@@ -23,6 +23,7 @@ import org.frankframework.larva.actions.LarvaApplicationContext;
 import org.frankframework.larva.actions.LarvaScenarioAction;
 import org.frankframework.larva.actions.SenderAction;
 import org.frankframework.larva.output.LarvaWriter;
+import org.frankframework.larva.output.PlainTextScenarioOutputRenderer;
 import org.frankframework.stream.Message;
 
 class LarvaActionFactoryTest {
@@ -33,8 +34,8 @@ class LarvaActionFactoryTest {
 
 	@BeforeEach
 	void setUp() throws ClassLoaderException {
-		larvaTool = new LarvaTool(null, new LarvaConfig(), new LarvaWriter(new LarvaConfig(), System.out), null);
-		actionFactory = new LarvaActionFactory(larvaTool);
+		larvaTool = new LarvaTool(null, new LarvaConfig());
+		actionFactory = new LarvaActionFactory(larvaTool, new PlainTextScenarioOutputRenderer(new LarvaWriter(larvaTool.getLarvaConfig(), System.out)));
 		applicationContext = new LarvaApplicationContext(null, "/");
 	}
 

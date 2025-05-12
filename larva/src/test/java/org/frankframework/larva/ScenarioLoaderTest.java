@@ -13,7 +13,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.frankframework.larva.output.LarvaWriter;
 import org.frankframework.util.AppConstants;
 
 public class ScenarioLoaderTest {
@@ -24,8 +23,7 @@ public class ScenarioLoaderTest {
 	@BeforeEach
 	public void setUp() {
 		LarvaConfig config = new LarvaConfig();
-		LarvaWriter out = new LarvaWriter(config, System.out);
-		LarvaTool larvaTool = new LarvaTool(null, config, out, null);
+		LarvaTool larvaTool = new LarvaTool(null, config);
 
 		scenarioLoader = new ScenarioLoader(larvaTool);
 		appConstants = AppConstants.getInstance();

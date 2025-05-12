@@ -30,7 +30,7 @@ class TestRunStatusTest {
 
 		config = new LarvaConfig();
 		LarvaWriter out = new LarvaWriter(config, System.out);
-		LarvaTool larvaTool = new LarvaTool(null, config, out, null);
+		LarvaTool larvaTool = new LarvaTool(null, config);
 		scenarioLoader = new ScenarioLoader(larvaTool);
 		testRunStatus = new TestRunStatus(config, larvaTool);
 

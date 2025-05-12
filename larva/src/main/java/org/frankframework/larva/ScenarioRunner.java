@@ -65,12 +65,12 @@ public class ScenarioRunner {
 	private final LarvaConfig larvaConfig;
 	private final TestExecutionObserver testExecutionObserver;
 
-	public ScenarioRunner(LarvaTool larvaTool) {
+	public ScenarioRunner(LarvaTool larvaTool, TestExecutionObserver testExecutionObserver, TestRunStatus testRunStatus) {
 		this.larvaTool = larvaTool;
 		this.applicationContext = larvaTool.getApplicationContext();
 		this.larvaConfig = larvaTool.getLarvaConfig();
-		this.testExecutionObserver = larvaTool.getTestExecutionObserver();
-		this.testRunStatus = larvaTool.getTestRunStatus();
+		this.testExecutionObserver = testExecutionObserver;
+		this.testRunStatus = testRunStatus;
 
 		this.logLevel = larvaConfig.getLogLevel();
 		this.waitBeforeCleanUp = larvaConfig.getWaitBeforeCleanup();
@@ -182,7 +182,7 @@ public class ScenarioRunner {
 
 			larvaTool.debugMessage("Open actions");
 
-			LarvaActionFactory actionFactory = new LarvaActionFactory(larvaTool);
+			LarvaActionFactory actionFactory = new LarvaActionFactory(larvaTool, testExecutionObserver);
 
 			// increment suffix for each scenario
 			String correlationId = TESTTOOL_CORRELATIONID + "(" + correlationIdSuffixCounter.getAndIncrement() + ")";
@@ -365,7 +365,7 @@ public class ScenarioRunner {
 				if ("".equals(fileName)) {
 					testExecutionObserver.stepMessage(scenario, stepDisplayName, "Unexpected message read from '" + actionName + "':", larvaTool.messageToString(message));
 				} else {
-					return larvaTool.compareResult(scenario, step, stepDisplayName, fileName, stepSaveFileName, expected, message, properties);
+					return larvaTool.compareResult(testExecutionObserver, scenario, step, stepDisplayName, fileName, stepSaveFileName, expected, message, properties);
 				}
 			}
 		} catch (Exception e) {

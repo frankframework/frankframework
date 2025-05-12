@@ -52,9 +52,9 @@ public class LarvaActionFactory {
 	private final LarvaTool testTool;
 	private final TestExecutionObserver testExecutionObserver;
 
-	public LarvaActionFactory(LarvaTool testTool) {
+	public LarvaActionFactory(LarvaTool testTool, TestExecutionObserver testExecutionObserver) {
 		this.testTool = testTool;
-		this.testExecutionObserver = testTool.getTestExecutionObserver();
+		this.testExecutionObserver = testExecutionObserver;
 		this.defaultTimeout = testTool.getLarvaConfig().getTimeout();
 	}
 
