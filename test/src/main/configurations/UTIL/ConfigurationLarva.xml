@@ -27,13 +27,13 @@
 				<forward name="success" path="StoreSuccessState" />
 				<forward name="failure" path="StoreFailState" />
 			</pipe>
-			<pipe name="StoreSuccessState" className="org.frankframework.pipes.PutInSession">
+			<pipe name="StoreSuccessState" className="org.frankframework.pipes.PutInSessionPipe">
 				<param name="result" value="SUCCESS"/>
 				<param name="mailaddresses" value="${errorreport.mailaddresses.pass}" />
 				<forward name="success" path="SwitchMethod" />
 			</pipe>
 
-			<pipe name="StoreFailState" className="org.frankframework.pipes.PutInSession">
+			<pipe name="StoreFailState" className="org.frankframework.pipes.PutInSessionPipe">
 				<param name="result" value="FAILED"/>
 				<param name="mailaddresses" value="${errorreport.mailaddresses.fail}" />
 				<forward name="success" path="SwitchMethod" />
@@ -51,7 +51,7 @@
 			</pipe>
 			<pipe
 				name="SetContentType"
-				className="org.frankframework.pipes.PutInSession"
+				className="org.frankframework.pipes.PutInSessionPipe"
 				sessionKey="contentType"
 				value="text/plain"
 				>

@@ -7,7 +7,7 @@
 			<exits>
 				<exit name="EXIT" state="success" />
 			</exits>
-			<pipe name="prepareDummyInput" className="org.frankframework.pipes.PutInSession" sessionKey="dummyInput" getInputFromFixedValue="&lt;root&gt;dummyInput&lt;/root&gt;" />
+			<pipe name="prepareDummyInput" className="org.frankframework.pipes.PutInSessionPipe" sessionKey="dummyInput" getInputFromFixedValue="&lt;root&gt;dummyInput&lt;/root&gt;" />
 			<pipe name="SwitchAction" className="org.frankframework.pipes.XmlSwitch" getInputFromSessionKey="originalMessage"
                   xpathExpression="request/@action"/>
 
@@ -66,7 +66,7 @@
 					<param name="key" sessionKey="clobKey" />
 				</sender>
 			</pipe>
-			<pipe name="prepareClobResultSessionKey" className="org.frankframework.pipes.PutInSession" sessionKey="clobResult" value="${testdata.dir}/clobresult.txt" />
+			<pipe name="prepareClobResultSessionKey" className="org.frankframework.pipes.PutInSessionPipe" sessionKey="clobResult" value="${testdata.dir}/clobresult.txt" />
 			<pipe name="cleanupClobResult" className="org.frankframework.pipes.LocalFileSystemPipe" action="delete" filename="${testdata.dir}/clobresult.txt" >
 				<forward name="exception" path="readClobViaSessionKey" />
 			</pipe>
@@ -137,7 +137,7 @@
 					<param name="key" sessionKey="blobKey" />
 				</sender>
 			</pipe>
-			<pipe name="prepareBlobResultSessionKey" className="org.frankframework.pipes.PutInSession" sessionKey="blobResult" value="${testdata.dir}/blobresult1.txt" />
+			<pipe name="prepareBlobResultSessionKey" className="org.frankframework.pipes.PutInSessionPipe" sessionKey="blobResult" value="${testdata.dir}/blobresult1.txt" />
 			<pipe name="cleanupBlobResult" className="org.frankframework.pipes.LocalFileSystemPipe" action="delete" filename="${testdata.dir}/blobresult1.txt" >
 				<forward name="exception" path="readBlobViaSessionKey" />
 			</pipe>

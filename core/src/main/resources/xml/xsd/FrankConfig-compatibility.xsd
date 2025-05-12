@@ -13948,7 +13948,7 @@
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="PutInSessionCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.PutInSession" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.PutInSessionPipe" />
   </xs:complexType>
   <xs:attributeGroup name="PutInSessionDeclaredAttributeGroup">
     <xs:attribute name="sessionKey" type="xs:string">

@@ -29,7 +29,7 @@
 				direction="unwrap" />
 
 			<pipe name="Store full File path and name"
-				className="org.frankframework.pipes.PutInSession"
+				className="org.frankframework.pipes.PutInSessionPipe"
 				sessionKey="filePathName">
 				<forward name="success" path="Read input CSV file" />
 			</pipe>

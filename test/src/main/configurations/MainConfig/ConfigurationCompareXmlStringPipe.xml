@@ -7,11 +7,11 @@
 			<exits>
 				<exit name="EXIT" state="success" />
 			</exits>
-			<pipe className="org.frankframework.pipes.PutInSession" name="FillSessionKey2"
+			<pipe className="org.frankframework.pipes.PutInSessionPipe" name="FillSessionKey2"
 				value="&lt;test&gt;&lt;a&gt;1&lt;/a&gt;&lt;b&gt;2&lt;/b&gt;&lt;c&gt;3&lt;/c&gt;&lt;/test&gt;" sessionKey="sessionKey2">
 				<forward name="success" path="FillIgnoreSessionKey" />
 			</pipe>
-			<pipe className="org.frankframework.pipes.PutInSession" name="FillIgnoreSessionKey" sessionKey="ignoreSessionKey"
+			<pipe className="org.frankframework.pipes.PutInSessionPipe" name="FillIgnoreSessionKey" sessionKey="ignoreSessionKey"
 				value="&lt;ignores&gt;&lt;ignore&gt;&lt;after&gt;&amp;lt;a&amp;gt;&lt;/after&gt;&lt;before&gt;&amp;lt;/a&amp;gt;&lt;/before&gt;&lt;/ignore&gt;&lt;ignore&gt;&lt;after&gt;&amp;lt;c&amp;gt;&lt;/after&gt;&lt;before&gt;&amp;lt;/c&amp;gt;&lt;/before&gt;&lt;/ignore&gt;&lt;/ignores&gt;">
 				<forward name="success" path="Compare" />
 			</pipe>

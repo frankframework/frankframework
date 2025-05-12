@@ -123,7 +123,7 @@
 			<!-- Move and rename file with use move2fileSessionKey -->
 			<pipe
 				name="move file [move2fileSessionKey]"
-				className="org.frankframework.pipes.PutInSession"
+				className="org.frankframework.pipes.PutInSessionPipe"
 				sessionKey="move2destination"
 				value="${testdata.dir}/mfp2">
 				<forward name="success" path="move file [move2fileSessionKey]2"/>
