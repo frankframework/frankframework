@@ -26,7 +26,7 @@
 		<spring-security.version>6.4.5</spring-security.version>
 		<spring-integration.version>6.4.4</spring-integration.version>
 		<spring.boot.version>3.4.5</spring.boot.version>
-		<tomcat.version>10.1.40</tomcat.version>
+		<tomcat.version>10.1.41</tomcat.version>
 		<bouncycastle.version>1.80</bouncycastle.version>
 
 		<narayana.version>7.2.2.Final</narayana.version>
