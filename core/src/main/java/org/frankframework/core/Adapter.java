@@ -74,6 +74,7 @@ import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.Misc;
 import org.frankframework.util.RunState;
 import org.frankframework.util.RunStateManager;
@@ -563,6 +564,9 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		) {
 			PipeLineResult result = new PipeLineResult();
 			boolean success = false;
+			if (StringUtils.isEmpty(messageId)) {
+				messageId = MessageUtils.generateMessageId();
+			}
 			try {
 				result = processMessageWithExceptions(messageId, message, pipeLineSession);
 				success = true;

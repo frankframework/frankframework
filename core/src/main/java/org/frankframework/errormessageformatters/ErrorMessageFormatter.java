@@ -35,6 +35,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlEncodingUtils;
@@ -78,11 +79,9 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		String prefix = location != null ? ClassUtils.nameOf(location) : null;
 		String messageId = session.getMessageId();
 		String correlationId = session.getCorrelationId();
-		if (StringUtils.isNotEmpty(messageId)) {
-			prefix = StringUtil.concatStrings(prefix, " ", "msgId ["+messageId+"]");
-		}
-		if (StringUtils.isNotEmpty(correlationId)) {
-			prefix = StringUtil.concatStrings(prefix, " ", "correlationId ["+correlationId+"]");
+		String msgIdToUse = StringUtils.isNotEmpty(messageId) && !MessageUtils.isGeneratedMessageId(messageId) ? messageId : correlationId;
+		if (StringUtils.isNotEmpty(msgIdToUse)) {
+			prefix = StringUtil.concatStrings(prefix, " ", "msgId [" + msgIdToUse + "]");
 		}
 		errorMessage = StringUtil.concatStrings(prefix, ": ", errorMessage);
 
@@ -109,11 +108,9 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 
 		XmlBuilder originalMessageXml = new XmlBuilder(PipeLineSession.ORIGINAL_MESSAGE_KEY);
 		originalMessageXml.addAttribute("messageId", messageId);
-		originalMessageXml.addAttribute("correlationId", correlationId);
 		Instant tsReceived = session.getTsReceived();
 		if (tsReceived != null && tsReceived.toEpochMilli() != 0) {
 			originalMessageXml.addAttribute("receivedTime", Date.from(tsReceived).toString());
-
 		}
 		// originalMessageXml.setCdataValue(originalMessage);
 		try {
