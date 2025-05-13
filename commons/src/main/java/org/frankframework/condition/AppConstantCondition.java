@@ -29,6 +29,9 @@ public class AppConstantCondition implements Condition {
 		if (attributes == null)
 			return false;
 
+		if (!attributes.containsKey("name") || !attributes.containsKey("value") || !attributes.containsKey("defaultValue"))
+			return false;
+
 		String propertyName = attributes.get("name").toString();
 		String propertyValue = attributes.get("value").toString();
 		String defaultValue = attributes.get("defaultValue").toString();
