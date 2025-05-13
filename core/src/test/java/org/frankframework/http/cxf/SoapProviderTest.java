@@ -19,8 +19,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayInputStream;
+import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -48,6 +50,7 @@ import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.UrlMessage;
+import org.frankframework.testutil.MatchUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
 
@@ -306,7 +309,7 @@ public class SoapProviderTest {
 		PipeLineSession session = new PipeLineSession();
 
 		session.put("attachmentXmlSessionKey", "<parts><part sessionKey=\"part_file\"/></parts>");
-		session.put("part_file", new Message(getFile(attachmentFile).asString())); //as String message / no message context
+		session.put("part_file", new Message(getFile(attachmentFile).asString())); // as String message / no message context
 
 		SOAPProvider.setAttachmentXmlSessionKey("attachmentXmlSessionKey");
 		SOAPProvider.setSession(session);
@@ -345,19 +348,58 @@ public class SoapProviderTest {
 		testAttachment(message, getFile(attachmentFile).asString(), "image/bmp");
 	}
 
+	@Test
+	public void vrijeBerichtenSoapTest() throws Exception {
+		SOAPMessage request = createMessage("VrijeBerichten_PipelineRequest.xml", false, true);
+		Message pipelineResult;
+		try (Message plr = getFile("VrijeBerichten_PipelineResult.xml")) {
+			pipelineResult = new Message(new FilterInputStream(plr.asInputStream()) {});
+		}
+
+		SoapProviderStub mockSOAPProvider = new SoapProviderStub(webServiceContext) {
+
+			@Override
+			Message processRequest(Message message, PipeLineSession pipelineSession) {
+				try {
+					MatchUtils.assertXmlEquals(getFile("VrijeBerichten_PipelineRequest.xml").asString(), message.asString());
+				} catch (IOException e) {
+					fail("unable to read response message: " + e.getMessage(), e);
+				}
+				// Ensure the message is registered on the PipelineSession.
+//				pipelineResult.closeOnCloseOf(pipelineSession);
+
+				// Add an attachment, which is registered on the PipelineSession.
+				pipelineSession.put("attachmentXmlSessionKey", MULTIPART_XML);
+				Message attachmentMessage = new Message(ATTACHMENT2_CONTENT);
+//				attachmentMessage.closeOnCloseOf(pipelineSession);
+				pipelineSession.put("part_file", attachmentMessage);
+
+				return pipelineResult;
+			}
+		};
+
+		SOAPMessage message = mockSOAPProvider.invoke(request);
+
+		assertAttachmentInReceivedMessage(message);
+
+		String result = XmlUtils.nodeToString(message.getSOAPPart());
+		String expected = getFile("VrijeBerichten_PipelineResult.xml").asString();
+		MatchUtils.assertXmlEquals(expected, result);
+	}
+
 	private void testAttachment(SOAPMessage message, String expectedAttachmentContent, String expectedContentType) throws Exception {
-		//Test attachment
+		// Test attachment
 		Iterator<?> attachmentParts = message.getAttachments();
 		while (attachmentParts.hasNext()) {
 			AttachmentPart soapAttachmentPart = (AttachmentPart)attachmentParts.next();
 			String attachment = StreamUtil.streamToString(soapAttachmentPart.getRawContent());
-			//ContentID should be equal to the filename
+			// ContentID should be equal to the filename
 			assertEquals(PART_NAME, soapAttachmentPart.getContentId());
 
-			//Validate the attachment's content
+			// Validate the attachment's content
 			assertEquals(expectedAttachmentContent, attachment);
 
-			//Make sure at least the content-type header has been set
+			// Make sure at least the content-type header has been set
 			Iterator<?> headers = soapAttachmentPart.getAllMimeHeaders();
 			String contentType = null;
 			while (headers.hasNext()) {
