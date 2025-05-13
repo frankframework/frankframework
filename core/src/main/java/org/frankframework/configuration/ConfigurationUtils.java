@@ -530,7 +530,7 @@ public class ConfigurationUtils {
 	@SuppressWarnings("unchecked")
 	protected static Class<DirectoryClassLoader> getDefaultDirectoryClassLoaderType(String classLoaderType) {
 		try {
-			String className = (classLoaderType.indexOf(".") == -1) ? ClassLoaderManager.CLASSLOADER_PACKAGE_LOCATION.formatted(classLoaderType) : classLoaderType;
+			String className = classLoaderType.contains(".") ? classLoaderType : ClassLoaderManager.CLASSLOADER_PACKAGE_LOCATION.formatted(classLoaderType);
 
 			Class<?> clazz = Class.forName(className);
 			if (DirectoryClassLoader.class.isAssignableFrom(clazz)) {
