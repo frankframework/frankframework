@@ -56,7 +56,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 
-			<pipe name="StylesheetNameSessionKey" className="org.frankframework.pipes.PutInSession"
+			<pipe name="StylesheetNameSessionKey" className="org.frankframework.pipes.PutInSessionPipe"
 				sessionKey="stylesheetLocation" value="XsltPipe/GenericFunctions.xsl">
 				<forward name="success" path="SetSessionKeyName" />
 				<forward name="exception" path="EXIT" />

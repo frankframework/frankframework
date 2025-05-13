@@ -51,7 +51,7 @@
 			<forward name="success" path="READY"/>
 		</pipe>
 
-		<pipe name="Create example plain text message" value="Line One&#10;Line Two&#10;Line Three&#10;Line Four&#10;Line Five" sessionKey="exampleMessage" className="org.frankframework.pipes.PutInSession">
+		<pipe name="Create example plain text message" value="Line One&#10;Line Two&#10;Line Three&#10;Line Four&#10;Line Five" sessionKey="exampleMessage" className="org.frankframework.pipes.PutInSessionPipe">
 			<forward name="success" path="Transform plain text message to XML"/>
 		</pipe>
 		<pipe name="Transform plain text message to XML" xmlTag="lines" splitLines="true" className="org.frankframework.pipes.Text2XmlPipe">

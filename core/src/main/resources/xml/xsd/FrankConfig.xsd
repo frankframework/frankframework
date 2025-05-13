@@ -15845,7 +15845,7 @@
   <xs:complexType name="PutInSessionType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="PutInSessionCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.PutInSession" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.PutInSessionPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="PutInSessionDeclaredAttributeGroup">
     <xs:attribute name="sessionKey" type="xs:string">

@@ -37,7 +37,7 @@
 			</pipe>
 
 			<pipe name="This PutInSession should throw an exception but not trigger a rollback"
-				className="org.frankframework.pipes.PutInSession"
+				className="org.frankframework.pipes.PutInSessionPipe"
 				getInputFromFixedValue="tralala"
 				transactionAttribute="Mandatory"
 			>

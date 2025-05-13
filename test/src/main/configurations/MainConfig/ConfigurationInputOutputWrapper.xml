@@ -140,34 +140,34 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- ERRORS -->
-			<pipe name="InputValidateError" className="org.frankframework.pipes.PutInSession">
+			<pipe name="InputValidateError" className="org.frankframework.pipes.PutInSessionPipe">
 				<param name="errorCode" value="NOT_WELL_FORMED_XML"/>
 				<forward name="success" path="ErrorExit" />
 			</pipe>
 			<!-- -->
-			<pipe name="InputValidateFailure" className="org.frankframework.pipes.PutInSession">
+			<pipe name="InputValidateFailure" className="org.frankframework.pipes.PutInSessionPipe">
 				<param name="errorCode" value="INVALID_XML" />
 				<param name="errorDetailCode" sessionKey="failureReason" />
 				<forward name="success" path="ErrorExit" />
 			</pipe>
 			<!-- -->
-			<pipe name="InternalXsdError" className="org.frankframework.pipes.PutInSession">
+			<pipe name="InternalXsdError" className="org.frankframework.pipes.PutInSessionPipe">
 				<param name="errorCode" value="INTERNAL_XSD_ERROR:NOT_WELL_FORMED_XML"/>
 				<forward name="success" path="ErrorExit" />
 			</pipe>
 			<!-- -->
-			<pipe name="InternalXsdFailure" className="org.frankframework.pipes.PutInSession">
+			<pipe name="InternalXsdFailure" className="org.frankframework.pipes.PutInSessionPipe">
 				<param name="errorCode" value="INTERNAL_XSD_ERROR" />
 				<param name="errorDetailCode" sessionKey="failureReason" />
 				<forward name="success" path="ErrorExit" />
 			</pipe>
 			<!-- -->
-			<pipe name="SendXsdError" className="org.frankframework.pipes.PutInSession">
+			<pipe name="SendXsdError" className="org.frankframework.pipes.PutInSessionPipe">
 				<param name="errorCode" value="SEND_XSD_ERROR:NOT_WELL_FORMED_XML"/>
 				<forward name="success" path="ErrorExit" />
 			</pipe>
 			<!-- -->
-			<pipe name="SendXsdFailure" className="org.frankframework.pipes.PutInSession">
+			<pipe name="SendXsdFailure" className="org.frankframework.pipes.PutInSessionPipe">
 				<param name="errorCode" value="SEND_XSD_ERROR" />
 				<param name="errorDetailCode" sessionKey="failureReason" />
 				<forward name="success" path="ErrorExit" />

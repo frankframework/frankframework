@@ -42,7 +42,7 @@ import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.pipes.PutInSession;
+import org.frankframework.pipes.PutInSessionPipe;
 import org.frankframework.pipes.PutSystemDateInSession;
 import org.frankframework.processors.CorePipeLineProcessor;
 import org.frankframework.processors.CorePipeProcessor;
@@ -1029,15 +1029,15 @@ public class ParameterTest {
 	}
 
 	@Test
-	// Test for #2256 PutInSession with xpathExpression with type=domdoc
+	// Test for #2256 PutInSessionPipe with xpathExpression with type=domdoc
 	// results in "Content is not allowed in prolog"
 	public void testPutInSessionPipeWithDomdocParamsUsedMoreThanOnce() throws Exception {
 		try(TestConfiguration configuration = new TestConfiguration()) {
 			Adapter adapter = configuration.createBean();
 			adapter.setName("testAdapter"); // Required for Metrics
 			PipeLine pipeline = SpringUtils.createBean(adapter);
-			String firstPipe = "PutInSession under test";
-			String secondPipe = "PutInSession next pipe";
+			String firstPipe = "PutInSessionPipe under test";
+			String secondPipe = "PutInSessionPipe next pipe";
 
 			String testMessage = """
 					<Test>
@@ -1049,7 +1049,7 @@ public class ParameterTest {
 
 			String testMessageChild1 = "<Child><name>X</name></Child>";
 
-			PutInSession pipe = configuration.createBean();
+			PutInSessionPipe pipe = configuration.createBean();
 			pipe.setName(firstPipe);
 			pipe.setPipeLine(pipeline);
 			Parameter p = new Parameter();
@@ -1059,7 +1059,7 @@ public class ParameterTest {
 			pipe.addParameter(p);
 			pipeline.addPipe(pipe);
 
-			PutInSession pipe2 = configuration.createBean();
+			PutInSessionPipe pipe2 = configuration.createBean();
 			pipe2.setName(secondPipe);
 			pipe2.setPipeLine(pipeline);
 			Parameter p2 = new Parameter();

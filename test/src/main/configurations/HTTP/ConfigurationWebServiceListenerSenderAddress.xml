@@ -289,7 +289,7 @@
 				<exit name="READY" state="success"/>
 			</exits>
 
-			<pipe name="call getUnifiedDocument" className="org.frankframework.pipes.PutInSession"
+			<pipe name="call getUnifiedDocument" className="org.frankframework.pipes.PutInSessionPipe"
 				value="fakeFileContents" sessionKey="FileContent" />
 
 			<pipe name="base64tostream2" className="org.frankframework.pipes.Base64Pipe"
