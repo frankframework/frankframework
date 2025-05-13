@@ -9,7 +9,7 @@
 			</exits>
 			<pipe name="SwitchAction" className="org.frankframework.pipes.XmlSwitch" xpathExpression="request/@action" />
 			<!-- putAndRemoveOneKey -->
-			<pipe name="putAndRemoveOneKey" className="org.frankframework.pipes.PutInSession" sessionKey="request">
+			<pipe name="putAndRemoveOneKey" className="org.frankframework.pipes.PutInSessionPipe" sessionKey="request">
 				<forward name="success" path="removeOneKey" />
 			</pipe>
 			<!-- removeOneKey -->
@@ -17,10 +17,10 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- putAndRemoveMultipleKeys -->
-			<pipe name="putAndRemoveMultipleKeys" className="org.frankframework.pipes.PutInSession" sessionKey="request1">
+			<pipe name="putAndRemoveMultipleKeys" className="org.frankframework.pipes.PutInSessionPipe" sessionKey="request1">
 				<forward name="success" path="putAndRemoveMultipleKeys2" />
 			</pipe>
-			<pipe name="putAndRemoveMultipleKeys2" className="org.frankframework.pipes.PutInSession" sessionKey="request3">
+			<pipe name="putAndRemoveMultipleKeys2" className="org.frankframework.pipes.PutInSessionPipe" sessionKey="request3">
 				<forward name="success" path="removeMultipleKeys" />
 			</pipe>
 			<!-- removeMultipleKeys -->

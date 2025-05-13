@@ -9,7 +9,7 @@
 			</exits>
 			<pipe name="SwitchAction" className="org.frankframework.pipes.XmlSwitch" xpathExpression="request/@action" />
 			<!-- getFromPreserveAndStore-Pipe -->
-			<pipe name="getFromPreserveAndStore-Pipe" className="org.frankframework.pipes.PutInSession" sessionKey="requestKey" value="&lt;abc/&gt;" />
+			<pipe name="getFromPreserveAndStore-Pipe" className="org.frankframework.pipes.PutInSessionPipe" sessionKey="requestKey" value="&lt;abc/&gt;" />
 			<pipe name="getFromPreserveAndStore-Pipe2" className="org.frankframework.pipes.XsltPipe" styleSheetName="/Parameters/WrapInput.xslt"
                   preserveInput="true" getInputFromSessionKey="requestKey" storeResultInSessionKey="storedResultKey" /> <!-- preserve input to restore it later, replace original input with fixed value, store wrapped result, return original input -->
 			<pipe name="getFromPreserveAndStore-Pipe4" className="org.frankframework.pipes.XsltPipe" styleSheetName="/Parameters/ShowParam.xslt" >
@@ -20,7 +20,7 @@
 			</pipe>
 
 			<!-- getFromPreserveAndStore-SenderWrapper -->
-			<pipe name="getFromPreserveAndStore-SenderWrapper" className="org.frankframework.pipes.PutInSession" sessionKey="requestKey" value="&lt;abc/&gt;" />
+			<pipe name="getFromPreserveAndStore-SenderWrapper" className="org.frankframework.pipes.PutInSessionPipe" sessionKey="requestKey" value="&lt;abc/&gt;" />
 			<pipe name="getFromPreserveAndStore-SenderWrapper2">
 				 <!-- preserve input to restore it later, replace original input with fixed value, store wrapped result, return original input -->
 				<sender className="org.frankframework.senders.SenderSeries" getInputFromSessionKey="requestKey" preserveInput="true" storeResultInSessionKey="storedResultKey">
