@@ -18,6 +18,8 @@ import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -31,8 +33,11 @@ import org.springframework.transaction.TransactionStatus;
 import org.frankframework.configuration.classloaders.DatabaseClassLoader;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
+import org.frankframework.configuration.classloaders.ScanningDirectoryClassLoader;
+import org.frankframework.configuration.classloaders.WebAppClassLoader;
 import org.frankframework.dbms.GenericDbmsSupport;
 import org.frankframework.jdbc.FixedQuerySender;
+import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder;
@@ -264,5 +269,40 @@ public class ConfigurationUtilsTest extends Mockito {
 		assertEquals(DirectoryClassLoader.class, configs.get("Config"));
 		assertEquals(DatabaseClassLoader.class, configs.get("configuration1"));
 		assertEquals(DatabaseClassLoader.class, configs.get("configuration2"));
+	}
+
+	@Test
+	public void testConfigurationDirectoryAutoLoadInvalidClassName() throws Exception {
+		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build()) {
+			Class<?> clazz = ConfigurationUtils.getDefaultDirectoryClassLoaderType("not-a-ClassLoader");
+			assertEquals(DirectoryClassLoader.class, clazz);
+
+			// Normally adapter is present in the ThreadContext, but this is not set by the pipe processors
+			assertTrue(appender.contains("FATAL - invalid classloader type provided for [configurations.directory.classLoaderType] value [not-a-ClassLoader]"));
+		}
+	}
+
+	@Test
+	public void testConfigurationDirectoryAutoLoadIncompatibleClassType() throws Exception {
+		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build()) {
+			Class<?> clazz = ConfigurationUtils.getDefaultDirectoryClassLoaderType(WebAppClassLoader.class.getSimpleName());
+			assertEquals(DirectoryClassLoader.class, clazz);
+
+			// Normally adapter is present in the ThreadContext, but this is not set by the pipe processors
+			assertTrue(appender.contains("FATAL - incompatible classloader type provided for [configurations.directory.classLoaderType] value [WebAppClassLoader]"));
+		}
+	}
+
+	@Test
+	public void testConfigurationDirectoryAutoLoadDefaultClassName() throws Exception {
+		Class<?> clazz = ConfigurationUtils.getDefaultDirectoryClassLoaderType("DirectoryClassLoader");
+		assertEquals(DirectoryClassLoader.class, clazz);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"ScanningDirectoryClassLoader", "org.frankframework.configuration.classloaders.ScanningDirectoryClassLoader"}) // Tests both simple and canonical names
+	public void testConfigurationDirectoryAutoLoadScanningDirectoryClassName(String name) throws Exception {
+		Class<?> clazz = ConfigurationUtils.getDefaultDirectoryClassLoaderType(name);
+		assertEquals(ScanningDirectoryClassLoader.class, clazz);
 	}
 }

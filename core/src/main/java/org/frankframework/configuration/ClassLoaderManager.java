@@ -48,6 +48,8 @@ public class ClassLoaderManager {
 	private final Map<String, ClassLoader> classLoaders = new TreeMap<>();
 	private final ClassLoader classPathClassLoader = Thread.currentThread().getContextClassLoader();
 
+	static final String CLASSLOADER_PACKAGE_LOCATION = "org.frankframework.configuration.classloaders.%s";
+
 	private IbisContext ibisContext;
 
 	public ClassLoaderManager(IbisContext ibisContext) {
@@ -63,10 +65,7 @@ public class ClassLoaderManager {
 		if(classLoaderType == null || classLoaderType.isEmpty())
 			throw new ClassLoaderException("classLoaderType cannot be empty");
 
-		String className = classLoaderType;
-		if(classLoaderType.indexOf(".") == -1)
-			className = "org.frankframework.configuration.classloaders." + classLoaderType;
-
+		String className = classLoaderType.contains(".") ? classLoaderType : CLASSLOADER_PACKAGE_LOCATION.formatted(classLoaderType);
 		log.debug("trying to create classloader of type[{}]", className);
 
 		final ClassLoader classLoader;
