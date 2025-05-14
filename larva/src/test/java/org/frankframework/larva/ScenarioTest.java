@@ -79,7 +79,7 @@ class ScenarioTest {
 	@Test
 	void getSteps3() throws IOException {
 		// Arrange
-		// Steps cannot currently use numbers starting with 0 so no steps returned for this scenario
+		// Steps can now use numbers starting with 0 so all 4 steps returned for this scenario
 		String scenarioSteps = """
 						step01.action.read=in.txt
 						step02.action.write=out.txt
@@ -128,7 +128,7 @@ class ScenarioTest {
 	@Test
 	void getSteps5() throws IOException {
 		// Arrange
-		// Step numbers cannot be skipped
+		// Step numbers can now be skipped, so step5 is now picked up as a valid step
 		String scenarioSteps = """
 				action.className=org.frankframework.test.TestAction
 				
