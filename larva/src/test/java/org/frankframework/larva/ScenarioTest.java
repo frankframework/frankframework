@@ -42,10 +42,11 @@ class ScenarioTest {
 		List<String> steps = scenario.getSteps(config);
 
 		// Assert
-		assertEquals(3, steps.size());
+		assertEquals(4, steps.size());
 		assertEquals("step1.action.read", steps.get(0));
 		assertEquals("step2.action.write", steps.get(1));
 		assertEquals("step3.action.writeline", steps.get(2));
+		assertEquals("step5.action.read", steps.get(3));
 
 		// Arrange
 		config.setAllowReadlineSteps(true);
@@ -86,12 +87,13 @@ class ScenarioTest {
 						step04.action.readline=inline
 				""";
 		Scenario scenario = createScenario(scenarioSteps);
+		config.setAllowReadlineSteps(false);
 
 		// Act
 		List<String> steps = scenario.getSteps(config);
 
 		// Assert
-		assertEquals(0, steps.size());
+		assertEquals(3, steps.size());
 	}
 
 	@Test
@@ -143,10 +145,11 @@ class ScenarioTest {
 		List<String> steps = scenario.getSteps(config);
 
 		// Assert
-		assertEquals(3, steps.size());
+		assertEquals(4, steps.size());
 		assertEquals("step1.action.read", steps.get(0));
 		assertEquals("step2.action.write", steps.get(1));
 		assertEquals("step3.action.writeline", steps.get(2));
+		assertEquals("step5.action.read", steps.get(3));
 	}
 
 	private Scenario createScenario(String scenarioSteps) throws IOException {

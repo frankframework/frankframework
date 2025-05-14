@@ -16,11 +16,12 @@
 package org.frankframework.larva;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Enumeration;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -30,6 +31,9 @@ import lombok.extern.log4j.Log4j2;
  */
 @Log4j2
 public class Scenario {
+
+	private final static Pattern STEP_NR_RE = Pattern.compile("^step(\\d+)\\..+(\\.read|\\.readline|\\.write|\\.writeline)$");
+
 	private final @Getter ID id;
 	private final @Getter File scenarioFile;
 	private final @Getter String name;
@@ -57,30 +61,24 @@ public class Scenario {
 	}
 
 	public List<String> getSteps(LarvaConfig larvaConfig) {
-		// TODO: This code can really do with some improvements. Now that it is part of Scenario class that will be easier.
-		List<String> steps = new ArrayList<>();
-		int i = 1;
-		boolean lastStepFound = false;
-		while (!lastStepFound) {
-			boolean stepFound = false;
-			Enumeration<?> enumeration = properties.propertyNames();
-			while (enumeration.hasMoreElements()) {
-				String key = (String) enumeration.nextElement();
-				if (key.startsWith("step" + i + ".") && (key.endsWith(".read") || key.endsWith(".write") || (larvaConfig.isAllowReadlineSteps() && key.endsWith(".readline")) || key.endsWith(".writeline"))) {
-					if (!stepFound) {
-						steps.add(key);
-						stepFound = true;
-						log.debug("Added step '{}'", key);
-					} else {
-						throw new LarvaException("More than one step" + i + " properties found, already found '" + steps.get(steps.size() - 1) + "' before finding '" + key + "'");
+		// Filter and sort steps from all scenario property names
+		List<String> steps = properties.stringPropertyNames().stream()
+				.filter(Scenario::isValidStep)
+				.filter(step -> larvaConfig.isAllowReadlineSteps() || !step.endsWith(".readline"))
+				.sorted(new Scenario.StepSorter())
+				.toList();
+
+		// Validate that there are no duplicate step numbers
+		//noinspection ResultOfMethodCallIgnored
+		steps.stream()
+				.mapToInt(Scenario::getStepNr)
+				.reduce(-1, (lastStepNr, stepNr) -> {
+					if (lastStepNr == stepNr) {
+						throw new LarvaException(String.format("Scenario %s has more than one step numbered %d", name, stepNr));
 					}
-				}
-			}
-			if (!stepFound) {
-				lastStepFound = true;
-			}
-			i++;
-		}
+					return stepNr;
+				});
+
 		return steps;
 	}
 
@@ -111,5 +109,27 @@ public class Scenario {
 		public int hashCode() {
 			return Objects.hashCode(scenarioId);
 		}
+	}
+
+	private static class StepSorter implements Comparator<String> {
+		@Override
+		public int compare(String o1, String o2) {
+			int step1Nr = getStepNr(o1);
+			int step2Nr = getStepNr(o2);
+			return step1Nr - step2Nr;
+		}
+	}
+
+	private static int getStepNr(String step) {
+		Matcher stepNrMatch = STEP_NR_RE.matcher(step);
+		if (!stepNrMatch.matches()) {
+			throw new IllegalArgumentException("Step '" + step + "' does not have a step number");
+		}
+		return Integer.parseInt(stepNrMatch.group(1));
+	}
+
+	private static boolean isValidStep(String step) {
+		Matcher stepMatch = STEP_NR_RE.matcher(step);
+		return stepMatch.matches();
 	}
 }
