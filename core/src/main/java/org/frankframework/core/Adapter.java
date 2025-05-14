@@ -559,14 +559,16 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * @return The {@link PipeLineResult} from processing the message, or indicating what error occurred.
 	 */
 	public PipeLineResult processMessageDirect(String messageId, Message message, PipeLineSession pipeLineSession) {
+		if (StringUtils.isEmpty(messageId)) {
+			messageId = MessageUtils.generateMessageId();
+			log.info("messageId not set, creating synthetic id [{}]", messageId);
+			pipeLineSession.put(PipeLineSession.MESSAGE_ID_KEY, messageId);
+		}
 		try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(this, messageId, pipeLineSession);
 			IbisMaskingLayout.HideRegexContext ignored2 = IbisMaskingLayout.pushToThreadLocalReplace(composedHideRegexPattern)
 		) {
 			PipeLineResult result = new PipeLineResult();
 			boolean success = false;
-			if (StringUtils.isEmpty(messageId)) {
-				messageId = MessageUtils.generateMessageId();
-			}
 			try {
 				result = processMessageWithExceptions(messageId, message, pipeLineSession);
 				success = true;

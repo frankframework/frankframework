@@ -95,7 +95,7 @@ public class TestPipeline extends BusEndpointBase {
 
 	// Does not support async requests because receiver requests are synchronous
 	private BinaryMessage processMessage(Adapter adapter, String payload, Map<String, String> threadContext, boolean expectsReply) {
-		String messageId = "testmessage" + UUIDUtil.createSimpleUUID();
+		String messageId = "testmessage-" + UUIDUtil.createSimpleUUID();
 		try (PipeLineSession pls = new PipeLineSession()) {
 			// Make sure the pipeline session has a security handler
 			pls.setSecurityHandler(new SpringSecurityHandler());
