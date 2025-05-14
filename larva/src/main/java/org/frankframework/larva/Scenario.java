@@ -32,7 +32,7 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class Scenario {
 
-	private final static Pattern STEP_NR_RE = Pattern.compile("^step(\\d+)\\..+(\\.read|\\.readline|\\.write|\\.writeline)$");
+	private static final Pattern STEP_NR_RE = Pattern.compile("^step(\\d+)\\..+(\\.read|\\.readline|\\.write|\\.writeline)$");
 
 	private final @Getter ID id;
 	private final @Getter File scenarioFile;
