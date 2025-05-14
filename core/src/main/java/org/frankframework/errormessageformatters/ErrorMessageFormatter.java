@@ -18,11 +18,13 @@ package org.frankframework.errormessageformatters;
 import java.io.IOException;
 import java.util.Date;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
+import org.xml.sax.SAXException;
 
 import lombok.Getter;
 
@@ -30,12 +32,17 @@ import org.frankframework.core.HasName;
 import org.frankframework.core.IErrorMessageFormatter;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.documentbuilder.DocumentBuilderFactory;
+import org.frankframework.documentbuilder.DocumentFormat;
+import org.frankframework.documentbuilder.IDocumentBuilder;
+import org.frankframework.documentbuilder.INodeBuilder;
+import org.frankframework.documentbuilder.ObjectBuilder;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
-import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlEncodingUtils;
 
 /**
@@ -61,10 +68,12 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 	protected Logger log = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
+	private @Getter @Nonnull DocumentFormat messageFormat = DocumentFormat.XML;
+
 	/**
 	 * Format the available parameters into a XML-message.
-	 *
-	 * Override this method in descender-classes to obtain the required behaviour.
+	 * <b/>
+	 * Override this method in subclasses to obtain the required behaviour.
 	 */
 	@Override
 	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, String messageId, long receivedTime) {
@@ -81,41 +90,63 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		errorMessage = StringUtil.concatStrings(prefix, ": ", errorMessage);
 
 		String originator = AppConstants.getInstance().getProperty("application.name")+" "+ AppConstants.getInstance().getProperty("application.version");
-		// Build a Base xml
-		XmlBuilder errorXml = new XmlBuilder("errorMessage");
-		errorXml.addAttribute("timestamp", new Date().toString());
-		errorXml.addAttribute("originator", originator);
-		errorXml.addAttribute("message", XmlEncodingUtils.replaceNonValidXmlCharacters(errorMessage));
-
-		if (location != null) {
-			XmlBuilder locationXml = new XmlBuilder("location");
-			locationXml.addAttribute("class", location.getClass().getName());
-			locationXml.addAttribute("name", location.getName());
-			errorXml.addSubElement(locationXml);
-		}
-
-		if (StringUtils.isNotEmpty(details)) {
-			XmlBuilder detailsXml = new XmlBuilder("details");
-			// detailsXml.setCdataValue(details);
-			detailsXml.setValue(XmlEncodingUtils.replaceNonValidXmlCharacters(details), true);
-			errorXml.addSubElement(detailsXml);
-		}
-
-		XmlBuilder originalMessageXml = new XmlBuilder(PipeLineSession.ORIGINAL_MESSAGE_KEY);
-		originalMessageXml.addAttribute("messageId", messageId);
-		if (receivedTime != 0) {
-			originalMessageXml.addAttribute("receivedTime", new Date(receivedTime).toString());
-		}
-		// originalMessageXml.setCdataValue(originalMessage);
+		// Build a Base document
 		try {
-			originalMessageXml.setValue(originalMessage!=null ? originalMessage.asString(): null, true);
+			MessageBuilder messageBuilder = new MessageBuilder();
+			IDocumentBuilder documentBuilder = DocumentBuilderFactory.startDocument(messageFormat, "errorMessage", messageBuilder, true);
+
+			ObjectBuilder errorXml = documentBuilder.asObjectBuilder();
+			errorXml.addAttribute("timestamp", new Date().toString());
+			errorXml.addAttribute("originator", originator);
+			errorXml.addAttribute("message", XmlEncodingUtils.replaceNonValidXmlCharacters(errorMessage));
+
+			if (location != null) {
+				ObjectBuilder locationXml = errorXml.addObjectField("location");
+				locationXml.addAttribute("class", location.getClass().getName());
+				locationXml.addAttribute("name", location.getName());
+				locationXml.close();
+			}
+
+			if (StringUtils.isNotEmpty(details)) {
+				errorXml.add("details", XmlEncodingUtils.replaceNonValidXmlCharacters(details));
+			}
+
+			INodeBuilder nodeBuilder = errorXml.addField(PipeLineSession.ORIGINAL_MESSAGE_KEY);
+			ObjectBuilder originalMessageXml = nodeBuilder.startObject();
+
+			originalMessageXml.addAttribute("messageId", messageId);
+			if (receivedTime != 0) {
+				originalMessageXml.addAttribute("receivedTime", new Date(receivedTime).toString());
+			}
+			String originalMessageAsString = getMessageAsString(originalMessage, messageId);
+			if (messageFormat == DocumentFormat.XML) {
+				nodeBuilder.setValue(originalMessageAsString);
+			} else {
+				originalMessageXml.add("message", originalMessageAsString);
+			}
+			originalMessageXml.close();
+
+			errorXml.close();
+			documentBuilder.close();
+			return messageBuilder.build();
+		} catch (IOException | SAXException e) {
+			if (t != null) {
+				e.addSuppressed(t);
+			}
+			throw new RuntimeException("Cannot create formatted error message for error [" + errorMessage + "]", e);
+		}
+	}
+
+	@Nullable
+	private String getMessageAsString(Message originalMessage, String messageId) {
+		String originalMessageAsString;
+		try {
+			originalMessageAsString = originalMessage != null ? originalMessage.asString() : null;
 		} catch (IOException e) {
 			log.warn("Could not convert originalMessage for messageId [{}]", messageId, e);
-			originalMessageXml.setValue(originalMessage.toString(), true);
+			originalMessageAsString = originalMessage.toString();
 		}
-		errorXml.addSubElement(originalMessageXml);
-
-		return errorXml.asMessage();
+		return originalMessageAsString;
 	}
 
 	protected @Nullable String getErrorMessage(@Nullable String message, @Nullable Throwable t) {
@@ -126,5 +157,14 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 			return t.getMessage();
 		}
 		return  message + ": "+t.getMessage();
+	}
+
+	/**
+	 * Format the error message as XML or as JSON.
+	 *
+	 * ff.default XML
+	 */
+	public void setMessageFormat(@Nonnull DocumentFormat messageFormat) {
+		this.messageFormat = messageFormat;
 	}
 }
