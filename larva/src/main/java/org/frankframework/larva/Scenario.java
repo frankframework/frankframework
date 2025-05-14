@@ -116,7 +116,7 @@ public class Scenario {
 		public int compare(String o1, String o2) {
 			int step1Nr = getStepNr(o1);
 			int step2Nr = getStepNr(o2);
-			return step1Nr - step2Nr;
+			return Integer.compare(step1Nr, step2Nr);
 		}
 	}
 
