@@ -105,8 +105,6 @@ public class LarvaTool {
 	private final @Getter ScenarioLoader scenarioLoader;
 	private @Getter @Setter LarvaWriter writer;
 
-	protected static int globalTimeoutMillis = AppConstants.getInstance().getInt("larva.timeout", 10_000);
-
 	public static LarvaTool createInstance(ServletContext servletContext) {
 		return createInstance(getApplicationContext(servletContext));
 	}
@@ -122,10 +120,6 @@ public class LarvaTool {
 		this.scenarioLoader = new ScenarioLoader(this);
 
 		XMLUnit.setIgnoreWhitespace(true);
-	}
-
-	public static void setTimeout(int newTimeout) {
-		globalTimeoutMillis = newTimeout;
 	}
 
 	private static ApplicationContext getApplicationContext(ServletContext servletContext) {
