@@ -9,12 +9,12 @@
 				<exit name="EXIT" state="success" />
 			</exits>
 
-			<pipe name="setFileName" className="org.frankframework.pipes.PutInSession"
+			<pipe name="setFileName" className="org.frankframework.pipes.PutInSessionPipe"
 				sessionKey="fileName" value="${testdata.dir}/rs2fs/file.txt">
 				<forward name="success" path="setMaxRecords" />
 			</pipe>
 
-			<pipe name="setMaxRecords" className="org.frankframework.pipes.PutInSession"
+			<pipe name="setMaxRecords" className="org.frankframework.pipes.PutInSessionPipe"
 				sessionKey="maxRecords" value="7">
 				<forward name="success" path="selectRecordIds" />
 			</pipe>

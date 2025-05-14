@@ -42,7 +42,7 @@
 				<forward name="success" path="SetStartIndex" />
 			</pipe>
 			<pipe name="SetStartIndex"
-				className="org.frankframework.pipes.PutInSession"
+				className="org.frankframework.pipes.PutInSessionPipe"
 				sessionKey="index" getInputFromFixedValue="0">
 				<forward name="success" path="GetHeapSize" />
 			</pipe>

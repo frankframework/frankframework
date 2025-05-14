@@ -35,7 +35,7 @@
 				filename="RestListener/pdf/sample.pdf" storeResultInSessionKey="fileContent">
 				<forward name="success" path="setFileName" />
 			</pipe>
-			<pipe name="setFileName" className="org.frankframework.pipes.PutInSession"
+			<pipe name="setFileName" className="org.frankframework.pipes.PutInSessionPipe"
 				sessionKey="fileContentName" value="sample.pdf">
 				<forward name="success" path="callRest" />
 			</pipe>
@@ -80,7 +80,7 @@
 				<exit state="success" name="EXIT" />
 			</exits>
 
-			<pipe name="setContentType" className="org.frankframework.pipes.PutInSession"
+			<pipe name="setContentType" className="org.frankframework.pipes.PutInSessionPipe"
 				sessionKey="contentType" value="application/octet-stream">
 				<forward name="success" path="getId" />
 			</pipe>
@@ -234,7 +234,7 @@
 				<exit name="EXIT" state="success" />
 			</exits>
 
-			<pipe name="createFileNameKey" className="org.frankframework.pipes.PutInSession"
+			<pipe name="createFileNameKey" className="org.frankframework.pipes.PutInSessionPipe"
 				sessionKey="fileName" getInputFromFixedValue="${testdata.dir}/rest/result3.pdf">
 				<forward name="success" path="getUrl" />
 			</pipe>

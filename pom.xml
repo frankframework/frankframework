@@ -26,12 +26,12 @@
 		<spring-security.version>6.4.5</spring-security.version>
 		<spring-integration.version>6.4.4</spring-integration.version>
 		<spring.boot.version>3.4.5</spring.boot.version>
-		<tomcat.version>10.1.40</tomcat.version>
+		<tomcat.version>10.1.41</tomcat.version>
 		<bouncycastle.version>1.80</bouncycastle.version>
 
-		<narayana.version>7.2.1.Final</narayana.version>
+		<narayana.version>7.2.2.Final</narayana.version>
 		<jboss-logging.version>3.6.1.Final</jboss-logging.version>
-		<micrometer.version>1.14.6</micrometer.version>
+		<micrometer.version>1.14.7</micrometer.version>
 		<argLine/> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>4.0-SNAPSHOT</frankdoc.version>
@@ -269,11 +269,6 @@
 			<dependency>
 				<groupId>org.frankframework</groupId>
 				<artifactId>frankframework-test</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.frankframework</groupId>
-				<artifactId>frankframework-test-integration</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -1469,17 +1464,6 @@
 					</snapshots>
 				</repository>
 			</repositories>
-		</profile>
-		<profile>
-			<id>test-integration</id>
-			<activation>
-				<property>
-					<name>test-integration</name>
-				</property>
-			</activation>
-			<modules>
-				<module>test-integration</module>
-			</modules>
 		</profile>
 		<profile>
 			<id>javadoc</id>

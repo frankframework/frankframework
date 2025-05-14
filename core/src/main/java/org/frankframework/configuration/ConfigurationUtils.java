@@ -83,6 +83,7 @@ public class ConfigurationUtils {
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.database.autoLoad", false);
 	private static final boolean CONFIG_AUTO_FS_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.directory.autoLoad", false);
+	private static final String DEFAULT_AUTO_DB_CLASSLOADER_TYPE = APP_CONSTANTS.getString("configurations.directory.classLoaderType", DirectoryClassLoader.class.getCanonicalName());
 	private static final String INSTANCE_NAME = AppConstants.getInstance().getProperty("instance.name", null);
 	private static final String CONFIGURATIONS = APP_CONSTANTS.getProperty("configurations.names.application");
 	public static final String DEFAULT_CONFIGURATION_FILE = "Configuration.xml";
@@ -492,9 +493,10 @@ public class ConfigurationUtils {
 			String configDir = AppConstants.getInstance().getProperty("configurations.directory");
 			log.info("scanning directory [{}] for configurations", configDir);
 			try {
+			Class<DirectoryClassLoader> classLoaderType = getDefaultDirectoryClassLoaderType(DEFAULT_AUTO_DB_CLASSLOADER_TYPE);
 				for(String name : retrieveDirectoryConfigNames(configDir)) {
 					if (allConfigNameItems.get(name) == null) {
-						allConfigNameItems.put(name, DirectoryClassLoader.class);
+						allConfigNameItems.put(name, classLoaderType);
 					} else {
 						log.warn("config [{}] already exists in {}, cannot add same config twice", name, allConfigNameItems);
 					}
@@ -523,6 +525,22 @@ public class ConfigurationUtils {
 		log.info("found configurations to load [{}]", allConfigNameItems);
 
 		return sort(allConfigNameItems);
+	}
+
+	@SuppressWarnings("unchecked")
+	protected static Class<DirectoryClassLoader> getDefaultDirectoryClassLoaderType(String classLoaderType) {
+		try {
+			String className = classLoaderType.contains(".") ? classLoaderType : ClassLoaderManager.CLASSLOADER_PACKAGE_LOCATION.formatted(classLoaderType);
+
+			Class<?> clazz = Class.forName(className);
+			if (DirectoryClassLoader.class.isAssignableFrom(clazz)) {
+				return (Class<DirectoryClassLoader>) clazz;
+			}
+			log.fatal("incompatible classloader type provided for [configurations.directory.classLoaderType] value [{}]", classLoaderType);
+		} catch (ClassNotFoundException e) {
+			log.fatal("invalid classloader type provided for [configurations.directory.classLoaderType] value [{}]", classLoaderType);
+		}
+		return DirectoryClassLoader.class;
 	}
 
 	private static <T> Map<String, T> sort(final Map<String, T> allConfigNameItems) {

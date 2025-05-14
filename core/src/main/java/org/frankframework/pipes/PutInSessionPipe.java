@@ -40,7 +40,7 @@ import org.frankframework.stream.Message;
  * @ff.parameters the result of each parameter defined will be we stored in the PipeLineSession, under the key specified by the parameter name
  */
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.SESSION)
-public class PutInSession extends FixedForwardPipe {
+public class PutInSessionPipe extends FixedForwardPipe {
 
 	private @Getter String sessionKey;
 	private @Getter String value;

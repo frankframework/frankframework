@@ -10,7 +10,7 @@
 			</exits>
 
 			<!-- Set FileName -->
-			<pipe name="setFilename" className="org.frankframework.pipes.PutInSession" sessionKey="filename" value="${testdata.dir}/test1.txt" >
+			<pipe name="setFilename" className="org.frankframework.pipes.PutInSessionPipe" sessionKey="filename" value="${testdata.dir}/test1.txt" >
  			 <forward name="success" path="setFileData"/>
 			</pipe>
 

@@ -33,23 +33,23 @@
 			<exits>
 				<exit name="EXIT" state="success" />
 			</exits>
-			<pipe name="put" className="org.frankframework.pipes.PutInSession"
+			<pipe name="put" className="org.frankframework.pipes.PutInSessionPipe"
 				sessionKey="sessionkey" value="hallo">
 				<forward name="success" path="put2" />
 			</pipe>
-			<pipe name="put2" className="org.frankframework.pipes.PutInSession"
+			<pipe name="put2" className="org.frankframework.pipes.PutInSessionPipe"
 				sessionKey="sessionkey2" value="goodbye">
 				<forward name="success" path="put3" />
 			</pipe>
-			<pipe name="put3" className="org.frankframework.pipes.PutInSession"
+			<pipe name="put3" className="org.frankframework.pipes.PutInSessionPipe"
 				sessionKey="sessionkie3" value="morning">
 				<forward name="success" path="put4" />
 			</pipe>
-			<pipe name="put4" className="org.frankframework.pipes.PutInSession"
+			<pipe name="put4" className="org.frankframework.pipes.PutInSessionPipe"
 				sessionKey="sessionkey4" value="bientot">
 				<forward name="success" path="put5" />
 			</pipe>
-			<pipe name="put5" className="org.frankframework.pipes.PutInSession"
+			<pipe name="put5" className="org.frankframework.pipes.PutInSessionPipe"
 				sessionKey="sessionkey5" value="hello">
 				<forward name="success" path="child" />
 			</pipe>
