@@ -165,6 +165,6 @@ class LogWriter extends StringWriter {
 		if (writeToSystemOut) {
 			System.out.println(str);
 		}
-		super.write(str + "\n");
+		super.write(str);
 	}
 }
