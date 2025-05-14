@@ -59,7 +59,7 @@ parallel, so you can for instance run multiple debug sessions side by side to co
 
 ### Create a Tomcat Run Configuration and set the following:
 1. Select your installed Tomcat Application Server
-2. Make sure that you have enabled the Maven profile `database-drivers` and reload the Maven project after enabling it.
+2. Make sure that you have enabled the Maven profile `database-drivers` and reload the Maven project after enabling it. Make sure to hit "Sync all maven projects" and not "Reload all maven projects" in the Maven tool window!
 2. Add the following parameters to the VM Options:
    - `-Ddtap.stage=LOC`
    - `-DauthAliases.expansion.allowed=testalias`

@@ -122,7 +122,14 @@ public class CredentialFactory {
 
 	public static ICredentials getCredentials(String rawAlias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
 		final String alias = extractAlias(rawAlias);
-		for (ICredentialFactory factory : getInstance().delegates) {
+		List<ICredentialFactory> credentialFactoryDelegates = getInstance().delegates;
+
+		// If there are no delegates, return a Credentials object with the default values
+		if (credentialFactoryDelegates.isEmpty()) {
+			return new Credentials(alias, defaultUsernameSupplier, defaultPasswordSupplier);
+		}
+
+		for (ICredentialFactory factory : credentialFactoryDelegates) {
 			try {
 				ICredentials result = factory.getCredentials(alias, defaultUsernameSupplier, defaultPasswordSupplier);
 
