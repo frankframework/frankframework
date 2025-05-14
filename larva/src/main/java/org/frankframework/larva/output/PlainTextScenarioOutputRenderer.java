@@ -19,6 +19,7 @@ import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.Scenario;
 import org.frankframework.larva.TestRunStatus;
+import org.frankframework.util.AppConstants;
 
 public class PlainTextScenarioOutputRenderer implements TestExecutionObserver {
 	private final LarvaWriter out;
@@ -61,6 +62,9 @@ public class PlainTextScenarioOutputRenderer implements TestExecutionObserver {
 	@Override
 	public void startScenario(TestRunStatus testRunStatus, Scenario scenario) {
 		// No-op
+		System.err.println("log.dir=" + System.getProperty("log.dir"));
+		System.err.println("log.dir=" + AppConstants.getInstance().getProperty("log.dir"));
+		System.err.println("testdata.dir=" + AppConstants.getInstance().getProperty("testdata.dir"));
 	}
 
 	@Override

@@ -95,7 +95,6 @@ public class LarvaWriter {
 		if (!outputBuffer.getBuffer().isEmpty()) {
 			try {
 				writer.write(outputBuffer.toString());
-				writer.write(System.lineSeparator());
 			} catch (IOException e) {
 				log.error("Cannot write output", e);
 			}
@@ -119,6 +118,7 @@ public class LarvaWriter {
 			synchronized (targetWriter) {
 				try {
 					targetWriter.write(message);
+					targetWriter.write(System.lineSeparator());
 				} catch (IOException e) {
 					log.error("Cannot write output", e);
 				}

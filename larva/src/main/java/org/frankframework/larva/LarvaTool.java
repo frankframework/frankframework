@@ -61,6 +61,7 @@ import org.custommonkey.xmlunit.XMLUnit;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.SenderException;
@@ -102,7 +103,7 @@ public class LarvaTool {
 	 */
 	private final @Getter List<LarvaMessage> messages = new ArrayList<>();
 	private final @Getter ScenarioLoader scenarioLoader;
-	private @Getter LarvaWriter writer;
+	private @Getter @Setter LarvaWriter writer;
 
 	protected static int globalTimeoutMillis = AppConstants.getInstance().getInt("larva.timeout", 10_000);
 

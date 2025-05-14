@@ -56,7 +56,6 @@ import org.frankframework.util.CloseUtils;
 public class RunLarvaTests {
 
 	public static final LarvaLogLevel LARVA_LOG_LEVEL = LarvaLogLevel.WRONG_PIPELINE_MESSAGES;
-
 	public static final Set<String> IGNORED_SCENARIOS = Set.of(
 			"ApiListener/scenario01",
 			"ApiListener/scenario02",
@@ -145,6 +144,7 @@ public class RunLarvaTests {
 		larvaConfig.setMultiThreaded(false);
 
 		larvaWriter = new LarvaWriter(larvaConfig, System.out);
+		larvaTool.setWriter(larvaWriter);
 		testExecutionObserver = new PlainTextScenarioOutputRenderer(larvaWriter);
 	}
 
@@ -164,6 +164,7 @@ public class RunLarvaTests {
 	 */
 	@TestFactory
 	Stream<DynamicNode> larvaTests() {
+		assertTrue(applicationContext.isRunning());
 		TestRunStatus testRunStatus = larvaTool.createTestRunStatus();
 		scenarioRootDir = testRunStatus.initScenarioDirectories();
 		scenarioRunner = larvaTool.createScenarioRunner(testExecutionObserver, testRunStatus);
@@ -205,6 +206,7 @@ public class RunLarvaTests {
 				scenarioName, scenario.getScenarioFile().toURI(), () -> {
 					System.out.println("Running scenario: [" + scenarioName + "]");
 					int scenarioPassed = scenarioRunner.runOneFile(scenario, true);
+					larvaWriter.flush();
 
 					assumeTrue(scenarioPassed != LarvaTool.RESULT_ERROR || !IGNORED_SCENARIOS.contains(scenarioName), () -> "Ignoring Blacklisted Scenario: [" + scenarioName + "]");
 					assertNotEquals(LarvaTool.RESULT_ERROR, scenarioPassed, () -> "Scenario failed: [" + scenarioName + "]");
