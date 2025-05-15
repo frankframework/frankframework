@@ -124,6 +124,7 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 	@Override
 	@Protected
 	public void setMessageFormat(@Nonnull DocumentFormat messageFormat) {
+		// Add no logic, override to add @Protected annotation which will make sure this method cannot be used from configuration for this class
 		super.setMessageFormat(messageFormat);
 	}
 }
