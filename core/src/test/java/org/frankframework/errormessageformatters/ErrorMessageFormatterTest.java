@@ -68,21 +68,24 @@ class ErrorMessageFormatterTest {
 
 		String expected = """
 				{
-					"timestamp": "Wed May 14 16:26:41 CEST 2025",
-					"originator": "IAF ",
-					"message": "MyLocation [dummy-location] msgId [dummy-message-id]: dummy-error-message",
-					"location": {
-						"class": "org.frankframework.errormessageformatters.ErrorMessageFormatterTest$MyLocation",
-						"name": "dummy-location"
-					},
-					"originalMessage": {
-						"messageId": "dummy-message-id",
-						"receivedTime": "Wed May 14 16:26:41 CEST 2025",
-						"message": "dummy-message"
+					"errorMessage": {
+						"timestamp": "Wed May 14 16:26:41 CEST 2025",
+						"originator": "IAF ",
+						"message": "MyLocation [dummy-location] msgId [dummy-message-id]: dummy-error-message",
+						"location": {
+							"class": "org.frankframework.errormessageformatters.ErrorMessageFormatterTest$MyLocation",
+							"name": "dummy-location"
+						},
+						"originalMessage": {
+							"messageId": "dummy-message-id",
+							"receivedTime": "Wed May 14 16:26:41 CEST 2025",
+							"message": "dummy-message"
+						}
 					}
 				}
 				""";
 
+		System.err.println(errorAsString);
 		assertJsonEquals(applyIgnores(expected), applyIgnores(errorAsString));
 	}
 

@@ -94,38 +94,49 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 			MessageBuilder messageBuilder = new MessageBuilder();
 			IDocumentBuilder documentBuilder = DocumentBuilderFactory.startDocument(messageFormat, "errorMessage", messageBuilder, true);
 
-			ObjectBuilder errorXml = documentBuilder.asObjectBuilder();
-			errorXml.addAttribute("timestamp", new Date().toString());
-			errorXml.addAttribute("originator", originator);
-			errorXml.addAttribute("message", XmlEncodingUtils.replaceNonValidXmlCharacters(errorMessage));
+			ObjectBuilder errorObject;
+			ObjectBuilder rootObjectBuilder;
+			if (messageFormat == DocumentFormat.XML) {
+				rootObjectBuilder = null;
+				errorObject = documentBuilder.asObjectBuilder();
+			} else {
+				rootObjectBuilder = documentBuilder.asObjectBuilder();
+				errorObject = rootObjectBuilder.addObjectField("errorMessage");
+			}
+			errorObject.addAttribute("timestamp", new Date().toString());
+			errorObject.addAttribute("originator", originator);
+			errorObject.addAttribute("message", XmlEncodingUtils.replaceNonValidXmlCharacters(errorMessage));
 
 			if (location != null) {
-				ObjectBuilder locationXml = errorXml.addObjectField("location");
-				locationXml.addAttribute("class", location.getClass().getName());
-				locationXml.addAttribute("name", location.getName());
-				locationXml.close();
+				ObjectBuilder locationObject = errorObject.addObjectField("location");
+				locationObject.addAttribute("class", location.getClass().getName());
+				locationObject.addAttribute("name", location.getName());
+				locationObject.close();
 			}
 
 			if (StringUtils.isNotEmpty(details)) {
-				errorXml.add("details", XmlEncodingUtils.replaceNonValidXmlCharacters(details));
+				errorObject.add("details", XmlEncodingUtils.replaceNonValidXmlCharacters(details));
 			}
 
-			INodeBuilder nodeBuilder = errorXml.addField(PipeLineSession.ORIGINAL_MESSAGE_KEY);
-			ObjectBuilder originalMessageXml = nodeBuilder.startObject();
+			INodeBuilder nodeBuilder = errorObject.addField(PipeLineSession.ORIGINAL_MESSAGE_KEY);
+			ObjectBuilder originalMessageObject = nodeBuilder.startObject();
 
-			originalMessageXml.addAttribute("messageId", messageId);
+			originalMessageObject.addAttribute("messageId", messageId);
 			if (receivedTime != 0) {
-				originalMessageXml.addAttribute("receivedTime", new Date(receivedTime).toString());
+				originalMessageObject.addAttribute("receivedTime", new Date(receivedTime).toString());
 			}
 			String originalMessageAsString = getMessageAsString(originalMessage, messageId);
 			if (messageFormat == DocumentFormat.XML) {
 				nodeBuilder.setValue(originalMessageAsString);
 			} else {
-				originalMessageXml.add("message", originalMessageAsString);
+				originalMessageObject.add("message", originalMessageAsString);
 			}
-			originalMessageXml.close();
+			originalMessageObject.close();
 
-			errorXml.close();
+			errorObject.close();
+			if (rootObjectBuilder != null) {
+				rootObjectBuilder.close();
+			}
 			documentBuilder.close();
 			return messageBuilder.build();
 		} catch (IOException | SAXException e) {
