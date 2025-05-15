@@ -71,7 +71,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 
 	/**
 	 * Format the available parameters into a XML-message.
-	 * <b/>
+	 * <br/>
 	 * Override this method in subclasses to obtain the required behaviour.
 	 */
 	@Override
