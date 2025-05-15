@@ -51,7 +51,7 @@ public class DateParameter extends AbstractParameter {
 	}
 
 	public enum DateFormatType {
-		DATE, DATETIME, TIMESTAMP, TIME, XMLDATETIME
+		DATE, DATETIME, TIMESTAMP, TIME, UNIX, XMLDATETIME
 	}
 
 	@Override
@@ -95,6 +95,23 @@ public class DateParameter extends AbstractParameter {
 		if(formatType == DateFormatType.XMLDATETIME) {
 			log.debug("Parameter [{}] converting result [{}] from XML dateTime to Date", this::getName, () -> request);
 			return XmlUtils.parseXmlDateTime(request.asString());
+		}
+
+		if (formatType == DateFormatType.UNIX) {
+			log.debug("Parameter [{}] interpreting result [{}] as UNIX timestamp", this::getName, () -> request);
+			try {
+				String value = request.asString().trim();
+				long epoch = Long.parseLong(value);
+
+				// Heuristic: if the number is less than 10^12, treat as seconds
+				if (epoch < 1_000_000_000_000L) {
+					epoch *= 1000; // convert seconds to milliseconds
+				}
+
+				return new Date(epoch);
+			} catch (NumberFormatException e) {
+				throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse UNIX timestamp from [" + request + "]", e);
+			}
 		}
 
 		log.debug("Parameter [{}] converting result [{}] to Date using formatString [{}]", this::getName, () -> request, this::getFormatString);

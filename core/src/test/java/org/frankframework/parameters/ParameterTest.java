@@ -4,6 +4,7 @@ import static org.frankframework.testutil.TestAssertions.assertJsonEquals;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -1180,6 +1181,27 @@ public class ParameterTest {
 
 			assertEquals(expectedDate, result);
 
+		} finally {
+			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
+		}
+	}
+
+	@Test
+	public void testPatternFixedDateWithUnixTimestamp() throws Exception {
+		Parameter p = new Parameter();
+		try {
+			p.setName("unixTimestamp");
+			p.setPattern("{now,number,#}");
+			p.configure();
+			PipeLineSession session = new PipeLineSession();
+
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+			assertInstanceOf(String.class, result);
+
+			assertDoesNotThrow(() -> Long.parseLong(result.toString()));
 		} finally {
 			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
