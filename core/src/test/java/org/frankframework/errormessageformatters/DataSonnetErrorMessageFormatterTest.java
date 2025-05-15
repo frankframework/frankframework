@@ -6,12 +6,15 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.io.IOException;
 import java.time.Instant;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasName;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
+import org.frankframework.util.CloseUtils;
 
 class DataSonnetErrorMessageFormatterTest {
 
@@ -20,8 +23,7 @@ class DataSonnetErrorMessageFormatterTest {
 	private Exception exception;
 	private String errorMessage;
 	private HasName location;
-	private String messageId;
-	private Instant receivedTs;
+	private PipeLineSession session;
 
 	@BeforeEach
 	void setUp() throws ConfigurationException {
@@ -33,14 +35,19 @@ class DataSonnetErrorMessageFormatterTest {
 		exception = null;
 		errorMessage = "dummy-error-message";
 		location = new ErrorMessageFormatterTest.MyLocation();
-		messageId = "dummy-message-id";
-		receivedTs = Instant.now();
+		session = new PipeLineSession();
+		PipeLineSession.updateListenerParameters(session, "dummy-message-id", "dummy-cid", Instant.now(), Instant.now());
+	}
+
+	@AfterEach
+	void tearDown() {
+		CloseUtils.closeSilently(session);
 	}
 
 	@Test
-	void format() throws IOException {
+	void formatNoParameters() throws IOException {
 		// Act
-		Message error = formatter.format(errorMessage, exception, location, originalMessage, messageId, receivedTs.toEpochMilli());
+		Message error = formatter.format(errorMessage, exception, location, originalMessage, session);
 
 		// Assert
 		String errorAsString = error.asString();

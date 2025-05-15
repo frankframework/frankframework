@@ -18,7 +18,9 @@ package org.frankframework.errormessageformatters;
 import java.io.IOException;
 
 import jakarta.annotation.Nonnull;
+
 import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasName;
 import org.frankframework.core.IConfigurable;
@@ -26,6 +28,7 @@ import org.frankframework.core.IErrorMessageFormatter;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.IWithParameters;
 import org.frankframework.core.ParameterException;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.Protected;
 import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.json.JsonMapper;
@@ -59,10 +62,10 @@ public class DataSonnetErrorMessageFormatter extends ErrorMessageFormatter imple
 	}
 
 	@Override
-	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, String messageId, long receivedTime) {
+	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, PipeLineSession session) {
 
-		try (Message defaultMessage = super.format(errorMessage, t, location, originalMessage, messageId, receivedTime)) {
-			return mapper.transform(defaultMessage, parameters.getValues(originalMessage, null));
+		try (Message defaultMessage = super.format(errorMessage, t, location, originalMessage, session)) {
+			return mapper.transform(defaultMessage, parameters.getValues(originalMessage, session));
 		} catch (IOException e) {
 			throw new FormatterException("Cannot format error message", e);
 		} catch (ParameterException e) {
