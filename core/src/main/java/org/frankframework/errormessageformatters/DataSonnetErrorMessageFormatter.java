@@ -95,8 +95,8 @@ public class DataSonnetErrorMessageFormatter extends ErrorMessageFormatter imple
 	 *
 	 * @ff.default JSON
 	 */
-	public void setMessageFormat(JsonMapper.DataSonnetOutputType messageFormat) {
-		this.outputType = messageFormat;
+	public void setOutputType(JsonMapper.DataSonnetOutputType outputType) {
+		this.outputType = outputType;
 	}
 
 	@Override
