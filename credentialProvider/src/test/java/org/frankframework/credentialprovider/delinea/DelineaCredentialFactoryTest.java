@@ -12,8 +12,6 @@ import static org.mockito.Mockito.when;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,26 +20,20 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.credentialprovider.ICredentials;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
-public class DelineaCredentialFactoryTest {
+class DelineaCredentialFactoryTest {
 
 	private DelineaCredentialFactory credentialFactory;
 
 	@BeforeEach
-	public void beforeEach() {
+	void beforeEach() {
 		Secret secret1 = createSecret(1, 11, "user1", "password1");
 		Secret secret2 = createSecret(2, 22, "user2", "password2");
 		Secret secret3 = createSecret(3, 33, "user3", "password3");
 		Secret secret4 = createSecret(4, 44, "user4", "password4");
 
-		List<String> list = Stream.of(secret1, secret2, secret3, secret4)
-				.map(Secret::id)
-				.map(Objects::toString)
-				.toList();
-
 		DelineaClient client = mock(DelineaClient.class);
 
 		// Get secret
-		// 		when(session.get(eq(SessionParameter.USER_AGENT), anyString())).thenReturn("Mockito mock-agent");
 		when(client.getSecret(eq("1"), any())).thenReturn(secret1);
 		when(client.getSecret(eq("2"), any())).thenReturn(secret2);
 		when(client.getSecret(eq("3"), any())).thenReturn(secret3);
@@ -58,7 +50,7 @@ public class DelineaCredentialFactoryTest {
 	}
 
 	@AfterAll
-	public static void tearDown() {
+	static void tearDown() {
 		// Since credential constants is a singleton, make sure to clean up what we set up in the beforeEach
 		CredentialConstants.getInstance().remove(DelineaCredentialFactory.API_ROOT_URL_KEY);
 		CredentialConstants.getInstance().remove(DelineaCredentialFactory.OAUTH_TOKEN_URL_KEY);
