@@ -29,5 +29,5 @@ import org.frankframework.stream.Message;
 @FrankDocGroup(FrankDocGroupValue.ERROR_MESSAGE_FORMATTER)
 public interface IErrorMessageFormatter {
 
-	Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, String messageId, long receivedTime);
+	Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, PipeLineSession session);
 }

@@ -57,7 +57,6 @@ import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageDataSource;
 import org.frankframework.util.MessageUtils;
-import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
 
@@ -110,7 +109,7 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 
 	@Override
 	public SOAPMessage invoke(SOAPMessage request) {
-		String messageId = UUIDUtil.createSimpleUUID();
+		String messageId = MessageUtils.generateMessageId();
 		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_MESSAGE_ID_KEY, messageId);
 				PipeLineSession pipelineSession = new PipeLineSession()) {
 
@@ -120,7 +119,8 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 			final Message response = request == null ? createSoapFault() : processRequest(request, pipelineSession);
 
 			// Transform result string to SOAP message
-			log.debug("transforming to SOAP message");
+			log.debug("transforming process result [{}] to SOAP message", response);
+			response.unscheduleFromCloseOnExitOf(pipelineSession); // Make sure we can read the pipe result.
 			String soapProtocol = pipelineSession.get(SOAP_PROTOCOL_KEY, SOAPConstants.SOAP_1_1_PROTOCOL);
 			SOAPMessage soapMessage = convertResponseToSoapMessage(response, soapProtocol);
 
@@ -323,8 +323,9 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 		return new Message(part, context);
 	}
 
+	// Cannot close message here, as the provided source 
 	private SOAPMessage convertResponseToSoapMessage(Message response, String soapProtocol) {
-		try (response) {
+		try {
 			SOAPMessage soapMessage = getMessageFactory(soapProtocol).createMessage();
 			soapMessage.getSOAPPart().setContent(response.asSource());
 			return soapMessage;

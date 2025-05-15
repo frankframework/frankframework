@@ -1,0 +1,43 @@
+<soapenv:Envelope
+	xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+	<soapenv:Header />
+	<soapenv:Body>
+		<ZKN:geefZaakdocumentbewerken_Di02
+			xmlns:ZKN="http://www.egem.nl/StUF/sector/zkn/0310"
+			xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			xsi:schemaLocation="http://www.egem.nl/StUF/sector/zkn/0310 zkn0310_msg_zs-dms.xsd">
+			<ZKN:stuurgegevens>
+				<StUF:berichtcode
+					xmlns:StUF="http://www.egem.nl/StUF/StUF0301">Di02</StUF:berichtcode>
+				<StUF:zender
+					xmlns:StUF="http://www.egem.nl/StUF/StUF0301">
+					<StUF:organisatie>1900</StUF:organisatie>
+					<StUF:applicatie>GWS4all</StUF:applicatie>
+					<StUF:gebruiker>Gebruiker</StUF:gebruiker>
+				</StUF:zender>
+				<StUF:ontvanger
+					xmlns:StUF="http://www.egem.nl/StUF/StUF0301">
+					<StUF:organisatie>1900</StUF:organisatie>
+					<StUF:applicatie>CDR</StUF:applicatie>
+				</StUF:ontvanger>
+				<StUF:referentienummer
+					xmlns:StUF="http://www.egem.nl/StUF/StUF0301">193ecc53-8b5b-4dbf-909d-941818f6fa09
+				</StUF:referentienummer>
+				<StUF:tijdstipBericht
+					xmlns:StUF="http://www.egem.nl/StUF/StUF0301">20250513130716533</StUF:tijdstipBericht>
+				<StUF:functie
+					xmlns:StUF="http://www.egem.nl/StUF/StUF0301">geefZaakdocumentbewerken</StUF:functie>
+			</ZKN:stuurgegevens>
+			<ZKN:edcLv01
+				xmlns:StUF="http://www.egem.nl/StUF/StUF0301"
+				StUF:entiteittype="EDC" StUF:functie="selectie">
+				<ZKN:parameters>
+					<StUF:indicatorAfnemerIndicatie>false</StUF:indicatorAfnemerIndicatie>
+				</ZKN:parameters>
+				<ZKN:gelijk StUF:entiteittype="EDC">
+					<ZKN:identificatie>DC2025-00002</ZKN:identificatie>
+				</ZKN:gelijk>
+			</ZKN:edcLv01>
+		</ZKN:geefZaakdocumentbewerken_Di02>
+	</soapenv:Body>
+</soapenv:Envelope>

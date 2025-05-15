@@ -378,7 +378,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 					if (StringUtils.isNotEmpty(getResultOnTimeOut())) {
 						resultMessage =new Message(getResultOnTimeOut());
 					} else {
-						resultMessage = getAdapter().formatErrorMessage(null,toe,input,session.getMessageId(), this, session.getTsReceived().toEpochMilli());
+						resultMessage = getAdapter().formatErrorMessage(null,toe,input, session, this);
 					}
 					return new PipeRunResult(timeoutForward,resultMessage);
 				}

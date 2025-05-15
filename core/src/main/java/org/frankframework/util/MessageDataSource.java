@@ -55,16 +55,16 @@ public class MessageDataSource implements DataSource, Closeable {
 		if(StringUtils.isNotEmpty(newContentType)) {
 			MimeType mimeType = MimeType.valueOf(newContentType);
 			if(mimeType != DEFAULT_MIMETYPE) {
-				this.contentType = mimeType.toString(); //use the parsed MimeType to ensure its validity
+				this.contentType = mimeType.toString(); // Use the parsed MimeType to ensure its validity
 			}
 		}
 
-		if(contentType == null) { //if the contentType is still null try to compute
+		if(contentType == null) { // If the contentType is still null try to compute
 			MimeType mimeType = MessageUtils.computeMimeType(message);
 			if(mimeType != null) {
 				contentType = mimeType.toString();
 			}
-			if(contentType == null) { //if unable to compute, fall back to the default
+			if(contentType == null) { // If unable to compute, fall back to the default
 				contentType = DEFAULT_MIMETYPE.toString();
 			}
 		}

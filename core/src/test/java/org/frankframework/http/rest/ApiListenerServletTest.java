@@ -2404,7 +2404,7 @@ public class ApiListenerServletTest {
 		}
 
 		@Override
-		public Message formatException(String extraInfo, String correlationId, Message message, Throwable t) {
+		public Message formatException(String extraInfo, PipeLineSession session, Message message, Throwable t) {
 			t.printStackTrace();
 
 			return new Message(t.getMessage());

@@ -16,6 +16,7 @@
 package org.frankframework.errormessageformatters;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Date;
 
 import jakarta.annotation.Nullable;
@@ -34,6 +35,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlEncodingUtils;
@@ -67,16 +69,19 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 	 * Override this method in descender-classes to obtain the required behaviour.
 	 */
 	@Override
-	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, String messageId, long receivedTime) {
+	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, PipeLineSession session) {
 
 		String details = null;
 		errorMessage = getErrorMessage(errorMessage, t);
 		if (t != null) {
 			details = ExceptionUtils.getStackTrace(t);
 		}
-		String prefix=location!=null ? ClassUtils.nameOf(location) : null;
-		if (StringUtils.isNotEmpty(messageId)) {
-			prefix = StringUtil.concatStrings(prefix, " ", "msgId ["+messageId+"]");
+		String prefix = location != null ? ClassUtils.nameOf(location) : null;
+		String messageId = session.getMessageId();
+		String correlationId = session.getCorrelationId();
+		String msgIdToUse = StringUtils.isNotEmpty(messageId) && !MessageUtils.isGeneratedMessageId(messageId) ? messageId : correlationId;
+		if (StringUtils.isNotEmpty(msgIdToUse)) {
+			prefix = StringUtil.concatStrings(prefix, " ", "msgId [" + msgIdToUse + "]");
 		}
 		errorMessage = StringUtil.concatStrings(prefix, ": ", errorMessage);
 
@@ -103,14 +108,15 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 
 		XmlBuilder originalMessageXml = new XmlBuilder(PipeLineSession.ORIGINAL_MESSAGE_KEY);
 		originalMessageXml.addAttribute("messageId", messageId);
-		if (receivedTime != 0) {
-			originalMessageXml.addAttribute("receivedTime", new Date(receivedTime).toString());
+		Instant tsReceived = session.getTsReceived();
+		if (tsReceived != null && tsReceived.toEpochMilli() != 0) {
+			originalMessageXml.addAttribute("receivedTime", Date.from(tsReceived).toString());
 		}
 		// originalMessageXml.setCdataValue(originalMessage);
 		try {
 			originalMessageXml.setValue(originalMessage!=null ? originalMessage.asString(): null, true);
 		} catch (IOException e) {
-			log.warn("Could not convert originalMessage for messageId [{}]", messageId, e);
+			log.warn("Could not convert originalMessage for messageId [{}], correlationID [{}]", messageId, correlationId, e);
 			originalMessageXml.setValue(originalMessage.toString(), true);
 		}
 		errorXml.addSubElement(originalMessageXml);
