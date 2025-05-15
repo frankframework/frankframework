@@ -58,9 +58,9 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 	private @Getter String xpathExpression;
 
 	@Override
-	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, String messageId, long receivedTime) {
+	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, PipeLineSession session) {
 
-		Message result = super.format(errorMessage, t, location, originalMessage, messageId, receivedTime);
+		Message result = super.format(errorMessage, t, location, originalMessage, session);
 
 		if (StringUtils.isNotEmpty(getStyleSheet()) || StringUtils.isNotEmpty(getXpathExpression())) {
 			try {
