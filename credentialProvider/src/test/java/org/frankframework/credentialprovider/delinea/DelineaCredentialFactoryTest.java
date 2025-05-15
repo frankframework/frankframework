@@ -72,7 +72,7 @@ public class DelineaCredentialFactoryTest {
 		assertEquals(0, configuredAliases.size());
 
 		credentialFactory.hasCredentials("1");
-		ICredentials credentials = credentialFactory.getCredentials("2", () -> null, () -> null);
+		credentialFactory.getCredentials("2", () -> null, () -> null);
 
 		// Expect a list of 2 secrets after hasCredentials and getCredentials calls
 		configuredAliases = credentialFactory.getConfiguredAliases();
