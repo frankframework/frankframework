@@ -24,6 +24,7 @@ import org.springframework.context.annotation.Configuration;
 import nl.nn.testtool.web.ApiServlet;
 import nl.nn.testtool.web.FrontendServlet;
 
+import org.frankframework.condition.ConditionalOnAppConstants;
 import org.frankframework.lifecycle.DynamicRegistration;
 import org.frankframework.lifecycle.servlets.SecuritySettings;
 import org.frankframework.lifecycle.servlets.ServletConfiguration;
@@ -66,6 +67,7 @@ public class LadybugServletConfiguration implements ApplicationContextAware {
 	}
 
 	@Bean
+	@ConditionalOnAppConstants(name = "testtool.echo2.enabled", value = "true")
 	public ServletRegistration<TesttoolServlet> testtoolServletBean() {
 		ServletConfiguration servletConfiguration = SpringUtils.createBean(applicationContext);
 		servletConfiguration.setUrlMapping("/iaf/testtool");

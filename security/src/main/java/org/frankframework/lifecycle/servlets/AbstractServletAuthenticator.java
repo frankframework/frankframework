@@ -67,12 +67,14 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 	private @Getter ApplicationContext applicationContext;
 	private Properties applicationConstants = null;
 	private boolean allowUnsecureOptionsRequest = false;
+	private boolean isTesttoolEcho2Enabled = false;
 
 	@Override
 	public final void setApplicationContext(ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
 		Environment env = applicationContext.getEnvironment();
 		allowUnsecureOptionsRequest = env.getProperty(ALLOW_OPTIONS_REQUESTS_KEY, boolean.class, false);
+		isTesttoolEcho2Enabled = env.getProperty("testtool.echo2.enabled", boolean.class, false);
 	}
 
 	protected final synchronized Properties getEnvironmentProperties() {
@@ -190,8 +192,10 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 		http.securityMatcher(securityRequestMatcher);
 
 		// STATELESS prevents session from leaking over multiple servlets.
-		// The Ladybug (echo2) however requires cookie persistence. Hence, it's set to NEVER
-		http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.NEVER));
+		// The Ladybug (echo2) however requires cookie persistence. Hence, it's set to NEVER when ehco2 is enabled
+		http.sessionManagement(management -> management.sessionCreationPolicy(
+			isTesttoolEcho2Enabled ? SessionCreationPolicy.NEVER : SessionCreationPolicy.STATELESS
+		));
 
 		if (!publicEndpoints.isEmpty()) { // Enable anonymous access on public endpoints
 			http.authorizeHttpRequests(requests -> requests.requestMatchers(new URLRequestMatcher(publicEndpoints)).permitAll());
