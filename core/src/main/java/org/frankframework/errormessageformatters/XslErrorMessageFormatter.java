@@ -24,12 +24,15 @@ import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasName;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.Resource;
+import org.frankframework.doc.Protected;
+import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
@@ -46,6 +49,7 @@ import org.frankframework.util.TransformerPool.OutputType;
  *
  * @author Johan Verrips IOS
  */
+@Log4j2
 public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 
 	protected @Nonnull ParameterList paramList = new ParameterList();
@@ -115,5 +119,11 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 	/** xPathExpression to use for transformation */
 	public void setXpathExpression(String string) {
 		xpathExpression = string;
+	}
+
+	@Override
+	@Protected
+	public void setMessageFormat(@Nonnull DocumentFormat messageFormat) {
+		super.setMessageFormat(messageFormat);
 	}
 }

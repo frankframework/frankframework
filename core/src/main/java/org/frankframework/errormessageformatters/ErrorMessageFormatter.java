@@ -23,10 +23,10 @@ import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.HasName;
 import org.frankframework.core.IErrorMessageFormatter;
@@ -41,7 +41,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlEncodingUtils;
 
@@ -64,8 +63,8 @@ import org.frankframework.util.XmlEncodingUtils;
  *
  * @author  Gerrit van Brakel
  */
+@Log4j2
 public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProvider {
-	protected Logger log = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	private @Getter @Nonnull DocumentFormat messageFormat = DocumentFormat.XML;
