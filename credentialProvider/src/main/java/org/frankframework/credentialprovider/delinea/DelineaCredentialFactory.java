@@ -42,7 +42,7 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  * credentialFactory.delinea.oauth.username=username
  * credentialFactory.delinea.oauth.password=password
  * }</pre>
- *
+ * <p>
  * If you use these settings, the default URLs will  be used with the given properties from the code block above:
  * <ul>
  *     <li>{@code https://<tenant>.secretservercloud.<tld>/api/v1} which will translate to {@code https://waf.secretservercloud.eu/api/v1}

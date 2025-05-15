@@ -101,7 +101,6 @@ class DelineaCredentialFactoryTest {
 		assertEquals(4, credentialFactory.getConfiguredAliases().size());
 	}
 
-
 	static Secret createSecret(int id, int folderId, String username, String password) {
 		Secret.Field usernameField = new Secret.Field(1, username, "username");
 		Secret.Field passwordField = new Secret.Field(2, password, "password");
