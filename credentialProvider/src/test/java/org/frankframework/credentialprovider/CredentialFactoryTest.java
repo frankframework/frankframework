@@ -2,11 +2,10 @@ package org.frankframework.credentialprovider;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collection;
-import java.util.NoSuchElementException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -55,7 +54,12 @@ class CredentialFactoryTest {
 		CredentialConstants.getInstance().setProperty("credentialFactory.class", "");
 
 		// Act
-		assertThrows(NoSuchElementException.class, () -> CredentialFactory.getCredentials("account", null, null));
+		ICredentials credentials = CredentialFactory.getCredentials("account", null, null);
+
+		// Assert
+		assertNull(credentials.getUsername());
+		assertNull(credentials.getPassword());
+		assertEquals("account", credentials.getAlias());
 	}
 
 	@Test
@@ -121,6 +125,7 @@ class CredentialFactoryTest {
 		MockCredentialFactory.getInstance().add("alias2", null, "alias2Password");
 		MockCredentialFactory.getInstance().add("TheMaster", "masterUsername", "masterPassword");
 		MockCredentialFactory.getInstance().add("TheBachelor", "bachelorUsername", "bachelorPassword");
+
 		// Act
 		ICredentials account = CredentialFactory.getCredentials("account", null, null);
 		ICredentials alias1 = CredentialFactory.getCredentials("alias1", null, null);
