@@ -90,10 +90,10 @@ public class DataSonnetPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		ParameterValueList parameters = getParameters(message, session);
+		ParameterValueList pvl = getParameters(message, session);
 
 		try {
-			Message output = mapper.transform(message, parameters);
+			Message output = mapper.transform(message, pvl);
 			return new PipeRunResult(getSuccessForward(), output);
 		} catch (Exception e) {
 			throw new PipeRunException(this, "error transforming input", e);

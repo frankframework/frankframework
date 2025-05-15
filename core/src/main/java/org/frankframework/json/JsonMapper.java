@@ -45,9 +45,9 @@ import org.frankframework.util.MessageUtils;
 @Log4j2
 public class JsonMapper {
 
-	private Mapper mapper;
-	private JsonMapper.DataSonnetOutputType outputType;
-	private boolean computeMimeType;
+	private final Mapper mapper;
+	private final JsonMapper.DataSonnetOutputType outputType;
+	private final boolean computeMimeType;
 
 	public enum DataSonnetOutputType {
 		JSON(MediaTypes.APPLICATION_JSON),
@@ -64,7 +64,7 @@ public class JsonMapper {
 	public JsonMapper(String dataSonnet, DataSonnetOutputType outputType, boolean computeMimeType, List<String> parameterNames) {
 		this.outputType = outputType;
 		this.computeMimeType = computeMimeType;
-		mapper = new MapperBuilder(dataSonnet)
+		this.mapper = new MapperBuilder(dataSonnet)
 				.withInputNames(parameterNames)
 				.build();
 	}
