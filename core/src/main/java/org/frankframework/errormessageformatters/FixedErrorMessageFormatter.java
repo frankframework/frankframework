@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 
 import org.frankframework.core.HasName;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.Resource;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassLoaderUtils;
@@ -43,7 +44,7 @@ public class FixedErrorMessageFormatter extends ErrorMessageFormatter {
 	private @Getter String styleSheetName = null;
 
 	@Override
-	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, String messageId, long receivedTime) {
+	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, PipeLineSession session) {
 
 		Message messageToReturn = new Message(getReturnString());
 		if (messageToReturn.isEmpty()) {
@@ -57,7 +58,7 @@ public class FixedErrorMessageFormatter extends ErrorMessageFormatter {
 			}
 		}
 		if (messageToReturn.isEmpty()) {
-			messageToReturn = super.format(errorMessage, t, location, originalMessage, messageId, receivedTime);
+			messageToReturn = super.format(errorMessage, t, location, originalMessage, session);
 		}
 		if (StringUtils.isNotEmpty(getReplaceFrom())) {
 			try {

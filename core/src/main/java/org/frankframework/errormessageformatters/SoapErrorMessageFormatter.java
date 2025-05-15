@@ -16,6 +16,7 @@
 package org.frankframework.errormessageformatters;
 
 import org.frankframework.core.HasName;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
 
@@ -27,13 +28,13 @@ import org.frankframework.stream.Message;
 public class SoapErrorMessageFormatter extends ErrorMessageFormatter {
 
 	@Override
-	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, String messageId, long receivedTime) {
+	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, PipeLineSession session) {
 
 		try {
 			return SoapWrapper.getInstance().createSoapFaultMessage(getErrorMessage(errorMessage, t));
 		} catch (Exception e) {
 			log.error("got error getting soapWrapper instance", e);
-			return super.format(errorMessage, t, location, originalMessage, messageId, receivedTime);
+			return super.format(errorMessage, t, location, originalMessage, session);
 		}
 	}
 }

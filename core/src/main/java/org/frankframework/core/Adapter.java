@@ -74,6 +74,7 @@ import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.Misc;
 import org.frankframework.util.RunState;
 import org.frankframework.util.RunStateManager;
@@ -423,12 +424,12 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		}
 	}
 
-	public Message formatErrorMessage(String errorMessage, Throwable t, Message originalMessage, String messageID, HasName objectInError, long receivedTime) {
+	public Message formatErrorMessage(String errorMessage, Throwable t, Message originalMessage, PipeLineSession session, HasName objectInError) {
 		if (errorMessageFormatter == null) {
 			errorMessageFormatter = SpringUtils.createBean(this, ErrorMessageFormatter.class);
 		}
 		try {
-			return errorMessageFormatter.format(errorMessage, t, objectInError, originalMessage, messageID, receivedTime);
+			return errorMessageFormatter.format(errorMessage, t, objectInError, originalMessage, session);
 		} catch (Exception e) {
 			String msg = "got error while formatting errormessage, original errorMessage [" + errorMessage + "]";
 			msg = msg + " from [" + (objectInError == null ? "unknown-null" : objectInError.getName()) + "]";
@@ -558,7 +559,11 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * @return The {@link PipeLineResult} from processing the message, or indicating what error occurred.
 	 */
 	public PipeLineResult processMessageDirect(String messageId, Message message, PipeLineSession pipeLineSession) {
-		long startTime = System.currentTimeMillis();
+		if (StringUtils.isEmpty(messageId)) {
+			messageId = MessageUtils.generateMessageId();
+			log.info("messageId not set, creating synthetic id [{}]", messageId);
+			pipeLineSession.put(PipeLineSession.MESSAGE_ID_KEY, messageId);
+		}
 		try (final CloseableThreadContext.Instance ignored = LogUtil.getThreadContext(this, messageId, pipeLineSession);
 			IbisMaskingLayout.HideRegexContext ignored2 = IbisMaskingLayout.pushToThreadLocalReplace(composedHideRegexPattern)
 		) {
@@ -582,7 +587,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 						objectInError = this;
 					}
 				}
-				result.setResult(formatErrorMessage(msg, t, message, messageId, objectInError, startTime));
+				result.setResult(formatErrorMessage(msg, t, message, pipeLineSession, objectInError));
 			} finally {
 				logToMessageLogWithMessageContentsOrSize(Level.INFO, "Pipeline "+(success ? "Success" : "Error"), "result", result.getResult());
 			}
@@ -614,7 +619,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	public PipeLineResult processMessageWithExceptions(String messageId, Message message, PipeLineSession pipeLineSession) throws ListenerException {
 		boolean processingSuccess = true;
 		// prevent executing a stopped adapter
-		// the receivers should implement this, but you never now....
+		// the receivers should implement this, but you never know....
 		RunState currentRunState = getRunState();
 		if (currentRunState!=RunState.STARTED && currentRunState!=RunState.STOPPING) {
 			String msgAdapterNotOpen = "Adapter [" + getName() + "] in state [" + currentRunState + "], cannot process message";

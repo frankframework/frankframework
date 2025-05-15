@@ -15,7 +15,6 @@
 */
 package org.frankframework.processors;
 
-import java.time.Instant;
 import java.util.Map;
 
 import jakarta.annotation.Nonnull;
@@ -44,18 +43,12 @@ public class ExceptionHandlingPipeProcessor extends AbstractPipeProcessor {
 			Map<String, PipeForward> forwards = pipe.getForwards();
 			if (forwards!=null && forwards.containsKey(PipeForward.EXCEPTION_FORWARD_NAME) && !(pipe instanceof ExceptionPipe)) {
 
-				Instant tsReceivedDate = pipeLineSession.getTsReceived();
-				long tsReceivedLong = 0L;
-				if(tsReceivedDate != null) {
-					tsReceivedLong = tsReceivedDate.toEpochMilli();
-				}
-
 				final Message errorMessage;
 				if(e instanceof PipeRunException exception) {
 					HasName location = exception.getPipeInError();
-					errorMessage = pipeLine.getAdapter().formatErrorMessage(null, e.getCause(), message, pipeLineSession.getMessageId(), location, tsReceivedLong);
+					errorMessage = pipeLine.getAdapter().formatErrorMessage(null, e.getCause(), message, pipeLineSession, location);
 				} else {
-					errorMessage = pipeLine.getAdapter().formatErrorMessage(null, e, message, pipeLineSession.getMessageId(), pipeLine.getAdapter(), tsReceivedLong);
+					errorMessage = pipeLine.getAdapter().formatErrorMessage(null, e, message, pipeLineSession, pipeLine.getAdapter());
 				}
 
 				log.info("exception occurred, forwarding to exception-forward [{}]", PipeForward.EXCEPTION_FORWARD_NAME, e);

@@ -57,7 +57,6 @@ import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageDataSource;
 import org.frankframework.util.MessageUtils;
-import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
 
@@ -110,7 +109,7 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 
 	@Override
 	public SOAPMessage invoke(SOAPMessage request) {
-		String messageId = UUIDUtil.createSimpleUUID();
+		String messageId = MessageUtils.generateMessageId();
 		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_MESSAGE_ID_KEY, messageId);
 				PipeLineSession pipelineSession = new PipeLineSession()) {
 

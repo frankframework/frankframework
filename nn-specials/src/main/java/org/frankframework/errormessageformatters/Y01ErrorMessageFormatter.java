@@ -16,6 +16,7 @@
 package org.frankframework.errormessageformatters;
 
 import org.frankframework.core.HasName;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
@@ -33,11 +34,11 @@ public class Y01ErrorMessageFormatter extends ErrorMessageFormatter {
 	private final String applicationVersion = AppConstants.getInstance().getProperty("application.version");
 
 	@Override
-	public Message format(String message, Throwable t, HasName location, Message originalMessage, String messageId, long receivedTime) {
+	public Message format(String message, Throwable t, HasName location, Message originalMessage, PipeLineSession session) {
 		String result= "<ServiceResponse>\n" +
 				"   <ResponseEnvelope>\n" +
 				"       <serviceType>ING_RES1006</serviceType>\n" +
-				"       <messageId>" +messageId+   "</messageId>\n" +
+				"       <messageId>" +session.getMessageId()+   "</messageId>\n" +
 				"       <from>"+applicationName+ " "+applicationVersion+ "</from>\n" +
 				"       <to>JUICE</to>\n" +
 				"       <timeStamp>" + DateFormatUtils.getTimeStamp() + "</timeStamp>\n" +

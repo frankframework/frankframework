@@ -23,7 +23,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.UUIDUtil;
+import org.frankframework.util.MessageUtils;
 
 /**
  * @author Jaco de Groot
@@ -35,7 +35,8 @@ public class InputOutputPipeLineProcessor extends AbstractPipeLineProcessor {
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 		// Reset the PipeLineSession and store the message and its id in the session
 		if (messageId == null) {
-			messageId = UUIDUtil.createSimpleUUID();
+			// This should not be touched anymore
+			messageId = MessageUtils.generateMessageId();
 			log.error("messageId not set, creating synthetic id [{}]", messageId);
 		}
 

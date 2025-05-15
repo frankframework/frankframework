@@ -177,7 +177,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 					} catch (ListenerException e) {
 						// Message with error contains a String so does not need to be preserved.
 						// (Trying to preserve means dealing with extra IOException for which there is no reason here)
-						return handler.formatException(null, session.getCorrelationId(), message, e);
+						return handler.formatException(null, session, message, e);
 					}
 				}
 			} finally {
