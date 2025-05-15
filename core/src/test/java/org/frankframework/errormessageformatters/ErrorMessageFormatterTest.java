@@ -53,9 +53,9 @@ class ErrorMessageFormatterTest {
 		assertNotNull(errorAsString);
 
 		String expected = """
-				<errorMessage timestamp="Wed May 14 16:26:41 CEST 2025" originator="IAF " message="MyLocation [dummy-location] msgId [dummy-message-id]: dummy-error-message">
+				<errorMessage timestamp="-timestamp-" originator="IAF " message="MyLocation [dummy-location] msgId [dummy-message-id]: dummy-error-message">
 					<location class="org.frankframework.errormessageformatters.ErrorMessageFormatterTest$MyLocation" name="dummy-location"/>
-					<originalMessage messageId="dummy-message-id" receivedTime="Wed May 14 16:26:41 CEST 2025">dummy-message</originalMessage>
+					<originalMessage messageId="dummy-message-id" receivedTime="-timestamp-">dummy-message</originalMessage>
 				</errorMessage>
 				""";
 
@@ -76,7 +76,7 @@ class ErrorMessageFormatterTest {
 		String expected = """
 				{
 					"errorMessage": {
-						"timestamp": "Wed May 14 16:26:41 CEST 2025",
+						"timestamp": "-timestamp-",
 						"originator": "IAF ",
 						"message": "MyLocation [dummy-location] msgId [dummy-message-id]: dummy-error-message",
 						"location": {
@@ -85,7 +85,7 @@ class ErrorMessageFormatterTest {
 						},
 						"originalMessage": {
 							"messageId": "dummy-message-id",
-							"receivedTime": "Wed May 14 16:26:41 CEST 2025",
+							"receivedTime": "-timestamp-",
 							"message": "dummy-message"
 						}
 					}
