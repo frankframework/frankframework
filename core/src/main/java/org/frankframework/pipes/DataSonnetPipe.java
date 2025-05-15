@@ -15,22 +15,7 @@
 */
 package org.frankframework.pipes;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import org.springframework.util.MimeType;
-
-import com.datasonnet.Mapper;
-import com.datasonnet.MapperBuilder;
-import com.datasonnet.document.DefaultDocument;
 import com.datasonnet.document.Document;
-import com.datasonnet.document.MediaType;
-import com.datasonnet.document.MediaTypes;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -39,23 +24,19 @@ import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.Resource;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
-import org.frankframework.parameters.DateParameter;
+import org.frankframework.json.JsonMapper;
+import org.frankframework.json.JsonUtil;
 import org.frankframework.parameters.IParameter;
-import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
-import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
-import org.frankframework.util.MessageUtils;
-import org.frankframework.util.StreamUtil;
 
 /**
  * <p>
  * Using {@code .jsonnet} transformation files, the DataSonnetPipe uses JSonnet at its core to transform files
- * from and to different file formats specified by supported {@link DataSonnetOutputType outputTypes}.
+ * from and to different file formats specified by supported {@link JsonMapper.DataSonnetOutputType outputTypes}.
  * </p>
  * <p>
  * The pipe input message will be set to the JSON object called {@code payload}.
@@ -95,54 +76,24 @@ import org.frankframework.util.StreamUtil;
 @EnterpriseIntegrationPattern(Type.TRANSLATOR)
 public class DataSonnetPipe extends FixedForwardPipe {
 	private String styleSheetName;
-	private Mapper mapper;
-	private DataSonnetOutputType outputType = DataSonnetOutputType.JSON;
+	private JsonMapper mapper;
+	private JsonMapper.DataSonnetOutputType outputType = JsonMapper.DataSonnetOutputType.JSON;
 	private boolean computeMimeType = false;
-
-	public enum DataSonnetOutputType {
-		JSON(MediaTypes.APPLICATION_JSON),
-		CSV(MediaTypes.APPLICATION_CSV),
-		XML(MediaTypes.APPLICATION_XML),
-		YAML(MediaTypes.APPLICATION_YAML);
-
-		final MediaType mediaType;
-		DataSonnetOutputType(MediaType mediaType) {
-			this.mediaType = mediaType;
-		}
-	}
 
 	@Override
 	public void configure() throws ConfigurationException {
 		parameterNamesMustBeUnique = true;
 		super.configure();
 
-		List<String> paramNames = getParameterList().stream().map(IParameter::getName).toList();
-		mapper = new MapperBuilder(getStyleSheet())
-				.withInputNames(paramNames)
-				.build();
-	}
-
-	private String getStyleSheet() throws ConfigurationException {
-		Resource styleSheet = Resource.getResource(this, styleSheetName);
-		if (styleSheet == null) {
-			throw new ConfigurationException("StyleSheet [" + styleSheetName + "] not found");
-		}
-		try (InputStream is = styleSheet.openStream()) {
-			return StreamUtil.streamToString(is);
-		} catch (IOException e) {
-			throw new ConfigurationException("unable to open/read StyleSheet [" + styleSheetName + "]", e);
-		}
+		mapper = JsonUtil.buildJsonMapper(this, styleSheetName, outputType, computeMimeType, getParameterList());
 	}
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		Map<String, Document<?>> parameters = getParameters(message, session);
+		ParameterValueList parameters = getParameters(message, session);
 
 		try {
-			Document<String> document = mapper.transform(new FrankMessageDocument(message, computeMimeType), parameters, outputType.mediaType);
-			Message output = new Message(document.getContent());
-			output.getContext().withMimeType(document.getMediaType().toString());
-
+			Message output = mapper.transform(message, parameters);
 			return new PipeRunResult(getSuccessForward(), output);
 		} catch (Exception e) {
 			throw new PipeRunException(this, "error transforming input", e);
@@ -152,31 +103,13 @@ public class DataSonnetPipe extends FixedForwardPipe {
 	/**
 	 * Loops over all the {@link IParameter Parameters} and converts them to DataSonnet {@link Document Documents}.
 	 */
-	private Map<String, Document<?>> getParameters(Message message, PipeLineSession session) throws PipeRunException {
+	private ParameterValueList getParameters(Message message, PipeLineSession session) throws PipeRunException {
 		try {
 			ParameterList parameterList = getParameterList();
-			ParameterValueList pvl = parameterList.getValues(message, session);
-
-			return StreamSupport.stream(pvl.spliterator(), false)
-					.collect(Collectors.toMap(ParameterValue::getName, this::toDocument, (prev, next) -> next, HashMap::new));
+			return parameterList.getValues(message, session);
 		} catch (ParameterException e) {
 			throw new PipeRunException(this, "exception extracting parameters", e);
 		}
-	}
-
-	/**
-	 * In order to maintain the date format, see {@link DateParameter#getFormatString()}. Use asString explicitly.
-	 * Messages may contain a context (with a specific MimeType) and should be parsed as-is.
-	 * Whatever remains may be parsed as a `raw` value.
-	 */
-	private Document<?> toDocument(ParameterValue pv) {
-		if(pv.getDefinition() instanceof DateParameter) {
-			return new DefaultDocument<>(pv.asStringValue());
-		} else if(pv.getDefinition() instanceof Parameter || pv.getValue() instanceof Message) {
-			return new FrankMessageDocument(pv.asMessage(), computeMimeType);
-		}
-
-		return new DefaultDocument<>(pv.getValue(), MediaTypes.APPLICATION_JAVA);
 	}
 
 	/** Location of the stylesheet to apply to the input message. */
@@ -187,7 +120,7 @@ public class DataSonnetPipe extends FixedForwardPipe {
 	/**
 	 * Output file format. DataSonnet is semi-capable of converting the converted JSON to a different format.
 	 */
-	public void setOutputType(DataSonnetOutputType outputType) {
+	public void setOutputType(JsonMapper.DataSonnetOutputType outputType) {
 		this.outputType = outputType;
 	}
 
@@ -198,63 +131,4 @@ public class DataSonnetPipe extends FixedForwardPipe {
 		this.computeMimeType = computeMimeType;
 	}
 
-	private static class FrankMessageDocument implements Document<String> {
-		private final String message;
-		private final MediaType mediaType;
-
-		public FrankMessageDocument(Message message, boolean computeMimeType) {
-			this(message, convertSpringToDataSonnetMediaType(getSpringMimeType(message, computeMimeType)));
-		}
-
-		private FrankMessageDocument(Message message, MediaType mediaType) {
-			this.mediaType = mediaType;
-			try {
-				this.message = message.asString();
-			} catch (IOException e) {
-				throw new IllegalStateException("unable to read message");
-			}
-		}
-
-		private static MediaType convertSpringToDataSonnetMediaType(MimeType springMime) {
-			if(springMime != null) {
-				try {
-					return MediaType.parseMediaType(springMime.toString());
-				} catch (IllegalArgumentException e) {
-					log.debug("unable to parse mimetype", e);
-				}
-			}
-			return MediaTypes.TEXT_PLAIN;
-		}
-
-		private static MimeType getSpringMimeType(Message message, boolean computeMimeType) {
-			MimeType mimeType = message.getContext().getMimeType();
-			if (mimeType != null) {
-				return mimeType;
-			}
-
-			if(computeMimeType) {
-				MimeType computedType = MessageUtils.computeMimeType(message);
-				if(!"octet-stream".equals(computedType.getSubtype())) {
-					return computedType;
-				}
-			}
-
-			return null;
-		}
-
-		@Override
-		public String getContent() {
-			return message;
-		}
-
-		@Override
-		public MediaType getMediaType() {
-			return mediaType;
-		}
-
-		@Override
-		public Document<String> withMediaType(MediaType mediaType) {
-			return new DefaultDocument<>(this.getContent(), mediaType);
-		}
-	}
 }

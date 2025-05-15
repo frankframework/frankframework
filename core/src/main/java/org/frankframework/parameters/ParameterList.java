@@ -273,4 +273,11 @@ public class ParameterList implements Iterable<IParameter> {
 		}
 		return parameters.size();
 	}
+
+	public List<String> getParameterNames() {
+		if (parameters == null) {
+			return List.of();
+		}
+		return parameters.stream().map(IParameter::getName).toList();
+	}
 }
