@@ -31,7 +31,6 @@ public class PropertyFileCredentialFactoryTest {
 		credentialFactory.initialize();
 	}
 
-
 	@Test
 	public void testNoAlias() {
 
