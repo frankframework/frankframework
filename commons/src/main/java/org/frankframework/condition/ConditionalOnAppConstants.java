@@ -30,5 +30,4 @@ import java.lang.annotation.Target;
 public @interface ConditionalOnAppConstants {
 	String name();
 	String value();
-	String defaultValue() default "";
 }

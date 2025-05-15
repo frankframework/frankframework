@@ -67,7 +67,7 @@ public class LadybugServletConfiguration implements ApplicationContextAware {
 	}
 
 	@Bean
-	@ConditionalOnAppConstants(name = "testtool.echo2.enabled", value = "true", defaultValue = "false")
+	@ConditionalOnAppConstants(name = "testtool.echo2.enabled", value = "true")
 	public ServletRegistration<TesttoolServlet> testtoolServletBean() {
 		ServletConfiguration servletConfiguration = SpringUtils.createBean(applicationContext);
 		servletConfiguration.setUrlMapping("/iaf/testtool");
