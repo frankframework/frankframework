@@ -55,7 +55,6 @@ import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.util.StreamUtil;
-import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
 
 public class SoapProviderTest {
