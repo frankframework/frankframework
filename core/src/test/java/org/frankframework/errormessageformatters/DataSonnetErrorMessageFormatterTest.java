@@ -13,7 +13,9 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasName;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.parameters.NumberParameter;
 import org.frankframework.stream.Message;
+import org.frankframework.testutil.NumberParameterBuilder;
 import org.frankframework.util.CloseUtils;
 
 class DataSonnetErrorMessageFormatterTest {
@@ -57,6 +59,36 @@ class DataSonnetErrorMessageFormatterTest {
 				{
 					"error": "MyLocation [dummy-location] msgId [dummy-message-id]: dummy-error-message",
 					"messageId": "dummy-message-id"
+				}
+				""";
+
+		System.err.println(errorAsString);
+		assertJsonEquals(expected, errorAsString);
+	}
+
+	@Test
+	void formatWithParameters() throws Exception {
+		// Arrange
+		session.put("exitCode", 400);
+		NumberParameter parameter = NumberParameterBuilder.create()
+				.withName("exitCode")
+				.withSessionKey("exitCode");
+		formatter.addParameter(parameter);
+		formatter.setStyleSheetName("ErrorMessageFormatters/errormessageWithParams.jsonnet");
+		formatter.configure();
+
+		// Act
+		Message error = formatter.format(errorMessage, exception, location, originalMessage, session);
+
+		// Assert
+		String errorAsString = error.asString();
+		assertNotNull(errorAsString);
+
+		String expected = """
+				{
+					"error": "MyLocation [dummy-location] msgId [dummy-message-id]: dummy-error-message",
+					"messageId": "dummy-message-id",
+					"status": 400
 				}
 				""";
 
