@@ -61,7 +61,7 @@ public class DelineaClient extends RestTemplate {
 	}
 
 	/**
-	 * This is currently not used by the DelineaCredentialFactory
+	 * This is currently not used by the {@link DelineaCredentialFactory}
 	 *
 	 * @return a list of all Secrets
 	 */
