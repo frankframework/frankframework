@@ -6,9 +6,10 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 
+import org.junit.jupiter.api.Test;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunException;
-import org.junit.jupiter.api.Test;
 
 public class CredentialCheckingPipeTest extends PipeTestBase<CredentialCheckingPipe> {
 
@@ -97,7 +98,7 @@ public class CredentialCheckingPipeTest extends PipeTestBase<CredentialCheckingP
 
     @Test
     public void testWrongUserNameAndPassword() throws PipeRunException {
-        String expectedResult = "username does not match targetpassword does not match target";
+        String expectedResult = "username does not match target, password does not match target";
         String result = resultLogIn("otherUserPassword", "otherUserId", "dummyUserPassword","dummyUserId");
         assertEquals(expectedResult, result);
     }

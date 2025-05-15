@@ -20,10 +20,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.credentialprovider.util.CredentialConstants;
 import org.frankframework.util.ClassUtils;
 
@@ -120,13 +122,27 @@ public class CredentialFactory {
 
 	public static ICredentials getCredentials(String rawAlias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
 		final String alias = extractAlias(rawAlias);
-		for (ICredentialFactory factory : getInstance().delegates) {
-			ICredentials result = factory.getCredentials(alias, defaultUsernameSupplier, defaultPasswordSupplier);
-			if (result != null) {
+		List<ICredentialFactory> credentialFactoryDelegates = getInstance().delegates;
+
+		// If there are no delegates, return a Credentials object with the default values
+		if (credentialFactoryDelegates.isEmpty()) {
+			return new Credentials(alias, defaultUsernameSupplier, defaultPasswordSupplier);
+		}
+
+		for (ICredentialFactory factory : credentialFactoryDelegates) {
+			try {
+				ICredentials result = factory.getCredentials(alias, defaultUsernameSupplier, defaultPasswordSupplier);
+
+				// check if the alias is the same as the one we are looking for - will throw if not
+				result.getUsername();
+
 				return result;
+			} catch (NoSuchElementException e) {
+				// The alias was not found in this factory, continue searching
+				log.info(alias + " not found in credential factory [" + factory.getClass().getName() + "]");
 			}
 		}
-		return new Credentials(alias, defaultUsernameSupplier, defaultPasswordSupplier);
+		throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+ alias +"]: alias not found");
 	}
 
 	public static Collection<String> getConfiguredAliases() throws Exception {
