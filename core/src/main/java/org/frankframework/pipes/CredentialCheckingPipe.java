@@ -41,29 +41,34 @@ public class CredentialCheckingPipe extends FixedForwardPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (getTargetUserid()==null) {
+
+		if (getTargetUserid() == null) {
 			throw new ConfigurationException("targetUserid must be specified");
 		}
-		if (getTargetPassword()==null) {
+		if (getTargetPassword() == null) {
 			throw new ConfigurationException("targetPassword must be specified");
 		}
 	}
 
-
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		CredentialFactory cf=new CredentialFactory(getAuthAlias(),getDefaultUserid(),getDefaultPassword());
-		String result="";
+		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getDefaultUserid(), getDefaultPassword());
+		String result = "";
+
 		if (!getTargetUserid().equals(cf.getUsername())) {
-			result+="username does not match target";
+			result += "username does not match target";
 		}
 		if (!getTargetPassword().equals(cf.getPassword())) {
-			result+="password does not match target";
+			if (!StringUtils.isEmpty(result)) {
+				result += ", ";
+			}
+			result += "password does not match target";
 		}
 		if (StringUtils.isEmpty(result)) {
-			result="OK";
+			result = "OK";
 		}
-		return new PipeRunResult(getSuccessForward(),result);
+
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	public void setAuthAlias(String string) {

@@ -16,6 +16,7 @@
 package org.frankframework.credentialprovider;
 
 import java.util.Collection;
+import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 
 public interface ICredentialFactory {
@@ -30,7 +31,7 @@ public interface ICredentialFactory {
 
 	boolean hasCredentials(String alias);
 
-	ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier);
+	ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) throws NoSuchElementException;
 
 	/**
 	 * return a list of all configured aliases, or null if such a list cannot be provided.

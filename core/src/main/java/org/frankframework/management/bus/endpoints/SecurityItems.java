@@ -32,8 +32,12 @@ import javax.net.ssl.SSLParameters;
 import javax.sql.DataSource;
 
 import jakarta.annotation.security.RolesAllowed;
-import lombok.Getter;
+
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.messaging.Message;
+
+import lombok.Getter;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.dbms.JdbcException;
@@ -55,7 +59,6 @@ import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.XmlUtils;
-import org.springframework.messaging.Message;
 
 @BusAware("frank-management-bus")
 public class SecurityItems extends BusEndpointBase {
@@ -279,11 +282,12 @@ public class SecurityItems extends BusEndpointBase {
 			Map<String, Object> ae = new HashMap<>();
 
 			ae.put("alias", authAlias);
-			CredentialFactory cf = new CredentialFactory(authAlias);
 
 			String userName;
 			String passWord;
 			try {
+				CredentialFactory cf = new CredentialFactory(authAlias);
+
 				userName = cf.getUsername();
 				passWord = cf.getPassword();
 				passWord = passWord==null ? "no password found" : StringUtils.repeat("*", cf.getPassword().length());
