@@ -16,9 +16,9 @@
 package org.frankframework.credentialprovider.delinea;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.HashSet;
 import java.util.NoSuchElementException;
-import java.util.Objects;
+import java.util.Set;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
@@ -88,14 +88,16 @@ public class DelineaCredentialFactory implements ICredentialFactory {
 	static final String TENANT_KEY = BASE_KEY + "tenant";
 	static final String API_ROOT_URL_KEY = BASE_KEY + "apiRootUrl";
 	static final String OAUTH_TOKEN_URL_KEY = BASE_KEY + "oauth.tokenUrl";
+
 	private static final String TLD_KEY = BASE_KEY + "tld";
 	private static final String API_ROOT_URL_TEMPLATE_KEY = BASE_KEY + "apiRootUrlTemplate";
 	private static final String OAUTH_TOKEN_URL_TEMPLATE_KEY = BASE_KEY + "oauth.tokenUrlTemplate";
 	private static final String OAUTH_USERNAME_KEY = BASE_KEY + "oauth.username";
 	private static final String OAUTH_PASSWORD_KEY = BASE_KEY + "oauth.password";
-	private static final long CACHE_DURATION_MILLIS = 60_000L;
-	private List<String> configuredAliases; // Refreshed every CACHE_DURATION_MILLIS
-	private long lastFetch = 0;
+
+	private final Set<String> configuredAliases = new HashSet<>();
+	private final Set<String> notFoundAliases = new HashSet<>();
+
 	private DelineaClientSettings delineaClientSettings;
 
 	private DelineaClient delineaClient;
@@ -136,22 +138,23 @@ public class DelineaCredentialFactory implements ICredentialFactory {
 
 	@Override
 	public boolean hasCredentials(String alias) {
-		return getConfiguredAliases().contains(alias);
+		// If we already know the alias is not found, return false
+		if (notFoundAliases.contains(alias)) {
+			return false;
+		}
+
+		// If we already know this alias, return true
+		if (configuredAliases.contains(alias)) {
+			return true;
+		}
+
+		getCredentials(alias, null, null);
+
+		return configuredAliases.contains(alias);
 	}
 
 	@Override
 	public Collection<String> getConfiguredAliases() {
-		// use a cache for the configured aliases
-		if (lastFetch + CACHE_DURATION_MILLIS > System.currentTimeMillis()) {
-			return configuredAliases;
-		}
-
-		configuredAliases = delineaClient.getSecrets().stream()
-				.map(Objects::toString)
-				.toList();
-
-		lastFetch = System.currentTimeMillis();
-
 		return configuredAliases;
 	}
 
@@ -163,11 +166,23 @@ public class DelineaCredentialFactory implements ICredentialFactory {
 			Secret secret = delineaClient.getSecret(alias, delineaClientSettings.autoCommentValue());
 
 			if (secret != null) {
+				setAliasPresent(alias);
 				return translate(secret);
 			}
 		}
 
+		setAliasNotPresent(alias);
 		return null;
+	}
+
+	private void setAliasPresent(String alias) {
+		configuredAliases.add(alias);
+		notFoundAliases.remove(alias);
+	}
+
+	private void setAliasNotPresent(String alias) {
+		notFoundAliases.add(alias);
+		configuredAliases.remove(alias);
 	}
 
 	void setDelineaClient(DelineaClient delineaClient) {
