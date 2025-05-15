@@ -40,7 +40,6 @@ import org.springframework.security.web.context.AbstractSecurityWebApplicationIn
 import lombok.Setter;
 
 import org.frankframework.lifecycle.servlets.IAuthenticator;
-import org.frankframework.lifecycle.servlets.ServletConfiguration;
 import org.frankframework.security.config.ServletRegistration;
 import org.frankframework.util.ClassUtils;
 
@@ -78,9 +77,9 @@ public class LadybugSecurityChainConfigurer implements ApplicationContextAware, 
 	public SecurityFilterChain createLadybugSecurityChain(HttpSecurity http, IAuthenticator ladybugAuthenticator) throws Exception {
 		APPLICATION_LOG.info("Securing Ladybug TestTool using {}", ClassUtils.classNameOf(ladybugAuthenticator));
 
-		ladybugAuthenticator.registerServlet(getServletConfig("ladybugApiServletBean"));
-		ladybugAuthenticator.registerServlet(getServletConfig("ladybugFrontendServletBean"));
-		ladybugAuthenticator.registerServlet(getServletConfig("testtoolServletBean"));
+		registerServletWhenBeanExists(ladybugAuthenticator, "ladybugApiServletBean");
+		registerServletWhenBeanExists(ladybugAuthenticator, "ladybugFrontendServletBean");
+		registerServletWhenBeanExists(ladybugAuthenticator, "testtoolServletBean");
 
 		http.csrf(CsrfConfigurer::disable); // Disable CSRF, should be configured in the Ladybug
 		http.formLogin(FormLoginConfigurer::disable); // Disable the form login filter
@@ -89,8 +88,10 @@ public class LadybugSecurityChainConfigurer implements ApplicationContextAware, 
 		return ladybugAuthenticator.configureHttpSecurity(http);
 	}
 
-	private ServletConfiguration getServletConfig(String servletBeanName) {
-		ServletRegistration<?> bean = applicationContext.getBean(servletBeanName, ServletRegistration.class);
-		return bean.getServletConfiguration();
+	private void registerServletWhenBeanExists(IAuthenticator ladybugAuthenticator, String servletBeanName) {
+		if (applicationContext.containsBean(servletBeanName)) {
+			ServletRegistration<?> bean = applicationContext.getBean(servletBeanName, ServletRegistration.class);
+			ladybugAuthenticator.registerServlet(bean.getServletConfiguration());
+		}
 	}
 }

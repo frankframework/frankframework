@@ -68,6 +68,7 @@ public class MessageUtils {
 
 	public static final String JSON_TEMPLATE_VALUE_QUOTED = "{\"%s\": \"%s\"}";
 	public static final String JSON_TEMPLATE_VALUE_UNQUOTED = "{\"%s\": %s}";
+	public static final String GENERATED_MESSAGE_ID_PREFIX = "synthetic-message-id-";
 
 	private MessageUtils() {
 		throw new IllegalStateException("Don't construct utility class");
@@ -485,5 +486,13 @@ public class MessageUtils {
 		} catch (NumberFormatException e) {
 			return false;
 		}
+	}
+
+	public static @Nonnull String generateMessageId() {
+		return GENERATED_MESSAGE_ID_PREFIX + UUIDUtil.createSimpleUUID();
+	}
+
+	public static boolean isGeneratedMessageId(@Nonnull String messageId) {
+		return messageId.startsWith(GENERATED_MESSAGE_ID_PREFIX);
 	}
 }

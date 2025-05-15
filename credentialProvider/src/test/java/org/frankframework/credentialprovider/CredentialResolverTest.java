@@ -1,8 +1,8 @@
 package org.frankframework.credentialprovider;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.util.StringResolver;
-
 
 class CredentialResolverTest {
 
@@ -27,7 +26,7 @@ class CredentialResolverTest {
 
 		InputStream propsStream = propertiesURL.openStream();
 		properties.load(propsStream);
-		assertTrue(properties.size() > 0, "did not find any properties!");
+		assertFalse(properties.isEmpty(), "did not find any properties!");
 
 		System.setProperty("authAliases.expansion.allowed", "${allowedAliases}");
 	}

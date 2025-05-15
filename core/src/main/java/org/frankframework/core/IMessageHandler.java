@@ -42,5 +42,5 @@ public interface IMessageHandler<M> {
 	 *	Formats any exception thrown by any of the above methods to a message that can be returned.
 	 *  Can be used if the calling system has no other way of returning the exception to the caller.
 	 */
-	Message formatException(String extraInfo, String correlationId, Message message, Throwable t);
+	Message formatException(String extraInfo, PipeLineSession session, Message message, Throwable t);
 }

@@ -16,6 +16,7 @@
 package org.frankframework.errormessageformatters;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Date;
 
 import jakarta.annotation.Nonnull;
@@ -41,6 +42,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlEncodingUtils;
 
@@ -75,16 +77,19 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 	 * Override this method in subclasses to obtain the required behaviour.
 	 */
 	@Override
-	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, String messageId, long receivedTime) {
+	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, PipeLineSession session) {
 
 		String details = null;
 		errorMessage = getErrorMessage(errorMessage, t);
 		if (t != null) {
 			details = ExceptionUtils.getStackTrace(t);
 		}
-		String prefix=location!=null ? ClassUtils.nameOf(location) : null;
-		if (StringUtils.isNotEmpty(messageId)) {
-			prefix = StringUtil.concatStrings(prefix, " ", "msgId ["+messageId+"]");
+		String prefix = location != null ? ClassUtils.nameOf(location) : null;
+		String messageId = session.getMessageId();
+		String correlationId = session.getCorrelationId();
+		String msgIdToUse = StringUtils.isNotEmpty(messageId) && !MessageUtils.isGeneratedMessageId(messageId) ? messageId : correlationId;
+		if (StringUtils.isNotEmpty(msgIdToUse)) {
+			prefix = StringUtil.concatStrings(prefix, " ", "msgId [" + msgIdToUse + "]");
 		}
 		errorMessage = StringUtil.concatStrings(prefix, ": ", errorMessage);
 
@@ -122,8 +127,9 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 			ObjectBuilder originalMessageObject = nodeBuilder.startObject();
 
 			originalMessageObject.addAttribute("messageId", messageId);
-			if (receivedTime != 0) {
-				originalMessageObject.addAttribute("receivedTime", new Date(receivedTime).toString());
+			Instant tsReceived = session.getTsReceived();
+			if (tsReceived != null && tsReceived.toEpochMilli() != 0) {
+				originalMessageObject.addAttribute("receivedTime", Date.from(tsReceived).toString());
 			}
 			String originalMessageAsString = getMessageAsString(originalMessage, messageId);
 			if (messageFormat == DocumentFormat.XML) {

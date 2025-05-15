@@ -22,7 +22,7 @@ class ScenarioTest {
 	}
 
 	@Test
-	void getSteps1() throws IOException {
+	void getStepsWithReadlineStep() throws IOException {
 		// Arrange
 		String scenarioSteps = """
 				action.className=org.frankframework.test.TestAction
@@ -42,10 +42,11 @@ class ScenarioTest {
 		List<String> steps = scenario.getSteps(config);
 
 		// Assert
-		assertEquals(3, steps.size());
+		assertEquals(4, steps.size());
 		assertEquals("step1.action.read", steps.get(0));
 		assertEquals("step2.action.write", steps.get(1));
 		assertEquals("step3.action.writeline", steps.get(2));
+		assertEquals("step5.action.read", steps.get(3));
 
 		// Arrange
 		config.setAllowReadlineSteps(true);
@@ -63,10 +64,10 @@ class ScenarioTest {
 	}
 
 	@Test
-	void getSteps2() throws IOException {
+	void getStepsDoNotAllowDuplicateStepNumbers() throws IOException {
 		String scenarioSteps = """
 						step1.action.read=in.txt
-						step1.action.write=out.txt
+						step01.action.write=out.txt
 				""";
 		// Arrange
 		Scenario scenario = createScenario(scenarioSteps);
@@ -76,9 +77,9 @@ class ScenarioTest {
 	}
 
 	@Test
-	void getSteps3() throws IOException {
+	void getStepsStepNrsPrefixedWith0() throws IOException {
 		// Arrange
-		// Steps cannot currently use numbers starting with 0 so no steps returned for this scenario
+		// Steps can now use numbers starting with 0 so all 4 steps returned for this scenario
 		String scenarioSteps = """
 						step01.action.read=in.txt
 						step02.action.write=out.txt
@@ -86,16 +87,17 @@ class ScenarioTest {
 						step04.action.readline=inline
 				""";
 		Scenario scenario = createScenario(scenarioSteps);
+		config.setAllowReadlineSteps(false);
 
 		// Act
 		List<String> steps = scenario.getSteps(config);
 
 		// Assert
-		assertEquals(0, steps.size());
+		assertEquals(3, steps.size());
 	}
 
 	@Test
-	void getSteps4() throws IOException {
+	void getStepsSortStepsNotInOrder() throws IOException {
 		// Arrange
 		// Steps not in order should be returned sorted
 		String scenarioSteps = """
@@ -124,9 +126,9 @@ class ScenarioTest {
 	}
 
 	@Test
-	void getSteps5() throws IOException {
+	void getStepsAllowSkippingStepNrs() throws IOException {
 		// Arrange
-		// Step numbers cannot be skipped
+		// Step numbers can now be skipped, so step5 is now picked up as a valid step
 		String scenarioSteps = """
 				action.className=org.frankframework.test.TestAction
 				
@@ -143,10 +145,11 @@ class ScenarioTest {
 		List<String> steps = scenario.getSteps(config);
 
 		// Assert
-		assertEquals(3, steps.size());
+		assertEquals(4, steps.size());
 		assertEquals("step1.action.read", steps.get(0));
 		assertEquals("step2.action.write", steps.get(1));
 		assertEquals("step3.action.writeline", steps.get(2));
+		assertEquals("step5.action.read", steps.get(3));
 	}
 
 	private Scenario createScenario(String scenarioSteps) throws IOException {

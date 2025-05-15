@@ -118,13 +118,13 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CompactSaxHandler;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.RunState;
 import org.frankframework.util.RunStateEnquiring;
 import org.frankframework.util.RunStateManager;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
-import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
 
@@ -1328,7 +1328,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 						pipeLineResult.setState(ExitState.ERROR);
 					}
 					if (Message.isEmpty(pipeLineResult.getResult())) {
-						pipeLineResult.setResult(adapter.formatErrorMessage("exception caught",t,compactedMessage,messageId,this,startProcessingTimestamp));
+						pipeLineResult.setResult(adapter.formatErrorMessage("exception caught",t,compactedMessage, session, this));
 					}
 					throw wrapExceptionAsListenerException(t);
 				}
@@ -1436,7 +1436,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 
 	private String ensureMessageIdNotEmpty(String messageId) {
 		if (StringUtils.isEmpty(messageId)) {
-			messageId ="synthetic-message-id-" + UUIDUtil.createSimpleUUID();
+			messageId = MessageUtils.generateMessageId();
 			if (log.isDebugEnabled())
 				log.debug("{} Message without message id; generated messageId [{}]", getLogPrefix(), messageId);
 		}
@@ -1936,11 +1936,9 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	}
 
 	@Override
-	public Message formatException(String extraInfo, String messageId, Message message, Throwable t) {
-		return getAdapter().formatErrorMessage(extraInfo,t,message,messageId,null,0);
+	public Message formatException(String extraInfo, PipeLineSession session, Message message, Throwable t) {
+		return getAdapter().formatErrorMessage(extraInfo,t,message, session, null);
 	}
-
-
 
 	private ListenerException wrapExceptionAsListenerException(Throwable t) {
 		ListenerException l;
