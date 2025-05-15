@@ -54,7 +54,7 @@ public class DataSonnetErrorMessageFormatter extends ErrorMessageFormatter imple
 
 	@Override
 	public void configure() throws ConfigurationException {
-		setMessageFormat(DocumentFormat.JSON);
+		super.setMessageFormat(DocumentFormat.JSON);
 		parameters.setNamesMustBeUnique(true);
 		parameters.configure();
 
@@ -95,15 +95,14 @@ public class DataSonnetErrorMessageFormatter extends ErrorMessageFormatter imple
 	 *
 	 * @ff.default JSON
 	 */
-	public void setOutputType(JsonMapper.DataSonnetOutputType outputType) {
-		this.outputType = outputType;
+	public void setMessageFormat(JsonMapper.DataSonnetOutputType messageFormat) {
+		this.outputType = messageFormat;
 	}
 
 	@Override
 	@Protected
 	public void setMessageFormat(@Nonnull DocumentFormat messageFormat) {
-		// Add no logic, override to add @Protected annotation which will make sure this method cannot be used from configuration for this class
-		super.setMessageFormat(messageFormat);
+		throw new UnsupportedOperationException("Not supported for this type");
 	}
 
 	@Override
