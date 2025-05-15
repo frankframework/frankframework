@@ -6,12 +6,15 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.time.Instant;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.HasName;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.stream.Message;
+import org.frankframework.util.CloseUtils;
 
 class ErrorMessageFormatterTest {
 
@@ -20,8 +23,7 @@ class ErrorMessageFormatterTest {
 	private Exception exception;
 	private String errorMessage;
 	private HasName location;
-	private String messageId;
-	private Instant receivedTs;
+	private PipeLineSession session;
 
 	@BeforeEach
 	void setUp() {
@@ -30,8 +32,13 @@ class ErrorMessageFormatterTest {
 		exception = null;
 		errorMessage = "dummy-error-message";
 		location = new MyLocation();
-		messageId = "dummy-message-id";
-		receivedTs = Instant.now();
+		session = new PipeLineSession();
+		PipeLineSession.updateListenerParameters(session, "dummy-message-id", "dummy-cid", Instant.now(), Instant.now());
+	}
+
+	@AfterEach
+	void tearDown() {
+		CloseUtils.closeSilently(session);
 	}
 
 	@Test
@@ -39,7 +46,7 @@ class ErrorMessageFormatterTest {
 		formatter.setMessageFormat(DocumentFormat.XML);
 
 		// Act
-		Message error = formatter.format(errorMessage, exception, location, originalMessage, messageId, receivedTs.toEpochMilli());
+		Message error = formatter.format(errorMessage, exception, location, originalMessage, session);
 
 		// Assert
 		String errorAsString = error.asString();
@@ -60,7 +67,7 @@ class ErrorMessageFormatterTest {
 		formatter.setMessageFormat(DocumentFormat.JSON);
 
 		// Act
-		Message error = formatter.format(errorMessage, exception, location, originalMessage, messageId, receivedTs.toEpochMilli());
+		Message error = formatter.format(errorMessage, exception, location, originalMessage, session);
 
 		// Assert
 		String errorAsString = error.asString();
