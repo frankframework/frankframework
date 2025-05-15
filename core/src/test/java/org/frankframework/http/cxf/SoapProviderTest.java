@@ -20,6 +20,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.io.ByteArrayInputStream;
 import java.io.FilterInputStream;
@@ -52,6 +55,7 @@ import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
 
 public class SoapProviderTest {
@@ -351,10 +355,12 @@ public class SoapProviderTest {
 	@Test
 	public void vrijeBerichtenSoapTest() throws Exception {
 		SOAPMessage request = createMessage("VrijeBerichten_PipelineRequest.xml", false, true);
+
 		Message pipelineResult;
 		try (Message plr = getFile("VrijeBerichten_PipelineResult.xml")) {
-			pipelineResult = new Message(new FilterInputStream(plr.asInputStream()) {});
+			pipelineResult = spy(new Message(new FilterInputStream(plr.asInputStream()) {}));
 		}
+		Message attachmentMessage = spy(new Message(new FilterInputStream(new ByteArrayInputStream(ATTACHMENT2_CONTENT.getBytes())) {}));
 
 		SoapProviderStub mockSOAPProvider = new SoapProviderStub(webServiceContext) {
 
@@ -362,25 +368,29 @@ public class SoapProviderTest {
 			Message processRequest(Message message, PipeLineSession pipelineSession) {
 				try {
 					MatchUtils.assertXmlEquals(getFile("VrijeBerichten_PipelineRequest.xml").asString(), message.asString());
+
+					// Ensure the message is registered on the PipelineSession.
+					pipelineResult.closeOnCloseOf(pipelineSession);
+
+					// Add an attachment, which is registered on the PipelineSession.
+					pipelineSession.put("attachmentXmlSessionKey", MULTIPART_XML);
+					attachmentMessage.closeOnCloseOf(pipelineSession);
+					pipelineSession.put("part_file", attachmentMessage);
+					return pipelineResult;
 				} catch (IOException e) {
 					fail("unable to read response message: " + e.getMessage(), e);
+					return null;
 				}
-				// Ensure the message is registered on the PipelineSession.
-//				pipelineResult.closeOnCloseOf(pipelineSession);
-
-				// Add an attachment, which is registered on the PipelineSession.
-				pipelineSession.put("attachmentXmlSessionKey", MULTIPART_XML);
-				Message attachmentMessage = new Message(ATTACHMENT2_CONTENT);
-//				attachmentMessage.closeOnCloseOf(pipelineSession);
-				pipelineSession.put("part_file", attachmentMessage);
-
-				return pipelineResult;
 			}
 		};
 
+		mockSOAPProvider.setAttachmentXmlSessionKey("attachmentXmlSessionKey");
 		SOAPMessage message = mockSOAPProvider.invoke(request);
 
 		assertAttachmentInReceivedMessage(message);
+
+		verify(pipelineResult, times(0)).close();
+		verify(attachmentMessage, times(0)).close(); // Should, but does not, call SourceClosingDataHandler.writeTo() ..?
 
 		String result = XmlUtils.nodeToString(message.getSOAPPart());
 		String expected = getFile("VrijeBerichten_PipelineResult.xml").asString();

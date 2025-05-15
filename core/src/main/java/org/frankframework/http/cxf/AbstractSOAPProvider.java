@@ -120,7 +120,8 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 			final Message response = request == null ? createSoapFault() : processRequest(request, pipelineSession);
 
 			// Transform result string to SOAP message
-			log.debug("transforming to SOAP message");
+			log.debug("transforming process result [{}] to SOAP message", response);
+			response.unscheduleFromCloseOnExitOf(pipelineSession); // Make sure we can read the pipe result.
 			String soapProtocol = pipelineSession.get(SOAP_PROTOCOL_KEY, SOAPConstants.SOAP_1_1_PROTOCOL);
 			SOAPMessage soapMessage = convertResponseToSoapMessage(response, soapProtocol);
 
@@ -323,8 +324,9 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 		return new Message(part, context);
 	}
 
+	// Cannot close message here, as the provided source 
 	private SOAPMessage convertResponseToSoapMessage(Message response, String soapProtocol) {
-		try (response) {
+		try {
 			SOAPMessage soapMessage = getMessageFactory(soapProtocol).createMessage();
 			soapMessage.getSOAPPart().setContent(response.asSource());
 			return soapMessage;
