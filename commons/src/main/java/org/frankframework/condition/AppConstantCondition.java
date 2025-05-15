@@ -15,8 +15,11 @@
 */
 package org.frankframework.condition;
 
+import jakarta.annotation.Nonnull;
+
 import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
+import org.springframework.core.env.Environment;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
 import java.util.Map;
@@ -24,19 +27,31 @@ import java.util.Map;
 public class AppConstantCondition implements Condition {
 
 	@Override
-	public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+	public boolean matches(@Nonnull ConditionContext context, AnnotatedTypeMetadata metadata) {
 		Map<String, Object> attributes = metadata.getAnnotationAttributes(ConditionalOnAppConstants.class.getName());
 		if (attributes == null)
 			return false;
 
-		if (!attributes.containsKey("name") || !attributes.containsKey("value") || !attributes.containsKey("defaultValue"))
+		if (!attributes.containsKey("name") || !attributes.containsKey("value"))
 			return false;
 
 		String propertyName = attributes.get("name").toString();
 		String propertyValue = attributes.get("value").toString();
-		String defaultValue = attributes.get("defaultValue").toString();
 
-		return propertyValue.equalsIgnoreCase(context.getEnvironment().getProperty(propertyName, defaultValue));
+		if (attributes.containsKey("defaultValue")) {
+			String defaultValue = attributes.get("defaultValue").toString();
+			return matchWithAppConstantsProperty(context.getEnvironment(), propertyName, propertyValue, defaultValue);
+		}
+		return matchWithAppConstantsProperty(context.getEnvironment(), propertyName, propertyValue);
 	}
 
+	private boolean matchWithAppConstantsProperty(Environment environment, String propertyName, String propertyValue) {
+		String appConstantsPropertyValue = environment.getProperty(propertyName);
+		return propertyValue.equalsIgnoreCase(appConstantsPropertyValue);
+	}
+
+	private boolean matchWithAppConstantsProperty(Environment environment, String propertyName, String propertyValue, String defaultValue) {
+		String appConstantsPropertyValue = environment.getProperty(propertyName, defaultValue);
+		return propertyValue.equalsIgnoreCase(appConstantsPropertyValue);
+	}
 }

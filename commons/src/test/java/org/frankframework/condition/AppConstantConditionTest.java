@@ -83,4 +83,29 @@ class AppConstantConditionTest {
 		assertFalse(matches);
 	}
 
+	@Test
+	void testMatchesConditionWithMissingDefaultValue() {
+		// Arrange
+		AppConstantCondition condition = new AppConstantCondition();
+		ConditionContext context = Mockito.mock(ConditionContext.class);
+		AnnotatedTypeMetadata metadata = Mockito.mock(AnnotatedTypeMetadata.class);
+		Environment environment = Mockito.mock(Environment.class);
+
+		// Mock the environment behavior
+		Mockito.when(context.getEnvironment()).thenReturn(environment);
+		Mockito.when(environment.getProperty("test.property", "default")).thenReturn("unexpectedValue");
+
+		// Mock the metadata behavior
+		Map<String, Object> attributes = new HashMap<>();
+		attributes.put("name", "test.property");
+		attributes.put("value", "expectedValue");
+		Mockito.when(metadata.getAnnotationAttributes("org.frankframework.condition.ConditionalOnAppConstants")).thenReturn(attributes);
+
+		// Act
+		boolean matches = condition.matches(context, metadata);
+
+		// Assert
+		assertFalse(matches);
+	}
+
 }
