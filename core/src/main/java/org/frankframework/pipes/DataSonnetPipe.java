@@ -119,6 +119,8 @@ public class DataSonnetPipe extends FixedForwardPipe {
 
 	/**
 	 * Output file format. DataSonnet is semi-capable of converting the converted JSON to a different format.
+	 *
+	 * @ff.default JSON
 	 */
 	public void setOutputType(JsonMapper.DataSonnetOutputType outputType) {
 		this.outputType = outputType;

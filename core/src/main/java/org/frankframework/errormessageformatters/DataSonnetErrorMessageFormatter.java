@@ -15,18 +15,23 @@
 */
 package org.frankframework.errormessageformatters;
 
+import java.io.IOException;
+
 import jakarta.annotation.Nonnull;
-
-import com.datasonnet.Mapper;
-
 import lombok.extern.log4j.Log4j2;
-
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasName;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.IErrorMessageFormatter;
+import org.frankframework.core.IScopeProvider;
+import org.frankframework.core.IWithParameters;
+import org.frankframework.core.ParameterException;
 import org.frankframework.doc.Protected;
 import org.frankframework.documentbuilder.DocumentFormat;
+import org.frankframework.json.JsonMapper;
+import org.frankframework.json.JsonUtil;
+import org.frankframework.parameters.IParameter;
+import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
 
 /**
@@ -36,22 +41,33 @@ import org.frankframework.stream.Message;
  * </p>
  */
 @Log4j2
-public class DataSonnetErrorMessageFormatter extends ErrorMessageFormatter implements IErrorMessageFormatter, IConfigurable {
+public class DataSonnetErrorMessageFormatter extends ErrorMessageFormatter implements IErrorMessageFormatter, IConfigurable, IScopeProvider, IWithParameters {
 
 	private String styleSheetName;
-	private Mapper mapper;
+	private boolean computeMimeType = true;
+	private JsonMapper.DataSonnetOutputType outputType = JsonMapper.DataSonnetOutputType.JSON;
+	private JsonMapper mapper;
+	private final ParameterList parameters = new ParameterList();
 
 	@Override
 	public void configure() throws ConfigurationException {
 		setMessageFormat(DocumentFormat.JSON);
+		parameters.setNamesMustBeUnique(true);
+		parameters.configure();
 
-
+		mapper = JsonUtil.buildJsonMapper(this, styleSheetName, outputType, computeMimeType, parameters);
 	}
 
 	@Override
 	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, String messageId, long receivedTime) {
-		Message defaultMessage = super.format(errorMessage, t, location, originalMessage, messageId, receivedTime);
-		return null;
+
+		try (Message defaultMessage = super.format(errorMessage, t, location, originalMessage, messageId, receivedTime)) {
+			return mapper.transform(defaultMessage, parameters.getValues(originalMessage, null));
+		} catch (IOException e) {
+			throw new FormatterException("Cannot format error message", e);
+		} catch (ParameterException e) {
+			throw new FormatterException("Cannot extract parameter values", e);
+		}
 	}
 
 	/**
@@ -61,10 +77,40 @@ public class DataSonnetErrorMessageFormatter extends ErrorMessageFormatter imple
 		this.styleSheetName = styleSheetName;
 	}
 
+	/**
+	 * Computes the mimetype when it is unknown. It requires more computation but improves
+	 * mapping results.
+	 *
+	 * @ff.default true
+	 */
+	public void setComputeMimeType(boolean computeMimeType) {
+		this.computeMimeType = computeMimeType;
+	}
+
+	/**
+	 * Output file format. DataSonnet is semi-capable of converting the converted JSON to a different format.
+	 *
+	 * @ff.default JSON
+	 */
+	public void setOutputType(JsonMapper.DataSonnetOutputType outputType) {
+		this.outputType = outputType;
+	}
+
 	@Override
 	@Protected
 	public void setMessageFormat(@Nonnull DocumentFormat messageFormat) {
 		// Add no logic, override to add @Protected annotation which will make sure this method cannot be used from configuration for this class
 		super.setMessageFormat(messageFormat);
+	}
+
+	@Override
+	public void addParameter(IParameter p) {
+		parameters.add(p);
+	}
+
+	@Nonnull
+	@Override
+	public ParameterList getParameterList() {
+		return parameters;
 	}
 }
