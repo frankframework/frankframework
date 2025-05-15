@@ -352,7 +352,7 @@ public class SoapProviderTest {
 	}
 
 	@Test
-	public void vrijeBerichtenSoapTest() throws Exception {
+	public void ensureMessageAndAttachmentIsNotClosed() throws Exception {
 		SOAPMessage request = createMessage("VrijeBerichten_PipelineRequest.xml", false, true);
 
 		Message pipelineResult;
