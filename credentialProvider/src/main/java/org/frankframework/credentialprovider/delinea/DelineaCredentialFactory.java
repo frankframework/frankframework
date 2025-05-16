@@ -15,10 +15,7 @@
 */
 package org.frankframework.credentialprovider.delinea;
 
-import java.lang.ref.SoftReference;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 
@@ -28,6 +25,7 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.credentialprovider.ICredentialFactory;
 import org.frankframework.credentialprovider.ICredentials;
+import org.frankframework.credentialprovider.util.Cache;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
 /**
@@ -96,7 +94,9 @@ public class DelineaCredentialFactory implements ICredentialFactory {
 	private static final String OAUTH_USERNAME_KEY = BASE_KEY + "oauth.username";
 	private static final String OAUTH_PASSWORD_KEY = BASE_KEY + "oauth.password";
 
-	private final Map<String, SoftReference<ICredentials>> configuredAliases = new HashMap<>();
+	private static final int CACHE_DURATION_MILLIS = 60_000;
+
+	private final Cache<String, Secret, NoSuchElementException> configuredAliases = new Cache<>(CACHE_DURATION_MILLIS);
 
 	private DelineaClientSettings delineaClientSettings;
 
@@ -138,12 +138,7 @@ public class DelineaCredentialFactory implements ICredentialFactory {
 
 	@Override
 	public boolean hasCredentials(String alias) {
-		// Check if we need to get the value for this alias
-		if (!configuredAliases.containsKey(alias)) {
-			getCredentials(alias, null, null);
-		}
-
-		return configuredAliases.get(alias).get() != null;
+		return getCredentials(alias, null, null) != null;
 	}
 
 	@Override
@@ -158,13 +153,9 @@ public class DelineaCredentialFactory implements ICredentialFactory {
 		}
 
 		// Make sure to always get a live copy of the secret
-		Secret secret = delineaClient.getSecret(alias, delineaClientSettings.autoCommentValue());
+		Secret secret = configuredAliases.computeIfAbsentOrExpired(alias, aliasToRetrieve -> delineaClient.getSecret(aliasToRetrieve, delineaClientSettings.autoCommentValue()));
 
-		DelineaCredentials credentials = translate(secret);
-
-		configuredAliases.put(alias, new SoftReference<>(credentials));
-
-		return credentials;
+		return translate(secret);
 	}
 
 	void setDelineaClient(DelineaClient delineaClient) {
