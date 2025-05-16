@@ -283,7 +283,7 @@
      If set to 0, then there is no delay after messages that had an error.
  &lt;/p&gt;
  &lt;p&gt;
-     If this is not set on the receiver, then a default is taken from the configuration property `${receiver.defaultMaxBackoffDelay}` which
+     If this is not set on the receiver, then a default is taken from the configuration property &lt;pre&gt;${receiver.defaultMaxBackoffDelay}&lt;/pre&gt; which
      defaults to 60 seconds.
  &lt;/p&gt;</xs:documentation>
       </xs:annotation>
@@ -8310,6 +8310,15 @@
   </xs:group>
   <xs:group name="ErrorMessageFormatterElementGroupBase">
     <xs:choice>
+      <xs:element name="DataSonnetErrorMessageFormatter">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="DataSonnetErrorMessageFormatterType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="errorMessageFormatter" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="FixedErrorMessageFormatter">
         <xs:complexType>
           <xs:complexContent>
@@ -8348,8 +8357,66 @@
       </xs:element>
     </xs:choice>
   </xs:group>
+  <xs:complexType name="DataSonnetErrorMessageFormatterType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="DataSonnetErrorMessageFormatterDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="DataSonnetErrorMessageFormatterCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.errormessageformatters.DataSonnetErrorMessageFormatter" />
+  </xs:complexType>
+  <xs:group name="DataSonnetErrorMessageFormatterDeclaredChildGroup">
+    <xs:sequence>
+      <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:group>
+  <xs:attributeGroup name="DataSonnetErrorMessageFormatterDeclaredAttributeGroup">
+    <xs:attribute name="styleSheetName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Set a DataSonnet stylesheet to transform the default JSON error message to a custom format.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="computeMimeType" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Computes the mimetype when it is unknown. It requires more computation but improves
+ mapping results. Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="outputType">
+      <xs:annotation>
+        <xs:documentation>Output file format. DataSonnet is semi-capable of converting the converted JSON to a different format. Default: JSON</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="DataSonnetOutputTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="DataSonnetErrorMessageFormatterCumulativeAttributeGroup">
+    <xs:attributeGroup ref="DataSonnetErrorMessageFormatterDeclaredAttributeGroup" />
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
+  <xs:complexType name="ErrorMessageFormatterType">
+    <xs:attributeGroup ref="ErrorMessageFormatterDeclaredAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.errormessageformatters.ErrorMessageFormatter" />
+  </xs:complexType>
+  <xs:attributeGroup name="ErrorMessageFormatterDeclaredAttributeGroup">
+    <xs:attribute name="messageFormat">
+      <xs:annotation>
+        <xs:documentation>Format the error message as XML or as JSON.
+
+ ff.default XML</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="DocumentFormatAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
   <xs:complexType name="FixedErrorMessageFormatterType">
-    <xs:attributeGroup ref="FixedErrorMessageFormatterDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="FixedErrorMessageFormatterCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.errormessageformatters.FixedErrorMessageFormatter" />
   </xs:complexType>
   <xs:attributeGroup name="FixedErrorMessageFormatterDeclaredAttributeGroup">
@@ -8366,21 +8433,27 @@
     <xs:attribute name="replaceFrom" type="xs:string" />
     <xs:attribute name="replaceTo" type="xs:string" />
     <xs:attribute name="styleSheetName" type="xs:string" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="FixedErrorMessageFormatterCumulativeAttributeGroup">
+    <xs:attributeGroup ref="FixedErrorMessageFormatterDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="ErrorMessageFormatterDeclaredAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="SoapErrorMessageFormatterType">
+    <xs:attributeGroup ref="SoapErrorMessageFormatterCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.errormessageformatters.SoapErrorMessageFormatter" />
+  </xs:complexType>
+  <xs:attributeGroup name="SoapErrorMessageFormatterDeclaredAttributeGroup" />
+  <xs:attributeGroup name="SoapErrorMessageFormatterCumulativeAttributeGroup">
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
-  <xs:complexType name="SoapErrorMessageFormatterType">
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.errormessageformatters.SoapErrorMessageFormatter" />
-    <xs:attribute ref="active" />
-    <xs:anyAttribute namespace="##other" processContents="skip" />
-  </xs:complexType>
   <xs:complexType name="XslErrorMessageFormatterType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:group ref="XslErrorMessageFormatterDeclaredChildGroup" />
       </xs:choice>
     </xs:sequence>
-    <xs:attributeGroup ref="XslErrorMessageFormatterDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="XslErrorMessageFormatterCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.errormessageformatters.XslErrorMessageFormatter" />
   </xs:complexType>
   <xs:group name="XslErrorMessageFormatterDeclaredChildGroup">
@@ -8399,6 +8472,9 @@
         <xs:documentation>xPathExpression to use for transformation</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="XslErrorMessageFormatterCumulativeAttributeGroup">
+    <xs:attributeGroup ref="XslErrorMessageFormatterDeclaredAttributeGroup" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -9077,19 +9153,20 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.JsonValidator" />
   </xs:complexType>
   <xs:attributeGroup name="JsonValidatorDeclaredAttributeGroup">
-    <xs:attribute name="schema" type="xs:string">
+    <xs:attribute name="schema" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>The JSON Schema to validate to</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="subSchemaPrefix" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Prefix to element name to find subschema in schema Default: /definitions/</xs:documentation>
+        <xs:documentation>The subSchemaPrefix is an optional attribute used when referencing a subschema located in a nested structure, such as $defs or definitions. 
+ Adding only the subSchema attribute is not enough if your schema organizes definitions in nested objects. Add root attribute to complete the process. Default: /definitions/</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="reasonSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>If set: key of session variable to store reasons of mis-validation in Default: failureReason</xs:documentation>
+        <xs:documentation>If set: creates a sessionKey to store any errors when validating the json output Default: failureReason</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -11124,7 +11201,7 @@
       <xs:element name="PutInSessionPipe">
         <xs:complexType>
           <xs:complexContent>
-            <xs:extension base="PutInSessionType">
+            <xs:extension base="PutInSessionPipeType">
               <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
             </xs:extension>
           </xs:complexContent>
@@ -12506,7 +12583,7 @@
     </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
-        <xs:documentation>Output file format. DataSonnet is semi-capable of converting the converted JSON to a different format.</xs:documentation>
+        <xs:documentation>Output file format. DataSonnet is semi-capable of converting the converted JSON to a different format. Default: JSON</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="DataSonnetOutputTypeAttributeValuesType variableRef" />
@@ -13079,7 +13156,7 @@
     </xs:attribute>
     <xs:attribute name="rootElementName" type="xs:string">
       <xs:annotation>
-        <xs:documentation>When direction is JSON2XML, specifies the name of the root element when `addXmlRootElement` is &lt;code&gt;true&lt;/code&gt;.
+        <xs:documentation>When direction is JSON2XML, specifies the name of the root element when &lt;pre&gt;addXmlRootElement&lt;/pre&gt; is &lt;code&gt;true&lt;/code&gt;.
  When direction is XML2JSON, can not be used. Default: root</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -13941,16 +14018,16 @@
     <xs:attributeGroup ref="PdfPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="PutInSessionType">
+  <xs:complexType name="PutInSessionPipeType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:group ref="AbstractPipeDeclaredChildGroup" />
       </xs:choice>
     </xs:sequence>
-    <xs:attributeGroup ref="PutInSessionCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="PutInSessionPipeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.PutInSessionPipe" />
   </xs:complexType>
-  <xs:attributeGroup name="PutInSessionDeclaredAttributeGroup">
+  <xs:attributeGroup name="PutInSessionPipeDeclaredAttributeGroup">
     <xs:attribute name="sessionKey" type="xs:string">
       <xs:annotation>
         <xs:documentation>Key of the session variable to store the input in</xs:documentation>
@@ -13962,8 +14039,8 @@
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
-  <xs:attributeGroup name="PutInSessionCumulativeAttributeGroup">
-    <xs:attributeGroup ref="PutInSessionDeclaredAttributeGroup" />
+  <xs:attributeGroup name="PutInSessionPipeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="PutInSessionPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="PutSystemDateInSessionType">
@@ -16094,6 +16171,14 @@
       <xs:pattern value="[nN][eE][vV][eE][rR]" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="DataSonnetOutputTypeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[jJ][sS][oO][nN]" />
+      <xs:pattern value="[cC][sS][vV]" />
+      <xs:pattern value="[xX][mM][lL]" />
+      <xs:pattern value="[yY][aA][mM][lL]" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="LockTypeAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[tT]" />
@@ -16184,14 +16269,6 @@
     <xs:restriction base="xs:string">
       <xs:pattern value="[lL][oO][wW][eE][rR][cC][aA][sS][eE]" />
       <xs:pattern value="[uU][pP][pP][eE][rR][cC][aA][sS][eE]" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="DataSonnetOutputTypeAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:pattern value="[jJ][sS][oO][nN]" />
-      <xs:pattern value="[cC][sS][vV]" />
-      <xs:pattern value="[xX][mM][lL]" />
-      <xs:pattern value="[yY][aA][mM][lL]" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="DirectionAttributeValuesType_7">
@@ -16697,7 +16774,7 @@
   </xs:attribute>
   <xs:attribute name="oauthAuthenticationMethod">
     <xs:annotation>
-      <xs:documentation>Only used when `tokenEndpoint` has been configured. Sets the OAuth authentication method and controls which authentication flow should be used.</xs:documentation>
+      <xs:documentation>Only used when &lt;pre&gt;tokenEndpoint&lt;/pre&gt; has been configured. Sets the OAuth authentication method and controls which authentication flow should be used.</xs:documentation>
     </xs:annotation>
     <xs:simpleType>
       <xs:union memberTypes="OauthAuthenticationMethodAttributeValuesType variableRef" />
@@ -17212,7 +17289,7 @@
   </xs:attribute>
   <xs:attribute name="durationThreshold" type="frankInt">
     <xs:annotation>
-      <xs:documentation>If durationThreshold &gt;=0 and the duration of the message processing exceeded the value specified (in milliseconds) the message is logged informatory to be analyzed Default: -1</xs:documentation>
+      <xs:documentation>If durationThreshold &gt;=0 and the duration of the message processing exceeded the value specified (in milliseconds) the message will be logged and a monitor event will be fired. Default: -1</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="removeCompactMsgNamespaces" type="frankBoolean" />
