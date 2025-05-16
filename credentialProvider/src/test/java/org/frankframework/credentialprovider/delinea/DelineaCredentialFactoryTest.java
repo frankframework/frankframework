@@ -98,7 +98,7 @@ class DelineaCredentialFactoryTest {
 		// Should be present in the notFoundAliases list
 		assertFalse(credentialFactory.hasCredentials("5"));
 
-		assertEquals(4, credentialFactory.getConfiguredAliases().size());
+		assertEquals(5, credentialFactory.getConfiguredAliases().size());
 	}
 
 	static Secret createSecret(int id, int folderId, String username, String password) {

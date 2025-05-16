@@ -15,10 +15,11 @@
 */
 package org.frankframework.credentialprovider.delinea;
 
+import java.lang.ref.SoftReference;
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.Set;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
@@ -95,8 +96,7 @@ public class DelineaCredentialFactory implements ICredentialFactory {
 	private static final String OAUTH_USERNAME_KEY = BASE_KEY + "oauth.username";
 	private static final String OAUTH_PASSWORD_KEY = BASE_KEY + "oauth.password";
 
-	private final Set<String> configuredAliases = new HashSet<>();
-	private final Set<String> notFoundAliases = new HashSet<>();
+	private final Map<String, SoftReference<ICredentials>> configuredAliases = new HashMap<>();
 
 	private DelineaClientSettings delineaClientSettings;
 
@@ -138,51 +138,33 @@ public class DelineaCredentialFactory implements ICredentialFactory {
 
 	@Override
 	public boolean hasCredentials(String alias) {
-		// If we already know the alias is not found, return false
-		if (notFoundAliases.contains(alias)) {
-			return false;
+		// Check if we need to get the value for this alias
+		if (!configuredAliases.containsKey(alias)) {
+			getCredentials(alias, null, null);
 		}
 
-		// If we already know this alias, return true
-		if (configuredAliases.contains(alias)) {
-			return true;
-		}
-
-		getCredentials(alias, null, null);
-
-		return configuredAliases.contains(alias);
+		return configuredAliases.get(alias).get() != null;
 	}
 
 	@Override
 	public Collection<String> getConfiguredAliases() {
-		return configuredAliases;
+		return configuredAliases.keySet();
 	}
 
 	@Override
 	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) throws NoSuchElementException {
-		if (StringUtils.isNotEmpty(alias)) {
-
-			// Make sure to always get a live copy of the secret
-			Secret secret = delineaClient.getSecret(alias, delineaClientSettings.autoCommentValue());
-
-			if (secret != null) {
-				setAliasPresent(alias);
-				return translate(secret);
-			}
+		if (StringUtils.isEmpty(alias)) {
+			return null;
 		}
 
-		setAliasNotPresent(alias);
-		return null;
-	}
+		// Make sure to always get a live copy of the secret
+		Secret secret = delineaClient.getSecret(alias, delineaClientSettings.autoCommentValue());
 
-	private void setAliasPresent(String alias) {
-		configuredAliases.add(alias);
-		notFoundAliases.remove(alias);
-	}
+		DelineaCredentials credentials = translate(secret);
 
-	private void setAliasNotPresent(String alias) {
-		notFoundAliases.add(alias);
-		configuredAliases.remove(alias);
+		configuredAliases.put(alias, new SoftReference<>(credentials));
+
+		return credentials;
 	}
 
 	void setDelineaClient(DelineaClient delineaClient) {
@@ -190,6 +172,10 @@ public class DelineaCredentialFactory implements ICredentialFactory {
 	}
 
 	private DelineaCredentials translate(Secret secret) {
+		if (secret == null) {
+			return null;
+		}
+
 		String username = getFieldValue(secret, "username");
 		String password = getFieldValue(secret, "password");
 
