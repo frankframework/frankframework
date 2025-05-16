@@ -1,18 +1,47 @@
-<module>
-	<adapter name="ErrorMessageFormatter" description="Test the functioning of the ErrorMessageFormatter">
-		<errorMessageFormatter className="org.frankframework.errormessageformatters.XslErrorMessageFormatter" styleSheet="ErrorMessageFormatter/buildGenericError.xsl">
-			<param name="foutCode" value="1001" />
-		</errorMessageFormatter>
-		<receiver>
-			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-ErrorMessageFormatter" throwException="false" />
-		</receiver>
-		<pipeline firstPipe="GenerateException">
-			<exits>
-				<exit name="EXIT" state="success" />
-			</exits>
-			<pipe name="GenerateException" className="org.frankframework.pipes.ExceptionPipe" getInputFromFixedValue="Some generic Exception">
-				<forward name="success" path="EXIT" />
-			</pipe>
-		</pipeline>
-	</adapter>
-</module>
+<Module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd">
+	<Adapter name="XslErrorMessageFormatter" description="Test the functioning of the ErrorMessageFormatter">
+		<Receiver>
+			<JavaListener name="ibis4test-ErrorMessageFormatter" serviceName="ibis4test-ErrorMessageFormatter" throwException="false" />
+		</Receiver>
+		<XslErrorMessageFormatter styleSheet="ErrorMessageFormatter/buildGenericError.xsl">
+			<Param name="foutCode" value="1001" />
+		</XslErrorMessageFormatter>
+		<Pipeline firstPipe="GenerateException">
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" />
+			</Exits>
+			<ExceptionPipe name="GenerateException" getInputFromFixedValue="Some generic Exception">
+				<Forward name="success" path="EXIT" />
+			</ExceptionPipe>
+		</Pipeline>
+	</Adapter>
+	<Adapter name="JsonErrorMessageFormatter" description="Test the functioning of the ErrorMessageFormatter">
+		<Receiver>
+			<JavaListener name="ibis4test-JsonErrorMessageFormatter" serviceName="ibis4test-JsonErrorMessageFormatter" throwException="false" />
+		</Receiver>
+		<ErrorMessageFormatter messageFormat="JSON"/>
+		<Pipeline firstPipe="GenerateException">
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" />
+			</Exits>
+			<ExceptionPipe name="GenerateException" getInputFromFixedValue="Some generic Exception">
+				<Forward name="success" path="EXIT" />
+			</ExceptionPipe>
+		</Pipeline>
+	</Adapter>
+	<Adapter name="DataSonnetErrorMessageFormatter" description="Test the functioning of the ErrorMessageFormatter">
+		<Receiver>
+			<JavaListener name="ibis4test-JsonErrorMessageFormatter" serviceName="ibis4test-JsonErrorMessageFormatter" throwException="false" />
+		</Receiver>
+		<DataSonnetErrorMessageFormatter styleSheetName="ErrorMessageFormatter/buildJsonError.jsonnet"/>
+		<Pipeline firstPipe="GenerateException">
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" />
+			</Exits>
+			<ExceptionPipe name="GenerateException" getInputFromFixedValue="Some generic Exception">
+				<Forward name="success" path="EXIT" />
+			</ExceptionPipe>
+		</Pipeline>
+	</Adapter>
+</Module>
