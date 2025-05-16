@@ -16,6 +16,7 @@
 package org.frankframework.errormessageformatters;
 
 import org.frankframework.core.HasName;
+import org.frankframework.core.IErrorMessageFormatter;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
@@ -29,7 +30,7 @@ import org.frankframework.util.DateFormatUtils;
  * @author Johan Verrips IOS
  */
 @Deprecated
-public class Y01ErrorMessageFormatter extends ErrorMessageFormatter {
+public class Y01ErrorMessageFormatter implements IErrorMessageFormatter {
 	private final String applicationName = AppConstants.getInstance().getProperty("application.name");
 	private final String applicationVersion = AppConstants.getInstance().getProperty("application.version");
 
