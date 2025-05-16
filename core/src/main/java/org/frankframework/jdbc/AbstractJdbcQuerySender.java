@@ -59,7 +59,6 @@ import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
-import org.frankframework.parameters.ParameterType;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.Base64Pipe;
 import org.frankframework.pipes.Base64Pipe.Direction;
@@ -366,27 +365,6 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 			throw new SenderException("got exception sending message", t);
 		} finally {
 			closeStatementSet(queryExecutionContext);
-			ParameterList newParameterList = queryExecutionContext.getParameterList();
-			if (newParameterList != null) {
-				//noinspection deprecation
-				newParameterList.stream()
-						.filter(param -> param.getType() == ParameterType.INPUTSTREAM)
-						.forEach(param -> closeParameterInputStream(param, message, session));
-			}
-		}
-	}
-
-	private void closeParameterInputStream(IParameter param, Message message, PipeLineSession session) {
-		log.debug("Closing inputstream for parameter [{}]", param::getName);
-		try {
-			Object object = param.getValue(null, message, session, true);
-			if (object instanceof AutoCloseable closeable) {
-				closeable.close();
-			} else {
-				log.error("unable to auto-close parameter [{}]", param::getName);
-			}
-		} catch (Exception e) {
-			log.warn(new SenderException("got exception closing inputstream", e));
 		}
 	}
 

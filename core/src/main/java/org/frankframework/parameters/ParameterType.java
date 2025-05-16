@@ -70,16 +70,6 @@ public enum ParameterType {
 	/** Converts the result to a Boolean */
 	BOOLEAN(BooleanParameter.class, true),
 
-	/** Only applicable as a JDBC parameter, the method setBinaryStream() is used */
-	@ConfigurationWarning("use type [BINARY] instead")
-	@Deprecated
-	INPUTSTREAM,
-
-	/** Only applicable as a JDBC parameter, the method setBytes() is used */
-	@ConfigurationWarning("use type [BINARY] instead")
-	@Deprecated
-	BYTES,
-
 	/** Forces the parameter value to be treated as binary data (e.g. when using a SQL BLOB field).
 	 * When applied as a JDBC parameter, the method setBinaryStream() or setBytes() is used */
 	BINARY,

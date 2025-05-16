@@ -567,8 +567,8 @@ public class JdbcUtil {
 		String paramName = pv.getDefinition().getName();
 		ParameterType paramType = pv.getDefinition().getType();
 		Object value = pv.getValue();
-		if (log.isDebugEnabled())
-			log.debug("jdbc parameter [{}] applying parameter [{}] type [{}] value [{}]", parameterIndex, paramName, paramType, value);
+		log.debug("jdbc parameter [{}] applying parameter [{}] type [{}] value [{}]", parameterIndex, paramName, paramType, value);
+
 		switch (paramType) {
 			case DATE:
 				if (value == null) {
@@ -615,7 +615,6 @@ public class JdbcUtil {
 				}
 				break;
 			// noinspection deprecation
-			case INPUTSTREAM:
 			case BINARY: {
 				Message message = Message.asMessage(value);
 				message.closeOnCloseOf(session);
@@ -636,14 +635,6 @@ public class JdbcUtil {
 				}
 				break;
 			}
-			// noinspection deprecation
-			case BYTES: {
-				Message message = Message.asMessage(value);
-				message.closeOnCloseOf(session);
-
-				statement.setBytes(parameterIndex, message.asByteArray());
-				break;
-			}
 			default:
 				Message message = Message.asMessage(value);
 				message.closeOnCloseOf(session);
@@ -651,7 +642,7 @@ public class JdbcUtil {
 		}
 	}
 
-	/** Set a parameter in a prepared statement. Optimised for single-parameter statements */
+	/** Set a parameter in a prepared statement. Optimized for single-parameter statements */
 	public static void setParameter(PreparedStatement statement, int parameterIndex, String value, boolean parameterTypeMatchRequired) throws SQLException {
 		setParameter(statement, parameterIndex, value, parameterTypeMatchRequired, parameterTypeMatchRequired ? statement.getParameterMetaData() : null);
 	}

@@ -45,6 +45,7 @@ public class DateParameter extends AbstractParameter {
 
 	private @Getter String formatString = null;
 	private DateFormatType formatType;
+	private DateFormat dateFormat;
 
 	public DateParameter() {
 		setFormatType(DateFormatType.DATE); // Defaults to Date
@@ -75,6 +76,14 @@ public class DateParameter extends AbstractParameter {
 			}
 		}
 
+		if(formatType != DateFormatType.XMLDATETIME) {
+			try {
+				dateFormat = new SimpleDateFormat(getFormatString());
+			} catch (IllegalArgumentException e) {
+				throw new ConfigurationException("invalid formatString [" + getFormatString() + "]", e);
+			}
+		}
+
 		super.configure();
 	}
 
@@ -90,9 +99,8 @@ public class DateParameter extends AbstractParameter {
 		}
 
 		log.debug("Parameter [{}] converting result [{}] to Date using formatString [{}]", this::getName, () -> request, this::getFormatString);
-		DateFormat df = new SimpleDateFormat(getFormatString());
 		try {
-			return df.parse(request.asString());
+			return dateFormat.parse(request.asString());
 		} catch (ParseException e) {
 			throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + request + "] to Date using formatString [" + getFormatString() + "]", e);
 		}
