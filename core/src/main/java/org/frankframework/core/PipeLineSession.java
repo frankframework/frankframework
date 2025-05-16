@@ -60,15 +60,16 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	public static final String MESSAGE_ID_KEY       = "mid";        // externally determined (or generated) messageId, e.g. JmsMessageID, HTTP header configured as messageId
 	public static final String CORRELATION_ID_KEY   = "cid";       // conversationId, e.g. JmsCorrelationID.
 	public static final String STORAGE_ID_KEY       = "key";
-	public static final String MANUAL_RETRY_KEY     = SYSTEM_MANAGED_RESOURCE_PREFIX + "isManualRetry";
 
 	public static final String TS_RECEIVED_KEY = "tsReceived";
 	public static final String TS_SENT_KEY = "tsSent";
+
 	public static final String SECURITY_HANDLER_KEY = SYSTEM_MANAGED_RESOURCE_PREFIX + "securityHandler";
+	public static final String MANUAL_RETRY_KEY     = SYSTEM_MANAGED_RESOURCE_PREFIX + "isManualRetry";
+	public static final String HTTP_REQUEST_KEY    = SYSTEM_MANAGED_RESOURCE_PREFIX + "servletRequest"; // Used in one place to get the Request URI
+	public static final String HTTP_RESPONSE_KEY   = SYSTEM_MANAGED_RESOURCE_PREFIX + "servletResponse"; // Used in one place to set a HTTP Cookie
 
 	public static final String HTTP_METHOD_KEY 	   = "HttpMethod";
-	public static final String HTTP_REQUEST_KEY    = SYSTEM_MANAGED_RESOURCE_PREFIX + "servletRequest";
-	public static final String HTTP_RESPONSE_KEY   = SYSTEM_MANAGED_RESOURCE_PREFIX + "servletResponse";
 
 	public static final String API_PRINCIPAL_KEY   = "apiPrincipal";
 	public static final String EXIT_STATE_CONTEXT_KEY="exitState";
