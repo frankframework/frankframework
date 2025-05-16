@@ -69,7 +69,6 @@ public class ScenarioLoader {
 			long end = System.currentTimeMillis();
 			String duration = LarvaUtil.formatDuration(end - start);
 			log.debug("Reading scenario files took {}", duration);
-			larvaTool.debugMessage("Reading scenario files took " + duration);
 		}
 	}
 
@@ -83,21 +82,26 @@ public class ScenarioLoader {
 			larvaTool.debugMessage("Could not read files from directory '" + scenariosDirectory + "'");
 			return scenarioFiles;
 		}
-		larvaTool.debugMessage("Sort files");
+		log.debug("Sort files");
 		Arrays.sort(files);
-		larvaTool.debugMessage("Filter out property files containing a 'scenario.description' property");
+		log.debug("Filter out property files containing a 'scenario.description' property");
 		for (File scenarioFile : files) {
 			if (scenarioFile.isFile() && scenarioFile.getName().endsWith(".properties") && !scenarioFile.getName().equalsIgnoreCase("common.properties")) {
-				Properties properties = readScenarioProperties(scenarioFile, appConstants);
 				String scenarioFilePath = scenarioFile.getAbsolutePath();
-				if (properties == null || properties.getProperty("scenario.description") == null) {
-					log.warn("Could not read properties file: [{}]", scenarioFilePath);
+				PropertyLoader properties;
+				try {
+					properties = readScenarioProperties(scenarioFile, appConstants);
+				} catch (IOException e) {
+					larvaTool.errorMessage("Could not read properties file [" + scenarioFilePath + "]: " + e.getMessage(), e);
 					continue;
 				}
 				String description = properties.getProperty("scenario.description");
-				String active = properties.getProperty("scenario.active", "true");
-				String unstable = properties.getProperty("adapter.unstable", "false");
-				if ("true".equalsIgnoreCase(active) && "false".equalsIgnoreCase(unstable)) {
+				if (description == null) {
+					log.warn("Property file [" + scenarioFilePath + "] has no description");
+				}
+				boolean active = properties.getBoolean("scenario.active", true);
+				boolean unstable = properties.getBoolean("adapter.unstable", false);
+				if (active && !unstable && description != null) {
 					String name = FilenameUtils.normalize(scenarioFilePath.substring(baseDirectory.length(), scenarioFilePath.length() - ".properties".length()), true);
 					Scenario scenario = new Scenario(scenarioFile, name, description, properties);
 					scenarioFiles.put(scenario.getId(), scenario);
@@ -117,16 +121,9 @@ public class ScenarioLoader {
 	 * @param appConstants {@link AppConstants} to be used for resolving propertes in scenarios
 	 * @return The properties read from the scenario file.
 	 */
-	public @Nullable PropertyLoader readScenarioProperties(@Nonnull File scenarioFile, @Nonnull AppConstants appConstants) {
-
-
+	public @Nonnull PropertyLoader readScenarioProperties(@Nonnull File scenarioFile, @Nonnull AppConstants appConstants) throws IOException {
 		PropertyLoader scenarioProperties;
-		try {
-			scenarioProperties = readScenarioProperties(scenarioFile, appConstants, true);
-		} catch (Exception e) {
-			larvaTool.errorMessage("Could not read properties file: " + e.getMessage(), e);
-			return null;
-		}
+		scenarioProperties = readScenarioProperties(scenarioFile, appConstants, true);
 		String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath();
 		addAbsolutePathProperties(scenarioDirectory, scenarioProperties);
 		return scenarioProperties;
@@ -143,7 +140,7 @@ public class ScenarioLoader {
 
 		Properties includedProperties = getIncludedProperties(properties, scenarioDirectory);
 		properties.putAll(includedProperties);
-		larvaTool.debugMessage(properties.size() + " properties found");
+		log.debug("{} properties found", properties.size());
 		if (!root) {
 			// Only cache included files since they are most likely to be frequently read. Root files would just pollute the cache.
 			scenarioFileCache.put(scenarioFile, properties);
@@ -160,7 +157,7 @@ public class ScenarioLoader {
 			includeFilename = properties.getProperty("include" + i);
 		}
 		while (includeFilename != null) {
-			larvaTool.debugMessage("Load include file: " + includeFilename);
+			log.debug("Load include file: [{}]", includeFilename);
 			File includeFile = new File(LarvaUtil.getAbsolutePath(directory, includeFilename));
 			Properties includeProperties = readScenarioProperties(includeFile, null, false);
 			includedProperties.putAll(includeProperties);

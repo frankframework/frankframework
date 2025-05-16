@@ -123,8 +123,7 @@ public class TestRunStatus {
 				scenariosRoots.put("X " + description, directory);
 			}
 		}
-		larvaTool.debugMessage("Read scenariosrootdirectory parameter");
-		larvaTool.debugMessage("Get current scenarios root directory");
+		log.debug("Get current scenarios root directory");
 		if (StringUtils.isEmpty(larvaConfig.getActiveScenariosDirectory())) {
 			String currentScenariosRootDirectory;
 			String scenariosRootDefault = appConstants.getProperty("scenariosroot.default");

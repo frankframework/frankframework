@@ -98,7 +98,7 @@ public class LarvaTool {
 	private final @Getter ApplicationContext applicationContext;
 	private final @Getter LarvaConfig larvaConfig;
 	/**
-	 * Larva API calls that do not provide an output-writer can collect relevant log messages for the
+	 * Larva API calls that do not provide an output-writer can collect relevant error and warning messages for the
 	 * user to be returned via the API from the message list.
 	 */
 	private final @Getter List<LarvaMessage> messages = new ArrayList<>();
@@ -147,7 +147,7 @@ public class LarvaTool {
 	 */
 	public TestRunStatus runScenarios(String execute, TestExecutionObserver testExecutionObserver, LarvaWriter writer) {
 		this.writer = writer;
-		debugMessage("Initialize scenarios root directories");
+		log.debug("Initialize scenarios root directories");
 		TestRunStatus testRunStatus = createTestRunStatus();
 		String currentScenariosRootDirectory = testRunStatus.initScenarioDirectories();
 
@@ -155,7 +155,7 @@ public class LarvaTool {
 			errorMessage("No scenarios root directories found");
 			throw new LarvaException("No scenarios root directories found");
 		}
-		debugMessage("Read scenarios from directory '" + StringEscapeUtils.escapeJava(currentScenariosRootDirectory) + "'");
+		log.debug("Read scenarios from directory '" + StringEscapeUtils.escapeJava(currentScenariosRootDirectory) + "'");
 		testRunStatus.readScenarioFiles(scenarioLoader);
 
 		testExecutionObserver.startTestSuiteExecution(testRunStatus);
@@ -169,9 +169,9 @@ public class LarvaTool {
 			errorMessage("No scenarios found");
 		}
 
-		debugMessage("Initialize statistics variables");
+		log.debug("Initialize statistics variables");
 		long startTime = System.currentTimeMillis();
-		debugMessage("Execute scenario('s)");
+		log.debug("Execute scenario('s)");
 		ScenarioRunner scenarioRunner = createScenarioRunner(testExecutionObserver, testRunStatus);
 		// If only one scenario is executed, do not use multithreading, because they mostly use the same resources
 		if (scenarioFiles.size() == 1) {
@@ -198,13 +198,12 @@ public class LarvaTool {
 	}
 
 	private void printScenarioExecutionStatistics(TestExecutionObserver testExecutionObserver, TestRunStatus testRunStatus, long executionTime) {
-		debugMessage("Print statistics information");
+		log.debug("Print statistics information");
 		testExecutionObserver.executionOverview(testRunStatus, executionTime);
 	}
 
 	public void debugMessage(String message) {
 		log.debug(message);
-		messages.add(new LarvaMessage(LarvaLogLevel.DEBUG, message));
 		if (writer != null) {
 			writer.debugMessage(message);
 		}
@@ -212,17 +211,8 @@ public class LarvaTool {
 
 	public void infoMessage(String message) {
 		log.info(message);
-		messages.add(new LarvaMessage(LarvaLogLevel.INFO, message));
 		if (writer != null) {
 			writer.infoMessage(message);
-		}
-	}
-
-	public void errorMessage(String message) {
-		log.error(message);
-		messages.add(new LarvaMessage(LarvaLogLevel.ERROR, message));
-		if (writer != null) {
-			writer.errorMessage(message);
 		}
 	}
 
@@ -234,8 +224,17 @@ public class LarvaTool {
 		}
 	}
 
+	public void errorMessage(String message) {
+		log.error(message);
+		messages.add(new LarvaMessage(LarvaLogLevel.ERROR, message));
+		if (writer != null) {
+			writer.errorMessage(message);
+		}
+	}
+
 	public void errorMessage(String message, Exception exception) {
 		log.error(message, exception);
+		messages.add(new LarvaMessage(LarvaLogLevel.ERROR, message, exception));
 		if (writer != null) {
 			writer.errorMessage(message, exception);
 		}
@@ -372,6 +371,7 @@ public class LarvaTool {
 	 * @return Message data, or "" if the message was empty. Returns NULL if there was an error reading the message.
 	 */
 	public @Nullable String messageToString(Message message) {
+		// TODO: This should just throw instead of returning NULL, and the caller should catch instead of checking NULL return value
 		try {
 			message.preserve();
 			String r = message.asString();
@@ -385,11 +385,8 @@ public class LarvaTool {
 		}
 	}
 
-	public int compareResult(TestExecutionObserver testExecutionObserver, Scenario scenario, String step, String stepDisplayName, String fileName, String stepSaveFileName, Message expectedResultMessage, Message actualResultMessage, Properties properties) {
-		if (fileName.endsWith("ignore")) {
-			debugMessage("ignoring compare for filename '"+fileName+"'");
-			return RESULT_OK;
-		}
+	public int compareResult(TestExecutionObserver testExecutionObserver, Scenario scenario, String step, String stepDisplayName, String fileName, Message expectedResultMessage, Message actualResultMessage) {
+		Properties properties = scenario.getProperties();
 		String expectedResult = messageToString(expectedResultMessage);
 		String actualResult = messageToString(actualResultMessage);
 		if (expectedResult == null || actualResult == null) {
@@ -438,10 +435,8 @@ public class LarvaTool {
 			}
 			if (identical) {
 				ok = RESULT_OK;
-				debugMessage("Strings are identical");
 				testExecutionObserver.stepMessageSuccess(scenario, stepDisplayName, "Result", printableActualResult, preparedActualResult);
 			} else {
-				debugMessage("Strings are not identical");
 				String message;
 				if (diffException == null) {
 					message = diff.toString();
@@ -449,17 +444,7 @@ public class LarvaTool {
 					message = "Exception during XML diff: " + diffException.getMessage();
 					errorMessage("Exception during XML diff: ", diffException);
 				}
-				testExecutionObserver.stepMessageFailed(scenario, stepDisplayName, message, stepSaveFileName, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult);
-				if (larvaConfig.isAutoSaveDiffs()) {
-					String filenameAbsolutePath = (String)properties.get(step + ".absolutepath");
-					debugMessage("Copy actual result to ["+filenameAbsolutePath+"]");
-					try {
-						org.apache.commons.io.FileUtils.writeStringToFile(new File(filenameAbsolutePath), actualResult, Charset.defaultCharset());
-					} catch (IOException e) {
-						// Ignore
-					}
-					ok = RESULT_AUTOSAVED;
-				}
+				ok = reportFailedCompare(testExecutionObserver, scenario, step, stepDisplayName, properties, message, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult, actualResult, ok);
 			}
 		} else {
 			// txt diff
@@ -467,10 +452,8 @@ public class LarvaTool {
 			String formattedPreparedActualResult = formatString(preparedActualResult);
 			if (formattedPreparedExpectedResult.equals(formattedPreparedActualResult)) {
 				ok = RESULT_OK;
-				debugMessage("Strings are identical");
 				testExecutionObserver.stepMessageSuccess(scenario, stepDisplayName, "Result", printableActualResult, preparedActualResult);
 			} else {
-				debugMessage("Strings are not identical");
 				String message = null;
 				StringBuilder diffActual = new StringBuilder();
 				StringBuilder diffExcpected = new StringBuilder();
@@ -501,17 +484,23 @@ public class LarvaTool {
 					diffExcpected.append(" ...");
 				}
 				message = message + " actual result is '" + diffActual + "' and expected result is '" + diffExcpected + "'";
-				testExecutionObserver.stepMessageFailed(scenario, stepDisplayName, message, stepSaveFileName, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult);
-				if (larvaConfig.isAutoSaveDiffs()) {
-					String filenameAbsolutePath = (String)properties.get(step + ".absolutepath");
-					debugMessage("Copy actual result to ["+filenameAbsolutePath+"]");
-					try {
-						org.apache.commons.io.FileUtils.writeStringToFile(new File(filenameAbsolutePath), actualResult, Charset.defaultCharset());
-					} catch (IOException e) {
-						// Ignore
-					}
-					ok = RESULT_AUTOSAVED;
-				}
+				ok = reportFailedCompare(testExecutionObserver, scenario, step, stepDisplayName, properties, message, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult, actualResult, ok);
+			}
+		}
+		return ok;
+	}
+
+	private int reportFailedCompare(TestExecutionObserver testExecutionObserver, Scenario scenario, String step, String stepDisplayName, Properties properties, String message, String printableExpectedResult, String preparedExpectedResult, String printableActualResult, String preparedActualResult, String actualResult, int ok) {
+		String filenameAbsolutePath = (String) properties.get(step + ".absolutepath");
+		testExecutionObserver.stepMessageFailed(scenario, stepDisplayName, message, filenameAbsolutePath, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult);
+		if (larvaConfig.isAutoSaveDiffs()) {
+			debugMessage("Copy actual result to ["+filenameAbsolutePath+"]");
+			try {
+				org.apache.commons.io.FileUtils.writeStringToFile(new File(filenameAbsolutePath), actualResult, Charset.defaultCharset());
+				ok = RESULT_AUTOSAVED;
+			} catch (IOException e) {
+				// Ignore
+				errorMessage("Cannot write actual result to ["+filenameAbsolutePath+"]", e);
 			}
 		}
 		return ok;
@@ -561,7 +550,7 @@ public class LarvaTool {
 
 	public String doActionBetweenKeys(String key, String value, Properties properties, Map<String, Map<String, Map<String, String>>> ignoreMap, BetweenKeysAction action) {
 		String result = value;
-		debugMessage("Check " + key + " properties");
+		log.debug("Check [{}] properties", key);
 		boolean lastKeyIndexProcessed = false;
 		int i = 1;
 		while (!lastKeyIndexProcessed) {
@@ -569,7 +558,7 @@ public class LarvaTool {
 			String key1 = properties.getProperty(keyPrefix + "key1");
 			String key2 = properties.getProperty(keyPrefix + "key2");
 			if (key1 != null && key2 != null) {
-				debugMessage(key + " between key1 '" + key1 + "' and key2 '" + key2 + "'");
+				log.debug("[{}] between key1 [{}] and key2 [{}]", key, key1, key2);
 				result = action.format(result, k -> properties.getProperty(keyPrefix + k), key1, key2);
 				i++;
 			} else if (key1 != null || key2 != null) {
@@ -591,7 +580,7 @@ public class LarvaTool {
 					throw new IllegalArgumentException("Error in Larva scenario file: Spec [" + key + "." + spec.getKey() + "] is incomplete; key1=[" + key1 + "], key2=[" + key2 + "]");
 				}
 
-				debugMessage(key + " between key1 '" + key1 + "' and key2 '" + key2 + "'");
+				log.debug("[{}] between key1 [{}] and key2 [{}]", key, key1, key2);
 				result = action.format(result, keyPair::get, key1, key2);
 			}
 		}
@@ -601,7 +590,7 @@ public class LarvaTool {
 
 	public String doActionWithSingleKey(String keyName, String value, Properties properties, Map<String, Map<String, Map<String, String>>> ignoreMap, SingleKeyAction action) {
 		String result = value;
-		debugMessage("Check " + keyName + " properties");
+		log.debug("Check [{}] properties", keyName);
 		boolean lastKeyIndexProcessed = false;
 		int i = 1;
 		while (!lastKeyIndexProcessed) {
@@ -611,7 +600,7 @@ public class LarvaTool {
 				key = properties.getProperty(keyPrefix + ".key");
 			}
 			if (key != null) {
-				debugMessage(keyName+ " key '" + key + "'");
+				log.debug("[{}] key [{}]", keyName, key);
 				result = action.format(result, k -> properties.getProperty(keyPrefix + "." + k), key);
 				i++;
 			} else {
@@ -628,7 +617,7 @@ public class LarvaTool {
 
 				String key = keyPair.get("key");
 
-				debugMessage(keyName + " key '" + key + "'");
+				log.debug("[{}] key [{}]", keyName, key);
 				result = action.format(result, keyPair::get, key);
 
 				keySpecIt.remove();
@@ -723,17 +712,17 @@ public class LarvaTool {
 		String result = string;
 		int i = result.indexOf(key1);
 		while (i != -1 && result.length() > i + key1.length()) {
-			debugMessage("Key 1 found");
+			log.debug("Key 1 found");
 			int j = result.indexOf(key2, i + key1.length());
 			if (j != -1) {
-				debugMessage("Key 2 found");
+				log.debug("Key 2 found");
 				String encoded = result.substring(i + key1.length(), j);
 				String unzipped;
 				byte[] decodedBytes;
-				debugMessage("Decode");
+				log.debug("Decode");
 				decodedBytes = Base64.decodeBase64(encoded);
 				try {
-					debugMessage("Unzip");
+					log.debug("Unzip");
 					StringBuilder stringBuilder = new StringBuilder();
 					stringBuilder.append("<tt:file xmlns:tt=\"testtool\">");
 					ZipInputStream zipInputStream = new ZipInputStream(new ByteArrayInputStream(decodedBytes));
@@ -803,10 +792,10 @@ public class LarvaTool {
 		String ignoreText = "IGNORE_CURRENT_TIME";
 		int i = result.indexOf(key1);
 		while (i != -1 && result.length() > i + key1.length()) {
-			debugMessage("Key 1 found");
+			log.debug("Key 1 found");
 			int j = result.indexOf(key2, i + key1.length());
 			if (j != -1) {
-				debugMessage("Key 2 found");
+				log.debug("Key 2 found");
 				String dateString = result.substring(i + key1.length(), j);
 				Date date;
 				boolean remainingString = false;
@@ -1003,7 +992,7 @@ public class LarvaTool {
 					errorMessage("Property '" + _param + i + ".value' or '" + _param + i + ".valuefile' not found while property '" + _param + i + ".name' exist");
 				} else {
 					result.put(name, value);
-					debugMessage("Add param with name '" + name + "' and value '" + value + "' for property '" + "'");
+					log.debug("Add param with name [{}] and value [{}] for property '" + "'", name, value);
 				}
 				i++;
 			} else {

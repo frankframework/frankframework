@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
@@ -36,7 +37,7 @@ public class ScenarioLoaderTest {
 	}
 
 	@Test
-	public void testLoadActiveScenario() {
+	public void testLoadActiveScenario() throws IOException {
 		File scenarioFile = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenarios/scenariodir1/active-scenario.properties");
 
 		Properties scenarioProperties = scenarioLoader.readScenarioProperties(scenarioFile, appConstants);
@@ -47,7 +48,7 @@ public class ScenarioLoaderTest {
 	}
 
 	@Test
-	public void testLoadInactiveScenario() {
+	public void testLoadInactiveScenario() throws IOException {
 		File scenarioFile = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenarios/scenariodir2/inactive-scenario.properties");
 
 		Properties scenarioProperties = scenarioLoader.readScenarioProperties(scenarioFile, appConstants);
