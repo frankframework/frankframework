@@ -28,6 +28,7 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.HasName;
 import org.frankframework.core.IWithParameters;
 import org.frankframework.core.ParameterException;
@@ -56,7 +57,7 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter implements I
 
 	protected @Nonnull ParameterList paramList = new ParameterList();
 
-	private @Getter String styleSheet;
+	private @Getter String styleSheetName;
 	private @Getter String xpathExpression;
 
 	@Override
@@ -64,15 +65,15 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter implements I
 
 		Message result = super.format(errorMessage, t, location, originalMessage, session);
 
-		if (!StringUtils.isNotEmpty(getStyleSheet()) && !StringUtils.isNotEmpty(getXpathExpression())) {
+		if (!StringUtils.isNotEmpty(getStyleSheetName()) && !StringUtils.isNotEmpty(getXpathExpression())) {
 			log.warn("no stylesheet or xpathExpression defined for XslErrorMessageFormatter");
 			return result;
 		}
 		try {
 			TransformerPool transformerPool;
 
-			if (StringUtils.isNotEmpty(getStyleSheet())) {
-				Resource xsltSource = Resource.getResource(this, getStyleSheet());
+			if (StringUtils.isNotEmpty(getStyleSheetName())) {
+				Resource xsltSource = Resource.getResource(this, getStyleSheetName());
 				transformerPool = TransformerPool.getInstance(xsltSource, 0);
 			} else {
 				transformerPool = TransformerPool.getXPathTransformerPool(null, getXpathExpression(), OutputType.TEXT, false, getParameterList());
@@ -83,11 +84,11 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter implements I
 				return transformerPool.transform(closeable, parameterValueList);
 			}
 		} catch (IOException e) {
-			log.error(" cannot retrieve [{}]", getStyleSheet(), e);
+			log.error(" cannot retrieve [{}]", getStyleSheetName(), e);
 		} catch (TransformerConfigurationException te) {
-			log.error("got error creating transformer from file [{}]", getStyleSheet(), te);
+			log.error("got error creating transformer from file [{}]", getStyleSheetName(), te);
 		} catch (Exception tfe) {
-			log.error("could not transform [{}] using stylesheet [{}]", result, getStyleSheet(), tfe);
+			log.error("could not transform [{}] using stylesheet [{}]", result, getStyleSheetName(), tfe);
 		}
 		return result;
 	}
@@ -120,9 +121,20 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter implements I
 
 	/**
 	 * URL to the stylesheet used to transform the output of the standard {@link ErrorMessageFormatter}
+	 *
+	 * @deprecated Use {@link #setStyleSheetName(String)} instead
 	 */
+	@Deprecated
+	@ConfigurationWarning("Use attribute [styleSheetName] instead")
 	public void setStyleSheet(String newStyleSheet) {
-		styleSheet = newStyleSheet;
+		styleSheetName = newStyleSheet;
+	}
+
+	/**
+	 * URL to the stylesheet used to transform the output of the standard {@link ErrorMessageFormatter}
+	 */
+	public void setStyleSheetName(String styleSheetName) {
+		this.styleSheetName = styleSheetName;
 	}
 
 	/** xPathExpression to use for transformation */

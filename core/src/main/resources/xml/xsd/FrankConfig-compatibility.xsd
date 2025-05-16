@@ -8467,6 +8467,11 @@
         <xs:documentation>URL to the stylesheet used to transform the output of the standard ErrorMessageFormatter</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="styleSheetName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>URL to the stylesheet used to transform the output of the standard ErrorMessageFormatter</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="xpathExpression" type="xs:string">
       <xs:annotation>
         <xs:documentation>xPathExpression to use for transformation</xs:documentation>

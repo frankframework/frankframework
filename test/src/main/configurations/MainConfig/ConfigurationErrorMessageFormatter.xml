@@ -4,7 +4,7 @@
 		<Receiver>
 			<JavaListener name="ibis4test-ErrorMessageFormatter" serviceName="ibis4test-ErrorMessageFormatter" throwException="false" />
 		</Receiver>
-		<XslErrorMessageFormatter styleSheet="ErrorMessageFormatter/buildGenericError.xsl">
+		<XslErrorMessageFormatter styleSheetName="ErrorMessageFormatter/buildGenericError.xsl">
 			<Param name="foutCode" value="1001" />
 		</XslErrorMessageFormatter>
 		<Pipeline firstPipe="GenerateException">
