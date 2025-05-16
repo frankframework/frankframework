@@ -20,7 +20,7 @@
 	<Include ref="ConfigurationForwardNameProvidingSenders.xml"/>
 	<Include ref="ConfigurationCompareStringPipe.xml"/>
 	<Include ref="ConfigurationCompareXmlStringPipe.xml"/>
-	<Include ref="ConfigurationQuerySender.xml"/>
+	
 	<Include ref="ConfigurationClobAndBlob.xml"/>
 	<Include ref="ConfigurationBigClobAndBlob.xml"/>
 	<Include ref="ConfigurationMongoDbSender.xml"/>
@@ -69,4 +69,6 @@
 	<Include ref="ConfigurationApiWsdlGenerator.xml"/>
 	<Include ref="ConfigurationUnzip.xml"/>
 	<Include ref="ConfigurationFrankSender.xml"/>
+	<Include ref="ConfigurationQuerySender.xml"/>
+	<Include ref="ConfigurationTrinoSender.xml"/>
 </Configuration>
