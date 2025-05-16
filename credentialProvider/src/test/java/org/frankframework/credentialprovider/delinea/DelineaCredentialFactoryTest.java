@@ -95,9 +95,6 @@ class DelineaCredentialFactoryTest {
 		// Should not be present
 		assertFalse(credentialFactory.hasCredentials("5"));
 
-		// Should be present in the notFoundAliases list
-		assertFalse(credentialFactory.hasCredentials("5"));
-
 		assertEquals(5, credentialFactory.getConfiguredAliases().size());
 	}
 
