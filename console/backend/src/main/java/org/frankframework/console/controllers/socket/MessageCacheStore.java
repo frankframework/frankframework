@@ -51,6 +51,11 @@ public class MessageCacheStore {
 		return cachedMessage;
 	}
 
+	/* Used to reset the cache for testing */
+	public void empty() {
+		memberCache.clear();
+	}
+
 	@Nonnull
 	private HashMap<String, String> getCache(@Nullable UUID uuid) {
 		UUID key = uuid == null ? LOCAL_UUID : uuid;

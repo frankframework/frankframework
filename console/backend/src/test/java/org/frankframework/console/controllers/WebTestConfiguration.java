@@ -11,6 +11,8 @@ import org.frankframework.console.configuration.ClientSession;
 import org.frankframework.console.configuration.WebConfiguration;
 import org.frankframework.console.controllers.socket.MessageCacheStore;
 
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+
 /**
  * Used in unit tests to create an outboundGateway bean which doesn't rely on http calls but simply returns what we need in the unit tests.
  *
@@ -47,4 +49,10 @@ public class WebTestConfiguration {
 	FrankApiService frankApiService(ClientSession clientSession, MessageCacheStore messageCacheStore) {
 		return new FrankApiService(clientSession, messageCacheStore);
 	}
+
+	@Bean
+	SimpMessagingTemplate simpMessagingTemplate() {
+		return Mockito.mock(SimpMessagingTemplate.class);
+	}
+
 }
