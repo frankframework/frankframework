@@ -155,5 +155,4 @@ public class CredentialFactory {
 		}
 		return aliases;
 	}
-
 }
