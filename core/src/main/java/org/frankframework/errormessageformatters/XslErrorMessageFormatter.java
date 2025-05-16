@@ -20,6 +20,7 @@ import java.io.IOException;
 import javax.xml.transform.TransformerConfigurationException;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -28,6 +29,7 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasName;
+import org.frankframework.core.IWithParameters;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.Resource;
@@ -50,7 +52,7 @@ import org.frankframework.util.TransformerPool.OutputType;
  * @author Johan Verrips IOS
  */
 @Log4j2
-public class XslErrorMessageFormatter extends ErrorMessageFormatter {
+public class XslErrorMessageFormatter extends ErrorMessageFormatter implements IWithParameters {
 
 	protected @Nonnull ParameterList paramList = new ParameterList();
 
@@ -62,49 +64,56 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter {
 
 		Message result = super.format(errorMessage, t, location, originalMessage, session);
 
-		if (StringUtils.isNotEmpty(getStyleSheet()) || StringUtils.isNotEmpty(getXpathExpression())) {
-			try {
-				TransformerPool transformerPool;
-
-				if (StringUtils.isNotEmpty(getStyleSheet())) {
-					Resource xsltSource = Resource.getResource(this, getStyleSheet());
-					transformerPool = TransformerPool.getInstance(xsltSource, 0);
-				} else {
-					transformerPool = TransformerPool.getXPathTransformerPool(null, getXpathExpression(), OutputType.TEXT, false, getParameterList());
-				}
-
-				try {
-					getParameterList().configure();
-				} catch (ConfigurationException e) {
-					log.error("exception while configuring parameters", e);
-				}
-
-				ParameterValueList parameterValueList = null;
-				try {
-					parameterValueList = getParameterList().getValues(new Message(errorMessage), new PipeLineSession());
-				} catch (ParameterException e) {
-					log.error("got exception extracting parameters", e);
-				}
-				try (Message closeable = result) {
-					return transformerPool.transform(closeable, parameterValueList);
-				}
-			} catch (IOException e) {
-				log.error(" cannot retrieve [{}]", getStyleSheet(), e);
-			} catch (TransformerConfigurationException te) {
-				log.error("got error creating transformer from file [{}]", getStyleSheet(), te);
-			} catch (Exception tfe) {
-				log.error("could not transform [{}] using stylesheet [{}]", result, getStyleSheet(), tfe);
-			}
-		} else {
+		if (!StringUtils.isNotEmpty(getStyleSheet()) && !StringUtils.isNotEmpty(getXpathExpression())) {
 			log.warn("no stylesheet or xpathExpression defined for XslErrorMessageFormatter");
+			return result;
+		}
+		try {
+			TransformerPool transformerPool;
+
+			if (StringUtils.isNotEmpty(getStyleSheet())) {
+				Resource xsltSource = Resource.getResource(this, getStyleSheet());
+				transformerPool = TransformerPool.getInstance(xsltSource, 0);
+			} else {
+				transformerPool = TransformerPool.getXPathTransformerPool(null, getXpathExpression(), OutputType.TEXT, false, getParameterList());
+			}
+
+			ParameterValueList parameterValueList = getParameterValues(errorMessage, session);
+			try (Message closeable = result) {
+				return transformerPool.transform(closeable, parameterValueList);
+			}
+		} catch (IOException e) {
+			log.error(" cannot retrieve [{}]", getStyleSheet(), e);
+		} catch (TransformerConfigurationException te) {
+			log.error("got error creating transformer from file [{}]", getStyleSheet(), te);
+		} catch (Exception tfe) {
+			log.error("could not transform [{}] using stylesheet [{}]", result, getStyleSheet(), tfe);
 		}
 		return result;
 	}
 
+	@Nullable
+	private ParameterValueList getParameterValues(String errorMessage, PipeLineSession session) {
+		try {
+			getParameterList().configure();
+		} catch (ConfigurationException e) {
+			log.error("exception while configuring parameters", e);
+		}
+
+		try {
+			return getParameterList().getValues(new Message(errorMessage), session);
+		} catch (ParameterException e) {
+			log.error("got exception extracting parameters", e);
+		}
+		return null;
+	}
+
+	@Override
 	public void addParameter(IParameter p) {
 		paramList.add(p);
 	}
 
+	@Override
 	public @Nonnull ParameterList getParameterList() {
 		return paramList;
 	}
