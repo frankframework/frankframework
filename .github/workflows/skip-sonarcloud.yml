@@ -1,0 +1,19 @@
+name: Skip SonarCloud Checks
+
+on:
+  workflow_call:
+
+jobs:
+  skip-sonarcloud:
+    name: SonarCloud
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip SonarCloud
+        run: echo "Skip SonarCloud, no important changes are detected"
+
+  skip-sonarcloud-code-analysis:
+    name: SonarCloud Code Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Skip SonarCloud Code Analysis
+        run: echo "Skip SonarCloud Code Analysis, no important changes are detected"

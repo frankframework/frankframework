@@ -6,27 +6,43 @@ on:
       - master
       - '[0-9]+.[0-9]+-release'
       - 'release/[0-9]+.[0-9]+'
-    ignore-paths:
-      - "**"
-      - "!**.md"
-      - "!**.yml"
-      - "!**.txt"
-      - "!**.png"
-      - "!**.toml"
-      - "!.github/**"
-      - "!docker/**"
 
 jobs:
-  skip-sonarcloud:
-    name: SonarCloud
+  check-only-changed:
     runs-on: ubuntu-latest
+    name: Check if only specific files changed
     steps:
-      - name: Skip SonarCloud
-        run: echo "Skip SonarCloud, no important changes are detected"
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-  skip-sonarcloud-code-analysis:
-    name: SonarCloud Code Analysis
-    runs-on: ubuntu-latest
-    steps:
-      - name: Skip SonarCloud Code Analysis
-        run: echo "Skip SonarCloud Code Analysis, no important changes are detected"
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v46
+        with:
+          files: |
+            **.md
+            **.yml
+            **.txt
+            **.png
+            **.toml
+            .github/**
+            docker/**
+
+      - name: Check if only these files were modified
+        if: steps.changed-files.outputs.only_changed == 'true'
+        run: |
+          echo "✅ Only our specified files were changed in this commit/PR"
+          echo "Modified files: ${{ steps.changed-files.outputs.all_changed_files }}"
+
+      - name: List other changed files
+        if: steps.changed-files.outputs.only_changed == 'false'
+        run: |
+          echo "⚠️ Additional files outside our specified patterns were modified"
+          echo "Files matching our pattern: ${{ steps.changed-files.outputs.all_changed_files }}"
+          echo "Other files changed: ${{ steps.changed-files.outputs.other_changed_files }}"
+
+      - name: Take action only when specific files change
+        if: steps.changed-files.outputs.only_changed == 'true'
+        call-workflow:
+          uses: ./.github/workflows/skip-sonarcloud.yml
