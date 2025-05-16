@@ -15,8 +15,14 @@
 */
 package org.frankframework.errormessageformatters;
 
+import jakarta.annotation.Nonnull;
+
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.core.HasName;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.doc.Protected;
+import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
 
@@ -25,6 +31,7 @@ import org.frankframework.stream.Message;
  *
  * @author  Peter Leeuwenburgh
  */
+@Log4j2
 public class SoapErrorMessageFormatter extends ErrorMessageFormatter {
 
 	@Override
@@ -36,5 +43,11 @@ public class SoapErrorMessageFormatter extends ErrorMessageFormatter {
 			log.error("got error getting soapWrapper instance", e);
 			return super.format(errorMessage, t, location, originalMessage, session);
 		}
+	}
+
+	@Override
+	@Protected
+	public void setMessageFormat(@Nonnull DocumentFormat messageFormat) {
+		throw new UnsupportedOperationException("Not supported for this type");
 	}
 }
