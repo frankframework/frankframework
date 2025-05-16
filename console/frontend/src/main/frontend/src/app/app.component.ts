@@ -257,7 +257,7 @@ export class AppComponent implements OnInit, OnDestroy {
           this.renderer.removeClass(document.body, 'gray-bg');
         }
 
-        this.serverTimeService.setServerTime(data['serverTime'], data['serverTimezone']);
+        this.serverTimeService.setServerTime(data['serverTime'], data['serverTimezone'], data['serverTimezoneOffset']);
 
         const iafInfoElement = document.querySelector<HTMLElement>('.iaf-info');
         if (iafInfoElement)
