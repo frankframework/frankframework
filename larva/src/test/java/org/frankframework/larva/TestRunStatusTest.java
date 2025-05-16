@@ -30,8 +30,9 @@ class TestRunStatusTest {
 
 		config = new LarvaConfig();
 		LarvaWriter out = new LarvaWriter(config, System.out);
-		scenarioLoader = new ScenarioLoader(out);
-		testRunStatus = new TestRunStatus(config, out);
+		LarvaTool larvaTool = new LarvaTool(null, config);
+		scenarioLoader = new ScenarioLoader(larvaTool);
+		testRunStatus = new TestRunStatus(config, larvaTool);
 
 		scenarioRoot1 = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenarios");
 		appConstants.setProperty("scenariosroot1.directory", scenarioRoot1.getAbsolutePath());

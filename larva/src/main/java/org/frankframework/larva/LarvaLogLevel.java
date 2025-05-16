@@ -22,23 +22,23 @@ import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public enum LarvaLogLevel {
-	DEBUG("debug", 1),
-	PIPELINE_MESSAGES_PREPARED_FOR_DIFF("pipeline messages prepared for diff", 2),
-	PIPELINE_MESSAGES("pipeline messages", 3),
-	WRONG_PIPELINE_MESSAGES_PREPARED_FOR_DIFF("wrong pipeline messages prepared for diff", 4),
-	WRONG_PIPELINE_MESSAGES("wrong pipeline messages", 5),
-	STEP_PASSED_FAILED("step passed/failed", 6),
-	SCENARIO_PASSED_FAILED("scenario passed/failed", 7),
-	SCENARIO_FAILED("scenario failed", 8),
-	TOTALS("totals", 9),
-	ERROR("error", 10);
+	DEBUG("debug"),
+	PIPELINE_MESSAGES_PREPARED_FOR_DIFF("pipeline messages prepared for diff"),
+	PIPELINE_MESSAGES("pipeline messages"),
+	INFO("info"),
+	WRONG_PIPELINE_MESSAGES_PREPARED_FOR_DIFF("wrong pipeline messages prepared for diff"),
+	WRONG_PIPELINE_MESSAGES("wrong pipeline messages"),
+	STEP_PASSED_FAILED("step passed/failed"),
+	SCENARIO_PASSED_FAILED("scenario passed/failed"),
+	SCENARIO_FAILED("scenario failed"),
+	TOTALS("totals"),
+	WARNING("error"),
+	ERROR("error");
 
 	@Getter private final String name;
-	private final int index;
 
-	LarvaLogLevel(String name, int index) {
+	LarvaLogLevel(String name) {
 		this.name = name;
-		this.index = index;
 	}
 
 	public static LarvaLogLevel parse(String value, LarvaLogLevel defaultValue) {
@@ -52,6 +52,6 @@ public enum LarvaLogLevel {
 	}
 
 	public boolean shouldLog(@Nullable LarvaLogLevel other) {
-		return other == null || this.index <= other.index;
+		return other == null || this.ordinal() <= other.ordinal();
 	}
 }

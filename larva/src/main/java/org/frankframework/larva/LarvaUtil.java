@@ -29,7 +29,6 @@ import jakarta.annotation.Nullable;
 
 import org.apache.commons.io.FilenameUtils;
 
-import org.frankframework.larva.output.LarvaWriter;
 import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
@@ -90,12 +89,12 @@ public class LarvaUtil {
 		return new File(realPath).getParent();
 	}
 
-	protected static @Nonnull Properties readProperties(LarvaWriter out, File propertyFile) {
+	protected static @Nonnull Properties readProperties(LarvaTool larvaTool, File propertyFile) {
 		Properties properties = new Properties();
 		try (InputStream in = Files.newInputStream(propertyFile.toPath()); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(in)) {
 			properties.load(reader);
 		} catch (IOException e) {
-			out.errorMessage("Cannot read property file: " + propertyFile.getAbsolutePath(), e);
+			larvaTool.errorMessage("Cannot read property file: " + propertyFile.getAbsolutePath(), e);
 		}
 		return properties;
 	}

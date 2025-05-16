@@ -20,7 +20,8 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.lang3.NotImplementedException;
-import org.apache.logging.log4j.Logger;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.IListener;
 import org.frankframework.core.IMessageHandler;
@@ -29,7 +30,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
-import org.frankframework.util.LogUtil;
 
 /**
  * Message handler for JavaListener and WebServiceListener.
@@ -37,12 +37,16 @@ import org.frankframework.util.LogUtil;
  * @author Jaco de Groot
  * @author Niels Meijer
  */
+@Log4j2
 public class ListenerMessageHandler<M> implements IMessageHandler<M> {
-	private static final Logger log = LogUtil.getLogger(ListenerMessageHandler.class);
-	private final BlockingQueue<ListenerMessage> requestMessages = new ArrayBlockingQueue<>(100);
-	private final BlockingQueue<ListenerMessage> responseMessages = new ArrayBlockingQueue<>(100);
+	private final BlockingQueue<ListenerMessage> requestMessages = new ArrayBlockingQueue<>(10);
+	private final BlockingQueue<ListenerMessage> responseMessages = new ArrayBlockingQueue<>(10);
 
-	private long defaultTimeout = LarvaTool.globalTimeoutMillis;
+	private long defaultTimeout;
+
+	public ListenerMessageHandler(long defaultTimeout) {
+		this.defaultTimeout = defaultTimeout;
+	}
 
 	@Override
 	public Message processRequest(IListener<M> origin, RawMessageWrapper<M> rawMessage, Message message, PipeLineSession session) throws ListenerException {
