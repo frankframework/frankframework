@@ -149,7 +149,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 			if (t != null) {
 				e.addSuppressed(t);
 			}
-			throw new RuntimeException("Cannot create formatted error message for error [" + errorMessage + "]", e);
+			throw new FormatterException("Cannot create formatted error message for error [" + errorMessage + "]", e);
 		}
 	}
 
