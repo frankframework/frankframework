@@ -17,9 +17,6 @@ import java.io.InputStream;
 import java.math.BigInteger;
 import java.util.List;
 
-import jakarta.servlet.ServletOutputStream;
-import jakarta.servlet.http.HttpServletResponse;
-
 import org.apache.chemistry.opencmis.client.api.Folder;
 import org.apache.chemistry.opencmis.client.api.ItemIterable;
 import org.apache.chemistry.opencmis.client.api.ObjectFactory;
@@ -39,7 +36,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.senders.SenderTestBase;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.StreamUtil;
@@ -98,11 +94,6 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 //		GET
 		OperationContext operationContext = mock(OperationContextImpl.class);
 		doReturn(operationContext).when(cmisSession).createOperationContext();
-
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		session.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
-		ServletOutputStream outputStream = mock(ServletOutputStream.class);
-		doReturn(outputStream).when(response).getOutputStream();
 
 //		CREATE
 		Folder folder = mock(FolderImpl.class);

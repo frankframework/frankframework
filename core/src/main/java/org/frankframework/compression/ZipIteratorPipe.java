@@ -32,6 +32,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.pipes.IteratingPipe;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageContext;
 import org.frankframework.util.StreamUtil;
 
 /**
@@ -114,7 +115,8 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 	}
 
 	/**
-	 * If set to <code>false</code>, the inputstream is not closed after it has been used
+	 * If set to <code>false</code>, the inputstream is not closed after it has been used.
+	 * Use with caution, they may create memory leaks.
 	 *
 	 * @ff.default true
 	 */
@@ -170,15 +172,21 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 
 		@Override
 		public String next() throws SenderException {
-			log.debug("next()");
+			log.trace("next()");
 			try {
 				skipCurrent();
 				currentOpen = true;
-				log.debug("found zipEntry name [{}] size [{}] compressed size [{}]", current::getName, current::getSize, current::getCompressedSize);
+				log.debug("found zipEntry name [{}] compressed size [{}]", current::getName, current::getCompressedSize);
 				String filename = current.getName();
 				if (isStreamingContents()) {
+					MessageContext context = new MessageContext().withName(current.getName());
+					if (current.getTime() > 0L) {
+						context.withModificationTime(current.getTime());
+					}
+
 					log.debug("storing stream to contents of zip entries under session key [{}]", ZipIteratorPipe.this::getContentsSessionKey);
-					session.put(getContentsSessionKey(), StreamUtil.dontClose(source)); // do this each time, to allow reuse of the session key when an item is optionally encoded
+					Message message = new Message(StreamUtil.dontClose(source), context);
+					session.put(getContentsSessionKey(), message); // do this each time, to allow reuse of the session key when an item is optionally encoded
 				} else {
 					log.debug("storing contents of zip entry under session key [{}]", ZipIteratorPipe.this::getContentsSessionKey);
 					String content = StreamUtil.streamToString(StreamUtil.dontClose(source), null, getCharset());

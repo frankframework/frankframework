@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018-2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2018-2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.http.cxf.AbstractSOAPProvider;
 import org.frankframework.http.cxf.MessageProvider;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ServiceDispatcher;
@@ -180,7 +181,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		if (!attachmentSessionKeysList.isEmpty()) {
 			XmlBuilder xmlMultipart = new XmlBuilder("parts");
 			for(String attachmentSessionKey: attachmentSessionKeysList) {
-				//<parts><part type=\"file\" name=\"document.pdf\" sessionKey=\"part_file\" size=\"12345\" mimeType=\"application/octet-stream\"/></parts>
+				// Using the following format: <parts><part type=\"file\" name=\"document.pdf\" sessionKey=\"part_file\" size=\"12345\" mimeType=\"application/octet-stream\"/></parts>
 				XmlBuilder part = new XmlBuilder("part");
 				part.addAttribute("name", attachmentSessionKey);
 				part.addAttribute("sessionKey", attachmentSessionKey);
@@ -190,26 +191,26 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			session.put(getMultipartXmlSessionKey(), xmlMultipart.asXmlString());
 		}
 
-		if (isSoap()) {
-			try {
-				if (log.isDebugEnabled()) log.debug("{}received SOAPMSG [{}]", getLogPrefix(), message);
-				Message request = soapWrapper.getBody(message, false, session, null);
-				Message result = super.processRequest(request, session);
-
-				String soapNamespace = SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE;
-				String soapProtocol = (String) session.get("soapProtocol");
-				if(SOAPConstants.SOAP_1_2_PROTOCOL.equals(soapProtocol)) {
-					soapNamespace = SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE;
-				}
-				Message reply = soapWrapper.putInEnvelope(result, null, null, null, null, soapNamespace, null, false, false);
-				if (log.isDebugEnabled()) log.debug("{}replied SOAPMSG [{}]", getLogPrefix(), reply);
-				return reply;
-			} catch (Exception e) {
-				throw new ListenerException(e);
-			}
+		if (!isSoap()) {
+			return super.processRequest(message, session);
 		}
 
-		return super.processRequest(message, session);
+		try {
+			if (log.isDebugEnabled()) log.debug("{}received SOAPMSG [{}]", getLogPrefix(), message);
+			Message request = soapWrapper.getBody(message, false, session, null);
+			Message result = super.processRequest(request, session);
+
+			String soapNamespace = SOAPConstants.URI_NS_SOAP_1_1_ENVELOPE;
+			String soapProtocol = (String) session.get(AbstractSOAPProvider.SOAP_PROTOCOL_KEY);
+			if(SOAPConstants.SOAP_1_2_PROTOCOL.equals(soapProtocol)) {
+				soapNamespace = SOAPConstants.URI_NS_SOAP_1_2_ENVELOPE;
+			}
+			Message reply = soapWrapper.putInEnvelope(result, null, null, null, null, soapNamespace, null, false, false);
+			if (log.isDebugEnabled()) log.debug("{}replied SOAPMSG [{}]", getLogPrefix(), reply);
+			return reply;
+		} catch (Exception e) {
+			throw new ListenerException(e);
+		}
 	}
 
 	public String getLogPrefix() {
