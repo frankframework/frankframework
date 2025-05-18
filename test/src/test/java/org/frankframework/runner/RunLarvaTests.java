@@ -51,7 +51,7 @@ import org.frankframework.util.CloseUtils;
 @Tag("integration")
 public class RunLarvaTests {
 
-	public static final LarvaLogLevel LARVA_LOG_LEVEL = LarvaLogLevel.WRONG_PIPELINE_MESSAGES;
+	public static final LarvaLogLevel LARVA_LOG_LEVEL = LarvaLogLevel.WRONG_PIPELINE_MESSAGES_PREPARED_FOR_DIFF;
 
 	public static final Set<String> IGNORED_SCENARIOS = Set.of(
 			"ApiListener/scenario01",
