@@ -2,7 +2,7 @@
 	xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd">
 	<Adapter name="XslErrorMessageFormatter" description="Test the functioning of the ErrorMessageFormatter">
 		<Receiver>
-			<JavaListener name="ibis4test-ErrorMessageFormatter" serviceName="ibis4test-ErrorMessageFormatter" throwException="false" />
+			<JavaListener name="ibis4test-XslErrorMessageFormatter" serviceName="ibis4test-XslErrorMessageFormatter" throwException="false" />
 		</Receiver>
 		<XslErrorMessageFormatter styleSheetName="ErrorMessageFormatter/buildGenericError.xsl">
 			<Param name="foutCode" value="1001" />
@@ -32,9 +32,11 @@
 	</Adapter>
 	<Adapter name="DataSonnetErrorMessageFormatter" description="Test the functioning of the ErrorMessageFormatter">
 		<Receiver>
-			<JavaListener name="ibis4test-JsonErrorMessageFormatter" serviceName="ibis4test-JsonErrorMessageFormatter" throwException="false" />
+			<JavaListener name="ibis4test-DataSonnetErrorMessageFormatter" serviceName="ibis4test-DataSonnetErrorMessageFormatter" throwException="false" />
 		</Receiver>
-		<DataSonnetErrorMessageFormatter styleSheetName="ErrorMessageFormatter/buildJsonError.jsonnet"/>
+		<DataSonnetErrorMessageFormatter styleSheetName="ErrorMessageFormatter/buildJsonError.jsonnet">
+			<Param name="exitCode" value="500"/>
+		</DataSonnetErrorMessageFormatter>
 		<Pipeline firstPipe="GenerateException">
 			<Exits>
 				<Exit name="EXIT" state="SUCCESS" />
