@@ -15,10 +15,6 @@
 */
 package org.frankframework.errormessageformatters;
 
-import java.io.IOException;
-
-import javax.xml.transform.TransformerConfigurationException;
-
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
@@ -30,6 +26,7 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.HasName;
+import org.frankframework.core.IConfigurable;
 import org.frankframework.core.IWithParameters;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
@@ -53,12 +50,36 @@ import org.frankframework.util.TransformerPool.OutputType;
  * @author Johan Verrips IOS
  */
 @Log4j2
-public class XslErrorMessageFormatter extends ErrorMessageFormatter implements IWithParameters {
+public class XslErrorMessageFormatter extends ErrorMessageFormatter implements IWithParameters, IConfigurable {
 
 	protected @Nonnull ParameterList paramList = new ParameterList();
 
 	private @Getter String styleSheetName;
 	private @Getter String xpathExpression;
+
+	private TransformerPool transformerPool;
+
+	@Override
+	public void configure() throws ConfigurationException {
+		super.setMessageFormat(DocumentFormat.XML);
+		paramList.setNamesMustBeUnique(true);
+		paramList.configure();
+
+		if (StringUtils.isNotEmpty(getStyleSheetName())) {
+			try {
+				Resource xsltSource = Resource.getResource(this, getStyleSheetName());
+				transformerPool = TransformerPool.getInstance(xsltSource, 0);
+			} catch (Exception e) {
+				throw new ConfigurationException("Cannot configure stylesheet transformer for [" + styleSheetName + "]", e);
+			}
+		} else {
+			try {
+				transformerPool = TransformerPool.getXPathTransformerPool(null, getXpathExpression(), OutputType.TEXT, false, getParameterList());
+			} catch (Exception e) {
+				throw new ConfigurationException("Cannot configure XPath transformer for [" + xpathExpression + "]", e);
+			}
+		}
+	}
 
 	@Override
 	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, PipeLineSession session) {
@@ -70,23 +91,10 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter implements I
 			return result;
 		}
 		try {
-			TransformerPool transformerPool;
-
-			if (StringUtils.isNotEmpty(getStyleSheetName())) {
-				Resource xsltSource = Resource.getResource(this, getStyleSheetName());
-				transformerPool = TransformerPool.getInstance(xsltSource, 0);
-			} else {
-				transformerPool = TransformerPool.getXPathTransformerPool(null, getXpathExpression(), OutputType.TEXT, false, getParameterList());
-			}
-
 			ParameterValueList parameterValueList = getParameterValues(errorMessage, session);
 			try (Message closeable = result) {
 				return transformerPool.transform(closeable, parameterValueList);
 			}
-		} catch (IOException e) {
-			log.error(" cannot retrieve [{}]", getStyleSheetName(), e);
-		} catch (TransformerConfigurationException te) {
-			log.error("got error creating transformer from file [{}]", getStyleSheetName(), te);
 		} catch (Exception tfe) {
 			log.error("could not transform [{}] using stylesheet [{}]", result, getStyleSheetName(), tfe);
 		}
@@ -95,12 +103,6 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter implements I
 
 	@Nullable
 	private ParameterValueList getParameterValues(String errorMessage, PipeLineSession session) {
-		try {
-			getParameterList().configure();
-		} catch (ConfigurationException e) {
-			log.error("exception while configuring parameters", e);
-		}
-
 		try {
 			return getParameterList().getValues(new Message(errorMessage), session);
 		} catch (ParameterException e) {
