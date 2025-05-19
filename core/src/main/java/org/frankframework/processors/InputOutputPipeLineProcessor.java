@@ -23,7 +23,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.MessageUtils;
 
 /**
  * @author Jaco de Groot
@@ -36,12 +35,11 @@ public class InputOutputPipeLineProcessor extends AbstractPipeLineProcessor {
 		// Reset the PipeLineSession and store the message and its id in the session
 		if (messageId == null) {
 			// This should not be touched anymore
-			messageId = MessageUtils.generateMessageId();
-			log.error("messageId not set, creating synthetic id [{}]", messageId);
+			throw new PipeRunException(null, "Pipeline of adapter ["+ pipeLine.getAdapter().getName()+"] received null message id");
 		}
 
 		if (message == null) {
-			throw new PipeRunException(null, "Pipeline of adapter ["+ pipeLine.getOwner().getName()+"] received null message");
+			throw new PipeRunException(null, "Pipeline of adapter ["+ pipeLine.getAdapter().getName()+"] received null message");
 		}
 
 		// Store message and messageId in the pipeLineSession

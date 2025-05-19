@@ -49,7 +49,7 @@ import org.frankframework.management.bus.message.BinaryMessage;
 import org.frankframework.management.bus.message.MessageBase;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.UUIDUtil;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.XmlUtils;
 
 @BusAware("frank-management-bus")
@@ -95,7 +95,7 @@ public class TestPipeline extends BusEndpointBase {
 
 	// Does not support async requests because receiver requests are synchronous
 	private BinaryMessage processMessage(Adapter adapter, String payload, Map<String, String> threadContext, boolean expectsReply) {
-		String messageId = "testmessage-" + UUIDUtil.createSimpleUUID();
+		String messageId = MessageUtils.generateMessageId("testmessage");
 		try (PipeLineSession pls = new PipeLineSession()) {
 			// Make sure the pipeline session has a security handler
 			pls.setSecurityHandler(new SpringSecurityHandler());

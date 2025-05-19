@@ -87,7 +87,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		String prefix = location != null ? ClassUtils.nameOf(location) : null;
 		String messageId = session.getMessageId();
 		String correlationId = session.getCorrelationId();
-		String msgIdToUse = StringUtils.isNotEmpty(messageId) && !MessageUtils.isGeneratedMessageId(messageId) ? messageId : correlationId;
+		String msgIdToUse = StringUtils.isNotEmpty(messageId) && !MessageUtils.isFallbackMessageId(messageId) ? messageId : correlationId;
 		if (StringUtils.isNotEmpty(msgIdToUse)) {
 			prefix = StringUtil.concatStrings(prefix, " ", "msgId [" + msgIdToUse + "]");
 		}

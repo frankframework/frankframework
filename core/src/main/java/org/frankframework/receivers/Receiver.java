@@ -1436,7 +1436,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 
 	private String ensureMessageIdNotEmpty(String messageId) {
 		if (StringUtils.isEmpty(messageId)) {
-			messageId = MessageUtils.generateMessageId();
+			messageId = MessageUtils.generateFallbackMessageId();
 			if (log.isDebugEnabled())
 				log.debug("{} Message without message id; generated messageId [{}]", getLogPrefix(), messageId);
 		}

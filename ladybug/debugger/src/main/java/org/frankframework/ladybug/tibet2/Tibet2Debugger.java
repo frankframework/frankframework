@@ -31,7 +31,7 @@ import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.ladybug.LadybugDebugger;
 import org.frankframework.stream.Message;
-import org.frankframework.util.UUIDUtil;
+import org.frankframework.util.MessageUtils;
 
 /**
  * @author Jaco de Groot
@@ -78,7 +78,7 @@ public class Tibet2Debugger extends LadybugDebugger {
 			}
 			pipeLineSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 			// Analog to test a pipeline that is using: "testmessage" + Misc.createSimpleUUID();
-			String messageId = "tibet2-resend" + UUIDUtil.createSimpleUUID();
+			String messageId = MessageUtils.generateMessageId("tibet2-resend");
 
 			PipeLineResult processResult = adapter.processMessageDirect(messageId, new Message(inputMessage), pipeLineSession);
 			String stringResult = processResult.getResult().asString();

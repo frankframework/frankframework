@@ -109,7 +109,7 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 
 	@Override
 	public SOAPMessage invoke(SOAPMessage request) {
-		String messageId = MessageUtils.generateMessageId();
+		String messageId = MessageUtils.generateFallbackMessageId();
 		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_MESSAGE_ID_KEY, messageId);
 				PipeLineSession pipelineSession = new PipeLineSession()) {
 
