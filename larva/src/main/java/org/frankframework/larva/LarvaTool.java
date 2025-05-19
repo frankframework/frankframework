@@ -65,6 +65,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.SenderException;
+import org.frankframework.json.JsonUtil;
 import org.frankframework.larva.output.HtmlScenarioOutputRenderer;
 import org.frankframework.larva.output.LarvaHtmlWriter;
 import org.frankframework.larva.output.LarvaWriter;
@@ -79,7 +80,6 @@ import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
-import org.frankframework.util.Misc;
 import org.frankframework.util.ProcessUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TemporaryDirectoryUtils;
@@ -399,13 +399,13 @@ public class LarvaTool {
 		String diffType = properties.getProperty(step + ".diffType");
 		if (".json".equals(diffType) || (diffType == null && fileName.endsWith(".json"))) {
 			try {
-				printableExpectedResult = Misc.jsonPretty(expectedResult);
+				printableExpectedResult = JsonUtil.jsonPretty(expectedResult);
 			} catch (JsonException e) {
 				debugMessage("Could not prettify Json: "+e.getMessage());
 				printableExpectedResult = expectedResult;
 			}
 			try {
-				printableActualResult = Misc.jsonPretty(actualResult);
+				printableActualResult = JsonUtil.jsonPretty(actualResult);
 			} catch (JsonException e) {
 				debugMessage("Could not prettify Json: "+e.getMessage());
 				printableActualResult = actualResult;
