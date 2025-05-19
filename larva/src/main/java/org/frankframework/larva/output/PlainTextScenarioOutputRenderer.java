@@ -70,28 +70,29 @@ public class PlainTextScenarioOutputRenderer implements TestExecutionObserver {
 	}
 
 	@Override
-	public void startStep(TestRunStatus testRunStatus, Scenario scenario, String stepName) {
+	public void startStep(TestRunStatus testRunStatus, Scenario scenario, String step) {
 		// No-op
 	}
 
 	@Override
-	public void finishStep(TestRunStatus testRunStatus, Scenario scenario, String stepName, int stepResult, String stepResultMessage) {
+	public void finishStep(TestRunStatus testRunStatus, Scenario scenario, String step, int stepResult, String stepResultMessage) {
 		out.writeOutputMessage(LarvaLogLevel.STEP_PASSED_FAILED, stepResultMessage);
 	}
 
 	@Override
-	public void stepMessage(Scenario scenario, String stepName, String description, String stepMessage) {
-		out.writeOutputMessage(LarvaLogLevel.PIPELINE_MESSAGES, "Step " + stepName + ": " + description + "\n" + stepMessage);
+	public void stepMessage(Scenario scenario, String step, String description, String stepMessage) {
+		out.writeOutputMessage(LarvaLogLevel.PIPELINE_MESSAGES, "Step " + scenario.getStepDisplayName(step) + ": " + description + "\n" + stepMessage);
 	}
 
 	@Override
-	public void stepMessageSuccess(Scenario scenario, String stepName, String description, String stepResultMessage, String stepResultMessagePreparedForDiff) {
-		out.writeOutputMessage(LarvaLogLevel.PIPELINE_MESSAGES, "Step " + stepName + ": " + description + "\n" + stepResultMessage);
+	public void stepMessageSuccess(Scenario scenario, String step, String description, String stepResultMessage, String stepResultMessagePreparedForDiff) {
+		out.writeOutputMessage(LarvaLogLevel.PIPELINE_MESSAGES, "Step " + scenario.getStepDisplayName(step) + ": " + description + "\n" + stepResultMessage);
 		out.writeOutputMessage(LarvaLogLevel.PIPELINE_MESSAGES_PREPARED_FOR_DIFF, stepResultMessagePreparedForDiff);
 	}
 
 	@Override
-	public void stepMessageFailed(Scenario scenario, String stepName, String description, String stepSaveFileName, String stepExpectedResultMessage, String stepExpectedResultMessagePreparedForDiff, String stepActualResultMessage, String stepActualResultMessagePreparedForDiff) {
+	public void stepMessageFailed(Scenario scenario, String step, String description, String stepExpectedResultMessage, String stepExpectedResultMessagePreparedForDiff, String stepActualResultMessage, String stepActualResultMessagePreparedForDiff) {
+		String stepName = scenario.getStepDisplayName(step);
 		String template = """
 				Step: %s %s
 				Actual%s:
