@@ -59,7 +59,6 @@ import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
-import org.frankframework.parameters.ParameterType;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.Base64Pipe;
 import org.frankframework.pipes.Base64Pipe.Direction;
@@ -132,7 +131,6 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	private @Getter String rowIdSessionKey=null;
 	private @Getter String packageContent = "db2";
 	private @Getter String[] columnsReturnedList=null;
-	private @Getter boolean streamResultToServlet = false; //TODO: remove stream result to servlet
 	private @Getter String sqlDialect = AppConstants.getInstance().getString("jdbc.sqlDialect", null);
 	private @Getter boolean lockRows=false;
 	private @Getter int lockWait=-1;
@@ -308,6 +306,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 		}
 	}
 
+	@SuppressWarnings("deprecation")
 	protected SenderResult executeStatementSet(@Nonnull QueryExecutionContext queryExecutionContext, @Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		try {
 			PreparedStatement statement=queryExecutionContext.getStatement();
@@ -317,21 +316,12 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 					Object blobSessionVar = null;
 					Object clobSessionVar = null;
 					if (StringUtils.isNotEmpty(getBlobSessionKey())) {
-						//noinspection deprecation
 						blobSessionVar = session.getMessage(getBlobSessionKey()).asObject();
 					}
 					if (StringUtils.isNotEmpty(getClobSessionKey())) {
-						//noinspection deprecation
 						clobSessionVar = session.getMessage(getClobSessionKey()).asObject();
 					}
-					if (isStreamResultToServlet()) {
-						HttpServletResponse response = (HttpServletResponse) session.get(PipeLineSession.HTTP_RESPONSE_KEY);
-						String contentType = session.getString("contentType");
-						String contentDisposition = session.getString("contentDisposition");
-						return executeSelectQuery(statement,blobSessionVar,clobSessionVar, response, contentType, contentDisposition);
-					} else {
-						return executeSelectQuery(statement,blobSessionVar,clobSessionVar);
-					}
+					return executeSelectQuery(statement,blobSessionVar,clobSessionVar);
 				case UPDATEBLOB:
 					if (StringUtils.isNotEmpty(getBlobSessionKey())) {
 						return new SenderResult(executeUpdateBlobQuery(statement, session.getMessage(getBlobSessionKey())));
@@ -366,27 +356,6 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 			throw new SenderException("got exception sending message", t);
 		} finally {
 			closeStatementSet(queryExecutionContext);
-			ParameterList newParameterList = queryExecutionContext.getParameterList();
-			if (newParameterList != null) {
-				//noinspection deprecation
-				newParameterList.stream()
-						.filter(param -> param.getType() == ParameterType.INPUTSTREAM)
-						.forEach(param -> closeParameterInputStream(param, message, session));
-			}
-		}
-	}
-
-	private void closeParameterInputStream(IParameter param, Message message, PipeLineSession session) {
-		log.debug("Closing inputstream for parameter [{}]", param::getName);
-		try {
-			Object object = param.getValue(null, message, session, true);
-			if (object instanceof AutoCloseable closeable) {
-				closeable.close();
-			} else {
-				log.error("unable to auto-close parameter [{}]", param::getName);
-			}
-		} catch (Exception e) {
-			log.warn(new SenderException("got exception closing inputstream", e));
 		}
 	}
 
@@ -822,7 +791,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 			}
 			StringBuilder newMessage = new StringBuilder(message.substring(0, openingBracePosition + 1));
 			if (idx >= 0) {
-				//check if output parameter exists is expected in original message and append an ending ?(out-parameter)
+				// Check if output parameter exists is expected in original message and append an ending ?(out-parameter)
 				int parameterCount = idx + (message.contains("?") ? 1 : 0);
 				if (parameterCount > 0) {
 					newMessage.append("?");
@@ -951,15 +920,6 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	/** If specified, the rowid of the processed row is put in the pipelinesession under the specified key (only applicable for <code>querytype=other</code>). <b>Note:</b> If multiple rows are processed a SqlException is thrown. */
 	public void setRowIdSessionKey(String string) {
 		rowIdSessionKey = string;
-	}
-
-	/**
-	 * If set, the result is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as bytes or as a String)
-	 * @ff.default false
-	 */
-	@Deprecated(forRemoval = true, since = "7.6.0")
-	public void setStreamResultToServlet(boolean b) {
-		streamResultToServlet = b;
 	}
 
 	/** If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect */
