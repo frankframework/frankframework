@@ -35,6 +35,9 @@ import org.frankframework.larva.LarvaException;
 import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.TestRunStatus;
+import org.frankframework.larva.output.LarvaWriter;
+import org.frankframework.larva.output.PlainTextScenarioOutputRenderer;
+import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.stream.Message;
 
 /**
@@ -79,7 +82,7 @@ public class LarvaPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message message, PipeLineSession session) {
 		ApplicationContext applicationContext = getAdapter().getConfiguration().getApplicationContext();
 		LogWriter out = new LogWriter(log, isWriteToLog(), isWriteToSystemOut());
-		LarvaTool larvaTool = LarvaTool.createInstance(applicationContext, out);
+		LarvaTool larvaTool = LarvaTool.createInstance(applicationContext);
 		LarvaConfig larvaConfig = larvaTool.getLarvaConfig();
 		larvaConfig.setLogLevel(getLogLevel());
 		if (StringUtils.isNotBlank(getWaitBeforeCleanup())) {
@@ -89,13 +92,15 @@ public class LarvaPipe extends FixedForwardPipe {
 			larvaConfig.setTimeout(getTimeout());
 		}
 
-		String paramExecute = larvaTool.getTestRunStatus().initScenarioDirectories();
+		String paramExecute = larvaTool.getActiveScenariosDirectory();
 		if (StringUtils.isNotEmpty(getExecute())) {
 			paramExecute = paramExecute + getExecute();
 		}
+		LarvaWriter larvaWriter = new LarvaWriter(larvaConfig, out);
+		TestExecutionObserver testExecutionObserver = new PlainTextScenarioOutputRenderer(larvaWriter);
 		PipeForward forward;
 		try {
-			TestRunStatus testRunStatus = larvaTool.runScenarios(paramExecute);
+			TestRunStatus testRunStatus = larvaTool.runScenarios(paramExecute, testExecutionObserver, larvaWriter);
 			int numScenariosFailed = testRunStatus.getScenariosFailedCount();
 			forward = numScenariosFailed==0 ? getSuccessForward() : failureForward;
 		} catch (LarvaException e) {
@@ -160,6 +165,6 @@ class LogWriter extends StringWriter {
 		if (writeToSystemOut) {
 			System.out.println(str);
 		}
-		super.write(str + "\n");
+		super.write(str);
 	}
 }
