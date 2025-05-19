@@ -35,7 +35,7 @@ public class InputOutputPipeLineProcessor extends AbstractPipeLineProcessor {
 		// Reset the PipeLineSession and store the message and its id in the session
 		if (messageId == null) {
 			// This should not be touched anymore
-			throw new PipeRunException(null, "Pipeline of adapter ["+ pipeLine.getAdapter().getName()+"] received null message id");
+			throw new PipeRunException(null, "Adapter ["+ pipeLine.getAdapter().getName()+"]: Unable to process message without messageID");
 		}
 
 		if (message == null) {

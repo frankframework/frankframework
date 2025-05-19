@@ -375,7 +375,7 @@ public class BisWrapperPipe extends SoapWrapperPipe {
 		}
 		headerFieldsElement.addSubElement(conversationIdElement);
 		XmlBuilder messageIdElement = new XmlBuilder("MessageId");
-		messageIdElement.setValue(MessageUtils.generateMessageId("MSG"));
+		messageIdElement.setValue(MessageUtils.generateMessageId());
 		headerFieldsElement.addSubElement(messageIdElement);
 		XmlBuilder externalRefToMessageIdElement = new XmlBuilder("ExternalRefToMessageId");
 		if (originalMessageHeader == null) {

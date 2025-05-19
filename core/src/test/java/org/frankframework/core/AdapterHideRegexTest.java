@@ -40,6 +40,7 @@ import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.util.CloseUtils;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.RunState;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.UUIDUtil;
@@ -209,7 +210,7 @@ public class AdapterHideRegexTest {
 		try (TestAppender appender = getAppender()) {
 
 			// Act
-			PipeLineResult result = adapter.processMessageDirect(UUIDUtil.createRandomUUID(), inputMessage, pipeLineSession);
+			PipeLineResult result = adapter.processMessageDirect(MessageUtils.generateMessageId(), inputMessage, pipeLineSession);
 
 			// Assert
 			assertEquals(inputMessage.asString(), result.getResult().asString());
@@ -229,7 +230,7 @@ public class AdapterHideRegexTest {
 		try (TestAppender appender = getAppender()) {
 
 			// Act
-			PipeLineResult result = adapter.processMessageDirect(UUIDUtil.createRandomUUID(), inputMessage, pipeLineSession);
+			PipeLineResult result = adapter.processMessageDirect(MessageUtils.generateMessageId(), inputMessage, pipeLineSession);
 
 			// Assert
 			assertEquals(inputMessage.asString(), result.getResult().asString());
@@ -248,7 +249,7 @@ public class AdapterHideRegexTest {
 		// Start capturing logs
 		try (TestAppender appender = getAppender()) {
 			// Act
-			PipeLineResult result = adapter.processMessageDirect(UUIDUtil.createRandomUUID(), inputMessage, pipeLineSession);
+			PipeLineResult result = adapter.processMessageDirect(MessageUtils.generateMessageId(), inputMessage, pipeLineSession);
 
 			// Assert
 			assertThat(result.getResult().asString(), containsString("error during pipeline processing"));

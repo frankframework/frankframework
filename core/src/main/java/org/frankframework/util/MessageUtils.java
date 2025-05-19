@@ -68,7 +68,8 @@ public class MessageUtils {
 
 	public static final String JSON_TEMPLATE_VALUE_QUOTED = "{\"%s\": \"%s\"}";
 	public static final String JSON_TEMPLATE_VALUE_UNQUOTED = "{\"%s\": %s}";
-	public static final String FALLBACK_MESSAGE_ID_PREFIX = "fallback-message-id-";
+	public static final String DEFAULT_MESSAGE_ID_PREFIX = "FFMSG";
+	public static final String FALLBACK_MESSAGE_ID_PREFIX = "fallback-message-id";
 
 	private MessageUtils() {
 		throw new IllegalStateException("Don't construct utility class");
@@ -488,12 +489,16 @@ public class MessageUtils {
 		}
 	}
 
+	public static @Nonnull String generateMessageId() {
+		return generateMessageId(DEFAULT_MESSAGE_ID_PREFIX);
+	}
+
 	public static @Nonnull String generateMessageId(String prefix) {
 		return prefix + "-" + Misc.getHostname() + "-" + UUIDUtil.createSimpleUUID();
 	}
 
 	public static @Nonnull String generateFallbackMessageId() {
-		return FALLBACK_MESSAGE_ID_PREFIX + UUIDUtil.createSimpleUUID();
+		return generateMessageId(FALLBACK_MESSAGE_ID_PREFIX);
 	}
 
 	public static boolean isFallbackMessageId(@Nonnull String messageId) {
