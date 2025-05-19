@@ -22,6 +22,8 @@ import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.larva.LarvaHtmlConfig;
 import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
@@ -39,6 +41,7 @@ import org.frankframework.util.XmlEncodingUtils;
  * using an accompanying LarvaHtmlWriter instance.
  * </p>
  */
+@Log4j2
 public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 
 	private static final String TR_STARTING_TAG="<tr>";
@@ -264,11 +267,11 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 		writeHtml(TR_STARTING_TAG);
 		writeHtml(TD_STARTING_TAG);
 		writeHtml("<select name=\"execute\">");
-		writer.debugMessage("Fill execute select box.");
+		log.debug("Fill execute select box");
 		Set<String> addedDirectories = new HashSet<>();
 		testRunStatus.getAllScenarios().forEach((scenarioId, scenario) -> {
 			String scenarioDirectory = scenario.getScenarioFile().getParentFile().getAbsolutePath() + File.separator;
-			writer.debugMessage("Add parent directories of '" + scenarioDirectory + "'");
+			log.debug("Add parent directories of [{}]", scenarioDirectory);
 			int i;
 			String scenarioDirectoryCanonicalPath;
 			String scenariosRootDirectoryCanonicalPath;
@@ -285,11 +288,11 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 				String paramExecute = config.getExecute();
 				while (i != -1) {
 					String longName = scenarioDirectory.substring(0, i + 1);
-					writer.debugMessage("longName: '" + longName + "'");
+					log.debug("longName: [{}]", longName);
 					if (!addedDirectories.contains(longName)) {
 						String shortName = FilenameUtils.normalize(scenarioDirectory.substring(scenariosRootDirectory.length() - 1, i + 1), true);
 						String option = "<option value=\"" + XmlEncodingUtils.encodeChars(longName) + "\"";
-						writer.debugMessage("paramExecute: '" + paramExecute + "'");
+						log.debug("paramExecute: [{}]", paramExecute);
 						if (paramExecute != null && paramExecute.equals(longName)) {
 							option = option + " selected";
 						}
@@ -301,7 +304,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 				}
 				String longName = scenario.getLongName();
 				String shortName = scenario.getName();
-				writer.debugMessage("shortName: '" + shortName + "'");
+				log.debug("shortName: [{}]", shortName);
 				String option = "<option value=\"" + XmlEncodingUtils.encodeChars(longName) + "\"";
 				if (paramExecute != null && paramExecute.equals(longName)) {
 					option = option + " selected";

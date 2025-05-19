@@ -86,10 +86,9 @@ class LarvaToolTest {
 	void testRunScenariosFromPlainConfig () {
 		// Arrange
 		StringWriter output = new StringWriter();
-		LarvaTool larvaTool = LarvaTool.createInstance(applicationContext, output);
 
 		// Act
-		TestRunStatus result = larvaTool.runScenarios(scenarioRoot.getAbsolutePath());
+		TestRunStatus result = LarvaTool.runScenarios(applicationContext, output, scenarioRoot.getAbsolutePath());
 
 		// Assert
 		verifyTestRunResults(result, output);

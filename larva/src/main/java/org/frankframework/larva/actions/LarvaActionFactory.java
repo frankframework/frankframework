@@ -37,7 +37,6 @@ import org.frankframework.larva.ListenerMessage;
 import org.frankframework.larva.ListenerMessageHandler;
 import org.frankframework.larva.Scenario;
 import org.frankframework.larva.SenderThread;
-import org.frankframework.larva.output.LarvaWriter;
 import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
@@ -50,15 +49,13 @@ public class LarvaActionFactory {
 
 	public static final String CLASS_NAME_PROPERTY_SUFFIX = ".className";
 	private final int defaultTimeout;
-	private final LarvaTool testTool;
-	private final LarvaWriter larvaWriter;
+	private final LarvaTool larvaTool;
 	private final TestExecutionObserver testExecutionObserver;
 
-	public LarvaActionFactory(LarvaTool testTool) {
-		this.testTool = testTool;
-		this.larvaWriter = testTool.getWriter();
-		this.testExecutionObserver = testTool.getTestExecutionObserver();
-		this.defaultTimeout = testTool.getLarvaConfig().getTimeout();
+	public LarvaActionFactory(LarvaTool larvaTool, TestExecutionObserver testExecutionObserver) {
+		this.larvaTool = larvaTool;
+		this.testExecutionObserver = testExecutionObserver;
+		this.defaultTimeout = larvaTool.getLarvaConfig().getTimeout();
 	}
 
 	public Map<String, LarvaScenarioAction> createLarvaActions(Scenario scenario, ApplicationContext applicationContext, String correlationId) {
@@ -106,7 +103,7 @@ public class LarvaActionFactory {
 		if (configurable instanceof IPullingListener pullingListener) {
 			larvaAction = new PullingListenerAction(pullingListener);
 		} else if (configurable instanceof IPushingListener pushingListener) {
-			larvaAction = new LarvaPushingListenerAction(pushingListener);
+			larvaAction = new LarvaPushingListenerAction(pushingListener, defaultTimeout);
 		} else if (configurable instanceof ISender sender) {
 			larvaAction = new SenderAction(sender);
 		} else {
@@ -198,19 +195,19 @@ public class LarvaActionFactory {
 	}
 
 	private void wrongPipelineMessage(String message, Message pipelineMessage) {
-		String messageAsString = testTool.messageToString(pipelineMessage);
+		String messageAsString = larvaTool.messageToString(pipelineMessage);
 		testExecutionObserver.messageError(message, messageAsString != null ? messageAsString : "Unreadable message: [" + pipelineMessage + "]");
 	}
 
 	private void debugMessage(String message) {
-		larvaWriter.debugMessage(message);
+		larvaTool.debugMessage(message);
 	}
 
 	private void warningMessage(String message) {
-		larvaWriter.warningMessage(message);
+		larvaTool.warningMessage(message);
 	}
 
 	private void errorMessage(String message, Exception e) {
-		larvaWriter.errorMessage(message, e);
+		larvaTool.errorMessage(message, e);
 	}
 }

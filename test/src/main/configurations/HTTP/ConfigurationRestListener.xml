@@ -15,7 +15,7 @@
 					query="INSERT INTO IBISTEMP (TKEY, TVARCHAR, TTIMESTAMP, TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, ?, CURRENT_TIMESTAMP, ?)"
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true">
 					<param name="TVARCHAR" sessionKey="fileName" />
-					<param name="message" sessionKey="file" type="inputstream" />
+					<param name="message" sessionKey="file" type="binary" />
 				</sender>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -114,7 +114,7 @@
 				className="org.frankframework.pipes.SenderPipe">
 				<sender className="org.frankframework.jdbc.FixedQuerySender"
 					query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=?" queryType="select"
-					scalar="true" streamResultToServlet="true"
+					scalar="true"
 					blobsCompressed="false">
 					<param name="messageKey" sessionKey="docId" />
 				</sender>

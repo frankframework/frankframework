@@ -178,7 +178,7 @@ public class LarvaServlet extends AbstractHttpServlet {
 				writer.append("<p>Comparing actual result with expected result...</p>");
 				writer.flush();
 				try {
-					LarvaTool larvaTool = LarvaTool.createInstance(getServletContext(), request, writer);
+					LarvaTool larvaTool = LarvaTool.createInstance(getServletContext());
 					larvaTool.windiff(request.getParameter("expectedFileName"), request.getParameter("expectedBox"), request.getParameter("resultBox"));
 				} catch (SenderException e) {
 					log.warn("unable to execute windiff command", e);
