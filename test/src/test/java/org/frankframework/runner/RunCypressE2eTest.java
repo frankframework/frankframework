@@ -17,6 +17,7 @@
 package org.frankframework.runner;
 
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -29,7 +30,6 @@ import jakarta.annotation.Nonnull;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicTest;
@@ -69,7 +69,7 @@ import org.frankframework.util.SpringUtils;
 public class RunCypressE2eTest {
 	private static CypressContainer container;
 	private static ConfigurableApplicationContext run;
-	private static final Logger LOGGER = LogUtil.getLogger("cypress");
+	private static final Logger CYPRESS_LOG = LogUtil.getLogger("cypress");
 
 	@BeforeAll
 	public static void setUp() throws IOException {
@@ -94,7 +94,7 @@ public class RunCypressE2eTest {
 			Message<Object> response = gateway.sendSyncMessage(RequestMessageBuilder.create(BusTopic.HEALTH).build(null));
 			return "200".equals(response.getHeaders().get(BusMessageUtils.HEADER_PREFIX+MessageBase.STATUS_KEY));
 		} catch (Exception e) {
-			LOGGER.error("error while checking health of application", e);
+			CYPRESS_LOG.error("error while checking health of application", e);
 			return false;
 		}
 	}
@@ -104,7 +104,7 @@ public class RunCypressE2eTest {
 
 		container = new CypressContainer();
 		container.withBaseUrl("http://host.testcontainers.internal:8080/iaf-test/iaf/gui");
-		container.withLogConsumer(frame -> LOGGER.info(frame.getUtf8StringWithoutLineEnding()));
+		container.withLogConsumer(frame -> CYPRESS_LOG.info(frame.getUtf8StringWithoutLineEnding()));
 
 		container.start();
 
@@ -116,8 +116,10 @@ public class RunCypressE2eTest {
 		run.stop();
 		container.stop();
 
-		Assertions.assertFalse(run.isRunning());
-		Assertions.assertFalse(container.isRunning());
+		assertFalse(run.isRunning());
+		assertFalse(container.isRunning());
+
+		run.close();
 	}
 
 	@TestFactory
