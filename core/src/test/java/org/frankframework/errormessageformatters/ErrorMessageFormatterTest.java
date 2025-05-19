@@ -54,7 +54,7 @@ class ErrorMessageFormatterTest {
 
 		String expected = """
 				<errorMessage timestamp="-timestamp-" originator="IAF " message="MyLocation [dummy-location] msgId [dummy-message-id]: dummy-error-message">
-					<location class="org.frankframework.errormessageformatters.ErrorMessageFormatterTest$MyLocation" name="dummy-location"/>
+					<location class="org.frankframework.errormessageformatters.MyLocation" name="dummy-location"/>
 					<originalMessage messageId="dummy-message-id" receivedTime="-timestamp-">dummy-message</originalMessage>
 				</errorMessage>
 				""";
@@ -80,7 +80,7 @@ class ErrorMessageFormatterTest {
 						"originator": "IAF ",
 						"message": "MyLocation [dummy-location] msgId [dummy-message-id]: dummy-error-message",
 						"location": {
-							"class": "org.frankframework.errormessageformatters.ErrorMessageFormatterTest$MyLocation",
+							"class": "org.frankframework.errormessageformatters.MyLocation",
 							"name": "dummy-location"
 						},
 						"originalMessage": {
