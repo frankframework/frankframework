@@ -11,6 +11,7 @@ import { LaddaModule } from 'angular2-ladda';
 
 import { FormatStatKeysPipe } from './format-stat-keys.pipe';
 import { FormatStatisticsPipe } from './format-statistics.pipe';
+import { ServerTimeService } from '../../services/server-time.service';
 
 @Component({
   selector: 'app-adapterstatistics',
@@ -98,6 +99,7 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
   private statisticsService: AdapterstatisticsService = inject(AdapterstatisticsService);
   private SweetAlert: SweetalertService = inject(SweetalertService);
   private Debug: DebugService = inject(DebugService);
+  private serverTimeService: ServerTimeService = inject(ServerTimeService);
   private appConstants: AppConstants = this.appService.APP_CONSTANTS;
 
   ngOnInit(): void {
@@ -135,8 +137,8 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
       this.stats = data;
       const labels: string[] = [];
       const chartData: number[] = [];
-      const currentHour = new Date().getHours();
-      const rotatedData = this.rotateHourlyData(data['hourly'], currentHour + 1);
+      const currentServerHour = this.serverTimeService.getDateWithOffset().getHours();
+      const rotatedData = this.rotateHourlyData(data['hourly'], currentServerHour + 1);
       for (const hour of rotatedData) {
         labels.push(hour.time);
         chartData.push(hour.count);

@@ -20,6 +20,7 @@ import java.io.IOException;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.HasName;
 import org.frankframework.core.PipeLineSession;
@@ -36,6 +37,7 @@ import org.frankframework.util.TransformerPool;
  * @author  Peter Leeuwenburgh
  * @since   4.3
  */
+@Log4j2
 public class FixedErrorMessageFormatter extends ErrorMessageFormatter {
 	private @Getter String filename = null;
 	private @Getter String returnString = null;

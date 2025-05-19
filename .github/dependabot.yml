@@ -32,8 +32,6 @@ updates:
         update-types:
         - "minor"
         - "patch"
-    reviewers:
-      - frankframework/maintainers
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
@@ -47,5 +45,3 @@ updates:
     labels:
       - "Dependencies"
       - "Docker"
-    reviewers:
-      - frankframework/maintainers

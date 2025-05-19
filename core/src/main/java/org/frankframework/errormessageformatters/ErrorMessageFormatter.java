@@ -19,25 +19,31 @@ import java.io.IOException;
 import java.time.Instant;
 import java.util.Date;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.apache.logging.log4j.Logger;
+import org.xml.sax.SAXException;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.HasName;
 import org.frankframework.core.IErrorMessageFormatter;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.documentbuilder.DocumentBuilderFactory;
+import org.frankframework.documentbuilder.DocumentFormat;
+import org.frankframework.documentbuilder.IDocumentBuilder;
+import org.frankframework.documentbuilder.INodeBuilder;
+import org.frankframework.documentbuilder.ObjectBuilder;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StringUtil;
-import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlEncodingUtils;
 
 /**
@@ -59,14 +65,16 @@ import org.frankframework.util.XmlEncodingUtils;
  *
  * @author  Gerrit van Brakel
  */
+@Log4j2
 public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProvider {
-	protected Logger log = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+
+	private @Getter @Nonnull DocumentFormat messageFormat = DocumentFormat.XML;
 
 	/**
 	 * Format the available parameters into a XML-message.
-	 *
-	 * Override this method in descender-classes to obtain the required behaviour.
+	 * <br/>
+	 * Override this method in subclasses to obtain the required behaviour.
 	 */
 	@Override
 	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, PipeLineSession session) {
@@ -86,42 +94,75 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		errorMessage = StringUtil.concatStrings(prefix, ": ", errorMessage);
 
 		String originator = AppConstants.getInstance().getProperty("application.name")+" "+ AppConstants.getInstance().getProperty("application.version");
-		// Build a Base xml
-		XmlBuilder errorXml = new XmlBuilder("errorMessage");
-		errorXml.addAttribute("timestamp", new Date().toString());
-		errorXml.addAttribute("originator", originator);
-		errorXml.addAttribute("message", XmlEncodingUtils.replaceNonValidXmlCharacters(errorMessage));
-
-		if (location != null) {
-			XmlBuilder locationXml = new XmlBuilder("location");
-			locationXml.addAttribute("class", location.getClass().getName());
-			locationXml.addAttribute("name", location.getName());
-			errorXml.addSubElement(locationXml);
-		}
-
-		if (StringUtils.isNotEmpty(details)) {
-			XmlBuilder detailsXml = new XmlBuilder("details");
-			// detailsXml.setCdataValue(details);
-			detailsXml.setValue(XmlEncodingUtils.replaceNonValidXmlCharacters(details), true);
-			errorXml.addSubElement(detailsXml);
-		}
-
-		XmlBuilder originalMessageXml = new XmlBuilder(PipeLineSession.ORIGINAL_MESSAGE_KEY);
-		originalMessageXml.addAttribute("messageId", messageId);
-		Instant tsReceived = session.getTsReceived();
-		if (tsReceived != null && tsReceived.toEpochMilli() != 0) {
-			originalMessageXml.addAttribute("receivedTime", Date.from(tsReceived).toString());
-		}
-		// originalMessageXml.setCdataValue(originalMessage);
+		// Build a Base document
 		try {
-			originalMessageXml.setValue(originalMessage!=null ? originalMessage.asString(): null, true);
-		} catch (IOException e) {
-			log.warn("Could not convert originalMessage for messageId [{}], correlationID [{}]", messageId, correlationId, e);
-			originalMessageXml.setValue(originalMessage.toString(), true);
-		}
-		errorXml.addSubElement(originalMessageXml);
+			MessageBuilder messageBuilder = new MessageBuilder();
+			IDocumentBuilder documentBuilder = DocumentBuilderFactory.startDocument(messageFormat, "errorMessage", messageBuilder, true);
 
-		return errorXml.asMessage();
+			ObjectBuilder errorObject;
+			ObjectBuilder rootObjectBuilder;
+			if (messageFormat == DocumentFormat.XML) {
+				rootObjectBuilder = null;
+				errorObject = documentBuilder.asObjectBuilder();
+			} else {
+				rootObjectBuilder = documentBuilder.asObjectBuilder();
+				errorObject = rootObjectBuilder.addObjectField("errorMessage");
+			}
+			errorObject.addAttribute("timestamp", new Date().toString());
+			errorObject.addAttribute("originator", originator);
+			errorObject.addAttribute("message", XmlEncodingUtils.replaceNonValidXmlCharacters(errorMessage));
+
+			if (location != null) {
+				ObjectBuilder locationObject = errorObject.addObjectField("location");
+				locationObject.addAttribute("class", location.getClass().getName());
+				locationObject.addAttribute("name", location.getName());
+				locationObject.close();
+			}
+
+			if (StringUtils.isNotEmpty(details)) {
+				errorObject.add("details", XmlEncodingUtils.replaceNonValidXmlCharacters(details));
+			}
+
+			INodeBuilder nodeBuilder = errorObject.addField(PipeLineSession.ORIGINAL_MESSAGE_KEY);
+			ObjectBuilder originalMessageObject = nodeBuilder.startObject();
+
+			originalMessageObject.addAttribute("messageId", messageId);
+			Instant tsReceived = session.getTsReceived();
+			if (tsReceived != null && tsReceived.toEpochMilli() != 0) {
+				originalMessageObject.addAttribute("receivedTime", Date.from(tsReceived).toString());
+			}
+			String originalMessageAsString = getMessageAsString(originalMessage, messageId);
+			if (messageFormat == DocumentFormat.XML) {
+				nodeBuilder.setValue(originalMessageAsString);
+			} else {
+				originalMessageObject.add("message", originalMessageAsString);
+			}
+			originalMessageObject.close();
+
+			errorObject.close();
+			if (rootObjectBuilder != null) {
+				rootObjectBuilder.close();
+			}
+			documentBuilder.close();
+			return messageBuilder.build();
+		} catch (IOException | SAXException e) {
+			if (t != null) {
+				e.addSuppressed(t);
+			}
+			throw new RuntimeException("Cannot create formatted error message for error [" + errorMessage + "]", e);
+		}
+	}
+
+	@Nullable
+	private String getMessageAsString(Message originalMessage, String messageId) {
+		String originalMessageAsString;
+		try {
+			originalMessageAsString = originalMessage != null ? originalMessage.asString() : null;
+		} catch (IOException e) {
+			log.warn("Could not convert originalMessage for messageId [{}]", messageId, e);
+			originalMessageAsString = originalMessage.toString();
+		}
+		return originalMessageAsString;
 	}
 
 	protected @Nullable String getErrorMessage(@Nullable String message, @Nullable Throwable t) {
@@ -132,5 +173,14 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 			return t.getMessage();
 		}
 		return  message + ": "+t.getMessage();
+	}
+
+	/**
+	 * Format the error message as XML or as JSON.
+	 *
+	 * ff.default XML
+	 */
+	public void setMessageFormat(@Nonnull DocumentFormat messageFormat) {
+		this.messageFormat = messageFormat;
 	}
 }

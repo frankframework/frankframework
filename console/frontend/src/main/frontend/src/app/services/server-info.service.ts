@@ -22,7 +22,7 @@ export type ServerInfo = {
   javaVersion: string;
   serverTime: number;
   serverTimezone: string;
-  serverTimeISO: string;
+  serverTimezoneOffset: number;
   'dtap.stage': string;
   'dtap.side': string;
   processMetrics: {
