@@ -24,8 +24,8 @@ import org.custommonkey.xmlunit.Diff;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import org.frankframework.json.JsonUtil;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.Misc;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.NamespaceRemovingFilter;
@@ -138,7 +138,7 @@ public class MatchUtils {
 	}
 
 	public static void assertJsonEquals(String description, String jsonExp, String jsonAct) {
-		assertEquals(Misc.jsonPretty(jsonExp), Misc.jsonPretty(jsonAct), description);
+		assertEquals(JsonUtil.jsonPretty(jsonExp), JsonUtil.jsonPretty(jsonAct), description);
 	}
 
 	public static void assertTestFileEquals(String file1, URL url) throws IOException {

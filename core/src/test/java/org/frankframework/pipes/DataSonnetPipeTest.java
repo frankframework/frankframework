@@ -6,8 +6,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.json.DataSonnetOutputType;
 import org.frankframework.parameters.JsonParameter;
-import org.frankframework.pipes.DataSonnetPipe.DataSonnetOutputType;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.DateParameterBuilder;
 import org.frankframework.testutil.NumberParameterBuilder;

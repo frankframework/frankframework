@@ -1,0 +1,13 @@
+{
+    "errorMessage": {
+        "timestamp": "Sun May 18 19:46:12 CEST 2025",
+        "originator": "IAF_ss9 ",
+        "message": "msgId [Test Tool correlation id(2)]: Pipe [GenerateException] Some generic Exception",
+        "details": "IGNORE",
+        "originalMessage": {
+            "messageId": "synthetic-message-id-c0a832ad--24f9fd99_196e480176a_-7fdc",
+            "receivedTime": "Sun May 18 19:46:11 CEST 2025",
+            "message": "<test/>"
+        }
+    }
+}

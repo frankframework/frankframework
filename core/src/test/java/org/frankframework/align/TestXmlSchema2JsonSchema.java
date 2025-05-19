@@ -19,9 +19,9 @@ import org.leadpony.justify.api.ProblemHandler;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.PipeForward;
+import org.frankframework.json.JsonUtil;
 import org.frankframework.pipes.Json2XmlValidator;
 import org.frankframework.testutil.MatchUtils;
-import org.frankframework.util.Misc;
 import org.frankframework.util.StreamUtil;
 
 /*
@@ -75,7 +75,7 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 		if (jsonschema == null) {
 			fail("no schema generated for [" + rootElement + "]");
 		}
-		String jsonSchemaContent = Misc.jsonPretty(jsonschema.toString());
+		String jsonSchemaContent = JsonUtil.jsonPretty(jsonschema.toString());
 		log.info("result compactArrays [{}] skipJsonRootElements [{}] json:\n{}", compactArrays, skipJsonRootElements, jsonSchemaContent);
 		if (StringUtils.isEmpty(jsonSchemaContent)) {
 			fail("json schema is empty");

@@ -86,7 +86,7 @@ public class JsonXsltPipeTest extends PipeTestBase<JsonXsltPipe> {
 		pipe.configure();
 		pipe.start();
 
-		URL url = TestFileUtils.getTestFileURL("/Misc/minified.json");
+		URL url = TestFileUtils.getTestFileURL("/JsonUtil/minified.json");
 		Message input = new Message(url.openStream());
 
 		PipeRunResult prr = doPipe(pipe, input, session);

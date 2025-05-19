@@ -287,6 +287,10 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			for (Receiver<?> receiver: receivers) {
 				configureReceiver(receiver);
 			}
+
+			if (errorMessageFormatter instanceof IConfigurable configurable) {
+				configurable.configure();
+			}
 		}
 
 		composedHideRegex = computeCombinedHideRegex();
@@ -425,10 +429,13 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	}
 
 	public Message formatErrorMessage(String errorMessage, Throwable t, Message originalMessage, PipeLineSession session, HasName objectInError) {
-		if (errorMessageFormatter == null) {
-			errorMessageFormatter = SpringUtils.createBean(this, ErrorMessageFormatter.class);
-		}
 		try {
+			if (errorMessageFormatter == null) {
+				errorMessageFormatter = SpringUtils.createBean(this, ErrorMessageFormatter.class);
+				if (errorMessageFormatter instanceof IConfigurable configurable) {
+					configurable.configure();
+				}
+			}
 			return errorMessageFormatter.format(errorMessage, t, objectInError, originalMessage, session);
 		} catch (Exception e) {
 			String msg = "got error while formatting errormessage, original errorMessage [" + errorMessage + "]";
