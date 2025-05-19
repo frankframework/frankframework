@@ -8,6 +8,7 @@ import java.net.URL;
 
 import org.junit.jupiter.api.Test;
 
+import org.frankframework.json.JsonUtil;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
 
@@ -133,7 +134,7 @@ public class MiscTest {
 		String inputString = StreamUtil.resourceToString(input);
 		URL expected = TestFileUtils.getTestFileURL("/Misc/prettified.json");
 		String expectedString = StreamUtil.resourceToString(expected);
-		TestAssertions.assertEqualsIgnoreCRLF(expectedString, Misc.jsonPretty(inputString));
+		TestAssertions.assertEqualsIgnoreCRLF(expectedString, JsonUtil.jsonPretty(inputString));
 	}
 
 	@Test
@@ -142,6 +143,6 @@ public class MiscTest {
 		String inputString = StreamUtil.resourceToString(input);
 		URL expected = TestFileUtils.getTestFileURL("/Misc/prettifiedJsonArray.json");
 		String expectedString = StreamUtil.resourceToString(expected);
-		TestAssertions.assertEqualsIgnoreCRLF(expectedString, Misc.jsonPretty(inputString));
+		TestAssertions.assertEqualsIgnoreCRLF(expectedString, JsonUtil.jsonPretty(inputString));
 	}
 }

@@ -65,19 +65,25 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter implements I
 		paramList.setNamesMustBeUnique(true);
 		paramList.configure();
 
+
 		if (StringUtils.isNotEmpty(getStyleSheetName())) {
+			if (StringUtils.isNotEmpty(getXpathExpression())) {
+				throw new ConfigurationException("Cannot configure both stylesheet and xpathExpression in XslErrorMessageFormatter");
+			}
 			try {
 				Resource xsltSource = Resource.getResource(this, getStyleSheetName());
 				transformerPool = TransformerPool.getInstance(xsltSource, 0);
 			} catch (Exception e) {
 				throw new ConfigurationException("Cannot configure stylesheet transformer for [" + styleSheetName + "]", e);
 			}
-		} else {
+		} else if (StringUtils.isNotEmpty(getXpathExpression())) {
 			try {
 				transformerPool = TransformerPool.getXPathTransformerPool(null, getXpathExpression(), OutputType.TEXT, false, getParameterList());
 			} catch (Exception e) {
 				throw new ConfigurationException("Cannot configure XPath transformer for [" + xpathExpression + "]", e);
 			}
+		} else {
+			throw new ConfigurationException("No stylesheet or xpathExpression defined for XslErrorMessageFormatter");
 		}
 	}
 
@@ -85,11 +91,6 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter implements I
 	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, PipeLineSession session) {
 
 		Message result = super.format(errorMessage, t, location, originalMessage, session);
-
-		if (!StringUtils.isNotEmpty(getStyleSheetName()) && !StringUtils.isNotEmpty(getXpathExpression())) {
-			log.warn("no stylesheet or xpathExpression defined for XslErrorMessageFormatter");
-			return result;
-		}
 		try {
 			ParameterValueList parameterValueList = getParameterValues(errorMessage, session);
 			try (Message closeable = result) {

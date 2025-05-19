@@ -17,6 +17,17 @@ package org.frankframework.json;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.HashMap;
+import java.util.Map;
+
+import jakarta.json.Json;
+import jakarta.json.JsonReader;
+import jakarta.json.JsonStructure;
+import jakarta.json.JsonWriter;
+import jakarta.json.JsonWriterFactory;
+import jakarta.json.stream.JsonGenerator;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -46,5 +57,21 @@ public class JsonUtil {
 		} catch (IOException e) {
 			throw new ConfigurationException("unable to open/read StyleSheet [" + styleSheetName + "]", e);
 		}
+	}
+
+	public static String jsonPretty(String json) {
+		StringWriter sw = new StringWriter();
+		try(JsonReader jr = Json.createReader(new StringReader(json))) {
+			JsonStructure jobj = jr.read();
+
+			Map<String, Object> properties = new HashMap<>(1);
+			properties.put(JsonGenerator.PRETTY_PRINTING, true);
+
+			JsonWriterFactory writerFactory = Json.createWriterFactory(properties);
+			try (JsonWriter jsonWriter = writerFactory.createWriter(sw)) {
+				jsonWriter.write(jobj);
+			}
+		}
+		return sw.toString().trim();
 	}
 }

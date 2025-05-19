@@ -105,11 +105,4 @@ class ErrorMessageFormatterTest {
 				.replaceAll("\"\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\"", "\"-timestamp-\"")
 				;
 	}
-
-	public static class MyLocation implements HasName {
-		@Override
-		public String getName() {
-			return "dummy-location";
-		}
-	}
 }

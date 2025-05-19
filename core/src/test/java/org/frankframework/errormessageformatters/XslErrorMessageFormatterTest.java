@@ -1,9 +1,10 @@
 package org.frankframework.errormessageformatters;
 
-import static org.frankframework.testutil.MatchUtils.assertJsonEquals;
+import static org.frankframework.testutil.MatchUtils.assertXmlEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.IOException;
 import java.time.Instant;
 
 import org.junit.jupiter.api.AfterEach;
@@ -18,9 +19,9 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.NumberParameterBuilder;
 import org.frankframework.util.CloseUtils;
 
-class DataSonnetErrorMessageFormatterTest {
+class XslErrorMessageFormatterTest {
 
-	private DataSonnetErrorMessageFormatter formatter;
+	private XslErrorMessageFormatter formatter;
 	private Message originalMessage;
 	private Exception exception;
 	private String errorMessage;
@@ -28,10 +29,8 @@ class DataSonnetErrorMessageFormatterTest {
 	private PipeLineSession session;
 
 	@BeforeEach
-	void setUp() throws ConfigurationException {
-		formatter = new DataSonnetErrorMessageFormatter();
-		formatter.setStyleSheetName("ErrorMessageFormatters/errormessage.jsonnet");
-		formatter.configure();
+	void setUp() {
+		formatter = new XslErrorMessageFormatter();
 
 		originalMessage = Message.asMessage("dummy-message");
 		exception = null;
@@ -47,33 +46,48 @@ class DataSonnetErrorMessageFormatterTest {
 	}
 
 	@Test
-	void formatNoParameters() throws IOException {
-		// Act
-		Message error = formatter.format(errorMessage, exception, location, originalMessage, session);
+	void configureWithStylesheet() {
+		// Arrange
+		formatter.setStyleSheetName("ErrorMessageFormatters/errormessage.xsl");
 
-		// Assert
-		String errorAsString = error.asString();
-		assertNotNull(errorAsString);
-
-		String expected = """
-				{
-					"error": "MyLocation [dummy-location] msgId [dummy-message-id]: dummy-error-message",
-					"messageId": "dummy-message-id"
-				}
-				""";
-
-		assertJsonEquals(expected, errorAsString);
+		// Act / Assert
+		assertDoesNotThrow(formatter::configure);
 	}
 
 	@Test
-	void formatWithParameters() throws Exception {
+	void configureWithXPath() {
+		// Arrange
+		formatter.setXpathExpression("/ErrorMessages/Error");
+
+		// Act / Assert
+		assertDoesNotThrow(formatter::configure);
+	}
+
+	@Test
+	void configureWithStylesheetAndXPath() {
+		// Arrange
+		formatter.setStyleSheetName("ErrorMessageFormatters/errormessage.xsl");
+		formatter.setXpathExpression("/ErrorMessages/Error");
+
+		// Act / Assert
+		assertThrows(ConfigurationException.class, formatter::configure);
+	}
+
+	@Test
+	void configureWithoutStylesheetAndXPath() {
+		// Act / Assert
+		assertThrows(ConfigurationException.class, formatter::configure);
+	}
+
+	@Test
+	void formatWithStylesheet() throws Exception {
 		// Arrange
 		session.put("exitCode", 400);
 		NumberParameter parameter = NumberParameterBuilder.create()
 				.withName("exitCode")
 				.withSessionKey("exitCode");
 		formatter.addParameter(parameter);
-		formatter.setStyleSheetName("ErrorMessageFormatters/errormessageWithParams.jsonnet");
+		formatter.setStyleSheetName("ErrorMessageFormatters/errormessage.xsl");
 		formatter.configure();
 
 		// Act
@@ -84,13 +98,13 @@ class DataSonnetErrorMessageFormatterTest {
 		assertNotNull(errorAsString);
 
 		String expected = """
-				{
-					"error": "MyLocation [dummy-location] msgId [dummy-message-id]: dummy-error-message",
-					"messageId": "dummy-message-id",
-					"status": 400
-				}
+				<result>
+					<error id="1">
+					 	<exitCode>400</exitCode>
+					</error>
+				</result>
 				""";
 
-		assertJsonEquals(expected, errorAsString);
+		assertXmlEquals(expected, errorAsString);
 	}
 }

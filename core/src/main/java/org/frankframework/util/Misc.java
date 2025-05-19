@@ -15,20 +15,9 @@
 */
 package org.frankframework.util;
 
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
-import jakarta.json.Json;
-import jakarta.json.JsonReader;
-import jakarta.json.JsonStructure;
-import jakarta.json.JsonWriter;
-import jakarta.json.JsonWriterFactory;
-import jakarta.json.stream.JsonGenerator;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.logging.log4j.Logger;
@@ -223,19 +212,4 @@ public class Misc {
 		return defaultValue;
 	}
 
-	public static String jsonPretty(String json) {
-		StringWriter sw = new StringWriter();
-		try(JsonReader jr = Json.createReader(new StringReader(json))) {
-			JsonStructure jobj = jr.read();
-
-			Map<String, Object> properties = new HashMap<>(1);
-			properties.put(JsonGenerator.PRETTY_PRINTING, true);
-
-			JsonWriterFactory writerFactory = Json.createWriterFactory(properties);
-			try (JsonWriter jsonWriter = writerFactory.createWriter(sw)) {
-				jsonWriter.write(jobj);
-			}
-		}
-		return sw.toString().trim();
-	}
 }
