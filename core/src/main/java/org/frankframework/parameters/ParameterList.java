@@ -215,7 +215,7 @@ public class ParameterList implements Iterable<IParameter> {
 		}
 	}
 
-	public ParameterValue getValue(ParameterValueList alreadyResolvedParameters, IParameter p, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
+	public ParameterValue getValue(ParameterValueList alreadyResolvedParameters, @Nonnull IParameter p, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		return new ParameterValue(p, p.getValue(alreadyResolvedParameters, message, session, namespaceAware));
 	}
 
@@ -260,7 +260,7 @@ public class ParameterList implements Iterable<IParameter> {
 		return Iterable.super.spliterator();
 	}
 
-	public Stream<IParameter> stream() {
+	public @Nonnull Stream<IParameter> stream() {
 		if (parameters == null) {
 			return Stream.empty();
 		}
@@ -274,7 +274,11 @@ public class ParameterList implements Iterable<IParameter> {
 		return parameters.size();
 	}
 
-	public List<String> getParameterNames() {
+	/**
+	 * Get a list of all parameter names in this ParameterList. Names do not need to be unique unless {@link #setNamesMustBeUnique(boolean)} has been set
+	 * to {@code true}, they will appear multiple times in the list if they are present multiple times in the ParameterList.
+	 */
+	public @Nonnull List<String> getParameterNames() {
 		if (parameters == null) {
 			return List.of();
 		}

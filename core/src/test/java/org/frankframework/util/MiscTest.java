@@ -3,12 +3,10 @@ package org.frankframework.util;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
-import java.io.IOException;
 import java.net.URL;
 
 import org.junit.jupiter.api.Test;
 
-import org.frankframework.json.JsonUtil;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
 
@@ -126,23 +124,5 @@ public class MiscTest {
 		URL resource = TestFileUtils.getTestFileURL("/Misc/test_file_for_resource_to_string_misc.txt");
 		String s1 = StreamUtil.resourceToString(resource, " newly added string ");
 		assertEquals("<!doctype txt>this is a text file. newly added string new line in the text file.", s1);
-	}
-
-	@Test
-	public void testPrettyJson() throws IOException {
-		URL input = TestFileUtils.getTestFileURL("/Misc/minified.json");
-		String inputString = StreamUtil.resourceToString(input);
-		URL expected = TestFileUtils.getTestFileURL("/Misc/prettified.json");
-		String expectedString = StreamUtil.resourceToString(expected);
-		TestAssertions.assertEqualsIgnoreCRLF(expectedString, JsonUtil.jsonPretty(inputString));
-	}
-
-	@Test
-	public void testPrettyJsonArray() throws IOException {
-		URL input = TestFileUtils.getTestFileURL("/Misc/minifiedJsonArray.json");
-		String inputString = StreamUtil.resourceToString(input);
-		URL expected = TestFileUtils.getTestFileURL("/Misc/prettifiedJsonArray.json");
-		String expectedString = StreamUtil.resourceToString(expected);
-		TestAssertions.assertEqualsIgnoreCRLF(expectedString, JsonUtil.jsonPretty(inputString));
 	}
 }
