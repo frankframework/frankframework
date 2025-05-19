@@ -510,10 +510,14 @@ public class LarvaTool {
 		String result = input;
 
 		// TESTDATA-dir based file paths in results can often not be compared properly because of location differences, and complicated by system-dependent file paths.
-		String testDataDir = new File(AppConstants.getInstance().getProperty("testdata.dir")).getAbsolutePath();
-		String testDataDirUnix = FilenameUtils.normalize(testDataDir, true);
-		result = result.replace(testDataDir, "TESTDATA_DIR")
-				.replace(testDataDirUnix, "TESTDATA_DIR");
+		// Changing Windows backslashes to Unix forward slashes in the rest of file paths is done with regexes configured in global.properties
+		String testDataDirValue = AppConstants.getInstance().getProperty("testdata.dir");
+		if (testDataDirValue != null) {
+			String testDataDir = new File(testDataDirValue).getAbsolutePath();
+			String testDataDirUnix = FilenameUtils.normalize(testDataDir, true);
+			result = result.replace(testDataDir, "TESTDATA_DIR")
+					.replace(testDataDirUnix, "TESTDATA_DIR");
+		}
 
 		result = doActionBetweenKeys("decodeUnzipContentBetweenKeys", result, properties, ignoreMap, (value, pp, key1, key2)-> {
 			boolean replaceNewlines = !"true".equals(pp.apply("replaceNewlines"));
