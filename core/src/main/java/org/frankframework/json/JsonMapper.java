@@ -31,7 +31,6 @@ import com.datasonnet.document.Document;
 import com.datasonnet.document.MediaType;
 import com.datasonnet.document.MediaTypes;
 
-import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.parameters.DateParameter;
@@ -46,20 +45,8 @@ import org.frankframework.util.MessageUtils;
 public class JsonMapper {
 
 	private final Mapper mapper;
-	private final JsonMapper.DataSonnetOutputType outputType;
+	private final DataSonnetOutputType outputType;
 	private final boolean computeMimeType;
-
-	public enum DataSonnetOutputType {
-		JSON(MediaTypes.APPLICATION_JSON),
-		CSV(MediaTypes.APPLICATION_CSV),
-		XML(MediaTypes.APPLICATION_XML),
-		YAML(MediaTypes.APPLICATION_YAML);
-
-		final @Getter MediaType mediaType;
-		DataSonnetOutputType(MediaType mediaType) {
-			this.mediaType = mediaType;
-		}
-	}
 
 	public JsonMapper(String dataSonnet, DataSonnetOutputType outputType, boolean computeMimeType, List<String> parameterNames) {
 		this.outputType = outputType;

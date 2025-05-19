@@ -31,6 +31,7 @@ import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.Protected;
 import org.frankframework.documentbuilder.DocumentFormat;
+import org.frankframework.json.DataSonnetOutputType;
 import org.frankframework.json.JsonMapper;
 import org.frankframework.json.JsonUtil;
 import org.frankframework.parameters.IParameter;
@@ -48,7 +49,7 @@ public class DataSonnetErrorMessageFormatter extends ErrorMessageFormatter imple
 
 	private String styleSheetName;
 	private boolean computeMimeType = true;
-	private JsonMapper.DataSonnetOutputType outputType = JsonMapper.DataSonnetOutputType.JSON;
+	private DataSonnetOutputType outputType = DataSonnetOutputType.JSON;
 	private JsonMapper mapper;
 	private final ParameterList parameters = new ParameterList();
 
@@ -95,7 +96,7 @@ public class DataSonnetErrorMessageFormatter extends ErrorMessageFormatter imple
 	 *
 	 * @ff.default JSON
 	 */
-	public void setOutputType(JsonMapper.DataSonnetOutputType outputType) {
+	public void setOutputType(DataSonnetOutputType outputType) {
 		this.outputType = outputType;
 	}
 

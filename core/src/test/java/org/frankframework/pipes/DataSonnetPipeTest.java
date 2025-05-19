@@ -6,7 +6,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.json.JsonMapper;
+import org.frankframework.json.DataSonnetOutputType;
 import org.frankframework.parameters.JsonParameter;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.DateParameterBuilder;
@@ -37,7 +37,7 @@ public class DataSonnetPipeTest extends PipeTestBase<DataSonnetPipe> {
 	@Test
 	public void toXmlMapping() throws Exception {
 		pipe.setStyleSheetName("/Pipes/DataSonnet/toXml.jsonnet");
-		pipe.setOutputType(JsonMapper.DataSonnetOutputType.XML);
+		pipe.setOutputType(DataSonnetOutputType.XML);
 		configureAndStartPipe();
 
 		// Act
@@ -168,7 +168,7 @@ public class DataSonnetPipeTest extends PipeTestBase<DataSonnetPipe> {
 	@Test
 	public void mappingWithXmlParamtoXml() throws Exception {
 		pipe.setStyleSheetName("/Pipes/DataSonnet/xml-param.jsonnet");
-		pipe.setOutputType(JsonMapper.DataSonnetOutputType.XML);
+		pipe.setOutputType(DataSonnetOutputType.XML);
 
 		Message jsonInput = new Message("{\"myvalue\":123}");
 		jsonInput.getContext().withMimeType(MediaType.APPLICATION_JSON);

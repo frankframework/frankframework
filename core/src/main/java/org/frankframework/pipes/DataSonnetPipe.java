@@ -26,6 +26,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
+import org.frankframework.json.DataSonnetOutputType;
 import org.frankframework.json.JsonMapper;
 import org.frankframework.json.JsonUtil;
 import org.frankframework.parameters.IParameter;
@@ -36,7 +37,7 @@ import org.frankframework.stream.Message;
 /**
  * <p>
  * Using {@code .jsonnet} transformation files, the DataSonnetPipe uses JSonnet at its core to transform files
- * from and to different file formats specified by supported {@link JsonMapper.DataSonnetOutputType outputTypes}.
+ * from and to different file formats specified by supported {@link DataSonnetOutputType outputTypes}.
  * </p>
  * <p>
  * The pipe input message will be set to the JSON object called {@code payload}.
@@ -77,7 +78,7 @@ import org.frankframework.stream.Message;
 public class DataSonnetPipe extends FixedForwardPipe {
 	private String styleSheetName;
 	private JsonMapper mapper;
-	private JsonMapper.DataSonnetOutputType outputType = JsonMapper.DataSonnetOutputType.JSON;
+	private DataSonnetOutputType outputType = DataSonnetOutputType.JSON;
 	private boolean computeMimeType = false;
 
 	@Override
@@ -122,7 +123,7 @@ public class DataSonnetPipe extends FixedForwardPipe {
 	 *
 	 * @ff.default JSON
 	 */
-	public void setOutputType(JsonMapper.DataSonnetOutputType outputType) {
+	public void setOutputType(DataSonnetOutputType outputType) {
 		this.outputType = outputType;
 	}
 

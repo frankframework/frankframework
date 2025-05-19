@@ -43,7 +43,7 @@ public class JsonUtil {
 		// Private constructor to prevent instance creations
 	}
 
-	public static JsonMapper buildJsonMapper(IScopeProvider scopeProvider, String stylesheetName, JsonMapper.DataSonnetOutputType outputType, boolean computeMimeType, ParameterList parameters) throws ConfigurationException {
+	public static JsonMapper buildJsonMapper(IScopeProvider scopeProvider, String stylesheetName, DataSonnetOutputType outputType, boolean computeMimeType, ParameterList parameters) throws ConfigurationException {
 		return new JsonMapper(getStyleSheet(scopeProvider, stylesheetName), outputType, computeMimeType, parameters.getParameterNames());
 	}
 
