@@ -58,14 +58,14 @@ public class FrankApiWebSocketBase implements InitializingBean, ApplicationListe
 	private @Getter List<ClusterMember> clusterMembers;
 
 	@Autowired
-	@Qualifier("outboundGateway")
-	private OutboundGateway gateway;
-
-	@Autowired
 	protected SimpMessagingTemplate messagingTemplate;
 
 	@Autowired
-	private MessageCacheStore messageCacheStore;
+	@Qualifier("outboundGateway")
+	OutboundGateway gateway;
+
+	@Autowired
+	MessageCacheStore messageCacheStore;
 
 	@Override
 	public void afterPropertiesSet() {
