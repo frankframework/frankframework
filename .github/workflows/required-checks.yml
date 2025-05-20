@@ -44,4 +44,4 @@ jobs:
 
       - name: Take action only when specific files change
         if: steps.changed-files.outputs.only_changed == 'true'
-        uses: ./.github/workflows/skip-sonarcloud.yml
+        uses: frankframework/frankframework/.github/workflows/skip-sonarcloud.yml@chore/skip-sonarcloud
