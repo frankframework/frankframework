@@ -337,8 +337,11 @@
 		<!-- XSD.compareTo(..) -->
 		<dependency>
 			<groupId>org.xmlunit</groupId>
+			<artifactId>xmlunit-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.xmlunit</groupId>
 			<artifactId>xmlunit-legacy</artifactId>
-			<version>2.10.1</version>
 			<exclusions>
 				<exclusion>
 					<groupId>junit</groupId>
