@@ -210,15 +210,13 @@ public class ScenarioRunner {
 			Iterator<String> steps = stepList.iterator();
 			while (allStepsPassed && steps.hasNext()) {
 				String step = steps.next();
-				String stepDisplayName = scenario.getName() + " - " + step + " - " + properties.get(step);
-
-				testExecutionObserver.startStep(testRunStatus, scenario, stepDisplayName);
+				testExecutionObserver.startStep(testRunStatus, scenario, step);
 
 				long stepStart = System.currentTimeMillis();
-				int stepResult = executeStep(scenario, step, stepDisplayName, larvaActions, correlationId);
+				int stepResult = executeStep(scenario, step, larvaActions, correlationId);
 				long stepEnd = System.currentTimeMillis();
 
-				testExecutionObserver.finishStep(testRunStatus, scenario, stepDisplayName, stepResult, buildStepFinishedMessage(stepDisplayName, stepResult, (stepEnd - stepStart)));
+				testExecutionObserver.finishStep(testRunStatus, scenario, step, stepResult, buildStepFinishedMessage(scenario, step, stepResult, (stepEnd - stepStart)));
 				if (stepResult == LarvaTool.RESULT_ERROR) {
 					allStepsPassed = false;
 				} else if (stepResult == LarvaTool.RESULT_AUTOSAVED) {
@@ -271,7 +269,7 @@ public class ScenarioRunner {
 	}
 
 	// Ideally, this should be moved to its own class.
-	private int executeStep(Scenario scenario, String step, String stepDisplayName, Map<String, LarvaScenarioAction> actions, String correlationId) {
+	private int executeStep(Scenario scenario, String step, Map<String, LarvaScenarioAction> actions, String correlationId) {
 		Properties properties = scenario.getProperties();
 		String fileName = properties.getProperty(step);
 		int i = step.indexOf('.');
@@ -298,15 +296,15 @@ public class ScenarioRunner {
 			if ("org.frankframework.larva.XsltProviderListener".equals(actionFactoryClassname)) {
 				Properties scenarioStepProperties = LarvaActionUtils.getSubProperties(properties, step);
 				Map<String, Object> xsltParameters = larvaTool.createParametersMapFromParamProperties(scenarioStepProperties);
-				return executeActionWriteStep(scenario, stepDisplayName, scenarioAction, actionName, fileContent, correlationId, xsltParameters); // XsltProviderListener has .read and .write reversed
+				return executeActionWriteStep(scenario, step, scenarioAction, actionName, fileContent, correlationId, xsltParameters); // XsltProviderListener has .read and .write reversed
 			} else {
-				return executeActionReadStep(scenario, step, stepDisplayName, scenarioAction, actionName, fileName, fileContent);
+				return executeActionReadStep(scenario, step, scenarioAction, actionName, fileName, fileContent);
 			}
 		} else {
 			if ("org.frankframework.larva.XsltProviderListener".equals(actionFactoryClassname)) {
-				return executeActionReadStep(scenario, step, stepDisplayName, scenarioAction, actionName, fileName, fileContent);  // XsltProviderListener has .read and .write reversed
+				return executeActionReadStep(scenario, step, scenarioAction, actionName, fileName, fileContent);  // XsltProviderListener has .read and .write reversed
 			} else {
-				return executeActionWriteStep(scenario, stepDisplayName, scenarioAction, actionName, fileContent, correlationId, null);
+				return executeActionWriteStep(scenario, step, scenarioAction, actionName, fileContent, correlationId, null);
 			}
 		}
 	}
@@ -315,7 +313,7 @@ public class ScenarioRunner {
 	private Message readScenarioStepData(Scenario scenario, String step) throws IOException {
 		Properties properties = scenario.getProperties();
 		String fileName = properties.getProperty(step);
-		String stepDataFileAbsolutePath = properties.getProperty(step + ".absolutepath");
+		String stepDataFileAbsolutePath = scenario.getStepDataFile(step);
 		Message fileContent;
 		if (StringUtils.isBlank(fileName)) {
 			throw new LarvaException("No file specified for step '" + step + "'");
@@ -342,10 +340,10 @@ public class ScenarioRunner {
 		return new Message(StringResolver.substVars(fileData, appConstants), fileContent.copyContext());
 	}
 
-	private int executeActionWriteStep(Scenario scenario, String stepDisplayName, LarvaScenarioAction scenarioAction, String actionName, Message fileContent, String correlationId, Map<String, Object> xsltParameters) {
+	private int executeActionWriteStep(Scenario scenario, String step, LarvaScenarioAction scenarioAction, String actionName, Message fileContent, String correlationId, Map<String, Object> xsltParameters) {
 		try {
 			scenarioAction.executeWrite(fileContent, correlationId, xsltParameters);
-			testExecutionObserver.stepMessage(scenario, stepDisplayName, "Successfully wrote message to '" + actionName + "':", larvaTool.messageToString(fileContent));
+			testExecutionObserver.stepMessage(scenario, step, "Successfully wrote message to '" + actionName + "':", larvaTool.messageToString(fileContent));
 			log.debug("Successfully wrote message to '{}'", actionName);
 			return LarvaTool.RESULT_OK;
 		} catch(TimeoutException e) {
@@ -356,7 +354,7 @@ public class ScenarioRunner {
 		return LarvaTool.RESULT_ERROR;
 	}
 
-	private int executeActionReadStep(Scenario scenario, String step, String stepDisplayName, LarvaScenarioAction scenarioAction, String actionName, String fileName, Message expected) {
+	private int executeActionReadStep(Scenario scenario, String step, LarvaScenarioAction scenarioAction, String actionName, String fileName, Message expected) {
 		try {
 			Message message = scenarioAction.executeRead(scenario.getProperties()); // cannot close this message because of FrankSender (JSON scenario02)
 			if (message == null) {
@@ -367,12 +365,12 @@ public class ScenarioRunner {
 				}
 			} else {
 				if (StringUtils.isEmpty(fileName)) {
-					testExecutionObserver.stepMessage(scenario, stepDisplayName, "Unexpected message read from '" + actionName + "':", larvaTool.messageToString(message));
+					testExecutionObserver.stepMessage(scenario, step, "Unexpected message read from '" + actionName + "':", larvaTool.messageToString(message));
 				} else if (fileName.endsWith("ignore")) {
 					larvaTool.debugMessage("ignoring compare for filename '"+fileName+"'");
 					return LarvaTool.RESULT_OK;
 				} else {
-					return larvaTool.compareResult(testExecutionObserver, scenario, step, stepDisplayName, fileName, expected, message);
+					return larvaTool.compareResult(testExecutionObserver, scenario, step, fileName, expected, message);
 				}
 			}
 		} catch (Exception e) {
@@ -388,7 +386,8 @@ public class ScenarioRunner {
 		return steps;
 	}
 
-	private String buildStepFinishedMessage(String stepName, int stepResult, long stepDurationMs) {
+	private String buildStepFinishedMessage(Scenario scenario, String step, int stepResult, long stepDurationMs) {
+		String stepName = scenario.getStepDisplayName(step);
 		StringBuilder stepResultMessage = new StringBuilder("Step '");
 		stepResultMessage.append(stepName).append("' ");
 		if (stepResult == LarvaTool.RESULT_OK) {

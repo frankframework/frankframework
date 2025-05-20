@@ -34,10 +34,10 @@ public interface TestExecutionObserver {
 	void startScenario(TestRunStatus testRunStatus, Scenario scenario);
 	void finishScenario(TestRunStatus testRunStatus, Scenario scenario, int scenarioResult, String scenarioResultMessage);
 
-	void startStep(TestRunStatus testRunStatus, Scenario scenario, String stepName);
-	void finishStep(TestRunStatus testRunStatus, Scenario scenario, String stepName, int stepResult, String stepResultMessage);
-	void stepMessage(Scenario scenario, String stepName, String description, String stepMessage);
-	void stepMessageSuccess(Scenario scenario, String stepName, String description, String stepResultMessage, String stepResultMessagePreparedForDiff);
-	void stepMessageFailed(Scenario scenario, String stepName, String description, String stepSaveFileName, String stepExpectedResultMessage, String stepExpectedResultMessagePreparedForDiff, String stepActualResultMessage, String stepActualResultMessagePreparedForDiff);
+	void startStep(TestRunStatus testRunStatus, Scenario scenario, String step);
+	void finishStep(TestRunStatus testRunStatus, Scenario scenario, String step, int stepResult, String stepResultMessage);
+	void stepMessage(Scenario scenario, String step, String description, String stepMessage);
+	void stepMessageSuccess(Scenario scenario, String step, String description, String stepResultMessage, String stepResultMessagePreparedForDiff);
+	void stepMessageFailed(Scenario scenario, String step, String description, String stepExpectedResultMessage, String stepExpectedResultMessagePreparedForDiff, String stepActualResultMessage, String stepActualResultMessagePreparedForDiff);
 	void messageError(String description, String messageError);
 }

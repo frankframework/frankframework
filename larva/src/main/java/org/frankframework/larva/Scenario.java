@@ -82,6 +82,14 @@ public class Scenario {
 		return steps;
 	}
 
+	public String getStepDataFile(String step) {
+		return properties.getProperty(step + ".absolutepath");
+	}
+
+	public String getStepDisplayName(String step) {
+		return getName() + " - " + step + " - " + properties.get(step);
+	}
+
 	public static class ID {
 		private final String scenarioId;
 
