@@ -44,5 +44,4 @@ jobs:
 
       - name: Take action only when specific files change
         if: steps.changed-files.outputs.only_changed == 'true'
-        call-workflow:
-          uses: ./.github/workflows/skip-sonarcloud.yml
+        uses: ./.github/workflows/skip-sonarcloud.yml
