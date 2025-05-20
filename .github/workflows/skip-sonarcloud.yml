@@ -1,20 +1,23 @@
-name: Skip SonarCloud Checks
+name: Initialize SonarCloud Checks
 
 on:
-  workflow_call:
-  workflow_dispatch:
+  pull_request:
+    branches:
+      - master
+      - '[0-9]+.[0-9]+-release'
+      - 'release/[0-9]+.[0-9]+'
 
 jobs:
-  skip-sonarcloud:
+  sonarcloud:
     name: SonarCloud
     runs-on: ubuntu-latest
     steps:
-      - name: Skip SonarCloud
-        run: echo "Skip SonarCloud, no important changes are detected"
+      - name: Start green
+        run: echo "Start green untill real results are in"
 
-  skip-sonarcloud-code-analysis:
+  sonarcloud-code-analysis:
     name: SonarCloud Code Analysis
     runs-on: ubuntu-latest
     steps:
-      - name: Skip SonarCloud Code Analysis
-        run: echo "Skip SonarCloud Code Analysis, no important changes are detected"
+      - name: Start green
+        run: echo "Start green untill real results are in"
