@@ -1,0 +1,9 @@
+<soapenv:Envelope xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope">
+	<soapenv:Body>
+		<WebServiceListerSenderREQ
+			xmlns="urn:ws:serviceNamespaceURI"
+			xmlns:ns1="http://www.ing.com/namespace1"
+			xmlns:ns2="http://www.ing.com/namespace2"
+			xmlns:soapenv="http://www.w3.org/2003/05/soap-envelope"></WebServiceListerSenderREQ>
+	</soapenv:Body>
+</soapenv:Envelope>
