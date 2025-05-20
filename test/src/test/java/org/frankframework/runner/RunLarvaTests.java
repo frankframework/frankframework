@@ -84,7 +84,8 @@ public class RunLarvaTests {
 			"WebServiceListenerSender/scenario11d",
 			"WsdlGeneratorPipe/scenario01",
 			"WsdlGeneratorPipe/scenario02",
-			"WsdlGeneratorPipe/scenario03"
+			"WsdlGeneratorPipe/scenario03",
+			"XsltProviderListener/scenario04"
 	);
 
 	private static ConfigurableApplicationContext parentContext;
