@@ -1,7 +1,5 @@
 package org.frankframework.http.cxf;
 
-import jakarta.xml.ws.WebServiceContext;
-
 import lombok.Getter;
 
 import org.frankframework.core.PipeLineSession;
@@ -11,8 +9,7 @@ public class SoapProviderStub extends AbstractSOAPProvider {
 
 	final @Getter PipeLineSession session;
 
-	public SoapProviderStub(WebServiceContext context) {
-		this.webServiceContext = context;
+	public SoapProviderStub() {
 		session = new PipeLineSession();
 	}
 

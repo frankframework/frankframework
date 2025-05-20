@@ -71,7 +71,7 @@ public class ServiceDispatcher  {
 	public Message dispatchRequest(String serviceName, Message message, PipeLineSession session) throws ListenerException {
 		log.debug("dispatchRequest for service [{}] correlationId [{}] message [{}]", serviceName, session != null ? session.getCorrelationId() : null, message);
 
-		ServiceClient client = registeredListeners.get(serviceName);
+		ServiceClient client = getListener(serviceName);
 		if (client == null) {
 			throw new ListenerException("service ["+ serviceName +"] is not registered");
 		}
@@ -92,7 +92,7 @@ public class ServiceDispatcher  {
 	 * @return true if the service is registered at this dispatcher, otherwise false
 	 */
 	public boolean isRegisteredServiceListener(String name) {
-		return registeredListeners.get(name) != null;
+		return getListener(name) != null;
 	}
 
 	public synchronized void registerServiceClient(String name, ServiceClient listener) {

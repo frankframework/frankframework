@@ -1,0 +1,113 @@
+package org.frankframework.http.cxf;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
+import java.io.FilterInputStream;
+import java.io.IOException;
+import java.net.URL;
+
+import javax.xml.transform.Source;
+
+import jakarta.xml.soap.MessageFactory;
+import jakarta.xml.soap.SOAPConstants;
+import jakarta.xml.soap.SOAPMessage;
+import jakarta.xml.ws.WebServiceContext;
+import jakarta.xml.ws.WebServiceException;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import org.frankframework.core.ListenerException;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.receivers.ServiceClient;
+import org.frankframework.receivers.ServiceDispatcher;
+import org.frankframework.stream.Message;
+import org.frankframework.stream.UrlMessage;
+import org.frankframework.testutil.MatchUtils;
+import org.frankframework.util.XmlUtils;
+
+/**
+ * We already test the main functionality in {@link SoapProviderTest}.
+ * This is to test the {@link ServiceDispatcher}
+ */
+public class NamespaceUriProviderTest {
+	private NamespaceUriProvider provider;
+	private WebServiceContext webServiceContext = new WebServiceContextStub();
+	private ServiceDispatcher dispatcher = ServiceDispatcher.getInstance();
+
+	@BeforeEach
+	public void setup() {
+		provider = new NamespaceUriProvider();
+		provider.webServiceContext = webServiceContext;
+
+		dispatcher.getRegisteredListenerNames().forEach(dispatcher::unregisterServiceClient);
+	}
+
+	private Message getFile(String file) throws IOException {
+		URL url = this.getClass().getResource("/Soap/"+file);
+		if (url == null) {
+			throw new IOException("file not found");
+		}
+		return new UrlMessage(url);
+	}
+
+	private SOAPMessage createMessage(String filename, boolean isSoap1_1) throws Exception {
+		MessageFactory factory = MessageFactory.newInstance(isSoap1_1 ? SOAPConstants.SOAP_1_1_PROTOCOL : SOAPConstants.SOAP_1_2_PROTOCOL);
+		SOAPMessage soapMessage = factory.createMessage();
+		Source streamSource = getFile(filename).asSource();
+		soapMessage.getSOAPPart().setContent(streamSource);
+		return soapMessage;
+	}
+
+	@Test
+	public void testCannotFindNamespaceAndCallServiceClient() throws Exception {
+		NamespaceUriProvider messageProvider = new NamespaceUriProvider();
+		messageProvider.webServiceContext = webServiceContext;
+
+		SOAPMessage request = createMessage("VrijeBerichten_PipelineRequest.xml", true);
+		WebServiceException e = assertThrows(WebServiceException.class, () -> messageProvider.invoke(request));
+		assertEquals("Could not process SOAP message: service [http://www.egem.nl/StUF/sector/zkn/0310] is not registered", e.getMessage());
+	}
+
+	@Test
+	public void testFindNamespaceAndCallServiceClient() throws Exception {
+		Message pipelineResult;
+		try (Message plr = getFile("VrijeBerichten_PipelineResult.xml")) {
+			pipelineResult = spy(new Message(new FilterInputStream(plr.asInputStream()) {}));
+		}
+
+		ServiceClient service = new ServiceClient() {
+			@Override
+			public Message processRequest(Message message, PipeLineSession pipelineSession) throws ListenerException {
+				try {
+					MatchUtils.assertXmlEquals(getFile("VrijeBerichten_PipelineRequest.xml").asString(), message.asString());
+
+					// Ensure the message is registered on the PipelineSession.
+					pipelineResult.closeOnCloseOf(pipelineSession);
+
+					return pipelineResult;
+				} catch (IOException e) {
+					fail("unable to read response message: " + e.getMessage(), e);
+					return null;
+				}
+			}
+		};
+		dispatcher.registerServiceClient("http://www.egem.nl/StUF/sector/zkn/0310", service);
+
+		SOAPMessage request = createMessage("VrijeBerichten_PipelineRequest.xml", true);
+		NamespaceUriProvider messageProvider = new NamespaceUriProvider();
+		messageProvider.webServiceContext = webServiceContext;
+		SOAPMessage message = messageProvider.invoke(request);
+
+		verify(pipelineResult, times(0)).close();
+
+		String result = XmlUtils.nodeToString(message.getSOAPPart());
+		String expected = getFile("VrijeBerichten_PipelineResult.xml").asString();
+		MatchUtils.assertXmlEquals(expected, result);
+	}
+}

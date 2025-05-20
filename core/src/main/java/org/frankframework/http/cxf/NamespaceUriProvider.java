@@ -58,12 +58,11 @@ public class NamespaceUriProvider extends AbstractSOAPProvider {
 	@Override
 	Message processRequest(Message message, PipeLineSession pipelineSession) throws ListenerException {
 		String serviceName = findNamespaceUri();
-		log.debug("found namespace[{}]", serviceName);
 		return sd.dispatchRequest(serviceName, message, pipelineSession);
 	}
 
 	public String findNamespaceUri() throws ListenerException {
-		log.debug("trying to find serviceName from soapMessage[{}]", soapMessage);
+		log.debug("trying to find serviceName from soapMessage [{}]", soapMessage);
 
 		try {
 			SOAPBody body = soapMessage.getSOAPBody();
@@ -73,15 +72,18 @@ public class NamespaceUriProvider extends AbstractSOAPProvider {
 					Node node = (Node) it.next();
 
 					// Found first namespaceURI
-					if(StringUtils.isNotEmpty(node.getNamespaceURI()))
-						return node.getNamespaceURI();
+					String namespace = node.getNamespaceURI();
+					if(StringUtils.isNotEmpty(namespace)) {
+						log.debug("found namespace[{}]", namespace);
+						return namespace;
+					}
 				}
 			}
 		}
 		catch (SOAPException e) {
-			throw new ListenerException(e);
+			throw new ListenerException("unable to read soap message", e);
 		}
 
-		throw new ListenerException("unable to determine serviceName from NamespaceURI");
+		throw new ListenerException("unable to determine serviceName from namespaceURI");
 	}
 }

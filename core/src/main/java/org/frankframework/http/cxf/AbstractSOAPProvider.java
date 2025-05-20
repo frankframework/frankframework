@@ -178,7 +178,7 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 		}
 	}
 
-	private Message processRequest(SOAPMessage request, PipeLineSession pipelineSession) {
+	protected Message processRequest(SOAPMessage request, PipeLineSession pipelineSession) {
 		// Make mime headers in request available as session key
 		Iterator<MimeHeader> mimeHeaders = request.getMimeHeaders().getAllHeaders();
 		String mimeHeadersXml = getMimeHeadersXml(mimeHeaders).asXmlString();
