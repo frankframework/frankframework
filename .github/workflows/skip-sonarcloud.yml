@@ -2,6 +2,7 @@ name: Skip SonarCloud Checks
 
 on:
   workflow_call:
+  workflow_dispatch:
 
 jobs:
   skip-sonarcloud:
