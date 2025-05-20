@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -132,7 +133,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 	}
 
 	@Override
-	public void startStep(TestRunStatus testRunStatus, Scenario scenario, String stepName) {
+	public void startStep(TestRunStatus testRunStatus, Scenario scenario, String step) {
 		// Create a div for the step. Will be closed in finishStep().
 		if (evenStep) {
 			writeHtml("<div class='even'>");
@@ -140,11 +141,11 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 			writeHtml("<div class='odd'>");
 		}
 		evenStep = !evenStep;
-		writer.debugMessage("Execute step '" + stepName + "'");
+		writer.debugMessage("Execute step '" + scenario.getStepDisplayName(step) + "'");
 	}
 
 	@Override
-	public void finishStep(TestRunStatus testRunStatus, Scenario scenario, String stepName, int stepResult, String stepResultMessage) {
+	public void finishStep(TestRunStatus testRunStatus, Scenario scenario, String step, int stepResult, String stepResultMessage) {
 		if (writer.shouldWriteLevel(LarvaLogLevel.STEP_PASSED_FAILED)) {
 			StringBuilder outputMessage = new StringBuilder();
 			if (stepResult == LarvaTool.RESULT_OK) {
@@ -162,20 +163,23 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 	}
 
 	@Override
-	public void stepMessage(Scenario scenario, String stepName, String description, String stepMessage) {
-		writer.writeStepMessageBox(LarvaLogLevel.PIPELINE_MESSAGES, "message container", stepName, description, "messagebox", stepMessage);
+	public void stepMessage(Scenario scenario, String step, String description, String stepMessage) {
+		writer.writeStepMessageBox(LarvaLogLevel.PIPELINE_MESSAGES, "message container", scenario.getStepDisplayName(step), description, "messagebox", stepMessage);
 	}
 
 	@Override
-	public void stepMessageSuccess(Scenario scenario, String stepName, String description, String stepResultMessage, String stepResultMessagePreparedForDiff) {
+	public void stepMessageSuccess(Scenario scenario, String step, String description, String stepResultMessage, String stepResultMessagePreparedForDiff) {
+		String stepName = scenario.getStepDisplayName(step);
 		writer.writeStepMessageBox(LarvaLogLevel.PIPELINE_MESSAGES, "message container", stepName, description, "messagebox", stepResultMessage);
 		writer.writeStepMessageBox(LarvaLogLevel.PIPELINE_MESSAGES_PREPARED_FOR_DIFF, "message container", stepName, description + " as prepared for diff", "messagebox", stepResultMessagePreparedForDiff);
 	}
 
 	@Override
-	public void stepMessageFailed(Scenario scenario, String stepName, String description, String stepSaveFileName, String stepExpectedResultMessage, String stepExpectedResultMessagePreparedForDiff, String stepActualResultMessage, String stepActualResultMessagePreparedForDiff) {
-		writer.writeStepMessageWithDiffBox(LarvaLogLevel.WRONG_PIPELINE_MESSAGES, "error container", stepName, stepSaveFileName, "scenario", "raw", description, stepActualResultMessage, stepExpectedResultMessage);
-		writer.writeStepMessageWithDiffBox(LarvaLogLevel.WRONG_PIPELINE_MESSAGES_PREPARED_FOR_DIFF, "error container", stepName, stepSaveFileName, "scenario", "prepared for diff", description, stepActualResultMessagePreparedForDiff, stepExpectedResultMessagePreparedForDiff);
+	public void stepMessageFailed(Scenario scenario, String step, String description, String stepExpectedResultMessage, String stepExpectedResultMessagePreparedForDiff, String stepActualResultMessage, String stepActualResultMessagePreparedForDiff) {
+		String stepName = scenario.getStepDisplayName(step);
+		String stepDataFileName = scenario.getStepDataFile(step);
+		writer.writeStepMessageWithDiffBox(LarvaLogLevel.WRONG_PIPELINE_MESSAGES, "error container", stepName, stepDataFileName, "scenario", "raw", description, stepActualResultMessage, stepExpectedResultMessage);
+		writer.writeStepMessageWithDiffBox(LarvaLogLevel.WRONG_PIPELINE_MESSAGES_PREPARED_FOR_DIFF, "error container", stepName, stepDataFileName, "scenario", "prepared for diff", description, stepActualResultMessagePreparedForDiff, stepExpectedResultMessagePreparedForDiff);
 	}
 
 	@Override
@@ -290,7 +294,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 					String longName = scenarioDirectory.substring(0, i + 1);
 					log.debug("longName: [{}]", longName);
 					if (!addedDirectories.contains(longName)) {
-						String shortName = FilenameUtils.normalize(scenarioDirectory.substring(scenariosRootDirectory.length() - 1, i + 1), true);
+						String shortName = StringUtils.prependIfMissing(FilenameUtils.normalize(scenarioDirectory.substring(scenariosRootDirectory.length() - 1, i + 1), true), "/");
 						String option = "<option value=\"" + XmlEncodingUtils.encodeChars(longName) + "\"";
 						log.debug("paramExecute: [{}]", paramExecute);
 						if (paramExecute != null && paramExecute.equals(longName)) {
