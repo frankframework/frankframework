@@ -385,7 +385,7 @@ public class LarvaTool {
 		}
 	}
 
-	public int compareResult(TestExecutionObserver testExecutionObserver, Scenario scenario, String step, String stepDisplayName, String fileName, Message expectedResultMessage, Message actualResultMessage) {
+	public int compareResult(TestExecutionObserver testExecutionObserver, Scenario scenario, String step, String fileName, Message expectedResultMessage, Message actualResultMessage) {
 		Properties properties = scenario.getProperties();
 		String expectedResult = messageToString(expectedResultMessage);
 		String actualResult = messageToString(actualResultMessage);
@@ -435,7 +435,7 @@ public class LarvaTool {
 			}
 			if (identical) {
 				ok = RESULT_OK;
-				testExecutionObserver.stepMessageSuccess(scenario, stepDisplayName, "Result", printableActualResult, preparedActualResult);
+				testExecutionObserver.stepMessageSuccess(scenario, step, "Result", printableActualResult, preparedActualResult);
 			} else {
 				String message;
 				if (diffException == null) {
@@ -444,7 +444,7 @@ public class LarvaTool {
 					message = "Exception during XML diff: " + diffException.getMessage();
 					errorMessage("Exception during XML diff: ", diffException);
 				}
-				ok = reportFailedCompare(testExecutionObserver, scenario, step, stepDisplayName, properties, message, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult, actualResult, ok);
+				ok = reportFailedCompare(testExecutionObserver, scenario, step, message, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult, actualResult, ok);
 			}
 		} else {
 			// txt diff
@@ -452,7 +452,7 @@ public class LarvaTool {
 			String formattedPreparedActualResult = formatString(preparedActualResult);
 			if (formattedPreparedExpectedResult.equals(formattedPreparedActualResult)) {
 				ok = RESULT_OK;
-				testExecutionObserver.stepMessageSuccess(scenario, stepDisplayName, "Result", printableActualResult, preparedActualResult);
+				testExecutionObserver.stepMessageSuccess(scenario, step, "Result", printableActualResult, preparedActualResult);
 			} else {
 				String message = null;
 				StringBuilder diffActual = new StringBuilder();
@@ -484,15 +484,15 @@ public class LarvaTool {
 					diffExcpected.append(" ...");
 				}
 				message = message + " actual result is '" + diffActual + "' and expected result is '" + diffExcpected + "'";
-				ok = reportFailedCompare(testExecutionObserver, scenario, step, stepDisplayName, properties, message, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult, actualResult, ok);
+				ok = reportFailedCompare(testExecutionObserver, scenario, step, message, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult, actualResult, ok);
 			}
 		}
 		return ok;
 	}
 
-	private int reportFailedCompare(TestExecutionObserver testExecutionObserver, Scenario scenario, String step, String stepDisplayName, Properties properties, String message, String printableExpectedResult, String preparedExpectedResult, String printableActualResult, String preparedActualResult, String actualResult, int ok) {
-		String filenameAbsolutePath = (String) properties.get(step + ".absolutepath");
-		testExecutionObserver.stepMessageFailed(scenario, stepDisplayName, message, filenameAbsolutePath, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult);
+	private int reportFailedCompare(TestExecutionObserver testExecutionObserver, Scenario scenario, String step, String message, String printableExpectedResult, String preparedExpectedResult, String printableActualResult, String preparedActualResult, String actualResult, int ok) {
+		String filenameAbsolutePath = scenario.getStepDataFile(step);
+		testExecutionObserver.stepMessageFailed(scenario, step, message, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult);
 		if (larvaConfig.isAutoSaveDiffs()) {
 			debugMessage("Copy actual result to ["+filenameAbsolutePath+"]");
 			try {
