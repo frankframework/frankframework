@@ -46,7 +46,11 @@ jobs:
           echo "Files matching our pattern: ${{ steps.changed-files.outputs.all_changed_files }}"
           echo "Other files changed: ${{ steps.changed-files.outputs.other_changed_files }}"
 
-  skip-sonarcloud:
-    if: needs.check-only-changed.outputs.only_changed == 'true'
-    uses: frankframework/frankframework/.github/workflows/skip-sonarcloud.yml@chore/skip-sonarcloud
-    needs: check-only-changed
+      - name: Trigger SonarCloud workflow
+        if: steps.changed-files.outputs.only_changed == 'true'
+        run: |
+          curl -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            https://api.github.com/repos/${{ github.repository }}/dispatches \
+            -d '{"event_type": "trigger-sonarcloud", "client_payload": {"pr": "${{ github.event.pull_request.number }}"}}'
