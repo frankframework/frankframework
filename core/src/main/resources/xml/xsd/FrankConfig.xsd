@@ -1001,6 +1001,7 @@
       <xs:element name="JmsRealms" minOccurs="0" maxOccurs="1" type="JmsRealmsType" />
       <xs:element name="Monitoring" minOccurs="0" maxOccurs="1" type="MonitoringType" />
       <xs:element name="SharedResources" minOccurs="0" maxOccurs="1" type="SharedResourcesType" />
+      <xs:group ref="ErrorMessageFormatterElementGroup" minOccurs="0" maxOccurs="1" />
     </xs:sequence>
   </xs:group>
   <xs:group name="ListenerElementGroup">
@@ -16802,7 +16803,8 @@
     </xs:attribute>
     <xs:attribute name="closeInputstreamOnExit" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;false&lt;/code&gt;, the inputstream is not closed after it has been used Default: true</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;false&lt;/code&gt;, the inputstream is not closed after it has been used.
+ Use with caution, they may create memory leaks. Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="charset" type="xs:string">
@@ -18631,12 +18633,14 @@
       <xs:enumeration value="DEBUG" />
       <xs:enumeration value="PIPELINE_MESSAGES_PREPARED_FOR_DIFF" />
       <xs:enumeration value="PIPELINE_MESSAGES" />
+      <xs:enumeration value="INFO" />
       <xs:enumeration value="WRONG_PIPELINE_MESSAGES_PREPARED_FOR_DIFF" />
       <xs:enumeration value="WRONG_PIPELINE_MESSAGES" />
       <xs:enumeration value="STEP_PASSED_FAILED" />
       <xs:enumeration value="SCENARIO_PASSED_FAILED" />
       <xs:enumeration value="SCENARIO_FAILED" />
       <xs:enumeration value="TOTALS" />
+      <xs:enumeration value="WARNING" />
       <xs:enumeration value="ERROR" />
     </xs:restriction>
   </xs:simpleType>
