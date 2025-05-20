@@ -1,5 +1,6 @@
 package org.frankframework.runner;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -8,9 +9,11 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
@@ -29,8 +32,12 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.messaging.Message;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.IbisContext;
+import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.larva.LarvaConfig;
 import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
@@ -41,7 +48,13 @@ import org.frankframework.larva.output.LarvaWriter;
 import org.frankframework.larva.output.PlainTextScenarioOutputRenderer;
 import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.LocalGateway;
+import org.frankframework.management.bus.OutboundGateway;
+import org.frankframework.management.bus.message.MessageBase;
 import org.frankframework.util.CloseUtils;
+import org.frankframework.util.SpringUtils;
 
 /**
  * Attempt to run Larva tests in the Maven build.
@@ -53,50 +66,18 @@ import org.frankframework.util.CloseUtils;
  *
  */
 @Tag("integration")
+@Log4j2
 public class RunLarvaTests {
 
 	public static final LarvaLogLevel LARVA_LOG_LEVEL = LarvaLogLevel.WRONG_PIPELINE_MESSAGES_PREPARED_FOR_DIFF;
 	public static final Set<String> IGNORED_SCENARIOS = Set.of(
-			"ApiListener/scenario01",
-			"ApiListener/scenario02",
-			"ApiListener/scenario03",
-			"ApiListener/scenario04",
-			"ApiListener/scenario05",
-			"ApiListener/scenario06",
-			"ApiListener/scenario07",
-			"ApiListener/scenario08",
 			"Authentication/scenario03",
 			"Authentication/scenario04",
 			"Base64Pipe/scenario01",
 			"Base64Pipe/scenario02",
-			"CorrelationMessageId/scenario04",
-			"CorrelationMessageId/scenario05",
-			"Exits/api/scenario01",
-			"Exits/api/scenario01b",
-			"Exits/api/scenario03",
-			"Exits/soap/scenario01",
-			"Exits/soap/scenario02",
-			"JSON/DataSonnet/scenario01",
-			"JSON/JsonPipe/scenario01",
 			"FileSender/scenario01",
-			"ForwardNameProvidingSenders/scenario10",
-			"ForwardNameProvidingSenders/scenario11",
-			"ForwardNameProvidingSenders/scenario12",
-			"ForwardNameProvidingSenders/scenario13",
-			"FrankSender/scenario05",
 			"ManagedFileHandler/scenario01",
 			"ManagedFileHandler/scenario02",
-			"LocalFileSystemPipe/scenario07",
-			"LocalFileSystemPipe/scenario08",
-			"MoveFiles/scenario01",
-			"MoveFiles/scenario04",
-			"MoveFiles/scenario09",
-			"Receivers/NonTransacted/NoInProcess/scenario01",
-			"Receivers/NonTransacted/NoInProcess/scenario05",
-			"Receivers/NonTransacted/NoInProcess/scenario06",
-			"Receivers/Transacted/WithInProcess/scenario03",
-			"RestListener/scenario01",
-			"RestListener/scenario02",
 			"Validators/SoapValidator/scenario07",
 			"WebServiceListenerSender/scenario11b",
 			"WebServiceListenerSender/scenario11c",
@@ -104,9 +85,7 @@ public class RunLarvaTests {
 			"WsdlGeneratorPipe/scenario01",
 			"WsdlGeneratorPipe/scenario02",
 			"WsdlGeneratorPipe/scenario03",
-			"XsltProviderListener/scenario04",
-			"Zip/ZipWriter/scenario 01",
-			"Zip/ZipWriter/scenario 02"
+			"XsltProviderListener/scenario04"
 	);
 
 	private static ConfigurableApplicationContext parentContext;
@@ -132,6 +111,22 @@ public class RunLarvaTests {
 		// We need to get the IbisContext from the ServletContext, since from this one we can get the ApplicationContext that has the database.
 		ibisContext = FrankApplicationInitializer.getIbisContext(servletContext);
 		applicationContext = ibisContext.getApplicationContext();
+
+		OutboundGateway gateway = SpringUtils.createBean(parentContext, LocalGateway.class);
+		assertTrue(parentContext.isRunning());
+		await().pollInterval(5, TimeUnit.SECONDS)
+				.atMost(Duration.ofMinutes(5))
+				.until(() -> verifyAppIsHealthy(gateway));
+	}
+
+	private static boolean verifyAppIsHealthy(OutboundGateway gateway) {
+		try {
+			Message<Object> response = gateway.sendSyncMessage(RequestMessageBuilder.create(BusTopic.HEALTH).build(null));
+			return "200".equals(response.getHeaders().get(BusMessageUtils.HEADER_PREFIX+ MessageBase.STATUS_KEY));
+		} catch (Exception e) {
+			log.error("error while checking health of application", e);
+			return false;
+		}
 	}
 
 	@BeforeEach

@@ -508,6 +508,19 @@ public class LarvaTool {
 
 	public String prepareResultForCompare(String input, Properties properties, Map<String, Map<String, Map<String, String>>> ignoreMap) {
 		String result = input;
+
+		// TESTDATA-dir based file paths in results can often not be compared properly because of location differences, and complicated by system-dependent file paths.
+		// Changing Windows backslashes to Unix forward slashes in the rest of file paths is done with regexes configured in global.properties
+		String testDataDirPropertyValue = AppConstants.getInstance().getProperty("testdata.dir");
+		if (testDataDirPropertyValue != null) {
+			String testDataDirNative = new File(testDataDirPropertyValue).getAbsolutePath();
+			String testDataDirWindows = FilenameUtils.normalize(testDataDirPropertyValue, false);
+			String testDataDirUnix = FilenameUtils.normalize(testDataDirPropertyValue, true);
+			result = result.replace(testDataDirNative, "TESTDATA_DIR")
+					.replace(testDataDirWindows, "TESTDATA_DIR")
+					.replace(testDataDirUnix, "TESTDATA_DIR");
+		}
+
 		result = doActionBetweenKeys("decodeUnzipContentBetweenKeys", result, properties, ignoreMap, (value, pp, key1, key2)-> {
 			boolean replaceNewlines = !"true".equals(pp.apply("replaceNewlines"));
 			return decodeUnzipContentBetweenKeys(value, key1, key2, replaceNewlines);
@@ -548,7 +561,7 @@ public class LarvaTool {
 		String format(String value, Function<String, String> propertyProvider, String key1);
 	}
 
-	public String doActionBetweenKeys(String key, String value, Properties properties, Map<String, Map<String, Map<String, String>>> ignoreMap, BetweenKeysAction action) {
+	public static String doActionBetweenKeys(String key, String value, Properties properties, Map<String, Map<String, Map<String, String>>> ignoreMap, BetweenKeysAction action) {
 		String result = value;
 		log.debug("Check [{}] properties", key);
 		boolean lastKeyIndexProcessed = false;
@@ -588,7 +601,7 @@ public class LarvaTool {
 		return result;
 	}
 
-	public String doActionWithSingleKey(String keyName, String value, Properties properties, Map<String, Map<String, Map<String, String>>> ignoreMap, SingleKeyAction action) {
+	public static String doActionWithSingleKey(String keyName, String value, Properties properties, Map<String, Map<String, Map<String, String>>> ignoreMap, SingleKeyAction action) {
 		String result = value;
 		log.debug("Check [{}] properties", keyName);
 		boolean lastKeyIndexProcessed = false;
