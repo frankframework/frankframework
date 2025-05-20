@@ -176,7 +176,7 @@ public class JdbcUtilTest {
 
 		ParameterList params = new ParameterList();
 		params.add(NumberParameterBuilder.create().withValue(1));
-		params.add(ParameterBuilder.create().withSessionKey("binaryParam").withType(ParameterType.BYTES));
+		params.add(ParameterBuilder.create().withSessionKey("binaryParam").withType(ParameterType.BINARY));
 
 		PipeLineSession session = new PipeLineSession();
 		session.put("binaryParam", new ThrowingAfterCloseInputStream(new VirtualInputStream(20_000)));

@@ -54,7 +54,7 @@ class ErrorMessageFormatterTest {
 
 		String expected = """
 				<errorMessage timestamp="-timestamp-" originator="IAF " message="MyLocation [dummy-location] msgId [dummy-message-id]: dummy-error-message">
-					<location class="org.frankframework.errormessageformatters.ErrorMessageFormatterTest$MyLocation" name="dummy-location"/>
+					<location class="org.frankframework.errormessageformatters.MyLocation" name="dummy-location"/>
 					<originalMessage messageId="dummy-message-id" receivedTime="-timestamp-">dummy-message</originalMessage>
 				</errorMessage>
 				""";
@@ -80,7 +80,7 @@ class ErrorMessageFormatterTest {
 						"originator": "IAF ",
 						"message": "MyLocation [dummy-location] msgId [dummy-message-id]: dummy-error-message",
 						"location": {
-							"class": "org.frankframework.errormessageformatters.ErrorMessageFormatterTest$MyLocation",
+							"class": "org.frankframework.errormessageformatters.MyLocation",
 							"name": "dummy-location"
 						},
 						"originalMessage": {
@@ -104,12 +104,5 @@ class ErrorMessageFormatterTest {
 				.replaceAll("\"\\w{3} \\w{3} \\d{1,2} \\d{1,2}:\\d{2}:\\d{2} \\w+ \\d{4}\"", "\"-timestamp-\"")
 				.replaceAll("\"\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\"", "\"-timestamp-\"")
 				;
-	}
-
-	public static class MyLocation implements HasName {
-		@Override
-		public String getName() {
-			return "dummy-location";
-		}
 	}
 }

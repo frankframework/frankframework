@@ -1,0 +1,23 @@
+name: Checks Start Successful
+
+on:
+  pull_request:
+    branches:
+      - master
+      - '[0-9]+.[0-9]+-release'
+      - 'release/[0-9]+.[0-9]+'
+
+jobs:
+  sonarcloud:
+    name: SonarCloud
+    runs-on: ubuntu-latest
+    steps:
+      - name: Start SonarCloud ✅
+        run: echo "Start successful until real results are in"
+
+  sonarcloud-code-analysis:
+    name: SonarCloud Code Analysis
+    runs-on: ubuntu-latest
+    steps:
+      - name: Start SonarCloud Code Analysis ✅
+        run: echo "Start successful until real results are in"

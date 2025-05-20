@@ -20,7 +20,6 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.StringReader;
@@ -33,6 +32,7 @@ import java.nio.file.StandardOpenOption;
 import java.text.ParseException;
 import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -46,6 +46,7 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.zip.ZipInputStream;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.json.JsonException;
 import jakarta.servlet.ServletContext;
@@ -60,9 +61,11 @@ import org.custommonkey.xmlunit.XMLUnit;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.SenderException;
+import org.frankframework.json.JsonUtil;
 import org.frankframework.larva.output.HtmlScenarioOutputRenderer;
 import org.frankframework.larva.output.LarvaHtmlWriter;
 import org.frankframework.larva.output.LarvaWriter;
@@ -77,7 +80,6 @@ import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
-import org.frankframework.util.Misc;
 import org.frankframework.util.ProcessUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TemporaryDirectoryUtils;
@@ -95,78 +97,65 @@ public class LarvaTool {
 
 	private final @Getter ApplicationContext applicationContext;
 	private final @Getter LarvaConfig larvaConfig;
-	private final @Getter LarvaWriter writer;
-	private final @Getter TestExecutionObserver testExecutionObserver;
-	private final @Getter TestRunStatus testRunStatus;
+	/**
+	 * Larva API calls that do not provide an output-writer can collect relevant error and warning messages for the
+	 * user to be returned via the API from the message list.
+	 */
+	private final @Getter List<LarvaMessage> messages = new ArrayList<>();
 	private final @Getter ScenarioLoader scenarioLoader;
+	private @Getter @Setter LarvaWriter writer;
 
-	protected static int globalTimeoutMillis = AppConstants.getInstance().getInt("larva.timeout", 10_000);
+	public static LarvaTool createInstance(ServletContext servletContext) {
+		return createInstance(getApplicationContext(servletContext));
+	}
 
-	public static LarvaTool createInstance(ApplicationContext applicationContext, OutputStream out) {
+	public static LarvaTool createInstance(ApplicationContext applicationContext) {
 		LarvaConfig larvaConfig = new LarvaConfig();
-		LarvaWriter larvaWriter = new LarvaWriter(larvaConfig, out);
-		TestExecutionObserver testExecutionObserver = new PlainTextScenarioOutputRenderer(larvaWriter);
-		return new LarvaTool(applicationContext, larvaConfig, larvaWriter, testExecutionObserver);
+		return new LarvaTool(applicationContext, larvaConfig);
 	}
 
-	public static LarvaTool createInstance(ApplicationContext ibisContext, Writer out) {
-		LarvaConfig larvaConfig = new LarvaConfig();
-		LarvaWriter larvaWriter = new LarvaWriter(larvaConfig, out);
-		TestExecutionObserver testExecutionObserver = new PlainTextScenarioOutputRenderer(larvaWriter);
-		return new LarvaTool(ibisContext, larvaConfig, larvaWriter, testExecutionObserver);
-	}
-
-	public static LarvaTool createInstance(ServletContext servletContext, HttpServletRequest request, Writer out) {
-		LarvaHtmlConfig larvaHtmlConfig = new LarvaHtmlConfig(request);
-		LarvaHtmlWriter larvaHtmlWriter = new LarvaHtmlWriter(larvaHtmlConfig, out);
-		TestExecutionObserver testExecutionObserver = new HtmlScenarioOutputRenderer(larvaHtmlConfig, larvaHtmlWriter);
-		return new LarvaTool(getApplicationContext(servletContext), larvaHtmlConfig, larvaHtmlWriter, testExecutionObserver);
-	}
-
-	public LarvaTool(ApplicationContext applicationContext, LarvaConfig larvaConfig, LarvaWriter writer, TestExecutionObserver testExecutionObserver) {
+	public LarvaTool(ApplicationContext applicationContext, LarvaConfig larvaConfig) {
 		this.applicationContext = applicationContext;
 		this.larvaConfig = larvaConfig;
-		this.writer = writer;
-		this.testExecutionObserver = testExecutionObserver;
-		this.testRunStatus = new TestRunStatus(larvaConfig, writer);
-		this.scenarioLoader = new ScenarioLoader(writer);
+		this.scenarioLoader = new ScenarioLoader(this);
 
 		XMLUnit.setIgnoreWhitespace(true);
 	}
 
-	public static void setTimeout(int newTimeout) {
-		globalTimeoutMillis = newTimeout;
-	}
-
-	private static ApplicationContext getApplicationContext(ServletContext application) {
-		return FrankApplicationInitializer.getIbisContext(application).getApplicationContext();
+	private static ApplicationContext getApplicationContext(ServletContext servletContext) {
+		return FrankApplicationInitializer.getIbisContext(servletContext).getApplicationContext();
 	}
 
 	// Invoked by LarvaServlet
-	public static TestRunStatus runScenarios(ServletContext application, HttpServletRequest request, Writer out) {
-		LarvaTool larvaTool = createInstance(application, request, out);
-		return larvaTool.runScenarios(request.getParameter(LarvaHtmlConfig.REQUEST_PARAM_EXECUTE));
+	public static TestRunStatus runScenarios(ServletContext servletContext, HttpServletRequest request, Writer out) {
+		LarvaHtmlConfig larvaHtmlConfig = new LarvaHtmlConfig(request);
+		LarvaTool larvaTool = new LarvaTool(getApplicationContext(servletContext), larvaHtmlConfig);
+		LarvaHtmlWriter larvaHtmlWriter = new LarvaHtmlWriter(larvaHtmlConfig, out);
+		TestExecutionObserver testExecutionObserver = new HtmlScenarioOutputRenderer(larvaHtmlConfig, larvaHtmlWriter);
+		return larvaTool.runScenarios(request.getParameter(LarvaHtmlConfig.REQUEST_PARAM_EXECUTE), testExecutionObserver, larvaHtmlWriter);
 	}
 
-	public static TestRunStatus runScenarios(ApplicationContext applicationContext, LarvaConfig config, LarvaWriter out, TestExecutionObserver testExecutionObserver, String execute) {
-		LarvaTool larvaTool = new LarvaTool(applicationContext, config, out, testExecutionObserver);
-		return larvaTool.runScenarios(execute);
+	public static TestRunStatus runScenarios(ApplicationContext applicationContext, Writer writer, String execute) {
+		LarvaTool larvaTool = createInstance(applicationContext);
+		LarvaWriter larvaWriter = new LarvaWriter(larvaTool.getLarvaConfig(), writer);
+		TestExecutionObserver testExecutionObserver = new PlainTextScenarioOutputRenderer(larvaWriter);
+		return larvaTool.runScenarios(execute, testExecutionObserver, larvaWriter);
 	}
 
 	/**
-	 * @return negative: error condition
-	 * 		   0: all scenarios passed
-	 * 		   positive: number of scenarios that failed
+	 * @return {@link TestRunStatus} with result of test
 	 */
-	public TestRunStatus runScenarios(String execute) {
-		debugMessage("Initialize scenarios root directories");
+	public TestRunStatus runScenarios(String execute, TestExecutionObserver testExecutionObserver, LarvaWriter writer) {
+		this.writer = writer;
+		log.debug("Initialize scenarios root directories");
+		TestRunStatus testRunStatus = createTestRunStatus();
 		String currentScenariosRootDirectory = testRunStatus.initScenarioDirectories();
 
 		if (testRunStatus.getScenarioDirectories().isEmpty()) {
 			errorMessage("No scenarios root directories found");
 			throw new LarvaException("No scenarios root directories found");
 		}
-		debugMessage("Read scenarios from directory '" + StringEscapeUtils.escapeJava(currentScenariosRootDirectory) + "'");
+		log.debug("Read scenarios from directory '" + StringEscapeUtils.escapeJava(currentScenariosRootDirectory) + "'");
 		testRunStatus.readScenarioFiles(scenarioLoader);
 
 		testExecutionObserver.startTestSuiteExecution(testRunStatus);
@@ -180,19 +169,19 @@ public class LarvaTool {
 			errorMessage("No scenarios found");
 		}
 
-		debugMessage("Initialize statistics variables");
+		log.debug("Initialize statistics variables");
 		long startTime = System.currentTimeMillis();
-		debugMessage("Execute scenario('s)");
-		ScenarioRunner scenarioRunner = createScenarioRunner();
+		log.debug("Execute scenario('s)");
+		ScenarioRunner scenarioRunner = createScenarioRunner(testExecutionObserver, testRunStatus);
 		// If only one scenario is executed, do not use multithreading, because they mostly use the same resources
 		if (scenarioFiles.size() == 1) {
 			scenarioRunner.setMultipleThreads(false);
 		}
 		scenarioRunner.runScenarios(scenarioFiles, currentScenariosRootDirectory);
-		writer.flush();
+		flushOutput();
 
 		long executionTime = System.currentTimeMillis() - startTime;
-		printScenarioExecutionStatistics(executionTime);
+		printScenarioExecutionStatistics(testExecutionObserver, testRunStatus, executionTime);
 
 		testExecutionObserver.endTestSuiteExecution(testRunStatus);
 		CleanerProvider.logLeakStatistics();
@@ -200,32 +189,83 @@ public class LarvaTool {
 		return testRunStatus;
 	}
 
-	public ScenarioRunner createScenarioRunner() {
-		return new ScenarioRunner(this);
+	public @Nonnull TestRunStatus createTestRunStatus() {
+		return new TestRunStatus(larvaConfig, this);
 	}
 
-	private void printScenarioExecutionStatistics(long executionTime) {
-		debugMessage("Print statistics information");
+	public @Nonnull ScenarioRunner createScenarioRunner(TestExecutionObserver testExecutionObserver, TestRunStatus testRunStatus) {
+		return new ScenarioRunner(this, testExecutionObserver, testRunStatus);
+	}
+
+	private void printScenarioExecutionStatistics(TestExecutionObserver testExecutionObserver, TestRunStatus testRunStatus, long executionTime) {
+		log.debug("Print statistics information");
 		testExecutionObserver.executionOverview(testRunStatus, executionTime);
 	}
 
 	public void debugMessage(String message) {
 		log.debug(message);
-		writer.debugMessage(message);
+		if (writer != null) {
+			writer.debugMessage(message);
+		}
 	}
 
-	public void errorMessage(String message) {
-		log.error(message);
-		writer.errorMessage(message);
+	public void infoMessage(String message) {
+		log.info(message);
+		if (writer != null) {
+			writer.infoMessage(message);
+		}
 	}
 
 	public void warningMessage(String message) {
 		log.warn(message);
-		writer.warningMessage(message);
+		messages.add(new LarvaMessage(LarvaLogLevel.WARNING, message));
+		if (writer != null) {
+			writer.warningMessage(message);
+		}
+	}
+
+	public void errorMessage(String message) {
+		log.error(message);
+		messages.add(new LarvaMessage(LarvaLogLevel.ERROR, message));
+		if (writer != null) {
+			writer.errorMessage(message);
+		}
 	}
 
 	public void errorMessage(String message, Exception exception) {
-		writer.errorMessage(message, exception);
+		log.error(message, exception);
+		messages.add(new LarvaMessage(LarvaLogLevel.ERROR, message, exception));
+		if (writer != null) {
+			writer.errorMessage(message, exception);
+		}
+	}
+
+	/**
+	 * Larva API calls that do not provide an output-writer can collect relevant log messages for the
+	 * user to be returned via the API from the message list.
+	 *
+	 * @param level Minimum level to be returned
+	 * @return List of LarvaMessages
+	 */
+	public List<LarvaMessage> getMessagesAtLevel(LarvaLogLevel level) {
+		return messages.stream()
+				.filter(m -> level.shouldLog(m.getLogLevel()))
+				.toList();
+	}
+
+	/**
+	 * Get the scenario directory selected as default Active with the current {@link LarvaConfig}
+	 * @return Active Scenario Directory
+	 */
+	public String getActiveScenariosDirectory() {
+		TestRunStatus testRunStatus = createTestRunStatus();
+		return testRunStatus.initScenarioDirectories();
+	}
+
+	public void flushOutput() {
+		if (writer != null) {
+			writer.flush();
+		}
 	}
 
 	// Used by saveResultToFile.jsp
@@ -233,6 +273,7 @@ public class LarvaTool {
 		AppConstants appConstants = AppConstants.getInstance();
 		String windiffCommand = appConstants.getProperty("larva.windiff.command");
 		if (windiffCommand == null) {
+			TestRunStatus testRunStatus = createTestRunStatus();
 			String currentScenariosRootDirectory = testRunStatus.initScenarioDirectories();
 			windiffCommand = currentScenariosRootDirectory + "..\\..\\IbisAlgemeenWasbak\\WinDiff\\WinDiff.Exe";
 		}
@@ -330,6 +371,7 @@ public class LarvaTool {
 	 * @return Message data, or "" if the message was empty. Returns NULL if there was an error reading the message.
 	 */
 	public @Nullable String messageToString(Message message) {
+		// TODO: This should just throw instead of returning NULL, and the caller should catch instead of checking NULL return value
 		try {
 			message.preserve();
 			String r = message.asString();
@@ -343,11 +385,8 @@ public class LarvaTool {
 		}
 	}
 
-	public int compareResult(Scenario scenario, String step, String stepDisplayName, String fileName, String stepSaveFileName, Message expectedResultMessage, Message actualResultMessage, Properties properties) {
-		if (fileName.endsWith("ignore")) {
-			debugMessage("ignoring compare for filename '"+fileName+"'");
-			return RESULT_OK;
-		}
+	public int compareResult(TestExecutionObserver testExecutionObserver, Scenario scenario, String step, String fileName, Message expectedResultMessage, Message actualResultMessage) {
+		Properties properties = scenario.getProperties();
 		String expectedResult = messageToString(expectedResultMessage);
 		String actualResult = messageToString(actualResultMessage);
 		if (expectedResult == null || actualResult == null) {
@@ -360,13 +399,13 @@ public class LarvaTool {
 		String diffType = properties.getProperty(step + ".diffType");
 		if (".json".equals(diffType) || (diffType == null && fileName.endsWith(".json"))) {
 			try {
-				printableExpectedResult = Misc.jsonPretty(expectedResult);
+				printableExpectedResult = JsonUtil.jsonPretty(expectedResult);
 			} catch (JsonException e) {
 				debugMessage("Could not prettify Json: "+e.getMessage());
 				printableExpectedResult = expectedResult;
 			}
 			try {
-				printableActualResult = Misc.jsonPretty(actualResult);
+				printableActualResult = JsonUtil.jsonPretty(actualResult);
 			} catch (JsonException e) {
 				debugMessage("Could not prettify Json: "+e.getMessage());
 				printableActualResult = actualResult;
@@ -396,10 +435,8 @@ public class LarvaTool {
 			}
 			if (identical) {
 				ok = RESULT_OK;
-				debugMessage("Strings are identical");
-				testExecutionObserver.stepMessageSuccess(scenario, stepDisplayName, "Result", printableActualResult, preparedActualResult);
+				testExecutionObserver.stepMessageSuccess(scenario, step, "Result", printableActualResult, preparedActualResult);
 			} else {
-				debugMessage("Strings are not identical");
 				String message;
 				if (diffException == null) {
 					message = diff.toString();
@@ -407,17 +444,7 @@ public class LarvaTool {
 					message = "Exception during XML diff: " + diffException.getMessage();
 					errorMessage("Exception during XML diff: ", diffException);
 				}
-				testExecutionObserver.stepMessageFailed(scenario, stepDisplayName, message, stepSaveFileName, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult);
-				if (larvaConfig.isAutoSaveDiffs()) {
-					String filenameAbsolutePath = (String)properties.get(step + ".absolutepath");
-					debugMessage("Copy actual result to ["+filenameAbsolutePath+"]");
-					try {
-						org.apache.commons.io.FileUtils.writeStringToFile(new File(filenameAbsolutePath), actualResult, Charset.defaultCharset());
-					} catch (IOException e) {
-						// Ignore
-					}
-					ok = RESULT_AUTOSAVED;
-				}
+				ok = reportFailedCompare(testExecutionObserver, scenario, step, message, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult, actualResult, ok);
 			}
 		} else {
 			// txt diff
@@ -425,10 +452,8 @@ public class LarvaTool {
 			String formattedPreparedActualResult = formatString(preparedActualResult);
 			if (formattedPreparedExpectedResult.equals(formattedPreparedActualResult)) {
 				ok = RESULT_OK;
-				debugMessage("Strings are identical");
-				testExecutionObserver.stepMessageSuccess(scenario, stepDisplayName, "Result", printableActualResult, preparedActualResult);
+				testExecutionObserver.stepMessageSuccess(scenario, step, "Result", printableActualResult, preparedActualResult);
 			} else {
-				debugMessage("Strings are not identical");
 				String message = null;
 				StringBuilder diffActual = new StringBuilder();
 				StringBuilder diffExcpected = new StringBuilder();
@@ -459,17 +484,23 @@ public class LarvaTool {
 					diffExcpected.append(" ...");
 				}
 				message = message + " actual result is '" + diffActual + "' and expected result is '" + diffExcpected + "'";
-				testExecutionObserver.stepMessageFailed(scenario, stepDisplayName, message, stepSaveFileName, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult);
-				if (larvaConfig.isAutoSaveDiffs()) {
-					String filenameAbsolutePath = (String)properties.get(step + ".absolutepath");
-					debugMessage("Copy actual result to ["+filenameAbsolutePath+"]");
-					try {
-						org.apache.commons.io.FileUtils.writeStringToFile(new File(filenameAbsolutePath), actualResult, Charset.defaultCharset());
-					} catch (IOException e) {
-						// Ignore
-					}
-					ok = RESULT_AUTOSAVED;
-				}
+				ok = reportFailedCompare(testExecutionObserver, scenario, step, message, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult, actualResult, ok);
+			}
+		}
+		return ok;
+	}
+
+	private int reportFailedCompare(TestExecutionObserver testExecutionObserver, Scenario scenario, String step, String message, String printableExpectedResult, String preparedExpectedResult, String printableActualResult, String preparedActualResult, String actualResult, int ok) {
+		String filenameAbsolutePath = scenario.getStepDataFile(step);
+		testExecutionObserver.stepMessageFailed(scenario, step, message, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult);
+		if (larvaConfig.isAutoSaveDiffs()) {
+			debugMessage("Copy actual result to ["+filenameAbsolutePath+"]");
+			try {
+				org.apache.commons.io.FileUtils.writeStringToFile(new File(filenameAbsolutePath), actualResult, Charset.defaultCharset());
+				ok = RESULT_AUTOSAVED;
+			} catch (IOException e) {
+				// Ignore
+				errorMessage("Cannot write actual result to ["+filenameAbsolutePath+"]", e);
 			}
 		}
 		return ok;
@@ -477,6 +508,19 @@ public class LarvaTool {
 
 	public String prepareResultForCompare(String input, Properties properties, Map<String, Map<String, Map<String, String>>> ignoreMap) {
 		String result = input;
+
+		// TESTDATA-dir based file paths in results can often not be compared properly because of location differences, and complicated by system-dependent file paths.
+		// Changing Windows backslashes to Unix forward slashes in the rest of file paths is done with regexes configured in global.properties
+		String testDataDirPropertyValue = AppConstants.getInstance().getProperty("testdata.dir");
+		if (testDataDirPropertyValue != null) {
+			String testDataDirNative = new File(testDataDirPropertyValue).getAbsolutePath();
+			String testDataDirWindows = FilenameUtils.normalize(testDataDirPropertyValue, false);
+			String testDataDirUnix = FilenameUtils.normalize(testDataDirPropertyValue, true);
+			result = result.replace(testDataDirNative, "TESTDATA_DIR")
+					.replace(testDataDirWindows, "TESTDATA_DIR")
+					.replace(testDataDirUnix, "TESTDATA_DIR");
+		}
+
 		result = doActionBetweenKeys("decodeUnzipContentBetweenKeys", result, properties, ignoreMap, (value, pp, key1, key2)-> {
 			boolean replaceNewlines = !"true".equals(pp.apply("replaceNewlines"));
 			return decodeUnzipContentBetweenKeys(value, key1, key2, replaceNewlines);
@@ -517,9 +561,9 @@ public class LarvaTool {
 		String format(String value, Function<String, String> propertyProvider, String key1);
 	}
 
-	public String doActionBetweenKeys(String key, String value, Properties properties, Map<String, Map<String, Map<String, String>>> ignoreMap, BetweenKeysAction action) {
+	public static String doActionBetweenKeys(String key, String value, Properties properties, Map<String, Map<String, Map<String, String>>> ignoreMap, BetweenKeysAction action) {
 		String result = value;
-		debugMessage("Check " + key + " properties");
+		log.debug("Check [{}] properties", key);
 		boolean lastKeyIndexProcessed = false;
 		int i = 1;
 		while (!lastKeyIndexProcessed) {
@@ -527,7 +571,7 @@ public class LarvaTool {
 			String key1 = properties.getProperty(keyPrefix + "key1");
 			String key2 = properties.getProperty(keyPrefix + "key2");
 			if (key1 != null && key2 != null) {
-				debugMessage(key + " between key1 '" + key1 + "' and key2 '" + key2 + "'");
+				log.debug("[{}] between key1 [{}] and key2 [{}]", key, key1, key2);
 				result = action.format(result, k -> properties.getProperty(keyPrefix + k), key1, key2);
 				i++;
 			} else if (key1 != null || key2 != null) {
@@ -549,7 +593,7 @@ public class LarvaTool {
 					throw new IllegalArgumentException("Error in Larva scenario file: Spec [" + key + "." + spec.getKey() + "] is incomplete; key1=[" + key1 + "], key2=[" + key2 + "]");
 				}
 
-				debugMessage(key + " between key1 '" + key1 + "' and key2 '" + key2 + "'");
+				log.debug("[{}] between key1 [{}] and key2 [{}]", key, key1, key2);
 				result = action.format(result, keyPair::get, key1, key2);
 			}
 		}
@@ -557,9 +601,9 @@ public class LarvaTool {
 		return result;
 	}
 
-	public String doActionWithSingleKey(String keyName, String value, Properties properties, Map<String, Map<String, Map<String, String>>> ignoreMap, SingleKeyAction action) {
+	public static String doActionWithSingleKey(String keyName, String value, Properties properties, Map<String, Map<String, Map<String, String>>> ignoreMap, SingleKeyAction action) {
 		String result = value;
-		debugMessage("Check " + keyName + " properties");
+		log.debug("Check [{}] properties", keyName);
 		boolean lastKeyIndexProcessed = false;
 		int i = 1;
 		while (!lastKeyIndexProcessed) {
@@ -569,7 +613,7 @@ public class LarvaTool {
 				key = properties.getProperty(keyPrefix + ".key");
 			}
 			if (key != null) {
-				debugMessage(keyName+ " key '" + key + "'");
+				log.debug("[{}] key [{}]", keyName, key);
 				result = action.format(result, k -> properties.getProperty(keyPrefix + "." + k), key);
 				i++;
 			} else {
@@ -586,7 +630,7 @@ public class LarvaTool {
 
 				String key = keyPair.get("key");
 
-				debugMessage(keyName + " key '" + key + "'");
+				log.debug("[{}] key [{}]", keyName, key);
 				result = action.format(result, keyPair::get, key);
 
 				keySpecIt.remove();
@@ -681,17 +725,17 @@ public class LarvaTool {
 		String result = string;
 		int i = result.indexOf(key1);
 		while (i != -1 && result.length() > i + key1.length()) {
-			debugMessage("Key 1 found");
+			log.debug("Key 1 found");
 			int j = result.indexOf(key2, i + key1.length());
 			if (j != -1) {
-				debugMessage("Key 2 found");
+				log.debug("Key 2 found");
 				String encoded = result.substring(i + key1.length(), j);
 				String unzipped;
 				byte[] decodedBytes;
-				debugMessage("Decode");
+				log.debug("Decode");
 				decodedBytes = Base64.decodeBase64(encoded);
 				try {
-					debugMessage("Unzip");
+					log.debug("Unzip");
 					StringBuilder stringBuilder = new StringBuilder();
 					stringBuilder.append("<tt:file xmlns:tt=\"testtool\">");
 					ZipInputStream zipInputStream = new ZipInputStream(new ByteArrayInputStream(decodedBytes));
@@ -761,10 +805,10 @@ public class LarvaTool {
 		String ignoreText = "IGNORE_CURRENT_TIME";
 		int i = result.indexOf(key1);
 		while (i != -1 && result.length() > i + key1.length()) {
-			debugMessage("Key 1 found");
+			log.debug("Key 1 found");
 			int j = result.indexOf(key2, i + key1.length());
 			if (j != -1) {
-				debugMessage("Key 2 found");
+				log.debug("Key 2 found");
 				String dateString = result.substring(i + key1.length(), j);
 				Date date;
 				boolean remainingString = false;
@@ -961,7 +1005,7 @@ public class LarvaTool {
 					errorMessage("Property '" + _param + i + ".value' or '" + _param + i + ".valuefile' not found while property '" + _param + i + ".name' exist");
 				} else {
 					result.put(name, value);
-					debugMessage("Add param with name '" + name + "' and value '" + value + "' for property '" + "'");
+					log.debug("Add param with name [{}] and value [{}] for property '" + "'", name, value);
 				}
 				i++;
 			} else {

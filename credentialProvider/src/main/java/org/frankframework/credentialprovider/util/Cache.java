@@ -16,6 +16,7 @@
 package org.frankframework.credentialprovider.util;
 
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Cache<K,V,E extends Exception> {
@@ -38,4 +39,7 @@ public class Cache<K,V,E extends Exception> {
 		}
 	}
 
+	public Set<K> keySet() {
+		return delegate.keySet();
+	}
 }

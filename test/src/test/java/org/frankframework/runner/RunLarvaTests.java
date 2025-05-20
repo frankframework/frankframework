@@ -1,5 +1,6 @@
 package org.frankframework.runner;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -8,9 +9,11 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
@@ -19,6 +22,7 @@ import jakarta.servlet.ServletContext;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicNode;
@@ -28,16 +32,29 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.messaging.Message;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.IbisContext;
+import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.larva.LarvaConfig;
 import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.Scenario;
 import org.frankframework.larva.ScenarioRunner;
 import org.frankframework.larva.TestRunStatus;
+import org.frankframework.larva.output.LarvaWriter;
+import org.frankframework.larva.output.PlainTextScenarioOutputRenderer;
+import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.LocalGateway;
+import org.frankframework.management.bus.OutboundGateway;
+import org.frankframework.management.bus.message.MessageBase;
 import org.frankframework.util.CloseUtils;
+import org.frankframework.util.SpringUtils;
 
 /**
  * Attempt to run Larva tests in the Maven build.
@@ -49,51 +66,18 @@ import org.frankframework.util.CloseUtils;
  *
  */
 @Tag("integration")
+@Log4j2
 public class RunLarvaTests {
 
-	public static final LarvaLogLevel LARVA_LOG_LEVEL = LarvaLogLevel.WRONG_PIPELINE_MESSAGES;
-
+	public static final LarvaLogLevel LARVA_LOG_LEVEL = LarvaLogLevel.WRONG_PIPELINE_MESSAGES_PREPARED_FOR_DIFF;
 	public static final Set<String> IGNORED_SCENARIOS = Set.of(
-			"ApiListener/scenario01",
-			"ApiListener/scenario02",
-			"ApiListener/scenario03",
-			"ApiListener/scenario04",
-			"ApiListener/scenario05",
-			"ApiListener/scenario06",
-			"ApiListener/scenario07",
-			"ApiListener/scenario08",
 			"Authentication/scenario03",
 			"Authentication/scenario04",
 			"Base64Pipe/scenario01",
 			"Base64Pipe/scenario02",
-			"CorrelationMessageId/scenario04",
-			"CorrelationMessageId/scenario05",
-			"Exits/api/scenario01",
-			"Exits/api/scenario01b",
-			"Exits/api/scenario03",
-			"Exits/soap/scenario01",
-			"Exits/soap/scenario02",
-			"JSON/DataSonnet/scenario01",
-			"JSON/JsonPipe/scenario01",
 			"FileSender/scenario01",
-			"ForwardNameProvidingSenders/scenario10",
-			"ForwardNameProvidingSenders/scenario11",
-			"ForwardNameProvidingSenders/scenario12",
-			"ForwardNameProvidingSenders/scenario13",
-			"FrankSender/scenario05",
 			"ManagedFileHandler/scenario01",
 			"ManagedFileHandler/scenario02",
-			"LocalFileSystemPipe/scenario07",
-			"LocalFileSystemPipe/scenario08",
-			"MoveFiles/scenario01",
-			"MoveFiles/scenario04",
-			"MoveFiles/scenario09",
-			"Receivers/NonTransacted/NoInProcess/scenario01",
-			"Receivers/NonTransacted/NoInProcess/scenario05",
-			"Receivers/NonTransacted/NoInProcess/scenario06",
-			"Receivers/Transacted/WithInProcess/scenario03",
-			"RestListener/scenario01",
-			"RestListener/scenario02",
 			"Validators/SoapValidator/scenario07",
 			"WebServiceListenerSender/scenario11b",
 			"WebServiceListenerSender/scenario11c",
@@ -101,23 +85,24 @@ public class RunLarvaTests {
 			"WsdlGeneratorPipe/scenario01",
 			"WsdlGeneratorPipe/scenario02",
 			"WsdlGeneratorPipe/scenario03",
-			"XsltProviderListener/scenario04",
-			"Zip/ZipWriter/scenario 01",
-			"Zip/ZipWriter/scenario 02"
+			"XsltProviderListener/scenario04"
 	);
 
 	private static ConfigurableApplicationContext parentContext;
 	private static ConfigurableApplicationContext applicationContext;
 	private static IbisContext ibisContext;
-	private static LarvaTool larvaTool;
-	private static ScenarioRunner scenarioRunner;
-	private static String scenarioRootDir;
+
+	private LarvaTool larvaTool;
+	private ScenarioRunner scenarioRunner;
+	private String scenarioRootDir;
+	private LarvaWriter larvaWriter;
+	private TestExecutionObserver testExecutionObserver;
 
 	/**
 	 * Since we don't use @SpringBootApplication, we can't use @SpringBootTest here and need to manually configure the application
 	 */
 	@BeforeAll
-	static void setup() throws IOException {
+	static void setupBeforeAll() throws IOException {
 		SpringApplication springApplication = IafTestInitializer.configureApplication();
 		// This ApplicationContext doesn't have the database so we cannot use it for the Larva Tests...
 		parentContext = springApplication.run();
@@ -126,15 +111,36 @@ public class RunLarvaTests {
 		// We need to get the IbisContext from the ServletContext, since from this one we can get the ApplicationContext that has the database.
 		ibisContext = FrankApplicationInitializer.getIbisContext(servletContext);
 		applicationContext = ibisContext.getApplicationContext();
-		larvaTool = LarvaTool.createInstance(applicationContext, System.out);
+
+		OutboundGateway gateway = SpringUtils.createBean(parentContext, LocalGateway.class);
+		assertTrue(parentContext.isRunning());
+		await().pollInterval(5, TimeUnit.SECONDS)
+				.atMost(Duration.ofMinutes(5))
+				.until(() -> verifyAppIsHealthy(gateway));
+	}
+
+	private static boolean verifyAppIsHealthy(OutboundGateway gateway) {
+		try {
+			Message<Object> response = gateway.sendSyncMessage(RequestMessageBuilder.create(BusTopic.HEALTH).build(null));
+			return "200".equals(response.getHeaders().get(BusMessageUtils.HEADER_PREFIX+ MessageBase.STATUS_KEY));
+		} catch (Exception e) {
+			log.error("error while checking health of application", e);
+			return false;
+		}
+	}
+
+	@BeforeEach
+	void setupBeforeEach() {
+		larvaTool = LarvaTool.createInstance(applicationContext);
 
 		LarvaConfig larvaConfig = larvaTool.getLarvaConfig();
 		larvaConfig.setTimeout(10_000);
 		larvaConfig.setLogLevel(LARVA_LOG_LEVEL);
 		larvaConfig.setMultiThreaded(false);
 
-		scenarioRunner = larvaTool.createScenarioRunner();
-		scenarioRootDir = larvaTool.getTestRunStatus().initScenarioDirectories();
+		larvaWriter = new LarvaWriter(larvaConfig, System.out);
+		larvaTool.setWriter(larvaWriter);
+		testExecutionObserver = new PlainTextScenarioOutputRenderer(larvaWriter);
 	}
 
 	@AfterAll
@@ -153,8 +159,13 @@ public class RunLarvaTests {
 	 */
 	@TestFactory
 	Stream<DynamicNode> larvaTests() {
-		larvaTool.getTestRunStatus().readScenarioFiles(larvaTool.getScenarioLoader());
-		List<Scenario> allScenarios = larvaTool.getTestRunStatus().getScenariosToRun(larvaTool.getLarvaConfig().getActiveScenariosDirectory());
+		assertTrue(applicationContext.isRunning());
+		TestRunStatus testRunStatus = larvaTool.createTestRunStatus();
+		scenarioRootDir = testRunStatus.initScenarioDirectories();
+		scenarioRunner = larvaTool.createScenarioRunner(testExecutionObserver, testRunStatus);
+
+		testRunStatus.readScenarioFiles(larvaTool.getScenarioLoader());
+		List<Scenario> allScenarios = testRunStatus.getScenariosToRun(larvaTool.getLarvaConfig().getActiveScenariosDirectory());
 		assertFalse(allScenarios.isEmpty(), () -> "Did not find any scenario-files in scenarioRootDir [%s]!".formatted(scenarioRootDir));
 		System.err.printf("Creating JUnit tests from %d scenarios loaded from [%s]%n", allScenarios.size(), scenarioRootDir);
 		return createScenarios(scenarioRootDir, "", allScenarios);
@@ -190,6 +201,7 @@ public class RunLarvaTests {
 				scenarioName, scenario.getScenarioFile().toURI(), () -> {
 					System.out.println("Running scenario: [" + scenarioName + "]");
 					int scenarioPassed = scenarioRunner.runOneFile(scenario, true);
+					larvaWriter.flush();
 
 					assumeTrue(scenarioPassed != LarvaTool.RESULT_ERROR || !IGNORED_SCENARIOS.contains(scenarioName), () -> "Ignoring Blacklisted Scenario: [" + scenarioName + "]");
 					assertNotEquals(LarvaTool.RESULT_ERROR, scenarioPassed, () -> "Scenario failed: [" + scenarioName + "]");
@@ -205,7 +217,7 @@ public class RunLarvaTests {
 		larvaConfig.setLogLevel(LarvaLogLevel.SCENARIO_FAILED);
 
 		long start = System.currentTimeMillis();
-		TestRunStatus result = larvaTool.runScenarios(scenarioRootDir);
+		TestRunStatus result = larvaTool.runScenarios(larvaTool.getActiveScenariosDirectory(), testExecutionObserver, larvaWriter);
 		long end = System.currentTimeMillis();
 		System.err.printf("Scenarios executed; duration: %dms%n", end - start);
 

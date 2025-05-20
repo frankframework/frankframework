@@ -8,6 +8,8 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.io.StringWriter;
 import java.util.List;
+import java.util.Map;
+import java.util.Properties;
 
 import jakarta.servlet.ServletContext;
 
@@ -28,6 +30,7 @@ import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CloseUtils;
+import org.frankframework.util.PropertyLoader;
 
 @Log4j2
 class LarvaToolTest {
@@ -37,6 +40,8 @@ class LarvaToolTest {
 
 	private static AppConstants appConstants;
 	private static File scenarioRoot;
+
+	private Properties properties;
 
 	@BeforeAll
 	public static void beforeAll() {
@@ -50,17 +55,84 @@ class LarvaToolTest {
 	public void setUp() {
 		appConstants.setProperty("scenariosroot1.directory", scenarioRoot.getAbsolutePath());
 		appConstants.setProperty("scenariosroot1.description", "Test Scenarios Root Directory");
+
+		properties = new PropertyLoader("scenario-testdata.properties");
 	}
 
 	@AfterEach
 	public void tearDown() {
 		appConstants.remove("scenariosroot1.directory");
 		appConstants.remove("scenariosroot1.description");
+		appConstants.remove("testdata.dir");
 	}
 
 	@AfterAll
 	public static void afterAll() {
 		CloseUtils.closeSilently(configuration);
+	}
+
+	@Test
+	public void testPrepareForCompareWithTestDataDirNotSet() {
+		// Arrange
+		LarvaTool larvaTool = LarvaTool.createInstance(configuration);
+		Map<String, Map<String, Map<String, String>>> ignoresMap = LarvaTool.mapPropertiesToIgnores(properties);
+
+		String input = """
+				<test>C:\\TestData\\SomePath\\MyFile.txt</test>
+				""";
+
+		String expected = """
+				<test>C:\\TestData\\SomePath\\MyFile.txt</test>
+				""";
+
+		// Act
+		String actual = larvaTool.prepareResultForCompare(input, properties, ignoresMap);
+
+		// Assert
+		assertEquals(expected, actual);
+	}
+	@Test
+	public void testPrepareForCompareWithTestDataDirUnixPathInput() {
+		// Arrange
+		LarvaTool larvaTool = LarvaTool.createInstance(configuration);
+		appConstants.setProperty("testdata.dir", "/var/testdata");
+		Map<String, Map<String, Map<String, String>>> ignoresMap = LarvaTool.mapPropertiesToIgnores(properties);
+
+		String input = """
+				<test>/var/testdata/SomePath/MyFile.txt</test>
+				""";
+
+		String expected = """
+				<test>TESTDATA_DIR/SomePath/MyFile.txt</test>
+				""";
+
+		// Act
+		String actual = larvaTool.prepareResultForCompare(input, properties, ignoresMap);
+
+		// Assert
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void testPrepareForCompareWithTestDataDirWindowsPathInput() {
+		// Arrange
+		LarvaTool larvaTool = LarvaTool.createInstance(configuration);
+		appConstants.setProperty("testdata.dir", "C:\\TestData");
+		Map<String, Map<String, Map<String, String>>> ignoresMap = LarvaTool.mapPropertiesToIgnores(properties);
+
+		String input = """
+				<test>C:\\TestData\\SomePath\\MyFile.txt</test>
+				""";
+
+		String expected = """
+				<test>TESTDATA_DIR/SomePath/MyFile.txt</test>
+				""";
+
+		// Act
+		String actual = larvaTool.prepareResultForCompare(input, properties, ignoresMap);
+
+		// Assert
+		assertEquals(expected, actual);
 	}
 
 	@Test
@@ -86,10 +158,9 @@ class LarvaToolTest {
 	void testRunScenariosFromPlainConfig () {
 		// Arrange
 		StringWriter output = new StringWriter();
-		LarvaTool larvaTool = LarvaTool.createInstance(applicationContext, output);
 
 		// Act
-		TestRunStatus result = larvaTool.runScenarios(scenarioRoot.getAbsolutePath());
+		TestRunStatus result = LarvaTool.runScenarios(applicationContext, output, scenarioRoot.getAbsolutePath());
 
 		// Assert
 		verifyTestRunResults(result, output);

@@ -23,7 +23,7 @@
 		<jackson.version>2.19.0</jackson.version>
 		<cxf.version>4.1.1</cxf.version>
 		<spring.version>6.2.7</spring.version>
-		<spring-security.version>6.4.5</spring-security.version>
+		<spring-security.version>6.5.0</spring-security.version>
 		<spring-integration.version>6.4.4</spring-integration.version>
 		<spring.boot.version>3.4.5</spring.boot.version>
 		<tomcat.version>10.1.41</tomcat.version>
@@ -425,12 +425,6 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-			<!-- SLF4J Log binding -->
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-api</artifactId>
-				<version>2.0.17</version>
-			</dependency>
 
 			<dependency>
 				<groupId>software.amazon.awssdk</groupId>
@@ -438,6 +432,21 @@
 				<version>${aws.java.sdk.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>org.xmlunit</groupId>
+				<artifactId>xmlunit-bom</artifactId>
+				<version>2.10.1</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<!-- SLF4J Log binding -->
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>2.0.17</version>
 			</dependency>
 
 			<!-- the bcpg depends on the other two modules, however to ensure we're using the latest version, explicitly define them here, dependabot will take care of the rest -->
