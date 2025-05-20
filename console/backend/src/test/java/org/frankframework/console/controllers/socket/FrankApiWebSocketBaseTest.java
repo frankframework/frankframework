@@ -11,9 +11,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.messaging.Message;
 import org.springframework.test.context.ContextConfiguration;
@@ -28,7 +26,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 @ContextConfiguration(classes = { WebTestConfiguration.class, FrankApiWebSocketBase.class})
 class FrankApiWebSocketBaseTest {
 
-	@InjectMocks
 	FrankApiWebSocketBase webSocketBase;
 
 	@Autowired
@@ -39,7 +36,6 @@ class FrankApiWebSocketBaseTest {
 
 	@BeforeEach
 	public void setUp() {
-		MockitoAnnotations.openMocks(this);
 		webSocketBase = Mockito.spy(new FrankApiWebSocketBase());
 		webSocketBase.gateway = outboundGateway;
 		webSocketBase.messageCacheStore = messageCacheStore;
@@ -79,7 +75,6 @@ class FrankApiWebSocketBaseTest {
 	@Test
 	void compareAndUpdateResponseWithoutDiff() {
 		String payload = "{\"item\": \"value\", \"status\": 1}";
-		String payload2 = "{\"item\": \"value\", \"status\": 1}";
 
 		Mockito.when(outboundGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
 			Message<String> msg = i.getArgument(0);
@@ -93,7 +88,7 @@ class FrankApiWebSocketBaseTest {
 		String result = webSocketBase.compareAndUpdateResponse(builder, null, null);
 
 		builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.GET);
-		builder.setPayload(payload2);
+		builder.setPayload(payload);
 		String result2 = webSocketBase.compareAndUpdateResponse(builder, null, null);
 
 		assertEquals(payload, result);
