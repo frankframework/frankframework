@@ -8,8 +8,6 @@ jobs:
     name: SonarCloud
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
       - name: Skip SonarCloud
         run: echo "Skip SonarCloud, no important changes are detected"
 
@@ -17,7 +15,5 @@ jobs:
     name: SonarCloud Code Analysis
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v3
       - name: Skip SonarCloud Code Analysis
         run: echo "Skip SonarCloud Code Analysis, no important changes are detected"
