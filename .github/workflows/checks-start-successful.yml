@@ -1,4 +1,4 @@
-name: Initialize SonarCloud Checks
+name: Checks Start Successful
 
 on:
   pull_request:
@@ -12,12 +12,12 @@ jobs:
     name: SonarCloud
     runs-on: ubuntu-latest
     steps:
-      - name: Start green
-        run: echo "Start green untill real results are in"
+      - name: Start SonarCloud ✅
+        run: echo "Start successful until real results are in"
 
   sonarcloud-code-analysis:
     name: SonarCloud Code Analysis
     runs-on: ubuntu-latest
     steps:
-      - name: Start green
-        run: echo "Start green untill real results are in"
+      - name: Start SonarCloud Code Analysis ✅
+        run: echo "Start successful until real results are in"
