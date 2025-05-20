@@ -11,6 +11,10 @@ jobs:
   check-only-changed:
     runs-on: ubuntu-latest
     name: Check if only specific files changed
+    outputs:
+      only_changed: ${{ steps.changed-files.outputs.only_changed }}
+      all_changed_files: ${{ steps.changed-files.outputs.all_changed_files }}
+      other_changed_files: ${{ steps.changed-files.outputs.other_changed_files }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -42,6 +46,7 @@ jobs:
           echo "Files matching our pattern: ${{ steps.changed-files.outputs.all_changed_files }}"
           echo "Other files changed: ${{ steps.changed-files.outputs.other_changed_files }}"
 
-      - name: Take action only when specific files change
-        if: steps.changed-files.outputs.only_changed == 'true'
-        uses: frankframework/frankframework/.github/workflows/skip-sonarcloud.yml@chore/skip-sonarcloud
+  skip-sonarcloud:
+    if: needs.check-only-changed.outputs.only_changed == 'true'
+    uses: frankframework/frankframework/.github/workflows/skip-sonarcloud.yml@chore/skip-sonarcloud
+    needs: check-only-changed
