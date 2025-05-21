@@ -1,5 +1,6 @@
 package org.frankframework.senders;
 
+import static org.frankframework.testutil.MatchUtils.assertXmlEquals;
 import static org.frankframework.testutil.mock.WaitUtils.waitForState;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -40,6 +41,8 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.jta.narayana.NarayanaJtaTransactionManager;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.EchoPipe;
+import org.frankframework.pipes.ForEachChildElementPipe;
+import org.frankframework.pipes.PutInSessionPipe;
 import org.frankframework.processors.CorePipeLineProcessor;
 import org.frankframework.processors.CorePipeProcessor;
 import org.frankframework.receivers.JavaListener;
@@ -51,6 +54,7 @@ import org.frankframework.testutil.ThrowingAfterCloseInputStream;
 import org.frankframework.testutil.VirtualInputStream;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.RunState;
+import org.frankframework.util.SpringUtils;
 
 @Log4j2
 class IbisLocalSenderTest {
@@ -72,9 +76,9 @@ class IbisLocalSenderTest {
 		}
 	}
 
-	private static IbisLocalSender setupIbisLocalSender(TestConfiguration configuration, JavaListener<?> listener, boolean callByServiceName, boolean callIsolated, boolean callSynchronous) throws ConfigurationException {
-		IsolatedServiceCaller serviceCaller = configuration.createBean();
-		IbisLocalSender ibisLocalSender = configuration.createBean();
+	private static IbisLocalSender setupIbisLocalSender(Adapter adapter, JavaListener<?> listener, boolean callByServiceName, boolean callIsolated, boolean callSynchronous) throws ConfigurationException {
+		IsolatedServiceCaller serviceCaller = SpringUtils.createBean(adapter);
+		IbisLocalSender ibisLocalSender = SpringUtils.createBean(adapter);
 		ibisLocalSender.setCheckDependency(true);
 		ibisLocalSender.setIsolatedServiceCaller(serviceCaller);
 		ibisLocalSender.setIsolated(callIsolated);
@@ -88,16 +92,17 @@ class IbisLocalSenderTest {
 			ibisLocalSender.setJavaListener(listener.getName());
 		}
 
-		ibisLocalSender.setApplicationContext(configuration);
+		ibisLocalSender.setApplicationContext(adapter);
+		ibisLocalSender.setName("IbisLocalSender");
 		ibisLocalSender.configure();
 		return ibisLocalSender;
 	}
 
-	private static void registerWithServiceDispatcher(JavaListener<?> listener) throws ListenerException {
+	private static void registerWithServiceDispatcher(JavaListener<?> listener) {
 		ServiceDispatcher.getInstance().registerServiceClient(listener.getServiceName(), listener);
 	}
 
-	private Message createVirtualInputStream(long streamSize) {
+	private static Message createVirtualInputStream(long streamSize) {
 		InputStream virtualInputStream = new VirtualInputStream(streamSize);
 		return new Message(new ThrowingAfterCloseInputStream(virtualInputStream));
 	}
@@ -115,13 +120,14 @@ class IbisLocalSenderTest {
 	void sendMessage(boolean callByServiceName, boolean callIsolated, boolean callSynchronous) throws Exception {
 		// Arrange
 		configuration = new TestConfiguration(false);
+		Adapter adapter = createAdapter(configuration);
 		AtomicLong asyncCounterResult = new AtomicLong();
 		Semaphore asyncCompletionSemaphore = new Semaphore(0);
 
 		TestPipe testPipe = createTestPipe(asyncCounterResult, asyncCompletionSemaphore);
-		PipeLine pipeline = createPipeLine(testPipe, configuration);
-		JavaListener<?> listener = setupJavaListener(configuration, pipeline, callByServiceName);
-		IbisLocalSender ibisLocalSender = setupIbisLocalSender(configuration, listener, callByServiceName, callIsolated, callSynchronous);
+		PipeLine pipeline = createPipeLine(testPipe, adapter);
+		JavaListener<?> listener = setupJavaListener(configuration, adapter, pipeline, callByServiceName);
+		IbisLocalSender ibisLocalSender = setupIbisLocalSender(adapter, listener, callByServiceName, callIsolated, callSynchronous);
 
 		log.info("*>>> Starting Configuration");
 		configuration.configure();
@@ -162,13 +168,14 @@ class IbisLocalSenderTest {
 	void sendMessageAsync(boolean callByServiceName) throws Exception {
 		// Arrange
 		configuration = new TestConfiguration(false);
+		Adapter adapter = createAdapter(configuration);
 		AtomicLong asyncCounterResult = new AtomicLong();
 		Semaphore asyncCompletionSemaphore = new Semaphore(0);
 
 		TestPipe testPipe = createTestPipe(asyncCounterResult, asyncCompletionSemaphore);
-		PipeLine pipeline = createPipeLine(testPipe, configuration);
-		JavaListener<?> listener = setupJavaListener(configuration, pipeline, callByServiceName);
-		IbisLocalSender ibisLocalSender = setupIbisLocalSender(configuration, listener, callByServiceName, true, false);
+		PipeLine pipeline = createPipeLine(testPipe, adapter);
+		JavaListener<?> listener = setupJavaListener(configuration, adapter, pipeline, callByServiceName);
+		IbisLocalSender ibisLocalSender = setupIbisLocalSender(adapter, listener, callByServiceName, true, false);
 
 		log.info("*>>> Starting Configuration");
 		configuration.configure();
@@ -352,20 +359,83 @@ class IbisLocalSenderTest {
 		}
 	}
 
-	private JavaListener<?> setupJavaListener(TestConfiguration configuration, PipeLine pipeline, boolean callByServiceName) throws Exception {
+	@Test
+	public void testIteratorPipeWithLocalSender() throws Exception {
+		// Arrange
+		configuration = new TestConfiguration(false);
+		Adapter adapter = createAdapter(configuration);
+		PutInSessionPipe pipe = configuration.createBean();
+		pipe.setName("put-in-session-pipe");
+		pipe.setSessionKey("my-session-key");
+		pipe.setValue("my-session-value");
+		PipeLine pipeline = createPipeLine(pipe, adapter);
+		JavaListener<?> listener = setupJavaListener(configuration, adapter, pipeline, false);
+		IbisLocalSender ibisLocalSender = setupIbisLocalSender(adapter, listener, false, false, true);
+		ibisLocalSender.setReturnedSessionKeys("my-session-key,no-such-key");
+
+
+		ForEachChildElementPipe iteratorPipe = SpringUtils.createBean(adapter);
+		iteratorPipe.setName("iterator");
+		iteratorPipe.setSender(ibisLocalSender);
+
+		log.info("*>>> Starting Configuration");
+		configuration.configure();
+		configuration.start();
+
+		waitForState((Receiver<?>)listener.getHandler(), RunState.STARTED);
+		ibisLocalSender.start();
+		iteratorPipe.start();
+
+		// Act
+		try (PipeLineSession session = new PipeLineSession()) {
+			Message message = new Message("""
+					<root>
+					  <sub>
+					  	<data/>
+					  </sub>
+					</root>
+					""");
+
+			PipeRunResult pipeRunResult = iteratorPipe.doPipe(message, session);
+
+			// Assert
+
+			String expectedResult = """
+					<results>
+					  <result item="1">
+					    <sub>
+					  	  <data/>
+					    </sub>
+					  </result>
+					</results>
+					""";
+
+			assertAll(
+					() -> assertEquals("my-session-value", session.getString("my-session-key")),
+					() -> assertTrue(session.containsKey("no-such-key"), "After request the pipeline-session should contain key [no-such-key]"),
+					() -> assertNull(session.getString("no-such-key")),
+					() -> assertXmlEquals(expectedResult, pipeRunResult.getResult().asString())
+			);
+		}
+	}
+
+	private static Adapter createAdapter(TestConfiguration configuration) {
 		Adapter adapter = configuration.createBean();
-		Receiver<String> receiver = configuration.createBean();
-		JavaListener<String> listener = configuration.createBean();
+		adapter.setName("TEST");
+		configuration.addAdapter(adapter);
+		return adapter;
+	}
+
+	private static JavaListener<?> setupJavaListener(TestConfiguration configuration, Adapter adapter, PipeLine pipeline, boolean callByServiceName) throws Exception {
+		Receiver<String> receiver = SpringUtils.createBean(adapter);
+		JavaListener<String> listener = SpringUtils.createBean(adapter);
 		listener.setName("TEST");
 		listener.setServiceName(SERVICE_NAME);
 		receiver.setName("TEST");
-		adapter.setName("TEST");
 
 		if (callByServiceName) {
 			registerWithServiceDispatcher(listener);
 		}
-
-		configuration.addAdapter(adapter);
 
 		adapter.addReceiver(receiver);
 		receiver.setListener(listener);
@@ -380,9 +450,9 @@ class IbisLocalSenderTest {
 		return listener;
 	}
 
-	private PipeLine createPipeLine(IPipe testPipe, TestConfiguration configuration) throws ConfigurationException {
-		PipeLine pl = configuration.createBean();
-		pl.setFirstPipe("read-stream");
+	private static PipeLine createPipeLine(IPipe testPipe, Adapter adapter) throws ConfigurationException {
+		PipeLine pl = SpringUtils.createBean(adapter);
+		pl.setFirstPipe(testPipe.getName());
 		pl.addPipe(testPipe);
 		PipeLineExit ple = new PipeLineExit();
 		ple.setName("success");
@@ -394,7 +464,7 @@ class IbisLocalSenderTest {
 		return pl;
 	}
 
-	private TestPipe createTestPipe(final AtomicLong asyncCounterResult, final Semaphore asyncCompletionSemaphore) {
+	private static TestPipe createTestPipe(final AtomicLong asyncCounterResult, final Semaphore asyncCompletionSemaphore) {
 		TestPipe testPipe = new TestPipe(asyncCounterResult, asyncCompletionSemaphore);
 		testPipe.setName("read-stream");
 		return testPipe;
@@ -455,7 +525,7 @@ class IbisLocalSenderTest {
 		sender.addParameter(parameter);
 	}
 
-	private class TestPipe extends EchoPipe {
+	private static class TestPipe extends EchoPipe {
 		private final AtomicLong asyncCounterResult;
 		private final Semaphore asyncCompletionSemaphore;
 

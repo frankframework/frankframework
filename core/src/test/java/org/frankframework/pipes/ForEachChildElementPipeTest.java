@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.lessThan;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.FilterInputStream;
@@ -22,7 +23,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.hamcrest.core.StringContains;
-import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
@@ -50,9 +50,9 @@ import org.frankframework.util.XmlUtils;
 
 public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElementPipe> {
 
-	private final boolean TEST_CDATA = false;
-	private final String CDATA_START = TEST_CDATA ? "<![CDATA[" : "";
-	private final String CDATA_END = TEST_CDATA ? "]]>" : "";
+	private static final boolean TEST_CDATA = false;
+	private static final String CDATA_START = TEST_CDATA ? "<![CDATA[" : "";
+	private static final String CDATA_END = TEST_CDATA ? "]]>" : "";
 
 	private final String messageBasicNoNS = "<root><sub>A &amp; B</sub><sub name=\"p &amp; Q\">" + CDATA_START + "<a>a &amp; b</a>" + CDATA_END + "</sub><sub name=\"r\">R</sub></root>";
 	private final String messageBasicNoNSLong = "<root><sub>A &amp; B</sub><sub name=\"p &amp; Q\">" + CDATA_START + "<a>a &amp; b</a>" + CDATA_END + "</sub><sub>data</sub><sub>data</sub><sub>data</sub><sub>data</sub></root>";
@@ -427,7 +427,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().asString();
 
 		assertEquals(expectedBasicNoNS, actual);
-		Assumptions.assumeTrue(AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true), "Streaming XSLT switched off");
+		assumeTrue(AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true), "Streaming XSLT switched off");
 		assertTrue(sc.count > 2, "streaming failure: switch count [" + sc.count + "] should be larger than 2");
 	}
 
@@ -470,7 +470,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().asString();
 
 		assertEquals(expectedBasicNoNS, actual);
-		Assumptions.assumeTrue(AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true), "Streaming XSLT switched off");
+		assumeTrue(AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true), "Streaming XSLT switched off");
 		assertTrue(sc.count > 2, "streaming failure: switch count [" + sc.count + "] should be larger than 2");
 	}
 
@@ -489,7 +489,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().asString();
 
 		assertEquals(expectedBasicNoNS, actual);
-		Assumptions.assumeTrue(AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true), "Streaming XSLT switched off");
+		assumeTrue(AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true), "Streaming XSLT switched off");
 		assertTrue(sc.count > 2, "streaming failure: switch count [" + sc.count + "] should be larger than 2");
 	}
 
@@ -507,7 +507,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().asString();
 
 		assertEquals(expectedBasicNS1, actual);
-		Assumptions.assumeTrue(AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true), "Streaming XSLT switched off");
+		assumeTrue(AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true), "Streaming XSLT switched off");
 		assertTrue(sc.count > 2, "streaming failure: switch count [" + sc.count + "] should be larger than 2");
 	}
 
@@ -525,7 +525,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().asString();
 
 		assertEquals(expectedBasicNS2, actual);
-		Assumptions.assumeTrue(AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true), "Streaming XSLT switched off");
+		assumeTrue(AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true), "Streaming XSLT switched off");
 		assertTrue(sc.count > 2, "streaming failure: switch count [" + sc.count + "] should be larger than 2");
 	}
 
@@ -544,7 +544,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().asString();
 
 		assertEquals(expectedBasicNS1, actual);
-		Assumptions.assumeTrue(AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true), "Streaming XSLT switched off");
+		assumeTrue(AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true), "Streaming XSLT switched off");
 		assertTrue(sc.count > 2, "streaming failure: switch count [" + sc.count + "] should be larger than 2");
 	}
 
@@ -561,7 +561,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().asString();
 
 		assertEquals(expectedBasicNoNSFirstTwoElements, actual);
-		Assumptions.assumeTrue(AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true), "Streaming XSLT switched off");
+		assumeTrue(AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true), "Streaming XSLT switched off");
 		assertTrue(sc.count > 2, "streaming failure: switch count [" + sc.count + "] should be larger than 2");
 	}
 
