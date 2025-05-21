@@ -2,6 +2,8 @@ package org.frankframework.senders;
 
 import static org.frankframework.testutil.MatchUtils.assertXmlEquals;
 import static org.frankframework.testutil.mock.WaitUtils.waitForState;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -32,9 +34,11 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.ListenerException;
+import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
@@ -42,9 +46,9 @@ import org.frankframework.jta.narayana.NarayanaJtaTransactionManager;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.pipes.ForEachChildElementPipe;
-import org.frankframework.pipes.PutInSessionPipe;
 import org.frankframework.processors.CorePipeLineProcessor;
 import org.frankframework.processors.CorePipeProcessor;
+import org.frankframework.processors.InputOutputPipeProcessor;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ServiceDispatcher;
@@ -125,15 +129,11 @@ class IbisLocalSenderTest {
 		Semaphore asyncCompletionSemaphore = new Semaphore(0);
 
 		TestPipe testPipe = createTestPipe(asyncCounterResult, asyncCompletionSemaphore);
-		PipeLine pipeline = createPipeLine(testPipe, adapter);
+		PipeLine pipeline = createPipeLine(testPipe, adapter, configuration);
 		JavaListener<?> listener = setupJavaListener(configuration, adapter, pipeline, callByServiceName);
 		IbisLocalSender ibisLocalSender = setupIbisLocalSender(adapter, listener, callByServiceName, callIsolated, callSynchronous);
 
-		log.info("*>>> Starting Configuration");
-		configuration.configure();
-		configuration.start();
-
-		waitForState((Receiver<?>)listener.getHandler(), RunState.STARTED);
+		startConfiguration(listener);
 		ibisLocalSender.start();
 
 		// Act
@@ -173,15 +173,11 @@ class IbisLocalSenderTest {
 		Semaphore asyncCompletionSemaphore = new Semaphore(0);
 
 		TestPipe testPipe = createTestPipe(asyncCounterResult, asyncCompletionSemaphore);
-		PipeLine pipeline = createPipeLine(testPipe, adapter);
+		PipeLine pipeline = createPipeLine(testPipe, adapter, configuration);
 		JavaListener<?> listener = setupJavaListener(configuration, adapter, pipeline, callByServiceName);
 		IbisLocalSender ibisLocalSender = setupIbisLocalSender(adapter, listener, callByServiceName, true, false);
 
-		log.info("*>>> Starting Configuration");
-		configuration.configure();
-		configuration.start();
-
-		waitForState((Receiver<?>)listener.getHandler(), RunState.STARTED);
+		startConfiguration(listener);
 		ibisLocalSender.start();
 
 		// Act
@@ -360,15 +356,14 @@ class IbisLocalSenderTest {
 	}
 
 	@Test
-	public void testIteratorPipeWithLocalSender() throws Exception {
+	public void testIteratorPipeWithLocalSenderExitSuccess() throws Exception {
 		// Arrange
 		configuration = new TestConfiguration(false);
 		Adapter adapter = createAdapter(configuration);
-		PutInSessionPipe pipe = configuration.createBean();
+		EchoPipe pipe = configuration.createBean();
 		pipe.setName("put-in-session-pipe");
-		pipe.setSessionKey("my-session-key");
-		pipe.setValue("my-session-value");
-		PipeLine pipeline = createPipeLine(pipe, adapter);
+		pipe.setStoreResultInSessionKey("my-session-key");
+		PipeLine pipeline = createPipeLine(pipe, adapter, configuration);
 		JavaListener<?> listener = setupJavaListener(configuration, adapter, pipeline, false);
 		IbisLocalSender ibisLocalSender = setupIbisLocalSender(adapter, listener, false, false, true);
 		ibisLocalSender.setReturnedSessionKeys("my-session-key,no-such-key");
@@ -378,23 +373,20 @@ class IbisLocalSenderTest {
 		iteratorPipe.setName("iterator");
 		iteratorPipe.setSender(ibisLocalSender);
 
-		log.info("*>>> Starting Configuration");
-		configuration.configure();
-		configuration.start();
-
-		waitForState((Receiver<?>)listener.getHandler(), RunState.STARTED);
+		startConfiguration(listener);
 		ibisLocalSender.start();
 		iteratorPipe.start();
 
 		// Act
-		try (PipeLineSession session = new PipeLineSession()) {
-			Message message = new Message("""
+		try (PipeLineSession session = new PipeLineSession();
+			 Message message = new Message("""
 					<root>
 					  <sub>
 					  	<data/>
 					  </sub>
 					</root>
-					""");
+					""")) {
+			session.put("my-session-key", null);
 
 			PipeRunResult pipeRunResult = iteratorPipe.doPipe(message, session);
 
@@ -409,14 +401,81 @@ class IbisLocalSenderTest {
 					  </result>
 					</results>
 					""";
+			String expectedSessionKeyValue = """
+					<sub>
+					  <data/>
+					</sub>
+					""";
 
 			assertAll(
-					() -> assertEquals("my-session-value", session.getString("my-session-key")),
+					() -> assertXmlEquals(expectedSessionKeyValue, session.getString("my-session-key")),
 					() -> assertTrue(session.containsKey("no-such-key"), "After request the pipeline-session should contain key [no-such-key]"),
 					() -> assertNull(session.getString("no-such-key")),
 					() -> assertXmlEquals(expectedResult, pipeRunResult.getResult().asString())
 			);
 		}
+	}
+
+	@Test
+	public void testIteratorPipeWithLocalSenderExitError() throws Exception {
+		// Arrange
+		configuration = new TestConfiguration(false);
+		Adapter adapter = createAdapter(configuration);
+		EchoPipe pipe = configuration.createBean();
+		pipe.setName("put-in-session-pipe");
+		pipe.setStoreResultInSessionKey("my-session-key");
+		pipe.addForward(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME, "error"));
+		pipe.addForward(new PipeForward(PipeForward.EXCEPTION_FORWARD_NAME, "error"));
+		PipeLine pipeline = createPipeLine(pipe, adapter, configuration);
+		JavaListener<?> listener = setupJavaListener(configuration, adapter, pipeline, false);
+		IbisLocalSender ibisLocalSender = setupIbisLocalSender(adapter, listener, false, false, true);
+		ibisLocalSender.setReturnedSessionKeys("my-session-key,no-such-key");
+
+
+		ForEachChildElementPipe iteratorPipe = SpringUtils.createBean(adapter);
+		iteratorPipe.setName("iterator");
+		iteratorPipe.setSender(ibisLocalSender);
+
+		startConfiguration(listener);
+		ibisLocalSender.start();
+		iteratorPipe.start();
+
+		// Act
+		try (PipeLineSession session = new PipeLineSession();
+			 Message message = new Message("""
+					<root>
+					  <sub>
+					  	<data/>
+					  </sub>
+					</root>
+					""")) {
+			session.put("my-session-key", null);
+
+			PipeRunException pre = assertThrows(PipeRunException.class, () -> iteratorPipe.doPipe(message, session));
+
+			// Assert
+
+			String expectedSessionKeyValue = """
+					<sub>
+					  <data/>
+					</sub>
+					""";
+
+			assertAll(
+					() -> assertXmlEquals(expectedSessionKeyValue, session.getString("my-session-key")),
+					() -> assertTrue(session.containsKey("no-such-key"), "After request the pipeline-session should contain key [no-such-key]"),
+					() -> assertNull(session.getString("no-such-key")),
+					() -> assertThat(pre.getMessage(), containsString("exitState=ERROR"))
+			);
+		}
+	}
+
+	private void startConfiguration(JavaListener<?> listener) throws ConfigurationException {
+		log.info("*>>> Starting Configuration");
+		configuration.configure();
+		configuration.start();
+
+		waitForState((Receiver<?>) listener.getHandler(), RunState.STARTED);
 	}
 
 	private static Adapter createAdapter(TestConfiguration configuration) {
@@ -450,16 +509,24 @@ class IbisLocalSenderTest {
 		return listener;
 	}
 
-	private static PipeLine createPipeLine(IPipe testPipe, Adapter adapter) throws ConfigurationException {
+	private static PipeLine createPipeLine(IPipe testPipe, Adapter adapter, TestConfiguration configuration) throws ConfigurationException {
 		PipeLine pl = SpringUtils.createBean(adapter);
 		pl.setFirstPipe(testPipe.getName());
 		pl.addPipe(testPipe);
-		PipeLineExit ple = new PipeLineExit();
-		ple.setName("success");
-		ple.setState(PipeLine.ExitState.SUCCESS);
-		pl.addPipeLineExit(ple);
-		CorePipeLineProcessor plp = new CorePipeLineProcessor();
-		plp.setPipeProcessor(new CorePipeProcessor());
+		PipeLineExit success = new PipeLineExit();
+		success.setName("success");
+		success.setState(PipeLine.ExitState.SUCCESS);
+		pl.addPipeLineExit(success);
+		PipeLineExit error = new PipeLineExit();
+		error.setName("error");
+		error.setState(PipeLine.ExitState.ERROR);
+		pl.addPipeLineExit(error);
+
+		InputOutputPipeProcessor iopp = SpringUtils.createBean(configuration);
+		CorePipeProcessor cpp = SpringUtils.createBean(configuration);
+		iopp.setPipeProcessor(cpp);
+		CorePipeLineProcessor plp = SpringUtils.createBean(configuration);
+		plp.setPipeProcessor(iopp);
 		pl.setPipeLineProcessor(plp);
 		return pl;
 	}
