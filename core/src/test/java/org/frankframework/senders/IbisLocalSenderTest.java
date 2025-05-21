@@ -212,10 +212,11 @@ class IbisLocalSenderTest {
 		// Arrange
 		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient(isolated);
 
-		try (PipeLineSession session = new PipeLineSession()) {
+		try (PipeLineSession session = new PipeLineSession();
+			 Message message = new Message("my-parameter1")) {
+
 			session.put("my-parameter1", "parameter1-value");
 			session.put("my-parameter2", new Message("parameter2-value"));
-			Message message = new Message("my-parameter1");
 			session.put("session-message", message);
 
 			// Act
@@ -244,9 +245,10 @@ class IbisLocalSenderTest {
 		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient(false);
 		sender.setReturnedSessionKeys(null);
 
-		try (PipeLineSession session = new PipeLineSession()) {
+		try (PipeLineSession session = new PipeLineSession();
+			 Message message = new Message("my-parameter1")) {
+
 			session.put("my-parameter1", "parameter1-value");
-			Message message = new Message("my-parameter1");
 
 			// Act
 			SenderResult result = sender.sendMessage(message, session);
@@ -267,10 +269,11 @@ class IbisLocalSenderTest {
 		// Arrange
 		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient(false);
 
-		try (PipeLineSession session = new PipeLineSession()) {
+		try (PipeLineSession session = new PipeLineSession();
+			 Message message = new Message("my-parameter1")) {
+
 			session.put(PipeLineSession.EXIT_STATE_CONTEXT_KEY, PipeLine.ExitState.ERROR);
 			session.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, "400");
-			Message message = new Message("my-parameter1");
 
 			// Act / Assert
 			SenderResult result = sender.sendMessage(message, session);
@@ -289,8 +292,8 @@ class IbisLocalSenderTest {
 			throw new ListenerException("TEST");
 		}));
 
-		try (PipeLineSession session = new PipeLineSession()) {
-			Message message = new Message("MESSAGE");
+		try (PipeLineSession session = new PipeLineSession();
+			 Message message = new Message("MESSAGE")) {
 
 			// Act / Assert
 			assertThrows(SenderException.class, () -> sender.sendMessage(message, session));
@@ -311,8 +314,8 @@ class IbisLocalSenderTest {
 			throw new ListenerException("TEST");
 		}));
 
-		try (PipeLineSession session = new PipeLineSession()) {
-			Message message = new Message("MESSAGE");
+		try (PipeLineSession session = new PipeLineSession();
+			 Message message = new Message("MESSAGE")) {
 
 			// Act / Assert
 			assertThrows(SenderException.class, () -> sender.sendMessage(message, session));
@@ -327,8 +330,8 @@ class IbisLocalSenderTest {
 		//noinspection removal
 		sender.setServiceName("invalid");
 
-		try (PipeLineSession session = new PipeLineSession()) {
-			Message message = new Message("MESSAGE");
+		try (PipeLineSession session = new PipeLineSession();
+			 Message message = new Message("MESSAGE")) {
 
 			// Act / Assert
 			assertThrows(SenderException.class, () -> sender.sendMessage(message, session));
@@ -343,8 +346,8 @@ class IbisLocalSenderTest {
 		//noinspection removal
 		sender.setServiceName("invalid");
 
-		try (PipeLineSession session = new PipeLineSession()) {
-			Message message = new Message("MESSAGE");
+		try (PipeLineSession session = new PipeLineSession();
+			 Message message = new Message("MESSAGE")) {
 
 			// Act / Assert
 			SenderResult result = sender.sendMessage(message, session);
@@ -485,7 +488,7 @@ class IbisLocalSenderTest {
 		return adapter;
 	}
 
-	private static JavaListener<?> setupJavaListener(TestConfiguration configuration, Adapter adapter, PipeLine pipeline, boolean callByServiceName) throws Exception {
+	private static JavaListener<?> setupJavaListener(TestConfiguration configuration, Adapter adapter, PipeLine pipeline, boolean callByServiceName) {
 		Receiver<String> receiver = SpringUtils.createBean(adapter);
 		JavaListener<String> listener = SpringUtils.createBean(adapter);
 		listener.setName("TEST");
@@ -552,7 +555,7 @@ class IbisLocalSenderTest {
 		return counter;
 	}
 
-	private IbisLocalSender createIbisLocalSenderWithDummyServiceClient(boolean isolated) throws ListenerException, ConfigurationException {
+	private IbisLocalSender createIbisLocalSenderWithDummyServiceClient(boolean isolated) throws ConfigurationException {
 		ServiceDispatcher.getInstance().registerServiceClient(SERVICE_NAME, ((message, session) -> {
 			session.put("key-not-configured-for-copy", "dummy-value");
 			session.put("key-to-copy", "dummy-value");
