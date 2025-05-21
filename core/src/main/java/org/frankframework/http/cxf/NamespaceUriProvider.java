@@ -52,11 +52,6 @@ public class NamespaceUriProvider extends AbstractSOAPProvider {
 	}
 
 	@Override
-	public SOAPMessage invoke(SOAPMessage request) {
-		return super.invoke(request);
-	}
-
-	@Override
 	protected Message processRequest(SOAPMessage request, PipeLineSession pipelineSession) throws ListenerException {
 		String serviceName = findNamespaceUri(request);
 		ServiceClient service = sd.getListener(serviceName);

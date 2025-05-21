@@ -3,6 +3,9 @@ package org.frankframework.http.cxf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -22,8 +25,8 @@ import jakarta.xml.ws.WebServiceException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.http.WebServiceListener;
 import org.frankframework.receivers.ServiceClient;
 import org.frankframework.receivers.ServiceDispatcher;
 import org.frankframework.stream.Message;
@@ -71,7 +74,20 @@ public class NamespaceUriProviderTest {
 
 		SOAPMessage request = createMessage("VrijeBerichten_PipelineRequest.xml", true);
 		WebServiceException e = assertThrows(WebServiceException.class, () -> messageProvider.invoke(request));
-		assertEquals("Could not process SOAP message: service [http://www.egem.nl/StUF/sector/zkn/0310] is not registered", e.getMessage());
+		assertEquals("Could not process SOAP message: service [http://www.egem.nl/StUF/sector/zkn/0310] is not registered or not of required type", e.getMessage());
+	}
+
+	@Test
+	public void testCanFindNamespaceButServiceClientOfWrongType() throws Exception {
+		ServiceClient service = mock(ServiceClient.class);
+		dispatcher.registerServiceClient("http://www.egem.nl/StUF/sector/zkn/0310", service);
+
+		SOAPMessage request = createMessage("VrijeBerichten_PipelineRequest.xml", true);
+		NamespaceUriProvider messageProvider = new NamespaceUriProvider();
+		messageProvider.webServiceContext = webServiceContext;
+
+		WebServiceException e = assertThrows(WebServiceException.class, () -> messageProvider.invoke(request));
+		assertEquals("Could not process SOAP message: service [http://www.egem.nl/StUF/sector/zkn/0310] is not registered or not of required type", e.getMessage());
 	}
 
 	@Test
@@ -81,23 +97,20 @@ public class NamespaceUriProviderTest {
 			pipelineResult = spy(new Message(new FilterInputStream(plr.asInputStream()) {}));
 		}
 
-		ServiceClient service = new ServiceClient() {
-			@Override
-			public Message processRequest(Message message, PipeLineSession pipelineSession) throws ListenerException {
-				try {
-					MatchUtils.assertXmlEquals(getFile("VrijeBerichten_PipelineRequest.xml").asString(), message.asString());
+		WebServiceListener listener = mock(WebServiceListener.class);
+		doAnswer(e -> {
+			Message message = e.getArgument(0);
 
-					// Ensure the message is registered on the PipelineSession.
-					pipelineResult.closeOnCloseOf(pipelineSession);
-
-					return pipelineResult;
-				} catch (IOException e) {
-					fail("unable to read response message: " + e.getMessage(), e);
-					return null;
-				}
+			try {
+				MatchUtils.assertXmlEquals(getFile("VrijeBerichten_PipelineRequest.xml").asString(), message.asString());
+				return pipelineResult;
+			} catch (IOException ex) {
+				fail("unable to read response message: " + ex.getMessage(), ex);
+				return null;
 			}
-		};
-		dispatcher.registerServiceClient("http://www.egem.nl/StUF/sector/zkn/0310", service);
+		}).when(listener).processRequest(any(Message.class), any(PipeLineSession.class));
+
+		dispatcher.registerServiceClient("http://www.egem.nl/StUF/sector/zkn/0310", listener);
 
 		SOAPMessage request = createMessage("VrijeBerichten_PipelineRequest.xml", true);
 		NamespaceUriProvider messageProvider = new NamespaceUriProvider();
