@@ -1,18 +1,11 @@
 package org.frankframework.extensions.mqtt;
 
-import org.eclipse.paho.client.mqttv3.MqttClient;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
+import java.util.List;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.SenderException;
-import org.frankframework.core.SenderResult;
-
-import org.frankframework.parameters.Parameter;
-import org.frankframework.senders.SenderTestBase;
-
-import org.frankframework.stream.Message;
-
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -21,8 +14,14 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.utility.DockerImageName;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.SenderException;
+import org.frankframework.core.SenderResult;
+import org.frankframework.jdbc.datasource.ResourceObjectLocator;
+import org.frankframework.parameters.Parameter;
+import org.frankframework.senders.SenderTestBase;
+import org.frankframework.stream.Message;
+import org.frankframework.util.AppConstants;
 
 @Testcontainers(disabledWithoutDocker = true)
 @Tag("integration") // Requires Docker; exclude with '-DexcludedGroups=integration'
@@ -33,25 +32,33 @@ public class MqttSenderTest extends SenderTestBase<MqttSender> {
 
 	private static final String RESOURCE_NAME = "mqtt/hivemq";
 
-	private static MqttClientFactory mqttClientFactory;
-
 	@Override
-	public MqttSender createSender() {
+	public MqttSender createSender() throws Exception {
 		MqttSender sender = new MqttSender();
 		sender.setName("senderName");
+
+		ResourceObjectLocator locator = new ResourceObjectLocator();
+		locator.setResourceFile("mqttResources.yml");
+		locator.afterPropertiesSet();
+
+		MqttClientFactory factory = new MqttClientFactory();
+		factory.setObjectLocators(List.of(locator));
+		factory.afterPropertiesSet();
+
+		sender.setMqttClientFactory(factory);
 		sender.setResourceName(RESOURCE_NAME);
-		sender.setMqttClientFactory(mqttClientFactory);
 
 		return sender;
 	}
 
 	@BeforeAll
 	public static void beforeAll() throws Exception {
-		MqttClient client = new MqttClient(String.format("tcp://%s:%s", hivemqCe.getHost(), hivemqCe.getMqttPort()), "clientId", new MemoryPersistence());
-		client.connect();
+		AppConstants.getInstance().setProperty("mqtt.brokerURL", String.format("tcp://%s:%s", hivemqCe.getHost(), hivemqCe.getMqttPort()));
+	}
 
-		mqttClientFactory = new MqttClientFactory();
-		mqttClientFactory.add(client, RESOURCE_NAME);
+	@AfterAll
+	static void teardown() {
+		AppConstants.getInstance().remove("mqtt.brokerURL");
 	}
 
 	@Test
@@ -100,7 +107,7 @@ public class MqttSenderTest extends SenderTestBase<MqttSender> {
 	}
 
 	@Test
-	public void testMultipleSenders() {
+	public void testMultipleSenders() throws Exception {
 		MqttSender sender1 = createSender();
 		sender1.setName("sender1");
 		sender1.setTopic("topic1");
