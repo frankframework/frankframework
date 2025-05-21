@@ -567,7 +567,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 */
 	public PipeLineResult processMessageDirect(String messageId, Message message, PipeLineSession pipeLineSession) {
 		if (StringUtils.isEmpty(messageId)) {
-			messageId = MessageUtils.generateMessageId();
+			messageId = MessageUtils.generateFallbackMessageId();
 			log.info("messageId not set, creating synthetic id [{}]", messageId);
 			pipeLineSession.put(PipeLineSession.MESSAGE_ID_KEY, messageId);
 		}

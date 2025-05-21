@@ -4,6 +4,7 @@ import static org.frankframework.testutil.mock.WaitUtils.waitForState;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -131,7 +132,9 @@ class IbisLocalSenderTest {
 
 		// Act
 		PipeLineSession session = new PipeLineSession();
-		PipeLineSession.updateListenerParameters(session, "m-id", "c-id");
+		String originalMessageId = "m-id";
+		String originalCorrelationId = "c-id";
+		PipeLineSession.updateListenerParameters(session, originalMessageId, originalCorrelationId);
 
 		log.info("**>>> Calling Local Sender");
 		Message message = createVirtualInputStream(EXPECTED_BYTE_COUNT);
@@ -148,8 +151,8 @@ class IbisLocalSenderTest {
 			() -> assertTrue(completedSuccess, msgPrefix + "Async local sender should complete w/o error within at most 10 seconds"),
 			() -> assertEquals(EXPECTED_BYTE_COUNT, localCounterResult, msgPrefix + "Local reader of message-stream should read " + EXPECTED_BYTE_COUNT + " bytes."),
 			() -> assertEquals(EXPECTED_BYTE_COUNT, asyncCounterResult.get(), msgPrefix + "Async reader of message-stream should read " + EXPECTED_BYTE_COUNT + " bytes."),
-			() -> assertNull(testPipe.recordedMessageId, msgPrefix + "Message ID should not be passed to nested session"),
-			() -> assertEquals("c-id", testPipe.recordedCorrelationId, msgPrefix + "Correlation ID should be passed to nested session")
+			() -> assertNotEquals(originalMessageId, testPipe.recordedMessageId, msgPrefix + "Original Message ID should not be passed to nested session"),
+			() -> assertEquals(originalCorrelationId, testPipe.recordedCorrelationId, msgPrefix + "Correlation ID should be passed to nested session")
 		);
 	}
 
@@ -176,7 +179,9 @@ class IbisLocalSenderTest {
 
 		// Act
 		PipeLineSession session = new PipeLineSession();
-		PipeLineSession.updateListenerParameters(session, "m-id", "c-id", null, null);
+		String originalMessageId = "m-id";
+		String originalCorrelationId = "c-id";
+		PipeLineSession.updateListenerParameters(session, originalMessageId, originalCorrelationId, null, null);
 
 		log.info("**>>> Calling Local Sender");
 		Message message = createVirtualInputStream(EXPECTED_BYTE_COUNT);
@@ -193,8 +198,8 @@ class IbisLocalSenderTest {
 		assertAll(
 			() -> assertTrue(completedSuccess, msgPrefix + "Async local sender should complete w/o error within at most 10 seconds"),
 			() -> assertEquals(EXPECTED_BYTE_COUNT, asyncCounterResult.get(), msgPrefix + "Async reader of message-stream should read " + EXPECTED_BYTE_COUNT + " bytes."),
-			() -> assertNull(testPipe.recordedMessageId, msgPrefix + "Message ID should not be passed to nested session"),
-			() -> assertEquals("c-id", testPipe.recordedCorrelationId, msgPrefix + "Correlation ID should be passed to nested session")
+			() -> assertNotEquals(originalMessageId, testPipe.recordedMessageId, msgPrefix + "Original Message ID should not be passed to nested session"),
+			() -> assertEquals(originalCorrelationId, testPipe.recordedCorrelationId, msgPrefix + "Correlation ID should be passed to nested session")
 		);
 	}
 

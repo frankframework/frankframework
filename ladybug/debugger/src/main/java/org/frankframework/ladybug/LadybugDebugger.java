@@ -55,8 +55,8 @@ import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.DebuggerStatusChangedEvent;
 import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.RunState;
-import org.frankframework.util.UUIDUtil;
 
 /**
  * @author Jaco de Groot
@@ -172,7 +172,7 @@ public class LadybugDebugger implements ApplicationContextAware, ApplicationList
 								}
 							}
 							// Analog to test a pipeline that is using: "testmessage" + Misc.createSimpleUUID();
-							String messageId = "ladybug-testmessage" + UUIDUtil.createSimpleUUID();
+							String messageId = MessageUtils.generateMessageId("ladybug-testmessage");
 							pipeLineSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 							PipeLineResult result = adapter.processMessageDirect(messageId, inputMessage, pipeLineSession);
 							result.getResult().close();
