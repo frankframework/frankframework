@@ -265,6 +265,9 @@ public class ScenarioRunner {
 			testExecutionObserver.finishScenario(testRunStatus, scenario, LarvaTool.RESULT_ERROR, "Error occurred while executing Larva Scenario: " + e.getMessage());
 			larvaTool.errorMessage(e.getClass().getSimpleName() + ": "+e.getMessage(), e);
 			return LarvaTool.RESULT_ERROR;
+		} finally {
+			// Clear caches to keep memory consumption under control
+			scenario.clearScenarioCaches();
 		}
 	}
 
