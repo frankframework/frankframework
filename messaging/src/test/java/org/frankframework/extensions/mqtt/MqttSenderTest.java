@@ -52,7 +52,7 @@ public class MqttSenderTest extends SenderTestBase<MqttSender> {
 	}
 
 	@BeforeAll
-	public static void beforeAll() throws Exception {
+	static void beforeAll() {
 		AppConstants.getInstance().setProperty("mqtt.brokerURL", String.format("tcp://%s:%s", hivemqCe.getHost(), hivemqCe.getMqttPort()));
 	}
 
