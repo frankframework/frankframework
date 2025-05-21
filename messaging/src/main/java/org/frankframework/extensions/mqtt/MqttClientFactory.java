@@ -28,7 +28,8 @@ import lombok.SneakyThrows;
 
 import org.frankframework.jdbc.datasource.MqttClientSettings;
 import org.frankframework.jdbc.datasource.ObjectFactory;
-import org.frankframework.util.AppConstants;
+import org.frankframework.util.Misc;
+import org.frankframework.util.UUIDUtil;
 
 public class MqttClientFactory extends ObjectFactory<MqttClient, MqttClientSettings> {
 
@@ -58,14 +59,12 @@ public class MqttClientFactory extends ObjectFactory<MqttClient, MqttClientSetti
 
 		String clientId = data.getClientId();
 		if (StringUtils.isEmpty(clientId)) {
-			clientId = AppConstants.getInstance().getProperty("transactionmanager.uid");
+			clientId = Misc.getHostname()+"-"+ UUIDUtil.createSimpleUUID();
 		}
 
-		try (MqttClient client = new MqttClient(data.getUrl(), clientId, getMqttDataStore(data.getPersistenceDirectory()))) {
-			client.connect(connectOptions);
-
-			return client;
-		}
+		MqttClient client = new MqttClient(data.getUrl(), clientId, getMqttDataStore(data.getPersistenceDirectory()));
+		client.connect(connectOptions);
+		return client;
 	}
 
 	private MqttClientPersistence getMqttDataStore(String persistenceDirectory) {
