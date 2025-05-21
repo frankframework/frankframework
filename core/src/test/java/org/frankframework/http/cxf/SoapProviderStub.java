@@ -1,6 +1,6 @@
 package org.frankframework.http.cxf;
 
-import jakarta.xml.ws.WebServiceContext;
+import jakarta.xml.soap.SOAPMessage;
 
 import lombok.Getter;
 
@@ -11,17 +11,16 @@ public class SoapProviderStub extends AbstractSOAPProvider {
 
 	final @Getter PipeLineSession session;
 
-	public SoapProviderStub(WebServiceContext context) {
-		this.webServiceContext = context;
+	public SoapProviderStub() {
 		session = new PipeLineSession();
 	}
 
 	@Override
-	Message processRequest(Message message, PipeLineSession pipelineSession) {
+	Message processRequest(SOAPMessage message, PipeLineSession pipelineSession) {
 		pipelineSession.putAll(session);
 
 		pipelineSession.mergeToParentSession("*", session);
-		return message;
+		return parseSOAPMessage(message);
 	}
 
 	public void setSession(PipeLineSession session) {
