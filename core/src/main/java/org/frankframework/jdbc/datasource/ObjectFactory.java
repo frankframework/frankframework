@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -87,7 +88,8 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	 * If not cached yet, attempts to traverse all {@link IObjectLocator IObjectLocators} to do so.
 	 */
 	protected final O get(String name, Properties environment) {
-		return objects.computeIfAbsent(name, k -> compute(k, environment));
+		String nameWithResourcePrefix = StringUtils.prependIfMissing(name, resourcePrefix+"/");
+		return objects.computeIfAbsent(nameWithResourcePrefix, k -> compute(k, environment));
 	}
 
 	/**
