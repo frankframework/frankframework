@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,8 +26,12 @@ import jakarta.xml.ws.ServiceMode;
 import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Node;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.http.WebServiceListener;
+import org.frankframework.receivers.ServiceClient;
 import org.frankframework.receivers.ServiceDispatcher;
 import org.frankframework.stream.Message;
 
@@ -36,14 +40,12 @@ import org.frankframework.stream.Message;
  *
  * @author Niels Meijer
  */
-
+@Log4j2
 @ServiceMode(value=jakarta.xml.ws.Service.Mode.MESSAGE)
 @BindingType(jakarta.xml.ws.soap.SOAPBinding.SOAP12HTTP_BINDING)
 public class NamespaceUriProvider extends AbstractSOAPProvider {
 
 	private final ServiceDispatcher sd = ServiceDispatcher.getInstance();
-
-	private SOAPMessage soapMessage;
 
 	public NamespaceUriProvider() {
 		log.debug("initiating NamespaceUriProvider");
@@ -51,17 +53,23 @@ public class NamespaceUriProvider extends AbstractSOAPProvider {
 
 	@Override
 	public SOAPMessage invoke(SOAPMessage request) {
-		this.soapMessage = request;
 		return super.invoke(request);
 	}
 
 	@Override
-	Message processRequest(Message message, PipeLineSession pipelineSession) throws ListenerException {
-		String serviceName = findNamespaceUri();
-		return sd.dispatchRequest(serviceName, message, pipelineSession);
+	protected Message processRequest(SOAPMessage request, PipeLineSession pipelineSession) throws ListenerException {
+		String serviceName = findNamespaceUri(request);
+		ServiceClient service = sd.getListener(serviceName);
+
+		if (!(service instanceof WebServiceListener)) {
+			throw new ListenerException("service ["+ serviceName +"] is not registered or not of required type");
+		}
+
+		Message message = parseSOAPMessage(request);
+		return service.processRequest(message, pipelineSession);
 	}
 
-	public String findNamespaceUri() throws ListenerException {
+	public static String findNamespaceUri(SOAPMessage soapMessage) throws ListenerException {
 		log.debug("trying to find serviceName from soapMessage [{}]", soapMessage);
 
 		try {
