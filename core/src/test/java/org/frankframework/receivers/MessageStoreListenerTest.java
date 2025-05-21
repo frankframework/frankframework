@@ -67,7 +67,7 @@ public class MessageStoreListenerTest extends ListenerTestBase<Serializable, Mes
 		doReturn(md).when(conn).getMetaData();
 		DataSourceFactory factory = new DataSourceFactory();
 		DataSource dataSource = mock(DataSource.class);
-		String dataSourceName = "myDummyDataSource";
+		String dataSourceName = "jdbc/myDummyDataSource";
 		factory.add(dataSource, dataSourceName);
 		listener.setDataSourceFactory(factory);
 		doReturn(conn).when(dataSource).getConnection();
