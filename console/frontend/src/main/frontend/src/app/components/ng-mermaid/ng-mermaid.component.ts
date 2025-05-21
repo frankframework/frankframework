@@ -1,5 +1,3 @@
-// /// <reference path="../../../../node_modules/mermaid/dist/mermaid.d.ts" /> doesnt work
-
 import {
   Component,
   ElementRef,
@@ -11,14 +9,7 @@ import {
   Output,
   ViewChild,
 } from '@angular/core';
-import { v4 as uuidv4 } from 'uuid';
-// @ts-expect-error mermaid does not have types
-import mermaidImport, { RenderResult } from 'mermaid/dist/mermaid.esm.mjs';
-const mermaid = mermaidImport;
-
-// Uncomment developing for type support, comment again when compiling as it causes errors
-// import type { Mermaid } from 'mermaid';
-// const mermaid: Mermaid = mermaidImport;
+import { Dimensions, getFactoryDimensions, initMermaid2Svg, mermaid2svg } from '@frankframework/frank-config-layout';
 
 @Component({
   selector: 'ng-mermaid',
@@ -36,6 +27,7 @@ const mermaid = mermaidImport;
 export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
   @Input() nmModel?: string;
   @Input() nmRefreshInterval?: number;
+  @Input() dimensions: Dimensions = getFactoryDimensions();
   @Output() nmInitCallback = new EventEmitter();
 
   @ViewChild('mermaidPre') mermaidEl!: ElementRef<HTMLElement>;
@@ -50,6 +42,7 @@ export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
   constructor() {}
 
   ngOnInit(): void {
+    initMermaid2Svg(this.dimensions);
     this.render();
     this.initialized = true;
   }
@@ -68,20 +61,22 @@ export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
     }
 
     if (this.nmModel) {
+      const mermaidContainer = this.mermaidEl.nativeElement;
+      mermaidContainer.innerHTML = 'Loading...';
       if (this.timeout) {
         window.clearTimeout(this.timeout);
       }
 
       this.timeout = window.setTimeout(
-        () => {
+        async () => {
           try {
-            mermaid.initialize({
-              startOnLoad: false,
-              maxTextSize: 70 * 1000,
-              maxEdges: 600,
-            });
+            const mermaidSvg = await mermaid2svg(this.nmModel!);
+            mermaidContainer.innerHTML = mermaidSvg;
 
-            const mermaidContainer = this.mermaidEl.nativeElement;
+            this.firstRender = false;
+            this.nmInitCallback.emit();
+
+            /*
             mermaidContainer.innerHTML = 'Loading...';
             const uid = `m${uuidv4()}`;
 
@@ -94,14 +89,7 @@ export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
                 svgElement.setAttribute('height', '100%');
                 svgElement.setAttribute('style', 'max-width: 100%;');
                 if (bindFunctions) bindFunctions(svgElement);
-              })
-              .catch((error: Error) => {
-                this.handleError(error);
-              })
-              .finally(() => {
-                this.firstRender = false;
-                this.nmInitCallback.emit();
-              });
+              })*/
           } catch (error) {
             this.handleError(error as Error);
           }
