@@ -103,6 +103,7 @@ public class ResourceObjectLocator implements IObjectLocator, InitializingBean {
 	}
 
 	@Override
+	@SuppressWarnings("unchecked")
 	public <O> O lookup(String name, Properties environment, Class<O> lookupClass) throws Exception {
 		if (resourceUrl == null) {
 			log.debug("resource locator is not configured, skip lookup");
@@ -113,6 +114,10 @@ public class ResourceObjectLocator implements IObjectLocator, InitializingBean {
 		if(resource == null) {
 			log.debug("no resource found for name [{}]", name);
 			return null; // If the lookup returns null, fail-fast to allow other ResourceFactories to locate the object.
+		}
+
+		if (lookupClass == null) {
+			return (O) resource;
 		}
 
 		return objectCreator.instantiateResource(resource, environment, lookupClass);

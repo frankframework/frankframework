@@ -5,7 +5,6 @@ jdbc:
  
 mqtt:
   - name: "hivemq"
-    type: "org.frankframework.jdbc.datasource.MqttClientSettings"
     url: "${mqtt.brokerURL}"
     username: "username1"
     password: "password1"
@@ -14,7 +13,6 @@ mqtt:
       cleanSession: "false"
 
   - name: "hivemq2"
-    type: "org.frankframework.jdbc.datasource.MqttClientSettings"
     url: "${mqtt.brokerURL}"
     authalias: "alias1"
     properties:

@@ -104,7 +104,7 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 	private @Getter DocumentFormat outputFormat=DocumentFormat.JSON;
 	private @Getter boolean prettyPrint=false;
 
-	private @Setter @Getter IMongoClientFactory mongoClientFactory = null; // Spring should wire this!
+	private @Setter @Getter JndiMongoClientFactory mongoClientFactory = null; // Spring should wire this!
 
 	private MongoClient mongoClient;
 	private final ConcurrentHashMap<String, MongoDatabase> mongoDatabases = new ConcurrentHashMap<>();

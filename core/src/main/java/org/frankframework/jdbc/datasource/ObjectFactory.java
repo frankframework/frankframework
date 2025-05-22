@@ -68,24 +68,18 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 
 	/**
 	 * Allow implementing classes to augment the looked up object class 'O'.
-	 */
-	@SuppressWarnings("java:S1172")
-	protected O augment(O object, String objectName) {
-		return object;
-	}
-
-	// TODO: #8275 - Use ObjectFactory#map to create shared resources from a DTO
-	/**
 	 * Allows the originally created object to be mutated to another object. Useful to generate an object from a filled DTO.
 	 */
-	@SuppressWarnings("unchecked")
-	protected O map(P object) {
+	@SuppressWarnings({ "java:S1172", "unchecked" })
+	protected O augment(P object, String objectName) {
 		return (O) object;
 	}
 
 	/**
 	 * Returns the object matching the name and return type.
 	 * If not cached yet, attempts to traverse all {@link IObjectLocator IObjectLocators} to do so.
+	 * 
+	 * When using a JNDI environment it allows initial properties to use for JNDI lookups.
 	 */
 	protected final O get(String name, Properties environment) {
 		String nameWithResourcePrefix = StringUtils.prependIfMissing(name, resourcePrefix+"/");
@@ -96,16 +90,15 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	 * Add and augment an Object to this factory so it can be used without the need of a lookup.
 	 * Should only be called during jUnit Tests or when registering an Object through Spring. Never through a lookup.
 	 */
-	public O add(O object, String name) {
+	public O add(P object, String name) {
 		return objects.computeIfAbsent(name, k -> augment(object, name));
 	}
 
 	private O compute(String name, Properties environment) {
 		for(IObjectLocator objectLocator : objectLocators) {
 			try {
-				P ds = objectLocator.lookup(name, environment, lookupClass);
-				O object = map(ds);
-				if(ds != null) {
+				P object = objectLocator.lookup(name, environment, lookupClass);
+				if(object != null) {
 					log.debug("located Object [{}] in objectLocator [{}]", name, objectLocator);
 					return augment(object, name);
 				}
