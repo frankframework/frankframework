@@ -177,7 +177,13 @@ public class ScenarioLoader {
 			if (!properties.containsKey(key)) {
 				properties.put(key, value);
 			} else if (!key.toString().startsWith("include")) {
-				String warningMessage = "Scenario [%s]: Property [%s] occurs both in scenario file and included file [%s]. Using value [%s] from scenario file instead of value [%s] from include.".formatted(scenarioFile, key, includeFile, properties.get(key), value);
+				String warningMessage;
+				if (!larvaTool.getLarvaConfig().isScenarioPropertyOverridesIncluded()) {
+					properties.put(key, value);
+					warningMessage = "Scenario file [%s]: Property [%s] occurs both in scenario file and included file [%s]. Using value [%s] from included file instead of value [%s] from scenario file.".formatted(scenarioFile, key, includeFile, value, properties.get(key));
+				} else {
+					warningMessage = "Scenario file [%s]: Property [%s] occurs both in scenario file and included file [%s]. Using value [%s] from scenario file instead of value [%s] from include.".formatted(scenarioFile, key, includeFile, properties.get(key), value);
+				}
 				log.warn(warningMessage);
 				larvaTool.warningMessage(warningMessage);
 				warnings.add(warningMessage);

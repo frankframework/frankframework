@@ -1,5 +1,6 @@
 package org.frankframework.larva;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -20,10 +21,11 @@ public class ScenarioLoaderTest {
 
 	private AppConstants appConstants;
 	private ScenarioLoader scenarioLoader;
+	private LarvaConfig config;
 
 	@BeforeEach
 	public void setUp() {
-		LarvaConfig config = new LarvaConfig();
+		config = new LarvaConfig();
 		LarvaTool larvaTool = new LarvaTool(null, config);
 
 		scenarioLoader = new ScenarioLoader(larvaTool);
@@ -60,33 +62,77 @@ public class ScenarioLoaderTest {
 	}
 
 	@Test
-	public void testLoadScenarioWithInclude1() throws IOException {
+	public void testLoadScenarioWithInclude1ScenarioOverrides() throws IOException {
 		// Arrange
 		File scenarioFile = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenario-with-includes/scenario1.properties");
-
-		ScenarioLoader.RawScenarioData scenarioData = scenarioLoader.readScenarioProperties(scenarioFile, appConstants);
-		Properties scenarioProperties = scenarioData.properties();
+		config.setScenarioPropertyOverridesIncluded(true);
 
 		// Act
+		ScenarioLoader.RawScenarioData scenarioData = scenarioLoader.readScenarioProperties(scenarioFile, appConstants);
+		Properties scenarioProperties = scenarioData.properties();
 		String propertyValue = scenarioProperties.getProperty("test.value");
 
 		// Assert
-		assertEquals("scenario1", propertyValue);
+		assertAll(
+				() -> assertEquals("scenario1", propertyValue),
+				() -> assertEquals(4, scenarioData.warnings().size())
+		);
 	}
 
 	@Test
-	public void testLoadScenarioWithInclude2() throws IOException {
+	public void testLoadScenarioWithInclude2ScenarioOverrides() throws IOException {
 		// Arrange
 		File scenarioFile = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenario-with-includes/scenario2.properties");
+		config.setScenarioPropertyOverridesIncluded(true);
 
+		// Act
 		ScenarioLoader.RawScenarioData scenarioData = scenarioLoader.readScenarioProperties(scenarioFile, appConstants);
 		Properties scenarioProperties = scenarioData.properties();
 
-		// Act
 		String propertyValue = scenarioProperties.getProperty("test.value");
 
 		// Assert
-		assertEquals("includes1", propertyValue);
+		assertAll(
+				() -> assertEquals("includes1", propertyValue),
+				() -> assertEquals(3, scenarioData.warnings().size())
+		);
+	}
+
+	@Test
+	public void testLoadScenarioWithInclude1IncludeOverrides() throws IOException {
+		// Arrange
+		File scenarioFile = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenario-with-includes/scenario1.properties");
+		config.setScenarioPropertyOverridesIncluded(false);
+
+		// Act
+		ScenarioLoader.RawScenarioData scenarioData = scenarioLoader.readScenarioProperties(scenarioFile, appConstants);
+		Properties scenarioProperties = scenarioData.properties();
+		String propertyValue = scenarioProperties.getProperty("test.value");
+
+		// Assert
+		assertAll(
+				() -> assertEquals("common", propertyValue),
+				() -> assertEquals(4, scenarioData.warnings().size())
+		);
+	}
+
+	@Test
+	public void testLoadScenarioWithInclude2IncludeOverrides() throws IOException {
+		// Arrange
+		File scenarioFile = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenario-with-includes/scenario2.properties");
+		config.setScenarioPropertyOverridesIncluded(false);
+
+		// Act
+		ScenarioLoader.RawScenarioData scenarioData = scenarioLoader.readScenarioProperties(scenarioFile, appConstants);
+		Properties scenarioProperties = scenarioData.properties();
+
+		String propertyValue = scenarioProperties.getProperty("test.value");
+
+		// Assert
+		assertAll(
+				() -> assertEquals("common", propertyValue),
+				() -> assertEquals(3, scenarioData.warnings().size())
+		);
 	}
 
 	@Test
