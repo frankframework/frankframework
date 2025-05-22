@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
@@ -49,7 +50,8 @@ import org.frankframework.util.PropertyLoader;
 public class ScenarioLoader {
 	private static final String LEGACY_PACKAGE_NAME_LARVA = "org.frankframework.testtool.";
 	private static final String CURRENT_PACKAGE_NAME_LARVA = "org.frankframework.larva.";
-	public static final int SCENARIO_CACHE_SIZE = 5;
+	private static final Pattern INCLUDE_PROPERTY_RE = Pattern.compile("^include\\d*$");
+	private static final int SCENARIO_CACHE_SIZE = 5;
 
 	private final Map<File, RawScenarioData> scenarioFileCache = new LRUMap<>(SCENARIO_CACHE_SIZE);
 
@@ -152,21 +154,19 @@ public class ScenarioLoader {
 	}
 
 	private @Nonnull List<String> addIncludedProperties(@Nonnull File scenarioFile, @Nonnull Properties properties, @Nonnull String directory) throws IOException {
-		int i = 0;
-		String includeFilename = (String) properties.remove("include");
-		if (includeFilename == null) {
-			i++;
-			includeFilename = (String) properties.remove("include" + i);
-		}
+		List<String> includedFiles = properties.stringPropertyNames().stream()
+				.filter(name -> INCLUDE_PROPERTY_RE.matcher(name).matches())
+				.sorted()
+				.map(properties::getProperty)
+				.toList();
+
 		List<String> warnings = new ArrayList<>();
-		while (includeFilename != null) {
+		for (String includeFilename : includedFiles) {
 			log.debug("Load include file: [{}]", includeFilename);
 			File includeFile = new File(LarvaUtil.getAbsolutePath(directory, includeFilename));
 			RawScenarioData includeProperties = readScenarioProperties(includeFile, null, false);
 			warnings.addAll(putAllIfAbsent(scenarioFile, includeFile, properties, includeProperties.properties));
 			warnings.addAll(includeProperties.warnings);
-			i++;
-			includeFilename = properties.getProperty("include" + i);
 		}
 		return warnings;
 	}
