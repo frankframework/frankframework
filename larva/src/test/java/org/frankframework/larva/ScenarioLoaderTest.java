@@ -40,7 +40,8 @@ public class ScenarioLoaderTest {
 	public void testLoadActiveScenario() throws IOException {
 		File scenarioFile = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenarios/scenariodir1/active-scenario.properties");
 
-		Properties scenarioProperties = scenarioLoader.readScenarioProperties(scenarioFile, appConstants);
+		ScenarioLoader.RawScenarioData scenarioData = scenarioLoader.readScenarioProperties(scenarioFile, appConstants);
+		Properties scenarioProperties = scenarioData.properties();
 
 		assertNotNull(scenarioProperties);
 		assertEquals("true", scenarioProperties.getProperty("scenario.active"));
@@ -51,10 +52,41 @@ public class ScenarioLoaderTest {
 	public void testLoadInactiveScenario() throws IOException {
 		File scenarioFile = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenarios/scenariodir2/inactive-scenario.properties");
 
-		Properties scenarioProperties = scenarioLoader.readScenarioProperties(scenarioFile, appConstants);
+		ScenarioLoader.RawScenarioData scenarioData = scenarioLoader.readScenarioProperties(scenarioFile, appConstants);
+		Properties scenarioProperties = scenarioData.properties();
 
 		assertNotNull(scenarioProperties);
 		assertEquals("false", scenarioProperties.getProperty("scenario.active"));
+	}
+
+	@Test
+	public void testLoadScenarioWithInclude1() throws IOException {
+		// Arrange
+		File scenarioFile = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenario-with-includes/scenario1.properties");
+
+		ScenarioLoader.RawScenarioData scenarioData = scenarioLoader.readScenarioProperties(scenarioFile, appConstants);
+		Properties scenarioProperties = scenarioData.properties();
+
+		// Act
+		String propertyValue = scenarioProperties.getProperty("test.value");
+
+		// Assert
+		assertEquals("scenario1", propertyValue);
+	}
+
+	@Test
+	public void testLoadScenarioWithInclude2() throws IOException {
+		// Arrange
+		File scenarioFile = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenario-with-includes/scenario2.properties");
+
+		ScenarioLoader.RawScenarioData scenarioData = scenarioLoader.readScenarioProperties(scenarioFile, appConstants);
+		Properties scenarioProperties = scenarioData.properties();
+
+		// Act
+		String propertyValue = scenarioProperties.getProperty("test.value");
+
+		// Assert
+		assertEquals("includes1", propertyValue);
 	}
 
 	@Test

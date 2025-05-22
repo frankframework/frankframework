@@ -16,12 +16,17 @@
 package org.frankframework.larva;
 
 import java.io.File;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import jakarta.annotation.Nonnull;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -39,6 +44,7 @@ public class Scenario {
 	private final @Getter String name;
 	private final @Getter String description;
 	private final @Getter Properties properties;
+	private final @Getter SortedSet<String> warnings = new TreeSet<>();
 
 	public Scenario(File scenarioFile, String name, String description, Properties properties) {
 		this.id = new ID(scenarioFile);
@@ -46,6 +52,19 @@ public class Scenario {
 		this.name = name;
 		this.description = description;
 		this.properties = properties;
+	}
+
+	public Scenario(File scenarioFile, String name, String description, Properties properties, Collection<String> warnings) {
+		this(scenarioFile, name, description, properties);
+		addWarnings(warnings);
+	}
+
+	public void addWarning(@Nonnull String warning) {
+		warnings.add(warning);
+	}
+
+	public void addWarnings(@Nonnull Collection<String> warnings) {
+		this.warnings.addAll(warnings);
 	}
 
 	@Override

@@ -17,8 +17,10 @@ package org.frankframework.larva;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Collectors;
@@ -49,7 +51,7 @@ public class ScenarioLoader {
 	private static final String CURRENT_PACKAGE_NAME_LARVA = "org.frankframework.larva.";
 	public static final int SCENARIO_CACHE_SIZE = 5;
 
-	private final Map<File, PropertyLoader> scenarioFileCache = new LRUMap<>(SCENARIO_CACHE_SIZE);
+	private final Map<File, RawScenarioData> scenarioFileCache = new LRUMap<>(SCENARIO_CACHE_SIZE);
 
 	private final LarvaTool larvaTool;
 
@@ -88,16 +90,17 @@ public class ScenarioLoader {
 		for (File scenarioFile : files) {
 			if (scenarioFile.isFile() && scenarioFile.getName().endsWith(".properties") && !scenarioFile.getName().equalsIgnoreCase("common.properties")) {
 				String scenarioFilePath = scenarioFile.getAbsolutePath();
-				PropertyLoader properties;
+				RawScenarioData scenarioData;
 				try {
-					properties = readScenarioProperties(scenarioFile, appConstants);
+					scenarioData = readScenarioProperties(scenarioFile, appConstants);
 				} catch (IOException e) {
 					larvaTool.errorMessage("Could not read properties file [" + scenarioFilePath + "]: " + e.getMessage(), e);
 					continue;
 				}
+				PropertyLoader properties = scenarioData.properties;
 				String description = properties.getProperty("scenario.description");
 				if (description == null) {
-					log.warn("Property file [" + scenarioFilePath + "] has no description");
+					log.warn("Property file [{}] has no description", scenarioFilePath);
 				}
 				boolean active = properties.getBoolean("scenario.active", true);
 				boolean unstable = properties.getBoolean("adapter.unstable", false);
@@ -121,15 +124,15 @@ public class ScenarioLoader {
 	 * @param appConstants {@link AppConstants} to be used for resolving propertes in scenarios
 	 * @return The properties read from the scenario file.
 	 */
-	public @Nonnull PropertyLoader readScenarioProperties(@Nonnull File scenarioFile, @Nonnull AppConstants appConstants) throws IOException {
-		PropertyLoader scenarioProperties;
-		scenarioProperties = readScenarioProperties(scenarioFile, appConstants, true);
+	public @Nonnull RawScenarioData readScenarioProperties(@Nonnull File scenarioFile, @Nonnull AppConstants appConstants) throws IOException {
+		RawScenarioData scenarioData;
+		scenarioData = readScenarioProperties(scenarioFile, appConstants, true);
 		String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath();
-		addAbsolutePathProperties(scenarioDirectory, scenarioProperties);
-		return scenarioProperties;
+		addAbsolutePathProperties(scenarioDirectory, scenarioData.properties);
+		return scenarioData;
 	}
 
-	private @Nonnull PropertyLoader readScenarioProperties(@Nonnull File scenarioFile, @Nullable AppConstants appConstants, boolean root) throws IOException {
+	private @Nonnull RawScenarioData readScenarioProperties(@Nonnull File scenarioFile, @Nullable AppConstants appConstants, boolean root) throws IOException {
 		// Only cache included files since they are most likely to be frequently read. Root files would just pollute the cache.
 		if (!root && scenarioFileCache.containsKey(scenarioFile)) {
 			return scenarioFileCache.get(scenarioFile);
@@ -138,33 +141,49 @@ public class ScenarioLoader {
 		PropertyLoader properties = new PropertyLoader(scenarioFile, appConstants);
 		fixLegacyClassnames(properties);
 
-		Properties includedProperties = getIncludedProperties(properties, scenarioDirectory);
-		properties.putAll(includedProperties);
+		List<String> warnings = addIncludedProperties(scenarioFile, properties, scenarioDirectory);
 		log.debug("{} properties found", properties.size());
+		RawScenarioData scenarioData = new RawScenarioData(properties, warnings);
 		if (!root) {
 			// Only cache included files since they are most likely to be frequently read. Root files would just pollute the cache.
-			scenarioFileCache.put(scenarioFile, properties);
+			scenarioFileCache.put(scenarioFile, scenarioData);
 		}
-		return properties;
+		return scenarioData;
 	}
 
-	private @Nonnull Properties getIncludedProperties(Properties properties, String directory) throws IOException {
-		Properties includedProperties = new Properties();
+	private @Nonnull List<String> addIncludedProperties(@Nonnull File scenarioFile, @Nonnull Properties properties, @Nonnull String directory) throws IOException {
 		int i = 0;
-		String includeFilename = properties.getProperty("include");
+		String includeFilename = (String) properties.remove("include");
 		if (includeFilename == null) {
 			i++;
-			includeFilename = properties.getProperty("include" + i);
+			includeFilename = (String) properties.remove("include" + i);
 		}
+		List<String> warnings = new ArrayList<>();
 		while (includeFilename != null) {
 			log.debug("Load include file: [{}]", includeFilename);
 			File includeFile = new File(LarvaUtil.getAbsolutePath(directory, includeFilename));
-			Properties includeProperties = readScenarioProperties(includeFile, null, false);
-			includedProperties.putAll(includeProperties);
+			RawScenarioData includeProperties = readScenarioProperties(includeFile, null, false);
+			warnings.addAll(putAllIfAbsent(scenarioFile, includeFile, properties, includeProperties.properties));
+			warnings.addAll(includeProperties.warnings);
 			i++;
 			includeFilename = properties.getProperty("include" + i);
 		}
-		return includedProperties;
+		return warnings;
+	}
+
+	private List<String> putAllIfAbsent(@Nonnull File scenarioFile, @Nonnull File includeFile, @Nonnull Properties properties, @Nonnull Properties otherProperties) {
+		List<String> warnings = new ArrayList<>();
+		otherProperties.forEach( (key, value) -> {
+			if (!properties.containsKey(key)) {
+				properties.put(key, value);
+			} else if (!key.toString().startsWith("include")) {
+				String warningMessage = "Scenario [%s]: Property [%s] occurs both in scenario file and included file [%s]. Using value [%s] from scenario file instead of value [%s] from include.".formatted(scenarioFile, key, includeFile, properties.get(key), value);
+				log.warn(warningMessage);
+				larvaTool.warningMessage(warningMessage);
+				warnings.add(warningMessage);
+			}
+		});
+		return warnings;
 	}
 
 	private static void addAbsolutePathProperties(@Nonnull String propertiesDirectory, @Nonnull Properties properties) {
@@ -206,4 +225,6 @@ public class ScenarioLoader {
 				.replace(LEGACY_PACKAGE_NAME_LARVA, CURRENT_PACKAGE_NAME_LARVA);
 		return Map.entry(propertyName, newClassName);
 	}
+
+	public record RawScenarioData(@Nonnull PropertyLoader properties, @Nonnull List<String> warnings) {}
 }
