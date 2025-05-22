@@ -33,6 +33,7 @@ import org.springframework.util.StreamUtils;
 import lombok.Getter;
 import lombok.Setter;
 
+import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.Misc;
 import org.frankframework.util.UUIDUtil;
@@ -51,7 +52,7 @@ public abstract class AbstractStatusRecordingTransactionManager extends ThreadCo
 
 	private @Getter @Setter String statusFile;
 	private @Getter @Setter String uidFile;
-	private @Getter @Setter String uid;
+	private @Getter String uid;
 
 	protected enum Status {
 		INITIALIZING,
@@ -93,13 +94,18 @@ public abstract class AbstractStatusRecordingTransactionManager extends ThreadCo
 			if (tmuid.length()>TMUID_MAX_LENGTH) {
 				tmuid = tmuid.substring(0, TMUID_MAX_LENGTH);
 			}
+			log.info("created tmuid [{}]", tmuid);
 			setUid(tmuid);
-			log.info("created tmuid [{}]", getUid());
 		}
 		if (!getUid().equals(recordedTmUid)) {
 			write(getUidFile(),getUid());
 		}
 		return getUid();
+	}
+
+	public void setUid(String transactionManagerUid) {
+		AppConstants.getInstance().setProperty("transactionmanager.uid", transactionManagerUid);
+		this.uid = transactionManagerUid;
 	}
 
 	@Override

@@ -7,7 +7,8 @@ mqtt:
   - name: "hivemq"
     type: "org.frankframework.jdbc.datasource.MqttClientSettings"
     url: "${mqtt.brokerURL}"
-    authalias: ""
+    username: "username1"
+    password: "password1"
     properties:
       automaticReconnect: "true"
       cleanSession: "false"
@@ -15,6 +16,6 @@ mqtt:
   - name: "hivemq2"
     type: "org.frankframework.jdbc.datasource.MqttClientSettings"
     url: "${mqtt.brokerURL}"
-    authalias: ""
+    authalias: "alias1"
     properties:
       clientId: "test123"
