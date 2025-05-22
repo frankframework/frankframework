@@ -34,8 +34,10 @@ import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Stream;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
@@ -330,6 +332,27 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		} else {
 			return attributeValue.toString();
 		}
+	}
+
+	@Override
+	public void setCustomFileAttribute(@Nonnull Path file, @Nonnull String name, @Nonnull String value) throws FileSystemException {
+		if (!Files.exists(file)) {
+			throw new org.frankframework.filesystem.FileNotFoundException("Cannot set custom attribute [" + name + "] for file [" + file + "] because the file does not exist.");
+		}
+		try {
+			UserDefinedFileAttributeView userDefinedAttributes = Files.getFileAttributeView(file, UserDefinedFileAttributeView.class);
+			userDefinedAttributes.write(name, Charset.defaultCharset().encode(value));
+		} catch (IOException e) {
+			throw new FileSystemException("Cannot set custom attribute [" + name + "] for file [" + file + "]: " + e.getMessage(), e);
+		}
+	}
+
+	@Nullable
+	@Override
+	public String getCustomFileAttribute(@Nonnull Path file, @Nonnull String name) throws FileSystemException {
+		Map<String, Object> additionalFileProperties = getAdditionalFileProperties(file);
+		if (additionalFileProperties == null) return null;
+		return Objects.toString(additionalFileProperties.get(name), null);
 	}
 
 	@Override

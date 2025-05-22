@@ -419,7 +419,13 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 				return null; // if message and/or toState does not exist, the message can/will not be moved to it, so return null.
 			}
 			if (toState==ProcessState.DONE || toState==ProcessState.ERROR) {
-				return wrap(FileSystemUtils.moveFile(getFileSystem(), message.getRawMessage(), getStateFolder(toState), isOverwrite(), getNumberOfBackups(), isCreateFolders(), false), message);
+				F movedFile = FileSystemUtils.moveFile(getFileSystem(), message.getRawMessage(), getStateFolder(toState), isOverwrite(), getNumberOfBackups(), isCreateFolders(), false);
+				if (StringUtils.isNotEmpty(reason) && getFileSystem() instanceof ISupportsCustomFileAttributes<?>) {
+					@SuppressWarnings("unchecked")
+					ISupportsCustomFileAttributes<F> fs = (ISupportsCustomFileAttributes<F>) getFileSystem();
+					fs.setCustomFileAttribute(movedFile, "comment", reason);
+				}
+				return wrap(movedFile, message);
 			}
 			if (toState==ProcessState.INPROCESS && isFileTimeSensitive() && getFileSystem() instanceof IWritableFileSystem) {
 				F movedFile = getFileSystem().moveFile(message.getRawMessage(), getStateFolder(toState), false);
@@ -499,7 +505,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 		if (isDisableMessageBrowsers() || !knownProcessStates().contains(state)) {
 			return null;
 		}
-		return new FileSystemMessageBrowser<F, FS>(getFileSystem(), getStateFolder(state), getMessageIdPropertyKey());
+		return new FileSystemMessageBrowser<>(getFileSystem(), getStateFolder(state), getMessageIdPropertyKey());
 	}
 
 	/** Name of the listener */

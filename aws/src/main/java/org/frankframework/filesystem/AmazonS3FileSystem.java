@@ -27,9 +27,11 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.io.FilenameUtils;
@@ -553,6 +555,17 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 					.build());
 		}
 		return httpClientBuilder;
+	}
+
+	@Override
+	public void setCustomFileAttribute(@Nonnull S3FileRef file, @Nonnull String name, @Nonnull String value) {
+		// Not implemented, silently do nothing
+	}
+
+	@Nullable
+	@Override
+	public String getCustomFileAttribute(@Nonnull S3FileRef file, @Nonnull String name) {
+		return Objects.toString(getAdditionalFileProperties(file).get(name), null);
 	}
 
 	@Override

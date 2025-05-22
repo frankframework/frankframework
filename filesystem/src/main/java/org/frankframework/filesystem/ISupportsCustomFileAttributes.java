@@ -91,4 +91,24 @@ public interface ISupportsCustomFileAttributes<F> {
 	 * @param customFileAttributes
 	 */
 	void createFile(F file, InputStream contents, Map<String, String> customFileAttributes) throws FileSystemException, IOException;
+
+	/**
+	 * Sets the given custom file attribute on the given file. If the attribute already exists, it will be overwritten.
+	 * If the filesystem cannot support this operation but can support other operations in this interface, it should silently ignore this call and
+	 * not throw an exception.
+	 *
+	 * @param file File object for which to set the extended attribute. Must not be {@code null}.
+	 * @param name Name of the extended attribute to set. Must not be {@code null}.
+	 * @param value Value of the extended attribute to set. Must not be {@code null}.
+	 */
+	void setCustomFileAttribute(@Nonnull F file, @Nonnull String name, @Nonnull String value) throws FileSystemException;
+
+	/**
+	 * Gets the value of the given custom file attribute on the given file. If the attribute does not exist, {@code null} is returned.
+	 *
+	 * @param file File object for which to get the extended attribute. Must not be {@code null}.
+	 * @param name Name of the extended attribute to get. Must not be {@code null}.
+	 * @return Value of the extended attribute or {@code null} if the attribute does not exist.
+	 */
+	@Nullable String getCustomFileAttribute(@Nonnull F file, @Nonnull String name) throws FileSystemException;
 }

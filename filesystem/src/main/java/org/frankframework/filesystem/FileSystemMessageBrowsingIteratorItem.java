@@ -29,11 +29,19 @@ public class FileSystemMessageBrowsingIteratorItem<F, FS extends IBasicFileSyste
 	private final FS fileSystem;
 	private final RawMessageWrapper<F> item;
 	private final String messageIdPropertyKey;
+	private final String comment;
 
-	public FileSystemMessageBrowsingIteratorItem(FS fileSystem, RawMessageWrapper<F> item, String messageIdPropertyKey) {
+	public FileSystemMessageBrowsingIteratorItem(FS fileSystem, RawMessageWrapper<F> item, String messageIdPropertyKey) throws FileSystemException {
 		this.fileSystem = fileSystem;
 		this.item = item;
 		this.messageIdPropertyKey = messageIdPropertyKey;
+		if (fileSystem instanceof ISupportsCustomFileAttributes<?>) {
+			@SuppressWarnings("unchecked")
+			ISupportsCustomFileAttributes<F> supportsCustomFileAttributes = (ISupportsCustomFileAttributes<F>) fileSystem;
+			comment = supportsCustomFileAttributes.getCustomFileAttribute(item.getRawMessage(), "comment");
+		} else {
+			comment = null;
+		}
 	}
 
 	@Override
@@ -55,7 +63,7 @@ public class FileSystemMessageBrowsingIteratorItem<F, FS extends IBasicFileSyste
 	}
 
 	@Override
-	public String getCorrelationId() throws ListenerException {
+	public String getCorrelationId() {
 		return null;
 	}
 
@@ -69,27 +77,27 @@ public class FileSystemMessageBrowsingIteratorItem<F, FS extends IBasicFileSyste
 	}
 
 	@Override
-	public Date getExpiryDate() throws ListenerException {
+	public Date getExpiryDate() {
 		return null;
 	}
 
 	@Override
-	public String getType() throws ListenerException {
+	public String getType() {
 		return null;
 	}
 
 	@Override
-	public String getHost() throws ListenerException {
+	public String getHost() {
 		return null;
 	}
 
 	@Override
 	public String getCommentString() throws ListenerException {
-		return null;
+		return comment;
 	}
 
 	@Override
-	public String getLabel() throws ListenerException {
+	public String getLabel() {
 		return null;
 	}
 

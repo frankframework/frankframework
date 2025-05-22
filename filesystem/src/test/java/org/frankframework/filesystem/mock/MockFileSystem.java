@@ -388,6 +388,17 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
+	public void setCustomFileAttribute(@Nonnull M file, @Nonnull String name, @Nonnull String value) {
+		getCustomAttributes(file).put(name, value);
+	}
+
+	@Nullable
+	@Override
+	public String getCustomFileAttribute(@Nonnull M file, @Nonnull String name) {
+		return getCustomAttributes(file).get(name);
+	}
+
+	@Override
 	public void createFile(M file, InputStream contents, Map<String, String> customFileAttributes) throws FileSystemException, IOException {
 		file.getCustomAttributes().putAll(customFileAttributes);
 

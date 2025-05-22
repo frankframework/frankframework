@@ -15,7 +15,6 @@
 */
 package org.frankframework.filesystem;
 
-import java.io.InputStream;
 import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
@@ -66,8 +65,6 @@ public class S3FileRef {
 
 	@Nonnull // may be empty
 	private final Map<String, String> userMetadata = new HashMap<>();
-
-	private @Getter InputStream objectContent;
 
 	/** Strip folder prefix of filename if present. May not be changed after creation */
 	private S3FileRef(@Nonnull String key) {
