@@ -53,8 +53,8 @@ public class MqttClientFactory extends ObjectFactory<MqttClient, MqttClientSetti
 		}
 		connectOptions.setMqttVersion(MqttConnectOptions.MQTT_VERSION_DEFAULT); // Default: 0, V3.1: 3, V3.1.1: 4
 
-		if (data.getUsername() != null && data.getPassword() != null) {
-			connectOptions.setUserName(data.getUsername());
+		if (data.getUser() != null && data.getPassword() != null) {
+			connectOptions.setUserName(data.getUser());
 			connectOptions.setPassword(data.getPassword().toCharArray());
 		}
 

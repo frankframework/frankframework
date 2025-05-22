@@ -16,6 +16,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import org.frankframework.credentialprovider.CredentialFactory;
 import org.frankframework.jdbc.datasource.MqttClientSettings;
 import org.frankframework.jdbc.datasource.ResourceObjectLocator;
 import org.frankframework.util.AppConstants;
@@ -53,6 +54,9 @@ public class MqttClientFactoryTest {
 		assertTrue(obj.isAutomaticReconnect());
 		assertNull(obj.getClientId());
 
+		assertEquals("username1", obj.getUser());
+		assertEquals("password1", obj.getPassword());
+
 		// Test without prefix
 		assertThrows(Exception.class, () -> locator.lookup("hivemq", null, MqttClientSettings.class));
 	}
@@ -63,10 +67,14 @@ public class MqttClientFactoryTest {
 		locator.setResourceFile("mqttResources.yml");
 		locator.afterPropertiesSet();
 
+		assertTrue(CredentialFactory.hasCredential("alias1")); // ensure the alias exists, else the remaining tests wont work
+
 		MqttClientSettings obj = locator.lookup("mqtt/hivemq2", null, MqttClientSettings.class);
 		assertNotNull(obj);
 		assertFalse(obj.isAutomaticReconnect());
 		assertEquals("test123", obj.getClientId());
+		assertEquals("username1", obj.getUser());
+		assertEquals("password1", obj.getPassword());
 	}
 
 	@Test
