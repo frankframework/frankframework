@@ -416,7 +416,7 @@ public class LarvaTool {
 		}
 
 		// Map all identifier based properties once
-		Map<String, Map<String, Map<String, String>>> ignoreMap = mapPropertiesToIgnores(properties);
+		Map<String, Map<String, Map<String, String>>> ignoreMap = scenario.getIgnoreMap();
 
 		String preparedExpectedResult = prepareResultForCompare(printableExpectedResult, properties, ignoreMap);
 		String preparedActualResult = prepareResultForCompare(printableActualResult, properties, ignoreMap);

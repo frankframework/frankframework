@@ -19,6 +19,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.SortedSet;
@@ -45,6 +46,7 @@ public class Scenario {
 	private final @Getter String description;
 	private final @Getter Properties properties;
 	private final @Getter SortedSet<String> warnings = new TreeSet<>();
+	private Map<String, Map<String, Map<String, String>>> ignoreMapCache;
 
 	public Scenario(File scenarioFile, String name, String description, Properties properties) {
 		this.id = new ID(scenarioFile);
@@ -107,6 +109,17 @@ public class Scenario {
 
 	public String getStepDisplayName(String step) {
 		return getName() + " - " + step + " - " + properties.get(step);
+	}
+
+	public void clearScenarioCaches() {
+		this.ignoreMapCache = null;
+	}
+
+	public Map<String, Map<String, Map<String, String>>> getIgnoreMap() {
+		if (this.ignoreMapCache == null) {
+			this.ignoreMapCache = LarvaTool.mapPropertiesToIgnores(this.properties);
+		}
+		return this.ignoreMapCache;
 	}
 
 	public static class ID {

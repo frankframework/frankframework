@@ -294,7 +294,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 					String longName = scenarioDirectory.substring(0, i + 1);
 					log.debug("longName: [{}]", longName);
 					if (!addedDirectories.contains(longName)) {
-						String shortName = StringUtils.prependIfMissing(FilenameUtils.normalize(scenarioDirectory.substring(scenariosRootDirectory.length() - 1, i + 1), true), "/");
+						String shortName = normalizeScenarioName(scenarioDirectory.substring(scenariosRootDirectory.length() - 1, i + 1));
 						String option = "<option value=\"" + XmlEncodingUtils.encodeChars(longName) + "\"";
 						log.debug("paramExecute: [{}]", paramExecute);
 						if (paramExecute != null && paramExecute.equals(longName)) {
@@ -313,7 +313,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 				if (paramExecute != null && paramExecute.equals(longName)) {
 					option = option + " selected";
 				}
-				option = option + ">" + XmlEncodingUtils.encodeChars(shortName + " - " + scenario.getDescription()) + "</option>";
+				option = option + ">" + normalizeScenarioName(shortName + " - " + scenario.getDescription()) + "</option>";
 				writeHtml(option);
 			}
 		});
@@ -341,6 +341,10 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 		writer.setBufferOutputMessages(false);
 		writer.setBufferLogMessages(false);
 		writer.flush();
+	}
+
+	private String normalizeScenarioName(String scenarioName) {
+		return XmlEncodingUtils.encodeChars(StringUtils.prependIfMissing(FilenameUtils.normalize(scenarioName, true), "/"));
 	}
 
 	private void writeCheckboxOptionBox(String description, String fieldName, boolean isChecked) {

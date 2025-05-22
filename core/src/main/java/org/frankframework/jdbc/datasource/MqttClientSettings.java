@@ -22,7 +22,7 @@ import lombok.Setter;
 public class MqttClientSettings {
 	private String name;
 	private String url;
-	private String username;
+	private String user;
 	private String password;
 	private String clientId;
 	private String persistenceDirectory;

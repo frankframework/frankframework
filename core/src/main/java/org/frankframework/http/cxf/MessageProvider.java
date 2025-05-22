@@ -15,6 +15,7 @@
 */
 package org.frankframework.http.cxf;
 
+import jakarta.xml.soap.SOAPMessage;
 import jakarta.xml.ws.BindingType;
 import jakarta.xml.ws.ServiceMode;
 
@@ -46,8 +47,9 @@ public class MessageProvider extends AbstractSOAPProvider {
 	}
 
 	@Override
-	Message processRequest(Message message, PipeLineSession pipelineSession) throws ListenerException {
+	Message processRequest(SOAPMessage soapMessage, PipeLineSession pipelineSession) throws ListenerException {
 		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_LISTENER_KEY, listener.getName())) {
+			Message message = parseSOAPMessage(soapMessage);
 			return listener.processRequest(message, pipelineSession);
 		}
 	}

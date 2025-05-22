@@ -47,8 +47,10 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.w3c.dom.Element;
 
+import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.InputStreamDataSource;
+import org.frankframework.http.PushingListenerAdapter;
 import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
@@ -77,7 +79,8 @@ public class SoapProviderTest {
 
 	@BeforeEach
 	public void setup() {
-		SOAPProvider = new SoapProviderStub(webServiceContext);
+		SOAPProvider = new SoapProviderStub();
+		SOAPProvider.webServiceContext = webServiceContext;
 	}
 
 	private Message getFile(String file) throws IOException {
@@ -361,10 +364,9 @@ public class SoapProviderTest {
 		}
 		Message attachmentMessage = spy(new Message(new FilterInputStream(new ByteArrayInputStream(ATTACHMENT2_CONTENT.getBytes())) {}));
 
-		SoapProviderStub mockSOAPProvider = new SoapProviderStub(webServiceContext) {
-
+		PushingListenerAdapter listener = new PushingListenerAdapter() {
 			@Override
-			Message processRequest(Message message, PipeLineSession pipelineSession) {
+			public Message processRequest(Message message, PipeLineSession pipelineSession) throws ListenerException {
 				try {
 					MatchUtils.assertXmlEquals(getFile("VrijeBerichten_PipelineRequest.xml").asString(), message.asString());
 
@@ -383,8 +385,9 @@ public class SoapProviderTest {
 			}
 		};
 
-		mockSOAPProvider.setAttachmentXmlSessionKey("attachmentXmlSessionKey");
-		SOAPMessage message = mockSOAPProvider.invoke(request);
+		MessageProvider messageProvider = new MessageProvider(listener, "attachmentXmlSessionKey");
+		messageProvider.webServiceContext = webServiceContext;
+		SOAPMessage message = messageProvider.invoke(request);
 
 		assertAttachmentInReceivedMessage(message);
 
