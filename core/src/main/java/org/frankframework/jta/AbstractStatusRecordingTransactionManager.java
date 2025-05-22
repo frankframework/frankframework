@@ -103,7 +103,7 @@ public abstract class AbstractStatusRecordingTransactionManager extends ThreadCo
 		return getUid();
 	}
 
-	private void setUid(String transactionManagerUid) {
+	public void setUid(String transactionManagerUid) {
 		AppConstants.getInstance().setProperty("transactionmanager.uid", transactionManagerUid);
 		this.uid = transactionManagerUid;
 	}

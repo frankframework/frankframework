@@ -1,10 +1,13 @@
 package org.frankframework.extensions.mqtt;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
+import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
@@ -52,13 +55,32 @@ public class MqttSenderTest extends SenderTestBase<MqttSender> {
 	}
 
 	@BeforeAll
-	static void beforeAll() {
+	static void setUrlProperty() {
 		AppConstants.getInstance().setProperty("mqtt.brokerURL", String.format("tcp://%s:%s", hivemqCe.getHost(), hivemqCe.getMqttPort()));
 	}
 
 	@AfterAll
-	static void teardown() {
+	static void clearUrlProperty() {
 		AppConstants.getInstance().remove("mqtt.brokerURL");
+	}
+
+	@Test
+	public void createAndDestroyFactory() throws Exception {
+		ResourceObjectLocator locator = new ResourceObjectLocator();
+		locator.setResourceFile("mqttResources.yml");
+		locator.afterPropertiesSet();
+
+		MqttClientFactory factory = new MqttClientFactory();
+		factory.setObjectLocators(List.of(locator));
+		factory.afterPropertiesSet();
+
+		MqttClient client = factory.getClient(RESOURCE_NAME);
+		assertTrue(client.isConnected());
+
+		factory.destroy();
+
+		assertFalse(client.isConnected());
+		assertTrue(factory.getObjectInfo().isEmpty());
 	}
 
 	@Test
