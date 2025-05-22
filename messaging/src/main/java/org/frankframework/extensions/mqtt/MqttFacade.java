@@ -35,6 +35,8 @@ import lombok.Setter;
  *   - name: "my-connection"
  *     type: "org.frankframework.jdbc.datasource.MqttClientSettings"
  *     url: "tcp://host:port"
+ *     username: ""
+ *     password: ""
  *     authalias: "${property.name.here}"
  *     properties:
  *       automaticReconnect: "true"
