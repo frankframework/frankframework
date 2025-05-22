@@ -177,23 +177,22 @@ public class ScenarioRunner {
 		testExecutionObserver.startScenario(testRunStatus, scenario);
 		try (CloseableThreadContext.Instance ignored = CloseableThreadContext.put("scenario", scenario.getName());
 			// This is far from optimal, but without refactoring the whole LarvaTool, this is the quick and dirty way to do it
-			LarvaApplicationContext applicationContext = new LarvaApplicationContext(this.applicationContext, scenarioDirectory)
+			LarvaApplicationContext larvaContext = new LarvaApplicationContext(this.applicationContext, scenarioDirectory)
 		) {
-			Properties properties = scenario.getProperties();
 			log.debug("Open actions");
 
 			LarvaActionFactory actionFactory = new LarvaActionFactory(larvaTool, testExecutionObserver);
 
 			// increment suffix for each scenario
 			String correlationId = TESTTOOL_CORRELATIONID + "(" + correlationIdSuffixCounter.getAndIncrement() + ")";
-			Map<String, LarvaScenarioAction> larvaActions = actionFactory.createLarvaActions(scenario, applicationContext, correlationId);
+			Map<String, LarvaScenarioAction> larvaActions = actionFactory.createLarvaActions(scenario, larvaContext, correlationId);
 			if (larvaActions == null || larvaActions.isEmpty()) {
 				testRunStatus.scenarioFailed(scenario);
 				testExecutionObserver.finishScenario(testRunStatus, scenario, LarvaTool.RESULT_ERROR, "Could not create LarvaActions");
 				return LarvaTool.RESULT_ERROR;
 			}
-			applicationContext.configure();
-			applicationContext.start();
+			larvaContext.configure();
+			larvaContext.start();
 
 			// Start the scenario
 			// TODO: The buffering is now not threadsafe yet.
