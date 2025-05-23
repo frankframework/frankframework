@@ -46,15 +46,13 @@ import org.frankframework.jta.narayana.NarayanaJtaTransactionManager;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.pipes.ForEachChildElementPipe;
-import org.frankframework.processors.CorePipeLineProcessor;
-import org.frankframework.processors.CorePipeProcessor;
-import org.frankframework.processors.InputOutputPipeProcessor;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ServiceDispatcher;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.ThrowingAfterCloseInputStream;
+import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.testutil.VirtualInputStream;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.RunState;
@@ -123,7 +121,7 @@ class IbisLocalSenderTest {
 	@DisplayName("Test IbisLocalSender.sendMessage()")
 	void sendMessage(boolean callByServiceName, boolean callIsolated, boolean callSynchronous) throws Exception {
 		// Arrange
-		configuration = new TestConfiguration(false);
+		configuration = TransactionManagerType.DATASOURCE.create(false);
 		Adapter adapter = createAdapter(configuration);
 		AtomicLong asyncCounterResult = new AtomicLong();
 		Semaphore asyncCompletionSemaphore = new Semaphore(0);
@@ -167,7 +165,7 @@ class IbisLocalSenderTest {
 	@DisplayName("Test IbisLocalSender.sendMessage() Async")
 	void sendMessageAsync(boolean callByServiceName) throws Exception {
 		// Arrange
-		configuration = new TestConfiguration(false);
+		configuration = TransactionManagerType.DATASOURCE.create(false);
 		Adapter adapter = createAdapter(configuration);
 		AtomicLong asyncCounterResult = new AtomicLong();
 		Semaphore asyncCompletionSemaphore = new Semaphore(0);
@@ -361,7 +359,7 @@ class IbisLocalSenderTest {
 	@Test
 	public void testIteratorPipeWithLocalSenderExitSuccess() throws Exception {
 		// Arrange
-		configuration = new TestConfiguration(false);
+		configuration = TransactionManagerType.DATASOURCE.create(false);
 		Adapter adapter = createAdapter(configuration);
 		EchoPipe pipe = configuration.createBean();
 		pipe.setName("put-in-session-pipe");
@@ -422,7 +420,7 @@ class IbisLocalSenderTest {
 	@Test
 	public void testIteratorPipeWithLocalSenderExitError() throws Exception {
 		// Arrange
-		configuration = new TestConfiguration(false);
+		configuration = TransactionManagerType.DATASOURCE.create(false);
 		Adapter adapter = createAdapter(configuration);
 		EchoPipe pipe = configuration.createBean();
 		pipe.setName("put-in-session-pipe");
@@ -524,13 +522,6 @@ class IbisLocalSenderTest {
 		error.setName("error");
 		error.setState(PipeLine.ExitState.ERROR);
 		pl.addPipeLineExit(error);
-
-		InputOutputPipeProcessor iopp = SpringUtils.createBean(configuration);
-		CorePipeProcessor cpp = SpringUtils.createBean(configuration);
-		iopp.setPipeProcessor(cpp);
-		CorePipeLineProcessor plp = SpringUtils.createBean(configuration);
-		plp.setPipeProcessor(iopp);
-		pl.setPipeLineProcessor(plp);
 		return pl;
 	}
 
