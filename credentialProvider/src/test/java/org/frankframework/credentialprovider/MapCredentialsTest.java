@@ -25,7 +25,6 @@ public class MapCredentialsTest {
 		aliases.put("singleValue", "Plain Credential");
 	}
 
-
 	@Test
 	public void testNoAlias() {
 		String alias = null;

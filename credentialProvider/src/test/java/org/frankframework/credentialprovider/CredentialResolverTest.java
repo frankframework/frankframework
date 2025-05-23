@@ -9,6 +9,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Properties;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -29,6 +30,14 @@ class CredentialResolverTest {
 		assertFalse(properties.isEmpty(), "did not find any properties!");
 
 		System.setProperty("authAliases.expansion.allowed", "${allowedAliases}");
+	}
+
+	/**
+	 *  Make sure to clean up the system properties after the tests
+	 */
+	@AfterAll
+	public static void tearDown() {
+		System.clearProperty("authAliases.expansion.allowed");
 	}
 
 	@Test

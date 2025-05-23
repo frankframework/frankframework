@@ -10,6 +10,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -29,6 +30,14 @@ public class PropertyFileCredentialFactoryTest {
 
 		credentialFactory = new PropertyFileCredentialFactory();
 		credentialFactory.initialize();
+	}
+
+	/**
+	 *  Make sure to clean up the system properties after the test
+	 */
+	@AfterAll
+	public static void tearDown() {
+		System.clearProperty("credentialFactory.map.properties");
 	}
 
 	@Test
