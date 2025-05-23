@@ -22,6 +22,7 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -31,6 +32,7 @@ import jakarta.annotation.Nullable;
 
 import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -178,17 +180,26 @@ public class ScenarioLoader {
 				properties.put(key, value);
 			} else if (!key.toString().startsWith("include")) {
 				String warningMessage;
-				if (!larvaTool.getLarvaConfig().isScenarioPropertyOverridesIncluded()) {
+				String scenarioFilename = chompFilename(scenarioFile);
+				String includeFilename = chompFilename(includeFile);
+				Object originalValue = properties.get(key);
+				if (Objects.equals(originalValue, value)) {
+					warningMessage = "Scenario file [%s]: Property [%s] occurs both in scenario file and included file [%s]. Both have the value [%s].".formatted(scenarioFilename, key, includeFilename, value);
+				} else if (!larvaTool.getLarvaConfig().isScenarioPropertyOverridesIncluded()) {
+					warningMessage = "Scenario file [%s]: Property [%s] occurs both in scenario file and included file [%s]. Using value [%s] from included file instead of value [%s] from scenario file.".formatted(scenarioFilename, key, includeFilename, value, originalValue);
 					properties.put(key, value);
-					warningMessage = "Scenario file [%s]: Property [%s] occurs both in scenario file and included file [%s]. Using value [%s] from included file instead of value [%s] from scenario file.".formatted(scenarioFile, key, includeFile, value, properties.get(key));
 				} else {
-					warningMessage = "Scenario file [%s]: Property [%s] occurs both in scenario file and included file [%s]. Using value [%s] from scenario file instead of value [%s] from include.".formatted(scenarioFile, key, includeFile, properties.get(key), value);
+					warningMessage = "Scenario file [%s]: Property [%s] occurs both in scenario file and included file [%s]. Using value [%s] from scenario file instead of value [%s] from include.".formatted(scenarioFilename, key, includeFilename, originalValue, value);
 				}
 				log.warn(warningMessage);
 				warnings.add(warningMessage);
 			}
 		});
 		return warnings;
+	}
+
+	private String chompFilename(File f) {
+		return StringUtils.removeStart(f.getAbsolutePath(), larvaTool.getActiveScenariosDirectory());
 	}
 
 	private static void addAbsolutePathProperties(@Nonnull String propertiesDirectory, @Nonnull Properties properties) {
