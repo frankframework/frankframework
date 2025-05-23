@@ -31,6 +31,7 @@ import org.frankframework.jdbc.AbstractJdbcQuerySender.QueryType;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.parameters.IParameter;
+import org.frankframework.util.ClassUtils;
 import org.frankframework.util.EnumUtils;
 
 /**
@@ -102,7 +103,7 @@ public abstract class AbstractLarvaAction<T extends IConfigurable> implements Co
 
 	public void invokeSetters(int defaultTimeout, Properties properties) {
 		log.trace("invoking setters on [{}]", configurable);
-		LarvaActionUtils.invokeSetters(configurable, properties);
+		ClassUtils.invokeSetters(configurable, properties);
 
 		String convertException = properties.getProperty(CONVERT_MESSAGE_TO_EXCEPTION_PROPERTY_KEY);
 		convertExceptionToMessage = Boolean.parseBoolean(convertException);
