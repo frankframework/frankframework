@@ -45,6 +45,8 @@ import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.configuration.extensions.SapSystems;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.FrankElement;
+import org.frankframework.core.IConfigurable;
+import org.frankframework.core.IErrorMessageFormatter;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Optional;
@@ -91,6 +93,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 
 	private @Getter String version;
 	private @Getter IbisManager ibisManager;
+	private @Getter IErrorMessageFormatter errorMessageFormatter;
 	private @Getter String originalConfiguration;
 	private @Getter String loadedConfiguration;
 	private @Getter boolean configured = false;
@@ -221,6 +224,10 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 			}
 
 			configurableLifecycle.configure();
+
+			if (errorMessageFormatter instanceof IConfigurable configurableErrorMessageFormatter) {
+				configurableErrorMessageFormatter.configure();
+			}
 		} catch (ConfigurationException e) {
 			state = RunState.STOPPED;
 			publishEvent(new ConfigurationMessageEvent(this, "aborted starting; " + e.getMessage()));
@@ -544,6 +551,14 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 
 	public void setSharedResources(SharedResources resource) {
 		// Dummy Frank!Doc setter
+	}
+
+	/**
+	 * Set the default {@link IErrorMessageFormatter} for all adapters in this configuration
+	 * that do not have an {@code ErrorMessageFormatter} defined.
+	 */
+	public void setErrorMessageFormatter(IErrorMessageFormatter errorMessageFormatter) {
+		this.errorMessageFormatter = errorMessageFormatter;
 	}
 
 	/**
