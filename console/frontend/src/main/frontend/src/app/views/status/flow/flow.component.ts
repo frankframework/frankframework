@@ -8,6 +8,7 @@ import { FlowModalComponent } from './flow-modal/flow-modal.component';
 
 import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
 import { NgMermaidComponent } from '../../../components/ng-mermaid/ng-mermaid.component';
+import { Dimensions, getFactoryDimensions } from '@frankframework/frank-config-layout';
 
 @Component({
   selector: 'app-flow',
@@ -28,6 +29,11 @@ export class FlowComponent implements OnChanges {
   } = { isImage: false, url: '' };
   protected flowModalLadda = false;
   protected loadInline = true;
+  protected flowDimensions: Dimensions = {
+    ...getFactoryDimensions(),
+    nodeBoxWidth: 100,
+    nodeBoxHeight: 100,
+  };
 
   constructor(
     private appService: AppService,
