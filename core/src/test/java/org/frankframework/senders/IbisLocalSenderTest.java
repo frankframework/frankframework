@@ -127,7 +127,7 @@ class IbisLocalSenderTest {
 		Semaphore asyncCompletionSemaphore = new Semaphore(0);
 
 		TestPipe testPipe = createTestPipe(asyncCounterResult, asyncCompletionSemaphore);
-		PipeLine pipeline = createPipeLine(testPipe, adapter, configuration);
+		PipeLine pipeline = createPipeLine(testPipe, adapter);
 		JavaListener<?> listener = setupJavaListener(configuration, adapter, pipeline, callByServiceName);
 		IbisLocalSender ibisLocalSender = setupIbisLocalSender(adapter, listener, callByServiceName, callIsolated, callSynchronous);
 
@@ -171,7 +171,7 @@ class IbisLocalSenderTest {
 		Semaphore asyncCompletionSemaphore = new Semaphore(0);
 
 		TestPipe testPipe = createTestPipe(asyncCounterResult, asyncCompletionSemaphore);
-		PipeLine pipeline = createPipeLine(testPipe, adapter, configuration);
+		PipeLine pipeline = createPipeLine(testPipe, adapter);
 		JavaListener<?> listener = setupJavaListener(configuration, adapter, pipeline, callByServiceName);
 		IbisLocalSender ibisLocalSender = setupIbisLocalSender(adapter, listener, callByServiceName, true, false);
 
@@ -364,7 +364,7 @@ class IbisLocalSenderTest {
 		EchoPipe pipe = configuration.createBean();
 		pipe.setName("put-in-session-pipe");
 		pipe.setStoreResultInSessionKey("my-session-key");
-		PipeLine pipeline = createPipeLine(pipe, adapter, configuration);
+		PipeLine pipeline = createPipeLine(pipe, adapter);
 		JavaListener<?> listener = setupJavaListener(configuration, adapter, pipeline, false);
 		IbisLocalSender ibisLocalSender = setupIbisLocalSender(adapter, listener, false, false, true);
 		ibisLocalSender.setReturnedSessionKeys("my-session-key,no-such-key");
@@ -427,7 +427,7 @@ class IbisLocalSenderTest {
 		pipe.setStoreResultInSessionKey("my-session-key");
 		pipe.addForward(new PipeForward(PipeForward.SUCCESS_FORWARD_NAME, "error"));
 		pipe.addForward(new PipeForward(PipeForward.EXCEPTION_FORWARD_NAME, "error"));
-		PipeLine pipeline = createPipeLine(pipe, adapter, configuration);
+		PipeLine pipeline = createPipeLine(pipe, adapter);
 		JavaListener<?> listener = setupJavaListener(configuration, adapter, pipeline, false);
 		IbisLocalSender ibisLocalSender = setupIbisLocalSender(adapter, listener, false, false, true);
 		ibisLocalSender.setReturnedSessionKeys("my-session-key,no-such-key");
@@ -510,7 +510,7 @@ class IbisLocalSenderTest {
 		return listener;
 	}
 
-	private static PipeLine createPipeLine(IPipe testPipe, Adapter adapter, TestConfiguration configuration) throws ConfigurationException {
+	private static PipeLine createPipeLine(IPipe testPipe, Adapter adapter) throws ConfigurationException {
 		PipeLine pl = SpringUtils.createBean(adapter);
 		pl.setFirstPipe(testPipe.getName());
 		pl.addPipe(testPipe);
