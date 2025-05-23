@@ -21,6 +21,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 
@@ -28,7 +29,8 @@ import lombok.SneakyThrows;
 
 import org.frankframework.jdbc.datasource.MqttClientSettings;
 import org.frankframework.jdbc.datasource.ObjectFactory;
-import org.frankframework.util.AppConstants;
+import org.frankframework.util.Misc;
+import org.frankframework.util.UUIDUtil;
 
 public class MqttClientFactory extends ObjectFactory<MqttClient, MqttClientSettings> {
 
@@ -51,21 +53,19 @@ public class MqttClientFactory extends ObjectFactory<MqttClient, MqttClientSetti
 		}
 		connectOptions.setMqttVersion(MqttConnectOptions.MQTT_VERSION_DEFAULT); // Default: 0, V3.1: 3, V3.1.1: 4
 
-		if (data.getUsername() != null && data.getPassword() != null) {
-			connectOptions.setUserName(data.getUsername());
+		if (data.getUser() != null && data.getPassword() != null) {
+			connectOptions.setUserName(data.getUser());
 			connectOptions.setPassword(data.getPassword().toCharArray());
 		}
 
 		String clientId = data.getClientId();
 		if (StringUtils.isEmpty(clientId)) {
-			clientId = AppConstants.getInstance().getProperty("transactionmanager.uid");
+			clientId = Misc.getHostname()+"-"+ UUIDUtil.createSimpleUUID();
 		}
 
-		try (MqttClient client = new MqttClient(data.getUrl(), clientId, getMqttDataStore(data.getPersistenceDirectory()))) {
-			client.connect(connectOptions);
-
-			return client;
-		}
+		MqttClient client = new MqttClient(data.getUrl(), clientId, getMqttDataStore(data.getPersistenceDirectory()));
+		client.connect(connectOptions);
+		return client;
 	}
 
 	private MqttClientPersistence getMqttDataStore(String persistenceDirectory) {
@@ -84,4 +84,19 @@ public class MqttClientFactory extends ObjectFactory<MqttClient, MqttClientSetti
 		return get(name, environment);
 	}
 
+	@Override
+	protected void destroyObject(String name, MqttClient object) throws Exception {
+		try {
+			if (object.isConnected()) {
+				object.disconnect();
+			}
+
+			object.close(true);
+		} catch (MqttException e) {
+			object.disconnectForcibly();
+			object.close(true);
+			throw e;
+		}
+
+	}
 }
