@@ -81,7 +81,7 @@ public class LarvaActionFactory {
 				IConfigurable configurable = (IConfigurable) SpringUtils.createBean(applicationContext, className);
 				log.debug("created FrankElement [{}]", configurable);
 
-				Properties actionProperties = handleDeprecations(LarvaActionUtils.getSubProperties(properties, actionName), actionName);
+				Properties actionProperties = handleDeprecations(scenario, LarvaActionUtils.getSubProperties(properties, actionName), actionName);
 				LarvaScenarioAction larvaScenarioAction = create(configurable, actionProperties, defaultTimeout, correlationId);
 				SpringUtils.registerSingleton(applicationContext, actionName, larvaScenarioAction);
 				larvaActions.put(actionName, larvaScenarioAction);
@@ -116,20 +116,20 @@ public class LarvaActionFactory {
 		return larvaAction;
 	}
 
-	private Properties handleDeprecations(Properties actionProperties, String keyBase) {
+	private Properties handleDeprecations(Scenario scenario, Properties actionProperties, String keyBase) {
 		if (actionProperties.containsKey("requestTimeOut") || actionProperties.containsKey("responseTimeOut")) {
-			warningMessage("Deprecation Warning: properties " + keyBase + ".requestTimeOut/" + keyBase + ".responseTimeOut have been replaced with " + keyBase + ".timeout");
+			scenario.addWarning("Deprecation Warning: properties " + keyBase + ".requestTimeOut/" + keyBase + ".responseTimeOut have been replaced with " + keyBase + ".timeout");
 		}
 		if (actionProperties.containsKey("getBlobSmart")) {
-			warningMessage("Deprecation Warning: property " + keyBase + ".getBlobSmart has been replaced with " + keyBase + ".blobSmartGet");
+			scenario.addWarning("Deprecation Warning: property " + keyBase + ".getBlobSmart has been replaced with " + keyBase + ".blobSmartGet");
 			String blobSmart = ""+actionProperties.remove("getBlobSmart");
 			actionProperties.setProperty("blobSmartGet", blobSmart);
 		}
 		if (actionProperties.containsKey("preDel1")) {
-			warningMessage("Removal Warning: property " + keyBase + ".preDel<index> has been removed without replacement");
+			scenario.addWarning("Removal Warning: property " + keyBase + ".preDel<index> has been removed without replacement");
 		}
 		if (actionProperties.containsKey("prePostQuery")) {
-			warningMessage("Removal Warning: property " + keyBase + ".prePostQuery has been removed without replacement");
+			scenario.addWarning("Removal Warning: property " + keyBase + ".prePostQuery has been removed without replacement");
 		}
 
 		return actionProperties;
