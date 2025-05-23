@@ -3,7 +3,7 @@
     <h4 class="modal-title">Flow Diagram for [{{ flowName }}]</h4>
   </div>
   <div class="modal-body text-center">
-    <ng-mermaid [nmModel]="flow" [nmRefreshInterval]="500" (nmInitCallback)="mermaidLoaded()"></ng-mermaid>
+    <ng-mermaid [nmModel]="flow" [nmRefreshInterval]="500" (nmInitCallback)="mermaidLoaded($event)"></ng-mermaid>
   </div>
 
   <div class="modal-footer">

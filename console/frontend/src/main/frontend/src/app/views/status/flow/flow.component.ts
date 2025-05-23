@@ -1,5 +1,5 @@
 import { HttpResponse } from '@angular/common/http';
-import { Component, Input, OnChanges } from '@angular/core';
+import { Component, inject, Input, OnChanges } from '@angular/core';
 import { StatusService } from '../status.service';
 import { MiscService } from 'src/app/services/misc.service';
 import { Adapter, AppService } from 'src/app/app.service';
@@ -8,6 +8,7 @@ import { FlowModalComponent } from './flow-modal/flow-modal.component';
 
 import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
 import { NgMermaidComponent } from '../../../components/ng-mermaid/ng-mermaid.component';
+import { Dimensions, getFactoryDimensions } from '@frankframework/frank-config-layout';
 
 @Component({
   selector: 'app-flow',
@@ -28,13 +29,16 @@ export class FlowComponent implements OnChanges {
   } = { isImage: false, url: '' };
   protected flowModalLadda = false;
   protected loadInline = true;
+  protected flowDimensions: Dimensions = {
+    ...getFactoryDimensions(),
+    nodeBoxWidth: 100,
+    nodeBoxHeight: 100,
+  };
 
-  constructor(
-    private appService: AppService,
-    private Misc: MiscService,
-    private statusService: StatusService,
-    private modalService: NgbModal,
-  ) {}
+  private appService: AppService = inject(AppService);
+  private Misc: MiscService = inject(MiscService);
+  private statusService: StatusService = inject(StatusService);
+  private modalService: NgbModal = inject(NgbModal);
 
   ngOnChanges(): void {
     if (this.adapter || this.configurationFlowDiagram) {
