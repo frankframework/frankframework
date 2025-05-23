@@ -410,6 +410,65 @@ public class DateParameterTest {
 	}
 
 	@Test
+	public void testUnixParameterConvertsToDate() throws Exception {
+		DateParameter p = new DateParameter();
+		try {
+			p.setName("date");
+			p.setValue("1747401948");
+			p.setFormatType(DateParameter.DateFormatType.UNIX);
+			p.configure();
+			PipeLineSession session = new PipeLineSession();
+
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+			assertInstanceOf(Date.class, result);
+		} finally {
+			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
+		}
+	}
+
+	@Test
+	public void testUnixPatternConvertsToDate() throws Exception {
+		DateParameter p = new DateParameter();
+		try {
+			p.setName("unixTimestamp");
+			p.setPattern("{now,number,#}");
+			p.setFormatType(DateFormatType.UNIX);
+			p.configure();
+			PipeLineSession session = new PipeLineSession();
+
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+			assertInstanceOf(Date.class, result);
+		} finally {
+			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
+		}
+	}
+
+	@Test
+	public void testUnixPatternConvertsToDateWithoutFormatType() throws Exception {
+		DateParameter p = new DateParameter();
+		try {
+			p.setName("unixTimestamp");
+			p.setPattern("{now,number}");
+			p.configure();
+			PipeLineSession session = new PipeLineSession();
+
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+			assertInstanceOf(Date.class, result);
+		} finally {
+			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
+		}
+	}
+
+	@Test
 	public void testParameterFromDateToDate() throws Exception {
 		Date date = new Date();
 
