@@ -77,6 +77,9 @@ public class PlainTextScenarioOutputRenderer implements TestExecutionObserver {
 	@Override
 	public void finishStep(TestRunStatus testRunStatus, Scenario scenario, String step, int stepResult, String stepResultMessage) {
 		out.writeOutputMessage(LarvaLogLevel.STEP_PASSED_FAILED, stepResultMessage);
+		if (!scenario.getWarnings().isEmpty()) {
+			out.writeOutputMessage(LarvaLogLevel.SCENARIO_FAILED, String.join(",\n", scenario.getWarnings()));
+		}
 	}
 
 	@Override

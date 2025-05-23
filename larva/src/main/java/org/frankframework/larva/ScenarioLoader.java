@@ -108,7 +108,7 @@ public class ScenarioLoader {
 				boolean unstable = properties.getBoolean("adapter.unstable", false);
 				if (active && !unstable && description != null) {
 					String name = FilenameUtils.normalize(scenarioFilePath.substring(baseDirectory.length(), scenarioFilePath.length() - ".properties".length()), true);
-					Scenario scenario = new Scenario(scenarioFile, name, description, properties);
+					Scenario scenario = new Scenario(scenarioFile, name, description, properties, scenarioData.warnings);
 					scenarioFiles.put(scenario.getId(), scenario);
 				}
 			} else if (scenarioFile.isDirectory() && (!scenarioFile.getName().startsWith(".") && !"CVS".equals(scenarioFile.getName()))) {
@@ -185,7 +185,6 @@ public class ScenarioLoader {
 					warningMessage = "Scenario file [%s]: Property [%s] occurs both in scenario file and included file [%s]. Using value [%s] from scenario file instead of value [%s] from include.".formatted(scenarioFile, key, includeFile, properties.get(key), value);
 				}
 				log.warn(warningMessage);
-				larvaTool.warningMessage(warningMessage);
 				warnings.add(warningMessage);
 			}
 		});

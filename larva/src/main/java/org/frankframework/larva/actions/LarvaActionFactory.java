@@ -100,9 +100,9 @@ public class LarvaActionFactory {
 
 	private static LarvaScenarioAction create(IConfigurable configurable, Properties actionProperties, int defaultTimeout, String correlationId) {
 		final AbstractLarvaAction<?> larvaAction;
-		if (configurable instanceof IPullingListener pullingListener) {
+		if (configurable instanceof IPullingListener<?> pullingListener) {
 			larvaAction = new PullingListenerAction(pullingListener);
-		} else if (configurable instanceof IPushingListener pushingListener) {
+		} else if (configurable instanceof IPushingListener<?> pushingListener) {
 			larvaAction = new LarvaPushingListenerAction(pushingListener, defaultTimeout);
 		} else if (configurable instanceof ISender sender) {
 			larvaAction = new SenderAction(sender);
