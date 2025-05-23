@@ -127,6 +127,15 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 		outputMessage.append(LarvaHtmlWriter.encodeForHtml(scenarioResultMessage)).append("</h2>");
 		writeHtml(resultLogLevel, outputMessage.toString(), false);
 
+		if (!scenario.getMessages().isEmpty()) {
+			writeHtml(LarvaLogLevel.SCENARIO_FAILED, "<div class='failed'>", false);
+			writeHtml(LarvaLogLevel.SCENARIO_FAILED, "<h3 class='failed'>Warnings</h3>", false);
+			writeHtml(LarvaLogLevel.SCENARIO_FAILED, "<ul>", false);
+			scenario.getMessages().forEach(message -> writeHtml(LarvaLogLevel.SCENARIO_FAILED, "<li>" + LarvaHtmlWriter.encodeForHtml(message.toString()) + "</li>", false));
+			writeHtml(LarvaLogLevel.SCENARIO_FAILED, "</ul>", false);
+			writeHtml(LarvaLogLevel.SCENARIO_FAILED, "</div>", false);
+		}
+
 		// Close the <div> tag created in #startScenario
 		writeHtml(LarvaLogLevel.SCENARIO_FAILED,"</div>", true);
 		writer.setBufferOutputMessages(false);

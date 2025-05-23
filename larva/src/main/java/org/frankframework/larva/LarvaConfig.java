@@ -34,6 +34,7 @@ public class LarvaConfig {
 
 	private @Getter @Setter int timeout = GLOBAL_TIMEOUT_MILLIS;
 	private @Getter @Setter int waitBeforeCleanup = 100;
+	private @Getter @Setter boolean scenarioPropertyOverridesIncluded = AppConstants.getInstance().getBoolean("larva.scenarioPropertyOverridesIncluded", false);
 	private @Getter @Setter boolean multiThreaded = false;
 	private @Getter @Setter LarvaLogLevel logLevel = LarvaLogLevel.WRONG_PIPELINE_MESSAGES;
 	private @Getter @Setter boolean autoSaveDiffs = AppConstants.getInstance().getBoolean("larva.diffs.autosave", false);
