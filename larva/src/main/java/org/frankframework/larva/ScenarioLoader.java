@@ -129,8 +129,7 @@ public class ScenarioLoader {
 	 * @return The properties read from the scenario file.
 	 */
 	public @Nonnull RawScenarioData readScenarioProperties(@Nonnull File scenarioFile, @Nonnull AppConstants appConstants) throws IOException {
-		RawScenarioData scenarioData;
-		scenarioData = readScenarioProperties(scenarioFile, appConstants, true);
+		RawScenarioData scenarioData = readScenarioProperties(scenarioFile, appConstants, true);
 		String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath();
 		addAbsolutePathProperties(scenarioDirectory, scenarioData.properties);
 		return scenarioData;
@@ -145,7 +144,8 @@ public class ScenarioLoader {
 		PropertyLoader properties = new PropertyLoader(scenarioFile, appConstants);
 		fixLegacyClassnames(properties);
 
-		List<LarvaMessage> messages = addIncludedProperties(scenarioFile, properties, scenarioDirectory);
+		List<LarvaMessage> messages = new ArrayList<>();
+		addIncludedProperties(scenarioFile, properties, scenarioDirectory, messages);
 		log.debug("{} properties found", properties.size());
 		RawScenarioData scenarioData = new RawScenarioData(properties, messages);
 		if (!root) {
@@ -155,26 +155,23 @@ public class ScenarioLoader {
 		return scenarioData;
 	}
 
-	private @Nonnull List<LarvaMessage> addIncludedProperties(@Nonnull File scenarioFile, @Nonnull Properties properties, @Nonnull String directory) throws IOException {
+	private void addIncludedProperties(@Nonnull File scenarioFile, @Nonnull Properties properties, @Nonnull String directory, List<LarvaMessage> messages) throws IOException {
 		List<String> includedFiles = properties.stringPropertyNames().stream()
 				.filter(name -> INCLUDE_PROPERTY_RE.matcher(name).matches())
 				.sorted()
 				.map(properties::getProperty)
 				.toList();
 
-		List<LarvaMessage> warnings = new ArrayList<>();
 		for (String includeFilename : includedFiles) {
 			log.debug("Load include file: [{}]", includeFilename);
 			File includeFile = new File(LarvaUtil.getAbsolutePath(directory, includeFilename));
 			RawScenarioData includeProperties = readScenarioProperties(includeFile, null, false);
-			warnings.addAll(putAllIfAbsent(scenarioFile, includeFile, properties, includeProperties.properties));
-			warnings.addAll(includeProperties.messages);
+			putAllIfAbsent(scenarioFile, includeFile, properties, includeProperties.properties, messages);
+			messages.addAll(includeProperties.messages);
 		}
-		return warnings;
 	}
 
-	private List<LarvaMessage> putAllIfAbsent(@Nonnull File scenarioFile, @Nonnull File includeFile, @Nonnull Properties properties, @Nonnull Properties otherProperties) {
-		List<LarvaMessage> warnings = new ArrayList<>();
+	private void putAllIfAbsent(@Nonnull File scenarioFile, @Nonnull File includeFile, @Nonnull Properties properties, @Nonnull Properties otherProperties, List<LarvaMessage> messages) {
 		otherProperties.forEach( (key, value) -> {
 			if (!properties.containsKey(key)) {
 				properties.put(key, value);
@@ -192,10 +189,9 @@ public class ScenarioLoader {
 					warningMessage = "Scenario file [%s]: Property [%s] occurs both in scenario file and included file [%s]. Using value [%s] from scenario file instead of value [%s] from include.".formatted(scenarioFilename, key, includeFilename, originalValue, value);
 				}
 				log.warn(warningMessage);
-				warnings.add(new LarvaMessage(LarvaLogLevel.WARNING, warningMessage));
+				messages.add(new LarvaMessage(LarvaLogLevel.WARNING, warningMessage));
 			}
 		});
-		return warnings;
 	}
 
 	private String chompFilename(File f) {

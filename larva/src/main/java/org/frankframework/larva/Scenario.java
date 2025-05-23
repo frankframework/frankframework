@@ -65,8 +65,8 @@ public class Scenario {
 		messages.add(new LarvaMessage(LarvaLogLevel.WARNING, warning));
 	}
 
-	public void addError(@Nonnull String warning) {
-		messages.add(new LarvaMessage(LarvaLogLevel.ERROR, warning));
+	public void addError(@Nonnull String error) {
+		messages.add(new LarvaMessage(LarvaLogLevel.ERROR, error));
 	}
 
 	public void addMessages(@Nonnull Collection<LarvaMessage> messages) {
