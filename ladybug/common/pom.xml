@@ -14,8 +14,8 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.ibissource</groupId>
-			<artifactId>ibis-ladybug</artifactId>
+			<groupId>org.wearefrank</groupId>
+			<artifactId>ladybug</artifactId>
 			<version>${ladybug.version}</version>
 			<exclusions>
 				<exclusion>
