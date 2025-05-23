@@ -1,31 +1,29 @@
-import {
-  Component,
-  ElementRef,
-  EventEmitter,
-  inject,
-  Input,
-  OnChanges,
-  OnDestroy,
-  OnInit,
-  Output,
-} from '@angular/core';
+import { Component, ElementRef, EventEmitter, inject, Input, OnChanges, OnInit, Output } from '@angular/core';
 import { Dimensions, getFactoryDimensions, initMermaid2Svg, mermaid2svg } from '@frankframework/frank-config-layout';
 
 @Component({
   selector: 'ng-mermaid',
-  template: `<div class="mermaid" #mermaidPre>Loading...</div>`,
+  template: ``,
+  styles: [
+    `
+      :host {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+    `,
+  ],
   imports: [],
 })
-export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
+export class NgMermaidComponent implements OnInit, OnChanges {
   @Input() dimensions: Dimensions = getFactoryDimensions();
   @Input() nmModel?: string;
   @Input() nmRefreshInterval?: number;
-  @Output() nmInitCallback = new EventEmitter();
+  @Output() nmInitCallback: EventEmitter<SVGSVGElement> = new EventEmitter();
 
   protected interval = 2000;
   protected initialized = false;
   protected firstRender = true;
-  protected mermaidSvgElement: SVGSVGElement | null = null;
   protected timeout?: number;
 
   private readonly rootElement: ElementRef<HTMLElement> = inject(ElementRef);
@@ -39,10 +37,6 @@ export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
 
   ngOnChanges(): void {
     if (this.initialized) this.render();
-  }
-
-  ngOnDestroy(): void {
-    this.rootElement.nativeElement.innerHTML = '';
   }
 
   render(): void {
@@ -61,8 +55,7 @@ export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
     this.timeout = window.setTimeout(
       async () => {
         try {
-          const mermaidSvgString = await mermaid2svg(this.nmModel!);
-          mermaidContainer.innerHTML = mermaidSvgString;
+          mermaidContainer.innerHTML = await mermaid2svg(this.nmModel!);
 
           const mermaidSvg = mermaidContainer.firstChild as SVGSVGElement;
           const viewBoxWidth = mermaidSvg.getAttribute('width');
@@ -72,17 +65,13 @@ export class NgMermaidComponent implements OnInit, OnChanges, OnDestroy {
           mermaidSvg.setAttribute('viewBox', `0 0 ${viewBoxWidth} ${viewBoxHeight}`);
 
           this.firstRender = false;
-          this.nmInitCallback.emit();
+          this.nmInitCallback.emit(mermaidSvg);
         } catch (error) {
           this.handleError(error as Error);
         }
       },
       this.firstRender ? 0 : this.interval,
     );
-  }
-
-  getMermaidSvgElement(): SVGSVGElement | null {
-    return this.mermaidSvgElement;
   }
 
   private handleError(error: Error): void {

@@ -1,5 +1,5 @@
 import { HttpResponse } from '@angular/common/http';
-import { Component, Input, OnChanges } from '@angular/core';
+import { Component, inject, Input, OnChanges } from '@angular/core';
 import { StatusService } from '../status.service';
 import { MiscService } from 'src/app/services/misc.service';
 import { Adapter, AppService } from 'src/app/app.service';
@@ -35,12 +35,10 @@ export class FlowComponent implements OnChanges {
     nodeBoxHeight: 100,
   };
 
-  constructor(
-    private appService: AppService,
-    private Misc: MiscService,
-    private statusService: StatusService,
-    private modalService: NgbModal,
-  ) {}
+  private appService: AppService = inject(AppService);
+  private Misc: MiscService = inject(MiscService);
+  private statusService: StatusService = inject(StatusService);
+  private modalService: NgbModal = inject(NgbModal);
 
   ngOnChanges(): void {
     if (this.adapter || this.configurationFlowDiagram) {
