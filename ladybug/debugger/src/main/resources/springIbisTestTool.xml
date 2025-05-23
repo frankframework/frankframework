@@ -156,7 +156,6 @@
 	<beans profile="ladybug.xml">
 		<bean name="testStorage" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName">
 			<property name="name" value="XmlTestStorage"/>
-			<property name="metadataFile" value="${log.dir}/testtool4${instance.name.lc}.metadata.xml"/><!-- cache file -->
 			<property name="reportsFolder" value="${ibistesttool.directory}"/><!-- contains the reports, may be stored in Git -->
 		</bean>
 	</beans>
