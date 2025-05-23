@@ -110,7 +110,7 @@ public class ScenarioLoader {
 				boolean unstable = properties.getBoolean("adapter.unstable", false);
 				if (active && !unstable && description != null) {
 					String name = FilenameUtils.normalize(scenarioFilePath.substring(baseDirectory.length(), scenarioFilePath.length() - ".properties".length()), true);
-					Scenario scenario = new Scenario(scenarioFile, name, description, properties, scenarioData.warnings);
+					Scenario scenario = new Scenario(scenarioFile, name, description, properties, scenarioData.messages);
 					scenarioFiles.put(scenario.getId(), scenario);
 				}
 			} else if (scenarioFile.isDirectory() && (!scenarioFile.getName().startsWith(".") && !"CVS".equals(scenarioFile.getName()))) {
@@ -145,9 +145,9 @@ public class ScenarioLoader {
 		PropertyLoader properties = new PropertyLoader(scenarioFile, appConstants);
 		fixLegacyClassnames(properties);
 
-		List<String> warnings = addIncludedProperties(scenarioFile, properties, scenarioDirectory);
+		List<LarvaMessage> messages = addIncludedProperties(scenarioFile, properties, scenarioDirectory);
 		log.debug("{} properties found", properties.size());
-		RawScenarioData scenarioData = new RawScenarioData(properties, warnings);
+		RawScenarioData scenarioData = new RawScenarioData(properties, messages);
 		if (!root) {
 			// Only cache included files since they are most likely to be frequently read. Root files would just pollute the cache.
 			scenarioFileCache.put(scenarioFile, scenarioData);
@@ -155,26 +155,26 @@ public class ScenarioLoader {
 		return scenarioData;
 	}
 
-	private @Nonnull List<String> addIncludedProperties(@Nonnull File scenarioFile, @Nonnull Properties properties, @Nonnull String directory) throws IOException {
+	private @Nonnull List<LarvaMessage> addIncludedProperties(@Nonnull File scenarioFile, @Nonnull Properties properties, @Nonnull String directory) throws IOException {
 		List<String> includedFiles = properties.stringPropertyNames().stream()
 				.filter(name -> INCLUDE_PROPERTY_RE.matcher(name).matches())
 				.sorted()
 				.map(properties::getProperty)
 				.toList();
 
-		List<String> warnings = new ArrayList<>();
+		List<LarvaMessage> warnings = new ArrayList<>();
 		for (String includeFilename : includedFiles) {
 			log.debug("Load include file: [{}]", includeFilename);
 			File includeFile = new File(LarvaUtil.getAbsolutePath(directory, includeFilename));
 			RawScenarioData includeProperties = readScenarioProperties(includeFile, null, false);
 			warnings.addAll(putAllIfAbsent(scenarioFile, includeFile, properties, includeProperties.properties));
-			warnings.addAll(includeProperties.warnings);
+			warnings.addAll(includeProperties.messages);
 		}
 		return warnings;
 	}
 
-	private List<String> putAllIfAbsent(@Nonnull File scenarioFile, @Nonnull File includeFile, @Nonnull Properties properties, @Nonnull Properties otherProperties) {
-		List<String> warnings = new ArrayList<>();
+	private List<LarvaMessage> putAllIfAbsent(@Nonnull File scenarioFile, @Nonnull File includeFile, @Nonnull Properties properties, @Nonnull Properties otherProperties) {
+		List<LarvaMessage> warnings = new ArrayList<>();
 		otherProperties.forEach( (key, value) -> {
 			if (!properties.containsKey(key)) {
 				properties.put(key, value);
@@ -192,7 +192,7 @@ public class ScenarioLoader {
 					warningMessage = "Scenario file [%s]: Property [%s] occurs both in scenario file and included file [%s]. Using value [%s] from scenario file instead of value [%s] from include.".formatted(scenarioFilename, key, includeFilename, originalValue, value);
 				}
 				log.warn(warningMessage);
-				warnings.add(warningMessage);
+				warnings.add(new LarvaMessage(LarvaLogLevel.WARNING, warningMessage));
 			}
 		});
 		return warnings;
@@ -242,5 +242,5 @@ public class ScenarioLoader {
 		return Map.entry(propertyName, newClassName);
 	}
 
-	public record RawScenarioData(@Nonnull PropertyLoader properties, @Nonnull List<String> warnings) {}
+	public record RawScenarioData(@Nonnull PropertyLoader properties, @Nonnull List<LarvaMessage> messages) {}
 }

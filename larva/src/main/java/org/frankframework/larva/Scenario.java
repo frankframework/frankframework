@@ -45,7 +45,7 @@ public class Scenario {
 	private final @Getter String name;
 	private final @Getter String description;
 	private final @Getter Properties properties;
-	private final @Getter SortedSet<String> warnings = new TreeSet<>();
+	private final @Getter SortedSet<LarvaMessage> messages = new TreeSet<>(Comparator.comparing(LarvaMessage::getMessage));
 	private Map<String, Map<String, Map<String, String>>> ignoreMapCache;
 
 	public Scenario(File scenarioFile, String name, String description, Properties properties) {
@@ -56,17 +56,21 @@ public class Scenario {
 		this.properties = properties;
 	}
 
-	public Scenario(File scenarioFile, String name, String description, Properties properties, Collection<String> warnings) {
+	public Scenario(File scenarioFile, String name, String description, Properties properties, Collection<LarvaMessage> messages) {
 		this(scenarioFile, name, description, properties);
-		addWarnings(warnings);
+		addMessages(messages);
 	}
 
 	public void addWarning(@Nonnull String warning) {
-		warnings.add(warning);
+		messages.add(new LarvaMessage(LarvaLogLevel.WARNING, warning));
 	}
 
-	public void addWarnings(@Nonnull Collection<String> warnings) {
-		this.warnings.addAll(warnings);
+	public void addError(@Nonnull String warning) {
+		messages.add(new LarvaMessage(LarvaLogLevel.ERROR, warning));
+	}
+
+	public void addMessages(@Nonnull Collection<LarvaMessage> messages) {
+		this.messages.addAll(messages);
 	}
 
 	@Override

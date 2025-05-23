@@ -75,7 +75,7 @@ public class ScenarioLoaderTest {
 		// Assert
 		assertAll(
 				() -> assertEquals("scenario1", propertyValue),
-				() -> assertEquals(4, scenarioData.warnings().size())
+				() -> assertEquals(4, scenarioData.messages().size())
 		);
 	}
 
@@ -94,7 +94,7 @@ public class ScenarioLoaderTest {
 		// Assert
 		assertAll(
 				() -> assertEquals("includes1", propertyValue),
-				() -> assertEquals(3, scenarioData.warnings().size())
+				() -> assertEquals(3, scenarioData.messages().size())
 		);
 	}
 
@@ -112,7 +112,7 @@ public class ScenarioLoaderTest {
 		// Assert
 		assertAll(
 				() -> assertEquals("common", propertyValue),
-				() -> assertEquals(4, scenarioData.warnings().size())
+				() -> assertEquals(4, scenarioData.messages().size())
 		);
 	}
 
@@ -131,7 +131,7 @@ public class ScenarioLoaderTest {
 		// Assert
 		assertAll(
 				() -> assertEquals("common", propertyValue),
-				() -> assertEquals(3, scenarioData.warnings().size())
+				() -> assertEquals(3, scenarioData.messages().size())
 		);
 	}
 
