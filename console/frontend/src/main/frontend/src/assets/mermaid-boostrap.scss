@@ -1,4 +1,4 @@
-.mermaid svg {
+svg {
   color: initial;
   line-height: initial;
   background-color: initial;
@@ -19,6 +19,16 @@
     font-weight: inherit;
     padding: inherit;
     text-shadow: inherit;
+    text-decoration: inherit;
+    -webkit-text-size-adjust: none;
+  }
+
+  *:hover {
+    color: inherit;
+    background-color: inherit;
+    font-weight: inherit;
+    text-shadow: inherit;
+    text-decoration: inherit;
     -webkit-text-size-adjust: none;
   }
 
