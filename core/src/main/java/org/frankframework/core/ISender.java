@@ -20,9 +20,9 @@ import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
-import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.stream.Message;
 
 /**
@@ -84,11 +84,7 @@ public interface ISender extends IConfigurable {
 		if (!senderResult.isSuccess()) {
 			String reason = StringUtils.isNotEmpty(senderResult.getErrorMessage()) ? senderResult.getErrorMessage() : "sender finished processing using undefined error forward";
 			SenderException se = new SenderException(reason);
-			try {
-				result.close();
-			} catch (Exception e) {
-				se.addSuppressed(e);
-			}
+			result.closeOnCloseOf(session, this);
 			throw se;
 		}
 		return result;
