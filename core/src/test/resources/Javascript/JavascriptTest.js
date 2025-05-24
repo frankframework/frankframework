@@ -30,6 +30,10 @@ function f4(x,y) {
 	return a == c && b == d;
 }
 
+function f5(input) {
+	return input;
+}
+
 //Used to test the performance.
 function performance(x) {
 	var data = [];

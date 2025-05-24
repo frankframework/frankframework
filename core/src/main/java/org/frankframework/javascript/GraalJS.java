@@ -15,12 +15,20 @@
 */
 package org.frankframework.javascript;
 
+import java.io.IOException;
+import java.util.logging.Handler;
+import java.util.logging.LogRecord;
+
 import javax.script.Bindings;
 import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.jul.LevelTranslator;
 import org.graalvm.polyglot.Context;
 import org.graalvm.polyglot.Engine;
+import org.graalvm.polyglot.HostAccess;
+import org.graalvm.polyglot.Value;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -39,8 +47,9 @@ import org.frankframework.util.flow.ResultHandler;
  * @since 8.2
  */
 @Log4j2
-@Deprecated
 public class GraalJS implements JavascriptEngine<ScriptEngine> {
+	private static final Handler LOG_HANDLER = new GraalJsToLog4J2Handler();
+	private static final String LANGUAGE_ID = "js";
 
 	// Fixes some return types and other compatibility issues, but GraphvizJS still does not work. Warning: has security disadvantages and puts ECMAScript 5 compatibility on!
 	private static final String NASHORN_COMPATIBILITY = AppConstants.getInstance().getString("javascript.graaljs.nashorn-compat", "false");
@@ -55,22 +64,33 @@ public class GraalJS implements JavascriptEngine<ScriptEngine> {
 	}
 
 	@Override
-	public void startRuntime() {
+	public void startRuntime() throws JavascriptException {
 		log.info("Creating a new GraalJS context");
 
-		context = Context.newBuilder()
-				.allowHostClassLookup(className -> true)
-				.allowAllAccess(true)
-				.currentWorkingDirectory(TemporaryDirectoryUtils.getTempDirectory())
-				.option("js.nashorn-compat", NASHORN_COMPATIBILITY)
-				.allowExperimentalOptions(true)
-				.engine(Engine.create("js")).build();
+		try {
+			Engine engine = Engine.newBuilder()
+					.logHandler(LOG_HANDLER)
+					.option("engine.WarnInterpreterOnly", "false")
+					.build();
+
+			context = Context.newBuilder(LANGUAGE_ID)
+					.logHandler(LOG_HANDLER)
+					.allowHostClassLookup(className -> true)
+					.allowAllAccess(true)
+					.currentWorkingDirectory(TemporaryDirectoryUtils.getTempDirectory("graaljs"))
+					.option("js.nashorn-compat", NASHORN_COMPATIBILITY)
+					.allowExperimentalOptions(true)
+					.engine(engine)
+					.build();
+		} catch (IOException e) {
+			throw new JavascriptException("unable to create temporary directory", e);
+		}
 	}
 
 	@Override
 	public void executeScript(String script) throws JavascriptException {
 		try {
-			context.eval("js", script);
+			context.eval(LANGUAGE_ID, script);
 		} catch (Exception e) {
 			throw new JavascriptException("error executing script", e);
 		}
@@ -78,31 +98,23 @@ public class GraalJS implements JavascriptEngine<ScriptEngine> {
 
 	@Override
 	public Object executeFunction(String name, Object... parameters) throws JavascriptException {
+		final Value function;
 		try {
-			String joinedParameters = joinParameters(parameters);
-			return context.eval("js", name + "(" + joinedParameters + ");");
+			function = context.getBindings(LANGUAGE_ID).getMember(name);
+		} catch (Exception e) {
+			throw new JavascriptException("unable to find function [" + name + "]", e);
+		}
+
+		if (function == null) {
+			throw new JavascriptException("unable to find function [" + name + "]");
+		}
+
+		try {
+			log.debug("executing function [{}]", name);
+			return function.execute(parameters);
 		} catch (Exception e) {
 			throw new JavascriptException("error executing function [" + name + "]", e);
 		}
-	}
-
-	private static String joinParameters(Object[] parameters) {
-		if (parameters.length == 0) {
-			return "";
-		}
-		StringBuilder parameterBuilder = new StringBuilder();
-		for (int i = 0; i < parameters.length; i++) {
-			Object parameter = parameters[i];
-			if (parameter instanceof String) { // Fixes Strings with quotes or spaces
-				parameterBuilder.append("'").append(parameter).append("'");
-			} else {
-				parameterBuilder.append(parameter);
-			}
-			if (i != parameters.length - 1) {
-				parameterBuilder.append(",");
-			}
-		}
-		return parameterBuilder.toString();
 	}
 
 	@Override
@@ -126,6 +138,7 @@ public class GraalJS implements JavascriptEngine<ScriptEngine> {
 
 	@FunctionalInterface
 	public interface JavaCallback {
+		@HostAccess.Export
 		Object apply(Object... arguments);
 	}
 
@@ -134,7 +147,7 @@ public class GraalJS implements JavascriptEngine<ScriptEngine> {
 		if (sender.getName() == null) {
 			throw new IllegalStateException("Sender name is required for call backs");
 		}
-		context.getBindings("js").putMember(sender.getName(), (JavaCallback) s -> {
+		context.getBindings(LANGUAGE_ID).putMember(sender.getName(), (JavaCallback) s -> {
 			try {
 				Message msg = Message.asMessage(s[0]);
 				try (Message message = sender.sendMessageOrThrow(msg, session)) {
@@ -151,4 +164,22 @@ public class GraalJS implements JavascriptEngine<ScriptEngine> {
 		// Does not work with GraalJS yet
 	}
 
+	private static class GraalJsToLog4J2Handler extends Handler {
+
+		@Override
+		public void publish(LogRecord logRecord) {
+			final Level log4jLevel = LevelTranslator.toLevel(logRecord.getLevel());
+			log.log(log4jLevel, logRecord.getMessage(), logRecord.getThrown());
+		}
+
+		@Override
+		public void flush() {
+			// NO OP
+		}
+
+		@Override
+		public void close() throws SecurityException {
+			// NO OP
+		}
+	}
 }

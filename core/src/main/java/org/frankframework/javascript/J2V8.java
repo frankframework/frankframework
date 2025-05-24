@@ -92,6 +92,9 @@ public class J2V8 implements JavascriptEngine<V8> {
 			}
 			return result;
 		} catch (Exception e) {
+			if ("undefined:0: TypeError: undefined is not a function".equals(e.getMessage())) {
+				throw new JavascriptException("unable to find function [" + name + "]");
+			}
 			throw new JavascriptException("error executing function [" + name + "]", e);
 		}
 	}
