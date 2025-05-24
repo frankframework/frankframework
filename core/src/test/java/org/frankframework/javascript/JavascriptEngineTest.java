@@ -1,10 +1,12 @@
 package org.frankframework.javascript;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
-import org.frankframework.testutil.TestAssertions;
-
+import org.graalvm.polyglot.Value;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -13,6 +15,8 @@ import org.junit.jupiter.params.provider.EnumSource;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.senders.EchoSender;
 import org.frankframework.senders.JavascriptSender;
+import org.frankframework.testutil.TestAppender;
+import org.frankframework.testutil.TestAssertions;
 
 class JavascriptEngineTest {
 
@@ -27,10 +31,47 @@ class JavascriptEngineTest {
 	void testBasicExecution(JavascriptSender.JavaScriptEngines engineWrapper) throws JavascriptException {
 		JavascriptEngine engine = engineWrapper.create();
 		engine.startRuntime();
-		engine.executeScript("function test(){ return 'Hello World!' }");
+		engine.executeScript("function test() { return 'Hello World!' }");
 		Object result = engine.executeFunction("test");
 		assertEquals("Hello World!", result.toString());
 		engine.closeRuntime();
+	}
+
+	// This test doesn't do much at the moment... We cannot capture the log output (yet).
+	@Test
+	void testLogStatement() throws JavascriptException {
+		JavascriptEngine engine = new GraalJS();
+		engine.startRuntime();
+		engine.executeScript("""
+				function logThings() {
+					console.log("log");
+					console.info("info");
+					console.warn("warn");
+					console.error("error");
+				}
+				""");
+
+		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build()) {
+			Object result = engine.executeFunction("logThings");
+
+			Value value = assertInstanceOf(Value.class, result);
+			assertTrue(value.isNull());
+//			assertTrue(appender.contains("DEBUG {} - log"));
+//			assertTrue(appender.contains("INFO {} - info"));
+//			assertTrue(appender.contains("WARN {} - warn"));
+//			assertTrue(appender.contains("ERROR {} - error"));
+		}
+		engine.closeRuntime();
+	}
+
+	@ParameterizedTest
+	@EnumSource(JavascriptSender.JavaScriptEngines.class)
+	void testFunctionDoesNotExist(JavascriptSender.JavaScriptEngines engineWrapper) throws JavascriptException {
+		JavascriptEngine engine = engineWrapper.create();
+		engine.startRuntime();
+
+		JavascriptException ex = assertThrows(JavascriptException.class, () -> engine.executeFunction("doesNotExist"));
+		assertEquals("unable to find function [doesNotExist]", ex.getMessage());
 	}
 
 	@ParameterizedTest
@@ -40,9 +81,9 @@ class JavascriptEngineTest {
 		engine.startRuntime();
 		engine.executeScript("""
 				function f5(x, y){
-				  var a = x * y;
-				  var b = (a);
-				  return b;
+					var a = x * y;
+					var b = (a);
+					return b;
 				}""");
 		Object result = engine.executeFunction("f5", 3, 5);
 		assertEquals("15", result.toString());
@@ -59,9 +100,9 @@ class JavascriptEngineTest {
 		engine.registerCallback(echoSender, new PipeLineSession());
 		engine.executeScript("""
 				function f5(x, y){
-				  var a = x * y;
-				  var b = echoFunction(a);
-				  return b;
+					var a = x * y;
+					var b = echoFunction(a);
+					return b;
 				}""");
 		Object result = engine.executeFunction("f5", 3, 5);
 		assertEquals("15", result.toString());
