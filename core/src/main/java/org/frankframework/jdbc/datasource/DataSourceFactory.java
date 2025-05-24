@@ -65,7 +65,7 @@ public class DataSourceFactory extends ObjectFactory<DataSource, CommonDataSourc
 
 	@Override
 	public DataSource getDataSource(@Nonnull String dataSourceName, @Nullable Properties environment) {
-		return (DataSource) get(dataSourceName, environment);
+		return get(dataSourceName, environment);
 	}
 
 	@Override
