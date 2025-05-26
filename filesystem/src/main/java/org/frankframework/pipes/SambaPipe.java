@@ -15,6 +15,10 @@
 */
 package org.frankframework.pipes;
 
+import org.frankframework.configuration.ConfigurationWarning;
+
+@Deprecated(forRemoval = true, since = "9.0")
+@ConfigurationWarning("Symbolic link to Samba2Pipe, please explicitly use the Samba2Pipe element name")
 public class SambaPipe extends Samba2Pipe {
 
 }

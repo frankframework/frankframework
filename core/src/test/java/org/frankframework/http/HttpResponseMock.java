@@ -181,7 +181,7 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 			String resultString = EntityUtils.toString(entity);
 			int i = resultString.indexOf("%PDF-1.");
 			if(i >= 0) {
-				resultString = "%s\n...%d more characters".formatted(resultString.substring(0, i + 8), (resultString.length() - i));
+				resultString = "%s%n...%d more characters".formatted(resultString.substring(0, i + 8), (resultString.length() - i));
 			}
 			response.append(resultString);
 		}

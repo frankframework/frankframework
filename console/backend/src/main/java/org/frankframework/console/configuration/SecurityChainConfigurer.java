@@ -37,6 +37,7 @@ import org.springframework.security.config.annotation.web.configurers.CorsConfig
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
@@ -94,6 +95,9 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 		} else {
 			http.csrf(CsrfConfigurer::disable);
 		}
+
+		// Spring Security will never use the JSESSION cookie to obtain the SecurityContext.
+		http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 		http.formLogin(FormLoginConfigurer::disable); // Disable the form login filter
 
 		if(!corsEnabled) {
@@ -109,7 +113,7 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 					.requestMatchers(new AntPathRequestMatcher("/**/health"))
 					.access(new WebExpressionAuthorizationManager(healthCheckEndpointExpression))
 			);
-		} else { // When NoOpAutheticator or healthCheckEndpointExpression is empty, you should be able to see the health endpoints.
+		} else { // When NoOpAuthenticator or healthCheckEndpointExpression is empty, you should be able to see the health endpoints.
 			http.authorizeHttpRequests(authorize -> authorize
 					.requestMatchers(new AntPathRequestMatcher("/**/health"))
 					.permitAll()
@@ -145,7 +149,7 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 		String propertyPrefix = "application.security.console.authentication.";
 		IAuthenticator authenticator = AuthenticatorUtils.createAuthenticator(applicationContext, propertyPrefix);
 
-		APPLICATION_LOG.info("Securing Frank!Framework Console using {}", ClassUtils.classNameOf(authenticator));
+		APPLICATION_LOG.info("Securing Frank!Framework Console using {}", () -> ClassUtils.classNameOf(authenticator));
 		return authenticator;
 	}
 

@@ -8,8 +8,6 @@ updates:
     labels:
       - "Dependencies"
       - "Java"
-    reviewers:
-      - frankframework/maintainers
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
@@ -31,11 +29,10 @@ updates:
       angular:
         patterns: 
         - "@angular*"
+        - "zone.js"
         update-types:
         - "minor"
         - "patch"
-    reviewers:
-      - frankframework/maintainers
     ignore:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
@@ -49,5 +46,3 @@ updates:
     labels:
       - "Dependencies"
       - "Docker"
-    reviewers:
-      - frankframework/maintainers

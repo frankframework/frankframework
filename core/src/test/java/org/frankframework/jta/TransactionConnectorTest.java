@@ -178,7 +178,7 @@ public class TransactionConnectorTest {
 				@Override
 				protected void abort() {
 					try {
-						log.warn("--> TIMEOUT executing ["+query+"]");
+						log.warn("--> TIMEOUT executing [{}]", query);
 						stmt.cancel();
 					} catch (SQLException e) {
 						e.printStackTrace();

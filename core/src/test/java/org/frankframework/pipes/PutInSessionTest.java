@@ -8,15 +8,15 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.testutil.ParameterBuilder;
 
 /**
- * PutInSession Tester.
+ * PutInSessionPipe Tester.
  *
  * @author <Sina Sen>
  */
-public class PutInSessionTest extends PipeTestBase<PutInSession> {
+public class PutInSessionTest extends PipeTestBase<PutInSessionPipe> {
 
 	@Override
-	public PutInSession createPipe() {
-		return new PutInSession();
+	public PutInSessionPipe createPipe() {
+		return new PutInSessionPipe();
 	}
 
 

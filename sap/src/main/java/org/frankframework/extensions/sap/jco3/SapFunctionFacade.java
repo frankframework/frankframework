@@ -92,14 +92,14 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade, FrankElem
 	public void openFacade() throws SapException {
 		if (sapSystem!=null) {
 			sapSystem.openSystem();
-			log.info("open SapSystem [{}]", sapSystem.toString());
+			log.info("open SapSystem [{}]", sapSystem);
 
 			//Something has changed, so remove the cached templates
 			SapSystemDataProvider.getInstance().updateSystem(sapSystem);
 
 			if (StringUtils.isNotEmpty(getFunctionName())) { //Listeners and IdocSenders don't use a functionName
 				ftemplate = getFunctionTemplate(sapSystem, getFunctionName());
-				log.debug("found JCoFunctionTemplate [{}]", ftemplate.toString());
+				log.debug("found JCoFunctionTemplate [{}]", ftemplate);
 				try {
 					calculateStaticFieldIndices(ftemplate);
 				} catch (Exception e) {

@@ -265,6 +265,25 @@ public class InputOutputPipeProcessorTest {
 	}
 
 	@Test
+	public void testWhenUnlessSessionKeySetAndNotPresent() throws Exception {
+		// Arrange
+		pipe.setUnlessSessionKey("this-key-is-not-there");
+		pipe.configure();
+		pipe.start();
+
+		Message input = new Message(INPUT_MESSAGE_TEXT);
+
+		// This should be false, because the sessionkey does not exist
+		assertFalse(pipe.skipPipe(input, session));
+
+		// Act
+		PipeRunResult prr = processor.processPipe(pipeLine, pipe, input, session);
+
+		// Assert
+		assertEquals(INPUT_MESSAGE_TEXT, prr.getResult().asString());
+	}
+
+	@Test
 	public void testSkipOnEmptyInput() throws Exception {
 		// Arrange
 		pipe.setSkipOnEmptyInput(true);

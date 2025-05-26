@@ -1,17 +1,13 @@
 package org.frankframework.extensions.cmis;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.Mockito.mock;
 
 import java.util.stream.Stream;
-
-import jakarta.servlet.http.HttpServletResponse;
 
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestAssertions;
 
@@ -88,8 +84,6 @@ public class TestBindingTypes extends CmisSenderTestBase {
 		sender.setFilenameSessionKey("my-file");
 
 		session.put("fileContent", "dummy data");
-		HttpServletResponse response = mock(HttpServletResponse.class);
-		session.put(PipeLineSession.HTTP_RESPONSE_KEY, response);
 
 		return sender;
 	}

@@ -50,6 +50,7 @@ import org.frankframework.receivers.ServiceDispatcher;
 import org.frankframework.stream.Message;
 import org.frankframework.threading.IThreadCreator;
 import org.frankframework.threading.ThreadLifeCycleEventListener;
+import org.frankframework.util.MessageUtils;
 
 /**
  * Posts a message to another Frank!Framework-adapter in the same Frank!Framework instance. If the callee exits with an &lt;<code>exit</code>&gt;
@@ -243,6 +244,7 @@ public class IbisLocalSender extends AbstractSenderWithParameters implements Has
 			if (correlationId != null) {
 				subAdapterSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 			}
+			subAdapterSession.put(PipeLineSession.MESSAGE_ID_KEY, MessageUtils.generateMessageId());
 			try {
 				Map<String, Object> paramValues = paramList.getValues(message, session).getValueMap();
 				subAdapterSession.putAll(paramValues);

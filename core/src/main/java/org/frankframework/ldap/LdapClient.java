@@ -451,19 +451,19 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
        	}
 	}
 
-    public String getFirstSearchResult(NamingEnumeration<SearchResult> searchResultEnum) throws NamingException {
-    	String result=null;
-    	try {
-	    	if (searchResultEnum.hasMore()) {
-	    		result=getFirstAttribute(searchResultEnum.next());
-	    	}
-		} catch(PartialResultException e) {
-			if (log.isDebugEnabled()) log.debug("ignoring Exception: {}", e);
+	public String getFirstSearchResult(NamingEnumeration<SearchResult> searchResultEnum) throws NamingException {
+		String result = null;
+		try {
+			if (searchResultEnum.hasMore()) {
+				result = getFirstAttribute(searchResultEnum.next());
+			}
+		} catch (PartialResultException e) {
+			log.debug("ignoring Exception: {}", e::getMessage);
 		} finally {
 			searchResultEnum.close();
 		}
 		return result;
-    }
+	}
 
     public String getFirstAttribute(SearchResult searchResult) throws NamingException {
 		Attributes attributes=searchResult.getAttributes();
@@ -550,7 +550,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 	    		}
 	    	}
 		} catch(PartialResultException e) {
-			if (log.isDebugEnabled()) log.debug("ignoring Exception: {}", e);
+			log.debug("ignoring Exception: {}", e::getMessage);
 		} finally {
 			searchResultEnum.close();
 		}
@@ -581,7 +581,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 	    		}
 	    	}
 		} catch(PartialResultException e) {
-			if (log.isDebugEnabled()) log.debug("ignoring Exception: {}", e);
+			log.debug("ignoring Exception: {}", e::getMessage);
 		} finally {
 			searchResultEnum.close();
 		}

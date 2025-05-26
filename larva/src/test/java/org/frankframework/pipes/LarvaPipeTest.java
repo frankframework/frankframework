@@ -33,14 +33,14 @@ class LarvaPipeTest extends PipeTestBase<LarvaPipe> {
 	@Test
 	public void testDoPipeWithoutScenarios() throws Exception {
 		// Arrange
-		pipe.setLogLevel(LarvaLogLevel.DEBUG);
+		pipe.setLogLevel(LarvaLogLevel.ERROR);
 		configureAndStartPipe();
 
 		// Act
 		PipeRunResult prr = doPipe(pipe, null, session);
-		String result = prr.getResult().asString();
+		String result = prr.getResult().asString().trim();
 
 		// Assert
-		assertEquals("No scenarios root directories found\n", result);
+		assertEquals("ERROR: No scenarios root directories found", result);
 	}
 }

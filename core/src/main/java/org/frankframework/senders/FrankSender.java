@@ -56,6 +56,7 @@ import org.frankframework.receivers.ServiceClient;
 import org.frankframework.stream.Message;
 import org.frankframework.threading.IThreadCreator;
 import org.frankframework.threading.ThreadLifeCycleEventListener;
+import org.frankframework.util.MessageUtils;
 
 /**
  * Sender to send a message to another Frank! Adapter, or an external program running in the same JVM as the Frank!Framework.
@@ -328,13 +329,13 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	public String getPhysicalDestinationName() {
 		StringBuilder result = new StringBuilder();
 		ParameterList pl = getParameterList();
-		if (pl != null && pl.hasParameter(SCOPE_PARAM_NAME)) {
+		if (pl.hasParameter(SCOPE_PARAM_NAME)) {
 			result.append("param:scope");
 		} else {
 			result.append(getScope());
 		}
 		result.append("/");
-		if (pl != null && pl.hasParameter(TARGET_PARAM_NAME)) {
+		if (pl.hasParameter(TARGET_PARAM_NAME)) {
 			result.append("param:target");
 		} else {
 			result.append(getTarget());
@@ -345,7 +346,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	@Override
 	public String getDomain() {
 		ParameterList pl = getParameterList();
-		if (pl != null && pl.hasParameter(SCOPE_PARAM_NAME)) {
+		if (pl.hasParameter(SCOPE_PARAM_NAME)) {
 			return "Dynamic";
 		} else {
 			return getScope().name();
@@ -425,6 +426,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 		if (correlationId != null) {
 			childSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 		}
+		childSession.put(PipeLineSession.MESSAGE_ID_KEY, MessageUtils.generateMessageId());
 		if (pvl != null) {
 			Map<String, Object> valueMap = pvl.getValueMap();
 			valueMap.remove(TARGET_PARAM_NAME);

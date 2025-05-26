@@ -1,0 +1,4 @@
+# Lifecycle management changes (dependabot) should be assigned to the maintainers group automatically
+pom.xml					@frankframework/maintainers
+docker/**/Dockerfile	@frankframework/maintainers
+package.json			@frankframework/maintainers

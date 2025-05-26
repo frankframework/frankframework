@@ -2,18 +2,25 @@ package org.frankframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
 
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.util.MimeType;
 
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.TestFileUtils;
 
@@ -55,13 +62,27 @@ class MessageUtilsCharsetDetectionTest {
 		URL url = TestFileUtils.getTestFileURL("/Util/MessageUtils/"+testFile);
 		assertNotNull(url, "cannot find test file ["+testFile+"]");
 
-		Message message = new UrlMessage(url);
-		String result = message.asString("auto"); //calls asReader();
+		Message message = spy(new UrlMessage(url));
+		String result = message.asString("auto"); // calls asReader();
 
+		verify(message, times(1)).asReader("auto");
 		assertEquals(expectedCharset.name(), message.getCharset(), "charset mismatch");
 
 		if(fileContent != null) {
 			assertEquals(fileContent, result, "fileContent mismatch");
 		}
+	}
+
+	// Prove Charset can be read from XML header.
+	@Test
+	public void testComputeMimeTypeWithEncodingFromXml() {
+		URL url = ClassLoaderUtils.getResourceURL("/Util/MessageUtils/iso-8859-1.xml");
+		Message message = new UrlMessage(url);
+		message.getContext().put(MessageContext.METADATA_CHARSET, "auto");
+
+		MimeType mimeType = MessageUtils.computeMimeType(message);
+		assertEquals("ISO-8859-1", message.getCharset());
+		assertTrue(mimeType.toString().contains("application/xml"), "Content-Type header ["+mimeType.toString()+"]");
+		assertTrue(mimeType.toString().contains("charset=ISO-8859-1"), "Content-Type header ["+mimeType.toString()+"]");
 	}
 }

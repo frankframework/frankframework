@@ -107,7 +107,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- schemaSessionKey -->
-			<pipe name="schemaSessionKey" className="org.frankframework.pipes.PutInSession"
+			<pipe name="schemaSessionKey" className="org.frankframework.pipes.PutInSessionPipe"
 				sessionKey="xsdLocation" value="/XmlValidator/schemaSessionKey/ING_REQ1041.xsd">
 				<forward name="success" path="schemaSessionKeyValidate" />
 			</pipe>

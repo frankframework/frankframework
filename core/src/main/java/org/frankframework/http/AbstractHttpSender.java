@@ -318,19 +318,17 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 	protected abstract Message extractResult(HttpResponseHandler responseHandler, PipeLineSession session) throws SenderException, IOException;
 
 	protected boolean validateResponseCode(int statusCode) {
-		boolean ok = false;
-		if (StringUtils.isNotEmpty(getResultStatusCodeSessionKey())) {
-			ok = true;
-		} else {
-			if (statusCode==200 || statusCode==201 || statusCode==202 || statusCode==204 || statusCode==206) {
-				ok = true;
-			} else {
-				if (isIgnoreRedirects() && (statusCode==HttpServletResponse.SC_MOVED_PERMANENTLY || statusCode==HttpServletResponse.SC_MOVED_TEMPORARILY || statusCode==HttpServletResponse.SC_TEMPORARY_REDIRECT)) {
-					ok = true;
-				}
-			}
-		}
-		return ok;
+		return StringUtils.isNotEmpty(getResultStatusCodeSessionKey())
+				|| isStatus2xx(statusCode)
+				|| isIgnoreRedirect(statusCode);
+	}
+
+	private boolean isStatus2xx(int statusCode) {
+		return statusCode == 200 || statusCode == 201 || statusCode == 202 || statusCode == 204 || statusCode == 206;
+	}
+
+	private boolean isIgnoreRedirect(int statusCode) {
+		return isIgnoreRedirects() && (statusCode == HttpServletResponse.SC_MOVED_PERMANENTLY || statusCode == HttpServletResponse.SC_MOVED_TEMPORARILY || statusCode == HttpServletResponse.SC_TEMPORARY_REDIRECT);
 	}
 
 	@Override

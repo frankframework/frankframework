@@ -101,9 +101,11 @@
             <li data-cy-nav="testingLarva" routerLinkActive="active">
               <a routerLink="/testing/larva">Larva</a>
             </li>
-            <li data-cy-nav="testingLadybugLegacy" routerLinkActive="active">
-              <a routerLink="/testing/ladybug-legacy">Ladybug (legacy)</a>
-            </li>
+            @if (showOldLadybug) {
+              <li data-cy-nav="testingLadybugLegacy" routerLinkActive="active">
+                <a routerLink="/testing/ladybug-legacy">Ladybug (legacy)</a>
+              </li>
+            }
             <li data-cy-nav="testingLadybug" routerLinkActive="active">
               <a routerLink="/testing/ladybug">Ladybug</a>
             </li>

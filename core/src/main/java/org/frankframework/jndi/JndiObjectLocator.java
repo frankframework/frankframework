@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.jndi.JndiLocatorSupport;
 import org.springframework.jndi.JndiTemplate;
 
 import lombok.Setter;
@@ -35,6 +36,8 @@ import org.frankframework.util.ClassUtils;
 
 /**
  * Class that does the actual JDNI lookup.
+ * Uses a Spring JndiTemplate with the given environment settings.
+ * @see JndiLocatorSupport#setJndiTemplate
  *
  * @author Niels Meijer
  *
@@ -44,6 +47,11 @@ public class JndiObjectLocator implements IObjectLocator, ApplicationContextAwar
 
 	private @Setter String jndiContextPrefix = null;
 
+	// For tests!
+	protected JndiTemplate getJndiTemplate(Properties jndiEnvironment) {
+		return new JndiTemplate(jndiEnvironment);
+	}
+
 	/**
 	 * Attempt to lookup the Object in the JNDI. If it cannot find the object, attempt to try again (without a JNDI-prefix).
 	 * @param <O> Object class used by clients
@@ -51,7 +59,7 @@ public class JndiObjectLocator implements IObjectLocator, ApplicationContextAwar
 	@Override
 	public <O> O lookup(String jndiName, Properties jndiEnvironment, Class<O> lookupClass) throws NamingException {
 		String prefixedJndiName = getPrefixedJndiName(jndiName);
-		JndiTemplate locator = new JndiTemplate(jndiEnvironment);
+		JndiTemplate locator = getJndiTemplate(jndiEnvironment);
 		try {
 			return locator.lookup(prefixedJndiName, lookupClass);
 		} catch (NameNotFoundException e) { // Fallback and search again but this time without prefix

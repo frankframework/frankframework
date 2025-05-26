@@ -33,8 +33,10 @@ import lombok.Setter;
  * <pre>{@code
  * mqtt:
  *   - name: "my-connection"
- *     type: "org.frankframework.jdbc.datasource.MqttClientSettings"
  *     url: "tcp://host:port"
+ *     username: ""
+ *     password: ""
+ *     authalias: "${property.name.here}"
  *     properties:
  *       automaticReconnect: "true"
  *       cleanSession: "false"
@@ -112,6 +114,10 @@ public abstract class MqttFacade implements HasPhysicalDestination, IConfigurabl
 		this.charset = charset;
 	}
 
+	/**
+	 * Name of the MqttClientSettings configuration in the `resources.yml`.
+	 */
+	@Mandatory
 	public void setResourceName(String resourceName) {
 		this.resourceName = resourceName;
 	}

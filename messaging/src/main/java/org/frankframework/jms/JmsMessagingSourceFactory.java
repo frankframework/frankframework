@@ -62,6 +62,7 @@ public class JmsMessagingSourceFactory {
 		return result;
 	}
 
+	@SuppressWarnings("java:S1181")
 	private Context getContext() throws IbisException {
 		try {
 			return new InitialContext();

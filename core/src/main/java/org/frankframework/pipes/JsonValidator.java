@@ -36,14 +36,14 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.Resource;
 import org.frankframework.doc.Category;
+import org.frankframework.doc.Mandatory;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
 import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 
 
 /**
- * Pipe that validates the input message against a JSON Schema.
- *
+ * Pipe that validates the input message against a JSON Schema. 
  * @author Gerrit van Brakel
  */
 @Category(Category.Type.BASIC)
@@ -118,7 +118,6 @@ public class JsonValidator extends AbstractValidator {
 		}
 	}
 
-
 	protected JsonSchema getJsonSchema() throws IOException {
 		String schemaName = getSchema();
 		Resource schemaRes = Resource.getResource(this, schemaName);
@@ -130,12 +129,14 @@ public class JsonValidator extends AbstractValidator {
 	}
 
 	/** The JSON Schema to validate to */
+	@Mandatory
 	public void setSchema(String schema) {
 		this.schema=schema;
 	}
 
 	/**
-	 * Prefix to element name to find subschema in schema
+	 * The subSchemaPrefix is an optional attribute used when referencing a subschema located in a nested structure, such as $defs or definitions. 
+	 * Adding only the subSchema attribute is not enough if your schema organizes definitions in nested objects. Add root attribute to complete the process.
 	 * @ff.default /definitions/
 	 */
 	public void setSubSchemaPrefix(String prefix) {
@@ -143,7 +144,7 @@ public class JsonValidator extends AbstractValidator {
 	}
 
 	/**
-	 * If set: key of session variable to store reasons of mis-validation in
+	 * If set: creates a sessionKey to store any errors when validating the json output
 	 * @ff.default failureReason
 	 */
 	public void setReasonSessionKey(String reasonSessionKey) {

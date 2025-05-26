@@ -16,6 +16,7 @@ import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -47,6 +48,15 @@ public class AnsibleVaultCredentialFactoryTest {
 		credentialFactory.initialize();
 	}
 
+	/**
+	 *  Make sure to clean up the system properties after the test
+	 */
+	@AfterAll
+	static void tearDown() {
+		System.clearProperty("credentialFactory.ansibleVault.vaultFile");
+		System.clearProperty("credentialFactory.ansibleVault.keyFile");
+	}
+
 	public void setupVault(Properties aliases, String title) throws IOException {
 		ByteArrayOutputStream credentialData = new ByteArrayOutputStream();
 		aliases.store(credentialData, title);
@@ -62,7 +72,6 @@ public class AnsibleVaultCredentialFactoryTest {
 		System.out.println("Ansible Vault:\n"+new String(encryptedVault));
 
 	}
-
 
 	//@Test
 	// run this to obtain a fresh ansible vault

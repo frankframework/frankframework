@@ -15,7 +15,7 @@
 					query="INSERT INTO IBISTEMP (TKEY, TVARCHAR, TTIMESTAMP, TBLOB) VALUES (SEQ_IBISTEMP.NEXTVAL, ?, CURRENT_TIMESTAMP, ?)"
 					resultQuery="SELECT SEQ_IBISTEMP.CURRVAL FROM DUAL" scalar="true">
 					<param name="TVARCHAR" sessionKey="fileName" />
-					<param name="message" sessionKey="file" type="inputstream" />
+					<param name="message" sessionKey="file" type="binary" />
 				</sender>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -35,7 +35,7 @@
 				filename="RestListener/pdf/sample.pdf" storeResultInSessionKey="fileContent">
 				<forward name="success" path="setFileName" />
 			</pipe>
-			<pipe name="setFileName" className="org.frankframework.pipes.PutInSession"
+			<pipe name="setFileName" className="org.frankframework.pipes.PutInSessionPipe"
 				sessionKey="fileContentName" value="sample.pdf">
 				<forward name="success" path="callRest" />
 			</pipe>
@@ -80,7 +80,7 @@
 				<exit state="success" name="EXIT" />
 			</exits>
 
-			<pipe name="setContentType" className="org.frankframework.pipes.PutInSession"
+			<pipe name="setContentType" className="org.frankframework.pipes.PutInSessionPipe"
 				sessionKey="contentType" value="application/octet-stream">
 				<forward name="success" path="getId" />
 			</pipe>
@@ -114,7 +114,7 @@
 				className="org.frankframework.pipes.SenderPipe">
 				<sender className="org.frankframework.jdbc.FixedQuerySender"
 					query="SELECT TBLOB FROM IBISTEMP WHERE TKEY=?" queryType="select"
-					scalar="true" streamResultToServlet="true"
+					scalar="true"
 					blobsCompressed="false">
 					<param name="messageKey" sessionKey="docId" />
 				</sender>
@@ -234,7 +234,7 @@
 				<exit name="EXIT" state="success" />
 			</exits>
 
-			<pipe name="createFileNameKey" className="org.frankframework.pipes.PutInSession"
+			<pipe name="createFileNameKey" className="org.frankframework.pipes.PutInSessionPipe"
 				sessionKey="fileName" getInputFromFixedValue="${testdata.dir}/rest/result3.pdf">
 				<forward name="success" path="getUrl" />
 			</pipe>

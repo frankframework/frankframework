@@ -42,7 +42,7 @@ import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.pipes.PutInSession;
+import org.frankframework.pipes.PutInSessionPipe;
 import org.frankframework.pipes.PutSystemDateInSession;
 import org.frankframework.processors.CorePipeLineProcessor;
 import org.frankframework.processors.CorePipeProcessor;
@@ -58,6 +58,101 @@ import org.frankframework.util.SpringUtils;
 import org.frankframework.util.XmlUtils;
 
 public class ParameterTest {
+
+	@Test
+	public void testParameterWithHiddenValue() throws Exception {
+		// NB: This test has been AI Generated
+		Parameter p = new Parameter();
+		p.setName("hiddenParam");
+		p.setValue("secretValue");
+		p.setHidden(true);
+		p.configure();
+
+		PipeLineSession session = new PipeLineSession();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+
+		// The hidden flag doesn't affect the actual value, only how it's logged
+		assertEquals("secretValue", p.getValue(alreadyResolvedParameters, null, session, false));
+		assertTrue(p.isHidden());
+	}
+
+	@Test
+	public void testParameterWithMode() throws Exception {
+		// NB: This test has been AI Generated
+		// Test INPUT mode (default)
+		Parameter inputParam = new Parameter();
+		inputParam.setName("inputParam");
+		inputParam.setValue("inputValue");
+		inputParam.configure();
+		assertEquals(AbstractParameter.ParameterMode.INPUT, inputParam.getMode());
+
+		// Test OUTPUT mode
+		Parameter outputParam = new Parameter();
+		outputParam.setName("outputParam");
+		outputParam.setMode(AbstractParameter.ParameterMode.OUTPUT);
+		outputParam.configure();
+		assertEquals(AbstractParameter.ParameterMode.OUTPUT, outputParam.getMode());
+
+		// Test INOUT mode
+		Parameter inoutParam = new Parameter();
+		inoutParam.setName("inoutParam");
+		inoutParam.setValue("inoutValue");
+		inoutParam.setMode(AbstractParameter.ParameterMode.INOUT);
+		inoutParam.configure();
+		assertEquals(AbstractParameter.ParameterMode.INOUT, inoutParam.getMode());
+	}
+
+	@Test
+	public void testParameterWithSessionKeyXPath() throws Exception {
+		// NB: This test has been AI Generated
+		// Create an XML message with a session key name
+		String xmlMessage = "<root><sessionKeyName>dynamicKey</sessionKeyName></root>";
+		Message message = new Message(xmlMessage);
+
+		// Create a parameter with sessionKeyXPath to extract the key name
+		Parameter p = new Parameter();
+		p.setName("dynamicSessionKeyParam");
+		p.setSessionKeyXPath("root/sessionKeyName");
+		p.configure();
+
+		// Set up session with the dynamic key
+		PipeLineSession session = new PipeLineSession();
+		session.put("dynamicKey", "dynamicValue");
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+
+		// The parameter should use the XPath to get the session key name, then use that to get the value
+		assertEquals("dynamicValue", p.getValue(alreadyResolvedParameters, message, session, false));
+
+		// Verify it requires input value for resolution (since it uses the message for XPath)
+		assertTrue(p.requiresInputValueForResolution());
+	}
+
+	@Test
+	public void testParameterWithSessionKeyJPath() throws Exception {
+		// NB: This test has been AI Generated
+		// Create a JSON message with a session key name
+		String jsonMessage = "{\"root\":{\"sessionKeyName\":\"jsonDynamicKey\"}}";
+		Message message = new Message(jsonMessage);
+
+		// Create a parameter with sessionKeyJPath to extract the key name
+		Parameter p = new Parameter();
+		p.setName("dynamicJsonSessionKeyParam");
+		p.setSessionKeyJPath("$.root.sessionKeyName");
+		p.configure();
+
+		// Set up session with the dynamic key
+		PipeLineSession session = new PipeLineSession();
+		session.put("jsonDynamicKey", "jsonDynamicValue");
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+
+		// The parameter should use the JSONPath to get the session key name, then use that to get the value
+		assertEquals("jsonDynamicValue", p.getValue(alreadyResolvedParameters, message, session, false));
+
+		// Verify it requires input value for resolution (since it uses the message for JSONPath)
+		assertTrue(p.requiresInputValueForResolution());
+	}
 
 	@Test
 	public void testPatternUsername() throws ConfigurationException, ParameterException {
@@ -934,15 +1029,15 @@ public class ParameterTest {
 	}
 
 	@Test
-	// Test for #2256 PutInSession with xpathExpression with type=domdoc
+	// Test for #2256 PutInSessionPipe with xpathExpression with type=domdoc
 	// results in "Content is not allowed in prolog"
 	public void testPutInSessionPipeWithDomdocParamsUsedMoreThanOnce() throws Exception {
 		try(TestConfiguration configuration = new TestConfiguration()) {
 			Adapter adapter = configuration.createBean();
 			adapter.setName("testAdapter"); // Required for Metrics
 			PipeLine pipeline = SpringUtils.createBean(adapter);
-			String firstPipe = "PutInSession under test";
-			String secondPipe = "PutInSession next pipe";
+			String firstPipe = "PutInSessionPipe under test";
+			String secondPipe = "PutInSessionPipe next pipe";
 
 			String testMessage = """
 					<Test>
@@ -954,7 +1049,7 @@ public class ParameterTest {
 
 			String testMessageChild1 = "<Child><name>X</name></Child>";
 
-			PutInSession pipe = configuration.createBean();
+			PutInSessionPipe pipe = configuration.createBean();
 			pipe.setName(firstPipe);
 			pipe.setPipeLine(pipeline);
 			Parameter p = new Parameter();
@@ -964,7 +1059,7 @@ public class ParameterTest {
 			pipe.addParameter(p);
 			pipeline.addPipe(pipe);
 
-			PutInSession pipe2 = configuration.createBean();
+			PutInSessionPipe pipe2 = configuration.createBean();
 			pipe2.setName(secondPipe);
 			pipe2.setPipeLine(pipeline);
 			Parameter p2 = new Parameter();
@@ -1431,5 +1526,187 @@ public class ParameterTest {
 
 		// Assert
 		assertTrue(((String)result).matches("\\d{1,2}:\\d{2}"));
+	}
+
+	@Test
+	public void testParameterWithJsonPathExpressionValueFromSessionKey() throws Exception {
+		// Arrange
+		Parameter parameter = new Parameter();
+		parameter.setName("p1");
+		parameter.setJsonPathExpression(".root.a");
+		parameter.setSessionKey("sessionKey");
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+		PipeLineSession session = new PipeLineSession();
+		session.put("sessionKey", """
+				{
+				  "root": {
+				    "a": "v1"
+				  }
+				}
+				""");
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		assertEquals("v1", result);
+	}
+
+	@Test
+	public void testParameterWithJsonPathExpressionValueFromSessionKeyAndContextKey() throws Exception {
+		// Arrange
+		Parameter parameter = new Parameter();
+		parameter.setName("p1");
+		parameter.setJsonPathExpression(".root.a");
+		parameter.setSessionKey("sessionKey");
+		parameter.setContextKey("ctx");
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+		message.getContext().put("ctx", """
+				{
+				  "root": {
+				    "a": "v1"
+				  }
+				}
+				""");
+		PipeLineSession session = new PipeLineSession();
+		session.put("sessionKey",message);
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		assertEquals("v1", result);
+	}
+
+	@Test
+	public void testParameterWithJsonPathExpressionFromValue() throws Exception {
+		// Arrange
+		Parameter parameter = new Parameter();
+		parameter.setName("p1");
+		parameter.setJsonPathExpression(".root.a");
+		parameter.setSessionKey("sessionKey");
+		parameter.setContextKey("ctx");
+		parameter.setValue( """
+				{
+				  "root": {
+				    "a": "v1"
+				  }
+				}
+				""");
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+		message.getContext().put("ctx", """
+				{
+				  "root": {
+				    "a": "wrongOutcome"
+				  }
+				}
+				""");
+		PipeLineSession session = new PipeLineSession();
+		session.put("sessionKey",message);
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		assertEquals("v1", result);
+	}
+
+	@Test
+	public void testParameterWithJsonPathExpressionValueFromMessage() throws Exception {
+		// Arrange
+		Parameter parameter = new Parameter();
+		parameter.setName("p1");
+		parameter.setJsonPathExpression(".root.a");
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("""
+				{
+				  "root": {
+				    "a": "v1"
+				  }
+				}
+				""");
+		PipeLineSession session = new PipeLineSession();
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		assertEquals("v1", result);
+	}
+
+	@Test
+	public void testParameterWithJsonPathExpressionValueFromMessageAndContextKey() throws Exception {
+		// Arrange
+		Parameter parameter = new Parameter();
+		parameter.setName("p1");
+		parameter.setJsonPathExpression(".root.a");
+		parameter.setContextKey("ctx");
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+		message.getContext().put("ctx", """
+				{
+				  "root": {
+				    "a": "v1"
+				  }
+				}
+				""");
+		PipeLineSession session = new PipeLineSession();
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		assertEquals("v1", result);
+	}
+
+
+	@Test
+	public void testParameterWithJsonPathExpressionConvertsFromXml() throws Exception {
+		// Arrange
+		Parameter parameter = new Parameter();
+		parameter.setName("p1");
+		parameter.setJsonPathExpression(".root.a");
+		parameter.setSessionKey("sessionKey");
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+		PipeLineSession session = new PipeLineSession();
+		session.put("sessionKey", """
+				<root>
+					<a>v1</a>
+				</root>
+				""");
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		assertEquals("v1", result);
+	}
+
+	@Test
+	public void testParameterCannotHaveBothXPathAndJsonPathExpression() {
+		// Arrange
+		Parameter parameter = new Parameter();
+		parameter.setName("p1");
+		parameter.setJsonPathExpression(".root.a");
+		parameter.setXpathExpression("/root/a");
+
+		// Act
+		assertThrows(ConfigurationException.class, parameter::configure);
 	}
 }

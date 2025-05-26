@@ -21,51 +21,59 @@ import org.apache.commons.lang3.StringUtils;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.eclipse.paho.client.mqttv3.MqttClientPersistence;
 import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
 
 import lombok.SneakyThrows;
 
-import org.frankframework.jdbc.datasource.MqttClientSettings;
+import org.frankframework.jdbc.datasource.FrankResource;
 import org.frankframework.jdbc.datasource.ObjectFactory;
-import org.frankframework.util.AppConstants;
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.Misc;
+import org.frankframework.util.UUIDUtil;
 
-public class MqttClientFactory extends ObjectFactory<MqttClient, MqttClientSettings> {
+public class MqttClientFactory extends ObjectFactory<MqttClient, Object> {
 
 	public MqttClientFactory() {
-		super(MqttClientSettings.class, "mqtt", "MQTT");
+		super(null, "mqtt", "MQTT");
 	}
 
 	@SneakyThrows
-	@Override
-	protected MqttClient map(MqttClientSettings data) {
-		MqttConnectOptions connectOptions = new MqttConnectOptions();
-		connectOptions.setCleanSession(data.isCleanSession());
-		connectOptions.setAutomaticReconnect(data.isAutomaticReconnect());
+	private MqttClient map(FrankResource resource) {
+		Properties props = resource.getProperties();
 
-		if (data.getTimeout() != 0) {
-			connectOptions.setConnectionTimeout(data.getTimeout());
-		}
-		if (data.getKeepAliveInterval() != 0) {
-			connectOptions.setKeepAliveInterval(data.getKeepAliveInterval());
-		}
+		MqttConnectOptions connectOptions = new MqttConnectOptions();
+		ClassUtils.invokeSetters(connectOptions, props);
+
 		connectOptions.setMqttVersion(MqttConnectOptions.MQTT_VERSION_DEFAULT); // Default: 0, V3.1: 3, V3.1.1: 4
 
-		if (data.getUsername() != null && data.getPassword() != null) {
-			connectOptions.setUserName(data.getUsername());
-			connectOptions.setPassword(data.getPassword().toCharArray());
+		CredentialFactory cf = resource.getCredentials();
+		if (cf.getUsername() != null && cf.getPassword() != null) {
+			connectOptions.setUserName(cf.getUsername());
+			connectOptions.setPassword(cf.getPassword().toCharArray());
 		}
 
-		String clientId = data.getClientId();
+		String clientId = props.getProperty("clientId");
 		if (StringUtils.isEmpty(clientId)) {
-			clientId = AppConstants.getInstance().getProperty("transactionmanager.uid");
+			clientId = Misc.getHostname()+"-"+ UUIDUtil.createSimpleUUID();
 		}
 
-		try (MqttClient client = new MqttClient(data.getUrl(), clientId, getMqttDataStore(data.getPersistenceDirectory()))) {
-			client.connect(connectOptions);
+		MqttClient client = new MqttClient(resource.getUrl(), clientId, getMqttDataStore(props.getProperty("persistenceDirectory")));
+		client.connect(connectOptions);
+		return client;
+	}
 
+	@Override
+	protected MqttClient augment(Object object, String objectName) {
+		if (object instanceof MqttClient client) {
 			return client;
 		}
+		if (object instanceof FrankResource resource) {
+			return map(resource);
+		}
+		throw new IllegalArgumentException("resource ["+objectName+"] not of required type");
 	}
 
 	private MqttClientPersistence getMqttDataStore(String persistenceDirectory) {
@@ -77,11 +85,22 @@ public class MqttClientFactory extends ObjectFactory<MqttClient, MqttClientSetti
 	}
 
 	public MqttClient getClient(String name) {
-		return getClient(name, null);
+		return get(name, null);
 	}
 
-	public MqttClient getClient(String name, Properties environment) {
-		return get(name, environment);
-	}
+	@Override
+	protected void destroyObject(MqttClient object) throws Exception {
+		try {
+			if (object.isConnected()) {
+				object.disconnect();
+			}
 
+			object.close(true);
+		} catch (MqttException e) {
+			object.disconnectForcibly();
+			object.close(true);
+			throw e;
+		}
+
+	}
 }

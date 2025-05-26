@@ -1,0 +1,58 @@
+<soapenv:Envelope
+	xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/">
+	<soapenv:Body>
+		<ZKN:geefZaakdocumentbewerken_Du02
+			xmlns:StUF="http://www.egem.nl/StUF/StUF0301"
+			xmlns:ZKN="http://www.egem.nl/StUF/sector/zkn/0310"
+			xmlns:xmime="http://www.w3.org/2005/05/xmlmime">
+			<ZKN:stuurgegevens>
+				<StUF:berichtcode>Du02</StUF:berichtcode>
+				<StUF:zender>
+					<StUF:organisatie>1900</StUF:organisatie>
+					<StUF:applicatie>CDR</StUF:applicatie>
+				</StUF:zender>
+				<StUF:ontvanger>
+					<StUF:organisatie>1900</StUF:organisatie>
+					<StUF:applicatie>GWS4all</StUF:applicatie>
+					<StUF:gebruiker>Gebruiker</StUF:gebruiker>
+				</StUF:ontvanger>
+				<StUF:referentienummer>193ecc53-8b5b-4dbf-909d-941818f6fa09</StUF:referentienummer>
+				<StUF:tijdstipBericht>20250513150717</StUF:tijdstipBericht>
+				<StUF:crossRefnummer>193ecc53-8b5b-4dbf-909d-941818f6fa09</StUF:crossRefnummer>
+				<StUF:functie>geefZaakdocumentbewerken</StUF:functie>
+			</ZKN:stuurgegevens>
+			<ZKN:parameters>
+				<ZKN:checkedOutId>eedf9a42d2044fd7ba9eb1cb1c50febd</ZKN:checkedOutId>
+			</ZKN:parameters>
+			<ZKN:edcLa01 StUF:entiteittype="EDC"
+				StUF:functie="antwoord">
+				<ZKN:parameters />
+				<ZKN:antwoord>
+					<ZKN:object StUF:entiteittype="EDC">
+						<ZKN:identificatie>DC2025-00002</ZKN:identificatie>
+						<ZKN:dct.omschrijving>Brief</ZKN:dct.omschrijving>
+						<ZKN:creatiedatum>20250513</ZKN:creatiedatum>
+						<ZKN:ontvangstdatum>00010101</ZKN:ontvangstdatum>
+						<ZKN:titel>Brief bijdrageregeling minima - Verzoek om aanvullende
+							gegevens</ZKN:titel>
+						<ZKN:formaat>pdf</ZKN:formaat>
+						<ZKN:taal>nld</ZKN:taal>
+						<ZKN:versie>1</ZKN:versie>
+						<ZKN:status>In bewerking</ZKN:status>
+						<ZKN:vertrouwelijkAanduiding>VERTROUWELIJK</ZKN:vertrouwelijkAanduiding>
+						<ZKN:auteur>Be Handelaar</ZKN:auteur>
+						<ZKN:link />
+						<ZKN:inhoud StUF:bestandsnaam="795880.pdf"
+							xmime:contentType="pdf">NHFXQk5iTGdKMTZ6bVYxTWFsTXhpckJOMFpQTDVEOFFtZEVpQTJKcFc0bURaZjNiWGE2QzZyVzZTM3gwSzhDMElBU0RXQng1a1lBaVhx</ZKN:inhoud>
+						<ZKN:isRelevantVoor StUF:entiteittype="EDCZAK">
+							<ZKN:gerelateerde StUF:entiteittype="ZAK">
+								<ZKN:identificatie>ZK2025-00002</ZKN:identificatie>
+								<ZKN:omschrijving>Aanvraag minimaregelingen (Z)</ZKN:omschrijving>
+							</ZKN:gerelateerde>
+						</ZKN:isRelevantVoor>
+					</ZKN:object>
+				</ZKN:antwoord>
+			</ZKN:edcLa01>
+		</ZKN:geefZaakdocumentbewerken_Du02>
+	</soapenv:Body>
+</soapenv:Envelope>

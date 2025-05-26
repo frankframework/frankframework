@@ -75,6 +75,14 @@ public class DateParameter extends AbstractParameter {
 			}
 		}
 
+		if(formatType != DateFormatType.XMLDATETIME) {
+			try {
+				new SimpleDateFormat(getFormatString());
+			} catch (IllegalArgumentException e) {
+				throw new ConfigurationException("invalid formatString [" + getFormatString() + "]", e);
+			}
+		}
+
 		super.configure();
 	}
 

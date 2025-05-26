@@ -1,7 +1,9 @@
 package org.frankframework.http.authentication;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URLDecoder;
@@ -17,6 +19,7 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.http.HttpSender;
 import org.frankframework.util.StreamUtil;
@@ -51,7 +54,7 @@ public class OAuthAccessTokenRequestTest {
 		httpSender.start();
 
 		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.OauthAuthenticationMethod.CLIENT_CREDENTIALS_QUERY_PARAMETERS.newAuthenticator(httpSender);
-		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getCredentials(), new ArrayList<>());
+		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getDomainAwareCredentials(), new ArrayList<>());
 
 		assertEquals("POST", request.getMethod());
 		assertHeaderPresent(request, "Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
@@ -71,7 +74,7 @@ public class OAuthAccessTokenRequestTest {
 		httpSender.start();
 
 		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.OauthAuthenticationMethod.CLIENT_CREDENTIALS_BASIC_AUTH.newAuthenticator(httpSender);
-		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getCredentials(), new ArrayList<>());
+		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getDomainAwareCredentials(), new ArrayList<>());
 
 		assertEquals("POST", request.getMethod());
 		assertHeaderPresent(request, "Authorization", BASE_64);
@@ -93,7 +96,7 @@ public class OAuthAccessTokenRequestTest {
 		httpSender.start();
 
 		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.OauthAuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS.newAuthenticator(httpSender);
-		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getCredentials(), new ArrayList<>());
+		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getDomainAwareCredentials(), new ArrayList<>());
 
 		assertEquals("POST", request.getMethod());
 		assertHeaderPresent(request, "Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
@@ -115,7 +118,7 @@ public class OAuthAccessTokenRequestTest {
 		httpSender.start();
 
 		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.OauthAuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_BASIC_AUTH.newAuthenticator(httpSender);
-		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getCredentials(), new ArrayList<>());
+		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getDomainAwareCredentials(), new ArrayList<>());
 
 		assertEquals("POST", request.getMethod());
 		assertHeaderPresent(request, "Authorization", BASE_64);
@@ -124,6 +127,32 @@ public class OAuthAccessTokenRequestTest {
 				.getContent(), "\n", "UTF-8"));
 		assertEquals("[Content-Type: application/x-www-form-urlencoded; charset=UTF-8,Content-Length: 95,Chunked: false]", request.getEntity()
 				.toString());
+	}
+
+	@Test
+	void testRetrieveAccessTokenWithResourceOwnerPasswordGrantWithMissingParamsShouldThrow() {
+		httpSender.setScope("email");
+
+		httpSender.setOauthAuthenticationMethod(AbstractHttpSession.OauthAuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS);
+
+		// Set each required field sequentially and check if an exception is thrown until all required fields are set
+		ConfigurationException missingUsername = assertThrows(ConfigurationException.class, () -> httpSender.configure(), "Expected ConfigurationException when username is missing");
+		assertTrue(missingUsername.getMessage().toLowerCase().contains("username"), "Expected exception message to mention 'username'");
+		httpSender.setUsername("fakeCredentialUserName");
+
+		ConfigurationException missingPassword = assertThrows(ConfigurationException.class, () -> httpSender.configure(), "Expected ConfigurationException when password is missing");
+		assertTrue(missingPassword.getMessage().toLowerCase().contains("password"), "Expected exception message to mention 'password'");
+		httpSender.setPassword("fakeCredentialPassword");
+
+		ConfigurationException missingClientId = assertThrows(ConfigurationException.class, () -> httpSender.configure(), "Expected ConfigurationException when clientId is missing");
+		assertTrue(missingClientId.getMessage().toLowerCase().contains("clientid"), "Expected exception message to mention 'clientId'");
+		httpSender.setClientId(CLIENT_ID);
+
+		ConfigurationException missingClientSecret = assertThrows(ConfigurationException.class, () -> httpSender.configure(), "Expected ConfigurationException when clientSecret is missing");
+		assertTrue(missingClientSecret.getMessage().toLowerCase().contains("clientsecret"), "Expected exception message to mention 'clientSecret'");
+		httpSender.setClientSecret(CLIENT_SECRET);
+
+		assertDoesNotThrow(() -> httpSender.configure());
 	}
 
 	@Test
@@ -151,7 +180,7 @@ public class OAuthAccessTokenRequestTest {
 
 		AbstractOauthAuthenticator oauthAuthenticator = (AbstractOauthAuthenticator) AbstractHttpSession.OauthAuthenticationMethod.SAML_ASSERTION.newAuthenticator(httpSender);
 		oauthAuthenticator.configure();
-		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getCredentials(), new ArrayList<>());
+		HttpEntityEnclosingRequestBase request = oauthAuthenticator.createRequest(httpSender.getDomainAwareCredentials(), new ArrayList<>());
 
 		final String body = StreamUtil.streamToString(request.getEntity().getContent(), "\n", "UTF-8");
 		final String decodedBody = URLDecoder.decode(body, StandardCharsets.UTF_8);

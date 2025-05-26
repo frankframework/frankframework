@@ -15,11 +15,11 @@
 */
 package org.frankframework.processors;
 
-import java.time.Instant;
 import java.util.Map;
 
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.HasName;
 import org.frankframework.core.IPipe;
@@ -28,38 +28,30 @@ import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.errormessageformatters.ErrorMessageFormatter;
 import org.frankframework.functional.ThrowingFunction;
 import org.frankframework.pipes.ExceptionPipe;
 import org.frankframework.stream.Message;
 
+@Log4j2
 public class ExceptionHandlingPipeProcessor extends AbstractPipeProcessor {
 
 	@Override
-	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		try {
 			return chain.apply(message);
 		} catch (Exception e) {
 			Map<String, PipeForward> forwards = pipe.getForwards();
 			if (forwards!=null && forwards.containsKey(PipeForward.EXCEPTION_FORWARD_NAME) && !(pipe instanceof ExceptionPipe)) {
 
-				Instant tsReceivedDate = pipeLineSession.getTsReceived();
-				long tsReceivedLong = 0L;
-				if(tsReceivedDate != null) {
-					tsReceivedLong = tsReceivedDate.toEpochMilli();
-				}
-
 				final Message errorMessage;
-				ErrorMessageFormatter emf = new ErrorMessageFormatter();
-
 				if(e instanceof PipeRunException exception) {
 					HasName location = exception.getPipeInError();
-					errorMessage = emf.format(null, e.getCause(), location, message, pipeLineSession.getMessageId(), tsReceivedLong);
+					errorMessage = pipeLine.getAdapter().formatErrorMessage(null, e.getCause(), message, pipeLineSession, location);
 				} else {
-					errorMessage = emf.format(null, e, pipeLine.getOwner(), message, pipeLineSession.getMessageId(), tsReceivedLong);
+					errorMessage = pipeLine.getAdapter().formatErrorMessage(null, e, message, pipeLineSession, pipeLine.getAdapter());
 				}
 
-				log.info("exception occured, forwarding to exception-forward [{}], exception:\n", PipeForward.EXCEPTION_FORWARD_NAME, e);
+				log.info("exception occurred, forwarding to exception-forward [{}]", PipeForward.EXCEPTION_FORWARD_NAME, e);
 				return new PipeRunResult(pipe.getForwards().get(PipeForward.EXCEPTION_FORWARD_NAME), errorMessage);
 			}
 			throw e;

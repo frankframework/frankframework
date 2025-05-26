@@ -31,8 +31,8 @@ import org.frankframework.receivers.FrankListener;
 import org.frankframework.scheduler.AbstractJobDef;
 import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.stream.Message;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.SpringUtils;
-import org.frankframework.util.UUIDUtil;
 
 /**
  * Scheduled job to send messages to a {@link FrankListener}.
@@ -68,7 +68,7 @@ public class SendMessageJob extends AbstractJobDef {
 		try (Message toSendMessage = getMessage() == null ? Message.nullMessage() : new Message(getMessage());
 				PipeLineSession session = new PipeLineSession()) {
 			// Set a messageId that will be forwarded by the localSender to the called adapter. Adapter and job will then share a Ladybug report.
-			session.put(PipeLineSession.CORRELATION_ID_KEY, UUIDUtil.createSimpleUUID());
+			session.put(PipeLineSession.CORRELATION_ID_KEY, MessageUtils.generateMessageId("FF-SCHEDULER"));
 
 			localSender.start();
 			try (Message result = localSender.sendMessageOrThrow(toSendMessage, session)) {

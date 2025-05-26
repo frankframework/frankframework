@@ -16,9 +16,13 @@
 
 package org.frankframework.runner;
 
+import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
@@ -26,7 +30,6 @@ import jakarta.annotation.Nonnull;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicTest;
@@ -34,6 +37,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestFactory;
 import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
+import org.springframework.messaging.Message;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import io.github.wimdeblauwe.testcontainers.cypress.CypressContainer;
@@ -41,7 +45,14 @@ import io.github.wimdeblauwe.testcontainers.cypress.CypressTestResults;
 import io.github.wimdeblauwe.testcontainers.cypress.CypressTestSuite;
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.console.util.RequestMessageBuilder;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.bus.LocalGateway;
+import org.frankframework.management.bus.OutboundGateway;
+import org.frankframework.management.bus.message.MessageBase;
 import org.frankframework.util.LogUtil;
+import org.frankframework.util.SpringUtils;
 
 /**
  * Runs e2e tests with Cypress in a Testcontainer.
@@ -58,22 +69,45 @@ import org.frankframework.util.LogUtil;
 public class RunCypressE2eTest {
 	private static CypressContainer container;
 	private static ConfigurableApplicationContext run;
-	private static final Logger LOGGER = LogUtil.getLogger("cypress");
+	private static final Logger CYPRESS_LOG = LogUtil.getLogger("cypress");
 
 	@BeforeAll
 	public static void setUp() throws IOException {
+		startIafTestInitializer();
+		startTestContainer();
+	}
+
+	private static void startIafTestInitializer() throws IOException {
 		SpringApplication springApplication = IafTestInitializer.configureApplication();
 
+		run = springApplication.run();
+		OutboundGateway gateway = SpringUtils.createBean(run, LocalGateway.class);
+
+		assertTrue(run.isRunning());
+		await().pollInterval(5, TimeUnit.SECONDS)
+				.atMost(Duration.ofMinutes(5))
+				.until(() -> verifyAppIsHealthy(gateway));
+	}
+
+	private static boolean verifyAppIsHealthy(OutboundGateway gateway) {
+		try {
+			Message<Object> response = gateway.sendSyncMessage(RequestMessageBuilder.create(BusTopic.HEALTH).build(null));
+			return "200".equals(response.getHeaders().get(BusMessageUtils.HEADER_PREFIX+MessageBase.STATUS_KEY));
+		} catch (Exception e) {
+			CYPRESS_LOG.error("error while checking health of application", e);
+			return false;
+		}
+	}
+
+	public static void startTestContainer() {
 		org.testcontainers.Testcontainers.exposeHostPorts(8080);
 
 		container = new CypressContainer();
 		container.withBaseUrl("http://host.testcontainers.internal:8080/iaf-test/iaf/gui");
-		container.withLogConsumer(frame -> LOGGER.info(frame.getUtf8StringWithoutLineEnding()));
+		container.withLogConsumer(frame -> CYPRESS_LOG.info(frame.getUtf8StringWithoutLineEnding()));
 
-		run = springApplication.run();
 		container.start();
 
-		assertTrue(run.isRunning());
 		assertTrue(container.isRunning());
 	}
 
@@ -82,8 +116,10 @@ public class RunCypressE2eTest {
 		run.stop();
 		container.stop();
 
-		Assertions.assertFalse(run.isRunning());
-		Assertions.assertFalse(container.isRunning());
+		assertFalse(run.isRunning());
+		assertFalse(container.isRunning());
+
+		run.close();
 	}
 
 	@TestFactory

@@ -48,6 +48,29 @@
 	</adapter>
 
 	<!--serviceNamespaceURI senders -->
+	<adapter name="WebServiceSenderServiceNamespaceMessage"
+		description="Test the functioning of the WebServiceSender sending to a listener with the namespace in the message">
+		<receiver>
+			<listener className="org.frankframework.receivers.JavaListener"
+				serviceName="ibis4test-WebServiceSenderServiceNamespaceMessage" />
+		</receiver>
+		<pipeline firstPipe="Send2WS">
+			<exits>
+				<exit name="EXIT" state="success" />
+			</exits>
+			<pipe className="org.frankframework.pipes.SenderPipe"
+				name="Send2WS">
+				<sender className="org.frankframework.http.WebServiceSender"
+					soap="false"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/servlet/rpcrouter"
+					sharedResourceRef="SharedHttpSession"
+				/>
+				<forward name="success" path="EXIT" />
+			</pipe>
+		</pipeline>
+	</adapter>
+
+	<!--serviceNamespaceURI senders -->
 	<adapter name="WebServiceSenderServiceNamespaceURI"
 		description="Test the functioning of the WebServiceSender sending to a listener with serviceNamespaceURI">
 		<receiver>

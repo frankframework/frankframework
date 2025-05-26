@@ -16,6 +16,7 @@
 package org.frankframework.configuration.digester;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import jakarta.annotation.Nonnull;
@@ -28,6 +29,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.configuration.SuppressKeys;
+import org.frankframework.core.HasApplicationContext;
 import org.frankframework.util.SpringUtils;
 
 /**
@@ -57,6 +61,7 @@ import org.frankframework.util.SpringUtils;
  */
 @Log4j2
 public abstract class AbstractSpringPoweredDigesterFactory implements IDigesterFactory {
+	private static final List<String> OLD_IMPLICIT_CLASSNAMES = List.of("org.frankframework.pipes.PutInSession");
 	private @Getter @Setter Digester digester;
 	private DigesterRule rule = null;
 
@@ -166,13 +171,28 @@ public abstract class AbstractSpringPoweredDigesterFactory implements IDigesterF
 			return applicationContext.getBean(beanName);
 		}
 
-		ClassLoader classLoader = applicationContext.getClassLoader();
-		Class<?> beanClass = Class.forName(className, true, classLoader);
-		return createBeanAndAutoWire(applicationContext, beanClass);
+		return fixImplicitClassnameAndCreateBean(applicationContext, className);
+	}
+
+	private Object fixImplicitClassnameAndCreateBean(ApplicationContext applicationContext, String className) throws ClassNotFoundException {
+		if (!OLD_IMPLICIT_CLASSNAMES.contains(className)) {
+			return createBeanAndAutoWire(applicationContext, className);
+		} else {
+			String implicitClassname = "%sPipe".formatted(className);
+			log.debug("rewriting classname [{}] to [{}]", className, implicitClassname);
+			final Object bean = createBeanAndAutoWire(applicationContext, implicitClassname);
+			if (bean instanceof HasApplicationContext hac) {
+				ConfigurationWarnings.add(hac, log, "[%s] has been renamed to [%s]. Please use the new syntax or change the className attribute.".formatted(className, implicitClassname), SuppressKeys.DEPRECATION_SUPPRESS_KEY);
+			}
+			return bean;
+		}
 	}
 
 	@Nonnull
-	private <T> T createBeanAndAutoWire(ApplicationContext applicationContext, Class<T> beanClass) {
+	private Object createBeanAndAutoWire(ApplicationContext applicationContext, String className) throws ClassNotFoundException {
+		ClassLoader classLoader = applicationContext.getClassLoader();
+		Class<?> beanClass = Class.forName(className, true, classLoader);
+
 		log.debug("instantiating bean class [{}] directly using Spring Factory [{}]", beanClass::getName, applicationContext::getDisplayName);
 
 		return SpringUtils.createBean(applicationContext, beanClass); // Autowire and initialize the bean through Spring

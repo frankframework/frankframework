@@ -14,7 +14,7 @@
 			</exits>
 
 			<pipe name="InitSessionKeyDefaults"
-				className="org.frankframework.pipes.PutInSession">
+				className="org.frankframework.pipes.PutInSessionPipe">
 				<param name="expectedNumberOfResults" sessionKey="expectedNumberOfResults" defaultValue="-1"/>
 				<param name="numberOfAttempts" sessionKey="numberOfAttempts" defaultValue="10"/>
 				<param name="timeout" sessionKey="timeout" defaultValue="1000"/>

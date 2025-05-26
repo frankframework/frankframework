@@ -36,9 +36,8 @@ import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
-import org.frankframework.util.Misc;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.TransformerPool;
-import org.frankframework.util.UUIDUtil;
 
 /**
  * ESB (Enterprise Service Bus) extension of {@code JmsTransactionalStorage}.
@@ -151,8 +150,8 @@ public class EsbJmsTransactionalStorage<S extends Serializable> extends JmsTrans
 	private Map<String,Object> createParameterValues(String messageId, String correlationId, Date receivedDate, String comments, S message) throws JMSException {
 		Map<String,Object> parameterValues = new HashMap<>();
 		parameterValues.put("fromId", AppConstants.getInstance().getProperty("instance.name", ""));
-		parameterValues.put("conversationId", 	Misc.getHostname() + "_" + UUIDUtil.createSimpleUUID());
-		parameterValues.put("messageId", 		Misc.getHostname() + "_" + UUIDUtil.createSimpleUUID());
+		parameterValues.put("conversationId", 	MessageUtils.generateMessageId());
+		parameterValues.put("messageId", 		MessageUtils.generateMessageId());
 		parameterValues.put("timestamp", 		DateFormatUtils.now(DateFormatUtils.FULL_ISO_FORMATTER));
 		parameterValues.put("msgMessageId", 	messageId);
 		parameterValues.put("msgCorrelationId", correlationId);

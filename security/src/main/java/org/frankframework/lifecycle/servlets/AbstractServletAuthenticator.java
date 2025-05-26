@@ -96,8 +96,11 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 	}
 
 	/**
-	 * For SpringSecurity we MUST register all (required) roles when Anonymous authentication is used.
-	 * The SecurityRoles may be used in the implementing class to configure Spring Security with.
+	 * For SpringSecurity we MUST register all (required) roles when Anonymous authentication is used (via the NoopAuthenticator).
+	 * When not using authentication (NOOP) the Anonymous authentication filter is used, which requires the roles to be registered,
+	 * else the Servlets which are protected will say the user does not have the required role.
+	 *
+	 * The SecurityRoles may be used in the implementing servlet authenticators to configure Spring Security with.
 	 * <p>
 	 * See {@link #configureHttpSecurity(HttpSecurity)} for the configuring process.
 	 */
@@ -169,6 +172,10 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 			httpSecurityConfigurer.logout(LogoutConfigurer::disable); // Disable the logout filter
 			httpSecurityConfigurer.headers(h -> h.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
 
+			// STATELESS prevents session from leaking over multiple servlets.
+			// Spring Security will never use the cookie to obtain the SecurityContext.
+			httpSecurityConfigurer.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
 			return configureHttpSecurity(httpSecurityConfigurer);
 		} catch (Exception e) {
 			throw new IllegalStateException("unable to configure Spring Security", e);
@@ -178,16 +185,17 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 
 	@Override
 	public SecurityFilterChain configureHttpSecurity(HttpSecurity http) throws Exception {
-		RequestMatcher securityRequestMatcher = new URLRequestMatcher(privateEndpoints);
-		http.securityMatcher(securityRequestMatcher); // Triggers the SecurityFilterChain, also for OPTIONS requests!
+		Set<String> endpointSet = new HashSet<>(privateEndpoints);
+		endpointSet.addAll(publicEndpoints);
 
-		// STATELESS prevents session from leaking over multiple servlets.
-		// The Ladybug (echo2) however requires cookie persistence. Hence it's set to NEVER
-		http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.NEVER));
+		RequestMatcher securityRequestMatcher = new URLRequestMatcher(endpointSet);
+		// Endpoints on which the SecurityFilterChain (filter) will match, also for OPTIONS requests!
+		// This does not authenticate the user, but only means the filter will be triggered.
+		http.securityMatcher(securityRequestMatcher);
 
 		if (!publicEndpoints.isEmpty()) { // Enable anonymous access on public endpoints
 			http.authorizeHttpRequests(requests -> requests.requestMatchers(new URLRequestMatcher(publicEndpoints)).permitAll());
-			http.anonymous(withDefaults());
+			http.anonymous(withDefaults()); // Anonymous access without roles
 		} else {
 			http.anonymous(AnonymousConfigurer::disable); // Disable the default anonymous filter and thus disallow all anonymous access
 		}

@@ -1,0 +1,4 @@
+<data>
+	<id>This is different from the input, but that is OK because it should be ignored</id>
+	<value>VALUE</value>
+</data>

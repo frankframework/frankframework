@@ -16,8 +16,7 @@
 package org.frankframework.credentialprovider.delinea;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
+import java.util.NoSuchElementException;
 import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
@@ -26,6 +25,7 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.credentialprovider.ICredentialFactory;
 import org.frankframework.credentialprovider.ICredentials;
+import org.frankframework.credentialprovider.util.Cache;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
 /**
@@ -41,7 +41,7 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  * credentialFactory.delinea.oauth.username=username
  * credentialFactory.delinea.oauth.password=password
  * }</pre>
- *
+ * <p>
  * If you use these settings, the default URLs will  be used with the given properties from the code block above:
  * <ul>
  *     <li>{@code https://<tenant>.secretservercloud.<tld>/api/v1} which will translate to {@code https://waf.secretservercloud.eu/api/v1}
@@ -87,14 +87,17 @@ public class DelineaCredentialFactory implements ICredentialFactory {
 	static final String TENANT_KEY = BASE_KEY + "tenant";
 	static final String API_ROOT_URL_KEY = BASE_KEY + "apiRootUrl";
 	static final String OAUTH_TOKEN_URL_KEY = BASE_KEY + "oauth.tokenUrl";
+
 	private static final String TLD_KEY = BASE_KEY + "tld";
 	private static final String API_ROOT_URL_TEMPLATE_KEY = BASE_KEY + "apiRootUrlTemplate";
 	private static final String OAUTH_TOKEN_URL_TEMPLATE_KEY = BASE_KEY + "oauth.tokenUrlTemplate";
 	private static final String OAUTH_USERNAME_KEY = BASE_KEY + "oauth.username";
 	private static final String OAUTH_PASSWORD_KEY = BASE_KEY + "oauth.password";
-	private static final long CACHE_DURATION_MILLIS = 60_000L;
-	private List<String> configuredAliases; // Refreshed every CACHE_DURATION_MILLIS
-	private long lastFetch = 0;
+
+	private static final int CACHE_DURATION_MILLIS = 60_000;
+
+	private final Cache<String, Secret, NoSuchElementException> configuredAliases = new Cache<>(CACHE_DURATION_MILLIS);
+
 	private DelineaClientSettings delineaClientSettings;
 
 	private DelineaClient delineaClient;
@@ -135,38 +138,24 @@ public class DelineaCredentialFactory implements ICredentialFactory {
 
 	@Override
 	public boolean hasCredentials(String alias) {
-		return getConfiguredAliases().contains(alias);
+		return getCredentials(alias, null, null) != null;
 	}
 
 	@Override
 	public Collection<String> getConfiguredAliases() {
-		// use a cache for the configured aliases
-		if (lastFetch + CACHE_DURATION_MILLIS > System.currentTimeMillis()) {
-			return configuredAliases;
-		}
-
-		configuredAliases = delineaClient.getSecrets().stream()
-				.map(Objects::toString)
-				.toList();
-
-		lastFetch = System.currentTimeMillis();
-
-		return configuredAliases;
+		return configuredAliases.keySet();
 	}
 
 	@Override
-	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
-		if (StringUtils.isNotEmpty(alias)) {
-
-			// Make sure to always get a live copy of the secret
-			Secret secret = delineaClient.getSecret(alias, delineaClientSettings.autoCommentValue());
-
-			if (secret != null) {
-				return translate(secret);
-			}
+	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) throws NoSuchElementException {
+		if (StringUtils.isEmpty(alias)) {
+			return null;
 		}
 
-		return null;
+		// Make sure to always get a live copy of the secret
+		Secret secret = configuredAliases.computeIfAbsentOrExpired(alias, aliasToRetrieve -> delineaClient.getSecret(aliasToRetrieve, delineaClientSettings.autoCommentValue()));
+
+		return translate(secret);
 	}
 
 	void setDelineaClient(DelineaClient delineaClient) {
@@ -174,6 +163,10 @@ public class DelineaCredentialFactory implements ICredentialFactory {
 	}
 
 	private DelineaCredentials translate(Secret secret) {
+		if (secret == null) {
+			return null;
+		}
+
 		String username = getFieldValue(secret, "username");
 		String password = getFieldValue(secret, "password");
 

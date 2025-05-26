@@ -15,9 +15,11 @@
 */
 package org.frankframework.util;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.io.Serial;
 import java.net.URL;
 import java.util.Collections;
 import java.util.Hashtable;
@@ -35,9 +37,17 @@ import org.apache.logging.log4j.Logger;
 
 public class PropertyLoader extends Properties {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 	private static final Logger LOG = LogManager.getLogger(PropertyLoader.class);
 	private final String rootPropertyFile;
+
+	public PropertyLoader(File propertiesFile, Properties defaults) throws IOException {
+		super(defaults);
+		rootPropertyFile = propertiesFile.getAbsolutePath();
+		loadResource(propertiesFile.toURI().toURL());
+//		loadFile(propertiesFile);
+	}
 
 	public PropertyLoader(String propertiesFile) {
 		this(PropertyLoader.class.getClassLoader(), propertiesFile);

@@ -25,7 +25,6 @@ import org.springframework.context.ApplicationContext;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.IPullingListener;
 import org.frankframework.core.IPushingListener;
@@ -36,7 +35,9 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.ListenerMessage;
 import org.frankframework.larva.ListenerMessageHandler;
+import org.frankframework.larva.Scenario;
 import org.frankframework.larva.SenderThread;
+import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
 
@@ -48,18 +49,21 @@ public class LarvaActionFactory {
 
 	public static final String CLASS_NAME_PROPERTY_SUFFIX = ".className";
 	private final int defaultTimeout;
-	private final LarvaTool testTool;
+	private final LarvaTool larvaTool;
+	private final TestExecutionObserver testExecutionObserver;
 
-	public LarvaActionFactory(LarvaTool testTool) {
-		this.testTool = testTool;
-		this.defaultTimeout = testTool.getConfig().getTimeout();
+	public LarvaActionFactory(LarvaTool larvaTool, TestExecutionObserver testExecutionObserver) {
+		this.larvaTool = larvaTool;
+		this.testExecutionObserver = testExecutionObserver;
+		this.defaultTimeout = larvaTool.getLarvaConfig().getTimeout();
 	}
 
-	public Map<String, LarvaScenarioAction> createLarvaActions(Properties properties, ApplicationContext applicationContext, String correlationId) {
+	public Map<String, LarvaScenarioAction> createLarvaActions(Scenario scenario, ApplicationContext applicationContext, String correlationId) {
 		Map<String, LarvaScenarioAction> larvaActions = new HashMap<>();
 		debugMessage("Get all action names");
 
 		try {
+			Properties properties = scenario.getProperties();
 			Set<String> actionNames = properties.keySet()
 					.stream()
 					.map(String.class::cast)
@@ -77,7 +81,7 @@ public class LarvaActionFactory {
 				IConfigurable configurable = (IConfigurable) SpringUtils.createBean(applicationContext, className);
 				log.debug("created FrankElement [{}]", configurable);
 
-				Properties actionProperties = handleDeprecations(LarvaActionUtils.getSubProperties(properties, actionName), actionName);
+				Properties actionProperties = handleDeprecations(scenario, LarvaActionUtils.getSubProperties(properties, actionName), actionName);
 				LarvaScenarioAction larvaScenarioAction = create(configurable, actionProperties, defaultTimeout, correlationId);
 				SpringUtils.registerSingleton(applicationContext, actionName, larvaScenarioAction);
 				larvaActions.put(actionName, larvaScenarioAction);
@@ -94,12 +98,12 @@ public class LarvaActionFactory {
 		return larvaActions;
 	}
 
-	private static LarvaScenarioAction create(IConfigurable configurable, Properties actionProperties, int defaultTimeout, String correlationId) throws ConfigurationException {
+	private static LarvaScenarioAction create(IConfigurable configurable, Properties actionProperties, int defaultTimeout, String correlationId) {
 		final AbstractLarvaAction<?> larvaAction;
-		if (configurable instanceof IPullingListener pullingListener) {
+		if (configurable instanceof IPullingListener<?> pullingListener) {
 			larvaAction = new PullingListenerAction(pullingListener);
-		} else if (configurable instanceof IPushingListener pushingListener) {
-			larvaAction = new LarvaPushingListenerAction(pushingListener);
+		} else if (configurable instanceof IPushingListener<?> pushingListener) {
+			larvaAction = new LarvaPushingListenerAction(pushingListener, defaultTimeout);
 		} else if (configurable instanceof ISender sender) {
 			larvaAction = new SenderAction(sender);
 		} else {
@@ -112,20 +116,20 @@ public class LarvaActionFactory {
 		return larvaAction;
 	}
 
-	private Properties handleDeprecations(Properties actionProperties, String keyBase) {
+	private Properties handleDeprecations(Scenario scenario, Properties actionProperties, String keyBase) {
 		if (actionProperties.containsKey("requestTimeOut") || actionProperties.containsKey("responseTimeOut")) {
-			warningMessage("Deprecation Warning: properties " + keyBase + ".requestTimeOut/" + keyBase + ".responseTimeOut have been replaced with " + keyBase + ".timeout");
+			scenario.addWarning("Deprecation Warning: properties " + keyBase + ".requestTimeOut/" + keyBase + ".responseTimeOut have been replaced with " + keyBase + ".timeout");
 		}
 		if (actionProperties.containsKey("getBlobSmart")) {
-			warningMessage("Deprecation Warning: property " + keyBase + ".getBlobSmart has been replaced with " + keyBase + ".blobSmartGet");
+			scenario.addWarning("Deprecation Warning: property " + keyBase + ".getBlobSmart has been replaced with " + keyBase + ".blobSmartGet");
 			String blobSmart = ""+actionProperties.remove("getBlobSmart");
 			actionProperties.setProperty("blobSmartGet", blobSmart);
 		}
 		if (actionProperties.containsKey("preDel1")) {
-			warningMessage("Removal Warning: property " + keyBase + ".preDel<index> has been removed without replacement");
+			scenario.addWarning("Removal Warning: property " + keyBase + ".preDel<index> has been removed without replacement");
 		}
 		if (actionProperties.containsKey("prePostQuery")) {
-			warningMessage("Removal Warning: property " + keyBase + ".prePostQuery has been removed without replacement");
+			scenario.addWarning("Removal Warning: property " + keyBase + ".prePostQuery has been removed without replacement");
 		}
 
 		return actionProperties;
@@ -191,18 +195,15 @@ public class LarvaActionFactory {
 	}
 
 	private void wrongPipelineMessage(String message, Message pipelineMessage) {
-		testTool.wrongPipelineMessage(message, pipelineMessage);
+		String messageAsString = larvaTool.messageToString(pipelineMessage);
+		testExecutionObserver.messageError(message, messageAsString != null ? messageAsString : "Unreadable message: [" + pipelineMessage + "]");
 	}
 
 	private void debugMessage(String message) {
-		testTool.debugMessage(message);
-	}
-
-	private void warningMessage(String message) {
-		testTool.warningMessage(message);
+		larvaTool.debugMessage(message);
 	}
 
 	private void errorMessage(String message, Exception e) {
-		testTool.errorMessage(message, e);
+		larvaTool.errorMessage(message, e);
 	}
 }

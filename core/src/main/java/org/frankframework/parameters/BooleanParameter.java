@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,6 +23,14 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.stream.Message;
 
+/**
+ * Parameter that resolves it's value to either {@code true} or {@code false}.
+ *
+ * {@inheritClassDoc}
+ * 
+ * @ff.tip {@code !false} also resolves to {@code true}, and {@code !true} is seen as {@code false}.
+ * 
+ */
 @Log4j2
 public class BooleanParameter extends AbstractParameter {
 
@@ -37,6 +45,7 @@ public class BooleanParameter extends AbstractParameter {
 		}
 
 		log.debug("Parameter [{}] converting result [{}] to boolean", this::getName, () -> request);
-		return Boolean.parseBoolean(request.asString());
+		String ob = request.asString();
+		return "true".equalsIgnoreCase(ob) || "!false".equalsIgnoreCase(ob);
 	}
 }

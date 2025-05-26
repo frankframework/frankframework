@@ -476,6 +476,8 @@ public class TransformerPool {
 				String name = entry.getKey();
 				if("output-method".equals(name) && "xml".equals(entry.getValue())) {
 					context.withMimeType(MediaType.APPLICATION_XML);
+				} else if ("output-media-type".equals(name)) {
+					context.withMimeType(MediaType.parseMediaType(entry.getValue()));
 				}
 				context.put("Xslt."+name, entry.getValue());
 			}

@@ -20,18 +20,18 @@
 		<junit.excludedTags></junit.excludedTags>
 		<junit.includedTags></junit.includedTags>
 
-		<jackson.version>2.18.3</jackson.version>
+		<jackson.version>2.19.0</jackson.version>
 		<cxf.version>4.1.1</cxf.version>
-		<spring.version>6.2.6</spring.version>
+		<spring.version>6.2.7</spring.version>
 		<spring-security.version>6.4.5</spring-security.version>
 		<spring-integration.version>6.4.4</spring-integration.version>
-		<spring.boot.version>3.4.4</spring.boot.version>
-		<tomcat.version>10.1.40</tomcat.version>
+		<spring.boot.version>3.5.0</spring.boot.version>
+		<tomcat.version>10.1.41</tomcat.version>
 		<bouncycastle.version>1.80</bouncycastle.version>
 
-		<narayana.version>7.2.1.Final</narayana.version>
+		<narayana.version>7.2.2.Final</narayana.version>
 		<jboss-logging.version>3.6.1.Final</jboss-logging.version>
-		<micrometer.version>1.14.6</micrometer.version>
+		<micrometer.version>1.15.0</micrometer.version>
 		<argLine/> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>4.0-SNAPSHOT</frankdoc.version>
@@ -40,17 +40,17 @@
 		<!-- DB Driver Versions -->
 		<h2.driver.version>2.3.232</h2.driver.version>
 		<db2.driver.version>11.5.9.0</db2.driver.version>
-		<oracle.driver.version>23.7.0.25.01</oracle.driver.version>
+		<oracle.driver.version>23.8.0.25.04</oracle.driver.version>
 		<oracle.driver.jdkversion>11</oracle.driver.jdkversion>
 		<mssql.driver.version>12.10.0.jre11</mssql.driver.version>
-		<mysql.driver.version>9.1.0</mysql.driver.version>
+		<mysql.driver.version>9.3.0</mysql.driver.version>
 		<mariadb.driver.version>3.5.3</mariadb.driver.version>
 		<postgresql.driver.version>42.7.5</postgresql.driver.version>
-		<mongodb.driver.version>5.4.0</mongodb.driver.version>
+		<mongodb.driver.version>5.5.0</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
 		<activemq.driver.version>6.1.6</activemq.driver.version>
-		<artemis.driver.version>2.40.0</artemis.driver.version>
+		<artemis.driver.version>2.41.0</artemis.driver.version>
 
 		<rabbitmq.driver.version>5.25.0</rabbitmq.driver.version>
 		<rabbitmq.jms.version>3.4.0</rabbitmq.jms.version>
@@ -58,7 +58,7 @@
 		<aws.java.sdk.version>2.31.0</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
-		<mockito.version>5.17.0</mockito.version>
+		<mockito.version>5.18.0</mockito.version>
 		<junit.version>5.12.2</junit.version>
 	</properties>
 
@@ -159,7 +159,7 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>4.30.2</version>
+				<version>4.31.0</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
@@ -269,11 +269,6 @@
 			<dependency>
 				<groupId>org.frankframework</groupId>
 				<artifactId>frankframework-test</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.frankframework</groupId>
-				<artifactId>frankframework-test-integration</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -408,7 +403,7 @@
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-bom</artifactId>
-				<version>4.2.0.Final</version>
+				<version>4.2.1.Final</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -430,12 +425,6 @@
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
-			<!-- SLF4J Log binding -->
-			<dependency>
-				<groupId>org.slf4j</groupId>
-				<artifactId>slf4j-api</artifactId>
-				<version>2.0.17</version>
-			</dependency>
 
 			<dependency>
 				<groupId>software.amazon.awssdk</groupId>
@@ -443,6 +432,21 @@
 				<version>${aws.java.sdk.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>org.xmlunit</groupId>
+				<artifactId>xmlunit-bom</artifactId>
+				<version>2.10.2</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<!-- SLF4J Log binding -->
+			<dependency>
+				<groupId>org.slf4j</groupId>
+				<artifactId>slf4j-api</artifactId>
+				<version>2.0.17</version>
 			</dependency>
 
 			<!-- the bcpg depends on the other two modules, however to ensure we're using the latest version, explicitly define them here, dependabot will take care of the rest -->
@@ -811,7 +815,8 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-surefire-plugin</artifactId>
-					<version>3.5.3</version>
+					<!-- Surefire 3.5.3 has a bug and does not report properly on dynamic larva tests -->
+					<version>3.5.2</version>
 					<configuration>
 						<redirectTestOutputToFile>true</redirectTestOutputToFile>
 						<reuseForks>true</reuseForks>
@@ -1049,7 +1054,7 @@
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>10.23.0</version>
+							<version>10.24.0</version>
 						</dependency>
 					</dependencies>
 				</plugin>
@@ -1363,32 +1368,18 @@
 						</executions>
 					</plugin>
 					<plugin>
-						<groupId>org.sonatype.plugins</groupId>
-						<artifactId>nexus-staging-maven-plugin</artifactId>
-						<version>1.7.0</version>
+						<groupId>org.sonatype.central</groupId>
+						<artifactId>central-publishing-maven-plugin</artifactId>
+						<version>0.7.0</version>
 						<extensions>true</extensions>
 						<configuration>
-							<serverId>ossrh</serverId>
-							<nexusUrl>https://s01.oss.sonatype.org/</nexusUrl>
-							<autoReleaseAfterClose>false</autoReleaseAfterClose>
+							<autoPublish>false</autoPublish><!-- Don't release the build directly after it's been published to Central (staging). -->
+							<publishingServerId>ossrh</publishingServerId>
+							<waitUntil>validated</waitUntil><!-- Wait until the deployment bundle has been uploaded and validated. -->
 						</configuration>
 					</plugin>
 				</plugins>
 			</build>
-			<distributionManagement>
-				<repository>
-					<id>ossrh</id>
-					<url>https://s01.oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-				</repository>
-				<snapshotRepository>
-					<id>ossrh</id>
-					<url>https://s01.oss.sonatype.org/content/repositories/snapshots</url>
-				</snapshotRepository>
-				<site>
-					<id>www.ibissource.org</id>
-					<url>file:target/site-deploy</url>
-				</site>
-			</distributionManagement>
 		</profile>
 		<profile>
 			<id>ibissource</id>
@@ -1482,17 +1473,6 @@
 					</snapshots>
 				</repository>
 			</repositories>
-		</profile>
-		<profile>
-			<id>test-integration</id>
-			<activation>
-				<property>
-					<name>test-integration</name>
-				</property>
-			</activation>
-			<modules>
-				<module>test-integration</module>
-			</modules>
 		</profile>
 		<profile>
 			<id>javadoc</id>

@@ -1,0 +1,14 @@
+<result>
+	<statuscode>200</statuscode>
+	<message>
+		<stat directory="/[CP code]/sampledir">
+			<file type="file" name="File2" size="398421" md5="[HASH]" mtime="1524068379"/>
+			<file type="symlink" name="My_symlink.html" target="File1" mtime="1524110333"/>
+			<file type="dir" name="dir1" bytes="19873716" files="6" mtime="1524068415" implicit="true"/>
+			<file type="dir" name="dir2" bytes="3874912" files="1" mtime="1524068422" implicit="true"/>
+			<file type="dir" name="explicitdir1" bytes="0" files="1" mtime="1524068459"/>
+			<file type="dir" name="explicitdir2" bytes="3" files="2" mtime="1524068462"/>
+			<file type="file" name="file1" size="532459" md5="[HASH]" mtime="1524068382"/>
+		</stat>
+	</message>
+</result>

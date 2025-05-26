@@ -29,6 +29,7 @@ import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.ladybug.LadybugDebugger;
 import org.frankframework.stream.Message;
+import org.frankframework.util.MessageUtils;
 
 @Log4j2
 public class TibetView extends View {
@@ -73,7 +74,7 @@ public class TibetView extends View {
 			}
 			pipeLineSession.put("StorageId", storageId);
 			pipeLineSession.put("View", getName());
-			PipeLineResult processResult = adapter.processMessageDirect(null, new Message("<dummy/>"), pipeLineSession);
+			PipeLineResult processResult = adapter.processMessageDirect(MessageUtils.generateMessageId("tibet-message"), new Message("<dummy/>"), pipeLineSession);
 			if (processResult.isSuccessful()) {
 				return ReportsComponent.OPEN_REPORT_ALLOWED;
 			}

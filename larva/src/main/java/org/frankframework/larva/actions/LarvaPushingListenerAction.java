@@ -27,16 +27,17 @@ import org.frankframework.http.WebServiceListener;
 import org.frankframework.larva.ListenerMessage;
 import org.frankframework.larva.ListenerMessageHandler;
 import org.frankframework.stream.Message;
+import org.frankframework.util.ClassUtils;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class LarvaPushingListenerAction extends AbstractLarvaAction<IPushingListener> {
 	private final ListenerMessageHandler<?> listenerMessageHandler;
 	private ListenerMessage listenerMessage;
 
-	public LarvaPushingListenerAction(IPushingListener listener) {
+	public LarvaPushingListenerAction(IPushingListener listener, long timeout) {
 		super(listener);
 
-		listenerMessageHandler = new ListenerMessageHandler<>();
+		listenerMessageHandler = new ListenerMessageHandler<>(timeout);
 		listener.setHandler(listenerMessageHandler);
 	}
 
@@ -69,7 +70,7 @@ public class LarvaPushingListenerAction extends AbstractLarvaAction<IPushingList
 			getMessageHandler().setTimeout(defaultTimeout);
 		}
 
-		LarvaActionUtils.invokeSetters(getMessageHandler(), properties); // Set timeout properties
+		ClassUtils.invokeSetters(getMessageHandler(), properties); // Set timeout properties
 	}
 
 	@Override
@@ -81,11 +82,11 @@ public class LarvaPushingListenerAction extends AbstractLarvaAction<IPushingList
 			context = getSession();
 		}
 
-		ListenerMessage listenerMessage = new ListenerMessage(fileContent, context);
-		listenerMessageHandler.putResponseMessage(listenerMessage);
+		listenerMessageHandler.putResponseMessage(new ListenerMessage(fileContent, context));
 	}
 
 	@Override
+	@SuppressWarnings("java:S1117")
 	public Message executeRead(Properties properties) throws TimeoutException, ListenerException {
 		ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessageWithDefaultTimeout();
 

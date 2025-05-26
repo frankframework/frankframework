@@ -24,6 +24,7 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -67,43 +68,37 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 
 	/**
 	 * Allow implementing classes to augment the looked up object class 'O'.
-	 */
-	@SuppressWarnings("java:S1172")
-	protected O augment(O object, String objectName) {
-		return object;
-	}
-
-	// TODO: #8275 - Use ObjectFactory#map to create shared resources from a DTO
-	/**
 	 * Allows the originally created object to be mutated to another object. Useful to generate an object from a filled DTO.
 	 */
-	@SuppressWarnings("unchecked")
-	protected O map(P object) {
+	@SuppressWarnings({ "java:S1172", "unchecked" })
+	protected O augment(P object, String objectName) {
 		return (O) object;
 	}
 
 	/**
 	 * Returns the object matching the name and return type.
 	 * If not cached yet, attempts to traverse all {@link IObjectLocator IObjectLocators} to do so.
+	 * 
+	 * When using a JNDI environment it allows initial properties to use for JNDI lookups.
 	 */
 	protected final O get(String name, Properties environment) {
-		return objects.computeIfAbsent(name, k -> compute(k, environment));
+		String nameWithResourcePrefix = StringUtils.prependIfMissing(name, resourcePrefix+"/");
+		return objects.computeIfAbsent(nameWithResourcePrefix, k -> compute(k, environment));
 	}
 
 	/**
 	 * Add and augment an Object to this factory so it can be used without the need of a lookup.
 	 * Should only be called during jUnit Tests or when registering an Object through Spring. Never through a lookup.
 	 */
-	public O add(O object, String name) {
+	public O add(P object, String name) {
 		return objects.computeIfAbsent(name, k -> augment(object, name));
 	}
 
 	private O compute(String name, Properties environment) {
 		for(IObjectLocator objectLocator : objectLocators) {
 			try {
-				P ds = objectLocator.lookup(name, environment, lookupClass);
-				O object = map(ds);
-				if(ds != null) {
+				P object = objectLocator.lookup(name, environment, lookupClass);
+				if(object != null) {
 					log.debug("located Object [{}] in objectLocator [{}]", name, objectLocator);
 					return augment(object, name);
 				}
@@ -147,21 +142,20 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	}
 
 	@Override
-	public void destroy() throws Exception {
+	public final void destroy() throws Exception {
 		Exception masterException=null;
 
 		for (Entry<String, O> entry : objects.entrySet()) {
 			final String name = entry.getKey();
-			if (entry.getValue() instanceof AutoCloseable closable) {
-				try {
-					log.debug("closing [{}] object [{}]", () -> ClassUtils.nameOf(closable), () -> name);
-					closable.close();
-				} catch (Exception e) {
-					if (masterException == null) {
-						masterException = new Exception("Exception caught closing [" + ClassUtils.nameOf(closable) + "] object [" + name + "] held by (" + getClass().getSimpleName() + ")", e);
-					} else {
-						masterException.addSuppressed(e);
-					}
+			final O objectToDestroy = entry.getValue();
+			try {
+				log.debug("closing [{}] object [{}]", () -> ClassUtils.nameOf(objectToDestroy), () -> name);
+				destroyObject(entry.getValue());
+			} catch (Exception e) {
+				if (masterException == null) {
+					masterException = new Exception("Exception caught closing [" + ClassUtils.nameOf(objectToDestroy) + "] object [" + name + "] held by (" + getClass().getSimpleName() + ")", e);
+				} else {
+					masterException.addSuppressed(e);
 				}
 			}
 		}
@@ -169,6 +163,16 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 		objects.clear();
 		if (masterException != null) {
 			throw masterException;
+		}
+	}
+
+	/**
+	 * This method is called when the objects stored in this Factory are removed.
+	 * It allows implementations to handle their own close actions.
+	 */
+	protected void destroyObject(O object) throws Exception {
+		if (object instanceof AutoCloseable closable) {
+			closable.close();
 		}
 	}
 }

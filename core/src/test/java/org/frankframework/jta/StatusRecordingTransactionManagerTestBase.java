@@ -62,7 +62,7 @@ public abstract class StatusRecordingTransactionManagerTestBase<S extends Abstra
 	}
 
 	protected S setupTransactionManager() {
-		log.debug("setupTransactionManager folder ["+folder+"]");
+		log.debug("setupTransactionManager folder [{}]", folder);
 		S result = createTransactionManager();
 		result.setStatusFile(statusFile);
 		result.setUidFile(tmUidFile);

@@ -4,6 +4,7 @@ import static org.frankframework.parameters.DateParameter.TYPE_DATE_PATTERN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.text.SimpleDateFormat;
@@ -134,6 +135,16 @@ public class DateParameterTest {
 
 		assertFalse(parameter.requiresInputValueForResolution());
 		assertTrue(parameter.consumesSessionVariable("originalMessage"));
+	}
+
+	@Test
+	public void testWrongFormatString() {
+		DateParameter p = new DateParameter();
+		p.setName("date");
+		p.setFormatType(DateFormatType.DATE);
+		p.setFormatString("abc");
+		ConfigurationException e = assertThrows(ConfigurationException.class, p::configure);
+		assertEquals("invalid formatString [abc]: (IllegalArgumentException) Illegal pattern character 'b'", e.getMessage());
 	}
 
 	@Test

@@ -1,5 +1,5 @@
 /*
-   Copyright 2014 Nationale-Nederlanden, 2020, 2024 WeAreFrank!
+   Copyright 2014 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -75,9 +75,9 @@ public class MQSender extends JmsSender {
 	}
 
 	private void setTargetClientMQ(Destination destination) throws JMSException {
-		log.debug("[{}] set target client for queue [{}] to NONJMS_MQ", getName(), destination.toString());
+		log.debug("[{}] set target client for queue [{}] to NONJMS_MQ", getName(), destination);
 		try {
-			ClassUtils.invokeSetter(destination, "setTargetClient", 1); //JMSC.MQJMS_CLIENT_NONJMS_MQ
+			ClassUtils.invokeSetter(destination, "setTargetClient", 1); // JMSC.MQJMS_CLIENT_NONJMS_MQ
 		} catch (Exception e) {
 			throw new JMSException("unable to set TargetClient", "0", e);
 		}

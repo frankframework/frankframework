@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,13 +15,17 @@
 */
 package org.frankframework.http.cxf;
 
+import jakarta.xml.soap.SOAPMessage;
 import jakarta.xml.ws.BindingType;
 import jakarta.xml.ws.ServiceMode;
+
+import org.apache.logging.log4j.CloseableThreadContext;
 
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.PushingListenerAdapter;
 import org.frankframework.stream.Message;
+import org.frankframework.util.LogUtil;
 
 /**
  * A JAX-WS wired message provider for handling soap messages
@@ -43,12 +47,10 @@ public class MessageProvider extends AbstractSOAPProvider {
 	}
 
 	@Override
-	Message processRequest(Message message, PipeLineSession pipelineSession) throws ListenerException {
-		return listener.processRequest(message, pipelineSession);
-	}
-
-	@Override
-	protected String getLogPrefix(String correlationId) {
-		return "Listener ["+listener.getName()+"] correlationId["+correlationId+"] ";
+	Message processRequest(SOAPMessage soapMessage, PipeLineSession pipelineSession) throws ListenerException {
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_LISTENER_KEY, listener.getName())) {
+			Message message = parseSOAPMessage(soapMessage);
+			return listener.processRequest(message, pipelineSession);
+		}
 	}
 }
