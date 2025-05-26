@@ -39,7 +39,9 @@ public class CsrfCookieFilter extends OncePerRequestFilter {
 				return;
 			}
 
-			csrfToken.getToken(); //Required to retrieve the cookie and store it in the HttpSession.
+			// Required to retrieve the `deferred token` and store it as a Cookie, see SpaCsrfTokenRequestHandler
+			// and CookieCsrfTokenRepository#loadDeferredToken.
+			csrfToken.getToken();
 		}
 		filterChain.doFilter(request, response);
 	}

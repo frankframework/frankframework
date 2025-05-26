@@ -81,7 +81,12 @@ public class JsonMapper {
 		if(pv.getDefinition() instanceof DateParameter) {
 			return new DefaultDocument<>(pv.asStringValue());
 		} else if(pv.getDefinition() instanceof Parameter || pv.getValue() instanceof Message) {
-			return new JsonMapper.FrankMessageDocument(pv.asMessage(), computeMimeType);
+			try {
+				return new JsonMapper.FrankMessageDocument(pv.asMessage(), computeMimeType);
+			} catch (IOException e) {
+				log.warn("unable to read message", e);
+				throw new IllegalStateException(e.getMessage());
+			}
 		}
 
 		return new DefaultDocument<>(pv.getValue(), MediaTypes.APPLICATION_JAVA);
@@ -92,17 +97,13 @@ public class JsonMapper {
 		private final String message;
 		private final MediaType mediaType;
 
-		public FrankMessageDocument(Message message, boolean computeMimeType) {
+		public FrankMessageDocument(Message message, boolean computeMimeType) throws IOException {
 			this(message, convertSpringToDataSonnetMediaType(getSpringMimeType(message, computeMimeType)));
 		}
 
-		private FrankMessageDocument(Message message, MediaType mediaType) {
+		private FrankMessageDocument(Message message, MediaType mediaType) throws IOException {
 			this.mediaType = mediaType;
-			try {
-				this.message = message.asString();
-			} catch (IOException e) {
-				throw new IllegalStateException("unable to read message");
-			}
+			this.message = message.asString();
 		}
 
 		private static MediaType convertSpringToDataSonnetMediaType(MimeType springMime) {

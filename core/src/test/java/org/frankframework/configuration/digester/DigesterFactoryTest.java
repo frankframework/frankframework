@@ -29,7 +29,7 @@ public class DigesterFactoryTest {
 	}
 
 	@Test
-	public void wrongClassNameAttribute() throws ClassNotFoundException {
+	public void wrongClassNameAttribute() {
 		Map<String, String> attrs = new HashMap<>();
 		attrs.put("classname", EchoPipe.class.getCanonicalName());
 		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> factory.createBean(configuration, attrs));
@@ -37,7 +37,7 @@ public class DigesterFactoryTest {
 	}
 
 	@Test
-	public void noClassNameAttribute() throws ClassNotFoundException {
+	public void noClassNameAttribute() {
 		Map<String, String> attrs = new HashMap<>();
 		attrs.put("class", EchoPipe.class.getCanonicalName());
 		IllegalStateException e = assertThrows(IllegalStateException.class, () -> factory.createBean(configuration, attrs));
