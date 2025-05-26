@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
@@ -204,11 +205,29 @@ public class ClassUtils {
 		}
 	}
 
+	public static void invokeSetters(Object clazz, Properties properties) {
+		for (Method method : clazz.getClass().getMethods()) {
+			if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
+				continue;
+
+			String setter = StringUtil.lcFirst(method.getName().substring(3));
+			String value = properties.getProperty(setter);
+			if(value == null)
+				continue;
+
+			try {
+				ClassUtils.invokeSetter(clazz, method, value);
+			} catch (Exception e) {
+				throw new IllegalArgumentException("unable to set method [" + setter + "] on Class [" + ClassUtils.nameOf(clazz) + "]: " + e.getMessage(), e);
+			}
+		}
+	}
+
 	/**
 	 * Throws IllegalArgumentException if the argument type is incompatible
 	 * Throws IllegalStateException if the argument cannot be set on the target bean
 	 */
-	public static void invokeSetter(Object bean, Method method, String valueToSet) {
+	public static void invokeSetter(Object clazz, Method method, String valueToSet) {
 		if (!method.getName().startsWith("set") || method.getParameterTypes().length != 1) {
 			throw new IllegalStateException("method must start with [set] and may only contain [1] parameter");
 		}
@@ -216,11 +235,11 @@ public class ClassUtils {
 		try {// Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
 			Object castValue = parseValueToSet(method, valueToSet);
 			log.trace("trying to set method [{}] with value [{}] of type [{}] on [{}]", method::getName, () -> valueToSet, () -> castValue.getClass()
-					.getCanonicalName(), () -> ClassUtils.nameOf(bean));
+					.getCanonicalName(), () -> ClassUtils.nameOf(clazz));
 
-			method.invoke(bean, castValue);
+			method.invoke(clazz, castValue);
 		} catch (IllegalAccessException | InvocationTargetException e) {
-			throw new IllegalStateException("error while calling method [" + method.getName() + "] on [" + ClassUtils.nameOf(bean) + "]", e);
+			throw new IllegalStateException("error while calling method [" + method.getName() + "] on [" + ClassUtils.nameOf(clazz) + "]", e);
 		}
 	}
 

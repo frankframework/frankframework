@@ -27,6 +27,7 @@ import org.frankframework.http.WebServiceListener;
 import org.frankframework.larva.ListenerMessage;
 import org.frankframework.larva.ListenerMessageHandler;
 import org.frankframework.stream.Message;
+import org.frankframework.util.ClassUtils;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class LarvaPushingListenerAction extends AbstractLarvaAction<IPushingListener> {
@@ -69,7 +70,7 @@ public class LarvaPushingListenerAction extends AbstractLarvaAction<IPushingList
 			getMessageHandler().setTimeout(defaultTimeout);
 		}
 
-		LarvaActionUtils.invokeSetters(getMessageHandler(), properties); // Set timeout properties
+		ClassUtils.invokeSetters(getMessageHandler(), properties); // Set timeout properties
 	}
 
 	@Override

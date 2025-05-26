@@ -2,6 +2,7 @@ package org.frankframework.configuration.digester;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.doReturn;
@@ -178,19 +179,23 @@ public class ConfigurationDigesterTest {
 
 	@Test
 	public void testFixedValueAttributeResolverWithFrankConfig() throws Exception {
-		URL schemaURL = TestFileUtils.getTestFileURL(FRANK_CONFIG_XSD);
-		ValidatorHandler validatorHandler = XmlUtils.getValidatorHandler(schemaURL);
+		try (TestAppender testAppender = TestAppender.newBuilder().minLogLevel(Level.ERROR).build()) {
+			URL schemaURL = TestFileUtils.getTestFileURL(FRANK_CONFIG_XSD);
+			ValidatorHandler validatorHandler = XmlUtils.getValidatorHandler(schemaURL);
 
-		XmlWriter writer = new XmlWriter();
-		validatorHandler.setContentHandler(writer);
-		validatorHandler.setErrorHandler(new XmlErrorHandler());
+			XmlWriter writer = new XmlWriter();
+			validatorHandler.setContentHandler(writer);
+			validatorHandler.setErrorHandler(new XmlErrorHandler());
 
-		Resource resource = Resource.getResource("/Digester/PreParsedConfiguration.xml");
-		assertNotNull(resource);
-		XmlUtils.parseXml(resource, validatorHandler);
+			Resource resource = Resource.getResource("/Digester/PreParsedConfiguration.xml");
+			assertNotNull(resource);
+			XmlUtils.parseXml(resource, validatorHandler);
 
-		String expected = TestFileUtils.getTestFile("/Digester/resolvedPreParsedConfiguration.xml");
-		assertEquals(expected, writer.toString().trim());
+			String expected = TestFileUtils.getTestFile("/Digester/resolvedPreParsedConfiguration.xml");
+			assertEquals(expected, writer.toString().trim());
+
+			assertIterableEquals(List.of(), testAppender.getLogLines());
+		}
 	}
 
 	@Test

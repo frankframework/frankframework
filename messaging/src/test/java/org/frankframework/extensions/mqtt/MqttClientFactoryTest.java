@@ -1,7 +1,6 @@
 package org.frankframework.extensions.mqtt;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -17,7 +16,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.credentialprovider.CredentialFactory;
-import org.frankframework.jdbc.datasource.MqttClientSettings;
+import org.frankframework.jdbc.datasource.FrankResource;
 import org.frankframework.jdbc.datasource.ResourceObjectLocator;
 import org.frankframework.util.AppConstants;
 
@@ -49,16 +48,17 @@ public class MqttClientFactoryTest {
 		locator.setResourceFile("mqttResources.yml");
 		locator.afterPropertiesSet();
 
-		MqttClientSettings obj = locator.lookup("mqtt/hivemq", null, MqttClientSettings.class);
+		Object obj = locator.lookup("mqtt/hivemq", null, null);
 		assertNotNull(obj);
-		assertTrue(obj.isAutomaticReconnect());
-		assertNull(obj.getClientId());
+		FrankResource resource = assertInstanceOf(FrankResource.class, obj);
+		assertEquals("true", resource.getProperties().getProperty("automaticReconnect"));
+		assertNull(resource.getProperties().getProperty("clientId"));
 
-		assertEquals("username1", obj.getUser());
-		assertEquals("password1", obj.getPassword());
+		assertEquals("username1", resource.getCredentials().getUsername());
+		assertEquals("password1", resource.getCredentials().getPassword());
 
 		// Test without prefix
-		assertThrows(Exception.class, () -> locator.lookup("hivemq", null, MqttClientSettings.class));
+		assertThrows(Exception.class, () -> locator.lookup("hivemq", null, null));
 	}
 
 	@Test
@@ -69,12 +69,15 @@ public class MqttClientFactoryTest {
 
 		assertTrue(CredentialFactory.hasCredential("alias1")); // ensure the alias exists, else the remaining tests wont work
 
-		MqttClientSettings obj = locator.lookup("mqtt/hivemq2", null, MqttClientSettings.class);
+		Object obj = locator.lookup("mqtt/hivemq2", null, null);
 		assertNotNull(obj);
-		assertFalse(obj.isAutomaticReconnect());
-		assertEquals("test123", obj.getClientId());
-		assertEquals("username1", obj.getUser());
-		assertEquals("password1", obj.getPassword());
+		FrankResource resource = assertInstanceOf(FrankResource.class, obj);
+
+		assertNull(resource.getProperties().getProperty("automaticReconnect"));
+		assertEquals("test123", resource.getProperties().getProperty("clientId"));
+
+		assertEquals("username1", resource.getCredentials().getUsername());
+		assertEquals("password1", resource.getCredentials().getPassword());
 	}
 
 	@Test

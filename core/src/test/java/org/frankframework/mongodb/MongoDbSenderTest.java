@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
@@ -17,17 +16,14 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonObjectBuilder;
 
 import org.hamcrest.core.StringContains;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.testcontainers.containers.MongoDBContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-
-import com.mongodb.MongoClientSettings;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -35,10 +31,12 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.documentbuilder.DocumentFormat;
+import org.frankframework.jdbc.datasource.ResourceObjectLocator;
 import org.frankframework.mongodb.MongoDbSender.MongoAction;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
+import org.frankframework.util.AppConstants;
 import org.frankframework.util.CloseUtils;
 
 @Log4j2
@@ -51,12 +49,9 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 	@Container
 	private static final MongoDBContainer mongoDBContainer = new MongoDBContainer(MONGO_DOCKER_TAG);
 
-	private final String host = "localhost";
 	private final String database = "testdb";
 	private final String collection = "Students";
 	private Message result;
-
-	private JndiMongoClientFactory mongoClientFactory;
 
 	@AfterEach
 	@Override
@@ -65,26 +60,34 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		super.tearDown();
 	}
 
-	@Override
-	@BeforeEach
-	public void setUp() throws Exception {
-		String url = "mongodb://" + host + ":" + mongoDBContainer.getMappedPort(27017); // Required for testcontainers, since the default port is randomized
+	@BeforeAll
+	static void beforeAll() {
+		// Required for testcontainers, since the default port is randomized
+		String url = String.format("mongodb://%s:%s", mongoDBContainer.getHost(), mongoDBContainer.getMappedPort(27017));
+		log.info("using connection string: {}", url);
+		AppConstants.getInstance().setProperty("mongo.connectionString", url);
+	}
 
-		MongoClientSettings settings = MongoClientSettings.builder()
-				.applyToClusterSettings(builder -> builder.serverSelectionTimeout(2, TimeUnit.SECONDS))
-				.applyToSocketSettings(builder -> builder.connectTimeout(3, TimeUnit.SECONDS).readTimeout(3, TimeUnit.SECONDS))
-				.applyConnectionString(new com.mongodb.ConnectionString(url)).build();
+	@AfterAll
+	static void afterAll() {
+		AppConstants.getInstance().remove("mongo.connectionString");
+	}
 
-		MongoClient mongoClient = MongoClients.create(settings);
-		mongoClientFactory = new JndiMongoClientFactory();
-		mongoClientFactory.add(mongoClient, JndiMongoClientFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
-		super.setUp();
+	private JndiMongoClientFactory createFactory() throws Exception {
+		ResourceObjectLocator locator = new ResourceObjectLocator();
+		locator.setResourceFile("mongodbResources.yml");
+		locator.afterPropertiesSet();
+
+		JndiMongoClientFactory factory = new JndiMongoClientFactory();
+		factory.setObjectLocators(List.of(locator));
+		factory.afterPropertiesSet();
+		return factory;
 	}
 
 	@Override
-	public MongoDbSender createSender() {
+	public MongoDbSender createSender() throws Exception {
 		MongoDbSender mongoDbSender = new MongoDbSender();
-		mongoDbSender.setMongoClientFactory(mongoClientFactory);
+		mongoDbSender.setMongoClientFactory(createFactory());
 		mongoDbSender.setDatabase(database);
 		mongoDbSender.setCollection(collection);
 		return mongoDbSender;

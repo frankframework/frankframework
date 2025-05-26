@@ -50,7 +50,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		}
 	}
 
-	//Test without a given jsFunctionName. Will call the javascript function main as default
+	// Test without a given jsFunctionName. Will call the javascript function main as default
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
 	void callMain(JavaScriptEngines engine) throws Exception {
@@ -64,7 +64,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		assertEquals("0", sender.sendMessageOrThrow(dummyInput, session).asString());
 	}
 
-	//Test without parameters, returns the result of a subtraction
+	// Test without parameters, returns the result of a subtraction
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
 	void noParameters(JavaScriptEngines engine) throws Exception {
@@ -79,8 +79,8 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		assertEquals("1", sender.sendMessageOrThrow(dummyInput, session).asString());
 	}
 
-	/*Test with two given parameters. The integer values of the given parameters will be added and the result
-	is given as the output of the pipe */
+	// Test with two given parameters. The integer values of the given parameters will be added and the result
+	// is given as the output of the pipe.
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
 	void twoParameters(JavaScriptEngines engine) throws Exception {
@@ -99,8 +99,8 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		assertEquals("3", sender.sendMessageOrThrow(dummyInput, session).asString());
 	}
 
-	/*Test with two parameters. The first parameter is the input of the pipe given using the originalMessage sessionKey. The input is expected to be
-	 * an integer. The two parameters will be added and the result is given as the output of the pipe */
+	// Test with two parameters. The first parameter is the input of the pipe given using the originalMessage sessionKey. The input is expected to be
+	// an integer. The two parameters will be added and the result is given as the output of the pipe.
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
 	void inputAsFirstParameter(JavaScriptEngines engine) throws Exception {
@@ -121,8 +121,10 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		assertEquals("12", sender.sendMessageOrThrow(message, session).asString());
 	}
 
-	/* Test with two given parameters, the first parameter being the input of the pipe. Both parameters need to be of type String and the output of the pipe
-	 * will be the result of concatenating the two parameter strings. */
+	/*
+	 * Test with two given parameters, the first parameter being the input of the pipe. Both parameters need to be of type String and the output of the pipe
+	 * will be the result of concatenating the two parameter strings.
+	 */
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
 	void concatenateString(JavaScriptEngines engine) throws Exception {
@@ -142,9 +144,11 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		assertEquals("Hello World!", sender.sendMessageOrThrow(dummyInput, session).asString());
 	}
 
-	/*Test with three given parameters. The integer values of the first two given parameters will be added and the result
-	is given as the output of the pipe, if the value of the last parameter is set to true. If the value of the last parameter is
-	set to false, the function will return 0 */
+	/*
+	 * Test with three given parameters. The integer values of the first two given parameters will be added and the result
+	 * is given as the output of the pipe, if the value of the last parameter is set to true. If the value of the last parameter is
+	 * set to false, the function will return 0.
+	 */
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
 	void threeParametersTrue(JavaScriptEngines engine) throws Exception {
@@ -163,9 +167,11 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		assertEquals("3", sender.sendMessageOrThrow(dummyInput, session).asString());
 	}
 
-	/*Test with three given parameters. The integer values of the first two given parameters will be added and the result
-	is given as the output of the pipe, if the value of the last parameter is set to true. If the value of the last parameter is
-	set to false, the function will return 0 */
+	/*
+	 * Test with three given parameters. The integer values of the first two given parameters will be added and the result
+	 * is given as the output of the pipe, if the value of the last parameter is set to true. If the value of the last parameter is
+	 * set to false, the function will return 0
+	 */
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
 	void threeParametersFalse(JavaScriptEngines engine) throws Exception {
@@ -184,7 +190,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		assertEquals("0", sender.sendMessageOrThrow(dummyInput, session).asString());
 	}
 
-	//A ConfigurationException is given when a non existing file is given as FileName
+	// A ConfigurationException is given when a non existing file is given as FileName
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
 	void invalidFileGivenException(JavaScriptEngines engine) throws Exception {
@@ -196,7 +202,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		assertEquals("cannot find resource [Nonexisting.js]", e.getMessage());
 	}
 
-	//A ConfigurationException is given when an empty string is given as FileName
+	// A ConfigurationException is given when an empty string is given as FileName
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
 	void emptyFileNameGivenException(JavaScriptEngines engine) throws Exception {
@@ -208,7 +214,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		assertEquals("no jsFileName specified", e.getMessage());
 	}
 
-	//If the given FunctionName is not a function of the given javascript file a SenderException is thrown.
+	// If the given FunctionName is not a function of the given javascript file a SenderException is thrown.
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
 	void invalidFunctionGivenException(JavaScriptEngines engine) throws Exception {
@@ -224,7 +230,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		assertTrue(e.getMessage().startsWith("unable to execute script/function"));
 	}
 
-	//A ConfigurationException is given when an empty string is given as FunctionName
+	// A ConfigurationException is given when an empty string is given as FunctionName
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
 	void emptyFunctionGivenException(JavaScriptEngines engine) throws Exception {
@@ -236,7 +242,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		assertEquals("JavaScript FunctionName not specified!", e.getMessage());
 	}
 
-	//If there is a syntax error in the given Javascript file a SenderException is thrown.
+	// If there is a syntax error in the given Javascript file a SenderException is thrown.
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
 	void invalidJavascriptSyntax(JavaScriptEngines engine) throws ConfigurationException, SenderException {
@@ -265,7 +271,7 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(dummyInput, session));
 	}
 
-	//The input is expected to be of type integer but an input of type Sting is given.
+	// The input is expected to be of type integer but an input of type Sting is given.
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
 	void wrongInputAsFirstParameter(JavaScriptEngines engine) throws ConfigurationException, SenderException {
@@ -283,6 +289,25 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.start();
 
 		assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(dummyInput, session));
+	}
+
+	// Receive and return a string with a single quotes.
+	@ParameterizedTest
+	@EnumSource(JavaScriptEngines.class)
+	void stringWithSingleQuote(JavaScriptEngines engine) throws Exception {
+		dummyInput = new Message("Stringinput");
+		sender.setJsFileName("Javascript/JavascriptTest.js");
+		sender.setJsFunctionName("f5");
+		sender.setEngineName(engine);
+
+		session.put("originalMessage", dummyInput);
+
+		sender.addParameter(ParameterBuilder.create("input", "{ \"key\": \"value met 'single' quotes\" }"));
+
+		sender.configure();
+		sender.start();
+
+		sender.sendMessageOrThrow(dummyInput, session);
 	}
 
 	static Stream<Arguments> testWithJavaScriptReturningAnObject() {

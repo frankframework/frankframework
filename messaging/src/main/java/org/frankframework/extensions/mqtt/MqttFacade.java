@@ -33,7 +33,6 @@ import lombok.Setter;
  * <pre>{@code
  * mqtt:
  *   - name: "my-connection"
- *     type: "org.frankframework.jdbc.datasource.MqttClientSettings"
  *     url: "tcp://host:port"
  *     username: ""
  *     password: ""

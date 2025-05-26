@@ -3,6 +3,9 @@
 	xsi:noNamespaceSchemaLocation="http://schemas.frankframework.org/ibisdoc.xsd"
 	name="My first beautiful configuration"
 	>
+	<DataSonnetErrorMessageFormatter styleSheetName="ErrorMessageFormatters/errormessageWithParams.jsonnet">
+		<NumberParam name="exitCode" sessionKey="exitCode"/>
+	</DataSonnetErrorMessageFormatter>
 	<Adapter name="HelloBeautifulWorld">
 		<Receiver name="HelloBeautifulWorld">
 			<JavaListener name="HelloBeautifulWorld" />
