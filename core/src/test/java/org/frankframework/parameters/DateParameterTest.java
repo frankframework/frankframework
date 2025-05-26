@@ -138,7 +138,7 @@ public class DateParameterTest {
 	}
 
 	@Test
-	public void testWrongFormatString() throws Exception {
+	public void testWrongFormatString() {
 		DateParameter p = new DateParameter();
 		p.setName("date");
 		p.setFormatType(DateFormatType.DATE);

@@ -59,8 +59,8 @@ public class NamespaceUriProviderTest {
 		return new UrlMessage(url);
 	}
 
-	private SOAPMessage createMessage(String filename, boolean isSoap1_1) throws Exception {
-		MessageFactory factory = MessageFactory.newInstance(isSoap1_1 ? SOAPConstants.SOAP_1_1_PROTOCOL : SOAPConstants.SOAP_1_2_PROTOCOL);
+	private SOAPMessage createMessage(String filename, boolean isSoap11) throws Exception {
+		MessageFactory factory = MessageFactory.newInstance(isSoap11 ? SOAPConstants.SOAP_1_1_PROTOCOL : SOAPConstants.SOAP_1_2_PROTOCOL);
 		SOAPMessage soapMessage = factory.createMessage();
 		Source streamSource = getFile(filename).asSource();
 		soapMessage.getSOAPPart().setContent(streamSource);
