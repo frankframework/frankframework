@@ -17,7 +17,6 @@ package org.frankframework.jdbc.datasource;
 
 import java.lang.reflect.Method;
 import java.sql.Driver;
-import java.util.Map.Entry;
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -28,27 +27,22 @@ import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
-import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.StringResolver;
 import org.frankframework.util.StringUtil;
 
 public class ObjectCreator {
 
-	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-
 	@Nonnull
 	@SuppressWarnings("unchecked")
 	public <O> O instantiateResource(@Nonnull FrankResource resource, @Nullable Properties environment, @Nonnull Class<O> lookupClass) throws ClassNotFoundException {
-		if(StringUtils.isEmpty(resource.getUrl())) {
+		String url = resource.getUrl();
+		if(StringUtils.isEmpty(url)) {
 			throw new IllegalStateException("field url is required");
 		}
 
 		Properties properties = getConnectionProperties(resource, environment);
-		String url = StringResolver.substVars(resource.getUrl(), APP_CONSTANTS);
-		String type = StringResolver.substVars(resource.getType(), APP_CONSTANTS);
-
+		String type = resource.getType();
 		Class<?> clazz = ClassUtils.loadClass(type);
 
 		if(lookupClass.isAssignableFrom(DataSource.class) && Driver.class.isAssignableFrom(clazz)) { // It's also possible to use the native drivers instead of the DataSources directly.
@@ -106,18 +100,9 @@ public class ObjectCreator {
 		if(environment != null) {
 			mergedProps.putAll(environment);
 		}
+		mergedProps.putAll(resource.getProperties());
 
-		Properties connProps = resource.getProperties();
-		if (connProps != null) {
-			for(Entry<Object, Object> entry : connProps.entrySet()) {
-				String key = String.valueOf(entry.getKey());
-				String value = String.valueOf(entry.getValue());
-				if(StringUtils.isNotEmpty(value)) {
-					mergedProps.setProperty(key, StringResolver.substVars(value, APP_CONSTANTS));
-				}
-			}
-		}
-		CredentialFactory cf = getCredentials(resource);
+		CredentialFactory cf = resource.getCredentials();
 		if(StringUtils.isNotEmpty(cf.getUsername())) {
 			mergedProps.setProperty("user", cf.getUsername());
 		}
@@ -125,25 +110,5 @@ public class ObjectCreator {
 			mergedProps.setProperty("password", cf.getPassword());
 		}
 		return mergedProps;
-	}
-
-	/**
-	 * Performs a 'safe' lookup of credentials.
-	 */
-	private CredentialFactory getCredentials(FrankResource resource) {
-		String alias = resource.getAuthalias();
-		if(StringUtils.isNotEmpty(alias)) {
-			alias = StringResolver.substVars(alias, APP_CONSTANTS);
-		}
-		String username = resource.getUsername();
-		if(StringUtils.isNotEmpty(username)) {
-			username = StringResolver.substVars(username, APP_CONSTANTS);
-		}
-		String password = resource.getPassword();
-		if(StringUtils.isNotEmpty(password)) {
-			password = StringResolver.substVars(password, APP_CONSTANTS);
-		}
-
-		return new CredentialFactory(alias, username, password);
 	}
 }

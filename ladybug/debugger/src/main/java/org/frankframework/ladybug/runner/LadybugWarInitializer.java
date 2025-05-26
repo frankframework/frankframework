@@ -102,12 +102,12 @@ public class LadybugWarInitializer extends SpringBootServletInitializer {
 
 		List<String> profiles = new ArrayList<>(2);
 		if(StringUtils.isBlank(dataSourceName)) {
-			profiles.add("ladybug.file");
+			profiles.add("ladybug-file");
 		} else {
-			profiles.add("ladybug.database");
+			profiles.add("ladybug-database");
 		}
 		if(dtapIsLoc(properties)) {
-			profiles.add("ladybug.xml");
+			profiles.add("ladybug-xml");
 		}
 		APPLICATION_LOG.debug("Using Ladybug profiles {}", profiles);
 		return profiles;

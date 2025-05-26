@@ -31,7 +31,7 @@ import org.frankframework.stream.Message;
 public class SenderAction extends AbstractLarvaAction<ISender> {
 	private @Getter SenderThread senderThread;
 
-	private Message jdbcInputMessage;
+	private Message inputMessage;
 
 	public SenderAction(ISender sender) {
 		super(sender);
@@ -50,7 +50,7 @@ public class SenderAction extends AbstractLarvaAction<ISender> {
 	@Override
 	public void executeWrite(Message fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException, ListenerException {
 		if (peek() instanceof FixedQuerySender) { // QuerySender is reversed, write is read. Just copy the input message here.
-			jdbcInputMessage = fileContent;
+			inputMessage = fileContent;
 			return;
 		}
 
@@ -60,9 +60,9 @@ public class SenderAction extends AbstractLarvaAction<ISender> {
 	}
 
 	@Override
-	public Message executeRead(Properties properties) throws SenderException, TimeoutException, ListenerException {
+	public Message executeRead(Properties properties) throws SenderException, TimeoutException {
 		if (peek() instanceof FixedQuerySender) { // QuerySender is reversed, read is write. Execute the query here.
-			try (Message input = Message.asMessage(jdbcInputMessage)) { // Uses the provided message or NULL
+			try (Message input = Message.asMessage(inputMessage)) { // Uses the provided message or NULL
 				return peek().sendMessageOrThrow(input, getSession());
 			}
 		}

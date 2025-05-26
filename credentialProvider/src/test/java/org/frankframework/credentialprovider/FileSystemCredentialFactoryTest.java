@@ -10,12 +10,11 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 public class FileSystemCredentialFactoryTest {
-
-	public String FS_SECRETS_FOLDER = "/credentials-unencrypted.txt";
 
 	private FileSystemCredentialFactory credentialFactory;
 
@@ -30,6 +29,13 @@ public class FileSystemCredentialFactoryTest {
 		credentialFactory.initialize();
 	}
 
+	/**
+	 *  Make sure to clean up the system properties after the tests
+	 */
+	@AfterAll
+	public static void tearDown() {
+		System.clearProperty("credentialFactory.filesystem.root");
+	}
 
 	@Test
 	public void testNoAlias() {

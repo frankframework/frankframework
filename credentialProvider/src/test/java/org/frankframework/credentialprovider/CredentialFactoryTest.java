@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collection;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -17,8 +18,15 @@ class CredentialFactoryTest {
 	@BeforeEach
 	void setup() {
 		CredentialFactory.clearInstance();
+
 		// Make sure the defaults are always the same
 		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory");
+	}
+
+	@AfterAll
+	static void tearDown() {
+		// Since credential constants is a singleton, make sure to clean up what we set up in the beforeEach
+		CredentialConstants.getInstance().remove("credentialFactory.class");
 	}
 
 	@Test

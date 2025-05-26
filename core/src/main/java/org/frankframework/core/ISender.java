@@ -75,11 +75,7 @@ public interface ISender extends IConfigurable, FrankElement, NameAware {
 		if (!senderResult.isSuccess()) {
 			String reason = StringUtils.isNotEmpty(senderResult.getErrorMessage()) ? senderResult.getErrorMessage() : "sender finished processing using undefined error forward";
 			SenderException se = new SenderException(reason);
-			try {
-				result.close();
-			} catch (Exception e) {
-				se.addSuppressed(e);
-			}
+			result.closeOnCloseOf(session);
 			throw se;
 		}
 		return result;

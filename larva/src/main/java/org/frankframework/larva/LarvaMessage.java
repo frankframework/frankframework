@@ -19,6 +19,8 @@ import java.time.Instant;
 
 import lombok.Getter;
 
+import org.frankframework.util.DateFormatUtils;
+
 public class LarvaMessage {
 	private final @Getter LarvaLogLevel logLevel;
 	private final @Getter String message;
@@ -35,5 +37,13 @@ public class LarvaMessage {
 		this.logLevel = logLevel;
 		this.message = message;
 		this.exception = exception;
+	}
+
+	@Override
+	public String toString() {
+		return logLevel +
+				" " + DateFormatUtils.format(timestamp) +
+				" " + message +
+				(exception != null ? ", exception=" + exception : "" );
 	}
 }
