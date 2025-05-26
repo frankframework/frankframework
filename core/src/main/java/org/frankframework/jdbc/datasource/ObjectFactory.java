@@ -150,7 +150,7 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 			final O objectToDestroy = entry.getValue();
 			try {
 				log.debug("closing [{}] object [{}]", () -> ClassUtils.nameOf(objectToDestroy), () -> name);
-				destroyObject(name, entry.getValue());
+				destroyObject(entry.getValue());
 			} catch (Exception e) {
 				if (masterException == null) {
 					masterException = new Exception("Exception caught closing [" + ClassUtils.nameOf(objectToDestroy) + "] object [" + name + "] held by (" + getClass().getSimpleName() + ")", e);
@@ -170,7 +170,7 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	 * This method is called when the objects stored in this Factory are removed.
 	 * It allows implementations to handle their own close actions.
 	 */
-	protected void destroyObject(String name, O object) throws Exception {
+	protected void destroyObject(O object) throws Exception {
 		if (object instanceof AutoCloseable closable) {
 			closable.close();
 		}

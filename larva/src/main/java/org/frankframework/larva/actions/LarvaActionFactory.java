@@ -203,10 +203,6 @@ public class LarvaActionFactory {
 		larvaTool.debugMessage(message);
 	}
 
-	private void warningMessage(String message) {
-		larvaTool.warningMessage(message);
-	}
-
 	private void errorMessage(String message, Exception e) {
 		larvaTool.errorMessage(message, e);
 	}
