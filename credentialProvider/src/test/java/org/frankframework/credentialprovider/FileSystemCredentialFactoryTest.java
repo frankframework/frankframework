@@ -15,8 +15,6 @@ import org.junit.jupiter.api.Test;
 
 public class FileSystemCredentialFactoryTest {
 
-	public String FS_SECRETS_FOLDER = "/credentials-unencrypted.txt";
-
 	private FileSystemCredentialFactory credentialFactory;
 
 	@BeforeEach

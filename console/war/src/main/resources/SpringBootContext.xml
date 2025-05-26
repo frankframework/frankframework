@@ -15,7 +15,7 @@
 
 	<import resource="FrankConsoleContext.xml" />
 
-	<beans profile="ladybug.file,ladybug.database">
+	<beans profile="ladybug-file,ladybug-database">
 		<import resource="springTestToolStandalone.xml" />
 	</beans>
 </beans>
