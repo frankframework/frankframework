@@ -37,6 +37,7 @@ import org.springframework.security.config.annotation.web.configurers.CorsConfig
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
@@ -94,6 +95,9 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 		} else {
 			http.csrf(CsrfConfigurer::disable);
 		}
+
+		// Spring Security will never use the JSESSION cookie to obtain the SecurityContext.
+		http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 		http.formLogin(FormLoginConfigurer::disable); // Disable the form login filter
 
 		if(!corsEnabled) {
