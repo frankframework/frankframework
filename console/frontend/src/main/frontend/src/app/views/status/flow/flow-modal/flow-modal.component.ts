@@ -1,4 +1,4 @@
-import { Component, inject, Input, OnInit, ViewChild } from '@angular/core';
+import { Component, inject, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgMermaidComponent } from 'src/app/components/ng-mermaid/ng-mermaid.component';
 
@@ -11,19 +11,20 @@ import { NgMermaidComponent } from 'src/app/components/ng-mermaid/ng-mermaid.com
 export class FlowModalComponent {
   @Input() flowName = '';
   @Input() flow = '';
-  @ViewChild(NgMermaidComponent) ngMermaid!: NgMermaidComponent;
 
   protected showActionButtons = false;
   protected errorActionMessage: null | string = null;
   protected isFirefox: boolean = false;
 
   private activeModal: NgbActiveModal = inject(NgbActiveModal);
+  private flowSvg: SVGSVGElement | null = null;
 
   close(): void {
     this.activeModal.close();
   }
 
-  mermaidLoaded(): void {
+  mermaidLoaded(flowSvg: SVGSVGElement): void {
+    this.flowSvg = flowSvg;
     this.showActionButtons = true;
   }
 
@@ -69,7 +70,7 @@ export class FlowModalComponent {
 
   openNewTab(): void {
     const newTab = window.open('about:blank');
-    const svg = this.ngMermaid.getMermaidSvgElement()?.cloneNode(true) as SVGSVGElement;
+    const svg = this.flowSvg?.cloneNode(true) as SVGSVGElement;
 
     if (newTab && svg) {
       setTimeout(() => {
@@ -106,13 +107,12 @@ export class FlowModalComponent {
     return new Promise<HTMLCanvasElement>((resolve, reject) => {
       const canvas = document.createElement('canvas');
       canvas.addEventListener('error', (event) => reject(event));
-      const svg = this.ngMermaid.getMermaidSvgElement();
 
-      if (!svg) {
+      if (!this.flowSvg) {
         throw new Error('Mermaid SVG not found');
       }
 
-      const svgBox = svg.viewBox.baseVal;
+      const svgBox = this.flowSvg.viewBox.baseVal;
       canvas.width = svgBox.width;
       canvas.height = svgBox.height;
 
@@ -124,7 +124,7 @@ export class FlowModalComponent {
       context.fillRect(0, 0, canvas.width, canvas.height);
       context.imageSmoothingQuality = 'high';
 
-      const base64Svg = this.svgToBase64(svg, canvas.width, canvas.height);
+      const base64Svg = this.svgToBase64(this.flowSvg, canvas.width, canvas.height);
       const base64SvgLength = base64Svg.length;
 
       if (base64SvgLength > 1e6) {
