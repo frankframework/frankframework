@@ -62,6 +62,9 @@ import org.frankframework.util.StreamUtil;
  * <p>
  * Failure to ensure the output is a string may mean the result will look like {@code [Object object]}.
  * </p>
+ * 
+ * @ff.info J2V8 is not compatible with ARM based environments.
+ * @ff.warning The default Javascript runtime has been changed from J2V8 to GraalJS.
  *
  * @since 7.4
  */
@@ -70,7 +73,7 @@ public class JavascriptSender extends SenderSeries {
 
 	private @Getter String jsFileName;
 	private @Getter String jsFunctionName = "main";
-	private @Getter JavaScriptEngines engine = JavaScriptEngines.J2V8;
+	private @Getter JavaScriptEngines engine = JavaScriptEngines.GRAALJS;
 
 	/** ES6's let/const declaration Pattern. */
 	private final Pattern es6VarPattern = Pattern.compile("(?:^|[\\s(;])(let|const)\\s+");
@@ -82,7 +85,7 @@ public class JavascriptSender extends SenderSeries {
 		J2V8(J2V8.class),
 		GRAALJS(GraalJS.class);
 
-		private final Class<? extends JavascriptEngine<?>> engine; //Enum cannot have parameters :(
+		private final Class<? extends JavascriptEngine<?>> engine; // Enum cannot have parameters :(
 		JavaScriptEngines(Class<? extends JavascriptEngine<?>> engine) {
 			this.engine = engine;
 		}
@@ -129,12 +132,13 @@ public class JavascriptSender extends SenderSeries {
 	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 		JavascriptEngine<?> jsInstance = engine.create();
 		try {
+			jsInstance.setGlobalAlias(jsFunctionName);
 			jsInstance.startRuntime();
 		} catch (JavascriptException e) {
 			throw new SenderException("unable to start Javascript engine", e);
 		}
 
-		//Create a Parameter Value List
+		// Create a Parameter Value List
 		ParameterValueList pvl;
 		try {
 			pvl = getParameterList().getValues(message, session);
@@ -144,7 +148,7 @@ public class JavascriptSender extends SenderSeries {
 		int numberOfParameters = 0;
 		numberOfParameters = pvl.size();
 
-		//This array will contain the parameters given in the configuration
+		// This array will contain the parameters given in the configuration
 		Object[] jsParameters = new Object[numberOfParameters];
 		for (int i = 0; i < numberOfParameters; i++) {
 			ParameterValue pv = pvl.getParameterValue(i);
@@ -162,7 +166,7 @@ public class JavascriptSender extends SenderSeries {
 
 		String result;
 		try {
-			//Compile the given Javascript and execute the given Javascript function
+			// Compile the given Javascript and execute the given Javascript function
 			jsInstance.executeScript(javascriptFileContents);
 			Object jsResult = jsInstance.executeFunction(jsFunctionName, jsParameters);
 			result = String.valueOf(jsResult);

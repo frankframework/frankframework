@@ -34,7 +34,7 @@ import org.frankframework.util.StringUtil;
  * Default implementation, does not use pooling, wraps the DataSource in a TransactionAwareDataSourceProxy.
  *
  */
-public class DataSourceFactory extends ObjectFactory<CommonDataSource, CommonDataSource> implements IDataSourceFactory {
+public class DataSourceFactory extends ObjectFactory<DataSource, CommonDataSource> implements IDataSourceFactory {
 
 	public DataSourceFactory() {
 		super(CommonDataSource.class, "jdbc", "DataSources");

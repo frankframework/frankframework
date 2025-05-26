@@ -24,6 +24,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.jndi.JndiLocatorSupport;
 import org.springframework.jndi.JndiTemplate;
 
 import lombok.Setter;
@@ -35,6 +36,8 @@ import org.frankframework.util.ClassUtils;
 
 /**
  * Class that does the actual JDNI lookup.
+ * Uses a Spring JndiTemplate with the given environment settings.
+ * @see JndiLocatorSupport#setJndiTemplate
  *
  * @author Niels Meijer
  *

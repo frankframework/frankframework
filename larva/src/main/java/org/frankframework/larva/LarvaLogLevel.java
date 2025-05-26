@@ -32,7 +32,7 @@ public enum LarvaLogLevel {
 	SCENARIO_PASSED_FAILED("scenario passed/failed"),
 	SCENARIO_FAILED("scenario failed"),
 	TOTALS("totals"),
-	WARNING("error"),
+	WARNING("warning"),
 	ERROR("error");
 
 	@Getter private final String name;

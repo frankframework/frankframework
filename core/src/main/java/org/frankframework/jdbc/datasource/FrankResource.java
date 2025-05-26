@@ -15,20 +15,77 @@
 */
 package org.frankframework.jdbc.datasource;
 
+import java.util.Map.Entry;
 import java.util.Properties;
+
+import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.StringResolver;
+
 public class FrankResource {
-	String name;
-	String type;
-	String url;
-	String authalias;
-	String username;
-	String password;
-	Properties properties;
+
+	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
+
+	@Getter @Setter String name;
+	@Setter String type;
+	@Setter String url;
+
+	// Credentials can be retrieved via `getCredentials()`.
+	@Setter String authalias;
+	@Setter String username;
+	@Setter String password;
+
+	// Additional connection or client settings
+	@Setter Properties properties;
+
+	public String getType() {
+		return StringResolver.substVars(type, APP_CONSTANTS);
+	}
+
+	public String getUrl() {
+		if(StringUtils.isEmpty(url)) {
+			throw new IllegalStateException("field url is required");
+		}
+		return StringResolver.substVars(url, APP_CONSTANTS);
+	}
+
+	/**
+	 * Performs a 'safe' lookup of credentials.
+	 */
+	public CredentialFactory getCredentials() {
+		if(StringUtils.isNotEmpty(authalias)) {
+			authalias = StringResolver.substVars(authalias, APP_CONSTANTS);
+		}
+		if(StringUtils.isNotEmpty(username)) {
+			username = StringResolver.substVars(username, APP_CONSTANTS);
+		}
+		if(StringUtils.isNotEmpty(password)) {
+			password = StringResolver.substVars(password, APP_CONSTANTS);
+		}
+
+		return new CredentialFactory(authalias, username, password);
+	}
+
+	public Properties getProperties() {
+		if (properties == null) {
+			return new Properties();
+		}
+
+		Properties resolvedProperties = new Properties();
+		for(Entry<Object, Object> entry : properties.entrySet()) {
+			String key = String.valueOf(entry.getKey());
+			String value = String.valueOf(entry.getValue());
+			if(StringUtils.isNotEmpty(value)) {
+				resolvedProperties.setProperty(key, StringResolver.substVars(value, APP_CONSTANTS));
+			}
+		}
+		return resolvedProperties;
+	}
 
 	@Override
 	public String toString() {

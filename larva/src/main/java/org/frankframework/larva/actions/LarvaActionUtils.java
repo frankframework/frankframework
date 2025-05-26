@@ -17,7 +17,6 @@ package org.frankframework.larva.actions;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -29,7 +28,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.FileMessage;
-import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StringUtil;
@@ -62,24 +60,6 @@ public class LarvaActionUtils {
 		}
 
 		return filteredProperties;
-	}
-
-	public static void invokeSetters(Object clazz, Properties actionProperties) {
-		for (Method method : clazz.getClass().getMethods()) {
-			if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
-				continue;
-
-			String setter = StringUtil.lcFirst(method.getName().substring(3));
-			String value = actionProperties.getProperty(setter);
-			if(value == null)
-				continue;
-
-			try {
-				ClassUtils.invokeSetter(clazz, method, value);
-			} catch (Exception e) {
-				throw new IllegalArgumentException("unable to set method [" + setter + "] on Class [" + ClassUtils.nameOf(clazz) + "]: " + e.getMessage(), e);
-			}
-		}
 	}
 
 	/**

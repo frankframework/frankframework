@@ -14,6 +14,7 @@
         <xs:element name="JmsRealm" minOccurs="0" maxOccurs="unbounded" type="JmsRealmType" />
         <xs:element name="Monitoring" minOccurs="0" maxOccurs="1" type="MonitoringType" />
         <xs:element name="SharedResources" minOccurs="0" maxOccurs="1" type="SharedResourcesType" />
+        <xs:group ref="ErrorMessageFormatterElementGroup" minOccurs="0" maxOccurs="1" />
       </xs:choice>
     </xs:sequence>
     <xs:attribute name="autoStart" type="frankBoolean">
@@ -2610,7 +2611,6 @@
         <xs:documentation>If specified, the rowid of the processed row is put in the pipelinesession under the specified key (only applicable for &lt;code&gt;querytype=other&lt;/code&gt;). &lt;b&gt;Note:&lt;/b&gt; If multiple rows are processed a SqlException is thrown.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="streamResultToServlet" />
     <xs:attribute name="sqlDialect" type="xs:string">
       <xs:annotation>
         <xs:documentation>If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect</xs:documentation>
@@ -5470,7 +5470,6 @@
     <xs:attribute ref="useNamedParams" />
     <xs:attribute ref="includeFieldDefinition" />
     <xs:attribute ref="trimSpaces" />
-    <xs:attribute ref="streamResultToServlet" />
     <xs:attribute name="sqlDialect" type="xs:string">
       <xs:annotation>
         <xs:documentation>If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect</xs:documentation>
@@ -15068,7 +15067,8 @@
     </xs:attribute>
     <xs:attribute name="closeInputstreamOnExit" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;false&lt;/code&gt;, the inputstream is not closed after it has been used Default: true</xs:documentation>
+        <xs:documentation>If set to &lt;code&gt;false&lt;/code&gt;, the inputstream is not closed after it has been used.
+ Use with caution, they may create memory leaks. Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="charset" type="xs:string">
@@ -15685,8 +15685,6 @@
       <xs:pattern value="[nN][uU][mM][bB][eE][rR]" />
       <xs:pattern value="[iI][nN][tT][eE][gG][eE][rR]" />
       <xs:pattern value="[bB][oO][oO][lL][eE][aA][nN]" />
-      <xs:pattern value="[iI][nN][pP][uU][tT][sS][tT][rR][eE][aA][mM]" />
-      <xs:pattern value="[bB][yY][tT][eE][sS]" />
       <xs:pattern value="[bB][iI][nN][aA][rR][yY]" />
       <xs:pattern value="[cC][hH][aA][rR][aA][cC][tT][eE][rR]" />
       <xs:pattern value="[lL][iI][sS][tT]" />
@@ -16310,12 +16308,14 @@
       <xs:pattern value="[dD][eE][bB][uU][gG]" />
       <xs:pattern value="[pP][iI][pP][eE][lL][iI][nN][eE][__][mM][eE][sS][sS][aA][gG][eE][sS][__][pP][rR][eE][pP][aA][rR][eE][dD][__][fF][oO][rR][__][dD][iI][fF][fF]" />
       <xs:pattern value="[pP][iI][pP][eE][lL][iI][nN][eE][__][mM][eE][sS][sS][aA][gG][eE][sS]" />
+      <xs:pattern value="[iI][nN][fF][oO]" />
       <xs:pattern value="[wW][rR][oO][nN][gG][__][pP][iI][pP][eE][lL][iI][nN][eE][__][mM][eE][sS][sS][aA][gG][eE][sS][__][pP][rR][eE][pP][aA][rR][eE][dD][__][fF][oO][rR][__][dD][iI][fF][fF]" />
       <xs:pattern value="[wW][rR][oO][nN][gG][__][pP][iI][pP][eE][lL][iI][nN][eE][__][mM][eE][sS][sS][aA][gG][eE][sS]" />
       <xs:pattern value="[sS][tT][eE][pP][__][pP][aA][sS][sS][eE][dD][__][fF][aA][iI][lL][eE][dD]" />
       <xs:pattern value="[sS][cC][eE][nN][aA][rR][iI][oO][__][pP][aA][sS][sS][eE][dD][__][fF][aA][iI][lL][eE][dD]" />
       <xs:pattern value="[sS][cC][eE][nN][aA][rR][iI][oO][__][fF][aA][iI][lL][eE][dD]" />
       <xs:pattern value="[tT][oO][tT][aA][lL][sS]" />
+      <xs:pattern value="[wW][aA][rR][nN][iI][nN][gG]" />
       <xs:pattern value="[eE][rR][rR][oO][rR]" />
     </xs:restriction>
   </xs:simpleType>
@@ -16629,11 +16629,6 @@
   <xs:attribute name="trimSpaces" type="frankBoolean">
     <xs:annotation>
       <xs:documentation>Remove trailing blanks from all result values. Default: true</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
-  <xs:attribute name="streamResultToServlet" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>If set, the result is streamed to the HttpServletResponse object of the RestServiceDispatcher (instead of passed as bytes or as a String) Default: false</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="synchronous" type="frankBoolean">

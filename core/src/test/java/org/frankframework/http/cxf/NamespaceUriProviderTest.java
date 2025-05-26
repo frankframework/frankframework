@@ -69,11 +69,8 @@ public class NamespaceUriProviderTest {
 
 	@Test
 	public void testCannotFindNamespaceAndCallServiceClient() throws Exception {
-		NamespaceUriProvider messageProvider = new NamespaceUriProvider();
-		messageProvider.webServiceContext = webServiceContext;
-
 		SOAPMessage request = createMessage("VrijeBerichten_PipelineRequest.xml", true);
-		WebServiceException e = assertThrows(WebServiceException.class, () -> messageProvider.invoke(request));
+		WebServiceException e = assertThrows(WebServiceException.class, () -> provider.invoke(request));
 		assertEquals("Could not process SOAP message: service [http://www.egem.nl/StUF/sector/zkn/0310] is not registered or not of required type", e.getMessage());
 	}
 
@@ -83,10 +80,8 @@ public class NamespaceUriProviderTest {
 		dispatcher.registerServiceClient("http://www.egem.nl/StUF/sector/zkn/0310", service);
 
 		SOAPMessage request = createMessage("VrijeBerichten_PipelineRequest.xml", true);
-		NamespaceUriProvider messageProvider = new NamespaceUriProvider();
-		messageProvider.webServiceContext = webServiceContext;
 
-		WebServiceException e = assertThrows(WebServiceException.class, () -> messageProvider.invoke(request));
+		WebServiceException e = assertThrows(WebServiceException.class, () -> provider.invoke(request));
 		assertEquals("Could not process SOAP message: service [http://www.egem.nl/StUF/sector/zkn/0310] is not registered or not of required type", e.getMessage());
 	}
 
@@ -113,9 +108,7 @@ public class NamespaceUriProviderTest {
 		dispatcher.registerServiceClient("http://www.egem.nl/StUF/sector/zkn/0310", listener);
 
 		SOAPMessage request = createMessage("VrijeBerichten_PipelineRequest.xml", true);
-		NamespaceUriProvider messageProvider = new NamespaceUriProvider();
-		messageProvider.webServiceContext = webServiceContext;
-		SOAPMessage message = messageProvider.invoke(request);
+		SOAPMessage message = provider.invoke(request);
 
 		verify(pipelineResult, times(0)).close();
 

@@ -1,0 +1,5 @@
+{
+    "error": "msgId [Test Tool correlation id(2)]: Pipe [GenerateException] Some generic Exception",
+    "messageId": "messageId",
+    "status": "400"
+}
