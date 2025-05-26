@@ -179,6 +179,7 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		return files.size();
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public DirectoryStream<M> list(String folderName, TypeFilter filter) throws FileSystemException {
 		checkOpen();
@@ -387,11 +388,6 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		return file.getCustomAttributes();
 	}
 
-	@Override
-	public void setCustomFileAttribute(@Nonnull M file, @Nonnull String name, @Nonnull String value) {
-		getCustomAttributes(file).put(name, value);
-	}
-
 	@Nullable
 	@Override
 	public String getCustomFileAttribute(@Nonnull M file, @Nonnull String name) {
@@ -403,5 +399,26 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		file.getCustomAttributes().putAll(customFileAttributes);
 
 		createFile(file, contents);
+	}
+
+	@Override
+	public M moveFile(M m, String destinationFolder, boolean createFolder, Map<String, String> customFileAttributes) throws FileSystemException {
+		M result = moveFile(m, destinationFolder, createFolder);
+		result.getCustomAttributes().putAll(customFileAttributes);
+		return result;
+	}
+
+	@Override
+	public M copyFile(M m, String destinationFolder, boolean createFolder, Map<String, String> customFileAttributes) throws FileSystemException {
+		M result = copyFile(m, destinationFolder, createFolder);
+		result.getCustomAttributes().putAll(customFileAttributes);
+		return result;
+	}
+
+	@Override
+	public M renameFile(M source, M destination, Map<String, String> customFileAttributes) throws FileSystemException {
+		M result = renameFile(source, destination);
+		result.getCustomAttributes().putAll(customFileAttributes);
+		return result;
 	}
 }

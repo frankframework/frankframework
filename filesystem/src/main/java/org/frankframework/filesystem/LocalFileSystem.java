@@ -136,15 +136,19 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 			createFile(file, contents);
 
 			// Then add the custom attributes
-			UserDefinedFileAttributeView userDefinedAttributes = Files.getFileAttributeView(file, UserDefinedFileAttributeView.class);
-
-			// Stream can't handle the possible IOException
-			for (Map.Entry<String, String> entry : customFileAttributes.entrySet()) {
-				userDefinedAttributes.write(entry.getKey(), Charset.defaultCharset().encode(entry.getValue()));
-			}
+			addCustomFileAttributes(file, customFileAttributes);
 
 		} catch (Exception e) {
 			throw ExceptionUtils.asRuntimeException(e);
+		}
+	}
+
+	private static void addCustomFileAttributes(Path file, Map<String, String> customFileAttributes) throws IOException {
+		UserDefinedFileAttributeView userDefinedAttributes = Files.getFileAttributeView(file, UserDefinedFileAttributeView.class);
+
+		// Stream can't handle the possible IOException
+		for (Map.Entry<String, String> entry : customFileAttributes.entrySet()) {
+			userDefinedAttributes.write(entry.getKey(), Charset.defaultCharset().encode(entry.getValue()));
 		}
 	}
 
@@ -216,8 +220,15 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 
 	@Override
 	public Path renameFile(Path source, Path destination) throws FileSystemException {
+		return renameFile(source, destination, Map.of());
+	}
+
+	@Override
+	public Path renameFile(Path source, Path destination, Map<String, String> customFileAttributes) throws FileSystemException {
 		try {
-			return Files.move(source, destination);
+			Path result = Files.move(source, destination);
+			addCustomFileAttributes(result, customFileAttributes);
+			return result;
 		} catch (FileNotFoundException e) {
 			throw new org.frankframework.filesystem.FileNotFoundException(e);
 		} catch (IOException e) {
@@ -227,6 +238,11 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 
 	@Override
 	public Path moveFile(Path f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		return moveFile(f, destinationFolder, createFolder, Map.of());
+	}
+
+	@Override
+	public Path moveFile(Path f, String destinationFolder, boolean createFolder, Map<String, String> customFileAttributes) throws FileSystemException {
 		if(createFolder && !folderExists(destinationFolder)) {
 			try {
 				Files.createDirectories(toFile(destinationFolder));
@@ -235,15 +251,23 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 			}
 		}
 		try {
-			return Files.move(f, toFile(destinationFolder, getName(f)));
+			Path result = Files.move(f, toFile(destinationFolder, getName(f)));
+			addCustomFileAttributes(result, customFileAttributes);
+			return result;
 		} catch (FileNotFoundException e) {
 			throw new org.frankframework.filesystem.FileNotFoundException(e);
 		} catch (IOException e) {
 			throw new FileSystemException("Cannot move file ["+ f +"] to ["+ destinationFolder+"]", e);
 		}
 	}
+
 	@Override
 	public Path copyFile(Path f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		return copyFile(f, destinationFolder, createFolder, Map.of());
+	}
+
+	@Override
+	public Path copyFile(Path f, String destinationFolder, boolean createFolder, Map<String, String> customFileAttributes) throws FileSystemException {
 		if(createFolder && !folderExists(destinationFolder)) {
 			try {
 				Files.createDirectories(toFile(destinationFolder));
@@ -254,6 +278,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		Path target = toFile(destinationFolder, getName(f));
 		try {
 			Files.copy(f, target);
+			addCustomFileAttributes(target, customFileAttributes);
 		} catch (FileNotFoundException e) {
 			throw new org.frankframework.filesystem.FileNotFoundException(e);
 		} catch (IOException e) {
@@ -331,19 +356,6 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 			return new String((buffer).array());
 		} else {
 			return attributeValue.toString();
-		}
-	}
-
-	@Override
-	public void setCustomFileAttribute(@Nonnull Path file, @Nonnull String name, @Nonnull String value) throws FileSystemException {
-		if (!Files.exists(file)) {
-			throw new org.frankframework.filesystem.FileNotFoundException("Cannot set custom attribute [" + name + "] for file [" + file + "] because the file does not exist.");
-		}
-		try {
-			UserDefinedFileAttributeView userDefinedAttributes = Files.getFileAttributeView(file, UserDefinedFileAttributeView.class);
-			userDefinedAttributes.write(name, Charset.defaultCharset().encode(value));
-		} catch (IOException e) {
-			throw new FileSystemException("Cannot set custom attribute [" + name + "] for file [" + file + "]: " + e.getMessage(), e);
 		}
 	}
 

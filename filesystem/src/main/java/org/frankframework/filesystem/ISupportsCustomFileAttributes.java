@@ -58,8 +58,7 @@ public interface ISupportsCustomFileAttributes<F> {
 		}
 
 		return pvl.stream()
-				.filter(pv -> pv.getName().startsWith(FILE_ATTRIBUTE_PARAM_PREFIX))
-				.count() > 0;
+				.anyMatch(pv -> pv.getName().startsWith(FILE_ATTRIBUTE_PARAM_PREFIX));
 	}
 
 	/**
@@ -93,15 +92,24 @@ public interface ISupportsCustomFileAttributes<F> {
 	void createFile(F file, InputStream contents, Map<String, String> customFileAttributes) throws FileSystemException, IOException;
 
 	/**
-	 * Sets the given custom file attribute on the given file. If the attribute already exists, it will be overwritten.
-	 * If the filesystem cannot support this operation but can support other operations in this interface, it should silently ignore this call and
-	 * not throw an exception.
-	 *
-	 * @param file File object for which to set the extended attribute. Must not be {@code null}.
-	 * @param name Name of the extended attribute to set. Must not be {@code null}.
-	 * @param value Value of the extended attribute to set. Must not be {@code null}.
+	 * Moves the file to another folder, adding the given custom file attributes to the file in the destination folder.
+	 * Does not need to check for existence of the source or non-existence of the destination.
+	 * Returns the moved file, or null if no file was moved or there is no reference to the moved file.<br/>
 	 */
-	void setCustomFileAttribute(@Nonnull F file, @Nonnull String name, @Nonnull String value) throws FileSystemException;
+	F moveFile(F f, String destinationFolder, boolean createFolder, Map<String, String> customFileAttributes) throws FileSystemException;
+
+	/**
+	 * Copies the file to another folder, adding the given custom file attributes to the file in the destination folder.
+	 * Does not need to check for existence of the source or non-existence of the destination.
+	 * Returns the copied file, or null if no file was copied or there is no reference to the copied file.
+	 */
+	F copyFile(F f, String destinationFolder, boolean createFolder, Map<String, String> customFileAttributes) throws FileSystemException;
+
+	/**
+	 * Renames the file to a new name, possibly in another folder.
+	 * Does not need to check for the existence of the source or non-existence of the destination.
+	 */
+	F renameFile(F source, F destination, Map<String, String> customFileAttributes) throws FileSystemException;
 
 	/**
 	 * Gets the value of the given custom file attribute on the given file. If the attribute does not exist, {@code null} is returned.

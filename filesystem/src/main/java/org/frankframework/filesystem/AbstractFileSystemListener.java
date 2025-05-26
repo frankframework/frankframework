@@ -419,12 +419,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 				return null; // if message and/or toState does not exist, the message can/will not be moved to it, so return null.
 			}
 			if (toState==ProcessState.DONE || toState==ProcessState.ERROR) {
-				F movedFile = FileSystemUtils.moveFile(getFileSystem(), message.getRawMessage(), getStateFolder(toState), isOverwrite(), getNumberOfBackups(), isCreateFolders(), false);
-				if (StringUtils.isNotEmpty(reason) && getFileSystem() instanceof ISupportsCustomFileAttributes<?>) {
-					@SuppressWarnings("unchecked")
-					ISupportsCustomFileAttributes<F> fs = (ISupportsCustomFileAttributes<F>) getFileSystem();
-					fs.setCustomFileAttribute(movedFile, "comment", reason);
-				}
+				F movedFile = FileSystemUtils.moveFile(getFileSystem(), message.getRawMessage(), getStateFolder(toState), reason, isOverwrite(), getNumberOfBackups(), isCreateFolders(), false);
 				return wrap(movedFile, message);
 			}
 			if (toState==ProcessState.INPROCESS && isFileTimeSensitive() && getFileSystem() instanceof IWritableFileSystem) {
