@@ -307,7 +307,8 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 		sender.configure();
 		sender.start();
 
-		sender.sendMessageOrThrow(dummyInput, session);
+		Message result = sender.sendMessageOrThrow(dummyInput, session);
+		assertEquals("{ \"key\": \"value met 'single' quotes\" }", result.asString());
 	}
 
 	static Stream<Arguments> testWithJavaScriptReturningAnObject() {
