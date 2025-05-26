@@ -34,6 +34,7 @@ import org.springframework.security.config.annotation.web.configurers.CsrfConfig
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
 
@@ -85,6 +86,13 @@ public class LadybugSecurityChainConfigurer implements ApplicationContextAware, 
 		http.formLogin(FormLoginConfigurer::disable); // Disable the form login filter
 		http.logout(LogoutConfigurer::disable); // Disable the logout filter
 		http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); // Allow same origin iframe request
+
+		// STATELESS prevents session from leaking over multiple servlets.
+		// The Ladybug (echo2) however requires cookie persistence. Hence, it's set to NEVER when echo2 is enabled
+		http.sessionManagement(management -> management.sessionCreationPolicy(
+			applicationContext.containsBean("testtoolServletBean") ? SessionCreationPolicy.NEVER : SessionCreationPolicy.STATELESS
+		));
+
 		return ladybugAuthenticator.configureHttpSecurity(http);
 	}
 

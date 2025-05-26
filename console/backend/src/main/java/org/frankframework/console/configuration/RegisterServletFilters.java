@@ -49,7 +49,8 @@ public class RegisterServletFilters implements ApplicationContextAware {
 		ETAG_FILTER(WeakShallowEtagHeaderFilter.class, "backendServletBean"),
 		SECURITY_LOG_FILTER(SecurityLogFilter.class, "backendServletBean"),
 		CSP_FILTER(CspFilter.class, "frontendServletBean"),
-		CSRF_COOKIE_FILTER(CsrfCookieFilter.class, "frontendServletBean");
+		CSRF_COOKIE_FILTER_SILLY_HACK(CsrfCookieFilter.class, "frontendServletBean"),
+		CSRF_COOKIE_FILTER(CsrfCookieFilter.class, "backendServletBean");
 
 		private final @Getter Class<? extends Filter> filterClass;
 		private final @Getter String servletBeanName;
@@ -82,6 +83,11 @@ public class RegisterServletFilters implements ApplicationContextAware {
 	@Bean
 	public FilterRegistrationBean<Filter> createCsrfCookieFilter() {
 		return createFilter(DynamicFilters.CSRF_COOKIE_FILTER);
+	}
+
+	@Bean
+	public FilterRegistrationBean<Filter> createCsrfCookieFilterForTheFrontendForInitialRequest() {
+		return createFilter(DynamicFilters.CSRF_COOKIE_FILTER_SILLY_HACK);
 	}
 
 	@Bean
