@@ -19,6 +19,9 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import org.apache.commons.lang3.NotImplementedException;
 
 import lombok.extern.log4j.Log4j2;
@@ -42,10 +45,10 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	private final BlockingQueue<ListenerMessage> requestMessages = new ArrayBlockingQueue<>(10);
 	private final BlockingQueue<ListenerMessage> responseMessages = new ArrayBlockingQueue<>(10);
 
-	private long defaultTimeout;
+	private long timeout;
 
 	public ListenerMessageHandler(long defaultTimeout) {
-		this.defaultTimeout = defaultTimeout;
+		this.timeout = defaultTimeout;
 	}
 
 	@Override
@@ -54,7 +57,7 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 			ListenerMessage requestMessage = new ListenerMessage(message, session);
 			requestMessages.add(requestMessage);
 
-			ListenerMessage responseMessage = getResponseMessage(defaultTimeout);
+			ListenerMessage responseMessage = getResponseMessage(timeout);
 			Message responseAsMessage = responseMessage.getMessage();
 			if (responseMessage.getContext() != null && responseMessage.getContext() != session) {
 				// Sometimes the response has a different PipeLineSession than the original request. If we don't close it here, we'll leak it.
@@ -67,24 +70,20 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	}
 
 	/** Attempt to retrieve a {@link ListenerMessage}. Returns NULL if none is present */
-	public ListenerMessage getRequestMessage() {
-		try {
-			return getRequestMessage(0);
-		} catch (TimeoutException e) {
-			return null;
-		}
+	public @Nullable ListenerMessage getRequestMessageOrNull() {
+		return requestMessages.poll();
 	}
 
-	public ListenerMessage getRequestMessageWithDefaultTimeout() throws TimeoutException {
-		return getRequestMessage(defaultTimeout);
+	public @Nonnull ListenerMessage getRequestMessageWithDefaultTimeout() throws TimeoutException {
+		return getRequestMessage(timeout);
 	}
 
 	/** Attempt to retrieve a {@link ListenerMessage} with timeout in ms. Returns TimeOutException if non is present */
-	private ListenerMessage getRequestMessage(long timeout) throws TimeoutException {
+	private @Nonnull ListenerMessage getRequestMessage(long timeout) throws TimeoutException {
 		return getMessageFromQueue(requestMessages, timeout, "request");
 	}
 
-	private ListenerMessage getMessageFromQueue(BlockingQueue<ListenerMessage> queue, long timeout, String messageType) throws TimeoutException {
+	private @Nonnull ListenerMessage getMessageFromQueue(BlockingQueue<ListenerMessage> queue, long timeout, String messageType) throws TimeoutException {
 		try {
 			ListenerMessage requestMessage = queue.poll(timeout, TimeUnit.MILLISECONDS);
 			if(requestMessage != null) {
@@ -99,16 +98,12 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	}
 
 	/** Attempt to retrieve a {@link ListenerMessage}. Returns NULL if none is present */
-	public ListenerMessage getResponseMessage() {
-		try {
-			return getResponseMessage(0);
-		} catch (TimeoutException e) {
-			return null;
-		}
+	public @Nullable ListenerMessage getResponseMessageOrNull() {
+		return responseMessages.poll();
 	}
 
 	/** Attempt to retrieve a {@link ListenerMessage} with timeout in ms. Returns TimeOutException if non is present */
-	private ListenerMessage getResponseMessage(long timeout) throws TimeoutException {
+	private @Nonnull ListenerMessage getResponseMessage(long timeout) throws TimeoutException {
 		return getMessageFromQueue(responseMessages, timeout, "response");
 	}
 
@@ -120,8 +115,8 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 		}
 	}
 
-	public void setTimeout(long defaultTimeout) {
-		this.defaultTimeout = defaultTimeout;
+	public void setTimeout(long timeout) {
+		this.timeout = timeout;
 	}
 
 	public void setRequestTimeOut(int timeout) {

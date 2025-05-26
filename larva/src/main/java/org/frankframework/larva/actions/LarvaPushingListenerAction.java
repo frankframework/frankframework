@@ -63,13 +63,8 @@ public class LarvaPushingListenerAction extends AbstractLarvaAction<IPushingList
 	}
 
 	@Override
-	public void invokeSetters(int defaultTimeout, Properties properties) {
-		super.invokeSetters(defaultTimeout, properties);
-
-		if(defaultTimeout > 0) {
-			getMessageHandler().setTimeout(defaultTimeout);
-		}
-
+	public void invokeSetters(Properties properties) {
+		super.invokeSetters(properties);
 		ClassUtils.invokeSetters(getMessageHandler(), properties); // Set timeout properties
 	}
 
