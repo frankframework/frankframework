@@ -19,8 +19,8 @@ import org.frankframework.larva.LarvaConfig;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.Scenario;
 import org.frankframework.larva.actions.LarvaActionFactory;
-import org.frankframework.larva.actions.LarvaApplicationContext;
 import org.frankframework.larva.actions.LarvaScenarioAction;
+import org.frankframework.larva.actions.LarvaScenarioContext;
 import org.frankframework.larva.actions.SenderAction;
 import org.frankframework.larva.output.LarvaWriter;
 import org.frankframework.larva.output.PlainTextScenarioOutputRenderer;
@@ -36,7 +36,7 @@ class LarvaActionFactoryTest {
 	void setUp() throws ClassLoaderException {
 		larvaTool = new LarvaTool(null, new LarvaConfig());
 		actionFactory = new LarvaActionFactory(larvaTool, new PlainTextScenarioOutputRenderer(new LarvaWriter(larvaTool.getLarvaConfig(), System.out)));
-		applicationContext = new LarvaApplicationContext(null, "/");
+		applicationContext = new LarvaScenarioContext(null, "/");
 	}
 
 	@Test
