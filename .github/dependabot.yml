@@ -12,6 +12,7 @@ updates:
       - dependency-name: "*"
         update-types: ["version-update:semver-major"]
       - dependency-name: "org.ibissource:ibis-ladybug"
+      - dependency-name: "org.wearefrank:ladybug"
       - dependency-name: "com.aspose:*"
       - dependency-name: "com.sap.jco3:sapidoc"
       - dependency-name: "org.frankframework:frankframework-ear"
