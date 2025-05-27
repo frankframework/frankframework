@@ -40,8 +40,8 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.larva.actions.LarvaActionFactory;
 import org.frankframework.larva.actions.LarvaActionUtils;
-import org.frankframework.larva.actions.LarvaApplicationContext;
 import org.frankframework.larva.actions.LarvaScenarioAction;
+import org.frankframework.larva.actions.LarvaScenarioContext;
 import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
@@ -177,7 +177,7 @@ public class ScenarioRunner {
 		testExecutionObserver.startScenario(testRunStatus, scenario);
 		try (CloseableThreadContext.Instance ignored = CloseableThreadContext.put("scenario", scenario.getName());
 			// This is far from optimal, but without refactoring the whole LarvaTool, this is the quick and dirty way to do it
-			LarvaApplicationContext larvaContext = new LarvaApplicationContext(this.applicationContext, scenarioDirectory)
+			LarvaScenarioContext larvaContext = new LarvaScenarioContext(this.applicationContext, scenarioDirectory)
 		) {
 			log.debug("Open actions");
 

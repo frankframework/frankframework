@@ -110,7 +110,7 @@ public class LarvaActionFactory {
 			larvaAction = new LarvaAction(configurable);
 		}
 
-		larvaAction.invokeSetters(defaultTimeout, actionProperties);
+		larvaAction.invokeSetters(actionProperties);
 		larvaAction.getSession().put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 
 		return larvaAction;
@@ -160,7 +160,7 @@ public class LarvaActionFactory {
 			}
 			if (larvaScenarioAction instanceof LarvaPushingListenerAction listenerAction && listenerAction.getMessageHandler() != null) {
 				ListenerMessageHandler<?> listenerMessageHandler = listenerAction.getMessageHandler();
-				ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage();
+				ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessageOrNull();
 				while (listenerMessage != null) {
 					Message message = listenerMessage.getMessage();
 					if (listenerMessage.getContext() != null) {
@@ -168,9 +168,9 @@ public class LarvaActionFactory {
 					}
 					wrongPipelineMessage("Found remaining request message on '" + actionName + "'", message);
 					remainingMessagesFound = true;
-					listenerMessage = listenerMessageHandler.getRequestMessage();
+					listenerMessage = listenerMessageHandler.getRequestMessageOrNull();
 				}
-				listenerMessage = listenerMessageHandler.getResponseMessage();
+				listenerMessage = listenerMessageHandler.getResponseMessageOrNull();
 				while (listenerMessage != null) {
 					Message message = listenerMessage.getMessage();
 					if (listenerMessage.getContext() != null) {
@@ -178,7 +178,7 @@ public class LarvaActionFactory {
 					}
 					wrongPipelineMessage("Found remaining response message on '" + actionName + "'", message);
 					remainingMessagesFound = true;
-					listenerMessage = listenerMessageHandler.getResponseMessage();
+					listenerMessage = listenerMessageHandler.getResponseMessageOrNull();
 				}
 			}
 
