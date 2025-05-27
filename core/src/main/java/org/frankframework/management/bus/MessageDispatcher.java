@@ -64,10 +64,16 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 		nullChannel = applicationContext.getBean("nullChannel", MessageChannel.class); // Messages that do not match the TopicSelector will be discarded
 
 		ClassPathBeanDefinitionScanner scanner = scan();
-		String[] names = scanner.getRegistry().getBeanDefinitionNames();
+		BeanDefinitionRegistry registry = scanner.getRegistry();
+		if (registry == null) {
+			throw new IllegalStateException("registry is null");
+		}
+
+		String[] names = registry.getBeanDefinitionNames();
 		for (String beanName : names) {
 			log.debug("scanning bean [{}] for ServiceActivators", beanName);
-			BeanDefinition beanDef = scanner.getRegistry().getBeanDefinition(beanName);
+
+			BeanDefinition beanDef = registry.getBeanDefinition(beanName);
 			findServiceActivators(beanDef);
 		}
 	}

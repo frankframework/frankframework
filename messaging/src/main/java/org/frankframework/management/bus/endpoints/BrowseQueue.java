@@ -32,6 +32,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
@@ -50,6 +51,7 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.JsonMessage;
 
+@Log4j2
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.QUEUE)
 public class BrowseQueue extends BusEndpointBase {
@@ -89,6 +91,7 @@ public class BrowseQueue extends BusEndpointBase {
 		Map<String, Object> returnMap = new HashMap<>();
 
 		try {
+			@SuppressWarnings("unchecked")
 			JmsBrowser<jakarta.jms.Message> jmsBrowser = createBean(JmsBrowser.class);
 			jmsBrowser.setName("BrowseQueueAction");
 			if(type == DestinationType.QUEUE) {

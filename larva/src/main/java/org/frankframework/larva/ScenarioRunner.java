@@ -40,8 +40,8 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.larva.actions.LarvaActionFactory;
 import org.frankframework.larva.actions.LarvaActionUtils;
-import org.frankframework.larva.actions.LarvaApplicationContext;
 import org.frankframework.larva.actions.LarvaScenarioAction;
+import org.frankframework.larva.actions.LarvaScenarioContext;
 import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
@@ -177,7 +177,7 @@ public class ScenarioRunner {
 		testExecutionObserver.startScenario(testRunStatus, scenario);
 		try (CloseableThreadContext.Instance ignored = CloseableThreadContext.put("scenario", scenario.getName());
 			// This is far from optimal, but without refactoring the whole LarvaTool, this is the quick and dirty way to do it
-			LarvaApplicationContext larvaContext = new LarvaApplicationContext(this.applicationContext, scenarioDirectory)
+			LarvaScenarioContext larvaContext = new LarvaScenarioContext(this.applicationContext, scenarioDirectory)
 		) {
 			log.debug("Open actions");
 
@@ -232,18 +232,11 @@ public class ScenarioRunner {
 					scenarioResult = LarvaTool.RESULT_OK;
 				}
 			}
-			log.debug("Wait [{}]ms before clean up", waitBeforeCleanUp);
-			try {
-				Thread.sleep(waitBeforeCleanUp);
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-			}
+			doWaitBeforeCleanup();
 			log.debug("Close actions");
-			boolean remainingMessagesFound = actionFactory.closeLarvaActions(larvaActions);
+			boolean remainingMessagesFound = actionFactory.closeLarvaActions(scenario, larvaActions);
 			if (remainingMessagesFound) {
-				if (logLevel.shouldLog(LarvaLogLevel.STEP_PASSED_FAILED)) {
-					testExecutionObserver.finishStep(testRunStatus, scenario, scenario.getName() + " - Remaining messages found", LarvaTool.RESULT_ERROR, "Found one or more messages on actions or in database after scenario executed");
-				}
+				testExecutionObserver.finishStep(testRunStatus, scenario, scenario.getName() + " - Remaining messages found", LarvaTool.RESULT_ERROR, "Found one or more messages on actions or in database after scenario executed");
 				scenarioResult = LarvaTool.RESULT_ERROR;
 			}
 
@@ -260,13 +253,22 @@ public class ScenarioRunner {
 			return scenarioResult;
 		} catch (Exception e) {
 			log.warn("Error occurred while creating Larva Scenario Actions for scenario [{}]", scenario.getName(), e);
+			scenarioError(scenario, e.getClass().getSimpleName() + ": "+e.getMessage(), e);
 			testRunStatus.scenarioFailed(scenario);
 			testExecutionObserver.finishScenario(testRunStatus, scenario, LarvaTool.RESULT_ERROR, "Error occurred while executing Larva Scenario: " + e.getMessage());
-			larvaTool.errorMessage(e.getClass().getSimpleName() + ": "+e.getMessage(), e);
 			return LarvaTool.RESULT_ERROR;
 		} finally {
 			// Clear caches to keep memory consumption under control
 			scenario.clearScenarioCaches();
+		}
+	}
+
+	private void doWaitBeforeCleanup() {
+		log.debug("Wait [{}]ms before clean up", waitBeforeCleanUp);
+		try {
+			Thread.sleep(waitBeforeCleanUp);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
 		}
 	}
 
@@ -282,7 +284,7 @@ public class ScenarioRunner {
 		try {
 			fileContent = readScenarioStepData(scenario, step);
 		} catch (Exception e) {
-			larvaTool.errorMessage("Error reading data for step " + step + ":" + e.getMessage(), e);
+			scenarioError(scenario, "Error reading data for step " + step + ":" + e.getMessage(), e);
 			return LarvaTool.RESULT_ERROR;
 		}
 
@@ -290,7 +292,7 @@ public class ScenarioRunner {
 		Object actionFactoryClassname = properties.get(actionName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX);
 		LarvaScenarioAction scenarioAction = actions.get(actionName);
 		if (scenarioAction == null) {
-			larvaTool.errorMessage("Property '" + actionName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
+			scenarioError(scenario, "Property '" + actionName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
 			return LarvaTool.RESULT_ERROR;
 		}
 
@@ -349,9 +351,9 @@ public class ScenarioRunner {
 			log.debug("Successfully wrote message to '{}'", actionName);
 			return LarvaTool.RESULT_OK;
 		} catch(TimeoutException e) {
-			larvaTool.errorMessage("Timeout sending message to '" + actionName + "': " + e.getMessage(), e);
+			scenarioError(scenario, "Timeout sending message to '" + actionName + "': " + e.getMessage(), e);
 		} catch(Exception e) {
-			larvaTool.errorMessage("Could not send message to '" + actionName + "' ("+e.getClass().getSimpleName()+"): " + e.getMessage(), e);
+			scenarioError(scenario, "Could not send message to '" + actionName + "' ("+e.getClass().getSimpleName()+"): " + e.getMessage(), e);
 		}
 		return LarvaTool.RESULT_ERROR;
 	}
@@ -363,7 +365,7 @@ public class ScenarioRunner {
 				if (StringUtils.isEmpty(fileName)) {
 					return LarvaTool.RESULT_OK;
 				} else {
-					larvaTool.errorMessage("Could not read from ["+actionName+"] (null returned)");
+					scenarioError(scenario, "Could not read from [" + actionName + "] (null returned)");
 				}
 			} else {
 				if (StringUtils.isEmpty(fileName)) {
@@ -376,10 +378,20 @@ public class ScenarioRunner {
 				}
 			}
 		} catch (Exception e) {
-			larvaTool.errorMessage("Could not read from ["+actionName+"] ("+e.getClass().getSimpleName()+"): " + e.getMessage(), e);
+			scenarioError(scenario, "Could not read from [" + actionName + "] (" + e.getClass().getSimpleName() + "): " + e.getMessage(), e);
 		}
 
 		return LarvaTool.RESULT_ERROR;
+	}
+
+	private void scenarioError(Scenario scenario, String message, Exception e) {
+		scenario.addError(message, e);
+		larvaTool.errorMessage(message, e); // For now, log error with this method too because of the nice big exception stacktrace it prints
+	}
+
+	private void scenarioError(Scenario scenario, String message) {
+		scenario.addError(message);
+		larvaTool.errorMessage(message); // Log error clearly in the flow of events
 	}
 
 	private List<String> getSteps(Scenario scenario) {

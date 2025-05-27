@@ -28,6 +28,8 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
@@ -57,6 +59,7 @@ import org.frankframework.util.EnumUtils;
 import org.frankframework.util.JacksonUtils;
 import org.frankframework.util.SpringUtils;
 
+@Log4j2
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.MONITORING)
 public class Monitoring extends BusEndpointBase {

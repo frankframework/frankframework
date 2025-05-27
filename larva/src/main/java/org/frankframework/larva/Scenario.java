@@ -69,6 +69,10 @@ public class Scenario {
 		messages.add(new LarvaMessage(LarvaLogLevel.ERROR, error));
 	}
 
+	public void addError(@Nonnull String error, @Nonnull Exception e) {
+		messages.add(new LarvaMessage(LarvaLogLevel.ERROR, error, e));
+	}
+
 	public void addMessages(@Nonnull Collection<LarvaMessage> messages) {
 		this.messages.addAll(messages);
 	}

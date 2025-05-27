@@ -35,9 +35,9 @@ import org.frankframework.lifecycle.ConfigurableApplicationContext;
  * Not a fan of the IbisContext being passed/used here, but for now it is the only way to get the `Application` SpringContext.
  */
 @Log4j2
-public class LarvaApplicationContext extends ConfigurableApplicationContext {
+public class LarvaScenarioContext extends ConfigurableApplicationContext {
 
-	public LarvaApplicationContext(ApplicationContext applicationContext, String scenarioDirectory) throws ClassLoaderException {
+	public LarvaScenarioContext(ApplicationContext applicationContext, String scenarioDirectory) throws ClassLoaderException {
 		log.debug("Creating LarvaApplicationContext for scenarioDirectory [{}]", scenarioDirectory);
 		// Use DirectoryClassLoader to make it possible to retrieve resources (such as styleSheetName) relative to the scenarioDirectory.
 		DirectoryClassLoader directoryClassLoader = new RelativePathDirectoryClassLoader();

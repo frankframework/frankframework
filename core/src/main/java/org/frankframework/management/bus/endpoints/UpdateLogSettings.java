@@ -31,6 +31,7 @@ import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.messaging.Message;
 
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.management.bus.ActionSelector;
@@ -44,6 +45,7 @@ import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 
+@Log4j2
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.LOG_CONFIGURATION)
 public class UpdateLogSettings extends BusEndpointBase implements ApplicationEventPublisherAware {

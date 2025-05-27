@@ -37,6 +37,8 @@ import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.messaging.Message;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.HasPhysicalDestination;
@@ -72,6 +74,7 @@ import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.MessageKeeperMessage;
 import org.frankframework.util.RunState;
 
+@Log4j2
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.ADAPTER)
 public class AdapterStatus extends BusEndpointBase {
