@@ -37,6 +37,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.messaging.Message;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.jdbc.datasource.ObjectFactory;
@@ -52,6 +53,7 @@ import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.XmlUtils;
 
+@Log4j2
 @BusAware("frank-management-bus")
 public class SecurityItems extends BusEndpointBase {
 	private List<String> securityRoles;

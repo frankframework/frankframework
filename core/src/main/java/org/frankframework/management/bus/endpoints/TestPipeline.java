@@ -33,6 +33,7 @@ import org.springframework.messaging.Message;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.Data;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLineResult;
@@ -52,6 +53,7 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.XmlUtils;
 
+@Log4j2
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.TEST_PIPELINE)
 public class TestPipeline extends BusEndpointBase {
