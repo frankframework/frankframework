@@ -38,6 +38,8 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.messaging.Message;
 import org.xml.sax.SAXException;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.Dbms;
@@ -61,6 +63,7 @@ import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
 
+@Log4j2
 @BusAware("frank-management-bus")
 public class BrowseJdbcTable extends BusEndpointBase {
 

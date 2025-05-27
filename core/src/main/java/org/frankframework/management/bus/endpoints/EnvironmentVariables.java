@@ -27,6 +27,8 @@ import jakarta.annotation.security.RolesAllowed;
 
 import org.springframework.messaging.Message;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.management.bus.BusAware;
 import org.frankframework.management.bus.BusTopic;
@@ -37,6 +39,7 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.Environment;
 import org.frankframework.util.StringUtil;
 
+@Log4j2
 @BusAware("frank-management-bus")
 public class EnvironmentVariables extends BusEndpointBase {
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ class SpringSoapBus extends SpringBus implements InitializingBean, DisposableBea
 	private static final String SOAP_BUS_PREFIX = "soap.bus.";
 
 	private final Logger log = LogUtil.getLogger(this);
-	private ApplicationContext ctx;
+	private ApplicationContext applicationContext;
 
 	public SpringSoapBus() {
 		super(true);
@@ -49,13 +49,13 @@ class SpringSoapBus extends SpringBus implements InitializingBean, DisposableBea
 	@Override
 	public void setApplicationContext(ApplicationContext ctx) {
 		super.setApplicationContext(ctx);
-		this.ctx = ctx;
+		this.applicationContext = ctx;
 	}
 
 	@Override
 	public void afterPropertiesSet() {
 		for(String propName: CFX_SECURITY_PROPERTIES) {
-			String propValue = ctx.getEnvironment().getProperty(SOAP_BUS_PREFIX + propName);
+			String propValue = applicationContext.getEnvironment().getProperty(SOAP_BUS_PREFIX + propName);
 			if(! StringUtils.isBlank(propValue)) {
 				this.setProperty(propName, Integer.valueOf(propValue));
 				log.info("Set property [{}] of bus [{}] to [{}]", () -> propName, this::getId, () -> propValue);

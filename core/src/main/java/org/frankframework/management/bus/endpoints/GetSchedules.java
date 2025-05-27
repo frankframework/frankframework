@@ -39,6 +39,8 @@ import org.quartz.TriggerKey;
 import org.quartz.impl.matchers.GroupMatcher;
 import org.springframework.messaging.Message;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
@@ -55,6 +57,7 @@ import org.frankframework.scheduler.job.IJob;
 import org.frankframework.util.Locker;
 import org.frankframework.util.MessageKeeperMessage;
 
+@Log4j2
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.SCHEDULER)
 public class GetSchedules extends BusEndpointBase {

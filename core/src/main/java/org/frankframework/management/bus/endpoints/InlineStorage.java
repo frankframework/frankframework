@@ -28,6 +28,7 @@ import org.springframework.messaging.Message;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
@@ -42,6 +43,7 @@ import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.receivers.Receiver;
 
+@Log4j2
 @BusAware("frank-management-bus")
 public class InlineStorage extends BusEndpointBase {
 
