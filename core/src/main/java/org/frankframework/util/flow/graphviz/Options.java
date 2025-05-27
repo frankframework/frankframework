@@ -19,9 +19,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public final class Options {
-	private static final Pattern FORMAT = Pattern.compile("format:'(.*?)'");
-	private static final Pattern MEMORY = Pattern.compile("totalMemory:'(.*?)'");
-	private static final Pattern Y_INVERT = Pattern.compile("yInvert:(.*?)");
+	private static final Pattern FORMAT_PATTERN = Pattern.compile("format:'(.*?)'");
+	private static final Pattern MEMORY_PATTERN = Pattern.compile("totalMemory:'(.*?)'");
+	private static final Pattern Y_INVERT_PATTERN = Pattern.compile("yInvert:(.*?)");
 
 	private Format format;
 	private Integer totalMemory;
@@ -39,11 +39,11 @@ public final class Options {
 	}
 
 	public static Options fromJson(String json) {
-		final Matcher format = FORMAT.matcher(json);
+		final Matcher format = FORMAT_PATTERN.matcher(json);
 		format.find();
-		final Matcher memory = MEMORY.matcher(json);
+		final Matcher memory = MEMORY_PATTERN.matcher(json);
 		final boolean hasMemory = memory.find();
-		final Matcher yInvert = Y_INVERT.matcher(json);
+		final Matcher yInvert = Y_INVERT_PATTERN.matcher(json);
 		final boolean hasYInvert = yInvert.find();
 		return new Options(
 				Format.valueOf(format.group(1)),
