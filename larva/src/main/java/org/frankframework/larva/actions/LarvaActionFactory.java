@@ -64,9 +64,8 @@ public class LarvaActionFactory {
 
 		try {
 			Properties properties = scenario.getProperties();
-			Set<String> actionNames = properties.keySet()
+			Set<String> actionNames = properties.stringPropertyNames()
 					.stream()
-					.map(String.class::cast)
 					.filter(key -> key.endsWith(CLASS_NAME_PROPERTY_SUFFIX))
 					.map(key -> key.substring(0, key.lastIndexOf(".")))
 					.collect(Collectors.toSet());
@@ -90,9 +89,9 @@ public class LarvaActionFactory {
 
 		} catch (Exception e) {
 			log.warn("Error occurred while creating Larva Scenario Actions", e);
-			closeLarvaActions(larvaActions);
+			closeLarvaActions(scenario, larvaActions);
 			larvaActions = null;
-			errorMessage(e.getClass().getSimpleName() + ": "+e.getMessage(), e);
+			errorMessage(scenario, e.getClass().getSimpleName() + ": "+e.getMessage(), e);
 		}
 
 		return larvaActions;
@@ -135,7 +134,7 @@ public class LarvaActionFactory {
 		return actionProperties;
 	}
 
-	public boolean closeLarvaActions(Map<String, LarvaScenarioAction> larvaActions) {
+	public boolean closeLarvaActions(Scenario scenario, Map<String, LarvaScenarioAction> larvaActions) {
 		boolean remainingMessagesFound = false;
 
 		debugMessage("Close autoclosables");
@@ -147,11 +146,11 @@ public class LarvaActionFactory {
 				debugMessage("Found remaining SenderThread");
 				SenderException senderException = senderThread.getSenderException();
 				if (senderException != null) {
-					errorMessage("Found remaining SenderException: " + senderException.getMessage(), senderException);
+					errorMessage(scenario, "Found remaining SenderException: " + senderException.getMessage(), senderException);
 				}
 				TimeoutException timeoutException = senderThread.getTimeoutException();
 				if (timeoutException != null) {
-					errorMessage("Found remaining TimeOutException: " + timeoutException.getMessage(), timeoutException);
+					errorMessage(scenario, "Found remaining TimeOutException: " + timeoutException.getMessage(), timeoutException);
 				}
 				Message message = senderThread.getResponse();
 				if (message != null) {
@@ -187,7 +186,7 @@ public class LarvaActionFactory {
 				debugMessage("Closed action '" + actionName + "'");
 			} catch(Exception e) {
 				log.error("could not close '" + actionName + "'", e);
-				errorMessage("Could not close '" + actionName + "': " + e.getMessage(), e);
+				errorMessage(scenario, "Could not close '" + actionName + "': " + e.getMessage(), e);
 			}
 		}
 
@@ -203,7 +202,8 @@ public class LarvaActionFactory {
 		larvaTool.debugMessage(message);
 	}
 
-	private void errorMessage(String message, Exception e) {
+	private void errorMessage(Scenario scenario, String message, Exception e) {
+		scenario.addError(message, e);
 		larvaTool.errorMessage(message, e);
 	}
 }
