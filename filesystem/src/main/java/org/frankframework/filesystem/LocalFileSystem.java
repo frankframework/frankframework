@@ -28,6 +28,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.util.Comparator;
 import java.util.Date;
@@ -144,12 +145,15 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	}
 
 	private static void addCustomFileAttributes(Path file, Map<String, String> customFileAttributes) throws IOException {
+		// We need to restore the original file modified time, because we use it to append to the filename in some configurations of the DirectoryListener.
+		FileTime lastModifiedTime = Files.getLastModifiedTime(file);
 		UserDefinedFileAttributeView userDefinedAttributes = Files.getFileAttributeView(file, UserDefinedFileAttributeView.class);
 
 		// Stream can't handle the possible IOException
 		for (Map.Entry<String, String> entry : customFileAttributes.entrySet()) {
 			userDefinedAttributes.write(entry.getKey(), Charset.defaultCharset().encode(entry.getValue()));
 		}
+		Files.setLastModifiedTime(file, lastModifiedTime);
 	}
 
 	@Override
