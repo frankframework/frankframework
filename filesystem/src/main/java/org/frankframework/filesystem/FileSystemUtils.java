@@ -120,8 +120,8 @@ public class FileSystemUtils {
 		F newFile;
 		if (StringUtils.isNotEmpty(comment) && fileSystem instanceof ISupportsCustomFileAttributes<?>) {
 			@SuppressWarnings("unchecked")
-			ISupportsCustomFileAttributes<F> fs = (ISupportsCustomFileAttributes<F>) fileSystem;
-			newFile = fs.moveFile(file, destinationFolder, createFolders, Map.of("comment", comment));
+			ISupportsCustomFileAttributes<F> fsWithAttributes = (ISupportsCustomFileAttributes<F>) fileSystem;
+			newFile = fsWithAttributes.moveFile(file, destinationFolder, createFolders, Map.of("comment", comment));
 		} else {
 			newFile = fileSystem.moveFile(file, destinationFolder, createFolders);
 		}

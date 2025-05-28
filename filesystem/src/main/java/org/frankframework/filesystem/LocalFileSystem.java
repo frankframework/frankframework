@@ -353,7 +353,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		if (attributeValue instanceof byte[] bytes) {
 			return new String(bytes);
 		} else if (attributeValue instanceof ByteBuffer buffer) {
-			return new String((buffer).array());
+			return new String(buffer.array());
 		} else {
 			return attributeValue.toString();
 		}

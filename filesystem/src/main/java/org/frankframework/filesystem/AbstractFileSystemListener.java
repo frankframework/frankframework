@@ -418,15 +418,16 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 			if (!getFileSystem().exists(message.getRawMessage()) || !knownProcessStates().contains(toState)) {
 				return null; // if message and/or toState does not exist, the message can/will not be moved to it, so return null.
 			}
+			F result;
 			if (toState==ProcessState.DONE || toState==ProcessState.ERROR) {
-				F movedFile = FileSystemUtils.moveFile(getFileSystem(), message.getRawMessage(), getStateFolder(toState), reason, isOverwrite(), getNumberOfBackups(), isCreateFolders(), false);
-				return wrap(movedFile, message);
-			}
-			if (toState==ProcessState.INPROCESS && isFileTimeSensitive() && getFileSystem() instanceof IWritableFileSystem) {
+				result = FileSystemUtils.moveFile(getFileSystem(), message.getRawMessage(), getStateFolder(toState), reason, isOverwrite(), getNumberOfBackups(), isCreateFolders(), false);
+			} else if (toState==ProcessState.INPROCESS && isFileTimeSensitive() && getFileSystem() instanceof IWritableFileSystem) {
 				F movedFile = getFileSystem().moveFile(message.getRawMessage(), getStateFolder(toState), false);
-				return wrap(renameFileWithTimeStamp(message, toState, movedFile), message);
+				 result = renameFileWithTimeStamp(message, toState, movedFile);
+			} else {
+				result = getFileSystem().moveFile(message.getRawMessage(), getStateFolder(toState), false);
 			}
-			return wrap(getFileSystem().moveFile(message.getRawMessage(), getStateFolder(toState), false), message);
+			return wrap(result, message);
 		} catch (FileSystemException e) {
 			throw new ListenerException("Cannot change processState to ["+toState+"] for ["+getFileSystem().getName(message.getRawMessage())+"]", e);
 		}
@@ -469,7 +470,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 	}
 
 	private RawMessageWrapper<F> wrap(F file, RawMessageWrapper<F> originalMessage) throws ListenerException {
-		// Do not modify original message context. We do not have threadContext so pass copy of message context as substitute.
+		// Do not modify the original message context. We do not have threadContext so pass copy of message context as substitute.
 		String originalFilename = (String) originalMessage.getContext().get(ORIGINAL_FILENAME_KEY);
 		return wrapRawMessage(file, originalFilename, new HashMap<>(originalMessage.getContext()));
 	}

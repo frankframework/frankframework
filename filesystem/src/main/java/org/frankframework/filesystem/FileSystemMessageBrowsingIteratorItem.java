@@ -54,7 +54,7 @@ public class FileSystemMessageBrowsingIteratorItem<F, FS extends IBasicFileSyste
 		try {
 			if (StringUtils.isNotEmpty(messageIdPropertyKey)) {
 				Map<String,Object> properties = fileSystem.getAdditionalFileProperties(item.getRawMessage());
-				return (String)properties.get(messageIdPropertyKey);
+				return properties != null ? (String)properties.get(messageIdPropertyKey) : null;
 			}
 			return fileSystem.getName(item.getRawMessage());
 		} catch (FileSystemException e) {
@@ -92,7 +92,7 @@ public class FileSystemMessageBrowsingIteratorItem<F, FS extends IBasicFileSyste
 	}
 
 	@Override
-	public String getCommentString() throws ListenerException {
+	public String getCommentString() {
 		return comment;
 	}
 
