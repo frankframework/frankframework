@@ -6,7 +6,6 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.attribute.FileTime;
 import java.util.Date;
 
@@ -34,13 +33,13 @@ public class LocalFileSystemTestHelper implements IFileSystemTestHelperFullContr
 	}
 
 	protected Path getFileHandle(String filename) {
-		return Paths.get(folder.toAbsolutePath().toString(), filename);
+		return folder.resolve(filename);
 	}
 	protected Path getFileHandle(String subfolder, String filename) {
 		if (subfolder==null) {
 			return getFileHandle(filename);
 		}
-		return Paths.get(folder.toAbsolutePath()+"/"+subfolder, filename);
+		return folder.resolve(subfolder).resolve(filename);
 	}
 
 	@Override

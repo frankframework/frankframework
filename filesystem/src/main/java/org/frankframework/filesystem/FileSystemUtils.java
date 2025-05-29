@@ -111,9 +111,20 @@ public class FileSystemUtils {
 	}
 
 	public static <F> F moveFile(IBasicFileSystem<F> fileSystem, F file, String destinationFolder, boolean overwrite, int numOfBackups, boolean createFolders, boolean destinationMustBeReturned) throws FileSystemException {
+		return moveFile(fileSystem, file, destinationFolder, null, overwrite, numOfBackups, createFolders, destinationMustBeReturned);
+	}
+
+	public static <F> F moveFile(IBasicFileSystem<F> fileSystem, F file, String destinationFolder, String comment, boolean overwrite, int numOfBackups, boolean createFolders, boolean destinationMustBeReturned) throws FileSystemException {
 		checkSource(fileSystem, file, FileSystemAction.MOVE);
 		prepareDestination(fileSystem, file, destinationFolder, overwrite, numOfBackups, createFolders, FileSystemAction.MOVE);
-		F newFile = fileSystem.moveFile(file, destinationFolder, createFolders);
+		F newFile;
+		if (StringUtils.isNotEmpty(comment) && fileSystem instanceof ISupportsCustomFileAttributes<?>) {
+			@SuppressWarnings("unchecked")
+			ISupportsCustomFileAttributes<F> fsWithAttributes = (ISupportsCustomFileAttributes<F>) fileSystem;
+			newFile = fsWithAttributes.moveFile(file, destinationFolder, createFolders, Map.of("comment", comment));
+		} else {
+			newFile = fileSystem.moveFile(file, destinationFolder, createFolders);
+		}
 		if (newFile == null && destinationMustBeReturned) {
 			throw new FileSystemException("cannot move file [" + fileSystem.getName(file) + "] to [" + destinationFolder + "]");
 		}
