@@ -159,7 +159,7 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>4.31.0</version>
+				<version>4.31.1</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
