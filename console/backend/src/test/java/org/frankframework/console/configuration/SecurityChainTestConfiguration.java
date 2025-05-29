@@ -8,6 +8,7 @@ import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
 import org.springframework.web.servlet.DispatcherServlet;
 
 import org.frankframework.console.ConsoleFrontend;
@@ -27,7 +28,7 @@ public class SecurityChainTestConfiguration implements ApplicationContextAware {
 	@Bean
 	public FilterRegistrationBean<Filter> getFilterRegistrationBean() {
 		FilterRegistrationBean<Filter> bean = new FilterRegistrationBean<>();
-		Filter filter = applicationContext.getBean("springSecurityFilterChain", Filter.class);
+		Filter filter = applicationContext.getBean(AbstractSecurityWebApplicationInitializer.DEFAULT_FILTER_NAME, Filter.class);
 		bean.setFilter(filter);
 		return bean;
 	}
