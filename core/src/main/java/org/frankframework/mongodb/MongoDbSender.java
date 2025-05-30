@@ -37,6 +37,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.doc.Mandatory;
 import org.frankframework.documentbuilder.ArrayBuilder;
 import org.frankframework.documentbuilder.DocumentBuilderFactory;
 import org.frankframework.documentbuilder.DocumentFormat;
@@ -388,6 +389,7 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 	}
 
 	/** Action */
+	@Mandatory
 	public void setAction(MongoAction action) {
 		this.action = action;
 	}

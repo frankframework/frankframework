@@ -231,7 +231,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 		} catch (ConfigurationException e) {
 			state = RunState.STOPPED;
 			publishEvent(new ConfigurationMessageEvent(this, "aborted starting; " + e.getMessage()));
-			applicationLog.info("Configuration [{}] [{}] was not able to startup", getName(), getVersion());
+			applicationLog.info("Configuration [{}] was not able to startup", this::getNameWithOptionalVersion);
 			throw e;
 		}
 		configured = true;
@@ -243,9 +243,16 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 		} else {
 			msg = "configured in " + (System.currentTimeMillis() - start) + " ms";
 		}
-		secLog.info("Configuration [{}] [{}] {}", getName(), getVersion(), msg);
-		applicationLog.info("Configuration [{}] [{}] {}", getName(), getVersion(), msg);
+		secLog.info("Configuration [{}] {}", getNameWithOptionalVersion(), msg);
+		applicationLog.info("Configuration [{}] {}", getNameWithOptionalVersion(), msg);
 		publishEvent(new ConfigurationMessageEvent(this, msg));
+	}
+
+	private String getNameWithOptionalVersion() {
+		if (StringUtils.isNotEmpty(version)) {
+			return "%s] [%s".formatted(getName(), version);
+		}
+		return getName();
 	}
 
 	@Override
@@ -266,7 +273,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	@Override
 	public void publishEvent(ApplicationEvent event) {
 		if (event instanceof ContextClosedEvent) {
-			applicationLog.info("Configuration [{}] [{}] closed", this::getName, this::getVersion);
+			applicationLog.info("Configuration [{}] closed", this::getNameWithOptionalVersion);
 			publishEvent(new ConfigurationMessageEvent(this, "closed"));
 		}
 

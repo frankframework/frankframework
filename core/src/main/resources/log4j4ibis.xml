@@ -114,6 +114,9 @@
 		<Logger name="com.hazelcast" level="WARN" />
 		<Logger name="org.yaml.snakeyaml.introspector" level="ERROR" />
 
+		<!-- Suppress `implements ApplicationListener interface but is not reachable for event multicasting` -->
+		<Logger name="org.springframework.context.support.ApplicationListenerDetector" level="ERROR" />
+
 		<Logger name="liquibase.migrationLog" level="INFO">
 			<AppenderRef ref="application-log-appender"/>
 		</Logger>
