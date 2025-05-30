@@ -45,6 +45,7 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Spy;
 import org.mockito.junit.MockitoJUnitRunner;
+
 import org.w3c.dom.Element;
 
 import nl.nn.adapterframework.core.PipeLineSession;
@@ -329,7 +330,7 @@ public class SoapProviderTest {
 
 		assertEquals(1, message.countAttachments());
 
-		testAttachment(message, getFile(attachmentFile).asString(), "application/octet-stream");
+		testAttachment(message, getFile(attachmentFile).asString(), "text/plain");
 	}
 
 	@Test
