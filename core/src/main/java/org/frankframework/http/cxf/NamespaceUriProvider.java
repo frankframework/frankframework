@@ -17,6 +17,7 @@ package org.frankframework.http.cxf;
 
 import java.util.Iterator;
 
+import jakarta.annotation.Nullable;
 import jakarta.xml.soap.SOAPBody;
 import jakarta.xml.soap.SOAPException;
 import jakarta.xml.soap.SOAPMessage;
@@ -24,12 +25,14 @@ import jakarta.xml.ws.BindingType;
 import jakarta.xml.ws.ServiceMode;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.cxf.binding.soap.SoapBindingConstants;
 import org.w3c.dom.Node;
 
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.http.SoapActionServiceListener;
 import org.frankframework.http.WebServiceListener;
 import org.frankframework.receivers.ServiceClient;
 import org.frankframework.receivers.ServiceDispatcher;
@@ -53,15 +56,32 @@ public class NamespaceUriProvider extends AbstractSOAPProvider {
 
 	@Override
 	protected Message processRequest(SOAPMessage request, PipeLineSession pipelineSession) throws ListenerException {
-		String serviceName = findNamespaceUri(request);
-		ServiceClient service = sd.getListener(serviceName);
+		String serviceName = pipelineSession.getString(SoapBindingConstants.SOAP_ACTION);
+		ServiceClient service = findService(serviceName);
+
+		if (!(service instanceof SoapActionServiceListener)) {
+			// found service but not SoapActionServiceListener
+			serviceName = findNamespaceUri(request);
+			service = findService(serviceName);
+		}
 
 		if (!(service instanceof WebServiceListener)) {
 			throw new ListenerException("service ["+ serviceName +"] is not registered or not of required type");
 		}
 
+
 		Message message = parseSOAPMessage(request);
+		log.info("processing message [{}] on service [{}]", message.getObjectId(), service);
 		return service.processRequest(message, pipelineSession);
+	}
+
+	@Nullable
+	private ServiceClient findService(String serviceName) {
+		if (StringUtils.isBlank(serviceName)) {
+			return null;
+		}
+
+		return sd.getListener(serviceName);
 	}
 
 	public static String findNamespaceUri(SOAPMessage soapMessage) throws ListenerException {
