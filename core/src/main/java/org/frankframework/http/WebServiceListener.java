@@ -84,9 +84,6 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	private EndpointImpl endpoint = null;
 	private SpringBus cxfBus;
 
-	/**
-	 * initialize listener and register <code>this</code> to the JNDI
-	 */
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
@@ -283,12 +280,9 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	@Override
 	public Object getSpecialDefaultValue(String attributeName, Object defaultValue, Map<String, String> attributes) {
 		if ("address".equals(attributeName)) {
-			return getAddressDefaultValue(attributes.get("name"));
+			return "/" + attributes.get("name");
 		}
 		return defaultValue;
 	}
 
-	private static String getAddressDefaultValue(String name) {
-		return "/" + name;
-	}
 }
