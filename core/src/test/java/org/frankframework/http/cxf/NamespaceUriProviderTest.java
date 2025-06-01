@@ -22,10 +22,12 @@ import jakarta.xml.soap.SOAPMessage;
 import jakarta.xml.ws.WebServiceContext;
 import jakarta.xml.ws.WebServiceException;
 
+import org.apache.cxf.binding.soap.SoapBindingConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.http.SoapActionServiceListener;
 import org.frankframework.http.WebServiceListener;
 import org.frankframework.receivers.ServiceClient;
 import org.frankframework.receivers.ServiceDispatcher;
@@ -114,6 +116,75 @@ public class NamespaceUriProviderTest {
 
 		String result = XmlUtils.nodeToString(message.getSOAPPart());
 		String expected = getFile("VrijeBerichten_PipelineResult.xml").asString();
+		MatchUtils.assertXmlEquals(expected, result);
+	}
+
+	@Test
+	public void testFindSoap11ActionAndCallServiceClient() throws Exception {
+		Message pipelineResult;
+		try (Message plr = getFile("soapmsg1_1.xml")) {
+			pipelineResult = spy(new Message(new FilterInputStream(plr.asInputStream()) {}));
+		}
+
+		SoapActionServiceListener listener = mock(SoapActionServiceListener.class);
+		doAnswer(e -> {
+			Message message = e.getArgument(0);
+
+			try {
+				MatchUtils.assertXmlEquals(getFile("soapmsg1_1.xml").asString(), message.asString());
+				return pipelineResult;
+			} catch (IOException ex) {
+				fail("unable to read response message: " + ex.getMessage(), ex);
+				return null;
+			}
+		}).when(listener).processRequest(any(Message.class), any(PipeLineSession.class));
+
+		dispatcher.registerServiceClient("http://www.egem.nl/StUF/sector/zkn/0310", listener);
+
+		SOAPMessage request = createMessage("soapmsg1_1.xml", true);
+		webServiceContext.getMessageContext().put(SoapBindingConstants.SOAP_ACTION, "http://www.egem.nl/StUF/sector/zkn/0310");
+		webServiceContext.getMessageContext().put("Content-Type", "text/xml; action=\"ignored\"");
+		SOAPMessage message = provider.invoke(request);
+
+		verify(pipelineResult, times(0)).close();
+
+		String result = XmlUtils.nodeToString(message.getSOAPPart());
+		String expected = getFile("soapmsg1_1.xml").asString();
+		MatchUtils.assertXmlEquals(expected, result);
+	}
+
+	@Test
+	public void testFindSoap12ActionAndCallServiceClient() throws Exception {
+		Message pipelineResult;
+		try (Message plr = getFile("soapmsg1_2.xml")) {
+			pipelineResult = spy(new Message(new FilterInputStream(plr.asInputStream()) {}));
+		}
+
+		SoapActionServiceListener listener = mock(SoapActionServiceListener.class);
+		doAnswer(e -> {
+			Message message = e.getArgument(0);
+
+			try {
+				MatchUtils.assertXmlEquals(getFile("soapmsg1_2.xml").asString(), message.asString());
+				return pipelineResult;
+			} catch (IOException ex) {
+				fail("unable to read response message: " + ex.getMessage(), ex);
+				return null;
+			}
+		}).when(listener).processRequest(any(Message.class), any(PipeLineSession.class));
+
+		dispatcher.registerServiceClient("http://www.egem.nl/StUF/sector/zkn/0310", listener);
+
+		SOAPMessage request = createMessage("soapmsg1_2.xml", false);
+		webServiceContext.getMessageContext().put(SoapBindingConstants.SOAP_ACTION, "ingored");
+		webServiceContext.getMessageContext().put("Content-Type",
+				"application/soap+xml;charset=UTF-8;action=\"http://www.egem.nl/StUF/sector/zkn/0310\"");
+		SOAPMessage message = provider.invoke(request);
+
+		verify(pipelineResult, times(0)).close();
+
+		String result = XmlUtils.nodeToString(message.getSOAPPart());
+		String expected = getFile("soapmsg1_2.xml").asString();
 		MatchUtils.assertXmlEquals(expected, result);
 	}
 }

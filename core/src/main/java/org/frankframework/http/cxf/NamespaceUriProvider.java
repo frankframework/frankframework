@@ -59,8 +59,12 @@ public class NamespaceUriProvider extends AbstractSOAPProvider {
 		String serviceName = pipelineSession.getString(SoapBindingConstants.SOAP_ACTION);
 		ServiceClient service = findService(serviceName);
 
-		if (!(service instanceof SoapActionServiceListener)) {
-			// found service but not SoapActionServiceListener
+		if (service instanceof SoapActionServiceListener) {
+			Message message = parseSOAPMessage(request);
+			log.info("processing message [{}] on service [{}]", message.getObjectId(), service);
+			return service.processRequest(message, pipelineSession);
+		} else {
+			// found service but not SoapActionServiceListener, find the namespaceURI and see if there are listeners
 			serviceName = findNamespaceUri(request);
 			service = findService(serviceName);
 		}
