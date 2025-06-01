@@ -218,9 +218,6 @@ public class IbisApplicationContext implements Closeable {
 	 * @return Spring XML Bean Factory or NULL
 	 */
 	public AbstractApplicationContext getApplicationContext() {
-		if (applicationContext == null)
-			createApplicationContext();
-
 		return applicationContext;
 	}
 

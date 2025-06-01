@@ -2,21 +2,13 @@ package org.frankframework.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.File;
-import java.nio.file.Path;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.larva.LarvaLogLevel;
-import org.frankframework.util.AppConstants;
 
 class LarvaPipeTest extends PipeTestBase<LarvaPipe> {
-
-	@TempDir
-	private Path tempDir;
 
 	@Override
 	public LarvaPipe createPipe() {
@@ -27,7 +19,6 @@ class LarvaPipeTest extends PipeTestBase<LarvaPipe> {
 	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
-		AppConstants.getInstance().setProperty("webapp.realpath", tempDir.toString() + File.separatorChar);
 	}
 
 	@Test

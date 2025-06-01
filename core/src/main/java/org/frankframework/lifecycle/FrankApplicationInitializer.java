@@ -30,7 +30,6 @@ import org.springframework.web.context.support.WebApplicationContextUtils;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.IbisContext;
-import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 
@@ -53,25 +52,17 @@ public class FrankApplicationInitializer implements WebApplicationInitializer {
 	public void onStartup(ServletContext servletContext) throws ServletException {
 		APPLICATION_LOG.debug("Starting Frank ApplicationContext");
 		servletContext.addListener(new ContextCloseEventListener());
-		AppConstants appConstants = AppConstants.getInstance();
-
-		String realPath = servletContext.getRealPath("/");
-		if (realPath != null) {
-			appConstants.put("webapp.realpath", realPath);
-		} else {
-			log.warn("Could not determine webapp.realpath");
-		}
 
 		ApplicationContext parentContext = null;
 		try {
-			parentContext = WebApplicationContextUtils.getWebApplicationContext(servletContext); //This can throw many different types of errors!
+			parentContext = WebApplicationContextUtils.getWebApplicationContext(servletContext); // This can throw many different types of errors!
 			if(parentContext == null) {
 				throw new IllegalStateException("No Frank EnvironmentContext found. Aborting launch...");
 			}
 		} catch (Throwable t) {
 			servletContext.setAttribute(EXCEPTION_KEY, t);
 			APPLICATION_LOG.fatal("Frank EnvironmentContext failed to initialize. Aborting launch...", t);
-			throw t; //If the IBIS WebApplicationInitializer can't be found or initialized, throw the exception
+			throw t; // If the IBIS WebApplicationInitializer can't be found or initialized, throw the exception
 		}
 
 		IbisContext ibisContext = new IbisContext();
