@@ -186,7 +186,7 @@ public class ScenarioRunner {
 			// increment suffix for each scenario
 			String correlationId = TESTTOOL_CORRELATIONID + "(" + correlationIdSuffixCounter.getAndIncrement() + ")";
 			Map<String, LarvaScenarioAction> larvaActions = actionFactory.createLarvaActions(scenario, larvaContext, correlationId);
-			if (larvaActions == null || larvaActions.isEmpty()) {
+			if (larvaActions.isEmpty()) {
 				testRunStatus.scenarioFailed(scenario);
 				testExecutionObserver.finishScenario(testRunStatus, scenario, LarvaTool.RESULT_ERROR, "Could not create LarvaActions");
 				return LarvaTool.RESULT_ERROR;
@@ -289,10 +289,10 @@ public class ScenarioRunner {
 		}
 
 		actionName = step.substring(i + 1, step.lastIndexOf("."));
-		Object actionFactoryClassname = properties.get(actionName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX);
+		Object actionFactoryClassname = properties.get(actionName + Scenario.CLASS_NAME_PROPERTY_SUFFIX);
 		LarvaScenarioAction scenarioAction = actions.get(actionName);
 		if (scenarioAction == null) {
-			scenarioError(scenario, "Property '" + actionName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
+			scenarioError(scenario, "Property '" + actionName + Scenario.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
 			return LarvaTool.RESULT_ERROR;
 		}
 

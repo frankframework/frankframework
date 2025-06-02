@@ -37,7 +37,6 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ClassNameRewriter;
-import org.frankframework.larva.actions.LarvaActionFactory;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.PropertyLoader;
 
@@ -228,7 +227,7 @@ public class ScenarioLoader {
 
 	private static Map.Entry<Object, Object> rewriteClassName(Map.Entry<Object, Object> e) {
 		Object propertyName = e.getKey();
-		if (e.getValue() == null || !propertyName.toString().endsWith(LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX)) {
+		if (e.getValue() == null || !propertyName.toString().endsWith(Scenario.CLASS_NAME_PROPERTY_SUFFIX)) {
 			return e;
 		}
 		String newClassName = e.getValue()

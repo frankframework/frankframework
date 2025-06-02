@@ -22,10 +22,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
+import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
 
@@ -38,7 +40,9 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class Scenario {
 
+	public static final String CLASS_NAME_PROPERTY_SUFFIX = ".className";
 	private static final Pattern STEP_NR_RE = Pattern.compile("^step(\\d+)\\..+(\\.read|\\.readline|\\.write|\\.writeline)$");
+	private static final StepSorter STEP_SORTER = new StepSorter();
 
 	private final @Getter ID id;
 	private final @Getter File scenarioFile;
@@ -46,6 +50,7 @@ public class Scenario {
 	private final @Getter String description;
 	private final @Getter Properties properties;
 	private final @Getter SortedSet<LarvaMessage> messages = new TreeSet<>(Comparator.comparing(LarvaMessage::getMessage));
+	private final @Getter boolean resolvePropertiesInScenarioFiles;
 	private Map<String, Map<String, Map<String, String>>> ignoreMapCache;
 
 	public Scenario(File scenarioFile, String name, String description, Properties properties) {
@@ -54,11 +59,20 @@ public class Scenario {
 		this.name = name;
 		this.description = description;
 		this.properties = properties;
+		this.resolvePropertiesInScenarioFiles = parseScenarioProperty("scenario.resolveProperties", true);
 	}
 
 	public Scenario(File scenarioFile, String name, String description, Properties properties, Collection<LarvaMessage> messages) {
 		this(scenarioFile, name, description, properties);
 		addMessages(messages);
+	}
+
+	public boolean parseScenarioProperty(String name, boolean dfault) {
+		String value = properties.getProperty(name);
+		if (value == null) {
+			return dfault;
+		}
+		return "true".equalsIgnoreCase(value) || "!false".equalsIgnoreCase(value);
 	}
 
 	public void addWarning(@Nonnull String warning) {
@@ -82,11 +96,28 @@ public class Scenario {
 		return "Scenario[" +
 				"name='" + name + '\'' +
 				", description='" + description + '\'' +
-				'[';
+				']';
 	}
 
 	public String getLongName() {
 		return scenarioFile.getAbsolutePath();
+	}
+
+	public Set<String> getScenarioActionNames() {
+		return properties.stringPropertyNames()
+				.stream()
+				.filter(key -> key.endsWith(CLASS_NAME_PROPERTY_SUFFIX))
+				.map(key -> key.substring(0, key.lastIndexOf(".")))
+				.collect(Collectors.toSet());
+	}
+
+	public String getScenarioActionClassName(String scenarioActionName) {
+		String className = properties.getProperty(scenarioActionName + CLASS_NAME_PROPERTY_SUFFIX);
+		// NB: Instead of rewriting legacy packages names when loading scenarios, we could also do that here instead.
+		if ("org.frankframework.jms.JmsListener".equals(className)) {
+			return "org.frankframework.jms.PullingJmsListener";
+		}
+		return className;
 	}
 
 	public List<String> getSteps(LarvaConfig larvaConfig) {
@@ -94,7 +125,7 @@ public class Scenario {
 		List<String> steps = properties.stringPropertyNames().stream()
 				.filter(Scenario::isValidStep)
 				.filter(step -> larvaConfig.isAllowReadlineSteps() || !step.endsWith(".readline"))
-				.sorted(new Scenario.StepSorter())
+				.sorted(STEP_SORTER)
 				.toList();
 
 		// Validate that there are no duplicate step numbers
