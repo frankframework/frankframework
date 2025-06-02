@@ -120,18 +120,19 @@ public class Scenario {
 		return className;
 	}
 
-	public List<String> getSteps(LarvaConfig larvaConfig) {
+	public List<Step> getSteps(LarvaConfig larvaConfig) {
 		// Filter and sort steps from all scenario property names
-		List<String> steps = properties.stringPropertyNames().stream()
+		List<Step> steps = properties.stringPropertyNames().stream()
 				.filter(Scenario::isValidStep)
 				.filter(step -> larvaConfig.isAllowReadlineSteps() || !step.endsWith(".readline"))
-				.sorted(STEP_SORTER)
+				.map(step -> Step.of(this, step))
+				.sorted()
 				.toList();
 
 		// Validate that there are no duplicate step numbers
 		//noinspection ResultOfMethodCallIgnored
 		steps.stream()
-				.mapToInt(Scenario::getStepNr)
+				.mapToInt(Step::getIdx)
 				.reduce(-1, (lastStepNr, stepNr) -> {
 					if (lastStepNr == stepNr) {
 						throw new LarvaException(String.format("Scenario %s has more than one step numbered %d", name, stepNr));
@@ -146,8 +147,8 @@ public class Scenario {
 		return properties.getProperty(step + ".absolutepath");
 	}
 
-	public String getStepDisplayName(String step) {
-		return getName() + " - " + step + " - " + properties.get(step);
+	public String getStepDisplayName(Step step) {
+		return getName() + " - " + step;
 	}
 
 	public void clearScenarioCaches() {

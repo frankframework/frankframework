@@ -1,6 +1,7 @@
 package org.frankframework.larva;
 
 import java.io.IOException;
+import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -8,22 +9,25 @@ import jakarta.annotation.Nonnull;
 
 import lombok.Getter;
 
+import org.frankframework.larva.actions.LarvaActionUtils;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringResolver;
 
 public class Step implements Comparable<Step> {
 
-	private static final Pattern STEP_PARSE_RE = Pattern.compile("^step(\\d+)\\..+(\\.read|\\.readline|\\.write|\\.writeline)$");
+	private static final Pattern STEP_PARSE_RE = Pattern.compile("^step(\\d+)\\.(.+)(\\.read|\\.readline|\\.write|\\.writeline)$");
 
 	private final @Getter Scenario scenario;
+	private final @Getter String rawLine;
 	private final @Getter int idx;
 	private final @Getter String actionTarget;
 	private final @Getter String action;
 	private final @Getter String value;
 
-	public Step(Scenario scenario, int idx, String actionTarget, String action, String value) {
+	public Step(Scenario scenario, String rawLine, int idx, String actionTarget, String action, String value) {
 		this.scenario = scenario;
+		this.rawLine = rawLine;
 		this.idx = idx;
 		this.actionTarget = actionTarget;
 		this.action = action;
@@ -35,15 +39,15 @@ public class Step implements Comparable<Step> {
 		if (!stepMatch.matches()) {
 			throw new IllegalArgumentException("Step '" + stepLine + "' does not have a step number or action");
 		}
-		String absPathProperty = stepLine + ".absolutepath";
-		String value;
-		if (scenario.getProperties().containsKey(absPathProperty)) {
-			value = scenario.getProperties().getProperty(absPathProperty);
-		} else {
-			value = scenario.getProperties().getProperty(stepLine);
-		}
+		String value = scenario.getProperties().getProperty(stepLine);
+		return new Step(scenario, stepLine, Integer.parseInt(stepMatch.group(1)), stepMatch.group(2), stepMatch.group(3), value);
+	}
 
-		return new Step(scenario, Integer.parseInt(stepMatch.group(1)), stepMatch.group(2), stepMatch.group(3), value);
+	public String getStepDataFile() {
+		if (isInline() || isIgnore()) {
+			return null;
+		}
+		return scenario.getProperties().getProperty(rawLine + ".absolutepath");
 	}
 
 	public boolean isInline() {
@@ -66,7 +70,7 @@ public class Step implements Comparable<Step> {
 		if (isInline() || isIgnore()) {
 			return new Message(value);
 		}
-		Message fileMessage = LarvaUtil.readFile(value);
+		Message fileMessage = LarvaUtil.readFile(getStepDataFile());
 		if (!scenario.isResolvePropertiesInScenarioFiles()) {
 			return fileMessage;
 		}
@@ -75,6 +79,10 @@ public class Step implements Comparable<Step> {
 			throw new LarvaException("Failed to resolve properties in input file [" + value + "] for step " + idx);
 		}
 		return new Message(StringResolver.substVars(fileData, appConstants), fileMessage.copyContext());
+	}
+
+	public Properties getStepParameters() {
+		return LarvaActionUtils.getSubProperties(scenario.getProperties(), rawLine);
 	}
 
 	@Override

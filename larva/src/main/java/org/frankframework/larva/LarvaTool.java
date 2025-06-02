@@ -385,7 +385,7 @@ public class LarvaTool {
 		}
 	}
 
-	public int compareResult(TestExecutionObserver testExecutionObserver, Scenario scenario, String step, String fileName, Message expectedResultMessage, Message actualResultMessage) {
+	public int compareResult(TestExecutionObserver testExecutionObserver, Scenario scenario, Step step, String fileName, Message expectedResultMessage, Message actualResultMessage) {
 		Properties properties = scenario.getProperties();
 		String expectedResult = messageToString(expectedResultMessage);
 		String actualResult = messageToString(actualResultMessage);
@@ -490,8 +490,8 @@ public class LarvaTool {
 		return ok;
 	}
 
-	private int reportFailedCompare(TestExecutionObserver testExecutionObserver, Scenario scenario, String step, String message, String printableExpectedResult, String preparedExpectedResult, String printableActualResult, String preparedActualResult, String actualResult, int ok) {
-		String filenameAbsolutePath = scenario.getStepDataFile(step);
+	private int reportFailedCompare(TestExecutionObserver testExecutionObserver, Scenario scenario, Step step, String message, String printableExpectedResult, String preparedExpectedResult, String printableActualResult, String preparedActualResult, String actualResult, int ok) {
+		String filenameAbsolutePath = step.getStepDataFile();
 		testExecutionObserver.stepMessageFailed(scenario, step, message, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult);
 		if (larvaConfig.isAutoSaveDiffs()) {
 			debugMessage("Copy actual result to ["+filenameAbsolutePath+"]");

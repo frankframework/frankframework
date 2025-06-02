@@ -16,6 +16,7 @@
 package org.frankframework.larva.output;
 
 import org.frankframework.larva.Scenario;
+import org.frankframework.larva.Step;
 import org.frankframework.larva.TestRunStatus;
 
 /**
@@ -34,10 +35,10 @@ public interface TestExecutionObserver {
 	void startScenario(TestRunStatus testRunStatus, Scenario scenario);
 	void finishScenario(TestRunStatus testRunStatus, Scenario scenario, int scenarioResult, String scenarioResultMessage);
 
-	void startStep(TestRunStatus testRunStatus, Scenario scenario, String step);
-	void finishStep(TestRunStatus testRunStatus, Scenario scenario, String step, int stepResult, String stepResultMessage);
-	void stepMessage(Scenario scenario, String step, String description, String stepMessage);
-	void stepMessageSuccess(Scenario scenario, String step, String description, String stepResultMessage, String stepResultMessagePreparedForDiff);
-	void stepMessageFailed(Scenario scenario, String step, String description, String stepExpectedResultMessage, String stepExpectedResultMessagePreparedForDiff, String stepActualResultMessage, String stepActualResultMessagePreparedForDiff);
+	void startStep(TestRunStatus testRunStatus, Scenario scenario, Step step);
+	void finishStep(TestRunStatus testRunStatus, Scenario scenario, Step step, int stepResult, String stepResultMessage);
+	void stepMessage(Scenario scenario, Step step, String description, String stepMessage);
+	void stepMessageSuccess(Scenario scenario, Step step, String description, String stepResultMessage, String stepResultMessagePreparedForDiff);
+	void stepMessageFailed(Scenario scenario, Step step, String description, String stepExpectedResultMessage, String stepExpectedResultMessagePreparedForDiff, String stepActualResultMessage, String stepActualResultMessagePreparedForDiff);
 	void messageError(String description, String messageError);
 }

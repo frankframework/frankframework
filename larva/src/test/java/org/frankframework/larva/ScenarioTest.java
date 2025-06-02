@@ -39,28 +39,28 @@ class ScenarioTest {
 		config.setAllowReadlineSteps(false);
 
 		// Act
-		List<String> steps = scenario.getSteps(config);
+		List<Step> steps = scenario.getSteps(config);
 
 		// Assert
 		assertEquals(4, steps.size());
-		assertEquals("step1.action.read", steps.get(0));
-		assertEquals("step2.action.write", steps.get(1));
-		assertEquals("step3.action.writeline", steps.get(2));
-		assertEquals("step5.action.read", steps.get(3));
+		assertEquals("step1.action.read", steps.get(0).getRawLine());
+		assertEquals("step2.action.write", steps.get(1).getRawLine());
+		assertEquals("step3.action.writeline", steps.get(2).getRawLine());
+		assertEquals("step5.action.read", steps.get(3).getRawLine());
 
 		// Arrange
 		config.setAllowReadlineSteps(true);
 
 		// Act
-		List<String> steps2 = scenario.getSteps(config);
+		List<Step> steps2 = scenario.getSteps(config);
 
 		// Assert
 		assertEquals(5, steps2.size());
-		assertEquals("step1.action.read", steps2.get(0));
-		assertEquals("step2.action.write", steps2.get(1));
-		assertEquals("step3.action.writeline", steps2.get(2));
-		assertEquals("step4.action.readline", steps2.get(3));
-		assertEquals("step5.action.read", steps2.get(4));
+		assertEquals("step1.action.read", steps2.get(0).getRawLine());
+		assertEquals("step2.action.write", steps2.get(1).getRawLine());
+		assertEquals("step3.action.writeline", steps2.get(2).getRawLine());
+		assertEquals("step4.action.readline", steps2.get(3).getRawLine());
+		assertEquals("step5.action.read", steps2.get(4).getRawLine());
 	}
 
 	@Test
@@ -90,7 +90,7 @@ class ScenarioTest {
 		config.setAllowReadlineSteps(false);
 
 		// Act
-		List<String> steps = scenario.getSteps(config);
+		List<Step> steps = scenario.getSteps(config);
 
 		// Assert
 		assertEquals(3, steps.size());
@@ -114,15 +114,15 @@ class ScenarioTest {
 		Scenario scenario = createScenario(scenarioSteps);
 
 		// Act
-		List<String> steps = scenario.getSteps(config);
+		List<Step> steps = scenario.getSteps(config);
 
 		// Assert
 		assertEquals(5, steps.size());
-		assertEquals("step1.action.read", steps.get(0));
-		assertEquals("step2.action.write", steps.get(1));
-		assertEquals("step3.action.writeline", steps.get(2));
-		assertEquals("step4.action.read", steps.get(3));
-		assertEquals("step5.action.read", steps.get(4));
+		assertEquals("step1.action.read", steps.get(0).getRawLine());
+		assertEquals("step2.action.write", steps.get(1).getRawLine());
+		assertEquals("step3.action.writeline", steps.get(2).getRawLine());
+		assertEquals("step4.action.read", steps.get(3).getRawLine());
+		assertEquals("step5.action.read", steps.get(4).getRawLine());
 	}
 
 	@Test
@@ -142,14 +142,14 @@ class ScenarioTest {
 		Scenario scenario = createScenario(scenarioSteps);
 
 		// Act
-		List<String> steps = scenario.getSteps(config);
+		List<Step> steps = scenario.getSteps(config);
 
 		// Assert
 		assertEquals(4, steps.size());
-		assertEquals("step1.action.read", steps.get(0));
-		assertEquals("step2.action.write", steps.get(1));
-		assertEquals("step3.action.writeline", steps.get(2));
-		assertEquals("step5.action.read", steps.get(3));
+		assertEquals("step1.action.read", steps.get(0).getRawLine());
+		assertEquals("step2.action.write", steps.get(1).getRawLine());
+		assertEquals("step3.action.writeline", steps.get(2).getRawLine());
+		assertEquals("step5.action.read", steps.get(3).getRawLine());
 	}
 
 	private Scenario createScenario(String scenarioSteps) throws IOException {

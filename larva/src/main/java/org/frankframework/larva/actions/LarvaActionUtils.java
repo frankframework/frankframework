@@ -52,8 +52,7 @@ public class LarvaActionUtils {
 			keyBase +=".";
 
 		Properties filteredProperties = new Properties();
-		for(Object objKey: properties.keySet()) {
-			String key = (String) objKey;
+		for(String key: properties.stringPropertyNames()) {
 			if(key.startsWith(keyBase)) {
 				filteredProperties.put(key.substring(keyBase.length()), properties.get(key));
 			}
@@ -73,7 +72,7 @@ public class LarvaActionUtils {
 	 * param2, param3 etc.
 	 *
 	 * @param properties Properties object from which to create the map
-	 * @param property   Property name to use as base name
+	 * @param session   PipeLineSession from which to resolve parameter values
 	 * @return A map with parameters
 	 */
 	public static Map<String, IParameter> createParametersMapFromParamProperties(Properties properties, PipeLineSession session) {

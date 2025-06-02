@@ -39,7 +39,6 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.TimeoutException;
 import org.frankframework.larva.actions.LarvaActionFactory;
-import org.frankframework.larva.actions.LarvaActionUtils;
 import org.frankframework.larva.actions.LarvaScenarioAction;
 import org.frankframework.larva.actions.LarvaScenarioContext;
 import org.frankframework.larva.output.TestExecutionObserver;
@@ -197,7 +196,7 @@ public class ScenarioRunner {
 			// Start the scenario
 			// TODO: The buffering is now not threadsafe yet.
 			log.debug("Get steps from property file");
-			List<String> stepList = getSteps(scenario);
+			List<Step> stepList = getSteps(scenario);
 			if (stepList.isEmpty()) {
 				testRunStatus.scenarioFailed(scenario);
 				testExecutionObserver.finishScenario(testRunStatus, scenario, LarvaTool.RESULT_ERROR, "No steps found");
@@ -206,9 +205,9 @@ public class ScenarioRunner {
 			log.debug("Execute steps");
 			boolean allStepsPassed = true;
 			boolean autoSaved = false;
-			Iterator<String> steps = stepList.iterator();
+			Iterator<Step> steps = stepList.iterator();
 			while (allStepsPassed && steps.hasNext()) {
-				String step = steps.next();
+				Step step = steps.next();
 				testExecutionObserver.startStep(testRunStatus, scenario, step);
 
 				long stepStart = System.currentTimeMillis();
@@ -236,7 +235,7 @@ public class ScenarioRunner {
 			log.debug("Close actions");
 			boolean remainingMessagesFound = actionFactory.closeLarvaActions(scenario, larvaActions);
 			if (remainingMessagesFound) {
-				testExecutionObserver.finishStep(testRunStatus, scenario, scenario.getName() + " - Remaining messages found", LarvaTool.RESULT_ERROR, "Found one or more messages on actions or in database after scenario executed");
+				testExecutionObserver.finishStep(testRunStatus, scenario, null, LarvaTool.RESULT_ERROR, "Found one or more messages on actions or in database after scenario executed");
 				scenarioResult = LarvaTool.RESULT_ERROR;
 			}
 
@@ -272,23 +271,21 @@ public class ScenarioRunner {
 		}
 	}
 
-	// Ideally, this should be moved to its own class.
-	private int executeStep(Scenario scenario, String step, Map<String, LarvaScenarioAction> actions, String correlationId) {
+	private int executeStep(Scenario scenario, Step step, Map<String, LarvaScenarioAction> actions, String correlationId) {
 		Properties properties = scenario.getProperties();
-		String fileName = properties.getProperty(step);
-		int i = step.indexOf('.');
+		String fileName = step.getValue();
 		String actionName;
 		Message fileContent;
 
 		// Read the scenario file for this step
 		try {
-			fileContent = readScenarioStepData(scenario, step);
+			fileContent = step.getStepMessage(appConstants);
 		} catch (Exception e) {
 			scenarioError(scenario, "Error reading data for step " + step + ":" + e.getMessage(), e);
 			return LarvaTool.RESULT_ERROR;
 		}
 
-		actionName = step.substring(i + 1, step.lastIndexOf("."));
+		actionName = step.getActionTarget();
 		Object actionFactoryClassname = properties.get(actionName + Scenario.CLASS_NAME_PROPERTY_SUFFIX);
 		LarvaScenarioAction scenarioAction = actions.get(actionName);
 		if (scenarioAction == null) {
@@ -296,9 +293,9 @@ public class ScenarioRunner {
 			return LarvaTool.RESULT_ERROR;
 		}
 
-		if (step.endsWith(".read") || step.endsWith(".readline")) {
+		if (step.isRead()) {
 			if ("org.frankframework.larva.XsltProviderListener".equals(actionFactoryClassname)) {
-				Properties scenarioStepProperties = LarvaActionUtils.getSubProperties(properties, step);
+				Properties scenarioStepProperties = step.getStepParameters();
 				Map<String, Object> xsltParameters = larvaTool.createParametersMapFromParamProperties(scenarioStepProperties);
 				return executeActionWriteStep(scenario, step, scenarioAction, actionName, fileContent, correlationId, xsltParameters); // XsltProviderListener has .read and .write reversed
 			} else {
@@ -344,7 +341,7 @@ public class ScenarioRunner {
 		return new Message(StringResolver.substVars(fileData, appConstants), fileContent.copyContext());
 	}
 
-	private int executeActionWriteStep(Scenario scenario, String step, LarvaScenarioAction scenarioAction, String actionName, Message fileContent, String correlationId, Map<String, Object> xsltParameters) {
+	private int executeActionWriteStep(Scenario scenario, Step step, LarvaScenarioAction scenarioAction, String actionName, Message fileContent, String correlationId, Map<String, Object> xsltParameters) {
 		try {
 			scenarioAction.executeWrite(fileContent, correlationId, xsltParameters);
 			testExecutionObserver.stepMessage(scenario, step, "Successfully wrote message to '" + actionName + "':", larvaTool.messageToString(fileContent));
@@ -358,7 +355,7 @@ public class ScenarioRunner {
 		return LarvaTool.RESULT_ERROR;
 	}
 
-	private int executeActionReadStep(Scenario scenario, String step, LarvaScenarioAction scenarioAction, String actionName, String fileName, Message expected) {
+	private int executeActionReadStep(Scenario scenario, Step step, LarvaScenarioAction scenarioAction, String actionName, String fileName, Message expected) {
 		try {
 			Message message = scenarioAction.executeRead(scenario.getProperties()); // cannot close this message because of FrankSender (JSON scenario02)
 			if (message == null) {
@@ -394,13 +391,13 @@ public class ScenarioRunner {
 		larvaTool.errorMessage(message); // Log error clearly in the flow of events
 	}
 
-	private List<String> getSteps(Scenario scenario) {
-		List<String> steps = scenario.getSteps(larvaConfig);
+	private List<Step> getSteps(Scenario scenario) {
+		List<Step> steps = scenario.getSteps(larvaConfig);
 		larvaTool.debugMessage(steps.size() + " steps found");
 		return steps;
 	}
 
-	private String buildStepFinishedMessage(Scenario scenario, String step, int stepResult, long stepDurationMs) {
+	private String buildStepFinishedMessage(Scenario scenario, Step step, int stepResult, long stepDurationMs) {
 		String stepName = scenario.getStepDisplayName(step);
 		StringBuilder stepResultMessage = new StringBuilder("Step '");
 		stepResultMessage.append(stepName).append("' ");
