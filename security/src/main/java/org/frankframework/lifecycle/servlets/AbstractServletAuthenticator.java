@@ -169,6 +169,10 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 			httpSecurityConfigurer.logout(LogoutConfigurer::disable); // Disable the logout filter
 			httpSecurityConfigurer.headers(h -> h.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
 
+			// STATELESS prevents session from leaking over multiple servlets.
+			// Spring Security will never use the cookie to obtain the SecurityContext for webservices.
+			httpSecurityConfigurer.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
 			return configureHttpSecurity(httpSecurityConfigurer);
 		} catch (Exception e) {
 			throw new IllegalStateException("unable to configure Spring Security", e);
@@ -180,10 +184,6 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 	public SecurityFilterChain configureHttpSecurity(HttpSecurity http) throws Exception {
 		RequestMatcher securityRequestMatcher = new URLRequestMatcher(privateEndpoints);
 		http.securityMatcher(securityRequestMatcher); // Triggers the SecurityFilterChain, also for OPTIONS requests!
-
-		// STATELESS prevents session from leaking over multiple servlets.
-		// The Ladybug (echo2) however requires cookie persistence. Hence it's set to NEVER
-		http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.NEVER));
 
 		if (!publicEndpoints.isEmpty()) { // Enable anonymous access on public endpoints
 			http.authorizeHttpRequests(requests -> requests.requestMatchers(new URLRequestMatcher(publicEndpoints)).permitAll());
