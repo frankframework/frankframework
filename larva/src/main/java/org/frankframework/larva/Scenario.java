@@ -25,8 +25,6 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
@@ -41,8 +39,7 @@ import lombok.extern.log4j.Log4j2;
 public class Scenario {
 
 	public static final String CLASS_NAME_PROPERTY_SUFFIX = ".className";
-	private static final Pattern STEP_NR_RE = Pattern.compile("^step(\\d+)\\..+(\\.read|\\.readline|\\.write|\\.writeline)$");
-	private static final StepSorter STEP_SORTER = new StepSorter();
+	public static final String ABSOLUTE_PATH_PROPERTY_SUFFIX = ".absolutepath";
 
 	private final @Getter ID id;
 	private final @Getter File scenarioFile;
@@ -123,7 +120,7 @@ public class Scenario {
 	public List<Step> getSteps(LarvaConfig larvaConfig) {
 		// Filter and sort steps from all scenario property names
 		List<Step> steps = properties.stringPropertyNames().stream()
-				.filter(Scenario::isValidStep)
+				.filter(Step::isValidStep)
 				.filter(step -> larvaConfig.isAllowReadlineSteps() || !step.endsWith(".readline"))
 				.map(step -> Step.of(this, step))
 				.sorted()
@@ -141,14 +138,6 @@ public class Scenario {
 				});
 
 		return steps;
-	}
-
-	public String getStepDataFile(String step) {
-		return properties.getProperty(step + ".absolutepath");
-	}
-
-	public String getStepDisplayName(Step step) {
-		return getName() + " - " + step;
 	}
 
 	public void clearScenarioCaches() {
@@ -191,25 +180,4 @@ public class Scenario {
 		}
 	}
 
-	private static class StepSorter implements Comparator<String> {
-		@Override
-		public int compare(String o1, String o2) {
-			int step1Nr = getStepNr(o1);
-			int step2Nr = getStepNr(o2);
-			return Integer.compare(step1Nr, step2Nr);
-		}
-	}
-
-	private static int getStepNr(String step) {
-		Matcher stepNrMatch = STEP_NR_RE.matcher(step);
-		if (!stepNrMatch.matches()) {
-			throw new IllegalArgumentException("Step '" + step + "' does not have a step number");
-		}
-		return Integer.parseInt(stepNrMatch.group(1));
-	}
-
-	private static boolean isValidStep(String step) {
-		Matcher stepMatch = STEP_NR_RE.matcher(step);
-		return stepMatch.matches();
-	}
 }

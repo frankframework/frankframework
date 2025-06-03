@@ -34,7 +34,6 @@ import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -42,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.zip.ZipInputStream;
@@ -870,8 +870,7 @@ public class LarvaTool {
 		return result;
 	}
 
-	public String formatDecimalContentBetweenKeys(String string,
-		String key1, String key2) {
+	public String formatDecimalContentBetweenKeys(String string, String key1, String key2) {
 		String result = string;
 		int i = result.indexOf(key1);
 		while (i != -1 && result.length() > i + key1.length()) {
@@ -1050,13 +1049,10 @@ public class LarvaTool {
 	*/
 	public static Map<String, Map<String, Map<String, String>>> mapPropertiesToIgnores(Properties properties){
 		Map<String, Map<String, Map<String, String>>> returnMap = new HashMap<>();
-		Enumeration<String> enums = (Enumeration<String>) properties.propertyNames();
+		Set<String> propertyNames = properties.stringPropertyNames();
 
 		// Loop through all properties
-		while (enums.hasMoreElements()) {
-			// Extract key
-			String key = enums.nextElement();
-
+		for (String key: propertyNames) {
 			// Extract ignore type
 			String ignore = key.split(Pattern.quote("."))[0];
 			List<String> attributes = findAttributesForIgnore(ignore);

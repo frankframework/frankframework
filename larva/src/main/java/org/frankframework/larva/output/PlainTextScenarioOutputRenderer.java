@@ -85,18 +85,18 @@ public class PlainTextScenarioOutputRenderer implements TestExecutionObserver {
 
 	@Override
 	public void stepMessage(Scenario scenario, Step step, String description, String stepMessage) {
-		out.writeOutputMessage(LarvaLogLevel.PIPELINE_MESSAGES, "Step " + scenario.getStepDisplayName(step) + ": " + description + "\n" + stepMessage);
+		out.writeOutputMessage(LarvaLogLevel.PIPELINE_MESSAGES, "Step " + step.getDisplayName() + ": " + description + "\n" + stepMessage);
 	}
 
 	@Override
 	public void stepMessageSuccess(Scenario scenario, Step step, String description, String stepResultMessage, String stepResultMessagePreparedForDiff) {
-		out.writeOutputMessage(LarvaLogLevel.PIPELINE_MESSAGES, "Step " + scenario.getStepDisplayName(step) + ": " + description + "\n" + stepResultMessage);
+		out.writeOutputMessage(LarvaLogLevel.PIPELINE_MESSAGES, "Step " + step.getDisplayName() + ": " + description + "\n" + stepResultMessage);
 		out.writeOutputMessage(LarvaLogLevel.PIPELINE_MESSAGES_PREPARED_FOR_DIFF, stepResultMessagePreparedForDiff);
 	}
 
 	@Override
 	public void stepMessageFailed(Scenario scenario, Step step, String description, String stepExpectedResultMessage, String stepExpectedResultMessagePreparedForDiff, String stepActualResultMessage, String stepActualResultMessagePreparedForDiff) {
-		String stepName = scenario.getStepDisplayName(step);
+		String stepName = step.getDisplayName();
 		String template = """
 				Step: %s %s
 				Actual%s:

@@ -29,9 +29,12 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringResolver;
 
+/**
+ * Step of a scenario loaded from property files.
+ */
 public class Step implements Comparable<Step> {
 
-	private static final Pattern STEP_PARSE_RE = Pattern.compile("^step(\\d+)\\.(.+)(\\.read|\\.readline|\\.write|\\.writeline)$");
+	private static final Pattern STEP_PARSE_RE = Pattern.compile("(?i)^step(\\d+)\\.(.+)\\.(read|readline|write|writeline)$");
 
 	private final @Getter Scenario scenario;
 	private final @Getter String rawLine;
@@ -52,21 +55,29 @@ public class Step implements Comparable<Step> {
 	public static Step of(Scenario scenario, String stepLine) {
 		Matcher stepMatch = STEP_PARSE_RE.matcher(stepLine);
 		if (!stepMatch.matches()) {
-			throw new IllegalArgumentException("Step '" + stepLine + "' does not have a step number or action");
+			throw new IllegalArgumentException("Step '" + stepLine + "' does not have a step number, action target, or action");
 		}
 		String value = scenario.getProperties().getProperty(stepLine);
 		return new Step(scenario, stepLine, Integer.parseInt(stepMatch.group(1)), stepMatch.group(2), stepMatch.group(3), value);
+	}
+
+	public static boolean isValidStep(String stepLine) {
+		return STEP_PARSE_RE.matcher(stepLine).matches();
 	}
 
 	public String getStepDataFile() {
 		if (isInline() || isIgnore()) {
 			return null;
 		}
-		return scenario.getProperties().getProperty(rawLine + ".absolutepath");
+		return scenario.getProperties().getProperty(rawLine + Scenario.ABSOLUTE_PATH_PROPERTY_SUFFIX);
+	}
+
+	public String getDisplayName() {
+		return scenario.getName() + " - " + this;
 	}
 
 	public boolean isInline() {
-		return action.endsWith("line");
+		return action.toLowerCase().endsWith("line");
 	}
 
 	public boolean isIgnore() {
@@ -108,7 +119,8 @@ public class Step implements Comparable<Step> {
 	@Override
 	public String toString() {
 		return "Step " + idx +
-				", action '" + actionTarget + action +
+				", action '" + actionTarget +
+				'.' + action +
 				"' = '" + value + '\''
 				;
 	}

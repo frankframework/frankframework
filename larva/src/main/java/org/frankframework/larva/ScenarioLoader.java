@@ -198,8 +198,7 @@ public class ScenarioLoader {
 	}
 
 	private static void addAbsolutePathProperties(@Nonnull String propertiesDirectory, @Nonnull Properties properties) {
-		for (Object o : properties.keySet()) {
-			String property = (String) o;
+		for (String property : properties.stringPropertyNames()) {
 			if ("configurations.directory".equalsIgnoreCase(property))
 				continue;
 
@@ -208,7 +207,7 @@ public class ScenarioLoader {
 					|| property.endsWith(".filename")
 					|| property.endsWith(".valuefile")
 					|| property.endsWith(".valuefileinputstream")) {
-				String absolutePathProperty = property + ".absolutepath";
+				String absolutePathProperty = property + Scenario.ABSOLUTE_PATH_PROPERTY_SUFFIX;
 				String value = LarvaUtil.getAbsolutePath(propertiesDirectory, (String) properties.get(property));
 				if (value != null) {
 					properties.put(absolutePathProperty, value);
