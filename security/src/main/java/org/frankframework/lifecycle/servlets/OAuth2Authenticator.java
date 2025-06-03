@@ -139,7 +139,6 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 		log.debug("using oauth base-url [{}] servlet-path [{}] and redirect-uri [{}]", baseUrl, servletPath, redirectUri);
 
 		clientRepository = getOrCreateClientRegistrationRepository();
-		SpringUtils.registerSingleton(getApplicationContext(), "clientRegistrationRepository", clientRepository);
 	}
 
 	public ClientRegistrationRepository getOrCreateClientRegistrationRepository() {
