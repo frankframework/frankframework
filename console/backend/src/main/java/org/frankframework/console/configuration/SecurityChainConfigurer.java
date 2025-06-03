@@ -96,8 +96,8 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 			http.csrf(CsrfConfigurer::disable);
 		}
 
-		// Spring Security will never use the JSESSION cookie to obtain the SecurityContext.
-		http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+		// Spring Security will use the JSESSION cookie to obtain the SecurityContext. Required for OAuth
+		http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
 		http.formLogin(FormLoginConfigurer::disable); // Disable the form login filter
 
 		if(!corsEnabled) {
@@ -147,14 +147,13 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 	@Bean
 	public IAuthenticator consoleAuthenticator() {
 		String propertyPrefix = "application.security.console.authentication.";
-		IAuthenticator authenticator = AuthenticatorUtils.createAuthenticator(applicationContext, propertyPrefix);
-
-		APPLICATION_LOG.info("Securing Frank!Framework Console using {}", () -> ClassUtils.classNameOf(authenticator));
-		return authenticator;
+		return AuthenticatorUtils.createAuthenticator(applicationContext, propertyPrefix);
 	}
 
 	@Bean
 	public SecurityFilterChain createConsoleSecurityChain(HttpSecurity http, IAuthenticator consoleAuthenticator) throws Exception {
+		APPLICATION_LOG.info("Securing Frank!Framework Console using {}", () -> ClassUtils.classNameOf(consoleAuthenticator));
+
 		consoleAuthenticator.registerServlet(applicationContext.getBean("backendServletBean", ServletRegistration.class).getServletConfiguration());
 		consoleAuthenticator.registerServlet(applicationContext.getBean("frontendServletBean", ServletRegistration.class).getServletConfiguration());
 

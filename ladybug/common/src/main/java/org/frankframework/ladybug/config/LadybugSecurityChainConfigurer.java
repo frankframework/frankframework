@@ -68,11 +68,10 @@ import org.frankframework.util.ClassUtils;
 @EnableWebSecurity // Enables Spring Security (classpath)
 @EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) // Enables JSR 250 (JAX-RS) annotations
 @Order(Ordered.HIGHEST_PRECEDENCE) // Higher then the Frank!Console so this `SecurityFilterChain` is used before the Console `SecurityChainConfigurer`.
-public class LadybugSecurityChainConfigurer implements ApplicationContextAware, EnvironmentAware {
+public class LadybugSecurityChainConfigurer implements ApplicationContextAware {
 	private static final Logger APPLICATION_LOG = LogManager.getLogger("APPLICATION");
 
 	private @Setter ApplicationContext applicationContext;
-	private @Setter Environment environment;
 
 	@Bean
 	public SecurityFilterChain createLadybugSecurityChain(HttpSecurity http, IAuthenticator ladybugAuthenticator) throws Exception {
@@ -88,10 +87,8 @@ public class LadybugSecurityChainConfigurer implements ApplicationContextAware, 
 		http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); // Allow same origin iframe request
 
 		// STATELESS prevents session from leaking over multiple servlets.
-		// The Ladybug (echo2) however requires cookie persistence. Hence, it's set to NEVER when echo2 is enabled
-		http.sessionManagement(management -> management.sessionCreationPolicy(
-			applicationContext.containsBean("testtoolServletBean") ? SessionCreationPolicy.NEVER : SessionCreationPolicy.STATELESS
-		));
+		// but OAuth requires cookies...
+		http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
 
 		return ladybugAuthenticator.configureHttpSecurity(http);
 	}
