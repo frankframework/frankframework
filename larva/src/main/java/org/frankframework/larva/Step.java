@@ -93,7 +93,7 @@ public class Step implements Comparable<Step> {
 	@Override
 	public String toString() {
 		return "Step " + idx +
-				", action '" + actionTarget + '.' + action +
+				", action '" + actionTarget + action +
 				"' = '" + value + '\''
 				;
 	}

@@ -187,7 +187,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 	@Override
 	public void stepMessageFailed(Scenario scenario, Step step, String description, String stepExpectedResultMessage, String stepExpectedResultMessagePreparedForDiff, String stepActualResultMessage, String stepActualResultMessagePreparedForDiff) {
 		String stepName = scenario.getStepDisplayName(step);
-		String stepDataFileName = step.getStepDataFile();
+		String stepDataFileName = step.isInline() ? null : step.getStepDataFile();
 		writer.writeStepMessageWithDiffBox(LarvaLogLevel.WRONG_PIPELINE_MESSAGES, "error container", stepName, stepDataFileName, "scenario", "raw", description, stepActualResultMessage, stepExpectedResultMessage);
 		writer.writeStepMessageWithDiffBox(LarvaLogLevel.WRONG_PIPELINE_MESSAGES_PREPARED_FOR_DIFF, "error container", stepName, stepDataFileName, "scenario", "prepared for diff", description, stepActualResultMessagePreparedForDiff, stepExpectedResultMessagePreparedForDiff);
 	}
