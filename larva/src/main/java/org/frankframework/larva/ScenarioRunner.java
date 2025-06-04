@@ -27,6 +27,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.springframework.context.ApplicationContext;
@@ -170,22 +172,22 @@ public class ScenarioRunner {
 		testExecutionObserver.startScenario(testRunStatus, scenario);
 		try (CloseableThreadContext.Instance ignored = CloseableThreadContext.put("scenario", scenario.getName());
 			// This is far from optimal, but without refactoring the whole LarvaTool, this is the quick and dirty way to do it
-			LarvaScenarioContext larvaContext = new LarvaScenarioContext(this.applicationContext, scenarioDirectory)
+			LarvaScenarioContext scenarioContext = new LarvaScenarioContext(this.applicationContext, scenarioDirectory)
 		) {
 			log.debug("Open actions");
 
 			LarvaActionFactory actionFactory = new LarvaActionFactory(larvaTool, testExecutionObserver);
 
 			// increment suffix for each scenario
-			String correlationId = TESTTOOL_CORRELATIONID + "(" + correlationIdSuffixCounter.getAndIncrement() + ")";
-			Map<String, LarvaScenarioAction> larvaActions = actionFactory.createLarvaActions(scenario, larvaContext, correlationId);
+			String correlationId = generateCorrelationId();
+			Map<String, LarvaScenarioAction> larvaActions = actionFactory.createLarvaActions(scenario, scenarioContext, correlationId);
 			if (larvaActions.isEmpty()) {
 				testRunStatus.scenarioFailed(scenario);
 				testExecutionObserver.finishScenario(testRunStatus, scenario, LarvaTool.RESULT_ERROR, "Could not create LarvaActions");
 				return LarvaTool.RESULT_ERROR;
 			}
-			larvaContext.configure();
-			larvaContext.start();
+			scenarioContext.configure();
+			scenarioContext.start();
 
 			// Start the scenario
 			// TODO: The buffering is now not threadsafe yet.
@@ -256,6 +258,11 @@ public class ScenarioRunner {
 		}
 	}
 
+	@Nonnull
+	private static String generateCorrelationId() {
+		return TESTTOOL_CORRELATIONID + "(" + correlationIdSuffixCounter.getAndIncrement() + ")";
+	}
+
 	private void doWaitBeforeCleanup() {
 		log.debug("Wait [{}]ms before clean up", waitBeforeCleanUp);
 		try {
@@ -280,28 +287,32 @@ public class ScenarioRunner {
 		}
 
 		actionName = step.getActionTarget();
-		String actionFactoryClassname = properties.getProperty(actionName + Scenario.CLASS_NAME_PROPERTY_SUFFIX);
 		LarvaScenarioAction scenarioAction = actions.get(actionName);
 		if (scenarioAction == null) {
 			scenarioError(scenario, "Property '" + actionName + Scenario.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
 			return LarvaTool.RESULT_ERROR;
 		}
 
-		if (step.isRead()) {
-			if ("org.frankframework.larva.XsltProviderListener".equals(actionFactoryClassname)) {
-				Properties scenarioStepProperties = step.getStepParameters();
-				Map<String, Object> xsltParameters = larvaTool.createParametersMapFromParamProperties(scenarioStepProperties);
-				return executeActionWriteStep(scenario, step, scenarioAction, fileContent, correlationId, xsltParameters); // XsltProviderListener has .read and .write reversed
-			} else {
-				return executeActionReadStep(scenario, step, scenarioAction, fileName, fileContent);
-			}
+		boolean actionIsXsltProviderListener = isActionTargetXsltProviderListener(properties, actionName);
+		boolean executeRead = (step.isRead() && !actionIsXsltProviderListener) || (!step.isRead() && actionIsXsltProviderListener); // XsltProviderListener has read/write reversed for some reason
+		if (executeRead) {
+			return executeActionReadStep(scenario, step, scenarioAction, fileName, fileContent);
 		} else {
-			if ("org.frankframework.larva.XsltProviderListener".equals(actionFactoryClassname)) {
-				return executeActionReadStep(scenario, step, scenarioAction, fileName, fileContent);  // XsltProviderListener has .read and .write reversed
+			// TODO: Perhaps we can use these parameters as a general mechanism to provide parameter values to senders, or populate a PipeLineSession? (see https://github.com/frankframework/frankframework/issues/5967)
+			Map<String, Object> xsltParameters;
+			if (actionIsXsltProviderListener) {
+				Properties scenarioStepProperties = step.getStepParameters();
+				xsltParameters = larvaTool.createParametersMapFromParamProperties(scenarioStepProperties);
 			} else {
-				return executeActionWriteStep(scenario, step, scenarioAction, fileContent, correlationId, null);
+				xsltParameters = null;
 			}
+			return executeActionWriteStep(scenario, step, scenarioAction, fileContent, correlationId, xsltParameters);
 		}
+	}
+
+	private static boolean isActionTargetXsltProviderListener(Properties properties, String actionName) {
+		String actionFactoryClassname = properties.getProperty(actionName + Scenario.CLASS_NAME_PROPERTY_SUFFIX);
+		return "org.frankframework.larva.XsltProviderListener".equals(actionFactoryClassname);
 	}
 
 	private int executeActionWriteStep(Scenario scenario, Step step, LarvaScenarioAction scenarioAction, Message fileContent, String correlationId, Map<String, Object> xsltParameters) {
