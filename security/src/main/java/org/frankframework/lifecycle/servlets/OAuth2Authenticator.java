@@ -17,14 +17,13 @@ package org.frankframework.lifecycle.servlets;
 
 import java.io.FileNotFoundException;
 import java.net.URL;
-import java.util.List;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
 import org.springframework.security.oauth2.client.InMemoryOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistration.Builder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -36,7 +35,6 @@ import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
 import org.springframework.security.oauth2.core.oidc.IdTokenClaimNames;
 import org.springframework.security.web.SecurityFilterChain;
 
-import lombok.Setter;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.SpringUtils;
@@ -94,6 +92,7 @@ public class OAuth2Authenticator extends ServletAuthenticatorBase {
 
 	private @Setter String roleMappingFile = "oauth-role-mapping.properties";
 	private URL roleMappingURL = null;
+	private OAuth2AuthorizedClientService clientService;
 
 	@Override
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
@@ -102,7 +101,7 @@ public class OAuth2Authenticator extends ServletAuthenticatorBase {
 		AuthorityMapper authorityMapper = new AuthorityMapper(roleMappingURL, getSecurityRoles(), getEnvironmentProperties());
 		http.oauth2Login(login -> login
 				.clientRegistrationRepository(clientRepository) // Explicitly set, but can also be implicitly implied.
-				.authorizedClientService(new InMemoryOAuth2AuthorizedClientService(clientRepository))
+				.authorizedClientService(clientService)
 				.failureUrl(oauthBaseUrl + "/oauth2/failure/")
 				.authorizationEndpoint(endpoint -> endpoint.baseUri(oauthBaseUrl + OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI))
 				.userInfoEndpoint(endpoint -> endpoint.userAuthoritiesMapper(authorityMapper))
@@ -123,15 +122,16 @@ public class OAuth2Authenticator extends ServletAuthenticatorBase {
 		log.info("found rolemapping file [{}]", roleMappingURL);
 
 		oauthBaseUrl = computeBaseUrl();
-		clientRepository = createClientRegistrationRepository();
-		SpringUtils.registerSingleton(getApplicationContext(), "clientRegistrationRepository", clientRepository);
+		clientRepository = getOrCreateClientRegistrationRepository();
 	}
 
-	public ClientRegistrationRepository createClientRegistrationRepository() {
-		Stream<String> providers = StringUtil.splitToStream(provider);
-		List<ClientRegistration> registrations = providers.map(this::getRegistration).collect(Collectors.toList());
-
-		return new InMemoryClientRegistrationRepository(registrations);
+	public ClientRegistrationRepository getOrCreateClientRegistrationRepository() {
+		if (clientRepository == null) {
+			clientRepository = new InMemoryClientRegistrationRepository(getRegistration(provider));
+			SpringUtils.registerSingleton(getApplicationContext(), "clientRegistrationRepository", clientRepository);
+			clientService = new InMemoryOAuth2AuthorizedClientService(clientRepository);
+		}
+		return clientRepository;
 	}
 
 	private ClientRegistration getRegistration(String provider) {
