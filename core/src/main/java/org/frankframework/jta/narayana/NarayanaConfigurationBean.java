@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.core.JndiContextPrefixFactory;
-import org.frankframework.util.AppConstants;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -33,6 +31,7 @@ import org.springframework.jndi.JndiTemplate;
 import com.arjuna.ats.arjuna.common.MetaObjectStoreEnvironmentBean;
 import com.arjuna.ats.arjuna.exceptions.ObjectStoreException;
 import com.arjuna.ats.internal.arjuna.objectstore.jdbc.JDBCStore;
+import com.arjuna.ats.internal.arjuna.objectstore.jdbc.accessors.DataSourceJDBCAccess;
 import com.arjuna.common.internal.util.propertyservice.BeanPopulator;
 import com.arjuna.common.util.propertyservice.PropertiesFactory;
 import com.arjuna.common.util.propertyservice.PropertiesFactoryStax;
@@ -40,6 +39,10 @@ import com.arjuna.common.util.propertyservice.PropertiesFactoryStax;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.core.JndiContextPrefixFactory;
+import org.frankframework.jdbc.datasource.PoolingDataSourceFactory;
+import org.frankframework.util.AppConstants;
 
 @Log4j2
 public class NarayanaConfigurationBean implements InitializingBean, ApplicationContextAware {
@@ -86,6 +89,11 @@ public class NarayanaConfigurationBean implements InitializingBean, ApplicationC
 		final MetaObjectStoreEnvironmentBean jdbcStoreEnvironment = BeanPopulator.getDefaultInstance(MetaObjectStoreEnvironmentBean.class);
 		if(JDBCStore.class.getCanonicalName().equals(jdbcStoreEnvironment.getObjectStoreType())) {
 			jdbcStoreEnvironment.setJdbcAccess(getObjectStoreJndiName());
+
+			String tablePrefix = AppConstants.getInstance().getString("transactionmanager.narayana.objectStoreTablePrefix", null);
+			if (StringUtils.isNotEmpty(tablePrefix)) {
+				jdbcStoreEnvironment.setTablePrefix(tablePrefix + "_");
+			}
 		}
 	}
 
@@ -109,7 +117,12 @@ public class NarayanaConfigurationBean implements InitializingBean, ApplicationC
 		try {
 			JndiTemplate locator = new JndiTemplate();
 			DataSource dataSource = locator.lookup(fullJndiName, DataSource.class);
-			log.info("found Narayana ObjectStoreDatasource [{}]", dataSource);
+			boolean isPooled = PoolingDataSourceFactory.isPooledDataSource(dataSource);
+			log.info("found Narayana ObjectStoreDatasource [{}] pooled [{}]", dataSource, isPooled);
+			if (isPooled) {
+				return DataSourceJDBCAccess.class.getCanonicalName() + ";datasourceName=" + fullJndiName;
+			}
+
 			return PoolingDataSourceJDBCAccess.class.getCanonicalName() + ';' + fullJndiName;
 		} catch (NamingException e) {
 			throw new ObjectStoreException("unable to find datasource", e);

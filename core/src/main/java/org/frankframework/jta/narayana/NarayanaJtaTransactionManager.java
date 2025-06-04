@@ -16,18 +16,23 @@
 package org.frankframework.jta.narayana;
 
 import java.io.IOException;
+import java.util.List;
 
 import jakarta.transaction.TransactionManager;
 import jakarta.transaction.UserTransaction;
 
 import com.arjuna.ats.arjuna.AtomicAction;
 import com.arjuna.ats.arjuna.common.CoreEnvironmentBeanException;
+import com.arjuna.ats.arjuna.common.RecoveryEnvironmentBean;
 import com.arjuna.ats.arjuna.common.arjPropertyManager;
+import com.arjuna.ats.arjuna.common.recoveryPropertyManager;
 import com.arjuna.ats.arjuna.exceptions.ObjectStoreException;
 import com.arjuna.ats.arjuna.objectstore.RecoveryStore;
 import com.arjuna.ats.arjuna.objectstore.StoreManager;
 import com.arjuna.ats.arjuna.recovery.RecoveryManager;
 import com.arjuna.ats.arjuna.state.InputObjectState;
+import com.arjuna.ats.internal.arjuna.recovery.AdvancedAtomicActionExpiryScanner;
+import com.arjuna.ats.internal.arjuna.recovery.AdvancedAtomicActionPurgeExpiryScanner;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.XARecoveryModule;
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 import lombok.Getter;
@@ -73,14 +78,32 @@ public class NarayanaJtaTransactionManager extends StatusRecordingTransactionMan
 			log.debug("TMUID [{}]", arjPropertyManager.getCoreEnvironmentBean().getNodeIdentifier());
 			log.debug("ObjectStoreDir [{}]", arjPropertyManager.getObjectStoreEnvironmentBean().getObjectStoreDir());
 
-			recoveryManager = RecoveryManager.manager();
+			initializeRecoveryManager();
+		}
+	}
 
-			if (heuristicDetectorEnabled) {
-				recoveryManager.addModule(new HeuristicDetectingRecoveryModule());
-			}
+	private void initializeRecoveryManager() {
+		setExpiryScanInterval();
 
-			recoveryManager.initialize();
-			recoveryManager.startRecoveryManagerThread();
+		recoveryManager = RecoveryManager.manager();
+
+		if (heuristicDetectorEnabled) {
+			recoveryManager.addModule(new HeuristicDetectingRecoveryModule());
+		}
+
+		recoveryManager.initialize();
+		recoveryManager.startRecoveryManagerThread();
+	}
+
+	private void setExpiryScanInterval() {
+		int expiryScanInterval = AppConstants.getInstance().getInt("com.arjuna.ats.arjuna.recovery.expiryScanInterval", 1);
+		if (expiryScanInterval > 0) {
+			RecoveryEnvironmentBean recoveryEnvironment = recoveryPropertyManager.getRecoveryEnvironmentBean();
+			recoveryEnvironment.setExpiryScanInterval(expiryScanInterval); // 1 hour
+
+			boolean purgeExpiredItems = AppConstants.getInstance().getBoolean("com.arjuna.ats.arjuna.recovery.purgeExpiredItems", false);
+			Class<?> expiryScanner = purgeExpiredItems ? AdvancedAtomicActionPurgeExpiryScanner.class : AdvancedAtomicActionExpiryScanner.class;
+			recoveryEnvironment.setExpiryScannerClassNames(List.of(expiryScanner.getName()));
 		}
 	}
 
