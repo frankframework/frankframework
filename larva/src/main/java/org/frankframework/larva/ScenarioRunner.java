@@ -16,8 +16,11 @@
 package org.frankframework.larva;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -41,9 +44,13 @@ import org.frankframework.larva.actions.LarvaActionFactory;
 import org.frankframework.larva.actions.LarvaScenarioAction;
 import org.frankframework.larva.actions.LarvaScenarioContext;
 import org.frankframework.larva.output.TestExecutionObserver;
+import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.DomBuilderException;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StringUtil;
+import org.frankframework.util.XmlUtils;
 
 @Log4j2
 public class ScenarioRunner {
@@ -301,8 +308,7 @@ public class ScenarioRunner {
 			// TODO: Perhaps we can use these parameters as a general mechanism to provide parameter values to senders, or populate a PipeLineSession? (see https://github.com/frankframework/frankframework/issues/5967)
 			Map<String, Object> xsltParameters;
 			if (actionIsXsltProviderListener) {
-				Properties scenarioStepProperties = step.getStepParameters();
-				xsltParameters = larvaTool.createParametersMapFromParamProperties(scenarioStepProperties);
+				xsltParameters = createParametersMapFromParamProperties(step);
 			} else {
 				xsltParameters = null;
 			}
@@ -405,4 +411,86 @@ public class ScenarioRunner {
 		scenarioResultMessage.append(" (").append(testRunStatus.getScenariosFailedCount()).append('/').append(testRunStatus.getScenariosAutosavedCount() + testRunStatus.getScenariosPassedCount()).append('/').append(testRunStatus.getScenarioExecuteCount()).append(')');
 		return scenarioResultMessage.toString();
 	}
+
+	/**
+	 * Create a Map for a specific property based on other properties that are
+	 * the same except for a .param1.name, .param1.value or .param1.valuefile
+	 * suffix.  The property with the .name suffix specifies the key for the
+	 * Map, the property with the value suffix specifies the value for the Map.
+	 * A property with a the .valuefile suffix can be used as an alternative
+	 * for a property with a .value suffix to specify the file to read the
+	 * value for the Map from. More than one param can be specified by using
+	 * param2, param3 etc.
+	 *
+	 * @param step Step for which to extract the parameters
+	 * @return A map with parameters
+	 */
+	// Replace or merge this with LarvaActionUtils.createParametersMapFromParamProperties
+	public Map<String, Object> createParametersMapFromParamProperties(Step step) {
+		Scenario scenario = step.getScenario();
+		Properties properties = step.getStepParameters();
+		final String _name = ".name";
+		final String _param = "param";
+		final String _type = ".type";
+		Map<String, Object> result = new HashMap<>();
+		int i = 1;
+		while (true) {
+			String name = properties.getProperty(_param + i + _name);
+			if (name == null) {
+				break;
+			}
+			String type = properties.getProperty(_param + i + _type);
+			String propertyValue = properties.getProperty(_param + i + ".value");
+			Object value = propertyValue;
+
+			if (value == null) {
+				String filename = properties.getProperty(_param + i + ".valuefile.absolutepath");
+				if (filename != null) {
+					value = new FileMessage(new File(filename));
+				} else {
+					String inputStreamFilename = properties.getProperty(_param + i + ".valuefileinputstream.absolutepath");
+					if (inputStreamFilename != null) {
+						scenario.addError("valuefileinputstream is no longer supported use valuefile instead");
+					}
+				}
+			}
+			if ("node".equals(type)) {
+				try {
+					value = XmlUtils.buildNode(MessageUtils.asString(value), true);
+				} catch (DomBuilderException | IOException e) {
+					scenario.addError("Could not build node for parameter '" + name + "' with value: " + value, e);
+				}
+			} else if ("domdoc".equals(type)) {
+				try {
+					value = XmlUtils.buildDomDocument(MessageUtils.asString(value), true);
+				} catch (DomBuilderException | IOException e) {
+					scenario.addError("Could not build node for parameter '" + name + "' with value: " + value, e);
+				}
+			} else if ("list".equals(type)) {
+				value = StringUtil.split(propertyValue);
+			} else if ("map".equals(type)) {
+				List<String> parts = StringUtil.split(propertyValue);
+				Map<String, String> map = new LinkedHashMap<>();
+
+				for (String part : parts) {
+					String[] splitted = part.split("\\s*(=\\s*)+", 2);
+					if (splitted.length==2) {
+						map.put(splitted[0], splitted[1]);
+					} else {
+						map.put(splitted[0], "");
+					}
+				}
+				value = map;
+			}
+			if (value == null) {
+				scenario.addError("Property '" + _param + i + ".value' or '" + _param + i + ".valuefile' not found while property '" + _param + i + ".name' exist");
+			} else {
+				result.put(name, value);
+				log.debug("Add param with name [{}] and value [{}] for property '" + "'", name, value);
+			}
+			i++;
+		}
+		return result;
+	}
+
 }

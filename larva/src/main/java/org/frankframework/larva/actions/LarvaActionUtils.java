@@ -80,78 +80,76 @@ public class LarvaActionUtils {
 		final String _param = "param";
 		final String _type = ".type";
 		Map<String, IParameter> result = new HashMap<>();
-		boolean processed = false;
 		int i = 1;
-		while (!processed) {
+		while (true) {
 			String name = properties.getProperty(_param + i + _name);
-			if (name != null) {
-				String type = properties.getProperty(_param + i + _type);
-				String propertyValue = properties.getProperty(_param + i + ".value");
-				Object value = propertyValue;
-
-				if (value == null) {
-					String filename = properties.getProperty(_param + i + ".valuefile.absolutepath");
-					if (filename != null) {
-						value = new FileMessage(new File(filename));
-					} else {
-						throw new IllegalStateException("use either value or valuefile");
-					}
-				}
-				if ("node".equals(type)) {
-					try {
-						value = XmlUtils.buildNode(MessageUtils.asString(value), true);
-					} catch (DomBuilderException | IOException e) {
-						throw new IllegalStateException("Could not build node for parameter '" + name + "' with value: " + value, e);
-					}
-				} else if ("domdoc".equals(type)) {
-					try {
-						value = XmlUtils.buildDomDocument(MessageUtils.asString(value), true);
-					} catch (DomBuilderException | IOException e) {
-						throw new IllegalStateException("Could not build node for parameter '" + name + "' with value: " + value, e);
-					}
-				} else if ("list".equals(type)) {
-					value = StringUtil.split(propertyValue);
-				} else if ("map".equals(type)) {
-					List<String> parts = StringUtil.split(propertyValue);
-					Map<String, String> map = new LinkedHashMap<>();
-					for (String part : parts) {
-						String[] splitted = part.split("\\s*(=\\s*)+", 2);
-						if (splitted.length == 2) {
-							map.put(splitted[0], splitted[1]);
-						} else {
-							map.put(splitted[0], "");
-						}
-					}
-					value = map;
-				}
-				String pattern = properties.getProperty(_param + i + ".pattern");
-				if (value == null && pattern == null) {
-					throw new IllegalStateException("Property '" + _param + i + " doesn't have a value or pattern");
-				} else {
-					try {
-						Parameter parameter = new Parameter();
-						parameter.setName(name);
-
-						if (value != null) {
-							if (value instanceof String string) {
-								parameter.setValue(string);
-								parameter.setPattern(pattern);
-							} else {
-								parameter.setSessionKey(name);
-								session.put(name, value);
-							}
-						}
-
-						parameter.configure();
-						result.put(name, parameter);
-					} catch (ConfigurationException e) {
-						throw new IllegalStateException("Parameter '" + name + "' could not be configured");
-					}
-				}
-				i++;
-			} else {
-				processed = true;
+			if (name == null) {
+				break;
 			}
+			String type = properties.getProperty(_param + i + _type);
+			String propertyValue = properties.getProperty(_param + i + ".value");
+			Object value = propertyValue;
+
+			if (value == null) {
+				String filename = properties.getProperty(_param + i + ".valuefile.absolutepath");
+				if (filename != null) {
+					value = new FileMessage(new File(filename));
+				} else {
+					throw new IllegalStateException("use either value or valuefile");
+				}
+			}
+			if ("node".equals(type)) {
+				try {
+					value = XmlUtils.buildNode(MessageUtils.asString(value), true);
+				} catch (DomBuilderException | IOException e) {
+					throw new IllegalStateException("Could not build node for parameter '" + name + "' with value: " + value, e);
+				}
+			} else if ("domdoc".equals(type)) {
+				try {
+					value = XmlUtils.buildDomDocument(MessageUtils.asString(value), true);
+				} catch (DomBuilderException | IOException e) {
+					throw new IllegalStateException("Could not build node for parameter '" + name + "' with value: " + value, e);
+				}
+			} else if ("list".equals(type)) {
+				value = StringUtil.split(propertyValue);
+			} else if ("map".equals(type)) {
+				List<String> parts = StringUtil.split(propertyValue);
+				Map<String, String> map = new LinkedHashMap<>();
+				for (String part : parts) {
+					String[] splitted = part.split("\\s*(=\\s*)+", 2);
+					if (splitted.length == 2) {
+						map.put(splitted[0], splitted[1]);
+					} else {
+						map.put(splitted[0], "");
+					}
+				}
+				value = map;
+			}
+			String pattern = properties.getProperty(_param + i + ".pattern");
+			if (value == null && pattern == null) {
+				throw new IllegalStateException("Property '" + _param + i + " doesn't have a value or pattern");
+			} else {
+				try {
+					Parameter parameter = new Parameter();
+					parameter.setName(name);
+
+					if (value != null) {
+						if (value instanceof String string) {
+							parameter.setValue(string);
+							parameter.setPattern(pattern);
+						} else {
+							parameter.setSessionKey(name);
+							session.put(name, value);
+						}
+					}
+
+					parameter.configure();
+					result.put(name, parameter);
+				} catch (ConfigurationException e) {
+					throw new IllegalStateException("Parameter '" + name + "' could not be configured");
+				}
+			}
+			i++;
 		}
 		return result;
 	}
