@@ -84,14 +84,14 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	private EndpointImpl endpoint = null;
 	private SpringBus cxfBus;
 
+	/* SOAP Action Implementation */
+	private @Getter String soapAction;
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if(StringUtils.isEmpty(getAddress()) && isMtomEnabled())
 			throw new ConfigurationException("can only use MTOM when address attribute has been set");
-
-		if(StringUtils.isNotEmpty(getAddress()) && getAddress().contains(":"))
-			throw new ConfigurationException("address cannot contain colon ( : ) character");
 
 		if (StringUtils.isNotEmpty(getAttachmentSessionKeys())) {
 			attachmentSessionKeysList.addAll(StringUtil.split(getAttachmentSessionKeys(), " ,;"));
@@ -104,21 +104,27 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			soapWrapper = SoapWrapper.getInstance();
 		}
 
-		if (StringUtils.isEmpty(getServiceNamespaceURI()) && StringUtils.isEmpty(getAddress())) {
-			String msg = "You must specify either an address or a serviceNamespaceURI";
+		if (StringUtils.isEmpty(getServiceNamespaceURI()) && StringUtils.isEmpty(getAddress()) && StringUtils.isEmpty(getSoapAction())) {
+			String msg = "You must specify either an address, soapAction or a serviceNamespaceURI";
 			ConfigurationWarnings.add(this, log, msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
 		}
-		if (StringUtils.isNotEmpty(getServiceNamespaceURI()) && StringUtils.isNotEmpty(getAddress())) {
-			String msg = "Please specify either an address or serviceNamespaceURI but not both";
+		if (StringUtils.isNotEmpty(getServiceNamespaceURI()) && StringUtils.isNotEmpty(getAddress()) && StringUtils.isNotEmpty(getSoapAction())) {
+			String msg = "Please specify either an address, soapAction or serviceNamespaceURI but not both";
 			ConfigurationWarnings.add(this, log, msg);
 		}
 
-		Bus bus = getApplicationContext().getBean("cxf", Bus.class);
-		if(bus instanceof SpringBus springBus) {
-			cxfBus = springBus;
-			log.debug("found CXF SpringBus id [{}]", bus::getId);
-		} else {
-			throw new ConfigurationException("unable to find SpringBus, cannot register "+this.getClass().getSimpleName());
+		if (StringUtils.isNotEmpty(getAddress())) {
+			if(getAddress().contains(":")) {
+				throw new ConfigurationException("address cannot contain colon ( : ) character");
+			}
+
+			Bus bus = getApplicationContext().getBean("cxf", Bus.class);
+			if(bus instanceof SpringBus springBus) {
+				cxfBus = springBus;
+				log.debug("found CXF SpringBus id [{}]", bus::getId);
+			} else {
+				throw new ConfigurationException("unable to find SpringBus, cannot register "+this.getClass().getSimpleName());
+			}
 		}
 	}
 
@@ -143,6 +149,9 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		} else if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
 			log.debug("registering listener [{}] with ServiceDispatcher by serviceNamespaceURI [{}]", this::getName, this::getServiceNamespaceURI);
 			ServiceDispatcher.getInstance().registerServiceClient(getServiceNamespaceURI(), this);
+		} else if (StringUtils.isNotEmpty(getSoapAction())) {
+			log.debug("registering listener [{}] with ServiceDispatcher by soapAction [{}]", this::getName, this::getSoapAction);
+			ServiceDispatcher.getInstance().registerServiceClient(getSoapAction(), this);
 		}
 		else {
 			log.debug("registering listener [{}] with ServiceDispatcher by name", this::getName);
@@ -166,6 +175,9 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		} else if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
 			log.debug("unregistering listener [{}] from ServiceDispatcher by serviceNamespaceURI [{}]", this::getName, this::getServiceNamespaceURI);
 			ServiceDispatcher.getInstance().unregisterServiceClient(getServiceNamespaceURI());
+		} else if (StringUtils.isNotEmpty(getSoapAction())) {
+			log.debug("unregistering listener [{}] from ServiceDispatcher by soapAction [{}]", this::getName, this::getSoapAction);
+			ServiceDispatcher.getInstance().unregisterServiceClient(getSoapAction());
 		}
 		else {
 			log.debug("unregistering listener [{}] from ServiceDispatcher", this::getName);
@@ -221,7 +233,10 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		}
 		else if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
 			return "serviceNamespaceURI ["+getServiceNamespaceURI()+"]";
+		} else if (StringUtils.isNotEmpty(getSoapAction())) {
+			return "soapAction ["+getSoapAction()+"]";
 		}
+
 		return "name ["+getName()+"]";
 	}
 
@@ -257,6 +272,14 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			else
 				this.address = address;
 		}
+	}
+
+	/**
+	 * SOAP Action to listen to. Requests sent to `/servlet/rpcrouter` which matches the soapAction will be processed by this listener.
+	 * This is slightly different from the namespaceURI which routes messages based on the first element's namespace.
+	 */
+	public void setSoapAction(String string) {
+		soapAction = string;
 	}
 
 	/** If set, MTOM is enabled on the SOAP binding */

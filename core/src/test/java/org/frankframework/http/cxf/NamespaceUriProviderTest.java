@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -23,12 +24,14 @@ import jakarta.xml.ws.WebServiceContext;
 import jakarta.xml.ws.WebServiceException;
 
 import org.apache.cxf.binding.soap.SoapBindingConstants;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.http.SoapActionServiceListener;
 import org.frankframework.http.WebServiceListener;
+import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.ServiceClient;
 import org.frankframework.receivers.ServiceDispatcher;
 import org.frankframework.stream.Message;
@@ -50,6 +53,11 @@ public class NamespaceUriProviderTest {
 		provider = new NamespaceUriProvider();
 		provider.webServiceContext = webServiceContext;
 
+		dispatcher.getRegisteredListenerNames().forEach(dispatcher::unregisterServiceClient);
+	}
+
+	@AfterEach
+	public void tearDown() {
 		dispatcher.getRegisteredListenerNames().forEach(dispatcher::unregisterServiceClient);
 	}
 
@@ -94,9 +102,12 @@ public class NamespaceUriProviderTest {
 			pipelineResult = spy(new Message(new FilterInputStream(plr.asInputStream()) {}));
 		}
 
-		WebServiceListener listener = mock(WebServiceListener.class);
+		WebServiceListener listener = new WebServiceListener();
+		IMessageHandler<Message> handler = mock(IMessageHandler.class);
+		listener.setHandler(handler);
+
 		doAnswer(e -> {
-			Message message = e.getArgument(0);
+			Message message = e.getArgument(2);
 
 			try {
 				MatchUtils.assertXmlEquals(getFile("VrijeBerichten_PipelineRequest.xml").asString(), message.asString());
@@ -105,9 +116,12 @@ public class NamespaceUriProviderTest {
 				fail("unable to read response message: " + ex.getMessage(), ex);
 				return null;
 			}
-		}).when(listener).processRequest(any(Message.class), any(PipeLineSession.class));
+		}).when(handler).processRequest(eq(listener), any(RawMessageWrapper.class), any(Message.class), any(PipeLineSession.class));
 
-		dispatcher.registerServiceClient("http://www.egem.nl/StUF/sector/zkn/0310", listener);
+		listener.setServiceNamespaceURI("http://www.egem.nl/StUF/sector/zkn/0310");
+		listener.setSoap(false);
+		listener.configure();
+		listener.start();
 
 		SOAPMessage request = createMessage("VrijeBerichten_PipelineRequest.xml", true);
 		SOAPMessage message = provider.invoke(request);
@@ -126,9 +140,12 @@ public class NamespaceUriProviderTest {
 			pipelineResult = spy(new Message(new FilterInputStream(plr.asInputStream()) {}));
 		}
 
-		SoapActionServiceListener listener = mock(SoapActionServiceListener.class);
+		WebServiceListener listener = new WebServiceListener();
+		IMessageHandler<Message> handler = mock(IMessageHandler.class);
+		listener.setHandler(handler);
+
 		doAnswer(e -> {
-			Message message = e.getArgument(0);
+			Message message = e.getArgument(2);
 
 			try {
 				MatchUtils.assertXmlEquals(getFile("soapmsg1_1.xml").asString(), message.asString());
@@ -137,9 +154,12 @@ public class NamespaceUriProviderTest {
 				fail("unable to read response message: " + ex.getMessage(), ex);
 				return null;
 			}
-		}).when(listener).processRequest(any(Message.class), any(PipeLineSession.class));
+		}).when(handler).processRequest(eq(listener), any(RawMessageWrapper.class), any(Message.class), any(PipeLineSession.class));
 
-		dispatcher.registerServiceClient("http://www.egem.nl/StUF/sector/zkn/0310", listener);
+		listener.setSoapAction("http://www.egem.nl/StUF/sector/zkn/0310");
+		listener.setSoap(false);
+		listener.configure();
+		listener.start();
 
 		SOAPMessage request = createMessage("soapmsg1_1.xml", true);
 		webServiceContext.getMessageContext().put(SoapBindingConstants.SOAP_ACTION, "http://www.egem.nl/StUF/sector/zkn/0310");
@@ -160,9 +180,12 @@ public class NamespaceUriProviderTest {
 			pipelineResult = spy(new Message(new FilterInputStream(plr.asInputStream()) {}));
 		}
 
-		SoapActionServiceListener listener = mock(SoapActionServiceListener.class);
+		WebServiceListener listener = new WebServiceListener();
+		IMessageHandler<Message> handler = mock(IMessageHandler.class);
+		listener.setHandler(handler);
+
 		doAnswer(e -> {
-			Message message = e.getArgument(0);
+			Message message = e.getArgument(2);
 
 			try {
 				MatchUtils.assertXmlEquals(getFile("soapmsg1_2.xml").asString(), message.asString());
@@ -171,9 +194,12 @@ public class NamespaceUriProviderTest {
 				fail("unable to read response message: " + ex.getMessage(), ex);
 				return null;
 			}
-		}).when(listener).processRequest(any(Message.class), any(PipeLineSession.class));
+		}).when(handler).processRequest(eq(listener), any(RawMessageWrapper.class), any(Message.class), any(PipeLineSession.class));
 
-		dispatcher.registerServiceClient("http://www.egem.nl/StUF/sector/zkn/0310", listener);
+		listener.setSoapAction("http://www.egem.nl/StUF/sector/zkn/0310");
+		listener.setSoap(false);
+		listener.configure();
+		listener.start();
 
 		SOAPMessage request = createMessage("soapmsg1_2.xml", false);
 		webServiceContext.getMessageContext().put(SoapBindingConstants.SOAP_ACTION, "ingored");

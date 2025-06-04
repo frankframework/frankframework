@@ -32,7 +32,6 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.http.SoapActionServiceListener;
 import org.frankframework.http.WebServiceListener;
 import org.frankframework.receivers.ServiceClient;
 import org.frankframework.receivers.ServiceDispatcher;
@@ -59,12 +58,11 @@ public class NamespaceUriProvider extends AbstractSOAPProvider {
 		String serviceName = pipelineSession.getString(SoapBindingConstants.SOAP_ACTION);
 		ServiceClient service = findService(serviceName);
 
-		if (service instanceof SoapActionServiceListener) {
-			Message message = parseSOAPMessage(request);
-			log.info("processing message [{}] on service [{}]", message.getObjectId(), service);
-			return service.processRequest(message, pipelineSession);
+		if (service instanceof WebServiceListener) {
+			// Found listener with corresponding soap action
+			return processRequest(service, request, pipelineSession);
 		} else {
-			// found service but not SoapActionServiceListener, find the namespaceURI and see if there are listeners
+			// Try again, this time to find the namespaceURI
 			serviceName = findNamespaceUri(request);
 			service = findService(serviceName);
 		}
@@ -73,10 +71,13 @@ public class NamespaceUriProvider extends AbstractSOAPProvider {
 			throw new ListenerException("service ["+ serviceName +"] is not registered or not of required type");
 		}
 
+		return processRequest(service, request, pipelineSession);
+	}
 
+	private Message processRequest(ServiceClient service, SOAPMessage request, PipeLineSession session) throws ListenerException {
 		Message message = parseSOAPMessage(request);
 		log.info("processing message [{}] on service [{}]", message.getObjectId(), service);
-		return service.processRequest(message, pipelineSession);
+		return service.processRequest(message, session);
 	}
 
 	@Nullable
@@ -84,6 +85,7 @@ public class NamespaceUriProvider extends AbstractSOAPProvider {
 		if (StringUtils.isBlank(serviceName)) {
 			return null;
 		}
+		log.debug("trying to find serviceName from soapMessage [{}]", serviceName);
 
 		return sd.getListener(serviceName);
 	}
