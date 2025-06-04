@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
 import org.springframework.security.oauth2.client.InMemoryOAuth2AuthorizedClientService;
+import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.registration.ClientRegistration;
 import org.springframework.security.oauth2.client.registration.ClientRegistration.Builder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
@@ -211,6 +212,7 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	 */
 	private @Setter String roleMappingFile = "oauth-role-mapping.properties";
 	private URL roleMappingURL = null;
+	private OAuth2AuthorizedClientService clientService;
 
 	@Override
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
@@ -221,7 +223,7 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 		// The 3 dynamic URLs use the servlet path, this cannot be changed or contain {baseUrl}.
 		http.oauth2Login(login -> login
 				.clientRegistrationRepository(clientRepository) // Explicitly set, but can also be implicitly implied.
-				.authorizedClientService(new InMemoryOAuth2AuthorizedClientService(clientRepository))
+				.authorizedClientService(clientService)
 				.failureUrl(servletPath + "/oauth2/failure/")
 				.authorizationEndpoint(endpoint -> endpoint.baseUri(servletPath + OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI))
 				.userInfoEndpoint(endpoint -> endpoint.userAuthoritiesMapper(authorityMapper))
@@ -248,12 +250,16 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 		redirectUri = computeRedirectUri();
 		log.debug("using oauth servlet-path [{}] and redirect-uri [{}]", servletPath, redirectUri);
 
-		clientRepository = createClientRegistrationRepository();
-		SpringUtils.registerSingleton(getApplicationContext(), "clientRegistrationRepository", clientRepository);
+		clientRepository = getOrCreateClientRegistrationRepository();
 	}
 
-	public ClientRegistrationRepository createClientRegistrationRepository() {
-		return new InMemoryClientRegistrationRepository(getRegistration(provider));
+	public ClientRegistrationRepository getOrCreateClientRegistrationRepository() {
+		if (clientRepository == null) {
+			clientRepository = new InMemoryClientRegistrationRepository(getRegistration(provider));
+			SpringUtils.registerSingleton(getApplicationContext(), "clientRegistrationRepository", clientRepository);
+			clientService = new InMemoryOAuth2AuthorizedClientService(clientRepository);
+		}
+		return clientRepository;
 	}
 
 	private ClientRegistration getRegistration(@Nonnull String provider) {
