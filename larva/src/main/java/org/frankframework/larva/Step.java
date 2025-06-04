@@ -73,7 +73,7 @@ public class Step implements Comparable<Step> {
 	}
 
 	public String getDisplayName() {
-		return scenario.getName() + " - " + this;
+		return "'" + scenario.getName() + "' - " + this;
 	}
 
 	public boolean isInline() {

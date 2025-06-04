@@ -23,8 +23,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.larva.Scenario;
+import org.frankframework.larva.Step;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.FileMessage;
@@ -41,6 +45,7 @@ import org.frankframework.util.XmlUtils;
  *
  * @author Niels Meijer
  */
+@Log4j2
 public class LarvaActionUtils {
 
 	private LarvaActionUtils() {
@@ -148,6 +153,87 @@ public class LarvaActionUtils {
 				} catch (ConfigurationException e) {
 					throw new IllegalStateException("Parameter '" + name + "' could not be configured");
 				}
+			}
+			i++;
+		}
+		return result;
+	}
+
+	/**
+	 * Create a Map for a specific property based on other properties that are
+	 * the same except for a .param1.name, .param1.value or .param1.valuefile
+	 * suffix.  The property with the .name suffix specifies the key for the
+	 * Map, the property with the value suffix specifies the value for the Map.
+	 * A property with a the .valuefile suffix can be used as an alternative
+	 * for a property with a .value suffix to specify the file to read the
+	 * value for the Map from. More than one param can be specified by using
+	 * param2, param3 etc.
+	 *
+	 * @param step Step for which to extract the parameters
+	 * @return A map with parameters
+	 */
+	// Merge this with LarvaActionUtils#createParametersMapFromParamProperties(Properties, PipeLineSession)
+	public static Map<String, Object> createParametersMapFromParamProperties(Step step) {
+		Scenario scenario = step.getScenario();
+		Properties properties = step.getStepParameters();
+		final String _name = ".name";
+		final String _param = "param";
+		final String _type = ".type";
+		Map<String, Object> result = new HashMap<>();
+		int i = 1;
+		while (true) {
+			String name = properties.getProperty(_param + i + _name);
+			if (name == null) {
+				break;
+			}
+			String type = properties.getProperty(_param + i + _type);
+			String propertyValue = properties.getProperty(_param + i + ".value");
+			Object value = propertyValue;
+
+			if (value == null) {
+				String filename = properties.getProperty(_param + i + ".valuefile.absolutepath");
+				if (filename != null) {
+					value = new FileMessage(new File(filename));
+				} else {
+					String inputStreamFilename = properties.getProperty(_param + i + ".valuefileinputstream.absolutepath");
+					if (inputStreamFilename != null) {
+						scenario.addError("valuefileinputstream is no longer supported use valuefile instead");
+					}
+				}
+			}
+			if ("node".equals(type)) {
+				try {
+					value = XmlUtils.buildNode(MessageUtils.asString(value), true);
+				} catch (DomBuilderException | IOException e) {
+					scenario.addError("Could not build node for parameter '" + name + "' with value: " + value, e);
+				}
+			} else if ("domdoc".equals(type)) {
+				try {
+					value = XmlUtils.buildDomDocument(MessageUtils.asString(value), true);
+				} catch (DomBuilderException | IOException e) {
+					scenario.addError("Could not build node for parameter '" + name + "' with value: " + value, e);
+				}
+			} else if ("list".equals(type)) {
+				value = StringUtil.split(propertyValue);
+			} else if ("map".equals(type)) {
+				List<String> parts = StringUtil.split(propertyValue);
+				Map<String, String> map = new LinkedHashMap<>();
+
+				for (String part : parts) {
+					String[] splitted = part.split("\\s*(=\\s*)+", 2);
+					if (splitted.length==2) {
+						map.put(splitted[0], splitted[1]);
+					} else {
+						map.put(splitted[0], "");
+					}
+				}
+				value = map;
+			}
+			if (value == null) {
+				scenario.addError("Property '" + _param + i + ".value' or '" + _param + i + ".valuefile' not found while property '" + _param + i + ".name' exist");
+			} else {
+				result.put(name, value);
+				log.debug("Add param with name [{}] and value [{}] for property '" + "'", name, value);
 			}
 			i++;
 		}

@@ -151,7 +151,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 			writeHtml("<div class='odd'>");
 		}
 		evenStep = !evenStep;
-		writer.debugMessage("Execute step '" + step.getDisplayName() + "'");
+		writer.debugMessage("Execute step " + step.getDisplayName());
 	}
 
 	@Override

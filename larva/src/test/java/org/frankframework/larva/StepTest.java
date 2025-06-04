@@ -38,7 +38,7 @@ class StepTest {
 		Step step = Step.of(scenario, rawLine);
 
 		// Assert
-		String expectedDisplayName = "test - Step " + idx + ", action '" + actionTarget + "." + action + "' = '" + "in.txt" + "'";
+		String expectedDisplayName = "'test' - Step " + idx + ", action '" + actionTarget + "." + action + "' = '" + "in.txt" + "'";
 		assertAll(
 				() -> assertNotNull(step),
 				() -> assertEquals(rawLine, step.getRawLine()),
