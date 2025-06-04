@@ -70,7 +70,7 @@ public class PoolingDataSourceFactory extends DataSourceFactory {
 		return (DataSource) dataSource;
 	}
 
-	private static boolean isPooledDataSource(CommonDataSource dataSource) {
+	public static boolean isPooledDataSource(CommonDataSource dataSource) {
 		return dataSource instanceof ConnectionPoolDataSource
 				|| dataSource.getClass().getName().startsWith("org.apache.tomcat")
 				;
