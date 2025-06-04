@@ -18,7 +18,6 @@ package org.frankframework.ladybug.config;
 import java.util.stream.Collectors;
 
 import jakarta.servlet.Filter;
-import jakarta.servlet.ServletContext;
 
 import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
@@ -40,9 +39,9 @@ import org.springframework.security.config.annotation.web.configurers.CsrfConfig
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
-import org.springframework.web.context.ServletContextAware;
 
 import org.frankframework.lifecycle.DynamicRegistration;
 import org.frankframework.lifecycle.servlets.AuthenticatorUtils;
@@ -72,13 +71,12 @@ import org.frankframework.util.SpringUtils;
 @EnableWebSecurity // Enables Spring Security (classpath)
 @EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) // Enables JSR 250 (JAX-RS) annotations
 @Order(Ordered.HIGHEST_PRECEDENCE)
-public class LadybugSecurityChainConfigurer implements ApplicationContextAware, EnvironmentAware, ServletContextAware {
+public class LadybugSecurityChainConfigurer implements ApplicationContextAware, EnvironmentAware {
 	private static final Logger APPLICATION_LOG = LogManager.getLogger("APPLICATION");
 	private static final String HTTP_SECURITY_BEAN_NAME = "org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity";
 
 	private @Setter ApplicationContext applicationContext;
 	private @Setter Environment environment;
-	private @Setter ServletContext servletContext;
 
 	private static final String STANDALONE_PROPERTY_PREFIX = "application.security.testtool.authentication.";
 	private static final String CONSOLE_PROPERTY_PREFIX = "application.security.console.authentication.";
@@ -98,9 +96,9 @@ public class LadybugSecurityChainConfigurer implements ApplicationContextAware, 
 
 	@Bean
 	public SecurityFilterChain createLadybugSecurityChain(HttpSecurity http, IAuthenticator ladybugAuthenticator) throws Exception {
-		ladybugAuthenticator.registerServlet(createServletConfig("ladybugApiServletBean"));
-		ladybugAuthenticator.registerServlet(createServletConfig("ladybugFrontendServletBean"));
-		ladybugAuthenticator.registerServlet(createServletConfig("testtoolServletBean"));
+		registerServletWhenBeanExists(ladybugAuthenticator, "ladybugApiServletBean");
+		registerServletWhenBeanExists(ladybugAuthenticator, "ladybugFrontendServletBean");
+		registerServletWhenBeanExists(ladybugAuthenticator, "testtoolServletBean");
 
 		HttpSecurity httpSecurity = applicationContext.getBean(HTTP_SECURITY_BEAN_NAME, HttpSecurity.class);
 
@@ -108,7 +106,19 @@ public class LadybugSecurityChainConfigurer implements ApplicationContextAware, 
 		httpSecurity.formLogin(FormLoginConfigurer::disable); // Disable the form login filter
 		httpSecurity.logout(LogoutConfigurer::disable); // Disable the logout filter
 		httpSecurity.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); // Allow same origin iframe request
+
+		// STATELESS prevents session from leaking over multiple servlets.
+		// but OAuth requires cookies...
+		http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
+
 		return ladybugAuthenticator.configureHttpSecurity(httpSecurity);
+	}
+
+	private void registerServletWhenBeanExists(IAuthenticator ladybugAuthenticator, String servletBeanName) {
+		if (applicationContext.containsBean(servletBeanName)) {
+			ServletRegistration<?> bean = applicationContext.getBean(servletBeanName, ServletRegistration.class);
+			ladybugAuthenticator.registerServlet(bean.getServletConfiguration());
+		}
 	}
 
 	/**

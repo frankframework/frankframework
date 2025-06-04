@@ -18,6 +18,7 @@ package org.frankframework.console.configuration;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import lombok.Setter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,12 +38,11 @@ import org.springframework.security.config.annotation.web.configurers.CorsConfig
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-
-import lombok.Setter;
 
 import org.frankframework.lifecycle.servlets.AuthenticatorUtils;
 import org.frankframework.lifecycle.servlets.IAuthenticator;
@@ -84,6 +84,9 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 		} else {
 			http.csrf(CsrfConfigurer::disable);
 		}
+
+		// Spring Security will use the JSESSION cookie to obtain the SecurityContext. Required for OAuth
+		http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
 		http.formLogin(FormLoginConfigurer::disable); // Disable the form login filter
 
 		if(!corsEnabled) {
@@ -119,15 +122,13 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 
 	@Bean
 	public IAuthenticator consoleAuthenticator() {
-		String properyPrefix = "application.security.console.authentication.";
-		IAuthenticator authenticator = AuthenticatorUtils.createAuthenticator(applicationContext, properyPrefix);
-
-		APPLICATION_LOG.info("Securing Frank!Framework Console using {}", ClassUtils.classNameOf(authenticator));
-		return authenticator;
+		String propertyPrefix = "application.security.console.authentication.";
+		return AuthenticatorUtils.createAuthenticator(applicationContext, propertyPrefix);
 	}
 
 	@Bean
 	public SecurityFilterChain createConsoleSecurityChain(HttpSecurity http, IAuthenticator consoleAuthenticator) throws Exception {
+		APPLICATION_LOG.info("Securing Frank!Framework Console using {}", ClassUtils.classNameOf(consoleAuthenticator));
 
 		consoleAuthenticator.registerServlet(applicationContext.getBean("backendServletBean", ServletRegistration.class).getServletConfiguration());
 		consoleAuthenticator.registerServlet(applicationContext.getBean("frontendServletBean", ServletRegistration.class).getServletConfiguration());
