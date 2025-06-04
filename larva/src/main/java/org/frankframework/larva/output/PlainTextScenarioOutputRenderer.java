@@ -68,6 +68,9 @@ public class PlainTextScenarioOutputRenderer implements TestExecutionObserver {
 	public void finishScenario(TestRunStatus testRunStatus, Scenario scenario, int scenarioResult, String scenarioResultMessage) {
 		LarvaLogLevel logLevel = scenarioResult == LarvaTool.RESULT_ERROR ? LarvaLogLevel.SCENARIO_FAILED : LarvaLogLevel.SCENARIO_PASSED_FAILED;
 		out.writeOutputMessage(logLevel, scenarioResultMessage);
+		if (!scenario.getMessages().isEmpty()) {
+			out.writeOutputMessage(LarvaLogLevel.SCENARIO_FAILED, scenario.getMessages().toString());
+		}
 	}
 
 	@Override
@@ -78,9 +81,6 @@ public class PlainTextScenarioOutputRenderer implements TestExecutionObserver {
 	@Override
 	public void finishStep(TestRunStatus testRunStatus, Scenario scenario, Step step, int stepResult, String stepResultMessage) {
 		out.writeOutputMessage(LarvaLogLevel.STEP_PASSED_FAILED, stepResultMessage);
-		if (!scenario.getMessages().isEmpty()) {
-			out.writeOutputMessage(LarvaLogLevel.SCENARIO_FAILED, scenario.getMessages().toString());
-		}
 	}
 
 	@Override
