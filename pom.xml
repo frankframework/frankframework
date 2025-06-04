@@ -59,7 +59,7 @@
 
 		<!-- Some test dependency versions -->
 		<mockito.version>5.18.0</mockito.version>
-		<junit.version>5.12.2</junit.version>
+		<junit.version>5.13.0</junit.version>
 	</properties>
 
 	<name>Frank!Framework parent</name>
@@ -1054,7 +1054,7 @@
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>10.24.0</version>
+							<version>10.25.0</version>
 						</dependency>
 					</dependencies>
 				</plugin>

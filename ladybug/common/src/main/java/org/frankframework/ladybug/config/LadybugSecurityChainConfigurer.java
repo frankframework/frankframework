@@ -21,12 +21,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -68,11 +66,10 @@ import org.frankframework.util.ClassUtils;
 @EnableWebSecurity // Enables Spring Security (classpath)
 @EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) // Enables JSR 250 (JAX-RS) annotations
 @Order(Ordered.HIGHEST_PRECEDENCE) // Higher then the Frank!Console so this `SecurityFilterChain` is used before the Console `SecurityChainConfigurer`.
-public class LadybugSecurityChainConfigurer implements ApplicationContextAware, EnvironmentAware {
+public class LadybugSecurityChainConfigurer implements ApplicationContextAware {
 	private static final Logger APPLICATION_LOG = LogManager.getLogger("APPLICATION");
 
 	private @Setter ApplicationContext applicationContext;
-	private @Setter Environment environment;
 
 	@Bean
 	public SecurityFilterChain createLadybugSecurityChain(HttpSecurity http, IAuthenticator ladybugAuthenticator) throws Exception {
@@ -88,10 +85,8 @@ public class LadybugSecurityChainConfigurer implements ApplicationContextAware, 
 		http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); // Allow same origin iframe request
 
 		// STATELESS prevents session from leaking over multiple servlets.
-		// The Ladybug (echo2) however requires cookie persistence. Hence, it's set to NEVER when echo2 is enabled
-		http.sessionManagement(management -> management.sessionCreationPolicy(
-			applicationContext.containsBean("testtoolServletBean") ? SessionCreationPolicy.NEVER : SessionCreationPolicy.STATELESS
-		));
+		// but OAuth requires cookies...
+		http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
 
 		return ladybugAuthenticator.configureHttpSecurity(http);
 	}

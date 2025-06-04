@@ -173,7 +173,7 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 			httpSecurityConfigurer.headers(h -> h.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
 
 			// STATELESS prevents session from leaking over multiple servlets.
-			// Spring Security will never use the cookie to obtain the SecurityContext.
+			// Spring Security will never use the cookie to obtain the SecurityContext for webservices.
 			httpSecurityConfigurer.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
 			return configureHttpSecurity(httpSecurityConfigurer);
