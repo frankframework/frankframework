@@ -99,5 +99,18 @@ public class IfPipeJsonPathTest extends PipeTestBase<IfPipe> {
 
 		pipeRunResult = doPipe(pipe, IfPipeTest.getJsonMessage(input), session);
 		assertEquals(expectedValue, pipeRunResult.getPipeForward().getName());
+		assertEquals(input, pipeRunResult.getResult().asString());
+	}
+
+	@ParameterizedTest
+	@MethodSource("messageSource")
+	void testExpressionsWithStreamingInput(String input, String expression, String expressionValue, String expectedValue) throws Exception {
+		pipe.setJsonPathExpression(expression);
+		pipe.setExpressionValue(expressionValue);
+		configureAndStartPipe();
+
+		pipeRunResult = doPipe(pipe, IfPipeTest.getStreamingJsonMessage(input), session);
+		assertEquals(expectedValue, pipeRunResult.getPipeForward().getName());
+		assertEquals(input, pipeRunResult.getResult().asString());
 	}
 }
