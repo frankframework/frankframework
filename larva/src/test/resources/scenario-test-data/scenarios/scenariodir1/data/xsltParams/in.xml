@@ -1,0 +1,22 @@
+<zgwRol>
+	<betrokkeneType>natuurlijk_persoon</betrokkeneType>
+	<roltoelichting>BetrekkingOp:Precies</roltoelichting>
+	<betrokkeneIdentificatie>
+		<inpBsn>111111110</inpBsn>
+		<authentiek>J</authentiek>
+		<geslachtsnaam>Precies</geslachtsnaam>
+		<voorvoegselGeslachtsnaam/>
+		<voorletters>P</voorletters>
+		<voornamen>Pietje</voornamen>
+		<geslachtsaanduiding>m</geslachtsaanduiding>
+		<geboortedatum>1901-01-01</geboortedatum>
+	</betrokkeneIdentificatie>
+	<kenmerken>
+		<kenmerk>kenmerk1</kenmerk>
+		<bron>larva</bron>
+	</kenmerken>
+	<kenmerken>
+		<kenmerk>kenmerk2</kenmerk>
+		<bron>larva</bron>
+	</kenmerken>
+</zgwRol>

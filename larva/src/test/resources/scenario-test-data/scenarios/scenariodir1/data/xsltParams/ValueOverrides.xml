@@ -1,0 +1,20 @@
+<root>
+  <valueOverrides>
+     <key>zgwRol.roltoelichting</key>
+     <value>lalala</value>
+     <condition>true()</condition>
+  </valueOverrides>
+  <valueOverrides>
+     <key>zgwRol.betrokkeneIdentificatie.inpBsn</key>
+     <value>apple</value>
+     <condition>true()</condition>
+  </valueOverrides>
+  <valueOverrides>
+     <key>zgwRol.betrokkeneIdentificatie.geslachtsnaam</key>
+     <value>shouldUseDefaultCondition</value>
+  </valueOverrides>
+  <valueOverrides>
+     <key>zgwRol.betrokkeneIdentificatie.idontexist</key>
+     <value>shouldUseDefaultCondition</value>
+  </valueOverrides>
+</root>
