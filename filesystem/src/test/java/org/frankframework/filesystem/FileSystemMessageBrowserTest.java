@@ -101,7 +101,7 @@ public abstract class FileSystemMessageBrowserTest<F, FS extends IWritableFileSy
 		String mid3 = getMessageId(file3);
 		String name3 = fileSystem.getName(file3);
 
-		browser = new FileSystemMessageBrowser(fileSystem, folder, messageIdProperty);
+		browser = new FileSystemMessageBrowser<>(fileSystem, folder, messageIdProperty);
 
 		Map<String,String> items = new HashMap<>();
 

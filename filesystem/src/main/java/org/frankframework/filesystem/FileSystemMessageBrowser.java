@@ -18,8 +18,8 @@ package org.frankframework.filesystem;
 import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
+import java.util.stream.StreamSupport;
 
 import org.apache.logging.log4j.Logger;
 
@@ -74,7 +74,11 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 
 	@Override
 	public IMessageBrowsingIteratorItem getContext(String storageKey) throws ListenerException {
-		return new FileSystemMessageBrowsingIteratorItem<F, FS>(fileSystem, browseMessage(storageKey), messageIdPropertyKey);
+		try {
+			return new FileSystemMessageBrowsingIteratorItem<>(fileSystem, browseMessage(storageKey), messageIdPropertyKey);
+		} catch (FileSystemException e) {
+			throw new ListenerException(e);
+		}
 	}
 
 	protected boolean contains(String value, ThrowingFunction<IMessageBrowsingIteratorItem,String,ListenerException> field) throws ListenerException {
@@ -123,23 +127,14 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 
 	@Override
 	public int getMessageCount() throws ListenerException {
-		int count = 0;
 		try(DirectoryStream<F> ds = fileSystem.list(folder, TypeFilter.FILES_ONLY)) {
 			if (ds==null) {
 				return -1;
 			}
-			Iterator<F> it = ds.iterator();
-			if (it==null) {
-				return 0;
-			}
-			while (it.hasNext()) {
-				count++;
-				it.next();
-			}
+			return (int) StreamSupport.stream(ds.spliterator(), false).count();
 		} catch (IOException | FileSystemException e) {
 			throw new ListenerException(e);
 		}
-		return count;
 	}
 
 	@Override
@@ -147,8 +142,8 @@ public class FileSystemMessageBrowser<F, FS extends IBasicFileSystem<F>> impleme
 		return List.of(
 			new MessageBrowserField(null, "id", "Storage ID", "string"),
 			new MessageBrowserField(null, "originalId", "Original ID", "string"),
-			new MessageBrowserField(null, "insertDate", "Timestamp", "date")
+			new MessageBrowserField(null, "insertDate", "Timestamp", "date"),
+			new MessageBrowserField(null, "comment", "Comment", "string")
 		);
 	}
-
 }

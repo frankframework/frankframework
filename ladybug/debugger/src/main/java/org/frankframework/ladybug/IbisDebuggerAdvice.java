@@ -199,7 +199,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		PipeRunResult pipeRunResult = null;
 
 		if(StringUtils.isNotEmpty(messageRoot)) {
-			reportGenerator.showInputValue(correlationId, "MessageRoot to be asserted", messageRoot);
+			reportGenerator.showInfoValue(correlationId, "MessageRoot to be asserted", messageRoot);
 		}
 
 		try {
@@ -302,7 +302,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			return contentHandler;
 		}
 		String correlationId = getCorrelationId(session);
-		WriterPlaceHolder writerPlaceHolder = reportGenerator.showInputValue(correlationId, label, new WriterPlaceHolder());
+		WriterPlaceHolder writerPlaceHolder = reportGenerator.showInfoValue(correlationId, label, new WriterPlaceHolder());
 		if (writerPlaceHolder!=null && writerPlaceHolder.getWriter()!=null) {
 			Writer writer = writerPlaceHolder.getWriter();
 			session.scheduleCloseOnSessionExit(writer);

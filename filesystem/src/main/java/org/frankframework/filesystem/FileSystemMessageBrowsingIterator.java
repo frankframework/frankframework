@@ -45,7 +45,11 @@ public class FileSystemMessageBrowsingIterator<F, FS extends IBasicFileSystem<F>
 
 	@Override
 	public IMessageBrowsingIteratorItem next() throws ListenerException {
-		return new FileSystemMessageBrowsingIteratorItem<>(fileSystem, new RawMessageWrapper<>(iterator.next()), messageIdPropertyKey);
+		try {
+			return new FileSystemMessageBrowsingIteratorItem<>(fileSystem, new RawMessageWrapper<>(iterator.next()), messageIdPropertyKey);
+		} catch (FileSystemException e) {
+			throw new ListenerException(e);
+		}
 	}
 
 	@Override

@@ -57,8 +57,8 @@ public interface IWritableFileSystem<F> extends IBasicFileSystem<F> {
 	}
 
 	/**
-	 * Renames the file to a new name, possibly in a another folder.
-	 * Does not need to check for existence of the source or non-existence of the destination.
+	 * Renames the file to a new name, possibly in another folder.
+	 * Does not need to check for the existence of the source or non-existence of the destination.
 	 */
 	F renameFile(F source, F destination) throws FileSystemException;
 }

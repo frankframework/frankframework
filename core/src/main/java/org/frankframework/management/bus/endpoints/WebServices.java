@@ -43,6 +43,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
@@ -69,7 +70,7 @@ import org.frankframework.soap.WsdlGenerator;
 import org.frankframework.soap.WsdlGeneratorUtils;
 import org.frankframework.util.EnumUtils;
 
-
+@Log4j2
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.WEBSERVICES)
 public class WebServices extends BusEndpointBase {

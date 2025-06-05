@@ -28,14 +28,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.util.Comparator;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Stream;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
@@ -134,16 +137,23 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 			createFile(file, contents);
 
 			// Then add the custom attributes
-			UserDefinedFileAttributeView userDefinedAttributes = Files.getFileAttributeView(file, UserDefinedFileAttributeView.class);
-
-			// Stream can't handle the possible IOException
-			for (Map.Entry<String, String> entry : customFileAttributes.entrySet()) {
-				userDefinedAttributes.write(entry.getKey(), Charset.defaultCharset().encode(entry.getValue()));
-			}
+			addCustomFileAttributes(file, customFileAttributes);
 
 		} catch (Exception e) {
 			throw ExceptionUtils.asRuntimeException(e);
 		}
+	}
+
+	private static void addCustomFileAttributes(Path file, Map<String, String> customFileAttributes) throws IOException {
+		// We need to restore the original file modified time, because we use it to append to the filename in some configurations of the DirectoryListener.
+		FileTime lastModifiedTime = Files.getLastModifiedTime(file);
+		UserDefinedFileAttributeView userDefinedAttributes = Files.getFileAttributeView(file, UserDefinedFileAttributeView.class);
+
+		// Stream can't handle the possible IOException
+		for (Map.Entry<String, String> entry : customFileAttributes.entrySet()) {
+			userDefinedAttributes.write(entry.getKey(), Charset.defaultCharset().encode(entry.getValue()));
+		}
+		Files.setLastModifiedTime(file, lastModifiedTime);
 	}
 
 	@Override
@@ -214,8 +224,15 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 
 	@Override
 	public Path renameFile(Path source, Path destination) throws FileSystemException {
+		return renameFile(source, destination, Map.of());
+	}
+
+	@Override
+	public Path renameFile(Path source, Path destination, Map<String, String> customFileAttributes) throws FileSystemException {
 		try {
-			return Files.move(source, destination);
+			Path result = Files.move(source, destination);
+			addCustomFileAttributes(result, customFileAttributes);
+			return result;
 		} catch (FileNotFoundException e) {
 			throw new org.frankframework.filesystem.FileNotFoundException(e);
 		} catch (IOException e) {
@@ -225,6 +242,11 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 
 	@Override
 	public Path moveFile(Path f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		return moveFile(f, destinationFolder, createFolder, Map.of());
+	}
+
+	@Override
+	public Path moveFile(Path f, String destinationFolder, boolean createFolder, Map<String, String> customFileAttributes) throws FileSystemException {
 		if(createFolder && !folderExists(destinationFolder)) {
 			try {
 				Files.createDirectories(toFile(destinationFolder));
@@ -233,15 +255,23 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 			}
 		}
 		try {
-			return Files.move(f, toFile(destinationFolder, getName(f)));
+			Path result = Files.move(f, toFile(destinationFolder, getName(f)));
+			addCustomFileAttributes(result, customFileAttributes);
+			return result;
 		} catch (FileNotFoundException e) {
 			throw new org.frankframework.filesystem.FileNotFoundException(e);
 		} catch (IOException e) {
 			throw new FileSystemException("Cannot move file ["+ f +"] to ["+ destinationFolder+"]", e);
 		}
 	}
+
 	@Override
 	public Path copyFile(Path f, String destinationFolder, boolean createFolder) throws FileSystemException {
+		return copyFile(f, destinationFolder, createFolder, Map.of());
+	}
+
+	@Override
+	public Path copyFile(Path f, String destinationFolder, boolean createFolder, Map<String, String> customFileAttributes) throws FileSystemException {
 		if(createFolder && !folderExists(destinationFolder)) {
 			try {
 				Files.createDirectories(toFile(destinationFolder));
@@ -252,6 +282,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		Path target = toFile(destinationFolder, getName(f));
 		try {
 			Files.copy(f, target);
+			addCustomFileAttributes(target, customFileAttributes);
 		} catch (FileNotFoundException e) {
 			throw new org.frankframework.filesystem.FileNotFoundException(e);
 		} catch (IOException e) {
@@ -326,10 +357,18 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		if (attributeValue instanceof byte[] bytes) {
 			return new String(bytes);
 		} else if (attributeValue instanceof ByteBuffer buffer) {
-			return new String((buffer).array());
+			return new String(buffer.array());
 		} else {
 			return attributeValue.toString();
 		}
+	}
+
+	@Nullable
+	@Override
+	public String getCustomFileAttribute(@Nonnull Path file, @Nonnull String name) throws FileSystemException {
+		Map<String, Object> additionalFileProperties = getAdditionalFileProperties(file);
+		if (additionalFileProperties == null) return null;
+		return Objects.toString(additionalFileProperties.get(name), null);
 	}
 
 	@Override

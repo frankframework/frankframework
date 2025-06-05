@@ -689,13 +689,13 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			if (StringUtils.isNotEmpty(hideRegex)) {
 				hideRegexPattern = Pattern.compile(hideRegex);
 
-				if (getErrorStorage() != null && StringUtils.isEmpty(getErrorStorage().getHideRegex())) {
-					getErrorStorage().setHideRegex(getHideRegex());
-					getErrorStorage().setHideMethod(getHideMethod());
+				if (errorStorage != null && StringUtils.isEmpty(errorStorage.getHideRegex())) {
+					errorStorage.setHideRegex(getHideRegex());
+					errorStorage.setHideMethod(getHideMethod());
 				}
-				if (getMessageLog() != null && StringUtils.isEmpty(getMessageLog().getHideRegex())) {
-					getMessageLog().setHideRegex(getHideRegex());
-					getMessageLog().setHideMethod(getHideMethod());
+				if (messageLog != null && StringUtils.isEmpty(messageLog.getHideRegex())) {
+					messageLog.setHideRegex(getHideRegex());
+					messageLog.setHideMethod(getHideMethod());
 				}
 			}
 

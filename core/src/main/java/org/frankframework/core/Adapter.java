@@ -259,7 +259,8 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		}
 
 		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_ADAPTER_KEY, getName())) {
-			log.debug("configuring adapter [{}]", name);
+			long startTime = System.currentTimeMillis();
+			log.debug("configuring adapter");
 
 			msgLog = LogUtil.getMsgLogger(this);
 			Configurator.setLevel(msgLog.getName(), msgLogLevel);
@@ -291,6 +292,8 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			if (errorMessageFormatter instanceof IConfigurable configurable) {
 				configurable.configure();
 			}
+
+			log.info("configured adapter in {}", () -> Misc.getDurationInMs(startTime));
 		}
 
 		composedHideRegex = computeCombinedHideRegex();
@@ -776,7 +779,10 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 						warn("configuration unload in progress or done. Starting the adapter ["+getName()+"] is not possible");
 						return;
 					}
+
+					log.info("starting adapter");
 					log.trace("Start Adapter thread - synchronize (lock) on Adapter runState[{}]", runState);
+
 					synchronized (runState) {
 						RunState currentRunState = getRunState();
 						if (currentRunState!=RunState.STOPPED) {

@@ -20,7 +20,6 @@ import java.util.Properties;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IPushingListener;
-import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.http.WebServiceListener;
@@ -82,13 +81,9 @@ public class LarvaPushingListenerAction extends AbstractLarvaAction<IPushingList
 
 	@Override
 	@SuppressWarnings("java:S1117")
-	public Message executeRead(Properties properties) throws TimeoutException, ListenerException {
+	public Message executeRead(Properties properties) throws TimeoutException {
 		ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessageWithDefaultTimeout();
-
-		if (listenerMessage != null) {
-			this.listenerMessage = listenerMessage;
-			return listenerMessage.getMessage();
-		}
-		throw new ListenerException("no message found in queue [" + peek() + "]");
+		this.listenerMessage = listenerMessage;
+		return listenerMessage.getMessage();
 	}
 }

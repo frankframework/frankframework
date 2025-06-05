@@ -120,5 +120,4 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination, AutoCloseab
 			return "<Cannot get true canonical name, error: [" + e.getMessage() + "]>";
 		}
 	}
-
 }
