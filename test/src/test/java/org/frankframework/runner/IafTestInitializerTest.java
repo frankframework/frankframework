@@ -45,11 +45,17 @@ class IafTestInitializerTest {
 	void ladybugRuns() {
 		// Make sure to use the right context and port for the Tomcat server
 		TomcatServletWebServerFactory tomcat = applicationContext.getBean("tomcat", TomcatServletWebServerFactory.class);
-		String url = String.format("http://localhost:%d/%s/iaf/ladybug/api/testtool", tomcat.getPort(), tomcat.getContextPath());
+		String baseUrl = String.format("http://localhost:%d/%s/iaf/ladybug/api/", tomcat.getPort(), tomcat.getContextPath());
 
-		// create a rest call to the ladybug endpoint at 'iaf/ladybug/api/testtool'  to check if it is running
 		RestTemplate restTemplate = new RestTemplate();
-		ResponseEntity<String> response = restTemplate.getForEntity(url, String.class);
+		ResponseEntity<String> response = restTemplate.getForEntity(baseUrl + "testtool", String.class);
 		assertTrue(response.getStatusCode().is2xxSuccessful(), "Ladybug endpoint should return 2xx status");
+
+		// create a rest call to the ladybug endpoints at 'iaf/ladybug/api/testtool/stub-strategies' and 'iaf/ladybug/api/testtool/views'
+		ResponseEntity<String> viewResponse = restTemplate.getForEntity(baseUrl + "testtool/views", String.class);
+		assertTrue(viewResponse.getStatusCode().is2xxSuccessful(), "Views should return 2xx status");
+
+		ResponseEntity<String> variablesResponse = restTemplate.getForEntity(baseUrl + "report/variables/", String.class);
+		assertTrue(variablesResponse.getStatusCode().is2xxSuccessful(), "Stub straties should return 2xx status");
 	}
 }
