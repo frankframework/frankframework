@@ -109,7 +109,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			ConfigurationWarnings.add(this, log, msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
 		}
 		if (StringUtils.isNotEmpty(getServiceNamespaceURI()) && StringUtils.isNotEmpty(getAddress()) && StringUtils.isNotEmpty(getSoapAction())) {
-			String msg = "Please specify either an address, soapAction or serviceNamespaceURI but not both";
+			String msg = "Please specify only one of either an address, soapAction or serviceNamespaceURI;
 			ConfigurationWarnings.add(this, log, msg);
 		}
 
