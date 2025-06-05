@@ -61,7 +61,7 @@ import org.frankframework.util.XmlBuilder;
  * <li>SOAP protocol is stored under a session key 'soapProtocol'</li>
  * <li>SOAP action is stored under a session key 'SOAPAction'</li>
  * </ul>
- * and for each response a multipart message is constructed if a 'multipart'-XML is provided in sessionKey specified by multipartXmlSessionKey.
+ * and for each response a multipart message is constructed if a 'multipart'-XML is provided in sessionKey specified by {@code multipartXmlSessionKey}.
  *
  * @author Gerrit van Brakel
  * @author Jaco de Groot
@@ -109,7 +109,7 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			ConfigurationWarnings.add(this, log, msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
 		}
 		if (StringUtils.isNotEmpty(getServiceNamespaceURI()) && StringUtils.isNotEmpty(getAddress()) && StringUtils.isNotEmpty(getSoapAction())) {
-			String msg = "Please specify only one of either an address, soapAction or serviceNamespaceURI;
+			String msg = "Please specify only one of either an address, soapAction or serviceNamespaceURI";
 			ConfigurationWarnings.add(this, log, msg);
 		}
 
