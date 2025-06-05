@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 
+import jakarta.annotation.Nullable;
+
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -94,44 +96,7 @@ public class LarvaActionUtils {
 				break;
 			}
 			String type = properties.getProperty(PARAM_KEY + i + TYPE_KEY);
-			String propertyValue = properties.getProperty(PARAM_KEY + i + VALUE_KEY);
-			Object value = propertyValue;
-
-			if (value == null) {
-				String filename = properties.getProperty(PARAM_KEY + i + VALUEFILE_ABSOLUTEPATH_KEY);
-				if (filename != null) {
-					value = new FileMessage(new File(filename));
-				} else {
-					throw new IllegalArgumentException("use either value or valuefile");
-				}
-			}
-			if ("node".equals(type)) {
-				try {
-					value = XmlUtils.buildNode(MessageUtils.asString(value), true);
-				} catch (DomBuilderException | IOException e) {
-					throw new IllegalArgumentException("Could not build node for parameter '" + name + "' with value: " + value, e);
-				}
-			} else if ("domdoc".equals(type)) {
-				try {
-					value = XmlUtils.buildDomDocument(MessageUtils.asString(value), true);
-				} catch (DomBuilderException | IOException e) {
-					throw new IllegalArgumentException("Could not build node for parameter '" + name + "' with value: " + value, e);
-				}
-			} else if ("list".equals(type)) {
-				value = StringUtil.split(propertyValue);
-			} else if ("map".equals(type)) {
-				List<String> parts = StringUtil.split(propertyValue);
-				Map<String, String> map = new LinkedHashMap<>();
-				for (String part : parts) {
-					String[] splitted = part.split("(\\s*?=\\s*)+", 2);
-					if (splitted.length == 2) {
-						map.put(splitted[0], splitted[1]);
-					} else {
-						map.put(splitted[0], "");
-					}
-				}
-				value = map;
-			}
+			Object value = getParamValue(properties, i, type, name);
 			String pattern = properties.getProperty(PARAM_KEY + i + PATTERN_KEY);
 			if (value == null && pattern == null) {
 				throw new IllegalArgumentException("Property '" + PARAM_KEY + i + " doesn't have a value or pattern");
@@ -184,48 +149,7 @@ public class LarvaActionUtils {
 				break;
 			}
 			String type = properties.getProperty(PARAM_KEY + i + TYPE_KEY);
-			String propertyValue = properties.getProperty(PARAM_KEY + i + VALUE_KEY);
-			Object value = propertyValue;
-
-			if (value == null) {
-				String filename = properties.getProperty(PARAM_KEY + i + VALUEFILE_ABSOLUTEPATH_KEY);
-				if (filename != null) {
-					value = new FileMessage(new File(filename));
-				} else {
-					String inputStreamFilename = properties.getProperty(PARAM_KEY + i + ".valuefileinputstream.absolutepath");
-					if (inputStreamFilename != null) {
-						throw new IllegalArgumentException("'valuefileinputstream' is no longer supported, use 'valuefile' instead");
-					}
-				}
-			}
-			if ("node".equals(type)) {
-				try {
-					value = XmlUtils.buildNode(MessageUtils.asString(value), true);
-				} catch (DomBuilderException | IOException e) {
-					throw new IllegalArgumentException("Could not build node for parameter '" + name + "' with value: " + value, e);
-				}
-			} else if ("domdoc".equals(type)) {
-				try {
-					value = XmlUtils.buildDomDocument(MessageUtils.asString(value), true);
-				} catch (DomBuilderException | IOException e) {
-					throw new IllegalArgumentException("Could not build node for parameter '" + name + "' with value: " + value, e);
-				}
-			} else if ("list".equals(type)) {
-				value = StringUtil.split(propertyValue);
-			} else if ("map".equals(type)) {
-				List<String> parts = StringUtil.split(propertyValue);
-				Map<String, String> map = new LinkedHashMap<>();
-
-				for (String part : parts) {
-					String[] splitted = part.split("(\\s*?=\\s*)+", 2);
-					if (splitted.length==2) {
-						map.put(splitted[0], splitted[1]);
-					} else {
-						map.put(splitted[0], "");
-					}
-				}
-				value = map;
-			}
+			Object value = getParamValue(properties, i, type, name);
 			if (value == null) {
 				throw new IllegalArgumentException("Property '" + PARAM_KEY + i + ".value' or '" + PARAM_KEY + i + ".valuefile' not found while property '" + PARAM_KEY + i + ".name' exist");
 			} else {
@@ -235,5 +159,52 @@ public class LarvaActionUtils {
 			i++;
 		}
 		return result;
+	}
+
+	@Nullable
+	private static Object getParamValue(Properties properties, int i, String type, String name) {
+		String propertyValue = properties.getProperty(PARAM_KEY + i + VALUE_KEY);
+		Object value = propertyValue;
+
+		if (value == null) {
+			String filename = properties.getProperty(PARAM_KEY + i + VALUEFILE_ABSOLUTEPATH_KEY);
+			if (filename != null) {
+				value = new FileMessage(new File(filename));
+			} else {
+				String inputStreamFilename = properties.getProperty(PARAM_KEY + i + ".valuefileinputstream.absolutepath");
+				if (inputStreamFilename != null) {
+					throw new IllegalArgumentException("'valuefileinputstream' is no longer supported, use 'valuefile' instead");
+				}
+			}
+		}
+		if ("node".equals(type)) {
+			try {
+				value = XmlUtils.buildNode(MessageUtils.asString(value), true);
+			} catch (DomBuilderException | IOException e) {
+				throw new IllegalArgumentException("Could not build node for parameter '" + name + "' with value: " + value, e);
+			}
+		} else if ("domdoc".equals(type)) {
+			try {
+				value = XmlUtils.buildDomDocument(MessageUtils.asString(value), true);
+			} catch (DomBuilderException | IOException e) {
+				throw new IllegalArgumentException("Could not build node for parameter '" + name + "' with value: " + value, e);
+			}
+		} else if ("list".equals(type)) {
+			value = StringUtil.split(propertyValue);
+		} else if ("map".equals(type)) {
+			List<String> parts = StringUtil.split(propertyValue);
+			Map<String, String> map = new LinkedHashMap<>();
+
+			for (String part : parts) {
+				String[] splitted = part.split("(\\s*?=\\s*)+", 2);
+				if (splitted.length==2) {
+					map.put(splitted[0], splitted[1]);
+				} else {
+					map.put(splitted[0], "");
+				}
+			}
+			value = map;
+		}
+		return value;
 	}
 }
