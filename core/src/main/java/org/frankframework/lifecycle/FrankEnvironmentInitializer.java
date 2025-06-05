@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
 import org.springframework.web.WebApplicationInitializer;
+import org.springframework.web.context.ConfigurableWebApplicationContext;
 import org.springframework.web.context.ContextLoader;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.XmlWebApplicationContext;
@@ -52,8 +53,7 @@ public class FrankEnvironmentInitializer implements WebApplicationInitializer {
 
 	@Override
 	public void onStartup(ServletContext servletContext) {
-		WebApplicationContext applicationContext = createApplicationContext();
-		ContextLoader contextLoader = new ContextLoader(applicationContext);
+		ContextLoader contextLoader = new NonServletContextContextLoader();
 
 		try {
 			// NOTE this doesn't work yet because the `org.springframework.boot.autoconfigure.jersey.JerseyAutoConfiguration.JerseyWebApplicationInitializer`
@@ -93,17 +93,33 @@ public class FrankEnvironmentInitializer implements WebApplicationInitializer {
 		}
 	}
 
-	private WebApplicationContext createApplicationContext() {
-		APPLICATION_LOG.debug("Starting Frank EnvironmentContext");
+	private static class NonServletContextContextLoader extends ContextLoader {
 
-		XmlWebApplicationContext applicationContext = new XmlWebApplicationContext();
-		applicationContext.setEnvironment(new StandardEnvironment()); // Force a StandardEnvironment else it will create a StandardServletEnvironment
-		applicationContext.setConfigLocations(SpringContextScope.ENVIRONMENT.getContextFile());
-		applicationContext.setDisplayName("EnvironmentContext");
+		public NonServletContextContextLoader() {
+			super(createRootApplicationContext());
+		}
 
-		MutablePropertySources propertySources = applicationContext.getEnvironment().getPropertySources();
-		propertySources.addFirst(new PropertiesPropertySource(SpringContextScope.ENVIRONMENT.getFriendlyName(), AppConstants.getInstance()));
+		@Override
+		protected void customizeContext(ServletContext sc, ConfigurableWebApplicationContext wac) {
+			// Spring AutoConfigure loves to initialize a `<NONE>` resource.
+			// Even though the `ConfigLocation` was already set... Thanks I suppose?
+			wac.setConfigLocations(SpringContextScope.ENVIRONMENT.getContextFile());
 
-		return applicationContext;
+			super.customizeContext(sc, wac);
+		}
+
+		private static WebApplicationContext createRootApplicationContext() {
+			APPLICATION_LOG.debug("Starting Frank EnvironmentContext");
+
+			XmlWebApplicationContext applicationContext = new XmlWebApplicationContext();
+			applicationContext.setEnvironment(new StandardEnvironment()); // Force a StandardEnvironment else it will create a StandardServletEnvironment
+			applicationContext.setConfigLocations(SpringContextScope.ENVIRONMENT.getContextFile());
+			applicationContext.setDisplayName("EnvironmentContext");
+
+			MutablePropertySources propertySources = applicationContext.getEnvironment().getPropertySources();
+			propertySources.addFirst(new PropertiesPropertySource(SpringContextScope.ENVIRONMENT.getFriendlyName(), AppConstants.getInstance()));
+
+			return applicationContext;
+		}
 	}
 }
