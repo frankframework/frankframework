@@ -27,7 +27,7 @@
 		<spring-integration.version>6.5.0</spring-integration.version>
 		<spring.boot.version>3.5.0</spring.boot.version>
 		<tomcat.version>10.1.41</tomcat.version>
-		<bouncycastle.version>1.80</bouncycastle.version>
+		<bouncycastle.version>1.81</bouncycastle.version>
 
 		<narayana.version>7.2.2.Final</narayana.version>
 		<jboss-logging.version>3.6.1.Final</jboss-logging.version>
