@@ -91,6 +91,7 @@ class LarvaToolTest {
 		// Assert
 		assertEquals(expected, actual);
 	}
+
 	@Test
 	public void testPrepareForCompareWithTestDataDirUnixPathInput() {
 		// Arrange
@@ -168,9 +169,9 @@ class LarvaToolTest {
 
 	private static void verifyTestRunResults(TestRunStatus result, StringWriter output) {
 		List<String> expectedFailed = List.of("scenariodir1/active-failing-scenario");
-		List<String> expectedPassed = List.of("scenariodir1/active-scenario", "scenariodir1/subdir/scenario01");
+		List<String> expectedPassed = List.of("scenariodir1/active-scenario", "scenariodir1/scenario-using-params", "scenariodir1/subdir/scenario01");
 
-		assertEquals(3, result.getScenarioExecuteCount(), () -> "Expected 3 scenarios to be executed, but was " + result.getScenarioExecuteCount() + "\n" + output.toString());
+		assertEquals(4, result.getScenarioExecuteCount(), () -> "Expected 3 scenarios to be executed, but was " + result.getScenarioExecuteCount() + "\n" + output.toString());
 		assertIterableEquals(expectedFailed, result.getFailedScenarios().stream().map(Scenario::getName).toList(), () -> "Expected " + expectedFailed.size() + " scenarios to fail, but was " + result.getFailedScenarios().size() + "\n" + output.toString());
 		assertIterableEquals(expectedPassed, result.getPassedScenarios().stream().map(Scenario::getName).toList(), () -> "Expected " + expectedPassed.size() + " scenarios to pass, but was " + result.getPassedScenarios().size() + "\n" + output.toString());
 	}

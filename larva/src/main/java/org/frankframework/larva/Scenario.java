@@ -121,7 +121,7 @@ public class Scenario {
 		// Filter and sort steps from all scenario property names
 		List<Step> steps = properties.stringPropertyNames().stream()
 				.filter(Step::isValidStep)
-				.filter(step -> larvaConfig.isAllowReadlineSteps() || !step.endsWith(".readline"))
+				.filter(step -> larvaConfig.isAllowReadlineSteps() || !step.toLowerCase().endsWith(".readline"))
 				.map(step -> Step.of(this, step))
 				.sorted()
 				.toList();

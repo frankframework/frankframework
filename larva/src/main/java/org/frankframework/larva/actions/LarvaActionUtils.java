@@ -197,7 +197,7 @@ public class LarvaActionUtils {
 				} else {
 					String inputStreamFilename = properties.getProperty(_param + i + ".valuefileinputstream.absolutepath");
 					if (inputStreamFilename != null) {
-						scenario.addError("valuefileinputstream is no longer supported use valuefile instead");
+						scenario.addError("'valuefileinputstream' is no longer supported, use 'valuefile' instead");
 					}
 				}
 			}
