@@ -302,7 +302,7 @@ public class ScenarioRunner {
 			// TODO: Perhaps we can use these parameters as a general mechanism to provide parameter values to senders, or populate a PipeLineSession? (see https://github.com/frankframework/frankframework/issues/5967)
 			Map<String, Object> xsltParameters;
 			if (actionIsXsltProviderListener) {
-				xsltParameters = LarvaActionUtils.createParametersMapFromParamProperties(step);
+				xsltParameters = LarvaActionUtils.createParametersMapFromParamProperties(step.getStepParameters());
 			} else {
 				xsltParameters = null;
 			}

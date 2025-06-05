@@ -27,8 +27,6 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.larva.Scenario;
-import org.frankframework.larva.Step;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.FileMessage;
@@ -47,6 +45,13 @@ import org.frankframework.util.XmlUtils;
  */
 @Log4j2
 public class LarvaActionUtils {
+
+	public static final String NAME_KEY = ".name";
+	public static final String PARAM_KEY = "param";
+	public static final String TYPE_KEY = ".type";
+	public static final String PATTERN_KEY = ".pattern";
+	public static final String VALUE_KEY = ".value";
+	public static final String VALUEFILE_ABSOLUTEPATH_KEY = ".valuefile.absolutepath";
 
 	private LarvaActionUtils() {
 		// don't construct util class
@@ -81,39 +86,36 @@ public class LarvaActionUtils {
 	 * @return A map with parameters
 	 */
 	public static Map<String, IParameter> createParametersMapFromParamProperties(Properties properties, PipeLineSession session) {
-		final String _name = ".name";
-		final String _param = "param";
-		final String _type = ".type";
 		Map<String, IParameter> result = new HashMap<>();
 		int i = 1;
 		while (true) {
-			String name = properties.getProperty(_param + i + _name);
+			String name = properties.getProperty(PARAM_KEY + i + NAME_KEY);
 			if (name == null) {
 				break;
 			}
-			String type = properties.getProperty(_param + i + _type);
-			String propertyValue = properties.getProperty(_param + i + ".value");
+			String type = properties.getProperty(PARAM_KEY + i + TYPE_KEY);
+			String propertyValue = properties.getProperty(PARAM_KEY + i + VALUE_KEY);
 			Object value = propertyValue;
 
 			if (value == null) {
-				String filename = properties.getProperty(_param + i + ".valuefile.absolutepath");
+				String filename = properties.getProperty(PARAM_KEY + i + VALUEFILE_ABSOLUTEPATH_KEY);
 				if (filename != null) {
 					value = new FileMessage(new File(filename));
 				} else {
-					throw new IllegalStateException("use either value or valuefile");
+					throw new IllegalArgumentException("use either value or valuefile");
 				}
 			}
 			if ("node".equals(type)) {
 				try {
 					value = XmlUtils.buildNode(MessageUtils.asString(value), true);
 				} catch (DomBuilderException | IOException e) {
-					throw new IllegalStateException("Could not build node for parameter '" + name + "' with value: " + value, e);
+					throw new IllegalArgumentException("Could not build node for parameter '" + name + "' with value: " + value, e);
 				}
 			} else if ("domdoc".equals(type)) {
 				try {
 					value = XmlUtils.buildDomDocument(MessageUtils.asString(value), true);
 				} catch (DomBuilderException | IOException e) {
-					throw new IllegalStateException("Could not build node for parameter '" + name + "' with value: " + value, e);
+					throw new IllegalArgumentException("Could not build node for parameter '" + name + "' with value: " + value, e);
 				}
 			} else if ("list".equals(type)) {
 				value = StringUtil.split(propertyValue);
@@ -130,9 +132,9 @@ public class LarvaActionUtils {
 				}
 				value = map;
 			}
-			String pattern = properties.getProperty(_param + i + ".pattern");
+			String pattern = properties.getProperty(PARAM_KEY + i + PATTERN_KEY);
 			if (value == null && pattern == null) {
-				throw new IllegalStateException("Property '" + _param + i + " doesn't have a value or pattern");
+				throw new IllegalArgumentException("Property '" + PARAM_KEY + i + " doesn't have a value or pattern");
 			} else {
 				try {
 					Parameter parameter = new Parameter();
@@ -151,7 +153,7 @@ public class LarvaActionUtils {
 					parameter.configure();
 					result.put(name, parameter);
 				} catch (ConfigurationException e) {
-					throw new IllegalStateException("Parameter '" + name + "' could not be configured");
+					throw new IllegalArgumentException("Parameter '" + name + "' could not be configured");
 				}
 			}
 			i++;
@@ -169,35 +171,30 @@ public class LarvaActionUtils {
 	 * value for the Map from. More than one param can be specified by using
 	 * param2, param3 etc.
 	 *
-	 * @param step Step for which to extract the parameters
+	 * @param properties Properties from which to extract the parameters
 	 * @return A map with parameters
 	 */
 	// Merge this with LarvaActionUtils#createParametersMapFromParamProperties(Properties, PipeLineSession)
-	public static Map<String, Object> createParametersMapFromParamProperties(Step step) {
-		Scenario scenario = step.getScenario();
-		Properties properties = step.getStepParameters();
-		final String _name = ".name";
-		final String _param = "param";
-		final String _type = ".type";
+	public static Map<String, Object> createParametersMapFromParamProperties(Properties properties) {
 		Map<String, Object> result = new HashMap<>();
 		int i = 1;
 		while (true) {
-			String name = properties.getProperty(_param + i + _name);
+			String name = properties.getProperty(PARAM_KEY + i + NAME_KEY);
 			if (name == null) {
 				break;
 			}
-			String type = properties.getProperty(_param + i + _type);
-			String propertyValue = properties.getProperty(_param + i + ".value");
+			String type = properties.getProperty(PARAM_KEY + i + TYPE_KEY);
+			String propertyValue = properties.getProperty(PARAM_KEY + i + VALUE_KEY);
 			Object value = propertyValue;
 
 			if (value == null) {
-				String filename = properties.getProperty(_param + i + ".valuefile.absolutepath");
+				String filename = properties.getProperty(PARAM_KEY + i + VALUEFILE_ABSOLUTEPATH_KEY);
 				if (filename != null) {
 					value = new FileMessage(new File(filename));
 				} else {
-					String inputStreamFilename = properties.getProperty(_param + i + ".valuefileinputstream.absolutepath");
+					String inputStreamFilename = properties.getProperty(PARAM_KEY + i + ".valuefileinputstream.absolutepath");
 					if (inputStreamFilename != null) {
-						scenario.addError("'valuefileinputstream' is no longer supported, use 'valuefile' instead");
+						throw new IllegalArgumentException("'valuefileinputstream' is no longer supported, use 'valuefile' instead");
 					}
 				}
 			}
@@ -205,13 +202,13 @@ public class LarvaActionUtils {
 				try {
 					value = XmlUtils.buildNode(MessageUtils.asString(value), true);
 				} catch (DomBuilderException | IOException e) {
-					scenario.addError("Could not build node for parameter '" + name + "' with value: " + value, e);
+					throw new IllegalArgumentException("Could not build node for parameter '" + name + "' with value: " + value, e);
 				}
 			} else if ("domdoc".equals(type)) {
 				try {
 					value = XmlUtils.buildDomDocument(MessageUtils.asString(value), true);
 				} catch (DomBuilderException | IOException e) {
-					scenario.addError("Could not build node for parameter '" + name + "' with value: " + value, e);
+					throw new IllegalArgumentException("Could not build node for parameter '" + name + "' with value: " + value, e);
 				}
 			} else if ("list".equals(type)) {
 				value = StringUtil.split(propertyValue);
@@ -230,7 +227,7 @@ public class LarvaActionUtils {
 				value = map;
 			}
 			if (value == null) {
-				scenario.addError("Property '" + _param + i + ".value' or '" + _param + i + ".valuefile' not found while property '" + _param + i + ".name' exist");
+				throw new IllegalArgumentException("Property '" + PARAM_KEY + i + ".value' or '" + PARAM_KEY + i + ".valuefile' not found while property '" + PARAM_KEY + i + ".name' exist");
 			} else {
 				result.put(name, value);
 				log.debug("Add param with name [{}] and value [{}] for property '" + "'", name, value);
