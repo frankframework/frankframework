@@ -196,7 +196,7 @@ public class LarvaActionUtils {
 			Map<String, String> map = new LinkedHashMap<>();
 
 			for (String part : parts) {
-				String[] splitted = part.split("(\\s*?=\\s*)+", 2);
+				String[] splitted = part.split("\\s*=\\s*", 2);
 				if (splitted.length==2) {
 					map.put(splitted[0], splitted[1]);
 				} else {
