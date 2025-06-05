@@ -196,11 +196,11 @@ public class LarvaActionUtils {
 			Map<String, String> map = new LinkedHashMap<>();
 
 			for (String part : parts) {
-				String[] splitted = part.split("\\s*=\\s*", 2);
+				String[] splitted = part.split("=", 2);
 				if (splitted.length==2) {
-					map.put(splitted[0], splitted[1]);
+					map.put(splitted[0].strip(), splitted[1].strip());
 				} else {
-					map.put(splitted[0], "");
+					map.put(splitted[0].strip(), "");
 				}
 			}
 			value = map;
