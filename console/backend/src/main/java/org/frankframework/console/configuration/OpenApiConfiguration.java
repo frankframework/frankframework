@@ -15,12 +15,18 @@
 */
 package org.frankframework.console.configuration;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.Map;
+
+import org.springdoc.core.providers.JavadocProvider;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
 
+import org.frankframework.console.Description;
 import org.frankframework.util.Environment;
 
 /**
@@ -43,4 +49,57 @@ public class OpenApiConfiguration {
 		return openApi;
 	}
 
+	@Bean
+	public JavadocProvider getJavadocProvider() {
+		return new JavadocProvider() {
+
+			@Override
+			public String getClassJavadoc(Class<?> cl) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public Map<String, String> getRecordClassParamJavadoc(Class<?> cl) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public String getMethodJavadocDescription(Method method) {
+				Description description = method.getAnnotation(Description.class);
+
+				return description != null ? description.value() : null;
+			}
+
+			@Override
+			public String getMethodJavadocReturn(Method method) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public Map<String, String> getMethodJavadocThrows(Method method) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public String getParamJavadoc(Method method, String name) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public String getFieldJavadoc(Field field) {
+				// TODO Auto-generated method stub
+				return null;
+			}
+
+			@Override
+			public String getFirstSentence(String text) {
+				return text;
+			}
+		};
+	}
 }

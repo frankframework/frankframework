@@ -16,9 +16,13 @@
 		<context:exclude-filter type="regex" expression="org\.frankframework\.console\.runner\..*"/>
 	</context:component-scan>
 
+	<!-- Create an OpenAPI spec for the Frank!Framework API -->
 	<context:component-scan base-package="org.springdoc">
 		<context:exclude-filter type="regex" expression="org\.springdoc\.core\.configuration\.SpringDocDataRestConfiguration"/>
 		<context:exclude-filter type="regex" expression="org\.springdoc\.core\.configuration\.SpringDocHateoasConfiguration"/>
+
+		<!-- Turn off grouped openapi's as we don't have any, and this adds extra endpoints -->
+		<context:exclude-filter type="regex" expression="org\.springdoc\.webmvc\.api\.Multiple.*"/>
 	</context:component-scan>
 
 	<bean id="JwtKeyGenerator" class="org.frankframework.management.security.JwtKeyGenerator"/>
