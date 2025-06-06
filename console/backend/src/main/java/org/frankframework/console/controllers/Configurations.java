@@ -30,6 +30,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -113,10 +114,10 @@ public class Configurations {
 	@Relation("configuration")
 	@Description("view individual loaded/original configuration")
 	@GetMapping(value = "/configurations/{configuration}", produces = MediaType.APPLICATION_XML_VALUE)
-	public ResponseEntity<?> getConfigurationByName(ConfigurationPathVariables path,
+	public ResponseEntity<?> getConfigurationByName(@PathVariable String configuration,
 													ConfigurationParameters params) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.GET);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 
 		if (params.loadedConfiguration != null) {
 			builder.addHeader("loaded", params.loadedConfiguration);
@@ -129,9 +130,9 @@ public class Configurations {
 	@Relation("configuration")
 	@Description("view configuration health")
 	@GetMapping(value = "/configurations/{configuration}/health", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getConfigurationHealth(ConfigurationPathVariables path) throws ApiException {
+	public ResponseEntity<?> getConfigurationHealth(@PathVariable String configuration) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.HEALTH);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		return frankApiService.callSyncGateway(builder);
 	}
 
@@ -139,9 +140,9 @@ public class Configurations {
 	@Relation("configuration")
 	@Description("view configuration flow diagram")
 	@GetMapping(value = "/configurations/{configuration}/flow")
-	public ResponseEntity<?> getConfigurationFlow(ConfigurationPathVariables path) throws ApiException {
+	public ResponseEntity<?> getConfigurationFlow(@PathVariable String configuration) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.FLOW);
-		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
+		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 		return frankApiService.callSyncGateway(builder);
 	}
 

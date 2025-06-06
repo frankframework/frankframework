@@ -19,6 +19,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Info;
+
+import org.frankframework.util.Environment;
 
 /**
  * <p>
@@ -32,7 +35,12 @@ public class OpenApiConfiguration {
 	// TODO Set Title + Version
 	@Bean
 	public OpenAPI openAPI() {
-		return new OpenAPI();
+		OpenAPI openApi = new OpenAPI();
+		Info info = new Info();
+		info.title("Frank!Framework OpenApi Definition").version(Environment.getModuleVersion("frankframework-console-backend"));
+		openApi.setInfo(info);
+
+		return openApi;
 	}
 
 }

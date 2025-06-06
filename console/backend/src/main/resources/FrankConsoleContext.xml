@@ -17,8 +17,8 @@
 	</context:component-scan>
 
 	<context:component-scan base-package="org.springdoc">
-		<context:include-filter type="regex" expression="org\.springdoc\.core\.configuration\.SpringDocDataRestConfiguration"/>
-		<context:include-filter type="regex" expression="org\.springdoc\.core\.configuration\.SpringDocHateoasConfiguration"/>
+		<context:exclude-filter type="regex" expression="org\.springdoc\.core\.configuration\.SpringDocDataRestConfiguration"/>
+		<context:exclude-filter type="regex" expression="org\.springdoc\.core\.configuration\.SpringDocHateoasConfiguration"/>
 	</context:component-scan>
 
 	<bean id="JwtKeyGenerator" class="org.frankframework.management.security.JwtKeyGenerator"/>
