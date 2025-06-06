@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.StringReader;
 import java.util.stream.Stream;
 
 import org.hamcrest.Matchers;
@@ -132,9 +133,19 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 
 		pipeRunResult = doPipe(pipe, "test123", session);
 		assertEquals(PIPE_FORWARD_THEN, pipeRunResult.getPipeForward().getName());
+		assertEquals("test123", pipeRunResult.getResult().asString());
 
 		pipeRunResult = doPipe(pipe, getJsonMessage("test123"), session);
 		assertEquals(PIPE_FORWARD_THEN, pipeRunResult.getPipeForward().getName());
+		assertEquals("test123", pipeRunResult.getResult().asString());
+
+		pipeRunResult = doPipe(pipe, new Message(new StringReader("test123")), session);
+		assertEquals(PIPE_FORWARD_THEN, pipeRunResult.getPipeForward().getName());
+		assertEquals("test123", pipeRunResult.getResult().asString());
+
+		pipeRunResult = doPipe(pipe, getStreamingJsonMessage("test123"), session);
+		assertEquals(PIPE_FORWARD_THEN, pipeRunResult.getPipeForward().getName());
+		assertEquals("test123", pipeRunResult.getResult().asString());
 	}
 
 	@MethodSource("messageSource")
@@ -227,6 +238,12 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 
 	static Message getJsonMessage(String json) {
 		Message jsonMessage = new Message(json);
+		jsonMessage.getContext().withMimeType("application/json");
+		return jsonMessage;
+	}
+
+	static Message getStreamingJsonMessage(String json) {
+		Message jsonMessage = new Message(new StringReader(json));
 		jsonMessage.getContext().withMimeType("application/json");
 		return jsonMessage;
 	}
