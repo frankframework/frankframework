@@ -34,14 +34,13 @@ import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.zip.ZipInputStream;
@@ -72,16 +71,12 @@ import org.frankframework.larva.output.LarvaWriter;
 import org.frankframework.larva.output.PlainTextScenarioOutputRenderer;
 import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
-import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CleanerProvider;
-import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.MessageUtils;
 import org.frankframework.util.ProcessUtil;
-import org.frankframework.util.StringUtil;
 import org.frankframework.util.TemporaryDirectoryUtils;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
@@ -385,7 +380,7 @@ public class LarvaTool {
 		}
 	}
 
-	public int compareResult(TestExecutionObserver testExecutionObserver, Scenario scenario, String step, String fileName, Message expectedResultMessage, Message actualResultMessage) {
+	public int compareResult(TestExecutionObserver testExecutionObserver, Scenario scenario, Step step, String fileName, Message expectedResultMessage, Message actualResultMessage) {
 		Properties properties = scenario.getProperties();
 		String expectedResult = messageToString(expectedResultMessage);
 		String actualResult = messageToString(actualResultMessage);
@@ -490,8 +485,8 @@ public class LarvaTool {
 		return ok;
 	}
 
-	private int reportFailedCompare(TestExecutionObserver testExecutionObserver, Scenario scenario, String step, String message, String printableExpectedResult, String preparedExpectedResult, String printableActualResult, String preparedActualResult, String actualResult, int ok) {
-		String filenameAbsolutePath = scenario.getStepDataFile(step);
+	private int reportFailedCompare(TestExecutionObserver testExecutionObserver, Scenario scenario, Step step, String message, String printableExpectedResult, String preparedExpectedResult, String printableActualResult, String preparedActualResult, String actualResult, int ok) {
+		String filenameAbsolutePath = step.getStepDataFile();
 		testExecutionObserver.stepMessageFailed(scenario, step, message, printableExpectedResult, preparedExpectedResult, printableActualResult, preparedActualResult);
 		if (larvaConfig.isAutoSaveDiffs()) {
 			debugMessage("Copy actual result to ["+filenameAbsolutePath+"]");
@@ -870,8 +865,7 @@ public class LarvaTool {
 		return result;
 	}
 
-	public String formatDecimalContentBetweenKeys(String string,
-		String key1, String key2) {
+	public String formatDecimalContentBetweenKeys(String string, String key1, String key2) {
 		String result = string;
 		int i = result.indexOf(key1);
 		while (i != -1 && result.length() > i + key1.length()) {
@@ -935,87 +929,6 @@ public class LarvaTool {
 	}
 
 	/**
-	 * Create a Map for a specific property based on other properties that are
-	 * the same except for a .param1.name, .param1.value or .param1.valuefile
-	 * suffix.  The property with the .name suffix specifies the key for the
-	 * Map, the property with the value suffix specifies the value for the Map.
-	 * A property with a the .valuefile suffix can be used as an alternative
-	 * for a property with a .value suffix to specify the file to read the
-	 * value for the Map from. More than one param can be specified by using
-	 * param2, param3 etc.
-	 *
-	 * @param properties Properties object from which to create the map
-	 * @return A map with parameters
-	 */
-	// Replace or merge this with LarvaActionUtils.createParametersMapFromParamProperties
-	public Map<String, Object> createParametersMapFromParamProperties(Properties properties) {
-		final String _name = ".name";
-		final String _param = "param";
-		final String _type = ".type";
-		Map<String, Object> result = new HashMap<>();
-		boolean processed = false;
-		int i = 1;
-		while (!processed) {
-			String name = properties.getProperty(_param + i + _name);
-			if (name != null) {
-				String type = properties.getProperty(_param + i + _type);
-				String propertyValue = properties.getProperty(_param + i + ".value");
-				Object value = propertyValue;
-
-				if (value == null) {
-					String filename = properties.getProperty(_param + i + ".valuefile.absolutepath");
-					if (filename != null) {
-						value = new FileMessage(new File(filename));
-					} else {
-						String inputStreamFilename = properties.getProperty(_param + i + ".valuefileinputstream.absolutepath");
-						if (inputStreamFilename != null) {
-							errorMessage("valuefileinputstream is no longer supported use valuefile instead");
-						}
-					}
-				}
-				if ("node".equals(type)) {
-					try {
-						value = XmlUtils.buildNode(MessageUtils.asString(value), true);
-					} catch (DomBuilderException | IOException e) {
-						errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e);
-					}
-				} else if ("domdoc".equals(type)) {
-					try {
-						value = XmlUtils.buildDomDocument(MessageUtils.asString(value), true);
-					} catch (DomBuilderException | IOException e) {
-						errorMessage("Could not build node for parameter '" + name + "' with value: " + value, e);
-					}
-				} else if ("list".equals(type)) {
-					value = StringUtil.split(propertyValue);
-				} else if ("map".equals(type)) {
-					List<String> parts = StringUtil.split(propertyValue);
-					Map<String, String> map = new LinkedHashMap<>();
-
-					for (String part : parts) {
-						String[] splitted = part.split("\\s*(=\\s*)+", 2);
-						if (splitted.length==2) {
-							map.put(splitted[0], splitted[1]);
-						} else {
-							map.put(splitted[0], "");
-						}
-					}
-					value = map;
-				}
-				if (value == null) {
-					errorMessage("Property '" + _param + i + ".value' or '" + _param + i + ".valuefile' not found while property '" + _param + i + ".name' exist");
-				} else {
-					result.put(name, value);
-					log.debug("Add param with name [{}] and value [{}] for property '" + "'", name, value);
-				}
-				i++;
-			} else {
-				processed = true;
-			}
-		}
-		return result;
-	}
-
-	/**
 	 * Replace all linefeed-characters with the platform-specific linefeed-character for the current platform.
 	 */
 	public String formatString(String string) {
@@ -1050,13 +963,10 @@ public class LarvaTool {
 	*/
 	public static Map<String, Map<String, Map<String, String>>> mapPropertiesToIgnores(Properties properties){
 		Map<String, Map<String, Map<String, String>>> returnMap = new HashMap<>();
-		Enumeration<String> enums = (Enumeration<String>) properties.propertyNames();
+		Set<String> propertyNames = properties.stringPropertyNames();
 
 		// Loop through all properties
-		while (enums.hasMoreElements()) {
-			// Extract key
-			String key = enums.nextElement();
-
+		for (String key: propertyNames) {
 			// Extract ignore type
 			String ignore = key.split(Pattern.quote("."))[0];
 			List<String> attributes = findAttributesForIgnore(ignore);

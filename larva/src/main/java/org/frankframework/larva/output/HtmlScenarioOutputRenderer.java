@@ -29,6 +29,7 @@ import org.frankframework.larva.LarvaHtmlConfig;
 import org.frankframework.larva.LarvaLogLevel;
 import org.frankframework.larva.LarvaTool;
 import org.frankframework.larva.Scenario;
+import org.frankframework.larva.Step;
 import org.frankframework.larva.TestRunStatus;
 import org.frankframework.util.XmlEncodingUtils;
 
@@ -142,7 +143,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 	}
 
 	@Override
-	public void startStep(TestRunStatus testRunStatus, Scenario scenario, String step) {
+	public void startStep(TestRunStatus testRunStatus, Scenario scenario, Step step) {
 		// Create a div for the step. Will be closed in finishStep().
 		if (evenStep) {
 			writeHtml("<div class='even'>");
@@ -150,11 +151,11 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 			writeHtml("<div class='odd'>");
 		}
 		evenStep = !evenStep;
-		writer.debugMessage("Execute step '" + scenario.getStepDisplayName(step) + "'");
+		writer.debugMessage("Execute step " + step.getDisplayName());
 	}
 
 	@Override
-	public void finishStep(TestRunStatus testRunStatus, Scenario scenario, String step, int stepResult, String stepResultMessage) {
+	public void finishStep(TestRunStatus testRunStatus, Scenario scenario, Step step, int stepResult, String stepResultMessage) {
 		if (writer.shouldWriteLevel(LarvaLogLevel.STEP_PASSED_FAILED)) {
 			StringBuilder outputMessage = new StringBuilder();
 			if (stepResult == LarvaTool.RESULT_OK) {
@@ -164,7 +165,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 			} else {
 				outputMessage.append("<h3 class='failed'>");
 			}
-			outputMessage.append(LarvaHtmlWriter.encodeForHtml(stepResultMessage)).append("</h2>");
+			outputMessage.append(LarvaHtmlWriter.encodeForHtml(stepResultMessage)).append("</h3>");
 			writeHtml(LarvaLogLevel.STEP_PASSED_FAILED, outputMessage.toString(), false);
 		}
 		// Close the div created when startStep was called.
@@ -172,21 +173,21 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 	}
 
 	@Override
-	public void stepMessage(Scenario scenario, String step, String description, String stepMessage) {
-		writer.writeStepMessageBox(LarvaLogLevel.PIPELINE_MESSAGES, "message container", scenario.getStepDisplayName(step), description, "messagebox", stepMessage);
+	public void stepMessage(Scenario scenario, Step step, String description, String stepMessage) {
+		writer.writeStepMessageBox(LarvaLogLevel.PIPELINE_MESSAGES, "message container", step.getDisplayName(), description, "messagebox", stepMessage);
 	}
 
 	@Override
-	public void stepMessageSuccess(Scenario scenario, String step, String description, String stepResultMessage, String stepResultMessagePreparedForDiff) {
-		String stepName = scenario.getStepDisplayName(step);
+	public void stepMessageSuccess(Scenario scenario, Step step, String description, String stepResultMessage, String stepResultMessagePreparedForDiff) {
+		String stepName = step.getDisplayName();
 		writer.writeStepMessageBox(LarvaLogLevel.PIPELINE_MESSAGES, "message container", stepName, description, "messagebox", stepResultMessage);
 		writer.writeStepMessageBox(LarvaLogLevel.PIPELINE_MESSAGES_PREPARED_FOR_DIFF, "message container", stepName, description + " as prepared for diff", "messagebox", stepResultMessagePreparedForDiff);
 	}
 
 	@Override
-	public void stepMessageFailed(Scenario scenario, String step, String description, String stepExpectedResultMessage, String stepExpectedResultMessagePreparedForDiff, String stepActualResultMessage, String stepActualResultMessagePreparedForDiff) {
-		String stepName = scenario.getStepDisplayName(step);
-		String stepDataFileName = scenario.getStepDataFile(step);
+	public void stepMessageFailed(Scenario scenario, Step step, String description, String stepExpectedResultMessage, String stepExpectedResultMessagePreparedForDiff, String stepActualResultMessage, String stepActualResultMessagePreparedForDiff) {
+		String stepName = step.getDisplayName();
+		String stepDataFileName = step.isInline() ? null : step.getStepDataFile();
 		writer.writeStepMessageWithDiffBox(LarvaLogLevel.WRONG_PIPELINE_MESSAGES, "error container", stepName, stepDataFileName, "scenario", "raw", description, stepActualResultMessage, stepExpectedResultMessage);
 		writer.writeStepMessageWithDiffBox(LarvaLogLevel.WRONG_PIPELINE_MESSAGES_PREPARED_FOR_DIFF, "error container", stepName, stepDataFileName, "scenario", "prepared for diff", description, stepActualResultMessagePreparedForDiff, stepExpectedResultMessagePreparedForDiff);
 	}
