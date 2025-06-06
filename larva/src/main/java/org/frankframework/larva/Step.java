@@ -37,15 +37,15 @@ public class Step implements Comparable<Step> {
 	private static final Pattern STEP_PARSE_RE = Pattern.compile("(?i)^step(\\d+)\\.(.+)\\.(read|readline|write|writeline)$");
 
 	private final @Getter Scenario scenario;
-	private final @Getter String rawLine;
+	private final @Getter String baseKey;
 	private final @Getter int idx;
 	private final @Getter String actionTarget;
 	private final @Getter String action;
 	private final @Getter String value;
 
-	public Step(Scenario scenario, String rawLine, int idx, String actionTarget, String action, String value) {
+	private Step(Scenario scenario, String baseKey, int idx, String actionTarget, String action, String value) {
 		this.scenario = scenario;
-		this.rawLine = rawLine;
+		this.baseKey = baseKey;
 		this.idx = idx;
 		this.actionTarget = actionTarget;
 		this.action = action;
@@ -69,7 +69,7 @@ public class Step implements Comparable<Step> {
 		if (isInline() || isIgnore()) {
 			return null;
 		}
-		return scenario.getProperties().getProperty(rawLine + Scenario.ABSOLUTE_PATH_PROPERTY_SUFFIX);
+		return scenario.getProperties().getProperty(baseKey + Scenario.ABSOLUTE_PATH_PROPERTY_SUFFIX);
 	}
 
 	public String getDisplayName() {
@@ -108,7 +108,7 @@ public class Step implements Comparable<Step> {
 	}
 
 	public Properties getStepParameters() {
-		return LarvaActionUtils.getSubProperties(scenario.getProperties(), rawLine);
+		return LarvaActionUtils.getSubProperties(scenario.getProperties(), baseKey);
 	}
 
 	@Override

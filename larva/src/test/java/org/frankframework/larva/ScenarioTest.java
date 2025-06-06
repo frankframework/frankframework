@@ -46,11 +46,11 @@ class ScenarioTest {
 
 		// Assert
 		assertEquals(5, steps.size());
-		assertEquals("step1.action.read", steps.get(0).getRawLine());
-		assertEquals("step2.action.write", steps.get(1).getRawLine());
-		assertEquals("step3.action.writeline", steps.get(2).getRawLine());
-		assertEquals("step5.action.read", steps.get(3).getRawLine());
-		assertEquals("step6.action.writeLine", steps.get(4).getRawLine());
+		assertEquals("step1.action.read", steps.get(0).getBaseKey());
+		assertEquals("step2.action.write", steps.get(1).getBaseKey());
+		assertEquals("step3.action.writeline", steps.get(2).getBaseKey());
+		assertEquals("step5.action.read", steps.get(3).getBaseKey());
+		assertEquals("step6.action.writeLine", steps.get(4).getBaseKey());
 
 		// Arrange
 		config.setAllowReadlineSteps(true);
@@ -60,13 +60,13 @@ class ScenarioTest {
 
 		// Assert
 		assertEquals(7, steps2.size());
-		assertEquals("step1.action.read", steps2.get(0).getRawLine());
-		assertEquals("step2.action.write", steps2.get(1).getRawLine());
-		assertEquals("step3.action.writeline", steps2.get(2).getRawLine());
-		assertEquals("step4.action.readline", steps2.get(3).getRawLine());
-		assertEquals("step5.action.read", steps2.get(4).getRawLine());
-		assertEquals("step6.action.writeLine", steps2.get(5).getRawLine());
-		assertEquals("step7.action.readLine", steps2.get(6).getRawLine());
+		assertEquals("step1.action.read", steps2.get(0).getBaseKey());
+		assertEquals("step2.action.write", steps2.get(1).getBaseKey());
+		assertEquals("step3.action.writeline", steps2.get(2).getBaseKey());
+		assertEquals("step4.action.readline", steps2.get(3).getBaseKey());
+		assertEquals("step5.action.read", steps2.get(4).getBaseKey());
+		assertEquals("step6.action.writeLine", steps2.get(5).getBaseKey());
+		assertEquals("step7.action.readLine", steps2.get(6).getBaseKey());
 	}
 
 	@Test
@@ -124,11 +124,11 @@ class ScenarioTest {
 
 		// Assert
 		assertEquals(5, steps.size());
-		assertEquals("step1.action.read", steps.get(0).getRawLine());
-		assertEquals("step2.action.write", steps.get(1).getRawLine());
-		assertEquals("step3.action.writeline", steps.get(2).getRawLine());
-		assertEquals("step4.action.read", steps.get(3).getRawLine());
-		assertEquals("step5.action.read", steps.get(4).getRawLine());
+		assertEquals("step1.action.read", steps.get(0).getBaseKey());
+		assertEquals("step2.action.write", steps.get(1).getBaseKey());
+		assertEquals("step3.action.writeline", steps.get(2).getBaseKey());
+		assertEquals("step4.action.read", steps.get(3).getBaseKey());
+		assertEquals("step5.action.read", steps.get(4).getBaseKey());
 	}
 
 	@Test
@@ -152,10 +152,10 @@ class ScenarioTest {
 
 		// Assert
 		assertEquals(4, steps.size());
-		assertEquals("step1.action.read", steps.get(0).getRawLine());
-		assertEquals("step2.action.write", steps.get(1).getRawLine());
-		assertEquals("step3.action.writeline", steps.get(2).getRawLine());
-		assertEquals("step5.action.read", steps.get(3).getRawLine());
+		assertEquals("step1.action.read", steps.get(0).getBaseKey());
+		assertEquals("step2.action.write", steps.get(1).getBaseKey());
+		assertEquals("step3.action.writeline", steps.get(2).getBaseKey());
+		assertEquals("step5.action.read", steps.get(3).getBaseKey());
 	}
 
 	private Scenario createScenario(String scenarioSteps) throws IOException {

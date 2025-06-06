@@ -41,7 +41,7 @@ class StepTest {
 		String expectedDisplayName = "'test' - Step " + idx + ", action '" + actionTarget + "." + action + "' = '" + "in.txt" + "'";
 		assertAll(
 				() -> assertNotNull(step),
-				() -> assertEquals(rawLine, step.getRawLine()),
+				() -> assertEquals(rawLine, step.getBaseKey()),
 				() -> assertEquals("in.txt", step.getValue()),
 				() -> assertEquals(expectedDisplayName, step.getDisplayName()),
 				() -> assertEquals(idx, step.getIdx()),
