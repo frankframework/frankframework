@@ -129,7 +129,7 @@ public class Scenario {
 		// Validate that there are no duplicate step numbers
 		//noinspection ResultOfMethodCallIgnored
 		steps.stream()
-				.mapToInt(Step::getIdx)
+				.mapToInt(Step::getIndex)
 				.reduce(-1, (lastStepNr, stepNr) -> {
 					if (lastStepNr == stepNr) {
 						throw new LarvaException(String.format("Scenario %s has more than one step numbered %d", name, stepNr));
