@@ -38,13 +38,12 @@ import org.frankframework.util.Environment;
 @Configuration
 public class OpenApiConfiguration {
 
-	// TODO Set Title + Version
 	@Bean
 	public OpenAPI openAPI() {
 		OpenAPI openApi = new OpenAPI();
-		Info info = new Info();
-		info.title("Frank!Framework OpenApi Definition").version(Environment.getModuleVersion("frankframework-console-backend"));
-		openApi.setInfo(info);
+		openApi.setInfo(new Info()
+				.title("Frank!Framework OpenApi Definition")
+				.version(Environment.getModuleVersion("frankframework-console-backend")));
 
 		return openApi;
 	}
@@ -55,13 +54,11 @@ public class OpenApiConfiguration {
 
 			@Override
 			public String getClassJavadoc(Class<?> cl) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public Map<String, String> getRecordClassParamJavadoc(Class<?> cl) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
@@ -74,25 +71,21 @@ public class OpenApiConfiguration {
 
 			@Override
 			public String getMethodJavadocReturn(Method method) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public Map<String, String> getMethodJavadocThrows(Method method) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public String getParamJavadoc(Method method, String name) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
 			@Override
 			public String getFieldJavadoc(Field field) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 
