@@ -69,6 +69,19 @@ public class IfPipeXpathTest extends PipeTestBase<IfPipe> {
 
 		pipeRunResult = doPipe(pipe, input, session);
 		assertEquals(expectedValue, pipeRunResult.getPipeForward().getName());
+		assertEquals(input, pipeRunResult.getResult().asString());
+	}
+
+	@ParameterizedTest
+	@MethodSource("messageSource")
+	void testExpressionsWithStreamingInput(String input, String expression, String expressionValue, String expectedValue) throws Exception {
+		pipe.setXpathExpression(expression);
+		pipe.setExpressionValue(expressionValue);
+		configureAndStartPipe();
+
+		pipeRunResult = doPipe(pipe, input, session);
+		assertEquals(expectedValue, pipeRunResult.getPipeForward().getName());
+		assertEquals(input, pipeRunResult.getResult().asString());
 	}
 
 	@Test
