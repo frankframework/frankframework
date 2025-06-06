@@ -119,7 +119,7 @@ public class PushingListenerAdapter implements IPushingListener<Message>, Servic
 
 	@Override
 	public String toString() {
-		//Including the handler causes StackOverflowExceptions on Receiver.toString() which also prints the listener
+		// Including the handler causes StackOverflowExceptions on Receiver.toString() which also prints the listener
 		return ReflectionToStringBuilder.toStringExclude(this, "handler");
 	}
 

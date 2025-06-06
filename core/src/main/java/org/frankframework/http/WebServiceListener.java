@@ -61,7 +61,7 @@ import org.frankframework.util.XmlBuilder;
  * <li>SOAP protocol is stored under a session key 'soapProtocol'</li>
  * <li>SOAP action is stored under a session key 'SOAPAction'</li>
  * </ul>
- * and for each response a multipart message is constructed if a 'multipart'-XML is provided in sessionKey specified by multipartXmlSessionKey.
+ * and for each response a multipart message is constructed if a 'multipart'-XML is provided in sessionKey specified by {@code multipartXmlSessionKey}.
  *
  * @author Gerrit van Brakel
  * @author Jaco de Groot
@@ -84,17 +84,14 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	private EndpointImpl endpoint = null;
 	private SpringBus cxfBus;
 
-	/**
-	 * initialize listener and register <code>this</code> to the JNDI
-	 */
+	/* SOAP Action Implementation */
+	private @Getter String soapAction;
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if(StringUtils.isEmpty(getAddress()) && isMtomEnabled())
 			throw new ConfigurationException("can only use MTOM when address attribute has been set");
-
-		if(StringUtils.isNotEmpty(getAddress()) && getAddress().contains(":"))
-			throw new ConfigurationException("address cannot contain colon ( : ) character");
 
 		if (StringUtils.isNotEmpty(getAttachmentSessionKeys())) {
 			attachmentSessionKeysList.addAll(StringUtil.split(getAttachmentSessionKeys(), " ,;"));
@@ -107,21 +104,27 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 			soapWrapper = SoapWrapper.getInstance();
 		}
 
-		if (StringUtils.isEmpty(getServiceNamespaceURI()) && StringUtils.isEmpty(getAddress())) {
-			String msg = "You must specify either an address or a serviceNamespaceURI";
+		if (StringUtils.isEmpty(getServiceNamespaceURI()) && StringUtils.isEmpty(getAddress()) && StringUtils.isEmpty(getSoapAction())) {
+			String msg = "You must specify either an address, soapAction or a serviceNamespaceURI";
 			ConfigurationWarnings.add(this, log, msg, SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
 		}
-		if (StringUtils.isNotEmpty(getServiceNamespaceURI()) && StringUtils.isNotEmpty(getAddress())) {
-			String msg = "Please specify either an address or serviceNamespaceURI but not both";
+		if (StringUtils.isNotEmpty(getServiceNamespaceURI()) && StringUtils.isNotEmpty(getAddress()) && StringUtils.isNotEmpty(getSoapAction())) {
+			String msg = "Please specify only one of either an address, soapAction or serviceNamespaceURI";
 			ConfigurationWarnings.add(this, log, msg);
 		}
 
-		Bus bus = getApplicationContext().getBean("cxf", Bus.class);
-		if(bus instanceof SpringBus springBus) {
-			cxfBus = springBus;
-			log.debug("found CXF SpringBus id [{}]", bus::getId);
-		} else {
-			throw new ConfigurationException("unable to find SpringBus, cannot register "+this.getClass().getSimpleName());
+		if (StringUtils.isNotEmpty(getAddress())) {
+			if(getAddress().contains(":")) {
+				throw new ConfigurationException("address cannot contain colon ( : ) character");
+			}
+
+			Bus bus = getApplicationContext().getBean("cxf", Bus.class);
+			if(bus instanceof SpringBus springBus) {
+				cxfBus = springBus;
+				log.debug("found CXF SpringBus id [{}]", bus::getId);
+			} else {
+				throw new ConfigurationException("unable to find SpringBus, cannot register "+this.getClass().getSimpleName());
+			}
 		}
 	}
 
@@ -146,6 +149,9 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		} else if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
 			log.debug("registering listener [{}] with ServiceDispatcher by serviceNamespaceURI [{}]", this::getName, this::getServiceNamespaceURI);
 			ServiceDispatcher.getInstance().registerServiceClient(getServiceNamespaceURI(), this);
+		} else if (StringUtils.isNotEmpty(getSoapAction())) {
+			log.debug("registering listener [{}] with ServiceDispatcher by soapAction [{}]", this::getName, this::getSoapAction);
+			ServiceDispatcher.getInstance().registerServiceClient(getSoapAction(), this);
 		}
 		else {
 			log.debug("registering listener [{}] with ServiceDispatcher by name", this::getName);
@@ -169,6 +175,9 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		} else if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
 			log.debug("unregistering listener [{}] from ServiceDispatcher by serviceNamespaceURI [{}]", this::getName, this::getServiceNamespaceURI);
 			ServiceDispatcher.getInstance().unregisterServiceClient(getServiceNamespaceURI());
+		} else if (StringUtils.isNotEmpty(getSoapAction())) {
+			log.debug("unregistering listener [{}] from ServiceDispatcher by soapAction [{}]", this::getName, this::getSoapAction);
+			ServiceDispatcher.getInstance().unregisterServiceClient(getSoapAction());
 		}
 		else {
 			log.debug("unregistering listener [{}] from ServiceDispatcher", this::getName);
@@ -224,7 +233,10 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		}
 		else if (StringUtils.isNotEmpty(getServiceNamespaceURI())) {
 			return "serviceNamespaceURI ["+getServiceNamespaceURI()+"]";
+		} else if (StringUtils.isNotEmpty(getSoapAction())) {
+			return "soapAction ["+getSoapAction()+"]";
 		}
+
 		return "name ["+getName()+"]";
 	}
 
@@ -262,6 +274,14 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 		}
 	}
 
+	/**
+	 * SOAP Action to listen to. Requests sent to `/servlet/rpcrouter` which matches the soapAction will be processed by this listener.
+	 * This is slightly different from the namespaceURI which routes messages based on the first element's namespace.
+	 */
+	public void setSoapAction(String string) {
+		soapAction = string;
+	}
+
 	/** If set, MTOM is enabled on the SOAP binding */
 	public void setMtomEnabled(boolean mtomEnabled) {
 		this.mtomEnabled = mtomEnabled;
@@ -283,12 +303,9 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	@Override
 	public Object getSpecialDefaultValue(String attributeName, Object defaultValue, Map<String, String> attributes) {
 		if ("address".equals(attributeName)) {
-			return getAddressDefaultValue(attributes.get("name"));
+			return "/" + attributes.get("name");
 		}
 		return defaultValue;
 	}
 
-	private static String getAddressDefaultValue(String name) {
-		return "/" + name;
-	}
 }

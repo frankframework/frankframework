@@ -318,7 +318,18 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 
 	protected String findAction(String contentType) {
 		MimeType mimeType = MimeType.valueOf(contentType);
-		return mimeType.getParameter("action");
+		return unquote(mimeType.getParameter("action"));
+	}
+
+	private boolean isQuotedString(String s) {
+		if (StringUtils.isEmpty(s) || s.length() < 2) {
+			return false;
+		}
+		return ((s.startsWith("\"") && s.endsWith("\"")) || (s.startsWith("'") && s.endsWith("'")));
+	}
+
+	private String unquote(String s) {
+		return (isQuotedString(s) ? s.substring(1, s.length() - 1) : s);
 	}
 
 	protected final Message parseSOAPMessage(SOAPMessage soapMessage) {

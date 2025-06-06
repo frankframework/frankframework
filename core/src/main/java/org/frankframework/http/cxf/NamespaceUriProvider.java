@@ -17,6 +17,7 @@ package org.frankframework.http.cxf;
 
 import java.util.Iterator;
 
+import jakarta.annotation.Nullable;
 import jakarta.xml.soap.SOAPBody;
 import jakarta.xml.soap.SOAPException;
 import jakarta.xml.soap.SOAPMessage;
@@ -24,6 +25,7 @@ import jakarta.xml.ws.BindingType;
 import jakarta.xml.ws.ServiceMode;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.cxf.binding.soap.SoapBindingConstants;
 import org.w3c.dom.Node;
 
 import lombok.extern.log4j.Log4j2;
@@ -53,15 +55,39 @@ public class NamespaceUriProvider extends AbstractSOAPProvider {
 
 	@Override
 	protected Message processRequest(SOAPMessage request, PipeLineSession pipelineSession) throws ListenerException {
-		String serviceName = findNamespaceUri(request);
-		ServiceClient service = sd.getListener(serviceName);
+		String serviceName = pipelineSession.getString(SoapBindingConstants.SOAP_ACTION);
+		ServiceClient service = findService(serviceName);
+
+		if (service instanceof WebServiceListener) {
+			// Found listener with corresponding soap action
+			return processRequest(service, request, pipelineSession);
+		} else {
+			// Try again, this time to find the namespaceURI
+			serviceName = findNamespaceUri(request);
+			service = findService(serviceName);
+		}
 
 		if (!(service instanceof WebServiceListener)) {
 			throw new ListenerException("service ["+ serviceName +"] is not registered or not of required type");
 		}
 
+		return processRequest(service, request, pipelineSession);
+	}
+
+	private Message processRequest(ServiceClient service, SOAPMessage request, PipeLineSession session) throws ListenerException {
 		Message message = parseSOAPMessage(request);
-		return service.processRequest(message, pipelineSession);
+		log.info("processing message [{}] on service [{}]", message.getObjectId(), service);
+		return service.processRequest(message, session);
+	}
+
+	@Nullable
+	private ServiceClient findService(String serviceName) {
+		if (StringUtils.isBlank(serviceName)) {
+			return null;
+		}
+		log.debug("trying to find serviceName from soapMessage [{}]", serviceName);
+
+		return sd.getListener(serviceName);
 	}
 
 	public static String findNamespaceUri(SOAPMessage soapMessage) throws ListenerException {
