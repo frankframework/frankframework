@@ -4,6 +4,7 @@ import static org.frankframework.pipes.IfPipeTest.PIPE_FORWARD_ELSE;
 import static org.frankframework.pipes.IfPipeTest.PIPE_FORWARD_THEN;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.io.StringReader;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterEach;
@@ -14,6 +15,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.stream.Message;
 import org.frankframework.util.CloseUtils;
 
 public class IfPipeJsonPathTest extends PipeTestBase<IfPipe> {
@@ -104,12 +106,24 @@ public class IfPipeJsonPathTest extends PipeTestBase<IfPipe> {
 
 	@ParameterizedTest
 	@MethodSource("messageSource")
-	void testExpressionsWithStreamingInput(String input, String expression, String expressionValue, String expectedValue) throws Exception {
+	void testExpressionsWithStreamingJsonInput(String input, String expression, String expressionValue, String expectedValue) throws Exception {
 		pipe.setJsonPathExpression(expression);
 		pipe.setExpressionValue(expressionValue);
 		configureAndStartPipe();
 
 		pipeRunResult = doPipe(pipe, IfPipeTest.getStreamingJsonMessage(input), session);
+		assertEquals(expectedValue, pipeRunResult.getPipeForward().getName());
+		assertEquals(input, pipeRunResult.getResult().asString());
+	}
+
+	@ParameterizedTest
+	@MethodSource("messageSource")
+	void testExpressionsWithStreamingStringInput(String input, String expression, String expressionValue, String expectedValue) throws Exception {
+		pipe.setJsonPathExpression(expression);
+		pipe.setExpressionValue(expressionValue);
+		configureAndStartPipe();
+
+		pipeRunResult = doPipe(pipe, new Message(new StringReader(input)), session);
 		assertEquals(expectedValue, pipeRunResult.getPipeForward().getName());
 		assertEquals(input, pipeRunResult.getResult().asString());
 	}
