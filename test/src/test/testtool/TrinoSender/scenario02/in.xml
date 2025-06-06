@@ -1,0 +1,8 @@
+<request action="CreateTable">
+	<sql>CREATE TABLE IF NOT EXISTS memory.test_schema.users (
+		id INTEGER,
+		name VARCHAR,
+		email VARCHAR,
+		created_at TIMESTAMP
+	)</sql>
+</request>
