@@ -1,0 +1,22 @@
+<requests>
+	<request uri="http://localhost:8080/iaf-test/test.jsp" />
+	<request uri="http://localhost:8080/iaf-test/test.jsp" />
+	<request uri="http://localhost:8080/iaf-test/test.jsp" />
+	<request uri="http://localhost:8080/iaf-test/test.jsp" />
+	<request uri="http://localhost:8080/iaf-test/test.jsp" />
+	<request uri="http://localhost:8080/iaf-test/test.jsp" />
+	<request uri="http://localhost:8080/iaf-test/test.jsp" />
+	<request uri="http://localhost:8080/iaf-test/test.jsp" />
+	<request uri="http://localhost:8080/iaf-test/test.jsp" />
+	<request uri="http://localhost:8080/iaf-test/test.jsp" />
+	<request uri="http://localhost:8080/iaf-test/test.jsp" />
+	<request uri="http://localhost:8080/iaf-test/test.jsp" />
+	<request uri="http://localhost:8080/iaf-test/test.jsp" />
+	<request uri="http://localhost:8080/iaf-test/test.jsp" />
+	<request uri="http://localhost:8080/iaf-test/test.jsp" />
+	<request uri="http://localhost:8080/iaf-test/test.jsp" />
+	<request uri="http://localhost:8080/iaf-test/test.jsp" />
+	<request uri="http://localhost:8080/iaf-test/test.jsp" />
+	<request uri="http://localhost:8080/iaf-test/test.jsp" />
+	<request uri="http://localhost:8080/iaf-test/test.jsp" />
+</requests>
