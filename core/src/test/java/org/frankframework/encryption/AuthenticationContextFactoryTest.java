@@ -30,7 +30,7 @@ public class AuthenticationContextFactoryTest {
 		keystoreOwner.setKeystorePassword("KeystorePW");
 		keystoreOwner.setKeystoreAlias("alias1");
 		keystoreOwner.setKeystoreAliasPassword("AliasPW1");
-		PrivateKey privateKey = PkiUtil.getPrivateKey(keystoreOwner, "Test");
+		PrivateKey privateKey = PkiUtil.getPrivateKey(keystoreOwner);
 		assertNotNull(privateKey);
 	}
 

@@ -78,9 +78,9 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 		}
 
 		try {
-			privateKey = PkiUtil.getPrivateKey(session, "Creation of SAML assertion");
+			privateKey = PkiUtil.getPrivateKey(session);
 
-			Certificate loadedCertificate = PkiUtil.getCertificate(session, "Creation of SAML assertion");
+			Certificate loadedCertificate = PkiUtil.getCertificate(session);
 
 			if (loadedCertificate instanceof X509Certificate x509certificate) {
 				this.certificate = x509certificate;
@@ -88,7 +88,7 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 				throw new ConfigurationException("Certificate must be a X.509 certificate");
 			}
 		} catch (EncryptionException e) {
-			throw new ConfigurationException(e);
+			throw new ConfigurationException("unable to load certificate for SAML assertion", e);
 		}
 	}
 

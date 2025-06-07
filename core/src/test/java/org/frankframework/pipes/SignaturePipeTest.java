@@ -48,7 +48,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
 		URL pfxURL = ClassLoaderUtils.getResourceURL(pfxCertificate);
 		assertNotNull(pfxURL, "PFX file not found");
-		KeyStore keystore = PkiUtil.createKeyStore(pfxURL, pfxPassword, KeystoreType.PKCS12, "junittest");
+		KeyStore keystore = PkiUtil.createKeyStore(pfxURL, pfxPassword, KeystoreType.PKCS12);
 		KeyManager[] keymanagers = PkiUtil.createKeyManagers(keystore, pfxPassword, null);
 		if (keymanagers==null || keymanagers.length==0) {
 			fail("No keymanager found in PFX file ["+pfxCertificate+"]");

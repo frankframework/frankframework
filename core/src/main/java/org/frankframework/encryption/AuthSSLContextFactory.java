@@ -117,7 +117,12 @@ public class AuthSSLContextFactory {
 			KeyManager[] keymanagers = null;
 			if (keystoreUrl != null) {
 				CredentialFactory keystoreCf = new CredentialFactory(keystoreOwner.getKeystoreAuthAlias(), null, keystoreOwner.getKeystorePassword());
-				KeyStore keystore = PkiUtil.createKeyStore(keystoreUrl, keystoreCf.getPassword(), keystoreOwner.getKeystoreType(), "Certificate chain");
+				KeyStore keystore;
+				try {
+					keystore = PkiUtil.createKeyStore(keystoreUrl, keystoreCf.getPassword(), keystoreOwner.getKeystoreType());
+				} catch (GeneralSecurityException e) {
+					throw new GeneralSecurityException("unable to create keystore for certificate chain", e);
+				}
 
 				CredentialFactory keystoreAliasCf = keystoreCf;
 				if (StringUtils.isNotEmpty(keystoreOwner.getKeystoreAliasAuthAlias()) || StringUtils.isNotEmpty(keystoreOwner.getKeystoreAliasPassword())) {
@@ -134,7 +139,12 @@ public class AuthSSLContextFactory {
 			TrustManager[] trustmanagers = null;
 			if (truststoreUrl != null) {
 				CredentialFactory truststoreCf  = new CredentialFactory(truststoreOwner.getTruststoreAuthAlias(),  null, truststoreOwner.getTruststorePassword());
-				truststore = PkiUtil.createKeyStore(truststoreUrl, truststoreCf.getPassword(), truststoreOwner.getTruststoreType(), "Trusted Certificate");
+				try {
+					truststore = PkiUtil.createKeyStore(truststoreUrl, truststoreCf.getPassword(), truststoreOwner.getTruststoreType());
+				} catch (GeneralSecurityException e) {
+					throw new GeneralSecurityException("unable to create truststore", e);
+				}
+
 				String algorithm = truststoreOwner != null ? truststoreOwner.getTrustManagerAlgorithm() : null;
 				trustmanagers = PkiUtil.createTrustManagers(truststore, algorithm);
 			}
