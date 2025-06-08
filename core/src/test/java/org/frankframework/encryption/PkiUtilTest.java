@@ -3,6 +3,7 @@ package org.frankframework.encryption;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
+import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.time.Duration;
@@ -36,15 +37,34 @@ public class PkiUtilTest {
 	}
 
 	@Test
-	public void testExpiredCertificate() throws Exception {
+	public void testExpiredCertificateFromJKS() throws Exception {
 		KeystoreOwner keystoreOwner = new KeystoreOwner("Encryption/expiredCert.jks");
 		keystoreOwner.setKeystoreType(KeystoreType.JKS);
 		keystoreOwner.setKeystorePassword("changeit");
 		keystoreOwner.setKeystoreAlias("common-name");
 		keystoreOwner.setKeystoreAliasPassword("changeme");
 
-		List<String> aliasses = PkiUtil.getExpiringCertificates(PkiUtil.keyStoreAsTrustStore(keystoreOwner), Duration.ofDays(31L));
+		KeyStore keystore = PkiUtil.createKeyStore(keystoreOwner);
+		List<String> keystoreAliasses = PkiUtil.getExpiringCertificates(keystore, Duration.ofDays(31L));
+		assertEquals(1, keystoreAliasses.size());
 
-		assertEquals(1, aliasses.size());
+		KeyStore truststore = PkiUtil.createKeyStore(PkiUtil.keyStoreAsTrustStore(keystoreOwner));
+		List<String> truststoreAliasses = PkiUtil.getExpiringCertificates(truststore, Duration.ofDays(31L));
+		assertEquals(1, truststoreAliasses.size());
+	}
+
+	@Test
+	public void testExpiredCertificateFromPKCS12() throws Exception {
+		KeystoreOwner keystoreOwner = new KeystoreOwner("Encryption/common_name.p12");
+		keystoreOwner.setKeystoreType(KeystoreType.PKCS12);
+		keystoreOwner.setKeystorePassword("changeit");
+
+		KeyStore keystore = PkiUtil.createKeyStore(keystoreOwner);
+		List<String> keystoreAliasses = PkiUtil.getExpiringCertificates(keystore, Duration.ofDays(31L));
+		assertEquals(1, keystoreAliasses.size());
+
+		KeyStore truststore = PkiUtil.createKeyStore(PkiUtil.keyStoreAsTrustStore(keystoreOwner));
+		List<String> truststoreAliasses = PkiUtil.getExpiringCertificates(truststore, Duration.ofDays(31L));
+		assertEquals(1, truststoreAliasses.size());
 	}
 }

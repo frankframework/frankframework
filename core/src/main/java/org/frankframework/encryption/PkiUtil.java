@@ -210,6 +210,26 @@ public class PkiUtil {
 		return keystore;
 	}
 
+	public static KeyStore createKeyStore(HasKeystore keystoreOwner) throws EncryptionException {
+		URL truststoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
+		CredentialFactory truststoreCredentialFactory = new CredentialFactory(keystoreOwner.getKeystoreAuthAlias(), null, keystoreOwner.getKeystorePassword());
+		try {
+			return PkiUtil.createKeyStore(truststoreUrl, truststoreCredentialFactory.getPassword(), keystoreOwner.getKeystoreType());
+		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
+			throw new EncryptionException("unable to open keystore ["+truststoreUrl+"]", e);
+		}
+	}
+
+	public static KeyStore createKeyStore(HasTruststore truststoreOwner) throws EncryptionException {
+		URL truststoreUrl = ClassLoaderUtils.getResourceURL(truststoreOwner, truststoreOwner.getTruststore());
+		CredentialFactory truststoreCredentialFactory = new CredentialFactory(truststoreOwner.getTruststoreAuthAlias(), null, truststoreOwner.getTruststorePassword());
+		try {
+			return PkiUtil.createKeyStore(truststoreUrl, truststoreCredentialFactory.getPassword(), truststoreOwner.getTruststoreType());
+		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
+			throw new EncryptionException("unable to open keystore ["+truststoreUrl+"]", e);
+		}
+	}
+
 	public static PrivateKey getPrivateKey(HasKeystore keystoreOwner) throws EncryptionException {
 		PrivateKey privateKey;
 		URL keystoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
@@ -270,24 +290,24 @@ public class PkiUtil {
 
 	/**
 	 * Returns a list of certificate aliases which are due to expire.
+	 * 
+	 * @param keystore A {@link KeyStore}.
+	 * @param duration Date after which Certificates should be classified as 'due to expire'.
+	 * @return A list with aliases of {@link Certificate Certificates}.
 	 */
 	@Nonnull
-	public static List<String> getExpiringCertificates(HasTruststore truststoreOwner, TemporalAmount duration) throws EncryptionException {
+	public static List<String> getExpiringCertificates(KeyStore keystore, TemporalAmount duration) throws EncryptionException {
 		List<String> certificates = new ArrayList<>();
-		URL truststoreUrl = ClassLoaderUtils.getResourceURL(truststoreOwner, truststoreOwner.getTruststore());
 		Instant dateAfterWhichCertsAreExpired = Instant.now().minus(duration);
 		try {
-			CredentialFactory truststoreCredentialFactory = new CredentialFactory(truststoreOwner.getTruststoreAuthAlias(), null, truststoreOwner.getTruststorePassword());
-			KeyStore keystore = PkiUtil.createKeyStore(truststoreUrl, truststoreCredentialFactory.getPassword(), truststoreOwner.getTruststoreType());
-
 			for (String certAlias : Collections.list(keystore.aliases())) {
 				Certificate cert = keystore.getCertificate(certAlias);
 				if (isDueToExpire(cert, dateAfterWhichCertsAreExpired)) {
 					certificates.add(certAlias);
 				}
 			}
-		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
-			throw new EncryptionException("cannot get Public Key for verification in keystore ["+truststoreUrl+"]", e);
+		} catch (KeyStoreException e) {
+			throw new EncryptionException("unable to read certificate from keystore", e);
 		}
 		return certificates;
 	}
