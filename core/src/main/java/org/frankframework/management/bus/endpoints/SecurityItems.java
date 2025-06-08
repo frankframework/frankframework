@@ -16,7 +16,9 @@
 package org.frankframework.management.bus.endpoints;
 
 import java.lang.reflect.Method;
+import java.security.KeyStore;
 import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,6 +28,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.net.ssl.SSLContext;
@@ -40,6 +43,13 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.Configuration;
+import org.frankframework.core.Adapter;
+import org.frankframework.core.FrankElement;
+import org.frankframework.core.HasSender;
+import org.frankframework.encryption.EncryptionException;
+import org.frankframework.encryption.HasKeystore;
+import org.frankframework.encryption.HasTruststore;
+import org.frankframework.encryption.PkiUtil;
 import org.frankframework.jdbc.datasource.ObjectFactory;
 import org.frankframework.jdbc.datasource.ObjectFactory.ObjectInfo;
 import org.frankframework.jms.JmsRealm;
@@ -69,6 +79,7 @@ public class SecurityItems extends BusEndpointBase {
 		returnMap.put("authEntries", addAuthEntries());
 		returnMap.put("xmlComponents", XmlUtils.getVersionInfo());
 		returnMap.put("supportedConnectionOptions", getSupportedProtocolsAndCyphers());
+		returnMap.put("expiringCertificates", getExpiringCertificates());
 
 		return new JsonMessage(returnMap);
 	}
@@ -231,5 +242,74 @@ public class SecurityItems extends BusEndpointBase {
 			supportedOptions.put("cyphers", new String[0]);
 		}
 		return supportedOptions;
+	}
+
+	// Pff so many ways to clean this mess up....
+	private List<KeyStoreDTO> getExpiringCertificates() {
+		List<KeyStoreDTO> expiringCertificates = new ArrayList<>();
+		for (Configuration config : getIbisManager().getConfigurations()) {
+			for (Adapter adapter : config.getRegisteredAdapters()) {
+				List<KeyStore> keystores = adapter.getPipeLine()
+						.getPipes()
+						.stream()
+						.filter(this::hasKeyOrTrustStore)
+						.map(FrankElement.class::cast)
+						.map(this::extractSender)
+						.map(this::extractKeyStore)
+						.filter(Objects::nonNull)
+						.toList();
+
+				if (!keystores.isEmpty()) {
+					String name = "%s/%s".formatted(config.getName(), adapter.getName());
+					List<String> certs = keystores.stream()
+							.map(keystore -> {
+								try {
+									return PkiUtil.getExpiringCertificates(keystore, Duration.ofDays(31L));
+								} catch (EncryptionException e) {
+									return List.of("");
+								}
+							})
+							.flatMap(List::stream)
+							.toList();
+					expiringCertificates.add(new KeyStoreDTO(name, certs));
+				}
+			}
+		}
+
+		return expiringCertificates;
+	}
+
+	public static record KeyStoreDTO(String name, List<String> certificates) {}
+
+	private boolean hasKeyOrTrustStore(Object bean) {
+		if (bean instanceof HasSender hasSender) {
+			return hasKeyOrTrustStore(hasSender.getSender());
+		}
+
+		if (bean instanceof HasKeystore keystoreOwner && StringUtils.isNotEmpty(keystoreOwner.getKeystore())) {
+			return true;
+		}
+		if (bean instanceof HasTruststore truststoreOwner && StringUtils.isNotEmpty(truststoreOwner.getTruststore())) {
+			return true;
+		}
+		return false;
+	}
+
+	private FrankElement extractSender(FrankElement bean) {
+		return (bean instanceof HasSender hasSender) ? hasSender.getSender() : bean;
+	}
+
+	private KeyStore extractKeyStore(FrankElement bean) {
+		try {
+			if (bean instanceof HasKeystore keystoreOwner) {
+				return PkiUtil.createKeyStore(keystoreOwner);
+			}
+			if (bean instanceof HasTruststore truststoreOwner) {
+				return PkiUtil.createKeyStore(truststoreOwner);
+			}
+		} catch (EncryptionException e) {
+			log.info("unable to open keystore of FrankElement [{}]", bean, e);
+		}
+		return null;
 	}
 }
