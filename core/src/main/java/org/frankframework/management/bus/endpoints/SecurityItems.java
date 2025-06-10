@@ -60,13 +60,26 @@ import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.JsonMessage;
+import org.frankframework.util.AppConstants;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.XmlUtils;
 
 @Log4j2
 @BusAware("frank-management-bus")
 public class SecurityItems extends BusEndpointBase {
+
+	private final Duration expiringCertificatesDuration;
+
 	private List<String> securityRoles;
+
+	public SecurityItems() {
+		int expiringCertAge = AppConstants.getInstance().getInt("SecurityItems.expiringCertificatesDuration", 31);
+		if (expiringCertAge > 0) {
+			expiringCertificatesDuration = Duration.ofDays(expiringCertAge);
+		} else {
+			expiringCertificatesDuration = null;
+		}
+	}
 
 	@TopicSelector(BusTopic.SECURITY_ITEMS)
 	@RolesAllowed({"IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester"})
@@ -246,10 +259,14 @@ public class SecurityItems extends BusEndpointBase {
 
 	// Pff so many ways to clean this mess up....
 	private List<KeyStoreDTO> getExpiringCertificates() {
+		if (expiringCertificatesDuration == null) {
+			return Collections.emptyList();
+		}
+
 		List<KeyStoreDTO> expiringCertificates = new ArrayList<>();
 		for (Configuration config : getIbisManager().getConfigurations()) {
 			for (Adapter adapter : config.getRegisteredAdapters()) {
-				List<KeyStore> keystores = adapter.getPipeLine()
+				List<String> listWithExpiredCertificates = adapter.getPipeLine()
 						.getPipes()
 						.stream()
 						.filter(this::hasKeyOrTrustStore)
@@ -257,21 +274,13 @@ public class SecurityItems extends BusEndpointBase {
 						.map(this::extractSender)
 						.map(this::extractKeyStore)
 						.filter(Objects::nonNull)
+						.map(this::getExpiringCertificates)
+						.flatMap(List::stream)
 						.toList();
 
-				if (!keystores.isEmpty()) {
+				if (!listWithExpiredCertificates.isEmpty()) {
 					String name = "%s/%s".formatted(config.getName(), adapter.getName());
-					List<String> certs = keystores.stream()
-							.map(keystore -> {
-								try {
-									return PkiUtil.getExpiringCertificates(keystore, Duration.ofDays(31L));
-								} catch (EncryptionException e) {
-									return List.of("");
-								}
-							})
-							.flatMap(List::stream)
-							.toList();
-					expiringCertificates.add(new KeyStoreDTO(name, certs));
+					expiringCertificates.add(new KeyStoreDTO(name, listWithExpiredCertificates));
 				}
 			}
 		}
@@ -311,5 +320,14 @@ public class SecurityItems extends BusEndpointBase {
 			log.info("unable to open keystore of FrankElement [{}]", bean, e);
 		}
 		return null;
+	}
+
+	private List<String> getExpiringCertificates(KeyStore keystore) {
+		try {
+			return PkiUtil.getExpiringCertificates(keystore, expiringCertificatesDuration);
+		} catch (EncryptionException e) {
+			log.debug("unable to find out of any certificates are due to expire", e);
+			return List.of("");
+		}
 	}
 }
