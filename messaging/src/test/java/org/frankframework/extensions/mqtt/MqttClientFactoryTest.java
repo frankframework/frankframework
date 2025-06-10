@@ -15,11 +15,14 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.credentialprovider.CredentialFactory;
 import org.frankframework.jdbc.datasource.FrankResource;
 import org.frankframework.jdbc.datasource.ResourceObjectLocator;
 import org.frankframework.util.AppConstants;
 
+@Log4j2
 public class MqttClientFactoryTest {
 
 	@BeforeAll
@@ -91,6 +94,7 @@ public class MqttClientFactoryTest {
 		factory.afterPropertiesSet();
 
 		IllegalStateException e = assertThrows(IllegalStateException.class, () -> factory.getClient("hivemq"));
+		log.debug("expected an exception, logging the trace as this seems to be a bit flaky", e);
 		assertInstanceOf(MqttException.class, e.getCause());
 		assertInstanceOf(ConnectException.class, e.getCause().getCause()); // We can create the MqttClient but it cannot connect to any server.
 	}

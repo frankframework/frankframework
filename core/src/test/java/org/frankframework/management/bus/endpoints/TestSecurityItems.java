@@ -13,12 +13,16 @@ import org.springframework.messaging.Message;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
+import org.frankframework.core.Adapter;
+import org.frankframework.core.PipeLine;
+import org.frankframework.encryption.KeystoreType;
 import org.frankframework.jdbc.datasource.DataSourceFactory;
 import org.frankframework.jdbc.datasource.TransactionalDbmsSupportAwareDataSourceProxy;
 import org.frankframework.jms.JmsRealm;
 import org.frankframework.jms.JmsRealmFactory;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.pipes.SignaturePipe;
 import org.frankframework.testutil.FindAvailableDataSources.TestDatasource;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.SpringRootInitializer;
@@ -49,6 +53,18 @@ public class TestSecurityItems extends BusTestBase {
 
 		// Strange hack because the endpoint uses the SecurityItems backend context.
 		SpringUtils.registerSingleton(getConfiguration().getParent(), "mockDataSourceFactory", dataSourceFactory);
+
+		Adapter adapter = SpringUtils.createBean(getConfiguration());
+		adapter.setName("myAdapter");
+		PipeLine pipeline = SpringUtils.createBean(adapter);
+		SignaturePipe pipe = SpringUtils.createBean(adapter);
+		pipe.setKeystore("Encryption/common_name.p12");
+		pipe.setKeystoreType(KeystoreType.PKCS12);
+		pipe.setKeystorePassword("changeit");
+		pipe.setName("signaturePipe");
+		pipeline.addPipe(pipe);
+		adapter.setPipeLine(pipeline);
+		getConfiguration().addAdapter(adapter);
 	}
 
 	@Test

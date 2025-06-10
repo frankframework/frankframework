@@ -67,6 +67,14 @@
         "dummyJmsRealm2": "JmsRealm[queueConnectionFactoryName=dummyQCF,realmName=dummyJmsRealm2]",
         "dummyJmsRealm1": "JmsRealm[datasourceName=dummyDatasourceName,realmName=dummyJmsRealm1]"
     },
+    "expiringCertificates": [
+        {
+            "name": "TestConfiguration/myAdapter",
+            "certificates": [
+                "common-name"
+            ]
+        }
+    ],
     "sapSystems": [
     ],
     "xmlComponents": {
