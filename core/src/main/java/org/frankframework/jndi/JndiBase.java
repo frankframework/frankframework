@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2021 WeareFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2025 WeareFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,22 +25,15 @@ import javax.naming.NamingException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.logging.log4j.Logger;
-import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
-import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
-import org.frankframework.core.HasApplicationContext;
-import org.frankframework.core.IConfigurable;
-import org.frankframework.core.NameAware;
+import org.frankframework.core.IScopeProvider;
 import org.frankframework.jms.JmsRealm;
-import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.LogUtil;
 
 /**
  * Provides all JNDI functions and is meant to act as a base class.
@@ -49,12 +42,10 @@ import org.frankframework.util.LogUtil;
  * <br/>
  * @author Johan Verrips IOS
  */
-public class JndiBase implements IConfigurable, HasApplicationContext, NameAware {
-	protected Logger log = LogUtil.getLogger(this);
+@Log4j2
+public class JndiBase implements IScopeProvider {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-	private @Getter @Setter ApplicationContext applicationContext;
 
-	private @Getter String name;
 	// JNDI
 	private @Getter String providerURL = null;
 	private @Getter String initialContextFactoryName = null;
@@ -65,19 +56,9 @@ public class JndiBase implements IConfigurable, HasApplicationContext, NameAware
 	private @Getter String jmsRealmName = null;
 	private @Getter String urlPkgPrefixes = null;
 	private @Getter String securityProtocol = null;
-	private @Getter String jndiContextPrefix = "";
 	private @Getter String jndiProperties = null;
 
 	private Context context = null;
-
-	@Override
-	public void configure() throws ConfigurationException {
-		// somewhere a sender is being initialized without setting the property
-		// TODO get rid of the workaround and find out why spring does not set the prefix
-		if (StringUtils.isEmpty(jndiContextPrefix)) {
-			jndiContextPrefix = AppConstants.getInstance(configurationClassLoader).getString("jndiContextPrefix","");
-		}
-	}
 
 	public void stop() {
 		if (null != context) {
@@ -181,8 +162,6 @@ public class JndiBase implements IConfigurable, HasApplicationContext, NameAware
 	/**
 	 * Sets the value of providerURL
 	 */
-	@Deprecated(forRemoval = true, since = "9.2.0")
-	@ConfigurationWarning("JNDI usage is being deprecated")
 	public void setProviderURL(String value) {
 		providerURL = value;
 	}
@@ -219,8 +198,6 @@ public class JndiBase implements IConfigurable, HasApplicationContext, NameAware
 	 * loads JNDI (and other) properties from a JmsRealm
 	 * @see JmsRealm
 	 */
-	@Deprecated(forRemoval = true, since = "9.2.0")
-	@ConfigurationWarning("JNDI usage is being deprecated")
 	public void setJmsRealm(String jmsRealmName) {
 		try {
 			JmsRealm.copyRealm(this, jmsRealmName);
@@ -241,17 +218,7 @@ public class JndiBase implements IConfigurable, HasApplicationContext, NameAware
 		jndiAuthAlias = string;
 	}
 
-	public void setJndiContextPrefix(String string) {
-		jndiContextPrefix = string;
-	}
-
 	public void setJndiProperties(String jndiProperties) {
 		this.jndiProperties = jndiProperties;
-	}
-
-	/** Name of the sender or the listener */
-	@Override
-	public void setName(String name) {
-		this.name = name;
 	}
 }

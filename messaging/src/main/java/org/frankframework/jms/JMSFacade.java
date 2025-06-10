@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2015, 2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,8 +44,9 @@ import jakarta.jms.TopicPublisher;
 import jakarta.jms.TopicSession;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Supplier;
-import org.springframework.context.Lifecycle;
+import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.xml.sax.SAXException;
@@ -56,15 +57,18 @@ import lombok.SneakyThrows;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.core.FrankElement;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IXAEnabled;
 import org.frankframework.core.IbisException;
 import org.frankframework.core.IbisTransaction;
+import org.frankframework.core.NameAware;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
 import org.frankframework.jndi.JndiBase;
+import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
@@ -73,6 +77,7 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.EnumUtils;
+import org.frankframework.util.LogUtil;
 import org.frankframework.util.XmlException;
 
 /**
@@ -84,7 +89,12 @@ import org.frankframework.util.XmlException;
  *
  * @author 	Gerrit van Brakel
  */
-public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEnabled, Lifecycle {
+public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankElement, NameAware, HasPhysicalDestination, IXAEnabled {
+	protected Logger log = LogUtil.getLogger(this);
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
+
+	private @Getter String name;
 
 	public static final String JMS_MESSAGECLASS_KEY = "jms.messageClass.default";
 
@@ -235,8 +245,6 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 		} catch (NamingException | JmsException e) {
 			throw new ConfigurationException("unable to use ConnectionFactory", e);
 		}
-
-		super.configure();
 	}
 
 	public String getConnectionFactoryName() throws JmsException {
@@ -334,6 +342,7 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 				}
 				log.debug("closed connection");
 			}
+			super.stop();
 		} finally {
 			// make sure all objects are reset, to be able to restart after IFSA parameters have changed (e.g. at iterative installation time)
 			destinations.clear();
@@ -918,5 +927,13 @@ public class JMSFacade extends JndiBase implements HasPhysicalDestination, IXAEn
 	 */
 	public void setLookupDestination(boolean b) {
 		lookupDestination = b;
+	}
+
+	/**
+	 * The name of this FrankElement
+	 */
+	@Override
+	public void setName(String name) {
+		this.name=name;
 	}
 }
