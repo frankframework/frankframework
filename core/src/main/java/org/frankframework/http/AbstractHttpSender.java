@@ -59,7 +59,6 @@ import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
-import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.StreamUtil;
@@ -395,13 +394,6 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 		boolean success;
 		String reasonPhrase;
 
-		TimeoutGuard tg = new TimeoutGuard(1+getTimeout()/1000, getName()) {
-			@Override
-			protected void abort() {
-				httpRequestBase.abort();
-			}
-		};
-
 		try {
 			log.debug("executing method [{}]", httpRequestBase::getRequestLine);
 			HttpResponse httpResponse = execute(targetUri, httpRequestBase, session);
@@ -433,20 +425,6 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 				throw new TimeoutException(e);
 			}
 			throw new SenderException(e);
-		} finally {
-			// By forcing the use of the HttpResponseHandler the resultStream
-			// will automatically be closed when it has been read.
-			// See HttpResponseHandler and ReleaseConnectionAfterReadInputStream.
-			// We cannot close the connection as the response might be kept
-			// in a sessionKey for later use in the pipeline.
-			//
-			// IMPORTANT: It is possible that poorly written implementations
-			// won't read or close the response.
-			// This will cause the connection to become stale.
-
-			if (tg.cancel()) {
-				throw new TimeoutException("timeout of ["+getTimeout()+"] ms exceeded");
-			}
 		}
 
 		if (statusCode == -1){

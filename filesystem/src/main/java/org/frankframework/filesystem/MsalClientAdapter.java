@@ -53,6 +53,7 @@ import com.microsoft.aad.msal4j.IHttpResponse;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
+import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Protected;
 import org.frankframework.filesystem.exchange.ExchangeFileSystem;
 import org.frankframework.filesystem.exchange.MailFolder;
@@ -173,7 +174,12 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 		@SuppressWarnings("unchecked")
 		public <T> T execute(HttpRequestBase httpRequestBase, Class<T> dto) throws IOException {
 			httpRequestBase.addHeader("Authorization", msal.getAuthenticationToken());
-			HttpResponse response = msal.execute(httpRequestBase.getURI(), httpRequestBase, null);
+			HttpResponse response;
+			try {
+				response = msal.execute(httpRequestBase.getURI(), httpRequestBase, null);
+			} catch (TimeoutException e) {
+				throw new IOException(e);
+			}
 			HttpStatus status = HttpStatus.valueOf(response.getStatusLine().getStatusCode());
 
 			if (status.is2xxSuccessful()) {
