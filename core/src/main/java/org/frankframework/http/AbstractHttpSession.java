@@ -700,7 +700,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 
 		preAuthenticate(context);
 
-		final int hardTimeout; // Since the Apache HttpComponents library does not support hard timeouts we have to abord the request our selves.
+		final int hardTimeout; // Since the Apache HttpComponents library does not support hard timeouts we have to abort the request our selves.
 		if (context.getAttribute(HttpClientContext.REQUEST_CONFIG) instanceof RequestConfig requestConfig) {
 			hardTimeout = requestConfig.getConnectTimeout(); // Configured timeout
 		} else {
