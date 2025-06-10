@@ -79,6 +79,7 @@ import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.FrankElement;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Unsafe;
 import org.frankframework.encryption.AuthSSLContextFactory;
 import org.frankframework.encryption.HasKeystore;
@@ -96,6 +97,7 @@ import org.frankframework.http.authentication.SamlAssertionOauth;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.MetricsInitializer;
+import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.LogUtil;
@@ -397,11 +399,11 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		}
 		httpClientBuilder.evictIdleConnections(getConnectionIdleTimeout(), TimeUnit.SECONDS);
 
-		sslSocketFactory = getSSLConnectionSocketFactory(); //Configure it here, so we can handle exceptions
+		sslSocketFactory = getSSLConnectionSocketFactory(); // Configure it here, so we can handle exceptions
 
 		configureRedirectStrategy();
 
-		httpClientContext = defaultHttpClientContext; //Ensure a local instance is used when no SharedResource is present.
+		httpClientContext = defaultHttpClientContext; // Ensure a local instance is used when no SharedResource is present.
 	}
 
 	private void validateProtocolsAndCiphers() throws ConfigurationException {
@@ -569,7 +571,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 
 	@Override
 	public void stop() {
-		//Close the HttpClient and ConnectionManager to release resources and potential open connections
+		// Close the HttpClient and ConnectionManager to release resources and potential open connections
 		if(httpClient != null) {
 			try {
 				httpClient.close();
@@ -580,7 +582,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	}
 
 	private void setupAuthentication(CredentialFactory proxyCredentials, HttpHost proxy, RequestConfig.Builder requestConfigBuilder) throws HttpAuthenticationException {
-		Assert.notNull(defaultHttpClientContext, "no HttpClientContext created during configure"); //This should be set in #configure()
+		Assert.notNull(defaultHttpClientContext, "no HttpClientContext created during configure"); // This should be set in #configure()
 
 		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
 		if (StringUtils.isNotEmpty(credentials.getUsername()) || StringUtils.isNotEmpty(getTokenEndpoint())) {
@@ -679,14 +681,48 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		return sslConnectionSocketFactory;
 	}
 
-	protected HttpResponse execute(URI targetUri, HttpRequestBase httpRequestBase, PipeLineSession session) throws IOException {
+	/**
+	 * By forcing the use of the HttpResponseHandler the resultStream
+	 * will automatically be closed when it has been read.
+	 * See HttpResponseHandler and ReleaseConnectionAfterReadInputStream.
+	 * We cannot close the connection as the response might be kept
+	 * in a sessionKey for later use in the pipeline.
+	 *
+	 * IMPORTANT: It is possible that poorly written implementations
+	 * won't read or close the response.
+	 * This will cause the connection to become stale.
+	 */
+	protected HttpResponse execute(URI targetUri, HttpRequestBase httpRequestBase, PipeLineSession session) throws IOException, TimeoutException {
 		HttpHost targetHost = new HttpHost(targetUri.getHost(), targetUri.getPort(), targetUri.getScheme());
-
 		CloseableHttpClient client = getHttpClient();
+
 		HttpClientContext context = httpClientContext != null ? httpClientContext : getOrCreateHttpClientContext(client, session);
+
 		preAuthenticate(context);
-		log.trace("executing request using HttpClient [{}] and HttpContext [{}]", client::hashCode, () -> context);
-		return client.execute(targetHost, httpRequestBase, context);
+
+		final int hardTimeout; // Since the Apache HttpComponents library does not support hard timeouts we have to abort the request our selves.
+		if (context.getAttribute(HttpClientContext.REQUEST_CONFIG) instanceof RequestConfig requestConfig) {
+			hardTimeout = requestConfig.getConnectTimeout(); // Configured timeout
+		} else {
+			hardTimeout = getTimeout(); // Default timeout
+		}
+
+		TimeoutGuard tg = new TimeoutGuard(1+hardTimeout/1000, getName()) {
+			@Override
+			protected void abort() {
+				httpRequestBase.abort();
+			}
+		};
+
+		try {
+			log.trace("executing request using HttpClient [{}] HttpContext [{}] timeout [{}]", client::hashCode, () -> context, () -> hardTimeout);
+			return client.execute(targetHost, httpRequestBase, context);
+		} finally {
+			if (tg.cancel()) {
+				throw new TimeoutException("timeout of ["+hardTimeout+"] ms exceeded");
+			}
+		}
+
 	}
 
 	private synchronized HttpClientContext getOrCreateHttpClientContext(CloseableHttpClient client, PipeLineSession session) {

@@ -44,7 +44,7 @@ class StepTest {
 				() -> assertEquals(rawLine, step.getBaseKey()),
 				() -> assertEquals("in.txt", step.getValue()),
 				() -> assertEquals(expectedDisplayName, step.getDisplayName()),
-				() -> assertEquals(idx, step.getIdx()),
+				() -> assertEquals(idx, step.getIndex()),
 				() -> assertEquals(actionTarget, step.getActionTarget()),
 				() -> assertEquals(action, step.getAction()),
 				() -> assertEquals(isRead, step.isRead()),

@@ -8,9 +8,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
@@ -25,10 +27,13 @@ import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.UrlMessage;
+import org.frankframework.testutil.LargeStructuredMockData;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
 
 public class MessageUtilsTest {
+
+	public static final String JSON_TEST_INPUT = "{\"GUID\": \"ABC\"}";
 
 	@Test
 	public void testCharset() {
@@ -204,19 +209,65 @@ public class MessageUtilsTest {
 	}
 
 	@Test
-	public void testJsonMessage() {
-		Message json = new Message("{\"GUID\": \"ABC\"}");
+	public void testJsonMessage() throws IOException {
+		Message json = new Message(JSON_TEST_INPUT);
 		MimeType mimeType = MessageUtils.computeMimeType(json);
 		assertNotNull(mimeType);
 		assertEquals("application/json", mimeType.toString());
+		assertEquals(JSON_TEST_INPUT, json.asString());
 	}
 
 	@Test
-	public void testJsonMessageWithName() {
-		Message json = new Message("{\"GUID\": \"ABC\"}", new MessageContext().withName("foo.json"));
+	public void testReaderJsonMessage() throws IOException {
+		Message json = new Message(new StringReader(JSON_TEST_INPUT));
+		MimeType mimeType = MessageUtils.computeMimeType(json);
+		assertNotNull(mimeType);
+		assertEquals("application/json", mimeType.toString());
+		assertEquals(JSON_TEST_INPUT, json.asString());
+	}
+
+	@Test
+	public void testReaderHugeJsonMessage() throws IOException {
+		Message json = new Message(LargeStructuredMockData.getLargeJsonDataReader(500_000_000L));
+		MimeType mimeType = MessageUtils.computeMimeType(json);
+		assertNotNull(mimeType);
+		assertEquals("application/json", mimeType.toString());
+
+		String expectedPeek = LargeStructuredMockData.DEFAULT_JSON_OPENING_BLOCK + LargeStructuredMockData.DEFAULT_JSON_REPEATED_BLOCK;
+		String actualPeek = json.peek(expectedPeek.length());
+
+		assertEquals(expectedPeek, actualPeek);
+	}
+
+	@Test
+	public void testInputStreamJsonMessage() throws IOException {
+		Message json = new Message(new ByteArrayInputStream(JSON_TEST_INPUT.getBytes()));
+		MimeType mimeType = MessageUtils.computeMimeType(json);
+		assertNotNull(mimeType);
+		assertEquals("application/json", mimeType.toString());
+		assertEquals(JSON_TEST_INPUT, json.asString());
+	}
+
+	@Test
+	public void testInputStreamHugeJsonMessage() throws IOException {
+		Message json = new Message(LargeStructuredMockData.getLargeJsonDataInputStream(500_000_000L, StandardCharsets.UTF_8));
+		MimeType mimeType = MessageUtils.computeMimeType(json);
+		assertNotNull(mimeType);
+		assertEquals("application/json", mimeType.toString());
+
+		String expectedPeek = LargeStructuredMockData.DEFAULT_JSON_OPENING_BLOCK + LargeStructuredMockData.DEFAULT_JSON_REPEATED_BLOCK;
+		String actualPeek = json.peek(expectedPeek.length());
+
+		assertEquals(expectedPeek, actualPeek);
+	}
+
+	@Test
+	public void testJsonMessageWithName() throws IOException {
+		Message json = new Message(JSON_TEST_INPUT, new MessageContext().withName("foo.json"));
 		MimeType mimeType = MessageUtils.computeMimeType(json);
 		assertNotNull(mimeType);
 		assertEquals("application/json", mimeType.toString()); //mime-type can be determined
+		assertEquals(JSON_TEST_INPUT, json.asString());
 	}
 
 	private String getMessageHeaders(Message message) {

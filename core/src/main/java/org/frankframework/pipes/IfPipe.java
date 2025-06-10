@@ -280,6 +280,7 @@ public class IfPipe extends AbstractPipe {
 		} else if (StringUtils.isNotBlank(jsonPathExpression)) {
 			// Try to match the jsonPath expression on the given json string
 			try {
+				message.preserve();
 				Object jsonPathResult = JsonPath.read(message.asInputStream(), jsonPathExpression);
 
 				// if we get to this point, we have a match (and no PathNotFoundException)
