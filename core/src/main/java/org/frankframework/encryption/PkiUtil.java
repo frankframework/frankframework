@@ -32,7 +32,13 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.X509Certificate;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
+import java.time.Instant;
+import java.time.temporal.TemporalAmount;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Date;
 import java.util.Enumeration;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.net.ssl.KeyManager;
@@ -40,6 +46,8 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
+
+import jakarta.annotation.Nonnull;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.NotImplementedException;
@@ -177,32 +185,52 @@ public class PkiUtil {
 		return trustmanagers;
 	}
 
-	public static KeyStore createKeyStore(final URL url, final String password, KeystoreType keystoreType, String purpose) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
+	public static KeyStore createKeyStore(final URL url, final String password, KeystoreType keystoreType) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
 		if (url == null) {
-			throw new IllegalArgumentException("Keystore url for "+purpose+" may not be null");
+			throw new IllegalArgumentException("Keystore url may not be null");
 		}
-		log.info("Initializing keystore for {} from {}", purpose, url);
+		log.info("Initializing keystore from url [{}]", url);
 		KeyStore keystore  = KeyStore.getInstance(keystoreType.name());
 		keystore.load(url.openStream(), password != null ? password.toCharArray(): null);
 		if (log.isInfoEnabled()) {
 			Enumeration<String> aliases = keystore.aliases();
 			while (aliases.hasMoreElements()) {
 				String alias = aliases.nextElement();
-				log.info("alias [{}] for {}:", alias, purpose);
+				log.info("found alias [{}]", alias);
 				Certificate trustedcert = keystore.getCertificate(alias);
 				if (trustedcert != null && trustedcert instanceof X509Certificate cert) {
-					log.info("  Subject DN: {}", cert.getSubjectDN());
+					log.info("  Subject DN: {}", cert.getSubjectX500Principal().getName());
 					log.info("  Signature Algorithm: {}", cert.getSigAlgName());
 					log.info("  Valid from: {}", cert.getNotBefore());
 					log.info("  Valid until: {}", cert.getNotAfter());
-					log.info("  Issuer: {}", cert.getIssuerDN());
+					log.info("  Issuer: {}", cert.getIssuerX500Principal().getName());
 				}
 			}
 		}
 		return keystore;
 	}
 
-	public static PrivateKey getPrivateKey(HasKeystore keystoreOwner, String purpose) throws EncryptionException {
+	public static KeyStore createKeyStore(HasKeystore keystoreOwner) throws EncryptionException {
+		URL truststoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
+		CredentialFactory truststoreCredentialFactory = new CredentialFactory(keystoreOwner.getKeystoreAuthAlias(), null, keystoreOwner.getKeystorePassword());
+		try {
+			return PkiUtil.createKeyStore(truststoreUrl, truststoreCredentialFactory.getPassword(), keystoreOwner.getKeystoreType());
+		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
+			throw new EncryptionException("unable to open keystore ["+truststoreUrl+"]", e);
+		}
+	}
+
+	public static KeyStore createKeyStore(HasTruststore truststoreOwner) throws EncryptionException {
+		URL truststoreUrl = ClassLoaderUtils.getResourceURL(truststoreOwner, truststoreOwner.getTruststore());
+		CredentialFactory truststoreCredentialFactory = new CredentialFactory(truststoreOwner.getTruststoreAuthAlias(), null, truststoreOwner.getTruststorePassword());
+		try {
+			return PkiUtil.createKeyStore(truststoreUrl, truststoreCredentialFactory.getPassword(), truststoreOwner.getTruststoreType());
+		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
+			throw new EncryptionException("unable to open keystore ["+truststoreUrl+"]", e);
+		}
+	}
+
+	public static PrivateKey getPrivateKey(HasKeystore keystoreOwner) throws EncryptionException {
 		PrivateKey privateKey;
 		URL keystoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
 		try {
@@ -217,24 +245,24 @@ public class PkiUtil {
 				} else {
 					keystoreAliasCredentialFactory = keystoreCredentialFactory;
 				}
-				KeyStore keystore = createKeyStore(keystoreUrl, keystoreCredentialFactory.getPassword(), keystoreOwner.getKeystoreType(), purpose);
+				KeyStore keystore = createKeyStore(keystoreUrl, keystoreCredentialFactory.getPassword(), keystoreOwner.getKeystoreType());
 				String password = keystoreAliasCredentialFactory.getPassword() != null ? keystoreAliasCredentialFactory.getPassword() : "";
 				privateKey = (PrivateKey) keystore.getKey(keystoreOwner.getKeystoreAlias(), password.toCharArray());
 			}
 		} catch (InvalidKeySpecException | NoSuchAlgorithmException | IOException | KeyStoreException | CertificateException | UnrecoverableKeyException e) {
-			throw new EncryptionException("Cannot obtain Private Key in alias ["+keystoreOwner.getKeystoreAlias()+"] of keystore ["+keystoreOwner.getKeystore()+"] for "+purpose, e);
+			throw new EncryptionException("cannot obtain Private Key in alias ["+keystoreOwner.getKeystoreAlias()+"] of keystore ["+keystoreOwner.getKeystore()+"]", e);
 		}
 		if (privateKey==null) {
-			throw new EncryptionException("No Signing Key found in alias ["+keystoreOwner.getKeystoreAlias()+"] of keystore ["+keystoreOwner.getKeystore()+"] for "+purpose);
+			throw new EncryptionException("no Signing Key found in alias ["+keystoreOwner.getKeystoreAlias()+"] of keystore ["+keystoreOwner.getKeystore()+"]");
 		}
 		return privateKey;
 	}
 
-	public static PublicKey getPublicKey(HasTruststore truststoreOwner, String purpose) throws EncryptionException {
-		return getCertificate(truststoreOwner, purpose).getPublicKey();
+	public static PublicKey getPublicKey(HasTruststore truststoreOwner) throws EncryptionException {
+		return getCertificate(truststoreOwner).getPublicKey();
 	}
 
-	public static Certificate getCertificate(HasTruststore truststoreOwner, String purpose) throws EncryptionException {
+	public static Certificate getCertificate(HasTruststore truststoreOwner) throws EncryptionException {
 		Certificate certificate;
 		URL truststoreUrl = ClassLoaderUtils.getResourceURL(truststoreOwner, truststoreOwner.getTruststore());
 		try {
@@ -242,22 +270,55 @@ public class PkiUtil {
 				certificate = PkiUtil.getCertificateFromPem(truststoreUrl);
 			} else {
 				CredentialFactory truststoreCredentialFactory = new CredentialFactory(truststoreOwner.getTruststoreAuthAlias(), null, truststoreOwner.getTruststorePassword());
-				KeyStore keystore = PkiUtil.createKeyStore(truststoreUrl, truststoreCredentialFactory.getPassword(), truststoreOwner.getTruststoreType(), purpose);
+				KeyStore keystore = PkiUtil.createKeyStore(truststoreUrl, truststoreCredentialFactory.getPassword(), truststoreOwner.getTruststoreType());
 				TrustManager[] trustmanagers = PkiUtil.createTrustManagers(keystore, truststoreOwner.getTrustManagerAlgorithm());
 				if (trustmanagers==null || trustmanagers.length==0) {
-					throw new EncryptionException("No trustmanager for keystore ["+truststoreUrl+"] for "+purpose);
+					throw new EncryptionException("no trustmanager for keystore ["+truststoreUrl+"]");
 				}
 				X509TrustManager trustManager = (X509TrustManager)trustmanagers[0];
 				X509Certificate[] certificates = trustManager.getAcceptedIssuers();
 				if (certificates==null || certificates.length==0) {
-					throw new EncryptionException("No Verfication Key found in keystore ["+truststoreUrl+"] for "+purpose);
+					throw new EncryptionException("no Verfication Key found in keystore ["+truststoreUrl+"]");
 				}
 				certificate = certificates[0];
 			}
 		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
-			throw new EncryptionException("cannot get Public Key for verification in keystore ["+truststoreUrl+"] for "+purpose, e);
+			throw new EncryptionException("cannot get Public Key for verification in keystore ["+truststoreUrl+"]", e);
 		}
 		return certificate;
+	}
+
+	/**
+	 * Returns a list of certificate aliases which are due to expire.
+	 * 
+	 * @param keystore A {@link KeyStore}.
+	 * @param duration Date after which Certificates should be classified as 'due to expire'.
+	 * @return A list with aliases of {@link Certificate Certificates}.
+	 */
+	@Nonnull
+	public static List<String> getExpiringCertificates(KeyStore keystore, TemporalAmount duration) throws EncryptionException {
+		List<String> certificates = new ArrayList<>();
+		Instant dateAfterWhichCertsAreExpired = Instant.now().minus(duration);
+		try {
+			for (String certAlias : Collections.list(keystore.aliases())) {
+				Certificate cert = keystore.getCertificate(certAlias);
+				if (isDueToExpire(cert, dateAfterWhichCertsAreExpired)) {
+					certificates.add(certAlias);
+				}
+			}
+		} catch (KeyStoreException e) {
+			throw new EncryptionException("unable to read certificate from keystore", e);
+		}
+		return certificates;
+	}
+
+	private static boolean isDueToExpire(Certificate cert, Instant dateAfterWhichCertsAreExpired) {
+		if (cert instanceof X509Certificate x509Cert) {
+			Date notAfter = x509Cert.getNotAfter();
+			return dateAfterWhichCertsAreExpired.isBefore(notAfter.toInstant());
+		}
+
+		return false;
 	}
 
 	private static byte[] loadPEM(URL resource) throws IOException {

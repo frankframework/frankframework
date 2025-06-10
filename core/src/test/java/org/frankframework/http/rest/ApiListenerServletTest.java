@@ -2018,7 +2018,7 @@ public class ApiListenerServletTest {
 
 		SignedJWT signedJWT = new SignedJWT(jwsHeader, builder.build());
 
-		KeyStore keystore = PkiUtil.createKeyStore(TestFileUtils.getTestFileURL("/JWT/jwt_keystore.p12"), "geheim", KeystoreType.PKCS12, "Keys for signing");
+		KeyStore keystore = PkiUtil.createKeyStore(TestFileUtils.getTestFileURL("/JWT/jwt_keystore.p12"), "geheim", KeystoreType.PKCS12);
 		KeyManager[] keymanagers = PkiUtil.createKeyManagers(keystore, "geheim", null);
 		X509KeyManager keyManager = (X509KeyManager)keymanagers[0];
 		PrivateKey privateKey = keyManager.getPrivateKey("1");
