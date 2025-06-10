@@ -17,7 +17,6 @@ package org.frankframework.jndi;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Iterator;
 import java.util.Properties;
 
 import javax.naming.Context;
@@ -33,6 +32,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.HasApplicationContext;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.NameAware;
@@ -130,9 +130,9 @@ public class JndiBase implements IConfigurable, HasApplicationContext, NameAware
 		}
 
 		if (log.isDebugEnabled()) {
-			for(Iterator it=jndiEnv.keySet().iterator(); it.hasNext();) {
-				String key=(String) it.next();
-				String value=jndiEnv.getProperty(key);
+			for (Object object : jndiEnv.keySet()) {
+				String key = (String) object;
+				String value = jndiEnv.getProperty(key);
 				log.debug("jndiEnv [{}] = [{}]", key, value);
 			}
 		}
@@ -181,6 +181,8 @@ public class JndiBase implements IConfigurable, HasApplicationContext, NameAware
 	/**
 	 * Sets the value of providerURL
 	 */
+	@Deprecated(forRemoval = true, since = "9.2.0")
+	@ConfigurationWarning("JNDI usage is being deprecated")
 	public void setProviderURL(String value) {
 		providerURL = value;
 	}
@@ -217,6 +219,8 @@ public class JndiBase implements IConfigurable, HasApplicationContext, NameAware
 	 * loads JNDI (and other) properties from a JmsRealm
 	 * @see JmsRealm
 	 */
+	@Deprecated(forRemoval = true, since = "9.2.0")
+	@ConfigurationWarning("JNDI usage is being deprecated")
 	public void setJmsRealm(String jmsRealmName) {
 		try {
 			JmsRealm.copyRealm(this, jmsRealmName);
