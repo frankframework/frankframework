@@ -46,6 +46,7 @@ import jakarta.jms.TopicSession;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Supplier;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
@@ -124,6 +125,8 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	private @Setter @Getter ConnectionFactory connectionFactory;
 
 	private @Setter @Getter Map<String, String> proxiedDestinationNames;
+
+	private @Getter String jndiContextPrefix;
 
 	// ---------------------------------------------------------------------
 	// Queue fields
@@ -284,6 +287,12 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 			}
 		}
 		return messagingSource;
+	}
+
+	// eol, required for the JmsMessagingSource
+	@Autowired
+	public void setJndiContextPrefix(String jndiContextPrefix) {
+		this.jndiContextPrefix = jndiContextPrefix;
 	}
 
 	/**
@@ -936,4 +945,5 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	public void setName(String name) {
 		this.name=name;
 	}
+
 }
