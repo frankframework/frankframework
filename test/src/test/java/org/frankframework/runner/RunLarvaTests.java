@@ -78,6 +78,13 @@ public class RunLarvaTests {
 			"Base64Pipe/scenario01",
 			"Base64Pipe/scenario02",
 			"FileSender/scenario01",
+			"JdbcListener/scenario02",
+			"OutputStreaming/scenario04",
+			"Receivers/Transacted/NoInProcess/scenario01",
+			"Receivers/Transacted/NoInProcess/scenario02",
+			"TransactionHandling/MultiThread/scenario20",
+			"TransactionHandling/MultiThread/scenario21",
+			"TransactionHandling/MultiThread/scenario22",
 			"ManagedFileHandler/scenario01",
 			"ManagedFileHandler/scenario02",
 			"Validators/SoapValidator/scenario07",
@@ -115,6 +122,7 @@ public class RunLarvaTests {
 		applicationContext = ibisContext.getApplicationContext();
 
 		// For WSDL Generator tests, this property needs to be unset from the value it gets from core/src/test/resources/DeploymentSpecifics.properties
+		// However, as it's set via DeploymentSpecifics we cannot just clear or remove it, so we have to set it to blanks in the System properties which take preference over DeploymentSpecifics
 		System.setProperty("wsdl.soapAction", "");
 
 		OutboundGateway gateway = SpringUtils.createBean(parentContext, LocalGateway.class);
