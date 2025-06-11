@@ -78,6 +78,15 @@ public class RunLarvaTests {
 			"Base64Pipe/scenario01",
 			"Base64Pipe/scenario02",
 			"FileSender/scenario01",
+			"ManagedFileHandler/scenario01",
+			"ManagedFileHandler/scenario02",
+			"Validators/SoapValidator/scenario07",
+			"WebServiceListenerSender/scenario11b",
+			"WebServiceListenerSender/scenario11c",
+			"WebServiceListenerSender/scenario11d",
+			"XsltProviderListener/scenario04",
+
+			// These scenarios likely fail when Narayana is used
 			"JdbcListener/scenario02",
 			"OutputStreaming/scenario04",
 			"Receivers/Transacted/NoInProcess/scenario01",
@@ -85,14 +94,15 @@ public class RunLarvaTests {
 			"TransactionHandling/MultiThread/scenario20",
 			"TransactionHandling/MultiThread/scenario21",
 			"TransactionHandling/MultiThread/scenario22",
-			"ManagedFileHandler/scenario01",
-			"ManagedFileHandler/scenario02",
-			"Validators/SoapValidator/scenario07",
-			"WebServiceListenerSender/scenario11b",
-			"WebServiceListenerSender/scenario11c",
-			"WebServiceListenerSender/scenario11d",
-			"XsltProviderListener/scenario04"
-	);
+
+			// These scenarios will likely fail when JMS is active but Narayana is not used
+			"FxF3/scenario12",
+			"JmsListenerSender/FF/scenario03",
+			"JmsListenerSender/FF/scenario07",
+			"JmsListenerSender/FF/scenario09",
+			"JmsListenerSender/FF/scenario11",
+			"JmsRetryListener/scenario01"
+			);
 
 	private static ConfigurableApplicationContext parentContext;
 	private static ConfigurableApplicationContext applicationContext;
