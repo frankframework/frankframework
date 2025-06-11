@@ -161,6 +161,18 @@
 			<version>${h2.driver.version}</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>artemis-jakarta-client</artifactId>
+			<version>${artemis.driver.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>artemis-jakarta-server</artifactId>
+			<version>${artemis.driver.version}</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>

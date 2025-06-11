@@ -83,7 +83,7 @@ public class IafTestInitializer {
 	public static class WsSciWrapper implements ServletContextInitializer {
 
 		@Override
-		public void onStartup(ServletContext servletContext) throws ServletException {
+		public void onStartup(ServletContext servletContext) {
 			WsContextListener sc = new WsContextListener();
 			sc.contextInitialized(new ServletContextEvent(servletContext));
 		}
@@ -98,11 +98,11 @@ public class IafTestInitializer {
 	}
 
 	public static void main(String[] args) throws IOException {
-		SpringApplication app = configureApplication();
+		SpringApplication app = configureApplication(false);
 		app.run(args);
 	}
 
-	static SpringApplication configureApplication() throws IOException {
+	static SpringApplication configureApplication(boolean supportJms) throws IOException {
 		Path runFromDir = Path.of(System.getProperty("user.dir")).toAbsolutePath();
 		Path projectDir = validateIfEclipseOrIntelliJ(runFromDir);
 
@@ -111,8 +111,13 @@ public class IafTestInitializer {
 		System.setProperty("application.security.http.authentication", "false");
 		System.setProperty("application.security.http.transportGuarantee", "none");
 		System.setProperty("dtap.stage", "LOC");
-		System.setProperty("active.jms", "false");
 		System.setProperty("log.dir", getLogDir(projectDir));
+		System.setProperty("active.jms", supportJms ? "true" : "false");
+		if (supportJms) {
+			System.setProperty("jms.provider.default", "inmem");
+			System.setProperty("jms.connectionfactory.qcf.inmem", "jms/qcf-inmem");
+			System.setProperty("jms.destination.suffix", "-inmem");
+		}
 		System.setProperty(ApplicationServerConfigurer.APPLICATION_SERVER_TYPE_PROPERTY, "IBISTEST");
 
 		SpringApplication app = new SpringApplication();

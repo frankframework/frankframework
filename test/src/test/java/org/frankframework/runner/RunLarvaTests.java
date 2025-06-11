@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.File;
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.List;
@@ -19,6 +18,9 @@ import java.util.stream.Stream;
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.ServletContext;
 
+import org.apache.activemq.artemis.core.config.Configuration;
+import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
+import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -91,6 +93,7 @@ public class RunLarvaTests {
 	private static ConfigurableApplicationContext parentContext;
 	private static ConfigurableApplicationContext applicationContext;
 	private static IbisContext ibisContext;
+	private static EmbeddedActiveMQ jmsServer;
 
 	private LarvaTool larvaTool;
 	private ScenarioRunner scenarioRunner;
@@ -102,9 +105,11 @@ public class RunLarvaTests {
 	 * Since we don't use @SpringBootApplication, we can't use @SpringBootTest here and need to manually configure the application
 	 */
 	@BeforeAll
-	static void setupBeforeAll() throws IOException {
-		SpringApplication springApplication = IafTestInitializer.configureApplication();
-		// This ApplicationContext doesn't have the database so we cannot use it for the Larva Tests...
+	static void setupBeforeAll() throws Exception {
+		jmsServer = configureEmbeddedJmsServer();
+
+		SpringApplication springApplication = IafTestInitializer.configureApplication(true);
+		// This ApplicationContext doesn't have the database, so we cannot use it for the Larva Tests...
 		parentContext = springApplication.run();
 		ServletContext servletContext = parentContext.getBean(ServletContext.class);
 
@@ -117,6 +122,18 @@ public class RunLarvaTests {
 		await().pollInterval(5, TimeUnit.SECONDS)
 				.atMost(Duration.ofMinutes(5))
 				.until(() -> verifyAppIsHealthy(gateway));
+	}
+
+	private static EmbeddedActiveMQ configureEmbeddedJmsServer() throws Exception {
+		Configuration artemisJmsConfig = new ConfigurationImpl();
+		artemisJmsConfig.addAcceptorConfiguration("in-vm", "vm://0");
+		artemisJmsConfig.setSecurityEnabled(false);
+
+		EmbeddedActiveMQ embeddedServer = new EmbeddedActiveMQ();
+		embeddedServer.setConfiguration(artemisJmsConfig);
+		embeddedServer.start();
+
+		return embeddedServer;
 	}
 
 	private static boolean verifyAppIsHealthy(OutboundGateway gateway) {
@@ -146,6 +163,11 @@ public class RunLarvaTests {
 	@AfterAll
 	static void tearDown() {
 		CloseUtils.closeSilently(ibisContext, parentContext);
+		try {
+			jmsServer.stop();
+		} catch (Exception e) {
+			log.error("error while stopping embedded JMS server", e);
+		}
 	}
 
 	/**

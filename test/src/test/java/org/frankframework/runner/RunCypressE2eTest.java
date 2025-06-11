@@ -78,7 +78,7 @@ public class RunCypressE2eTest {
 	}
 
 	private static void startIafTestInitializer() throws IOException {
-		SpringApplication springApplication = IafTestInitializer.configureApplication();
+		SpringApplication springApplication = IafTestInitializer.configureApplication(false);
 
 		run = springApplication.run();
 		OutboundGateway gateway = SpringUtils.createBean(run, LocalGateway.class);
