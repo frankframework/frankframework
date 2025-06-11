@@ -12,7 +12,6 @@ export const authGuard: CanActivateFn = async (route): Promise<boolean> => {
   }
 
   await authService.loadPermissions();
-
   return typeof linkNames === 'string'
     ? authService.hasAccessToLink(linkNames)
     : linkNames.some((linkName) => authService.hasAccessToLink(linkName));
