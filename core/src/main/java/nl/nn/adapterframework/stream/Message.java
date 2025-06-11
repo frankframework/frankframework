@@ -535,7 +535,9 @@ public class Message implements Serializable, Closeable {
 			if (request instanceof Reader) {
 				Reader reader = (Reader) request;
 				LOG.debug("returning Reader {} as InputStream", this::getObjectId);
-				return new BufferedInputStream(new ReaderInputStream(reader, charset));
+				BufferedInputStream inputStream = new BufferedInputStream(new ReaderInputStream(reader, charset));
+				this.request = inputStream;
+				return inputStream;
 			}
 			LOG.debug("returning String {} as InputStream", this::getObjectId);
 			return new ByteArrayInputStream(request.toString().getBytes(charset));
