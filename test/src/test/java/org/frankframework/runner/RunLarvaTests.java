@@ -84,9 +84,6 @@ public class RunLarvaTests {
 			"WebServiceListenerSender/scenario11b",
 			"WebServiceListenerSender/scenario11c",
 			"WebServiceListenerSender/scenario11d",
-			"WsdlGeneratorPipe/scenario01",
-			"WsdlGeneratorPipe/scenario02",
-			"WsdlGeneratorPipe/scenario03",
 			"XsltProviderListener/scenario04"
 	);
 
@@ -116,6 +113,9 @@ public class RunLarvaTests {
 		// We need to get the IbisContext from the ServletContext, since from this one we can get the ApplicationContext that has the database.
 		ibisContext = FrankApplicationInitializer.getIbisContext(servletContext);
 		applicationContext = ibisContext.getApplicationContext();
+
+		// For WSDL Generator tests, this property needs to be unset from the value it gets from core/src/test/resources/DeploymentSpecifics.properties
+		System.setProperty("wsdl.soapAction", "");
 
 		OutboundGateway gateway = SpringUtils.createBean(parentContext, LocalGateway.class);
 		assertTrue(parentContext.isRunning());
