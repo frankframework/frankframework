@@ -10,6 +10,7 @@ import { Component, Input, OnInit } from '@angular/core';
 import { debounceTime, filter } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
+import { error } from '@angular/compiler-cli/src/transformers/util';
 
 @Component({
   selector: 'app-file-viewer',
@@ -63,7 +64,13 @@ export class FileViewerComponent implements OnInit {
           }
         },
         error: (errorData: HttpErrorResponse) => {
-          this.fileContents = `Error requesting file data: ${errorData.message}`;
+          let serverError: { status: string; error: string } = { status: '', error: '' };
+          try {
+            serverError = JSON.parse(errorData.error);
+          } catch {
+            serverError.error = errorData.error;
+          }
+          this.fileContents = `Error requesting file data: ${serverError.status}\n${serverError.error}`;
           this.loading = false;
           this.error = true;
         },
