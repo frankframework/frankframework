@@ -48,6 +48,7 @@ import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.springframework.util.StreamUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -327,6 +328,48 @@ public class MessageTest {
 
 		String captured = outputStream.toString(StandardCharsets.UTF_8);
 		assertEquals(testString, captured);
+	}
+
+	@Test
+	public void testInputStreamAsReaderMarkAndReset() throws Exception {
+		// Arrange
+		byte[] bytes = testString.getBytes(StandardCharsets.UTF_8);
+		ByteArrayInputStream source = new ByteArrayInputStream(bytes);
+		adapter = new Message(source);
+
+		StringWriter target = new StringWriter();
+
+		// Act
+		Reader r =  adapter.asReader();
+		r.mark(bytes.length);
+
+		r.transferTo(target); // Cannot use StreamUtil#readerToString() as it closes the reader, which is not what we need for the test
+		String actual = target.toString();
+
+		r.reset();
+
+		// Assert
+		assertEquals(testString, actual);
+		assertEquals(testString, adapter.asString());
+	}
+
+	@Test
+	public void testReaderAsInputStreamMarkAndReset() throws Exception {
+		// Arrange
+		StringReader source = new StringReader(testString);
+		adapter = new Message(source);
+
+		// Act
+		InputStream is =  adapter.asInputStream();
+		is.mark(testString.length());
+
+		String actual = StreamUtils.copyToString(is, StandardCharsets.UTF_8);
+
+		is.reset();
+
+		// Assert
+		assertEquals(testString, actual);
+		assertEquals(testString, adapter.asString());
 	}
 
 	@Test

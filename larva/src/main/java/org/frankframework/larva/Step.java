@@ -34,19 +34,19 @@ import org.frankframework.util.StringResolver;
  */
 public class Step implements Comparable<Step> {
 
-	private static final Pattern STEP_PARSE_RE = Pattern.compile("(?i)^step(\\d+)\\.(.+)\\.(read|readline|write|writeline)$");
+	private static final Pattern STEP_PARSE_RE = Pattern.compile("(?i)^step(?<idx>\\d+)\\.(?<target>.+)\\.(?<action>read|readline|write|writeline)$");
 
 	private final @Getter Scenario scenario;
 	private final @Getter String baseKey;
-	private final @Getter int idx;
+	private final @Getter int index;
 	private final @Getter String actionTarget;
 	private final @Getter String action;
 	private final @Getter String value;
 
-	private Step(Scenario scenario, String baseKey, int idx, String actionTarget, String action, String value) {
+	private Step(Scenario scenario, String baseKey, int index, String actionTarget, String action, String value) {
 		this.scenario = scenario;
 		this.baseKey = baseKey;
-		this.idx = idx;
+		this.index = index;
 		this.actionTarget = actionTarget;
 		this.action = action;
 		this.value = value;
@@ -58,7 +58,7 @@ public class Step implements Comparable<Step> {
 			throw new IllegalArgumentException("Step '" + stepLine + "' does not have a step number, action target, or action");
 		}
 		String value = scenario.getProperties().getProperty(stepLine);
-		return new Step(scenario, stepLine, Integer.parseInt(stepMatch.group(1)), stepMatch.group(2), stepMatch.group(3), value);
+		return new Step(scenario, stepLine, Integer.parseInt(stepMatch.group("idx")), stepMatch.group("target"), stepMatch.group("action"), value);
 	}
 
 	public static boolean isValidStep(String stepLine) {
@@ -102,7 +102,7 @@ public class Step implements Comparable<Step> {
 		}
 		String fileData = fileMessage.asString();
 		if (fileData == null) {
-			throw new LarvaException("Failed to resolve properties in input file [" + value + "] for step " + idx);
+			throw new LarvaException("Failed to resolve properties in input file [" + value + "] for step " + index);
 		}
 		return new Message(StringResolver.substVars(fileData, appConstants), fileMessage.copyContext());
 	}
@@ -113,12 +113,12 @@ public class Step implements Comparable<Step> {
 
 	@Override
 	public int compareTo(@Nonnull Step o) {
-		return Integer.compare(idx, o.idx);
+		return Integer.compare(index, o.index);
 	}
 
 	@Override
 	public String toString() {
-		return "Step " + idx +
+		return "Step " + index +
 				", action '" + actionTarget +
 				'.' + action +
 				"' = '" + value + '\''

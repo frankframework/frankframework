@@ -24,7 +24,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.logging.log4j.Logger;
-import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -55,7 +54,6 @@ import org.frankframework.util.SpringUtils;
 public class MessageDispatcher implements InitializingBean, ApplicationContextAware {
 	private final Logger log = LogUtil.getLogger(this);
 	private @Setter String packageName;
-	private @Setter BeanFactory beanFactory;
 	private @Setter ApplicationContext applicationContext;
 	private MessageChannel nullChannel;
 

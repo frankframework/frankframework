@@ -1,0 +1,2306 @@
+<results>
+	<result senderClass="IbisLocalSender" success="true" errorMessage="exitState=SUCCESS" type="byte[]">
+		<results>
+			<result item="1">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+				</results>
+			</result>
+			<result item="2">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+				</results>
+			</result>
+			<result item="3">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+				</results>
+			</result>
+			<result item="4">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+				</results>
+			</result>
+			<result item="5">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+				</results>
+			</result>
+			<result item="6">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+				</results>
+			</result>
+			<result item="7">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+				</results>
+			</result>
+			<result item="8">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+				</results>
+			</result>
+			<result item="9">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+				</results>
+			</result>
+			<result item="10">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+				</results>
+			</result>
+			<result item="11">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+				</results>
+			</result>
+			<result item="12">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+				</results>
+			</result>
+			<result item="13">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+				</results>
+			</result>
+			<result item="14">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+				</results>
+			</result>
+			<result item="15">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+				</results>
+			</result>
+			<result item="16">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+				</results>
+			</result>
+			<result item="17">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+				</results>
+			</result>
+			<result item="18">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+				</results>
+			</result>
+			<result item="19">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+				</results>
+			</result>
+			<result item="20">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">76FA6E3481399E2517E77E2AAFFCF59D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">46A5B458DFDC4F8FD3EAB1E0D6FEB6A6</session>
+					</result>
+				</results>
+			</result>
+		</results>
+	</result>
+	<result senderClass="IbisLocalSender" success="true" errorMessage="exitState=SUCCESS" type="byte[]">
+		<results>
+			<result item="1">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+				</results>
+			</result>
+			<result item="2">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+				</results>
+			</result>
+			<result item="3">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+				</results>
+			</result>
+			<result item="4">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+				</results>
+			</result>
+			<result item="5">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+				</results>
+			</result>
+			<result item="6">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+				</results>
+			</result>
+			<result item="7">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+				</results>
+			</result>
+			<result item="8">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+				</results>
+			</result>
+			<result item="9">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+				</results>
+			</result>
+			<result item="10">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+				</results>
+			</result>
+			<result item="11">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+				</results>
+			</result>
+			<result item="12">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+				</results>
+			</result>
+			<result item="13">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+				</results>
+			</result>
+			<result item="14">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+				</results>
+			</result>
+			<result item="15">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+				</results>
+			</result>
+			<result item="16">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+				</results>
+			</result>
+			<result item="17">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+				</results>
+			</result>
+			<result item="18">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+				</results>
+			</result>
+			<result item="19">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+				</results>
+			</result>
+			<result item="20">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">C6D40B927B4F0B18090AB5DD6CF57AD4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">1F8408797DA01441589E51607AEE8785</session>
+					</result>
+				</results>
+			</result>
+		</results>
+	</result>
+	<result senderClass="IbisLocalSender" success="true" errorMessage="exitState=SUCCESS" type="byte[]">
+		<results>
+			<result item="1">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+				</results>
+			</result>
+			<result item="2">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+				</results>
+			</result>
+			<result item="3">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+				</results>
+			</result>
+			<result item="4">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+				</results>
+			</result>
+			<result item="5">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+				</results>
+			</result>
+			<result item="6">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+				</results>
+			</result>
+			<result item="7">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+				</results>
+			</result>
+			<result item="8">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+				</results>
+			</result>
+			<result item="9">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+				</results>
+			</result>
+			<result item="10">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+				</results>
+			</result>
+			<result item="11">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+				</results>
+			</result>
+			<result item="12">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+				</results>
+			</result>
+			<result item="13">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+				</results>
+			</result>
+			<result item="14">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+				</results>
+			</result>
+			<result item="15">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+				</results>
+			</result>
+			<result item="16">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+				</results>
+			</result>
+			<result item="17">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+				</results>
+			</result>
+			<result item="18">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+				</results>
+			</result>
+			<result item="19">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+				</results>
+			</result>
+			<result item="20">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">1F2988D963B16726C31ED93009EBE98C</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">E5771A3A82B63B40316E891AD9B1153D</session>
+					</result>
+				</results>
+			</result>
+		</results>
+	</result>
+	<result senderClass="IbisLocalSender" success="true" errorMessage="exitState=SUCCESS" type="byte[]">
+		<results>
+			<result item="1">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+				</results>
+			</result>
+			<result item="2">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+				</results>
+			</result>
+			<result item="3">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+				</results>
+			</result>
+			<result item="4">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+				</results>
+			</result>
+			<result item="5">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+				</results>
+			</result>
+			<result item="6">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+				</results>
+			</result>
+			<result item="7">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+				</results>
+			</result>
+			<result item="8">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+				</results>
+			</result>
+			<result item="9">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+				</results>
+			</result>
+			<result item="10">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+				</results>
+			</result>
+			<result item="11">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+				</results>
+			</result>
+			<result item="12">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+				</results>
+			</result>
+			<result item="13">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+				</results>
+			</result>
+			<result item="14">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+				</results>
+			</result>
+			<result item="15">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+				</results>
+			</result>
+			<result item="16">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+				</results>
+			</result>
+			<result item="17">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+				</results>
+			</result>
+			<result item="18">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+				</results>
+			</result>
+			<result item="19">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+				</results>
+			</result>
+			<result item="20">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">46EAFB00DCE83241ED35383CEFC090D8</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">53404CD364ED44D5DE4469E4CAEA446B</session>
+					</result>
+				</results>
+			</result>
+		</results>
+	</result>
+	<result senderClass="IbisLocalSender" success="true" errorMessage="exitState=SUCCESS" type="byte[]">
+		<results>
+			<result item="1">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+				</results>
+			</result>
+			<result item="2">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+				</results>
+			</result>
+			<result item="3">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+				</results>
+			</result>
+			<result item="4">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+				</results>
+			</result>
+			<result item="5">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+				</results>
+			</result>
+			<result item="6">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+				</results>
+			</result>
+			<result item="7">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+				</results>
+			</result>
+			<result item="8">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+				</results>
+			</result>
+			<result item="9">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+				</results>
+			</result>
+			<result item="10">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+				</results>
+			</result>
+			<result item="11">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+				</results>
+			</result>
+			<result item="12">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+				</results>
+			</result>
+			<result item="13">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+				</results>
+			</result>
+			<result item="14">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+				</results>
+			</result>
+			<result item="15">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+				</results>
+			</result>
+			<result item="16">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+				</results>
+			</result>
+			<result item="17">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+				</results>
+			</result>
+			<result item="18">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+				</results>
+			</result>
+			<result item="19">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+				</results>
+			</result>
+			<result item="20">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">FB4EA1609693D6738917B879D620F8AF</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">6BF230EFF27D4C65D2B5D737A9B2FD24</session>
+					</result>
+				</results>
+			</result>
+		</results>
+	</result>
+	<result senderClass="IbisLocalSender" success="true" errorMessage="exitState=SUCCESS" type="byte[]">
+		<results>
+			<result item="1">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+				</results>
+			</result>
+			<result item="2">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+				</results>
+			</result>
+			<result item="3">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+				</results>
+			</result>
+			<result item="4">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+				</results>
+			</result>
+			<result item="5">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+				</results>
+			</result>
+			<result item="6">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+				</results>
+			</result>
+			<result item="7">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+				</results>
+			</result>
+			<result item="8">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+				</results>
+			</result>
+			<result item="9">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+				</results>
+			</result>
+			<result item="10">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+				</results>
+			</result>
+			<result item="11">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+				</results>
+			</result>
+			<result item="12">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+				</results>
+			</result>
+			<result item="13">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+				</results>
+			</result>
+			<result item="14">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+				</results>
+			</result>
+			<result item="15">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+				</results>
+			</result>
+			<result item="16">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+				</results>
+			</result>
+			<result item="17">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+				</results>
+			</result>
+			<result item="18">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+				</results>
+			</result>
+			<result item="19">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+				</results>
+			</result>
+			<result item="20">
+				<results>
+					<result senderClass="HttpSender" senderName="myFirstHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="1">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="mySecondHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="2">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myThirdHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="3">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFourthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="4">75C5B2356EC2CF3CDF45F89F350FEDC4</session>
+					</result>
+					<result senderClass="HttpSender" senderName="myFifthHttpSender" success="true" forwardName="200" type="ReleaseConnectionAfterReadInputStream">
+						<session nr="5">BDF8A1F8105A03D903FFD2A2CE5AE9FD</session>
+					</result>
+				</results>
+			</result>
+		</results>
+	</result>
+</results>
