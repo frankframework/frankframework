@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AppService, ServerErrorResponse } from 'src/app/app.service';
 
@@ -9,7 +9,9 @@ interface stackTrace {
   lineNumber: string;
 }
 
-type ServerError = ServerErrorResponse & {
+type ServerError = {
+  status: string;
+  error: string;
   stackTrace?: stackTrace[];
 };
 
@@ -25,11 +27,8 @@ export class ErrorComponent implements OnInit, OnDestroy {
   protected stackTrace?: stackTrace[];
 
   private interval?: number;
-
-  constructor(
-    private router: Router,
-    private appService: AppService,
-  ) {}
+  private readonly router: Router = inject(Router);
+  private readonly appService: AppService = inject(AppService);
 
   ngOnInit(): void {
     this.checkState();
@@ -41,28 +40,20 @@ export class ErrorComponent implements OnInit, OnDestroy {
     }
   }
 
-  cooldown(data: ServerError): void {
+  cooldown(httpCode: number, error: string, stackTrace?: stackTrace[]): void {
+    if (httpCode < 400 && httpCode >= 502) this.router.navigate(['/status']);
+
     this.cooldownCounter = 60;
+    this.appService.updateStartupError(error);
+    this.stackTrace = stackTrace;
 
-    if (
-      data.status === 'error' ||
-      data.status === 'INTERNAL_SERVER_ERROR' ||
-      data.status === 'Internal Server Error' ||
-      data.status === 'Gateway Timeout'
-    ) {
-      this.appService.updateStartupError(data.error);
-      this.stackTrace = data.stackTrace;
-
-      this.interval = window.setInterval(() => {
-        this.cooldownCounter--;
-        if (this.cooldownCounter < 1) {
-          clearInterval(this.interval);
-          this.checkState();
-        }
-      }, 1000);
-    } else if (data.status === 'SERVICE_UNAVAILABLE' || 'Service Unavailable') {
-      this.router.navigate(['/status']);
-    }
+    this.interval = window.setInterval(() => {
+      this.cooldownCounter--;
+      if (this.cooldownCounter < 1) {
+        clearInterval(this.interval);
+        this.checkState();
+      }
+    }, 1000);
   }
 
   checkState(): void {
@@ -72,10 +63,10 @@ export class ErrorComponent implements OnInit, OnDestroy {
       },
       error: (response: HttpErrorResponse) => {
         try {
-          const serverError: ServerError = JSON.parse(response.error);
-          this.cooldown(serverError);
+          const errorResponse: ServerError = JSON.parse(response.error);
+          this.cooldown(response.status, errorResponse.error, errorResponse.stackTrace);
         } catch {
-          this.cooldown({ error: response.error, status: response.statusText });
+          this.cooldown(response.status, response.error);
         }
       },
     });
