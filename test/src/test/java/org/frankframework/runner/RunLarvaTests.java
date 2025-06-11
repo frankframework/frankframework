@@ -21,6 +21,7 @@ import jakarta.servlet.ServletContext;
 import org.apache.activemq.artemis.core.config.Configuration;
 import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
 import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -36,6 +37,8 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.messaging.Message;
 
+import ch.vorburger.mariadb4j.DB;
+import ch.vorburger.mariadb4j.DBConfigurationBuilder;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.IbisContext;
@@ -112,6 +115,7 @@ public class RunLarvaTests {
 	private static ConfigurableApplicationContext applicationContext;
 	private static IbisContext ibisContext;
 	private static EmbeddedActiveMQ jmsServer;
+	private static DB mariaDB;
 
 	private LarvaTool larvaTool;
 	private ScenarioRunner scenarioRunner;
@@ -125,8 +129,9 @@ public class RunLarvaTests {
 	@BeforeAll
 	static void setupBeforeAll() throws Exception {
 		jmsServer = configureEmbeddedJmsServer();
+		mariaDB = configureEmbeddedDbServer();
 
-		SpringApplication springApplication = IafTestInitializer.configureApplication(true);
+		SpringApplication springApplication = IafTestInitializer.configureApplication("NARAYANA", "mariadb", "inmem");
 		// This ApplicationContext doesn't have the database, so we cannot use it for the Larva Tests...
 		parentContext = springApplication.run();
 		ServletContext servletContext = parentContext.getBean(ServletContext.class);
@@ -144,6 +149,19 @@ public class RunLarvaTests {
 		await().pollInterval(5, TimeUnit.SECONDS)
 				.atMost(Duration.ofMinutes(5))
 				.until(() -> verifyAppIsHealthy(gateway));
+	}
+
+	private static DB configureEmbeddedDbServer() throws Exception {
+		DBConfigurationBuilder configurationBuilder = DBConfigurationBuilder.newBuilder();
+		configurationBuilder.setPort(3306);
+		String logDir = IafTestInitializer.getLogDir();
+		configurationBuilder.setDataDir(new File(logDir + "/mariadb/data"));
+		configurationBuilder.setBaseDir(new File(logDir + "/mariadb/base"));
+
+		DB db = DB.newEmbeddedDB(configurationBuilder.build());
+		db.start();
+		db.createDB("testiaf", "testiaf_user", "testiaf_user00");
+		return db;
 	}
 
 	private static EmbeddedActiveMQ configureEmbeddedJmsServer() throws Exception {
@@ -189,6 +207,14 @@ public class RunLarvaTests {
 			jmsServer.stop();
 		} catch (Exception e) {
 			log.error("error while stopping embedded JMS server", e);
+		}
+		try {
+			File dataDir = mariaDB.getConfiguration().getDataDir();
+			mariaDB.stop();
+			// The data directory has to be deleted before tests can be run again
+			FileUtils.deleteDirectory(dataDir);
+		} catch (Exception e) {
+			log.error("error while stopping embedded MariaDB server", e);
 		}
 	}
 

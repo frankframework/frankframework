@@ -17,7 +17,7 @@ class IafTestInitializerTest {
 	 */
 	@Test
 	void contextLoads() throws IOException {
-		SpringApplication springApplication = IafTestInitializer.configureApplication(false);
+		SpringApplication springApplication = IafTestInitializer.configureApplication();
 
 		ConfigurableApplicationContext run = springApplication.run();
 
