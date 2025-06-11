@@ -84,6 +84,9 @@ public class RunLarvaTests {
 			"WebServiceListenerSender/scenario11b",
 			"WebServiceListenerSender/scenario11c",
 			"WebServiceListenerSender/scenario11d",
+			"WsdlGeneratorPipe/scenario01",
+			"WsdlGeneratorPipe/scenario02",
+			"WsdlGeneratorPipe/scenario03",
 			"XsltProviderListener/scenario04",
 
 			// These scenarios likely fail when Narayana is used
