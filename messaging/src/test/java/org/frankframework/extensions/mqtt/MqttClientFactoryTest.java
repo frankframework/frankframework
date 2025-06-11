@@ -20,19 +20,18 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.credentialprovider.CredentialFactory;
 import org.frankframework.jdbc.datasource.FrankResource;
 import org.frankframework.jdbc.datasource.ResourceObjectLocator;
-import org.frankframework.util.AppConstants;
 
 @Log4j2
 public class MqttClientFactoryTest {
 
 	@BeforeAll
 	static void setup() {
-		AppConstants.getInstance().setProperty("mqtt.brokerURL", "tcp://localhost:1883");
+		System.setProperty("mqtt.brokerURL", "tcp://localhost:1883");
 	}
 
 	@AfterAll
 	static void teardown() {
-		AppConstants.getInstance().remove("mqtt.brokerURL");
+		System.clearProperty("mqtt.brokerURL");
 	}
 
 	@Test
