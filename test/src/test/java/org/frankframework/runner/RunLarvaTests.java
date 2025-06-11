@@ -99,6 +99,7 @@ public class RunLarvaTests {
 			"TransactionHandling/MultiThread/scenario22",
 
 			// These scenarios will likely fail when JMS is active but Narayana is not used
+			"FxF3/scenario11",
 			"FxF3/scenario12",
 			"JmsListenerSender/FF/scenario03",
 			"JmsListenerSender/FF/scenario07",
