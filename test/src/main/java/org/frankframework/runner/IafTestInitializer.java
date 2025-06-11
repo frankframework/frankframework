@@ -117,6 +117,9 @@ public class IafTestInitializer {
 			System.setProperty("jms.provider.default", "inmem");
 			System.setProperty("jms.connectionfactory.qcf.inmem", "jms/qcf-inmem");
 			System.setProperty("jms.destination.suffix", "-inmem");
+
+			// Also need to use Narayana Transaction Manager for several of the JMS tests
+			System.setProperty(ApplicationServerConfigurer.APPLICATION_SERVER_CUSTOMIZATION_PROPERTY, "NARAYANA");
 		}
 		System.setProperty(ApplicationServerConfigurer.APPLICATION_SERVER_TYPE_PROPERTY, "IBISTEST");
 
