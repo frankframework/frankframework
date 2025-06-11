@@ -77,7 +77,7 @@ public class DataSonnetPipeTest extends PipeTestBase<DataSonnetPipe> {
 		// Assert
 		assertEquals(MediaType.APPLICATION_JSON, result.getContext().getMimeType());
 		assertEquals("""
-				{"greetings":{"foo":456},"param-one":"{\\"bar\\":123}"}""", result.asString());
+				{"greetings":{"foo":456},"param-one":{"bar":123}}""", result.asString());
 	}
 
 	@Test

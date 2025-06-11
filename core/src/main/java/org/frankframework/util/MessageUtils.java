@@ -23,6 +23,9 @@ import java.util.Iterator;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
+import jakarta.json.Json;
+import jakarta.json.stream.JsonParser;
+import jakarta.json.stream.JsonParsingException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.xml.soap.AttachmentPart;
 import jakarta.xml.soap.MimeHeader;
@@ -36,8 +39,10 @@ import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.logging.log4j.Logger;
 import org.apache.tika.Tika;
+import org.springframework.http.MediaType;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.MimeType;
+import org.springframework.util.StreamUtils;
 
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
@@ -262,6 +267,11 @@ public class MessageUtils {
 		try {
 			String mediaType = TIKA.detect(message.asInputStream(), name);
 			MimeType mimeType = MimeType.valueOf(mediaType);
+			if (MediaType.TEXT_PLAIN.equalsTypeAndSubtype(mimeType) && name == null) {
+				// TIKA detects XML or JSON as text/plain when there is no filename, so manually do a check for JSON.
+				// See also: https://stackoverflow.com/questions/48618629/apache-tika-detect-json-pdf-specific-mime-type#48619266
+				mimeType = guessMimeType(message);
+			}
 			context.withMimeType(mimeType);
 			if("text".equals(mimeType.getType()) || message.getCharset() != null) { // is of type 'text' or message has charset
 				Charset charset = computeDecodingCharset(message);
@@ -276,6 +286,44 @@ public class MessageUtils {
 		} catch (Exception t) {
 			LOG.warn("error parsing message to determine mimetype", t);
 			return null;
+		}
+	}
+
+	/**
+	 * Make an educated guess at a message's mimetype if Apache TIKA cannot determine it. This
+	 * is an internal method of {@link #computeMimeType(Message)}, called with assumption that
+	 * TIKA computed {@literal text/plain} and the message has been preserved.
+	 * @param message Message for which to make educated guess of the mimetype.
+	 * @return {@literal application/json} if the message started with {@literal '{'} or {@literal '['},
+	 * {@literal application/xml} if the message started with {@literal '<'}, otherwise {@literal text/plain}.
+	 *
+	 */
+	private static MimeType guessMimeType(Message message) {
+		// TIKA detects JSON as text/plain when there is no filename, so manually do a check for JSON.
+		// See also: https://stackoverflow.com/questions/48618629/apache-tika-detect-json-pdf-specific-mime-type#48619266
+		String firstChar;
+		try {
+			firstChar = message.peek(1);
+		} catch (IOException e) {
+			return MediaType.TEXT_PLAIN;
+		}
+		if ("<".equals(firstChar)) {
+			return MediaType.APPLICATION_XML;
+		}
+		if (!"{".equals(firstChar) && !"[".equals(firstChar)) {
+			return MediaType.TEXT_PLAIN;
+		}
+		try {
+			InputStream inputStream = message.asInputStream();
+			inputStream.mark(20_000);
+			try (JsonParser parser = Json.createParser(StreamUtils.nonClosing(inputStream))) {
+				parser.next();
+				return MediaType.APPLICATION_JSON;
+			} finally {
+				inputStream.reset();
+			}
+		} catch (JsonParsingException | IOException e) {
+			return MediaType.TEXT_PLAIN;
 		}
 	}
 

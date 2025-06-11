@@ -166,6 +166,10 @@ public class TestAssertions extends org.junit.jupiter.api.Assertions {
 		return System.getProperty("sun.java.command").contains("surefire");
 	}
 
+	public static boolean isTestRunningWithIntelliJ() {
+		return System.getProperty("sun.java.command").contains("intellij");
+	}
+
 	public static boolean isTestRunningOnWindows() {
 		return System.getProperty("os.name").startsWith("Windows");
 	}
