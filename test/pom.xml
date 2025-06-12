@@ -162,18 +162,6 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>ch.vorburger.mariaDB4j</groupId>
-			<artifactId>mariaDB4j</artifactId>
-			<version>3.2.0</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mariadb.jdbc</groupId>
-			<artifactId>mariadb-java-client</artifactId>
-			<version>${mariadb.driver.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.activemq</groupId>
 			<artifactId>artemis-jakarta-client</artifactId>
 			<version>${artemis.driver.version}</version>
