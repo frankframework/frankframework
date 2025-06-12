@@ -365,6 +365,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	/**
 	 * Include the referenced Module in this configuration
 	 */
+	@SuppressWarnings("unused")
 	public void addInclude(Include module) {
 		// method exists to trigger FrankDoc.
 	}
@@ -419,7 +420,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	 * @see AbstractJobDef for a description of Cron triggers
 	 * @since 4.0
 	 */
-	@Deprecated // deprecated to force use of Scheduler element
+	@Deprecated // deprecated to force use of the 'Scheduler' element
 	public void addScheduledJob(IJob jobdef) {
 		scheduleManager.addScheduledJob(jobdef);
 	}
