@@ -29,6 +29,9 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.util.LogUtil;
 
 /**
@@ -78,7 +81,9 @@ import org.frankframework.util.LogUtil;
  *
  * @param <C> the type of class that is looked up
  */
-public class TomcatJndiProxy<C> extends JndiBase implements ObjectFactory{
+public class TomcatJndiProxy<C> extends JndiBase implements ObjectFactory {
+	private @Getter @Setter String name;
+
 	protected Logger log = LogUtil.getLogger(this);
 
 	public static final String DELEGATE_PREFIX="delegate_";
