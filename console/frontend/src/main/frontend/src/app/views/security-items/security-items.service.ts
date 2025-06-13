@@ -40,6 +40,11 @@ export type supportedConnectionOptions = {
   cyphers: string[];
 };
 
+export type ExpiringCertificate = {
+  name: string;
+  certificates: string[];
+};
+
 export interface SecurityItems {
   securityRoles: SecurityRole[];
   resourceFactories: ResourceFactories[];
@@ -48,6 +53,7 @@ export interface SecurityItems {
   sapSystems: SapSystem[];
   xmlComponents: Record<string, string>;
   supportedConnectionOptions: supportedConnectionOptions;
+  expiringCertificates: ExpiringCertificate[];
 }
 
 export type HttpRequestMethodType =

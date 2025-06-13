@@ -2,67 +2,104 @@
   <div class="row">
     <div class="col-lg-12">
       <div class="m-b-md float-e-margins">
-        @if (securityRoles) {
-          <div class="col-md-5 m-t-md table-responsive">
-            <div class="ibox-title">
-              <h4>Security Roles</h4>
-            </div>
-            <div class="ibox-content">
-              <table class="table table-striped">
-                <thead>
-                  <tr>
-                    <th>Role</th>
-                    <th>Access</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (roles of securityRoles; track roles.name) {
-                    <tr>
-                      <td>{{ roles.name }}</td>
-                      <td>
-                        <i [ngClass]="roles.allowed ? 'fa fa-check-square' : 'fa fa-times-circle'"></i>
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
+        <div class="col-md-6 col-lg-4 m-t-md table-responsive">
+          <div class="ibox-title">
+            <h4>Security Roles</h4>
           </div>
-        }
-        @if (authEntries.length > 0) {
-          <div class="col-md-5 m-t-md table-responsive">
-            <div class="ibox-title">
-              <h4>Used Authentication Entries</h4>
-            </div>
-            <div class="ibox-content">
-              <table class="table">
-                <thead>
+          <div class="ibox-content">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Role</th>
+                  <th>Access</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (roles of securityRoles; track roles.name) {
                   <tr>
-                    <th>Alias</th>
-                    <th>Username</th>
-                    <th>Password</th>
+                    <td>{{ roles.name }}</td>
+                    <td>
+                      <i [ngClass]="roles.allowed ? 'fa fa-check-square' : 'fa fa-times-circle'"></i>
+                    </td>
                   </tr>
-                </thead>
-                <tbody>
-                  @for (alias of authEntries; track alias) {
-                    <tr>
-                      <td>{{ alias.alias }}</td>
-                      <td>{{ alias.username }}</td>
-                      <td>{{ alias.password }}</td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
+                } @empty {
+                  <tr>
+                    <td colspan="2">No roles found</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
           </div>
-        }
+        </div>
+        <div class="col-md-6 col-lg-4 m-t-md table-responsive">
+          <div class="ibox-title">
+            <h4>Used Authentication Entries</h4>
+          </div>
+          <div class="ibox-content">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Alias</th>
+                  <th>Username</th>
+                  <th>Password</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (alias of authEntries; track alias) {
+                  <tr>
+                    <td>{{ alias.alias }}</td>
+                    <td>{{ alias.username }}</td>
+                    <td>{{ alias.password }}</td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="3">No entries found</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="col-md-6 col-lg-4 m-t-md table-responsive">
+          <div class="ibox-title">
+            <h4>Expiring Certificates</h4>
+          </div>
+          <div class="ibox-content mh-600">
+            <table class="table table-striped">
+              <thead>
+                <tr>
+                  <th>Configuration/Adapter</th>
+                  <th>Aliases</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (certificateEntry of expiringCertificates; track certificateEntry.name) {
+                  <tr>
+                    <td>{{ certificateEntry.name }}</td>
+                    <td>
+                      <ul>
+                        @for (alias of certificateEntry.certificates; track alias) {
+                          <li>{{ alias }}</li>
+                        }
+                      </ul>
+                    </td>
+                  </tr>
+                } @empty {
+                  <tr>
+                    <td colspan="2">No expiring certificates found</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
         @if (sapSystems.length > 0) {
           <div class="col-md-4 m-t-md table-responsive">
             <div class="ibox-title">
               <h4>Used Sap Systems</h4>
             </div>
             <div class="ibox-content">
-              <table class="table">
+              <table class="table table-striped">
                 <thead>
                   <tr>
                     <th>Name</th>
@@ -87,7 +124,7 @@
               <h4>Used Certificates</h4>
             </div>
             <div class="ibox-content">
-              <table class="table">
+              <table class="table table-striped">
                 <thead>
                   <tr>
                     <th>Adapter</th>
@@ -116,7 +153,7 @@
               <h4>Used JmsRealms</h4>
             </div>
             <div class="ibox-content">
-              <table class="table resources">
+              <table class="table table-striped resources">
                 <thead>
                   <tr>
                     <th>Realm Name</th>
@@ -142,7 +179,7 @@
                 <h4>Used {{ resourceFactory.name }}</h4>
               </div>
               <div class="ibox-content">
-                <table class="table resources">
+                <table class="table table-striped resources">
                   <thead>
                     <tr>
                       <th>Name</th>
@@ -206,7 +243,7 @@
               <h4>XML Components</h4>
             </div>
             <div class="ibox-content">
-              <table class="table">
+              <table class="table table-striped">
                 <thead>
                   <tr>
                     <th>Component</th>
