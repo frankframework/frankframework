@@ -34,6 +34,7 @@ import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.dispatcher.RequestProcessor;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
@@ -177,7 +178,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 					} catch (ListenerException e) {
 						// Message with error contains a String so does not need to be preserved.
 						// (Trying to preserve means dealing with extra IOException for which there is no reason here)
-						return handler.formatException(null, session, message, e);
+						return formatExceptionUsingErrorMessageFormatter(session, message, e);
 					}
 				}
 			} finally {
@@ -185,6 +186,16 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 				session.mergeToParentSession(getReturnedSessionKeys(), parentSession);
 			}
 		}
+	}
+
+	// The ApplicationContext is practically always an Adapter except when the listener is created directly via the LarvaScenarioContext
+	private Message formatExceptionUsingErrorMessageFormatter(PipeLineSession session, Message inputMessage, Throwable t) {
+		if (applicationContext instanceof Adapter adapter) {
+			return adapter.formatErrorMessage(null, t, inputMessage, session, null);
+		}
+
+		log.warn("unformatted exception while processing input request [{}]", inputMessage, t);
+		return new Message(t.getMessage());
 	}
 
 	/**

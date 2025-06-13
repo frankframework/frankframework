@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,9 +38,4 @@ public interface IMessageHandler<M> {
 	 */
 	Message processRequest(IListener<M> origin, RawMessageWrapper<M> rawMessage, Message message, PipeLineSession session) throws ListenerException;
 
-	/**
-	 *	Formats any exception thrown by any of the above methods to a message that can be returned.
-	 *  Can be used if the calling system has no other way of returning the exception to the caller.
-	 */
-	Message formatException(String extraInfo, PipeLineSession session, Message message, Throwable t);
 }
