@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation=
+		"
+			http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+		"
+	>
+
+
+	<bean
+		name="txManagerReal"
+		class="org.frankframework.jta.narayana.NarayanaJtaTransactionManager"
+		depends-on="narayanaConfig"
+	>
+		<property name="statusFile" value="${transactionmanager.log.dir}/status.txt" />
+		<property name="uidFile"  value="${transactionmanager.log.dir}/tm-uid.txt" />
+		<property name="uid" value="${transactionmanager.uid}" />
+	</bean>
+
+
+	<bean id="narayanaConfig" class="org.frankframework.jta.narayana.NarayanaConfigurationBean">
+		<property name="properties">
+			<props>
+				<prop key="JDBCEnvironmentBean.isolationLevel">2</prop> <!-- TRANSACTION_READ_COMMITTED -->
+				<prop key="ObjectStoreEnvironmentBean.objectStoreDir">${transactionmanager.log.dir}</prop>
+				<prop key="ObjectStoreEnvironmentBean.stateStore.objectStoreDir">${transactionmanager.log.dir}</prop>
+				<prop key="ObjectStoreEnvironmentBean.communicationStore.objectStoreDir">${transactionmanager.log.dir}</prop>
+
+				<prop key="ObjectStoreEnvironmentBean.objectStoreType">${transactionmanager.narayana.objectStoreType}</prop>
+				<prop key="ObjectStoreEnvironmentBean.dropTable">${transactionmanager.narayana.dropTable}</prop>
+				<prop key="ObjectStoreEnvironmentBean.createTable">${transactionmanager.narayana.createTable}</prop>
+
+
+				<prop key="CoordinatorEnvironmentBean.defaultTimeout">${transactionmanager.defaultTransactionTimeout}</prop>
+
+				<prop key="CoordinatorEnvironmentBean.txReaperTimeout">${transactionmanager.narayana.reapTime}</prop>
+				<prop key="CoordinatorEnvironmentBean.txReaperMode">DYNAMIC</prop>
+				<prop key="CoordinatorEnvironmentBean.txReaperZombieMax">2</prop> <!-- default 8. how many stuck threads need to be present before things are logged -->
+				<prop key="CoordinatorEnvironmentBean.txReaperTraceGracePeriod">${transactionmanager.narayana.stuckTime}</prop>
+				<prop key="CoordinatorEnvironmentBean.txReaperTraceInterval">${transactionmanager.narayana.stuckTimerTime}</prop>
+			</props>
+		</property>
+	</bean>
+
+	<bean id="dataSourceFactory" class="org.frankframework.jta.narayana.NarayanaDataSourceFactory" depends-on="txManagerReal" autowire="byType" >
+		<property name="transactionManager" ref="txManagerReal"/>
+	</bean>
+</beans>

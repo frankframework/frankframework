@@ -416,7 +416,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * sends a error message to the log and to the messagekeeper of the adapter
 	 */
 	protected void error(@Nonnull String msg, @Nullable Throwable t) {
-		log.error("{}{}", getLogPrefix(), msg, t);
+		log.error(() -> "%s%s".formatted(getLogPrefix(), msg), t);
 		if (adapter != null) {
 			adapter.getMessageKeeper().add("ERROR: " + getLogPrefix() + msg+(t!=null?": "+t.getMessage():""), MessageKeeperLevel.ERROR);
 		}
