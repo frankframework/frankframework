@@ -48,7 +48,7 @@ public class IfPipeXpathTest extends PipeTestBase<IfPipe> {
 		return ifPipe;
 	}
 
-	public static Stream<Arguments> messageSource() {
+	public static Stream<Arguments> testExpressionsWithStreamingInput() {
 		return Stream.of(
 				// input, expression, expressionValue, expectedValue
 				Arguments.of("<root/>", "/root", "", PIPE_FORWARD_THEN),
@@ -61,19 +61,7 @@ public class IfPipeXpathTest extends PipeTestBase<IfPipe> {
 	}
 
 	@ParameterizedTest
-	@MethodSource("messageSource")
-	void testExpressions(String input, String expression, String expressionValue, String expectedValue) throws Exception {
-		pipe.setXpathExpression(expression);
-		pipe.setExpressionValue(expressionValue);
-		configureAndStartPipe();
-
-		pipeRunResult = doPipe(pipe, input, session);
-		assertEquals(expectedValue, pipeRunResult.getPipeForward().getName());
-		assertEquals(input, pipeRunResult.getResult().asString());
-	}
-
-	@ParameterizedTest
-	@MethodSource("messageSource")
+	@MethodSource
 	void testExpressionsWithStreamingInput(String input, String expression, String expressionValue, String expectedValue) throws Exception {
 		pipe.setXpathExpression(expression);
 		pipe.setExpressionValue(expressionValue);

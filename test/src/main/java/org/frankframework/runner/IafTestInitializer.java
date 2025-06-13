@@ -38,6 +38,8 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.console.runner.ConsoleWarInitializer;
 import org.frankframework.ladybug.runner.LadybugWarInitializer;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
@@ -50,6 +52,7 @@ import org.frankframework.util.AppConstants;
  *
  * @author Niels Meijer
  */
+@Log4j2
 public class IafTestInitializer {
 
 	public static class ApplicationInitializerWrapper implements ServletContextInitializer {
@@ -121,7 +124,7 @@ public class IafTestInitializer {
 	static SpringApplication configureApplication(@Nullable String appServerCustom, @Nullable String dbms, @Nullable String jmsProvider) throws IOException {
 		Path projectDir = getProjectDir();
 
-		getConfigurationsDirectory(projectDir);
+		setConfigurationsDirectory(projectDir);
 
 		System.setProperty("application.security.http.authentication", "false");
 		System.setProperty("application.security.http.transportGuarantee", "none");
@@ -159,10 +162,11 @@ public class IafTestInitializer {
 	public static Path getProjectDir() throws IOException {
 		Path runFromDir = Path.of(System.getProperty("user.dir")).toAbsolutePath();
 		Path projectDir = validateIfEclipseOrIntelliJ(runFromDir);
+		log.info("found project dir [{}]", projectDir);
 		return projectDir;
 	}
 
-	private static void getConfigurationsDirectory(Path projectDir) throws IOException {
+	private static void setConfigurationsDirectory(Path projectDir) throws IOException {
 		Path configurationDir = projectDir.resolve("src/main/configurations").toAbsolutePath();
 		System.setProperty("configurations.directory", configurationDir.toString());
 

@@ -28,6 +28,7 @@ import io.swagger.v3.oas.models.info.Info;
 
 import org.frankframework.console.Description;
 import org.frankframework.util.Environment;
+import org.frankframework.util.StringUtil;
 
 /**
  * <p>
@@ -52,21 +53,24 @@ public class OpenApiConfiguration {
 	public JavadocProvider getJavadocProvider() {
 		return new JavadocProvider() {
 
+			// Creates the `tags` in the spec and adds a description to it.
 			@Override
 			public String getClassJavadoc(Class<?> cl) {
-				return null;
+				Description description = cl.getAnnotation(Description.class);
+
+				return description != null ? formatString(description.value()) : null;
 			}
 
 			@Override
 			public Map<String, String> getRecordClassParamJavadoc(Class<?> cl) {
-				return null;
+				return Map.of();
 			}
 
 			@Override
 			public String getMethodJavadocDescription(Method method) {
 				Description description = method.getAnnotation(Description.class);
 
-				return description != null ? description.value() : null;
+				return description != null ? formatString(description.value()) : null;
 			}
 
 			@Override
@@ -74,9 +78,10 @@ public class OpenApiConfiguration {
 				return null;
 			}
 
+			// Perhaps we should create a generic error response?
 			@Override
 			public Map<String, String> getMethodJavadocThrows(Method method) {
-				return null;
+				return Map.of();
 			}
 
 			@Override
@@ -89,10 +94,17 @@ public class OpenApiConfiguration {
 				return null;
 			}
 
+			// Creates a summary element, which we don't need to use as our descriptions are small enough.
 			@Override
 			public String getFirstSentence(String text) {
-				return text;
+				return null;
 			}
 		};
+	}
+
+	// Upper case first character and end with a `.`.
+	private static String formatString(String str) {
+		String capitalString = StringUtil.ucFirst(str);
+		return capitalString.endsWith(".") ? capitalString : capitalString + ".";
 	}
 }
