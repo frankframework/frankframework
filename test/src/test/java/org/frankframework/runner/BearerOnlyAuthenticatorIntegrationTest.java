@@ -45,7 +45,7 @@ public class BearerOnlyAuthenticatorIntegrationTest {
 
 	@Container
 	private static final KeycloakContainer keycloak = new KeycloakContainer()
-				.withRealmImportFile("/keycloak-test-realm.json");
+			.withRealmImportFile("/test-realm.json");
 
 	private static ConfigurableApplicationContext applicationContext = null;
 

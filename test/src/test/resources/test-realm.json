@@ -458,6 +458,28 @@
     "webAuthnPolicyPasswordlessAvoidSameAuthenticatorRegister": false,
     "webAuthnPolicyPasswordlessAcceptableAaguids": [],
     "webAuthnPolicyPasswordlessExtraOrigins": [],
+    "users": [
+        {
+            "id" : "6548ee4e-6c87-465f-836c-e6d0c503fd96",
+            "username" : "testuser",
+            "firstName" : "Test",
+            "lastName" : "User",
+            "email" : "test@example.com",
+            "emailVerified" : false,
+            "createdTimestamp" : 1749821908972,
+            "credentials": [
+                {"type": "password", "value": "testuser"}
+            ],
+            "enabled" : true,
+            "totp" : false,
+            "disableableCredentialTypes" : [ ],
+            "requiredActions" : [ ],
+            "notBefore" : 0,
+            "access" : {
+                "manage" : true
+            }
+        }
+    ],
     "scopeMappings": [
         {
             "clientScope": "offline_access",
