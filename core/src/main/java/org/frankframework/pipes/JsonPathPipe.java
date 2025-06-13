@@ -1,10 +1,13 @@
 package org.frankframework.pipes;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.jayway.jsonpath.JsonPath;
 
 import lombok.Getter;
+import net.minidev.json.JSONObject;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
@@ -20,6 +23,7 @@ import org.frankframework.util.XmlException;
 /**
  * Apply a one-liner JSON path expression to the input to extract a value from input data.
  * If the input is in XML format, it will be converted to JSON using the same method as the {@link org.frankframework.align.Xml2Json} pipe.
+ * Depending on the result of the expression, this pipe can return a string value or JSON value.
  *
  */
 @EnterpriseIntegrationPattern(Type.TRANSLATOR)
@@ -48,8 +52,20 @@ public class JsonPathPipe extends FixedForwardPipe {
 		}
 
 		PipeRunResult prr = new PipeRunResult();
-		prr.setResult(result);
+		prr.setResult(convertToString(result));
 		return prr;
+	}
+
+	private String convertToString(Object result) {
+		if (result == null) {
+			return null;
+		}
+		if (result instanceof HashMap<?,?> map) {
+			@SuppressWarnings("unchecked")
+			JSONObject jsonObject = new JSONObject((Map<String, ?>) map);
+			return jsonObject.toString();
+		}
+		return result.toString();
 	}
 
 	@Mandatory
