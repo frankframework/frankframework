@@ -1,0 +1,33 @@
+<adapter name="CallApiListener">
+	<receiver>
+		<listener className="org.frankframework.receivers.JavaListener"
+			serviceName="ibis4test-CallApiListener" />
+	</receiver>
+	<pipeline firstPipe="${callApiListener}">
+		<exits>
+			<exit name="EXIT" state="success" />
+		</exits>
+		<pipe name="${callApiListener}" className="org.frankframework.pipes.SenderPipe">
+			<sender className="org.frankframework.http.HttpSender" urlParam="url_param"
+				methodType="POST" resultStatusCodeSessionKey="statusCode"
+				allowSelfSignedCertificates="true" verifyHostname="false"
+				authAlias="${framework.api.user.alias}" headersParams="Message-Id">
+				<param name="url_param" xpathExpression="*/@uri" />
+				<!-- use pipeline input -->
+				<param name="${Message-Id}" sessionKey="cid" />
+				<!-- use well known value for
+messageId, to be able to test duplicate check -->
+			</sender>
+		</pipe>
+		<pipe name="successOrException" className="org.frankframework.pipes.XmlSwitch"
+			forwardNameSessionKey="statusCode">
+			<forward name="200" path="EXIT" />
+			<forward name="304" path="EXIT" />
+			<forward name="500" path="FixedResultOnException" />
+		</pipe>
+		<pipe name="FixedResultOnException" className="org.frankframework.pipes.EchoPipe"
+			getInputFromFixedValue="&lt;error/&gt;">
+			<forward name="success" path="EXIT" />
+		</pipe>
+	</pipeline>
+</adapter>
