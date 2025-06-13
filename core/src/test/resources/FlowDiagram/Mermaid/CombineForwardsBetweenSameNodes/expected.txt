@@ -1,0 +1,14 @@
+flowchart
+	d4454e2("<b>Receiver</b><br/>JavaListener"):::normal
+	d4454e7("<b>callApiListener</b><br/>SenderPipe"):::normal
+	d4454e11("<b>successOrException</b><br/>XmlSwitch"):::normal
+	d4454e6("<b>success</b>"):::normal
+	d4454e15("<b>FixedResultOnException</b><br/>EchoPipe"):::normal
+	classDef normal fill:#fff,stroke-width:4px,stroke:#8bc34a;
+	classDef errorOutline fill:#fff,stroke-width:4px,stroke:#ec4758;
+	d4454e2 --> |success| d4454e7
+	d4454e7 --> |success| d4454e11
+	d4454e11 --> |200<br/>304| d4454e6
+	d4454e11 --> |500| d4454e15
+	d4454e15 --> |success| d4454e6
+	linkStyle 0,1,2,3,4,5 stroke:#8bc34a,stroke-width:3px,fill:none;
