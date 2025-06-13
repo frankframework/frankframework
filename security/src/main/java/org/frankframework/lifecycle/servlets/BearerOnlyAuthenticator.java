@@ -17,8 +17,9 @@ package org.frankframework.lifecycle.servlets;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoders;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
 
 import lombok.Setter;
@@ -46,21 +47,23 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 
 	@Override
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
-		if (StringUtils.isAllEmpty(issuerUri, jwkSetUri)) {
-			throw new IllegalArgumentException("Either issuerUri or jwkSetUri must be set for BearerOnlyAuthenticator");
+		if (StringUtils.isAllBlank(issuerUri, jwkSetUri)) {
+			throw new IllegalArgumentException("Configuring issuerUri and/or jwkSetUri is mandatory to use BearerOnlyAuthenticator");
 		}
 
 		http.oauth2ResourceServer(oauth2 -> oauth2
-				.jwt(this::getJwtConfigurer));
+				.jwt(jwt -> jwt.decoder(getJwtDecoder())));
 
 		return http.build();
 	}
 
-	private void getJwtConfigurer(OAuth2ResourceServerConfigurer.JwtConfigurer jwtConfigurer) {
-		if (jwkSetUri != null) {
-			jwtConfigurer.jwkSetUri(jwkSetUri);
-		} else if (issuerUri != null) {
-			jwtConfigurer.decoder(JwtDecoders.fromIssuerLocation(issuerUri));
+	private JwtDecoder getJwtDecoder() {
+		if (StringUtils.isNotBlank(issuerUri)) {
+			return JwtDecoders.fromIssuerLocation(issuerUri);
+		} else if (StringUtils.isNotBlank(jwkSetUri)) {
+			return NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
+		} else {
+			throw new IllegalArgumentException("Either issuerUri or jwkSetUri must be provided");
 		}
 	}
 }
