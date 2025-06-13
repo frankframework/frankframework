@@ -2,21 +2,27 @@
   display: flex;
 }
 
-ul.protocols-list,
-ul.cyphers-list {
-  display: inline-block;
-  flex: 1 1 0;
-  padding: 0 40px 0 0;
+ul {
   list-style-type: none;
+  padding: 0 40px 0 0;
   vertical-align: top;
 
   li {
-    min-width: 200px;
     padding: 0.5rem;
 
     & + li {
       border-top: 1px solid #ddd;
     }
+  }
+}
+
+ul.protocols-list,
+ul.cyphers-list {
+  display: inline-block;
+  flex: 1 1 0;
+
+  li {
+    min-width: 200px;
   }
 }
 
@@ -33,4 +39,9 @@ ul.cyphers-list {
 }
 table.resources > thead > tr > th {
   min-width: 150px;
+}
+
+.mh-600 {
+  max-height: 600px;
+  overflow-y: auto;
 }

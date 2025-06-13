@@ -24,6 +24,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletException;
@@ -83,7 +84,7 @@ public class IafTestInitializer {
 	public static class WsSciWrapper implements ServletContextInitializer {
 
 		@Override
-		public void onStartup(ServletContext servletContext) throws ServletException {
+		public void onStartup(ServletContext servletContext) {
 			WsContextListener sc = new WsContextListener();
 			sc.contextInitialized(new ServletContextEvent(servletContext));
 		}
@@ -102,19 +103,46 @@ public class IafTestInitializer {
 		app.run(args);
 	}
 
+	/**
+	 * Configure the Frank!Framework application, without support for JMS enabled, with default (datasource) transaction-manager and with H2 in-memory database.
+	 */
 	static SpringApplication configureApplication() throws IOException {
-		Path runFromDir = Path.of(System.getProperty("user.dir")).toAbsolutePath();
-		Path projectDir = validateIfEclipseOrIntelliJ(runFromDir);
+		return configureApplication(null, null, null);
+	}
+
+	/**
+	 * Configure the Frank!Framework application, with options.
+	 *
+	 * @param appServerCustom Customization option for the AppServer, as used by standard in the framework. Supported in IAF-Test: {@code null}, or {@code "NARAYANA"}.
+	 * @param dbms Name of DBMS provider. if {@code null}, then {@code H2} is used as default
+	 * @param jmsProvider Name of JMS provider. If null, JMS is not enabled in tests (property {@code jms.active=false}). The JMS provider name is used to set the properties
+	 *                    {@code jms.provider.default=<jmsProvider>}, {@code jms.connectionfactory.qcf.<jmsProvider>=jms/qcf-<jmsProvider>} and {@code jms.destination.suffix=-<jmsProvider>}.
+	 */
+	static SpringApplication configureApplication(@Nullable String appServerCustom, @Nullable String dbms, @Nullable String jmsProvider) throws IOException {
+		Path projectDir = getProjectDir();
 
 		getConfigurationsDirectory(projectDir);
 
 		System.setProperty("application.security.http.authentication", "false");
 		System.setProperty("application.security.http.transportGuarantee", "none");
 		System.setProperty("dtap.stage", "LOC");
-		System.setProperty("active.jms", "false");
 		System.setProperty("log.dir", getLogDir(projectDir));
+		System.setProperty("active.jms", jmsProvider != null ? "true" : "false");
+		if (jmsProvider != null) {
+			System.setProperty("jms.provider.default", jmsProvider);
+			System.setProperty("jms.connectionfactory.qcf." + jmsProvider, "jms/qcf-" + jmsProvider);
+			System.setProperty("jms.destination.suffix", "-" + jmsProvider);
+		}
 		System.setProperty(ApplicationServerConfigurer.APPLICATION_SERVER_TYPE_PROPERTY, "IBISTEST");
-
+		if (appServerCustom != null) {
+			System.setProperty(ApplicationServerConfigurer.APPLICATION_SERVER_CUSTOMIZATION_PROPERTY, appServerCustom);
+		}
+		if (dbms != null) {
+			System.setProperty("jdbc.dbms.default", dbms);
+			if (!"h2".equals(dbms)) {
+				System.setProperty("active.storedProcedureTests", "true");
+			}
+		}
 		SpringApplication app = new SpringApplication();
 		app.addInitializers(new ConfigureAppConstants());
 		app.setWebApplicationType(WebApplicationType.SERVLET);
@@ -125,6 +153,13 @@ public class IafTestInitializer {
 		app.setSources(set);
 
 		return app;
+	}
+
+	@Nonnull
+	public static Path getProjectDir() throws IOException {
+		Path runFromDir = Path.of(System.getProperty("user.dir")).toAbsolutePath();
+		Path projectDir = validateIfEclipseOrIntelliJ(runFromDir);
+		return projectDir;
 	}
 
 	private static void getConfigurationsDirectory(Path projectDir) throws IOException {
@@ -157,7 +192,7 @@ public class IafTestInitializer {
 	}
 
 	// Store the logs by default in ./test/target/logs
-	private static String getLogDir(Path projectPath) throws IOException {
+	public static String getLogDir(Path projectPath) throws IOException {
 		Path targetPath = projectPath.resolve("target");
 		if(Files.exists(targetPath) && Files.isDirectory(targetPath)) {
 			Path logDir = targetPath.resolve("logs");
@@ -168,5 +203,4 @@ public class IafTestInitializer {
 		}
 		throw new IOException("unable to determine log directory");
 	}
-
 }
