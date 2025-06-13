@@ -119,8 +119,7 @@ public class IafTestInitializer {
 	 *                    {@code jms.provider.default=<jmsProvider>}, {@code jms.connectionfactory.qcf.<jmsProvider>=jms/qcf-<jmsProvider>} and {@code jms.destination.suffix=-<jmsProvider>}.
 	 */
 	static SpringApplication configureApplication(@Nullable String appServerCustom, @Nullable String dbms, @Nullable String jmsProvider) throws IOException {
-		Path runFromDir = Path.of(System.getProperty("user.dir")).toAbsolutePath();
-		Path projectDir = validateIfEclipseOrIntelliJ(runFromDir);
+		Path projectDir = getProjectDir();
 
 		getConfigurationsDirectory(projectDir);
 
@@ -156,6 +155,13 @@ public class IafTestInitializer {
 		return app;
 	}
 
+	@Nonnull
+	public static Path getProjectDir() throws IOException {
+		Path runFromDir = Path.of(System.getProperty("user.dir")).toAbsolutePath();
+		Path projectDir = validateIfEclipseOrIntelliJ(runFromDir);
+		return projectDir;
+	}
+
 	private static void getConfigurationsDirectory(Path projectDir) throws IOException {
 		Path configurationDir = projectDir.resolve("src/main/configurations").toAbsolutePath();
 		System.setProperty("configurations.directory", configurationDir.toString());
@@ -186,7 +192,7 @@ public class IafTestInitializer {
 	}
 
 	// Store the logs by default in ./test/target/logs
-	private static String getLogDir(Path projectPath) throws IOException {
+	public static String getLogDir(Path projectPath) throws IOException {
 		Path targetPath = projectPath.resolve("target");
 		if(Files.exists(targetPath) && Files.isDirectory(targetPath)) {
 			Path logDir = targetPath.resolve("logs");
@@ -196,11 +202,5 @@ public class IafTestInitializer {
 			return logDir.toAbsolutePath().toString().replace("\\", "/"); // Slashes are required for the larva tool...
 		}
 		throw new IOException("unable to determine log directory");
-	}
-
-	public static String getLogDir() throws IOException {
-		Path runFromDir = Path.of(System.getProperty("user.dir")).toAbsolutePath();
-		Path projectDir = validateIfEclipseOrIntelliJ(runFromDir);
-		return getLogDir(projectDir);
 	}
 }
