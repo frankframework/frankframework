@@ -54,7 +54,7 @@ class JsonPathPipeTest {
 						"""
 								{
 								"k1": {"a": 1},
-								"k2": {"a": 2},
+								"k2": {"a": 2}
 								}
 								"""
 				),
