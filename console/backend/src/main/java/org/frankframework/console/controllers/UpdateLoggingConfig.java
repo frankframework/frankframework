@@ -36,6 +36,7 @@ import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
 
 @RestController
+@Description("all log related endpoints such as creating or updating log definitions for packages and classes")
 public class UpdateLoggingConfig {
 
 	private final FrankApiService frankApiService;

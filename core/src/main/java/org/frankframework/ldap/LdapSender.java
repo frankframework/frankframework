@@ -1171,6 +1171,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		ldapProviderURL = string;
 	}
 
+	@Override
 	@Deprecated(forRemoval = true, since = "9.2.0")
 	@ConfigurationWarning("JNDI usage is being deprecated, please use [ldapProviderURL] instead")
 	public void setProviderURL(String value) {

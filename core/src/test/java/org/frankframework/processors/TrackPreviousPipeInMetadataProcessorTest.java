@@ -83,8 +83,7 @@ public class TrackPreviousPipeInMetadataProcessorTest extends PipeProcessorTestB
 		// Assert
 		assertEquals("<xml>water</xml>", result.asString());
 
-// TODO fix this
-//		assertTrue(prr.getResult().getContext().containsKey(MessageContext.CONTEXT_PREVIOUS_PIPE));
-//		assertEquals("Echo pipe", prr.getResult().getContext().get(MessageContext.CONTEXT_PREVIOUS_PIPE));
+		assertTrue(result.getContext().containsKey(MessageContext.CONTEXT_PREVIOUS_PIPE));
+		assertEquals("Echo pipe", result.getContext().get(MessageContext.CONTEXT_PREVIOUS_PIPE));
 	}
 }
