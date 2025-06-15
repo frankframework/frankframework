@@ -1935,11 +1935,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		return errorMessage;
 	}
 
-	@Override
-	public Message formatException(String extraInfo, PipeLineSession session, Message message, Throwable t) {
-		return getAdapter().formatErrorMessage(extraInfo,t,message, session, null);
-	}
-
 	private ListenerException wrapExceptionAsListenerException(Throwable t) {
 		ListenerException l;
 		if (t instanceof ListenerException exception) {

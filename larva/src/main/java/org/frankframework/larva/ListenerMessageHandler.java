@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2024 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,8 +21,6 @@ import java.util.concurrent.TimeUnit;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-
-import org.apache.commons.lang3.NotImplementedException;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -133,11 +131,4 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 		processRequest(origin, rawMessage, message, threadContext);
 	}
 
-
-	@Override
-	public Message formatException(String extraInfo, PipeLineSession arg1, Message arg2, Throwable arg3) {
-		NotImplementedException e = new NotImplementedException();
-		log.error("formatException not implemented", e);
-		return null;
-	}
 }

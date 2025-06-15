@@ -28,6 +28,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
 import org.frankframework.core.IbisExceptionListener;
@@ -109,13 +110,23 @@ public class PushingListenerAdapter implements IPushingListener<Message>, Servic
 				log.debug("PushingListenerAdapter.processRequest() rethrows ListenerException...");
 				throw e;
 			}
+
 			log.debug("PushingListenerAdapter.processRequest() formats ListenerException to errormessage");
-			return handler.formatException(null, session, message, e);
+			return formatExceptionUsingErrorMessageFormatter(session, message, e);
 		} finally {
 			ThreadContext.clearAll();
 		}
 	}
 
+	// The ApplicationContext is practically always an Adapter except when the listener is created directly via the LarvaScenarioContext
+	private Message formatExceptionUsingErrorMessageFormatter(PipeLineSession session, Message inputMessage, Throwable t) {
+		if (applicationContext instanceof Adapter adapter) {
+			return adapter.formatErrorMessage(null, t, inputMessage, session, null);
+		}
+
+		log.warn("unformatted exception while processing input request [{}]", inputMessage, t);
+		return new Message(t.getMessage());
+	}
 
 	@Override
 	public String toString() {
