@@ -150,6 +150,7 @@ public class IfPipe extends AbstractPipe {
 	private @Getter boolean namespaceAware = XmlUtils.isNamespaceAwareByDefault();
 	private TransformerPool transformerPool;
 	private String jsonPathExpression = null;
+	private JsonPath jsonPath;
 	private @Getter String xpathExpression = null;
 	private @Getter String expressionValue = null;
 
@@ -184,6 +185,13 @@ public class IfPipe extends AbstractPipe {
 			transformerPool = TransformerPool.configureTransformer0(this, namespaceDefs, determineXpathExpression(), null,
 					TransformerPool.OutputType.XML, false, getParameterList(), xsltVersion
 			);
+		}
+		if (StringUtils.isNotEmpty(jsonPathExpression)) {
+			try {
+				jsonPath = JsonPath.compile(jsonPathExpression);
+			} catch (Exception e) {
+				throw new ConfigurationException("Invalid JSON path expression: [" + jsonPathExpression + "]", e);
+			}
 		}
 	}
 
@@ -289,11 +297,11 @@ public class IfPipe extends AbstractPipe {
 			} catch (Exception ioe) {
 				throw new PipeRunException(this, "error reading message", ioe);
 			}
-		} else if (StringUtils.isNotBlank(jsonPathExpression)) {
+		} else if (jsonPath != null) {
 			// Try to match the jsonPath expression on the given json string
 			try {
 				message.preserve();
-				Object jsonPathResult = JsonPath.read(message.asInputStream(), jsonPathExpression);
+				Object jsonPathResult = jsonPath.read(message.asInputStream());
 
 				// if we get to this point, we have a match (and no PathNotFoundException)
 

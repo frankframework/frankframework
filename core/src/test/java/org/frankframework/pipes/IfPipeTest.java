@@ -206,12 +206,11 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 	@Test
 	void testInvalidJsonPathExpression() throws Exception {
 		pipe.setJsonPathExpression("$[invalid]");
-		configureAndStartPipe();
 
-		PipeRunException pipeRunException = assertThrows(PipeRunException.class, () -> doPipe(pipe, getJsonMessage("invalid"), session));
+		ConfigurationException configurationException = assertThrows(ConfigurationException.class, () -> pipe.configure());
 
-		assertInstanceOf(com.jayway.jsonpath.InvalidPathException.class, pipeRunException.getCause());
-		assertThat(pipeRunException.getMessage(), containsString("error evaluating expression"));
+		assertInstanceOf(com.jayway.jsonpath.InvalidPathException.class, configurationException.getCause());
+		assertThat(configurationException.getMessage(), containsString("Invalid JSON path expression"));
 	}
 
 	@Test
