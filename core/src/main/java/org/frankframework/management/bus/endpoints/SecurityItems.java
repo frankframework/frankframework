@@ -298,10 +298,9 @@ public class SecurityItems extends BusEndpointBase {
 		if (bean instanceof HasKeystore keystoreOwner && StringUtils.isNotEmpty(keystoreOwner.getKeystore())) {
 			return true;
 		}
-		if (bean instanceof HasTruststore truststoreOwner && StringUtils.isNotEmpty(truststoreOwner.getTruststore())) {
-			return true;
-		}
-		return false;
+
+		// If the bean does not have a Keystore it must be a Truststore.
+		return (bean instanceof HasTruststore truststoreOwner && StringUtils.isNotEmpty(truststoreOwner.getTruststore()));
 	}
 
 	private FrankElement extractSender(FrankElement bean) {
