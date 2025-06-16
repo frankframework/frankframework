@@ -303,6 +303,12 @@ public class IfPipe extends AbstractPipe {
 		if (jsonPathResult instanceof String string) {
 			return string;
 		}
+		if (jsonPathResult instanceof Number number) {
+			return number.toString();
+		}
+		if (jsonPathResult instanceof Boolean bool) {
+			return bool.toString();
+		}
 
 		if (jsonPathResult instanceof JSONArray jsonArray
 				&& !jsonArray.isEmpty()) {
