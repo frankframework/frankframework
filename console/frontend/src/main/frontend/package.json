@@ -34,7 +34,7 @@
     "@stomp/stompjs": "^7.1.1",
     "angular2-ladda": "^5.0.0",
     "bootstrap": "3.3.6",
-    "chart.js": "^4.4.9",
+    "chart.js": "^4.5.0",
     "font-awesome": "4.7.0",
     "ladda": "^2.0.3",
     "lodash.merge": "^4.6.2",
