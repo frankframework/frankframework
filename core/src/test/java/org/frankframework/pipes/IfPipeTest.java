@@ -1,7 +1,9 @@
 package org.frankframework.pipes;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.StringReader;
@@ -199,6 +201,27 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 
 		pipeRunResult = doPipe(pipe, getJsonMessage(null), session);
 		assertEquals(PIPE_FORWARD_ELSE, pipeRunResult.getPipeForward().getName());
+	}
+
+	@Test
+	void testInvalidJsonPathExpression() throws Exception {
+		pipe.setJsonPathExpression("$[invalid]");
+
+		ConfigurationException configurationException = assertThrows(ConfigurationException.class, () -> pipe.configure());
+
+		assertInstanceOf(com.jayway.jsonpath.InvalidPathException.class, configurationException.getCause());
+		assertThat(configurationException.getMessage(), containsString("Invalid JSON path expression"));
+	}
+
+	@Test
+	void testInvalidJsonMessage() throws Exception {
+		pipe.setJsonPathExpression("$.invalid");
+		configureAndStartPipe();
+
+		PipeRunException pipeRunException = assertThrows(PipeRunException.class, () -> doPipe(pipe, getJsonMessage("{invalid"), session));
+
+		assertInstanceOf(com.jayway.jsonpath.InvalidJsonException.class, pipeRunException.getCause());
+		assertThat(pipeRunException.getMessage(), containsString("error evaluating expression"));
 	}
 
 	@ParameterizedTest
