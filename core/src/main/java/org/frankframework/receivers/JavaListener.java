@@ -34,7 +34,6 @@ import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.dispatcher.RequestProcessor;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IMessageHandler;
@@ -280,6 +279,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 	/**
 	 * Should the JavaListener throw a ListenerException when it occurs or return an error message.
 	 * Please consider using an {@link ErrorMessageFormatter} instead of disabling Exception from being thrown.
+	 * 
 	 * @ff.default true
 	 */
 	public void setThrowException(boolean throwException) {
