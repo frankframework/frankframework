@@ -281,7 +281,7 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	}
 
 	private ClientRegistration.Builder createAzureBuilder() {
-		if (StringUtils.isBlank(tenantId)) throw new IllegalStateException("when using Azure provider the tentantId property is required");
+		if (StringUtils.isBlank(tenantId)) throw new IllegalStateException("when using Azure provider the tenantId property is required");
 
 		ClientRegistration.Builder builder = ClientRegistration.withRegistrationId("azure");
 		builder.clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
