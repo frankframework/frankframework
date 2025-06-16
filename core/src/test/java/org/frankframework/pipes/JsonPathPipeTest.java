@@ -18,6 +18,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CloseUtils;
@@ -96,7 +97,7 @@ class JsonPathPipeTest {
 		// Act
 		result = pipe.doPipe(input, session);
 
-		// Arrange
+		// Assert
 		assertNotNull(result);
 		assertNotNull(result.getResult());
 
@@ -115,5 +116,20 @@ class JsonPathPipeTest {
 		ConfigurationException e = assertThrows(ConfigurationException.class, pipe::configure);
 
 		assertEquals("jsonPathExpression has to be set", e.getMessage());
+	}
+
+	@Test
+	void testPathEvaluationNoResult() throws ConfigurationException {
+		// Arrange
+		pipe.setJsonPathExpression("$.a");
+		pipe.configure();
+
+		input = Message.asMessage("{k: \"Hello World\"}");
+
+		// Act
+		PipeRunException pipeRunException = assertThrows(PipeRunException.class, () -> pipe.doPipe(input, session));
+
+		// Assert
+		assertEquals("No results for path: $['a']", pipeRunException.getCause().getMessage());
 	}
 }

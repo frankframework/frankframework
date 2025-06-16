@@ -15,7 +15,6 @@
 */
 package org.frankframework.pipes;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -33,7 +32,6 @@ import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.stream.Message;
 import org.frankframework.util.MessageUtils;
-import org.frankframework.util.XmlException;
 
 /**
  * Apply a one-liner JSON path expression to the input to extract a value from input data.
@@ -82,6 +80,8 @@ import org.frankframework.util.XmlException;
  *}</code></pre>
  *         </tr>
  *     </table>
+ *     If the input message does not have a match with the expression, then the Exception Forward path will be taken.
+ *
  * </p>
  */
 @EnterpriseIntegrationPattern(Type.TRANSLATOR)
@@ -105,7 +105,7 @@ public class JsonPathPipe extends FixedForwardPipe {
 			message.preserve();
 			Message jsonMessage = MessageUtils.convertToJsonMessage(message);
 			result = JsonPath.read(jsonMessage.asInputStream(), jsonPathExpression);
-		} catch (IOException | XmlException e) {
+		} catch (Exception e) {
 			throw new PipeRunException(this, "Failed to evaluate json path expression [" + jsonPathExpression + "] on input [" + message + "]", e);
 		}
 
