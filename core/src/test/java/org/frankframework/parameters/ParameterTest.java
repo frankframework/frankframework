@@ -1,5 +1,6 @@
 package org.frankframework.parameters;
 
+import static org.frankframework.testutil.TestAssertions.assertJsonEquals;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -1533,7 +1534,7 @@ public class ParameterTest {
 		// Arrange
 		Parameter parameter = new Parameter();
 		parameter.setName("p1");
-		parameter.setJsonPathExpression(".root.a");
+		parameter.setJsonPathExpression("$.root.a");
 		parameter.setSessionKey("sessionKey");
 		parameter.configure();
 
@@ -1560,7 +1561,7 @@ public class ParameterTest {
 		// Arrange
 		Parameter parameter = new Parameter();
 		parameter.setName("p1");
-		parameter.setJsonPathExpression(".root.a");
+		parameter.setJsonPathExpression("$.root.a");
 		parameter.setSessionKey("sessionKey");
 		parameter.setContextKey("ctx");
 		parameter.configure();
@@ -1589,7 +1590,7 @@ public class ParameterTest {
 		// Arrange
 		Parameter parameter = new Parameter();
 		parameter.setName("p1");
-		parameter.setJsonPathExpression(".root.a");
+		parameter.setJsonPathExpression("$.root.a");
 		parameter.setSessionKey("sessionKey");
 		parameter.setContextKey("ctx");
 		parameter.setValue( """
@@ -1625,7 +1626,7 @@ public class ParameterTest {
 		// Arrange
 		Parameter parameter = new Parameter();
 		parameter.setName("p1");
-		parameter.setJsonPathExpression(".root.a");
+		parameter.setJsonPathExpression("$.root.a");
 		parameter.configure();
 
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
@@ -1646,11 +1647,75 @@ public class ParameterTest {
 	}
 
 	@Test
+	public void testParameterWithJsonPathExpressionValueIsJsonObject() throws Exception {
+		// Arrange
+		Parameter parameter = new Parameter();
+		parameter.setName("p1");
+		parameter.setJsonPathExpression("$.root");
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("""
+				{
+				  "root": {
+				    "a": "v1"
+				  }
+				}
+				""");
+		PipeLineSession session = new PipeLineSession();
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		assertJsonEquals(
+				"""
+						{
+							"a": "v1"
+						}
+						""", result.toString());
+	}
+
+	@Test
+	public void testParameterWithJsonPathExpressionValueIsJsonArray() throws Exception {
+		// Arrange
+		Parameter parameter = new Parameter();
+		parameter.setName("p1");
+		parameter.setJsonPathExpression("$.root");
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("""
+				{
+				  "root": [{
+				    "a": "v1"
+				  }, {
+				    "a": "v2"
+				  }]
+				}
+				""");
+		PipeLineSession session = new PipeLineSession();
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		assertJsonEquals(
+				"""
+						[{
+							"a": "v1"
+						}, {
+							"a": "v2"
+						}]
+						""", result.toString());
+	}
+
+	@Test
 	public void testParameterWithJsonPathExpressionValueFromMessageAndContextKey() throws Exception {
 		// Arrange
 		Parameter parameter = new Parameter();
 		parameter.setName("p1");
-		parameter.setJsonPathExpression(".root.a");
+		parameter.setJsonPathExpression("$.root.a");
 		parameter.setContextKey("ctx");
 		parameter.configure();
 
@@ -1678,7 +1743,7 @@ public class ParameterTest {
 		// Arrange
 		Parameter parameter = new Parameter();
 		parameter.setName("p1");
-		parameter.setJsonPathExpression(".root.a");
+		parameter.setJsonPathExpression("$.root.a");
 		parameter.setSessionKey("sessionKey");
 		parameter.configure();
 
