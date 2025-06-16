@@ -81,6 +81,7 @@ public class IfPipeJsonPathTest extends PipeTestBase<IfPipe> {
 				Arguments.of("{root: ''}", "$.root", "", PIPE_FORWARD_THEN),
 				Arguments.of("{root: 'test'}", "$.root", "", PIPE_FORWARD_THEN),
 				Arguments.of("{root: ''}", "$.root", "test", PIPE_FORWARD_ELSE),
+				Arguments.of("{root: ''}", "$.root", "", PIPE_FORWARD_THEN),
 				Arguments.of("{root: 'test'}", "$.root", "test", PIPE_FORWARD_THEN),
 				Arguments.of("{root: 123}", "$.root", "123", PIPE_FORWARD_THEN),
 				Arguments.of("{root: '123'}", "$.root", "123", PIPE_FORWARD_THEN),
@@ -92,7 +93,8 @@ public class IfPipeJsonPathTest extends PipeTestBase<IfPipe> {
 				Arguments.of(testJson, "$.store.book[1].isbn", "", PIPE_FORWARD_ELSE),
 				Arguments.of(testJson, "$.store.book[1].category", "reference", PIPE_FORWARD_ELSE),
 				Arguments.of(testJson, "$.store.book[?(@.price == 22.99)].author", "J. R. R. Tolkien", PIPE_FORWARD_THEN),
-				Arguments.of(testJson, "$.store.book[?(@.category == 'fiction')]", "", PIPE_FORWARD_THEN)
+				Arguments.of(testJson, "$.store.book[?(@.category == 'fiction')]", "", PIPE_FORWARD_THEN),
+				Arguments.of(testJson, "$.store.book[?(@.category == 'fiction')][0]", "", PIPE_FORWARD_THEN)
 		);
 	}
 
