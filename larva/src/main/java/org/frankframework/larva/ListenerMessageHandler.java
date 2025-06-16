@@ -35,8 +35,8 @@ import org.frankframework.stream.Message;
 
 /**
  * Message handler for JavaListener and WebServiceListener.
- *
- * @author Jaco de Groot
+ * Only used for PushingListeners.
+ * 
  * @author Niels Meijer
  */
 @Log4j2
