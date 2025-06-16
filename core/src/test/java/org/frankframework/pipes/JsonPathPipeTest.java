@@ -1,6 +1,8 @@
 package org.frankframework.pipes;
 
 import static org.frankframework.testutil.TestAssertions.assertJsonEquals;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -43,6 +45,10 @@ class JsonPathPipeTest {
 	}
 
 	static Stream<Arguments> doPipe() {
+		// The arguments are:
+		// - JSON Path Expression
+		// - Expected output
+		// - Input message for thest
 		return Stream.of(
 				arguments(
 						"$.a", "Hello World",
@@ -111,11 +117,19 @@ class JsonPathPipeTest {
 	}
 
 	@Test
-	void testConfigureFails() {
+	void testConfigureFailsNoExpressionSet() {
 
 		ConfigurationException e = assertThrows(ConfigurationException.class, pipe::configure);
 
 		assertEquals("jsonPathExpression has to be set", e.getMessage());
+	}
+
+	@Test
+	void testConfigureFailsInvalidExpressionSet() {
+		pipe.setJsonPathExpression("$[invalid");
+		ConfigurationException e = assertThrows(ConfigurationException.class, pipe::configure);
+
+		assertThat(e.getMessage(), containsString("Invalid JSON Path expression: [$[invalid]"));
 	}
 
 	@Test

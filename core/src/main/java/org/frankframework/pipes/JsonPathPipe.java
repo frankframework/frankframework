@@ -88,12 +88,23 @@ import org.frankframework.util.MessageUtils;
 public class JsonPathPipe extends FixedForwardPipe {
 
 	private @Getter String jsonPathExpression;
+	private JsonPath jsonPath;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (jsonPathExpression == null) {
 			throw new ConfigurationException("jsonPathExpression has to be set");
+		}
+		jsonPath = validateJsonPathExpression(jsonPathExpression);
+	}
+
+	@SuppressWarnings("java:S2147") // Cannot combine catches due to the specific exception inheritance tree
+	private JsonPath validateJsonPathExpression(String jsonPathExpression) throws ConfigurationException {
+		try {
+			return JsonPath.compile(jsonPathExpression);
+		} catch (com.jayway.jsonpath.InvalidPathException e) {
+			throw new ConfigurationException("Invalid JSON Path expression: [" + jsonPathExpression + "]", e);
 		}
 	}
 
@@ -104,7 +115,7 @@ public class JsonPathPipe extends FixedForwardPipe {
 		try {
 			message.preserve();
 			Message jsonMessage = MessageUtils.convertToJsonMessage(message);
-			result = JsonPath.read(jsonMessage.asInputStream(), jsonPathExpression);
+			result = jsonPath.read(jsonMessage.asInputStream());
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Failed to evaluate json path expression [" + jsonPathExpression + "] on input [" + message + "]", e);
 		}
