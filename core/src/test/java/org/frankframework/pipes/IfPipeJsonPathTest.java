@@ -81,14 +81,20 @@ public class IfPipeJsonPathTest extends PipeTestBase<IfPipe> {
 				Arguments.of("{root: ''}", "$.root", "", PIPE_FORWARD_THEN),
 				Arguments.of("{root: 'test'}", "$.root", "", PIPE_FORWARD_THEN),
 				Arguments.of("{root: ''}", "$.root", "test", PIPE_FORWARD_ELSE),
+				Arguments.of("{root: ''}", "$.root", "", PIPE_FORWARD_THEN),
 				Arguments.of("{root: 'test'}", "$.root", "test", PIPE_FORWARD_THEN),
+				Arguments.of("{root: 123}", "$.root", "123", PIPE_FORWARD_THEN),
+				Arguments.of("{root: '123'}", "$.root", "123", PIPE_FORWARD_THEN),
+				Arguments.of("{root: true}", "$.root", "true", PIPE_FORWARD_THEN),
+				Arguments.of("{root: false}", "$.root", "false", PIPE_FORWARD_THEN),
 				Arguments.of("{root: 'test123'}", "$.root", "test", PIPE_FORWARD_ELSE),
 				Arguments.of(testJson, "$.store.book[1].author", "", PIPE_FORWARD_THEN),
 				Arguments.of(testJson, "$.store.book[1].author", "Evelyn Waugh", PIPE_FORWARD_THEN),
 				Arguments.of(testJson, "$.store.book[1].isbn", "", PIPE_FORWARD_ELSE),
 				Arguments.of(testJson, "$.store.book[1].category", "reference", PIPE_FORWARD_ELSE),
 				Arguments.of(testJson, "$.store.book[?(@.price == 22.99)].author", "J. R. R. Tolkien", PIPE_FORWARD_THEN),
-				Arguments.of(testJson, "$.store.book[?(@.category == 'fiction')]", "", PIPE_FORWARD_THEN)
+				Arguments.of(testJson, "$.store.book[?(@.category == 'fiction')]", "", PIPE_FORWARD_THEN),
+				Arguments.of(testJson, "$.store.book[?(@.category == 'fiction')][0]", "", PIPE_FORWARD_THEN)
 		);
 	}
 

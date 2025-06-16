@@ -19,6 +19,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
@@ -147,6 +150,7 @@ public class IfPipe extends AbstractPipe {
 	private @Getter boolean namespaceAware = XmlUtils.isNamespaceAwareByDefault();
 	private TransformerPool transformerPool;
 	private String jsonPathExpression = null;
+	private JsonPath jsonPath;
 	private @Getter String xpathExpression = null;
 	private @Getter String expressionValue = null;
 
@@ -181,6 +185,13 @@ public class IfPipe extends AbstractPipe {
 			transformerPool = TransformerPool.configureTransformer0(this, namespaceDefs, determineXpathExpression(), null,
 					TransformerPool.OutputType.XML, false, getParameterList(), xsltVersion
 			);
+		}
+		if (StringUtils.isNotEmpty(jsonPathExpression)) {
+			try {
+				jsonPath = JsonPath.compile(jsonPathExpression);
+			} catch (Exception e) {
+				throw new ConfigurationException("Invalid JSON path expression: [" + jsonPathExpression + "]", e);
+			}
 		}
 	}
 
@@ -249,7 +260,7 @@ public class IfPipe extends AbstractPipe {
 					return elseForward;
 				}
 
-				// If there's a value, there's a match
+				// If there's a value, there's a match. An empty string is a match against empty input
 				return thenForward;
 			}
 		}
@@ -262,7 +273,16 @@ public class IfPipe extends AbstractPipe {
 		return transformerPool != null || StringUtils.isNotBlank(jsonPathExpression);
 	}
 
-	private String getResultString(Message message, PipeLineSession session) throws PipeRunException {
+	/**
+	 * Evaluate expression to a single scalar value, cast to a String. Returns NULL if the expression did
+	 * not match anything in the input, return an empty string if the expression matched a non-scalar value or empty value.
+	 *
+	 * @param message {@link Message} to match
+	 * @param session {@link PipeLineSession} in which the pipe executes
+	 * @return Expression result. NULL if there was no match.
+	 * @throws PipeRunException If there was any exception in execution.
+	 */
+	private @Nullable String getResultString(Message message, PipeLineSession session) throws PipeRunException {
 		if (xpathExpression != null && transformerPool != null) {
 			try {
 				Map<String, Object> parameterValues = null;
@@ -277,39 +297,53 @@ public class IfPipe extends AbstractPipe {
 			} catch (Exception ioe) {
 				throw new PipeRunException(this, "error reading message", ioe);
 			}
-		} else if (StringUtils.isNotBlank(jsonPathExpression)) {
+		} else if (jsonPath != null) {
 			// Try to match the jsonPath expression on the given json string
 			try {
 				message.preserve();
-				Object jsonPathResult = JsonPath.read(message.asInputStream(), jsonPathExpression);
+				Object jsonPathResult = jsonPath.read(message.asInputStream());
 
 				// if we get to this point, we have a match (and no PathNotFoundException)
 
 				return getJsonPathResult(jsonPathResult);
 			} catch (PathNotFoundException e) {
-				// No results found for path
+				// No results found for path, fall through to the NULL return to indicate nothing was found
 			} catch (IOException ioe) {
 				throw new PipeRunException(this, "error reading message", ioe);
+			} catch (Exception e) {
+				throw new PipeRunException(this, "error evaluating expression", e);
 			}
 		}
 
+		// No match was found
 		return null;
 	}
 
 	/**
 	 * When using expressions, jsonPath returns a JsonArray, even if there is only one match. Make sure to get a String from it.
+	 * If the result is not an array and not a scalar value, then return an empty string. Do not return NULL
+	 * when a result was found.
 	 */
-	private String getJsonPathResult(Object jsonPathResult) {
+	private @Nonnull String getJsonPathResult(@Nonnull Object jsonPathResult) {
 		if (jsonPathResult instanceof String string) {
 			return string;
+		}
+		if (jsonPathResult instanceof Number number) {
+			return number.toString();
+		}
+		if (jsonPathResult instanceof Boolean bool) {
+			return bool.toString();
 		}
 
 		if (jsonPathResult instanceof JSONArray jsonArray
 				&& !jsonArray.isEmpty()) {
-			return jsonArray.get(0).toString();
+			return getJsonPathResult(jsonArray.get(0));
 		}
 
-		return null;
+		// We found something, but it does not have a proper string representation
+		// usable for the IF-pipe.
+		// Do not return NULL because NULL indicates that nothing is found.
+		return "";
 	}
 
 	PipeForward getForwardForStringInput(Message message) throws PipeRunException {
