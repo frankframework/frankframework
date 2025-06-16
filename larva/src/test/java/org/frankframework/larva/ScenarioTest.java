@@ -24,6 +24,7 @@ class ScenarioTest {
 	@Test
 	void getStepsWithReadlineStep() throws IOException {
 		// Arrange
+		// The "L" in readLine / writeLine can now be capitalized optionally.
 		String scenarioSteps = """
 				action.className=org.frankframework.test.TestAction
 				
@@ -32,6 +33,8 @@ class ScenarioTest {
 				step3.action.writeline=outline
 				step4.action.readline=inline
 				step5.action.read=in.txt
+				step6.action.writeLine=outline
+				step7.action.readLine=inline
 				
 				ignore.action.read=ignore.txt
 				""";
@@ -39,28 +42,31 @@ class ScenarioTest {
 		config.setAllowReadlineSteps(false);
 
 		// Act
-		List<String> steps = scenario.getSteps(config);
+		List<Step> steps = scenario.getSteps(config);
 
 		// Assert
-		assertEquals(4, steps.size());
-		assertEquals("step1.action.read", steps.get(0));
-		assertEquals("step2.action.write", steps.get(1));
-		assertEquals("step3.action.writeline", steps.get(2));
-		assertEquals("step5.action.read", steps.get(3));
+		assertEquals(5, steps.size());
+		assertEquals("step1.action.read", steps.get(0).getBaseKey());
+		assertEquals("step2.action.write", steps.get(1).getBaseKey());
+		assertEquals("step3.action.writeline", steps.get(2).getBaseKey());
+		assertEquals("step5.action.read", steps.get(3).getBaseKey());
+		assertEquals("step6.action.writeLine", steps.get(4).getBaseKey());
 
 		// Arrange
 		config.setAllowReadlineSteps(true);
 
 		// Act
-		List<String> steps2 = scenario.getSteps(config);
+		List<Step> steps2 = scenario.getSteps(config);
 
 		// Assert
-		assertEquals(5, steps2.size());
-		assertEquals("step1.action.read", steps2.get(0));
-		assertEquals("step2.action.write", steps2.get(1));
-		assertEquals("step3.action.writeline", steps2.get(2));
-		assertEquals("step4.action.readline", steps2.get(3));
-		assertEquals("step5.action.read", steps2.get(4));
+		assertEquals(7, steps2.size());
+		assertEquals("step1.action.read", steps2.get(0).getBaseKey());
+		assertEquals("step2.action.write", steps2.get(1).getBaseKey());
+		assertEquals("step3.action.writeline", steps2.get(2).getBaseKey());
+		assertEquals("step4.action.readline", steps2.get(3).getBaseKey());
+		assertEquals("step5.action.read", steps2.get(4).getBaseKey());
+		assertEquals("step6.action.writeLine", steps2.get(5).getBaseKey());
+		assertEquals("step7.action.readLine", steps2.get(6).getBaseKey());
 	}
 
 	@Test
@@ -79,7 +85,7 @@ class ScenarioTest {
 	@Test
 	void getStepsStepNrsPrefixedWith0() throws IOException {
 		// Arrange
-		// Steps can now use numbers starting with 0 so all 4 steps returned for this scenario
+		// Steps can now use numbers starting with 0 so all 6 steps returned for this scenario
 		String scenarioSteps = """
 						step01.action.read=in.txt
 						step02.action.write=out.txt
@@ -90,7 +96,7 @@ class ScenarioTest {
 		config.setAllowReadlineSteps(false);
 
 		// Act
-		List<String> steps = scenario.getSteps(config);
+		List<Step> steps = scenario.getSteps(config);
 
 		// Assert
 		assertEquals(3, steps.size());
@@ -114,15 +120,15 @@ class ScenarioTest {
 		Scenario scenario = createScenario(scenarioSteps);
 
 		// Act
-		List<String> steps = scenario.getSteps(config);
+		List<Step> steps = scenario.getSteps(config);
 
 		// Assert
 		assertEquals(5, steps.size());
-		assertEquals("step1.action.read", steps.get(0));
-		assertEquals("step2.action.write", steps.get(1));
-		assertEquals("step3.action.writeline", steps.get(2));
-		assertEquals("step4.action.read", steps.get(3));
-		assertEquals("step5.action.read", steps.get(4));
+		assertEquals("step1.action.read", steps.get(0).getBaseKey());
+		assertEquals("step2.action.write", steps.get(1).getBaseKey());
+		assertEquals("step3.action.writeline", steps.get(2).getBaseKey());
+		assertEquals("step4.action.read", steps.get(3).getBaseKey());
+		assertEquals("step5.action.read", steps.get(4).getBaseKey());
 	}
 
 	@Test
@@ -142,14 +148,14 @@ class ScenarioTest {
 		Scenario scenario = createScenario(scenarioSteps);
 
 		// Act
-		List<String> steps = scenario.getSteps(config);
+		List<Step> steps = scenario.getSteps(config);
 
 		// Assert
 		assertEquals(4, steps.size());
-		assertEquals("step1.action.read", steps.get(0));
-		assertEquals("step2.action.write", steps.get(1));
-		assertEquals("step3.action.writeline", steps.get(2));
-		assertEquals("step5.action.read", steps.get(3));
+		assertEquals("step1.action.read", steps.get(0).getBaseKey());
+		assertEquals("step2.action.write", steps.get(1).getBaseKey());
+		assertEquals("step3.action.writeline", steps.get(2).getBaseKey());
+		assertEquals("step5.action.read", steps.get(3).getBaseKey());
 	}
 
 	private Scenario createScenario(String scenarioSteps) throws IOException {

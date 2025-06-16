@@ -19,7 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
+
+import jakarta.annotation.Nonnull;
 
 import org.springframework.context.ApplicationContext;
 
@@ -47,7 +48,6 @@ import org.frankframework.util.SpringUtils;
 @Log4j2
 public class LarvaActionFactory {
 
-	public static final String CLASS_NAME_PROPERTY_SUFFIX = ".className";
 	private final int defaultTimeout;
 	private final LarvaTool larvaTool;
 	private final TestExecutionObserver testExecutionObserver;
@@ -58,24 +58,17 @@ public class LarvaActionFactory {
 		this.defaultTimeout = larvaTool.getLarvaConfig().getTimeout();
 	}
 
-	public Map<String, LarvaScenarioAction> createLarvaActions(Scenario scenario, ApplicationContext applicationContext, String correlationId) {
+	public @Nonnull Map<String, LarvaScenarioAction> createLarvaActions(Scenario scenario, ApplicationContext applicationContext, String correlationId) {
 		Map<String, LarvaScenarioAction> larvaActions = new HashMap<>();
 		debugMessage("Get all action names");
 
 		try {
 			Properties properties = scenario.getProperties();
-			Set<String> actionNames = properties.stringPropertyNames()
-					.stream()
-					.filter(key -> key.endsWith(CLASS_NAME_PROPERTY_SUFFIX))
-					.map(key -> key.substring(0, key.lastIndexOf(".")))
-					.collect(Collectors.toSet());
+			Set<String> actionNames = scenario.getScenarioActionNames();
 
 			for (String actionName : actionNames) {
 				debugMessage("actionname openaction: " + actionName);
-				String className = properties.getProperty(actionName + CLASS_NAME_PROPERTY_SUFFIX);
-				if ("org.frankframework.jms.JmsListener".equals(className)) {
-					className = "org.frankframework.jms.PullingJmsListener";
-				}
+				String className = scenario.getScenarioActionClassName(actionName);
 
 				IConfigurable configurable = (IConfigurable) SpringUtils.createBean(applicationContext, className);
 				log.debug("created FrankElement [{}]", configurable);
@@ -87,14 +80,15 @@ public class LarvaActionFactory {
 				debugMessage("Opened [" + className + "] '" + actionName + "'");
 			}
 
+			return larvaActions;
 		} catch (Exception e) {
 			log.warn("Error occurred while creating Larva Scenario Actions", e);
 			closeLarvaActions(scenario, larvaActions);
-			larvaActions = null;
 			errorMessage(scenario, e.getClass().getSimpleName() + ": "+e.getMessage(), e);
-		}
 
-		return larvaActions;
+			// We could throw an exception, but returning an empty map is more convenient for the caller.
+			return Map.of();
+		}
 	}
 
 	private static LarvaScenarioAction create(IConfigurable configurable, Properties actionProperties, int defaultTimeout, String correlationId) {

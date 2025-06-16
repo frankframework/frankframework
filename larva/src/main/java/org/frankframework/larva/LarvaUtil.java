@@ -99,7 +99,7 @@ public class LarvaUtil {
 		return properties;
 	}
 
-	public static Message readFile(@Nonnull String fileName) throws IOException {
+	public static Message readFile(@Nonnull String fileName) {
 		Message message = new FileMessage(new File(fileName));
 		final String encoding;
 		if (fileName.endsWith(".utf8") || fileName.endsWith(".json")) {

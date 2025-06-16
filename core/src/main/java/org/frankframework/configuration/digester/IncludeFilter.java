@@ -71,11 +71,11 @@ public class IncludeFilter extends FullXmlFilter {
 					throw new SaxException("Cannot find include ["+ref+"]");
 				}
 				XMLFilterImpl handlerTail = new BodyOnlyFilter(getContentHandler(), false);
-				ContentHandler includeHandler = handlerTail;
+				ContentHandler includeHandler;
 				// the below filters need to be included if the filter is placed higher in the chain
 				// includeHandler = new OnlyActiveFilter(includeHandler, appConstants);
 				// includeHandler = new ElementPropertyResolver(includeHandler, appConstants);
-				includeHandler = new IncludeFilter(includeHandler, subResource);
+				includeHandler = new IncludeFilter(handlerTail, subResource);
 				XMLReader curParent = getParent();
 				try {
 					if (curParent!=null) {

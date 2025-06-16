@@ -176,8 +176,9 @@ public class LarvaHtmlWriter extends LarvaWriter {
 				""";
 		String btn1 = "<a class=\"['" + resultBoxId + "','" + expectedBoxId + "']|indentCompare|" + diffBoxId + "\" href=\"javascript:void(0)\">compare</a>";
 		String btn2 = "<a href='javascript:void(0);' class='" + formName + "|indentWindiff'>windiff</a>";
+		String saveCommand = stepOutputFilename != null ? "<a href='javascript:void(0);' class='" + formName + "|saveResults'>save</a>" : null;
 		writeHtml(logLevel, template.formatted(cssClass, formName, encodeForHtml(stepName),
-				writeCommands(resultBoxId, true, "<a href='javascript:void(0);' class='" + formName + "|saveResults'>save</a>"),
+				writeCommands(resultBoxId, true, saveCommand),
 				encodeForHtml(headerExtra), resultBoxId, encodeForHtml(actualMessage),
 				writeCommands(expectedBoxId, true, null),
 				stepOutputFilename,

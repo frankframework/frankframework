@@ -113,16 +113,16 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 		switch (getAction()) {
 			case SIGN:
 				try {
-					privateKey = PkiUtil.getPrivateKey(this, "Keys for action [" + getAction() + "]");
+					privateKey = PkiUtil.getPrivateKey(this);
 				} catch (EncryptionException e) {
-					throw new LifecycleException(e);
+					throw new LifecycleException("unable to get private key for action [" + getAction() + "]", e);
 				}
 				break;
 			case VERIFY:
 				try {
-					publicKey = PkiUtil.getPublicKey(PkiUtil.keyStoreAsTrustStore(this), "Keys for action [" + getAction() + "]");
+					publicKey = PkiUtil.getPublicKey(PkiUtil.keyStoreAsTrustStore(this));
 				} catch (EncryptionException e) {
-					throw new LifecycleException(e);
+					throw new LifecycleException("unable to get public key for action [" + getAction() + "]", e);
 				}
 				break;
 			default:

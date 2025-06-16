@@ -3,6 +3,7 @@ package org.frankframework.pipes;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -20,6 +21,7 @@ import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.encryption.EncryptionException;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.encryption.PkiUtil;
 import org.frankframework.lifecycle.LifecycleException;
@@ -48,7 +50,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
 		URL pfxURL = ClassLoaderUtils.getResourceURL(pfxCertificate);
 		assertNotNull(pfxURL, "PFX file not found");
-		KeyStore keystore = PkiUtil.createKeyStore(pfxURL, pfxPassword, KeystoreType.PKCS12, "junittest");
+		KeyStore keystore = PkiUtil.createKeyStore(pfxURL, pfxPassword, KeystoreType.PKCS12);
 		KeyManager[] keymanagers = PkiUtil.createKeyManagers(keystore, pfxPassword, null);
 		if (keymanagers==null || keymanagers.length==0) {
 			fail("No keymanager found in PFX file ["+pfxCertificate+"]");
@@ -74,7 +76,7 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
 		pipe.setKeystore("/Signature/certificate.pfx");
 		pipe.setKeystorePassword(pfxPassword);
-		pipe.setKeystoreAlias(alias); //GitHub Actions uses a different X509KeyManager, the first alias is 0 instead of 1;
+		pipe.setKeystoreAlias(alias); // GitHub Actions uses a different X509KeyManager, the first alias is 0 instead of 1;
 		configureAndStartPipe();
 
 		PipeRunResult prr = doPipe(new Message(testMessage));
@@ -108,7 +110,8 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 		pipe.setKeystoreAlias("1");
 
 		LifecycleException e = assertThrows(LifecycleException.class, this::configureAndStartPipe);
-		assertThat(e.getMessage(), Matchers.containsString("Cannot obtain Private Key in alias [1]"));
+		EncryptionException ee = assertInstanceOf(EncryptionException.class, e.getCause());
+		assertThat(ee.getMessage(), Matchers.containsString("cannot obtain Private Key in alias [1] of keystore [/Signature/ks_multipassword.jks]"));
 	}
 
 	@Test

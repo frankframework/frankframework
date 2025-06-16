@@ -1,4 +1,14 @@
-import { Component, ElementRef, EventEmitter, inject, Input, OnChanges, OnInit, Output } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  EventEmitter,
+  inject,
+  Input,
+  isDevMode,
+  OnChanges,
+  OnInit,
+  Output,
+} from '@angular/core';
 import { Dimensions, getFactoryDimensions, initMermaid2Svg, mermaid2svg } from '@frankframework/frank-config-layout';
 
 @Component({
@@ -76,7 +86,12 @@ export class NgMermaidComponent implements OnInit, OnChanges {
 
   private handleError(error: Error): void {
     console.error(error);
-    let errorContainer = '';
+    console.log(`Mermaid flow code:\n${this.nmModel}`);
+    if (!isDevMode()) {
+      this.rootElement.nativeElement.innerHTML = '<span style="font-size: 16px">&otimes;</span>';
+      return;
+    }
+    let errorContainer = '<div style="font-size: 16px">&otimes;</div>';
     errorContainer += `<div style="display: inline-block; text-align: left; color: red; margin: 8px auto; font-family: Monaco,Consolas,Liberation Mono,Courier New,monospace">`;
     for (const v of error.message.split('\n')) {
       errorContainer += `<span>${v}</span><br/>`;

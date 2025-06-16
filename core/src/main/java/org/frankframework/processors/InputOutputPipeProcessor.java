@@ -36,6 +36,7 @@ import org.frankframework.functional.ThrowingFunction;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
+import org.frankframework.stream.MessageContext;
 import org.frankframework.util.CompactSaxHandler;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.RestoreMovedElementsHandler;
@@ -116,7 +117,6 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 				Collectors.joining(",")) + "]";
 	}
 
-	// TODO restore MessageContext#CONTEXT_PREVIOUS_PIPE && MessageContext#CONTEXT_PIPELINE_CALLER
 	private PipeRunResult postProcessPipeResult(IPipe pipe, PipeLineSession pipeLineSession, PipeRunResult pipeRunResult, Message originalMessage) throws PipeRunException {
 		if (pipe.isRestoreMovedElements()) {
 			processRestoreMovedElements(pipe, pipeLineSession, pipeRunResult);
@@ -208,6 +208,9 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 			XmlUtils.parseXml(inputSource, handler);
 
 			Message compactedResult = messageBuilder.build();
+
+			// restore MessageContext#CONTEXT_PREVIOUS_PIPE
+			compactedResult.getContext().put(MessageContext.CONTEXT_PREVIOUS_PIPE, pipe.getName());
 			compactedResult.closeOnCloseOf(pipeLineSession);
 			pipeRunResult.setResult(compactedResult);
 		} catch (IOException | SAXException e) {
@@ -235,6 +238,9 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 			XmlUtils.parseXml(inputSource, handler);
 
 			Message restoredResult = messageBuilder.build();
+
+			// restore MessageContext#CONTEXT_PREVIOUS_PIPE
+			restoredResult.getContext().put(MessageContext.CONTEXT_PREVIOUS_PIPE, pipe.getName());
 			restoredResult.closeOnCloseOf(pipeLineSession);
 			pipeRunResult.setResult(restoredResult);
 		} catch (SAXException | IOException e) {
