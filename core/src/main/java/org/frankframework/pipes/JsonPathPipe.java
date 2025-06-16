@@ -18,6 +18,7 @@ package org.frankframework.pipes;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.jayway.jsonpath.InvalidPathException;
 import com.jayway.jsonpath.JsonPath;
 
 import lombok.Getter;
@@ -49,39 +50,38 @@ import org.frankframework.util.MessageUtils;
  *         <tr>
  *             <td>{@code $.a}</td>
  *             <td>
- *                <pre><code> {
+ *                <pre>{@code {
  *   "a": "Hello World"
- *}</code></pre>
+ * } }</pre>
  *             </td>
  *             <td>String with value {@code Hello World}</td>
  *         </tr>
  *         <tr>
  *             <td>{@code $.*.a}</td>
  *             <td>
- *                 <pre><code> {
+ *                 <pre>{@code {
  *   "k1": {"a": 1},
  *   "k2": {"a": 2}
- *}</code></pre>
+ * } }</pre>
  *             </td>
  *             <td>JSON Array with value <pre>{@code [1, 2]}</pre></td>
  *         </tr>
  *         <tr>
  *             <td>{@code $.a}</td>
  *             <td>
- *                 <pre><code> {
+ *                 <pre>{@code {
  *   "a": {
  *     "Hello": "World"
  *   }
- *}</code></pre>
+ * } }</pre>
  *             </td>
  *             <td>JSON Object with value
- *             <pre><code> {
+ *             <pre>{@code {
  *   "Hello": "World"
- *}</code></pre>
+ * } }</pre>
  *         </tr>
  *     </table>
  *     If the input message does not have a match with the expression, then the Exception Forward path will be taken.
- *
  * </p>
  */
 @EnterpriseIntegrationPattern(Type.TRANSLATOR)
@@ -96,14 +96,9 @@ public class JsonPathPipe extends FixedForwardPipe {
 		if (jsonPathExpression == null) {
 			throw new ConfigurationException("jsonPathExpression has to be set");
 		}
-		jsonPath = validateJsonPathExpression(jsonPathExpression);
-	}
-
-	@SuppressWarnings("java:S2147") // Cannot combine catches due to the specific exception inheritance tree
-	private JsonPath validateJsonPathExpression(String jsonPathExpression) throws ConfigurationException {
 		try {
-			return JsonPath.compile(jsonPathExpression);
-		} catch (com.jayway.jsonpath.InvalidPathException e) {
+			jsonPath = JsonPath.compile(jsonPathExpression);
+		} catch (InvalidPathException e) {
 			throw new ConfigurationException("Invalid JSON Path expression: [" + jsonPathExpression + "]", e);
 		}
 	}
