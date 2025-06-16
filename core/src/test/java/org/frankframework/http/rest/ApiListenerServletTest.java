@@ -99,6 +99,7 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IListener;
 import org.frankframework.core.IMessageHandler;
+import org.frankframework.core.IPushingListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.encryption.KeystoreType;
@@ -2383,7 +2384,7 @@ public class ApiListenerServletTest {
 		}
 
 		@Override
-		public Message processRequest(IListener<Message> origin, RawMessageWrapper<Message> rawMessage, Message message, PipeLineSession context) throws ListenerException {
+		public Message processRequest(IPushingListener<Message> origin, RawMessageWrapper<Message> rawMessage, Message message, PipeLineSession context) throws ListenerException {
 			assertNotNull(message, "input message may not be null");
 
 			handlerInvoked = true;

@@ -34,6 +34,7 @@ import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.dispatcher.RequestProcessor;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IMessageHandler;
@@ -44,6 +45,7 @@ import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.Mandatory;
+import org.frankframework.errormessageformatters.ErrorMessageFormatter;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.senders.IbisJavaSender;
 import org.frankframework.senders.IbisLocalSender;
@@ -128,8 +130,9 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 		return new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
 	}
 
-	@SuppressWarnings("unchecked")
+	// ### RequestProcessor
 	@Override
+	@SuppressWarnings("unchecked")
 	public String processRequest(String correlationId, String rawMessage, HashMap context) throws ListenerException {
 		try (PipeLineSession processContext = new PipeLineSession()) {
 			if (context != null) {
@@ -138,7 +141,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 			processContext.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 			try (Message message = new Message(rawMessage);
 				Message result = processRequest(new MessageWrapper<>(message, null, correlationId), processContext)) {
-					return result.asString();
+				return result.asString();
 			} finally {
 				if (context != null) {
 					context.putAll(processContext);
@@ -153,6 +156,7 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 		}
 	}
 
+	// ### ServiceClient
 	@Override
 	public Message processRequest(Message message, @Nonnull PipeLineSession session) throws ListenerException {
 		MessageWrapper<M> messageWrapper = new MessageWrapper<>(message, session.getMessageId(), session.getCorrelationId());
@@ -169,18 +173,17 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 
 		try (PipeLineSession session = new PipeLineSession(parentSession)) {
 			Message message = messageWrapper.getMessage();
+
 			try {
+				return handler.processRequest(this, messageWrapper, message, session);
+			} catch (ListenerException e) {
 				if (throwException) {
-					return handler.processRequest(this, messageWrapper, message, session);
-				} else {
-					try {
-						return handler.processRequest(this, messageWrapper, message, session);
-					} catch (ListenerException e) {
-						// Message with error contains a String so does not need to be preserved.
-						// (Trying to preserve means dealing with extra IOException for which there is no reason here)
-						return formatExceptionUsingErrorMessageFormatter(session, message, e);
-					}
+					throw e;
 				}
+
+				// Message with error contains a String so does not need to be preserved.
+				// (Trying to preserve means dealing with extra IOException for which there is no reason here)
+				return formatExceptionUsingErrorMessageFormatter(session, message, e);
 			} finally {
 				session.unscheduleCloseOnSessionExit(message); // The input message should not be managed by this PipelineSession but rather the method invoker
 				session.mergeToParentSession(getReturnedSessionKeys(), parentSession);
@@ -275,7 +278,8 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 	}
 
 	/**
-	 * Should the JavaListener throw a ListenerException when it occurs or return an error message
+	 * Should the JavaListener throw a ListenerException when it occurs or return an error message.
+	 * Please consider using an {@link ErrorMessageFormatter} instead of disabling Exception from being thrown.
 	 * @ff.default true
 	 */
 	public void setThrowException(boolean throwException) {

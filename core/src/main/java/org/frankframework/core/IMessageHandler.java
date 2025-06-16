@@ -30,12 +30,15 @@ public interface IMessageHandler<M> {
 
 	/**
 	 * Will use listener to perform {@link IListener#extractMessage} and {@link IListener#afterMessageProcessed}
+	 * TODO Shouldn't this be a IPullingListener?
+	 * TOOD Move {@link IListener#extractMessage} and {@link IListener#afterMessageProcessed} to {@link IPullingListener}.
 	 */
 	void processRawMessage(IListener<M> origin, RawMessageWrapper<M> message, PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException;
 
 	/**
-	 * Alternative to functions above, will NOT use {@link IListener#extractMessage}. Used by PushingListeners.
+	 * Alternative to functions above, will NOT use {@link IListener#extractMessage}.
+	 * TODO Remove pointless `RawMessage` wrapping and unwrapping.
 	 */
-	Message processRequest(IListener<M> origin, RawMessageWrapper<M> rawMessage, Message message, PipeLineSession session) throws ListenerException;
+	Message processRequest(IPushingListener<M> origin, RawMessageWrapper<M> rawMessage, Message message, PipeLineSession session) throws ListenerException;
 
 }

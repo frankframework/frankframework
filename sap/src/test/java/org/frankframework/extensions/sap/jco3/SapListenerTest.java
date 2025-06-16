@@ -29,6 +29,7 @@ import org.mockito.ArgumentCaptor;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IListener;
+import org.frankframework.core.IPushingListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
@@ -134,7 +135,7 @@ public class SapListenerTest {
 		doReturn(mock(IDocXMLProcessor.class)).when(listener).getIDocXMLProcessor();
 
 		ArgumentCaptor<RawMessageWrapper> messageCaptor = ArgumentCaptor.forClass(RawMessageWrapper.class);
-		doReturn(mock(Message.class)).when(receiver).processRequest(any(IListener.class), messageCaptor.capture(), any(Message.class), any(PipeLineSession.class));
+		doReturn(mock(Message.class)).when(receiver).processRequest(any(IPushingListener.class), messageCaptor.capture(), any(Message.class), any(PipeLineSession.class));
 
 		assertDoesNotThrow(() -> listener.configure());
 		assertDoesNotThrow(() -> listener.handleRequest(mock(JCoServerContext.class), documentList));

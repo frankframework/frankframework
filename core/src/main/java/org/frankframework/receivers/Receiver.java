@@ -1027,7 +1027,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * </p>
 	 */
 	@Override
-	public Message processRequest(IListener<M> origin, @Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Message message, @Nonnull PipeLineSession session) throws ListenerException {
+	public Message processRequest(IPushingListener<M> origin, @Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Message message, @Nonnull PipeLineSession session) throws ListenerException {
 		Objects.requireNonNull(session, "Session can not be null");
 		try (final CloseableThreadContext.Instance ignored = getLoggingContext(getListener(), session)) {
 			if (origin!=getListener()) {
