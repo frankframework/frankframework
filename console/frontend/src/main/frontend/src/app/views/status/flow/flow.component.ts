@@ -72,6 +72,7 @@ export class FlowComponent implements OnChanges {
     const modalReference = this.modalService.open(FlowModalComponent, {
       windowClass: 'mermaidFlow',
     });
+    modalReference.componentInstance.flow = xhr?.body ?? '';
     modalReference.componentInstance.flow = xhr?.body;
     modalReference.componentInstance.flowName = this.adapter?.name ?? 'Configuration';
     setTimeout(() => {
