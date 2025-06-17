@@ -10,7 +10,6 @@ import { Component, Input, OnInit } from '@angular/core';
 import { debounceTime, filter } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
-import { error } from '@angular/compiler-cli/src/transformers/util';
 
 @Component({
   selector: 'app-file-viewer',

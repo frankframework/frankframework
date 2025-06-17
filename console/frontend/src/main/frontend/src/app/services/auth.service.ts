@@ -11,35 +11,20 @@ import {
   Links,
 } from '../views/security-items/security-items.service';
 
+type AllowedLinks = Pick<Link, 'name'> & Partial<Link>;
+
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
   private loggedIn = false;
   private allowedRoles: string[] = [];
-  private allowedLinks: Link[] = [];
+  private allowedLinks: AllowedLinks[] = [];
 
   private readonly appService: AppService = inject(AppService);
   private readonly http: HttpClient = inject(HttpClient);
   private readonly securityItemsService: SecurityItemsService = inject(SecurityItemsService);
-  private readonly onErrorAllowedLinks: Link[] = [
-    {
-      name: 'getFileContent',
-      rel: 'logging',
-      description: 'view or download a (log)file',
-      href: 'http://localhost:8080/iaf-test/iaf/api/file-viewer',
-      type: 'GET',
-      roles: ['IbisObserver', 'IbisDataAdmin', 'IbisAdmin', 'IbisTester'],
-    },
-    {
-      name: 'getLogDirectory',
-      rel: 'logging',
-      description: 'view files/folders inside the log directory',
-      href: 'http://localhost:8080/iaf-test/iaf/api/logging',
-      type: 'GET',
-      roles: ['IbisObserver', 'IbisDataAdmin', 'IbisAdmin', 'IbisTester'],
-    },
-  ];
+  private readonly onErrorAllowedLinks: AllowedLinks[] = [{ name: 'getFileContent' }, { name: 'getLogDirectory' }];
 
   /* Currently not being used because servlet handles basic auth */
   /* login(username: string, password: string): void {
