@@ -1,7 +1,7 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { AppService, ServerErrorResponse } from 'src/app/app.service';
+import { AppService } from 'src/app/app.service';
 
 interface stackTrace {
   className: string;
@@ -41,7 +41,7 @@ export class ErrorComponent implements OnInit, OnDestroy {
   }
 
   cooldown(httpCode: number, error: string, stackTrace?: stackTrace[]): void {
-    if (httpCode < 400 && httpCode >= 502) this.router.navigate(['/status']);
+    if (httpCode < 400 || httpCode > 502) this.router.navigate(['/status']);
 
     this.cooldownCounter = 60;
     this.appService.updateStartupError(error);
@@ -58,9 +58,7 @@ export class ErrorComponent implements OnInit, OnDestroy {
 
   checkState(): void {
     this.appService.getServerHealth().subscribe({
-      next: () => {
-        this.router.navigate(['/status']);
-      },
+      next: () => this.router.navigate(['/status']),
       error: (response: HttpErrorResponse) => {
         try {
           const errorResponse: ServerError = JSON.parse(response.error);
