@@ -101,6 +101,6 @@ export class NgMermaidComponent implements OnInit, OnChanges {
       errorContainer += `<span>${v}</span><br/>`;
     }
     errorContainer += `</div>`;
-    this.rootElement.innerHTML += errorContainer;
+    this.rootElement.innerHTML = errorContainer;
   }
 }
