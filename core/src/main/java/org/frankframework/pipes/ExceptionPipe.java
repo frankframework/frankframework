@@ -16,17 +16,20 @@
 package org.frankframework.pipes;
 
 import java.io.IOException;
+import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
+import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
+import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 
 /**
@@ -42,27 +45,40 @@ public class ExceptionPipe extends AbstractPipe {
 
 	private boolean throwException = true;
 	private PipeForward successForward;
+	private boolean copyParametersToSession = false;
 
 	@Override
 	public void configure() throws ConfigurationException {
+		parameterNamesMustBeUnique = true;
 		super.configure();
 		successForward = findForward(PipeForward.SUCCESS_FORWARD_NAME);
 	}
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
+		ParameterValueList pvl;
+		try {
+			pvl = getParameterList().getValues(message, session);
+		} catch (ParameterException e) {
+			throw new PipeRunException(this, "Cannot Evaluate Parameters, e");
+		}
+		Map<String, Object> parameterValues = pvl.getValueMap();
+
 		String errorMessage;
 		try {
 			errorMessage = message.asString();
 		} catch (IOException e) {
-			throw new PipeRunException(this, "cannot open stream", e);
+			throw new PipeRunException(this, "cannot open stream", parameterValues, e);
 		}
 		if (StringUtils.isEmpty(errorMessage)) {
 			errorMessage="exception: "+getName();
 		}
 
+		if (copyParametersToSession) {
+			session.putAll(parameterValues);
+		}
 		if (isThrowException()) {
-			throw new PipeRunException(this, errorMessage);
+			throw new PipeRunException(this, errorMessage, parameterValues, null);
 		}
 		log.error(errorMessage);
 
@@ -83,4 +99,13 @@ public class ExceptionPipe extends AbstractPipe {
 		return throwException;
 	}
 
+	/**
+	 * If {@code true} all parameters are copied to the session so that it is easier for an {@link org.frankframework.errormessageformatters.ErrorMessageFormatter}
+	 * on the {@link org.frankframework.core.Adapter} to pick up the values.
+	 *
+	 * @ff.default false
+	 */
+	public void setCopyParametersToSession(boolean copyParametersToSession) {
+		this.copyParametersToSession = copyParametersToSession;
+	}
 }

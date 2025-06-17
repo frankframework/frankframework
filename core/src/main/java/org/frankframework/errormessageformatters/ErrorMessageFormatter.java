@@ -17,7 +17,9 @@ package org.frankframework.errormessageformatters;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.util.Collection;
 import java.util.Date;
+import java.util.Map;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -33,6 +35,8 @@ import org.frankframework.core.HasName;
 import org.frankframework.core.IErrorMessageFormatter;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeRunException;
+import org.frankframework.documentbuilder.ArrayBuilder;
 import org.frankframework.documentbuilder.DocumentBuilderFactory;
 import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.documentbuilder.IDocumentBuilder;
@@ -84,6 +88,12 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		if (t != null) {
 			details = ExceptionUtils.getStackTrace(t);
 		}
+		Map<String, Object> exceptionParams;
+		if (t instanceof PipeRunException pre) {
+			exceptionParams = pre.getParameters();
+		} else {
+			exceptionParams = Map.of();
+		}
 		String prefix = location != null ? ClassUtils.nameOf(location) : null;
 		String messageId = session.getMessageId();
 		String correlationId = session.getCorrelationId();
@@ -121,6 +131,20 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 
 			if (StringUtils.isNotEmpty(details)) {
 				errorObject.add("details", XmlEncodingUtils.replaceNonValidXmlCharacters(details));
+			}
+			if (!exceptionParams.isEmpty()) {
+				ArrayBuilder paramsObject = errorObject.addArrayField("params", "param");
+				Collection<Map.Entry<String, Object>> entries = exceptionParams.entrySet()
+						.stream()
+						.sorted(Map.Entry.comparingByKey())
+						.toList();
+				for (Map.Entry<String, Object> entry : entries) {
+					ObjectBuilder param = paramsObject.addObjectElement();
+					param.addAttribute("name", entry.getKey());
+					param.addAttribute("value", entry.getValue().toString());
+					param.close();
+				}
+				paramsObject.close();
 			}
 
 			INodeBuilder nodeBuilder = errorObject.addField(PipeLineSession.ORIGINAL_MESSAGE_KEY);
