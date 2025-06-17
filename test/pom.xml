@@ -478,6 +478,12 @@
 					<version>${rabbitmq.jms.version}</version>
 					<scope>runtime</scope>
 				</dependency>
+				<dependency>
+					<groupId>org.jboss.logging</groupId>
+					<artifactId>jboss-logging</artifactId>
+					<version>${jboss-logging.version}</version>
+					<scope>runtime</scope>
+				</dependency>
 			</dependencies>
 		</profile>
 		<profile>

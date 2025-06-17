@@ -1870,7 +1870,7 @@
  &lt;li&gt;SOAP protocol is stored under a session key 'soapProtocol'&lt;/li&gt;
  &lt;li&gt;SOAP action is stored under a session key 'SOAPAction'&lt;/li&gt;
  &lt;/ul&gt;
- and for each response a multipart message is constructed if a 'multipart'-XML is provided in sessionKey specified by multipartXmlSessionKey.</xs:documentation>
+ and for each response a multipart message is constructed if a 'multipart'-XML is provided in sessionKey specified by &lt;code&gt;multipartXmlSessionKey&lt;/code&gt;.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -2300,6 +2300,7 @@
     <xs:attribute ref="replySoapAction" />
     <xs:attribute ref="soapHeaderSessionKey" />
     <xs:attribute ref="messageClass" />
+    <xs:attribute ref="jndiContextPrefix" />
     <xs:attribute ref="destinationType" />
     <xs:attribute ref="acknowledgeMode" />
     <xs:attribute ref="subscriberType" />
@@ -2322,6 +2323,11 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="lookupDestination" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The name of this FrankElement</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attributeGroup ref="JndiBaseDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:group name="AbstractJmsListenerDeclaredChildGroup">
@@ -2371,6 +2377,7 @@
   </xs:complexType>
   <xs:attributeGroup name="JMSFacadeDeclaredAttributeGroup">
     <xs:attribute ref="messageClass" />
+    <xs:attribute ref="jndiContextPrefix" />
     <xs:attribute name="destinationName" type="xs:string">
       <xs:annotation>
         <xs:documentation>Name of the JMS destination (queue or topic) to use</xs:documentation>
@@ -2398,6 +2405,11 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="lookupDestination" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The name of this FrankElement</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="JMSFacadeCumulativeAttributeGroup">
     <xs:attributeGroup ref="JMSFacadeDeclaredAttributeGroup" />
@@ -2408,58 +2420,24 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jndi.JndiBase" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="JndiBaseDeclaredAttributeGroup">
-    <xs:attribute name="authentication" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>maps to the field context.security_authentication</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="credentials" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>username to connect to context, maps to context.security_credentials</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="initialContextFactoryName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>class to use as initial context factory</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:attribute ref="authentication" />
+    <xs:attribute ref="credentials" />
+    <xs:attribute ref="initialContextFactoryName" />
     <xs:attribute name="providerURL" type="xs:string">
       <xs:annotation>
         <xs:documentation>Sets the value of providerURL</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="securityProtocol" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>maps to the field context.security_protocol</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="urlPkgPrefixes" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>maps to the field context.url_pkg_prefixes</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:attribute ref="securityProtocol" />
+    <xs:attribute ref="urlPkgPrefixes" />
     <xs:attribute name="jmsRealm" type="xs:string">
       <xs:annotation>
         <xs:documentation>loads JNDI (and other) properties from a JmsRealm</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="principal" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>username to connect to context, maps to context.security_principal</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="jndiAuthAlias" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>authentication alias, may be used to override principal and credential-settings</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="jndiContextPrefix" type="xs:string" />
-    <xs:attribute name="jndiProperties" type="xs:string" />
-    <xs:attribute name="name" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Name of the sender or the listener</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
+    <xs:attribute ref="principal" />
+    <xs:attribute ref="jndiAuthAlias" />
+    <xs:attribute ref="jndiProperties" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -2494,6 +2472,7 @@
     <xs:attributeGroup ref="PushingJmsListenerDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractJmsListenerDeclaredAttributeGroup" />
     <xs:attribute ref="messageClass" />
+    <xs:attribute ref="jndiContextPrefix" />
     <xs:attribute ref="destinationType" />
     <xs:attribute ref="acknowledgeMode" />
     <xs:attribute ref="subscriberType" />
@@ -2516,6 +2495,11 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="lookupDestination" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The name of this FrankElement</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attributeGroup ref="JndiBaseDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="ExchangeMailListenerType">
@@ -3305,7 +3289,7 @@
         <xs:documentation>character encoding of received messages Default: UTF-8</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="resourceName" />
+    <xs:attribute ref="resourceName" use="required" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -3686,6 +3670,12 @@
       <xs:annotation>
         <xs:documentation>The address to listen to, e.g the part &amp;lt;address&amp;gt; in https://mydomain.com/ibis4something/services/&amp;lt;address&amp;gt;,
  where mydomain.com and ibis4something refer to 'your ibis'.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="soapAction" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>SOAP Action to listen to. Requests sent to `/servlet/rpcrouter` which matches the soapAction will be processed by this listener.
+ This is slightly different from the namespaceURI which routes messages based on the first element's namespace.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="mtomEnabled" type="frankBoolean">
@@ -7392,7 +7382,7 @@
  &lt;/p&gt;
  &lt;p&gt;
  Failure to ensure the output is a string may mean the result will look like &lt;code&gt;[Object object]&lt;/code&gt;.
- &lt;/p&gt;</xs:documentation>
+ &lt;/p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;J2V8 is not compatible with ARM based environments.&lt;/p&gt;&lt;br&gt;&lt;b&gt;WARNING&lt;/b&gt;&lt;p&gt;The default Javascript runtime has been changed from J2V8 to GraalJS.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -10013,10 +10003,24 @@
         <xs:documentation>(Only used when &lt;code&gt;operation=search/deepsearch&lt;/code&gt;) when &lt;code&gt;true&lt;/code&gt; the xml '&amp;lt;ldapresult&amp;gt;object not found&amp;lt;/ldapresult&amp;gt;' is returned instead of the PartialResultException 'unprocessed continuation reference(s)' Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>name of the sender</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="LdapSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="LdapSenderDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="JndiBaseDeclaredAttributeGroup" />
+    <xs:attribute ref="authentication" />
+    <xs:attribute ref="credentials" />
+    <xs:attribute ref="initialContextFactoryName" />
+    <xs:attribute ref="securityProtocol" />
+    <xs:attribute ref="urlPkgPrefixes" />
+    <xs:attribute ref="principal" />
+    <xs:attribute ref="jndiAuthAlias" />
+    <xs:attribute ref="jndiProperties" />
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
   <xs:complexType name="LocalFileSystemSenderType">
     <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
@@ -10189,7 +10193,7 @@
         <xs:documentation>Collection to act upon. Can be overridden by parameter &lt;code&gt;collection&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="action">
+    <xs:attribute name="action" use="required">
       <xs:annotation>
         <xs:documentation>Action</xs:documentation>
       </xs:annotation>
@@ -10262,7 +10266,7 @@
         <xs:documentation>character encoding of received messages Default: UTF-8</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="resourceName" />
+    <xs:attribute ref="resourceName" use="required" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -13025,6 +13029,64 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="JsonPathPipe">
+        <xs:annotation>
+          <xs:documentation>Apply a one-liner JSON path expression to the input to extract a value from input data.
+ If the input is in XML format, it will be converted to JSON using the same method as the org.frankframework.align.Xml2Json pipe.
+ Depending on the result of the expression, this pipe can return a string value or JSON value.
+
+ &lt;h3&gt;Examples&lt;/h3&gt;
+ &lt;p&gt;
+     &lt;table&gt;
+         &lt;tr&gt;
+             &lt;th&gt;JSON Path Expression&lt;/th&gt;
+             &lt;th&gt;Input Message&lt;/th&gt;
+             &lt;th&gt;Output&lt;/th&gt;
+         &lt;/tr&gt;
+         &lt;tr&gt;
+             &lt;td&gt;&lt;code&gt;$.a&lt;/code&gt;&lt;/td&gt;
+             &lt;td&gt;
+                &lt;pre&gt;&lt;code&gt; {
+   "a": "Hello World"
+ }&lt;/code&gt;&lt;/pre&gt;
+             &lt;/td&gt;
+             &lt;td&gt;String with value &lt;code&gt;Hello World&lt;/code&gt;&lt;/td&gt;
+         &lt;/tr&gt;
+         &lt;tr&gt;
+             &lt;td&gt;&lt;code&gt;$.*.a&lt;/code&gt;&lt;/td&gt;
+             &lt;td&gt;
+                 &lt;pre&gt;&lt;code&gt; {
+   "k1": {"a": 1},
+   "k2": {"a": 2}
+ }&lt;/code&gt;&lt;/pre&gt;
+             &lt;/td&gt;
+             &lt;td&gt;JSON Array with value &lt;pre&gt;&lt;code&gt;[1, 2]&lt;/code&gt;&lt;/pre&gt;&lt;/td&gt;
+         &lt;/tr&gt;
+         &lt;tr&gt;
+             &lt;td&gt;&lt;code&gt;$.a&lt;/code&gt;&lt;/td&gt;
+             &lt;td&gt;
+                 &lt;pre&gt;&lt;code&gt; {
+   "a": {
+     "Hello": "World"
+   }
+ }&lt;/code&gt;&lt;/pre&gt;
+             &lt;/td&gt;
+             &lt;td&gt;JSON Object with value
+             &lt;pre&gt;&lt;code&gt; {
+   "Hello": "World"
+ }&lt;/code&gt;&lt;/pre&gt;
+         &lt;/tr&gt;
+     &lt;/table&gt;
+ &lt;/p&gt;</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="JsonPathPipeType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="JsonPipe">
         <xs:annotation>
           <xs:documentation>JSON is not aware of the element order. This pipe performs a &lt;strong&gt;best effort&lt;/strong&gt; JSON to XML transformation.
@@ -15108,6 +15170,18 @@
   <xs:attributeGroup name="IsXmlPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="IsXmlPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="JsonPathPipeType">
+    <xs:group ref="AbstractPipeDeclaredChildGroup" />
+    <xs:attributeGroup ref="JsonPathPipeCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.JsonPathPipe" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="JsonPathPipeDeclaredAttributeGroup">
+    <xs:attribute name="jsonPathExpression" type="xs:string" use="required" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="JsonPathPipeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="JsonPathPipeDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="JsonPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
@@ -18866,6 +18940,7 @@
       <xs:union memberTypes="MessageClassAttributeValuesType variableRef" />
     </xs:simpleType>
   </xs:attribute>
+  <xs:attribute name="jndiContextPrefix" type="xs:string" />
   <xs:attribute name="destinationType">
     <xs:annotation>
       <xs:documentation>Type of the messageing destination.
@@ -18937,6 +19012,42 @@
       <xs:documentation>If set &lt;code&gt;false&lt;/code&gt;, the destinationName is used directly instead of performing a JNDI lookup Default: true</xs:documentation>
     </xs:annotation>
   </xs:attribute>
+  <xs:attribute name="authentication" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>maps to the field context.security_authentication</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="credentials" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>username to connect to context, maps to context.security_credentials</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="initialContextFactoryName" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>class to use as initial context factory</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="securityProtocol" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>maps to the field context.security_protocol</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="urlPkgPrefixes" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>maps to the field context.url_pkg_prefixes</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="principal" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>username to connect to context, maps to context.security_principal</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="jndiAuthAlias" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>authentication alias, may be used to override principal and credential-settings</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="jndiProperties" type="xs:string" />
   <xs:attribute name="peekUntransacted" type="frankBoolean">
     <xs:annotation>
       <xs:documentation>when true, then PollingListener container will execute getRawMessage() only when hasRawMessageAvailable() has returned true. This avoids rolling back a lot of XA transactions, that appears to be problematic on MS SQL Server Default: true</xs:documentation>
@@ -18989,7 +19100,11 @@
       <xs:documentation>see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#MqttClient-java.lang.String-java.lang.String-org.eclipse.paho.client.mqttv3.MqttClientPersistence-" target="_blank"&gt;MqttClient(java.lang.String serverURI, java.lang.String clientId, MqttClientPersistence persistence)&lt;/a&gt; Default: 2</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="resourceName" type="xs:string" />
+  <xs:attribute name="resourceName" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Name of the MqttClientSettings configuration in the `resources.yml`.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
   <xs:attribute name="correlationIdFieldIndex" type="frankInt">
     <xs:annotation>
       <xs:documentation>Index of the field in the ImportParameterList of the RFC function that contains the correlationId Default: 0</xs:documentation>
