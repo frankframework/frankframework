@@ -88,12 +88,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		if (t != null) {
 			details = ExceptionUtils.getStackTrace(t);
 		}
-		Map<String, Object> exceptionParams;
-		if (t instanceof PipeRunException pre) {
-			exceptionParams = pre.getParameters();
-		} else {
-			exceptionParams = Map.of();
-		}
+		Map<String, Object> exceptionParams = getPipeRunExceptionParams(t);
 		String prefix = location != null ? ClassUtils.nameOf(location) : null;
 		String messageId = session.getMessageId();
 		String correlationId = session.getCorrelationId();
@@ -122,30 +117,12 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 			errorObject.addAttribute("originator", originator);
 			errorObject.addAttribute("message", XmlEncodingUtils.replaceNonValidXmlCharacters(errorMessage));
 
-			if (location != null) {
-				ObjectBuilder locationObject = errorObject.addObjectField("location");
-				locationObject.addAttribute("class", location.getClass().getName());
-				locationObject.addAttribute("name", location.getName());
-				locationObject.close();
-			}
+			addLocation(location, errorObject);
 
 			if (StringUtils.isNotEmpty(details)) {
 				errorObject.add("details", XmlEncodingUtils.replaceNonValidXmlCharacters(details));
 			}
-			if (!exceptionParams.isEmpty()) {
-				ArrayBuilder paramsObject = errorObject.addArrayField("params", "param");
-				Collection<Map.Entry<String, Object>> entries = exceptionParams.entrySet()
-						.stream()
-						.sorted(Map.Entry.comparingByKey())
-						.toList();
-				for (Map.Entry<String, Object> entry : entries) {
-					ObjectBuilder param = paramsObject.addObjectElement();
-					param.addAttribute("name", entry.getKey());
-					param.addAttribute("value", entry.getValue().toString());
-					param.close();
-				}
-				paramsObject.close();
-			}
+			addParams(exceptionParams, errorObject);
 
 			INodeBuilder nodeBuilder = errorObject.addField(PipeLineSession.ORIGINAL_MESSAGE_KEY);
 			ObjectBuilder originalMessageObject = nodeBuilder.startObject();
@@ -174,6 +151,46 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 				e.addSuppressed(t);
 			}
 			throw new FormatterException("Cannot create formatted error message for error [" + errorMessage + "]", e);
+		}
+	}
+
+	private static void addParams(Map<String, Object> exceptionParams, ObjectBuilder errorObject) throws SAXException {
+		if (!exceptionParams.isEmpty()) {
+			ArrayBuilder paramsObject = errorObject.addArrayField("params", "param");
+			Collection<Map.Entry<String, Object>> entries = exceptionParams.entrySet()
+					.stream()
+					.sorted(Map.Entry.comparingByKey())
+					.toList();
+			for (Map.Entry<String, Object> entry : entries) {
+				ObjectBuilder param = paramsObject.addObjectElement();
+				param.addAttribute("name", entry.getKey());
+				param.addAttribute("value", entry.getValue().toString());
+				param.close();
+			}
+			paramsObject.close();
+		}
+	}
+
+	private static void addLocation(HasName location, ObjectBuilder errorObject) throws SAXException {
+		if (location != null) {
+			ObjectBuilder locationObject = errorObject.addObjectField("location");
+			locationObject.addAttribute("class", location.getClass().getName());
+			locationObject.addAttribute("name", location.getName());
+			locationObject.close();
+		}
+	}
+
+	/**
+	 * Extract parameters from (nested) PipeRunException, or empty map.
+	 */
+	private static @Nonnull Map<String, Object> getPipeRunExceptionParams(@Nullable Throwable t) {
+		if (t == null) {
+			return Map.of();
+		}
+		if (t instanceof PipeRunException pre) {
+			return pre.getParameters();
+		} else {
+			return getPipeRunExceptionParams(t.getCause());
 		}
 	}
 
