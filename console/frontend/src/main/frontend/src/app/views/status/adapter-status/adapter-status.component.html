@@ -254,7 +254,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  @for (receiver of adapter.receivers; track receiver.name) {
+                  @for (receiver of adapter.receivers; track $index) {
                     <tr [ngClass]="{ 'text-danger': receiver.state === 'error' }">
                       <td>{{ receiver.name }}</td>
                       @if (receiver.listener && receiver.listener.destination) {
