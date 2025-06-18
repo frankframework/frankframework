@@ -71,6 +71,8 @@ public class DataSonnetErrorMessageFormatter extends ErrorMessageFormatter imple
 			throw new FormatterException("Cannot format error message", e);
 		} catch (ParameterException e) {
 			throw new FormatterException("Cannot extract parameter values", e);
+		} catch (RuntimeException e) {
+			throw new FormatterException("Cannot apply DataSonnet transformation to default JSON error message", e);
 		}
 	}
 

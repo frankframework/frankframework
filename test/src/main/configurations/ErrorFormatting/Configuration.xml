@@ -68,7 +68,7 @@
 
 	<Adapter name="ParameterizedErrorMessage-Trigger">
 		<Receiver>
-			<JavaListener name="ParameterizedErrorMessage-Trigger"/>
+			<FrankListener name="ParameterizedErrorMessage-Trigger"/>
 		</Receiver>
 		<Pipeline>
 			<SenderPipe name="Call Subadapter To Test">

@@ -1,0 +1,5 @@
+{
+    "errorCode": "2",
+    "errorMessage": "Too many results found, expected only single result",
+    "origin": "result-count-too-many"
+}
