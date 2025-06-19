@@ -27,24 +27,24 @@ best practices and perform security testing before releasing your application.
 | Version | Supported                  | Security Fixes*          | Minimal JRE | Released         |
 | ------- | -------------------------- | ------------------------ | ----------- | ---------------- |
 | latest  | :white_check_mark:         |:white_check_mark:        | Java SE 17  |                  |
-| 9.0.x   | :white_check_mark:         |:white_check_mark:        | Java SE 17  | Jan 06, 2025     |
+| 9.1.x   | :white_check_mark:         |:white_check_mark:        | Java SE 17  | Apr 10, 2025     |
+| 9.0.x   | :eight_pointed_black_star: |:white_check_mark:        | Java SE 17  | Jan 06, 2025     |
 | 8.3.x   | :white_check_mark:         |:white_check_mark:        | Java SE 17  | Oct 10, 2024     |
 | 8.2.x   | :x:                        |:x:                       | Java SE 17  | Jul 11, 2024     |
 | 8.1.x   | :x:                        |:x:                       | Java SE 17  | Apr 5, 2024      |
 | 8.0.x   | :x:                        |:eight_pointed_black_star:| Java SE 11  | Dec 23, 2023     |
 | 7.9.x   | :x:                        |:eight_pointed_black_star:| Java SE 8   | Dec 14, 2023     |
-| 7.8.x   | :x:                        |:x:                       | Java SE 8   | Apr 5, 2023      |
-| 7.7.x   | :x:                        |:x:                       | Java SE 8   | Mar 29, 2022     |
-| 7.6.x   | :x:                        |:x:                       | Java SE 8   | Aug 3, 2021      |
-| 7.5.x   | :x:                        |:x:                       | Java SE 7   | Nov 16, 2020     |
-| 7.4.x   | :x:                        |:x:                       | Java SE 7   | Aug 9, 2019      |
-| 7.3.x   | :x:                        |:x:                       | Java SE 7   | Jul 11, 2019     |
-| 7.2.x   | :x:                        |:x:                       | Java SE 6   | Nov 14, 2018     |
-| 7.1.x   | :x:                        |:x:                       | Java SE 6   | Nov 06, 2018     |
-| 7.0.x   | :x:                        |:x:                       | Java SE 6   | Jun 1, 2018      |
-| < 6.1   | :x:                        |:x:                       | Java SE 5   | Dec 13, 2016     |
+| < 7.8   | :x:                        |:x:                       | Java SE 8   | Apr 5, 2023      |
 
-*Please always update to the latest available release. CVE's are solved on a best-effort basis, on versions not older then 1 year after the initial release date (specified in the table above). For more information see our [Security monitoring procedure](https://github.com/frankframework/frankframework/wiki/Security-monitoring-procedure).
+### Legend
+
+:white_check_mark: Actively supported version, includes performance improvements, bugsfixes and CVE updates  
+:x: No longer supported, please upgrade to stay secure  
+:eight_pointed_black_star: Only major CVE's and bugs will be patched  
+
+
+Features will only be added to the latest version. Bug fixes and security updates will happen in the last major and minor versions.  
+Please always update to the latest available release. CVE's are solved on a best-effort basis, on versions not older then 1 year after the initial release date (specified in the table above). For more information see our [Security monitoring procedure](https://github.com/frankframework/frankframework/wiki/Security-monitoring-procedure).
 
 ## Reporting a Vulnerability
 
