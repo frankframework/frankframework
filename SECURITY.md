@@ -38,7 +38,7 @@ best practices and perform security testing before releasing your application.
 
 ### Legend
 
-:white_check_mark: Actively supported version, includes performance improvements, bugsfixes and CVE updates  
+:white_check_mark: Actively supported version, includes performance improvements, bugfixes and CVE updates  
 :x: No longer supported, please upgrade to stay secure  
 :eight_pointed_black_star: Only major CVE's and bugs will be patched  
 
