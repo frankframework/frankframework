@@ -239,7 +239,7 @@
 					slotId="${applicationId}/JmsFFSender" />
 				<forward name="success" path="switchAction" />
 			</pipe>
-			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch"
+			<pipe name="switchAction" className="org.frankframework.pipes.SwitchPipe"
 				xpathExpression="request/@action" getInputFromSessionKey="originalMessage"
 				>
 				<forward name="echo" path="EXIT" />
@@ -276,7 +276,7 @@
 					<param name="value" xpathExpression="request/value" />
 				</sender>
 			</pipe>
-			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch"
+			<pipe name="switchAction" className="org.frankframework.pipes.SwitchPipe"
 				xpathExpression="request/@action" getInputFromSessionKey="originalMessage" />
 			<pipe name="suspend"
 				className="org.frankframework.pipes.SenderPipe"
@@ -363,7 +363,7 @@
 			<pipe name="put something in log context" export="true" className="org.frankframework.pipes.LogContextPipe">
 				<param name="testMdc" value="testMdc" />
 			</pipe>
-			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch"
+			<pipe name="switchAction" className="org.frankframework.pipes.SwitchPipe"
 				xpathExpression="request/@action" />
 			<pipe name="echo" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
@@ -415,7 +415,7 @@
 			<exits>
 				<exit name="EXIT" state="success" />
 			</exits>
-			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch"
+			<pipe name="switchAction" className="org.frankframework.pipes.SwitchPipe"
 				xpathExpression="request/@action" />
 			<pipe name="subcall_local_echo" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
@@ -442,7 +442,7 @@
 			<exits>
 				<exit name="EXIT" state="success" />
 			</exits>
-			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch"
+			<pipe name="switchAction" className="org.frankframework.pipes.SwitchPipe"
 				xpathExpression="*/@delay='true'">
 				<forward name="true" path="delay" />
 				<forward name="false" path="jmsBrowser" />

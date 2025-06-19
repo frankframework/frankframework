@@ -21,10 +21,10 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.XmlParameterBuilder;
 
-public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
+public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 
 	@Override
-	public XmlSwitch createPipe() {
+	public SwitchPipe createPipe() {
 		// Correctly chain the pipe processors
 		CorePipeLineProcessor pipeLineProcessor = new CorePipeLineProcessor();
 		InputOutputPipeProcessor inputOutputPipeProcessor = new InputOutputPipeProcessor();
@@ -35,7 +35,7 @@ public class XmlSwitchTest extends PipeTestBase<XmlSwitch> {
 
 		pipeline.setPipeLineProcessor(pipeLineProcessor);
 
-		return new XmlSwitch();
+		return new SwitchPipe();
 	}
 
 	public void testSwitch(Message input, String expectedForwardName) throws Exception {

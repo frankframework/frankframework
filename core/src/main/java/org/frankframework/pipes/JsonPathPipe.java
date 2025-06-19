@@ -15,14 +15,11 @@
 */
 package org.frankframework.pipes;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.apache.commons.lang3.StringUtils;
 
-import com.jayway.jsonpath.InvalidPathException;
 import com.jayway.jsonpath.JsonPath;
 
 import lombok.Getter;
-import net.minidev.json.JSONObject;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
@@ -31,8 +28,8 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.doc.Mandatory;
+import org.frankframework.json.JsonUtil;
 import org.frankframework.stream.Message;
-import org.frankframework.util.MessageUtils;
 
 /**
  * Apply a one-liner JSON path expression to the input to extract a value from input data.
@@ -93,43 +90,23 @@ public class JsonPathPipe extends FixedForwardPipe {
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
-		if (jsonPathExpression == null) {
+		if (StringUtils.isEmpty(jsonPathExpression)) {
 			throw new ConfigurationException("jsonPathExpression has to be set");
 		}
-		try {
-			jsonPath = JsonPath.compile(jsonPathExpression);
-		} catch (InvalidPathException e) {
-			throw new ConfigurationException("Invalid JSON Path expression: [" + jsonPathExpression + "]", e);
-		}
+		jsonPath = JsonUtil.compileJsonPath(jsonPathExpression);
 	}
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-
-		Object result;
+		String result;
 		try {
 			message.preserve();
-			Message jsonMessage = MessageUtils.convertToJsonMessage(message);
-			result = jsonPath.read(jsonMessage.asInputStream());
+			result = JsonUtil.evaluateJsonPath(jsonPath, message);
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Failed to evaluate json path expression [" + jsonPathExpression + "] on input [" + message + "]", e);
 		}
 
-		PipeRunResult prr = new PipeRunResult();
-		prr.setResult(convertToString(result));
-		return prr;
-	}
-
-	private String convertToString(Object result) {
-		if (result == null) {
-			return null;
-		}
-		if (result instanceof HashMap<?,?> map) {
-			@SuppressWarnings("unchecked")
-			JSONObject jsonObject = new JSONObject((Map<String, ?>) map);
-			return jsonObject.toString();
-		}
-		return result.toString();
+		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	@Mandatory

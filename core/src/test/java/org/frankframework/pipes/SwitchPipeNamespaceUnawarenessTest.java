@@ -9,7 +9,7 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.util.TransformerPoolNamespaceUnawarenessTest;
 
-public class XmlSwitchNamespaceUnawarenessTest extends PipeTestBase<XmlSwitch> {
+public class SwitchPipeNamespaceUnawarenessTest extends PipeTestBase<SwitchPipe> {
 
 	public String NAMESPACE_UNAWARE_XSLT1_RESULT_7_0= "1";
 	public String NAMESPACE_UNAWARE_XSLT1_RESULT_7_5678= "1";
@@ -22,8 +22,8 @@ public class XmlSwitchNamespaceUnawarenessTest extends PipeTestBase<XmlSwitch> {
 	private final String xslt2_XPath_result = XSLT2_XPATH_RESULT_7_5678;
 
 	@Override
-	public XmlSwitch createPipe() {
-		return new XmlSwitch();
+	public SwitchPipe createPipe() {
+		return new SwitchPipe();
 
 	}
 

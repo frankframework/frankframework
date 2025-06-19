@@ -9,7 +9,7 @@
 				<exit name="EXIT" state="success" code="200"/>
 			</exits>
 
-			<pipe name="XmlSwitch1" className="org.frankframework.pipes.XmlSwitch" xpathExpression="*/@channel" />
+			<pipe name="XmlSwitch1" className="org.frankframework.pipes.SwitchPipe" xpathExpression="*/@channel" />
 			<pipe name="local">
 				<sender className="org.frankframework.senders.IbisLocalSender" javaListener="local-exits" />
 				<forward name="success" path="EXIT"/>
@@ -63,7 +63,7 @@
 				<exit name="ServerError" state="error" code="500" />
 			</exits>
 
-			<pipe name="XmlSwitch2" className="org.frankframework.pipes.XmlSwitch" xpathExpression="*/@path" >
+			<pipe name="XmlSwitch2" className="org.frankframework.pipes.SwitchPipe" xpathExpression="*/@path" >
 				<forward name="forwardToExit" path="EXIT"/>
 				<forward name="forwardToNotModified" path="NotModified"/>
 				<forward name="forwardToBadRequest" path="BadRequest"/>

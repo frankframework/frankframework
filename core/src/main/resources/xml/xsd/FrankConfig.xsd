@@ -16806,7 +16806,7 @@
   <xs:complexType name="XmlSwitchType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="XmlSwitchCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.XmlSwitch" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.SwitchPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="XmlSwitchDeclaredAttributeGroup">
     <xs:attribute name="styleSheetName" type="xs:string">

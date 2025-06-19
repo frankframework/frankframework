@@ -15040,7 +15040,7 @@
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="XmlSwitchCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.XmlSwitch" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.SwitchPipe" />
   </xs:complexType>
   <xs:attributeGroup name="XmlSwitchDeclaredAttributeGroup">
     <xs:attribute name="styleSheetName" type="xs:string">
