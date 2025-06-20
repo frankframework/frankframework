@@ -3,24 +3,25 @@ package org.frankframework.align;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
 
-import java.io.StringReader;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
 import jakarta.json.JsonStructure;
-import jakarta.json.stream.JsonParser;
 
 import org.apache.commons.lang3.StringUtils;
-import org.leadpony.justify.api.JsonSchema;
-import org.leadpony.justify.api.JsonValidationService;
-import org.leadpony.justify.api.ProblemHandler;
+
+import com.networknt.schema.InputFormat;
+import com.networknt.schema.JsonSchema;
+import com.networknt.schema.JsonSchemaFactory;
+import com.networknt.schema.SpecVersion;
+import com.networknt.schema.ValidationMessage;
 
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.PipeForward;
 import org.frankframework.json.JsonUtil;
 import org.frankframework.pipes.Json2XmlValidator;
+import org.frankframework.pipes.JsonValidator;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.util.StreamUtil;
 
@@ -102,25 +103,29 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 				validateJson(jsonString,jsonSchemaContent);
 			}
 		}
-
 	}
 
+	/**
+	 * Derived from {@link JsonValidator#getSubSchema()}
+	 */
 	public void validateJson(String jsonString, String jsonSchemaContent) {
-		JsonValidationService service = JsonValidationService.newInstance();
-		JsonSchema schema = service.readSchema(new StringReader(jsonSchemaContent));
-		final List<String> problems = new ArrayList<>();
-		// Problem handler which will print problems found.
-		ProblemHandler handler = service.createProblemPrinter(problems::add);
+		JsonSchemaFactory service = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012);
+		JsonSchema schema = service.getSchema(jsonSchemaContent);
 
-		try (JsonParser parser = service.createParser(new StringReader(jsonString), schema, handler)) {
-			while (parser.hasNext()) {
-				parser.next();
-				// Could do something useful here, like posting the event on a JsonEventHandler.
-			}
+		try {
+			Set<ValidationMessage> validationMessages = schema.validate(
+					jsonString, InputFormat.JSON,
+					executionContext -> {
+						executionContext.getExecutionConfig().setFormatAssertionsEnabled(true);
+					}
+			);
+
+			log.debug("jsonString: {}", jsonString);
+			log.debug("problems: {}", validationMessages.toString());
+			assertEquals(0, validationMessages.size(), validationMessages.toString());
+
+		} catch (IllegalArgumentException e) {
+			//
 		}
-
-		log.debug("jsonString: {}", jsonString);
-		log.debug("problems: {}", problems);
-		assertEquals(0, problems.size(), problems.toString());
 	}
 }

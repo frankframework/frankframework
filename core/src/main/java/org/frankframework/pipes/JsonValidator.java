@@ -17,16 +17,18 @@ package org.frankframework.pipes;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import jakarta.json.stream.JsonParser;
-import jakarta.json.stream.JsonParsingException;
+import java.util.HashSet;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.leadpony.justify.api.JsonSchema;
-import org.leadpony.justify.api.JsonValidationService;
-import org.leadpony.justify.api.ProblemHandler;
+
+import com.networknt.schema.InputFormat;
+import com.networknt.schema.InvalidSchemaRefException;
+import com.networknt.schema.JsonSchema;
+import com.networknt.schema.JsonSchemaFactory;
+import com.networknt.schema.SchemaLocation;
+import com.networknt.schema.SpecVersion;
+import com.networknt.schema.ValidationMessage;
 
 import lombok.Getter;
 
@@ -54,7 +56,8 @@ public class JsonValidator extends AbstractValidator {
 	private @Getter String subSchemaPrefix="/definitions/";
 	private @Getter String reasonSessionKey = "failureReason";
 
-	private final JsonValidationService service = JsonValidationService.newInstance();
+	private final JsonSchemaFactory service = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012);
+
 	private JsonSchema jsonSchema;
 
 	@Override
@@ -69,7 +72,7 @@ public class JsonValidator extends AbstractValidator {
 	public void start() {
 		try {
 			super.start();
-			jsonSchema = getJsonSchema();
+			jsonSchema = getSubSchema();
 		} catch (IOException e) {
 			throw new LifecycleException("unable to start validator", e);
 		}
@@ -77,55 +80,78 @@ public class JsonValidator extends AbstractValidator {
 
 	@Override
 	protected PipeForward validate(Message messageToValidate, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
-		final List<String> problems = new ArrayList<>();
-		// Problem handler which will print problems found.
-		ProblemHandler handler = service.createProblemPrinter(problems::add);
-		ValidationResult resultEvent;
 		try {
 			if (messageToValidate.isEmpty()) {
 				messageToValidate = new Message("{}");
 			} else {
 				messageToValidate.preserve();
 			}
+
 			JsonSchema curSchema = jsonSchema;
+
 			if (StringUtils.isEmpty(messageRoot)) {
 				messageRoot = responseMode ? getResponseRoot() : getRoot();
 			}
+
 			if (StringUtils.isNotEmpty(messageRoot)) {
 				log.debug("validation to messageRoot [{}]", messageRoot);
-				curSchema = jsonSchema.getSubschemaAt(getSubSchemaPrefix()+messageRoot);
-				if (curSchema==null) {
-					throw new PipeRunException(this, "No schema found for ["+getSubSchemaPrefix()+messageRoot+"]");
-				}
+
+				curSchema = getSubSchema(messageRoot);
 			}
-			// Parses the JSON instance by JsonParser
-			try (JsonParser parser = service.createParser(messageToValidate.asInputStream(), curSchema, handler)) {
-				while (parser.hasNext()) {
-					JsonParser.Event event = parser.next();
-					// Could do something useful here, like posting the event on a JsonEventHandler.
-				}
-				resultEvent = problems.isEmpty()? ValidationResult.VALID : ValidationResult.INVALID;
-			} catch (JsonParsingException e) {
-				resultEvent = ValidationResult.PARSER_ERROR;
-				problems.add(e.getMessage());
-			}
+
+			SchemaValidationResult result = validateJson(curSchema, messageToValidate);
+
 			if (StringUtils.isNotEmpty(getReasonSessionKey())) {
-				session.put(getReasonSessionKey(), problems.toString());
+				session.put(getReasonSessionKey(), result.validationMessages.toString());
 			}
-			return determineForward(resultEvent, responseMode, problems::toString);
+
+			return determineForward(result.result, responseMode, result.validationMessages::toString);
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot validate", e);
 		}
 	}
 
-	protected JsonSchema getJsonSchema() throws IOException {
+	private JsonSchema getSubSchema(String messageRoot) throws PipeRunException {
+		try {
+			return jsonSchema.getSubSchema(SchemaLocation.Fragment.of(subSchemaPrefix + messageRoot));
+		} catch (InvalidSchemaRefException e) {
+			throw new PipeRunException(this, "No schema found for ["+getSubSchemaPrefix()+ messageRoot +"]");
+		}
+	}
+
+	private SchemaValidationResult validateJson(JsonSchema jsonSchema, Message message) throws IOException {
+		// Parses the JSON instance by JsonParser
+		Set<ValidationMessage> validationMessages = new HashSet<>();
+
+		try {
+			validationMessages = jsonSchema.validate(
+					message.asString(), InputFormat.JSON,
+					// By default, since Draft 2019-09 the format keyword only generates annotations and not assertions
+					executionContext -> executionContext.getExecutionConfig().setFormatAssertionsEnabled(true)
+			);
+
+			return new SchemaValidationResult(
+					validationMessages.isEmpty() ? ValidationResult.VALID : ValidationResult.INVALID,
+					validationMessages
+			);
+		} catch (IllegalArgumentException e) {
+			validationMessages.add(ValidationMessage.builder().message(e.getMessage()).build());
+
+			return new SchemaValidationResult(ValidationResult.PARSER_ERROR, validationMessages);
+		}
+	}
+
+	record SchemaValidationResult(ValidationResult result, Set<ValidationMessage> validationMessages) { }
+
+	protected JsonSchema getSubSchema() throws IOException {
 		String schemaName = getSchema();
 		Resource schemaRes = Resource.getResource(this, schemaName);
-		if (schemaRes==null) {
+
+		if (schemaRes == null) {
 			throw new FileNotFoundException("Cannot find schema ["+schemaName+"]");
 		}
-		JsonSchema result = service.readSchema(schemaRes.openStream());
-		return result;
+
+		return service.getSchema(schemaRes.openStream());
 	}
 
 	/** The JSON Schema to validate to */
