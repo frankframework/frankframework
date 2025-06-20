@@ -26,6 +26,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.Parameter;
+import org.frankframework.processors.PipeProcessor;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestAssertions;
@@ -471,9 +472,11 @@ public abstract class FileSystemPipeTest<FSP extends AbstractFileSystemPipe<F, F
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 
+		PipeProcessor pipeProcessor = (PipeProcessor) getConfiguration().getBean("pipeProcessor");
+
 		// Act
 		Message input= new Message(folder);
-		prr = fileSystemPipe.doPipe(input, session);
+		prr = pipeProcessor.processPipe(fileSystemPipe.getPipeLine(), fileSystemPipe, input, session);
 		CloseUtils.closeSilently(input);
 
 		// Assert
@@ -568,8 +571,10 @@ public abstract class FileSystemPipeTest<FSP extends AbstractFileSystemPipe<F, F
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 
+		PipeProcessor pipeProcessor = (PipeProcessor) getConfiguration().getBean("pipeProcessor");
+
 		Message input= new Message(folder);
-		prr = fileSystemPipe.doPipe(input, session);
+		prr = pipeProcessor.processPipe(fileSystemPipe.getPipeLine(), fileSystemPipe, input, session);
 		CloseUtils.closeSilently(input);
 
 		// Assert
