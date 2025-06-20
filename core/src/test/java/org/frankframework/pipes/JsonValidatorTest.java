@@ -4,7 +4,12 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.jupiter.api.Test;
+import java.util.Arrays;
+import java.util.List;
+
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunResult;
@@ -18,9 +23,17 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 		return new JsonValidator();
 	}
 
-	@Test
-	public void basic() throws Exception {
-		pipe.setSchema("/Align/FamilyTree/family-compact-family.jsd");
+	public static List<Arguments> testSchemas() {
+		return Arrays.asList(new Arguments[]{
+				Arguments.of("/Align/FamilyTree/family-compact-family.jsd", "/definitions/"),
+				Arguments.of("/Align/FamilyTree/family-compact-family-2020.jsd" , "/$defs/"),
+		});
+	}
+
+	@MethodSource("testSchemas")
+	@ParameterizedTest
+	public void basic(String schema, String subschemaPrefix) throws Exception {
+		pipe.setSchema(schema);
 		configureAndStartPipe();
 
 		String input = TestFileUtils.getTestFile("/Align/FamilyTree/family-compact.json");
@@ -30,9 +43,10 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 		assertEquals(input, result.getResult().asString());
 	}
 
-	@Test
-	public void basicInvalid() throws Exception {
-		pipe.setSchema("/Align/FamilyTree/family-compact-family.jsd");
+	@MethodSource("testSchemas")
+	@ParameterizedTest
+	public void basicInvalid(String schema, String subschemaPrefix) throws Exception {
+		pipe.setSchema(schema);
 		pipe.addForward(new PipeForward("failure", null));
 		configureAndStartPipe();
 
@@ -43,12 +57,13 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 		assertEquals(input, result.getResult().asString());
 
 		String reason = (String)session.get("failureReason");
-		assertThat(reason, containsString("The object must have a property whose name is \"members\""));
+		assertThat(reason, containsString("required property 'members' not found"));
 	}
 
-	@Test
-	public void basicNullInput() throws Exception {
-		pipe.setSchema("/Align/FamilyTree/family-compact-family.jsd");
+	@MethodSource("testSchemas")
+	@ParameterizedTest
+	public void basicNullInput(String schema, String subschemaPrefix) throws Exception {
+		pipe.setSchema(schema);
 		pipe.addForward(new PipeForward("failure", null));
 		configureAndStartPipe();
 
@@ -59,12 +74,13 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 		assertEquals(input, result.getResult().asString());
 
 		String reason = (String)session.get("failureReason");
-		assertThat(reason, containsString("The object must have a property whose name is \"members\""));
+		assertThat(reason, containsString("required property 'members' not found"));
 	}
 
-	@Test
-	public void parserError() throws Exception {
-		pipe.setSchema("/Align/FamilyTree/family-compact-family.jsd");
+	@MethodSource("testSchemas")
+	@ParameterizedTest
+	public void parserError(String schema, String subschemaPrefix) throws Exception {
+		pipe.setSchema(schema);
 		pipe.addForward(new PipeForward("failure", null));
 		pipe.addForward(new PipeForward("parserError", null));
 		configureAndStartPipe();
@@ -76,12 +92,14 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 		assertEquals(input, result.getResult().asString());
 
 		String reason = (String)session.get("failureReason");
-		assertThat(reason, containsString("[Unexpected char 97 at (line no=1, column no=2, offset=1)]"));
+		assertThat(reason, containsString("Invalid input"));
 	}
 
-	@Test
-	public void basicWithRootElementSpecified() throws Exception {
-		pipe.setSchema("/Align/FamilyTree/family-compact-family.jsd");
+	@MethodSource("testSchemas")
+	@ParameterizedTest
+	public void basicWithRootElementSpecified(String schema, String subschemaPrefix) throws Exception {
+		pipe.setSchema(schema);
+		pipe.setSubSchemaPrefix(subschemaPrefix);
 		configureAndStartPipe();
 
 		String input = TestFileUtils.getTestFile("/Align/FamilyTree/family-compact.json");
@@ -91,9 +109,11 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 		assertEquals(input, result.getResult().asString());
 	}
 
-	@Test
-	public void overrideRootElement() throws Exception {
-		pipe.setSchema("/Align/FamilyTree/family-compact-family.jsd");
+	@MethodSource("testSchemas")
+	@ParameterizedTest
+	public void overrideRootElement(String schema, String subschemaPrefix) throws Exception {
+		pipe.setSchema(schema);
+		pipe.setSubSchemaPrefix(subschemaPrefix);
 		pipe.addForward(new PipeForward("failure", null));
 		configureAndStartPipe();
 
@@ -104,9 +124,11 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 		assertEquals(input, result.getResult().asString());
 	}
 
-	@Test
-	public void overrideRootElementInvalid() throws Exception {
-		pipe.setSchema("/Align/FamilyTree/family-compact-family.jsd");
+	@MethodSource("testSchemas")
+	@ParameterizedTest
+	public void overrideRootElementInvalid(String schema, String subschemaPrefix) throws Exception {
+		pipe.setSchema(schema);
+		pipe.setSubSchemaPrefix(subschemaPrefix);
 		pipe.setRoot("address");
 		pipe.addForward(new PipeForward("failure", null));
 		configureAndStartPipe();
@@ -118,8 +140,6 @@ public class JsonValidatorTest extends PipeTestBase<JsonValidator>{
 		assertEquals(input, result.getResult().asString());
 
 		String reason = (String)session.get("failureReason");
-		assertThat(reason, containsString("The object must have a property whose name is \"street\""));
+		assertThat(reason, containsString("required property 'street' not found"));
 	}
-
-
 }

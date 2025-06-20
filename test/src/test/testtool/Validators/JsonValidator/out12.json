@@ -1,1 +1,1 @@
-{ "message":"input validation failure: [[2,14][/Status] The value must be one of ["a", "b", "c", "d"].]" }
+{ "message":"input validation failure: [$.Status: does not have a value in the enumeration ["a", "b", "c", "d"]]" }
