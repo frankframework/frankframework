@@ -94,7 +94,7 @@
                 </tr>
               </thead>
               <tbody *ngFor="let receiver of stats?.receivers">
-                <tr *ngFor="let threadsProcessing of receiver.processing">
+                <tr *ngFor="let threadsProcessing of getSortedProcessingThreads(receiver)">
                   <td>{{ receiver.name }}</td>
                   <td *ngFor="let thread of threadsProcessing | formatStatistics: statisticsTimeBoundaries">
                     {{ thread.value }}
