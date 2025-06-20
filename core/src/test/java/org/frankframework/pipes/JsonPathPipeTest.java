@@ -80,6 +80,26 @@ class JsonPathPipeTest {
 								}
 								"""
 				),
+				arguments(
+						"$..[?(@.a)].length()", "2",
+						"""
+								{
+								"k1": {"a": 1},
+								"k2": {"a": 2},
+								"k3": {"b": 3}
+								}
+								"""
+				),
+				arguments(
+						"concat(\"result count=\", $..[?(@.a)].length())", "result count=2",
+						"""
+								{
+								"k1": {"a": 2},
+								"k2": {"a": 4},
+								"k3": {"b": 3}
+								}
+								"""
+				),
 				arguments("$.a", """
 						{"Hello": "World"}
 						""",

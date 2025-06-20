@@ -15,6 +15,11 @@
 */
 package org.frankframework.core;
 
+import java.util.Map;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import lombok.Getter;
 
 import org.frankframework.util.StringUtil;
@@ -22,20 +27,26 @@ import org.frankframework.util.StringUtil;
 /**
  * Exception thrown when the <code>doPipe()</code> method
  * of a {@link IPipe Pipe} runs in error.
- * @author  Johan Verrips
+ *
+ * @author Johan Verrips
  */
 public class PipeRunException extends IbisException {
 
-	private @Getter IPipe pipeInError = null;
+	private final @Getter IPipe pipeInError;
+	private final @Getter Map<String, Object> parameters;
 
-	public PipeRunException(IPipe pipe, String msg) {
-		super(StringUtil.concatStrings(pipe!=null ? "Pipe ["+pipe.getName()+"]" : null, " ", msg));
-		pipeInError = pipe;
+	public PipeRunException(@Nullable IPipe pipe, @Nullable String msg) {
+		this(pipe, msg, null);
 	}
 
-	public PipeRunException(IPipe pipe, String msg, Throwable e) {
-		super(StringUtil.concatStrings(pipe!=null ? "Pipe ["+pipe.getName()+"]" : null, " ", msg), e);
-		pipeInError = pipe;
+	public PipeRunException(@Nullable IPipe pipe, @Nullable String msg, @Nullable Throwable e) {
+		this(pipe, msg, Map.of(), e);
+	}
+
+	public PipeRunException(@Nullable IPipe pipe, @Nullable String msg, @Nonnull Map<String, Object> parameters, @Nullable Throwable e) {
+		super(StringUtil.concatStrings(pipe != null ? "Pipe [" + pipe.getName() + "]" : null, " ", msg), e);
+		this.pipeInError = pipe;
+		this.parameters = parameters;
 	}
 
 }
