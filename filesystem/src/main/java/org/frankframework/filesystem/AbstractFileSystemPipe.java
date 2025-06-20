@@ -117,8 +117,8 @@ public abstract class AbstractFileSystemPipe<F, FS extends IBasicFileSystem<F>> 
 			Map<String, PipeForward> forwards = getForwards();
 			if (forwards.containsKey(forwardName)) {
 				return new PipeRunResult(getForwards().get(forwardName), e.getMessage());
-			} else if (forwards.containsKey(PipeForward.EXCEPTION_FORWARD_NAME)) {
-				return new PipeRunResult(getForwards().get(PipeForward.EXCEPTION_FORWARD_NAME), e.getMessage());
+//			} else if (forwards.containsKey(PipeForward.EXCEPTION_FORWARD_NAME)) {
+//				return new PipeRunResult(getForwards().get(PipeForward.EXCEPTION_FORWARD_NAME), e.getMessage());
 			}
 			throw new PipeRunException(this, "cannot perform action", e);
 		}

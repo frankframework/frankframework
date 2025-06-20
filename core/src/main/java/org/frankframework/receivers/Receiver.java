@@ -1298,7 +1298,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 						}
 
 						log.debug("{} received result: {}", logPrefix, statusMessage);
-						messageInError=itx.isRollbackOnly();
+						messageInError=itx.isRollbackOnly() || !pipeLineResult.isSuccessful();
 					} finally {
 						log.debug("{} canceling TimeoutGuard, isInterrupted [{}]", () -> logPrefix, () -> Thread.currentThread().isInterrupted());
 						if (tg.cancel()) {
