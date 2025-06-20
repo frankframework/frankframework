@@ -28,6 +28,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
 import org.frankframework.core.IbisExceptionListener;
@@ -35,6 +36,7 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.Protected;
+import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ServiceClient;
@@ -98,24 +100,34 @@ public class PushingListenerAdapter implements IPushingListener<Message>, Servic
 
 	@Override
 	public Message processRequest(Message rawMessage, PipeLineSession session) throws ListenerException {
-		RawMessageWrapper<Message> rawMessageWrapper = new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
-		// NB: This seems pointless, but I guess that a subclass could override extractMessage() and make it do something more revolutionary.
-		Message message = extractMessage(rawMessageWrapper, session);
+		MessageWrapper<Message> messageWrapper = new MessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
 		try {
 			log.debug("PushingListenerAdapter.processRequest() for correlationId [{}]", session::getCorrelationId);
-			return handler.processRequest(this, rawMessageWrapper, message, session);
+			return handler.processRequest(this, messageWrapper, session);
 		} catch (ListenerException e) {
 			if (isApplicationFaultsAsExceptions()) {
 				log.debug("PushingListenerAdapter.processRequest() rethrows ListenerException...");
 				throw e;
 			}
+
 			log.debug("PushingListenerAdapter.processRequest() formats ListenerException to errormessage");
-			return handler.formatException(null, session, message, e);
+			// NB: This seems pointless, but I guess that a subclass could override extractMessage() and make it do something more revolutionary.
+			Message message = extractMessage(messageWrapper, session);
+			return formatExceptionUsingErrorMessageFormatter(session, message, e);
 		} finally {
 			ThreadContext.clearAll();
 		}
 	}
 
+	// The ApplicationContext is practically always an Adapter except when the listener is created directly via the LarvaScenarioContext
+	private Message formatExceptionUsingErrorMessageFormatter(PipeLineSession session, Message inputMessage, Throwable t) {
+		if (applicationContext instanceof Adapter adapter) {
+			return adapter.formatErrorMessage(null, t, inputMessage, session, null);
+		}
+
+		log.warn("unformatted exception while processing input request [{}]", inputMessage, t);
+		return new Message(t.getMessage());
+	}
 
 	@Override
 	public String toString() {

@@ -31,7 +31,7 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.WebServiceListener;
-import org.frankframework.receivers.RawMessageWrapper;
+import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.ServiceClient;
 import org.frankframework.receivers.ServiceDispatcher;
 import org.frankframework.stream.Message;
@@ -107,16 +107,16 @@ public class NamespaceUriProviderTest {
 		listener.setHandler(handler);
 
 		doAnswer(e -> {
-			Message message = e.getArgument(2);
+			MessageWrapper messageWrapper = e.getArgument(1);
 
 			try {
-				MatchUtils.assertXmlEquals(getFile("VrijeBerichten_PipelineRequest.xml").asString(), message.asString());
+				MatchUtils.assertXmlEquals(getFile("VrijeBerichten_PipelineRequest.xml").asString(), messageWrapper.getMessage().asString());
 				return pipelineResult;
 			} catch (IOException ex) {
 				fail("unable to read response message: " + ex.getMessage(), ex);
 				return null;
 			}
-		}).when(handler).processRequest(eq(listener), any(RawMessageWrapper.class), any(Message.class), any(PipeLineSession.class));
+		}).when(handler).processRequest(eq(listener), any(MessageWrapper.class), any(PipeLineSession.class));
 
 		listener.setServiceNamespaceURI("http://www.egem.nl/StUF/sector/zkn/0310");
 		listener.setSoap(false);
@@ -145,16 +145,16 @@ public class NamespaceUriProviderTest {
 		listener.setHandler(handler);
 
 		doAnswer(e -> {
-			Message message = e.getArgument(2);
+			MessageWrapper messageWrapper = e.getArgument(1);
 
 			try {
-				MatchUtils.assertXmlEquals(getFile("soapmsg1_1.xml").asString(), message.asString());
+				MatchUtils.assertXmlEquals(getFile("soapmsg1_1.xml").asString(), messageWrapper.getMessage().asString());
 				return pipelineResult;
 			} catch (IOException ex) {
 				fail("unable to read response message: " + ex.getMessage(), ex);
 				return null;
 			}
-		}).when(handler).processRequest(eq(listener), any(RawMessageWrapper.class), any(Message.class), any(PipeLineSession.class));
+		}).when(handler).processRequest(eq(listener), any(MessageWrapper.class), any(PipeLineSession.class));
 
 		listener.setSoapAction("http://www.egem.nl/StUF/sector/zkn/0310");
 		listener.setSoap(false);
@@ -185,16 +185,16 @@ public class NamespaceUriProviderTest {
 		listener.setHandler(handler);
 
 		doAnswer(e -> {
-			Message message = e.getArgument(2);
+			MessageWrapper messageWrapper = e.getArgument(1);
 
 			try {
-				MatchUtils.assertXmlEquals(getFile("soapmsg1_2.xml").asString(), message.asString());
+				MatchUtils.assertXmlEquals(getFile("soapmsg1_2.xml").asString(), messageWrapper.getMessage().asString());
 				return pipelineResult;
 			} catch (IOException ex) {
 				fail("unable to read response message: " + ex.getMessage(), ex);
 				return null;
 			}
-		}).when(handler).processRequest(eq(listener), any(RawMessageWrapper.class), any(Message.class), any(PipeLineSession.class));
+		}).when(handler).processRequest(eq(listener), any(MessageWrapper.class), any(PipeLineSession.class));
 
 		listener.setSoapAction("http://www.egem.nl/StUF/sector/zkn/0310");
 		listener.setSoap(false);

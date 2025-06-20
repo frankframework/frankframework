@@ -83,8 +83,8 @@ public class FrankListener implements IPushingListener<Message>, HasPhysicalDest
 	}
 
 	@Override
-	public RawMessageWrapper<Message> wrapRawMessage(Message rawMessage, PipeLineSession session) {
-		return new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
+	public MessageWrapper<Message> wrapRawMessage(Message rawMessage, PipeLineSession session) {
+		return new MessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
 	}
 
 	@Override
@@ -153,6 +153,7 @@ public class FrankListener implements IPushingListener<Message>, HasPhysicalDest
 		if (!isOpen()) {
 			throw new ListenerException("JavaListener [" + getName() + "] is not opened");
 		}
-		return getHandler().processRequest(this, wrapRawMessage(message, session), message, session);
+
+		return getHandler().processRequest(this, wrapRawMessage(message, session), session);
 	}
 }

@@ -18,24 +18,27 @@ import static org.mockito.Mockito.when;
 import java.io.IOException;
 import java.util.Map;
 
-import com.sap.conn.idoc.IDocDocumentList;
-import com.sap.conn.idoc.IDocXMLProcessor;
-import com.sap.conn.jco.JCoFunction;
-import com.sap.conn.jco.server.JCoServerContext;
-import org.frankframework.util.SapSystemListItem;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import com.sap.conn.idoc.IDocDocumentList;
+import com.sap.conn.idoc.IDocXMLProcessor;
+import com.sap.conn.jco.JCoFunction;
+import com.sap.conn.jco.server.JCoServerContext;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IListener;
+import org.frankframework.core.IPushingListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.extensions.sap.SapException;
+import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.stream.Message;
+import org.frankframework.util.SapSystemListItem;
 
 public class SapListenerTest {
 
@@ -133,8 +136,8 @@ public class SapListenerTest {
 
 		doReturn(mock(IDocXMLProcessor.class)).when(listener).getIDocXMLProcessor();
 
-		ArgumentCaptor<RawMessageWrapper> messageCaptor = ArgumentCaptor.forClass(RawMessageWrapper.class);
-		doReturn(mock(Message.class)).when(receiver).processRequest(any(IListener.class), messageCaptor.capture(), any(Message.class), any(PipeLineSession.class));
+		ArgumentCaptor<MessageWrapper> messageCaptor = ArgumentCaptor.forClass(MessageWrapper.class);
+		doReturn(mock(Message.class)).when(receiver).processRequest(any(IPushingListener.class), messageCaptor.capture(), any(PipeLineSession.class));
 
 		assertDoesNotThrow(() -> listener.configure());
 		assertDoesNotThrow(() -> listener.handleRequest(mock(JCoServerContext.class), documentList));

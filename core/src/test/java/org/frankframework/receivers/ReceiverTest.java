@@ -222,7 +222,7 @@ public class ReceiverTest {
 		return adapter;
 	}
 
-	public Receiver<Serializable> setupReceiverWithMessageStoreListener(MessageStoreListener listener, ITransactionalStorage<Serializable> errorStorage) {
+	public Receiver<Serializable> setupReceiverWithListener(IListener listener, ITransactionalStorage<Serializable> errorStorage) {
 		@SuppressWarnings("unchecked")
 		Receiver<Serializable> receiver = spy(configuration.createBean(Receiver.class));
 		receiver.setListener(listener);
@@ -246,6 +246,17 @@ public class ReceiverTest {
 
 		doReturn("dummy-destination").when(listener).getPhysicalDestinationName();
 		doReturn(false).when(listener).hasRawMessageAvailable();
+		doNothing().when(listener).configure();
+		doNothing().when(listener).start();
+
+		return listener;
+	}
+
+	public JavaListener setupJavaListener() throws Exception {
+		JavaListener listener = spy(new JavaListener());
+		listener.setName("javaListener");
+
+		doReturn("dummy-destination").when(listener).getPhysicalDestinationName();
 		doNothing().when(listener).configure();
 		doNothing().when(listener).start();
 
@@ -697,13 +708,13 @@ public class ReceiverTest {
 	public void testProcessRequest() throws Exception {
 		// Arrange
 		String rawTestMessage = "TEST";
-		RawMessageWrapper<Serializable> rawTestMessageWrapper = new RawMessageWrapper<>(rawTestMessage, "mid", "cid");
 		Message testMessage = new Message(new StringReader(rawTestMessage));
+		MessageWrapper<Serializable> rawTestMessageWrapper = new MessageWrapper<>(testMessage, "mid", "cid");
 
 		configuration = buildNarayanaTransactionManagerConfiguration();
 		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
-		MessageStoreListener listener = setupMessageStoreListener();
-		Receiver<Serializable> receiver = setupReceiverWithMessageStoreListener(listener, errorStorage);
+		JavaListener listener = setupJavaListener();
+		Receiver<Serializable> receiver = setupReceiverWithListener(listener, errorStorage);
 		Adapter adapter = setupAdapter(receiver);
 
 		PipeLine pipeLine = adapter.getPipeLine();
@@ -724,7 +735,7 @@ public class ReceiverTest {
 
 		try (PipeLineSession session = new PipeLineSession()) {
 			// Act
-			Message result = receiver.processRequest(listener, rawTestMessageWrapper, testMessage, session);
+			Message result = receiver.processRequest(listener, rawTestMessageWrapper, session);
 
 			// Assert
 			assertFalse(result.isScheduledForCloseOnExitOf(session), "Result message should not be scheduled for closure on exit of session");
@@ -741,7 +752,7 @@ public class ReceiverTest {
 		final String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
 		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
 		MessageStoreListener listener = setupMessageStoreListener();
-		Receiver<Serializable> receiver = setupReceiverWithMessageStoreListener(listener, errorStorage);
+		Receiver<Serializable> receiver = setupReceiverWithListener(listener, errorStorage);
 		Adapter adapter = setupAdapter(receiver);
 
 		when(errorStorage.getMessage("1")).thenAnswer((Answer<RawMessageWrapper<?>>) invocation -> new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null));
@@ -776,7 +787,7 @@ public class ReceiverTest {
 		configuration = buildNarayanaTransactionManagerConfiguration();
 		final String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
 		MessageStoreListener listener = setupMessageStoreListener();
-		Receiver<Serializable> receiver = setupReceiverWithMessageStoreListener(listener, null);
+		Receiver<Serializable> receiver = setupReceiverWithListener(listener, null);
 		Adapter adapter = setupAdapter(receiver);
 		IMessageBrowser<Serializable> messageBrowser = mock();
 
@@ -817,7 +828,7 @@ public class ReceiverTest {
 		final String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
 		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
 		MessageStoreListener listener = setupMessageStoreListener();
-		Receiver<Serializable> receiver = setupReceiverWithMessageStoreListener(listener, errorStorage);
+		Receiver<Serializable> receiver = setupReceiverWithListener(listener, errorStorage);
 		Adapter adapter = setupAdapter(receiver);
 
 		doThrow(new RuntimeException()).when(adapter).processMessageWithExceptions(any(), any(), any());
@@ -846,7 +857,7 @@ public class ReceiverTest {
 		configuration = buildNarayanaTransactionManagerConfiguration();
 		final String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
 		MessageStoreListener listener = setupMessageStoreListener();
-		Receiver<Serializable> receiver = setupReceiverWithMessageStoreListener(listener, null);
+		Receiver<Serializable> receiver = setupReceiverWithListener(listener, null);
 		Adapter adapter = setupAdapter(receiver);
 		IMessageBrowser<String> messageBrowser = mock();
 
@@ -1155,8 +1166,8 @@ public class ReceiverTest {
 		// Arrange
 		configuration = buildNarayanaTransactionManagerConfiguration();
 		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
-		MessageStoreListener listener = setupMessageStoreListener();
-		Receiver<Serializable> receiver = setupReceiverWithMessageStoreListener(listener, errorStorage);
+		JavaListener listener = setupJavaListener();
+		Receiver<Serializable> receiver = setupReceiverWithListener(listener, errorStorage);
 		Adapter adapter = setupAdapter(receiver);
 
 		// The actual size of a message as string can be shorter than the reported size. This could be due to incorrect
@@ -1183,7 +1194,7 @@ public class ReceiverTest {
 		PipeLineSession session = new PipeLineSession();
 
 		// Act
-		Message message = receiver.processRequest(listener, new RawMessageWrapper<>("raw"), Message.nullMessage(), session);
+		Message message = receiver.processRequest(listener, new MessageWrapper<>(new Message("raw"), null, null), session);
 
 		// Assert
 		assertEquals(result, message);

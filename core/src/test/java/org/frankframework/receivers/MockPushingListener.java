@@ -18,14 +18,14 @@ public class MockPushingListener extends MockListenerBase implements IPushingLis
 	@Override
 	public void offerMessage(String text) throws ListenerException {
 		try(PipeLineSession session = new PipeLineSession()) {
-			RawMessageWrapper<String> raw = wrapRawMessage(text, session);
-			handler.processRequest(this, raw, new Message(text), session);
+			MessageWrapper<String> raw = wrapRawMessage(text, session);
+			handler.processRequest(this, raw, session);
 		}
 	}
 
 	@Override
-	public RawMessageWrapper<String> wrapRawMessage(String rawMessage, PipeLineSession session) {
-		return new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
+	public MessageWrapper<String> wrapRawMessage(String rawMessage, PipeLineSession session) {
+		return new MessageWrapper<>(new Message(rawMessage), session.getMessageId(), session.getCorrelationId());
 	}
 
 	@Override

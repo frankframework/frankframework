@@ -58,6 +58,7 @@ import org.frankframework.doc.Mandatory;
 import org.frankframework.extensions.sap.ISapListener;
 import org.frankframework.extensions.sap.SapException;
 import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 
@@ -217,10 +218,10 @@ public abstract class SapListenerImpl<M> extends SapFunctionFacade implements IS
 			IDocDocument doc = iterator.next();
 			if(log.isTraceEnabled()) log.trace("{}Processing document no. [{}] of type [{}]", getLogPrefix(), doc.getIDocNumber(), doc.getIDocType());
 			try (PipeLineSession session = new PipeLineSession()) {
-				String rawMessage = xmlProcessor.render(doc);
-				RawMessageWrapper rawMessageWrapper = new RawMessageWrapper<>(rawMessage, doc.getIDocNumber(), null);
+				Message rawMessage = new Message(xmlProcessor.render(doc));
+				MessageWrapper messageWrapper = new MessageWrapper<>(rawMessage, doc.getIDocNumber(), null);
 				//noinspection unchecked
-				handler.processRequest(this, rawMessageWrapper, new Message(rawMessage), session);
+				handler.processRequest(this, messageWrapper, session);
 			} catch (Throwable t) {
 				log.warn("{}Exception caught and handed to SAP", getLogPrefix(), t);
 				throw new JCoRuntimeException(JCoException.JCO_ERROR_APPLICATION_EXCEPTION, "IbisException", t.getMessage());

@@ -191,14 +191,14 @@ class FrankListenerTest {
 		// Arrange
 		listener.configure();
 		listener.start();
-		when(receiver.processRequest(any(), any(), any(), any())).thenReturn(message);
+		when(receiver.processRequest(any(), any(), any())).thenReturn(message);
 
 		// Act
 		Message result = listener.processRequest(message, session);
 
 		// Assert
 		assertSame(message, result);
-		verify(receiver).processRequest(eq(listener), any(), eq(message), eq(session));
+		verify(receiver).processRequest(eq(listener), any(), eq(session));
 	}
 
 	@Test
