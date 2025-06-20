@@ -26,6 +26,7 @@ import java.util.Set;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.validation.ValidatorHandler;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.logging.log4j.Logger;
@@ -133,11 +134,14 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		}
 	}
 
-	public Digester getDigester(Configuration configuration) throws ConfigurationException {
+	public @Nonnull Digester getDigester(Configuration configuration) throws ConfigurationException {
 		Digester digester = SpringUtils.createBean(configuration);
 		try {
 
 			Resource digesterRulesResource = Resource.getResource(configuration, getDigesterRuleFile());
+			if (digesterRulesResource == null) {
+				throw new ConfigurationException("Unable to load Digester rule file");
+			}
 			loadDigesterRules(digester, digesterRulesResource);
 
 			return digester;
@@ -176,10 +180,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			configLogger.info(configuration.getLoadedConfiguration());
 		} catch (Throwable t) {
 			// wrap exception to be sure it gets rendered via the IbisException-renderer
-			String currentElementName = null;
-			if (digester != null ) {
-				currentElementName = digester.getCurrentElementName();
-			}
+			String currentElementName = digester.getCurrentElementName();
 			Locator locator = digester.getDocumentLocator();
 			String location = locator!=null ? " systemId ["+locator.getSystemId()+"] line ["+locator.getLineNumber()+"] column ["+locator.getColumnNumber()+"]":"";
 			throw new ConfigurationException("error during unmarshalling configuration from file [" + configurationResource + "] "+location+" with digester-rules-file ["+getDigesterRuleFile()+"] in element ["+currentElementName+"]", t);
