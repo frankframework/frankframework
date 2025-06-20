@@ -72,7 +72,7 @@ public class JsonValidator extends AbstractValidator {
 	public void start() {
 		try {
 			super.start();
-			jsonSchema = getSubSchema();
+			jsonSchema = getJsonSchema();
 		} catch (IOException e) {
 			throw new LifecycleException("unable to start validator", e);
 		}
@@ -143,7 +143,7 @@ public class JsonValidator extends AbstractValidator {
 
 	record SchemaValidationResult(ValidationResult result, Set<ValidationMessage> validationMessages) { }
 
-	protected JsonSchema getSubSchema() throws IOException {
+	protected JsonSchema getJsonSchema() throws IOException {
 		String schemaName = getSchema();
 		Resource schemaRes = Resource.getResource(this, schemaName);
 
