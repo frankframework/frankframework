@@ -15,6 +15,7 @@
 */
 package org.frankframework.core;
 
+import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 
@@ -36,9 +37,8 @@ public interface IMessageHandler<M> {
 	void processRawMessage(IListener<M> origin, RawMessageWrapper<M> message, PipeLineSession session, boolean duplicatesAlreadyChecked) throws ListenerException;
 
 	/**
-	 * Alternative to functions above, will NOT use {@link IListener#extractMessage}.
-	 * TODO Remove pointless `RawMessage` wrapping and unwrapping? Method should have either a `message` or a `rawMessage`.
+	 * Alternative to functions above, will NOT use {@link IListener#extractMessage} as both input and output are a {@link Message}.
 	 */
-	Message processRequest(IPushingListener<M> origin, RawMessageWrapper<M> rawMessage, Message message, PipeLineSession session) throws ListenerException;
+	Message processRequest(IPushingListener<M> origin, MessageWrapper<M> messageWrapper, PipeLineSession session) throws ListenerException;
 
 }

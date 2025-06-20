@@ -30,6 +30,7 @@ import org.frankframework.core.IPushingListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 
@@ -51,8 +52,8 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	}
 
 	@Override
-	public Message processRequest(IPushingListener<M> origin, RawMessageWrapper<M> rawMessage, Message message, PipeLineSession session) throws ListenerException {
-		return processRequest(message, session);
+	public Message processRequest(IPushingListener<M> origin, MessageWrapper<M> rawMessage, PipeLineSession session) throws ListenerException {
+		return processRequest(rawMessage.getMessage(), session);
 	}
 
 	@Override

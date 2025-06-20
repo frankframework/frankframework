@@ -36,6 +36,7 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.Protected;
+import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ServiceClient;
@@ -99,12 +100,10 @@ public class PushingListenerAdapter implements IPushingListener<Message>, Servic
 
 	@Override
 	public Message processRequest(Message rawMessage, PipeLineSession session) throws ListenerException {
-		RawMessageWrapper<Message> rawMessageWrapper = new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
-		// NB: This seems pointless, but I guess that a subclass could override extractMessage() and make it do something more revolutionary.
-		Message message = extractMessage(rawMessageWrapper, session);
+		MessageWrapper<Message> messageWrapper = new MessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
 		try {
 			log.debug("PushingListenerAdapter.processRequest() for correlationId [{}]", session::getCorrelationId);
-			return handler.processRequest(this, rawMessageWrapper, message, session);
+			return handler.processRequest(this, messageWrapper, session);
 		} catch (ListenerException e) {
 			if (isApplicationFaultsAsExceptions()) {
 				log.debug("PushingListenerAdapter.processRequest() rethrows ListenerException...");
@@ -112,6 +111,8 @@ public class PushingListenerAdapter implements IPushingListener<Message>, Servic
 			}
 
 			log.debug("PushingListenerAdapter.processRequest() formats ListenerException to errormessage");
+			// NB: This seems pointless, but I guess that a subclass could override extractMessage() and make it do something more revolutionary.
+			Message message = extractMessage(messageWrapper, session);
 			return formatExceptionUsingErrorMessageFormatter(session, message, e);
 		} finally {
 			ThreadContext.clearAll();

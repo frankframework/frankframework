@@ -168,13 +168,13 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 		if (!isOpen()) {
 			throw new ListenerException("JavaListener [" + getName() + "] is not opened");
 		}
-		log.debug("JavaListener [{}] processing correlationId [{}]" , getName(), messageWrapper.getCorrelationId());
+		log.debug("JavaListener [{}] processing correlationId [{}]", this::getName, messageWrapper::getCorrelationId);
 
 		try (PipeLineSession session = new PipeLineSession(parentSession)) {
 			Message message = messageWrapper.getMessage();
 
 			try {
-				return handler.processRequest(this, messageWrapper, message, session);
+				return handler.processRequest(this, messageWrapper, session);
 			} catch (ListenerException e) {
 				if (throwException) {
 					throw e;

@@ -109,6 +109,7 @@ import org.frankframework.http.HttpMessageEntity;
 import org.frankframework.http.mime.MultipartEntityBuilder;
 import org.frankframework.http.rest.ApiListener.AuthenticationMethods;
 import org.frankframework.http.rest.ApiListener.HttpMethod;
+import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
@@ -2384,7 +2385,8 @@ public class ApiListenerServletTest {
 		}
 
 		@Override
-		public Message processRequest(IPushingListener<Message> origin, RawMessageWrapper<Message> rawMessage, Message message, PipeLineSession context) throws ListenerException {
+		public Message processRequest(IPushingListener<Message> origin, MessageWrapper<Message> messageWrapper, PipeLineSession context) throws ListenerException {
+			Message message = messageWrapper.getMessage();
 			assertNotNull(message, "input message may not be null");
 
 			handlerInvoked = true;

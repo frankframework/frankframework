@@ -708,8 +708,8 @@ public class ReceiverTest {
 	public void testProcessRequest() throws Exception {
 		// Arrange
 		String rawTestMessage = "TEST";
-		RawMessageWrapper<Serializable> rawTestMessageWrapper = new RawMessageWrapper<>(rawTestMessage, "mid", "cid");
 		Message testMessage = new Message(new StringReader(rawTestMessage));
+		MessageWrapper<Serializable> rawTestMessageWrapper = new MessageWrapper<>(testMessage, "mid", "cid");
 
 		configuration = buildNarayanaTransactionManagerConfiguration();
 		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
@@ -735,7 +735,7 @@ public class ReceiverTest {
 
 		try (PipeLineSession session = new PipeLineSession()) {
 			// Act
-			Message result = receiver.processRequest(listener, rawTestMessageWrapper, testMessage, session);
+			Message result = receiver.processRequest(listener, rawTestMessageWrapper, session);
 
 			// Assert
 			assertFalse(result.isScheduledForCloseOnExitOf(session), "Result message should not be scheduled for closure on exit of session");
@@ -1194,7 +1194,7 @@ public class ReceiverTest {
 		PipeLineSession session = new PipeLineSession();
 
 		// Act
-		Message message = receiver.processRequest(listener, new RawMessageWrapper<>("raw"), Message.nullMessage(), session);
+		Message message = receiver.processRequest(listener, new MessageWrapper<>(new Message("raw"), null, null), session);
 
 		// Assert
 		assertEquals(result, message);
