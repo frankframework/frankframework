@@ -35,6 +35,11 @@ import org.frankframework.stream.Message;
 /**
  * Pipe that throws an exception based on the input message.
  * <br/>
+ * Parameters that are set on the ExceptionPipe will be added to the error message that is produced by
+ * the {@link org.frankframework.errormessageformatters.ErrorMessageFormatter} that has been configured on
+ * the {@link org.frankframework.core.Adapter} and will also be copied into the {@link PipeLineSession}, so
+ * that they can be passed back to a calling adapter as {@code returnedSessionKey}.
+ * <br/>
  * The {@literal success} forward is only used when the (deprecated) attribute {@literal throwException} has been set to {@literal false}. Otherwise, the (default) {@literal exception} forward will be used.
  *
  * @ff.warning The attribute {@literal throwException} has been deprecated and thus the {@literal success} forward will be removed along with the {@literal throwException} attribute.
@@ -45,7 +50,6 @@ public class ExceptionPipe extends AbstractPipe {
 
 	private boolean throwException = true;
 	private PipeForward successForward;
-	private boolean copyParametersToSession = false;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -74,9 +78,7 @@ public class ExceptionPipe extends AbstractPipe {
 			errorMessage="exception: "+getName();
 		}
 
-		if (copyParametersToSession) {
-			session.putAll(parameterValues);
-		}
+		session.putAll(parameterValues);
 		if (isThrowException()) {
 			throw new PipeRunException(this, errorMessage, parameterValues, null);
 		}
@@ -97,15 +99,5 @@ public class ExceptionPipe extends AbstractPipe {
 	}
 	public boolean isThrowException() {
 		return throwException;
-	}
-
-	/**
-	 * If {@code true} all parameters are copied to the session so that it is easier for an {@link org.frankframework.errormessageformatters.ErrorMessageFormatter}
-	 * on the {@link org.frankframework.core.Adapter} to pick up the values.
-	 *
-	 * @ff.default false
-	 */
-	public void setCopyParametersToSession(boolean copyParametersToSession) {
-		this.copyParametersToSession = copyParametersToSession;
 	}
 }

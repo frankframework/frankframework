@@ -78,27 +78,6 @@ public class ExceptionPipeTest extends PipeTestBase<ExceptionPipe> {
 		assertTrue(e.getParameters().containsKey("p2"));
 		assertEquals("v1",  e.getParameters().get("p1"));
 		assertEquals("v2",  e.getParameters().get("p2"));
-		assertFalse(session.containsKey("p1"));
-		assertFalse(session.containsKey("p2"));
-	}
-	@Test
-	public void throwsExceptionWithParametersAndCopyToSession() throws ConfigurationException {
-		pipe.setThrowException(true);
-		pipe.setCopyParametersToSession(true);
-		pipe.addParameter(new Parameter("p1", "v1"));
-		pipe.addParameter(new Parameter("p2", "v2"));
-
-		pipe.configure();
-
-		PipeRunException e = assertThrows(PipeRunException.class, ()->doPipe(pipe, "exception thrown with a custom message", session));
-		assertThat(e.getMessage(), Matchers.endsWith("exception thrown with a custom message"));
-
-		assertFalse(e.getParameters().isEmpty());
-		assertTrue(e.getParameters().containsKey("p1"));
-		assertTrue(e.getParameters().containsKey("p2"));
-		assertEquals("v1",  e.getParameters().get("p1"));
-		assertEquals("v2",  e.getParameters().get("p2"));
-
 		assertTrue(session.containsKey("p1"));
 		assertTrue(session.containsKey("p2"));
 		assertEquals("v1",  session.get("p1"));
