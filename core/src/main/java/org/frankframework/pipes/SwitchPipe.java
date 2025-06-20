@@ -93,7 +93,7 @@ public class SwitchPipe extends AbstractPipe {
 
 		if (StringUtils.isNotEmpty(getXpathExpression()) || StringUtils.isNotEmpty(getStyleSheetName())) {
 			transformerPool = TransformerPool.configureTransformer0(this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), OutputType.TEXT, false, getParameterList(), getXsltVersion());
-		} else if (StringUtils.isEmpty(jsonPathExpression)) {
+		} else {
 			transformerPool = UtilityTransformerPools.getGetRootNodeNameTransformerPool();
 		}
 		jsonPath = JsonUtil.compileJsonPath(jsonPathExpression);
@@ -145,10 +145,6 @@ public class SwitchPipe extends AbstractPipe {
 
 	/**
 	 * Determine the forward to go to, based on the content of the message. If the forward is not found, the notFoundForwardName is used.
-	 * <p>
-	 * This method needs to be refactored. getInputFromSessionKey shouldn't be used here, only getForwardNameSessionKey should be used.
-	 * <p>
-	 * GetInputFromSessionKey can be removed in 9.2.0.
 	 */
 	private String getForward(Message message, PipeLineSession session) throws PipeRunException {
 		if (StringUtils.isNotEmpty(getForwardNameSessionKey())) {
@@ -160,7 +156,7 @@ public class SwitchPipe extends AbstractPipe {
 			throw new PipeRunException(this, "got exception reading input message", e);
 		}
 		if (message.isEmpty()) {
-			return "";
+			return null;
 		}
 		MimeType mimeType = MessageUtils.computeMimeType(message);
 
@@ -183,25 +179,20 @@ public class SwitchPipe extends AbstractPipe {
 			}
 		}
 
-		if (transformerPool != null) {
-			// If the message is JSON it could be transformed to XML using a stylesheet before extracting,
-			// so no mimetype-check here.
-			try {
-				Map<String, Object> parametervalues = null;
-				ParameterList parameterList = getParameterList();
+		// If the message is JSON it could be transformed to XML using a stylesheet before extracting,
+		// so no mimetype-check here.
+		try {
+			Map<String, Object> parametervalues = null;
+			ParameterList parameterList = getParameterList();
 
-				if (!parameterList.isEmpty()) {
-					parametervalues = parameterList.getValues(message, session, isNamespaceAware()).getValueMap();
-				}
-
-				return transformerPool.transformToString(message, parametervalues, isNamespaceAware());
-			} catch (Throwable e) {
-				throw new PipeRunException(this, "got exception on transformation", e);
+			if (!parameterList.isEmpty()) {
+				parametervalues = parameterList.getValues(message, session, isNamespaceAware()).getValueMap();
 			}
-		}
 
-		// It's unlikely that this code is ever reached, as the above code should always return a forward.
-		return null;
+			return transformerPool.transformToString(message, parametervalues, isNamespaceAware());
+		} catch (Throwable e) {
+			throw new PipeRunException(this, "got exception on transformation", e);
+		}
 	}
 
 	private PipeForward getPipeForward(String forward) {
