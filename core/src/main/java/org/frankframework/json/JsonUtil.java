@@ -70,6 +70,14 @@ public class JsonUtil {
 		}
 	}
 
+	/**
+	 * Compile a {@link JsonPath} from the {@code jsonPathExpression} parameter, if it's not {@code null}. If {@code jsonPathExpression} is {@code null},
+	 * return {@code null}.
+	 *
+	 * @param jsonPathExpression JSON Path Expression to compile. May be {@code null}.
+	 * @return {@link JsonPath} compiled from the {@code jsonPathExpression}, or {@code null} if {@code jsonPathExpression} was {@code null}.
+	 * @throws ConfigurationException If there was any exception in trying to compile the {@code jsonPathExpression}, throw a {@link ConfigurationException}.
+	 */
 	public static @Nullable JsonPath compileJsonPath(@Nullable String jsonPathExpression) throws ConfigurationException {
 		if (StringUtils.isEmpty(jsonPathExpression)) {
 			return null;

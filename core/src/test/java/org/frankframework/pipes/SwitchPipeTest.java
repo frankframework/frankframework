@@ -1,5 +1,7 @@
 package org.frankframework.pipes;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -235,6 +237,15 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 	}
 
 	@Test
+	void basicSelectionWithJsonPathExpression() throws Exception {
+		pipe.addForward(new PipeForward("Error", "statusError-Path"));
+		pipe.addForward(new PipeForward("Success", "statusSuccess-Path"));
+		pipe.setJsonPathExpression("$.status");
+
+		testSwitch(MessageTestUtils.getMessage("/SwitchPipe/simple.json"),"Success");
+	}
+
+	@Test
 	void testForwardNameFromSessionKey() throws Exception {
 		pipe.addForward(new PipeForward("forwardName","Envelope-Path"));
 		pipe.setForwardNameSessionKey("forwardNameSessionKey");
@@ -275,7 +286,8 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 	@Test
 	void emptyParameterList() {
 		pipe.setGetInputFromSessionKey("sessionKey");
-		assertThrows(PipeRunException.class, () -> testSwitch(new Message("dummy"), "Envelope"), "cannot find forward or pipe named");
+		PipeRunException prr = assertThrows(PipeRunException.class, () -> testSwitch(new Message("dummy"), "Envelope"));
+		assertThat(prr.getMessage(), containsString("cannot find forward or pipe named"));
 	}
 
 	@Test
@@ -313,15 +325,17 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 	}
 
 	@Test
-	void configureNotFoundForwardNotRegistered() {
+	void configureXpathAndStylesheetBothSet() {
 		pipe.setXpathExpression("name(/node()[position()=last()])");
 		pipe.setStyleSheetName("/SwitchPipe/selection.xsl");
-		assertThrows(ConfigurationException.class, () -> pipe.configure(), "cannot have both an xpathExpression and a styleSheetName specified");
+		ConfigurationException ce = assertThrows(ConfigurationException.class, () -> pipe.configure());
+		assertThat(ce.getMessage(), containsString("cannot have both an xpathExpression and a styleSheetName specified"));
 	}
 
 	@Test
 	void styleSheetNotExists() {
 		pipe.setStyleSheetName("/SwitchPipe/dummy.xsl");
-		assertThrows(ConfigurationException.class, () -> pipe.configure(), "cannot find stylesheet");
+		ConfigurationException ce = assertThrows(ConfigurationException.class, () -> pipe.configure());
+		assertThat(ce.getMessage(), containsString("cannot find [/SwitchPipe/dummy.xsl]"));
 	}
 }

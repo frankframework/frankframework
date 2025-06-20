@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.MimeType;
 
 import com.jayway.jsonpath.JsonPath;
 
@@ -33,10 +34,12 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
+import org.frankframework.http.rest.MediaTypes;
 import org.frankframework.json.JsonException;
 import org.frankframework.json.JsonUtil;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.UtilityTransformerPools;
@@ -45,7 +48,7 @@ import org.frankframework.util.XmlUtils;
 
 /**
  * Selects an exitState, based on either the content of the input message, by means
- * of an XSLT-stylesheet, the content of a session variable or, by default, by returning the name of the root-element.
+ * of an XSLT-stylesheet, the content of a session variable, a JSON Path expression, or, by default, by returning the name of the root-element.
  *
  * @author Johan Verrips
  */
@@ -90,7 +93,7 @@ public class SwitchPipe extends AbstractPipe {
 
 		if (StringUtils.isNotEmpty(getXpathExpression()) || StringUtils.isNotEmpty(getStyleSheetName())) {
 			transformerPool = TransformerPool.configureTransformer0(this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), OutputType.TEXT, false, getParameterList(), getXsltVersion());
-		} else {
+		} else if (StringUtils.isEmpty(jsonPathExpression)) {
 			transformerPool = UtilityTransformerPools.getGetRootNodeNameTransformerPool();
 		}
 		jsonPath = JsonUtil.compileJsonPath(jsonPathExpression);
@@ -151,8 +154,38 @@ public class SwitchPipe extends AbstractPipe {
 		if (StringUtils.isNotEmpty(getForwardNameSessionKey())) {
 			return session.getString(getForwardNameSessionKey());
 		}
+		try {
+			message.preserve();
+		} catch (IOException e) {
+			throw new PipeRunException(this, "got exception reading input message", e);
+		}
+		if (message.isEmpty()) {
+			return "";
+		}
+		MimeType mimeType = MessageUtils.computeMimeType(message);
 
-		if (!(StringUtils.isEmpty(getXpathExpression()) && StringUtils.isEmpty(getStyleSheetName())) || StringUtils.isEmpty(getGetInputFromSessionKey())) {
+		if (mimeType.isCompatibleWith(MediaTypes.TEXT.getMimeType())) {
+			try {
+				// Use the message-text itself as forward if the message is plaintext which would never parse correctly as XML or JSON
+				return message.asString();
+			} catch (IOException e) {
+				throw new PipeRunException(this, "Error reading message", e);
+			}
+		}
+
+		if (jsonPath != null && mimeType.isCompatibleWith(MediaTypes.JSON.getMimeType())) {
+			// If the message is not JSON, don't try to evaluate it here. User may have also
+			// set an xpath or stylesheet to transform, or the XML root element may be used.
+			try {
+				return JsonUtil.evaluateJsonPathToSingleValue(jsonPath, message);
+			} catch (JsonException e) {
+				throw new PipeRunException(this, "Exception on JSON Path Evaluation", e);
+			}
+		}
+
+		if (transformerPool != null) {
+			// If the message is JSON it could be transformed to XML using a stylesheet before extracting,
+			// so no mimetype-check here.
 			try {
 				Map<String, Object> parametervalues = null;
 				ParameterList parameterList = getParameterList();
@@ -161,31 +194,13 @@ public class SwitchPipe extends AbstractPipe {
 					parametervalues = parameterList.getValues(message, session, isNamespaceAware()).getValueMap();
 				}
 
-				message.preserve();
 				return transformerPool.transformToString(message, parametervalues, isNamespaceAware());
 			} catch (Throwable e) {
 				throw new PipeRunException(this, "got exception on transformation", e);
 			}
 		}
 
-		if (jsonPath != null) {
-			try {
-				return JsonUtil.evaluateJsonPathToSingleValue(jsonPath, message);
-			} catch (JsonException e) {
-				throw new PipeRunException(this, "Exception on JSON Path Evaluation", e);
-			}
-		}
-
 		// It's unlikely that this code is ever reached, as the above code should always return a forward.
-		if (StringUtils.isNotEmpty(getGetInputFromSessionKey())) {
-			try {
-				// Use the message as forward if none of the cases above apply
-				return message.asString();
-			} catch (IOException e) {
-				throw new PipeRunException(this, "Error reading message", e);
-			}
-		}
-
 		return null;
 	}
 
