@@ -1,15 +1,13 @@
 package org.frankframework.util.flow;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class MermaidFlowGeneratorTest {
 
@@ -26,8 +24,10 @@ class MermaidFlowGeneratorTest {
 			"Exit1Validators0Wrappers0", "Exit1Validators0Wrappers1",
 			"Exit1Validators1Wrappers0", "Exit1Validators1Wrappers1",
 			"NoExplicitExitThenImplicitSuccessExit", "OnlyExplicitErrorExitThenImplicitSuccessExit",
-			"OnlyExplicitSuccessThenNoImplicitError", "ExplicitSuccessAndErrorThenNothingImplicit"
+			"OnlyExplicitSuccessThenNoImplicitError", "ExplicitSuccessAndErrorThenNothingImplicit",
+			"CombineForwardsBetweenSameNodes"
 	})
+
 	void test(String directory) throws Exception {
 		String testFileDir = BASE_DIR + directory;
 
