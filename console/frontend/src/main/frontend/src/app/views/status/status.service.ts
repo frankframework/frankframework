@@ -1,6 +1,6 @@
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { map, Observable } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
 
@@ -16,6 +16,15 @@ export class StatusService {
 
   getConfigurationFlowDiagramUrl(flowUrl: string): string {
     return `${this.appService.getServerPath()}iaf/api/configurations${flowUrl}`;
+  }
+
+  getAdapterFlowDiagramContentLength(flowUrl: string): Observable<number> {
+    return this.http
+      .head(flowUrl, {
+        observe: 'response',
+        responseType: 'text',
+      })
+      .pipe(map((data) => +(data.headers.get('Content-Length') ?? 0)));
   }
 
   getAdapterFlowDiagram(flowUrl: string): Observable<HttpResponse<string>> {

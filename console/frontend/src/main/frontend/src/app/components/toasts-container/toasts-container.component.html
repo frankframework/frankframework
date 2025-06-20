@@ -1,4 +1,4 @@
-@for (toast of toastService.toasts; track toast) {
+@for (toast of toastService.toasts; track $index) {
   <ngb-toast
     [class]="getClassByType(toast.type)"
     [class.clickable]="!!toast.clickHandler"
