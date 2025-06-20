@@ -9,7 +9,7 @@
 			<exits>
 				<exit name="EXIT" state="success" />
 			</exits>
-			<XmlSwitchPipe name="select branch" xpathExpression="*/@branch" />
+			<SwitchPipe name="select branch" xpathExpression="*/@branch" />
 
 			<EchoPipe name="defaultExit" getInputFromFixedValue="&lt;/root&gt;branch not found&lt;/root&gt;">
 				<forward name="success" path="EXIT" />
