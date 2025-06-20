@@ -106,7 +106,7 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 	}
 
 	/**
-	 * Derived from {@link JsonValidator#getSubSchema()}
+	 * Derived from {@link JsonValidator#getJsonSchema()}
 	 */
 	public void validateJson(String jsonString, String jsonSchemaContent) {
 		JsonSchemaFactory service = JsonSchemaFactory.getInstance(SpecVersion.VersionFlag.V202012);
