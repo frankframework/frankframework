@@ -95,12 +95,12 @@
 			</EchoPipe>
 
 			<ExceptionPipe name="result-count=0">
-				<Param name="errorCode" value="-1"/>
+				<NumberParam name="errorCode" value="-1"/>
 				<Param name="errorMessage" value="No results found"/>
 			</ExceptionPipe>
 
 			<ExceptionPipe name="result-count-too-many">
-				<Param name="errorCode" value="2"/>
+				<NumberParam name="errorCode" value="2"/>
 				<Param name="errorMessage" value="Too many results found, expected only single result"/>
 			</ExceptionPipe>
 		</Pipeline>

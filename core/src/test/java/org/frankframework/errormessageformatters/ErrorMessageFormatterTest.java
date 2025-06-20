@@ -117,8 +117,8 @@ class ErrorMessageFormatterTest {
 					<location class="org.frankframework.errormessageformatters.MyLocation" name="dummy-location"/>
 					<details>org.frankframework.core.PipeRunException: dummy-exception-message</details>
 					<params>
-				 		<param name="p1" value="v1"/>
-				 		<param name="p2" value="v2"/>
+				 		<param name="p1">v1</param>
+				 		<param name="p2">v2</param>
 				 	</params>
 					<originalMessage messageId="dummy-message-id" receivedTime="-timestamp-">dummy-message</originalMessage>
 				</errorMessage>
@@ -130,7 +130,7 @@ class ErrorMessageFormatterTest {
 	@Test
 	void formatAsJsonWithException() throws Exception {
 		formatter.setMessageFormat(DocumentFormat.JSON);
-		Map<String, Object> params = Map.of("p1", "v1", "p2", "v2");
+		Map<String, Object> params = Map.of("p1", "v1", "p2", 2);
 		exception = new PipeRunException(null, "dummy-exception-message", params, null);
 
 		// Act
@@ -151,16 +151,10 @@ class ErrorMessageFormatterTest {
 							"name": "dummy-location"
 						},
 						"details": "org.frankframework.core.PipeRunException: dummy-exception-message",
-						"params": [
-							{
-								"name": "p1",
-								"value": "v1"
-							},
-							{
-								"name": "p2",
-								"value": "v2"
-							}
-						],
+						"params": {
+							"p1": "v1",
+							"p2": 2
+						},
 						"originalMessage": {
 							"messageId": "dummy-message-id",
 							"receivedTime": "-timestamp-",

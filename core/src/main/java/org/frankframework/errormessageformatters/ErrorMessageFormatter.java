@@ -124,21 +124,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 			}
 			addParams(exceptionParams, errorObject);
 
-			INodeBuilder nodeBuilder = errorObject.addField(PipeLineSession.ORIGINAL_MESSAGE_KEY);
-			ObjectBuilder originalMessageObject = nodeBuilder.startObject();
-
-			originalMessageObject.addAttribute("messageId", messageId);
-			Instant tsReceived = session.getTsReceived();
-			if (tsReceived != null && tsReceived.toEpochMilli() != 0) {
-				originalMessageObject.addAttribute("receivedTime", Date.from(tsReceived).toString());
-			}
-			String originalMessageAsString = getMessageAsString(originalMessage, messageId);
-			if (messageFormat == DocumentFormat.XML) {
-				nodeBuilder.setValue(originalMessageAsString);
-			} else {
-				originalMessageObject.add("message", originalMessageAsString);
-			}
-			originalMessageObject.close();
+			addOriginalMessageObject(originalMessage, session, errorObject, messageId);
 
 			errorObject.close();
 			if (rootObjectBuilder != null) {
@@ -154,20 +140,65 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		}
 	}
 
-	private static void addParams(Map<String, Object> exceptionParams, ObjectBuilder errorObject) throws SAXException {
+	private void addOriginalMessageObject(Message originalMessage, PipeLineSession session, ObjectBuilder errorObject, String messageId) throws SAXException {
+		INodeBuilder originalMessageNode = errorObject.addField(PipeLineSession.ORIGINAL_MESSAGE_KEY);
+		ObjectBuilder originalMessageObject = originalMessageNode.startObject();
+
+		originalMessageObject.addAttribute("messageId", messageId);
+		Instant tsReceived = session.getTsReceived();
+		if (tsReceived != null && tsReceived.toEpochMilli() != 0) {
+			originalMessageObject.addAttribute("receivedTime", Date.from(tsReceived).toString());
+		}
+		String originalMessageAsString = getMessageAsString(originalMessage, messageId);
+		if (messageFormat == DocumentFormat.XML) {
+			originalMessageNode.setValue(originalMessageAsString);
+		} else {
+			originalMessageObject.add("message", originalMessageAsString);
+		}
+		originalMessageObject.close();
+	}
+
+	private void addParams(Map<String, Object> exceptionParams, ObjectBuilder errorObject) throws SAXException, IOException {
 		if (!exceptionParams.isEmpty()) {
-			ArrayBuilder paramsObject = errorObject.addArrayField("params", "param");
+			// Sort the entries in the map by key, basically because it makes testing easier.
 			Collection<Map.Entry<String, Object>> entries = exceptionParams.entrySet()
 					.stream()
 					.sorted(Map.Entry.comparingByKey())
 					.toList();
-			for (Map.Entry<String, Object> entry : entries) {
-				ObjectBuilder param = paramsObject.addObjectElement();
-				param.addAttribute("name", entry.getKey());
-				param.addAttribute("value", entry.getValue().toString());
-				param.close();
+
+			if (messageFormat == DocumentFormat.XML) {
+				ArrayBuilder paramsArray = errorObject.addArrayField("params", "param");
+				for (Map.Entry<String, Object> entry : entries) {
+					INodeBuilder paramNode = paramsArray.addElement();
+					ObjectBuilder paramObject = paramNode.startObject();
+					paramObject.addAttribute("name", entry.getKey());
+
+					Object value = entry.getValue();
+					if (value instanceof Message message) {
+						paramNode.setValue(message.asString());
+					} else {
+						paramNode.setValue(value.toString());
+					}
+					paramObject.close();
+				}
+				paramsArray.close();
+			} else {
+				ObjectBuilder paramsObject = errorObject.addObjectField("params");
+				for (Map.Entry<String, Object> entry : entries) {
+					String key = entry.getKey();
+					Object value = entry.getValue();
+					if (value instanceof Message message) {
+						paramsObject.add(key, message.asString());
+					} else if (value instanceof Number number) {
+						paramsObject.add(key, number);
+					} else if (value instanceof Boolean bool) {
+						paramsObject.add(key, bool);
+					} else {
+						paramsObject.add(key, entry.getValue().toString());
+					}
+				}
+				paramsObject.close();
 			}
-			paramsObject.close();
 		}
 	}
 
