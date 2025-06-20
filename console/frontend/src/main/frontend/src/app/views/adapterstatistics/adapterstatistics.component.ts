@@ -6,7 +6,7 @@ import { Subscription } from 'rxjs';
 import { AppConstants, AppService } from 'src/app/app.service';
 import { DebugService } from 'src/app/services/debug.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
-import { AdapterstatisticsService, Statistics } from './adapterstatistics.service';
+import { AdapterstatisticsService, Statistics, StatisticsKeeper } from './adapterstatistics.service';
 import { LaddaModule } from 'angular2-ladda';
 
 import { FormatStatKeysPipe } from './format-stat-keys.pipe';
@@ -161,6 +161,10 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
 
   collapseExpand(key: keyof typeof this.iboxExpanded): void {
     this.iboxExpanded[key] = !this.iboxExpanded[key];
+  }
+
+  getSortedProcessingThreads(receiver: Statistics['receivers'][0]): StatisticsKeeper[] {
+    return receiver.processing.sort((a: StatisticsKeeper, b: StatisticsKeeper) => a.name.localeCompare(b.name));
   }
 
   private populateBoundaries(): void {
