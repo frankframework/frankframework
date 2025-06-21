@@ -127,7 +127,7 @@ public class SwitchPipe extends AbstractPipe {
 	 */
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		String forward = getForward(message, session);
+		String forward = getForwardName(message, session);
 
 		log.debug("determined forward [{}]", forward);
 
@@ -146,7 +146,7 @@ public class SwitchPipe extends AbstractPipe {
 	/**
 	 * Determine the forward to go to, based on the content of the message. If the forward is not found, the notFoundForwardName is used.
 	 */
-	private String getForward(Message message, PipeLineSession session) throws PipeRunException {
+	private String getForwardName(Message message, PipeLineSession session) throws PipeRunException {
 		if (StringUtils.isNotEmpty(getForwardNameSessionKey())) {
 			return session.getString(getForwardNameSessionKey());
 		}
@@ -156,7 +156,7 @@ public class SwitchPipe extends AbstractPipe {
 			throw new PipeRunException(this, "got exception reading input message", e);
 		}
 		if (message.isEmpty()) {
-			return null;
+			return getEmptyForwardName();
 		}
 		MimeType mimeType = MessageUtils.computeMimeType(message);
 
@@ -195,23 +195,16 @@ public class SwitchPipe extends AbstractPipe {
 		}
 	}
 
-	private PipeForward getPipeForward(String forward) {
-		PipeForward pipeForward;
-		if (StringUtils.isEmpty(forward) && getEmptyForwardName() != null) {
+	private PipeForward getPipeForward(String forwardName) {
+		PipeForward pipeForward = findForward(forwardName);
+		if (pipeForward != null) {
 			throwEvent(SWITCH_FORWARD_FOUND_MONITOR_EVENT);
-			pipeForward = findForward(getEmptyForwardName());
 		} else {
-			if (findForward(forward) != null) {
-				throwEvent(SWITCH_FORWARD_FOUND_MONITOR_EVENT);
-				pipeForward = findForward(forward);
-			} else {
-				throwEvent(SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT);
-				pipeForward = findForward(getNotFoundForwardName());
-			}
+			throwEvent(SWITCH_FORWARD_NOT_FOUND_MONITOR_EVENT);
+			pipeForward = findForward(getNotFoundForwardName());
 		}
 
-		log.info("resolved forward [{}] to [{}]", forward, pipeForward);
-
+		log.info("resolved forward [{}] to [{}]", forwardName, pipeForward);
 		return pipeForward;
 	}
 

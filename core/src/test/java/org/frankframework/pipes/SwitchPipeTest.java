@@ -246,6 +246,32 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 	}
 
 	@Test
+	void basicSelectionWithJsonPathExpressionNotFound() throws Exception {
+		pipe.setEmptyForwardName("EmptyMessage");
+		pipe.setNotFoundForwardName("NotFound");
+		pipe.addForward(new PipeForward("EmptyMessage", "EmptyMessage-Path"));
+		pipe.addForward(new PipeForward("NotFound", "NotFound-Path"));
+		pipe.addForward(new PipeForward("Error", "statusError-Path"));
+		pipe.addForward(new PipeForward("Success", "statusSuccess-Path"));
+		pipe.setJsonPathExpression("$.NotThere");
+
+		testSwitch(MessageTestUtils.getMessage("/SwitchPipe/simple.json"),"NotFound");
+	}
+
+	@Test
+	void basicSelectionWithJsonPathExpressionSelectsObject() throws Exception {
+		pipe.setEmptyForwardName("EmptyMessage");
+		pipe.setNotFoundForwardName("NotFound");
+		pipe.addForward(new PipeForward("EmptyMessage", "EmptyMessage-Path"));
+		pipe.addForward(new PipeForward("NotFound", "NotFound-Path"));
+		pipe.addForward(new PipeForward("Error", "statusError-Path"));
+		pipe.addForward(new PipeForward("Success", "statusSuccess-Path"));
+		pipe.setJsonPathExpression("$.data");
+
+		testSwitch(MessageTestUtils.getMessage("/SwitchPipe/simple.json"),"NotFound");
+	}
+
+	@Test
 	void testForwardNameFromSessionKey() throws Exception {
 		pipe.addForward(new PipeForward("forwardName","Envelope-Path"));
 		pipe.setForwardNameSessionKey("forwardNameSessionKey");
@@ -291,11 +317,11 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 	}
 
 	@Test
-	void emptyForward() throws Exception {
+	void emptyForwardSelected() throws Exception {
 		pipe.setEmptyForwardName("emptyForward");
-		pipe.setGetInputFromSessionKey("sessionKey");
+		pipe.setNotFoundForwardName("notFound");
 		pipe.addForward(new PipeForward("emptyForward", "test"));
-		session.put("sessionKey", "");
+		pipe.addForward(new PipeForward("notFound", "notFound"));
 
 		// Configure input/output pipe processor to enable getInputFromSessionKey
 		InputOutputPipeProcessor ioProcessor = new InputOutputPipeProcessor();
@@ -304,7 +330,7 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 
 		pipe.configure();
 
-		PipeRunResult prr = ioProcessor.processPipe(pipeline, pipe, new Message("dummy"), session);
+		PipeRunResult prr = ioProcessor.processPipe(pipeline, pipe, new Message(""), session);
 
 		// Expect emptyForward to be returned
 		PipeForward forward = prr.getPipeForward();
@@ -312,6 +338,30 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 
 		String actualForwardName = forward.getName();
 		assertEquals("emptyForward", actualForwardName);
+	}
+
+	@Test
+	void emptyForwardNotSelected() throws Exception {
+		pipe.setEmptyForwardName("emptyForward");
+		pipe.setNotFoundForwardName("notFound");
+		pipe.addForward(new PipeForward("emptyForward", "test"));
+		pipe.addForward(new PipeForward("notFound", "notFound"));
+
+		// Configure input/output pipe processor to enable getInputFromSessionKey
+		InputOutputPipeProcessor ioProcessor = new InputOutputPipeProcessor();
+		CorePipeProcessor coreProcessor = new CorePipeProcessor();
+		ioProcessor.setPipeProcessor(coreProcessor);
+
+		pipe.configure();
+
+		PipeRunResult prr = ioProcessor.processPipe(pipeline, pipe, new Message("unfound"), session);
+
+		// Expect emptyForward to be returned
+		PipeForward forward = prr.getPipeForward();
+		assertNotNull(forward);
+
+		String actualForwardName = forward.getName();
+		assertEquals("notFound", actualForwardName);
 	}
 
 	@Test
