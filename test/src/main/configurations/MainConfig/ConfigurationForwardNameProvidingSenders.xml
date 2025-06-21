@@ -5,10 +5,10 @@
 			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-ForwardNameSelectable"/>
 		</receiver>
 		<pipeline>
-			<XmlSwitchPipe name="SenderSelector" xpathExpression="*/@sender">
+			<SwitchPipe name="SenderSelector" xpathExpression="*/@sender">
 				<forward name="IbisLocalSender" path="Call ForwardNameSelectable Child Adapter via IbisLocalSender"/>
 				<forward name="HttpSender" path="Call ForwardNameSelectable Child Adapter via HttpSender"/>
-			</XmlSwitchPipe>
+			</SwitchPipe>
 
 			<SenderPipe name="Call ForwardNameSelectable Child Adapter via IbisLocalSender">
 				<IbisLocalSender javaListener="ibis4test-ForwardNameSelectable-Child"/>
@@ -71,7 +71,7 @@
 				<Exit name="ExitE400" state="ERROR" code="400"/>
 				<Exit name="ExitE500" state="ERROR" code="500"/>
 			</Exits>
-			<XmlSwitchPipe name="exitSelector" xpathExpression="*/@path"/>
+			<SwitchPipe name="exitSelector" xpathExpression="*/@path"/>
 		</Pipeline>
 	</Adapter>
 
@@ -89,7 +89,7 @@
 			<ReplacerPipe name="httpservice" getInputFromFixedValue="statuscodeselectable: [?{exit}]">
 				<param name="exit" sessionKey="exit"/>
 			</ReplacerPipe>
-			<XmlSwitchPipe name="exitXmlSwitch" forwardNameSessionKey="exit"/>
+			<SwitchPipe name="exitXmlSwitch" forwardNameSessionKey="exit"/>
 		</Pipeline>
 	</Adapter>
 </module>

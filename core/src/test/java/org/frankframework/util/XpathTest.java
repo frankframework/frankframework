@@ -135,7 +135,7 @@ public class XpathTest extends FunctionalTransformerPoolTestBase {
 
 	@Test
 	public void testXpathXmlSwitchCase1() throws Exception {
-		String input= TestFileUtils.getTestFile("/XmlSwitch/in.xml");
+		String input= TestFileUtils.getTestFile("/SwitchPipe/in.xml");
 		String expression="name(/Envelope/Body/*[name()!='MessageHeader'])";
 		String expected="SetRequest";
 		xpathTest(input,expression,expected);

@@ -156,7 +156,7 @@
 			</pipe>
 
 			<pipe name="successOrException"
-				className="org.frankframework.pipes.XmlSwitch" forwardNameSessionKey="statusCode">
+                  className="org.frankframework.pipes.SwitchPipe" forwardNameSessionKey="statusCode">
 				<forward name="200" path="EXIT" />
 				<forward name="304" path="EXIT" />
 				<forward name="500" path="FixedResultOnException" />
@@ -249,7 +249,7 @@
 					<exit state="success" name="EXIT" />
 				</exits>
 			</exits>
-			<pipe name="SwitchMethod" className="org.frankframework.pipes.XmlSwitch" xpathExpression="*/@method" />
+			<pipe name="SwitchMethod" className="org.frankframework.pipes.SwitchPipe" xpathExpression="*/@method" />
 
 			<pipe name="post" className="org.frankframework.pipes.SenderPipe">
 				<HttpSender urlParam="url_param" allowSelfSignedCertificates="true" verifyHostname="false" authAlias="${framework.api.user.alias}"

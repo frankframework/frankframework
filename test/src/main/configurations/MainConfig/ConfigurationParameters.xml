@@ -7,7 +7,7 @@
 			<exits>
 				<exit name="EXIT" state="success" />
 			</exits>
-			<pipe name="SwitchAction" className="org.frankframework.pipes.XmlSwitch" getInputFromSessionKey="originalMessage"
+			<pipe name="SwitchAction" className="org.frankframework.pipes.SwitchPipe" getInputFromSessionKey="originalMessage"
                   xpathExpression="request/@action"/>
 
 			<pipe name="XsltPipe-viaInput" className="org.frankframework.pipes.XsltPipe" styleSheetName ="Parameters/ShowParam.xslt">

@@ -9,7 +9,7 @@
 				<exit name="EXIT" state="success" />
 			</exits>
 
-			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch"
+			<pipe name="switchAction" className="org.frankframework.pipes.SwitchPipe"
 				xpathExpression="request/@action"></pipe>
 
 			<!-- insertBigClob -->

@@ -46,7 +46,7 @@
 			/>
 			<pipe
 				name="CheckDummyMessage"
-				className="org.frankframework.pipes.XmlSwitch"
+				className="org.frankframework.pipes.SwitchPipe"
 				xpathExpression="/tests/test = 'Dummy'"
 				>
 				<forward name="true" path="CreateExampleMessage"/>

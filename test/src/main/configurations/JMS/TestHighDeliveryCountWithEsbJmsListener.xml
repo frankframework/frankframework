@@ -12,7 +12,7 @@
 				<exit name="EXIT" state="success" />
 			</exits>
 
-			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch" xpathExpression="reply/@action" />
+			<pipe name="switchAction" className="org.frankframework.pipes.SwitchPipe" xpathExpression="reply/@action" />
 
 			<pipe name="ok" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />

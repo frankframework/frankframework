@@ -48,7 +48,7 @@
 			</exits>
 
 			<pipe name="isZipfile"
-				className="org.frankframework.pipes.XmlSwitch"
+				className="org.frankframework.pipes.SwitchPipe"
 				xpathExpression="contains($filename,'.zip')">
 				<param name="filename" xpathExpression="part/@filename" />
 				<forward name="true" path="switchUnzipFile" />
@@ -56,7 +56,7 @@
 			</pipe>
 
 			<pipe name="switchUnzipFile"
-				className="org.frankframework.pipes.XmlSwitch"
+				className="org.frankframework.pipes.SwitchPipe"
 				sessionKey="unzipFile"
 				notFoundForwardName="StoreFilenameInSessionkey">
 				<forward name="unzip" path="unzipFiles" />

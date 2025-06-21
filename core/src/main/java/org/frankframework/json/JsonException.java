@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,13 +13,17 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.pipes;
+package org.frankframework.json;
 
+import java.io.Serial;
 
-/**
- * Selects an exitState, based on either the content of the input message, by means
- * of an XSLT-stylesheet, the content of a session variable or, by default, by returning the name of the root-element.
- *
- */
-public class XmlSwitch extends SwitchPipe {
+import org.frankframework.core.IbisException;
+
+public class JsonException extends IbisException {
+	@Serial
+	private static final long serialVersionUID = 1L;
+
+	public JsonException(String message, Throwable cause) {
+		super(message, cause);
+	}
 }

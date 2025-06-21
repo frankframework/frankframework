@@ -89,7 +89,7 @@
 				<sender className="org.frankframework.senders.IbisJavaSender"
 					serviceName="testtool-receivertest" />
 			</pipe>
-			<pipe name="switch" className="org.frankframework.pipes.XmlSwitch" xpathExpression="*/@forward" >
+			<pipe name="switch" className="org.frankframework.pipes.SwitchPipe" xpathExpression="*/@forward" >
 				<forward name="ready" path="READY"/>
 				<forward name="error" path="ERROR"/>
 				<forward name="exception" path="ThrowException"/>

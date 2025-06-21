@@ -5,10 +5,10 @@
 				<Exit name="SUCCESS" state="SUCCESS"/>
 				<Exit name="ERROR" state="ERROR"/>
 			</Exits>
-			<XmlSwitchPipe name="SenderSelector" xpathExpression="/select-sender">
+			<SwitchPipe name="SenderSelector" xpathExpression="/select-sender">
 				<forward name="Sender with All Keys" path="Sender With All Expected Keys"/>
 				<forward name="Sender with Missing Keys" path="Sender With Expected Keys Missing"/>
-			</XmlSwitchPipe>
+			</SwitchPipe>
 			<SenderPipe name="Sender With All Expected Keys">
 				<FrankSender target="Pipeline with Expected Session Keys">
 					<Param name="k1" value="1"/>

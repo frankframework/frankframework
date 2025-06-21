@@ -30,7 +30,7 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 
 	@Test
 	void testFindForwardToPipeExplicit() throws ConfigurationException {
-		XmlSwitch pipe1 = new XmlSwitch();
+		SwitchPipe pipe1 = new SwitchPipe();
 		pipe1.setName("pipe1");
 		pipe1.addForward(new PipeForward("fakeForward", "pipe3"));
 		pipeline.addPipe(pipe1);
@@ -53,7 +53,7 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 
 	@Test
 	void testFindForwardToPipeImplicit() throws ConfigurationException {
-		XmlSwitch pipe1 = new XmlSwitch();
+		SwitchPipe pipe1 = new SwitchPipe();
 		pipe1.setName("pipe1");
 		pipeline.addPipe(pipe1);
 
@@ -75,7 +75,7 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 
 	@Test
 	void testFindForwardToNextPipeImplicit() throws ConfigurationException {
-		XmlSwitch pipe1 = new XmlSwitch();
+		SwitchPipe pipe1 = new SwitchPipe();
 		pipe1.setName("pipe1");
 		pipeline.addPipe(pipe1);
 
@@ -98,7 +98,7 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 
 	@Test
 	void testFindForwardToExitExplicit() throws ConfigurationException {
-		XmlSwitch pipe1 = new XmlSwitch();
+		SwitchPipe pipe1 = new SwitchPipe();
 		pipe1.setName("pipe1");
 		pipe1.addForward(new PipeForward("ready", "READY"));
 		pipeline.addPipe(pipe1);
@@ -118,7 +118,7 @@ class ForwardHandlingTest extends ConfiguredTestBase {
 
 	@Test
 	void testFindForwardToExitImplicit() throws ConfigurationException {
-		XmlSwitch pipe1 = new XmlSwitch();
+		SwitchPipe pipe1 = new SwitchPipe();
 		pipe1.setName("pipe1");
 		pipeline.addPipe(pipe1);
 

@@ -129,7 +129,7 @@ class JsonPathPipeTest {
 		pipe.setJsonPathExpression("$[invalid");
 		ConfigurationException e = assertThrows(ConfigurationException.class, pipe::configure);
 
-		assertThat(e.getMessage(), containsString("Invalid JSON Path expression: [$[invalid]"));
+		assertThat(e.getMessage(), containsString("Invalid JSON path expression: [$[invalid]"));
 	}
 
 	@Test
@@ -144,6 +144,6 @@ class JsonPathPipeTest {
 		PipeRunException pipeRunException = assertThrows(PipeRunException.class, () -> pipe.doPipe(input, session));
 
 		// Assert
-		assertEquals("No results for path: $['a']", pipeRunException.getCause().getMessage());
+		assertThat(pipeRunException.getCause().getMessage(), containsString("No results for path: $['a']"));
 	}
 }

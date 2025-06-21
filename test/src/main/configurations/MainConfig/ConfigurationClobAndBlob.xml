@@ -8,7 +8,7 @@
 				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe name="prepareDummyInput" className="org.frankframework.pipes.PutInSessionPipe" sessionKey="dummyInput" getInputFromFixedValue="&lt;root&gt;dummyInput&lt;/root&gt;" />
-			<pipe name="SwitchAction" className="org.frankframework.pipes.XmlSwitch" getInputFromSessionKey="originalMessage"
+			<pipe name="SwitchAction" className="org.frankframework.pipes.SwitchPipe" getInputFromSessionKey="originalMessage"
                   xpathExpression="request/@action"/>
 
 			<!-- 01 InsertClobViaInputMessage -->

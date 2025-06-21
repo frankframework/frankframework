@@ -9,26 +9,20 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.util.TransformerPoolNamespaceUnawarenessTest;
 
-public class XmlSwitchNamespaceUnawarenessTest extends PipeTestBase<XmlSwitch> {
+public class SwitchPipeNamespaceUnawarenessTest extends PipeTestBase<SwitchPipe> {
 
-	public String NAMESPACE_UNAWARE_XSLT1_RESULT_7_0= "1";
-	public String NAMESPACE_UNAWARE_XSLT1_RESULT_7_5678= "1";
-
-	private final String namespaceUnaware_Xslt1_result = NAMESPACE_UNAWARE_XSLT1_RESULT_7_5678;
-
-	public String XSLT2_XPATH_RESULT_7_0= "NF";
-	public String XSLT2_XPATH_RESULT_7_5678= "1";
-
-	private final String xslt2_XPath_result = XSLT2_XPATH_RESULT_7_5678;
+	public static final String NAMESPACE_UNAWARE_XSLT1_RESULT_7_5678= "1";
+	public static final String XSLT2_XPATH_RESULT_7_0 = "NF";
+	public static final String XSLT2_XPATH_RESULT_7_5678 = "1";
 
 	@Override
-	public XmlSwitch createPipe() {
-		return new XmlSwitch();
+	public SwitchPipe createPipe() {
+		return new SwitchPipe();
 
 	}
 
 	public void testSwitch(String input, String expectedForwardName) throws Exception {
-		log.debug("inputfile ["+input+"]");
+		log.debug("inputfile [{}]", input);
 		pipe.configure();
 		pipe.start();
 		PipeRunResult prr = doPipe(input);
@@ -44,10 +38,10 @@ public class XmlSwitchNamespaceUnawarenessTest extends PipeTestBase<XmlSwitch> {
 
 
 	public void testNamespaceAwarenessWithStylesheet(int xsltVersion, boolean namespaceAware, String expectedForwardName) throws Exception {
-		pipe.addForward(new PipeForward("1","FixedResult1"));
-		pipe.addForward(new PipeForward("NF","FixedResultNF"));
+		pipe.addForward(new PipeForward(XSLT2_XPATH_RESULT_7_5678,"FixedResult1"));
+		pipe.addForward(new PipeForward(XSLT2_XPATH_RESULT_7_0,"FixedResultNF"));
 		pipe.setStyleSheetName(TransformerPoolNamespaceUnawarenessTest.NAMESPACELESS_STYLESHEET);
-		pipe.setNotFoundForwardName("NF");
+		pipe.setNotFoundForwardName(XSLT2_XPATH_RESULT_7_0);
 		pipe.setXsltVersion(xsltVersion);
 		pipe.setNamespaceAware(namespaceAware);
 		String input= "<root xmlns=\"http://dummy\"><sub>1</sub></root>";
@@ -55,10 +49,10 @@ public class XmlSwitchNamespaceUnawarenessTest extends PipeTestBase<XmlSwitch> {
 	}
 
 	public void testNamespaceAwarenessWithXpath(int xsltVersion, boolean namespaceAware, String expectedForwardName) throws Exception {
-		pipe.addForward(new PipeForward("1","FixedResult1"));
-		pipe.addForward(new PipeForward("NF","FixedResultNF"));
+		pipe.addForward(new PipeForward(XSLT2_XPATH_RESULT_7_5678,"FixedResult1"));
+		pipe.addForward(new PipeForward(XSLT2_XPATH_RESULT_7_0,"FixedResultNF"));
 		pipe.setXpathExpression("/root/sub");
-		pipe.setNotFoundForwardName("NF");
+		pipe.setNotFoundForwardName(XSLT2_XPATH_RESULT_7_0);
 		pipe.setXsltVersion(xsltVersion);
 		pipe.setNamespaceAware(namespaceAware);
 		String input= "<root xmlns=\"http://dummy\"><sub>1</sub></root>";
@@ -67,62 +61,62 @@ public class XmlSwitchNamespaceUnawarenessTest extends PipeTestBase<XmlSwitch> {
 
 	@Test
 	void testNamespaceAwareWithStylesheetXslt2() throws Exception {
-		testNamespaceAwarenessWithStylesheet(2, true, "NF");
+		testNamespaceAwarenessWithStylesheet(2, true, XSLT2_XPATH_RESULT_7_0);
 	}
 
 	@Test
 	void testNamespaceAwareWithXPathXslt2() throws Exception {
-		testNamespaceAwarenessWithXpath(2, true, xslt2_XPath_result); // Will return 1, as Xslt 2.0 stylesheet generated from XPath will ignore namespaces in input, as no namespaceDefs were specified
+		testNamespaceAwarenessWithXpath(2, true, XSLT2_XPATH_RESULT_7_5678); // Will return 1, as Xslt 2.0 stylesheet generated from XPath will ignore namespaces in input, as no namespaceDefs were specified
 	}
 
 	@Test
 	void testNamespaceUnawareWithStylesheetXslt2() throws Exception {
-		testNamespaceAwarenessWithStylesheet(2, false, "NF"); // should not set XsltVersion=2 explicitly if you want a namespace unaware XSLT 1.0 stylesheet transformation.
+		testNamespaceAwarenessWithStylesheet(2, false, XSLT2_XPATH_RESULT_7_0); // should not set XsltVersion=2 explicitly if you want a namespace unaware XSLT 1.0 stylesheet transformation.
 	}
 
 	@Test
 	void testNamespaceUnawareWithXPathXslt2() throws Exception {
-		testNamespaceAwarenessWithXpath(2, false, xslt2_XPath_result);
+		testNamespaceAwarenessWithXpath(2, false, XSLT2_XPATH_RESULT_7_5678);
 	}
 
 	@Test
 	void testNamespaceAwareWithStylesheetXslt1() throws Exception {
-		testNamespaceAwarenessWithStylesheet(1, true, "NF");
+		testNamespaceAwarenessWithStylesheet(1, true, XSLT2_XPATH_RESULT_7_0);
 	}
 
 	@Test
 	void testNamespaceAwareWithXPathXslt1() throws Exception {
-		testNamespaceAwarenessWithXpath(1, true, "NF");
+		testNamespaceAwarenessWithXpath(1, true, XSLT2_XPATH_RESULT_7_0);
 	}
 
 	@Test
 	void testNamespaceUnawareWithStylesheetXslt1() throws Exception {
-		testNamespaceAwarenessWithStylesheet(1, false, namespaceUnaware_Xslt1_result);
+		testNamespaceAwarenessWithStylesheet(1, false, NAMESPACE_UNAWARE_XSLT1_RESULT_7_5678);
 	}
 
 	@Test
 	void testNamespaceUnawareWithXPathXslt1() throws Exception {
-		testNamespaceAwarenessWithXpath(1, false, namespaceUnaware_Xslt1_result);
+		testNamespaceAwarenessWithXpath(1, false, NAMESPACE_UNAWARE_XSLT1_RESULT_7_5678);
 	}
 
 	@Test
 	void testNamespaceAwareWithStylesheetXsltVersionAutoDetect() throws Exception {
-		testNamespaceAwarenessWithStylesheet(0, true, "NF");
+		testNamespaceAwarenessWithStylesheet(0, true, XSLT2_XPATH_RESULT_7_0);
 	}
 
 	@Test
 	void testNamespaceAwareWithXPathXsltVersionAutoDetect() throws Exception {
-		testNamespaceAwarenessWithXpath(0, true, xslt2_XPath_result);  // Will return 1, as Xslt 2.0 stylesheet generated from XPath will ignore namespaces in input, as no namespaceDefs were specified
+		testNamespaceAwarenessWithXpath(0, true, XSLT2_XPATH_RESULT_7_5678);  // Will return 1, as Xslt 2.0 stylesheet generated from XPath will ignore namespaces in input, as no namespaceDefs were specified
 	}
 
 	@Test
 	void testNamespaceUnawareWithStylesheetXsltVersionAutoDetect() throws Exception {
-		testNamespaceAwarenessWithStylesheet(0, false, namespaceUnaware_Xslt1_result);
+		testNamespaceAwarenessWithStylesheet(0, false, NAMESPACE_UNAWARE_XSLT1_RESULT_7_5678);
 	}
 
 	@Test
 	void testNamespaceUnawareWithXPathXsltVersionAutoDetect() throws Exception {
-		testNamespaceAwarenessWithXpath(0, false, "1");
+		testNamespaceAwarenessWithXpath(0, false, XSLT2_XPATH_RESULT_7_5678);
 	}
 
 }

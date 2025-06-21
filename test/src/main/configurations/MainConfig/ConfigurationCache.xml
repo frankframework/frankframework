@@ -64,7 +64,7 @@
 
 			<pipe
 				name="selectSenderBasedOnRootNode"
-				className="org.frankframework.pipes.XmlSwitch" >
+				className="org.frankframework.pipes.SwitchPipe" >
 			</pipe>
 
 			<pipe name="Basic" >

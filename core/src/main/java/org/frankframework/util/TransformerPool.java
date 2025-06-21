@@ -276,7 +276,7 @@ public class TransformerPool {
 		try {
 			styleSheet = Resource.getResource(scopeProvider, styleSheetName);
 			if (styleSheet==null) {
-				throw new ConfigurationException("cannot find ["+ styleSheetName + "] in scope ["+scopeProvider+"]");
+				throw new ConfigurationException("cannot find ["+ styleSheetName + "] in scope ["+(scopeProvider != null ? scopeProvider.getName() : "<Global>")+"]");
 			}
 			log.debug("configuring stylesheet [{}] resource [{}]", styleSheetName, styleSheet);
 			result = TransformerPool.getInstance(styleSheet, xsltVersion);

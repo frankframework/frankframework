@@ -8,7 +8,7 @@
 			<exits>
 				<exit name="EXIT" state="success" />
 			</exits>
-			<pipe name="Switch" className="org.frankframework.pipes.XmlSwitch"
+			<pipe name="Switch" className="org.frankframework.pipes.SwitchPipe"
 				forwardNameSessionKey="switch" />
 			<!-- schema -->
 			<pipe name="schema" className="org.frankframework.pipes.XmlValidator"
@@ -39,7 +39,7 @@
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- soap_schemaLocation -->
-			<pipe name="soap_schemaLocation" className="org.frankframework.pipes.XmlSwitch"
+			<pipe name="soap_schemaLocation" className="org.frankframework.pipes.SwitchPipe"
 				xpathExpression="name(Envelope/Body/*[name()!='MessageHeader'])" />
 			<pipe name="LogPolicyRequest" className="org.frankframework.pipes.XmlValidator"
 				schemaLocation="http://schemas.xmlsoap.org/soap/envelope/ /XmlValidator/soap/envelope.xsd http://www.ing.com/CSP/XSD/General/Message_2 /XmlValidator/bis/Message_2.xsd http://www.ing.com/nl/pcretail/ts/migrationauditdata_01 /XmlValidator/AuditDataLogPolicy/migrationauditdata_01.xsd"

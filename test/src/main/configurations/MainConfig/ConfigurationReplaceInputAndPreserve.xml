@@ -7,7 +7,7 @@
 			<exits>
 				<exit name="EXIT" state="success" />
 			</exits>
-			<pipe name="SwitchAction" className="org.frankframework.pipes.XmlSwitch" xpathExpression="request/@action" />
+			<pipe name="SwitchAction" className="org.frankframework.pipes.SwitchPipe" xpathExpression="request/@action" />
 			<!-- getFromPreserveAndStore-Pipe -->
 			<pipe name="getFromPreserveAndStore-Pipe" className="org.frankframework.pipes.PutInSessionPipe" sessionKey="requestKey" value="&lt;abc/&gt;" />
 			<pipe name="getFromPreserveAndStore-Pipe2" className="org.frankframework.pipes.XsltPipe" styleSheetName="/Parameters/WrapInput.xslt"

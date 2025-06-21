@@ -22,7 +22,7 @@
 				<exit name="EXIT" state="success" />
 				<exit name="ERROR" state="error" />
 			</exits>
-			<pipe name="switch" className="org.frankframework.pipes.XmlSwitch" xpathExpression="request" />
+			<pipe name="switch" className="org.frankframework.pipes.SwitchPipe" xpathExpression="request" />
 			<pipe name="hello" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="&lt;reply&gt;goodbye&lt;/reply&gt;">
 				<forward name="success" path="EXIT" />
 			</pipe>

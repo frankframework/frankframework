@@ -8,7 +8,7 @@
 			<exits>
 				<exit name="EXIT" state="success" />
 			</exits>
-			<pipe name="switch" className="org.frankframework.pipes.XmlSwitch" forwardNameSessionKey="action" />
+			<pipe name="switch" className="org.frankframework.pipes.SwitchPipe" forwardNameSessionKey="action" />
 <!-- unwrap -->
 			<pipe name="unwrap" className="org.frankframework.soap.SoapWrapperPipe" direction="unwrap" soapHeaderSessionKey="soapHeader">
 				<forward name="success" path="EXIT" />

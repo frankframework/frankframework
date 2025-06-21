@@ -293,8 +293,8 @@
 		</xsl:copy>
 	</xsl:template>
 
-	<!-- The XmlSwitchPipe can have no forwards, in that case do nothing. Users shouldn't let this happen -->
-	<xsl:template match="pipe[@className='org.frankframework.pipes.XmlSwitch']" mode="preprocess">
+	<!-- The SwitchPipe can have no forwards, in that case do nothing. Users shouldn't let this happen -->
+	<xsl:template match="pipe[@className='org.frankframework.pipes.XmlSwitch' or @className='org.frankframework.pipes.SwitchPipe']" mode="preprocess">
 		<xsl:copy>
 			<xsl:call-template name="switchPipeCopyActions"/>
 

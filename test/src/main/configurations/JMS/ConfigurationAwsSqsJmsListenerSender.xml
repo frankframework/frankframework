@@ -26,7 +26,7 @@
 				<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage"
 					slotId="${applicationId}/AwsSqsJmsFFSender" />
 			</pipe>
-			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch"
+			<pipe name="switchAction" className="org.frankframework.pipes.SwitchPipe"
 				xpathExpression="request/@action" getInputFromSessionKey="originalMessage"
 				>
 				<forward name="echo" path="EXIT" />
@@ -55,7 +55,7 @@
 				<exit name="ERROR" state="error" />
 			</exits>
 			<EchoPipe name="echo message" />
-			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch"
+			<pipe name="switchAction" className="org.frankframework.pipes.SwitchPipe"
 				xpathExpression="msg/@action" >
 				<forward name="echo" path="EXIT" />
 				<forward name="senderException" path="EXIT" />
