@@ -78,10 +78,10 @@ class FrankListenerTest {
 		listener.configure();
 
 		// Act
-		RawMessageWrapper<Message> result = listener.wrapRawMessage(message, session);
+		MessageWrapper<Message> result = listener.wrapRawMessage(message, session);
 
 		// Assert
-		assertEquals(message, result.getRawMessage());
+		assertEquals(message, result.getMessage());
 		assertEquals("cid", result.getCorrelationId());
 		assertEquals("mid", result.getId());
 	}
