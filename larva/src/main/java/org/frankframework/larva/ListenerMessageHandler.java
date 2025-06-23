@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2024 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,22 +22,22 @@ import java.util.concurrent.TimeUnit;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-import org.apache.commons.lang3.NotImplementedException;
-
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.IListener;
 import org.frankframework.core.IMessageHandler;
+import org.frankframework.core.IPushingListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 
 /**
  * Message handler for JavaListener and WebServiceListener.
- *
- * @author Jaco de Groot
+ * Only used for PushingListeners.
+ * 
  * @author Niels Meijer
  */
 @Log4j2
@@ -52,7 +52,17 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	}
 
 	@Override
-	public Message processRequest(IListener<M> origin, RawMessageWrapper<M> rawMessage, Message message, PipeLineSession session) throws ListenerException {
+	public Message processRequest(IPushingListener<M> origin, MessageWrapper<M> rawMessage, PipeLineSession session) throws ListenerException {
+		return processRequest(rawMessage.getMessage(), session);
+	}
+
+	@Override
+	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, PipeLineSession threadContext, boolean duplicatesAlreadyChecked) throws ListenerException {
+		Message message = origin.extractMessage(rawMessage, threadContext);
+		processRequest(message, threadContext);
+	}
+
+	private Message processRequest(Message message, PipeLineSession session) throws ListenerException {
 		try {
 			ListenerMessage requestMessage = new ListenerMessage(message, session);
 			requestMessages.add(requestMessage);
@@ -125,19 +135,5 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 
 	public void setResponseTimeOut(int timeout) {
 		setTimeout(timeout);
-	}
-
-	@Override
-	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, PipeLineSession threadContext, boolean duplicatesAlreadyChecked) throws ListenerException {
-		Message message = origin.extractMessage(rawMessage, threadContext);
-		processRequest(origin, rawMessage, message, threadContext);
-	}
-
-
-	@Override
-	public Message formatException(String extraInfo, PipeLineSession arg1, Message arg2, Throwable arg3) {
-		NotImplementedException e = new NotImplementedException();
-		log.error("formatException not implemented", e);
-		return null;
 	}
 }

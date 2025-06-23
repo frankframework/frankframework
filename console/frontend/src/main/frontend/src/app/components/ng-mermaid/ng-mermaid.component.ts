@@ -20,6 +20,7 @@ import { Dimensions, getFactoryDimensions, initMermaid2Svg, mermaid2svg } from '
         display: block;
         width: 100%;
         height: 100%;
+        user-select: none;
       }
     `,
   ],
@@ -78,6 +79,8 @@ export class NgMermaidComponent implements OnInit, OnChanges {
           mermaidSvg.setAttribute('width', '100%');
           mermaidSvg.setAttribute('height', '100%');
           mermaidSvg.setAttribute('viewBox', `0 0 ${viewBoxWidth} ${viewBoxHeight}`);
+          mermaidSvg.dataset['contentWidth'] = viewBoxWidth ?? '0';
+          mermaidSvg.dataset['contentHeight'] = viewBoxHeight ?? '0';
 
           this.firstRender = false;
           this.nmInitCallback.emit(mermaidSvg);

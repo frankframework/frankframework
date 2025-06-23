@@ -39,6 +39,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.RunState;
+import org.frankframework.util.SpringUtils;
 
 public class JavaListenerTest {
 	private TestConfiguration configuration;
@@ -50,46 +51,49 @@ public class JavaListenerTest {
 	@BeforeEach
 	public void setUp() throws Exception {
 		configuration = new TestConfiguration(false);
+		adapter = setupAdapter();
 		listener = setupJavaListener();
-		receiver = setupReceiver(listener);
-		adapter = setupAdapter(receiver);
+		receiver = setupReceiver();
 		configuration.configure();
 		session = new PipeLineSession();
 	}
 
 	@AfterEach
 	public void tearDown() throws Exception {
-		CloseUtils.closeSilently(session, configuration);
+		CloseUtils.closeSilently(session, adapter, configuration);
 	}
 
-	Receiver<String> setupReceiver(JavaListener<String> listener) {
-		Receiver<String> receiver = configuration.createBean();
+	Receiver<String> setupReceiver() {
+		Receiver<String> receiver = SpringUtils.createBean(adapter);
 		receiver.setListener(listener);
 		receiver.setName("receiver");
-		DummySender sender = configuration.createBean();
+		DummySender sender = SpringUtils.createBean(adapter);
 		receiver.setSender(sender);
 
-		NarayanaJtaTransactionManager transactionManager = configuration.createBean();
+		NarayanaJtaTransactionManager transactionManager = SpringUtils.createBean(adapter);
 		receiver.setTxManager(transactionManager);
+		adapter.addReceiver(receiver);
 
 		return receiver;
 	}
 
+	@SuppressWarnings("unchecked")
 	JavaListener<String> setupJavaListener() {
-		JavaListener<String> listener = spy(configuration.createBean(JavaListener.class));
+		JavaListener<String> listener = spy(SpringUtils.createBean(adapter, JavaListener.class));
 		listener.setReturnedSessionKeys("copy-this,this-doesnt-exist");
 		return listener;
 	}
 
-	<M> Adapter setupAdapter(Receiver<M> receiver) throws Exception {
+	<M> Adapter setupAdapter() throws Exception {
 		Adapter adapter = spy(configuration.createBean(Adapter.class));
 		adapter.setName("ReceiverTestAdapterName");
 
+		// Overwrite the default so we don't have to worry about a tx manager
 		CorePipeLineProcessor pipeLineProcessor = new CorePipeLineProcessor();
 		PipeProcessor pipeProcessor = new CorePipeProcessor();
 		pipeLineProcessor.setPipeProcessor(pipeProcessor);
 
-		PipeLine pl = spy(configuration.createBean(PipeLine.class));
+		PipeLine pl = spy(SpringUtils.createBean(adapter, PipeLine.class));
 		pl.setFirstPipe("dummy");
 		pl.setPipeLineProcessor(pipeLineProcessor);
 
@@ -110,7 +114,6 @@ public class JavaListenerTest {
 		pl.addPipeLineExit(ple);
 		adapter.setPipeLine(pl);
 
-		adapter.addReceiver(receiver);
 		configuration.addAdapter(adapter);
 		return adapter;
 	}
