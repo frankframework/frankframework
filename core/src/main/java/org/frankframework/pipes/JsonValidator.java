@@ -17,7 +17,6 @@ package org.frankframework.pipes;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.util.HashSet;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
@@ -120,11 +119,8 @@ public class JsonValidator extends AbstractValidator {
 	}
 
 	private SchemaValidationResult validateJson(JsonSchema jsonSchema, Message message) throws IOException {
-		// Parses the JSON instance by JsonParser
-		Set<ValidationMessage> validationMessages = new HashSet<>();
-
 		try {
-			validationMessages = jsonSchema.validate(
+			Set<ValidationMessage> validationMessages = jsonSchema.validate(
 					message.asString(), InputFormat.JSON,
 					// By default, since Draft 2019-09 the format keyword only generates annotations and not assertions
 					executionContext -> executionContext.getExecutionConfig().setFormatAssertionsEnabled(true)
@@ -135,9 +131,8 @@ public class JsonValidator extends AbstractValidator {
 					validationMessages
 			);
 		} catch (IllegalArgumentException e) {
-			validationMessages.add(ValidationMessage.builder().message(e.getMessage()).build());
-
-			return new SchemaValidationResult(ValidationResult.PARSER_ERROR, validationMessages);
+			return new SchemaValidationResult(ValidationResult.PARSER_ERROR,
+					Set.of(ValidationMessage.builder().message(e.getMessage()).build()));
 		}
 	}
 
