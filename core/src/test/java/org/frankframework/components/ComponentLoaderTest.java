@@ -52,4 +52,13 @@ public class ComponentLoaderTest {
 		ModuleInformation info = new ModuleInformation(manifest);
 		assertEquals("myConfig", info.getTitle());
 	}
+
+	@Test
+	public void testIfWeCanReadManifestWithSpace() throws IOException {
+		URL jarFileWithManifest = ComponentLoaderTest.class.getResource("/ClassLoader/zip/my Config.jar");
+		assertNotNull(jarFileWithManifest);
+		Manifest manifest = Environment.getManifest(jarFileWithManifest);
+		ModuleInformation info = new ModuleInformation(manifest);
+		assertEquals("myConfig", info.getTitle());
+	}
 }
