@@ -5,7 +5,7 @@
 } @else {
   <div (click)="prepareFlowModal()" title="Generate Flow Diagram" [style.height]="height + 'px'">
     @if (loadInline) {
-      <ng-mermaid [nmModel]="flow.data ?? ''" [nmRefreshInterval]="500"></ng-mermaid>
+      <ng-mermaid [nmModel]="flow.data ?? ''" [nmRefreshInterval]="500" [flowName]="flowName"></ng-mermaid>
     } @else {
       <button appHasAccessToLink="getAdapterFlow" class="btn btn-info">
         <i class="fa fa-share-alt-square"></i> Flow Diagram

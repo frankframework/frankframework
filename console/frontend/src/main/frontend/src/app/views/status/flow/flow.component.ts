@@ -31,6 +31,7 @@ export class FlowComponent implements OnChanges {
   protected flow: FlowModel = { isImage: false, url: '', data: null };
   protected flowModalLadda = false;
   protected loadInline = true;
+  protected flowName = '';
   protected flowDimensions: Dimensions = {
     ...getFactoryDimensions(),
     nodeBoxWidth: 100,
@@ -46,6 +47,7 @@ export class FlowComponent implements OnChanges {
     if (!!this.adapter || this.configurationFlowDiagram) {
       const flowUrl = this.getflowUrl();
       this.flow = { isImage: false, url: flowUrl, data: null };
+      this.flowName = this.adapter ? `${this.adapter.configuration}/${this.adapter.name}` : 'Configuration';
 
       this.checkLoadInline();
     }
