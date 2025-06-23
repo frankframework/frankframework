@@ -7,7 +7,7 @@ import { AppConstants, AppService } from 'src/app/app.service';
 import { DebugService } from 'src/app/services/debug.service';
 import { MiscService } from 'src/app/services/misc.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
-import { AdapterstatisticsService, Statistics } from './adapterstatistics.service';
+import { AdapterstatisticsService, Statistics, StatisticsKeeper } from './adapterstatistics.service';
 
 @Component({
   selector: 'app-adapterstatistics',
@@ -151,6 +151,10 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
         this.refreshing = false;
       }, 500);
     });
+  }
+
+  getSortedProcessingThreads(receiver: Statistics['receivers'][0]): StatisticsKeeper[] {
+    return receiver.processing.sort((a: StatisticsKeeper, b: StatisticsKeeper) => a.name.localeCompare(b.name));
   }
 
   populateBoundaries(): void {
