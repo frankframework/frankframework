@@ -12992,6 +12992,11 @@
         <xs:annotation>
           <xs:documentation>Pipe that throws an exception based on the input message.
  &lt;br/&gt;
+ Parameters that are set on the ExceptionPipe will be added to the error message that is produced by
+ the org.frankframework.errormessageformatters.ErrorMessageFormatter that has been configured on
+ the org.frankframework.core.Adapter and will also be copied into the PipeLineSession, so
+ that they can be passed back to a calling adapter as &lt;code&gt;returnedSessionKey&lt;/code&gt;.
+ &lt;br/&gt;
  The &lt;pre&gt;success&lt;/pre&gt; forward is only used when the (deprecated) attribute &lt;pre&gt;throwException&lt;/pre&gt; has been set to &lt;pre&gt;false&lt;/pre&gt;. Otherwise, the (default) &lt;pre&gt;exception&lt;/pre&gt; forward will be used.&lt;br&gt;&lt;br&gt;&lt;b&gt;WARNING&lt;/b&gt;&lt;p&gt;The attribute &lt;pre&gt;throwException&lt;/pre&gt; has been deprecated and thus the &lt;pre&gt;success&lt;/pre&gt; forward will be removed along with the &lt;pre&gt;throwException&lt;/pre&gt; attribute.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
