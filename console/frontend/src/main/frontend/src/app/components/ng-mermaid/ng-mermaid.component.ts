@@ -28,6 +28,7 @@ import { Dimensions, getFactoryDimensions, initMermaid2Svg, mermaid2svg } from '
 })
 export class NgMermaidComponent implements OnInit, OnChanges {
   @Input() dimensions: Dimensions = getFactoryDimensions();
+  @Input() flowName: string = '';
   @Input() nmModel: string = '';
   @Input() nmRefreshInterval?: number;
   @Output() nmInitCallback: EventEmitter<SVGSVGElement> = new EventEmitter();
@@ -92,8 +93,10 @@ export class NgMermaidComponent implements OnInit, OnChanges {
   }
 
   private handleError(error: Error): void {
-    console.error(error);
-    console.log(`Mermaid flow code:\n${this.nmModel}`);
+    console.error(
+      `An error occurred while trying to render mermaid flow for '${this.flowName}'\nMermaid flow code:\n${this.nmModel}`,
+      error,
+    );
     if (!isDevMode()) {
       this.rootElement.innerHTML = '<span style="font-size: 16px">&otimes;</span>';
       return;
