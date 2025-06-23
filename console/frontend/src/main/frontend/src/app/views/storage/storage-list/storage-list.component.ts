@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, inject, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { MessageField, MessageStore, Note, StorageService } from '../storage.service';
 import { StorageListDtComponent } from './storage-list-dt/storage-list-dt.component';
 import { SessionService } from 'src/app/services/session.service';
@@ -51,8 +51,6 @@ type MessageData = MessageStore['messages'][number];
   ],
 })
 export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('storageListDt') storageListDt!: TemplateRef<StorageListDtComponent>;
-
   protected targetStates: Record<string, { name: string }> = {};
 
   protected truncated = false;
@@ -106,6 +104,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.datasource.options = {
       filter: false,
       serverSide: true,
+      serverSort: 'DESC',
     };
 
     this.getDisplayedColumns();
