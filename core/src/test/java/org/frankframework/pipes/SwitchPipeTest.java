@@ -272,6 +272,30 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 	}
 
 	@Test
+	void testBothJsonAndXpathSetWithXmlInput() throws Exception {
+		pipe.addForward(new PipeForward("Envelope","Envelope-Path"));
+		pipe.addForward(new PipeForward("Error", "statusError-Path"));
+		pipe.addForward(new PipeForward("Success", "statusSuccess-Path"));
+		pipe.setJsonPathExpression("$.status");
+		pipe.setXpathExpression("name(/node()[position()=last()])");
+		Message input=MessageTestUtils.getMessage("/SwitchPipe/in.xml");
+
+		testSwitch(input,"Envelope");
+	}
+
+	@Test
+	void testBothJsonAndXpathSetWithJsonInput() throws Exception {
+		pipe.addForward(new PipeForward("Envelope","Envelope-Path"));
+		pipe.addForward(new PipeForward("Error", "statusError-Path"));
+		pipe.addForward(new PipeForward("Success", "statusSuccess-Path"));
+		pipe.setJsonPathExpression("$.status");
+		pipe.setXpathExpression("name(/node()[position()=last()])");
+		Message input=MessageTestUtils.getMessage("/SwitchPipe/in.xml");
+
+		testSwitch(MessageTestUtils.getMessage("/SwitchPipe/simple.json"),"Success");
+	}
+
+	@Test
 	void testForwardNameFromSessionKey() throws Exception {
 		pipe.addForward(new PipeForward("forwardName","Envelope-Path"));
 		pipe.setForwardNameSessionKey("forwardNameSessionKey");
