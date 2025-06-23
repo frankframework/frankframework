@@ -24,6 +24,7 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +48,7 @@ import com.jayway.jsonpath.JsonPath;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.minidev.json.JSONArray;
+import net.minidev.json.JSONObject;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
@@ -70,7 +71,6 @@ import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.XmlBuilder;
-import org.frankframework.util.XmlException;
 import org.frankframework.util.XmlUtils;
 
 /**
@@ -121,9 +121,11 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	private @Getter String sessionKey = null;
 	private @Getter String sessionKeyXPath = null;
 	private @Getter String sessionKeyJPath = null;
+	private JsonPath sessionKeyJsonPath = null;
 	private @Getter String contextKey = null;
 	private @Getter String xpathExpression = null;
 	private @Getter String jsonPathExpression = null;
+	private JsonPath jsonPath = null;
 	private @Getter String namespaceDefs = null;
 	private @Getter String styleSheetName = null;
 	private @Getter String pattern = null;
@@ -203,6 +205,20 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			setType(ParameterType.STRING);
 		}
 
+		if (StringUtils.isNotBlank(jsonPathExpression)) {
+			try {
+				jsonPath = JsonPath.compile(jsonPathExpression);
+			} catch (Exception e) {
+				throw new ConfigurationException("Invalid JSON Path expression: [" + jsonPathExpression + "]", e);
+			}
+		}
+		if (StringUtils.isNotBlank(sessionKeyJPath)) {
+			try {
+				sessionKeyJsonPath = JsonPath.compile(sessionKeyJPath);
+			} catch (Exception e) {
+				throw new ConfigurationException("Invalid sessionKeyJPath expression: [" + jsonPathExpression + "]", e);
+			}
+		}
 		configured = true;
 
 		if (StringUtils.isNotEmpty(getAuthAlias()) || StringUtils.isNotEmpty(getUsername()) || StringUtils.isNotEmpty(getPassword())) {
@@ -265,8 +281,8 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			} catch (Exception e) {
 				throw new ParameterException(getName(), "SessionKey for parameter [" + getName() + "] exception on transformation to get name", e);
 			}
-		} else if (sessionKeyJPath != null) {
-			Object o = evaluateJsonPath(message, sessionKeyJPath);
+		} else if (sessionKeyJsonPath != null) {
+			Object o = evaluateJsonPath(message, sessionKeyJsonPath);
 			requestedSessionKey = o != null ? o.toString() : null;
 		} else {
 			requestedSessionKey = getSessionKey();
@@ -290,6 +306,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 					Object sourceObject = session.get(requestedSessionKey);
 					if (getType() == ParameterType.LIST && sourceObject instanceof List) {
 						// larva can produce the sourceObject as list
+						//noinspection unchecked
 						List<String> items = (List<String>) sourceObject;
 						XmlBuilder itemsXml = new XmlBuilder("items");
 						for (String item : items) {
@@ -362,7 +379,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			} catch (Exception e) {
 				throw new ParameterException(getName(), "Parameter ["+getName()+"] exception on transformation to get parametervalue", e);
 			}
-		} else if (getJsonPathExpression() != null) {
+		} else if (jsonPath != null) {
 			/*
 			 * determine source for JPath evaluation same as for XSLT / XPath, from
 			 * 1) value attribute
@@ -385,7 +402,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 				input = null;
 			}
 			if (input != null) {
-				result = evaluateJsonPath(input, getJsonPathExpression());
+				result = evaluateJsonPath(input, jsonPath);
 			}
 		} else {
 			/*
@@ -506,30 +523,26 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		return input;
 	}
 
-	private Object evaluateJsonPath(Object input, String jsonPathExpression) throws ParameterException {
+	private Object evaluateJsonPath(Object input, JsonPath jsonPath) throws ParameterException {
 		try {
 			Message inputMessage = MessageUtils.convertToJsonMessage(input);
-			Object result = JsonPath.read(inputMessage.asInputStream(), jsonPathExpression);
+			Object result = jsonPath.read(inputMessage.asInputStream());
 			return getJsonPathResult(result);
-		} catch (XmlException | IOException e) {
+		} catch (Exception e) {
 			throw new ParameterException("Cannot evaluate JSonPathExpression on parameter value", e);
 		}
 	}
 
-	/**
-	 * When using expressions, jsonPath returns a JsonArray, even if there is only one match. Make sure to get a String from it.
-	 */
-	private String getJsonPathResult(Object jsonPathResult) {
-		if (jsonPathResult instanceof String string) {
-			return string;
+	private String getJsonPathResult(Object result) {
+		if (result == null) {
+			return null;
 		}
-
-		if (jsonPathResult instanceof JSONArray jsonArray
-				&& !jsonArray.isEmpty()) {
-			return jsonArray.get(0).toString();
+		if (result instanceof HashMap<?,?> map) {
+			@SuppressWarnings("unchecked")
+			JSONObject jsonObject = new JSONObject((Map<String, ?>) map);
+			return jsonObject.toString();
 		}
-
-		return null;
+		return result.toString();
 	}
 
 	private Object applyMinAndMaxLengths(final Object request) {

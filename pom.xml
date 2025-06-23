@@ -20,12 +20,12 @@
 		<junit.excludedTags></junit.excludedTags>
 		<junit.includedTags></junit.includedTags>
 
-		<jackson.version>2.19.0</jackson.version>
+		<jackson.version>2.19.1</jackson.version>
 		<cxf.version>4.1.2</cxf.version>
 		<spring.version>6.2.8</spring.version>
 		<spring-security.version>6.4.6</spring-security.version>
 		<spring-integration.version>6.5.0</spring-integration.version>
-		<spring.boot.version>3.5.0</spring.boot.version>
+		<spring.boot.version>3.5.2</spring.boot.version>
 		<tomcat.version>10.1.42</tomcat.version>
 		<bouncycastle.version>1.81</bouncycastle.version>
 
@@ -437,7 +437,7 @@
 			<dependency>
 				<groupId>org.xmlunit</groupId>
 				<artifactId>xmlunit-bom</artifactId>
-				<version>2.10.2</version>
+				<version>2.10.3</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -683,7 +683,7 @@
 			<dependency>
 				<groupId>org.testcontainers</groupId>
 				<artifactId>testcontainers-bom</artifactId>
-				<version>1.21.1</version>
+				<version>1.21.2</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -1054,7 +1054,7 @@
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>10.25.0</version>
+							<version>10.25.1</version>
 						</dependency>
 					</dependencies>
 				</plugin>
@@ -1370,7 +1370,7 @@
 					<plugin>
 						<groupId>org.sonatype.central</groupId>
 						<artifactId>central-publishing-maven-plugin</artifactId>
-						<version>0.7.0</version>
+						<version>0.8.0</version>
 						<extensions>true</extensions>
 						<configuration>
 							<autoPublish>false</autoPublish><!-- Don't release the build directly after it's been published to Central (staging). -->
