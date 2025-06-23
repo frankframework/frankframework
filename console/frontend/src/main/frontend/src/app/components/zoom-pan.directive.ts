@@ -76,7 +76,7 @@ export class ZoomPanDirective implements OnChanges, OnDestroy {
     this.observer?.disconnect();
   }
 
-  resize(): void {
+  private resize(): void {
     if (!this.svg) return;
 
     const w = this.svg.clientWidth;
@@ -101,7 +101,7 @@ export class ZoomPanDirective implements OnChanges, OnDestroy {
     }
   }
 
-  scale(mx: number, my: number, direction: number): void {
+  private scale(mx: number, my: number, direction: number): void {
     this.setScaleFactor(this.scaleFactor + direction * 0.4);
     // viewBox size delta
     const dw = this.viewBox.w - this.svgSize.w * this.zoom;
@@ -118,7 +118,7 @@ export class ZoomPanDirective implements OnChanges, OnDestroy {
     this.applyViewBox(this.viewBox);
   }
 
-  pan(event: MouseEvent): ViewBox {
+  private pan(event: MouseEvent): ViewBox {
     this.endPoint = { x: event.pageX, y: event.pageY };
     // viewBox offset delta
     const dx = (this.startPoint.x - this.endPoint.x) * this.zoom;
@@ -133,11 +133,11 @@ export class ZoomPanDirective implements OnChanges, OnDestroy {
     return movedViewBox;
   }
 
-  applyViewBox(viewBox: ViewBox): void {
-    this.svg!.setAttribute('viewBox', `${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`);
+  private applyViewBox(viewBox: ViewBox): void {
+    this.svg?.setAttribute('viewBox', `${viewBox.x} ${viewBox.y} ${viewBox.w} ${viewBox.h}`);
   }
 
-  setScaleFactor(factor: number): void {
+  private setScaleFactor(factor: number): void {
     this.scaleFactor = Math.max(0, factor);
     this.zoom = fixedPointFloat((this.scaleFactor * this.scaleFactor) / 100); // fixed to 3 decimals to mitigate float rounding errors
     this.newScale.emit(this.zoom * 100);
