@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.FileSystemNotFoundException;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Paths;
 import java.util.Optional;
@@ -177,8 +178,8 @@ public class Environment {
 		File file;
 		try {
 			file = Paths.get(jarFileLocation.toURI()).toFile();
-		} catch (URISyntaxException e) {
-			throw new IOException("unable to turn URL into a File", e);
+		} catch (FileSystemNotFoundException | URISyntaxException e) {
+			throw new IOException("unable to turn URL ["+jarFileLocation+"] into a File", e);
 		}
 
 		try (JarFile jarFile = new JarFile(file)) {
