@@ -27,7 +27,7 @@
     "@angular/platform-browser": "^19.2.14",
     "@angular/platform-browser-dynamic": "^19.2.14",
     "@angular/router": "^19.2.14",
-    "@frankframework/frank-config-layout": "^1.1.1",
+    "@frankframework/frank-config-layout": "^1.1.2",
     "@ng-bootstrap/ng-bootstrap": "^18.0.0",
     "@ng-idle/core": "^13.0.0",
     "@popperjs/core": "^2.11.8",
