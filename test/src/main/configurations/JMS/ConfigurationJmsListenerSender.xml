@@ -239,7 +239,7 @@
 					slotId="${applicationId}/JmsFFSender" />
 				<forward name="success" path="switchAction" />
 			</pipe>
-			<pipe name="switchAction" className="org.frankframework.pipes.SwitchPipe"
+			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch"
 				xpathExpression="request/@action" getInputFromSessionKey="originalMessage"
 				>
 				<forward name="echo" path="EXIT" />

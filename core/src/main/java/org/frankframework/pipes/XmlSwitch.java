@@ -16,10 +16,22 @@
 package org.frankframework.pipes;
 
 
+import org.frankframework.doc.Protected;
+
 /**
  * Selects an exitState, based on either the content of the input message, by means
  * of an XSLT-stylesheet, the content of a session variable or, by default, by returning the name of the root-element.
- *
+ * <br/>
+ * @ff.note This pipe has been renamed to {@link SwitchPipe} which has also gained {@link SwitchPipe#setJsonPathExpression(String)} functionality.
  */
 public class XmlSwitch extends SwitchPipe {
+		// Empty class, exists as alias for the SwitchPipe to ease gradual migration to the new name.
+
+
+	@Override
+	@Protected
+	public void setJsonPathExpression(String jsonPathExpression) {
+		// Setter exists to add @Protected annotation to forbid this method on the XmlSwitch and push people to the SwitchPipe.
+		super.setJsonPathExpression(jsonPathExpression);
+	}
 }

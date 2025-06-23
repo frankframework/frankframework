@@ -206,13 +206,13 @@
 				<Param name="multipart1" sessionKey="multipart1" defaultValue="NoMultiPart1"/>
 				<Forward name="success" path="SwitchCases"/>
 			</XsltPipe>
-			<SwitchPipe
+			<XmlSwitchPipe
 				name="SwitchCases"
 				xpathExpression="/case"
 			>
 				<Forward name="noFiles" path="throwException"/>
 				<Forward name="oneFile" path="WriteStream"/>
-			</SwitchPipe>
+			</XmlSwitchPipe>
 			<LocalFileSystemPipe
 				name="WriteStream"
 				action="write"
