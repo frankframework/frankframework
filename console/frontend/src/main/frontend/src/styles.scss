@@ -20,6 +20,14 @@
   width: 125px;
 }
 
+.moveable {
+  cursor: move;
+}
+
+.prevent-selection {
+  user-select: none;
+}
+
 @media screen and (max-width: 960px) {
   .mini-navbar {
     .page-heading {

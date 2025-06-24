@@ -1027,7 +1027,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * </p>
 	 */
 	@Override
-	public Message processRequest(IListener<M> origin, @Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Message message, @Nonnull PipeLineSession session) throws ListenerException {
+	public Message processRequest(IPushingListener<M> origin, @Nonnull MessageWrapper<M> messageWrapper, @Nonnull PipeLineSession session) throws ListenerException {
 		Objects.requireNonNull(session, "Session can not be null");
 		try (final CloseableThreadContext.Instance ignored = getLoggingContext(getListener(), session)) {
 			if (origin!=getListener()) {
@@ -1040,10 +1040,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			Instant tsReceived = PipeLineSession.getTsReceived(session);
 			Instant tsSent = PipeLineSession.getTsSent(session);
 			PipeLineSession.updateListenerParameters(session, null, null, tsReceived, tsSent);
-
-			String messageId = rawMessage.getId() != null ? rawMessage.getId() : session.getMessageId();
-			String correlationId = rawMessage.getCorrelationId() != null ? rawMessage.getCorrelationId() : session.getCorrelationId();
-			MessageWrapper<M> messageWrapper = rawMessage instanceof MessageWrapper ? (MessageWrapper<M>) rawMessage : new MessageWrapper<>(rawMessage, message, messageId, correlationId);
 
 			boolean manualRetry = session.get(PipeLineSession.MANUAL_RETRY_KEY, false);
 
@@ -1933,11 +1929,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			}
 		}
 		return errorMessage;
-	}
-
-	@Override
-	public Message formatException(String extraInfo, PipeLineSession session, Message message, Throwable t) {
-		return getAdapter().formatErrorMessage(extraInfo,t,message, session, null);
 	}
 
 	private ListenerException wrapExceptionAsListenerException(Throwable t) {

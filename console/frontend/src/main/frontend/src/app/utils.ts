@@ -69,6 +69,10 @@ export function copyToClipboard(text: string): void {
   element.remove();
 }
 
+export function fixedPointFloat(value: number): number {
+  return +value.toFixed(3);
+}
+
 export const compare = (v1: string | number, v2: string | number): 1 | -1 | 0 => (v1 < v2 ? -1 : v1 > v2 ? 1 : 0);
 
 /** This is pretty bad, non primitive types won't be covered correctly (null, undefined, object, etc) */

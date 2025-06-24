@@ -18,6 +18,8 @@ package org.frankframework.pipes;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.annotation.Nullable;
+
 import com.jayway.jsonpath.InvalidPathException;
 import com.jayway.jsonpath.JsonPath;
 
@@ -115,12 +117,10 @@ public class JsonPathPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "Failed to evaluate json path expression [" + jsonPathExpression + "] on input [" + message + "]", e);
 		}
 
-		PipeRunResult prr = new PipeRunResult();
-		prr.setResult(convertToString(result));
-		return prr;
+		return new PipeRunResult(getSuccessForward(), convertToString(result));
 	}
 
-	private String convertToString(Object result) {
+	private @Nullable String convertToString(@Nullable Object result) {
 		if (result == null) {
 			return null;
 		}
