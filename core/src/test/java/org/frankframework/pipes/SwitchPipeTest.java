@@ -221,7 +221,8 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 		pipe.addForward(new PipeForward("SetRequest","SetRequest-Path"));
 		pipe.setStyleSheetName("/SwitchPipe/selection.xsl");
 		pipe.setNamespaceAware(false);
-		Message input=MessageTestUtils.getMessage("/SwitchPipe/in.xml");
+		Message input = MessageTestUtils.getMessage("/SwitchPipe/in.xml");
+
 		testSwitch(input,"SetRequest");
 	}
 
@@ -232,7 +233,8 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 		pipe.setXsltVersion(3);
 		pipe.setStyleSheetName("/SwitchPipe/selectionXslt3.0.xsl");
 		pipe.setNamespaceAware(false);
-		Message input=MessageTestUtils.getMessage("/SwitchPipe/in.json");
+		Message input = MessageTestUtils.getMessage("/SwitchPipe/in.json");
+
 		testSwitch(input,"SetRequest");
 	}
 
@@ -278,7 +280,7 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 		pipe.addForward(new PipeForward("Success", "statusSuccess-Path"));
 		pipe.setJsonPathExpression("$.status");
 		pipe.setXpathExpression("name(/node()[position()=last()])");
-		Message input=MessageTestUtils.getMessage("/SwitchPipe/in.xml");
+		Message input = MessageTestUtils.getMessage("/SwitchPipe/in.xml");
 
 		testSwitch(input,"Envelope");
 	}
@@ -290,9 +292,9 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 		pipe.addForward(new PipeForward("Success", "statusSuccess-Path"));
 		pipe.setJsonPathExpression("$.status");
 		pipe.setXpathExpression("name(/node()[position()=last()])");
-		Message input=MessageTestUtils.getMessage("/SwitchPipe/in.xml");
+		Message input = MessageTestUtils.getMessage("/SwitchPipe/simple.json");
 
-		testSwitch(MessageTestUtils.getMessage("/SwitchPipe/simple.json"),"Success");
+		testSwitch(input,"Success");
 	}
 
 	@Test
@@ -301,7 +303,8 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 		pipe.setForwardNameSessionKey("forwardNameSessionKey");
 		session=new PipeLineSession();
 		session.put("forwardNameSessionKey", "forwardName");
-		Message input=MessageTestUtils.getMessage("/SwitchPipe/in.xml");
+		Message input = MessageTestUtils.getMessage("/SwitchPipe/in.xml");
+
 		testSwitch(input,"forwardName");
 	}
 
