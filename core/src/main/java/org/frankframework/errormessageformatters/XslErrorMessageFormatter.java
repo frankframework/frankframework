@@ -88,7 +88,8 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter implements I
 	}
 
 	@Override
-	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, PipeLineSession session) {
+	public @Nonnull Message format(
+			@Nullable String errorMessage, @Nullable Throwable t, @Nullable HasName location, @Nullable Message originalMessage, @Nonnull PipeLineSession session) {
 
 		Message result = super.format(errorMessage, t, location, originalMessage, session);
 		try {

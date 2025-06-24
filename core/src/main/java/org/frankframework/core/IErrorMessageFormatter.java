@@ -15,19 +15,36 @@
 */
 package org.frankframework.core;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.stream.Message;
 
 /**
- * An <code>errorMessageFormatter</code> is responsible for returning a string
+ * An {@code errorMessageFormatter} is responsible for returning a message
  * describing the error at hand in a format that the receiver expects.
- * By implementing this interface, it is possible to customize messages.
+ *
+ * <p>
+ *     ErrorMessageFormatters are configured on {@link Adapter}s to format
+ *     exception messages when an exception is thrown in the execution
+ *     of a {@link PipeLine}. When no specific error message formatter is
+ *     configured, the default implementation {@link org.frankframework.errormessageformatters.ErrorMessageFormatter}
+ *     is used. For more control over the layout of the message, configure
+ *     a {@link org.frankframework.errormessageformatters.XslErrorMessageFormatter} or
+ *     {@link org.frankframework.errormessageformatters.DataSonnetErrorMessageFormatter}.
+ * </p>
+ * <p>
+ *     If these do not provide enough control over the error message format for your
+ *     adapter, you can provide a custom implementation of this interface as custom code in
+ *     your configuration.
+ * </p>
  *
  * @author Johan Verrips
  */
 @FrankDocGroup(FrankDocGroupValue.ERROR_MESSAGE_FORMATTER)
 public interface IErrorMessageFormatter {
 
-	Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, PipeLineSession session);
+	@Nonnull Message format(@Nullable String errorMessage, @Nullable Throwable t, @Nullable HasName location, @Nullable Message originalMessage, @Nonnull PipeLineSession session);
 }

@@ -46,7 +46,8 @@ public class ExceptionHandlingPipeProcessor extends AbstractPipeProcessor {
 				final Message errorMessage;
 				if(e instanceof PipeRunException exception) {
 					HasName location = exception.getPipeInError();
-					errorMessage = pipeLine.getAdapter().formatErrorMessage(null, e.getCause(), message, pipeLineSession, location);
+					Throwable exceptionToPass = exception.getParameters().isEmpty() ? exception.getCause() : exception;
+					errorMessage = pipeLine.getAdapter().formatErrorMessage(null, exceptionToPass, message, pipeLineSession, location);
 				} else {
 					errorMessage = pipeLine.getAdapter().formatErrorMessage(null, e, message, pipeLineSession, pipeLine.getAdapter());
 				}

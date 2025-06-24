@@ -51,7 +51,19 @@ import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlEncodingUtils;
 
 /**
- * This class wraps an error in an XML string.
+ * This is the default {@link IErrorMessageFormatter} implementation that is used when no specific {@code ErrorMessageFormatter} has
+ * been configured. It wraps an error in an XML or JSON string. XML is the default.
+ * <p>
+ *     If the exception is a {@link PipeRunException} that has parameters set on it, then these parameters
+ *     are added to a {@code params} element in the error message. These parameters can be set from an
+ *     {@link org.frankframework.pipes.ExceptionPipe}.
+ * </p>
+ * <p>
+ *     If you need more control over the layout of the error message, then configure your {@link org.frankframework.core.Adapter} or
+ *     {@link org.frankframework.configuration.Configuration} with a {@link IErrorMessageFormatter} implementation
+ *     that can reformat the error message to the desired layout, the {@link XslErrorMessageFormatter} for XML error formats or the
+ *     {@link DataSonnetErrorMessageFormatter} for JSON error messages.
+ * </p>
  * <p>
  * Sample xml:
  * <pre>{@code
@@ -59,14 +71,42 @@ import org.frankframework.util.XmlEncodingUtils;
  *    <message timestamp="Mon Oct 13 12:01:57 CEST 2003"
  *             originator="NN IOS AdapterFramework(set from 'application.name' and 'application.version')"
  *             message="message describing the error that occurred">
- *    <location class="org.frankframework.pipes.XmlSwitch" name="ServiceSwitch"/>
- *    <details>detailed information of the error</details>
+ *    <location class="org.frankframework.pipes.SwitchPipe" name="ServiceSwitch"/>
+ *    <detailsException and stacktrace</details>
+ *    <params>
+ *      <param name="sampleParam>paramValue</param>
+ *    </params>
  *    <originalMessage messageId="..." receivedTime="Mon Oct 27 12:10:18 CET 2003" >
  *        <![CDATA[contents of message for which the error occurred]]>
  *    </originalMessage>
  * </errorMessage>
  * }</pre>
- *
+ * </p>
+ * <p>
+ *     Sample JSON:
+ *     <pre>{@code
+ *         {
+ *             "errorMessage": {
+ *                 "timestamp": "Mon Oct 13 12:01:57 CEST 2003",
+ *                 "originator": "IAF 9.2",
+ *                 "message": "Message describing error and location",
+ *                 "location": {
+ *                     "class": "org.frankframework.pipes.SwitchPipe",
+ *                     "name": "ServiceSwitch"
+ *                 },
+ *                 "details": "Exception and stacktrace",
+ *                 "params": {
+ *                     "sampleParam": "paramValue"
+ *                 },
+ *                 "originalMessage": {
+ *                     "messageId": "...",
+ *                     "receivedTime": "Mon Oct 27 12:10:18 CET 2003",
+ *                     "message": "contents of message for which the error occurred"
+ *                 }
+ *             }
+ *         }
+ *     }</pre>
+ * </p>
  * @author  Gerrit van Brakel
  */
 @Log4j2
@@ -76,23 +116,25 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 	private @Getter @Nonnull DocumentFormat messageFormat = DocumentFormat.XML;
 
 	/**
-	 * Format the available parameters into a XML-message.
+	 * Format the available parameters into an XML or JSON message.
 	 * <br/>
 	 * Override this method in subclasses to obtain the required behaviour.
 	 */
 	@Override
-	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, PipeLineSession session) {
+	public @Nonnull Message format(@Nullable String errorMessage, @Nullable Throwable t, @Nullable HasName location, @Nullable Message originalMessage, @Nonnull PipeLineSession session) {
 
-		String details = null;
 		errorMessage = getErrorMessage(errorMessage, t);
+		String details;
 		if (t != null) {
 			details = ExceptionUtils.getStackTrace(t);
+		} else {
+			details = null;
 		}
 		Map<String, Object> exceptionParams = getPipeRunExceptionParams(t);
-		String prefix = location != null ? ClassUtils.nameOf(location) : null;
 		String messageId = session.getMessageId();
 		String correlationId = session.getCorrelationId();
 		String msgIdToUse = StringUtils.isNotEmpty(messageId) && !MessageUtils.isFallbackMessageId(messageId) ? messageId : correlationId;
+		String prefix = location != null ? ClassUtils.nameOf(location) : null;
 		if (StringUtils.isNotEmpty(msgIdToUse)) {
 			prefix = StringUtil.concatStrings(prefix, " ", "msgId [" + msgIdToUse + "]");
 		}
@@ -140,7 +182,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		}
 	}
 
-	private void addOriginalMessageObject(Message originalMessage, PipeLineSession session, ObjectBuilder errorObject, String messageId) throws SAXException {
+	private void addOriginalMessageObject(@Nullable Message originalMessage, @Nonnull PipeLineSession session, @Nonnull ObjectBuilder errorObject, @Nullable String messageId) throws SAXException {
 		INodeBuilder originalMessageNode = errorObject.addField(PipeLineSession.ORIGINAL_MESSAGE_KEY);
 		ObjectBuilder originalMessageObject = originalMessageNode.startObject();
 
@@ -158,7 +200,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		originalMessageObject.close();
 	}
 
-	private void addParams(Map<String, Object> exceptionParams, ObjectBuilder errorObject) throws SAXException, IOException {
+	private void addParams(@Nonnull Map<String, Object> exceptionParams, @Nonnull ObjectBuilder errorObject) throws SAXException, IOException {
 		if (!exceptionParams.isEmpty()) {
 			// Sort the entries in the map by key, basically because it makes testing easier.
 			Collection<Map.Entry<String, Object>> entries = exceptionParams.entrySet()
@@ -202,7 +244,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		}
 	}
 
-	private static void addLocation(HasName location, ObjectBuilder errorObject) throws SAXException {
+	private static void addLocation(@Nullable HasName location, @Nonnull ObjectBuilder errorObject) throws SAXException {
 		if (location != null) {
 			ObjectBuilder locationObject = errorObject.addObjectField("location");
 			locationObject.addAttribute("class", location.getClass().getName());
@@ -225,8 +267,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		}
 	}
 
-	@Nullable
-	private String getMessageAsString(Message originalMessage, String messageId) {
+	private @Nullable String getMessageAsString(@Nullable Message originalMessage, @Nullable String messageId) {
 		String originalMessageAsString;
 		try {
 			originalMessageAsString = originalMessage != null ? originalMessage.asString() : null;

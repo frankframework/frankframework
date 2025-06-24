@@ -1015,7 +1015,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	}
 
 	/**
-	 * Process the received message with {@link IMessageHandler#processRequest(IListener, RawMessageWrapper, Message, PipeLineSession)}.
+	 * Process the received message with {@link IMessageHandler#processRequest(IPushingListener, MessageWrapper, PipeLineSession)}.
 	 * <br/>
 	 * A messageId is generated that is unique and consists of the name of this listener and a GUID.
 	 * <p>

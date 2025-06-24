@@ -18,6 +18,7 @@ package org.frankframework.errormessageformatters;
 import java.io.IOException;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -63,7 +64,7 @@ public class DataSonnetErrorMessageFormatter extends ErrorMessageFormatter imple
 	}
 
 	@Override
-	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, PipeLineSession session) {
+	public @Nonnull Message format(@Nullable String errorMessage, @Nullable Throwable t, @Nullable HasName location, @Nullable Message originalMessage, @Nonnull PipeLineSession session) {
 
 		try (Message defaultMessage = super.format(errorMessage, t, location, originalMessage, session)) {
 			return mapper.transform(defaultMessage, parameters.getValues(originalMessage, session));

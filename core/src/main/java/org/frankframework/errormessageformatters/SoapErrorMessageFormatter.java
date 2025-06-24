@@ -16,6 +16,7 @@
 package org.frankframework.errormessageformatters;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -35,7 +36,8 @@ import org.frankframework.stream.Message;
 public class SoapErrorMessageFormatter extends ErrorMessageFormatter {
 
 	@Override
-	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, PipeLineSession session) {
+	public @Nonnull Message format(
+			@Nullable String errorMessage, @Nullable Throwable t, @Nullable HasName location, @Nullable Message originalMessage, @Nonnull PipeLineSession session) {
 
 		try {
 			return SoapWrapper.getInstance().createSoapFaultMessage(getErrorMessage(errorMessage, t));

@@ -17,6 +17,9 @@ package org.frankframework.errormessageformatters;
 
 import java.io.IOException;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -46,7 +49,8 @@ public class FixedErrorMessageFormatter extends ErrorMessageFormatter {
 	private @Getter String styleSheetName = null;
 
 	@Override
-	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, PipeLineSession session) {
+	public @Nonnull Message format(
+			@Nullable String errorMessage, @Nullable Throwable t, @Nullable HasName location, @Nullable Message originalMessage, @Nonnull PipeLineSession session) {
 
 		Message messageToReturn = new Message(getReturnString());
 		if (messageToReturn.isEmpty()) {
