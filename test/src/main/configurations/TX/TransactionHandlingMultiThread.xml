@@ -24,7 +24,7 @@
 				<sender className="org.frankframework.senders.IbisLocalSender" javaListener="TransactionHandlingMultiThread-Work" />
 			</pipe>
 
-			<pipe name="switch" className="org.frankframework.pipes.XmlSwitch" getInputFromSessionKey="originalMessage" xpathExpression="*/@select" notFoundForwardName="selectChar" />
+			<pipe name="switch" className="org.frankframework.pipes.SwitchPipe" getInputFromSessionKey="originalMessage" xpathExpression="*/@select" notFoundForwardName="selectChar" />
 
 			<pipe name="selectChar">
 				<sender className="org.frankframework.jdbc.FixedQuerySender" query="SELECT TCHAR FROM IBISTEMP WHERE TKEY=999" queryType="select" scalar="true" />
@@ -60,7 +60,7 @@
 				<sender className="org.frankframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='b' WHERE TKEY=999" />
 			</pipe>
 
-			<pipe name="switch" className="org.frankframework.pipes.XmlSwitch" getInputFromSessionKey="originalMessage" xpathExpression="*/@branch" />
+			<pipe name="switch" className="org.frankframework.pipes.SwitchPipe" getInputFromSessionKey="originalMessage" xpathExpression="*/@branch" />
 
 			<pipe name="update">
 				<sender className="org.frankframework.jdbc.FixedQuerySender" query="UPDATE IBISTEMP SET TCHAR='c' WHERE TKEY=999" />

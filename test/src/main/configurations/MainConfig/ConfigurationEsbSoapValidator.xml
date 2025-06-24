@@ -105,7 +105,7 @@
 			<exits>
 				<exit name="EXIT" state="success" />
 			</exits>
-			<pipe name="Switch" className="org.frankframework.pipes.XmlSwitch" forwardNameSessionKey="switch" />
+			<pipe name="Switch" className="org.frankframework.pipes.SwitchPipe" forwardNameSessionKey="switch" />
 			<!-- request -->
 			<pipe name="request"
 				className="org.frankframework.extensions.esb.EsbSoapValidator"
