@@ -7,6 +7,7 @@ import { WebStorageService } from 'src/app/services/web-storage.service';
 import { getProcessStateIcon } from 'src/app/utils';
 import { AppService } from '../../../app.service';
 import { DataTableColumn, DataTableDataSource } from '../../../components/datatable/datatable.component';
+import { SortDirection } from '../../../components/th-sortable.directive';
 
 type DisplayColumn = {
   actions: boolean;
@@ -107,6 +108,11 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     },
     { name: 'label', property: 'label', displayName: 'Label' },
   ];
+  protected sortOptions: { name: string; value: SortDirection }[] = [
+    { name: 'Ascending', value: 'ASC' },
+    { name: 'Descending', value: 'DESC' },
+  ];
+  protected sortDirection: SortDirection = 'DESC';
 
   constructor(
     private webStorageService: WebStorageService,
@@ -128,6 +134,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     this.datasource.options = {
       filter: false,
       serverSide: true,
+      serverSort: 'DESC',
     };
 
     this.setupMessagesRequest();
@@ -259,6 +266,10 @@ export class StorageListComponent implements OnInit, AfterViewInit {
     const fd = new FormData();
     fd.append('messageIds', messageIds as unknown as string);
     return fd;
+  }
+
+  updateSort(): void {
+    this.datasource.options.serverSort = this.sortDirection;
   }
 
   searchUpdated(): void {

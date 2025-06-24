@@ -6,12 +6,14 @@ import { FormsModule } from '@angular/forms';
 import { DtContentDirective } from './dt-content.directive';
 import { TruncatePipe } from '../../pipes/truncate.pipe';
 import { ToDateDirective } from '../to-date.directive';
+import { SortDirection } from '../th-sortable.directive';
 
 export type TableOptions = {
   sizeOptions: number[];
   size: number;
-  serverSide: boolean;
   filter: boolean;
+  serverSide: boolean;
+  serverSort: SortDirection;
 };
 
 export type DataTableColumn<T> = {
@@ -34,7 +36,7 @@ export type DataTableEntryInfo = {
 export type DataTableServerRequestInfo = {
   size: number;
   offset: number;
-  sort: 'asc' | 'desc';
+  sort: SortDirection;
 };
 
 export type DataTableServerResponseInfo<T> = {
@@ -113,6 +115,7 @@ export class DataTableDataSource<T> extends DataSource<T> {
     size: 50,
     filter: true,
     serverSide: false,
+    serverSort: 'NONE',
   });
   private _entriesInfo = new BehaviorSubject<DataTableEntryInfo>({
     minPageEntry: 0,
@@ -125,7 +128,6 @@ export class DataTableDataSource<T> extends DataSource<T> {
   private filteredData: T[] = [];
   private _currentPage: number = 1;
   private _totalPages: number = 0;
-  private serverRequestId: number = -1;
   private serverRequestFn?: (value: DataTableServerRequestInfo) => PromiseLike<DataTableServerResponseInfo<T>>;
 
   get data(): T[] {
@@ -211,7 +213,7 @@ export class DataTableDataSource<T> extends DataSource<T> {
     Promise.resolve<DataTableServerRequestInfo>({
       size: this.options.size,
       offset: (this._currentPage - 1) * this.options.size,
-      sort: 'asc',
+      sort: this.options.serverSort,
     })
       .then(this.serverRequestFn)
       .then((response) => {
