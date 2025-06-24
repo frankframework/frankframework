@@ -30,6 +30,7 @@ import org.frankframework.stream.MessageContext;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.RunState;
+import org.frankframework.util.SpringUtils;
 
 @SuppressWarnings("unchecked")
 public class ConditionalPipelineCallerTest {
@@ -82,7 +83,7 @@ public class ConditionalPipelineCallerTest {
 
 		pipeLineProcessor.setPipeProcessor(inputOutputPipeProcessor);
 
-		PipeLine pl = spy(configuration.createBean(PipeLine.class));
+		PipeLine pl = spy(SpringUtils.createBean(adapterBean, PipeLine.class));
 		pl.setFirstPipe("dummy");
 		pl.setPipeLineProcessor(pipeLineProcessor);
 

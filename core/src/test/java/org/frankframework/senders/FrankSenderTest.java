@@ -62,6 +62,7 @@ import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.RunState;
+import org.frankframework.util.SpringUtils;
 
 @Log4j2
 class FrankSenderTest {
@@ -226,11 +227,11 @@ class FrankSenderTest {
 		sender.setTarget(target);
 		IPipe pipe = new EchoPipe();
 		pipe.setName("test-pipe");
-		PipeLine pipeline = configuration.createBean();
-		pipeline.addPipe(pipe);
 		Adapter adapter = configuration.createBean();
 		adapter.setName("adapterName");
 		configuration.addAdapter(adapter);
+		PipeLine pipeline = SpringUtils.createBean(adapter);
+		pipeline.addPipe(pipe);
 
 		IbisManager ibisManager = mock();
 		sender.setIbisManager(ibisManager);
@@ -573,7 +574,7 @@ class FrankSenderTest {
 		CorePipeLineProcessor plp = configuration.createBean();
 		CorePipeProcessor pp = configuration.createBean();
 		plp.setPipeProcessor(pp);
-		PipeLine pl = configuration.createBean(PipeLine.class);
+		PipeLine pl = SpringUtils.createBean(adapter);
 		pl.setPipeLineProcessor(plp);
 		pl.addPipe(pipe);
 		pl.setFirstPipe(pipe.getName());

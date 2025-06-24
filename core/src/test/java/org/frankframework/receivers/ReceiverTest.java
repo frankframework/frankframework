@@ -198,7 +198,7 @@ public class ReceiverTest {
 		Adapter adapter = spy(configuration.createBean(Adapter.class));
 		adapter.setName(adapterName);
 
-		PipeLine pl = spy(configuration.createBean(PipeLine.class));
+		PipeLine pl = spy(SpringUtils.createBean(adapter, PipeLine.class));
 		doAnswer(p -> {
 			PipeLineResult plr = new PipeLineResult();
 			plr.setState(exitState);
