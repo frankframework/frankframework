@@ -20,6 +20,7 @@ import { HasAccessToLinkDirective } from '../../../components/has-access-to-link
 import { DtContentDirective } from '../../../components/datatable/dt-content.directive';
 import { DropLastCharPipe } from '../../../pipes/drop-last-char.pipe';
 import { Subscription } from 'rxjs';
+import { SortDirection } from '../../../components/th-sortable.directive';
 
 type FieldSearchInfo = {
   fieldName: string;
@@ -76,6 +77,11 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
   protected datasource: DataTableDataSource<MessageData> = new DataTableDataSource<MessageData>();
   protected displayedColumns: DataTableColumn<MessageData>[] = [];
   protected messageFields: SearchColumn[] = [];
+  protected sortOptions: { name: string; value: SortDirection }[] = [
+    { name: 'Ascending', value: 'ASC' },
+    { name: 'Descending', value: 'DESC' },
+  ];
+  protected sortDirection: SortDirection = 'DESC';
 
   private Session: SessionService = inject(SessionService);
   private SweetAlert: SweetalertService = inject(SweetalertService);
@@ -215,6 +221,10 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
         displayedColumn.hidden = !column.display;
       }
     }
+  }
+
+  updateSort(): void {
+    this.datasource.options.serverSort = this.sortDirection;
   }
 
   searchUpdated(): void {
