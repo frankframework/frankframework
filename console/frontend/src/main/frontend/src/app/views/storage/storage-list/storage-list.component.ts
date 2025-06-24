@@ -21,6 +21,7 @@ import { HasAccessToLinkDirective } from '../../../components/has-access-to-link
 import { DtContentDirective } from '../../../components/datatable/dt-content.directive';
 import { DropLastCharPipe } from '../../../pipes/drop-last-char.pipe';
 import { Subscription } from 'rxjs';
+import { SortDirection } from '../../../components/th-sortable.directive';
 
 type DisplayColumn = {
   actions: boolean;
@@ -134,6 +135,11 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     },
     { name: 'label', property: 'label', displayName: 'Label' },
   ];
+  protected sortOptions: { name: string; value: SortDirection }[] = [
+    { name: 'Ascending', value: 'ASC' },
+    { name: 'Descending', value: 'DESC' },
+  ];
+  protected sortDirection: SortDirection = 'DESC';
 
   private webStorageService: WebStorageService = inject(WebStorageService);
   private Session: SessionService = inject(SessionService);
@@ -154,6 +160,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.datasource.options = {
       filter: false,
       serverSide: true,
+      serverSort: 'DESC',
     };
 
     this.setupMessagesRequest();
@@ -294,6 +301,10 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     const fd = new FormData();
     fd.append('messageIds', messageIds as unknown as string);
     return fd;
+  }
+
+  updateSort(): void {
+    this.datasource.options.serverSort = this.sortDirection;
   }
 
   searchUpdated(): void {

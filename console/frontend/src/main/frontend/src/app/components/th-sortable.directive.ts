@@ -11,7 +11,7 @@ import {
 } from '@angular/core';
 import { anyCompare, compare } from '../utils';
 
-export type SortDirection = 'asc' | 'desc' | null;
+export type SortDirection = 'ASC' | 'DESC' | 'NONE';
 export type SortEvent = {
   column: string | number;
   direction: SortDirection;
@@ -20,7 +20,7 @@ export type SortEvent = {
 export function updateSortableHeaders(headers: QueryList<ThSortableDirective>, column: string | number | symbol): void {
   for (const header of headers) {
     if (header.sortable !== column) {
-      header.updateDirection(null);
+      header.updateDirection('NONE');
     }
   }
 }
@@ -32,11 +32,11 @@ export function basicTableSort<T extends Record<string, string | number>>(
 ): T[] {
   updateSortableHeaders(headers, column);
 
-  if (direction == null || column == '') return array;
+  if (direction == 'NONE' || column == '') return array;
 
   return [...array].sort((a, b) => {
     const order = compare(a[column], b[column]);
-    return direction === 'asc' ? order : -order;
+    return direction === 'ASC' ? order : -order;
   });
 }
 
@@ -48,11 +48,11 @@ export function basicAnyValueTableSort<T>(
 ): T[] {
   updateSortableHeaders(headers, column);
 
-  if (direction == null || column == '') return array;
+  if (direction == 'NONE' || column == '') return array;
 
   return [...array].sort((a, b) => {
     const order = anyCompare(a[column as keyof T], b[column as keyof T]);
-    return direction === 'asc' ? order : -order;
+    return direction === 'ASC' ? order : -order;
   });
 }
 
@@ -61,22 +61,19 @@ export function basicAnyValueTableSort<T>(
 })
 export class ThSortableDirective implements OnInit {
   @Input() sortable: string = '';
-  @Input() direction: SortDirection = null;
+  @Input() direction: SortDirection = 'NONE';
   @Output() sorted = new EventEmitter<SortEvent>();
 
   private nextSortOption(sortOption: SortDirection): SortDirection {
     switch (sortOption) {
-      case null: {
-        return 'asc';
+      case 'NONE': {
+        return 'ASC';
       }
-      case 'asc': {
-        return 'desc';
-      }
-      case 'desc': {
-        return null;
+      case 'ASC': {
+        return 'DESC';
       }
       default: {
-        return sortOption as never;
+        return 'NONE';
       }
     }
   }
@@ -90,10 +87,10 @@ export class ThSortableDirective implements OnInit {
   updateIcon(direction: SortDirection): void {
     let updateColumnName = '';
     updateColumnName =
-      direction == null
+      direction == 'NONE'
         ? this.headerText
         : this.headerText +
-          (direction == 'asc' ? ' <i class="fa fa-arrow-up"></i>' : ' <i class="fa fa-arrow-down"></i>');
+          (direction == 'ASC' ? ' <i class="fa fa-arrow-up"></i>' : ' <i class="fa fa-arrow-down"></i>');
     this.elementRef.nativeElement.innerHTML = updateColumnName;
   }
 
