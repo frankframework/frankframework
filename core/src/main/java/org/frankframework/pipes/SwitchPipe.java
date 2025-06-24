@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 
 import com.jayway.jsonpath.JsonPath;
@@ -34,7 +35,6 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
-import org.frankframework.http.rest.MediaTypes;
 import org.frankframework.json.JsonException;
 import org.frankframework.json.JsonUtil;
 import org.frankframework.parameters.ParameterList;
@@ -160,7 +160,7 @@ public class SwitchPipe extends AbstractPipe {
 		}
 		MimeType mimeType = MessageUtils.computeMimeType(message);
 
-		if (mimeType.isCompatibleWith(MediaTypes.TEXT.getMimeType())) {
+		if (mimeType.isCompatibleWith(MediaType.TEXT_PLAIN)) {
 			try {
 				// Use the message-text itself as forward if the message is plaintext which would never parse correctly as XML or JSON
 				return message.asString();
@@ -169,7 +169,7 @@ public class SwitchPipe extends AbstractPipe {
 			}
 		}
 
-		if (jsonPath != null && mimeType.isCompatibleWith(MediaTypes.JSON.getMimeType())) {
+		if (jsonPath != null && mimeType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
 			// If the message is not JSON, don't try to evaluate it here. User may have also
 			// set an xpath or stylesheet to transform, or the XML root element may be used.
 			try {
