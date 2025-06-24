@@ -14124,6 +14124,19 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="SwitchPipe">
+        <xs:annotation>
+          <xs:documentation>Selects an exitState, based on either the content of the input message, by means
+ of an XSLT-stylesheet, the content of a session variable or, by default, by returning the name of the root-element.</xs:documentation>
+        </xs:annotation>
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="SwitchPipeType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="Text2XmlPipe">
         <xs:annotation>
           <xs:documentation>Pipe for converting TEXT to XML.</xs:documentation>
@@ -14257,7 +14270,7 @@
       <xs:element name="XmlSwitchPipe">
         <xs:annotation>
           <xs:documentation>Selects an exitState, based on either the content of the input message, by means
- of a XSLT-stylesheet, the content of a session variable or, by default, by returning the name of the root-element.</xs:documentation>
+ of an XSLT-stylesheet, the content of a session variable or, by default, by returning the name of the root-element.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -17049,6 +17062,67 @@
     <xs:attributeGroup ref="StreamPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
+  <xs:complexType name="SwitchPipeType">
+    <xs:group ref="AbstractPipeDeclaredChildGroup" />
+    <xs:attributeGroup ref="SwitchPipeCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.SwitchPipe" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="SwitchPipeDeclaredAttributeGroup">
+    <xs:attribute name="styleSheetName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>stylesheet may return a string representing the forward to look up Default: &lt;i&gt;a stylesheet that returns the name of the root-element&lt;/i&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="xpathExpression" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>xpath-expression that returns a string representing the forward to look up. It's possible to refer to a parameter (which e.g. contains a value from a sessionkey) by using the parameter name prefixed with $</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="jsonPathExpression" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>jsonPath expression to be applied to the input-message. if not set, no transformation is done when the input message is mediatype JSON</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="namespaceDefs" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions. For some use other cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="notFoundForwardName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Forward returned when the pipename derived from the stylesheet could not be found.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="emptyForwardName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Forward returned when the content, on which the switch is performed, is empty. if &lt;code&gt;emptyforwardname&lt;/code&gt; is not specified, &lt;code&gt;notfoundforwardname&lt;/code&gt; is used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="xsltVersion" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto-detect Default: 0</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="storeForwardInSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Selected forward name will be stored in the specified session key.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="forwardNameSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Session key that will be used to get the forward name from.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="namespaceAware" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>controls namespace-awareness of XSLT transformation Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="SwitchPipeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="SwitchPipeDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
+  </xs:attributeGroup>
   <xs:complexType name="Text2XmlPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="Text2XmlPipeCumulativeAttributeGroup" />
@@ -17211,60 +17285,9 @@
   </xs:attributeGroup>
   <xs:complexType name="XmlSwitchType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
-    <xs:attributeGroup ref="XmlSwitchCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="SwitchPipeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.XmlSwitch" use="prohibited" />
   </xs:complexType>
-  <xs:attributeGroup name="XmlSwitchDeclaredAttributeGroup">
-    <xs:attribute name="styleSheetName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>stylesheet may return a string representing the forward to look up Default: &lt;i&gt;a stylesheet that returns the name of the root-element&lt;/i&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="xpathExpression" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>xpath-expression that returns a string representing the forward to look up. It's possible to refer to a parameter (which e.g. contains a value from a sessionkey) by using the parameter name prefixed with $</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="namespaceDefs" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions. For some use other cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="notFoundForwardName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Forward returned when the pipename derived from the stylesheet could not be found.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="emptyForwardName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Forward returned when the content, on which the switch is performed, is empty. if &lt;code&gt;emptyforwardname&lt;/code&gt; is not specified, &lt;code&gt;notfoundforwardname&lt;/code&gt; is used.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="xsltVersion" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto-detect Default: 0</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="storeForwardInSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Selected forward name will be stored in the specified session key.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="forwardNameSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Session key that will be used to get the forward name from.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="namespaceAware" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>controls namespace-awareness of XSLT transformation Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="XmlSwitchCumulativeAttributeGroup">
-    <xs:attributeGroup ref="XmlSwitchDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
-  </xs:attributeGroup>
   <xs:complexType name="ZipIteratorPipeType">
     <xs:group ref="IteratingPipeCumulativeChildGroup" />
     <xs:attributeGroup ref="ZipIteratorPipeCumulativeAttributeGroup" />

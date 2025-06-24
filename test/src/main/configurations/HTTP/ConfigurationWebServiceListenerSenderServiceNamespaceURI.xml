@@ -129,7 +129,7 @@
 			<global-forwards>
 				<forward name="exception" path="error_exception2" />
 			</global-forwards>
-			<pipe name="SwitchAction" className="org.frankframework.pipes.XmlSwitch"
+			<pipe name="SwitchAction" className="org.frankframework.pipes.SwitchPipe"
 				xpathExpression="request/@action"></pipe>
 			<!-- send2ws_no_forwards -->
 			<pipe className="org.frankframework.pipes.SenderPipe"
@@ -180,7 +180,7 @@
 			<exits>
 				<exit name="EXIT" state="success" />
 			</exits>
-			<pipe name="SwitchAction" className="org.frankframework.pipes.XmlSwitch"
+			<pipe name="SwitchAction" className="org.frankframework.pipes.SwitchPipe"
 				xpathExpression="request/@action"></pipe>
 			<!-- send2ws_no_forwards -->
 			<pipe className="org.frankframework.pipes.SenderPipe"

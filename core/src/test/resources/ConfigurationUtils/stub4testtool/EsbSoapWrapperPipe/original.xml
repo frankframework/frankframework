@@ -11,7 +11,7 @@
 			<inputWrapper className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"/>
 			<outputWrapper className="org.frankframework.extensions.esb.EsbSoapWrapperPipe"/>
 
-			<pipe name="switch" className="org.frankframework.pipes.XmlSwitch" sessionKey="action" />
+			<pipe name="switch" className="org.frankframework.pipes.SwitchPipe" sessionKey="action" />
 			<!-- unwrap -->
 			<pipe name="unwrap" className="org.frankframework.extensions.esb.EsbSoapWrapperPipe" direction="unwrap" cmhVersion="1">
 				<forward name="success" path="EXIT" />

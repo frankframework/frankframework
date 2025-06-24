@@ -13,7 +13,7 @@
 			<pipe name="ExctractQuery" className="org.frankframework.pipes.XsltPipe"
 				xpathExpression="/request/@query" storeResultInSessionKey="query"
 			/>
-			<pipe name="SwitchAction" className="org.frankframework.pipes.XmlSwitch"
+			<pipe name="SwitchAction" className="org.frankframework.pipes.SwitchPipe"
 				xpathExpression="/request/@action" getInputFromSessionKey="originalMessage"
 			/>
 

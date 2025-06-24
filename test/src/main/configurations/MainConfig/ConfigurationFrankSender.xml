@@ -8,7 +8,7 @@
 			</Exits>
 
 			<!-- Selects pipe based on root element of the XML -->
-			<XmlSwitchPipe name="select sender to test"/>
+			<SwitchPipe name="select sender to test"/>
 
 			<SenderPipe name="CallAdapter1">
 				<FrankSender target="SubAdapter1" returnedSessionKeys="resultKey"/>

@@ -161,7 +161,7 @@ public class RunLarvaTests {
 		EmbeddedActiveMQ embeddedServer = new EmbeddedActiveMQ();
 		embeddedServer.setConfiguration(artemisJmsConfig);
 		embeddedServer.start();
-
+		log.info("Started embedded in-memory JMS server");
 		return embeddedServer;
 	}
 
