@@ -23,7 +23,6 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.stream.Message;
-import org.frankframework.util.UUIDUtil;
 
 import java.util.Random;
 
