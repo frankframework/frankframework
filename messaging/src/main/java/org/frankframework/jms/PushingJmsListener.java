@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,7 +35,6 @@ import org.frankframework.core.IPortConnectedListener;
 import org.frankframework.core.ISender;
 import org.frankframework.core.IThreadCountControllable;
 import org.frankframework.core.IbisExceptionListener;
-import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.receivers.RawMessageWrapper;
@@ -132,7 +131,7 @@ public class PushingJmsListener extends AbstractJmsListener implements IPortConn
 	}
 
 	@Override
-	public RawMessageWrapper<Message> wrapRawMessage(Message rawMessage, PipeLineSession session) throws ListenerException {
+	public RawMessageWrapper<Message> wrapRawMessage(Message rawMessage, PipeLineSession session) {
 		Map<String, Object> messageProperties = extractMessageProperties(rawMessage);
 		session.putAll(messageProperties);
 		return new RawMessageWrapper<>(rawMessage, session.getMessageId(), session.getCorrelationId());
@@ -221,8 +220,8 @@ public class PushingJmsListener extends AbstractJmsListener implements IPortConn
 	}
 
 	/**
-	 * Interval <i>in milliseconds</i> for the poll guard to check whether a successful poll was done by the receive
-	 * (https://docs.oracle.com/javaee/7/api/javax/jms/messageconsumer.html#receive-long-) since last check. If polling has stopped this will be logged
+	 * Interval <i>in milliseconds</i> for the poll guard to check whether a successful poll was done by the
+	 * (<a href="https://docs.oracle.com/javaee/7/api/javax/jms/messageconsumer.html#receive-long-">JMS Receive call</a>) since last check. If polling has stopped this will be logged
 	 * and the listener will be stopped and started in an attempt to workaround problems with polling.
 	 * Polling might stop due to bugs in the JMS driver/implementation which should be fixed by the supplier. As the poll time includes reading
 	 * and processing of the message no successful poll might be registered since the last check when message processing takes a long time, hence
