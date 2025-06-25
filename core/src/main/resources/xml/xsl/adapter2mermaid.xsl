@@ -390,7 +390,7 @@
 					<pair>
 						<xsl:variable name="target" select="$newOriginalPipes/*[@elementID=current-grouping-key()]"/>
 						<xsl:copy>
-							<xsl:attribute name="errorHandling" select="$errorHandling or exists(current-group[@name = $errorForwards])) or $target/type = 'errorhandling'"/>
+							<xsl:attribute name="errorHandling" select="$errorHandling or exists(current-group[@name = $errorForwards]) or $target/type = 'errorhandling'"/>
 							<xsl:attribute name="name">
 								<xsl:value-of select="current-group()/@name" separator="&lt;br/>"/>
 							</xsl:attribute>
