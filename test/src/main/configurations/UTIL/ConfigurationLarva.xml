@@ -41,7 +41,7 @@
 
 			<pipe
 				name="SwitchMethod"
-				className="org.frankframework.pipes.XmlSwitch"
+				className="org.frankframework.pipes.SwitchPipe"
 				getInputFromFixedValue="&lt;dummy/&gt;"
 				preserveInput="true"
 				notFoundForwardName="CreateMail"

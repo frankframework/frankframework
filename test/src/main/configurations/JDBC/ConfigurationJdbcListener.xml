@@ -52,7 +52,7 @@
 			<pipe name="Insert" transactionAttribute="RequiresNew">
 				<sender className="org.frankframework.jdbc.FixedQuerySender" query="INSERT INTO IBISTEMP (TKEY, TCHAR, TNUMBER) VALUES (SEQ_IBISTEMP.NEXTVAL, 'X', ${jdbc.querylistener.key})" />
 			</pipe>
-			<pipe name="SwitchAction" className="org.frankframework.pipes.XmlSwitch" forwardNameSessionKey="originalMessage">
+			<pipe name="SwitchAction" className="org.frankframework.pipes.SwitchPipe" forwardNameSessionKey="originalMessage">
 				<forward name="success" path="do_success" />
 				<forward name="error" path="do_error" />
 			</pipe>
@@ -78,7 +78,7 @@
 			<exits>
 				<exit name="EXIT" state="success" />
 			</exits>
-			<pipe name="SwitchAction" className="org.frankframework.pipes.XmlSwitch"
+			<pipe name="SwitchAction" className="org.frankframework.pipes.SwitchPipe"
 				xpathExpression="request/@action"></pipe>
 			<pipe name="DeleteIbistemp">
 				<sender className="org.frankframework.jdbc.FixedQuerySender"

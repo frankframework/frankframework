@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2021-2024 WeAreFrank!
+   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -48,7 +47,6 @@ import com.jayway.jsonpath.JsonPath;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.minidev.json.JSONObject;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
@@ -59,12 +57,13 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
 import org.frankframework.jdbc.StoredProcedureQuerySender;
+import org.frankframework.json.JsonException;
+import org.frankframework.json.JsonUtil;
 import org.frankframework.pipes.PutSystemDateInSession;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.EnumUtils;
-import org.frankframework.util.MessageUtils;
 import org.frankframework.util.Misc;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TransformerPool;
@@ -204,21 +203,9 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			LOG.info("parameter [{} has no type. Setting the type to [{}]", this::getType, ()->ParameterType.STRING);
 			setType(ParameterType.STRING);
 		}
+		jsonPath = JsonUtil.compileJsonPath(jsonPathExpression);
+		sessionKeyJsonPath = JsonUtil.compileJsonPath(sessionKeyJPath);
 
-		if (StringUtils.isNotBlank(jsonPathExpression)) {
-			try {
-				jsonPath = JsonPath.compile(jsonPathExpression);
-			} catch (Exception e) {
-				throw new ConfigurationException("Invalid JSON Path expression: [" + jsonPathExpression + "]", e);
-			}
-		}
-		if (StringUtils.isNotBlank(sessionKeyJPath)) {
-			try {
-				sessionKeyJsonPath = JsonPath.compile(sessionKeyJPath);
-			} catch (Exception e) {
-				throw new ConfigurationException("Invalid sessionKeyJPath expression: [" + jsonPathExpression + "]", e);
-			}
-		}
 		configured = true;
 
 		if (StringUtils.isNotEmpty(getAuthAlias()) || StringUtils.isNotEmpty(getUsername()) || StringUtils.isNotEmpty(getPassword())) {
@@ -279,11 +266,14 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			try {
 				requestedSessionKey = tpDynamicSessionKey.transformToString(message);
 			} catch (Exception e) {
-				throw new ParameterException(getName(), "SessionKey for parameter [" + getName() + "] exception on transformation to get name", e);
+				throw new ParameterException(getName(), "SessionKey for parameter [" + getName() + "] exception on XML transformation to get name", e);
 			}
 		} else if (sessionKeyJsonPath != null) {
-			Object o = evaluateJsonPath(message, sessionKeyJsonPath);
-			requestedSessionKey = o != null ? o.toString() : null;
+			try {
+				requestedSessionKey = JsonUtil.evaluateJsonPathToSingleValue(sessionKeyJsonPath, message);
+			} catch (JsonException e) {
+				throw new ParameterException(getName(), "SessionKey for parameter [" + getName() + "] exception on JSON Path Evaluation to get name", e);
+			}
 		} else {
 			requestedSessionKey = getSessionKey();
 		}
@@ -402,7 +392,11 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 				input = null;
 			}
 			if (input != null) {
-				result = evaluateJsonPath(input, jsonPath);
+				try {
+					result = JsonUtil.evaluateJsonPath(jsonPath, input);
+				} catch (JsonException e) {
+					throw new ParameterException(getName(), e);
+				}
 			}
 		} else {
 			/*
@@ -521,28 +515,6 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			LOG.debug("Parameter [{}] session variable [{}] is empty", this::getName, () -> requestedSessionKey);
 		}
 		return input;
-	}
-
-	private Object evaluateJsonPath(Object input, JsonPath jsonPath) throws ParameterException {
-		try {
-			Message inputMessage = MessageUtils.convertToJsonMessage(input);
-			Object result = jsonPath.read(inputMessage.asInputStream());
-			return getJsonPathResult(result);
-		} catch (Exception e) {
-			throw new ParameterException("Cannot evaluate JSonPathExpression on parameter value", e);
-		}
-	}
-
-	private String getJsonPathResult(Object result) {
-		if (result == null) {
-			return null;
-		}
-		if (result instanceof HashMap<?,?> map) {
-			@SuppressWarnings("unchecked")
-			JSONObject jsonObject = new JSONObject((Map<String, ?>) map);
-			return jsonObject.toString();
-		}
-		return result.toString();
 	}
 
 	private Object applyMinAndMaxLengths(final Object request) {

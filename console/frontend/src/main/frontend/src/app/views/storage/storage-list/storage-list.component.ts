@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, inject, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { MessageField, MessageStore, Note, StorageService } from '../storage.service';
 import { StorageListDtComponent } from './storage-list-dt/storage-list-dt.component';
 import { SessionService } from 'src/app/services/session.service';
@@ -20,6 +20,7 @@ import { HasAccessToLinkDirective } from '../../../components/has-access-to-link
 import { DtContentDirective } from '../../../components/datatable/dt-content.directive';
 import { DropLastCharPipe } from '../../../pipes/drop-last-char.pipe';
 import { Subscription } from 'rxjs';
+import { SortDirection } from '../../../components/th-sortable.directive';
 
 type FieldSearchInfo = {
   fieldName: string;
@@ -51,8 +52,6 @@ type MessageData = MessageStore['messages'][number];
   ],
 })
 export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('storageListDt') storageListDt!: TemplateRef<StorageListDtComponent>;
-
   protected targetStates: Record<string, { name: string }> = {};
 
   protected truncated = false;
@@ -78,6 +77,11 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
   protected datasource: DataTableDataSource<MessageData> = new DataTableDataSource<MessageData>();
   protected displayedColumns: DataTableColumn<MessageData>[] = [];
   protected messageFields: SearchColumn[] = [];
+  protected sortOptions: { name: string; value: SortDirection }[] = [
+    { name: 'Ascending', value: 'ASC' },
+    { name: 'Descending', value: 'DESC' },
+  ];
+  protected sortDirection: SortDirection = 'DESC';
 
   private Session: SessionService = inject(SessionService);
   private SweetAlert: SweetalertService = inject(SweetalertService);
@@ -106,6 +110,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.datasource.options = {
       filter: false,
       serverSide: true,
+      serverSort: 'DESC',
     };
 
     this.getDisplayedColumns();
@@ -216,6 +221,10 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
         displayedColumn.hidden = !column.display;
       }
     }
+  }
+
+  updateSort(): void {
+    this.datasource.options.serverSort = this.sortDirection;
   }
 
   searchUpdated(): void {
