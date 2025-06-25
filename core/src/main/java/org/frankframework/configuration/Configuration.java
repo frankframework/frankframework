@@ -564,6 +564,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	/**
 	 * Set the default {@link IErrorMessageFormatter} for all adapters in this configuration
 	 * that do not have an {@code ErrorMessageFormatter} defined.
+	 *
+	 * @see IErrorMessageFormatter for general information on error message formatters.
 	 */
 	public void setErrorMessageFormatter(IErrorMessageFormatter errorMessageFormatter) {
 		this.errorMessageFormatter = errorMessageFormatter;

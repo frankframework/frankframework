@@ -39,8 +39,7 @@ public class Y01ErrorMessageFormatter implements IErrorMessageFormatter {
 	private final String applicationVersion = AppConstants.getInstance().getProperty("application.version");
 
 	@Override
-	public @Nonnull Message format(
-			@Nullable String message, @Nullable Throwable t, @Nullable HasName location, @Nullable Message originalMessage, @Nonnull PipeLineSession session) {
+	public @Nonnull Message format(@Nullable String message, @Nullable Throwable t, @Nullable HasName location, @Nullable Message originalMessage, @Nonnull PipeLineSession session) {
 		String result= "<ServiceResponse>\n" +
 				"   <ResponseEnvelope>\n" +
 				"       <serviceType>ING_RES1006</serviceType>\n" +
