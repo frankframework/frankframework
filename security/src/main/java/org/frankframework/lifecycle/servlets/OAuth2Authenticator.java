@@ -280,6 +280,7 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 		return builder.build();
 	}
 
+	// https://login.microsoftonline.com/%s/.well-known/openid-configuration
 	private ClientRegistration.Builder createAzureBuilder() {
 		if (StringUtils.isBlank(tenantId)) throw new IllegalStateException("when using Azure provider the tenantId property is required");
 
@@ -292,7 +293,7 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 
 		builder.authorizationUri("https://login.microsoftonline.com/%s/oauth2/v2.0/authorize".formatted(tenantId));
 		builder.tokenUri("https://login.microsoftonline.com/%s/oauth2/v2.0/token".formatted(tenantId));
-		builder.jwkSetUri("https://login.microsoftonline.com/common/discovery/v2.0/keys");
+		builder.jwkSetUri("https://login.microsoftonline.com/%s/discovery/v2.0/keys?appid=%s".formatted(tenantId, clientId));
 		builder.issuerUri("https://login.microsoftonline.com/%s/v2.0".formatted(tenantId));
 		builder.userInfoUri("https://graph.microsoft.com/oidc/userinfo");
 		builder.userNameAttributeName("email");

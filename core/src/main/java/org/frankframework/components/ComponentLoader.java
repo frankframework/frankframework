@@ -42,8 +42,7 @@ public class ComponentLoader {
 	}
 
 	public static List<Module> findAllModules() {
-		List<Module> allModules = new ArrayList<>();
-		allModules.addAll(getModules());
+		List<Module> allModules = new ArrayList<>(getModules());
 
 		// Filter out modules that already exist, match on name
 		LegacyLoader.findActiveApplicationModules()
@@ -51,7 +50,7 @@ public class ComponentLoader {
 			.filter(m -> !allModules.contains(m))
 			.forEach(allModules::add);
 
-		allModules.stream().forEach(ComponentLoader::registerApplicationModules);
+		allModules.forEach(ComponentLoader::registerApplicationModules);
 
 		return allModules;
 	}

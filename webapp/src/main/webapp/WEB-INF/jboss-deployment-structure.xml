@@ -31,10 +31,10 @@ In order to find all modules:
 		<exports />
 		<module-alias name="deployment.iaf" />
 		<dependencies>
-			<module name="jakarta.xml.ws.api" export="true"/>	<!-- java.lang.NoClassDefFoundError: jakarta/jws/WebService -->
+			<module name="jakarta.xml.ws.api" export="true"/> <!-- To prevent java.lang.NoClassDefFoundError: jakarta/jws/WebService -->
 			<module name="jakarta.jms.api" export="true"/>
 			<module name="module.frank-framework" />
-			<module name="org.jboss.as.server"/> <!-- for WildFlyCredentialFactory -->
+			<module name="org.jboss.as.server"/> <!-- Enable SecretStore support in the WildFlyCredentialFactory -->
 		</dependencies>
 		<exclude-subsystems>
 			<subsystem name="webservices" />	<!-- To avoid apache CXF RT-WS (SOAP) conflict -->

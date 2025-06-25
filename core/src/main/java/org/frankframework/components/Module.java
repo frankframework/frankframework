@@ -40,7 +40,7 @@ import jakarta.annotation.Nonnull;
 public interface Module {
 
 	/**
-	 * Retrieves the module information based on the MANIFEST.MF file instead of the pom.properties.
+	 * Retrieves the module information based on the MANIFEST.MF file.
 	 */
 	@Nonnull
 	default ModuleInformation getModuleInformation() throws IOException {
