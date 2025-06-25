@@ -29,7 +29,7 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
 
   private promise: number = -1;
   private versions: Configuration[] = [];
-  private lastSortEvent: SortEvent = { direction: null, column: '' };
+  private lastSortEvent: SortEvent = { direction: 'NONE', column: '' };
 
   @ViewChildren(ThSortableDirective) headers!: QueryList<ThSortableDirective>;
 
