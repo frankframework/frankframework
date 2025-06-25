@@ -43,7 +43,7 @@ public class ComponentLoaderTest {
 			}
 		}).count();
 
-		assertEquals(1L, foundCoreModule);
+		assertEquals(1L, foundCoreModule, "did not find core module but found: " + modules);
 	}
 
 	@Test
@@ -65,10 +65,18 @@ public class ComponentLoaderTest {
 	}
 
 	@Test
-	public void jbossVirtualFilesystem() throws Exception {
-		String path = "vfs:/content/iaf-test.war/WEB-INF/lib/abc.jar/META-INF/maven/org.frankframework/abc/pom.properties";
+	public void normalFilesystem() throws Exception {
+		String path = "file:/content/iaf%20test.war/WEB-INF/lib/abc.jar/META-INF/maven/org.frankframework/abc/pom.properties";
 		URLStreamHandler urlStreamHandler = new BytesURLStreamHandler("dummy-data".getBytes());
 		URL url = new URL(null, path, urlStreamHandler);
-		assertEquals("/content/iaf-test.war/WEB-INF/lib/abc.jar/META-INF/maven/org.frankframework/abc/pom.properties", Environment.extractPath(url));
+		assertEquals("/content/iaf test.war/WEB-INF/lib/abc.jar/META-INF/maven/org.frankframework/abc/pom.properties", Environment.extractPath(url));
+	}
+
+	@Test
+	public void jbossVirtualFilesystem() throws Exception {
+		String path = "vfs:/content/iaf%20test.war/WEB-INF/lib/abc.jar/META-INF/maven/org.frankframework/abc/pom.properties";
+		URLStreamHandler urlStreamHandler = new BytesURLStreamHandler("dummy-data".getBytes());
+		URL url = new URL(null, path, urlStreamHandler);
+		assertEquals("/content/iaf%20test.war/WEB-INF/lib/abc.jar/META-INF/maven/org.frankframework/abc/pom.properties", Environment.extractPath(url));
 	}
 }
