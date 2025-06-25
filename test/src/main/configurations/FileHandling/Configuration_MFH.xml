@@ -93,7 +93,7 @@
 				<Param name="LegacyFlowId" sessionKey="originalMessage" xpathExpression="/Message/LegacyMessage/OnCompletedTransferNotify_Action/TransferFlowId"/>
 				<Param name="clientFilename" sessionKey="originalMessage" xpathExpression="/Message/LegacyMessage/OnCompletedTransferNotify_Action/ClientFilename"/>
 			</PutInSessionPipe>
-<!-- Some processing may be in place (XmlSwitchPipe switch between flows)-->
+<!-- Some processing may be in place (SwitchPipe switch between flows)-->
 
 			<LocalFileSystemPipe name="Move to processed folder" action="move" createFolder="true">
 				<Param name="filename" sessionKey="clientFilename"/>

@@ -8,7 +8,7 @@
 			<exits>
 				<exit name="EXIT" state="success" />
 			</exits>
-			<pipe name="Switch" className="org.frankframework.pipes.XmlSwitch"
+			<pipe name="Switch" className="org.frankframework.pipes.SwitchPipe"
 				forwardNameSessionKey="switch" />
 			<!-- gpbdb -->
 			<pipe name="gpbdb" className="org.frankframework.pipes.WsdlXmlValidator"

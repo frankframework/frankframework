@@ -20,12 +20,12 @@
 		<junit.excludedTags></junit.excludedTags>
 		<junit.includedTags></junit.includedTags>
 
-		<jackson.version>2.19.0</jackson.version>
+		<jackson.version>2.19.1</jackson.version>
 		<cxf.version>4.1.2</cxf.version>
 		<spring.version>6.2.8</spring.version>
 		<spring-security.version>6.4.6</spring-security.version>
 		<spring-integration.version>6.5.0</spring-integration.version>
-		<spring.boot.version>3.5.0</spring.boot.version>
+		<spring.boot.version>3.5.3</spring.boot.version>
 		<tomcat.version>10.1.42</tomcat.version>
 		<bouncycastle.version>1.81</bouncycastle.version>
 
@@ -42,14 +42,14 @@
 		<db2.driver.version>11.5.9.0</db2.driver.version>
 		<oracle.driver.version>23.8.0.25.04</oracle.driver.version>
 		<oracle.driver.jdkversion>11</oracle.driver.jdkversion>
-		<mssql.driver.version>12.10.0.jre11</mssql.driver.version>
+		<mssql.driver.version>12.10.1.jre11</mssql.driver.version>
 		<mysql.driver.version>9.3.0</mysql.driver.version>
 		<mariadb.driver.version>3.5.3</mariadb.driver.version>
 		<postgresql.driver.version>42.7.7</postgresql.driver.version>
 		<mongodb.driver.version>5.5.1</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
-		<activemq.driver.version>6.1.6</activemq.driver.version>
+		<activemq.driver.version>6.1.7</activemq.driver.version>
 		<artemis.driver.version>2.41.0</artemis.driver.version>
 
 		<rabbitmq.driver.version>5.25.0</rabbitmq.driver.version>
@@ -59,7 +59,7 @@
 
 		<!-- Some test dependency versions -->
 		<mockito.version>5.18.0</mockito.version>
-		<junit.version>5.13.1</junit.version>
+		<junit.version>5.13.2</junit.version>
 	</properties>
 
 	<name>Frank!Framework parent</name>
@@ -437,7 +437,7 @@
 			<dependency>
 				<groupId>org.xmlunit</groupId>
 				<artifactId>xmlunit-bom</artifactId>
-				<version>2.10.2</version>
+				<version>2.10.3</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -683,7 +683,7 @@
 			<dependency>
 				<groupId>org.testcontainers</groupId>
 				<artifactId>testcontainers-bom</artifactId>
-				<version>1.21.1</version>
+				<version>1.21.2</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -1054,14 +1054,14 @@
 						<dependency>
 							<groupId>com.puppycrawl.tools</groupId>
 							<artifactId>checkstyle</artifactId>
-							<version>10.25.0</version>
+							<version>10.26.0</version>
 						</dependency>
 					</dependencies>
 				</plugin>
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>flatten-maven-plugin</artifactId>
-					<version>1.7.0</version>
+					<version>1.7.1</version>
 					<configuration>
 						<updatePomFile>true</updatePomFile>
 						<flattenMode>resolveCiFriendliesOnly</flattenMode>
@@ -1370,7 +1370,7 @@
 					<plugin>
 						<groupId>org.sonatype.central</groupId>
 						<artifactId>central-publishing-maven-plugin</artifactId>
-						<version>0.7.0</version>
+						<version>0.8.0</version>
 						<extensions>true</extensions>
 						<configuration>
 							<autoPublish>false</autoPublish><!-- Don't release the build directly after it's been published to Central (staging). -->

@@ -33,7 +33,7 @@
 			<exits>
 				<exit name="EXIT" state="success" />
 			</exits>
-			<pipe name="switchAction" className="org.frankframework.pipes.XmlSwitch"
+			<pipe name="switchAction" className="org.frankframework.pipes.SwitchPipe"
 				xpathExpression="Request/@action"></pipe>
 			<!-- sendMessage_invalidRequest -->
 			<pipe name="sendMessage_invalidRequest" className="org.frankframework.pipes.FixedResultPipe"

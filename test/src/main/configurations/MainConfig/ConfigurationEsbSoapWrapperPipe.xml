@@ -8,7 +8,7 @@
 			<exits>
 				<exit name="EXIT" state="success" />
 			</exits>
-			<pipe name="switch" className="org.frankframework.pipes.XmlSwitch" forwardNameSessionKey="action" />
+			<pipe name="switch" className="org.frankframework.pipes.SwitchPipe" forwardNameSessionKey="action" />
 			<!-- unwrap -->
 			<pipe name="unwrap" className="org.frankframework.extensions.esb.EsbSoapWrapperPipe" mode="i2t" direction="unwrap" removeOutputNamespaces="true">
 				<forward name="success" path="EXIT" />
@@ -89,7 +89,7 @@
 			<exits>
 				<exit name="EXIT" state="success" />
 			</exits>
-			<pipe name="switch" className="org.frankframework.pipes.XmlSwitch" forwardNameSessionKey="action" />
+			<pipe name="switch" className="org.frankframework.pipes.SwitchPipe" forwardNameSessionKey="action" />
 			<!-- unwrap -->
 			<pipe name="unwrap" className="org.frankframework.extensions.esb.EsbSoapWrapperPipe" direction="unwrap" cmhVersion="1">
 				<forward name="success" path="EXIT" />
@@ -179,7 +179,7 @@
 			<exits>
 				<exit name="EXIT" state="success" />
 			</exits>
-			<pipe name="switch" className="org.frankframework.pipes.XmlSwitch" forwardNameSessionKey="action" />
+			<pipe name="switch" className="org.frankframework.pipes.SwitchPipe" forwardNameSessionKey="action" />
 			<!-- unwrap -->
 			<pipe name="unwrap" className="org.frankframework.extensions.esb.EsbSoapWrapperPipe" mode="bis" direction="unwrap">
 				<forward name="success" path="EXIT" />
@@ -234,7 +234,7 @@
 			<exits>
 				<exit name="EXIT" state="success" />
 			</exits>
-			<pipe name="switch" className="org.frankframework.pipes.XmlSwitch" forwardNameSessionKey="action" />
+			<pipe name="switch" className="org.frankframework.pipes.SwitchPipe" forwardNameSessionKey="action" />
 			<!-- wrap2 -->
 			<pipe name="wrap2" className="org.frankframework.extensions.esb.EsbSoapWrapperPipe" cmhVersion="2" outputNamespace="http://www.ing.com/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply">
 				<param name="destination" value="ESB.Publishing.BS.Document.SalesDocument.1.GetDocuments.1.Response" />
@@ -276,7 +276,7 @@
 			<exits>
 				<exit name="EXIT" state="success" />
 			</exits>
-			<pipe name="switch" className="org.frankframework.pipes.XmlSwitch" forwardNameSessionKey="action" />
+			<pipe name="switch" className="org.frankframework.pipes.SwitchPipe" forwardNameSessionKey="action" />
 			<!-- wrap2 -->
 			<pipe name="wrap2" className="org.frankframework.extensions.esb.EsbSoapWrapperPipe" cmhVersion="2" outputNamespace="http://www.ing.com/ISS/XSD/NL/LI/ActuarialCalculationsLifeRetail_1_CQAPVLI_1_Req_Rply">
 				<param name="destination" value="ESB.Publishing.BS.SalesDocument.1.GetDocuments.1.Response" />

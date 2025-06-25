@@ -1,9 +1,14 @@
 <div class="inmodal">
   <div class="modal-header">
-    <h4 class="modal-title">Flow Diagram for [{{ flowName }}]</h4>
+    <h4 class="modal-title">Flow Diagram for [{{ flowName }}] ({{ zoom }})</h4>
   </div>
-  <div class="modal-body text-center">
-    <ng-mermaid [nmModel]="flow" [nmRefreshInterval]="500" (nmInitCallback)="mermaidLoaded($event)"></ng-mermaid>
+  <div class="modal-body text-center" [appZoomPan]="flowSvg" (newScale)="updateZoom($event)">
+    <ng-mermaid
+      [nmModel]="flow"
+      [nmRefreshInterval]="500"
+      [flowName]="flowName"
+      (nmInitCallback)="mermaidLoaded($event)"
+    ></ng-mermaid>
   </div>
 
   <div class="modal-footer">

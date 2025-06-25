@@ -276,7 +276,7 @@ public class TransformerPool {
 		try {
 			styleSheet = Resource.getResource(scopeProvider, styleSheetName);
 			if (styleSheet==null) {
-				throw new ConfigurationException("cannot find ["+ styleSheetName + "] in scope ["+scopeProvider+"]");
+				throw new ConfigurationException("cannot find ["+ styleSheetName + "] in scope ["+(scopeProvider != null ? scopeProvider.getName() : "<Global>")+"]");
 			}
 			log.debug("configuring stylesheet [{}] resource [{}]", styleSheetName, styleSheet);
 			result = TransformerPool.getInstance(styleSheet, xsltVersion);
@@ -357,7 +357,7 @@ public class TransformerPool {
 		tFactory.setURIResolver(null);
 	}
 
-	protected Transformer getTransformer() throws TransformerConfigurationException {
+	protected @Nonnull Transformer getTransformer() throws TransformerConfigurationException {
 		if(pool == null) {
 			throw new IllegalStateException("TransformerPool does not exist, did you forget to call open()?");
 		}
@@ -462,7 +462,9 @@ public class TransformerPool {
 		MessageBuilder messageBuilder = new MessageBuilder();
 		try (OutputStream outputStream = messageBuilder.asOutputStream()) {
 			StreamResult result = new StreamResult(outputStream);
-			transform(m.asSource(), result, parameterMap);
+			Source source = m.asSource();
+			if (source == null) throw new IllegalStateException("Message#asSource may not be null when message is not empty");
+			transform(source, result, parameterMap);
 		}
 		Message output = messageBuilder.build();
 		output.getContext().putAll(createMessageContext().getAll());
@@ -493,6 +495,7 @@ public class TransformerPool {
 	 * Should ideally only be used internally, however there is one use outside this class.
 	 */
 	public void transform(@Nonnull Source s, @Nonnull Result r, Map<String,Object> parameters) throws TransformerException, IOException {
+		Exception exceptionToThrow;
 		Transformer transformer = getTransformer();
 		try {
 			XmlUtils.setTransformerParameters(transformer, parameters);
@@ -501,24 +504,28 @@ public class TransformerPool {
 			((TransformerErrorListener)transformer.getErrorListener()).setFatalTransformerException(te);
 		} catch (IOException ioe) {
 			((TransformerErrorListener)transformer.getErrorListener()).setFatalIOException(ioe);
-		}
-		finally {
-			if (transformer != null) {
-				TransformerErrorListener transformerErrorListener = (TransformerErrorListener)transformer.getErrorListener();
-				if (transformerErrorListener.getFatalTransformerException() != null) {
-					invalidateTransformerNoThrow(transformer);
-					throw transformerErrorListener.getFatalTransformerException();
-				}
-				if (transformerErrorListener.getFatalIOException() != null) {
-					invalidateTransformerNoThrow(transformer);
-					throw transformerErrorListener.getFatalIOException();
-				}
+		} finally {
+			TransformerErrorListener transformerErrorListener = (TransformerErrorListener) transformer.getErrorListener();
+			if (transformerErrorListener.getFatalTransformerException() != null) {
+				invalidateTransformerNoThrow(transformer);
+				exceptionToThrow = transformerErrorListener.getFatalTransformerException();
+			} else if (transformerErrorListener.getFatalIOException() != null) {
+				invalidateTransformerNoThrow(transformer);
+				exceptionToThrow = transformerErrorListener.getFatalIOException();
+			} else {
+				exceptionToThrow = null;
 				try {
 					releaseTransformer(transformer);
 				} catch(Exception e) {
 					log.warn("Exception returning transformer to pool",e);
 				}
 			}
+		}
+		// Should not throw an exception from a "finally" block
+		if (exceptionToThrow instanceof TransformerException transformerException) {
+			throw transformerException;
+		} else if (exceptionToThrow instanceof IOException ioException) {
+			throw ioException;
 		}
 	}
 

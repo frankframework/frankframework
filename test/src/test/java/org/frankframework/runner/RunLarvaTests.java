@@ -147,14 +147,21 @@ public class RunLarvaTests {
 	}
 
 	private static EmbeddedActiveMQ configureEmbeddedJmsServer() throws Exception {
+		String jmsDataDir = IafTestInitializer.getLogDir(IafTestInitializer.getProjectDir()) + "/ArtemisMQ";
+
 		Configuration artemisJmsConfig = new ConfigurationImpl();
-		artemisJmsConfig.addAcceptorConfiguration("in-vm", "vm://0");
-		artemisJmsConfig.setSecurityEnabled(false);
+		artemisJmsConfig.addAcceptorConfiguration("in-vm", "vm://0")
+			.setSecurityEnabled(false)
+				.setName("ArtemisJmsServer-Larva")
+				.setBindingsDirectory(jmsDataDir + "/bindings")
+				.setJournalDirectory(jmsDataDir + "/journal")
+				.setLargeMessagesDirectory(jmsDataDir + "/largemessages")
+		;
 
 		EmbeddedActiveMQ embeddedServer = new EmbeddedActiveMQ();
 		embeddedServer.setConfiguration(artemisJmsConfig);
 		embeddedServer.start();
-
+		log.info("Started embedded in-memory JMS server");
 		return embeddedServer;
 	}
 

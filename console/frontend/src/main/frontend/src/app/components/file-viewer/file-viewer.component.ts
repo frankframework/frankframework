@@ -63,7 +63,13 @@ export class FileViewerComponent implements OnInit {
           }
         },
         error: (errorData: HttpErrorResponse) => {
-          this.fileContents = `Error requesting file data: ${errorData.message}`;
+          let serverError: { status: string; error: string } = { status: '', error: '' };
+          try {
+            serverError = JSON.parse(errorData.error);
+          } catch {
+            serverError.error = errorData.error;
+          }
+          this.fileContents = `Error requesting file data: ${serverError.status}\n${serverError.error}`;
           this.loading = false;
           this.error = true;
         },

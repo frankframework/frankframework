@@ -2151,6 +2151,7 @@
   </xs:complexType>
   <xs:attributeGroup name="JMSFacadeDeclaredAttributeGroup">
     <xs:attribute ref="messageClass" />
+    <xs:attribute ref="jndiContextPrefix" />
     <xs:attribute name="destinationName" type="xs:string">
       <xs:annotation>
         <xs:documentation>Name of the JMS destination (queue or topic) to use</xs:documentation>
@@ -2179,6 +2180,11 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="lookupDestination" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The name of this FrankElement</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="JMSFacadeCumulativeAttributeGroup">
     <xs:attributeGroup ref="JMSFacadeDeclaredAttributeGroup" />
@@ -2234,13 +2240,7 @@
         <xs:documentation>authentication alias, may be used to override principal and credential-settings</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="jndiContextPrefix" type="xs:string" />
     <xs:attribute name="jndiProperties" type="xs:string" />
-    <xs:attribute name="name" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Name of the sender or the listener</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -4216,6 +4216,11 @@
         <xs:documentation>(Only used when &lt;code&gt;operation=search/deepsearch&lt;/code&gt;) when &lt;code&gt;true&lt;/code&gt; the xml '&amp;lt;ldapresult&amp;gt;object not found&amp;lt;/ldapresult&amp;gt;' is returned instead of the PartialResultException 'unprocessed continuation reference(s)' Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>name of the sender</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="LdapSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="LdapSenderDeclaredAttributeGroup" />
@@ -4561,7 +4566,7 @@
         <xs:documentation>Collection to act upon. Can be overridden by parameter &lt;code&gt;collection&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="action">
+    <xs:attribute name="action" use="required">
       <xs:annotation>
         <xs:documentation>Action</xs:documentation>
       </xs:annotation>
@@ -4638,7 +4643,7 @@
         <xs:documentation>character encoding of received messages Default: UTF-8</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="resourceName" />
+    <xs:attribute ref="resourceName" use="required" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -4659,7 +4664,7 @@
         <xs:documentation>character encoding of received messages Default: UTF-8</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="resourceName" />
+    <xs:attribute ref="resourceName" use="required" />
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -6577,6 +6582,7 @@
     <xs:attributeGroup ref="PushingJmsListenerDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractJmsListenerDeclaredAttributeGroup" />
     <xs:attribute ref="messageClass" />
+    <xs:attribute ref="jndiContextPrefix" />
     <xs:attribute ref="destinationType" />
     <xs:attribute ref="acknowledgeMode" />
     <xs:attribute ref="persistent" />
@@ -6600,6 +6606,11 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="lookupDestination" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The name of this FrankElement</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attributeGroup ref="JndiBaseDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="CmisEventListenerType">
@@ -6808,6 +6819,7 @@
     <xs:attribute ref="replySoapAction" />
     <xs:attribute ref="soapHeaderSessionKey" />
     <xs:attribute ref="messageClass" />
+    <xs:attribute ref="jndiContextPrefix" />
     <xs:attribute ref="destinationType" />
     <xs:attribute ref="acknowledgeMode" />
     <xs:attribute ref="persistent" />
@@ -6831,6 +6843,11 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="lookupDestination" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The name of this FrankElement</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attributeGroup ref="JndiBaseDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="ExchangeMailListenerType">
@@ -8028,6 +8045,12 @@
       <xs:annotation>
         <xs:documentation>The address to listen to, e.g the part &amp;lt;address&amp;gt; in https://mydomain.com/ibis4something/services/&amp;lt;address&amp;gt;,
  where mydomain.com and ibis4something refer to 'your ibis'.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="soapAction" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>SOAP Action to listen to. Requests sent to `/servlet/rpcrouter` which matches the soapAction will be processed by this listener.
+ This is slightly different from the namespaceURI which routes messages based on the first element's namespace.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="mtomEnabled" type="frankBoolean">
@@ -11040,6 +11063,15 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="JsonPathPipe">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="JsonPathPipeType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="JsonPipe">
         <xs:complexType>
           <xs:complexContent>
@@ -11404,6 +11436,15 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="StreamTransformerPipeType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
+      <xs:element name="SwitchPipe">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="SwitchPipeType">
               <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
             </xs:extension>
           </xs:complexContent>
@@ -13134,6 +13175,22 @@
     <xs:attributeGroup ref="IsXmlPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
+  <xs:complexType name="JsonPathPipeType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractPipeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="JsonPathPipeCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.JsonPathPipe" />
+  </xs:complexType>
+  <xs:attributeGroup name="JsonPathPipeDeclaredAttributeGroup">
+    <xs:attribute name="jsonPathExpression" type="xs:string" use="required" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="JsonPathPipeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="JsonPathPipeDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+  </xs:attributeGroup>
   <xs:complexType name="JsonPipeType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -14748,6 +14805,71 @@
     <xs:attributeGroup ref="StreamLineIteratorPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="StringIteratorPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
+  <xs:complexType name="SwitchPipeType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractPipeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
+    <xs:attributeGroup ref="SwitchPipeCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.SwitchPipe" />
+  </xs:complexType>
+  <xs:attributeGroup name="SwitchPipeDeclaredAttributeGroup">
+    <xs:attribute name="styleSheetName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>stylesheet may return a string representing the forward to look up Default: &lt;i&gt;a stylesheet that returns the name of the root-element&lt;/i&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="xpathExpression" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>xpath-expression that returns a string representing the forward to look up. It's possible to refer to a parameter (which e.g. contains a value from a sessionkey) by using the parameter name prefixed with $</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="jsonPathExpression" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>jsonPath expression to be applied to the input-message. if not set, no transformation is done when the input message is mediatype JSON</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="namespaceDefs" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions. For some use other cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="notFoundForwardName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Forward returned when the pipename derived from the stylesheet could not be found.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="emptyForwardName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Forward returned when the content, on which the switch is performed, is empty. if &lt;code&gt;emptyforwardname&lt;/code&gt; is not specified, &lt;code&gt;notfoundforwardname&lt;/code&gt; is used.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="xsltVersion" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto-detect Default: 0</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="storeForwardInSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Selected forward name will be stored in the specified session key.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="forwardNameSessionKey" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Session key that will be used to get the forward name from.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="namespaceAware" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>controls namespace-awareness of XSLT transformation Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="SwitchPipeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="SwitchPipeDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
+  </xs:attributeGroup>
   <xs:complexType name="Text2XmlPipeType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -14991,60 +15113,9 @@
         <xs:group ref="AbstractPipeDeclaredChildGroup" />
       </xs:choice>
     </xs:sequence>
-    <xs:attributeGroup ref="XmlSwitchCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="SwitchPipeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.XmlSwitch" />
   </xs:complexType>
-  <xs:attributeGroup name="XmlSwitchDeclaredAttributeGroup">
-    <xs:attribute name="styleSheetName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>stylesheet may return a string representing the forward to look up Default: &lt;i&gt;a stylesheet that returns the name of the root-element&lt;/i&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="xpathExpression" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>xpath-expression that returns a string representing the forward to look up. It's possible to refer to a parameter (which e.g. contains a value from a sessionkey) by using the parameter name prefixed with $</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="namespaceDefs" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Namespace defintions for xpathExpression. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions. For some use other cases (NOT xpathExpression), one entry can be without a prefix, that will define the default namespace.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="notFoundForwardName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Forward returned when the pipename derived from the stylesheet could not be found.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="emptyForwardName" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Forward returned when the content, on which the switch is performed, is empty. if &lt;code&gt;emptyforwardname&lt;/code&gt; is not specified, &lt;code&gt;notfoundforwardname&lt;/code&gt; is used.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="xsltVersion" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto-detect Default: 0</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="storeForwardInSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Selected forward name will be stored in the specified session key.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="forwardNameSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Session key that will be used to get the forward name from.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="namespaceAware" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>controls namespace-awareness of XSLT transformation Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="XmlSwitchCumulativeAttributeGroup">
-    <xs:attributeGroup ref="XmlSwitchDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
-  </xs:attributeGroup>
   <xs:complexType name="ZipIteratorPipeType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -16493,6 +16564,7 @@
       <xs:union memberTypes="MessageClassAttributeValuesType variableRef" />
     </xs:simpleType>
   </xs:attribute>
+  <xs:attribute name="jndiContextPrefix" type="xs:string" />
   <xs:attribute name="destinationType">
     <xs:annotation>
       <xs:documentation>Type of the messageing destination.
@@ -17124,7 +17196,11 @@
       <xs:documentation>see &lt;a href="https://www.eclipse.org/paho/files/javadoc/org/eclipse/paho/client/mqttv3/MqttClient.html#MqttClient-java.lang.String-java.lang.String-org.eclipse.paho.client.mqttv3.MqttClientPersistence-" target="_blank"&gt;MqttClient(java.lang.String serverURI, java.lang.String clientId, MqttClientPersistence persistence)&lt;/a&gt; Default: 2</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="resourceName" type="xs:string" />
+  <xs:attribute name="resourceName" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Name of the MqttClientSettings configuration in the `resources.yml`.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
   <xs:attribute name="replyDestinationName" type="xs:string">
     <xs:annotation>
       <xs:documentation>Name of the JMS destination (queue or topic) to use for sending replies. If &lt;code&gt;useReplyTo=true&lt;/code&gt;,

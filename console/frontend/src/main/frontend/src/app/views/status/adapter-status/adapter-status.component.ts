@@ -25,7 +25,7 @@ import { FlowComponent } from '../flow/flow.component';
   styleUrl: './adapter-status.component.scss',
 })
 export class AdapterStatusComponent {
-  @Input({ required: true }) adapter: Adapter | null = null;
+  @Input({ required: true }) adapter!: Adapter;
   @Input({ required: true }) loadFlowInline = true;
   @Input({ required: true }) adapterShowContent: Record<string, boolean> = {};
 

@@ -1,7 +1,9 @@
 package org.frankframework.pipes;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.StringReader;
@@ -14,10 +16,13 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import com.jayway.jsonpath.InvalidJsonException;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.json.JsonException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CloseUtils;
 
@@ -199,6 +204,28 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 
 		pipeRunResult = doPipe(pipe, getJsonMessage(null), session);
 		assertEquals(PIPE_FORWARD_ELSE, pipeRunResult.getPipeForward().getName());
+	}
+
+	@Test
+	void testInvalidJsonPathExpression() throws Exception {
+		pipe.setJsonPathExpression("$[invalid]");
+
+		ConfigurationException configurationException = assertThrows(ConfigurationException.class, () -> pipe.configure());
+
+		assertInstanceOf(com.jayway.jsonpath.InvalidPathException.class, configurationException.getCause());
+		assertThat(configurationException.getMessage(), containsString("Invalid JSON path expression"));
+	}
+
+	@Test
+	void testInvalidJsonMessage() throws Exception {
+		pipe.setJsonPathExpression("$.invalid");
+		configureAndStartPipe();
+
+		PipeRunException pipeRunException = assertThrows(PipeRunException.class, () -> doPipe(pipe, getJsonMessage("{invalid"), session));
+
+		assertInstanceOf(JsonException.class, pipeRunException.getCause());
+		assertInstanceOf(InvalidJsonException.class, pipeRunException.getCause().getCause());
+		assertThat(pipeRunException.getMessage(), containsString("error evaluating expression"));
 	}
 
 	@ParameterizedTest

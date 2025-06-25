@@ -11,17 +11,20 @@ import {
   Links,
 } from '../views/security-items/security-items.service';
 
+type AllowedLinks = Pick<Link, 'name'> & Partial<Link>;
+
 @Injectable({
   providedIn: 'root',
 })
 export class AuthService {
+  private loggedIn = false;
+  private allowedRoles: string[] = [];
+  private allowedLinks: AllowedLinks[] = [];
+
   private readonly appService: AppService = inject(AppService);
   private readonly http: HttpClient = inject(HttpClient);
   private readonly securityItemsService: SecurityItemsService = inject(SecurityItemsService);
-
-  private loggedIn = false;
-  private allowedRoles: string[] = [];
-  private allowedLinks: Link[] = [];
+  private readonly onErrorAllowedLinks: AllowedLinks[] = [{ name: 'getFileContent' }, { name: 'getLogDirectory' }];
 
   /* Currently not being used because servlet handles basic auth */
   /* login(username: string, password: string): void {
@@ -68,9 +71,16 @@ export class AuthService {
       combineLatest([
         this.securityItemsService.getSecurityItems(),
         this.securityItemsService.getEndpointsWithRoles(),
-      ]).subscribe(([securityItems, links]) => {
-        this.updatePermissions(securityItems, links);
-        resolve();
+      ]).subscribe({
+        next: ([securityItems, links]) => {
+          this.updatePermissions(securityItems, links);
+          resolve();
+        },
+        error: (error) => {
+          console.error("Couldn't load permissions", error);
+          this.allowedLinks = this.onErrorAllowedLinks;
+          resolve();
+        },
       });
     });
     return this.loadingPermissionsPromise;

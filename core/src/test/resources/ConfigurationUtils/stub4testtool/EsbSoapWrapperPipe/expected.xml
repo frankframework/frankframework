@@ -32,7 +32,7 @@
          </outputWrapper>
 
 			      <pipe name="switch"
-               className="org.frankframework.pipes.XmlSwitch"
+               className="org.frankframework.pipes.SwitchPipe"
                sessionKey="action"/>
 			      <!-- unwrap -->
 			<pipe name="unwrap"

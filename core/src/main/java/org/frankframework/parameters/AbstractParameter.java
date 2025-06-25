@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2021-2024 WeAreFrank!
+   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -47,7 +47,6 @@ import com.jayway.jsonpath.JsonPath;
 
 import lombok.Getter;
 import lombok.Setter;
-import net.minidev.json.JSONArray;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
@@ -58,19 +57,19 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
 import org.frankframework.jdbc.StoredProcedureQuerySender;
+import org.frankframework.json.JsonException;
+import org.frankframework.json.JsonUtil;
 import org.frankframework.pipes.PutSystemDateInSession;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.EnumUtils;
-import org.frankframework.util.MessageUtils;
 import org.frankframework.util.Misc;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.XmlBuilder;
-import org.frankframework.util.XmlException;
 import org.frankframework.util.XmlUtils;
 
 /**
@@ -121,9 +120,11 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	private @Getter String sessionKey = null;
 	private @Getter String sessionKeyXPath = null;
 	private @Getter String sessionKeyJPath = null;
+	private JsonPath sessionKeyJsonPath = null;
 	private @Getter String contextKey = null;
 	private @Getter String xpathExpression = null;
 	private @Getter String jsonPathExpression = null;
+	private JsonPath jsonPath = null;
 	private @Getter String namespaceDefs = null;
 	private @Getter String styleSheetName = null;
 	private @Getter String pattern = null;
@@ -202,6 +203,8 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			LOG.info("parameter [{} has no type. Setting the type to [{}]", this::getType, ()->ParameterType.STRING);
 			setType(ParameterType.STRING);
 		}
+		jsonPath = JsonUtil.compileJsonPath(jsonPathExpression);
+		sessionKeyJsonPath = JsonUtil.compileJsonPath(sessionKeyJPath);
 
 		configured = true;
 
@@ -263,11 +266,14 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			try {
 				requestedSessionKey = tpDynamicSessionKey.transformToString(message);
 			} catch (Exception e) {
-				throw new ParameterException(getName(), "SessionKey for parameter [" + getName() + "] exception on transformation to get name", e);
+				throw new ParameterException(getName(), "SessionKey for parameter [" + getName() + "] exception on XML transformation to get name", e);
 			}
-		} else if (sessionKeyJPath != null) {
-			Object o = evaluateJsonPath(message, sessionKeyJPath);
-			requestedSessionKey = o != null ? o.toString() : null;
+		} else if (sessionKeyJsonPath != null) {
+			try {
+				requestedSessionKey = JsonUtil.evaluateJsonPathToSingleValue(sessionKeyJsonPath, message);
+			} catch (JsonException e) {
+				throw new ParameterException(getName(), "SessionKey for parameter [" + getName() + "] exception on JSON Path Evaluation to get name", e);
+			}
 		} else {
 			requestedSessionKey = getSessionKey();
 		}
@@ -290,6 +296,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 					Object sourceObject = session.get(requestedSessionKey);
 					if (getType() == ParameterType.LIST && sourceObject instanceof List) {
 						// larva can produce the sourceObject as list
+						//noinspection unchecked
 						List<String> items = (List<String>) sourceObject;
 						XmlBuilder itemsXml = new XmlBuilder("items");
 						for (String item : items) {
@@ -362,7 +369,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			} catch (Exception e) {
 				throw new ParameterException(getName(), "Parameter ["+getName()+"] exception on transformation to get parametervalue", e);
 			}
-		} else if (getJsonPathExpression() != null) {
+		} else if (jsonPath != null) {
 			/*
 			 * determine source for JPath evaluation same as for XSLT / XPath, from
 			 * 1) value attribute
@@ -385,7 +392,11 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 				input = null;
 			}
 			if (input != null) {
-				result = evaluateJsonPath(input, getJsonPathExpression());
+				try {
+					result = JsonUtil.evaluateJsonPath(jsonPath, input);
+				} catch (JsonException e) {
+					throw new ParameterException(getName(), e);
+				}
 			}
 		} else {
 			/*
@@ -504,32 +515,6 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			LOG.debug("Parameter [{}] session variable [{}] is empty", this::getName, () -> requestedSessionKey);
 		}
 		return input;
-	}
-
-	private Object evaluateJsonPath(Object input, String jsonPathExpression) throws ParameterException {
-		try {
-			Message inputMessage = MessageUtils.convertToJsonMessage(input);
-			Object result = JsonPath.read(inputMessage.asInputStream(), jsonPathExpression);
-			return getJsonPathResult(result);
-		} catch (XmlException | IOException e) {
-			throw new ParameterException("Cannot evaluate JSonPathExpression on parameter value", e);
-		}
-	}
-
-	/**
-	 * When using expressions, jsonPath returns a JsonArray, even if there is only one match. Make sure to get a String from it.
-	 */
-	private String getJsonPathResult(Object jsonPathResult) {
-		if (jsonPathResult instanceof String string) {
-			return string;
-		}
-
-		if (jsonPathResult instanceof JSONArray jsonArray
-				&& !jsonArray.isEmpty()) {
-			return jsonArray.get(0).toString();
-		}
-
-		return null;
 	}
 
 	private Object applyMinAndMaxLengths(final Object request) {
