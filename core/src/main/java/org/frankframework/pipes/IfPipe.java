@@ -27,7 +27,6 @@ import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 
 import com.jayway.jsonpath.JsonPath;
-import com.jayway.jsonpath.PathNotFoundException;
 
 import lombok.Getter;
 import net.minidev.json.JSONArray;
@@ -40,6 +39,8 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
+import org.frankframework.json.JsonException;
+import org.frankframework.json.JsonUtil;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.MessageUtils;
@@ -186,13 +187,7 @@ public class IfPipe extends AbstractPipe {
 					TransformerPool.OutputType.XML, false, getParameterList(), xsltVersion
 			);
 		}
-		if (StringUtils.isNotEmpty(jsonPathExpression)) {
-			try {
-				jsonPath = JsonPath.compile(jsonPathExpression);
-			} catch (Exception e) {
-				throw new ConfigurationException("Invalid JSON path expression: [" + jsonPathExpression + "]", e);
-			}
-		}
+		jsonPath = JsonUtil.compileJsonPath(jsonPathExpression);
 	}
 
 	/**
@@ -298,23 +293,13 @@ public class IfPipe extends AbstractPipe {
 				throw new PipeRunException(this, "error reading message", ioe);
 			}
 		} else if (jsonPath != null) {
-			// Try to match the jsonPath expression on the given json string
 			try {
-				message.preserve();
-				Object jsonPathResult = jsonPath.read(message.asInputStream());
-
-				// if we get to this point, we have a match (and no PathNotFoundException)
-
-				return getJsonPathResult(jsonPathResult);
-			} catch (PathNotFoundException e) {
-				// No results found for path, fall through to the NULL return to indicate nothing was found
-			} catch (IOException ioe) {
-				throw new PipeRunException(this, "error reading message", ioe);
-			} catch (Exception e) {
-				throw new PipeRunException(this, "error evaluating expression", e);
+				// Try to match the jsonPath expression on the given json string
+				return JsonUtil.evaluateJsonPathToSingleValue(jsonPath, message);
+			} catch (JsonException je) {
+				throw new PipeRunException(this, je.getMessage(), je);
 			}
 		}
-
 		// No match was found
 		return null;
 	}

@@ -514,7 +514,7 @@
       <object idref="Report0"/>
      </void>
      <void property="sourceClassName">
-      <string>org.frankframework.pipes.XmlSwitch</string>
+      <string>org.frankframework.pipes.SwitchPipe</string>
      </void>
      <void property="threadName">
       <string>http-nio-8080-exec-9</string>
@@ -542,7 +542,7 @@
       <object idref="Report0"/>
      </void>
      <void property="sourceClassName">
-      <string>org.frankframework.pipes.XmlSwitch</string>
+      <string>org.frankframework.pipes.SwitchPipe</string>
      </void>
      <void property="threadName">
       <string>http-nio-8080-exec-9</string>
@@ -573,7 +573,7 @@
       <object idref="Report0"/>
      </void>
      <void property="sourceClassName">
-      <string>org.frankframework.pipes.XmlSwitch</string>
+      <string>org.frankframework.pipes.SwitchPipe</string>
      </void>
      <void property="threadName">
       <string>http-nio-8080-exec-9</string>

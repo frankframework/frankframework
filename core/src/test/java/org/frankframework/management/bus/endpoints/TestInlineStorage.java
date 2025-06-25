@@ -67,7 +67,7 @@ public class TestInlineStorage extends BusTestBase {
 		receiver.setName("ReceiverName");
 		receiver.setListener(listener);
 		adapter.addReceiver(receiver);
-		PipeLine pipeline = SpringUtils.createBean(configuration);
+		PipeLine pipeline = SpringUtils.createBean(adapter);
 		EchoPipe pipe = SpringUtils.createBean(configuration);
 		pipe.setName("EchoPipe");
 		pipeline.addPipe(pipe);

@@ -1,7 +1,6 @@
 .modal-body {
-  min-width: 900px;
-  max-width: 95vw;
-  height: 600px;
+  width: 95vw;
+  height: calc(100vh - 230px);
   margin: 0;
   padding: 0;
 

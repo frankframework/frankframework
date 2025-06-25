@@ -1822,7 +1822,7 @@ a:focus {
   background: #f8fafb;
 }
 .inmodal .modal-header {
-  padding: 30px 15px;
+  padding: 8px;
   text-align: center;
 }
 .animated.modal.fade .modal-dialog {
@@ -1840,6 +1840,7 @@ a:focus {
 }
 .modal-footer {
   margin-top: 0;
+  padding: 8px;
 }
 /* WRAPPERS */
 #wrapper {

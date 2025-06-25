@@ -14,7 +14,7 @@
 			</exits>
 			<pipe
 				name="selectSenderBasedOnRootElement"
-				className="org.frankframework.pipes.XmlSwitch"  >
+				className="org.frankframework.pipes.SwitchPipe"  >
 			</pipe>
 
 			<pipe

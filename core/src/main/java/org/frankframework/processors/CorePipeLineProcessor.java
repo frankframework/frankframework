@@ -53,7 +53,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 	private Configuration configuration;
 
 	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) {
+	public void setApplicationContext(@Nonnull ApplicationContext applicationContext) {
 		if (applicationContext instanceof Configuration config) {
 			configuration = config;
 		} else {
@@ -163,8 +163,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 								log.debug("wrap succeeded");
 								message = wrapResult.getResult();
 							}
-							if(log.isDebugEnabled()) log.debug("PipeLineResult after wrapping: {}", message == null ? "<null>" : "(" + message.getClass()
-									.getSimpleName() + ") [" + message + "]");
+							log.debug("PipeLineResult after wrapping: ({}) [{}]", message.getClass().getSimpleName(), message);
 						}
 					}
 
@@ -218,10 +217,9 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 							Object value = entry.getValue();
 							skString.append("\n ").append(key).append("=[").append(value).append("]");
 						}
-						log.debug("Available session keys at finishing pipeline of adapter [{}]:{}", pipeLine.getOwner().getName(), skString);
-						log.debug("Pipeline of adapter [{}] finished processing messageId [{}] result: {} with exit-state [{}]", pipeLine.getOwner()
-								.getName(), messageId, message == null ? "<null>" : "(" + message.getClass()
-								.getSimpleName() + ") [" + message + "]", state);
+						log.debug("Available session keys at finishing pipeline of adapter [{}]:{}", pipeLine.getAdapter().getName(), skString);
+						log.debug("Pipeline of adapter [{}] finished processing messageId [{}] result: ({}) [{}] with exit-state [{}]", pipeLine.getAdapter()
+								.getName(), messageId, message.getClass().getSimpleName(), message, state);
 					}
 				}
 			} else {

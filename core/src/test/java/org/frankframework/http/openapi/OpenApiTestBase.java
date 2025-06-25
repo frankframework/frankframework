@@ -279,7 +279,7 @@ public class OpenApiTestBase extends Mockito {
 		 * @param start automatically start the adapter upon creation
 		 */
 		public Adapter build(boolean start) throws ConfigurationException {
-			PipeLine pipeline = spy(SpringUtils.createBean(configuration, PipeLine.class));
+			PipeLine pipeline = spy(SpringUtils.createBean(adapter, PipeLine.class));
 
 			Receiver receiver = SpringUtils.createBean(configuration);
 			receiver.setName("receiver");

@@ -9,7 +9,7 @@
 				<exit name="EXIT" state="success" />
 			</exits>
 
-			<pipe name="SwitchAction" className="org.frankframework.pipes.XmlSwitch"
+			<pipe name="SwitchAction" className="org.frankframework.pipes.SwitchPipe"
 				xpathExpression="request/@action" notFoundForwardName="copy" />
 
 			<pipe name="genericFunctions" className="org.frankframework.pipes.XsltPipe"

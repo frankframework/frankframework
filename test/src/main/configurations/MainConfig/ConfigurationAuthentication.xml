@@ -10,7 +10,7 @@
 				<exit name="READY" state="success" />
 			</exits>
 
-			<pipe name="selectSenderBasedOnRootNode" className="org.frankframework.pipes.XmlSwitch" />
+			<pipe name="selectSenderBasedOnRootNode" className="org.frankframework.pipes.SwitchPipe" />
 
 			<pipe name="testalias" className="org.frankframework.pipes.CredentialCheckingPipe"
 				targetUserid="testUser" targetPassword="testPassword" authAlias="${test.alias}"

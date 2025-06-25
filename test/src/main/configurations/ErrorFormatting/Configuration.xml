@@ -117,8 +117,7 @@
 				<Exit name="error" state="ERROR"/>
 			</Exits>
 
-			<JsonPathPipe name="Count nr of results" storeResultInSessionKey="ResultCount" jsonPathExpression='concat("result-count=", $.results.length())'/>
-			<XmlSwitchPipe name="Check Success" forwardNameSessionKey="ResultCount" notFoundForwardName="result-count-too-many"/>
+			<SwitchPipe name="Check Success" jsonPathExpression='concat("result-count=", $.results.length())' notFoundForwardName="result-count-too-many"/>
 
 			<EchoPipe name="result-count=1" getInputFromSessionKey="originalMessage">
 				<Forward name="success" path="done"/>

@@ -25,10 +25,11 @@ import java.util.ServiceLoader;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.logging.log4j.Logger;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
 
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.LogUtil;
 
 @Log4j2
 public class ComponentLoader {

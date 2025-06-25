@@ -17,7 +17,6 @@ package org.frankframework.util;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
@@ -169,20 +168,6 @@ public class Environment {
 		}
 	}
 
-	protected static Manifest getManifestFromRelativeLocation(URL pomProperties) throws IOException {
-		String fullUrl = pomProperties.toExternalForm();
-		int metaInfFolder = fullUrl.indexOf("/META-INF/");
-		if (metaInfFolder > 0) { // We found the meta-inf folder, it could be a shared classpath. Attempt to locate the MANIFEST file.
-			String manifestFile = fullUrl.substring(fullUrl.indexOf(pomProperties.getProtocol()), metaInfFolder +1) + JarFile.MANIFEST_NAME;
-			URL manifestURL = new URL(pomProperties, manifestFile);
-			log.debug("attempting to read manifest at location [{}]", manifestURL);
-			try (InputStream is = manifestURL.openStream()) { // Throws a FileNotFoundException
-				return new Manifest(is);
-			}
-		}
-		throw new FileNotFoundException("no manifest file found relative to path ["+pomProperties+"]");
-	}
-
 	/**
 	 * Fallback to read the Jar using a File handle.
 	 * When the first entry is not the Manifest file, the {@link ZipInputStream} will return null when calling `getManifest`.
@@ -201,6 +186,9 @@ public class Environment {
 		}
 	}
 
+	/**
+	 * Cleanup an URL, removes the protocol and decodes the URL.
+	 */
 	public static String extractPath(final URL url) throws IOException {
 		String urlPath = url.getPath(); // same as getFile but without the Query portion
 

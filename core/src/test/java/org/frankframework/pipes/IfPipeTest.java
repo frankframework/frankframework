@@ -16,10 +16,13 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import com.jayway.jsonpath.InvalidJsonException;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.json.JsonException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CloseUtils;
 
@@ -220,7 +223,8 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 
 		PipeRunException pipeRunException = assertThrows(PipeRunException.class, () -> doPipe(pipe, getJsonMessage("{invalid"), session));
 
-		assertInstanceOf(com.jayway.jsonpath.InvalidJsonException.class, pipeRunException.getCause());
+		assertInstanceOf(JsonException.class, pipeRunException.getCause());
+		assertInstanceOf(InvalidJsonException.class, pipeRunException.getCause().getCause());
 		assertThat(pipeRunException.getMessage(), containsString("error evaluating expression"));
 	}
 
