@@ -27,12 +27,31 @@ import org.frankframework.stream.Message;
  * describing the error at hand in a format that the receiver expects.
  *
  * <p>
- *     ErrorMessageFormatters are configured on {@link Adapter}s to format
+ *     ErrorMessageFormatters are configured on {@link Adapter}s or {@link org.frankframework.configuration.Configuration}s to format
  *     exception messages when an exception is thrown in the execution
- *     of a {@link PipeLine}. When no specific error message formatter is
- *     configured, the default implementation {@link org.frankframework.errormessageformatters.ErrorMessageFormatter}
- *     is used. For more control over the layout of the message, configure
- *     a {@link org.frankframework.errormessageformatters.XslErrorMessageFormatter} or
+ *     of a {@link PipeLine}.
+ * </p>
+ * <p>
+ *     The ErrorMessageFormatter is called when a {@link IPipe} throws an exception, and has an {@code exceptionForward}. The
+ *     target of the {@code exceptionForward} will receive the message produced by the ErrorMessageFormatter.
+ * </p>
+ * <p>
+ *     The ErrorMessageFormatter is also called when any exception occurs during pipeline execution that is not caught or handled
+ *     by an {@code exceptionForward}. The error message is then returned as the pipeline result.
+ * </p>
+ * <p>
+ *     If you want to return a specific error message from a pipeline to signal a (functional) error condition that did not result from
+ *     an exception, use an {@link org.frankframework.pipes.ExceptionPipe} to trigger an exception. This exception will then result in the
+ *     ErrorMessageFormatter being called.
+ *     You can use {@link org.frankframework.parameters.IParameter}s on the {@link org.frankframework.pipes.ExceptionPipe} to pass specific
+ *     information to the ErrorMessageFormatter such as error codes, error messages, etc. See the example message layouts in
+ *     {@link org.frankframework.errormessageformatters.ErrorMessageFormatter} to see how parameters are available in the XML or JSON error message.
+ *     Parameters from the {@link org.frankframework.pipes.ExceptionPipe} are also copied into the {@link PipeLineSession}.
+ * </p>
+ * <p>
+ *     When no specific error message formatter is configured on the adapter or its configuration, the default implementation
+ *     {@link org.frankframework.errormessageformatters.ErrorMessageFormatter} is used with a default XML format. For more control
+ *     over the layout of the message, configure a {@link org.frankframework.errormessageformatters.XslErrorMessageFormatter} or
  *     {@link org.frankframework.errormessageformatters.DataSonnetErrorMessageFormatter}.
  * </p>
  * <p>
