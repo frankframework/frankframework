@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021, 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,10 +40,9 @@ public class TransactionAttributePipeLineProcessor extends AbstractPipeLineProce
 	@Override
 	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 		try {
-			//TransactionStatus txStatus = txManager.getTransaction(txDef);
-			IbisTransaction itx = new IbisTransaction(txManager, pipeLine.getTxDef(), "pipeline of adapter [" + pipeLine.getOwner().getName() + "]");
+			IbisTransaction itx = new IbisTransaction(txManager, pipeLine.getTxDef(), "pipeline of adapter [" + pipeLine.getAdapter().getName() + "]");
 			try {
-				TimeoutGuard tg = new TimeoutGuard("pipeline of adapter [" + pipeLine.getOwner().getName() + "]");
+				TimeoutGuard tg = new TimeoutGuard("pipeline of adapter [" + pipeLine.getAdapter().getName() + "]");
 				Throwable tCaught=null;
 				try {
 					tg.activateGuard(pipeLine.getTransactionTimeout());

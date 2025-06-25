@@ -64,7 +64,8 @@ public class PipeLineTest {
 
 	@Test
 	public void testFixedForwardPipesWithNoForwardShouldDefaultToNextPipe() throws ConfigurationException {
-		PipeLine pipeline = configuration.createBean();
+		Adapter adapter = configuration.createBean();
+		PipeLine pipeline = SpringUtils.createBean(adapter);
 		String pipeForwardName = "EchoPipe next pipe";
 
 		EchoPipe pipe = configuration.createBean();
@@ -94,7 +95,8 @@ public class PipeLineTest {
 	@Test
 	void testFixedForwardAsLastPipeForwardsToFirstSuccessfulExit() throws ConfigurationException {
 		// Arrange
-		PipeLine pipeline = configuration.createBean();
+		Adapter adapter = configuration.createBean();
+		PipeLine pipeline = SpringUtils.createBean(adapter);
 		String pipeForwardName = "EchoPipe next pipe";
 
 		EchoPipe pipe = configuration.createBean();
@@ -134,7 +136,8 @@ public class PipeLineTest {
 
 	@Test
 	public void testPipesWithNormalForwardToNextPipe() throws ConfigurationException {
-		PipeLine pipeline = configuration.createBean();
+		Adapter adapter = configuration.createBean();
+		PipeLine pipeline = SpringUtils.createBean(adapter);
 		String pipeForwardName = "EchoPipe next pipe";
 
 		EchoPipe pipe = configuration.createBean();
@@ -165,7 +168,8 @@ public class PipeLineTest {
 
 	@Test
 	public void giveWarningWhenForwardIsAlreadyDefined() throws ConfigurationException {
-		PipeLine pipeline = configuration.createBean();
+		Adapter adapter = configuration.createBean();
+		PipeLine pipeline = SpringUtils.createBean(adapter);
 		String pipeForwardName = "EchoPipe next pipe";
 
 		EchoPipe pipe = configuration.createBean();
@@ -201,7 +205,8 @@ public class PipeLineTest {
 
 	@Test
 	public void giveWarningWhenForwardToNonExistingPipe() throws ConfigurationException {
-		PipeLine pipeline = configuration.createBean();
+		Adapter adapter = configuration.createBean();
+		PipeLine pipeline = SpringUtils.createBean(adapter);
 		String pipeForwardName = "EchoPipe next pipe";
 
 		EchoPipe pipe = configuration.createBean();
@@ -239,7 +244,8 @@ public class PipeLineTest {
 
 	@Test
 	public void testNonFixedForwardPipesWithNoForwardToNextPipe() throws ConfigurationException {
-		PipeLine pipeline = configuration.createBean();
+		Adapter adapter = configuration.createBean();
+		PipeLine pipeline = SpringUtils.createBean(adapter);
 		String pipeForwardName = "EchoPipe next pipe";
 
 		NonFixedForwardPipe pipe = configuration.createBean();

@@ -13,6 +13,7 @@ import org.frankframework.pipes.EchoPipe;
 import org.frankframework.processors.CorePipeProcessor;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.util.SpringUtils;
 
 @SuppressWarnings("deprecation") //Part of the tests!
 public class TestDirectWrapperPipePipeLine {
@@ -31,7 +32,8 @@ public class TestDirectWrapperPipePipeLine {
 
 	@Test
 	public void testDirectWrapperPipeSuccessForward() throws ConfigurationException, PipeRunException {
-		PipeLine pipeline = configuration.createBean();
+		Adapter adapter = configuration.createBean();
+		PipeLine pipeline = SpringUtils.createBean(adapter);
 
 		PipeForward pf = configuration.createBean();
 		pf.setName("success");

@@ -21,6 +21,7 @@ import java.net.URI;
 import java.net.URLEncoder;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.mail.BodyPart;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMultipart;
@@ -36,6 +37,7 @@ import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 import org.w3c.dom.Element;
 
@@ -241,17 +243,17 @@ public class HttpSender extends AbstractHttpSender {
 	/**
 	 * return the first part as Message and put the other parts as InputStream in the PipeLineSession
 	 */
-	private static Message handleMultipartResponse(HttpResponseHandler httpHandler, PipeLineSession session) throws IOException {
+	private static Message handleMultipartResponse(@Nonnull HttpResponseHandler httpHandler, @Nonnull PipeLineSession session) throws IOException {
 		return handleMultipartResponse(httpHandler.getMimeType(), httpHandler.getResponse(), session);
 	}
 
 	/**
 	 * return the first part as Message and put the other parts as InputStream in the PipeLineSession
 	 */
-	private static Message handleMultipartResponse(MimeType mimeType, InputStream inputStream, PipeLineSession session) throws IOException {
+	private static Message handleMultipartResponse(@Nullable MimeType mimeType, @Nonnull InputStream inputStream, @Nonnull PipeLineSession session) throws IOException {
 		Message result = null;
 		try {
-			InputStreamDataSource dataSource = new InputStreamDataSource(mimeType.toString(), inputStream); // The entire InputStream will be read here!
+			InputStreamDataSource dataSource = new InputStreamDataSource(mimeType != null ? mimeType.toString() : MediaType.APPLICATION_OCTET_STREAM_VALUE, inputStream); // The entire InputStream will be read here!
 			MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
 			for (int i = 0; i < mimeMultipart.getCount(); i++) {
 				BodyPart bodyPart = mimeMultipart.getBodyPart(i);

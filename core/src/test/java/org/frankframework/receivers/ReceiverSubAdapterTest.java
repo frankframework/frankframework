@@ -48,6 +48,7 @@ import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.RunState;
+import org.frankframework.util.SpringUtils;
 
 @Log4j2
 public class ReceiverSubAdapterTest {
@@ -78,8 +79,8 @@ public class ReceiverSubAdapterTest {
 		return new FailurePipe();
 	}
 
-	private PipeLine createPipeLine(TestConfiguration configuration, IPipe testPipe) throws ConfigurationException {
-		PipeLine pl = configuration.createBean();
+	private PipeLine createPipeLine(Adapter adapter, IPipe testPipe) throws ConfigurationException {
+		PipeLine pl = SpringUtils.createBean(adapter);
 		pl.setFirstPipe(testPipe.getName());
 		pl.addPipe(testPipe);
 		PipeLineExit success = new PipeLineExit();
@@ -113,13 +114,9 @@ public class ReceiverSubAdapterTest {
 		return listener;
 	}
 
-	private Receiver<Serializable> createReceiver(TestConfiguration configuration, PipeLine pipeline, String name, NarayanaJtaTransactionManager txManager) throws Exception {
-		Adapter adapter = configuration.createBean();
-		Receiver<Serializable> receiver = configuration.createBean();
+	private Receiver<Serializable> createReceiver(Adapter adapter, PipeLine pipeline, String name, NarayanaJtaTransactionManager txManager) {
+		Receiver<Serializable> receiver = SpringUtils.createBean(adapter);
 		receiver.setName(name);
-		adapter.setName(name);
-
-		configuration.addAdapter(adapter);
 
 		adapter.addReceiver(receiver);
 
@@ -128,6 +125,14 @@ public class ReceiverSubAdapterTest {
 		receiver.setTxManager(txManager);
 		adapter.setPipeLine(pipeline);
 		return receiver;
+	}
+
+	private Adapter createAdapter(TestConfiguration configuration, String name) {
+		Adapter adapter = configuration.createBean();
+		adapter.setName(name);
+		configuration.addAdapter(adapter);
+
+		return adapter;
 	}
 
 	private MessageSendingPipe createMessageSendingPipe(TestConfiguration configuration, JavaListener<?> javaListener) {
@@ -192,15 +197,17 @@ public class ReceiverSubAdapterTest {
 		// Arrange
 		NarayanaJtaTransactionManager txManager = configuration.createBean();
 
+		Adapter subAdapter = createAdapter(configuration, "TEST-FAIL");
 		FailurePipe failurePipe = createFailurePipe();
-		PipeLine subAdapterPipeLine = createPipeLine(configuration, failurePipe);
-		Receiver<Serializable> subAdapterReceiver = createReceiver(configuration, subAdapterPipeLine, "TEST-FAIL", txManager);
+		PipeLine subAdapterPipeLine = createPipeLine(subAdapter, failurePipe);
+		Receiver<Serializable> subAdapterReceiver = createReceiver(subAdapter, subAdapterPipeLine, "TEST-FAIL", txManager);
 		JavaListener<Serializable> javaListener = createJavaListener(configuration, subAdapterReceiver);
 		subAdapterReceiver.setMaxRetries(1);
 
+		Adapter mainAdapter = createAdapter(configuration, "TEST");
 		MessageSendingPipe messageSendingPipe = createMessageSendingPipe(configuration, javaListener);
-		PipeLine mainAdapterPipeLine = createPipeLine(configuration, messageSendingPipe);
-		Receiver<Serializable> mainAdapterReceiver = createReceiver(configuration, mainAdapterPipeLine, "TEST", txManager);
+		PipeLine mainAdapterPipeLine = createPipeLine(mainAdapter, messageSendingPipe);
+		Receiver<Serializable> mainAdapterReceiver = createReceiver(mainAdapter, mainAdapterPipeLine, "TEST", txManager);
 
 		ITransactionalStorage<Serializable> mockErrorStorage = createMockErrorStorage(mainAdapterReceiver);
 		IListener<Serializable> mockListener = createMockListener(mainAdapterReceiver);
