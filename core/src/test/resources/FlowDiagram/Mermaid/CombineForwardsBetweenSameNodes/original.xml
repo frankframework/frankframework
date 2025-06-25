@@ -3,11 +3,11 @@
 		<listener className="org.frankframework.receivers.JavaListener"
 			serviceName="ibis4test-CallApiListener" />
 	</receiver>
-	<pipeline firstPipe="${callApiListener}">
+	<pipeline firstPipe="callApiListener">
 		<exits>
 			<exit name="EXIT" state="success" />
 		</exits>
-		<pipe name="${callApiListener}" className="org.frankframework.pipes.SenderPipe">
+		<pipe name="callApiListener" className="org.frankframework.pipes.SenderPipe">
 			<sender className="org.frankframework.http.HttpSender" urlParam="url_param"
 				methodType="POST" resultStatusCodeSessionKey="statusCode"
 				allowSelfSignedCertificates="true" verifyHostname="false"
