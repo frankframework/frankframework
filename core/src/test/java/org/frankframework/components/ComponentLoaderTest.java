@@ -23,27 +23,34 @@ import org.frankframework.util.Environment;
 @Log4j2
 public class ComponentLoaderTest {
 
+	/*
+	 * This test assumes the project is build as a Maven reactor mode.
+	 * Building the required Maven Modules and attaching them to this Module build.
+	 * 
+	 * Some tools build each Module separately, attaching the dependent module's sources to the classpath.
+	 * This will cause the test to fail.
+	 */
 	@Test
-	@Tag("integration") // This test fails when running just 'mvn test'. Tagged as integration to work around that in the Github Smoketest workflow
-	public void locateCoreModule() {
+	@Tag("integration") // Tagged as integration to work around that in the Github Smoketest workflow
+	public void locateCommonsModule() {
 		List<Module> modules = ComponentLoader.findAllModules();
 		if (isTestRunningWithIntelliJ()) {
 			assumeFalse(modules.isEmpty());
 		}
 		assertFalse(modules.isEmpty(), "no modules found, failing!");
 
-		long foundCoreModule = modules.stream().filter(module -> {
+		long foundModules = modules.stream().filter(module -> {
 			try {
 				ModuleInformation info = module.getModuleInformation();
 				log.debug("found module: {}", info);
-				return "frankframework-core".equals(info.getArtifactId());
+				return "frankframework-commons".equals(info.getArtifactId());
 			} catch (IOException e) {
 				log.warn("unable to find manifest file in test", e);
 				return false;
 			}
 		}).count();
 
-		assertEquals(1L, foundCoreModule, "did not find core module but found: " + modules);
+		assertEquals(1L, foundModules, "did not find commons module but found: " + modules);
 	}
 
 	@Test

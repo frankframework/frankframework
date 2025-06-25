@@ -152,5 +152,10 @@ public class LegacyLoader {
 			}
 			return false;
 		}
+
+		@Override
+		public String toString() {
+			return "DefaultModule[%s]".formatted(moduleInformation.getArtifactId());
+		}
 	}
 }
