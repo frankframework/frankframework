@@ -49,6 +49,7 @@ public class MessageCapturer extends MessageCapturerImpl {
 	public <T> T toWriter(T message, Writer writer, Consumer<Throwable> exceptionNotifier) {
 		if (message instanceof Message message1) {
 			try {
+				// TODO: Since messages are now preserved, should instantly write message to capture-writer
 				// should call StreamCaptureUtils.captureReader directly...
 				message1.captureCharacterStream(writer, maxMessageLength);
 			} catch (Throwable t) {
@@ -70,6 +71,7 @@ public class MessageCapturer extends MessageCapturerImpl {
 		if (message instanceof Message m) {
 			charsetNotifier.accept(m.getCharset());
 			try {
+				// TODO: Since messages are now preserved, should instantly write message to capture-outputstream
 				m.captureBinaryStream(outputStream, maxMessageLength);
 			} catch (Throwable t) {
 				exceptionNotifier.accept(t);

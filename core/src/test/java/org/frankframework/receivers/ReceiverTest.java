@@ -45,9 +45,8 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.Reader;
 import java.io.Serializable;
-import java.io.StringReader;
+import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
@@ -118,6 +117,7 @@ import org.frankframework.monitoring.events.FireMonitorEvent;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
+import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestConfiguration;
@@ -708,7 +708,7 @@ public class ReceiverTest {
 	public void testProcessRequest() throws Exception {
 		// Arrange
 		String rawTestMessage = "TEST";
-		Message testMessage = new Message(new StringReader(rawTestMessage));
+		Message testMessage = Message.asMessage(SerializableFileReference.of(rawTestMessage, Charset.defaultCharset().name()));
 		MessageWrapper<Serializable> rawTestMessageWrapper = new MessageWrapper<>(testMessage, "mid", "cid");
 
 		configuration = buildNarayanaTransactionManagerConfiguration();
@@ -740,7 +740,7 @@ public class ReceiverTest {
 			// Assert
 			assertFalse(result.isScheduledForCloseOnExitOf(session), "Result message should not be scheduled for closure on exit of session");
 			assertTrue(result.requiresStream(), "Result message should be a stream");
-			assertTrue(result.isRequestOfType(Reader.class), "Result message should be of type Reader");
+			assertTrue(result.isRequestOfType(SerializableFileReference.class), "Result message should be of type SerializableFileReference");
 			assertEquals("TEST", result.asString());
 		}
 	}
