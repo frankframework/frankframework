@@ -719,7 +719,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	/**
 	 * Set an {@link IErrorMessageFormatter} that will be used to format an error-message when an exception occurs in this adapter.
 	 * If not set, then, when an exception occurs, the adapter will first check the {@link Configuration#setErrorMessageFormatter(IErrorMessageFormatter)}
-	 * to see if a configuration-wide default error message formatter is set and otherwise create an instance of {@link ErrorMessageFormatter} as default.
+	 * to see if a configuration-wide default error message formatter is set and otherwise create a new instance of {@link ErrorMessageFormatter} as default.
 	 *
 	 * @see IErrorMessageFormatter for general information on error message formatters.
 	 */

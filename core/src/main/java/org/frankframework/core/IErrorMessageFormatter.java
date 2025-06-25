@@ -28,8 +28,7 @@ import org.frankframework.stream.Message;
  *
  * <p>
  *     ErrorMessageFormatters are configured on {@link Adapter}s or {@link org.frankframework.configuration.Configuration}s to format
- *     exception messages when an exception is thrown in the execution
- *     of a {@link PipeLine}.
+ *     exception messages when an exception is thrown during the {@link PipeLine} execution process.
  * </p>
  * <p>
  *     The ErrorMessageFormatter is called when a {@link IPipe} throws an exception, and has an {@code exceptionForward}. The
@@ -49,7 +48,7 @@ import org.frankframework.stream.Message;
  *     Parameters from the {@link org.frankframework.pipes.ExceptionPipe} are also copied into the {@link PipeLineSession}.
  * </p>
  * <p>
- *     When no specific error message formatter is configured on the adapter or its configuration, the default implementation
+ *     When no specific ErrorMessageFormatter is configured on the Adapter or its Configuration, the default implementation
  *     {@link org.frankframework.errormessageformatters.ErrorMessageFormatter} is used with a default XML format. For more control
  *     over the layout of the message, configure a {@link org.frankframework.errormessageformatters.XslErrorMessageFormatter} or
  *     {@link org.frankframework.errormessageformatters.DataSonnetErrorMessageFormatter}.
