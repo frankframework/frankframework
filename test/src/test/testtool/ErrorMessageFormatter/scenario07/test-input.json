@@ -1,5 +1,5 @@
 {
-    "target": "ParameterizedErrorMessage-PassViaException",
+    "target": "ParameterizedErrorMessage-CallDirect-PassViaException",
     "results": [
         {
             "name": "Lord of the Rings",
