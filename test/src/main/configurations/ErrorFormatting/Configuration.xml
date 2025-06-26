@@ -142,6 +142,7 @@
 		<Receiver>
 			<FrankListener name="ParameterizedErrorMessage-CallListener-Trigger"/>
 		</Receiver>
+		<ErrorMessageFormatter messageFormat="JSON"/>
 		<Pipeline>
 			<Exits>
 				<Exit name="EXIT" state="SUCCESS" />
