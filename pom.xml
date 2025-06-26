@@ -841,6 +841,7 @@
 								<goal>test</goal>
 							</goals>
 							<configuration>
+								<excludedGroups>${junit.excludedTags}</excludedGroups>
 								<groups>integration</groups>
 							</configuration>
 						</execution>
