@@ -149,7 +149,11 @@
                 </tr>
                 <tr>
                   <th>&nbsp;</th>
-                  <td>&nbsp;</td>
+                  <td>
+                    <select [(ngModel)]="sortDirection" (ngModelChange)="updateSort()">
+                        <option *ngFor="let option of sortOptions" value="{{ option.value }}">{{ option.name }}</option>
+                    </select>
+                  </td>
                   <td>
                     <button [ladda]="searching" (click)="searchUpdated()" class="btn btn-info btn-sm" type="button">
                       <i class="fa fa-search" aria-hidden="true"></i> Search
