@@ -12,7 +12,6 @@ import jakarta.jms.JMSException;
 import jakarta.jms.TextMessage;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -90,7 +89,6 @@ public class TestSendJmsMessage extends BusTestBase {
 	}
 
 	@Test
-	@Disabled("TODO: Fix this test. Unknown yet why it doesn't work.")
 	public void putInputStreamMessageOnQueue() throws Exception {
 		Message payload = new Message("<dummy message=\"true\" />");
 		MessageBuilder<InputStream> request = createRequestMessage(payload.asInputStream(), BusTopic.QUEUE, BusAction.UPLOAD);
@@ -100,12 +98,15 @@ public class TestSendJmsMessage extends BusTestBase {
 
 		mockConnectionFactoryFactory.addEchoReceiverOnQueue(DUMMY_DESTINATION);
 
-		assertNotNull(callSyncGateway(request).getPayload());
+		org.springframework.messaging.Message<?> response = callSyncGateway(request);
+		assertNotNull(response.getPayload());
+		assertEquals(payload.asString(), Message.asMessage(response.getPayload()).asString());
 
 		jakarta.jms.Message jmsResponse = mockConnectionFactoryFactory.getLastMessageFromQueue(DUMMY_DESTINATION);
 		assertNotNull(jmsResponse, "expected a response");
-		assertTrue(jmsResponse instanceof jakarta.jms.BytesMessage);
-		String responseMessage = readBytesMessageToString((BytesMessage) jmsResponse);
+		BytesMessage bytesMessage = assertInstanceOf(BytesMessage.class, jmsResponse);
+
+		String responseMessage = readBytesMessageToString(bytesMessage);
 		assertEquals(payload.asString(), responseMessage);
 	}
 
@@ -130,6 +131,7 @@ public class TestSendJmsMessage extends BusTestBase {
 	}
 
 	private static String readBytesMessageToString(final BytesMessage jmsResponse) throws JMSException {
+		jmsResponse.reset();
 		byte[] data = new byte[(int)jmsResponse.getBodyLength()];
 		jmsResponse.readBytes(data);
 		return new String(data);
