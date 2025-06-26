@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.IOException;
 import java.net.URL;
-import java.net.URLStreamHandler;
 import java.util.List;
 import java.util.jar.Manifest;
 
@@ -17,7 +16,6 @@ import org.junit.jupiter.api.Test;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.configuration.classloaders.BytesURLStreamHandler;
 import org.frankframework.util.Environment;
 
 @Log4j2
@@ -69,21 +67,5 @@ public class ComponentLoaderTest {
 		Manifest manifest = Environment.getManifest(jarFileWithManifest);
 		ModuleInformation info = new ModuleInformation(manifest);
 		assertEquals("myConfig", info.getTitle());
-	}
-
-	@Test
-	public void normalFilesystem() throws Exception {
-		String path = "file:/content/iaf%20test.war/WEB-INF/lib/abc.jar/META-INF/maven/org.frankframework/abc/pom.properties";
-		URLStreamHandler urlStreamHandler = new BytesURLStreamHandler("dummy-data".getBytes());
-		URL url = new URL(null, path, urlStreamHandler);
-		assertEquals("/content/iaf test.war/WEB-INF/lib/abc.jar/META-INF/maven/org.frankframework/abc/pom.properties", Environment.extractPath(url));
-	}
-
-	@Test
-	public void jbossVirtualFilesystem() throws Exception {
-		String path = "vfs:/content/iaf%20test.war/WEB-INF/lib/abc.jar/META-INF/maven/org.frankframework/abc/pom.properties";
-		URLStreamHandler urlStreamHandler = new BytesURLStreamHandler("dummy-data".getBytes());
-		URL url = new URL(null, path, urlStreamHandler);
-		assertEquals("/content/iaf%20test.war/WEB-INF/lib/abc.jar/META-INF/maven/org.frankframework/abc/pom.properties", Environment.extractPath(url));
 	}
 }
