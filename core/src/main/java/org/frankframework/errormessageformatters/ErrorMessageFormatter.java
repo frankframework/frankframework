@@ -72,7 +72,7 @@ import org.frankframework.util.XmlEncodingUtils;
  *             originator="NN IOS AdapterFramework(set from 'application.name' and 'application.version')"
  *             message="message describing the error that occurred">
  *    <location class="org.frankframework.pipes.SwitchPipe" name="ServiceSwitch"/>
- *    <detailsException and stacktrace</details>
+ *    <details>Exception and stacktrace</details>
  *    <params>
  *      <param name="sampleParam>paramValue</param>
  *    </params>
