@@ -28,7 +28,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FilterReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
@@ -41,7 +40,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
@@ -54,7 +52,6 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.SerializationTester;
@@ -321,10 +318,10 @@ public class MessageTest {
 	@Test
 	public void testInputStreamPreservedAndCaptured() throws Exception {
 		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
-		adapter = new Message(source);
+		adapter = Message.asMessage(SerializableFileReference.of(source));
 		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
 		assertNotNull(outputStream);
-		adapter.preserve();
+		adapter.asString();
 
 		String captured = outputStream.toString(StandardCharsets.UTF_8);
 		assertEquals(testString, captured);
@@ -490,10 +487,10 @@ public class MessageTest {
 	@Test
 	public void testReaderPreservedAndCaptured() throws Exception {
 		StringReader source = new StringReader(testString);
-		adapter = new Message(source);
+		adapter = Message.asMessage(SerializableFileReference.of(source, StandardCharsets.UTF_8.name()));
 		StringWriter writer = adapter.captureCharacterStream();
 		assertNotNull(writer);
-		adapter.preserve();
+		adapter.asString();
 
 		String captured = writer.toString();
 		assertEquals(testString, captured);
@@ -502,7 +499,7 @@ public class MessageTest {
 	@Test
 	public void testReaderOnlyCaptured() throws Exception {
 		StringReader source = new StringReader(testString);
-		adapter = new Message(source);
+		adapter = Message.asMessage(SerializableFileReference.of(source, StandardCharsets.UTF_8.name()));
 		StringWriter writer = adapter.captureCharacterStream();
 		assertNotNull(writer);
 
@@ -1127,14 +1124,14 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testMessageSizeReader() throws IOException {
+	public void testMessageSizeReader() {
 		try (Message message = new Message(new StringReader("string"))) {
-			assertEquals(-1, message.size(), "size differs or could not be determined");
+			assertEquals(6, message.size(), "size differs or could not be determined");
 		}
 	}
 
 	@Test
-	public void testMessageIsEmpty() throws IOException {
+	public void testMessageIsEmpty() {
 		try (Message message = Message.nullMessage()) {
 			assertTrue(message.isEmpty());
 			assertTrue(Message.isEmpty(message));
@@ -1241,31 +1238,6 @@ public class MessageTest {
 			assertEquals(1, i, "charset should be determined only once");
 		}
 		message.close();
-	}
-
-	@Test
-	public void testMagicCharactersCounted() throws Exception {
-		Reader reader = new StringReader(testString);
-		AtomicInteger charsRead = new AtomicInteger();
-		FilterReader filterReader = new FilterReader(reader) {
-			private int readCounted(ThrowingSupplier<Integer, IOException> reader) throws IOException {
-				int len = reader.get();
-				if (len > 0) {
-					charsRead.addAndGet(len);
-				}
-				return len;
-			}
-
-			@Override
-			public int read(char[] chr, int st, int end) throws IOException {
-				return readCounted(() -> super.read(chr, st, end));
-			}
-		};
-		Message message = new Message(filterReader);
-		int charsToRead = 6;
-		message.peek(charsToRead);
-		message.close();
-		assertEquals(charsToRead, charsRead.get());
 	}
 
 	@Test

@@ -54,7 +54,6 @@ public class MessageCapturerTest {
 		}
 
 		verify(message, times(1)).close();
-		verify(stream, times(2)).close();
 		verify(capture, times(2)).close();
 
 		String expected = new String(testFileURL.openStream().readAllBytes());

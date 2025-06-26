@@ -16,6 +16,7 @@ import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.StringReader;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
@@ -31,6 +32,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
 import org.frankframework.stream.Message;
+import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.MessageTestUtils.MessageType;
 
@@ -280,7 +282,7 @@ public class PipeLineSessionTest {
 		session.put("key6", m6);
 		Message m7 = Message.asMessage("123".getBytes());
 		session.put("key7", m7);
-		Message m8 = Message.asMessage(new StringReader("123"));
+		Message m8 = Message.asMessage(new StringReader("123")); // Reader should be instantly preserved
 		session.put("key8", m8);
 
 		// Act
@@ -294,7 +296,7 @@ public class PipeLineSessionTest {
 		assertFalse(m5.isClosed());
 		assertFalse(m6.isClosed());
 		assertFalse(m7.isClosed());
-		assertTrue(m8.isClosed());
+		assertFalse(m8.isClosed());
 	}
 
 	/**
@@ -413,7 +415,7 @@ public class PipeLineSessionTest {
 		PipeLineSession from = new PipeLineSession();
 		PipeLineSession to = new PipeLineSession();
 		Message message = new Message("a message");
-		Message messageOfCloseable = new Message(new StringReader("a message is closeable"));
+		Message messageOfCloseable = Message.asMessage(SerializableFileReference.of("a message is closeable", StandardCharsets.UTF_8.name()));
 		BufferedReader closeable1 = new BufferedReader(new StringReader("a closeable"));
 		Message closeable2 = new Message(new StringReader("a message is closeable"));
 		from.put("a", 15);
@@ -456,8 +458,10 @@ public class PipeLineSessionTest {
 		PipeLineSession from = new PipeLineSession();
 		PipeLineSession to = new PipeLineSession();
 
-		Message message1 = new Message(new StringReader("m1")); // Message should contain a closeable not a string, in order to be eligible for closing
-		Message message2 = new Message(new StringReader("m2"));
+		SerializableFileReference sfr1 =  SerializableFileReference.of("m1", StandardCharsets.UTF_8.name());
+		SerializableFileReference sfr2 =  SerializableFileReference.of("m2", StandardCharsets.UTF_8.name());
+		Message message1 = Message.asMessage(sfr1); // Message should contain a closeable not a string, in order to be eligible for closing
+		Message message2 = Message.asMessage(sfr2);
 
 		String keys = "a,c";
 		from.put("a", 15);

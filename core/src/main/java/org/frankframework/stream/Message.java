@@ -106,6 +106,15 @@ public class Message implements Serializable, Closeable {
 		this.context = context;
 		this.requestClass = requestClass != null ? ClassUtils.nameOf(requestClass) : ClassUtils.nameOf(request);
 
+		if (!isRepeatable()) {
+			try {
+				this.preserve(false);
+			} catch (IOException e) {
+				// TODO: Don't want IOException on the constructor. What to do then? RuntimeException? IllegalArgumentException? Lombok SneakThrows?
+				throw new RuntimeException("Cannot read message / preserve message", e);
+			}
+		}
+
 		if (request != null) {
 			messageNotClosedAction = new MessageNotClosedAction();
 			CleanerProvider.register(this, messageNotClosedAction);
@@ -270,8 +279,9 @@ public class Message implements Serializable, Closeable {
 	 *
 	 * @throws IOException Throws IOException if the Message can not be read or writing fails.
 	 */
+	@Deprecated // TODO: Delete, only keep internal methods to be used on creation.
 	public void preserve() throws IOException {
-		preserve(false);
+		//preserve(false);
 	}
 
 	private void preserve(boolean deepPreserve) throws IOException {
@@ -283,9 +293,26 @@ public class Message implements Serializable, Closeable {
 		}
 
 		long requestSize = size();
-		if (requestSize == MESSAGE_SIZE_UNKNOWN || requestSize > AppConstants.getInstance()
-				.getLong(MESSAGE_MAX_IN_MEMORY_PROPERTY, MESSAGE_MAX_IN_MEMORY_DEFAULT)) {
+		long maxInMemory = AppConstants.getInstance().getLong(MESSAGE_MAX_IN_MEMORY_PROPERTY, MESSAGE_MAX_IN_MEMORY_DEFAULT);
+		if (requestSize == MESSAGE_SIZE_UNKNOWN || requestSize > maxInMemory) {
 			preserveToDisk(deepPreserve);
+			// Check again the size now that we know it for sure. If it fits into memory, better for performance to keep it in memory!
+			if (requestSize == MESSAGE_SIZE_UNKNOWN && size() <= maxInMemory && request instanceof SerializableFileReference serializableFileReference) {
+				if (isBinary()) {
+					try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+					BufferedInputStream inputStream = serializableFileReference.getInputStream()) {
+						inputStream.transferTo(bos);
+						this.request = bos.toByteArray();
+					}
+				} else {
+					try (StringWriter sw = new StringWriter();
+						 Reader reader = serializableFileReference.getReader()) {
+						reader.transferTo(sw);
+						this.request = sw.toString();
+					}
+				}
+				serializableFileReference.close();
+			}
 		} else {
 			preserveToMemory(deepPreserve);
 		}
@@ -367,8 +394,9 @@ public class Message implements Serializable, Closeable {
 		return request instanceof InputStream || request instanceof ThrowingSupplier || request instanceof byte[];
 	}
 
+	@Deprecated // TODO: Make internal, private method
 	public boolean isRepeatable() {
-		return request instanceof String || request instanceof ThrowingSupplier || request instanceof byte[] || request instanceof Node || request instanceof SerializableFileReference;
+		return request == null || request instanceof String || request instanceof Number || request instanceof Boolean || request instanceof ThrowingSupplier || request instanceof byte[] || request instanceof Node || request instanceof SerializableFileReference;
 	}
 
 	/**
@@ -445,6 +473,7 @@ public class Message implements Serializable, Closeable {
 		if (request == null) {
 			return null;
 		}
+		// TODO: This case should no longer be possible
 		if (request instanceof Reader reader) {
 			if (!reader.markSupported()) {
 				reader = new BufferedReader(reader);
@@ -508,6 +537,7 @@ public class Message implements Serializable, Closeable {
 			if (request == null) {
 				return null;
 			}
+			// TODO: This case should no longer be possible
 			if (request instanceof InputStream stream) {
 				if (!stream.markSupported()) {
 					stream = new BufferedInputStream(stream);
@@ -979,16 +1009,20 @@ public class Message implements Serializable, Closeable {
 	 * Can be called when {@link #requiresStream()} is true to retrieve a copy of (part of) the stream that is in this
 	 * message, after the stream has been closed. Primarily for debugging purposes.
 	 */
+	@Deprecated
 	public ByteArrayOutputStream captureBinaryStream() throws IOException {
 		var result = new ByteArrayOutputStream();
 		captureBinaryStream(result);
 		return result;
 	}
 
+	@Deprecated
 	public void captureBinaryStream(OutputStream outputStream) throws IOException {
 		captureBinaryStream(outputStream, StreamCaptureUtils.DEFAULT_STREAM_CAPTURE_LIMIT);
 	}
 
+	// TODO: This code is now rather dubious since we no longer represent messages internally as streams
+	@Deprecated
 	public void captureBinaryStream(OutputStream outputStream, int maxSize) throws IOException {
 		LOG.debug("creating capture of {}", ClassUtils.nameOf(request));
 		if (isNull()) {
@@ -1014,16 +1048,20 @@ public class Message implements Serializable, Closeable {
 	 * When isBinary() is true the Message's charset is used when present to create a Reader that reads the InputStream.
 	 * When charset not present {@link StreamUtil#DEFAULT_INPUT_STREAM_ENCODING} is used.
 	 */
+	@Deprecated
 	public StringWriter captureCharacterStream() throws IOException {
 		var result = new StringWriter();
 		captureCharacterStream(result);
 		return result;
 	}
 
+	@Deprecated
 	public void captureCharacterStream(Writer writer) throws IOException {
 		captureCharacterStream(writer, StreamCaptureUtils.DEFAULT_STREAM_CAPTURE_LIMIT);
 	}
 
+	// TODO: This code is now rather dubious since we no longer represent messages internally as streams
+	@Deprecated
 	public void captureCharacterStream(Writer writer, int maxSize) throws IOException {
 		LOG.debug("creating capture of {}", () -> ClassUtils.nameOf(request));
 		if (isNull()) {
