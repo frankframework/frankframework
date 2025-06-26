@@ -17,12 +17,16 @@ package org.frankframework.errormessageformatters;
 
 import java.io.IOException;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.HasName;
+import org.frankframework.core.IErrorMessageFormatter;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.Resource;
 import org.frankframework.stream.Message;
@@ -34,6 +38,16 @@ import org.frankframework.util.TransformerPool;
 /**
  * ErrorMessageFormatter that returns a fixed message with replacements.
  *
+ * <p>
+ *     The fixed message is loaded from a file or a string configured on the formatter. If neither
+ *     is set, then the default {@link ErrorMessageFormatter} is used to create the error message.
+ * </p>
+ * <p>
+ *     Fixed strings in the generated error message can be replaced using {@code replaceFrom} / {@code replaceTo}. As
+ *     last step, an optional XSLT stylesheet transformation is applied.
+ * </p>
+ *
+ * @see IErrorMessageFormatter for general information on error message formatters.
  * @author  Peter Leeuwenburgh
  * @since   4.3
  */
@@ -46,7 +60,7 @@ public class FixedErrorMessageFormatter extends ErrorMessageFormatter {
 	private @Getter String styleSheetName = null;
 
 	@Override
-	public Message format(String errorMessage, Throwable t, HasName location, Message originalMessage, PipeLineSession session) {
+	public @Nonnull Message format(@Nullable String errorMessage, @Nullable Throwable t, @Nullable HasName location, @Nullable Message originalMessage, @Nonnull PipeLineSession session) {
 
 		Message messageToReturn = new Message(getReturnString());
 		if (messageToReturn.isEmpty()) {
@@ -94,10 +108,16 @@ public class FixedErrorMessageFormatter extends ErrorMessageFormatter {
 		this.filename = filename;
 	}
 
+	/**
+	 * The string to replace
+	 */
 	public void setReplaceFrom (String replaceFrom){
 		this.replaceFrom=replaceFrom;
 	}
 
+	/**
+	 * What to replace the {@code replaceFrom} with.
+	 */
 	public void setReplaceTo (String replaceTo){
 		this.replaceTo=replaceTo;
 	}
