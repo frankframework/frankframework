@@ -9,7 +9,7 @@ svg {
   padding: initial;
   text-shadow: initial;
 
-  * {
+  foreignObject * {
     color: inherit;
     line-height: inherit;
     background-color: inherit;
@@ -21,14 +21,14 @@ svg {
     text-shadow: inherit;
     text-decoration: inherit;
     -webkit-text-size-adjust: none;
-  }
 
-  *:hover {
-    color: inherit;
-    background-color: inherit;
-    text-shadow: inherit;
-    text-decoration: inherit;
-    -webkit-text-size-adjust: none;
+    &:hover {
+      color: inherit;
+      background-color: inherit;
+      text-shadow: inherit;
+      text-decoration: inherit;
+      -webkit-text-size-adjust: none;
+    }
   }
 
   b {

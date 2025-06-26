@@ -7,7 +7,6 @@ import { FlowModalComponent } from './flow-modal/flow-modal.component';
 
 import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
 import { NgMermaidComponent } from '../../../components/ng-mermaid/ng-mermaid.component';
-import { Dimensions, getFactoryDimensions } from '@frankframework/frank-config-layout';
 import { HttpResponse } from '@angular/common/http';
 
 type FlowModel = {
@@ -32,11 +31,6 @@ export class FlowComponent implements OnChanges {
   protected flowModalLadda = false;
   protected loadInline = true;
   protected flowName = '';
-  protected flowDimensions: Dimensions = {
-    ...getFactoryDimensions(),
-    nodeBoxWidth: 100,
-    nodeBoxHeight: 100,
-  };
 
   private appService: AppService = inject(AppService);
   private Misc: MiscService = inject(MiscService);
