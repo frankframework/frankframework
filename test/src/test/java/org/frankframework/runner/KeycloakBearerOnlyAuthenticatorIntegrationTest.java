@@ -33,6 +33,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import dasniko.testcontainers.keycloak.KeycloakContainer;
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.util.AppConstants;
+
 /**
  * Tests whether bearer only request authentication works with Keycloak and the application.
  *
@@ -78,6 +80,9 @@ public class KeycloakBearerOnlyAuthenticatorIntegrationTest {
 		System.clearProperty("application.security.console.authentication.issuerUri");
 		System.clearProperty("application.security.console.authentication.preferredUsernameClaimName");
 		System.clearProperty("application.security.console.authentication.authoritiesClaimName");
+
+		// Make sure to clear the app constants as well
+		AppConstants.removeInstance();
 	}
 
 	@Test
