@@ -89,7 +89,7 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 			throw new IllegalArgumentException("Configuring issuerUri and/or jwkSetUri is mandatory to use BearerOnlyAuthenticator");
 		}
 
-		if (StringUtils.countMatches(issuerUri, ".") > 1) {
+		if (StringUtils.countMatches(authoritiesClaimName, ".") > 1) {
 			throw new IllegalArgumentException("The authoritiesClaimName must not contain more than one dot (.) to indicate a nested claim. Found: " + authoritiesClaimName);
 		}
 
@@ -122,7 +122,7 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 	 *
 	 * @return the converter to use for extracting authorities from the JWT token
 	 */
-	private Converter<Jwt, Collection<GrantedAuthority>> getJwtCollectionConverter() {
+	Converter<Jwt, Collection<GrantedAuthority>> getJwtCollectionConverter() {
 		if (StringUtils.contains(authoritiesClaimName, ".")) {
 			String[] split = authoritiesClaimName.split("\\.");
 
