@@ -1400,6 +1400,10 @@
 			</distributionManagement>
 		</profile>
 		<profile>
+			<id>database-drivers</id>
+			<!-- Empty here but exists so that IntelliJ will always recognize it exists? -->
+		</profile>
+		<profile>
 			<id>default-modules</id><!-- Profile defaults to ON, when the property is set it will turn off -->
 			<activation>
 				<property>
