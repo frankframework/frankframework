@@ -89,10 +89,6 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 		this.parsedPatterns.addAll(parsedPatterns.values());
 	}
 
-	public String getCurrentElementName() {
-		return elementNames.peek();
-	}
-
 	@Nullable
 	public Object peek() {
 		if (!elementBeans.isEmpty()) {

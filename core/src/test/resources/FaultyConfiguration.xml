@@ -1,0 +1,17 @@
+<configuration name="TestConfiguration">
+	<module>
+		<adapter name="HelloWorld">
+			<receiver name="HelloWorld">
+				<listener name="HelloWorld" className="org.frankframework.receivers.JavaListener"/>
+			</receiver>
+			<pipeline firstPipe="HelloWorld">
+				<exits>
+					<exit name="EXIT" state="success"/>
+				</exits>
+				<typo-pipe name="HelloWorld" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="Hello World">
+					<forward name="success" path="EXIT"/>
+				</pipe>
+			</pipeline>
+		</adapter>
+	</module>
+</configuration>
