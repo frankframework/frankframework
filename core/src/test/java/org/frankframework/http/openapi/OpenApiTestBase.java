@@ -22,6 +22,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.mockito.Answers;
 import org.mockito.Mockito;
 import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
@@ -171,6 +172,7 @@ public class OpenApiTestBase extends Mockito {
 			adapter.setName(name);
 			adapter.setDescription(description);
 			adapter.setConfiguration(configuration);
+			configuration.addAdapter(adapter);
 			adapter.setTaskExecutor(getTaskExecutor());
 		}
 
@@ -179,7 +181,7 @@ public class OpenApiTestBase extends Mockito {
 		}
 
 		public AdapterBuilder setListener(String uriPattern, List<ApiListener.HttpMethod> method, String produces, String operationId) {
-			listener = new ApiListener();
+			listener = SpringUtils.createBean(adapter);
 
 			if (method != null) {
 				listener.setMethods(method.toArray(new ApiListener.HttpMethod[0]));
@@ -209,7 +211,7 @@ public class OpenApiTestBase extends Mockito {
 
 		public AdapterBuilder setInputValidator(String xsdSchema, String requestRoot, String responseRoot, Parameter param) {
 			String ref = xsdSchema.substring(0, xsdSchema.indexOf(".")) + "-" + responseRoot;
-			inputValidator = new Json2XmlValidator();
+			inputValidator = SpringUtils.createBean(adapter);
 			inputValidator.setName(ref);
 			String xsd = "/OpenApi/" + xsdSchema;
 			URL url = this.getClass().getResource(xsd);
@@ -279,9 +281,9 @@ public class OpenApiTestBase extends Mockito {
 		 * @param start automatically start the adapter upon creation
 		 */
 		public Adapter build(boolean start) throws ConfigurationException {
-			PipeLine pipeline = spy(SpringUtils.createBean(adapter, PipeLine.class));
+			PipeLine pipeline = SpringUtils.createBean(adapter, PipeLine.class);
 
-			Receiver receiver = SpringUtils.createBean(configuration);
+			Receiver receiver = SpringUtils.createBean(adapter);
 			receiver.setName("receiver");
 			receiver.setListener(listener);
 

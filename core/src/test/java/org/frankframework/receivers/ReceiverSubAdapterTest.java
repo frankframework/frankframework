@@ -117,11 +117,9 @@ public class ReceiverSubAdapterTest {
 	private Receiver<Serializable> createReceiver(Adapter adapter, PipeLine pipeline, String name, NarayanaJtaTransactionManager txManager) {
 		Receiver<Serializable> receiver = SpringUtils.createBean(adapter);
 		receiver.setName(name);
-
 		adapter.addReceiver(receiver);
-
-		receiver.setApplicationContext(configuration);
 		receiver.setTxManager(txManager);
+
 		adapter.setPipeLine(pipeline);
 		return receiver;
 	}

@@ -76,8 +76,8 @@ public class AdapterHideRegexTest {
 		return listener;
 	}
 
-	private  <M> Receiver<M> setupReceiver(IListener<M> listener, String hideRegex) {
-		Receiver<M> receiver = configuration.createBean();
+	private <M> Receiver<M> setupReceiver(Adapter adapter, IListener<M> listener, String hideRegex) {
+		Receiver<M> receiver =  SpringUtils.createBean(adapter);
 		receiver.setListener(listener);
 		receiver.setName("receiver");
 		receiver.setStartTimeout(2);
@@ -85,10 +85,11 @@ public class AdapterHideRegexTest {
 		receiver.setHideRegex(hideRegex);
 		DummySender sender = configuration.createBean();
 		receiver.setSender(sender);
+		adapter.addReceiver(receiver);
 		return receiver;
 	}
 
-	private <M> Adapter setupAdapter(Receiver<M> receiver, PipeLine.ExitState exitState, String name, IPipe... pipes) throws ConfigurationException {
+	private <M> Adapter setupAdapter(PipeLine.ExitState exitState, String name, IPipe... pipes) throws ConfigurationException {
 		assertNotNull(pipes);
 		assertTrue(pipes.length > 0, "Should add at least 1 pipe");
 
@@ -112,8 +113,6 @@ public class AdapterHideRegexTest {
 		pl.addPipeLineExit(ple);
 		adapter.setPipeLine(pl);
 
-		SpringUtils.autowireByName(adapter, receiver);
-		adapter.addReceiver(receiver);
 		configuration.addAdapter(adapter);
 		return adapter;
 	}
@@ -165,9 +164,9 @@ public class AdapterHideRegexTest {
 		IPipe pipe2 = createSubAdapterCallPipe(subAdapterListener.getName(), MAIN_ADAPTER_SECRET, subAdapterInSeparateThread);
 		IPipe pipe3 = createLoggingPipe("echo2", null, false);
 
+		Adapter adapter = setupAdapter(PipeLine.ExitState.SUCCESS, name, pipe1, pipe2, pipe3);
 		JavaListener<String> listener = setupJavaListener(name);
-		Receiver<String> receiver = setupReceiver(listener, MAIN_RECEIVER_SECRET);
-		setupAdapter(receiver, PipeLine.ExitState.SUCCESS, name, pipe1, pipe2, pipe3);
+		setupReceiver(adapter, listener, MAIN_RECEIVER_SECRET);
 
 		return listener;
 	}
@@ -175,8 +174,8 @@ public class AdapterHideRegexTest {
 	private JavaListener<String> createSubAdapter(String name, PipeLine.ExitState exitState, boolean doThrowException) throws ConfigurationException {
 		IPipe pipe = createLoggingPipe("echo", SUB_ADAPTER_SECRET, doThrowException);
 		JavaListener<String> listener = setupJavaListener(name);
-		Receiver<String> receiver = setupReceiver(listener, SUB_RECEIVER_SECRET);
-		setupAdapter(receiver, exitState, name, pipe);
+		Adapter adapter = setupAdapter(exitState, name, pipe);
+		setupReceiver(adapter, listener, SUB_RECEIVER_SECRET);
 
 		return listener;
 	}
@@ -185,7 +184,8 @@ public class AdapterHideRegexTest {
 		IPipe pipe = createLoggingPipe("echo", MAIN_ADAPTER_SECRET, doThrowException);
 		Receiver<?> receiver = mock(Receiver.class);
 		when(receiver.getRunState()).thenReturn(RunState.STOPPED);
-		Adapter adapter = setupAdapter(receiver, exitState, "main-adapter", pipe);
+		Adapter adapter = setupAdapter(exitState, "main-adapter", pipe);
+		adapter.addReceiver(receiver);
 
 		configuration.configure();
 		configuration.start();
