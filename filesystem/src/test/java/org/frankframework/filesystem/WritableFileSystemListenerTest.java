@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2023 WeAreFrank!
+   Copyright 2019-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,7 +30,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.Date;
@@ -365,9 +369,9 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 		receiver.setConfigurationMetrics(metrics);
 		PlatformTransactionManager transactionManager = mock();
 		when(transactionManager.getTransaction(any())).thenAnswer(invocation -> mock(TransactionStatus.class));
-		ApplicationContext applicationContext = mock();
-		when(applicationContext.getBean("listenerContainer", PullingListenerContainer.class)).thenAnswer((Answer<PullingListenerContainer<F>>) invocation -> new PullingListenerContainer<F>());
-		when(applicationContext.getBean("transactionManager")).thenReturn(transactionManager);
+		ApplicationContext applicationContext = spy(receiver.getApplicationContext());
+		doAnswer((Answer<PullingListenerContainer<F>>) invocation -> new PullingListenerContainer<F>()).when(applicationContext).getBean(eq("listenerContainer"));
+		doReturn(transactionManager).when(applicationContext).getBean(eq("transactionManager"));
 		receiver.setApplicationContext(applicationContext);
 		receiver.setTxManager(transactionManager);
 		receiver.configure();
