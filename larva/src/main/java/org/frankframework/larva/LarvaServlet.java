@@ -29,6 +29,7 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 
+import org.frankframework.condition.ConditionalOnAppConstants;
 import org.frankframework.core.SenderException;
 import org.frankframework.http.AbstractHttpServlet;
 import org.frankframework.lifecycle.IbisInitializer;
@@ -37,6 +38,7 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 
 @IbisInitializer
+@ConditionalOnAppConstants(name = "servlet.LarvaServlet.enabled", value = "true")
 public class LarvaServlet extends AbstractHttpServlet {
 	private static final URL INDEX_TEMPLATE = getResource("/index.html.template");
 	private static final String SERVLET_PATH = "/iaf/larva/";
