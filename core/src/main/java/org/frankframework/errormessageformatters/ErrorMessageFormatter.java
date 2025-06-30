@@ -135,7 +135,9 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		String messageId = session.getMessageId();
 		String correlationId = session.getCorrelationId();
 		String msgIdToUse = StringUtils.isNotEmpty(messageId) && !MessageUtils.isFallbackMessageId(messageId) ? messageId : correlationId;
-		String prefix = locationToUse != null ? ClassUtils.nameOf(locationToUse) : null;
+
+		// PipeRunException already includes the location in the message so we don't need to prefix the message with the location again
+		String prefix = (locationToUse != null &&  extractPipeRunException(t) == null) ? ClassUtils.nameOf(locationToUse) : null;
 		if (StringUtils.isNotEmpty(msgIdToUse)) {
 			prefix = StringUtil.concatStrings(prefix, " ", "msgId [" + msgIdToUse + "]");
 		}
