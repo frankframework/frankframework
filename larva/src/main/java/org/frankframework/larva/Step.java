@@ -81,7 +81,7 @@ public class Step implements Comparable<Step> {
 	}
 
 	public boolean isIgnore() {
-		return value.toLowerCase().contains("ignore");
+		return value.toLowerCase().endsWith("ignore");
 	}
 
 	public boolean isRead() {
