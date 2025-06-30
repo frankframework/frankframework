@@ -116,7 +116,7 @@ public class MtlsHelper {
 			TrustManagerFactory tmf = TrustManagerFactory.getInstance("SunX509");
 			tmf.init(trustKs);
 
-			SSLContext ctx = SSLContext.getInstance("TLS");
+			SSLContext ctx = SSLContext.getInstance("TLSv1.3");
 			ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new SecureRandom());
 			return ctx;
 		} catch (GeneralSecurityException e) {
