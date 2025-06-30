@@ -176,25 +176,28 @@ public class ReceiverTest {
 		return listener;
 	}
 
-	public <M> Receiver<M> setupReceiver(IListener<M> listener) {
+	public <M> Receiver<M> setupReceiver(Adapter adapter, IListener<M> listener) {
 		@SuppressWarnings("unchecked")
-		Receiver<M> receiver = spy(configuration.createBean(Receiver.class));
+		Receiver<M> receiver = spy(SpringUtils.createBean(adapter, Receiver.class));
+		receiver.setApplicationContext(adapter); // Required because we have to spy the Adapter
 		receiver.setListener(listener);
 		receiver.setName("receiver");
 		receiver.setStartTimeout(2);
 		receiver.setStopTimeout(2);
 		// To speed up test, we don't actually sleep
 		doNothing().when(receiver).suspendReceiverThread(anyInt());
-		DummySender sender = configuration.createBean();
+		DummySender sender = SpringUtils.createBean(adapter);
 		receiver.setSender(sender);
+
+		adapter.addReceiver(receiver);
 		return receiver;
 	}
 
-	public <M> Adapter setupAdapter(Receiver<M> receiver) throws Exception {
-		return setupAdapter(receiver, ExitState.SUCCESS);
+	public <M> Adapter setupAdapter() throws Exception {
+		return setupAdapter(ExitState.SUCCESS);
 	}
 
-	public <M> Adapter setupAdapter(Receiver<M> receiver, ExitState exitState) throws Exception {
+	public <M> Adapter setupAdapter(ExitState exitState) throws Exception {
 		Adapter adapter = spy(configuration.createBean(Adapter.class));
 		adapter.setName(adapterName);
 
@@ -217,14 +220,14 @@ public class ReceiverTest {
 		pl.addPipeLineExit(ple);
 		adapter.setPipeLine(pl);
 
-		adapter.addReceiver(receiver);
 		configuration.addAdapter(adapter);
 		return adapter;
 	}
 
-	public Receiver<Serializable> setupReceiverWithListener(IListener listener, ITransactionalStorage<Serializable> errorStorage) {
+	public Receiver<Serializable> setupReceiverWithListener(Adapter adapter, IListener listener, ITransactionalStorage<Serializable> errorStorage) {
 		@SuppressWarnings("unchecked")
-		Receiver<Serializable> receiver = spy(configuration.createBean(Receiver.class));
+		Receiver<Serializable> receiver = spy(SpringUtils.createBean(adapter, Receiver.class));
+		receiver.setApplicationContext(adapter); // Required because we have to spy the Adapter
 		receiver.setListener(listener);
 		receiver.setName("receiver");
 		DummySender sender = configuration.createBean(DummySender.class);
@@ -233,6 +236,7 @@ public class ReceiverTest {
 		receiver.setNumThreads(2);
 		// To speed up test, we don't actually sleep
 		doNothing().when(receiver).suspendReceiverThread(anyInt());
+		adapter.addReceiver(receiver);
 		return receiver;
 	}
 
@@ -308,15 +312,15 @@ public class ReceiverTest {
 
 		@SuppressWarnings("unchecked")
 		ITransactionalStorage<Serializable> errorStorage = mock(ITransactionalStorage.class);
-		Receiver<String> receiver = setupReceiver(listener);
+
+		Adapter adapter = setupAdapter();
+		Receiver<String> receiver = setupReceiver(adapter, listener);
 		receiver.setErrorStorage(errorStorage);
 
 		final PlatformTransactionManager txManager = configuration.getBean("txManagerReal", PlatformTransactionManager.class);
 		((AbstractPlatformTransactionManager)txManager).setDefaultTimeout(1);
 		receiver.setTxManager(txManager);
 		receiver.setTransactionAttribute(TransactionAttribute.REQUIRED);
-
-		Adapter adapter = setupAdapter(receiver);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());
 		assertEquals(RunState.STOPPED, receiver.getRunState());
@@ -418,7 +422,8 @@ public class ReceiverTest {
 		@SuppressWarnings("unchecked")
 		ITransactionalStorage<Serializable> messageLog = mock(ITransactionalStorage.class);
 
-		Receiver<String> receiver = setupReceiver(listener);
+		Adapter adapter = setupAdapter(ExitState.ERROR);
+		Receiver<String> receiver = setupReceiver(adapter, listener);
 		receiver.setErrorStorage(errorStorage);
 		receiver.setMessageLog(messageLog);
 
@@ -433,7 +438,6 @@ public class ReceiverTest {
 		final int MAX_NR_TIMES_MESSAGE_OFFERED = TEST_MAX_RETRIES + 3;
 		receiver.setMaxRetries(TEST_MAX_RETRIES);
 
-		Adapter adapter = setupAdapter(receiver, ExitState.ERROR);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());
 		assertEquals(RunState.STOPPED, receiver.getRunState());
@@ -536,8 +540,11 @@ public class ReceiverTest {
 	void testStopReceiverWithFaultyMonitor() throws Exception {
 		// Arrange
 		configuration = buildDataSourceTransactionManagerConfiguration();
+
+		Adapter adapter = setupAdapter(ExitState.ERROR);
+
 		IListener<Serializable> listener = setupMessageStoreListener();
-		Receiver<Serializable> receiver = setupReceiver(listener);
+		Receiver<Serializable> receiver = setupReceiver(adapter, listener);
 
 		IMonitorDestination destination = mock(IMonitorDestination.class);
 		when(destination.getName()).thenReturn("dummy-destination-name");
@@ -562,8 +569,6 @@ public class ReceiverTest {
 		ConfigurableListableBeanFactory beanFactory = configuration.getBeanFactory();
 		SimpleApplicationEventMulticaster eventMulticaster = beanFactory.getBean(AbstractApplicationContext.APPLICATION_EVENT_MULTICASTER_BEAN_NAME, SimpleApplicationEventMulticaster.class);
 		eventMulticaster.setErrorHandler(new SpringEventErrorHandler());
-
-		Adapter adapter = setupAdapter(receiver, ExitState.ERROR);
 
 		badTrigger.setSourceFiltering(SourceFiltering.ADAPTER);
 		AdapterFilter af = new AdapterFilter();
@@ -603,7 +608,8 @@ public class ReceiverTest {
 		@SuppressWarnings("unchecked")
 		ITransactionalStorage<Serializable> messageLog = mock(ITransactionalStorage.class);
 
-		Receiver<String> receiver = setupReceiver(listener);
+		Adapter adapter = setupAdapter();
+		Receiver<String> receiver = setupReceiver(adapter, listener);
 		receiver.setErrorStorage(errorStorage);
 		receiver.setMessageLog(messageLog);
 		receiver.configure();
@@ -666,7 +672,8 @@ public class ReceiverTest {
 		@SuppressWarnings("unchecked")
 		ITransactionalStorage<Serializable> messageLog = mock(ITransactionalStorage.class);
 
-		Receiver<String> receiver = setupReceiver(listener);
+		Adapter adapter = setupAdapter(ExitState.ERROR);
+		Receiver<String> receiver = setupReceiver(adapter, listener);
 		receiver.setErrorStorage(errorStorage);
 		receiver.setMessageLog(messageLog);
 
@@ -675,8 +682,6 @@ public class ReceiverTest {
 		receiver.setTxManager(txManager);
 		receiver.setTransactionAttribute(TransactionAttribute.NOTSUPPORTED);
 		receiver.configure();
-
-		Adapter adapter = setupAdapter(receiver, ExitState.ERROR);
 		configuration.configure();
 		configuration.start();
 		waitForState(adapter, RunState.STARTED);
@@ -712,10 +717,10 @@ public class ReceiverTest {
 		MessageWrapper<Serializable> rawTestMessageWrapper = new MessageWrapper<>(testMessage, "mid", "cid");
 
 		configuration = buildNarayanaTransactionManagerConfiguration();
+		Adapter adapter = setupAdapter();
 		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
 		JavaListener listener = setupJavaListener();
-		Receiver<Serializable> receiver = setupReceiverWithListener(listener, errorStorage);
-		Adapter adapter = setupAdapter(receiver);
+		Receiver<Serializable> receiver = setupReceiverWithListener(adapter, listener, errorStorage);
 
 		PipeLine pipeLine = adapter.getPipeLine();
 		PipeLineResult pipeLineResult = new PipeLineResult();
@@ -749,11 +754,11 @@ public class ReceiverTest {
 	public void testManualRetryWithErrorStorage() throws Exception {
 		// Arrange
 		configuration = buildNarayanaTransactionManagerConfiguration();
+		Adapter adapter = setupAdapter();
 		final String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
 		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
 		MessageStoreListener listener = setupMessageStoreListener();
-		Receiver<Serializable> receiver = setupReceiverWithListener(listener, errorStorage);
-		Adapter adapter = setupAdapter(receiver);
+		Receiver<Serializable> receiver = setupReceiverWithListener(adapter, listener, errorStorage);
 
 		when(errorStorage.getMessage("1")).thenAnswer((Answer<RawMessageWrapper<?>>) invocation -> new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null));
 
@@ -785,10 +790,10 @@ public class ReceiverTest {
 	public void testManualRetryWithMessageStoreListener() throws Exception {
 		// Arrange
 		configuration = buildNarayanaTransactionManagerConfiguration();
+		Adapter adapter = setupAdapter();
 		final String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
 		MessageStoreListener listener = setupMessageStoreListener();
-		Receiver<Serializable> receiver = setupReceiverWithListener(listener, null);
-		Adapter adapter = setupAdapter(receiver);
+		Receiver<Serializable> receiver = setupReceiverWithListener(adapter, listener, null);
 		IMessageBrowser<Serializable> messageBrowser = mock();
 
 		when(messageBrowser.browseMessage("1")).thenAnswer((Answer<RawMessageWrapper<?>>) invocation -> new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null));
@@ -825,11 +830,11 @@ public class ReceiverTest {
 	public void testManualRetryWithErrorStorageThrowsError() throws Exception {
 		// Arrange
 		configuration = buildNarayanaTransactionManagerConfiguration();
+		Adapter adapter = setupAdapter();
 		final String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
 		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
 		MessageStoreListener listener = setupMessageStoreListener();
-		Receiver<Serializable> receiver = setupReceiverWithListener(listener, errorStorage);
-		Adapter adapter = setupAdapter(receiver);
+		Receiver<Serializable> receiver = setupReceiverWithListener(adapter, listener, errorStorage);
 
 		doThrow(new RuntimeException()).when(adapter).processMessageWithExceptions(any(), any(), any());
 		doAnswer((Answer<RawMessageWrapper<?>>) invocation -> new RawMessageWrapper<>(testMessage, invocation.getArgument(0), null)).when(errorStorage).getMessage("1");
@@ -855,10 +860,10 @@ public class ReceiverTest {
 	public void testManualRetryWithMessageStoreListenerThrowsError() throws Exception {
 		// Arrange
 		configuration = buildNarayanaTransactionManagerConfiguration();
+		Adapter adapter = setupAdapter();
 		final String testMessage = "\"<msg attr=\"\"an attribute\"\"/>\",\"ANY-KEY-VALUE\"";
 		MessageStoreListener listener = setupMessageStoreListener();
-		Receiver<Serializable> receiver = setupReceiverWithListener(listener, null);
-		Adapter adapter = setupAdapter(receiver);
+		Receiver<Serializable> receiver = setupReceiverWithListener(adapter, listener, null);
 		IMessageBrowser<String> messageBrowser = mock();
 
 		doThrow(new RuntimeException()).when(adapter).processMessageWithExceptions(any(), any(), any());
@@ -896,8 +901,8 @@ public class ReceiverTest {
 	}
 
 	public void testStartNoTimeout(SlowListenerBase listener) throws Exception {
-		Receiver<String> receiver = setupReceiver(listener);
-		Adapter adapter = setupAdapter(receiver);
+		Adapter adapter = setupAdapter();
+		Receiver<String> receiver = setupReceiver(adapter, listener);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());
 		assertEquals(RunState.STOPPED, receiver.getRunState());
@@ -934,9 +939,9 @@ public class ReceiverTest {
 	}
 
 	public void testStartTimeout(SlowListenerBase listener) throws Exception {
-		Receiver<String> receiver = setupReceiver(listener);
+		Adapter adapter = setupAdapter();
+		Receiver<String> receiver = setupReceiver(adapter, listener);
 		receiver.setStartTimeout(1);
-		Adapter adapter = setupAdapter(receiver);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());
 		assertEquals(RunState.STOPPED, receiver.getRunState());
@@ -983,9 +988,9 @@ public class ReceiverTest {
 
 		// Arrange
 		configuration = buildDataSourceTransactionManagerConfiguration();
+		Adapter adapter = setupAdapter();
 		SlowListenerBase listener = setupSlowStartPushingListener(1_000);
-		Receiver<String> receiver = setupReceiver(listener);
-		Adapter adapter = setupAdapter(receiver);
+		Receiver<String> receiver = setupReceiver(adapter, listener);
 
 		try (TestAppender appender = TestAppender.newBuilder().build()) {
 			assertEquals(RunState.STOPPED, adapter.getRunState());
@@ -1039,8 +1044,8 @@ public class ReceiverTest {
 	@Test
 	public void testStopAdapterAfterStopReceiverWithException() throws Exception {
 		configuration = buildNarayanaTransactionManagerConfiguration();
-		Receiver<String> receiver = setupReceiver(setupSlowStopPushingListener(100_000));
-		Adapter adapter = setupAdapter(receiver);
+		Adapter adapter = setupAdapter();
+		Receiver<String> receiver = setupReceiver(adapter, setupSlowStopPushingListener(100_000));
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());
 		assertEquals(RunState.STOPPED, receiver.getRunState());
@@ -1078,8 +1083,8 @@ public class ReceiverTest {
 	}
 
 	public void testStopTimeout(SlowListenerBase listener) throws Exception {
-		Receiver<String> receiver = setupReceiver(listener);
-		Adapter adapter = setupAdapter(receiver);
+		Adapter adapter = setupAdapter();
+		Receiver<String> receiver = setupReceiver(adapter, listener);
 		receiver.setStopTimeout(1);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());
@@ -1108,9 +1113,9 @@ public class ReceiverTest {
 	@Test
 	public void startReceiver() throws Exception {
 		configuration = buildDataSourceTransactionManagerConfiguration();
-		Receiver<String> receiver = setupReceiver(setupSlowStartPullingListener(10_000));
+		Adapter adapter = setupAdapter();
+		Receiver<String> receiver = setupReceiver(adapter, setupSlowStartPullingListener(10_000));
 		receiver.setStartTimeout(1);
-		Adapter adapter = setupAdapter(receiver);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());
 		assertEquals(RunState.STOPPED, receiver.getRunState());
@@ -1167,8 +1172,8 @@ public class ReceiverTest {
 		configuration = buildNarayanaTransactionManagerConfiguration();
 		ITransactionalStorage<Serializable> errorStorage = setupErrorStorage();
 		JavaListener listener = setupJavaListener();
-		Receiver<Serializable> receiver = setupReceiverWithListener(listener, errorStorage);
-		Adapter adapter = setupAdapter(receiver);
+		Adapter adapter = setupAdapter();
+		Receiver<Serializable> receiver = setupReceiverWithListener(adapter, listener, errorStorage);
 
 		// The actual size of a message as string can be shorter than the reported size. This could be due to incorrect
 		// cached size in metadata, or due to conversion from byte[] to String for instance.
@@ -1241,14 +1246,13 @@ public class ReceiverTest {
 		@SuppressWarnings("unchecked")
 		ITransactionalStorage<Serializable> errorStorage = mock(ITransactionalStorage.class);
 
-		Receiver<String> receiver = setupReceiver(listener);
+		Adapter adapter = setupAdapter();
+		Receiver<String> receiver = setupReceiver(adapter, listener);
 		receiver.setErrorStorage(errorStorage);
 
 		final PlatformTransactionManager txManager = configuration.getBean("txManagerReal", PlatformTransactionManager.class);
 		receiver.setTxManager(txManager);
 		receiver.setTransactionAttribute(TransactionAttribute.REQUIRED);
-
-		Adapter adapter = setupAdapter(receiver);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());
 		assertEquals(RunState.STOPPED, receiver.getRunState());
