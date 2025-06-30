@@ -142,7 +142,7 @@
 		<Receiver>
 			<FrankListener name="ParameterizedErrorMessage-CallListener-Trigger"/>
 		</Receiver>
-		<ErrorMessageFormatter messageFormat="JSON"/>
+		<DataSonnetErrorMessageFormatter styleSheetName="stylesheets/ErrorParameterized1.jsonnet"/>
 		<Pipeline>
 			<Exits>
 				<Exit name="EXIT" state="SUCCESS" />
