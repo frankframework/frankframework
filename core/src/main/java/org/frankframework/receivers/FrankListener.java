@@ -39,6 +39,7 @@ import org.frankframework.core.IbisExceptionListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.RequestReplyListener;
 import org.frankframework.doc.Category;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
@@ -53,7 +54,7 @@ import org.frankframework.stream.Message;
  */
 @Category(Category.Type.BASIC)
 @Log4j2
-public class FrankListener implements IPushingListener<Message>, HasPhysicalDestination, ServiceClient, ConfigurationAware {
+public class FrankListener implements RequestReplyListener, IPushingListener<Message>, HasPhysicalDestination, ServiceClient, ConfigurationAware {
 
 	private static final ConcurrentMap<String, FrankListener> listeners = new ConcurrentHashMap<>();
 
@@ -61,6 +62,7 @@ public class FrankListener implements IPushingListener<Message>, HasPhysicalDest
 	private @Setter @Getter ApplicationContext applicationContext;
 	private @Setter Configuration configuration;
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ExceptionHandlingMethod exceptionHandlingMethod = ExceptionHandlingMethod.RETHROW;
 
 	private @Getter String name;
 	private String fullName;

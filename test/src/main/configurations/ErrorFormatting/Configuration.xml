@@ -142,7 +142,6 @@
 		<Receiver>
 			<FrankListener name="ParameterizedErrorMessage-CallListener-Trigger"/>
 		</Receiver>
-		<DataSonnetErrorMessageFormatter styleSheetName="stylesheets/ErrorParameterized1.jsonnet"/>
 		<Pipeline>
 			<Exits>
 				<Exit name="EXIT" state="SUCCESS" />
@@ -151,14 +150,13 @@
 				<FrankSender scope="LISTENER">
 					<Param name="target" jsonPathExpression="$.target"/>
 				</FrankSender>
-				<Forward name="exception" path="EXIT"/>
 			</SenderPipe>
 		</Pipeline>
 	</Adapter>
 
 	<Adapter name="ParameterizedErrorMessage-CallListener-PassViaException">
 		<Receiver>
-			<FrankListener name="ParameterizedErrorMessage-CallListener-PassViaException"/>
+			<FrankListener name="ParameterizedErrorMessage-CallListener-PassViaException" exceptionHandlingMethod="format_and_return"/>
 		</Receiver>
 		<DataSonnetErrorMessageFormatter styleSheetName="stylesheets/ErrorParameterized1.jsonnet"/>
 		<Pipeline>
@@ -188,7 +186,7 @@
 
 	<Adapter name="ParameterizedErrorMessage-CallListener-PassViaSession">
 		<Receiver>
-			<FrankListener name="ParameterizedErrorMessage-CallListener-PassViaSession"/>
+			<FrankListener name="ParameterizedErrorMessage-CallListener-PassViaSession" exceptionHandlingMethod="format_and_return"/>
 		</Receiver>
 		<DataSonnetErrorMessageFormatter styleSheetName="stylesheets/ErrorParameterized2.jsonnet">
 			<NumberParam name="errorCode" sessionKey="errorCode"/>

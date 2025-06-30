@@ -35,6 +35,7 @@ import org.frankframework.core.IbisExceptionListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.RequestReplyListener;
 import org.frankframework.doc.Protected;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
@@ -50,12 +51,13 @@ import org.frankframework.util.LogUtil;
  * @author  Gerrit van Brakel
  * @since   4.12
  */
-public class PushingListenerAdapter implements IPushingListener<Message>, ServiceClient {
+public class PushingListenerAdapter implements RequestReplyListener, IPushingListener<Message>, ServiceClient {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private @Getter String name;
 	private @Getter boolean applicationFaultsAsExceptions=true;
 	private @Getter boolean running;
+	private @Getter @Setter ExceptionHandlingMethod exceptionHandlingMethod = ExceptionHandlingMethod.RETHROW;
 
 	private IMessageHandler<Message> handler;
 
