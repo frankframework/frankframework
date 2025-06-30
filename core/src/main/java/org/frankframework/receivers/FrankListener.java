@@ -106,7 +106,7 @@ public class FrankListener implements IPushingListener<Message>, HasPhysicalDest
 		return "";
 	}
 
-	// TODO this should be the applicationcontext...?
+	// TODO this should be the ApplicationContext...?
 	private Adapter getAdapter() {
 		return ((Receiver<?>) getHandler()).getAdapter();
 	}
