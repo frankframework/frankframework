@@ -51,7 +51,7 @@ public abstract class AbstractJwtKeyGenerator {
 	public @Nonnull String create() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (authentication == null) {
-			throw new AuthenticationServiceException("No Authentication object found in SecurityContext");
+			throw new AuthenticationServiceException("no Authentication object found in SecurityContext");
 		}
 
 		JWTClaimsSet claims = createClaimsSet(authentication);
