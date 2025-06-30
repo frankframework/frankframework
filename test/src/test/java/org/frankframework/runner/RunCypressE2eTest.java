@@ -51,6 +51,7 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.LocalGateway;
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.SpringUtils;
 
@@ -120,6 +121,9 @@ public class RunCypressE2eTest {
 		assertFalse(container.isRunning());
 
 		run.close();
+
+		// Make sure to clear the app constants as well
+		AppConstants.removeInstance();
 	}
 
 	@TestFactory

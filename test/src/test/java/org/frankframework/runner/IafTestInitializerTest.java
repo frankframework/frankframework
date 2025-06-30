@@ -14,6 +14,8 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.RestTemplate;
 
+import org.frankframework.util.AppConstants;
+
 @Tag("slow")
 class IafTestInitializerTest {
 
@@ -34,6 +36,9 @@ class IafTestInitializerTest {
 		if (applicationContext != null) {
 			applicationContext.close();
 		}
+
+		// Make sure to clear the app constants as well
+		AppConstants.removeInstance();
 	}
 
 	@Test
