@@ -31,7 +31,6 @@ class StepTest {
 		scenarioProperties.setProperty(rawLine + Scenario.ABSOLUTE_PATH_PROPERTY_SUFFIX, "/path/to/scenarios/in.txt");
 
 		File scenarioFile = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenarios/scenariodir1/active-scenario.properties");
-
 		Scenario scenario = new Scenario(scenarioFile, "test", "test", scenarioProperties);
 
 		// Act
@@ -84,5 +83,29 @@ class StepTest {
 		// Assert
 		assertEquals("Step '" + rawLine + "' does not have a step number, action target, or action", e.getMessage());
 		assertFalse(Step.isValidStep(rawLine));
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+			"ignore, true",
+			"IGNORE, true",
+			"DoIgnore, true",
+			"IgnoreSomething, false",
+			"TestThatIgnoresSomething, false",
+			"IGNORED, false"
+	})
+	void testStepIgnore(String value, boolean shouldIgnoreFile) {
+		// Arrange
+		String rawLine = "step1.target.read";
+		Properties scenarioProperties = new Properties();
+		scenarioProperties.setProperty(rawLine, value);
+
+		File scenarioFile = LarvaTestHelpers.getFileFromResource("/scenario-test-data/scenarios/scenariodir1/active-scenario.properties");
+		Scenario scenario = new Scenario(scenarioFile, "test", "test", scenarioProperties);
+
+		Step step = Step.of(scenario, rawLine);
+
+		// Act
+		assertEquals(shouldIgnoreFile, step.isIgnore(), "Step file should be ignored: [" + shouldIgnoreFile + "] but instead was [" + step.isIgnore() + "]");
 	}
 }
