@@ -35,7 +35,6 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
-import java.util.concurrent.CountDownLatch;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -59,7 +58,6 @@ import org.frankframework.management.bus.BusException;
 public class PhoneHomeInboundGateway extends MessagingGatewaySupport {
 
 	private final SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
-	private final CountDownLatch latch = new CountDownLatch(1);
 	private final SSLProperties sslProperties = new SSLProperties();
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final HttpClient httpClient;
@@ -109,7 +107,7 @@ public class PhoneHomeInboundGateway extends MessagingGatewaySupport {
 				.buildAsync(sslProperties.getWebsocketUri(), new SimpleListener());
 	}
 
-	private CompletionStage<?> handleMessage(WebSocket ws, byte[] rawMessage) {
+	private CompletionStage<?> handleMessage(WebSocket ws, byte[] rawMessage) { // NOSONAR
 		long startTime = System.nanoTime();
 		try {
 			RelayEnvelope envelope = deserializeEnvelope(rawMessage);

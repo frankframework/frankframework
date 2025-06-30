@@ -120,8 +120,7 @@ public class MtlsHelper {
 			ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new SecureRandom());
 			return ctx;
 		} catch (GeneralSecurityException e) {
-			log.error("Failed to build SSL context", e);
-			throw new RuntimeException(e);
+			throw new PhoneHomeException("Failed to build SSL context", e);
 		}
 	}
 
@@ -134,7 +133,7 @@ public class MtlsHelper {
 		try {
 			return getKeyStore(location, password, fallbackType);
 		} catch (GeneralSecurityException ex) {
-			throw new RuntimeException("Unable to load keystore as " + primaryType + " or " + fallbackType, ex);
+			throw new PhoneHomeException("Unable to load keystore as " + primaryType + " or " + fallbackType, ex);
 		}
 	}
 

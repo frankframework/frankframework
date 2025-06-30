@@ -32,7 +32,7 @@ public class InstanceInfoDto {
 	private final UUID clientId;
 	private final String instanceName;
 	private final String instanceVersion;
-	private final String instanceType = "worker";
+	private final String instanceType = "worker"; // NOSONAR
 	private final PublicKey publicKey;
 
 	@JsonProperty("publicKey")
