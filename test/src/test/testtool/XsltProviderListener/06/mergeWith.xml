@@ -1,0 +1,12 @@
+<zgwRol>
+	<roltoelichting>lalala</roltoelichting>
+	<betrokkeneIdentificatie>
+		<inpBsn>apple</inpBsn>
+		<geslachtsnaam>banana</geslachtsnaam>
+		<idontexist>kiwi</idontexist>
+	</betrokkeneIdentificatie>
+	<kenmerken>
+		<kenmerk>kenmerk3</kenmerk>
+		<bron>larva</bron>
+	</kenmerken>
+</zgwRol>

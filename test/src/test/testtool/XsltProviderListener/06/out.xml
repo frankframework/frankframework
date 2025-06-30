@@ -1,0 +1,28 @@
+<zgwRol>
+	<betrokkeneIdentificatie>
+		<authentiek>J</authentiek>
+		<geboortedatum>1901-01-01</geboortedatum>
+		<geslachtsaanduiding>m</geslachtsaanduiding>
+		<geslachtsnaam>Precies</geslachtsnaam>
+		<idontexist>kiwi</idontexist>
+		<inpBsn>111111110</inpBsn>
+		<voorletters>P</voorletters>
+		<voornamen>Pietje</voornamen>
+		<voorvoegselGeslachtsnaam/>
+	</betrokkeneIdentificatie>
+	<betrokkeneType>natuurlijk_persoon</betrokkeneType>
+	<kenmerken>
+		<kenmerk>kenmerk1</kenmerk>
+		<bron>larva</bron>
+	</kenmerken>
+	<kenmerken>
+		<kenmerk>kenmerk2</kenmerk>
+		<bron>larva</bron>
+	</kenmerken>
+	<kenmerken>
+		<kenmerk>kenmerk3</kenmerk>
+		<bron>larva</bron>
+	</kenmerken>
+	<roltoelichting>BetrekkingOp:Precies</roltoelichting>
+	<roltype>http://open-zaak.nginx:9001/catalogi/api/v1/roltypen/91d7e379-06a8-42c6-bcec-19990dccbc9a</roltype>
+</zgwRol>
