@@ -16,7 +16,7 @@
 		<context:exclude-filter type="regex" expression="org\.frankframework\.console\.runner\..*"/>
 	</context:component-scan>
 
-	<bean id="JwtKeyGenerator" class="org.frankframework.management.security.JwtKeyGenerator"/>
+	<bean id="JwtKeyGeneratorSupplier" class="org.frankframework.management.security.JwtKeyGeneratorSupplier"/>
 	<bean id="messageBuilderFactory" class="org.springframework.integration.support.DefaultMessageBuilderFactory" />
 
 	<mvc:interceptors>

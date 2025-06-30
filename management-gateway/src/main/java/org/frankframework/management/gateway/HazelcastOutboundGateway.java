@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.gateway.HazelcastConfig.InstanceType;
 import org.frankframework.management.gateway.events.ClusterMemberEvent;
 import org.frankframework.management.gateway.events.ClusterMemberEvent.EventType;
-import org.frankframework.management.security.JwtKeyGenerator;
+import org.frankframework.management.security.JwtKeyGeneratorSupplier;
 import org.frankframework.util.SpringUtils;
 
 @Log4j2
@@ -64,7 +64,7 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 	private ITopic<Message<?>> requestTopic;
 
 	@Autowired
-	private JwtKeyGenerator jwtGenerator;
+	private JwtKeyGeneratorSupplier jwtKeyGeneratorSupplier;
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -77,7 +77,7 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 		SpringUtils.registerSingleton(applicationContext, "hazelcastOutboundInstance", hzInstance);
 
 		IMap<String, String> config = hzInstance.getMap(HazelcastConfig.FRANK_APPLICATION_CONFIG);
-		config.set(HazelcastConfig.FRANK_APPLICATION_KEYSET, jwtGenerator.getPublicJwkSet());
+		config.set(HazelcastConfig.FRANK_APPLICATION_KEYSET, jwtKeyGeneratorSupplier.getJwtKeyGenerator().getPublicJwkSet());
 
 		requestTopic = hzInstance.getTopic(requestTopicName);
 
@@ -171,7 +171,7 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 	}
 
 	private @Nonnull String getAuthentication() {
-		return jwtGenerator.create();
+		return jwtKeyGeneratorSupplier.getJwtKeyGenerator().create();
 	}
 
 	private long receiveTimeout(Message<?> requestMessage) {
