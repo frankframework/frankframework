@@ -121,7 +121,6 @@ public class ReceiverSubAdapterTest {
 		adapter.addReceiver(receiver);
 
 		receiver.setApplicationContext(configuration);
-		receiver.setAdapter(adapter);
 		receiver.setTxManager(txManager);
 		adapter.setPipeLine(pipeline);
 		return receiver;

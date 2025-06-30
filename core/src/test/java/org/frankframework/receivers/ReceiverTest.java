@@ -1213,9 +1213,8 @@ public class ReceiverTest {
 		adapter.setName("adapter");
 		ConfigurationWarnings configWarnings = configuration.getConfigurationWarnings();
 
-		Receiver<String> receiver = new Receiver<>();
+		Receiver<String> receiver = SpringUtils.createBean(adapter);
 
-		receiver.setAdapter(adapter);
 		receiver.setMaxBackoffDelay(maxBackoffDelay);
 		receiver.setTransactionTimeout(100);
 

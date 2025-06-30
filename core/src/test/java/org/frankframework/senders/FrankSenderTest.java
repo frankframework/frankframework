@@ -532,8 +532,8 @@ class FrankSenderTest {
 		return sender;
 	}
 
-	private void createFrankListener(TestConfiguration configuration, Adapter targetAdapter) {
-		Receiver<Message> receiver = configuration.createBean();
+	private void createFrankListener(TestConfiguration configuration, Adapter adapter) {
+		Receiver<Message> receiver = SpringUtils.createBean(adapter);
 		receiver.setName("TargetAdapter-receiver");
 
 		FrankListener listener = configuration.createBean();
@@ -542,15 +542,14 @@ class FrankSenderTest {
 		receiver.setListener(listener);
 		receiver.setTxManager(configuration.createBean(NarayanaJtaTransactionManager.class));
 
-		targetAdapter.addReceiver(receiver);
-		receiver.setAdapter(targetAdapter);
+		adapter.addReceiver(receiver);
 
 		listener.configure();
 		listener.start();
 	}
 
-	private void createJavaListener(TestConfiguration configuration, Adapter targetAdapter) {
-		Receiver<String> receiver = configuration.createBean();
+	private void createJavaListener(TestConfiguration configuration, Adapter adapter) {
+		Receiver<String> receiver = SpringUtils.createBean(adapter);
 		receiver.setName("TargetAdapter-receiver");
 
 		JavaListener<String> listener = configuration.createBean();
@@ -561,8 +560,7 @@ class FrankSenderTest {
 		receiver.setListener(listener);
 		receiver.setTxManager(configuration.createBean(NarayanaJtaTransactionManager.class));
 
-		targetAdapter.addReceiver(receiver);
-		receiver.setAdapter(targetAdapter);
+		adapter.addReceiver(receiver);
 
 		listener.start();
 	}

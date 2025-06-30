@@ -74,7 +74,6 @@ public class TestWebServices extends BusTestBase {
 		Receiver receiver = SpringUtils.createBean(adapter);
 		receiver.setName("ReceiverName2");
 		listener.setReceiver(receiver);
-		receiver.setAdapter(adapter);
 		adapter.addReceiver(receiver);
 		PipeLine pipeline = SpringUtils.createBean(adapter);
 		EchoPipe pipe = SpringUtils.createBean(adapter);
@@ -97,7 +96,6 @@ public class TestWebServices extends BusTestBase {
 		receiver.setName("ReceiverName1");
 		receiver.setListener(listener);
 		adapter.addReceiver(receiver);
-		receiver.setAdapter(adapter);
 		PipeLine pipeline = SpringUtils.createBean(adapter);
 		EchoPipe pipe = SpringUtils.createBean(adapter);
 		pipe.setName("EchoPipe");
@@ -119,7 +117,6 @@ public class TestWebServices extends BusTestBase {
 		receiver.setName("ReceiverName3");
 		receiver.setListener(listener);
 		adapter.addReceiver(receiver);
-		receiver.setAdapter(adapter);
 		PipeLine pipeline = SpringUtils.createBean(adapter);
 		XmlValidator validator = SpringUtils.createBean(adapter);
 		validator.setSchema("Validation/Basic/xsd/A_correct.xsd");

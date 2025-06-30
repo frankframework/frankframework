@@ -62,6 +62,7 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StreamUtil;
 
 public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileSystem<F>> extends BasicFileSystemListenerTest<F, S> {
@@ -355,7 +356,7 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 		assertTrue(_fileExists(fileName));
 		assertTrue(_folderExists(processedFolder));
 
-		Receiver<F> receiver = new Receiver<>();
+		Receiver<F> receiver = SpringUtils.createBean(adapter);
 		receiver.setListener(fileSystemListener);
 		MetricsInitializer metrics = mock();
 		when(metrics.createCounter(any(), any())).thenAnswer(invocation -> mock(Counter.class));
@@ -368,7 +369,6 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 		when(applicationContext.getBean("listenerContainer", PullingListenerContainer.class)).thenAnswer((Answer<PullingListenerContainer<F>>) invocation -> new PullingListenerContainer<F>());
 		when(applicationContext.getBean("transactionManager")).thenReturn(transactionManager);
 		receiver.setApplicationContext(applicationContext);
-		receiver.setAdapter(adapter);
 		receiver.setTxManager(transactionManager);
 		receiver.configure();
 

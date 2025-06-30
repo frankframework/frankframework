@@ -327,7 +327,6 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		}
 
 		log.info("Adapter [{}] is initializing receiver [{}]", name, receiver.getName());
-		receiver.setAdapter(this);
 		try {
 			receiver.configure();
 			getMessageKeeper().info(receiver, "successfully configured");
