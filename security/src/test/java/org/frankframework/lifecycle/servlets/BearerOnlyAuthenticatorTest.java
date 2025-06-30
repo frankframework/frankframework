@@ -58,9 +58,9 @@ public class BearerOnlyAuthenticatorTest extends ServletAuthenticatorTest<Bearer
 	}
 
 	@Test
-	void testConfigureHttpSecurityWithCustomPreferredUsernameClaimName() {
+	void testConfigureHttpSecurityWithCustomUsernameAttributeName() {
 		authenticator.setJwkSetUri("http://localhost:8080/realms/myrealm/.well-known/jwks.json");
-		authenticator.setPreferredUsernameClaimName("preferred_username");
+		authenticator.setUserNameAttributeName("preferred_username");
 
 		assertDoesNotThrow(() -> authenticator.configure(httpSecurity));
 	}

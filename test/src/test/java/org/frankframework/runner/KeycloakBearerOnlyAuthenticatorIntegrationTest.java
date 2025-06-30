@@ -62,7 +62,7 @@ public class KeycloakBearerOnlyAuthenticatorIntegrationTest {
 		// Set system properties for the application to use the Keycloak container and start the framework initializer
 		System.setProperty("application.security.console.authentication.type", "BEARER_ONLY");
 		System.setProperty("application.security.console.authentication.issuerUri", "http://localhost:%s/realms/test".formatted(keycloak.getHttpPort()));
-		System.setProperty("application.security.console.authentication.preferredUsernameClaimName", "preferred_username");
+		System.setProperty("application.security.console.authentication.userNameAttributeName", "preferred_username");
 		System.setProperty("application.security.console.authentication.authoritiesClaimName", "realm_access.roles");
 
 		SpringApplication springApplication = IafTestInitializer.configureApplication();
@@ -78,7 +78,7 @@ public class KeycloakBearerOnlyAuthenticatorIntegrationTest {
 
 		System.clearProperty("application.security.console.authentication.type");
 		System.clearProperty("application.security.console.authentication.issuerUri");
-		System.clearProperty("application.security.console.authentication.preferredUsernameClaimName");
+		System.clearProperty("application.security.console.authentication.userNameAttributeName");
 		System.clearProperty("application.security.console.authentication.authoritiesClaimName");
 
 		// Make sure to clear the app constants as well

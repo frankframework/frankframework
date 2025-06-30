@@ -47,7 +47,7 @@ import lombok.Setter;
  * <p>
  * Possibly, other optional settings might need to be applied as well. For example, when using Keycloak as IdP, the following settings are common:
  * <pre>{@code
- * application.security.console.authentication.preferredUsernameClaimName=preferred_username
+ * application.security.console.authentication.userNameAttributeName=preferred_username
  * application.security.console.authentication.authoritiesClaimName=realm_access.roles
  * }</pre>
  * </p>
@@ -68,7 +68,7 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 	 * @see "JwtAuthenticationConverter#principalClaimName"
 	 */
 	@Setter
-	private String preferredUsernameClaimName;
+	private String userNameAttributeName;
 
 	/**
 	 * <p>The claim name in the JWT token that contains the authorities of the user.
@@ -103,8 +103,8 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 
 		JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
 
-		if (StringUtils.isNotBlank(preferredUsernameClaimName)) {
-			jwtAuthenticationConverter.setPrincipalClaimName(preferredUsernameClaimName);
+		if (StringUtils.isNotBlank(userNameAttributeName)) {
+			jwtAuthenticationConverter.setPrincipalClaimName(userNameAttributeName);
 		}
 
 		jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
