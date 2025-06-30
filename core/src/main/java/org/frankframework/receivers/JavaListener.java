@@ -34,7 +34,7 @@ import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.dispatcher.RequestProcessor;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.Adapter;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
@@ -77,7 +77,6 @@ public class JavaListener<M> implements RequestReplyListener, IPushingListener<M
 	private @Getter String name;
 	private @Getter String serviceName;
 	private @Getter String returnedSessionKeys=null;
-	private @Getter boolean throwException = true;
 	private @Getter boolean httpWsdl = false;
 
 	private @Getter boolean open=false;
@@ -177,29 +176,11 @@ public class JavaListener<M> implements RequestReplyListener, IPushingListener<M
 
 			try {
 				return handler.processRequest(this, messageWrapper, session);
-			} catch (ListenerException e) {
-				if (throwException) {
-					throw e;
-				}
-
-				// Message with error contains a String so does not need to be preserved.
-				// (Trying to preserve means dealing with extra IOException for which there is no reason here)
-				return formatExceptionUsingErrorMessageFormatter(session, message, e);
 			} finally {
 				session.unscheduleCloseOnSessionExit(message); // The input message should not be managed by this PipelineSession but rather the method invoker
 				session.mergeToParentSession(getReturnedSessionKeys(), parentSession);
 			}
 		}
-	}
-
-	// The ApplicationContext is practically always an Adapter except when the listener is created directly via the LarvaScenarioContext
-	private Message formatExceptionUsingErrorMessageFormatter(PipeLineSession session, Message inputMessage, Throwable t) {
-		if (applicationContext instanceof Adapter adapter) {
-			return adapter.formatErrorMessage(null, t, inputMessage, session, null);
-		}
-
-		log.warn("unformatted exception while processing input request [{}]", inputMessage, t);
-		return new Message(t.getMessage());
 	}
 
 	/**
@@ -284,8 +265,10 @@ public class JavaListener<M> implements RequestReplyListener, IPushingListener<M
 	 * 
 	 * @ff.default true
 	 */
+	@Deprecated(since = "9.2")
+	@ConfigurationWarning("Replaced with 'exceptionHandlingMethod'")
 	public void setThrowException(boolean throwException) {
-		this.throwException = throwException;
+		this.exceptionHandlingMethod = throwException ? ExceptionHandlingMethod.RETHROW : ExceptionHandlingMethod.FORMAT_AND_RETURN;
 	}
 
 	/**

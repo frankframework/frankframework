@@ -1325,7 +1325,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 						pipeLineResult.setState(ExitState.ERROR);
 					}
 					if (Message.isEmpty(pipeLineResult.getResult())) {
-						pipeLineResult.setResult(adapter.formatErrorMessage("exception caught",t,compactedMessage, session, this));
+						pipeLineResult.setResult(adapter.formatErrorMessage(null, t, compactedMessage, session, this));
 					}
 					if (getListener() instanceof RequestReplyListener requestReplyListener) {
 						if (requestReplyListener.getExceptionHandlingMethod() == RequestReplyListener.ExceptionHandlingMethod.FORMAT_AND_RETURN) {
