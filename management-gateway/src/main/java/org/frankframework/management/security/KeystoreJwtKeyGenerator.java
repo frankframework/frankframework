@@ -33,10 +33,8 @@ import org.frankframework.management.gateway.MtlsHelper;
 
 public class KeystoreJwtKeyGenerator extends AbstractJwtKeyGenerator {
 
-	private final MtlsHelper mtlsHelper;
-
 	protected KeystoreJwtKeyGenerator() {
-		this.mtlsHelper = new MtlsHelper();
+		final MtlsHelper mtlsHelper = new MtlsHelper();
 		try {
 			KeyStore keyStore = mtlsHelper.getKeyStore();
 			Enumeration<String> aliases = keyStore.aliases();

@@ -53,6 +53,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.management.bus.BusException;
+
 @Log4j2
 public class PhoneHomeInboundGateway extends MessagingGatewaySupport {
 
@@ -123,12 +125,10 @@ public class PhoneHomeInboundGateway extends MessagingGatewaySupport {
 
 			GenericMessage<?> inboundMsg = parseGenericMessage(inboundJson);
 
-			if (inboundMsg.getPayload() instanceof Map<?, ?> payload) {
-				if (payload.containsKey("publicKey")) {
-					@SuppressWarnings("unchecked")
-					var publicKeyPayload = (Map<String, String>) payload;
-					return handleSwitchboardMessage(ws, envelope, publicKeyPayload);
-				}
+			if (inboundMsg.getPayload() instanceof Map<?, ?> payload && payload.containsKey("publicKey")) {
+				@SuppressWarnings("unchecked")
+				var publicKeyPayload = (Map<String, String>) payload;
+				return handleSwitchboardMessage(ws, envelope, publicKeyPayload);
 			}
 
 			if (consolePubKey == null) {
@@ -162,8 +162,7 @@ public class PhoneHomeInboundGateway extends MessagingGatewaySupport {
 						return null;
 					});
 		} catch (JsonProcessingException | GeneralSecurityException e) {
-			log.error("Failed to handle switchboard message", e);
-			throw new RuntimeException(e);
+			throw new BusException("Failed to handle switchboard message", e);
 		}
 	}
 

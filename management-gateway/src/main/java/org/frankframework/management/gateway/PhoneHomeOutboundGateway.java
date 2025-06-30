@@ -56,6 +56,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.security.JwtKeyGeneratorSupplier;
 
@@ -105,10 +106,11 @@ public class PhoneHomeOutboundGateway implements InitializingBean, ApplicationCo
 			} else {
 				log.warn("Failed to retrieve members: HTTP {}", response.statusCode());
 			}
-		} catch (IOException | InterruptedException e) {
+		} catch (IOException | InterruptedException | GeneralSecurityException e) {
 			log.error("Error fetching cluster members", e);
-		} catch (Exception e) {
-			throw new RuntimeException("Unexpected error in getMembers()", e);
+			if (e instanceof InterruptedException) {
+				Thread.currentThread().interrupt();
+			}
 		}
 		return List.of();
 	}
@@ -201,10 +203,8 @@ public class PhoneHomeOutboundGateway implements InitializingBean, ApplicationCo
 			messageId = envelope.getMessageId();
 
 			return decryptAndConvert(envelope);
-		} catch (JsonProcessingException | GeneralSecurityException e) {
-			throw new RuntimeException("Failed to send/receive message | Message id: " + messageId, e);
-		} catch (InterruptedException | IOException e) {
-			throw new RuntimeException("IO error during sendSyncMessage", e);
+		} catch (GeneralSecurityException | InterruptedException | IOException e) {
+			throw new BusException("Failed to send/receive message | Message id: " + messageId, e);
 		}
 	}
 
@@ -235,8 +235,7 @@ public class PhoneHomeOutboundGateway implements InitializingBean, ApplicationCo
 		return objectMapper.readValue(json, msgType);
 	}
 
-	private <I> byte[] createByteEnvelope(Message<I> message)
-			throws GeneralSecurityException, JsonProcessingException {
+	private <I> byte[] createByteEnvelope(Message<I> message) throws GeneralSecurityException, JsonProcessingException {
 		String json = objectMapper.writeValueAsString(message);
 		byte[] encrypted = mtlsHelper.encryptHybrid(json.getBytes(StandardCharsets.UTF_8));
 
@@ -268,11 +267,8 @@ public class PhoneHomeOutboundGateway implements InitializingBean, ApplicationCo
 				log.info("Async message sent to {} (messageId={})", targetId, messageId);
 			}
 
-		} catch (JsonProcessingException | GeneralSecurityException e) {
-			throw new RuntimeException("Failed to encrypt async message | Message id: " + messageId, e);
-		} catch (InterruptedException | IOException e) {
-			throw new RuntimeException("IO error during sendAsyncMessage | Message id: " + messageId, e);
+		} catch (IOException | InterruptedException | GeneralSecurityException e) {
+			throw new BusException("Failed to send message with id: " + messageId, e);
 		}
 	}
-
 }

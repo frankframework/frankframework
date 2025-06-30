@@ -148,7 +148,7 @@ public class MtlsHelper {
 			log.info(" → successfully loaded {} as {}", location, type);
 			return ks;
 		} catch (IOException ioe) {
-			throw new GeneralSecurityException("I/O error loading keystore " + location, ioe);
+			throw new GeneralSecurityException("Error loading keystore " + location, ioe);
 		}
 	}
 
@@ -171,18 +171,21 @@ public class MtlsHelper {
 	 * Decrypts an RSA/OAEP-SHA256 ciphertext with private key.
 	 */
 	public byte[] decrypt(byte[] ciphertext) throws GeneralSecurityException {
-		Cipher c = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
-		c.init(Cipher.DECRYPT_MODE, privateKey);
-		return c.doFinal(ciphertext);
+		return useRsaCipher(ciphertext, Cipher.DECRYPT_MODE, privateKey);
 	}
 
 	/**
 	 * Encrypts plaintext with public key.
 	 */
 	public byte[] encrypt(byte[] plaintext) throws GeneralSecurityException {
+		return useRsaCipher(plaintext, Cipher.ENCRYPT_MODE, publicKey);
+	}
+
+	private byte[] useRsaCipher(byte[] data, int cipherMode, Key key) throws GeneralSecurityException {
+		// “ECB” is required by JCA for RSA but is ignored; actual mode is RSA with OAEP padding.
 		Cipher c = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
-		c.init(Cipher.ENCRYPT_MODE, publicKey);
-		return c.doFinal(plaintext);
+		c.init(cipherMode, key);
+		return c.doFinal(data);
 	}
 
 	/**
@@ -203,7 +206,7 @@ public class MtlsHelper {
 		byte[] encryptedPayload = aesCipher.doFinal(plaintext);
 
 		// RSA encrypt AES key
-		byte[] encryptedAesKey = rsaEncrypt(aesKey.getEncoded(), rsaPublicKey);
+		byte[] encryptedAesKey = useRsaCipher(aesKey.getEncoded(), Cipher.ENCRYPT_MODE, rsaPublicKey);
 
 		// Combine components
 		ByteBuffer buffer = ByteBuffer.allocate(4 + encryptedAesKey.length + iv.length + encryptedPayload.length);
@@ -212,12 +215,6 @@ public class MtlsHelper {
 				.put(iv)
 				.put(encryptedPayload);
 		return buffer.array();
-	}
-
-	private byte[] rsaEncrypt(byte[] data, PublicKey key) throws GeneralSecurityException {
-		Cipher rsaCipher = Cipher.getInstance("RSA/ECB/OAEPWithSHA-256AndMGF1Padding");
-		rsaCipher.init(Cipher.ENCRYPT_MODE, key);
-		return rsaCipher.doFinal(data);
 	}
 
 	public byte[] encryptHybrid(byte[] plaintext) throws GeneralSecurityException {
