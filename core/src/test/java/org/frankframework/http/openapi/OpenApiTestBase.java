@@ -283,7 +283,7 @@ public class OpenApiTestBase extends Mockito {
 			Receiver receiver = SpringUtils.createBean(adapter);
 			receiver.setName("receiver");
 			receiver.setListener(listener);
-			receiver.setApplicationContext(adapter); // Required because for some reason Mockito spied classes, don't propagate setters properly.
+			receiver.setApplicationContext(adapter); // Required because we have to spy the Adapter
 
 			pipeline.setInputValidator(inputValidator);
 			pipeline.setOutputValidator(outputValidator);
