@@ -81,12 +81,14 @@ public interface IPipe extends IConfigurable, IForwardTarget, FrankElement, Name
 	 * after the {@link #configure()} method, for each start and stop command of the
 	 * adapter.
 	 */
+	@Override
 	void start();
 
 	/**
 	 * Perform necessary actions to stop the <code>Pipe</code>.<br/>
 	 * For instance, closing JMS connections, DBMS connections etc.
 	 */
+	@Override
 	void stop();
 
 	/**

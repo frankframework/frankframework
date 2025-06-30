@@ -168,7 +168,6 @@ public class OpenApiTestBase extends Mockito {
 			when(adapter.getMessageKeeper()).thenReturn(new SysOutMessageKeeper());
 			adapter.setName(name);
 			adapter.setDescription(description);
-			adapter.setConfiguration(configuration);
 			configuration.addAdapter(adapter);
 			adapter.setTaskExecutor(getTaskExecutor());
 		}

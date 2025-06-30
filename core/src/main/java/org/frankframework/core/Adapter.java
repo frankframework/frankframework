@@ -182,8 +182,12 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) {
+		if(!(applicationContext instanceof Configuration config)) {
+			throw new IllegalStateException();
+		}
+
 		setParent(applicationContext);
-		setConfiguration((Configuration) applicationContext);
+		this.configuration = config;
 	}
 
 	@Override
@@ -740,10 +744,6 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		return pipeline;
 	}
 
-	public void setConfiguration(Configuration configuration) {
-		this.configuration = configuration;
-	}
-
 	/**
 	 * Start the adapter. The thread-name will be set to the adapter's name.
 	 * The run method, called by t.start(), will call the startRunning method
@@ -836,7 +836,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		};
 
 		// Since we are catching all exceptions in the thread, the super start will always be called,
-		// not a problem for now but something we should look into in the furture...
+		// not a problem for now but something we should look into in the future...
 		CompletableFuture.runAsync(runnable, taskExecutor) // Start all smart-lifecycles
 				.thenRun(super::start); // Then start the adapter it self
 	}
