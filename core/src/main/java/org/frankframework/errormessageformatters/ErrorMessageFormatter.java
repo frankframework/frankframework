@@ -258,7 +258,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 	 * Get the location, either from a nested PipeRunException if present or from
 	 * the location passed to the ErrorMessageFormatter.
 	 */
-	private static @Nullable HasName getLocation(@Nullable HasName location, Throwable t) {
+	private static @Nullable HasName getLocation(@Nullable HasName location, @Nullable Throwable t) {
 		PipeRunException pre = extractPipeRunException(t);
 		if (pre != null && pre.getPipeInError() != null) {
 			return pre.getPipeInError();
