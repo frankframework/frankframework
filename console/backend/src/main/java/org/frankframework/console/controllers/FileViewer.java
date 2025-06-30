@@ -15,7 +15,9 @@
 */
 package org.frankframework.console.controllers;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
@@ -34,6 +36,7 @@ import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.console.util.ResponseUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.management.gateway.GenericMessage;
 
 @RestController
 public class FileViewer {
@@ -57,8 +60,20 @@ public class FileViewer {
 		builder.addHeader("fileName", file);
 		builder.addHeader("resultType", wantedType);
 
-		Message<InputStream> inputStreamMessage = (Message<InputStream>) frankApiService.sendSyncMessage(builder);
+		var response = frankApiService.sendSyncMessage(builder);
+		Message<InputStream> inputStreamMessage = getInputStreamMessage(response);
 		return ResponseUtils.convertToSpringStreamingResponse(inputStreamMessage);
+	}
+
+	private static Message<InputStream> getInputStreamMessage(Message<?> response) {
+		Message<InputStream> inputStreamMessage;
+		if (response.getPayload() instanceof String payload) {
+			InputStream inputStream = new ByteArrayInputStream(payload.getBytes(StandardCharsets.UTF_8));
+			inputStreamMessage = new GenericMessage<>(inputStream, response.getHeaders());
+		} else {
+			inputStreamMessage = (Message<InputStream>) response;
+		}
+		return inputStreamMessage;
 	}
 
 }
