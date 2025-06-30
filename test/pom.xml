@@ -161,6 +161,32 @@
 			<version>${h2.driver.version}</version>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>artemis-jakarta-client</artifactId>
+			<version>${artemis.driver.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.activemq</groupId>
+			<artifactId>artemis-jakarta-server</artifactId>
+			<version>${artemis.driver.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<!-- Required for Narayana -->
+		<dependency>
+			<groupId>org.jboss.logging</groupId>
+			<artifactId>jboss-logging</artifactId>
+			<version>${jboss-logging.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.github.dasniko</groupId>
+			<artifactId>testcontainers-keycloak</artifactId>
+			<version>3.7.0</version>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -450,6 +476,12 @@
 					<groupId>com.rabbitmq.jms</groupId>
 					<artifactId>rabbitmq-jms</artifactId>
 					<version>${rabbitmq.jms.version}</version>
+					<scope>runtime</scope>
+				</dependency>
+				<dependency>
+					<groupId>org.jboss.logging</groupId>
+					<artifactId>jboss-logging</artifactId>
+					<version>${jboss-logging.version}</version>
 					<scope>runtime</scope>
 				</dependency>
 			</dependencies>

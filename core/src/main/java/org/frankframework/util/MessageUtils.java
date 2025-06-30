@@ -50,6 +50,7 @@ import org.apache.tika.Tika;
 import org.springframework.http.MediaType;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.MimeType;
+import org.springframework.util.StreamUtils;
 import org.xml.sax.SAXException;
 
 import com.ibm.icu.text.CharsetDetector;
@@ -332,9 +333,15 @@ public class MessageUtils {
 		if (!"{".equals(firstChar) && !"[".equals(firstChar)) {
 			return MediaType.TEXT_PLAIN;
 		}
-		try (JsonParser parser = Json.createParser(message.asInputStream())) {
-			parser.next();
-			return MediaType.APPLICATION_JSON;
+		try {
+			InputStream inputStream = message.asInputStream();
+			inputStream.mark(20_000);
+			try (JsonParser parser = Json.createParser(StreamUtils.nonClosing(inputStream))) {
+				parser.next();
+				return MediaType.APPLICATION_JSON;
+			} finally {
+				inputStream.reset();
+			}
 		} catch (JsonParsingException | IOException e) {
 			return MediaType.TEXT_PLAIN;
 		}

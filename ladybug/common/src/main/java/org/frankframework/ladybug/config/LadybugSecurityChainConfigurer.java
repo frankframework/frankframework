@@ -21,12 +21,10 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
-import org.springframework.core.env.Environment;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -34,6 +32,7 @@ import org.springframework.security.config.annotation.web.configurers.CsrfConfig
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
 
@@ -67,11 +66,10 @@ import org.frankframework.util.ClassUtils;
 @EnableWebSecurity // Enables Spring Security (classpath)
 @EnableMethodSecurity(jsr250Enabled = true, prePostEnabled = false) // Enables JSR 250 (JAX-RS) annotations
 @Order(Ordered.HIGHEST_PRECEDENCE) // Higher then the Frank!Console so this `SecurityFilterChain` is used before the Console `SecurityChainConfigurer`.
-public class LadybugSecurityChainConfigurer implements ApplicationContextAware, EnvironmentAware {
+public class LadybugSecurityChainConfigurer implements ApplicationContextAware {
 	private static final Logger APPLICATION_LOG = LogManager.getLogger("APPLICATION");
 
 	private @Setter ApplicationContext applicationContext;
-	private @Setter Environment environment;
 
 	@Bean
 	public SecurityFilterChain createLadybugSecurityChain(HttpSecurity http, IAuthenticator ladybugAuthenticator) throws Exception {
@@ -85,6 +83,11 @@ public class LadybugSecurityChainConfigurer implements ApplicationContextAware, 
 		http.formLogin(FormLoginConfigurer::disable); // Disable the form login filter
 		http.logout(LogoutConfigurer::disable); // Disable the logout filter
 		http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); // Allow same origin iframe request
+
+		// STATELESS prevents session from leaking over multiple servlets.
+		// but OAuth requires cookies...
+		http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
+
 		return ladybugAuthenticator.configureHttpSecurity(http);
 	}
 

@@ -16,6 +16,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
+import org.frankframework.util.SpringUtils;
 
 public abstract class JdbcEnabledPipeTestBase<P extends IPipe> {
 
@@ -31,17 +32,17 @@ public abstract class JdbcEnabledPipeTestBase<P extends IPipe> {
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) throws Exception {
 		this.env = env;
+		adapter = env.createBean(Adapter.class);
 		pipe = createPipe();
 		env.autowire(pipe);
 		pipe.addForward(new PipeForward("success", "exit"));
 		pipe.setName(pipe.getClass().getSimpleName()+" under test");
-		pipeline = env.createBean(PipeLine.class);
+		pipeline = SpringUtils.createBean(adapter, PipeLine.class);
 		pipeline.addPipe(pipe);
 		PipeLineExit exit = new PipeLineExit();
 		exit.setName("exit");
 		exit.setState(ExitState.SUCCESS);
 		pipeline.addPipeLineExit(exit);
-		adapter = env.createBean(Adapter.class);
 		adapter.setName("TestAdapter-for-".concat(pipe.getClass().getSimpleName()));
 		adapter.setPipeLine(pipeline);
 	}

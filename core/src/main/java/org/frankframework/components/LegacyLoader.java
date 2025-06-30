@@ -95,13 +95,15 @@ public class LegacyLoader {
 		return ffModules;
 	}
 
-	private static Manifest convertPomPropertiesToManifest(URL pomProperties) throws IOException {
-		String fullUrl = pomProperties.toExternalForm();
+	protected static Manifest convertPomPropertiesToManifest(URL pomProperties) throws IOException {
+		String fullUrl = Environment.extractPath(pomProperties);
 		int bangSlash = fullUrl.indexOf("!/");
-		if (bangSlash > 0) { // We found a bang-slash, assume it's file
-			String jarFile = fullUrl.substring(fullUrl.indexOf("file:"), bangSlash);
+		if (bangSlash > 0) {
+			String jarFile = fullUrl.substring(0, bangSlash);
 			try {
-				return Environment.getManifest(new URL(jarFile));
+				// We found a bang-slash, assume it's file
+				URL url = new URL("file", null, jarFile);
+				return Environment.getManifest(url);
 			} catch (NoSuchFileException e) {
 				// A bit of a strange situation when you end up here, typically caused by missing permissions.
 				// Log a warning but no stacktrace, this is logged (on debug level) by the caller.
@@ -111,8 +113,8 @@ public class LegacyLoader {
 		} else {
 			int metaInfFolder = fullUrl.indexOf("/META-INF/");
 			if (metaInfFolder > 0) { // We found the meta-inf folder, it could be a shared classpath. Attempt to locate the MANIFEST file.
-				String manifestFile = fullUrl.substring(fullUrl.indexOf("file:"), metaInfFolder +1) + JarFile.MANIFEST_NAME;
-				URL manifestURL = new URL(manifestFile);
+				String manifestFile = fullUrl.substring(0, metaInfFolder +1) + JarFile.MANIFEST_NAME;
+				URL manifestURL = new URL(pomProperties, manifestFile);
 				try (InputStream is = manifestURL.openStream()) { // Throws a FileNotFoundException
 					return new Manifest(is);
 				}
@@ -149,6 +151,11 @@ public class LegacyLoader {
 				}
 			}
 			return false;
+		}
+
+		@Override
+		public String toString() {
+			return "DefaultModule[%s]".formatted(moduleInformation.getArtifactId());
 		}
 	}
 }

@@ -48,15 +48,13 @@ class FrankApiWebSocketBaseTest {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	void compareAndUpdateResponseWithDiff() {
 		String payload = "{\"item\": \"value\", \"status\": 1}";
 		String payload2 = "{\"item\": \"value\", \"status\": 2}";
 		String expectedResult = "{\"status\":2}";
 
-		Mockito.when(outboundGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
-			Message<String> msg = i.getArgument(0);
-			return msg;
-		});
+		Mockito.when(outboundGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> i.getArgument(0));
 
 		RequestMessageBuilder builder;
 
@@ -73,13 +71,11 @@ class FrankApiWebSocketBaseTest {
 	}
 
 	@Test
+	@SuppressWarnings("unchecked")
 	void compareAndUpdateResponseWithoutDiff() {
 		String payload = "{\"item\": \"value\", \"status\": 1}";
 
-		Mockito.when(outboundGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> {
-			Message<String> msg = i.getArgument(0);
-			return msg;
-		});
+		Mockito.when(outboundGateway.sendSyncMessage(Mockito.any(Message.class))).thenAnswer(i -> i.getArgument(0));
 
 		RequestMessageBuilder builder;
 

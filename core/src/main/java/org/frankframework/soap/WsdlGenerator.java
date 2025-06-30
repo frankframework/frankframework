@@ -534,15 +534,15 @@ public class WsdlGenerator {
 	protected String getSoapAction(IListener<?> listener) {
 		AppConstants appConstants = AppConstants.getInstance(pipeLine.getAdapter().getConfiguration().getClassLoader());
 		String sa = appConstants.getProperty("wsdl." + getName() + "." + listener.getName() + ".soapAction");
-		if (sa != null) {
+		if (StringUtils.isNotBlank(sa)) {
 			return sa;
 		}
 		sa = appConstants.getProperty("wsdl." + getName() + ".soapAction");
-		if (sa != null) {
+		if (StringUtils.isNotBlank(sa)) {
 			return sa;
 		}
 		sa = appConstants.getProperty("wsdl.soapAction");
-		if (sa != null) {
+		if (StringUtils.isNotBlank(sa)) {
 			return sa;
 		}
 		if (extensionContext != null && extensionContext.hasSOAPActionName()) {

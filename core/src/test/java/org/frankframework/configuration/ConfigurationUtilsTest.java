@@ -67,6 +67,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		AppConstants.removeInstance();
 	}
 
+	@SuppressWarnings("deprecation")
 	private void mockDatabase() throws Exception {
 		// Mock a FixedQuerySender
 		FixedQuerySender fq = mock(FixedQuerySender.class);
@@ -75,7 +76,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		Connection conn = mock(Connection.class);
 		doReturn(conn).when(fq).getConnection();
 
-		//Override prepareStatement(String query) and return a mock to validate the parameters
+		// Override prepareStatement(String query) and return a mock to validate the parameters
 		doAnswer(new Answer<PreparedStatementMock>() {
 			@Override
 			public PreparedStatementMock answer(InvocationOnMock invocation) throws Throwable {
@@ -85,7 +86,7 @@ public class ConfigurationUtilsTest extends Mockito {
 			}
 		}).when(conn).prepareStatement(anyString());
 
-		//Mock applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
+		// Mock applicationContext.getAutowireCapableBeanFactory().createBean(beanClass, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 		AutowireCapableBeanFactory beanFactory = mock(AutowireCapableBeanFactory.class);
 		doReturn(beanFactory).when(applicationContext).getAutowireCapableBeanFactory();
 		doReturn(fq).when(beanFactory).createBean(FixedQuerySender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
@@ -198,17 +199,17 @@ public class ConfigurationUtilsTest extends Mockito {
 		assertNotEquals(0, result.size(), "file uploaded to mock database");
 		assertEquals("{ConfigurationName: 001_20191002-1300=loaded, ConfigurationName: 002_20191002-1400=loaded, noBuildInfoZip.jar=no [BuildInfo.properties] present in configuration}",result.toString());
 
-		Map<String, Object> parameters = stmt.getNamedParameters(); //Test the 2nd file, because the 3rd result fails
+		Map<String, Object> parameters = stmt.getNamedParameters(); // Test the 2nd file, because the 3rd result fails
 		assertEquals("ConfigurationName", parameters.get("NAME"), "buildInfo name does not match");
 		assertEquals("002_20191002-1400", parameters.get("VERSION"), "buildInfo version does not match");
 		assertEquals("buildInfoZip2.jar", parameters.get("FILENAME"), "FILENAME does not match");
 
-		//Make sure ACTIVECONFIG, AUTORELOAD and RUSER are passed through properly
+		// Make sure ACTIVECONFIG, AUTORELOAD and RUSER are passed through properly
 		assertEquals("FALSE", parameters.get("ACTIVECONFIG"), "ACTIVECONFIG does not match");
 		assertEquals("FALSE", parameters.get("AUTORELOAD"), "AUTORELOAD does not match");
 		assertEquals("user", parameters.get("RUSER"), "RUSER does not match");
 
-		//This field is pretty obsolete, check if it's been set
+		// This field is pretty obsolete, check if it's been set
 		assertNotNull(parameters.get("FILENAME"), "FILENAME not set");
 	}
 
@@ -224,7 +225,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		applicationContext.mockQuery("SELECT COUNT(*) FROM IBISCONFIG", builder.build());
 		List<String> configs = ConfigurationUtils.retrieveConfigNamesFromDatabase(applicationContext);
 
-		assertThat(configs, IsIterableContainingInOrder.contains("config1", "config2", "config3", "config4", "config5")); //checks order!
+		assertThat(configs, IsIterableContainingInOrder.contains("config1", "config2", "config3", "config4", "config5")); // checks order!
 	}
 
 	@Test
@@ -239,7 +240,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		applicationContext.mockQuery("SELECT COUNT(*) FROM IBISCONFIG", builder.build());
 		Map<String, Class<? extends IConfigurationClassLoader>> configs = ConfigurationUtils.retrieveAllConfigNames(applicationContext, false, true);
 
-		assertThat("keyset was: " + configs.keySet(), configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "configuration1", "configuration4", "configuration2", "configuration3", "configuration5")); //checks order!
+		assertThat("keyset was: " + configs.keySet(), configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "configuration1", "configuration4", "configuration2", "configuration3", "configuration5")); // checks order!
 
 		assertNull(configs.get("IAF_Util"));
 		assertNull(configs.get("TestConfiguration"));
@@ -260,7 +261,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		applicationContext.mockQuery("SELECT COUNT(*) FROM IBISCONFIG", builder.build());
 		Map<String, Class<? extends IConfigurationClassLoader>> configs = ConfigurationUtils.retrieveAllConfigNames(applicationContext, true, true);
 
-		assertThat("keyset was: " + configs.keySet(), configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "ClassLoader", "Config", "configuration1", "configuration4", "configuration2", "configuration3", "configuration5")); //checks order!
+		assertThat("keyset was: " + configs.keySet(), configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "ClassLoader", "Config", "configuration1", "configuration4", "configuration2", "configuration3", "configuration5")); // checks order!
 
 		assertNull(configs.get("IAF_Util"));
 		assertNull(configs.get("TestConfiguration"));
@@ -272,7 +273,7 @@ public class ConfigurationUtilsTest extends Mockito {
 	}
 
 	@Test
-	public void testConfigurationDirectoryAutoLoadInvalidClassName() throws Exception {
+	public void testConfigurationDirectoryAutoLoadInvalidClassName() {
 		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build()) {
 			Class<?> clazz = ConfigurationUtils.getDefaultDirectoryClassLoaderType("not-a-ClassLoader");
 			assertEquals(DirectoryClassLoader.class, clazz);
@@ -283,7 +284,7 @@ public class ConfigurationUtilsTest extends Mockito {
 	}
 
 	@Test
-	public void testConfigurationDirectoryAutoLoadIncompatibleClassType() throws Exception {
+	public void testConfigurationDirectoryAutoLoadIncompatibleClassType() {
 		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build()) {
 			Class<?> clazz = ConfigurationUtils.getDefaultDirectoryClassLoaderType(WebAppClassLoader.class.getSimpleName());
 			assertEquals(DirectoryClassLoader.class, clazz);
@@ -294,14 +295,14 @@ public class ConfigurationUtilsTest extends Mockito {
 	}
 
 	@Test
-	public void testConfigurationDirectoryAutoLoadDefaultClassName() throws Exception {
+	public void testConfigurationDirectoryAutoLoadDefaultClassName() {
 		Class<?> clazz = ConfigurationUtils.getDefaultDirectoryClassLoaderType("DirectoryClassLoader");
 		assertEquals(DirectoryClassLoader.class, clazz);
 	}
 
 	@ParameterizedTest
 	@ValueSource(strings = {"ScanningDirectoryClassLoader", "org.frankframework.configuration.classloaders.ScanningDirectoryClassLoader"}) // Tests both simple and canonical names
-	public void testConfigurationDirectoryAutoLoadScanningDirectoryClassName(String name) throws Exception {
+	public void testConfigurationDirectoryAutoLoadScanningDirectoryClassName(String name) {
 		Class<?> clazz = ConfigurationUtils.getDefaultDirectoryClassLoaderType(name);
 		assertEquals(ScanningDirectoryClassLoader.class, clazz);
 	}

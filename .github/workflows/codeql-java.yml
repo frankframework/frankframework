@@ -110,3 +110,15 @@ jobs:
 
     - name: Perform CodeQL Analysis
       uses: github/codeql-action/analyze@v3
+
+    - name: Save cached directories
+      uses: actions/cache/save@v4
+      if: |
+        always() &&
+        (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release'))
+      with:
+        path: |
+          ~/.m2/repository
+          ~/.sonar/cache
+          console/frontend/src/main/frontend/node_modules
+        key: project-cache-${{ github.run_id }}-${{ github.run_attempt }}

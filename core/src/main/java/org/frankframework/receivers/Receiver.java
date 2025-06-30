@@ -416,7 +416,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * sends a error message to the log and to the messagekeeper of the adapter
 	 */
 	protected void error(@Nonnull String msg, @Nullable Throwable t) {
-		log.error("{}{}", getLogPrefix(), msg, t);
+		log.error(() -> "%s%s".formatted(getLogPrefix(), msg), t);
 		if (adapter != null) {
 			adapter.getMessageKeeper().add("ERROR: " + getLogPrefix() + msg+(t!=null?": "+t.getMessage():""), MessageKeeperLevel.ERROR);
 		}
@@ -689,13 +689,13 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			if (StringUtils.isNotEmpty(hideRegex)) {
 				hideRegexPattern = Pattern.compile(hideRegex);
 
-				if (getErrorStorage() != null && StringUtils.isEmpty(getErrorStorage().getHideRegex())) {
-					getErrorStorage().setHideRegex(getHideRegex());
-					getErrorStorage().setHideMethod(getHideMethod());
+				if (errorStorage != null && StringUtils.isEmpty(errorStorage.getHideRegex())) {
+					errorStorage.setHideRegex(getHideRegex());
+					errorStorage.setHideMethod(getHideMethod());
 				}
-				if (getMessageLog() != null && StringUtils.isEmpty(getMessageLog().getHideRegex())) {
-					getMessageLog().setHideRegex(getHideRegex());
-					getMessageLog().setHideMethod(getHideMethod());
+				if (messageLog != null && StringUtils.isEmpty(messageLog.getHideRegex())) {
+					messageLog.setHideRegex(getHideRegex());
+					messageLog.setHideMethod(getHideMethod());
 				}
 			}
 
@@ -1015,7 +1015,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	}
 
 	/**
-	 * Process the received message with {@link IMessageHandler#processRequest(IListener, RawMessageWrapper, Message, PipeLineSession)}.
+	 * Process the received message with {@link IMessageHandler#processRequest(IPushingListener, MessageWrapper, PipeLineSession)}.
 	 * <br/>
 	 * A messageId is generated that is unique and consists of the name of this listener and a GUID.
 	 * <p>
@@ -1027,7 +1027,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * </p>
 	 */
 	@Override
-	public Message processRequest(IListener<M> origin, @Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Message message, @Nonnull PipeLineSession session) throws ListenerException {
+	public Message processRequest(IPushingListener<M> origin, @Nonnull MessageWrapper<M> messageWrapper, @Nonnull PipeLineSession session) throws ListenerException {
 		Objects.requireNonNull(session, "Session can not be null");
 		try (final CloseableThreadContext.Instance ignored = getLoggingContext(getListener(), session)) {
 			if (origin!=getListener()) {
@@ -1040,10 +1040,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			Instant tsReceived = PipeLineSession.getTsReceived(session);
 			Instant tsSent = PipeLineSession.getTsSent(session);
 			PipeLineSession.updateListenerParameters(session, null, null, tsReceived, tsSent);
-
-			String messageId = rawMessage.getId() != null ? rawMessage.getId() : session.getMessageId();
-			String correlationId = rawMessage.getCorrelationId() != null ? rawMessage.getCorrelationId() : session.getCorrelationId();
-			MessageWrapper<M> messageWrapper = rawMessage instanceof MessageWrapper ? (MessageWrapper<M>) rawMessage : new MessageWrapper<>(rawMessage, message, messageId, correlationId);
 
 			boolean manualRetry = session.get(PipeLineSession.MANUAL_RETRY_KEY, false);
 
@@ -1933,11 +1929,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			}
 		}
 		return errorMessage;
-	}
-
-	@Override
-	public Message formatException(String extraInfo, PipeLineSession session, Message message, Throwable t) {
-		return getAdapter().formatErrorMessage(extraInfo,t,message, session, null);
 	}
 
 	private ListenerException wrapExceptionAsListenerException(Throwable t) {

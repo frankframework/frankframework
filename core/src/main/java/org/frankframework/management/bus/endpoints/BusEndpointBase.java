@@ -26,6 +26,8 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
@@ -36,8 +38,8 @@ import org.frankframework.receivers.Receiver;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.SpringUtils;
 
+@Log4j2
 public class BusEndpointBase implements ApplicationContextAware, InitializingBean {
-	protected Logger log = LogUtil.getLogger(this);
 	private final Logger secLog = LogUtil.getLogger("SEC");
 	private ApplicationContext applicationContext;
 	private IbisManager ibisManager;
@@ -74,7 +76,7 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 	}
 
 	protected void doAfterPropertiesSet() {
-		//Override to initialize bean
+		// Override to initialize bean
 	}
 
 	protected final void log2SecurityLog(String message, String issuedBy) {

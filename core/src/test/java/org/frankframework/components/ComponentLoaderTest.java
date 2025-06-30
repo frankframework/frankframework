@@ -21,8 +21,15 @@ import org.frankframework.util.Environment;
 @Log4j2
 public class ComponentLoaderTest {
 
+	/*
+	 * This test assumes the project is build as a Maven reactor mode.
+	 * Building the required Maven Modules and attaching them to this Module build.
+	 * 
+	 * Some tools build each Module separately, attaching the dependent module's sources to the classpath.
+	 * This will cause the test to fail.
+	 */
 	@Test
-	@Tag("integration") // This test fails when running just 'mvn test'. Tagged as integration to work around that in the Github Smoketest workflow
+	@Tag("integration") // Tagged as integration to work around that in the Github Smoketest workflow
 	public void locateCommonsModule() {
 		List<Module> modules = ComponentLoader.findAllModules();
 		if (isTestRunningWithIntelliJ()) {
@@ -30,7 +37,7 @@ public class ComponentLoaderTest {
 		}
 		assertFalse(modules.isEmpty(), "no modules found, failing!");
 
-		long foundCoreModule = modules.stream().filter(module -> {
+		long foundModules = modules.stream().filter(module -> {
 			try {
 				ModuleInformation info = module.getModuleInformation();
 				log.debug("found module: {}", info);
@@ -41,12 +48,21 @@ public class ComponentLoaderTest {
 			}
 		}).count();
 
-		assertEquals(1L, foundCoreModule);
+		assertEquals(1L, foundModules, "did not find commons module but found: " + modules);
 	}
 
 	@Test
 	public void testIfWeCanReadManifest() throws IOException {
 		URL jarFileWithManifest = ComponentLoaderTest.class.getResource("/ClassLoader/zip/myConfig.zip");
+		assertNotNull(jarFileWithManifest);
+		Manifest manifest = Environment.getManifest(jarFileWithManifest);
+		ModuleInformation info = new ModuleInformation(manifest);
+		assertEquals("myConfig", info.getTitle());
+	}
+
+	@Test
+	public void testIfWeCanReadManifestWithSpace() throws IOException {
+		URL jarFileWithManifest = ComponentLoaderTest.class.getResource("/ClassLoader/zip/my Config.jar");
 		assertNotNull(jarFileWithManifest);
 		Manifest manifest = Environment.getManifest(jarFileWithManifest);
 		ModuleInformation info = new ModuleInformation(manifest);

@@ -57,6 +57,7 @@ import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.util.RunState;
+import org.frankframework.util.SpringUtils;
 
 @Log4j2
 @Tag("slow")
@@ -106,7 +107,7 @@ public class TestReceiverOnError {
 			return invocation.callRealMethod();
 		}).when(adapter).processMessageWithExceptions(anyString(), any(Message.class), any(PipeLineSession.class));
 
-		PipeLine pl = spy(configuration.createBean(PipeLine.class));
+		PipeLine pl = spy(SpringUtils.createBean(adapter, PipeLine.class));
 		doAnswer(p -> {
 			PipeLineResult plr = new PipeLineResult();
 			plr.setState(ExitState.SUCCESS);

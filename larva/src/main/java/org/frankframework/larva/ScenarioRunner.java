@@ -16,7 +16,6 @@
 package org.frankframework.larva;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -40,18 +39,17 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.larva.actions.LarvaActionFactory;
 import org.frankframework.larva.actions.LarvaActionUtils;
-import org.frankframework.larva.actions.LarvaApplicationContext;
 import org.frankframework.larva.actions.LarvaScenarioAction;
+import org.frankframework.larva.actions.LarvaScenarioContext;
 import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.StringResolver;
 import org.frankframework.util.StringUtil;
 
 @Log4j2
 public class ScenarioRunner {
 
-	private static final AtomicLong correlationIdSuffixCounter = new AtomicLong(1);
+	private static final AtomicLong correlationIdSuffixCounter = new AtomicLong(1L);
 	private static final String TESTTOOL_CORRELATIONID = "Test Tool correlation id";
 	public final List<String> parallelBlacklistDirs;
 
@@ -60,7 +58,6 @@ public class ScenarioRunner {
 	private final AppConstants appConstants;
 	private final TestRunStatus testRunStatus;
 	private final int waitBeforeCleanUp;
-	private final LarvaLogLevel logLevel;
 	private @Setter boolean multipleThreads;
 	private final int threads;
 
@@ -74,7 +71,6 @@ public class ScenarioRunner {
 		this.testExecutionObserver = testExecutionObserver;
 		this.testRunStatus = testRunStatus;
 
-		this.logLevel = larvaConfig.getLogLevel();
 		this.waitBeforeCleanUp = larvaConfig.getWaitBeforeCleanup();
 		this.multipleThreads = larvaConfig.isMultiThreaded();
 		this.appConstants = AppConstants.getInstance();
@@ -177,27 +173,27 @@ public class ScenarioRunner {
 		testExecutionObserver.startScenario(testRunStatus, scenario);
 		try (CloseableThreadContext.Instance ignored = CloseableThreadContext.put("scenario", scenario.getName());
 			// This is far from optimal, but without refactoring the whole LarvaTool, this is the quick and dirty way to do it
-			LarvaApplicationContext larvaContext = new LarvaApplicationContext(this.applicationContext, scenarioDirectory)
+			LarvaScenarioContext scenarioContext = new LarvaScenarioContext(this.applicationContext, scenarioDirectory)
 		) {
 			log.debug("Open actions");
 
 			LarvaActionFactory actionFactory = new LarvaActionFactory(larvaTool, testExecutionObserver);
 
 			// increment suffix for each scenario
-			String correlationId = TESTTOOL_CORRELATIONID + "(" + correlationIdSuffixCounter.getAndIncrement() + ")";
-			Map<String, LarvaScenarioAction> larvaActions = actionFactory.createLarvaActions(scenario, larvaContext, correlationId);
-			if (larvaActions == null || larvaActions.isEmpty()) {
+			String correlationId = generateCorrelationId();
+			Map<String, LarvaScenarioAction> larvaActions = actionFactory.createLarvaActions(scenario, scenarioContext, correlationId);
+			if (larvaActions.isEmpty()) {
 				testRunStatus.scenarioFailed(scenario);
 				testExecutionObserver.finishScenario(testRunStatus, scenario, LarvaTool.RESULT_ERROR, "Could not create LarvaActions");
 				return LarvaTool.RESULT_ERROR;
 			}
-			larvaContext.configure();
-			larvaContext.start();
+			scenarioContext.configure();
+			scenarioContext.start();
 
 			// Start the scenario
 			// TODO: The buffering is now not threadsafe yet.
 			log.debug("Get steps from property file");
-			List<String> stepList = getSteps(scenario);
+			List<Step> stepList = getSteps(scenario);
 			if (stepList.isEmpty()) {
 				testRunStatus.scenarioFailed(scenario);
 				testExecutionObserver.finishScenario(testRunStatus, scenario, LarvaTool.RESULT_ERROR, "No steps found");
@@ -206,16 +202,16 @@ public class ScenarioRunner {
 			log.debug("Execute steps");
 			boolean allStepsPassed = true;
 			boolean autoSaved = false;
-			Iterator<String> steps = stepList.iterator();
+			Iterator<Step> steps = stepList.iterator();
 			while (allStepsPassed && steps.hasNext()) {
-				String step = steps.next();
+				Step step = steps.next();
 				testExecutionObserver.startStep(testRunStatus, scenario, step);
 
 				long stepStart = System.currentTimeMillis();
 				int stepResult = executeStep(scenario, step, larvaActions, correlationId);
 				long stepEnd = System.currentTimeMillis();
 
-				testExecutionObserver.finishStep(testRunStatus, scenario, step, stepResult, buildStepFinishedMessage(scenario, step, stepResult, (stepEnd - stepStart)));
+				testExecutionObserver.finishStep(testRunStatus, scenario, step, stepResult, buildStepFinishedMessage(step, stepResult, (stepEnd - stepStart)));
 				if (stepResult == LarvaTool.RESULT_ERROR) {
 					allStepsPassed = false;
 				} else if (stepResult == LarvaTool.RESULT_AUTOSAVED) {
@@ -232,18 +228,11 @@ public class ScenarioRunner {
 					scenarioResult = LarvaTool.RESULT_OK;
 				}
 			}
-			log.debug("Wait [{}]ms before clean up", waitBeforeCleanUp);
-			try {
-				Thread.sleep(waitBeforeCleanUp);
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-			}
+			doWaitBeforeCleanup();
 			log.debug("Close actions");
-			boolean remainingMessagesFound = actionFactory.closeLarvaActions(larvaActions);
+			boolean remainingMessagesFound = actionFactory.closeLarvaActions(scenario, larvaActions);
 			if (remainingMessagesFound) {
-				if (logLevel.shouldLog(LarvaLogLevel.STEP_PASSED_FAILED)) {
-					testExecutionObserver.finishStep(testRunStatus, scenario, scenario.getName() + " - Remaining messages found", LarvaTool.RESULT_ERROR, "Found one or more messages on actions or in database after scenario executed");
-				}
+				testExecutionObserver.finishStep(testRunStatus, scenario, null, LarvaTool.RESULT_ERROR, "Found one or more messages on actions or in database after scenario executed");
 				scenarioResult = LarvaTool.RESULT_ERROR;
 			}
 
@@ -260,9 +249,9 @@ public class ScenarioRunner {
 			return scenarioResult;
 		} catch (Exception e) {
 			log.warn("Error occurred while creating Larva Scenario Actions for scenario [{}]", scenario.getName(), e);
+			scenarioError(scenario, e.getClass().getSimpleName() + ": "+e.getMessage(), e);
 			testRunStatus.scenarioFailed(scenario);
 			testExecutionObserver.finishScenario(testRunStatus, scenario, LarvaTool.RESULT_ERROR, "Error occurred while executing Larva Scenario: " + e.getMessage());
-			larvaTool.errorMessage(e.getClass().getSimpleName() + ": "+e.getMessage(), e);
 			return LarvaTool.RESULT_ERROR;
 		} finally {
 			// Clear caches to keep memory consumption under control
@@ -270,100 +259,86 @@ public class ScenarioRunner {
 		}
 	}
 
-	// Ideally, this should be moved to its own class.
-	private int executeStep(Scenario scenario, String step, Map<String, LarvaScenarioAction> actions, String correlationId) {
+	@Nonnull
+	private static String generateCorrelationId() {
+		return TESTTOOL_CORRELATIONID + "(" + correlationIdSuffixCounter.getAndIncrement() + ")";
+	}
+
+	private void doWaitBeforeCleanup() {
+		log.debug("Wait [{}]ms before clean up", waitBeforeCleanUp);
+		try {
+			Thread.sleep(waitBeforeCleanUp);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+	}
+
+	private int executeStep(Scenario scenario, Step step, Map<String, LarvaScenarioAction> actions, String correlationId) {
 		Properties properties = scenario.getProperties();
-		String fileName = properties.getProperty(step);
-		int i = step.indexOf('.');
+		String fileName = step.getValue();
 		String actionName;
 		Message fileContent;
 
 		// Read the scenario file for this step
 		try {
-			fileContent = readScenarioStepData(scenario, step);
+			fileContent = step.getStepMessage(appConstants);
 		} catch (Exception e) {
-			larvaTool.errorMessage("Error reading data for step " + step + ":" + e.getMessage(), e);
+			scenarioError(scenario, "Error reading data for step " + step + ":" + e.getMessage(), e);
 			return LarvaTool.RESULT_ERROR;
 		}
 
-		actionName = step.substring(i + 1, step.lastIndexOf("."));
-		Object actionFactoryClassname = properties.get(actionName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX);
+		actionName = step.getActionTarget();
 		LarvaScenarioAction scenarioAction = actions.get(actionName);
 		if (scenarioAction == null) {
-			larvaTool.errorMessage("Property '" + actionName + LarvaActionFactory.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
+			scenarioError(scenario, "Property '" + actionName + Scenario.CLASS_NAME_PROPERTY_SUFFIX + "' not found or not valid");
 			return LarvaTool.RESULT_ERROR;
 		}
 
-		if (step.endsWith(".read") || step.endsWith(".readline")) {
-			if ("org.frankframework.larva.XsltProviderListener".equals(actionFactoryClassname)) {
-				Properties scenarioStepProperties = LarvaActionUtils.getSubProperties(properties, step);
-				Map<String, Object> xsltParameters = larvaTool.createParametersMapFromParamProperties(scenarioStepProperties);
-				return executeActionWriteStep(scenario, step, scenarioAction, actionName, fileContent, correlationId, xsltParameters); // XsltProviderListener has .read and .write reversed
-			} else {
-				return executeActionReadStep(scenario, step, scenarioAction, actionName, fileName, fileContent);
-			}
+		boolean actionIsXsltProviderListener = isActionTargetXsltProviderListener(properties, actionName);
+		boolean executeRead = (step.isRead() && !actionIsXsltProviderListener) || (!step.isRead() && actionIsXsltProviderListener); // XsltProviderListener has read/write reversed for some reason
+		if (executeRead) {
+			return executeActionReadStep(scenario, step, scenarioAction, fileName, fileContent);
 		} else {
-			if ("org.frankframework.larva.XsltProviderListener".equals(actionFactoryClassname)) {
-				return executeActionReadStep(scenario, step, scenarioAction, actionName, fileName, fileContent);  // XsltProviderListener has .read and .write reversed
+			// TODO: Perhaps we can use these parameters as a general mechanism to provide parameter values to senders, or populate a PipeLineSession? (see https://github.com/frankframework/frankframework/issues/5967)
+			Map<String, Object> xsltParameters;
+			if (actionIsXsltProviderListener) {
+				xsltParameters = LarvaActionUtils.createParametersMapFromParamProperties(step.getStepParameters());
 			} else {
-				return executeActionWriteStep(scenario, step, scenarioAction, actionName, fileContent, correlationId, null);
+				xsltParameters = null;
 			}
+			return executeActionWriteStep(scenario, step, scenarioAction, fileContent, correlationId, xsltParameters);
 		}
 	}
 
-	@Nonnull
-	private Message readScenarioStepData(Scenario scenario, String step) throws IOException {
-		Properties properties = scenario.getProperties();
-		String fileName = properties.getProperty(step);
-		String stepDataFileAbsolutePath = scenario.getStepDataFile(step);
-		Message fileContent;
-		if (StringUtils.isBlank(fileName)) {
-			throw new LarvaException("No file specified for step '" + step + "'");
-		}
-		if (step.endsWith("readline") || step.endsWith("writeline")) {
-			fileContent = new Message(fileName);
-		} else {
-			if (fileName.endsWith("ignore")) {
-				log.debug("creating dummy expected file for filename [{}]", fileName);
-				fileContent = new Message("ignore");
-			} else {
-				larvaTool.debugMessage("Read file " + fileName);
-				fileContent = LarvaUtil.readFile(stepDataFileAbsolutePath);
-			}
-		}
-		String resolveProperties = properties.getProperty("scenario.resolveProperties", "true");
-		if ("false".equalsIgnoreCase(resolveProperties) || "!true".equalsIgnoreCase(resolveProperties)) {
-			return fileContent;
-		}
-		String fileData = larvaTool.messageToString(fileContent);
-		if (fileData == null) {
-			throw new LarvaException("Failed to resolve properties in input file [" + fileName + "] for step '" + step + "'");
-		}
-		return new Message(StringResolver.substVars(fileData, appConstants), fileContent.copyContext());
+	private static boolean isActionTargetXsltProviderListener(Properties properties, String actionName) {
+		String actionFactoryClassname = properties.getProperty(actionName + Scenario.CLASS_NAME_PROPERTY_SUFFIX);
+		return "org.frankframework.larva.XsltProviderListener".equals(actionFactoryClassname);
 	}
 
-	private int executeActionWriteStep(Scenario scenario, String step, LarvaScenarioAction scenarioAction, String actionName, Message fileContent, String correlationId, Map<String, Object> xsltParameters) {
+	private int executeActionWriteStep(Scenario scenario, Step step, LarvaScenarioAction scenarioAction, Message fileContent, String correlationId, Map<String, Object> xsltParameters) {
+		String actionName = step.getActionTarget();
 		try {
 			scenarioAction.executeWrite(fileContent, correlationId, xsltParameters);
 			testExecutionObserver.stepMessage(scenario, step, "Successfully wrote message to '" + actionName + "':", larvaTool.messageToString(fileContent));
 			log.debug("Successfully wrote message to '{}'", actionName);
 			return LarvaTool.RESULT_OK;
 		} catch(TimeoutException e) {
-			larvaTool.errorMessage("Timeout sending message to '" + actionName + "': " + e.getMessage(), e);
+			scenarioError(scenario, "Timeout sending message to '" + actionName + "': " + e.getMessage(), e);
 		} catch(Exception e) {
-			larvaTool.errorMessage("Could not send message to '" + actionName + "' ("+e.getClass().getSimpleName()+"): " + e.getMessage(), e);
+			scenarioError(scenario, "Could not send message to '" + actionName + "' ("+e.getClass().getSimpleName()+"): " + e.getMessage(), e);
 		}
 		return LarvaTool.RESULT_ERROR;
 	}
 
-	private int executeActionReadStep(Scenario scenario, String step, LarvaScenarioAction scenarioAction, String actionName, String fileName, Message expected) {
+	private int executeActionReadStep(Scenario scenario, Step step, LarvaScenarioAction scenarioAction, String fileName, Message expected) {
+		String actionName = step.getActionTarget();
 		try {
 			Message message = scenarioAction.executeRead(scenario.getProperties()); // cannot close this message because of FrankSender (JSON scenario02)
 			if (message == null) {
 				if (StringUtils.isEmpty(fileName)) {
 					return LarvaTool.RESULT_OK;
 				} else {
-					larvaTool.errorMessage("Could not read from ["+actionName+"] (null returned)");
+					scenarioError(scenario, "Could not read from [" + actionName + "] (null returned)");
 				}
 			} else {
 				if (StringUtils.isEmpty(fileName)) {
@@ -376,22 +351,32 @@ public class ScenarioRunner {
 				}
 			}
 		} catch (Exception e) {
-			larvaTool.errorMessage("Could not read from ["+actionName+"] ("+e.getClass().getSimpleName()+"): " + e.getMessage(), e);
+			scenarioError(scenario, "Could not read from [" + actionName + "] (" + e.getClass().getSimpleName() + "): " + e.getMessage(), e);
 		}
 
 		return LarvaTool.RESULT_ERROR;
 	}
 
-	private List<String> getSteps(Scenario scenario) {
-		List<String> steps = scenario.getSteps(larvaConfig);
+	private void scenarioError(Scenario scenario, String message, Exception e) {
+		scenario.addError(message, e);
+		larvaTool.errorMessage(message, e); // For now, log error with this method too because of the nice big exception stacktrace it prints
+	}
+
+	private void scenarioError(Scenario scenario, String message) {
+		scenario.addError(message);
+		larvaTool.errorMessage(message); // Log error clearly in the flow of events
+	}
+
+	private List<Step> getSteps(Scenario scenario) {
+		List<Step> steps = scenario.getSteps(larvaConfig);
 		larvaTool.debugMessage(steps.size() + " steps found");
 		return steps;
 	}
 
-	private String buildStepFinishedMessage(Scenario scenario, String step, int stepResult, long stepDurationMs) {
-		String stepName = scenario.getStepDisplayName(step);
-		StringBuilder stepResultMessage = new StringBuilder("Step '");
-		stepResultMessage.append(stepName).append("' ");
+	private String buildStepFinishedMessage(Step step, int stepResult, long stepDurationMs) {
+		String stepName = step.getDisplayName();
+		StringBuilder stepResultMessage = new StringBuilder("Step ");
+		stepResultMessage.append(stepName).append(' ');
 		if (stepResult == LarvaTool.RESULT_OK) {
 			stepResultMessage.append("passed");
 		} else if (stepResult == LarvaTool.RESULT_AUTOSAVED) {

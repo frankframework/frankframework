@@ -27,6 +27,8 @@ import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.util.MimeType;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.jdbc.AbstractJdbcQuerySender.QueryType;
 import org.frankframework.jdbc.DirectQuerySender;
@@ -44,6 +46,7 @@ import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.management.bus.message.StringMessage;
 import org.frankframework.util.LogUtil;
 
+@Log4j2
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.JDBC)
 public class ExecuteJdbcQuery extends BusEndpointBase {

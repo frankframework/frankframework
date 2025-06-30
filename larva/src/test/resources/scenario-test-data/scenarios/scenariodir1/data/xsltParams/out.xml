@@ -1,0 +1,23 @@
+<zgwRol>
+    <betrokkeneIdentificatie>
+        <authentiek>J</authentiek>
+        <geboortedatum>1901-01-01</geboortedatum>
+        <geslachtsaanduiding>m</geslachtsaanduiding>
+        <geslachtsnaam>Precies</geslachtsnaam>
+        <idontexist>kiwi</idontexist>
+        <inpBsn>apple</inpBsn>
+        <voorletters>P</voorletters>
+        <voornamen>Pietje</voornamen>
+        <voorvoegselGeslachtsnaam />
+    </betrokkeneIdentificatie>
+    <betrokkeneType>natuurlijk_persoon</betrokkeneType>
+    <kenmerken>
+        <kenmerk>kenmerk1</kenmerk>
+        <bron>larva</bron>
+    </kenmerken>
+    <kenmerken>
+        <kenmerk>kenmerk2</kenmerk>
+        <bron>larva</bron>
+    </kenmerken>
+    <roltoelichting>lalala</roltoelichting>
+</zgwRol>

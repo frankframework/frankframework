@@ -37,6 +37,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.StandardEnvironment;
+import org.springframework.security.web.context.AbstractSecurityWebApplicationInitializer;
 import org.springframework.web.context.WebApplicationContext;
 
 import lombok.Setter;
@@ -67,7 +68,7 @@ public class ConsoleWarInitializer extends SpringBootServletInitializer {
 		@Bean
 		public FilterRegistrationBean<Filter> getFilterRegistrationBean() {
 			FilterRegistrationBean<Filter> bean = new FilterRegistrationBean<>();
-			Filter filter = applicationContext.getBean("springSecurityFilterChain", Filter.class);
+			Filter filter = applicationContext.getBean(AbstractSecurityWebApplicationInitializer.DEFAULT_FILTER_NAME, Filter.class);
 			bean.setFilter(filter);
 			return bean;
 		}
@@ -111,6 +112,9 @@ public class ConsoleWarInitializer extends SpringBootServletInitializer {
 		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
 		application.setEnvironment(environment);
 		application.setSources(set);
+
+		// This will be exposed on the <context-path>/api/openapi/v3 url
+		System.setProperty("springdoc.api-docs.path", "/openapi/v3");
 
 		// When running the console in a traditional WAR environment this needs to be called.
 		SecuritySettings.setupDefaultSecuritySettings(environment);

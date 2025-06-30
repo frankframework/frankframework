@@ -89,7 +89,7 @@ public class MqttClientFactory extends ObjectFactory<MqttClient, Object> {
 	}
 
 	@Override
-	protected void destroyObject(String name, MqttClient object) throws Exception {
+	protected void destroyObject(MqttClient object) throws Exception {
 		try {
 			if (object.isConnected()) {
 				object.disconnect();

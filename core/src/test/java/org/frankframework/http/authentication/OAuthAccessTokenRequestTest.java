@@ -130,7 +130,7 @@ public class OAuthAccessTokenRequestTest {
 	}
 
 	@Test
-	void testRetrieveAccessTokenWithResourceOwnerPasswordGrantWithMissingParamsShouldThrow() throws ConfigurationException {
+	void testRetrieveAccessTokenWithResourceOwnerPasswordGrantWithMissingParamsShouldThrow() {
 		httpSender.setScope("email");
 
 		httpSender.setOauthAuthenticationMethod(AbstractHttpSession.OauthAuthenticationMethod.RESOURCE_OWNER_PASSWORD_CREDENTIALS_QUERY_PARAMETERS);

@@ -16,20 +16,27 @@
 package org.frankframework.util;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.NoSuchFileException;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.jar.JarFile;
+import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
-
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.util.zip.ZipInputStream;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 public class Environment {
 	private static final Logger log = LogManager.getLogger(Environment.class);
@@ -148,16 +155,65 @@ public class Environment {
 
 	@Nonnull
 	public static Manifest getManifest(@Nonnull URL jarFileLocation) throws IOException {
-		try (JarFile file = new JarFile(jarFileLocation.getFile())) {
-			Manifest manifest = file.getManifest();
+		try (JarInputStream jarInputStream = new JarInputStream(jarFileLocation.openStream())) {
+			Manifest manifest = jarInputStream.getManifest();
 			if (manifest == null) {
-				throw new NoSuchFileException("unable to find manifest file");
+				manifest = getManifestFromFile(jarFileLocation);
 			}
 			log.debug("found {} in {}", JarFile.MANIFEST_NAME, jarFileLocation);
 			return manifest;
 		} catch (IOException e) {
 			log.info("unable to read " + JarFile.MANIFEST_NAME, e);
 			throw e;
+		}
+	}
+
+	/**
+	 * Fallback to read the Jar using a File handle.
+	 * When the first entry is not the Manifest file, the {@link ZipInputStream} will return null when calling `getManifest`.
+	 * Ideally the Manifest file is always generated via Maven (or any other build tool) but it could be manipulated in the CI.
+	 * This fallback mechanism works (obviously) only when it's a local file, which it should be regardless.
+	 */
+	@Nonnull
+	private static Manifest getManifestFromFile(@Nonnull URL jarFileLocation) throws IOException {
+		String cleanPath = extractPath(jarFileLocation);
+		try (JarFile jarFile = new JarFile(cleanPath)) {
+			Manifest manifest = jarFile.getManifest();
+			if (manifest == null) {
+				throw new NoSuchFileException("unable to find manifest file");
+			}
+			return manifest;
+		}
+	}
+
+	/**
+	 * Cleanup an URL, removes the protocol and decodes the URL.
+	 */
+	public static String extractPath(final URL url) throws IOException {
+		String urlPath = url.getPath(); // same as getFile but without the Query portion
+
+		// I would be surprised if URL.getPath() ever starts with "jar:" but no harm in checking
+		if (urlPath.startsWith("jar:")) {
+			urlPath = urlPath.substring(4);
+		}
+		// For jar: URLs, the path part starts with "file:"
+		if (urlPath.startsWith("file:")) {
+			urlPath = urlPath.substring(5);
+		}
+
+		if ("vfs".equals(url.getProtocol())) {
+			return urlPath;
+		}
+
+		try {
+			final String cleanPath = new URI(urlPath).getPath();
+			if (new File(cleanPath).exists()) {
+				// if URL-encoded file exists, don't decode it
+				return cleanPath;
+			}
+			return URLDecoder.decode(urlPath, StandardCharsets.UTF_8.name());
+		} catch (URISyntaxException e) {
+			throw new IOException("unable to read path from URL ["+url+"]", e);
 		}
 	}
 }

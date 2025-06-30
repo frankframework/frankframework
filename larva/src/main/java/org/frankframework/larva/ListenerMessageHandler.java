@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2024 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,22 +19,25 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang3.NotImplementedException;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.IListener;
 import org.frankframework.core.IMessageHandler;
+import org.frankframework.core.IPushingListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 
 /**
  * Message handler for JavaListener and WebServiceListener.
- *
- * @author Jaco de Groot
+ * Only used for PushingListeners.
+ * 
  * @author Niels Meijer
  */
 @Log4j2
@@ -42,19 +45,29 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	private final BlockingQueue<ListenerMessage> requestMessages = new ArrayBlockingQueue<>(10);
 	private final BlockingQueue<ListenerMessage> responseMessages = new ArrayBlockingQueue<>(10);
 
-	private long defaultTimeout;
+	private long timeout;
 
 	public ListenerMessageHandler(long defaultTimeout) {
-		this.defaultTimeout = defaultTimeout;
+		this.timeout = defaultTimeout;
 	}
 
 	@Override
-	public Message processRequest(IListener<M> origin, RawMessageWrapper<M> rawMessage, Message message, PipeLineSession session) throws ListenerException {
+	public Message processRequest(IPushingListener<M> origin, MessageWrapper<M> rawMessage, PipeLineSession session) throws ListenerException {
+		return processRequest(rawMessage.getMessage(), session);
+	}
+
+	@Override
+	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, PipeLineSession threadContext, boolean duplicatesAlreadyChecked) throws ListenerException {
+		Message message = origin.extractMessage(rawMessage, threadContext);
+		processRequest(message, threadContext);
+	}
+
+	private Message processRequest(Message message, PipeLineSession session) throws ListenerException {
 		try {
 			ListenerMessage requestMessage = new ListenerMessage(message, session);
 			requestMessages.add(requestMessage);
 
-			ListenerMessage responseMessage = getResponseMessage(defaultTimeout);
+			ListenerMessage responseMessage = getResponseMessage(timeout);
 			Message responseAsMessage = responseMessage.getMessage();
 			if (responseMessage.getContext() != null && responseMessage.getContext() != session) {
 				// Sometimes the response has a different PipeLineSession than the original request. If we don't close it here, we'll leak it.
@@ -67,24 +80,20 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	}
 
 	/** Attempt to retrieve a {@link ListenerMessage}. Returns NULL if none is present */
-	public ListenerMessage getRequestMessage() {
-		try {
-			return getRequestMessage(0);
-		} catch (TimeoutException e) {
-			return null;
-		}
+	public @Nullable ListenerMessage getRequestMessageOrNull() {
+		return requestMessages.poll();
 	}
 
-	public ListenerMessage getRequestMessageWithDefaultTimeout() throws TimeoutException {
-		return getRequestMessage(defaultTimeout);
+	public @Nonnull ListenerMessage getRequestMessageWithDefaultTimeout() throws TimeoutException {
+		return getRequestMessage(timeout);
 	}
 
 	/** Attempt to retrieve a {@link ListenerMessage} with timeout in ms. Returns TimeOutException if non is present */
-	private ListenerMessage getRequestMessage(long timeout) throws TimeoutException {
+	private @Nonnull ListenerMessage getRequestMessage(long timeout) throws TimeoutException {
 		return getMessageFromQueue(requestMessages, timeout, "request");
 	}
 
-	private ListenerMessage getMessageFromQueue(BlockingQueue<ListenerMessage> queue, long timeout, String messageType) throws TimeoutException {
+	private @Nonnull ListenerMessage getMessageFromQueue(BlockingQueue<ListenerMessage> queue, long timeout, String messageType) throws TimeoutException {
 		try {
 			ListenerMessage requestMessage = queue.poll(timeout, TimeUnit.MILLISECONDS);
 			if(requestMessage != null) {
@@ -99,16 +108,12 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	}
 
 	/** Attempt to retrieve a {@link ListenerMessage}. Returns NULL if none is present */
-	public ListenerMessage getResponseMessage() {
-		try {
-			return getResponseMessage(0);
-		} catch (TimeoutException e) {
-			return null;
-		}
+	public @Nullable ListenerMessage getResponseMessageOrNull() {
+		return responseMessages.poll();
 	}
 
 	/** Attempt to retrieve a {@link ListenerMessage} with timeout in ms. Returns TimeOutException if non is present */
-	private ListenerMessage getResponseMessage(long timeout) throws TimeoutException {
+	private @Nonnull ListenerMessage getResponseMessage(long timeout) throws TimeoutException {
 		return getMessageFromQueue(responseMessages, timeout, "response");
 	}
 
@@ -120,8 +125,8 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 		}
 	}
 
-	public void setTimeout(long defaultTimeout) {
-		this.defaultTimeout = defaultTimeout;
+	public void setTimeout(long timeout) {
+		this.timeout = timeout;
 	}
 
 	public void setRequestTimeOut(int timeout) {
@@ -130,19 +135,5 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 
 	public void setResponseTimeOut(int timeout) {
 		setTimeout(timeout);
-	}
-
-	@Override
-	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, PipeLineSession threadContext, boolean duplicatesAlreadyChecked) throws ListenerException {
-		Message message = origin.extractMessage(rawMessage, threadContext);
-		processRequest(origin, rawMessage, message, threadContext);
-	}
-
-
-	@Override
-	public Message formatException(String extraInfo, PipeLineSession arg1, Message arg2, Throwable arg3) {
-		NotImplementedException e = new NotImplementedException();
-		log.error("formatException not implemented", e);
-		return null;
 	}
 }

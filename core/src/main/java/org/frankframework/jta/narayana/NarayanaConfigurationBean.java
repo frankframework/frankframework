@@ -31,6 +31,7 @@ import org.springframework.jndi.JndiTemplate;
 import com.arjuna.ats.arjuna.common.MetaObjectStoreEnvironmentBean;
 import com.arjuna.ats.arjuna.exceptions.ObjectStoreException;
 import com.arjuna.ats.internal.arjuna.objectstore.jdbc.JDBCStore;
+import com.arjuna.ats.internal.arjuna.objectstore.jdbc.accessors.DataSourceJDBCAccess;
 import com.arjuna.common.internal.util.propertyservice.BeanPopulator;
 import com.arjuna.common.util.propertyservice.PropertiesFactory;
 import com.arjuna.common.util.propertyservice.PropertiesFactoryStax;
@@ -40,6 +41,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.JndiContextPrefixFactory;
+import org.frankframework.jdbc.datasource.PoolingDataSourceFactory;
 import org.frankframework.util.AppConstants;
 
 @Log4j2
@@ -87,6 +89,11 @@ public class NarayanaConfigurationBean implements InitializingBean, ApplicationC
 		final MetaObjectStoreEnvironmentBean jdbcStoreEnvironment = BeanPopulator.getDefaultInstance(MetaObjectStoreEnvironmentBean.class);
 		if(JDBCStore.class.getCanonicalName().equals(jdbcStoreEnvironment.getObjectStoreType())) {
 			jdbcStoreEnvironment.setJdbcAccess(getObjectStoreJndiName());
+
+			String tablePrefix = AppConstants.getInstance().getString("transactionmanager.narayana.objectStoreTablePrefix", null);
+			if (StringUtils.isNotEmpty(tablePrefix)) {
+				jdbcStoreEnvironment.setTablePrefix(tablePrefix + "_");
+			}
 		}
 	}
 
@@ -110,7 +117,12 @@ public class NarayanaConfigurationBean implements InitializingBean, ApplicationC
 		try {
 			JndiTemplate locator = new JndiTemplate();
 			DataSource dataSource = locator.lookup(fullJndiName, DataSource.class);
-			log.info("found Narayana ObjectStoreDatasource [{}]", dataSource);
+			boolean isPooled = PoolingDataSourceFactory.isPooledDataSource(dataSource);
+			log.info("found Narayana ObjectStoreDatasource [{}] pooled [{}]", dataSource, isPooled);
+			if (isPooled) {
+				return DataSourceJDBCAccess.class.getCanonicalName() + ";datasourceName=" + fullJndiName;
+			}
+
 			return PoolingDataSourceJDBCAccess.class.getCanonicalName() + ';' + fullJndiName;
 		} catch (NamingException e) {
 			throw new ObjectStoreException("unable to find datasource", e);

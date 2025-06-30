@@ -314,9 +314,9 @@
 			<version>2.0.1</version>
 		</dependency>
 		<dependency>
-			<groupId>org.leadpony.justify</groupId>
-			<artifactId>justify</artifactId>
-			<version>3.1.0</version>
+			<groupId>com.networknt</groupId>
+			<artifactId>json-schema-validator</artifactId>
+			<version>1.5.7</version>
 		</dependency>
 		<dependency>
 			<groupId>xalan</groupId>
@@ -564,7 +564,7 @@
 		<dependency>
 			<groupId>com.fasterxml.woodstox</groupId>
 			<artifactId>woodstox-core</artifactId>
-			<version>7.1.0</version>
+			<version>7.1.1</version>
 		</dependency>
 		<!-- Explicitly add the StAX2-API to ensure this version is used -->
 		<dependency>

@@ -3,6 +3,7 @@ import { AppService, Pipe } from 'src/app/app.service';
 import {
   AuthEntry,
   CertificateList,
+  ExpiringCertificate,
   Link,
   ResourceFactories,
   SapSystem,
@@ -26,6 +27,7 @@ export class SecurityItemsComponent implements OnInit {
   protected certificates: CertificateList[] = [];
   protected xmlComponents: Record<string, string> = {};
   protected resourceFactories: ResourceFactories[] = [];
+  protected expiringCertificates: ExpiringCertificate[] = [];
   protected supportedConnectionOptions: supportedConnectionOptions = {
     protocols: [],
     cyphers: [],
@@ -60,6 +62,7 @@ export class SecurityItemsComponent implements OnInit {
       this.securityRoles = data.securityRoles;
       this.xmlComponents = data.xmlComponents;
       this.supportedConnectionOptions = data.supportedConnectionOptions;
+      this.expiringCertificates = data.expiringCertificates;
     });
 
     this.securityItemsService.getEndpointsWithRoles().subscribe(({ links }) => {

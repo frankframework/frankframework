@@ -67,14 +67,12 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 	private @Getter ApplicationContext applicationContext;
 	private Properties applicationConstants = null;
 	private boolean allowUnsecureOptionsRequest = false;
-	private boolean isTesttoolEcho2Enabled = false;
 
 	@Override
 	public final void setApplicationContext(ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
 		Environment env = applicationContext.getEnvironment();
 		allowUnsecureOptionsRequest = env.getProperty(ALLOW_OPTIONS_REQUESTS_KEY, boolean.class, false);
-		isTesttoolEcho2Enabled = env.getProperty("testtool.echo2.enabled", boolean.class, false);
 	}
 
 	protected final synchronized Properties getEnvironmentProperties() {
@@ -174,6 +172,10 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 			httpSecurityConfigurer.logout(LogoutConfigurer::disable); // Disable the logout filter
 			httpSecurityConfigurer.headers(h -> h.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
 
+			// STATELESS prevents session from leaking over multiple servlets.
+			// Spring Security will never use the cookie to obtain the SecurityContext for webservices.
+			httpSecurityConfigurer.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
 			return configureHttpSecurity(httpSecurityConfigurer);
 		} catch (Exception e) {
 			throw new IllegalStateException("unable to configure Spring Security", e);
@@ -190,12 +192,6 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 		// Endpoints on which the SecurityFilterChain (filter) will match, also for OPTIONS requests!
 		// This does not authenticate the user, but only means the filter will be triggered.
 		http.securityMatcher(securityRequestMatcher);
-
-		// STATELESS prevents session from leaking over multiple servlets.
-		// The Ladybug (echo2) however requires cookie persistence. Hence, it's set to NEVER when ehco2 is enabled
-		http.sessionManagement(management -> management.sessionCreationPolicy(
-			isTesttoolEcho2Enabled ? SessionCreationPolicy.NEVER : SessionCreationPolicy.STATELESS
-		));
 
 		if (!publicEndpoints.isEmpty()) { // Enable anonymous access on public endpoints
 			http.authorizeHttpRequests(requests -> requests.requestMatchers(new URLRequestMatcher(publicEndpoints)).permitAll());

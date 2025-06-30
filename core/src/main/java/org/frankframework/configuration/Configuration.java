@@ -231,7 +231,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 		} catch (ConfigurationException e) {
 			state = RunState.STOPPED;
 			publishEvent(new ConfigurationMessageEvent(this, "aborted starting; " + e.getMessage()));
-			applicationLog.info("Configuration [{}] [{}] was not able to startup", getName(), getVersion());
+			applicationLog.info("Configuration [{}] was not able to startup", this::getNameWithOptionalVersion);
 			throw e;
 		}
 		configured = true;
@@ -243,9 +243,16 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 		} else {
 			msg = "configured in " + (System.currentTimeMillis() - start) + " ms";
 		}
-		secLog.info("Configuration [{}] [{}] {}", getName(), getVersion(), msg);
-		applicationLog.info("Configuration [{}] [{}] {}", getName(), getVersion(), msg);
+		secLog.info("Configuration [{}] {}", getNameWithOptionalVersion(), msg);
+		applicationLog.info("Configuration [{}] {}", getNameWithOptionalVersion(), msg);
 		publishEvent(new ConfigurationMessageEvent(this, msg));
+	}
+
+	private String getNameWithOptionalVersion() {
+		if (StringUtils.isNotEmpty(version)) {
+			return "%s] [%s".formatted(getName(), version);
+		}
+		return getName();
 	}
 
 	@Override
@@ -266,7 +273,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	@Override
 	public void publishEvent(ApplicationEvent event) {
 		if (event instanceof ContextClosedEvent) {
-			applicationLog.info("Configuration [{}] [{}] closed", this::getName, this::getVersion);
+			applicationLog.info("Configuration [{}] closed", this::getNameWithOptionalVersion);
 			publishEvent(new ConfigurationMessageEvent(this, "closed"));
 		}
 
@@ -358,6 +365,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	/**
 	 * Include the referenced Module in this configuration
 	 */
+	@SuppressWarnings("unused")
 	public void addInclude(Include module) {
 		// method exists to trigger FrankDoc.
 	}
@@ -412,7 +420,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	 * @see AbstractJobDef for a description of Cron triggers
 	 * @since 4.0
 	 */
-	@Deprecated // deprecated to force use of Scheduler element
+	@Deprecated // deprecated to force use of the 'Scheduler' element
 	public void addScheduledJob(IJob jobdef) {
 		scheduleManager.addScheduledJob(jobdef);
 	}
@@ -556,6 +564,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	/**
 	 * Set the default {@link IErrorMessageFormatter} for all adapters in this configuration
 	 * that do not have an {@code ErrorMessageFormatter} defined.
+	 *
+	 * @see IErrorMessageFormatter for general information on error message formatters.
 	 */
 	public void setErrorMessageFormatter(IErrorMessageFormatter errorMessageFormatter) {
 		this.errorMessageFormatter = errorMessageFormatter;

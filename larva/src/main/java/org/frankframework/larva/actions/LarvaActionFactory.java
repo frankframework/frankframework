@@ -19,7 +19,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.stream.Collectors;
+
+import jakarta.annotation.Nonnull;
 
 import org.springframework.context.ApplicationContext;
 
@@ -47,7 +48,6 @@ import org.frankframework.util.SpringUtils;
 @Log4j2
 public class LarvaActionFactory {
 
-	public static final String CLASS_NAME_PROPERTY_SUFFIX = ".className";
 	private final int defaultTimeout;
 	private final LarvaTool larvaTool;
 	private final TestExecutionObserver testExecutionObserver;
@@ -58,25 +58,17 @@ public class LarvaActionFactory {
 		this.defaultTimeout = larvaTool.getLarvaConfig().getTimeout();
 	}
 
-	public Map<String, LarvaScenarioAction> createLarvaActions(Scenario scenario, ApplicationContext applicationContext, String correlationId) {
+	public @Nonnull Map<String, LarvaScenarioAction> createLarvaActions(Scenario scenario, ApplicationContext applicationContext, String correlationId) {
 		Map<String, LarvaScenarioAction> larvaActions = new HashMap<>();
 		debugMessage("Get all action names");
 
 		try {
 			Properties properties = scenario.getProperties();
-			Set<String> actionNames = properties.keySet()
-					.stream()
-					.map(String.class::cast)
-					.filter(key -> key.endsWith(CLASS_NAME_PROPERTY_SUFFIX))
-					.map(key -> key.substring(0, key.lastIndexOf(".")))
-					.collect(Collectors.toSet());
+			Set<String> actionNames = scenario.getScenarioActionNames();
 
 			for (String actionName : actionNames) {
 				debugMessage("actionname openaction: " + actionName);
-				String className = properties.getProperty(actionName + CLASS_NAME_PROPERTY_SUFFIX);
-				if ("org.frankframework.jms.JmsListener".equals(className)) {
-					className = "org.frankframework.jms.PullingJmsListener";
-				}
+				String className = scenario.getScenarioActionClassName(actionName);
 
 				IConfigurable configurable = (IConfigurable) SpringUtils.createBean(applicationContext, className);
 				log.debug("created FrankElement [{}]", configurable);
@@ -88,14 +80,15 @@ public class LarvaActionFactory {
 				debugMessage("Opened [" + className + "] '" + actionName + "'");
 			}
 
+			return larvaActions;
 		} catch (Exception e) {
 			log.warn("Error occurred while creating Larva Scenario Actions", e);
-			closeLarvaActions(larvaActions);
-			larvaActions = null;
-			errorMessage(e.getClass().getSimpleName() + ": "+e.getMessage(), e);
-		}
+			closeLarvaActions(scenario, larvaActions);
+			errorMessage(scenario, e.getClass().getSimpleName() + ": "+e.getMessage(), e);
 
-		return larvaActions;
+			// We could throw an exception, but returning an empty map is more convenient for the caller.
+			return Map.of();
+		}
 	}
 
 	private static LarvaScenarioAction create(IConfigurable configurable, Properties actionProperties, int defaultTimeout, String correlationId) {
@@ -110,7 +103,7 @@ public class LarvaActionFactory {
 			larvaAction = new LarvaAction(configurable);
 		}
 
-		larvaAction.invokeSetters(defaultTimeout, actionProperties);
+		larvaAction.invokeSetters(actionProperties);
 		larvaAction.getSession().put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 
 		return larvaAction;
@@ -135,7 +128,7 @@ public class LarvaActionFactory {
 		return actionProperties;
 	}
 
-	public boolean closeLarvaActions(Map<String, LarvaScenarioAction> larvaActions) {
+	public boolean closeLarvaActions(Scenario scenario, Map<String, LarvaScenarioAction> larvaActions) {
 		boolean remainingMessagesFound = false;
 
 		debugMessage("Close autoclosables");
@@ -147,11 +140,11 @@ public class LarvaActionFactory {
 				debugMessage("Found remaining SenderThread");
 				SenderException senderException = senderThread.getSenderException();
 				if (senderException != null) {
-					errorMessage("Found remaining SenderException: " + senderException.getMessage(), senderException);
+					errorMessage(scenario, "Found remaining SenderException: " + senderException.getMessage(), senderException);
 				}
 				TimeoutException timeoutException = senderThread.getTimeoutException();
 				if (timeoutException != null) {
-					errorMessage("Found remaining TimeOutException: " + timeoutException.getMessage(), timeoutException);
+					errorMessage(scenario, "Found remaining TimeOutException: " + timeoutException.getMessage(), timeoutException);
 				}
 				Message message = senderThread.getResponse();
 				if (message != null) {
@@ -160,7 +153,7 @@ public class LarvaActionFactory {
 			}
 			if (larvaScenarioAction instanceof LarvaPushingListenerAction listenerAction && listenerAction.getMessageHandler() != null) {
 				ListenerMessageHandler<?> listenerMessageHandler = listenerAction.getMessageHandler();
-				ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessage();
+				ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessageOrNull();
 				while (listenerMessage != null) {
 					Message message = listenerMessage.getMessage();
 					if (listenerMessage.getContext() != null) {
@@ -168,9 +161,9 @@ public class LarvaActionFactory {
 					}
 					wrongPipelineMessage("Found remaining request message on '" + actionName + "'", message);
 					remainingMessagesFound = true;
-					listenerMessage = listenerMessageHandler.getRequestMessage();
+					listenerMessage = listenerMessageHandler.getRequestMessageOrNull();
 				}
-				listenerMessage = listenerMessageHandler.getResponseMessage();
+				listenerMessage = listenerMessageHandler.getResponseMessageOrNull();
 				while (listenerMessage != null) {
 					Message message = listenerMessage.getMessage();
 					if (listenerMessage.getContext() != null) {
@@ -178,7 +171,7 @@ public class LarvaActionFactory {
 					}
 					wrongPipelineMessage("Found remaining response message on '" + actionName + "'", message);
 					remainingMessagesFound = true;
-					listenerMessage = listenerMessageHandler.getResponseMessage();
+					listenerMessage = listenerMessageHandler.getResponseMessageOrNull();
 				}
 			}
 
@@ -187,7 +180,7 @@ public class LarvaActionFactory {
 				debugMessage("Closed action '" + actionName + "'");
 			} catch(Exception e) {
 				log.error("could not close '" + actionName + "'", e);
-				errorMessage("Could not close '" + actionName + "': " + e.getMessage(), e);
+				errorMessage(scenario, "Could not close '" + actionName + "': " + e.getMessage(), e);
 			}
 		}
 
@@ -203,11 +196,8 @@ public class LarvaActionFactory {
 		larvaTool.debugMessage(message);
 	}
 
-	private void warningMessage(String message) {
-		larvaTool.warningMessage(message);
-	}
-
-	private void errorMessage(String message, Exception e) {
+	private void errorMessage(Scenario scenario, String message, Exception e) {
+		scenario.addError(message, e);
 		larvaTool.errorMessage(message, e);
 	}
 }

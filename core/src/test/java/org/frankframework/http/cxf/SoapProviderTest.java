@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2023 - 2024 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2023 - 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import jakarta.xml.ws.WebServiceContext;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.w3c.dom.Element;
 
@@ -530,5 +531,31 @@ public class SoapProviderTest {
 		SOAPProvider.invoke(request);
 		webServiceContext.getMessageContext().clear();
 		assertNull(SOAPProvider.getSession().get("SOAPAction"));
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+		"text/xml;action=tralala, tralala",
+		"application/soap+xml;charset=UTF-8;action=0310, 0310",
+		"application/soap+xml;charset=UTF-8;action=\"0310\", 0310",
+		"application/soap+xml;charset=UTF-8;action='0310', 0310",
+		"application/soap+xml;charset=UTF-8;action=\"http://www.egem.nl/StUF/sector/zkn/0310\", http://www.egem.nl/StUF/sector/zkn/0310"
+	})
+	public void findAction(String contentType, String action) {
+		assertEquals(action, SOAPProvider.findAction(contentType));
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+		"application/soap+xml;charset=UTF-8;action=\"\"",
+		"application/soap+xml;charset=UTF-8;action=''",
+	})
+	public void emptyAction(String contentType) {
+		assertEquals("", SOAPProvider.findAction(contentType));
+	}
+
+	@Test
+	public void nullAction() {
+		assertNull(SOAPProvider.findAction("application/soap+xml;charset=UTF-8;action"));
 	}
 }

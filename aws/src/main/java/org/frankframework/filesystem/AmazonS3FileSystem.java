@@ -27,9 +27,11 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.io.FilenameUtils;
@@ -453,12 +455,20 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	// rename is implemented via copy & delete
 	@Override
 	public S3FileRef renameFile(S3FileRef source, S3FileRef destination) {
+		return renameFile(source, destination, Map.of());
+	}
+
+	@Override
+	public S3FileRef renameFile(S3FileRef source, S3FileRef destination, Map<String, String> customFileAttributes) {
+		Map<String, String> metadata = new HashMap<>(customFileAttributes);
+		metadata.putAll(source.getUserMetadata());
 		CopyObjectRequest copyObjectRequest = CopyObjectRequest.builder()
 				.sourceBucket(source.getBucketName())
 				.sourceKey(source.getKey())
 				.destinationBucket(destination.getBucketName())
 				.destinationKey(destination.getKey())
 				.storageClass(getStorageClass())
+				.metadata(metadata)
 				.build();
 		s3Client.copyObject(copyObjectRequest);
 
@@ -472,17 +482,24 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 
 	@Override
 	public S3FileRef copyFile(S3FileRef s3Object, String destinationFolder, boolean createFolder) throws FileSystemException {
+		return copyFile(s3Object, destinationFolder, createFolder, Map.of());
+	}
+
+	@Override
+	public S3FileRef copyFile(S3FileRef s3Object, String destinationFolder, boolean createFolder, Map<String, String> customFileAttributes) throws FileSystemException {
 		if (!createFolder && !folderExists(destinationFolder)) {
 			throw new FolderNotFoundException("folder [" + destinationFolder + "] does not exist");
 		}
 		String destinationFile = destinationFolder+FILE_DELIMITER+getName(s3Object);
-
+		Map<String, String> metadata = new HashMap<>(customFileAttributes);
+		metadata.putAll(s3Object.getUserMetadata());
 		CopyObjectRequest copyObjectRequest = CopyObjectRequest.builder()
 				.sourceBucket(s3Object.getBucketName())
 				.sourceKey(s3Object.getKey())
 				.destinationBucket(bucketName)
 				.destinationKey(destinationFile)
 				.storageClass(getStorageClass())
+				.metadata(metadata)
 				.build();
 		CopyObjectResponse copyObjectResponse = s3Client.copyObject(copyObjectRequest);
 		if (copyObjectResponse == null || copyObjectResponse.copyObjectResult().eTag() == null) {
@@ -494,7 +511,12 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	@Override
 	// move is actually implemented via copy and delete
 	public S3FileRef moveFile(S3FileRef f, String destinationFolder, boolean createFolder) {
-		return renameFile(f, toFile(destinationFolder, getName(f)));
+		return moveFile(f, destinationFolder, createFolder, Map.of());
+	}
+
+	@Override
+	public S3FileRef moveFile(S3FileRef f, String destinationFolder, boolean createFolder, Map<String, String> customFileAttributes) {
+		return renameFile(f, toFile(destinationFolder, getName(f)), customFileAttributes);
 	}
 
 	@Override
@@ -553,6 +575,12 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 					.build());
 		}
 		return httpClientBuilder;
+	}
+
+	@Nullable
+	@Override
+	public String getCustomFileAttribute(@Nonnull S3FileRef file, @Nonnull String name) {
+		return Objects.toString(getAdditionalFileProperties(file).get(name), null);
 	}
 
 	@Override

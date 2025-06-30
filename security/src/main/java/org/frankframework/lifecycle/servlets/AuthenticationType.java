@@ -26,7 +26,8 @@ public enum AuthenticationType {
 	YML(YmlFileAuthenticator.class),
 	YAML(YmlFileAuthenticator.class),
 	NONE(NoOpAuthenticator.class),
-	SEALED(SealedAuthenticator.class);
+	SEALED(SealedAuthenticator.class),
+	BEARER_ONLY(BearerOnlyAuthenticator.class);
 
 	/**
 	 * NB. Should be initialized with a Spring AutoWired /Value enabled PostProcessor.

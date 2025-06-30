@@ -259,7 +259,8 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		}
 
 		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_ADAPTER_KEY, getName())) {
-			log.debug("configuring adapter [{}]", name);
+			long startTime = System.currentTimeMillis();
+			log.debug("configuring adapter");
 
 			msgLog = LogUtil.getMsgLogger(this);
 			Configurator.setLevel(msgLog.getName(), msgLogLevel);
@@ -291,6 +292,8 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			if (errorMessageFormatter instanceof IConfigurable configurable) {
 				configurable.configure();
 			}
+
+			log.info("configured adapter in {}", () -> Misc.getDurationInMs(startTime));
 		}
 
 		composedHideRegex = computeCombinedHideRegex();
@@ -707,14 +710,18 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * Receives incoming messages. If an adapter can receive messages through multiple channels, then add a receiver for each channel.
 	 * @ff.mandatory
 	 */
-	@SuppressWarnings("java:S3457") // Cast arguments to String before invocation so that we do not have recursive call to logger when trace-level logging is enabled
+	@SuppressWarnings("java:S3457") // Cast arguments to String before invocation so that we do not have a recursive call to logger when trace-level logging is enabled
 	public void addReceiver(Receiver<?> receiver) {
 		receivers.add(receiver);
 		if (log.isDebugEnabled()) log.debug("Adapter [{}] registered receiver [{}] with properties [{}]", name, receiver.getName(), receiver.toString());
 	}
 
 	/**
-	 * Formatter for errors that can occur in this adapter.
+	 * Set an {@link IErrorMessageFormatter} that will be used to format an error-message when an exception occurs in this adapter.
+	 * If not set, then, when an exception occurs, the adapter will first check the {@link Configuration#setErrorMessageFormatter(IErrorMessageFormatter)}
+	 * to see if a configuration-wide default error message formatter is set and otherwise create a new instance of {@link ErrorMessageFormatter} as default.
+	 *
+	 * @see IErrorMessageFormatter for general information on error message formatters.
 	 */
 	public void setErrorMessageFormatter(IErrorMessageFormatter errorMessageFormatter) {
 		this.errorMessageFormatter = errorMessageFormatter;
@@ -776,7 +783,10 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 						warn("configuration unload in progress or done. Starting the adapter ["+getName()+"] is not possible");
 						return;
 					}
+
+					log.info("starting adapter");
 					log.trace("Start Adapter thread - synchronize (lock) on Adapter runState[{}]", runState);
+
 					synchronized (runState) {
 						RunState currentRunState = getRunState();
 						if (currentRunState!=RunState.STOPPED) {

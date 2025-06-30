@@ -42,11 +42,15 @@ import javax.naming.directory.SearchResult;
 import jakarta.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 import lombok.Lombok;
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.ParameterException;
@@ -156,7 +160,12 @@ import org.frankframework.util.XmlEncodingUtils;
  * @author Gerrit van Brakel
  * @author Jaco de Groot
  */
+@Log4j2
 public class LdapSender extends JndiBase implements ISenderWithParameters {
+	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	private @Getter @Setter ApplicationContext applicationContext;
+
+	private @Getter String name;
 
 	private static final String FILTER = "filterExpression";
 	private static final String ENTRYNAME = "entryName";
@@ -1162,6 +1171,13 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		ldapProviderURL = string;
 	}
 
+	@Override
+	@Deprecated(forRemoval = true, since = "9.2.0")
+	@ConfigurationWarning("JNDI usage is being deprecated, please use [ldapProviderURL] instead")
+	public void setProviderURL(String value) {
+		setLdapProviderURL(value);
+	}
+
 	/**
 	 * Specifies subject to perform operation on.
 	 * @ff.default attribute
@@ -1225,5 +1241,18 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	 */
 	public void setReplyNotFound(boolean b) {
 		replyNotFound = b;
+	}
+
+	@Override
+	@Deprecated(forRemoval = true, since = "9.2.0")
+	@ConfigurationWarning("JNDI usage through a JmsRealm is discouraged!")
+	public void setJmsRealm(String jmsRealmName) {
+		super.setJmsRealm(jmsRealmName);
+	}
+
+	/** name of the sender */
+	@Override
+	public void setName(String name) {
+		this.name=name;
 	}
 }

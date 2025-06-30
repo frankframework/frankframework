@@ -67,6 +67,7 @@ import org.frankframework.util.StringUtil;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
+@SuppressWarnings("SynchronizeOnNonFinalField")
 public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>, IHasProcessState<M>, ReceiverAware<M> {
 
 	public static final String ADDITIONAL_QUERY_FIELDS_KEY = "ADDITIONAL_QUERY_FIELDS";
@@ -146,7 +147,8 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 				throw new LifecycleException(e);
 			}
 		} else {
-			try (Connection c = getConnection()) {
+			//noinspection EmptyTryBlock
+			try (Connection ignored = getConnection()) {
 				//do nothing, eat a connection from the pool to validate connectivity
 			} catch (JdbcException | SQLException e) {
 				throw new LifecycleException(e);
@@ -359,7 +361,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		return Message.asMessage(rawMessage.getRawMessage());
 	}
 
-	protected  <M> void addAdditionalQueryFieldsToSession(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String, Object> context) {
+	protected void addAdditionalQueryFieldsToSession(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String, Object> context) {
 		if (rawMessage.getContext().containsKey(ADDITIONAL_QUERY_FIELDS_KEY)) {
 			//noinspection unchecked
 			context.putAll((Map<String, String>) rawMessage.getContext().get(ADDITIONAL_QUERY_FIELDS_KEY));

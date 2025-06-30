@@ -221,12 +221,16 @@ public class LadybugReportGenerator implements InitializingBean {
 		return testTool.inputpoint(correlationId, null, name, result, extractMessageContext(result));
 	}
 
-	public <T> T showInputValue(String correlationId, String label, T value) {
-		return testTool.inputpoint(correlationId, null, label, value, extractMessageContext(value));
+	public <T> T showInfoValue(String correlationId, String name, T value) {
+		return testTool.infopoint(correlationId, null, name, value, extractMessageContext(value));
 	}
 
-	public <T> T showOutputValue(String correlationId, String label, T value) {
-		return testTool.outputpoint(correlationId, null, label, value, extractMessageContext(value));
+	public <T> T showInputValue(String correlationId, String name, T value) {
+		return testTool.inputpoint(correlationId, null, name, value, extractMessageContext(value));
+	}
+
+	public <T> T showOutputValue(String correlationId, String name, T value) {
+		return testTool.outputpoint(correlationId, null, name, value, extractMessageContext(value));
 	}
 
 	public Message preserveInput(String correlationId, Message input) {

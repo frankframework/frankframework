@@ -15,8 +15,8 @@ import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.PipeRunException;
 import org.frankframework.pipes.CompareIntegerPipe;
+import org.frankframework.pipes.SwitchPipe;
 import org.frankframework.pipes.UnzipPipe;
-import org.frankframework.pipes.XmlSwitch;
 import org.frankframework.pipes.XsltPipe;
 
 public class IbisThrowablePatternConverterTest {
@@ -34,7 +34,7 @@ public class IbisThrowablePatternConverterTest {
 					try {
 						throw new PipeRunException(new UnzipPipe(), "UnzipPipe");
 					} catch (final PipeRunException e) {
-						throw new PipeRunException(new XmlSwitch(), "XmlSwitch",e);
+						throw new PipeRunException(new SwitchPipe(), "XmlSwitch",e);
 					}
 				} catch (final PipeRunException e) {
 					throw new PipeRunException(new XsltPipe(), "XsltPipe",e);

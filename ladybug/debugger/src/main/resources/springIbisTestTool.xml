@@ -4,13 +4,9 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xmlns:context="http://www.springframework.org/schema/context"
 	xmlns:task="http://www.springframework.org/schema/task"
-	xmlns:util="http://www.springframework.org/schema/util"
-	xsi:schemaLocation="
-		http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd
+	xsi:schemaLocation="http://www.springframework.org/schema/beans   http://www.springframework.org/schema/beans/spring-beans.xsd
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
-		http://www.springframework.org/schema/task    http://www.springframework.org/schema/task/spring-task.xsd
-		http://www.springframework.org/schema/util    http://www.springframework.org/schema/util/spring-util.xsd
-	">
+		http://www.springframework.org/schema/task    http://www.springframework.org/schema/task/spring-task.xsd">
 
 	<!-- scan both the original and overridden configuration -->
 	<context:component-scan base-package="org.frankframework.ladybug" />
@@ -84,7 +80,7 @@
 
 
 	<!-- Storage Profiles -->
-	<beans profile="ladybug.file">
+	<beans profile="ladybug-file">
 		<bean name="debugStorage" class="nl.nn.testtool.storage.file.Storage" autowire="byName">
 			<property name="name" value="FileDebugStorage"/>
 			<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
@@ -98,7 +94,7 @@
 		</bean>
 	</beans>
 
-	<beans profile="ladybug.database">
+	<beans profile="ladybug-database">
 		<bean name="dataSourceName" class="java.lang.String">
 			<constructor-arg value="${ladybug.jdbc.datasource:}"/>
 		</bean>
@@ -153,7 +149,7 @@
 	</beans>
 
 	<!-- XML only for the test-tab storage. Configured last so it can overwrite either the File or Database Storage. -->
-	<beans profile="ladybug.xml">
+	<beans profile="ladybug-xml">
 		<bean name="testStorage" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName">
 			<property name="name" value="XmlTestStorage"/>
 			<property name="reportsFolder" value="${ibistesttool.directory}"/><!-- contains the reports, may be stored in Git -->

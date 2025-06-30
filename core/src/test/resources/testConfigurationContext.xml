@@ -28,4 +28,8 @@
 	<bean primary="true" name="meterRegistry" class="org.frankframework.metrics.LocalStatisticsRegistry" autowire="byName" />
 
 	<bean id="ConfigurationMessageListener" class="org.frankframework.testutil.ConfigurationMessageEventListener" />
+
+	<!-- Required for the fake `lookupDestination` in the JmsMessagingSource -->
+	<bean id="jndiContextPrefix" factory-bean="jndiContextPrefixFactory" factory-method="getContextPrefix" />
+	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory" />
 </beans>

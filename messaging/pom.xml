@@ -44,14 +44,14 @@
 		<dependency>
 			<groupId>org.apache.kafka</groupId>
 			<artifactId>kafka-clients</artifactId>
-			<version>3.9.0</version>
+			<version>3.9.1</version>
 			<optional>true</optional>
 		</dependency>
 
 		<dependency>
 			<groupId>com.ibm.mq</groupId>
 			<artifactId>com.ibm.mq.allclient</artifactId>
-			<version>9.4.2.1</version>
+			<version>9.4.3.0</version>
 			<scope>provided</scope>
 			<exclusions>
 				<exclusion>

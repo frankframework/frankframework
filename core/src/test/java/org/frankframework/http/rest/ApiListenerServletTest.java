@@ -99,6 +99,7 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IListener;
 import org.frankframework.core.IMessageHandler;
+import org.frankframework.core.IPushingListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.encryption.KeystoreType;
@@ -108,6 +109,7 @@ import org.frankframework.http.HttpMessageEntity;
 import org.frankframework.http.mime.MultipartEntityBuilder;
 import org.frankframework.http.rest.ApiListener.AuthenticationMethods;
 import org.frankframework.http.rest.ApiListener.HttpMethod;
+import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
@@ -2018,7 +2020,7 @@ public class ApiListenerServletTest {
 
 		SignedJWT signedJWT = new SignedJWT(jwsHeader, builder.build());
 
-		KeyStore keystore = PkiUtil.createKeyStore(TestFileUtils.getTestFileURL("/JWT/jwt_keystore.p12"), "geheim", KeystoreType.PKCS12, "Keys for signing");
+		KeyStore keystore = PkiUtil.createKeyStore(TestFileUtils.getTestFileURL("/JWT/jwt_keystore.p12"), "geheim", KeystoreType.PKCS12);
 		KeyManager[] keymanagers = PkiUtil.createKeyManagers(keystore, "geheim", null);
 		X509KeyManager keyManager = (X509KeyManager)keymanagers[0];
 		PrivateKey privateKey = keyManager.getPrivateKey("1");
@@ -2383,7 +2385,8 @@ public class ApiListenerServletTest {
 		}
 
 		@Override
-		public Message processRequest(IListener<Message> origin, RawMessageWrapper<Message> rawMessage, Message message, PipeLineSession context) throws ListenerException {
+		public Message processRequest(IPushingListener<Message> origin, MessageWrapper<Message> messageWrapper, PipeLineSession context) throws ListenerException {
+			Message message = messageWrapper.getMessage();
 			assertNotNull(message, "input message may not be null");
 
 			handlerInvoked = true;
@@ -2401,13 +2404,6 @@ public class ApiListenerServletTest {
 				return Message.asMessage(responseContent);
 			}
 			return message;
-		}
-
-		@Override
-		public Message formatException(String extraInfo, PipeLineSession session, Message message, Throwable t) {
-			t.printStackTrace();
-
-			return new Message(t.getMessage());
 		}
 	}
 

@@ -1,12 +1,13 @@
 import { Component, inject, Input } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { NgMermaidComponent } from 'src/app/components/ng-mermaid/ng-mermaid.component';
+import { ZoomPanDirective } from '../../../../components/zoom-pan.directive';
 
 @Component({
   selector: 'app-flow-modal',
   templateUrl: './flow-modal.component.html',
   styleUrls: ['./flow-modal.component.scss'],
-  imports: [NgMermaidComponent],
+  imports: [NgMermaidComponent, ZoomPanDirective],
 })
 export class FlowModalComponent {
   @Input() flowName = '';
@@ -15,9 +16,10 @@ export class FlowModalComponent {
   protected showActionButtons = false;
   protected errorActionMessage: null | string = null;
   protected isFirefox: boolean = false;
+  protected flowSvg: SVGSVGElement | null = null;
+  protected zoom = '100%';
 
   private activeModal: NgbActiveModal = inject(NgbActiveModal);
-  private flowSvg: SVGSVGElement | null = null;
 
   close(): void {
     this.activeModal.close();
@@ -25,7 +27,7 @@ export class FlowModalComponent {
 
   mermaidLoaded(flowSvg: SVGSVGElement): void {
     this.flowSvg = flowSvg;
-    this.showActionButtons = true;
+    // this.showActionButtons = true;
   }
 
   downloadAsPng(event: MouseEvent): void {
@@ -70,14 +72,22 @@ export class FlowModalComponent {
 
   openNewTab(): void {
     const newTab = window.open('about:blank');
-    const svg = this.flowSvg?.cloneNode(true) as SVGSVGElement;
 
-    if (newTab && svg) {
+    if (newTab && this.flowSvg) {
+      const svgBox = this.flowSvg.dataset;
+      const width = +(svgBox['contentWidth'] ?? '0');
+      const height = +(svgBox['contentHeight'] ?? '0');
+      const svg = this.cloneSvg(this.flowSvg, width, height);
+
       setTimeout(() => {
         newTab.document.body.innerHTML = svg.outerHTML;
         newTab.document.title = `${this.flowName} Flow`;
       }, 50);
     }
+  }
+
+  updateZoom(scale: number): void {
+    this.zoom = `${scale.toFixed(0)}%`;
   }
 
   private canvasToBlob(canvas: HTMLCanvasElement, type?: string, quality?: number): Promise<Blob> {
@@ -95,10 +105,10 @@ export class FlowModalComponent {
     });
   }
 
-  private svgToBase64(svg: SVGSVGElement, width?: number, height?: number): string {
-    const svgClone = svg.cloneNode(true) as SVGSVGElement;
-    if (width) svgClone.setAttribute('height', `${height}px`);
-    if (height) svgClone.setAttribute('width', `${width}px`);
+  private svgToBase64(svg: SVGSVGElement, width: number, height: number): string {
+    const svgClone = this.cloneSvg(svg, width, height);
+    svgClone.setAttribute('height', `${window.innerWidth}px`);
+    svgClone.setAttribute('width', `${window.innerHeight}px`);
     const svgString = svgClone.outerHTML.replaceAll('<br>', '<br/>');
     return btoa(svgString);
   }
@@ -112,9 +122,9 @@ export class FlowModalComponent {
         throw new Error('Mermaid SVG not found');
       }
 
-      const svgBox = this.flowSvg.viewBox.baseVal;
-      canvas.width = svgBox.width;
-      canvas.height = svgBox.height;
+      const svgBox = this.flowSvg.dataset;
+      canvas.width = +(svgBox['contentWidth'] ?? '0');
+      canvas.height = +(svgBox['contentHeight'] ?? '0');
 
       const context = canvas.getContext('2d');
       if (!context) {
@@ -151,5 +161,11 @@ export class FlowModalComponent {
       image.onerror = (event): void => reject(event);
       image.src = `data:image/svg+xml;base64,${base64Svg}`;
     });
+  }
+
+  private cloneSvg(svg: SVGSVGElement, width: number, height: number): SVGSVGElement {
+    const svgClone = svg.cloneNode(true) as SVGSVGElement;
+    svgClone.setAttribute('viewBox', `0 0 ${width} ${height}`);
+    return svgClone;
   }
 }

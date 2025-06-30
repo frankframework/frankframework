@@ -32,7 +32,7 @@
 	</bean>
 
 	<!-- Profiles -->
-	<beans profile="ladybug.file">
+	<beans profile="ladybug-file">
 		<bean name="debugStorage" class="nl.nn.testtool.storage.file.Storage" autowire="byName">
 			<property name="name" value="Debug"/>
 			<property name="reportsFilename" value="../${ladybug.directory:ladybug}/file-storage/ladybug.tts"/>
@@ -45,7 +45,7 @@
 		</bean>
 	</beans>
 
-	<beans profile="ladybug.database">
+	<beans profile="ladybug-database">
 		<bean name="debugStorage" class="nl.nn.testtool.storage.database.DatabaseLogStorage" autowire="byName"
 			depends-on="ladybugDatabaseChangelog"
 			>

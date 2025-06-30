@@ -4,7 +4,7 @@ import { Observable } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
 
-type StatisticsKeeper = {
+export type StatisticsKeeper = {
   name: string;
   count: number;
   min: number | null;

@@ -17,6 +17,7 @@ import org.frankframework.core.PipeLine;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.RunState;
+import org.frankframework.util.SpringUtils;
 
 @Log4j2
 public class TestConfigurableLifeCycle {
@@ -29,7 +30,7 @@ public class TestConfigurableLifeCycle {
 		configuration = new TestConfiguration();
 		adapter = configuration.createBean();
 		adapter.setName("testAdapter");
-		PipeLine pipeline = configuration.createBean();
+		PipeLine pipeline = SpringUtils.createBean(adapter);
 		EchoPipe pipe = configuration.createBean();
 		pipe.setName("echo");
 		pipeline.addPipe(pipe);
