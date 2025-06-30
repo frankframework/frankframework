@@ -56,8 +56,6 @@ import lombok.Setter;
  */
 public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 
-	private static final String DEFAULT_ROLE_PREFIX = "ROLE_";
-
 	@Setter
 	private String issuerUri;
 

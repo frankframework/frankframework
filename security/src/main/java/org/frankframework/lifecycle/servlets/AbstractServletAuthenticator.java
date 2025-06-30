@@ -59,6 +59,7 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 	public static final String ALLOW_OPTIONS_REQUESTS_KEY = "application.security.http.allowUnsecureOptionsRequests";
 
 	private static final String HTTP_SECURITY_BEAN_NAME = "org.springframework.security.config.annotation.web.configuration.HttpSecurityConfiguration.httpSecurity";
+	protected static final String DEFAULT_ROLE_PREFIX = "ROLE_";
 	protected final Logger log = LogManager.getLogger(this);
 
 	private final Set<String> publicEndpoints = new HashSet<>();
