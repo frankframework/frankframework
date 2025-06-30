@@ -106,7 +106,9 @@ public class LarvaActionUtils {
 				try {
 					Parameter parameter = new Parameter();
 					parameter.setName(name);
-					parameter.setType(EnumUtils.parse(ParameterType.class, type));
+					if (type != null) {
+						parameter.setType(EnumUtils.parse(ParameterType.class, type));
+					}
 					if (value != null) {
 						if (value instanceof String string) {
 							parameter.setValue(string);
