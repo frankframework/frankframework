@@ -422,7 +422,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 
 	@Override
 	public final void setApplicationContext(@Nonnull ApplicationContext context) {
-		if (!( context instanceof Adapter adapter)) {
+		if (!(context instanceof Adapter adapter)) {
 			throw new IllegalArgumentException("ApplicationContext must always be of type Adapter");
 		}
 

@@ -12,27 +12,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.mockito.Answers;
-import org.mockito.Mockito;
-import org.springframework.core.task.SyncTaskExecutor;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
-
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
-import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineExit;
@@ -52,6 +37,18 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.RunState;
 import org.frankframework.util.SpringUtils;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.mockito.Mockito;
+import org.springframework.core.task.SyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
 
 public class OpenApiTestBase extends Mockito {
 
@@ -231,7 +228,7 @@ public class OpenApiTestBase extends Mockito {
 
 		protected AdapterBuilder setOutputValidator(String xsdSchema, String root) {
 			String ref = xsdSchema.substring(0, xsdSchema.indexOf(".")) + "-" + root;
-			outputValidator = new Json2XmlValidator();
+			outputValidator = SpringUtils.createBean(adapter);
 			outputValidator.setName(ref);
 
 			String xsd = "/OpenApi/" + xsdSchema;
@@ -281,11 +278,12 @@ public class OpenApiTestBase extends Mockito {
 		 * @param start automatically start the adapter upon creation
 		 */
 		public Adapter build(boolean start) throws ConfigurationException {
-			PipeLine pipeline = SpringUtils.createBean(adapter, PipeLine.class);
+			PipeLine pipeline = SpringUtils.createBean(adapter);
 
 			Receiver receiver = SpringUtils.createBean(adapter);
 			receiver.setName("receiver");
 			receiver.setListener(listener);
+			receiver.setApplicationContext(adapter); // Required because for some reason Mockito spied classes, don't propagate setters properly.
 
 			pipeline.setInputValidator(inputValidator);
 			pipeline.setOutputValidator(outputValidator);
@@ -295,7 +293,7 @@ public class OpenApiTestBase extends Mockito {
 
 				pipeline.addPipeLineExit(exit);
 			}
-			IPipe pipe = new EchoPipe();
+			EchoPipe pipe = SpringUtils.createBean(adapter);
 			pipe.setName("echo");
 			pipeline.addPipe(pipe);
 
