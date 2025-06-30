@@ -50,7 +50,7 @@ import org.frankframework.util.LogUtil;
  * @author  Gerrit van Brakel
  * @since   4.12
  */
-public abstract class PushingListenerAdapter implements IPushingListener<Message>, ServiceClient {
+public class PushingListenerAdapter implements IPushingListener<Message>, ServiceClient {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private @Getter String name;
