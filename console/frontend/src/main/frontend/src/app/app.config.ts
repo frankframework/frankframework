@@ -16,6 +16,7 @@ export const appConfig: ApplicationConfig = {
       withRouterConfig({
         paramsInheritanceStrategy: 'always',
       }),
+      // withDebugTracing(),
     ),
     provideHttpClient(withInterceptorsFromDi()),
     httpInterceptorProviders,
