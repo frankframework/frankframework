@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.Timer;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
+import jakarta.annotation.Nonnull;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.Destination;
 import jakarta.jms.ExceptionListener;
@@ -251,7 +252,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 
 	@Override
-	public void onMessage(Message message, Session session)	throws JMSException {
+	public void onMessage(Message message, @Nonnull Session session)	throws JMSException {
 		TransactionStatus txStatus=null;
 
 		final long onMessageStart= System.currentTimeMillis();

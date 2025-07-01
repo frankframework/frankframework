@@ -53,6 +53,7 @@ import org.frankframework.receivers.Receiver;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
 import org.frankframework.util.RunState;
+import org.frankframework.util.SpringUtils;
 
 @Tag("slow")
 @Log4j2
@@ -112,7 +113,7 @@ public class PushingJmsListenerTest {
 		Adapter adapter = spy(configuration.createBean(Adapter.class));
 		adapter.setName(adapterName);
 
-		PipeLine pl = spy(configuration.createBean(PipeLine.class));
+		PipeLine pl = spy(SpringUtils.createBean(adapter, PipeLine.class));
 		doAnswer(p -> {
 			PipeLineResult plr = new PipeLineResult();
 			plr.setState(exitState);

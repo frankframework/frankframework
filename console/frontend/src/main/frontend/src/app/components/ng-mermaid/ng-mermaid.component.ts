@@ -9,7 +9,10 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-import { Dimensions, getFactoryDimensions, initMermaid2Svg, mermaid2svg } from '@frankframework/frank-config-layout';
+// import { Dimensions, getFactoryDimensions, initMermaid2Svg, mermaid2svg } from '@frankframework/frank-config-layout';
+import { v4 as uuidv4 } from 'uuid';
+// @ts-expect-error mermaid does not have types
+import mermaid, { RenderResult } from 'mermaid/dist/mermaid.esm.mjs';
 
 @Component({
   selector: 'ng-mermaid',
@@ -27,7 +30,7 @@ import { Dimensions, getFactoryDimensions, initMermaid2Svg, mermaid2svg } from '
   imports: [],
 })
 export class NgMermaidComponent implements OnInit, OnChanges {
-  @Input() dimensions: Dimensions = getFactoryDimensions();
+  // @Input() dimensions: Dimensions = getFactoryDimensions();
   @Input() flowName: string = '';
   @Input() nmModel: string = '';
   @Input() nmRefreshInterval?: number;
@@ -42,7 +45,12 @@ export class NgMermaidComponent implements OnInit, OnChanges {
   private readonly rootElement = this.rootElementReference.nativeElement;
 
   ngOnInit(): void {
-    initMermaid2Svg(this.dimensions);
+    // initMermaid2Svg(this.dimensions);
+    mermaid.initialize({
+      startOnLoad: false,
+      maxTextSize: 70 * 1000,
+      maxEdges: 600,
+    });
     this.rootElement.textContent = 'Waiting for mermaid model...';
     this.render();
     this.initialized = true;
@@ -71,16 +79,22 @@ export class NgMermaidComponent implements OnInit, OnChanges {
     this.timeout = window.setTimeout(
       async () => {
         try {
-          this.rootElement.innerHTML = await mermaid2svg(this.nmModel!);
+          // this.rootElement.innerHTML = await mermaid2svg(this.nmModel!);
+          const uid = `m${uuidv4()}`;
+          const { svg, bindFunctions } = await mermaid.render(uid, this.nmModel);
+          this.rootElement.innerHTML = svg;
 
           const mermaidSvg = this.rootElement.firstChild as SVGSVGElement;
-          const viewBoxWidth = mermaidSvg.getAttribute('width');
-          const viewBoxHeight = mermaidSvg.getAttribute('height');
+          // const viewBoxWidth = mermaidSvg.getAttribute('width');
+          // const viewBoxHeight = mermaidSvg.getAttribute('height');
           mermaidSvg.setAttribute('width', '100%');
           mermaidSvg.setAttribute('height', '100%');
-          mermaidSvg.setAttribute('viewBox', `0 0 ${viewBoxWidth} ${viewBoxHeight}`);
-          mermaidSvg.dataset['contentWidth'] = viewBoxWidth ?? '0';
-          mermaidSvg.dataset['contentHeight'] = viewBoxHeight ?? '0';
+          // mermaidSvg.setAttribute('viewBox', `0 0 ${viewBoxWidth} ${viewBoxHeight}`);
+          // mermaidSvg.dataset['contentWidth'] = viewBoxWidth ?? '0';
+          // mermaidSvg.dataset['contentHeight'] = viewBoxHeight ?? '0';
+
+          mermaidSvg.setAttribute('style', 'max-width: 100%;');
+          if (bindFunctions) bindFunctions(mermaidSvg);
 
           this.firstRender = false;
           this.nmInitCallback.emit(mermaidSvg);

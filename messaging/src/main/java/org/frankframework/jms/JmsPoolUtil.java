@@ -60,7 +60,7 @@ public class JmsPoolUtil {
 				return ClassUtils.getDeclaredFieldValue(qcf, ConnectionFactoryProxy.class, "xaConnectionFactory");
 			}
 			return ClassUtils.invokeGetter(qcf, "getManagedConnectionFactory", true);
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			log.warn("could not determine managed connection factory", e);
 			return null;
 		}

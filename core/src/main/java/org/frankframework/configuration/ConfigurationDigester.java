@@ -140,13 +140,13 @@ public class ConfigurationDigester implements ApplicationContextAware {
 
 			Resource digesterRulesResource = Resource.getResource(configuration, getDigesterRuleFile());
 			if (digesterRulesResource == null) {
-				throw new ConfigurationException("Unable to load Digester rule file");
+				throw new ConfigurationException("unable to load Digester rule file");
 			}
 			loadDigesterRules(digester, digesterRulesResource);
 
 			return digester;
 		} catch (IOException | SAXException e) {
-			throw new ConfigurationException("unable to create configuration parser", e);
+			throw new ConfigurationException("unable to create digester with digester-rules ["+getDigesterRuleFile()+"] ", e);
 		}
 	}
 
@@ -178,17 +178,17 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			parseAndResolveEntitiesAndProperties(digester, configuration, configurationResource, appConstants);
 
 			configLogger.info(configuration.getLoadedConfiguration());
-		} catch (Throwable t) {
-			// wrap exception to be sure it gets rendered via the IbisException-renderer
-			String currentElementName = digester.getCurrentElementName();
+		} catch (IOException | TransformerConfigurationException e) {
+			throw new ConfigurationException("error loading configuration", e);
+		} catch (SAXException e) {
 			Locator locator = digester.getDocumentLocator();
-			String location = locator!=null ? " systemId ["+locator.getSystemId()+"] line ["+locator.getLineNumber()+"] column ["+locator.getColumnNumber()+"]":"";
-			throw new ConfigurationException("error during unmarshalling configuration from file [" + configurationResource + "] "+location+" with digester-rules-file ["+getDigesterRuleFile()+"] in element ["+currentElementName+"]", t);
+			String location = locator != null ? " line [%d] column [%d]".formatted(locator.getLineNumber(), locator.getColumnNumber()) : "";
+			throw new ConfigurationException("error loading configuration from file [" + configurationResource + "]"+location, e);
 		}
 	}
 
 	@Nullable
-	private Resource getConfigurationResource(Configuration configuration) throws ConfigurationException {
+	protected Resource getConfigurationResource(Configuration configuration) throws ConfigurationException {
 		String configurationFile = ConfigurationUtils.getConfigurationFile(configuration.getClassLoader(), configuration.getName());
 
 		Resource configurationResource = Resource.getResource(configuration, configurationFile);
@@ -201,7 +201,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			return null;
 		}
 
-		throw new ConfigurationException("Configuration file ["+configurationFile+"] not found in ClassLoader ["+configuration.getClassLoader()+"]");
+		throw new ConfigurationException("configuration file ["+configurationFile+"] not found in ClassLoader ["+configuration.getClassLoader()+"]");
 	}
 
 	/**
@@ -262,7 +262,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 			SkipContainersFilter skipContainersFilter = new SkipContainersFilter(namespacedContentsRemovingFilter);
 			return new InitialCapsFilter(skipContainersFilter);
 		} catch (SAXException e) {
-			throw new IOException("Cannot get canonicalizer using ["+ConfigurationUtils.FRANK_CONFIG_XSD+"]", e);
+			throw new IOException("cannot get canonicalizer using ["+ConfigurationUtils.FRANK_CONFIG_XSD+"]", e);
 		}
 	}
 

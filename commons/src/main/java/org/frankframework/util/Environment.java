@@ -19,11 +19,12 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.nio.file.FileSystemNotFoundException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.NoSuchFileException;
-import java.nio.file.Paths;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.jar.JarFile;
@@ -175,19 +176,44 @@ public class Environment {
 	 */
 	@Nonnull
 	private static Manifest getManifestFromFile(@Nonnull URL jarFileLocation) throws IOException {
-		File file;
-		try {
-			file = Paths.get(jarFileLocation.toURI()).toFile();
-		} catch (FileSystemNotFoundException | URISyntaxException e) {
-			throw new IOException("unable to turn URL ["+jarFileLocation+"] into a File", e);
-		}
-
-		try (JarFile jarFile = new JarFile(file)) {
+		String cleanPath = extractPath(jarFileLocation);
+		try (JarFile jarFile = new JarFile(cleanPath)) {
 			Manifest manifest = jarFile.getManifest();
 			if (manifest == null) {
 				throw new NoSuchFileException("unable to find manifest file");
 			}
 			return manifest;
+		}
+	}
+
+	/**
+	 * Cleanup an URL, removes the protocol and decodes the URL.
+	 */
+	public static String extractPath(final URL url) throws IOException {
+		String urlPath = url.getPath(); // same as getFile but without the Query portion
+
+		// I would be surprised if URL.getPath() ever starts with "jar:" but no harm in checking
+		if (urlPath.startsWith("jar:")) {
+			urlPath = urlPath.substring(4);
+		}
+		// For jar: URLs, the path part starts with "file:"
+		if (urlPath.startsWith("file:")) {
+			urlPath = urlPath.substring(5);
+		}
+
+		if ("vfs".equals(url.getProtocol())) {
+			return urlPath;
+		}
+
+		try {
+			final String cleanPath = new URI(urlPath).getPath();
+			if (new File(cleanPath).exists()) {
+				// if URL-encoded file exists, don't decode it
+				return cleanPath;
+			}
+			return URLDecoder.decode(urlPath, StandardCharsets.UTF_8.name());
+		} catch (URISyntaxException e) {
+			throw new IOException("unable to read path from URL ["+url+"]", e);
 		}
 	}
 }
