@@ -11,7 +11,7 @@ export class ConditionalOnPropertyDirective implements OnInit {
   private readonly elementRef: ElementRef<HTMLElement> = inject(ElementRef);
   private readonly appService: AppService = inject(AppService);
 
-  ngOnInit() {
+  ngOnInit(): void {
     this.appService.appConstants$.subscribe(() => this.checkCondition());
     this.checkCondition();
   }
