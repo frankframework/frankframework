@@ -41,6 +41,7 @@ import { IframeLadybugComponent } from './views/iframe/iframe-ladybug/iframe-lad
 import { IafUpdateComponent } from './views/iaf-update/iaf-update.component';
 import { LoadingComponent } from './views/loading/loading.component';
 import { ErrorComponent } from './views/error/error.component';
+import { conditionalOnPropertyGuard } from './guards/conditional-on-property.guard';
 
 export const routes: Routes = [
   {
@@ -420,7 +421,9 @@ export const routes: Routes = [
     path: 'testing/larva',
     component: IframeLarvaComponent,
     title: 'Larva',
+    canActivate: [conditionalOnPropertyGuard],
     data: {
+      onProperty: 'servlet.LarvaServlet.enabled',
       breadcrumbs: 'Testing > Larva',
       iframe: true,
     },
@@ -472,7 +475,7 @@ export const routes: Routes = [
     path: '**',
     redirectTo: '',
     data: {
-      breadcrumbs: 'Loading',
+      breadcrumbs: 'Redirecting',
     },
   },
 ];

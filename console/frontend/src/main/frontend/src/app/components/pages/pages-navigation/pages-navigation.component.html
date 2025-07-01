@@ -98,7 +98,11 @@
             ><i class="fa fa-bug"></i> <span class="nav-label">Testing</span> <span class="fa arrow"></span
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemTesting.expanded }">
-            <li data-cy-nav="testingLarva" routerLinkActive="active">
+            <li
+              data-cy-nav="testingLarva"
+              routerLinkActive="active"
+              appConditionalOnProperty="servlet.LarvaServlet.enabled"
+            >
               <a routerLink="/testing/larva">Larva</a>
             </li>
             @if (showOldLadybug) {
