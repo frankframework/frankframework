@@ -118,11 +118,9 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		}
 
 		Object result;
-		try {
-			Adapter adapter = new Adapter();
-			Configuration configuration = new Configuration();
-			configuration.setClassLoader(getConfigurationClassLoader());
-			adapter.setApplicationContext(configuration);
+		try (Adapter adapter = new Adapter()) {
+			adapter.setClassLoader(getConfigurationClassLoader());
+			adapter.refresh();
 			String fileBaseName = FileUtils.getBaseName(fileName).replace(" ", "_");
 			adapter.setName(fileBaseName);
 			Receiver receiver = new Receiver();
@@ -131,7 +129,6 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			esbJmsListener.setDestinationName("jms/dest_" + fileBaseName);
 			receiver.setListener(esbJmsListener);
 			adapter.addReceiver(receiver);
-			pipeLine.setConfiguration(configuration);
 			pipeLine.setApplicationContext(adapter);
 			adapter.setPipeLine(pipeLine);
 

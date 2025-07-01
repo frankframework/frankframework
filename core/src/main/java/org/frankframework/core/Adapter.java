@@ -223,7 +223,10 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		postProcessor.setAutowiredAnnotationType(Autowired.class);
 		postProcessor.setBeanFactory(beanFactory);
 		beanFactory.addBeanPostProcessor(postProcessor);
-		beanFactory.addBeanPostProcessor(new ConfigurationAwareBeanPostProcessor(configuration));
+
+		if (configuration != null) {
+			beanFactory.addBeanPostProcessor(new ConfigurationAwareBeanPostProcessor(configuration));
+		}
 	}
 
 	/**

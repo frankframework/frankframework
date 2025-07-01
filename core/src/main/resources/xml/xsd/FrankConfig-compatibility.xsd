@@ -6569,8 +6569,8 @@
     </xs:attribute>
     <xs:attribute name="pollGuardInterval" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Interval &lt;i&gt;in milliseconds&lt;/i&gt; for the poll guard to check whether a successful poll was done by the receive
- (https://docs.oracle.com/javaee/7/api/javax/jms/messageconsumer.html#receive-long-) since last check. If polling has stopped this will be logged
+        <xs:documentation>Interval &lt;i&gt;in milliseconds&lt;/i&gt; for the poll guard to check whether a successful poll was done by the
+ (&lt;a href="https://docs.oracle.com/javaee/7/api/javax/jms/messageconsumer.html#receive-long-"&gt;JMS Receive call&lt;/a&gt;) since last check. If polling has stopped this will be logged
  and the listener will be stopped and started in an attempt to workaround problems with polling.
  Polling might stop due to bugs in the JMS driver/implementation which should be fixed by the supplier. As the poll time includes reading
  and processing of the message no successful poll might be registered since the last check when message processing takes a long time, hence
