@@ -27,21 +27,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Serial;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
-import java.util.LinkedHashSet;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Set;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
@@ -50,8 +45,6 @@ import javax.xml.transform.dom.DOMSource;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-import org.apache.commons.io.input.ReaderInputStream;
-import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -71,7 +64,6 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CleanerProvider;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.MessageUtils;
-import org.frankframework.util.StreamCaptureUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
@@ -93,7 +85,6 @@ public class Message implements Serializable, Closeable {
 	private boolean failedToDetermineCharset = false;
 
 	private @Getter boolean closed = false;
-	private Set<AutoCloseable> resourcesToClose;
 
 	private Message(@Nonnull MessageContext context, @Nullable Object request, @Nullable Class<?> requestClass) {
 		if (request instanceof Message) {
@@ -406,16 +397,8 @@ public class Message implements Serializable, Closeable {
 			CloseUtils.closeSilently(closeable);
 		}
 		request = null;
-		CloseUtils.closeSilently(resourcesToClose);
 		closed = true;
 		CleanerProvider.clean(messageNotClosedAction);
-	}
-
-	private void closeOnClose(@Nonnull AutoCloseable resource) {
-		if (resourcesToClose == null) {
-			resourcesToClose = new LinkedHashSet<>();
-		}
-		resourcesToClose.add(resource);
 	}
 
 	public void closeOnCloseOf(@Nonnull PipeLineSession session) {
@@ -463,15 +446,7 @@ public class Message implements Serializable, Closeable {
 		if (request == null) {
 			return null;
 		}
-		// TODO: This case should no longer be possible
-		if (request instanceof Reader reader) {
-			if (!reader.markSupported()) {
-				reader = new BufferedReader(reader);
-				request = reader;
-			}
-			LOG.debug("returning Reader {} as Reader", this::getObjectId);
-			return reader;
-		}
+
 		if (request instanceof SerializableFileReference reference && !reference.isBinary()) {
 			LOG.debug("returning SerializableFileReference {} as Reader", this::getObjectId);
 			// The Message was saved with a Charset (see PreserveToDisk), so read it with the Charset
@@ -484,9 +459,6 @@ public class Message implements Serializable, Closeable {
 			InputStream inputStream = asInputStream();
 			try {
 				BufferedReader reader = StreamUtil.getCharsetDetectingInputStreamReader(inputStream, readerCharset);
-				if (this.request instanceof InputStream) {
-					this.request = reader;
-				}
 				return reader;
 			} catch (IOException e) {
 				onExceptionClose(e);
@@ -523,15 +495,7 @@ public class Message implements Serializable, Closeable {
 			if (request == null) {
 				return null;
 			}
-			// TODO: This case should no longer be possible
-			if (request instanceof InputStream stream) {
-				if (!stream.markSupported()) {
-					stream = new BufferedInputStream(stream);
-					request = stream;
-				}
-				LOG.debug("returning InputStream {} as InputStream", this::getObjectId);
-				return stream;
-			}
+
 			if (request instanceof SerializableFileReference reference) {
 				LOG.debug("returning InputStream {} from SerializableFileReference", this::getObjectId);
 				return reference.getInputStream();
@@ -555,12 +519,6 @@ public class Message implements Serializable, Closeable {
 				return new ByteArrayInputStream(asByteArray());
 			}
 			String charset = getEncodingCharset(defaultEncodingCharset);
-			if (request instanceof Reader reader) {
-				LOG.debug("returning Reader {} as InputStream", this::getObjectId);
-				BufferedInputStream inputStream = new BufferedInputStream(new ReaderInputStream(reader, charset));
-				this.request = inputStream;
-				return inputStream;
-			}
 			LOG.debug("returning String {} as InputStream", this::getObjectId);
 			return new ByteArrayInputStream(request.toString().getBytes(charset));
 		} catch (IOException e) {
@@ -989,84 +947,6 @@ public class Message implements Serializable, Closeable {
 		}
 
 		return MESSAGE_SIZE_UNKNOWN;
-	}
-
-	/**
-	 * Can be called when {@link #requiresStream()} is true to retrieve a copy of (part of) the stream that is in this
-	 * message, after the stream has been closed. Primarily for debugging purposes.
-	 */
-	@Deprecated
-	public ByteArrayOutputStream captureBinaryStream() throws IOException {
-		var result = new ByteArrayOutputStream();
-		captureBinaryStream(result);
-		return result;
-	}
-
-	@Deprecated
-	public void captureBinaryStream(OutputStream outputStream) throws IOException {
-		captureBinaryStream(outputStream, StreamCaptureUtils.DEFAULT_STREAM_CAPTURE_LIMIT);
-	}
-
-	// TODO: This code is now rather dubious since we no longer represent messages internally as streams
-	@Deprecated
-	public void captureBinaryStream(OutputStream outputStream, int maxSize) throws IOException {
-		LOG.debug("creating capture of {}", ClassUtils.nameOf(request));
-		if (isNull()) {
-			CloseUtils.closeSilently(outputStream);
-			LOG.debug("message is NULL, nothing to capture");
-			return;
-		}
-		if (isRepeatable()) {
-			LOG.warn("repeatability of {} of type [{}] will be lost by capturing stream", this.getObjectId(), request.getClass().getTypeName());
-		}
-		if (isBinary()) {
-			request = StreamCaptureUtils.captureInputStream(asInputStream(), outputStream, maxSize);
-		} else {
-			request = StreamCaptureUtils.captureReader(asReader(), new OutputStreamWriter(outputStream, StreamUtil.DEFAULT_CHARSET), maxSize);
-		}
-		closeOnClose(outputStream);
-	}
-
-	/**
-	 * Can be called when {@link #requiresStream()} is true to retrieve a copy of (part of) the stream that is in this
-	 * message, after the stream has been closed. Primarily for debugging purposes.
-	 * <p>
-	 * When isBinary() is true the Message's charset is used when present to create a Reader that reads the InputStream.
-	 * When charset not present {@link StreamUtil#DEFAULT_INPUT_STREAM_ENCODING} is used.
-	 */
-	// TODO: This code is now rather dubious since we no longer represent messages internally as streams
-	@Deprecated
-	public StringWriter captureCharacterStream() throws IOException {
-		var result = new StringWriter();
-		captureCharacterStream(result);
-		return result;
-	}
-
-	@Deprecated
-	public void captureCharacterStream(Writer writer) throws IOException {
-		captureCharacterStream(writer, StreamCaptureUtils.DEFAULT_STREAM_CAPTURE_LIMIT);
-	}
-
-	// TODO: This code is now rather dubious since we no longer represent messages internally as streams
-	@Deprecated
-	public void captureCharacterStream(Writer writer, int maxSize) throws IOException {
-		LOG.debug("creating capture of {}", () -> ClassUtils.nameOf(request));
-		if (isNull()) {
-			CloseUtils.closeSilently(writer);
-			LOG.debug("message is NULL, nothing to capture");
-			return;
-		}
-		if (isRepeatable()) {
-			LOG.warn("repeatability of {} of type [{}] will be lost by capturing stream", this.getObjectId(), request.getClass().getTypeName());
-		}
-
-		if (!isBinary()) {
-			request = StreamCaptureUtils.captureReader(asReader(), writer, maxSize);
-		} else {
-			String charset = StringUtils.isNotEmpty(getCharset()) ? getCharset() : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-			request = StreamCaptureUtils.captureInputStream(asInputStream(), new WriterOutputStream(writer, charset, StreamUtil.BUFFER_SIZE, true), maxSize);
-		}
-		closeOnClose(writer);
 	}
 
 	/**

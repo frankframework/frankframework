@@ -36,7 +36,6 @@ import org.frankframework.mongodb.MongoDbSender.MongoAction;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
-import org.frankframework.util.AppConstants;
 import org.frankframework.util.CloseUtils;
 
 @Log4j2
@@ -65,12 +64,12 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		// Required for testcontainers, since the default port is randomized
 		String url = String.format("mongodb://%s:%s", mongoDBContainer.getHost(), mongoDBContainer.getMappedPort(27017));
 		log.info("using connection string: {}", url);
-		AppConstants.getInstance().setProperty("mongo.connectionString", url);
+		System.setProperty("mongo.connectionString", url);
 	}
 
 	@AfterAll
 	static void afterAll() {
-		AppConstants.getInstance().remove("mongo.connectionString");
+		System.clearProperty("mongo.connectionString");
 	}
 
 	private JndiMongoClientFactory createFactory() throws Exception {

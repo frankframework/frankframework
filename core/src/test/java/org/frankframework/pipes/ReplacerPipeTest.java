@@ -191,7 +191,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 	}
 
 	@Test
-	@DisplayName("Test whether markSupported is doing what it should by calling captureBinaryStream and getMagic in Message")
+	@DisplayName("Test whether markSupported is doing what it should by calling peek in Message")
 	public void testMarkSupportedIsFalse() throws Exception {
 		session.put("exit", "Exit201");
 		pipe.addParameter(ParameterBuilder.create()
@@ -203,7 +203,6 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 		PipeRunResult res = doPipe(pipe, "statuscodeselectable: [?{exit}]", session);
 
 		Message result = res.getResult();
-		result.captureBinaryStream();
 		result.peek(10);
 
 		assertEquals("statuscodeselectable: [Exit201]", result.asString());
