@@ -42,11 +42,7 @@ import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
 
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
@@ -61,19 +57,18 @@ import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.security.JwtKeyGeneratorSupplier;
 
 @Log4j2
-public class PhoneHomeOutboundGateway implements InitializingBean, ApplicationContextAware, OutboundGateway {
+public class PhoneHomeOutboundGateway implements InitializingBean, OutboundGateway {
 
-	private ApplicationContext applicationContext;
 	private final HttpClient httpClient;
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final MtlsHelper mtlsHelper;
 	private final Set<UUID> clientsThatReceivedPublicKey = new HashSet<>();
+	private static final String PUBLIC_KEY_FIELD = "publicKey";
 
-	@Autowired
 	private JwtKeyGeneratorSupplier jwtKeyGeneratorSupplier;
 
-	public PhoneHomeOutboundGateway(ApplicationContext applicationContext) {
-		this.applicationContext = applicationContext;
+	public PhoneHomeOutboundGateway(JwtKeyGeneratorSupplier jwtKeyGeneratorSupplier) {
+		this.jwtKeyGeneratorSupplier = jwtKeyGeneratorSupplier;
 		this.mtlsHelper = new MtlsHelper();
 		this.httpClient = mtlsHelper.getHttpClient();
 	}
@@ -84,10 +79,6 @@ public class PhoneHomeOutboundGateway implements InitializingBean, ApplicationCo
 	}
 
 	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.applicationContext = applicationContext;
-	}
-
 	@Nonnull
 	public List<ClusterMember> getMembers() {
 		log.info("Retrieving members registered to switchboard");
@@ -106,11 +97,11 @@ public class PhoneHomeOutboundGateway implements InitializingBean, ApplicationCo
 			} else {
 				log.warn("Failed to retrieve members: HTTP {}", response.statusCode());
 			}
-		} catch (IOException | InterruptedException | GeneralSecurityException e) {
+		} catch (IOException | GeneralSecurityException e) {
 			log.error("Error fetching cluster members", e);
-			if (e instanceof InterruptedException) {
-				Thread.currentThread().interrupt();
-			}
+		} catch (InterruptedException e) {
+			log.error("Error fetching cluster members", e);
+			Thread.currentThread().interrupt();
 		}
 		return List.of();
 	}
@@ -126,7 +117,7 @@ public class PhoneHomeOutboundGateway implements InitializingBean, ApplicationCo
 				continue;
 			}
 
-			String base64Key = member.getAttributes().get("publicKey");
+			String base64Key = member.getAttributes().get(PUBLIC_KEY_FIELD);
 			byte[] decodedKey = Base64.getDecoder().decode(base64Key);
 			X509EncodedKeySpec keySpec = new X509EncodedKeySpec(decodedKey);
 			PublicKey pubKey = KeyFactory.getInstance("RSA").generatePublic(keySpec);
@@ -174,7 +165,7 @@ public class PhoneHomeOutboundGateway implements InitializingBean, ApplicationCo
 				member.setAttributes(Map.of(
 						"name", jsonObject.getString("instanceName"),
 						"version", jsonObject.getString("instanceVersion"),
-						"publicKey", jsonObject.getString("publicKey")
+						PUBLIC_KEY_FIELD, jsonObject.getString(PUBLIC_KEY_FIELD)
 				));
 				members.add(member);
 			}
