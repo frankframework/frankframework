@@ -428,7 +428,6 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			log.debug("Target namespace or schema location is empty, not changing namespace in input");
 			return xml;
 		}
-		xml.preserve();
 		String currentRootNamespace = XmlUtils.getRootNamespace(xml);
 		if (StringUtils.isNotEmpty(currentRootNamespace)) {
 			log.debug("Message already has namespace [{}]", currentRootNamespace);

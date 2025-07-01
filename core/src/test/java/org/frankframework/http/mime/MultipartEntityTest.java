@@ -175,7 +175,6 @@ public class MultipartEntityTest {
 	public void testWriteToCharacterData(MessageType type) throws Exception {
 		Message charMessage = MessageTestUtils.getMessage(type);
 
-		charMessage.preserve();
 		MessageContentBody contentBody = new MessageContentBody(charMessage);
 
 		// Act

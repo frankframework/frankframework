@@ -150,11 +150,6 @@ public class SwitchPipe extends AbstractPipe {
 		if (StringUtils.isNotEmpty(getForwardNameSessionKey())) {
 			return session.getString(getForwardNameSessionKey());
 		}
-		try {
-			message.preserve();
-		} catch (IOException e) {
-			throw new PipeRunException(this, "got exception reading input message", e);
-		}
 		if (message.isEmpty()) {
 			return getEmptyForwardName();
 		}

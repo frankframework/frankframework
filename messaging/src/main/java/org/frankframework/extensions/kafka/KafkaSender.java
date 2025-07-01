@@ -92,7 +92,6 @@ public class KafkaSender extends AbstractKafkaFacade implements ISender {
 	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 		byte[] messageData;
 		try {
-			message.preserve();
 			messageData = message.asByteArray();
 		} catch (Exception e) {
 			throw new SenderException("Failed to convert message to message type:", e);

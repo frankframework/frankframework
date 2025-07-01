@@ -82,8 +82,6 @@ public class JsonValidator extends AbstractValidator {
 		try {
 			if (messageToValidate.isEmpty()) {
 				messageToValidate = new Message("{}");
-			} else {
-				messageToValidate.preserve();
 			}
 
 			JsonSchema curSchema = jsonSchema;

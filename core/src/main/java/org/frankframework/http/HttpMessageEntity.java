@@ -76,7 +76,7 @@ public class HttpMessageEntity extends AbstractHttpEntity {
 
 	@Override
 	public boolean isRepeatable() {
-		return message.isRepeatable();
+		return true;
 	}
 
 	@Override

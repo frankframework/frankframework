@@ -353,10 +353,6 @@ public class MessageUtils {
 	@SuppressWarnings("java:S4790") // MD5 usage is allowed for checksums
 	public static String generateMD5Hash(Message message) {
 		try {
-			if(!message.isRepeatable()) {
-				message.preserve();
-			}
-
 			try (InputStream inputStream = message.asInputStream()) {
 				return DigestUtils.md5DigestAsHex(inputStream);
 			}
@@ -371,10 +367,6 @@ public class MessageUtils {
 	 */
 	public static Long generateCRC32(Message message) {
 		try {
-			if(!message.isRepeatable()) {
-				message.preserve();
-			}
-
 			CRC32 checksum = new CRC32();
 			try (InputStream inputStream = new CheckedInputStream(message.asInputStream(), checksum)) {
 				long size = IOUtils.consume(inputStream);
@@ -395,10 +387,6 @@ public class MessageUtils {
 			long size = message.size();
 			if(size > Message.MESSAGE_SIZE_UNKNOWN) {
 				return size;
-			}
-
-			if(!message.isRepeatable()) {
-				message.preserve();
 			}
 
 			// Preserving the message might make reading the size known. If so, there is no need to compute it.
@@ -459,7 +447,6 @@ public class MessageUtils {
 	 */
 	public static @Nonnull Message convertToJsonMessage(@Nonnull Object value, @Nonnull String valueName) throws IOException, XmlException {
 		Message message = Message.asMessage(value);
-		message.preserve();
 		MimeType mimeType = MessageUtils.computeMimeType(message);
 		if (MediaType.APPLICATION_JSON.isCompatibleWith(mimeType)) {
 			return message;

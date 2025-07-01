@@ -450,7 +450,6 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 						break;
 					case INPUT:
 						try {
-							message.preserve();
 							valueByDefault=message.asString();
 						} catch (IOException e) {
 							throw new ParameterException(getName(), e);
@@ -490,15 +489,10 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 
 	private Object getParameterValueFromInputMessage(Message message) throws ParameterException {
 		Object input;
-		try {
-			if (StringUtils.isNotEmpty(getContextKey())) {
-				input = message.getContext().get(getContextKey());
-			} else {
-				message.preserve();
-				input = message;
-			}
-		} catch (IOException e) {
-			throw new ParameterException(getName(), e);
+		if (StringUtils.isNotEmpty(getContextKey())) {
+			input = message.getContext().get(getContextKey());
+		} else {
+			input = message;
 		}
 		return input;
 	}

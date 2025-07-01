@@ -391,8 +391,6 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 					// Make a copy of a local file, otherwise the file is deleted after this method returns.
 					if (fileSystem instanceof LocalFileSystem) {
 						result = result.copyMessage();
-					} else {
-						result.preserve();
 					}
 					fileSystem.deleteFile(file);
 					deleteEmptyFolder(file);

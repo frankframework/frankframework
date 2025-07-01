@@ -34,7 +34,7 @@ public class MessageCapturer extends MessageCapturerImpl {
 	@Override
 	public StreamingType getStreamingType(Object message) {
 		if (message instanceof Message m) {
-			if (m.requiresStream() && !m.isRepeatable()) {
+			if (m.requiresStream()) {
 				return m.isBinary() ? StreamingType.BYTE_STREAM : StreamingType.CHARACTER_STREAM;
 			}
 		} else {

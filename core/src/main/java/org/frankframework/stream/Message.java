@@ -279,11 +279,6 @@ public class Message implements Serializable, Closeable {
 	 *
 	 * @throws IOException Throws IOException if the Message can not be read or writing fails.
 	 */
-	@Deprecated // TODO: Delete, only keep internal methods to be used on creation.
-	public void preserve() throws IOException {
-		//preserve(false);
-	}
-
 	private void preserve(boolean deepPreserve) throws IOException {
 		if (request == null) {
 			return;
@@ -394,8 +389,7 @@ public class Message implements Serializable, Closeable {
 		return request instanceof InputStream || request instanceof ThrowingSupplier || request instanceof byte[];
 	}
 
-	@Deprecated // TODO: Make internal, private method
-	public boolean isRepeatable() {
+	private boolean isRepeatable() {
 		return request == null || request instanceof String || request instanceof Number || request instanceof Boolean || request instanceof ThrowingSupplier || request instanceof byte[] || request instanceof Node || request instanceof SerializableFileReference;
 	}
 
@@ -453,8 +447,6 @@ public class Message implements Serializable, Closeable {
 
 	/**
 	 * Return a {@link Reader} backed by the data in this message. {@link Reader#markSupported()} is guaranteed to be true for the returned stream.
-	 * Should not be called more than once, unless the request is {@link #isRepeatable() repeatable} or the Reader is reset to its starting position. If
-	 * the message is not {@link #isRepeatable() repeatable} then {@link #preserve()} can be called on the message to make it repeatable.
 	 */
 	@Nullable
 	public Reader asReader() throws IOException {
@@ -463,8 +455,6 @@ public class Message implements Serializable, Closeable {
 
 	/**
 	 * Return a {@link Reader} backed by the data in this message. {@link Reader#markSupported()} is guaranteed to be true for the returned stream.
-	 * Should not be called more than once, unless the request is {@link #isRepeatable() repeatable} or the Reader is reset to its starting position. If
-	 * the message is not {@link #isRepeatable() repeatable} then {@link #preserve()} can be called on the message to make it repeatable.
 	 *
 	 * @param defaultDecodingCharset is only used when {@link #isBinary()} is {@code true}.
 	 */
@@ -516,8 +506,6 @@ public class Message implements Serializable, Closeable {
 
 	/**
 	 * Return an {@link InputStream} backed by the data in this message. {@link InputStream#markSupported()} is guaranteed to be true for the returned stream.
-	 * Should not be called more than once, unless the request is {@link #isRepeatable() repeatable} or the InputStream is reset to its starting position. If
-	 * the message is not {@link #isRepeatable() repeatable} then {@link #preserve()} can be called on the message to make it repeatable.
 	 */
 	@Nullable
 	public InputStream asInputStream() throws IOException {
@@ -526,8 +514,6 @@ public class Message implements Serializable, Closeable {
 
 	/**
 	 * Return an {@link InputStream} backed by the data in this message. {@link InputStream#markSupported()} is guaranteed to be true for the returned stream.
-	 * Should not be called more than once, unless the request is {@link #isRepeatable() repeatable} or the InputStream is reset to its starting position. If
-	 * the message is not {@link #isRepeatable() repeatable} then {@link #preserve()} can be called on the message to make it repeatable.
 	 *
 	 * @param defaultEncodingCharset is only used when the Message object is of character type (String)
 	 */
@@ -606,7 +592,7 @@ public class Message implements Serializable, Closeable {
 	}
 
 	/**
-	 * return the request object as a {@link InputSource}. Should not be called more than once, if request is not {@link #preserve() preserved}.
+	 * return the request object as a {@link InputSource}.
 	 */
 	@Nullable
 	public InputSource asInputSource() throws IOException {
@@ -633,7 +619,7 @@ public class Message implements Serializable, Closeable {
 	}
 
 	/**
-	 * return the request object as a {@link Source}. Should not be called more than once, if request is not {@link #preserve() preserved}.
+	 * return the request object as a {@link Source}.
 	 */
 	@Nullable
 	public Source asSource() throws IOException, SAXException {
@@ -1048,6 +1034,7 @@ public class Message implements Serializable, Closeable {
 	 * When isBinary() is true the Message's charset is used when present to create a Reader that reads the InputStream.
 	 * When charset not present {@link StreamUtil#DEFAULT_INPUT_STREAM_ENCODING} is used.
 	 */
+	// TODO: This code is now rather dubious since we no longer represent messages internally as streams
 	@Deprecated
 	public StringWriter captureCharacterStream() throws IOException {
 		var result = new StringWriter();
@@ -1095,7 +1082,7 @@ public class Message implements Serializable, Closeable {
 	@Nonnull
 	public Message copyMessage() throws IOException {
 		if (!isRepeatable()) {
-			preserve();
+			preserve(false);
 		}
 		if (!(request instanceof SerializableFileReference)) {
 			return new Message(copyContext(), request);

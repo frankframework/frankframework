@@ -67,7 +67,6 @@ public class HttpMessageEntityTest {
 		HttpMessageEntity hmeNonRepeatable = new HttpMessageEntity(nonRepeatableMessage);
 		HttpMessageEntity hmeUrlRepeatable = new HttpMessageEntity(binaryMessage);
 
-		assertTrue(repeatableMessage.isRepeatable());
 		assertTrue(bae.isRepeatable());
 		assertFalse(ise.isRepeatable());
 		assertTrue(hmeRepeatable.isRepeatable());

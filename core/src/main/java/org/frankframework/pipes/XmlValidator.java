@@ -211,7 +211,6 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 	public PipeRunResult doPipe(Message input, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
 		try {
 			Message messageToValidate;
-			input.preserve();
 			if (StringUtils.isNotEmpty(getSoapNamespace())) {
 				messageToValidate = getMessageToValidate(input);
 			} else {

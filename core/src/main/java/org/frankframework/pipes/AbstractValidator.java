@@ -79,7 +79,6 @@ public abstract class AbstractValidator extends FixedForwardPipe implements IDua
 
 	public PipeRunResult doPipe(Message input, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
 		try {
-			input.preserve();
 			PipeForward forward = validate(input, session, responseMode, messageRoot);
 			return new PipeRunResult(forward, input);
 		} catch (Exception e) {

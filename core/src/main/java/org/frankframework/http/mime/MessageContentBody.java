@@ -114,8 +114,4 @@ public class MessageContentBody implements ContentBody {
 		}
 		return null;
 	}
-
-	public boolean isRepeatable() {
-		return message.isRepeatable();
-	}
 }

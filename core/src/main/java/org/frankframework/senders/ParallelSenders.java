@@ -70,14 +70,6 @@ public class ParallelSenders extends SenderSeries {
 
 	@Override
 	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException {
-		try {
-			if (!message.isRepeatable()) {
-				message.preserve();
-			}
-		} catch (IOException e) {
-			throw new SenderException("could not preserve input message", e);
-		}
-
 		Map<ISender, ParallelSenderExecutor> executorMap = new LinkedHashMap<>();
 		Phaser senderGuard = new Phaser(((List<ISender>) getSenders()).size() + 1); // Itself and all senders
 		for (ISender sender : getSenders()) {

@@ -15,8 +15,6 @@
 */
 package org.frankframework.pipes;
 
-import java.io.IOException;
-
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -56,11 +54,6 @@ public class PutInSessionPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(getSessionKey())) {
 			Message v;
 			if (getValue() == null) {
-				try {
-					message.preserve();
-				} catch (IOException e) {
-					throw new PipeRunException(this, "cannot preserve message", e);
-				}
 				v = message;
 			} else {
 				v = new Message(getValue());
