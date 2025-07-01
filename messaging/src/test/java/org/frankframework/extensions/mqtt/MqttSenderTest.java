@@ -24,7 +24,6 @@ import org.frankframework.jdbc.datasource.ResourceObjectLocator;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
-import org.frankframework.util.AppConstants;
 
 @Testcontainers(disabledWithoutDocker = true)
 @Tag("integration") // Requires Docker; exclude with '-DexcludedGroups=integration'
@@ -56,12 +55,12 @@ public class MqttSenderTest extends SenderTestBase<MqttSender> {
 
 	@BeforeAll
 	static void setUrlProperty() {
-		AppConstants.getInstance().setProperty("mqtt.brokerURL", String.format("tcp://%s:%s", hivemqCe.getHost(), hivemqCe.getMqttPort()));
+		System.setProperty("mqtt.brokerURL", String.format("tcp://%s:%s", hivemqCe.getHost(), hivemqCe.getMqttPort()));
 	}
 
 	@AfterAll
 	static void clearUrlProperty() {
-		AppConstants.getInstance().remove("mqtt.brokerURL");
+		System.clearProperty("mqtt.brokerURL");
 	}
 
 	@Test
