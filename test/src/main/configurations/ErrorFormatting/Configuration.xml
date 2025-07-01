@@ -156,7 +156,7 @@
 
 	<Adapter name="ParameterizedErrorMessage-CallListener-PassViaException">
 		<Receiver>
-			<FrankListener name="ParameterizedErrorMessage-CallListener-PassViaException" exceptionHandlingMethod="format_and_return"/>
+			<FrankListener name="ParameterizedErrorMessage-CallListener-PassViaException" onException="format_and_return"/>
 		</Receiver>
 		<DataSonnetErrorMessageFormatter styleSheetName="stylesheets/ErrorParameterized1.jsonnet"/>
 		<Pipeline>
@@ -186,7 +186,7 @@
 
 	<Adapter name="ParameterizedErrorMessage-CallListener-PassViaSession">
 		<Receiver>
-			<FrankListener name="ParameterizedErrorMessage-CallListener-PassViaSession" exceptionHandlingMethod="format_and_return"/>
+			<FrankListener name="ParameterizedErrorMessage-CallListener-PassViaSession" onException="format_and_return"/>
 		</Receiver>
 		<DataSonnetErrorMessageFormatter styleSheetName="stylesheets/ErrorParameterized2.jsonnet">
 			<NumberParam name="errorCode" sessionKey="errorCode"/>

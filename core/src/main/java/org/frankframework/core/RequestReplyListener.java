@@ -15,13 +15,28 @@
 */
 package org.frankframework.core;
 
+/**
+ * Interface to be added to {@link IListener}s that are used for request / reply
+ * scenarios.
+ */
 public interface RequestReplyListener {
 
 	enum ExceptionHandlingMethod {
 		RETHROW, FORMAT_AND_RETURN;
 	}
 
-
-	void setExceptionHandlingMethod(ExceptionHandlingMethod method);
-	ExceptionHandlingMethod getExceptionHandlingMethod();
+	/**
+	 * When an exception happens in the execution of the pipeline, with {@code RETHROW} the
+	 * exception is thrown to the caller. With {@code FORMAT_AND_RETURN} the exception is processed
+	 * by the {@link Adapter#setErrorMessageFormatter(IErrorMessageFormatter)} and returned as result-message
+	 * of the {@link Adapter}.
+	 *
+	 * <br/>
+	 * The default is currently {@code RETHROW} for backwards compatibility but will become {@code FORMAT_AND_RETURN} in a future version.
+	 *
+	 * @ff.default RETHROW
+	 * @param method {@code RETHROW} or {@code FORMAT_AND_RETURN}
+	 */
+	void setOnException(ExceptionHandlingMethod method);
+	ExceptionHandlingMethod getOnException();
 }

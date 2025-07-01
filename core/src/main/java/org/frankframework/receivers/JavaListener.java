@@ -72,14 +72,14 @@ public class JavaListener<M> implements RequestReplyListener, IPushingListener<M
 	protected Logger log = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
-	private @Getter @Setter ExceptionHandlingMethod exceptionHandlingMethod = ExceptionHandlingMethod.RETHROW;
+	private @Getter @Setter ExceptionHandlingMethod onException = ExceptionHandlingMethod.RETHROW;
 
 	private @Getter String name;
 	private @Getter String serviceName;
-	private @Getter String returnedSessionKeys=null;
+	private @Getter String returnedSessionKeys = null;
 	private @Getter boolean httpWsdl = false;
 
-	private @Getter boolean open=false;
+	private @Getter boolean open = false;
 	private static Map<String, JavaListener<?>> registeredListeners;
 	private @Getter @Setter IMessageHandler<M> handler;
 
@@ -268,7 +268,7 @@ public class JavaListener<M> implements RequestReplyListener, IPushingListener<M
 	@Deprecated(since = "9.2")
 	@ConfigurationWarning("Replaced with 'exceptionHandlingMethod'")
 	public void setThrowException(boolean throwException) {
-		this.exceptionHandlingMethod = throwException ? ExceptionHandlingMethod.RETHROW : ExceptionHandlingMethod.FORMAT_AND_RETURN;
+		this.onException = throwException ? ExceptionHandlingMethod.RETHROW : ExceptionHandlingMethod.FORMAT_AND_RETURN;
 	}
 
 	/**

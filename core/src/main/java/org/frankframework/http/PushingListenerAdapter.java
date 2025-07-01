@@ -56,7 +56,7 @@ public class PushingListenerAdapter implements RequestReplyListener, IPushingLis
 
 	private @Getter String name;
 	private @Getter boolean running;
-	private @Getter @Setter ExceptionHandlingMethod exceptionHandlingMethod = ExceptionHandlingMethod.RETHROW;
+	private @Getter @Setter ExceptionHandlingMethod onException = ExceptionHandlingMethod.RETHROW;
 
 	private IMessageHandler<Message> handler;
 
@@ -137,7 +137,7 @@ public class PushingListenerAdapter implements RequestReplyListener, IPushingLis
 	@Deprecated(since = "9.2")
 	@ConfigurationWarning("Replaced with 'exceptionHandlingMethod'")
 	public void setApplicationFaultsAsExceptions(boolean applicationFaultsAsExceptions) {
-		this.exceptionHandlingMethod = applicationFaultsAsExceptions ? ExceptionHandlingMethod.RETHROW : ExceptionHandlingMethod.FORMAT_AND_RETURN;
+		this.onException = applicationFaultsAsExceptions ? ExceptionHandlingMethod.RETHROW : ExceptionHandlingMethod.FORMAT_AND_RETURN;
 	}
 
 	@Protected

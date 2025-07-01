@@ -131,13 +131,11 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 			details = null;
 		}
 		Map<String, Object> exceptionParams = getPipeRunExceptionParams(t);
-		HasName locationToUse = getLocation(location, t);
 		String messageId = session.getMessageId();
 		String correlationId = session.getCorrelationId();
 		String msgIdToUse = StringUtils.isNotEmpty(messageId) && !MessageUtils.isFallbackMessageId(messageId) ? messageId : correlationId;
 
-		// PipeRunException already includes the location in the message so we don't need to prefix the message with the location again
-		String prefix = (locationToUse != null &&  extractPipeRunException(t) == null) ? ClassUtils.nameOf(locationToUse) : null;
+		String prefix = (location != null) ? ClassUtils.nameOf(location) : null;
 		if (StringUtils.isNotEmpty(msgIdToUse)) {
 			prefix = StringUtil.concatStrings(prefix, " ", "msgId [" + msgIdToUse + "]");
 		}
@@ -162,7 +160,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 			errorObject.addAttribute("originator", originator);
 			errorObject.addAttribute("message", XmlEncodingUtils.replaceNonValidXmlCharacters(errorMessage));
 
-			addLocation(locationToUse, errorObject);
+			addLocation(getLocation(location, t), errorObject);
 
 			if (StringUtils.isNotEmpty(details)) {
 				errorObject.add("details", XmlEncodingUtils.replaceNonValidXmlCharacters(details));

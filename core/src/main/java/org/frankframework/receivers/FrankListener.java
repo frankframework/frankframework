@@ -62,12 +62,12 @@ public class FrankListener implements RequestReplyListener, IPushingListener<Mes
 	private @Setter @Getter ApplicationContext applicationContext;
 	private @Setter Configuration configuration;
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-	private @Getter @Setter ExceptionHandlingMethod exceptionHandlingMethod = ExceptionHandlingMethod.RETHROW;
+	private @Getter @Setter ExceptionHandlingMethod onException = ExceptionHandlingMethod.RETHROW;
 
 	private @Getter String name;
 	private String fullName;
 
-	private @Getter boolean open=false;
+	private @Getter boolean open = false;
 	private @Getter @Setter IMessageHandler<Message> handler;
 
 	public static @Nullable FrankListener getListener(String name) {
