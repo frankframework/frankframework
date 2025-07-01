@@ -26,6 +26,7 @@ import nl.nn.testtool.MessageCapturerImpl;
 
 import org.frankframework.stream.Message;
 import org.frankframework.util.CloseUtils;
+import org.frankframework.util.StreamUtil;
 
 public class MessageCapturer extends MessageCapturerImpl {
 
@@ -49,9 +50,8 @@ public class MessageCapturer extends MessageCapturerImpl {
 	public <T> T toWriter(T message, Writer writer, Consumer<Throwable> exceptionNotifier) {
 		if (message instanceof Message message1) {
 			try {
-				// TODO: Since messages are now preserved, should instantly write message to capture-writer
-				// should call StreamCaptureUtils.captureReader directly...
-				message1.captureCharacterStream(writer, maxMessageLength);
+				StreamUtil.copyPartialReader(message1.asReader(), writer, maxMessageLength, StreamUtil.BUFFER_SIZE);
+				writer.close();
 			} catch (Throwable t) {
 				exceptionNotifier.accept(t);
 				CloseUtils.closeSilently(writer);
@@ -71,8 +71,8 @@ public class MessageCapturer extends MessageCapturerImpl {
 		if (message instanceof Message m) {
 			charsetNotifier.accept(m.getCharset());
 			try {
-				// TODO: Since messages are now preserved, should instantly write message to capture-outputstream
-				m.captureBinaryStream(outputStream, maxMessageLength);
+				StreamUtil.copyPartialStream(m.asInputStream(), outputStream, maxMessageLength, StreamUtil.BUFFER_SIZE);
+				outputStream.close();
 			} catch (Throwable t) {
 				exceptionNotifier.accept(t);
 				CloseUtils.closeSilently(outputStream);

@@ -209,7 +209,7 @@ public class StreamUtil {
 		long bytesLeft = maxBytesToCopy;
 		int bytesRead;
 		long totalBytesCopied = 0L;
-		while (bytesLeft != 0L) {
+		while (bytesLeft > 0L) {
 			int toRead = (int) Math.min(chunkSize, bytesLeft);
 			bytesRead = in.read(buffer, 0, toRead);
 			if (bytesRead <= 0) {
@@ -244,6 +244,32 @@ public class StreamUtil {
 				writer.write(buffer, 0, charsRead);
 			}
 		}
+	}
+
+	public static long copyPartialReader(Reader in, Writer out, long maxCharsToCopy, int chunkSize) throws IOException {
+		if (in == null || maxCharsToCopy == 0L) {
+			return 0L;
+		}
+
+		if (maxCharsToCopy < 0L) {
+			return in.transferTo(out);
+		}
+
+		char[] buffer = new char[chunkSize];
+		long charsLeft = maxCharsToCopy;
+		int charsRead;
+		long totalCharsCopied = 0L;
+		while (charsLeft > 0L) {
+			int toRead = (int) Math.min(chunkSize, charsLeft);
+			charsRead = in.read(buffer, 0, toRead);
+			if (charsRead <= 0) {
+				break;
+			}
+			out.write(buffer, 0, charsRead);
+			totalCharsCopied += charsRead;
+			charsLeft -= charsRead;
+		}
+		return totalCharsCopied;
 	}
 
 	/**
