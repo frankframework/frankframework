@@ -31,8 +31,10 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.ParameterType;
 import org.frankframework.stream.FileMessage;
 import org.frankframework.util.DomBuilderException;
+import org.frankframework.util.EnumUtils;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
@@ -104,7 +106,9 @@ public class LarvaActionUtils {
 				try {
 					Parameter parameter = new Parameter();
 					parameter.setName(name);
-
+					if (type != null) {
+						parameter.setType(EnumUtils.parse(ParameterType.class, type));
+					}
 					if (value != null) {
 						if (value instanceof String string) {
 							parameter.setValue(string);
@@ -177,21 +181,21 @@ public class LarvaActionUtils {
 				}
 			}
 		}
-		if ("node".equals(type)) {
+		if ("node".equalsIgnoreCase(type)) {
 			try {
 				value = XmlUtils.buildNode(MessageUtils.asString(value), true);
 			} catch (DomBuilderException | IOException e) {
 				throw new IllegalArgumentException("Could not build node for parameter '" + name + "' with value: " + value, e);
 			}
-		} else if ("domdoc".equals(type)) {
+		} else if ("domdoc".equalsIgnoreCase(type)) {
 			try {
 				value = XmlUtils.buildDomDocument(MessageUtils.asString(value), true);
 			} catch (DomBuilderException | IOException e) {
 				throw new IllegalArgumentException("Could not build node for parameter '" + name + "' with value: " + value, e);
 			}
-		} else if ("list".equals(type)) {
+		} else if ("list".equalsIgnoreCase(type)) {
 			value = StringUtil.split(propertyValue);
-		} else if ("map".equals(type)) {
+		} else if ("map".equalsIgnoreCase(type)) {
 			List<String> parts = StringUtil.split(propertyValue);
 			Map<String, String> map = new LinkedHashMap<>();
 

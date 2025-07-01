@@ -1,5 +1,6 @@
 package org.frankframework.runner;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -32,6 +33,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import dasniko.testcontainers.keycloak.KeycloakContainer;
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.util.AppConstants;
+
 /**
  * Tests whether bearer only request authentication works with Keycloak and the application.
  *
@@ -41,10 +44,10 @@ import lombok.extern.log4j.Log4j2;
 @Testcontainers(disabledWithoutDocker = true)
 @Tag("integration")
 @Log4j2
-public class BearerOnlyAuthenticatorIntegrationTest {
+public class KeycloakBearerOnlyAuthenticatorIntegrationTest {
 
 	@Container
-	private static final KeycloakContainer keycloak = new KeycloakContainer()
+	private static final KeycloakContainer keycloak = new KeycloakContainer("quay.io/keycloak/keycloak:26.2.5")
 			.withRealmImportFile("/test-realm.json");
 
 	private static ConfigurableApplicationContext applicationContext = null;
@@ -58,7 +61,9 @@ public class BearerOnlyAuthenticatorIntegrationTest {
 	static void setup() throws IOException {
 		// Set system properties for the application to use the Keycloak container and start the framework initializer
 		System.setProperty("application.security.console.authentication.type", "BEARER_ONLY");
-		System.setProperty("application.security.console.authentication.issuerUri", "http://localhost:%s/realms/test".formatted(keycloak.getHttpPort())); // works
+		System.setProperty("application.security.console.authentication.issuerUri", "http://localhost:%s/realms/test".formatted(keycloak.getHttpPort()));
+		System.setProperty("application.security.console.authentication.userNameAttributeName", "preferred_username");
+		System.setProperty("application.security.console.authentication.authoritiesClaimName", "realm_access.roles");
 
 		SpringApplication springApplication = IafTestInitializer.configureApplication();
 
@@ -73,6 +78,11 @@ public class BearerOnlyAuthenticatorIntegrationTest {
 
 		System.clearProperty("application.security.console.authentication.type");
 		System.clearProperty("application.security.console.authentication.issuerUri");
+		System.clearProperty("application.security.console.authentication.userNameAttributeName");
+		System.clearProperty("application.security.console.authentication.authoritiesClaimName");
+
+		// Make sure to clear the app constants as well
+		AppConstants.removeInstance();
 	}
 
 	@Test
@@ -105,11 +115,21 @@ public class BearerOnlyAuthenticatorIntegrationTest {
 						.headers(headers).build(), String.class);
 
 		assertNotNull(response, "Response should not be null");
+
+		// Try to access the server info endpoint, which uses the same authentication but relies on user roles being present
+		String serverInfoUrl = url + "/server/info";
+		ResponseEntity<GetServerInfoResponse> serverInfoResponse = restTemplate.exchange(RequestEntity
+				.get(new URI(serverInfoUrl))
+				.headers(headers).build(), GetServerInfoResponse.class);
+
+		assertNotNull(serverInfoResponse, "Server info response should not be null");
+		assertEquals("testuser", serverInfoResponse.getBody().getUserName(), "Username should match the authenticated user");
 	}
 
 	private String getFrameworkUrl() {
 		TomcatServletWebServerFactory tomcat = applicationContext.getBean("tomcat", TomcatServletWebServerFactory.class);
-		return String.format("http://localhost:%d%s/iaf/api", tomcat.getPort(), tomcat.getContextPath());
+		return String.
+				format("http://localhost:%d%s/iaf/api", tomcat.getPort(), tomcat.getContextPath());
 	}
 
 	/**
@@ -129,7 +149,6 @@ public class BearerOnlyAuthenticatorIntegrationTest {
 		return new HttpEntity<>(parameters, headers);
 	}
 
-
 	/**
 	 * DTO for the token response from Keycloak.
 	 */
@@ -144,6 +163,22 @@ public class BearerOnlyAuthenticatorIntegrationTest {
 
 		public void setAccessToken(String accessToken) {
 			this.accessToken = accessToken;
+		}
+	}
+
+	/**
+	 * DTO for the server info response from the application.
+	 */
+	@JsonIgnoreProperties(ignoreUnknown = true)
+	static class GetServerInfoResponse {
+		private String userName;
+
+		public String getUserName() {
+			return userName;
+		}
+
+		public void setUserName(String userName) {
+			this.userName = userName;
 		}
 	}
 

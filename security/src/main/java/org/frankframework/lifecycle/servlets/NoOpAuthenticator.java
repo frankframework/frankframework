@@ -43,7 +43,6 @@ import org.springframework.security.web.access.intercept.RequestAuthorizationCon
  * </p>
  */
 public class NoOpAuthenticator extends AbstractServletAuthenticator {
-	private static final String ROLE_PREFIX = "ROLE_"; // See AuthorityAuthorizationManager#ROLE_PREFIX
 
 	@Override
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
@@ -60,7 +59,7 @@ public class NoOpAuthenticator extends AbstractServletAuthenticator {
 		Set<String> securityRoles = getSecurityRoles();
 		List<GrantedAuthority> grantedAuthorities = new ArrayList<>(securityRoles.size());
 		for (String role : securityRoles) {
-			grantedAuthorities.add(new SimpleGrantedAuthority(ROLE_PREFIX + role));
+			grantedAuthorities.add(new SimpleGrantedAuthority(DEFAULT_ROLE_PREFIX + role));
 		}
 		return grantedAuthorities;
 	}
