@@ -16,7 +16,6 @@
 package org.frankframework.stream;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -97,6 +96,9 @@ public class Message implements Serializable, Closeable {
 		this.context = context;
 		this.requestClass = requestClass != null ? ClassUtils.nameOf(requestClass) : ClassUtils.nameOf(request);
 
+		if (this.request instanceof InputStream source) {
+			this.request = new RepeatableInputStreamWrapper(source);
+		}
 		if (!isRepeatable()) {
 			try {
 				this.preserve(false);
@@ -381,7 +383,7 @@ public class Message implements Serializable, Closeable {
 	}
 
 	private boolean isRepeatable() {
-		return request == null || request instanceof String || request instanceof Number || request instanceof Boolean || request instanceof ThrowingSupplier || request instanceof byte[] || request instanceof Node || request instanceof SerializableFileReference;
+		return request == null || request instanceof String || request instanceof Number || request instanceof Boolean || request instanceof ThrowingSupplier || request instanceof byte[] || request instanceof Node || request instanceof SerializableFileReference || request instanceof RequestBuffer;
 	}
 
 	/**
@@ -452,14 +454,19 @@ public class Message implements Serializable, Closeable {
 			// The Message was saved with a Charset (see PreserveToDisk), so read it with the Charset
 			return reference.getReader();
 		}
+
+		if (request instanceof RequestBuffer requestBuffer) {
+			String readerCharset = computeDecodingCharset(defaultDecodingCharset); // Don't overwrite the Message's charset unless it's set to AUTO
+			return requestBuffer.asReader(Charset.forName(readerCharset));
+		}
+
 		if (isBinary()) {
 			String readerCharset = computeDecodingCharset(defaultDecodingCharset); // Don't overwrite the Message's charset unless it's set to AUTO
 
 			LOG.debug("returning InputStream {} as Reader", this::getObjectId);
 			InputStream inputStream = asInputStream();
 			try {
-				BufferedReader reader = StreamUtil.getCharsetDetectingInputStreamReader(inputStream, readerCharset);
-				return reader;
+				return StreamUtil.getCharsetDetectingInputStreamReader(inputStream, readerCharset);
 			} catch (IOException e) {
 				onExceptionClose(e);
 				throw e;
@@ -494,6 +501,11 @@ public class Message implements Serializable, Closeable {
 		try {
 			if (request == null) {
 				return null;
+			}
+
+			if (request instanceof RequestBuffer requestBuffer) {
+				LOG.debug("returning InputStream {} from RequestBuffer", this::getObjectId);
+				return requestBuffer.asInputStream();
 			}
 
 			if (request instanceof SerializableFileReference reference) {
