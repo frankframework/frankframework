@@ -28,14 +28,7 @@ import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
-
-import lombok.Getter;
-import lombok.Setter;
-
-import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 import org.frankframework.core.Adapter;
@@ -57,6 +50,10 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.TemporaryDirectoryUtils;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
+
+import jakarta.annotation.Nullable;
+import lombok.Getter;
+import lombok.Setter;
 
 @Category(Category.Type.NN_SPECIAL)
 public class WsdlGeneratorPipe extends FixedForwardPipe {
