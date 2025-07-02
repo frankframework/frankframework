@@ -423,7 +423,7 @@ export const routes: Routes = [
     title: 'Larva',
     canActivate: [conditionalOnPropertyGuard],
     data: {
-      onProperty: 'servlet.LarvaServlet.enabled',
+      onProperty: 'larva.enabled',
       breadcrumbs: 'Testing > Larva',
       iframe: true,
     },
