@@ -25,12 +25,12 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.NonNull;
 
-public class GenericMessage<T> implements Message<T> {
+public class SwitchBoardMessage<T> implements Message<T> {
 	private final T payload;
 	private final Map<String, Object> headersMap;
 
 	@JsonCreator
-	public GenericMessage(
+	public SwitchBoardMessage(
 			@JsonProperty("payload") T payload,
 			@JsonProperty("headers") Map<String, Object> headersMap
 	) {

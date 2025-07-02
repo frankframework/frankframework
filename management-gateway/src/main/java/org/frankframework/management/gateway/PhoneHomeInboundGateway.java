@@ -121,7 +121,7 @@ public class PhoneHomeInboundGateway extends MessagingGatewaySupport {
 			String inboundJson = new String(decrypted, StandardCharsets.UTF_8);
 			log.info("Decrypted WS message: {}", inboundJson);
 
-			GenericMessage<?> inboundMsg = parseGenericMessage(inboundJson);
+			SwitchBoardMessage<?> inboundMsg = parseGenericMessage(inboundJson);
 
 			if (inboundMsg.getPayload() instanceof Map<?, ?> payload && payload.containsKey("publicKey")) {
 				@SuppressWarnings("unchecked")
@@ -145,8 +145,8 @@ public class PhoneHomeInboundGateway extends MessagingGatewaySupport {
 		return objectMapper.readValue(raw, RelayEnvelope.class);
 	}
 
-	private GenericMessage<?> parseGenericMessage(String json) throws JsonProcessingException {
-		return objectMapper.readValue(json, GenericMessage.class);
+	private SwitchBoardMessage<?> parseGenericMessage(String json) throws JsonProcessingException {
+		return objectMapper.readValue(json, SwitchBoardMessage.class);
 	}
 
 	private CompletionStage<?> handleSwitchboardMessage(WebSocket ws, RelayEnvelope envelope, Map<String, String> payload) {
@@ -180,7 +180,7 @@ public class PhoneHomeInboundGateway extends MessagingGatewaySupport {
 	}
 
 	private CompletionStage<?> handleRoutedMessage(
-			WebSocket ws, RelayEnvelope envelope, GenericMessage<?> inboundMsg, long startTime) {
+			WebSocket ws, RelayEnvelope envelope, SwitchBoardMessage<?> inboundMsg, long startTime) {
 		try {
 			Authentication auth = createAuthentication(envelope.getAuthentication());
 			propagateAuthenticationContext(auth);
@@ -198,7 +198,7 @@ public class PhoneHomeInboundGateway extends MessagingGatewaySupport {
 		return CompletableFuture.completedFuture(null);
 	}
 
-	private CompletionStage<?> sendSynchronousMessage(WebSocket ws, RelayEnvelope envelope, GenericMessage<?> inboundMsg, long startTime) {
+	private CompletionStage<?> sendSynchronousMessage(WebSocket ws, RelayEnvelope envelope, SwitchBoardMessage<?> inboundMsg, long startTime) {
 		try {
 
 			Message<?> response = super.sendAndReceiveMessage(inboundMsg);

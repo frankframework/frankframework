@@ -222,7 +222,7 @@ public class PhoneHomeOutboundGateway implements InitializingBean, OutboundGatew
 		String json = new String(decryptedBytes, StandardCharsets.UTF_8);
 
 		JavaType msgType = objectMapper.getTypeFactory()
-				.constructParametricType(GenericMessage.class, Object.class);
+				.constructParametricType(SwitchBoardMessage.class, Object.class);
 		return objectMapper.readValue(json, msgType);
 	}
 

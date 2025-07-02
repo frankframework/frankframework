@@ -23,6 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.support.GenericMessage;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -36,7 +37,6 @@ import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.console.util.ResponseUtils;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
-import org.frankframework.management.gateway.GenericMessage;
 
 @RestController
 public class FileViewer {
@@ -47,7 +47,7 @@ public class FileViewer {
 		this.frankApiService = frankApiService;
 	}
 
-	@GetMapping(value = "/file-viewer", produces = {"text/html", "text/plain", "application/xml", "application/zip", "application/octet-stream"})
+	@GetMapping(value = "/file-viewer", produces = { "text/html", "text/plain", "application/xml", "application/zip", "application/octet-stream" })
 	@AllowAllIbisUserRoles
 	@Relation("logging")
 	@Description("view or download a (log)file")
