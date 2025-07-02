@@ -54,7 +54,7 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.OutboundGateway;
-import org.frankframework.management.security.JwtKeyGeneratorSupplier;
+import org.frankframework.management.security.JwtKeyGeneratorFactoryBean;
 
 @Log4j2
 public class PhoneHomeOutboundGateway implements InitializingBean, OutboundGateway {
@@ -65,10 +65,10 @@ public class PhoneHomeOutboundGateway implements InitializingBean, OutboundGatew
 	private final Set<UUID> clientsThatReceivedPublicKey = new HashSet<>();
 	private static final String PUBLIC_KEY_FIELD = "publicKey";
 
-	private JwtKeyGeneratorSupplier jwtKeyGeneratorSupplier;
+	private JwtKeyGeneratorFactoryBean keyGeneratorFactory;
 
-	public PhoneHomeOutboundGateway(JwtKeyGeneratorSupplier jwtKeyGeneratorSupplier) {
-		this.jwtKeyGeneratorSupplier = jwtKeyGeneratorSupplier;
+	public PhoneHomeOutboundGateway(JwtKeyGeneratorFactoryBean keyGeneratorFactory) {
+		this.keyGeneratorFactory = keyGeneratorFactory;
 		this.mtlsHelper = new MtlsHelper();
 		this.httpClient = mtlsHelper.getHttpClient();
 	}
@@ -234,7 +234,7 @@ public class PhoneHomeOutboundGateway implements InitializingBean, OutboundGatew
 		RelayEnvelope envelope = new RelayEnvelope(
 				messageId,
 				encrypted,
-				jwtKeyGeneratorSupplier.getJwtKeyGenerator().create()
+				keyGeneratorFactory.getObject().create()
 		);
 		return objectMapper.writeValueAsBytes(envelope);
 	}

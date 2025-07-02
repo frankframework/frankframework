@@ -32,7 +32,7 @@ import org.springframework.context.annotation.Configuration;
 
 import lombok.Setter;
 
-import org.frankframework.management.security.JwtKeyGeneratorSupplier;
+import org.frankframework.management.security.JwtKeyGeneratorFactoryBean;
 import org.frankframework.util.SpringUtils;
 
 @Configuration
@@ -56,7 +56,7 @@ public class JwksEndpoint implements ApplicationContextAware {
 	}
 
 	private static class JwksServlet extends HttpServlet implements ApplicationContextAware {
-		private JwtKeyGeneratorSupplier keyGeneratorSupplier;
+		private JwtKeyGeneratorFactoryBean keyGeneratorFactory;
 
 		public String getName() {
 			return "JwksServlet";
@@ -64,12 +64,12 @@ public class JwksEndpoint implements ApplicationContextAware {
 
 		@Override
 		protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
-			resp.getWriter().write(keyGeneratorSupplier.getJwtKeyGenerator().getPublicJwkSet());
+			resp.getWriter().write(keyGeneratorFactory.getObject().getPublicJwkSet());
 		}
 
 		@Override
 		public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-			keyGeneratorSupplier = applicationContext.getBean("JwtKeyGeneratorSupplier", JwtKeyGeneratorSupplier.class);
+			keyGeneratorFactory = applicationContext.getBean("JwtKeyGeneratorSupplier", JwtKeyGeneratorFactoryBean.class);
 		}
 	}
 }
