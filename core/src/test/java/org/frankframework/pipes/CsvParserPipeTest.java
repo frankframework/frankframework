@@ -211,4 +211,37 @@ public class CsvParserPipeTest extends PipeTestBase<CsvParserPipe> {
 		String expected = TestFileUtils.getTestFile("/CsvParser/0x1f_example.xml");
 		assertXmlEquals(expected, prr.getResult().asString());
 	}
+
+	@Test
+	void expectSpacesNotReplaced() throws Exception {
+		pipe.setFieldSeparator(";");
+		pipe.setPrettyPrint(true);
+
+		configureAndStartPipe();
+
+		URL input = TestFileUtils.getTestFileURL("/CsvParser/input_with_spaces.csv");
+		assertNotNull(input, "cannot find test file");
+
+		PipeRunResult prr = doPipe(new UrlMessage(input));
+		String expected = TestFileUtils.getTestFile("/CsvParser/output_with_spaces.xml");
+
+		assertXmlEquals(expected, prr.getResult().asString());
+	}
+
+	@Test
+	void testTrimWhitespace() throws Exception {
+		pipe.setTrimWhitespace(true);
+		pipe.setFieldSeparator(";");
+		pipe.setPrettyPrint(true);
+
+		configureAndStartPipe();
+
+		URL input = TestFileUtils.getTestFileURL("/CsvParser/input_with_spaces.csv");
+		assertNotNull(input, "cannot find test file");
+
+		PipeRunResult prr = doPipe(new UrlMessage(input));
+		String expected = TestFileUtils.getTestFile("/CsvParser/trimmed_output.xml");
+
+		assertXmlEquals(expected, prr.getResult().asString());
+	}
 }
