@@ -41,6 +41,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.TrustManagerFactory;
 
+import org.springframework.util.StringUtils;
+
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
@@ -152,6 +154,9 @@ public class MtlsHelper {
 	}
 
 	private InputStream resolveResource(String location) throws FileNotFoundException {
+		if (!StringUtils.hasLength(location)) {
+			throw new FileNotFoundException("Location is empty");
+		}
 		if (location.startsWith("classpath:")) {
 			String path = location.substring("classpath:".length());
 			InputStream is = Thread.currentThread()
