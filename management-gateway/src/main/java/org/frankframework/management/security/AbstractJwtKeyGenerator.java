@@ -19,7 +19,6 @@ package org.frankframework.management.security;
 import java.time.Instant;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
 
@@ -81,7 +80,7 @@ public abstract class AbstractJwtKeyGenerator {
 	protected List<String> mapAuthorities(Authentication authentication) {
 		return authentication.getAuthorities().stream()
 				.map(GrantedAuthority::getAuthority)
-				.collect(Collectors.toList());
+				.toList();
 	}
 
 	protected void addCustomClaims(JWTClaimsSet.Builder builder, Authentication authentication) {
