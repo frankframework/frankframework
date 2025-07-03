@@ -69,7 +69,7 @@ public class JwksEndpoint implements ApplicationContextAware {
 
 		@Override
 		public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-			keyGenerator = applicationContext.getBean("JwtKeyGeneratorFactoryBean", AbstractJwtKeyGenerator.class);
+			keyGenerator = applicationContext.getBean("JwtGeneratorFactoryBean", AbstractJwtKeyGenerator.class);
 		}
 	}
 }
