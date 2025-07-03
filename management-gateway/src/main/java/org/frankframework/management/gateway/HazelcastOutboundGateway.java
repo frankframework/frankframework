@@ -27,6 +27,9 @@ import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import org.frankframework.management.security.AbstractJwtKeyGenerator;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,7 +54,7 @@ import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.gateway.HazelcastConfig.InstanceType;
 import org.frankframework.management.gateway.events.ClusterMemberEvent;
 import org.frankframework.management.gateway.events.ClusterMemberEvent.EventType;
-import org.frankframework.management.security.JwtKeyGeneratorFactoryBean;
+import org.frankframework.management.security.JwtGeneratorFactoryBean;
 import org.frankframework.util.SpringUtils;
 
 @Log4j2
@@ -63,8 +66,11 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 	private final String requestTopicName = HazelcastConfig.REQUEST_TOPIC_NAME;
 	private ITopic<Message<?>> requestTopic;
 
-	@Autowired
-	private JwtKeyGeneratorFactoryBean keyGeneratorFactory;
+	private AbstractJwtKeyGenerator jwtKeyGenerator;
+
+	public HazelcastOutboundGateway(JwtGeneratorFactoryBean keyGeneratorFactory) {
+		this.jwtKeyGenerator = keyGeneratorFactory.getObject();
+	}
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
@@ -77,7 +83,7 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 		SpringUtils.registerSingleton(applicationContext, "hazelcastOutboundInstance", hzInstance);
 
 		IMap<String, String> config = hzInstance.getMap(HazelcastConfig.FRANK_APPLICATION_CONFIG);
-		config.set(HazelcastConfig.FRANK_APPLICATION_KEYSET, keyGeneratorFactory.getObject().getPublicJwkSet());
+		config.set(HazelcastConfig.FRANK_APPLICATION_KEYSET, jwtKeyGenerator.getPublicJwkSet());
 
 		requestTopic = hzInstance.getTopic(requestTopicName);
 
@@ -171,7 +177,7 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 	}
 
 	private @Nonnull String getAuthentication() {
-		return keyGeneratorFactory.getObject().create();
+		return jwtKeyGenerator.create();
 	}
 
 	private long receiveTimeout(Message<?> requestMessage) {

@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.management.gateway;
+package org.frankframework.management.switchboard;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -120,7 +120,7 @@ public class MtlsHelper {
 			ctx.init(kmf.getKeyManagers(), tmf.getTrustManagers(), new SecureRandom());
 			return ctx;
 		} catch (GeneralSecurityException e) {
-			throw new PhoneHomeException("Failed to build SSL context", e);
+			throw new CloudAgentException("Failed to build SSL context", e);
 		}
 	}
 
@@ -133,7 +133,7 @@ public class MtlsHelper {
 		try {
 			return getKeyStore(location, password, fallbackType);
 		} catch (GeneralSecurityException ex) {
-			throw new PhoneHomeException("Unable to load keystore as " + primaryType + " or " + fallbackType, ex);
+			throw new CloudAgentException("Unable to load keystore as " + primaryType + " or " + fallbackType, ex);
 		}
 	}
 

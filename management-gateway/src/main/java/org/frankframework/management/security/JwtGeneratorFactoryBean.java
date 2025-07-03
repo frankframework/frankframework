@@ -19,14 +19,14 @@ package org.frankframework.management.security;
 
 import java.util.Objects;
 
-import lombok.NonNull;
-
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Value;
 
-import org.frankframework.management.gateway.PhoneHomeOutboundGateway;
+import org.frankframework.management.switchboard.CloudAgentOutboundGateway;
 
-public class JwtKeyGeneratorFactoryBean implements FactoryBean<AbstractJwtKeyGenerator> {
+import org.springframework.lang.NonNull;
+
+public class JwtGeneratorFactoryBean implements FactoryBean<AbstractJwtKeyGenerator> {
 
 	@Value("${management.gateway.outbound.class}")
 	private String outboundClass;
@@ -37,7 +37,7 @@ public class JwtKeyGeneratorFactoryBean implements FactoryBean<AbstractJwtKeyGen
 	@Override
 	public AbstractJwtKeyGenerator getObject() {
 		if (jwtKeyGenerator == null) {
-			if (Objects.equals(outboundClass, PhoneHomeOutboundGateway.class.getName())) {
+			if (Objects.equals(outboundClass, CloudAgentOutboundGateway.class.getName())) {
 				jwtKeyGenerator = new KeystoreJwtKeyGenerator();
 			} else {
 				jwtKeyGenerator = new JwtKeyGenerator();

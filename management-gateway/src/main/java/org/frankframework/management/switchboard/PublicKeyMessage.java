@@ -13,8 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.management.gateway;
+package org.frankframework.management.switchboard;
 
-public enum SwitchBoardCommandType {
-    INSTANCE_INFO,
+public record PublicKeyMessage(String publicKey) {
 }

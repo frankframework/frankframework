@@ -13,7 +13,8 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.management.gateway;
+package org.frankframework.management.switchboard;
 
-public record PublicKeyMessage(String publicKey) {
+
+public record SwitchBoardCommand<T>(SwitchBoardCommandType type, T data) {
 }

@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.management.gateway;
+package org.frankframework.management.switchboard;
 
 import java.io.IOException;
 import java.security.KeyStore;
@@ -41,9 +41,9 @@ import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 
 import org.frankframework.management.security.JwtAuthenticationToken;
 
-public class PhoneHomeJwtVerifier extends DefaultJWTProcessor<SecurityContext> {
+public class CloudAgentJwtVerifier extends DefaultJWTProcessor<SecurityContext> {
 
-	public PhoneHomeJwtVerifier(MtlsHelper mtlsHelper) {
+	public CloudAgentJwtVerifier(MtlsHelper mtlsHelper) {
 		setJWSKeySelector(new LazyLoadingJwkSource(mtlsHelper));
 	}
 

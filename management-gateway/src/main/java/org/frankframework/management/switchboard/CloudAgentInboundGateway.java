@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.management.gateway;
+package org.frankframework.management.switchboard;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -55,15 +55,15 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.management.bus.BusException;
 
 @Log4j2
-public class PhoneHomeInboundGateway extends MessagingGatewaySupport {
+public class CloudAgentInboundGateway extends MessagingGatewaySupport {
 
 	private final SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
 	private final SSLProperties sslProperties = new SSLProperties();
 	private final ObjectMapper objectMapper = new ObjectMapper();
-	private final HttpClient httpClient;
-	private final MtlsHelper mtlsHelper;
+	private final MtlsHelper mtlsHelper = new MtlsHelper();
+	private final HttpClient httpClient = mtlsHelper.getHttpClient();
 	private PublicKey consolePubKey;
-	private PhoneHomeJwtVerifier jwtVerifier;
+	private CloudAgentJwtVerifier jwtVerifier;
 
 	@Value("${instance.name:}")
 	private String instanceName;
@@ -74,18 +74,13 @@ public class PhoneHomeInboundGateway extends MessagingGatewaySupport {
 	@Value("${client.ssl.client-id:#{T(java.util.UUID).randomUUID()}}")
 	private UUID clientId;
 
-	public PhoneHomeInboundGateway() {
-		this.mtlsHelper = new MtlsHelper();
-		this.httpClient = mtlsHelper.getHttpClient();
-	}
-
 	@Override
 	protected void onInit() {
 		log.info("Init PhoneHomeInboundGateway, clientId={}", clientId);
 		setRequestChannel(resolveRequestChannel(getApplicationContext()));
 		setErrorChannel(null);
 
-		jwtVerifier = new PhoneHomeJwtVerifier(mtlsHelper);
+		jwtVerifier = new CloudAgentJwtVerifier(mtlsHelper);
 
 		try {
 			connectWebSocket();
@@ -119,7 +114,6 @@ public class PhoneHomeInboundGateway extends MessagingGatewaySupport {
 
 			byte[] decrypted = mtlsHelper.decryptHybrid(encryptedPayload);
 			String inboundJson = new String(decrypted, StandardCharsets.UTF_8);
-			log.info("Decrypted WS message: {}", inboundJson);
 
 			SwitchBoardMessage<?> inboundMsg = parseGenericMessage(inboundJson);
 
@@ -130,7 +124,7 @@ public class PhoneHomeInboundGateway extends MessagingGatewaySupport {
 			}
 
 			if (consolePubKey == null) {
-				log.error("Dropping message before console public key is set: messageId={}", envelope.getMessageId());
+				log.error("Dropping message because public key is not set: messageId={}", envelope.getMessageId());
 				return CompletableFuture.completedFuture(null);
 			}
 

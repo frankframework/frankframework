@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.management.gateway;
+package org.frankframework.management.switchboard;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -54,21 +54,21 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.OutboundGateway;
-import org.frankframework.management.security.JwtKeyGeneratorFactoryBean;
+import org.frankframework.management.security.AbstractJwtKeyGenerator;
+import org.frankframework.management.security.JwtGeneratorFactoryBean;
 
 @Log4j2
-public class PhoneHomeOutboundGateway implements InitializingBean, OutboundGateway {
+public class CloudAgentOutboundGateway implements InitializingBean, OutboundGateway {
 
 	private final HttpClient httpClient;
 	private final ObjectMapper objectMapper = new ObjectMapper();
 	private final MtlsHelper mtlsHelper;
 	private final Set<UUID> clientsThatReceivedPublicKey = new HashSet<>();
 	private static final String PUBLIC_KEY_FIELD = "publicKey";
+	private AbstractJwtKeyGenerator jwtKeyGenerator;
 
-	private JwtKeyGeneratorFactoryBean keyGeneratorFactory;
-
-	public PhoneHomeOutboundGateway(JwtKeyGeneratorFactoryBean keyGeneratorFactory) {
-		this.keyGeneratorFactory = keyGeneratorFactory;
+	public CloudAgentOutboundGateway(JwtGeneratorFactoryBean keyGeneratorFactory) {
+		this.jwtKeyGenerator = keyGeneratorFactory.getObject();
 		this.mtlsHelper = new MtlsHelper();
 		this.httpClient = mtlsHelper.getHttpClient();
 	}
@@ -234,7 +234,7 @@ public class PhoneHomeOutboundGateway implements InitializingBean, OutboundGatew
 		RelayEnvelope envelope = new RelayEnvelope(
 				messageId,
 				encrypted,
-				keyGeneratorFactory.getObject().create()
+				jwtKeyGenerator.create()
 		);
 		return objectMapper.writeValueAsBytes(envelope);
 	}

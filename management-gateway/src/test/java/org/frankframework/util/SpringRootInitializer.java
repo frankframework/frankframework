@@ -9,7 +9,7 @@ import org.frankframework.management.bus.InboundGatewayFactory;
 import org.frankframework.management.bus.OutboundGatewayFactory;
 import org.frankframework.management.gateway.HazelcastInboundGateway;
 import org.frankframework.management.gateway.HazelcastOutboundGateway;
-import org.frankframework.management.security.JwtKeyGeneratorFactoryBean;
+import org.frankframework.management.security.JwtGeneratorFactoryBean;
 
 /**
  * A minimal Spring ApplicationContext which contains no beans and no configuration.
@@ -46,7 +46,7 @@ public class SpringRootInitializer {
 	}
 
 	@Bean
-	public JwtKeyGeneratorFactoryBean createJwtKeyGeneratorSupplier() {
-		return new JwtKeyGeneratorFactoryBean();
+	public JwtGeneratorFactoryBean createJwtGeneratorFactoryBean() {
+		return new JwtGeneratorFactoryBean();
 	}
 }
