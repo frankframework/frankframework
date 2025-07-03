@@ -53,17 +53,26 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 
 
-// TODO: When anchors are supported by the Frank!Doc, link to https://github.com/frankframework/servicedispatcher
 /**
  * Use this listener to receive messages from other adapters or a scheduler within the same Frank-application or from other components residing in the same JVM.
  * JavaListeners can receive calls made via de ibis-servicedispatcher, which should be located on the JVM classpath to receive calls from other components in the JVM. If you want to call an adapter in the same Frank-application, consider using the IbisLocalSender.
- * <br/>
+ * <p>
  * To understand what this listener does exactly, please remember that the Frank!Framework is a Java application.
  * The JavaListener listens to Java method calls. You can issue Java method calls using a {@link IbisJavaSender} (external call)
  * or {@link IbisLocalSender} (internal call).
- * For more information see the ibis-servicedispatcher project.
- *
- * @author  Gerrit van Brakel
+ * </p>
+ * <p>
+ *     Calling the JavaListener via the {@link IbisJavaSender} forces all request messages to be passed as strings without
+ *     metadata.
+ * </p>
+ * <p>
+ *     When calling the JavaListener via the {@link IbisLocalSender} all messages are passed in their native format,
+ *     retaining all their metadata.
+ * </p>
+ * <p>
+ *     @see <a href="https://github.com/frankframework/servicedispatcher">The ServiceDispatcher project on Gitbug for more information.</a>
+ * </p>
+ * @author Gerrit van Brakel
  */
 @Category(Category.Type.BASIC)
 public class JavaListener<M> implements RequestReplyListener, IPushingListener<M>, RequestProcessor, HasPhysicalDestination, ServiceClient {

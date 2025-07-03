@@ -36,7 +36,7 @@ import org.frankframework.stream.Message;
  * </p>
  * <p>
  *     The ErrorMessageFormatter is also called when any exception occurs during pipeline execution that is not caught or handled
- *     by an {@code exceptionForward}. The error message is then returned as the pipeline result.
+ *     by an {@code exceptionForward}. Request-Reply receivers configured with {@code FORMAT_AND_RETURN} will then return the formatted error message as the pipeline result.
  * </p>
  * <p>
  *     If you want to return a specific error message from a pipeline to signal a (functional) error condition that did not result from

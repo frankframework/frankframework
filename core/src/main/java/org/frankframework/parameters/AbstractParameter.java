@@ -75,13 +75,14 @@ import org.frankframework.util.XmlUtils;
 /**
  * Generic parameter definition.
  *
+ * <p>
  * A parameter resembles an attribute. However, while attributes get their value at configuration-time,
  * parameters get their value at the time of processing the message. Value can be retrieved from the message itself,
  * a fixed value, or from the pipelineSession. If this does not result in a value (or if neither of these is specified), a default value
  * can be specified. If an XPathExpression, XSLT stylesheet or JSONPathExpression is specified, it will be applied to the message, the value retrieved
  * from the pipelineSession or the fixed value specified. If the transformation produces no output, the default value
  * of the parameter is taken if provided.
- * <br/><br/>
+ * </p>
  * Examples:
  * <pre><code>
  * stored under SessionKey 'TransportInfo':
@@ -102,7 +103,7 @@ import org.frankframework.util.XmlUtils;
  * </code></pre>
  *
  * N.B. to obtain a fixed value: a non-existing 'dummy' <code>sessionKey</code> in combination with the fixed value in <code>defaultValue</code> is used traditionally.
- * The current version of parameter supports the 'value' attribute, that is sufficient to set a fixed value.
+ * The current version of parameter supports the {@code value} attribute, that is sufficient to set a fixed value.
  * @author Gerrit van Brakel
  * @ff.parameters Parameters themselves can have parameters too, for instance if a XSLT transformation is used, that transformation can have parameters.
  */

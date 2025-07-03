@@ -35,6 +35,8 @@ public interface RequestReplyListener {
 	 * The default is currently {@code RETHROW} for backwards compatibility but will become {@code FORMAT_AND_RETURN} in a future version.
 	 *
 	 * @ff.default RETHROW
+	 * @since 9.2
+	 *
 	 * @param method {@code RETHROW} or {@code FORMAT_AND_RETURN}
 	 */
 	void setOnException(ExceptionHandlingMethod method);

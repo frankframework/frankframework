@@ -36,12 +36,29 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.ThreadContext;
+import org.springframework.context.ApplicationContext;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.AbstractPlatformTransactionManager;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
+import org.xml.sax.SAXException;
+
+import io.micrometer.core.instrument.DistributionSummary;
+import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -111,21 +128,6 @@ import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.util.XmlUtils;
-import org.springframework.context.ApplicationContext;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionStatus;
-import org.springframework.transaction.support.AbstractPlatformTransactionManager;
-import org.springframework.transaction.support.DefaultTransactionDefinition;
-import org.springframework.transaction.support.TransactionSynchronization;
-import org.springframework.transaction.support.TransactionSynchronizationManager;
-import org.xml.sax.SAXException;
-
-import io.micrometer.core.instrument.DistributionSummary;
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Wrapper for a listener that specifies a channel for the incoming messages of a specific {@link Adapter}.
@@ -1325,7 +1327,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 					statusMessage = t.getMessage();
 					if (pipeLineResult==null) {
 						pipeLineResult=new PipeLineResult();
-						pipeLineResult.setExitCode(500); // If there was an exception that was not handled by the pipeline, consider it an internal server error.
+						pipeLineResult.setExitCode(session.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 500)); // If there was an exception that was not handled by the pipeline, consider it an internal server error.
 					}
 					messageInError = true;
 					// If processing before this step set ExitState to REJECTED, do not overwrite. Do make sure that when message is in error, ExitState = ERROR before calling Listener.afterMessageProcessed().
@@ -1335,6 +1337,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 					if (Message.isEmpty(pipeLineResult.getResult())) {
 						pipeLineResult.setResult(adapter.formatErrorMessage(null, t, compactedMessage, session, null));
 					}
+					session.setExitState(pipeLineResult);
 					if (getListener() instanceof RequestReplyListener requestReplyListener && requestReplyListener.getOnException() == RequestReplyListener.ExceptionHandlingMethod.FORMAT_AND_RETURN) {
 						return pipeLineResult.getResult();
 					}
