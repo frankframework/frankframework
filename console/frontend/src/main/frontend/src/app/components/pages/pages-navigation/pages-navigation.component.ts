@@ -20,6 +20,7 @@ import { HasAccessToLinkDirective } from '../../has-access-to-link.directive';
 import { NgClass } from '@angular/common';
 import { AppConstants, AppService } from '../../../app.service';
 import { Subscription } from 'rxjs';
+import { ConditionalOnPropertyDirective } from '../../conditional-on-property.directive';
 
 type ExpandedItem = {
   element: HTMLElement;
@@ -39,6 +40,7 @@ type ExpandedItem = {
     SidebarDirective,
     HasAccessToLinkDirective,
     NgClass,
+    ConditionalOnPropertyDirective,
   ],
 })
 export class PagesNavigationComponent implements OnChanges, OnInit, AfterViewInit, OnDestroy {
