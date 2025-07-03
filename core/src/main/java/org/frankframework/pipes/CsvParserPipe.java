@@ -135,7 +135,7 @@ public class CsvParserPipe extends FixedForwardPipe {
 	 */
 	private String getValue(String value) {
 		if (isTrimWhitespace()) {
-			value = StringUtils.trim(value);
+			return StringUtils.trim(value);
 		}
 		return value;
 	}
@@ -146,15 +146,16 @@ public class CsvParserPipe extends FixedForwardPipe {
 	 * @return the processed header key
 	 */
 	private String getKey(String key) {
+		String processedKey = key;
 		if (isTrimWhitespace()) {
-			key = StringUtils.trim(key);
+			processedKey = StringUtils.trim(processedKey);
 		}
 
 		if (getHeaderCase() != null) {
-			return getHeaderCase() == HeaderCase.LOWERCASE ? key.toLowerCase() : key.toUpperCase();
+			return getHeaderCase() == HeaderCase.LOWERCASE ? processedKey.toLowerCase() : processedKey.toUpperCase();
 		}
 
-		return key;
+		return processedKey;
 	}
 
 	/**
