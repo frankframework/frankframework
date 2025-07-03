@@ -19,12 +19,12 @@ package org.frankframework.management.security;
 
 import java.util.Objects;
 
+import jakarta.annotation.Nonnull;
+
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Value;
 
 import org.frankframework.management.switchboard.CloudAgentOutboundGateway;
-
-import org.springframework.lang.NonNull;
 
 public class JwtGeneratorFactoryBean implements FactoryBean<AbstractJwtKeyGenerator> {
 
@@ -33,7 +33,7 @@ public class JwtGeneratorFactoryBean implements FactoryBean<AbstractJwtKeyGenera
 
 	private AbstractJwtKeyGenerator jwtKeyGenerator;
 
-	@NonNull
+	@Nonnull
 	@Override
 	public AbstractJwtKeyGenerator getObject() {
 		if (jwtKeyGenerator == null) {
