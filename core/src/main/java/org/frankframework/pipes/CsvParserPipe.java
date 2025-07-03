@@ -199,7 +199,7 @@ public class CsvParserPipe extends FixedForwardPipe {
 
 	/**
 	 * When set to true, whitespace is trimmed from the beginning and end of each header and field value.
-	 * @param trimWhitespace
+	 * @ff.default false
 	 */
 	public void setTrimWhitespace(boolean trimWhitespace) {
 		this.trimWhitespace = trimWhitespace;
