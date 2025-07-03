@@ -66,9 +66,9 @@
 		</Pipeline>
 	</Adapter>
 
-	<Adapter name="ParameterizedErrorMessage-Trigger">
+	<Adapter name="ParameterizedErrorMessage-CallDirect-Trigger">
 		<Receiver>
-			<FrankListener name="ParameterizedErrorMessage-Trigger"/>
+			<FrankListener name="ParameterizedErrorMessage-CallDirect-Trigger"/>
 		</Receiver>
 		<Pipeline>
 			<SenderPipe name="Call Subadapter To Test">
@@ -79,7 +79,8 @@
 		</Pipeline>
 	</Adapter>
 
-	<Adapter name="ParameterizedErrorMessage-PassViaException">
+	<!-- Use FrankSender with direct calls to sub-adapters -->
+	<Adapter name="ParameterizedErrorMessage-CallDirect-PassViaException">
 		<DataSonnetErrorMessageFormatter styleSheetName="stylesheets/ErrorParameterized1.jsonnet"/>
 		<Pipeline>
 			<Exits>
@@ -106,7 +107,87 @@
 		</Pipeline>
 	</Adapter>
 
-	<Adapter name="ParameterizedErrorMessage-PassViaSession">
+	<Adapter name="ParameterizedErrorMessage-CallDirect-PassViaSession">
+		<DataSonnetErrorMessageFormatter styleSheetName="stylesheets/ErrorParameterized2.jsonnet">
+			<NumberParam name="errorCode" sessionKey="errorCode"/>
+			<Param name="errorMessage" sessionKey="errorMessage"/>
+		</DataSonnetErrorMessageFormatter>
+		<Pipeline>
+			<Exits>
+				<Exit name="done" state="SUCCESS"/>
+				<Exit name="error" state="ERROR"/>
+			</Exits>
+
+			<SwitchPipe name="Check Success" jsonPathExpression='concat("result-count=", $.results.length())' notFoundForwardName="result-count-too-many"/>
+
+			<EchoPipe name="result-count=1" getInputFromSessionKey="originalMessage">
+				<Forward name="success" path="done"/>
+			</EchoPipe>
+
+			<ExceptionPipe name="result-count=0">
+				<NumberParam name="errorCode" value="-1"/>
+				<Param name="errorMessage" value="No results found"/>
+			</ExceptionPipe>
+
+			<ExceptionPipe name="result-count-too-many">
+				<NumberParam name="errorCode" value="2"/>
+				<Param name="errorMessage" value="Too many results found, expected only single result"/>
+			</ExceptionPipe>
+		</Pipeline>
+	</Adapter>
+
+	<!-- Use FrankSender with calls to FrankListener in sub-adapters -->
+	<!-- TODO: Error handling in these scenarios differs from the direct-call scenario and we need to fix that -->
+	<Adapter name="ParameterizedErrorMessage-CallListener-Trigger">
+		<Receiver>
+			<FrankListener name="ParameterizedErrorMessage-CallListener-Trigger"/>
+		</Receiver>
+		<Pipeline>
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" />
+			</Exits>
+			<SenderPipe name="Call Subadapter To Test">
+				<FrankSender scope="LISTENER">
+					<Param name="target" jsonPathExpression="$.target"/>
+				</FrankSender>
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="ParameterizedErrorMessage-CallListener-PassViaException">
+		<Receiver>
+			<FrankListener name="ParameterizedErrorMessage-CallListener-PassViaException" onException="format_and_return"/>
+		</Receiver>
+		<DataSonnetErrorMessageFormatter styleSheetName="stylesheets/ErrorParameterized1.jsonnet"/>
+		<Pipeline>
+			<Exits>
+				<Exit name="done" state="SUCCESS"/>
+				<Exit name="error" state="ERROR"/>
+			</Exits>
+
+			<JsonPathPipe name="Count nr of results" storeResultInSessionKey="ResultCount" jsonPathExpression='concat("result-count=", $.results.length())'/>
+			<XmlSwitchPipe name="Check Success" forwardNameSessionKey="ResultCount" notFoundForwardName="result-count-too-many"/>
+
+			<EchoPipe name="result-count=1" getInputFromSessionKey="originalMessage">
+				<Forward name="success" path="done"/>
+			</EchoPipe>
+
+			<ExceptionPipe name="result-count=0">
+				<NumberParam name="errorCode" value="-1"/>
+				<Param name="errorMessage" value="No results found"/>
+			</ExceptionPipe>
+
+			<ExceptionPipe name="result-count-too-many">
+				<NumberParam name="errorCode" value="2"/>
+				<Param name="errorMessage" value="Too many results found, expected only single result"/>
+			</ExceptionPipe>
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="ParameterizedErrorMessage-CallListener-PassViaSession">
+		<Receiver>
+			<FrankListener name="ParameterizedErrorMessage-CallListener-PassViaSession" onException="format_and_return"/>
+		</Receiver>
 		<DataSonnetErrorMessageFormatter styleSheetName="stylesheets/ErrorParameterized2.jsonnet">
 			<NumberParam name="errorCode" sessionKey="errorCode"/>
 			<Param name="errorMessage" sessionKey="errorMessage"/>

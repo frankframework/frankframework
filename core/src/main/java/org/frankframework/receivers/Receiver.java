@@ -94,6 +94,7 @@ import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
+import org.frankframework.core.RequestReplyListener;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.core.TransactionAttribute;
@@ -1324,7 +1325,10 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 						pipeLineResult.setState(ExitState.ERROR);
 					}
 					if (Message.isEmpty(pipeLineResult.getResult())) {
-						pipeLineResult.setResult(adapter.formatErrorMessage("exception caught",t,compactedMessage, session, this));
+						pipeLineResult.setResult(adapter.formatErrorMessage(null, t, compactedMessage, session, null));
+					}
+					if (getListener() instanceof RequestReplyListener requestReplyListener && requestReplyListener.getOnException() == RequestReplyListener.ExceptionHandlingMethod.FORMAT_AND_RETURN) {
+						return pipeLineResult.getResult();
 					}
 					throw wrapExceptionAsListenerException(t);
 				}

@@ -26,6 +26,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
@@ -68,6 +69,7 @@ import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageContext;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DateFormatUtils;
@@ -431,7 +433,10 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		}
 	}
 
-	public Message formatErrorMessage(String errorMessage, Throwable t, Message originalMessage, PipeLineSession session, HasName objectInError) {
+	public @Nonnull Message formatErrorMessage(@Nullable String errorMessage, @Nullable Throwable t, @Nullable Message originalMessage, @Nonnull PipeLineSession session, @Nullable HasName objectInError) {
+		if (Message.isFormattedErrorMessage(originalMessage)) {
+			return originalMessage;
+		}
 		try {
 			if (errorMessageFormatter == null) {
 				if (getConfiguration().getErrorMessageFormatter() != null) {
@@ -443,7 +448,9 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 					}
 				}
 			}
-			return errorMessageFormatter.format(errorMessage, t, objectInError, originalMessage, session);
+			Message errorResult = errorMessageFormatter.format(errorMessage, t, objectInError, originalMessage, session);
+			errorResult.getContext().put(MessageContext.IS_ERROR_MESSAGE, true);
+			return errorResult;
 		} catch (Exception e) {
 			String msg = "got error while formatting errormessage, original errorMessage [" + errorMessage + "]";
 			msg = msg + " from [" + (objectInError == null ? "unknown-null" : objectInError.getName()) + "]";

@@ -134,7 +134,8 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		String messageId = session.getMessageId();
 		String correlationId = session.getCorrelationId();
 		String msgIdToUse = StringUtils.isNotEmpty(messageId) && !MessageUtils.isFallbackMessageId(messageId) ? messageId : correlationId;
-		String prefix = location != null ? ClassUtils.nameOf(location) : null;
+
+		String prefix = (location != null) ? ClassUtils.nameOf(location) : null;
 		if (StringUtils.isNotEmpty(msgIdToUse)) {
 			prefix = StringUtil.concatStrings(prefix, " ", "msgId [" + msgIdToUse + "]");
 		}
@@ -159,7 +160,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 			errorObject.addAttribute("originator", originator);
 			errorObject.addAttribute("message", XmlEncodingUtils.replaceNonValidXmlCharacters(errorMessage));
 
-			addLocation(location, errorObject);
+			addLocation(getLocation(location, t), errorObject);
 
 			if (StringUtils.isNotEmpty(details)) {
 				errorObject.add("details", XmlEncodingUtils.replaceNonValidXmlCharacters(details));
@@ -254,17 +255,36 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 	}
 
 	/**
+	 * Get the location, either from a nested PipeRunException if present or from
+	 * the location passed to the ErrorMessageFormatter.
+	 */
+	private static @Nullable HasName getLocation(@Nullable HasName location, @Nullable Throwable t) {
+		PipeRunException pre = extractPipeRunException(t);
+		if (pre != null && pre.getPipeInError() != null) {
+			return pre.getPipeInError();
+		}
+		return location;
+	}
+
+	/**
 	 * Extract parameters from (nested) PipeRunException, or empty map.
 	 */
 	private static @Nonnull Map<String, Object> getPipeRunExceptionParams(@Nullable Throwable t) {
-		if (t == null) {
+		PipeRunException pre = extractPipeRunException(t);
+		if (pre == null) {
 			return Map.of();
 		}
-		if (t instanceof PipeRunException pre) {
-			return pre.getParameters();
-		} else {
-			return getPipeRunExceptionParams(t.getCause());
+		return pre.getParameters();
+	}
+
+	private static @Nullable PipeRunException extractPipeRunException(@Nullable Throwable t) {
+		if (t == null) {
+			return null;
 		}
+		if (t instanceof PipeRunException pre) {
+			return pre;
+		}
+		return extractPipeRunException(t.getCause());
 	}
 
 	private @Nullable String getMessageAsString(@Nullable Message originalMessage, @Nullable String messageId) {
