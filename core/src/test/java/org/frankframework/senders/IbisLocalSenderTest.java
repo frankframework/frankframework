@@ -499,7 +499,6 @@ class IbisLocalSenderTest {
 
 		adapter.addReceiver(receiver);
 		receiver.setListener(listener);
-		receiver.setAdapter(adapter);
 		receiver.setTxManager(configuration.createBean(NarayanaJtaTransactionManager.class));
 
 		listener.setHandler(receiver);

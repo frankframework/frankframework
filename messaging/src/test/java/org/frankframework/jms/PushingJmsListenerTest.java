@@ -93,23 +93,25 @@ public class PushingJmsListenerTest {
 		return listener;
 	}
 
-	public <M> Receiver<M> setupReceiver(IListener<M> listener) {
+	public <M> Receiver<M> setupReceiver(Adapter adapter, IListener<M> listener) {
 		@SuppressWarnings("unchecked")
-		Receiver<M> receiver = spy(configuration.createBean(Receiver.class));
+		Receiver<M> receiver = spy(SpringUtils.createBean(adapter, Receiver.class));
+		receiver.setApplicationContext(adapter);
 		receiver.setListener(listener);
 		receiver.setName("receiver");
 		receiver.setStartTimeout(2);
 		receiver.setStopTimeout(2);
 		// To speed up test, we don't actually sleep
 		doNothing().when(receiver).suspendReceiverThread(anyInt());
+		adapter.addReceiver(receiver);
 		return receiver;
 	}
 
-	public <M> Adapter setupAdapter(Receiver<M> receiver) throws Exception {
-		return setupAdapter(receiver, PipeLine.ExitState.SUCCESS);
+	public <M> Adapter setupAdapter() throws Exception {
+		return setupAdapter(PipeLine.ExitState.SUCCESS);
 	}
 
-	public <M> Adapter setupAdapter(Receiver<M> receiver, PipeLine.ExitState exitState) throws Exception {
+	public <M> Adapter setupAdapter(PipeLine.ExitState exitState) throws Exception {
 		Adapter adapter = spy(configuration.createBean(Adapter.class));
 		adapter.setName(adapterName);
 
@@ -132,7 +134,6 @@ public class PushingJmsListenerTest {
 		pl.addPipeLineExit(ple);
 		adapter.setPipeLine(pl);
 
-		adapter.addReceiver(receiver);
 		configuration.addAdapter(adapter);
 		return adapter;
 	}
@@ -150,13 +151,13 @@ public class PushingJmsListenerTest {
 
 		createMessagingSource(listener);
 
+		Adapter adapter = setupAdapter(PipeLine.ExitState.ERROR);
 		@SuppressWarnings("unchecked")
 		IListenerConnector<Message> jmsConnectorMock = mock(IListenerConnector.class);
 		listener.setJmsConnector(jmsConnectorMock);
-		Receiver<Message> receiver = setupReceiver(listener);
+		Receiver<Message> receiver = setupReceiver(adapter, listener);
 		receiver.setMaxRetries(1);
 
-		Adapter adapter = setupAdapter(receiver, PipeLine.ExitState.ERROR);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());
 		assertEquals(RunState.STOPPED, receiver.getRunState());
@@ -209,8 +210,8 @@ public class PushingJmsListenerTest {
 		listener.setPollGuardInterval(1_000);
 		listener.setMockLastPollDelayMs(10_000); // Last Poll always before PollGuard triggered
 
-		Receiver<jakarta.jms.Message> receiver = setupReceiver(listener);
-		Adapter adapter = setupAdapter(receiver);
+		Adapter adapter = setupAdapter();
+		Receiver<jakarta.jms.Message> receiver = setupReceiver(adapter, listener);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());
 		assertEquals(RunState.STOPPED, receiver.getRunState());
@@ -270,8 +271,8 @@ public class PushingJmsListenerTest {
 		listener.setPollGuardInterval(1_000);
 		listener.setMockLastPollDelayMs(10_000); // Last Poll always before PollGuard triggered
 
-		Receiver<jakarta.jms.Message> receiver = setupReceiver(listener);
-		Adapter adapter = setupAdapter(receiver);
+		Adapter adapter = setupAdapter();
+		Receiver<jakarta.jms.Message> receiver = setupReceiver(adapter, listener);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());
 		assertEquals(RunState.STOPPED, receiver.getRunState());
