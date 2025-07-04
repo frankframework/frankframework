@@ -37,6 +37,7 @@ import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
+import org.frankframework.doc.Category;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
 
@@ -45,7 +46,7 @@ import org.frankframework.stream.Message;
  * The Kafka integration is still under development so do not
  * currently use unless you wish to participate in this development.
  */
-@Deprecated(forRemoval = false)
+@Category(Category.Type.EXPERIMENTAL)
 @ConfigurationWarning("Experimental and under development. Do not use unless you wish to participate in this development.")
 @Log4j2
 public class KafkaSender extends AbstractKafkaFacade implements ISender {
