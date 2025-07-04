@@ -1,11 +1,7 @@
 package org.frankframework.console.controllers.socket;
 
-import org.frankframework.console.controllers.SpringUnitTestLocalGateway;
-
-import org.frankframework.console.controllers.WebTestConfiguration;
-import org.frankframework.console.util.RequestMessageBuilder;
-import org.frankframework.management.bus.BusAction;
-import org.frankframework.management.bus.BusTopic;
+import static org.frankframework.console.util.MatchUtils.assertJsonEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,8 +14,11 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import org.frankframework.console.controllers.SpringUnitTestLocalGateway;
+import org.frankframework.console.controllers.WebTestConfiguration;
+import org.frankframework.console.util.RequestMessageBuilder;
+import org.frankframework.management.bus.BusAction;
+import org.frankframework.management.bus.BusTopic;
 
 @WebAppConfiguration
 @ExtendWith(SpringExtension.class)
@@ -66,8 +65,8 @@ class FrankApiWebSocketBaseTest {
 		builder.setPayload(payload2);
 		String result2 = webSocketBase.compareAndUpdateResponse(builder, null, null);
 
-		assertEquals(payload, result);
-		assertEquals(expectedResult, result2);
+		assertJsonEquals(payload, result);
+		assertJsonEquals(expectedResult, result2);
 	}
 
 	@Test
@@ -87,7 +86,7 @@ class FrankApiWebSocketBaseTest {
 		builder.setPayload(payload);
 		String result2 = webSocketBase.compareAndUpdateResponse(builder, null, null);
 
-		assertEquals(payload, result);
+		assertJsonEquals(payload, result);
 		assertNull(result2);
 	}
 }
