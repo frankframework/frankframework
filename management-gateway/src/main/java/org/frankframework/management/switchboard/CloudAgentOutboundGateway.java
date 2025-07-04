@@ -73,6 +73,12 @@ public class CloudAgentOutboundGateway implements InitializingBean, OutboundGate
 		this.httpClient = mtlsHelper.getHttpClient();
 	}
 
+	protected CloudAgentOutboundGateway(JwtGeneratorFactoryBean keyFactory, MtlsHelper mtlsHelper, HttpClient httpClient) {
+		this.jwtKeyGenerator = keyFactory.getObject();
+		this.mtlsHelper = mtlsHelper;
+		this.httpClient = httpClient;
+	}
+
 	@Override
 	public void afterPropertiesSet() {
 		getMembers();
