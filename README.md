@@ -65,3 +65,7 @@ In need of help? Our manual can be found at <http://frank-manual.readthedocs.io>
 ## Contributing
 Eager to help us expand or enhance our framework? 
 Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before [Contributing](CONTRIBUTING.md).
+
+## Show Your Support
+Star the repository to stay current with our newest updates and enhancements!
+![star-gif](https://github.com/user-attachments/assets/a094486b-cabb-48a1-8718-37072162fa50)
