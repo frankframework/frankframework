@@ -51,6 +51,7 @@ import org.frankframework.core.IListener;
 import org.frankframework.core.IPullingListener;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.doc.Category;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
@@ -63,7 +64,7 @@ import org.frankframework.util.StringUtil;
  * The Kafka integration is still under development so do not
  * currently use unless you wish to participate in this development.
  */
-@Deprecated(forRemoval = false)
+@Category(Category.Type.EXPERIMENTAL)
 @ConfigurationWarning("Experimental and under development. Do not use unless you wish to participate in this development.")
 @Log4j2
 public class KafkaListener extends AbstractKafkaFacade implements IPullingListener<ConsumerRecord<String, byte[]>> {
