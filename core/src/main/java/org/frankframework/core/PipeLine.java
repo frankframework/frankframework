@@ -15,7 +15,6 @@
 */
 package org.frankframework.core;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -149,7 +148,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private final Map<String, DistributionSummary> pipeSizeStats = new ConcurrentHashMap<>();
 
 	private boolean configurationSucceeded = false;
-	private boolean inputMessageConsumedMultipleTimes=false;
 
 	private @Getter String expectsSessionKeys;
 	private Set<String> expectsSessionKeysSet;
@@ -289,9 +287,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		requestSizeStats = configurationMetrics.createDistributionSummary(this, FrankMeterType.PIPELINE_SIZE);
 		pipelineWaitStatistics = configurationMetrics.createDistributionSummary(this, FrankMeterType.PIPELINE_WAIT_TIME);
 
-		inputMessageConsumedMultipleTimes |= pipes.stream()
-				.anyMatch(p -> p.consumesSessionVariable(PipeLineSession.ORIGINAL_MESSAGE_KEY));
-
 		if (StringUtils.isNotBlank(expectsSessionKeys)) {
 			expectsSessionKeysSet = StringUtil.splitToStream(expectsSessionKeys).collect(Collectors.toUnmodifiableSet());
 		} else {
@@ -412,14 +407,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	public PipeLineResult process(String messageId, Message message, PipeLineSession pipeLineSession) throws PipeRunException {
 		if (transformNullMessage != null && message.isEmpty()) {
 			message = transformNullMessage;
-		} else {
-			if (inputMessageConsumedMultipleTimes) {
-				try {
-					message.preserve();
-				} catch (IOException e) {
-					throw new PipeRunException(null, "Cannot preserve inputMessage", e);
-				}
-			}
 		}
 		if (!expectsSessionKeysSet.isEmpty()) {
 			verifyExpectedSessionKeysPresent(pipeLineSession);

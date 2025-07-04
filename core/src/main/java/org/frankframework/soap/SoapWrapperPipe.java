@@ -22,6 +22,8 @@ import javax.xml.transform.TransformerException;
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
@@ -38,8 +40,6 @@ import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.UtilityTransformerPools;
 import org.frankframework.util.XmlUtils;
-
-import lombok.Getter;
 
 /**
  * Pipe to wrap or unwrap a message from/into a SOAP Envelope.
@@ -203,7 +203,6 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 				}
 				String soapHeader = null;
 				if (soapHeaderTp != null) {
-					payload.preserve();
 					try (Message soapHeaderMsg = soapHeaderTp.transform(payload, parameterValueList)) {
 						soapHeader = soapHeaderMsg.asString();
 					}
@@ -218,7 +217,6 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 
 				result = wrapMessage(payload, soapHeader, session);
 			} else { // direction==unwrap
-				message.preserve();
 				result = unwrapMessage(message, session);
 				if (Message.isEmpty(result)) {
 					throw new PipeRunException(this, "SOAP Body is empty or message is not a SOAP Message");

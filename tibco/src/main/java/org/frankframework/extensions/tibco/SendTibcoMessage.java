@@ -125,12 +125,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		int replyTimeout_work;
 		String soapAction_work;
 
-		String result = null;
-		try {
-			input.preserve();
-		} catch (IOException e) {
-			throw new PipeRunException(this,"cannot preserve input",e);
-		}
+		String result;
 		ParameterValueList pvl;
 		try {
 			pvl = getParameterList().getValues(input, session);

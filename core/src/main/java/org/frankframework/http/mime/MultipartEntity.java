@@ -44,7 +44,7 @@ public class MultipartEntity extends BasicHttpEntity implements HttpEntity {
 
 	@Override
 	public boolean isRepeatable() {
-		return multipart.isRepeatable();
+		return true;
 	}
 
 	@Override

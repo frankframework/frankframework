@@ -40,8 +40,8 @@ import org.frankframework.util.StreamUtil;
  */
 @Log4j2
 public class OverflowToDiskOutputStream extends OutputStream implements AutoCloseable, Flushable {
-	private List<BufferBlock> buffers; // temporary buffer, once full, write to disk
-	private BufferBlock lastBlock;
+	private List<ByteBufferBlock> buffers; // temporary buffer, once full, write to disk
+	private ByteBufferBlock lastBlock;
 	private OutputStream outputStream;
 
 	private final Path tempDirectory;
@@ -66,7 +66,7 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 		// either the buffer or outputStream exists, but not both at the same time.
 		if (maxSize > 0) {
 			buffers = new ArrayList<>();
-			lastBlock = new BufferBlock();
+			lastBlock = new ByteBufferBlock();
 			buffers.add(lastBlock);
 			this.maxBufferSize = maxSize;
 		} else {
@@ -124,7 +124,7 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 
 		// create the OutputStream and write the buffer to it.
 		OutputStream overflow = createFileOnDisk();
-		for (BufferBlock b : buffers) {
+		for (ByteBufferBlock b : buffers) {
 			overflow.write(b.buffer, 0, b.count);
 		}
 
@@ -162,9 +162,9 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 		// Write to the buffer
 		currentBufferSize += len;
 		while (len > 0) {
-			BufferBlock s = lastBlock;
+			ByteBufferBlock s = lastBlock;
 			if (s.isFull()) {
-				s = new BufferBlock();
+				s = new ByteBufferBlock();
 				buffers.add(s);
 				lastBlock = s;
 			}
@@ -173,17 +173,6 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 			s.count += n;
 			len -= n;
 			off += n;
-		}
-	}
-
-	static class BufferBlock {
-
-		final byte[] buffer = new byte[StreamUtil.BUFFER_SIZE];
-
-		int count;
-
-		boolean isFull() {
-			return count == buffer.length;
 		}
 	}
 
@@ -211,9 +200,9 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 			final byte[] out = new byte[currentBufferSize];
 
 			int outPtr = 0;
-			Iterator<BufferBlock> i = buffers.iterator();
+			Iterator<ByteBufferBlock> i = buffers.iterator();
 			while (i.hasNext()) {
-				BufferBlock b = i.next();
+				ByteBufferBlock b = i.next();
 				System.arraycopy(b.buffer, 0, out, outPtr, b.count);
 				outPtr += b.count;
 				i.remove();

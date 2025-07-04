@@ -21,12 +21,13 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringWriter;
 
-import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.MessageEncoderImpl;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.io.input.BoundedReader;
 import org.springframework.beans.factory.annotation.Autowired;
+
+import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.MessageEncoderImpl;
 
 import org.frankframework.stream.Message;
 
@@ -41,27 +42,24 @@ public class MessageEncoder extends MessageEncoderImpl {
 				charset = m.getCharset();
 			}
 			if (m.requiresStream()) {
-				if (m.isRepeatable()) {
-					if (m.isBinary()) {
-						ByteArrayOutputStream baos = new ByteArrayOutputStream();
-						try (InputStream inputStream = m.asInputStream()) {
-							IOUtils.copy(new BoundedInputStream(inputStream, maxMessageLength), baos, maxMessageLength);
-							ToStringResult result = super.toString(baos.toByteArray(), charset);
-							result.setMessageClassName(m.getObjectId());
-							return result;
-						} catch (IOException e) {
-							return super.toString(e, null);
-						}
-					}
-					StringWriter writer = new StringWriter();
-					try (Reader reader = m.asReader()){
-						IOUtils.copy(new BoundedReader(reader, maxMessageLength), writer);
+				if (m.isBinary()) {
+					ByteArrayOutputStream baos = new ByteArrayOutputStream();
+					try (InputStream inputStream = m.asInputStream()) {
+						IOUtils.copy(new BoundedInputStream(inputStream, maxMessageLength), baos, maxMessageLength);
+						ToStringResult result = super.toString(baos.toByteArray(), charset);
+						result.setMessageClassName(m.getObjectId());
+						return result;
 					} catch (IOException e) {
 						return super.toString(e, null);
 					}
-					return new ToStringResult(writer.toString(), null, m.getObjectId());
 				}
-				return new ToStringResult(WAITING_FOR_STREAM_MESSAGE, null, m.getObjectId());
+				StringWriter writer = new StringWriter();
+				try (Reader reader = m.asReader()){
+					IOUtils.copy(new BoundedReader(reader, maxMessageLength), writer);
+				} catch (IOException e) {
+					return super.toString(e, null);
+				}
+				return new ToStringResult(writer.toString(), null, m.getObjectId());
 			}
 			ToStringResult r = super.toString(m.asObject(), charset);
 			r.setMessageClassName(m.getObjectId());

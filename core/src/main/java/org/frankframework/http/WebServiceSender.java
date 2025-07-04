@@ -143,7 +143,6 @@ public class WebServiceSender extends HttpSender {
 		Message httpResult;
 		try {
 			httpResult = super.extractResult(responseHandler, session);
-			httpResult.preserve();
 		} catch (SenderException e) {
 			soapWrapper.checkForSoapFault(getResponseBody(responseHandler), e, session);
 			throw e;

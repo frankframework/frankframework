@@ -15,8 +15,6 @@
 */
 package org.frankframework.compression;
 
-import java.io.IOException;
-
 import jakarta.annotation.Nonnull;
 
 import org.frankframework.collection.AbstractCollectorPipe.Action;
@@ -57,13 +55,8 @@ public class ZipWriterSender extends AbstractCollectorSender<ZipWriter, MessageZ
 	@Override
 	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		if(backwardsCompatibility) {
-			try {
-				message.preserve();
-				super.sendMessage(message, session);
-				return new SenderResult(message);
-			} catch (IOException e) {
-				throw new SenderException("unable to preserve input", e);
-			}
+			super.sendMessage(message, session);
+			return new SenderResult(message);
 		}
 
 		return super.sendMessage(message, session);

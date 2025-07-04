@@ -69,6 +69,7 @@ public class MessageTestUtils {
 		return type.getMessage();
 	}
 
+	// TODO: Is this name still appropriate? Is this still relevant?
 	public static Message getNonRepeatableMessage(MessageType type) throws IOException {
 		Message message = type.getMessage();
 		if(type == MessageType.BINARY) {

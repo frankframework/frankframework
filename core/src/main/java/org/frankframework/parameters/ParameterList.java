@@ -15,7 +15,6 @@
 */
 package org.frankframework.parameters;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -169,13 +168,6 @@ public class ParameterList implements Iterable<IParameter> {
 		ParameterValueList result = new ParameterValueList();
 		if (parameters == null) {
 			return result;
-		}
-		if(inputValueRequiredForResolution && !Message.isNull(message)) {
-			try {
-				message.preserve();
-			} catch (IOException e) {
-				throw new ParameterException("<input message>", "Cannot preserve message for parameter resolution", e);
-			}
 		}
 		if (inputValueRequiredForResolution && message != null) {
 			message.assertNotClosed();

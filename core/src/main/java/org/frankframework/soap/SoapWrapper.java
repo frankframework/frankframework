@@ -127,7 +127,6 @@ public class SoapWrapper {
 		String faultCode = null;
 		int faultCount = 0;
 		try {
-			responseBody.preserve();
 			faultCount = getFaultCount(responseBody);
 			log.debug("fault count={}", faultCount);
 			if (faultCount > 0) {
@@ -148,8 +147,6 @@ public class SoapWrapper {
 	}
 
 	public Message getBody(Message message, boolean allowPlainXml, PipeLineSession session, String soapNamespaceSessionKey) throws SAXException, TransformerException, IOException {
-		message.preserve();
-
 		// First try with Soap 1.1 transform pool, when no result, try with Soap 1.2 transform pool
 		String extractedBody = extractMessageWithTransformers(extractBodySoap11, extractBodySoap12, message, session, soapNamespaceSessionKey);
 		if (StringUtils.isNotEmpty(extractedBody)) {

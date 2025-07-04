@@ -289,7 +289,6 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 				switch (getMessageFieldType()) {
 					case CLOB:
 						message = new Message(getDbmsSupport().getClobReader(rs, getMessageField()));
-						message.preserve(); // Prevent problems with stream closed after ResultSet is closed. Needed for MS SQL, Oracle
 						break;
 					case BLOB:
 						if (isBlobSmartGet() || StringUtils.isNotEmpty(getBlobCharset())) { // in this case blob contains a String
@@ -297,7 +296,6 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 						} else {
 							try (InputStream blobStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, getMessageField(), isBlobsCompressed())) {
 								message = new Message(blobStream);
-								message.preserve();
 							}
 						}
 						break;

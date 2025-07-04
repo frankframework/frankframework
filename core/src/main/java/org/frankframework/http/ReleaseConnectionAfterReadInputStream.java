@@ -19,11 +19,15 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import jakarta.annotation.Nullable;
+
+import org.apache.commons.io.input.NullInputStream;
+
 public class ReleaseConnectionAfterReadInputStream extends FilterInputStream {
 	HttpResponseHandler responseHandler;
 
-	public ReleaseConnectionAfterReadInputStream(HttpResponseHandler responseHandler, InputStream inputStream) {
-		super(inputStream);
+	public ReleaseConnectionAfterReadInputStream(@Nullable HttpResponseHandler responseHandler, @Nullable InputStream inputStream) {
+		super(inputStream != null ? inputStream : new NullInputStream());
 		this.responseHandler = responseHandler;
 	}
 

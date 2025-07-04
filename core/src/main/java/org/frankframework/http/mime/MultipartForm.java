@@ -28,7 +28,6 @@ import org.apache.http.entity.mime.Header;
 import org.apache.http.entity.mime.MIME;
 import org.apache.http.entity.mime.MinimalField;
 import org.apache.http.entity.mime.content.ContentBody;
-import org.apache.http.entity.mime.content.StringBody;
 import org.apache.http.util.Args;
 import org.apache.http.util.ByteArrayBuffer;
 
@@ -174,15 +173,5 @@ public class MultipartForm {
 			// Should never happen
 			return -1;
 		}
-	}
-
-	public boolean isRepeatable() {
-		for (final FormBodyPart part: getBodyParts()) {
-			final ContentBody contentBody = part.getBody();
-			if(!(contentBody instanceof StringBody) && !(contentBody instanceof MessageContentBody body && body.isRepeatable())) {
-				return false;
-			}
-		}
-		return true;
 	}
 }

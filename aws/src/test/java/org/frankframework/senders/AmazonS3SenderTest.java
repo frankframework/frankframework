@@ -1,12 +1,10 @@
 package org.frankframework.senders;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
 
-import java.io.IOException;
 import java.nio.file.Path;
 
 import org.junit.jupiter.api.Tag;
@@ -119,8 +117,8 @@ public class AmazonS3SenderTest extends WritableFileSystemSenderTest<AmazonS3Sen
 		// Assert
 		assertTrue(_fileExists(inputFolder, FILE1), "File ["+FILE1+"] should still be there after READ action");
 		assertEquals("some content", StreamUtil.streamToString(result.asInputStream()));
-		IOException e = assertThrows(IOException.class, result::preserve); // read binary stream twice
-		assertEquals("Stream closed", e.getMessage());
+		// Read a 2nd time -- this should now work.
+		assertEquals("some content", StreamUtil.streamToString(result.asInputStream()));
 	}
 
 	@Test

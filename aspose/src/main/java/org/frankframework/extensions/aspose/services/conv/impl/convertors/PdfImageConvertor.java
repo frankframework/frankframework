@@ -84,7 +84,6 @@ public class PdfImageConvertor extends AbstractConvertor {
 		if (!MEDIA_TYPE_LOAD_FORMAT_MAPPING.containsKey(mediaType)) {
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
-		message.preserve();
 
 		File tmpImageFile = null;
 		com.aspose.imaging.Image image = null;

@@ -141,7 +141,6 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 					break;
 				case VERIFY:
 					dsa.initVerify(publicKey);
-					message.preserve();
 					break;
 				default:
 					throw new IllegalStateException("Unknown action ["+getAction()+"]");
