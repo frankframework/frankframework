@@ -29,7 +29,7 @@ import org.frankframework.management.switchboard.CloudAgentOutboundGateway;
 public class JwtGeneratorFactoryBean implements FactoryBean<AbstractJwtKeyGenerator> {
 
 	@Value("${management.gateway.outbound.class}")
-	private String outboundClass;
+	String outboundClass;
 
 	private AbstractJwtKeyGenerator jwtKeyGenerator;
 

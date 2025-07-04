@@ -32,15 +32,13 @@ class CloudAgentOutboundGatewayTest {
 
 	private CloudAgentOutboundGateway gateway;
 	private MtlsHelper mtlsHelper;
-	private JwtGeneratorFactoryBean keyFactory;
-	private AbstractJwtKeyGenerator keyGenerator;
 	private HttpClient httpClient;
 	private HttpResponse<String> httpResponse;
 
 	@BeforeEach
 	void setup() throws Exception {
-		keyFactory = mock(JwtGeneratorFactoryBean.class);
-		keyGenerator = mock(AbstractJwtKeyGenerator.class);
+		JwtGeneratorFactoryBean keyFactory = mock(JwtGeneratorFactoryBean.class);
+		AbstractJwtKeyGenerator keyGenerator = mock(AbstractJwtKeyGenerator.class);
 		when(keyFactory.getObject()).thenReturn(keyGenerator);
 
 		mtlsHelper = mock(MtlsHelper.class);

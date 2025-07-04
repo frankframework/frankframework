@@ -241,7 +241,7 @@ public class CloudAgentInboundGateway extends MessagingGatewaySupport {
 	}
 
 
-	private Object unwrapPayloadIfStream(Message<?> response) {
+	Object unwrapPayloadIfStream(Message<?> response) {
 		Object payload = response.getPayload();
 		if (payload instanceof InputStream inputStream) {
 			try (inputStream) {
