@@ -9,7 +9,6 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import org.springframework.test.context.support.TestPropertySourceUtils;
 
 import org.frankframework.management.bus.LocalGateway;
-import org.frankframework.management.switchboard.CloudAgentException;
 import org.frankframework.management.switchboard.CloudAgentOutboundGateway;
 
 class JwtGeneratorFactoryBeanTest {
@@ -29,7 +28,7 @@ class JwtGeneratorFactoryBeanTest {
 
 			JwtGeneratorFactoryBean factoryBean = ctx.getBean(JwtGeneratorFactoryBean.class);
 			// the KeystoreJwtKeyGenerator path will trigger a missing‐bean error
-			assertThrows(CloudAgentException.class, factoryBean::getObject);
+			assertThrows(IllegalArgumentException.class, factoryBean::getObject);
 		}
 	}
 
