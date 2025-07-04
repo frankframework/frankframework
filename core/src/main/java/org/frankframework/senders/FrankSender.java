@@ -476,6 +476,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 		return (message, session) -> {
 			PipeLineResult plr = adapter.processMessageDirect(session.getMessageId(), message, session);
 			session.setExitState(plr);
+			// TODO: The code here seems rather dubious actually. Check if we really want to keep this special behaviour on having the text "ListenerException" in our error message.
 			if (plr.getState() == PipeLine.ExitState.ERROR) {
 				// Adapter.processMessageDirect() catches ListenerException and makes an error message from it, but
 				// we want to actually throw it.
