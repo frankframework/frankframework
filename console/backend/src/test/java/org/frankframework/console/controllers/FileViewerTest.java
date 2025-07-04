@@ -1,17 +1,24 @@
 package org.frankframework.console.controllers;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.request;
 
 import java.io.FileInputStream;
+import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
+import org.springframework.messaging.support.GenericMessage;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
@@ -19,11 +26,11 @@ import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 
 import org.frankframework.management.bus.message.BinaryMessage;
 
-@ContextConfiguration(classes = {WebTestConfiguration.class, FileViewer.class})
-public class FileViewerTest extends FrankApiTestBase {
+@ContextConfiguration(classes = { WebTestConfiguration.class, FileViewer.class })
+class FileViewerTest extends FrankApiTestBase {
 
 	@Test
-	public void testRetrievingTextFile() throws Exception {
+	void testRetrievingTextFile() throws Exception {
 		URL fileUrl = FileViewerTest.class.getResource("/management/web/FileViewer.txt");
 		assert fileUrl != null;
 		String filePath = fileUrl.getPath();
@@ -52,7 +59,7 @@ public class FileViewerTest extends FrankApiTestBase {
 	}
 
 	@Test
-	public void testDownloadFile() throws Exception {
+	void testDownloadFile() throws Exception {
 		URL fileUrl = FileViewerTest.class.getResource("/management/web/FileViewer.txt");
 		String filePath = fileUrl.getPath();
 		String fileName = FilenameUtils.getName(filePath);
@@ -78,6 +85,23 @@ public class FileViewerTest extends FrankApiTestBase {
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_OCTET_STREAM))
 				.andExpect(MockMvcResultMatchers.header().string("Content-Disposition", "attachment; filename=\"FileViewer.txt\""))
 				.andReturn();
+	}
+
+	@Test
+	@DisplayName("When getInputStreamMessage is called with String payload, Then Message is recreated into a Stream payload")
+	void testGetInputStreamMessage_stringPayload() throws Exception {
+		String text = "this is a test string payload \n testing123";
+		Map<String, Object> headers = new HashMap<>();
+		headers.put("foo", "bar");
+		GenericMessage<String> stringMsg = new GenericMessage<>(text, headers);
+
+		Message<InputStream> result = FileViewer.getInputStreamMessage(stringMsg);
+
+		InputStream is = result.getPayload();
+		byte[] bytes = is.readAllBytes();
+		assertArrayEquals(text.getBytes(StandardCharsets.UTF_8), bytes);
+
+		assertEquals("bar", result.getHeaders().get("foo"));
 	}
 
 }

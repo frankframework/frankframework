@@ -65,7 +65,7 @@ public class FileViewer {
 		return ResponseUtils.convertToSpringStreamingResponse(inputStreamMessage);
 	}
 
-	private static Message<InputStream> getInputStreamMessage(Message<?> response) {
+	static Message<InputStream> getInputStreamMessage(Message<?> response) {
 		Message<InputStream> inputStreamMessage;
 		if (response.getPayload() instanceof String payload) {
 			InputStream inputStream = new ByteArrayInputStream(payload.getBytes(StandardCharsets.UTF_8));
