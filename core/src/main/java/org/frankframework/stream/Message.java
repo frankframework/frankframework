@@ -96,6 +96,14 @@ public class Message implements Serializable, Closeable {
 		this.context = context;
 		this.requestClass = requestClass != null ? ClassUtils.nameOf(requestClass) : ClassUtils.nameOf(request);
 
+		// Cache size before possibly replacing FileInputStream or other streams of which the size is knowable with a wrapper
+		if (!context.containsKey(MessageContext.METADATA_SIZE)) {
+			long cacheSize = size();
+			if (cacheSize != MESSAGE_SIZE_UNKNOWN) {
+				context.put(MessageContext.METADATA_SIZE, cacheSize);
+			}
+		}
+
 		if (this.request instanceof InputStream source) {
 			this.request = new RepeatableInputStreamWrapper(source);
 		}
@@ -350,6 +358,9 @@ public class Message implements Serializable, Closeable {
 		} else if (request instanceof InputStream stream) {
 			LOG.debug("preserving InputStream {} as SerializableFileReference", this::getObjectId);
 			request = SerializableFileReference.of(stream);
+		} else if (request instanceof RequestBuffer requestBuffer) {
+			LOG.debug("preserving RequestWrapper {} as SerializableFileReference", this::getObjectId);
+			request = SerializableFileReference.of(requestBuffer.asInputStream());
 		} else if (request instanceof String string) {
 			request = SerializableFileReference.of(string, computeDecodingCharset(null));
 		} else if (request instanceof byte[] bytes) {
@@ -379,7 +390,7 @@ public class Message implements Serializable, Closeable {
 			return reference.isBinary();
 		}
 
-		return request instanceof InputStream || request instanceof ThrowingSupplier || request instanceof byte[];
+		return request instanceof RepeatableInputStreamWrapper || request instanceof ThrowingSupplier || request instanceof byte[];
 	}
 
 	private boolean isRepeatable() {
@@ -455,10 +466,10 @@ public class Message implements Serializable, Closeable {
 			return reference.getReader();
 		}
 
-		if (request instanceof RequestBuffer requestBuffer) {
-			String readerCharset = computeDecodingCharset(defaultDecodingCharset); // Don't overwrite the Message's charset unless it's set to AUTO
-			return requestBuffer.asReader(Charset.forName(readerCharset));
-		}
+//		if (request instanceof RequestBuffer requestBuffer) {
+//			String readerCharset = computeDecodingCharset(defaultDecodingCharset); // Don't overwrite the Message's charset unless it's set to AUTO
+//			return requestBuffer.asReader(Charset.forName(readerCharset));
+//		}
 
 		if (isBinary()) {
 			String readerCharset = computeDecodingCharset(defaultDecodingCharset); // Don't overwrite the Message's charset unless it's set to AUTO
@@ -973,7 +984,7 @@ public class Message implements Serializable, Closeable {
 	 */
 	@Nonnull
 	public Message copyMessage() throws IOException {
-		if (!isRepeatable()) {
+		if (!isRepeatable() || request instanceof RequestBuffer) {
 			preserve(false);
 		}
 		if (!(request instanceof SerializableFileReference)) {

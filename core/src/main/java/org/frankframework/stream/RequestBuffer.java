@@ -26,8 +26,8 @@ import java.nio.charset.Charset;
  */
 public interface RequestBuffer {
 
-	InputStream asInputStream();
+	InputStream asInputStream() throws IOException;
 	Reader asReader() throws IOException;
-	Reader asReader(Charset charset);
+	Reader asReader(Charset charset) throws IOException;
 
 }

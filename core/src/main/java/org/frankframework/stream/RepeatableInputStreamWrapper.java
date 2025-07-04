@@ -29,6 +29,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CloseUtils;
@@ -36,11 +37,11 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.TemporaryDirectoryUtils;
 
 public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseable {
-	private static final long MAX_IN_MEMORY_SIZE = AppConstants.getInstance().getLong(Message.MESSAGE_MAX_IN_MEMORY_PROPERTY, Message.MESSAGE_MAX_IN_MEMORY_DEFAULT);
+	private final long maxInMemorySize = AppConstants.getInstance().getLong(Message.MESSAGE_MAX_IN_MEMORY_PROPERTY, Message.MESSAGE_MAX_IN_MEMORY_DEFAULT);
 
 	private final InputStream source;
 	private boolean isEof = false;
-
+	private boolean closed = false;
 	private final List<ByteBufferBlock> buffers; // temporary buffer, once full, write to disk
 	private ByteBufferBlock currentBuffer;
 
@@ -57,8 +58,8 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 		this.buffers.add(currentBuffer);
 	}
 
-	private void bufferDataFromSource(int size) throws IOException {
-		if (size <= 0 || isEof) {
+	private synchronized void bufferDataFromSource(int size) throws IOException {
+		if (size <= 0 || isEof || closed) {
 			return;
 		}
 
@@ -92,7 +93,7 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 			bytesReadTotal += bytesRead;
 			toRead -= bytesRead;
 		}
-		if (bytesReadTotal > MAX_IN_MEMORY_SIZE) {
+		if (bytesReadTotal > maxInMemorySize) {
 			fileLocation = allocateTemporaryFile();
 			outputStream = transferBuffersToFile(fileLocation, buffers);
 			buffers.clear();
@@ -115,6 +116,7 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 
 	@Override
 	public void close() throws Exception {
+		closed = true;
 		CloseUtils.closeSilently(source, outputStream);
 		buffers.clear();
 		currentBuffer = null;
@@ -124,7 +126,7 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 	}
 
 	@Override
-	public InputStream asInputStream() {
+	public InputStream asInputStream() throws IOException {
 		return new BufferReadingInputStream();
 	}
 
@@ -134,7 +136,7 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 	}
 
 	@Override
-	public Reader asReader(Charset charset) {
+	public Reader asReader(Charset charset) throws IOException {
 		return new BufferedReader(new InputStreamReader(asInputStream(), charset));
 	}
 
@@ -142,6 +144,12 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 		private long position = 0L;
 		private long markedPosition = -1L;
 		private InputStream fileInputStream;
+
+		BufferReadingInputStream() throws IOException {
+			if (fileLocation != null) {
+				fileInputStream = openFileInputStream(fileLocation, position);
+			}
+		}
 
 		@Override
 		public int available() throws IOException {
@@ -155,18 +163,25 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 		 * Ensure that data is available (unless the source has reached EOF).
 		 */
 		private void ensureDataAvailable(int minToBuffer) throws IOException {
-			boolean inMemoryBefore = isBufferedInMemory();
 			if (available() == 0) {
 				bufferDataFromSource(Math.max(minToBuffer, StreamUtil.BUFFER_SIZE));
 			}
 			boolean inMemoryAfter = isBufferedInMemory();
-			if (inMemoryBefore && !inMemoryAfter) {
-				fileInputStream = Files.newInputStream(fileLocation, StandardOpenOption.READ);
-				long skipped = fileInputStream.skip(position);
-				if (skipped != position) {
-					throw new IllegalStateException("Skipped file position " + skipped + " != " + position);
+			if (!inMemoryAfter && fileInputStream == null) {
+				fileInputStream = openFileInputStream(fileLocation, position);
+			}
+		}
+
+		@Nonnull
+		private InputStream openFileInputStream(Path file, long skipTo) throws IOException {
+			InputStream fis = Files.newInputStream(file, StandardOpenOption.READ);
+			if (skipTo > 0L) {
+				long skipped = fis.skip(skipTo);
+				if (skipped != skipTo) {
+					throw new IllegalStateException("Skipped file position " + skipped + " != " + skipTo);
 				}
 			}
+			return fis;
 		}
 
 		private int calculateBufferIndex(long position) {
@@ -177,18 +192,22 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 			return Math.toIntExact(position % StreamUtil.BUFFER_SIZE);
 		}
 
-		private ByteBufferBlock getBufferForPosition(long position) {
-			return buffers.get(calculateBufferIndex(position));
+		private @Nullable ByteBufferBlock getBufferForPosition(long position) {
+			int index = calculateBufferIndex(position);
+			if (index > buffers.size()) {
+				return null;
+			}
+			return buffers.get(index);
 		}
 
 		private int readSingleByteFromBuffer() {
 			int positionInBuffer = calculatePositionInBuffer(position);
 			ByteBufferBlock bufferBlock = getBufferForPosition(position);
-			if (positionInBuffer > bufferBlock.count) {
+			if (bufferBlock == null || positionInBuffer >= bufferBlock.count) {
 				return -1; // EOF reached for this stream
 			}
 			++position;
-			return bufferBlock.buffer[positionInBuffer];
+			return bufferBlock.buffer[positionInBuffer] & 0xFF;
 		}
 
 		@Override
@@ -220,7 +239,7 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 		private int readBytesFromBuffer(byte[] b, int off, int len) {
 			ByteBufferBlock bufferBlock = getBufferForPosition(position);
 			int positionInBuffer = calculatePositionInBuffer(position);
-			if  (positionInBuffer >= bufferBlock.count) {
+			if  (bufferBlock == null || positionInBuffer >= bufferBlock.count) {
 				return -1;
 			}
 			int maxFromBuffer = Math.min(len, bufferBlock.count-positionInBuffer);
