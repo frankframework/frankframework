@@ -60,8 +60,8 @@ public class CloudAgentInboundGateway extends MessagingGatewaySupport {
 	private final SecurityContextHolderStrategy securityContextHolderStrategy = SecurityContextHolder.getContextHolderStrategy();
 	private final SSLProperties sslProperties = new SSLProperties();
 	private final ObjectMapper objectMapper = new ObjectMapper();
-	private final MtlsHelper mtlsHelper = new MtlsHelper();
-	private final HttpClient httpClient = mtlsHelper.getHttpClient();
+	private final MtlsHelper mtlsHelper;
+	private final HttpClient httpClient;
 	private PublicKey consolePubKey;
 	private CloudAgentJwtVerifier jwtVerifier;
 
@@ -73,6 +73,16 @@ public class CloudAgentInboundGateway extends MessagingGatewaySupport {
 
 	@Value("${client.ssl.client-id:#{T(java.util.UUID).randomUUID()}}")
 	private UUID clientId;
+
+	public CloudAgentInboundGateway(MtlsHelper mtlsHelper) {
+		this.mtlsHelper = mtlsHelper;
+		this.httpClient = mtlsHelper.getHttpClient();
+	}
+
+	public CloudAgentInboundGateway() {
+		this.mtlsHelper = new MtlsHelper();
+		this.httpClient = mtlsHelper.getHttpClient();
+	}
 
 	@Override
 	protected void onInit() {
@@ -107,10 +117,7 @@ public class CloudAgentInboundGateway extends MessagingGatewaySupport {
 		try {
 			RelayEnvelope envelope = deserializeEnvelope(rawMessage);
 			byte[] encryptedPayload = envelope.getPayload();
-			log.info(
-					"Unwrapped envelope: messageId={} payloadLen={}",
-					envelope.getMessageId(), encryptedPayload.length
-			);
+			log.info("Unwrapped envelope: messageId={} payloadLen={}", envelope.getMessageId(), encryptedPayload.length);
 
 			byte[] decrypted = mtlsHelper.decryptHybrid(encryptedPayload);
 			String inboundJson = new String(decrypted, StandardCharsets.UTF_8);
@@ -143,7 +150,7 @@ public class CloudAgentInboundGateway extends MessagingGatewaySupport {
 		return objectMapper.readValue(json, SwitchBoardMessage.class);
 	}
 
-	private CompletionStage<?> handleSwitchboardMessage(WebSocket ws, RelayEnvelope envelope, Map<String, String> payload) {
+	CompletionStage<?> handleSwitchboardMessage(WebSocket ws, RelayEnvelope envelope, Map<String, String> payload) {
 		try {
 			consolePubKey = decodePublicKey(payload.get("publicKey"));
 			byte[] reply = buildEncryptedStatusOK(envelope.getMessageId(), consolePubKey);
@@ -287,7 +294,7 @@ public class CloudAgentInboundGateway extends MessagingGatewaySupport {
 		System.exit(1);
 	}
 
-	private class SimpleListener implements WebSocket.Listener {
+	class SimpleListener implements WebSocket.Listener {
 		@Override
 		public void onOpen(WebSocket socket) {
 			socket.request(Long.MAX_VALUE);
