@@ -47,7 +47,7 @@ import org.frankframework.util.AppConstants;
 public class KeycloakBearerOnlyAuthenticatorIntegrationTest {
 
 	@Container
-	private static final KeycloakContainer keycloak = new KeycloakContainer("quay.io/keycloak/keycloak:26.2.5")
+	private static final KeycloakContainer keycloak = new KeycloakContainer()
 			.withRealmImportFile("/test-realm.json");
 
 	private static ConfigurableApplicationContext applicationContext = null;
