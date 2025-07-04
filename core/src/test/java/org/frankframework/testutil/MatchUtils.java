@@ -18,23 +18,22 @@ import jakarta.json.Json;
 import jakarta.json.JsonStructure;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.DetailedDiff;
 import org.custommonkey.xmlunit.Diff;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.json.JsonUtil;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.NamespaceRemovingFilter;
 import org.frankframework.xml.PrettyPrintFilter;
 import org.frankframework.xml.XmlWriter;
 
+@Log4j2
 public class MatchUtils {
-
-	private static final Logger LOG = LogUtil.getLogger(MatchUtils.class);
 
 	public static Map<String, Object> stringToMap(String mapInStr) throws IOException {
 		Properties inProps = new Properties();
@@ -119,8 +118,8 @@ public class MatchUtils {
 
 			DetailedDiff diff = new DetailedDiff(new Diff(expectedCanonalized, actualCanonalized));
 			if(!diff.similar()) {
-				LOG.debug("expected: \n"+ expectedCanonalized);
-				LOG.debug("actual: \n"+ actualCanonalized);
+				log.debug("expected: \n{}", expectedCanonalized);
+				log.debug("actual: \n{}", actualCanonalized);
 				assertEquals("xml not similar: " + diff, expectedCanonalized, actualCanonalized);
 			}
 		} catch (Exception e) {
