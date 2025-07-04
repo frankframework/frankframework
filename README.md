@@ -68,4 +68,4 @@ Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before [Contributing](CONT
 
 ## Show Your Support
 Star the repository to stay current with our newest updates and enhancements!
-![star-gif](https://github.com/user-attachments/assets/a094486b-cabb-48a1-8718-37072162fa50)
+![Animated star badge to show support for the repository](https://github.com/user-attachments/assets/a094486b-cabb-48a1-8718-37072162fa50)
