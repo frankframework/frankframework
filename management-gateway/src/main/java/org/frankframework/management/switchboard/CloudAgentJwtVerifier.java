@@ -17,6 +17,7 @@ package org.frankframework.management.switchboard;
 
 import java.io.IOException;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.PublicKey;
 import java.security.cert.X509Certificate;
 import java.text.ParseException;
@@ -90,7 +91,7 @@ public class CloudAgentJwtVerifier extends DefaultJWTProcessor<SecurityContext> 
 						.build();
 
 				return new JWKSet(jwk);
-			} catch (Exception e) {
+			} catch (KeyStoreException e) {
 				throw new KeySourceException("Failed to load JWK from keystore", e);
 			}
 		}

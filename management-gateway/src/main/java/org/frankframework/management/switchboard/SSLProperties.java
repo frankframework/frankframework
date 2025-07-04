@@ -22,18 +22,18 @@ import lombok.Getter;
 @Getter
 public class SSLProperties {
 
-	private final String keyStore;
+	private final String keyStoreLocation;
 	private final String keyStorePassword;
-	private final String trustStore;
+	private final String trustStoreLocation;
 	private final String trustStorePassword;
 	private final String switchboardDomain;
 	private final String switchboardWebsocketPort;
 	private final String switchboardApiPort;
 
 	public SSLProperties() {
-		this.keyStore = System.getProperty("client.ssl.key-store");
+		this.keyStoreLocation = System.getProperty("client.ssl.key-store");
 		this.keyStorePassword = System.getProperty("client.ssl.key-store-password");
-		this.trustStore = System.getProperty("client.ssl.trust-store");
+		this.trustStoreLocation = System.getProperty("client.ssl.trust-store");
 		this.trustStorePassword = System.getProperty("client.ssl.trust-store-password");
 		this.switchboardDomain = System.getProperty("client.switchboard.host", "localhost");
 		this.switchboardWebsocketPort = System.getProperty("client.switchboard.websocket.port", "8443");

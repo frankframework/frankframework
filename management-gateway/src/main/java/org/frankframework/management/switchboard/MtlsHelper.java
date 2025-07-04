@@ -54,7 +54,6 @@ public class MtlsHelper {
 	private final PublicKey publicKey;
 	private HttpClient httpClient;
 	private final SSLContext sslContext;
-
 	@Getter
 	private final KeyStore keyStore;
 	@Getter
@@ -63,7 +62,7 @@ public class MtlsHelper {
 	public MtlsHelper() {
 		this.sslProperties = new SSLProperties();
 		KeyStore clientKs = loadStoreWithFallback(
-				sslProperties.getKeyStore(),
+				sslProperties.getKeyStoreLocation(),
 				sslProperties.getKeyStorePassword(),
 				"PKCS12", "JKS"
 		);
@@ -111,7 +110,7 @@ public class MtlsHelper {
 			kmf.init(clientKs, sslProperties.getKeyStorePassword().toCharArray());
 
 			KeyStore trustKs = loadStoreWithFallback(
-					sslProperties.getTrustStore(),
+					sslProperties.getTrustStoreLocation(),
 					sslProperties.getTrustStorePassword(),
 					"PKCS12", "JKS"
 			);
@@ -127,6 +126,9 @@ public class MtlsHelper {
 	}
 
 	private KeyStore loadStoreWithFallback(String location, String password, String primaryType, String fallbackType) {
+		if (location == null) {
+			throw new IllegalArgumentException("location is null");
+		}
 		try {
 			return getKeyStore(location, password, primaryType);
 		} catch (GeneralSecurityException e) {
