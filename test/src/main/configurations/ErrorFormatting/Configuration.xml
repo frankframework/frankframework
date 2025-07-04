@@ -79,7 +79,9 @@
 				<FrankSender scope="ADAPTER">
 					<Param name="target" jsonPathExpression="$.target"/>
 				</FrankSender>
+				<!-- SubAdapter "PassViaException" returns exitCode 42 -->
 				<Forward name="42" path="error"/>
+				<!-- SubAdapter "PassViaSession" returns default error-exitCode 500 -->
 				<Forward name="500" path="error"/>
 			</SenderPipe>
 			<DataSonnetPipe name="Extract Name" styleSheetName="stylesheets/buildResponse.jsonnet"/>

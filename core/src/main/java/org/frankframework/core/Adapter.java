@@ -177,6 +177,7 @@ import org.frankframework.util.flow.SpringContextFlowDiagramProvider;
  *
  * 			<!-- No results: use this ExceptionPipe to pass parameters to the error message formatter and set an exitCode -->
  * 			<ExceptionPipe name="result-count=0">
+ * 				<!-- When we do not set exitCode it will default to 500 when an adapter ends with an exception -->
  * 				<NumberParam name="exitCode" value="42"/>
  * 				<NumberParam name="errorCode" value="-1"/>
  * 				<Param name="errorMessage" value="No results found"/>
@@ -199,7 +200,10 @@ import org.frankframework.util.flow.SpringContextFlowDiagramProvider;
  * Instead of a FrankSender / FrankListener, an {@link org.frankframework.senders.IbisLocalSender} / {@link org.frankframework.receivers.JavaListener}
  * pair can also be used to the same effect.
  * In this example we use the {@code exception} forward on the {@link org.frankframework.pipes.SenderPipe} to take the error-path after
- * an error result, but we could also use the {@code exitCode} instead as in the previous example.
+ * an error result, but we could also use the {@code exitCode} instead as in the previous example. When
+ * a sub-adapter ends with a state {@code ERROR}, and the calling {@link org.frankframework.pipes.SenderPipe} does not have a forward
+ * for the {@code exitCode} returned from the sub-adapter, but does have an {@code exception} forward, then
+ * the {@code exception} forward is chosen.
  *
  * <h4>Calling Adapter:</h4>
  * <p>
