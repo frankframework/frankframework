@@ -13,7 +13,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.net.http.HttpClient;
 import java.net.http.WebSocket;
 import java.nio.ByteBuffer;
@@ -95,16 +94,12 @@ class CloudAgentInboundGatewayTest {
 
 	@Test
 	@DisplayName("unwrapPayloadIfStream should read InputStream payload into a String")
-	void unwrapPayloadIfStream_readsStreamPayload() throws Exception {
+	void unwrapPayloadIfStream_readsStreamPayload() {
 		String content = "hello stream";
 		InputStream is = new ByteArrayInputStream(content.getBytes(StandardCharsets.UTF_8));
 		Message<InputStream> msg = MessageBuilder.withPayload(is).build();
 
-		Method unwrap = CloudAgentInboundGateway.class
-				.getDeclaredMethod("unwrapPayloadIfStream", Message.class);
-		unwrap.setAccessible(true);
-
-		Object result = unwrap.invoke(gateway, msg);
+		Object result = gateway.unwrapPayloadIfStream(msg);
 
 		assertInstanceOf(String.class, result, "Result should be a String");
 		assertEquals(content, result);

@@ -60,7 +60,6 @@ class CloudAgentOutboundGatewayTest {
 	@Test
 	@DisplayName("When a valid client response is received, Then a ClusterMember is parsed and the public key is sent")
 	void getMembersTest() throws Exception {
-		// Generate a real RSA key pair
 		KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("RSA");
 		keyPairGenerator.initialize(2048);
 		KeyPair keyPair = keyPairGenerator.generateKeyPair();
@@ -77,12 +76,10 @@ class CloudAgentOutboundGatewayTest {
 		JsonArrayBuilder arr = Json.createArrayBuilder().add(obj);
 		String body = arr.build().toString();
 
-		// Mock HTTP response
 		when(httpResponse.statusCode()).thenReturn(200);
 		when(httpResponse.body()).thenReturn(body);
 		when(httpClient.send(any(), any(HttpResponse.BodyHandler.class))).thenReturn(httpResponse);
 
-		// Mock getPublicKey (for outbound encryption)
 		PublicKey myPubKey = keyPair.getPublic();
 		when(mtlsHelper.getPublicKey()).thenReturn(myPubKey);
 
