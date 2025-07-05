@@ -1923,6 +1923,11 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		return runState.getRunState();
 	}
 
+	@Override
+	public int getPhase() {
+		return Integer.MAX_VALUE; // Starts at the very last moment, is stopped first
+	}
+
 	public boolean isInRunState(RunState someRunState) {
 		RunState currentRunState = runState.getRunState();
 		log.trace("Receiver [{}] check if runState=[{}] - current runState=[{}]", name, someRunState, currentRunState);

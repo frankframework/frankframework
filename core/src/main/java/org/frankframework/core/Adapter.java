@@ -343,7 +343,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) {
-		if(!(applicationContext instanceof Configuration config)) {
+		if (!(applicationContext instanceof Configuration config)) {
 			throw new IllegalStateException();
 		}
 
@@ -907,6 +907,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 */
 	public void setPipeLine(PipeLine pipeline) {
 		this.pipeline = pipeline;
+//		SpringUtils.registerSingleton(this, pipeline.getName(), pipeline);
 		log.debug("Adapter [{}] registered pipeline [{}]", name, pipeline);
 	}
 
