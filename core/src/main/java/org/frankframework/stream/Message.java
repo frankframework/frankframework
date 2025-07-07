@@ -673,6 +673,9 @@ public class Message implements Serializable, Closeable {
 		if (request instanceof String string) {
 			return string;
 		}
+		if (request instanceof Number || request instanceof Boolean) {
+			return request.toString();
+		}
 		if (request instanceof Node node) {
 			try {
 				LOG.debug("returning Node {} as String", this::getObjectId);
@@ -942,8 +945,8 @@ public class Message implements Serializable, Closeable {
 			return (long) context.get(MessageContext.METADATA_SIZE);
 		}
 
-		if (request instanceof String string) {
-			long size = string.getBytes(StreamUtil.DEFAULT_CHARSET).length;
+		if (request instanceof String || request instanceof Number || request instanceof Boolean) {
+			long size = request.toString().getBytes(StreamUtil.DEFAULT_CHARSET).length;
 			getContext().put(MessageContext.METADATA_SIZE, size);
 			return size;
 		}
