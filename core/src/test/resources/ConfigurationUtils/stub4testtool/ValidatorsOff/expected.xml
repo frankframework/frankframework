@@ -7,7 +7,7 @@
 		    <receiver>
 			      <listener className="org.frankframework.receivers.JavaListener"
                    serviceName="validator"
-                   throwException="false"/>
+					  onException="FORMAT_AND_RETURN"/>
 		    </receiver>
       <receiver name="testtool-Validator-1">
          <listener className="org.frankframework.receivers.JavaListener"

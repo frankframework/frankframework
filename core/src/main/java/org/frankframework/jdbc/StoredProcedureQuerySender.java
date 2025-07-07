@@ -142,7 +142,6 @@ import org.frankframework.util.JdbcUtil;
  * 	</resultset>
  * }</pre>
  * </p>
- * @ff.info Support for stored procedures is currently experimental and changes in the currently produced output-format are expected.
  * @ff.info Please note that the default value of {@code trimSpaces} is {@literal true}
  * @ff.parameters All parameters present are applied to the query to be executed.
  *
