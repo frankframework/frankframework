@@ -58,9 +58,9 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 		this.buffers.add(currentBuffer);
 	}
 
-	private synchronized void bufferDataFromSource(int size) throws IOException {
+	private synchronized boolean bufferDataFromSource(int size) throws IOException {
 		if (size <= 0 || isEof || closed) {
-			return;
+			return false;
 		}
 
 		// Already more bytes read than should be buffered in memory
@@ -70,12 +70,14 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 			if (bytesRead == -1) {
 				isEof = true;
 				source.close();
-				return;
+				outputStream.close();
+				outputStream = null;
+				return false;
 			}
 			bytesReadTotal += bytesRead;
 			outputStream.write(data, 0, bytesRead);
-			outputStream.flush();
-			return;
+			outputStream.flush(); // Flush, b/c we will instantly read from the file we write to
+			return true;
 		}
 
 		// Buffer to memory
@@ -101,6 +103,7 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 			buffers.clear();
 			currentBuffer = null;
 		}
+		return true;
 	}
 
 	private @Nonnull OutputStream transferBuffersToFile(Path fileLocation, List<ByteBufferBlock> buffers) throws IOException {
@@ -134,6 +137,22 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 			return Message.MESSAGE_SIZE_UNKNOWN;
 		}
 		return bytesReadTotal;
+	}
+
+	@Override
+	public synchronized Object preserve() throws IOException {
+		while (bufferDataFromSource(StreamUtil.BUFFER_SIZE)) ; // Empty while because of side-effects in the condition
+		if (fileLocation != null) {
+			return new SerializableFileReference(fileLocation, true);
+		}
+
+		byte[] out = new byte[Math.toIntExact(bytesReadTotal)];
+		int offset = 0;
+		for (ByteBufferBlock buffer: buffers) {
+			System.arraycopy(buffer.buffer, 0, out, offset, buffer.count);
+			offset += buffer.count;
+		}
+		return out;
 	}
 
 	@Override

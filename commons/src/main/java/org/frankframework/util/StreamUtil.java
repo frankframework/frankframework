@@ -41,8 +41,8 @@ import jakarta.annotation.Nullable;
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Functions to read and write from one stream to another.
@@ -50,15 +50,19 @@ import org.apache.logging.log4j.Logger;
  *
  * @author Gerrit van Brakel
  */
+@Log4j2
 public class StreamUtil {
+	// TODO: Move AppConstants to commons and make this configurable for tests
+	public static final String BUFFER_SIZE_PROPERTY = "stream.buffer.size";
 
 	public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING = DEFAULT_CHARSET.displayName();
 	public static final String AUTO_DETECT_CHARSET = "auto";
 	public static final int BUFFER_SIZE = 64 * 1024;
 
-	// DEFAULT_CHARSET and DEFAULT_INPUT_STREAM_ENCODING must be defined before LogUtil.getLogger() is called, otherwise DEFAULT_CHARSET returns null.
-	protected static Logger log = LogManager.getLogger(StreamUtil.class);
+	private StreamUtil() {
+		// Private constructor so that the utility-class cannot be instantiated.
+	}
 
 	public static InputStream dontClose(InputStream stream) {
 		class NonClosingInputStreamFilter extends FilterInputStream {
@@ -67,7 +71,7 @@ public class StreamUtil {
 			}
 
 			@Override
-			public void close() throws IOException {
+			public void close() {
 				// do not close
 			}
 		}
@@ -82,7 +86,7 @@ public class StreamUtil {
 			}
 
 			@Override
-			public void close() throws IOException {
+			public void close() {
 				// do not close
 			}
 		}
@@ -97,7 +101,7 @@ public class StreamUtil {
 			}
 
 			@Override
-			public void close() throws IOException {
+			public void close() {
 				// do not close
 			}
 		}

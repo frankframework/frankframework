@@ -287,6 +287,11 @@ public class Message implements Serializable, Closeable {
 		if (request instanceof SerializableFileReference) {
 			return;
 		}
+		if (request instanceof RequestBuffer requestBuffer) {
+			// RequestBuffer knows how to preserve itself, intelligently deciding to preserve to memory or disk
+			request = requestBuffer.preserve();
+			return;
+		}
 
 		long requestSize = size();
 		long maxInMemory = AppConstants.getInstance().getLong(MESSAGE_MAX_IN_MEMORY_PROPERTY, MESSAGE_MAX_IN_MEMORY_DEFAULT);
@@ -390,11 +395,11 @@ public class Message implements Serializable, Closeable {
 			return reference.isBinary();
 		}
 
-		return request instanceof RepeatableInputStreamWrapper || request instanceof ThrowingSupplier || request instanceof byte[];
+		return request instanceof RepeatableInputStreamWrapper || request instanceof ThrowingSupplier || request instanceof byte[] || request instanceof Number || request instanceof Boolean;
 	}
 
 	private boolean isRepeatable() {
-		return request == null || request instanceof String || request instanceof Number || request instanceof Boolean || request instanceof ThrowingSupplier || request instanceof byte[] || request instanceof Node || request instanceof SerializableFileReference || request instanceof RequestBuffer;
+		return request == null || request instanceof String || request instanceof Number || request instanceof Boolean || request instanceof ThrowingSupplier || request instanceof byte[] || request instanceof Node || request instanceof SerializableFileReference || request instanceof RequestBuffer || request instanceof FileInputStream;
 	}
 
 	/**
