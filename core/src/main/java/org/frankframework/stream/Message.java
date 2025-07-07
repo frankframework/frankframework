@@ -967,6 +967,10 @@ public class Message implements Serializable, Closeable {
 			}
 		}
 
+		if (request instanceof RequestBuffer requestBuffer) {
+			return requestBuffer.size();
+		}
+
 		if (!(request instanceof InputStream || request instanceof Reader)) {
 			//Unable to determine the size of a Stream
 			LOG.debug("unable to determine size of Message [{}]", () -> ClassUtils.nameOf(request));

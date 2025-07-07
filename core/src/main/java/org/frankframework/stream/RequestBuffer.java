@@ -30,4 +30,5 @@ public interface RequestBuffer {
 	Reader asReader() throws IOException;
 	Reader asReader(Charset charset) throws IOException;
 
+	long size();
 }

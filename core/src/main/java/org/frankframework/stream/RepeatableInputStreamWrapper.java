@@ -69,6 +69,7 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 			int bytesRead = source.read(data, 0, size);
 			if (bytesRead == -1) {
 				isEof = true;
+				source.close();
 				return;
 			}
 			bytesReadTotal += bytesRead;
@@ -88,6 +89,7 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 			int bytesRead = buffer.addFromStream(source, toRead);
 			if (bytesRead == -1) {
 				isEof = true;
+				source.close();
 				break;
 			}
 			bytesReadTotal += bytesRead;
@@ -123,6 +125,15 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 		if (fileLocation != null) {
 			Files.deleteIfExists(fileLocation);
 		}
+	}
+
+	@Override
+	public long size() {
+		if (!isEof) {
+			// Cannot yet know the full size
+			return Message.MESSAGE_SIZE_UNKNOWN;
+		}
+		return bytesReadTotal;
 	}
 
 	@Override
