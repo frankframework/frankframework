@@ -33,18 +33,18 @@ import org.frankframework.util.LogUtil;
  * @param <T> the transaction
  * @param <R> a holder of suspended resources
  */
-public class TransactionConnector<T,R> implements AutoCloseable {
+public class TransactionConnector implements AutoCloseable {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private final Object owner;
 	private final String description;
-	private final TransactionConnectorCoordinator<T, R> coordinator;
+	private final TransactionConnectorCoordinator coordinator;
 	private final Thread parentThread;
 	private Thread childThread;
 
 	private boolean childThreadTransactionSuspended;
 
-	private TransactionConnector(TransactionConnectorCoordinator<T,R> coordinator, Object owner, String description) {
+	private TransactionConnector(TransactionConnectorCoordinator coordinator, Object owner, String description) {
 		super();
 		parentThread=Thread.currentThread();
 		this.coordinator = coordinator;
@@ -61,15 +61,15 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 	 * TODO: This also means that objects further downstream might need to restore the transaction context before they can add new transactional resources.
 	 * This is currently not implemented; therefore a FixedQuerySender providing an UpdateClob or UpdateBlob outputstream might behave incorrectly.
 	 */
-	public static <T,R> TransactionConnector<T,R> getInstance(IThreadConnectableTransactionManager<T,R> txManager, Object owner, String description) {
+	public static <T,R> TransactionConnector getInstance(IThreadConnectableTransactionManager txManager, Object owner, String description) {
 		if (txManager==null) {
 			return null;
 		}
-		TransactionConnectorCoordinator<T,R> coordinator = TransactionConnectorCoordinator.getInstance(txManager);
+		TransactionConnectorCoordinator coordinator = TransactionConnectorCoordinator.getInstance(txManager);
 		if (coordinator == null) {
 			return null;
 		}
-		TransactionConnector<T,R> instance = new TransactionConnector<>(coordinator, owner, description);
+		TransactionConnector instance = new TransactionConnector(coordinator, owner, description);
 		coordinator.registerConnector();
 		return instance;
 	}

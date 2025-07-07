@@ -15,27 +15,26 @@
 */
 package org.frankframework.jta;
 
-import org.apache.logging.log4j.Logger;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 
-import org.frankframework.util.LogUtil;
+import lombok.extern.log4j.Log4j2;
 
-public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
-	protected static Logger log = LogUtil.getLogger(TransactionConnectorCoordinator.class);
+@Log4j2
+public class TransactionConnectorCoordinator implements AutoCloseable {
 
-	private final IThreadConnectableTransactionManager<T, R> txManager;
+	private final IThreadConnectableTransactionManager txManager;
 	private final Thread parentThread;
 
-	private static final ThreadLocal<TransactionConnectorCoordinator<?, ?>> coordinators = new ThreadLocal<>();
+	private static final ThreadLocal<TransactionConnectorCoordinator> coordinators = new ThreadLocal<>();
 
-	private T transaction;
-	private R resourceHolder;
+	private Object transaction;
+	private Object resourceHolder;
 	private boolean suspended;
 	private int connectorCount=0;
 	private int numBeginChildThreadsCalled=0;
 
 
-	private TransactionConnectorCoordinator(IThreadConnectableTransactionManager<T,R> txManager) {
+	private TransactionConnectorCoordinator(IThreadConnectableTransactionManager txManager) {
 		super();
 		parentThread=Thread.currentThread();
 		if (txManager==null) {
@@ -46,17 +45,17 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 		suspendTransaction();
 	}
 
-	public static <T,R> TransactionConnectorCoordinator<T,R> getInstance(IThreadConnectableTransactionManager<T,R> txManager) {
+	public static TransactionConnectorCoordinator getInstance(IThreadConnectableTransactionManager txManager) {
 		if (txManager==null) {
 			throw new IllegalStateException("txManager is null");
 		}
-		TransactionConnectorCoordinator<T,R> coordinator = (TransactionConnectorCoordinator<T,R>)coordinators.get();
+		TransactionConnectorCoordinator coordinator = coordinators.get();
 		if (coordinator==null) {
 			if (!TransactionSynchronizationManager.isSynchronizationActive()) {
 				log.debug("no active transaction in thread [{}]", ()->Thread.currentThread().getName());
 				return null;
 			}
-			coordinator = new TransactionConnectorCoordinator<>(txManager);
+			coordinator = new TransactionConnectorCoordinator(txManager);
 			coordinators.set(coordinator);
 		}
 		return coordinator;
@@ -67,7 +66,7 @@ public class TransactionConnectorCoordinator<T,R> implements AutoCloseable {
 	}
 
 
-	public void resumeTransactionInChildThread(TransactionConnector<T,R> requester) {
+	public void resumeTransactionInChildThread(TransactionConnector requester) {
 		numBeginChildThreadsCalled++;
 		if (numBeginChildThreadsCalled==connectorCount) {
 			log.debug("resumeTransactionInChildThread() requester [{}] is last in thread, so resuming transaction", requester);
