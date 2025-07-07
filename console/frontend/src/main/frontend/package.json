@@ -62,7 +62,7 @@
     "@angular/compiler-cli": "^19.0.5",
     "@cypress/schematic": "^3.0.0",
     "@types/jasmine": "~4.6.5",
-    "@types/lodash": "^4.17.19",
+    "@types/lodash": "^4.17.20",
     "@types/markdown-it": "^13.0.7",
     "@types/sockjs-client": "^1.5.4",
     "@types/tinycon": "^0.6.6",
