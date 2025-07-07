@@ -17,6 +17,9 @@ package org.frankframework.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Writer;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -59,6 +62,7 @@ import com.ibm.icu.text.CharsetMatch;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.stream.MessageContext;
 
 public class MessageUtils {
@@ -74,6 +78,30 @@ public class MessageUtils {
 
 	private MessageUtils() {
 		throw new IllegalStateException("Don't construct utility class");
+	}
+
+	/**
+	 * Fully read {@link InputStream} and create a message from it, so that the InputStream can be closed
+	 * without losing the message contents.
+	 */
+	public static Message fromInputStream(InputStream inputStream) throws IOException {
+		MessageBuilder messageBuilder = new MessageBuilder();
+		try (OutputStream outputStream = messageBuilder.asOutputStream()) {
+			inputStream.transferTo(outputStream);
+		}
+		return messageBuilder.build();
+	}
+
+	/**
+	 * Fully read {@link Reader} and create a Message from it, so that the Reader can be closed
+	 * without losing the message contents.
+	 */
+	public static Message fromReader(Reader reader) throws IOException {
+		MessageBuilder messageBuilder = new MessageBuilder();
+		try (Writer writer = messageBuilder.asWriter()) {
+			reader.transferTo(writer);
+		}
+		return messageBuilder.build();
 	}
 
 	/**
@@ -385,12 +413,6 @@ public class MessageUtils {
 	public static long computeSize(Message message) {
 		try {
 			long size = message.size();
-			if(size > Message.MESSAGE_SIZE_UNKNOWN) {
-				return size;
-			}
-
-			// Preserving the message might make reading the size known. If so, there is no need to compute it.
-			size = message.size();
 			if(size > Message.MESSAGE_SIZE_UNKNOWN) {
 				return size;
 			}
