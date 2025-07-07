@@ -1,7 +1,7 @@
 <configuration>
 	<adapter name="Validator">
 		<receiver>
-			<listener className="org.frankframework.receivers.JavaListener" serviceName="validator" throwException="false" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="validator" onException="FORMAT_AND_RETURN" />
 		</receiver>
 		<pipeline>
 			<exits>
