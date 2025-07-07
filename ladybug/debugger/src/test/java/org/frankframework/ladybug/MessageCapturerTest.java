@@ -215,7 +215,7 @@ public class MessageCapturerTest {
 		assertEquals(expected, capture.toString());
 
 		verify(message, times(1)).close();
-		verify(stream, times(1)).close();
+		verify(stream, times(2)).close();
 		verify(capture, times(1)).close();
 	}
 
