@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -40,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.context.support.GenericApplicationContext;
@@ -337,6 +339,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	protected void initLifecycleProcessor() {
 		ConfiguringLifecycleProcessor defaultProcessor = new ConfiguringLifecycleProcessor();
 		defaultProcessor.setBeanFactory(getBeanFactory());
+		defaultProcessor.setMessageKeeper(getMessageKeeper());
 		getBeanFactory().registerSingleton(LIFECYCLE_PROCESSOR_BEAN_NAME, defaultProcessor);
 		super.initLifecycleProcessor();
 	}
@@ -440,17 +443,6 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			numOfMessagesInError = configurationMetrics.createCounter(this, FrankMeterType.PIPELINE_IN_ERROR);
 			configurationMetrics.createGauge(this, FrankMeterType.PIPELINE_IN_PROCESS, () -> numOfMessagesInProcess);
 			statsMessageProcessingDuration = configurationMetrics.createDistributionSummary(this, FrankMeterType.PIPELINE_DURATION);
-
-			if(!pipeline.configurationSucceeded()) { // only reconfigure pipeline when it hasn't been configured yet!
-				try {
-					pipeline.configure();
-					getMessageKeeper().add("pipeline successfully configured");
-				}
-				catch (ConfigurationException e) {
-					getMessageKeeper().error("error initializing pipeline, " + e.getMessage());
-					throw e;
-				}
-			}
 
 			// Receivers must be configured for the adapter to start up, but they don't need to start
 			for (Receiver<?> receiver: receivers) {
@@ -907,7 +899,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 */
 	public void setPipeLine(PipeLine pipeline) {
 		this.pipeline = pipeline;
-//		SpringUtils.registerSingleton(this, pipeline.getName(), pipeline);
+		SpringUtils.registerSingleton(this, pipeline.getName(), pipeline);
 		log.debug("Adapter [{}] registered pipeline [{}]", name, pipeline);
 	}
 
@@ -968,16 +960,6 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 					}
 					log.trace("Start Adapter thread - lock released on Adapter runState[{}]", runState);
 
-					// start the pipeline
-					try {
-						log.debug("Adapter [{}] is starting pipeline", name);
-						pipeline.start();
-					} catch (LifecycleException lifecycleException) {
-						addErrorMessageToMessageKeeper("got error starting PipeLine", lifecycleException);
-						runState.setRunState(RunState.ERROR);
-						return;
-					}
-
 					// Update the adapter uptime.
 					statsUpSince = System.currentTimeMillis();
 
@@ -994,9 +976,6 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 					}
 
 					log.trace("Start Adapter thread - finished and completed");
-				} catch (Throwable t) {
-					addErrorMessageToMessageKeeper("got error starting Adapter", t);
-					runState.setRunState(RunState.ERROR);
 				}
 			}
 
@@ -1008,8 +987,31 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 		// Since we are catching all exceptions in the thread, the super start will always be called,
 		// not a problem for now but something we should look into in the future...
-		CompletableFuture.runAsync(runnable, taskExecutor) // Start all smart-lifecycles
-				.thenRun(super::start); // Then start the adapter it self
+		CompletableFuture.runAsync(this::startLifecycleBeans, taskExecutor) // Start all smart-lifecycles
+				.thenRun(runnable) // Then start the adapter it self
+				.whenComplete((e,t) -> handleException(t)); // The exception from the previous stage, if any, will propagate further.
+	}
+
+	private void startLifecycleBeans() {
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_ADAPTER_KEY, getName())) {
+			super.start();
+		}
+	}
+
+	private void handleException(Throwable t) {
+		if (t == null) {
+			return;
+		}
+		if (t instanceof ExecutionException ee) {
+			handleException(ee);
+			return;
+		} else if (t instanceof ApplicationContextException ace) {
+			handleException(ace);
+			return;
+		}
+
+		runState.setRunState(RunState.ERROR);
+		addErrorMessageToMessageKeeper(t.getMessage(), t);
 	}
 
 	@Override
@@ -1089,8 +1091,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 						warn(msg);
 					}
 					waitForNoMessagesInProcess();
-					log.debug("Adapter [{}] is stopping pipeline", name);
-					pipeline.stop();
+
 					// Set the adapter uptime to 0 as the adapter is stopped.
 					statsUpSince = 0;
 					runState.setRunState(RunState.STOPPED);
@@ -1112,8 +1113,15 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		};
 
 		CompletableFuture.runAsync(runnable, taskExecutor) // Stop asynchronous from other adapters
-				.thenRun(super::stop) // Stop other LifeCycle aware beans
+				.handle((e, t) -> { handleException(t); return e; }) // The exception from the previous stage, if any, will NOT propagate further.
+				.thenRun(this::stopLifecycleBeans) // Stop other LifeCycle aware beans
 				.thenRun(callback); // Call the callback 'CountDownLatch' to confirm we've stopped
+	}
+
+	private void stopLifecycleBeans() {
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_ADAPTER_KEY, getName())) {
+			super.stop();
+		}
 	}
 
 	/**

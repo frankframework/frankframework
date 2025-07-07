@@ -43,4 +43,20 @@ public interface ConfigurableLifecycle extends SmartLifecycle, IConfigurable {
 	default boolean isAutoStartup() {
 		return false;
 	}
+
+	/**
+	 * Just like {@link #isRunning()} this method is called before the {@link #configure()} method.
+	 * 
+	 * @return If the return value is {@code true} the {@link #configure()} method won't be executed.
+	 */
+	default boolean isConfigured() {
+		return false;
+	}
+
+	@Override
+	default void start() {
+		if (!isConfigured()) {
+			throw new LifecycleException("not yet configured");
+		}
+	}
 }

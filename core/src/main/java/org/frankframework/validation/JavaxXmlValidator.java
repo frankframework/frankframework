@@ -73,7 +73,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 	}
 
 	@Override
-	public void start()  {
+	public void start() {
 		super.start();
 
 		try {

@@ -149,12 +149,13 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private final Map<String, DistributionSummary> pipeWaitStatistics = new ConcurrentHashMap<>();
 	private final Map<String, DistributionSummary> pipeSizeStats = new ConcurrentHashMap<>();
 
-	private boolean configurationSucceeded = false;
 	private boolean inputMessageConsumedMultipleTimes=false;
 
 	private @Getter String expectsSessionKeys;
 	private Set<String> expectsSessionKeysSet;
+
 	private boolean started = false;
+	private @Getter boolean configured = false;
 
 	public enum ExitState {
 		SUCCESS,
@@ -198,7 +199,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-		System.err.println("pipeline configure should be before receiver: "+getName());
 		ConfigurationException configurationException = null;
 		if (cache != null) {
 			cache.configure();
@@ -303,7 +303,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 		super.configure();
 		log.debug("successfully configured");
-		configurationSucceeded = true;
+		configured = true;
 		if (configurationException != null) {
 			throw configurationException;
 		}
@@ -364,10 +364,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			throw e;
 		}
 		log.debug("Pipe successfully configured");
-	}
-
-	public boolean configurationSucceeded() {
-		return configurationSucceeded;
 	}
 
 	public Optional<PipeLineExit> findExitByState(ExitState state) {
