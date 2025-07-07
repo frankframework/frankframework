@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -40,6 +41,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.SmartLifecycle;
 import org.springframework.context.support.GenericApplicationContext;
@@ -343,7 +345,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) {
-		if(!(applicationContext instanceof Configuration config)) {
+		if (!(applicationContext instanceof Configuration config)) {
 			throw new IllegalStateException();
 		}
 
@@ -1007,8 +1009,31 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 		// Since we are catching all exceptions in the thread, the super start will always be called,
 		// not a problem for now but something we should look into in the future...
-		CompletableFuture.runAsync(runnable, taskExecutor) // Start all smart-lifecycles
-				.thenRun(super::start); // Then start the adapter it self
+		CompletableFuture.runAsync(this::startLifecycleBeans, taskExecutor) // Start all smart-lifecycles
+				.thenRun(runnable) // Then start the adapter it self
+				.whenComplete((e,t) -> handleException(t)); // The exception from the previous stage, if any, will propagate further.
+	}
+
+	private void startLifecycleBeans() {
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_ADAPTER_KEY, getName())) {
+			super.start();
+		}
+	}
+
+	private void handleException(Throwable t) {
+		if (t == null) {
+			return;
+		}
+		if (t instanceof ExecutionException ee) {
+			handleException(ee);
+			return;
+		} else if (t instanceof ApplicationContextException ace) {
+			handleException(ace);
+			return;
+		}
+
+		runState.setRunState(RunState.ERROR);
+		addErrorMessageToMessageKeeper(t.getMessage(), t);
 	}
 
 	@Override
@@ -1111,8 +1136,15 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		};
 
 		CompletableFuture.runAsync(runnable, taskExecutor) // Stop asynchronous from other adapters
-				.thenRun(super::stop) // Stop other LifeCycle aware beans
+				.handle((e, t) -> { handleException(t); return e; }) // The exception from the previous stage, if any, will NOT propagate further.
+				.thenRun(this::stopLifecycleBeans) // Stop other LifeCycle aware beans
 				.thenRun(callback); // Call the callback 'CountDownLatch' to confirm we've stopped
+	}
+
+	private void stopLifecycleBeans() {
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_ADAPTER_KEY, getName())) {
+			super.stop();
+		}
 	}
 
 	/**
