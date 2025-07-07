@@ -282,8 +282,10 @@ public class PipeLineSessionTest {
 		session.put("key6", m6);
 		Message m7 = Message.asMessage("123".getBytes());
 		session.put("key7", m7);
-		Message m8 = Message.asMessage(new StringReader("123")); // Reader should be instantly preserved
+		Message m8 = Message.asMessage(new StringReader("123"));
 		session.put("key8", m8);
+		Message m9 = Message.asMessage(new ByteArrayInputStream("123".getBytes()));
+		session.put("key9", m9);
 
 		// Act
 		session.close();
@@ -296,7 +298,8 @@ public class PipeLineSessionTest {
 		assertFalse(m5.isClosed());
 		assertFalse(m6.isClosed());
 		assertFalse(m7.isClosed());
-		assertFalse(m8.isClosed());
+		assertTrue(m8.isClosed());
+		assertTrue(m9.isClosed());
 	}
 
 	/**

@@ -17,6 +17,7 @@ package org.frankframework.stream;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -971,14 +972,16 @@ public class MessageTest {
 		assertNotNull(url, "cannot find testfile");
 
 		try (Message message = new UrlMessage(url)) {
-			assertEquals(-1, message.size());
+			assertEquals(-1L, message.size());
 		}
 	}
 
 	@Test
 	public void testMessageSizeReader() {
 		try (Message message = new Message(new StringReader("string"))) {
-			assertEquals(6, message.size(), "size differs or could not be determined");
+			assertEquals(-1L, message.size(), "size differs or could not be determined");
+			assertDoesNotThrow(() -> message.asString());
+			assertEquals(6L, message.size(), "size differs or could not be determined");
 		}
 	}
 

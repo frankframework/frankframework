@@ -34,6 +34,9 @@ import java.io.StringWriter;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.time.temporal.TemporalAccessor;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.Map.Entry;
 import java.util.Objects;
 
@@ -106,8 +109,10 @@ public class Message implements Serializable, Closeable {
 
 		if (this.request instanceof InputStream source) {
 			this.request = new RepeatableInputStreamWrapper(source);
-		}
-		if (!isRepeatable()) {
+		} else if (this.request instanceof Reader source) {
+			this.request = new RepeatableReaderWrapper(source);
+		} else if (!isRepeatable()) {
+			LOG.warn("Non-repeatable type of request object passed: [{}]. Request will be preserved.", this.requestClass);
 			try {
 				this.preserve(false);
 			} catch (IOException e) {
@@ -399,7 +404,7 @@ public class Message implements Serializable, Closeable {
 	}
 
 	private boolean isRepeatable() {
-		return request == null || request instanceof String || request instanceof Number || request instanceof Boolean || request instanceof ThrowingSupplier || request instanceof byte[] || request instanceof Node || request instanceof SerializableFileReference || request instanceof RequestBuffer || request instanceof FileInputStream;
+		return request == null || request instanceof String || request instanceof Number || request instanceof Boolean || request instanceof Date || request instanceof Calendar || request instanceof TemporalAccessor || request instanceof ThrowingSupplier || request instanceof byte[] || request instanceof Node || request instanceof SerializableFileReference || request instanceof RequestBuffer;
 	}
 
 	/**
@@ -471,10 +476,10 @@ public class Message implements Serializable, Closeable {
 			return reference.getReader();
 		}
 
-//		if (request instanceof RequestBuffer requestBuffer) {
-//			String readerCharset = computeDecodingCharset(defaultDecodingCharset); // Don't overwrite the Message's charset unless it's set to AUTO
-//			return requestBuffer.asReader(Charset.forName(readerCharset));
-//		}
+		if (request instanceof RequestBuffer requestBuffer) {
+			String readerCharset = computeDecodingCharset(defaultDecodingCharset); // Don't overwrite the Message's charset unless it's set to AUTO
+			return requestBuffer.asReader(Charset.forName(readerCharset));
+		}
 
 		if (isBinary()) {
 			String readerCharset = computeDecodingCharset(defaultDecodingCharset); // Don't overwrite the Message's charset unless it's set to AUTO

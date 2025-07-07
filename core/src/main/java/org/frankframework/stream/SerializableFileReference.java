@@ -137,6 +137,10 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 		this(true, null, deleteOnClose, path);
 	}
 
+	public SerializableFileReference(Path path, String charset, boolean deleteOnClose) {
+		this(false, charset, deleteOnClose, path);
+	}
+
 	private SerializableFileReference(boolean binary, String charset, boolean isFileOwner, Path path) {
 		this.binary = binary;
 		this.charset = charset;
