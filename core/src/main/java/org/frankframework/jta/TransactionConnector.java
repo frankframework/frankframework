@@ -15,11 +15,8 @@
 */
 package org.frankframework.jta;
 
-import java.util.List;
-
 import org.apache.logging.log4j.Logger;
 
-import org.frankframework.functional.ThrowingRunnable;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 
@@ -44,7 +41,6 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 	private final TransactionConnectorCoordinator<T, R> coordinator;
 	private final Thread parentThread;
 	private Thread childThread;
-	private List<ThrowingRunnable<?>> onEndChildThreadActions;
 
 	private boolean childThreadTransactionSuspended;
 
@@ -74,7 +70,7 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 			return null;
 		}
 		TransactionConnector<T,R> instance = new TransactionConnector<>(coordinator, owner, description);
-		coordinator.registerConnector(instance);
+		coordinator.registerConnector();
 		return instance;
 	}
 
@@ -98,28 +94,19 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 	 */
 	@lombok.SneakyThrows
 	public void endChildThread() {
-		if (onEndChildThreadActions!=null) {
-			log.debug("[{}] endChildThread() in thread [{}], executing onEndThreadAction", ()->toString(), ()->Thread.currentThread().getName());
-			for(ThrowingRunnable<?> action:onEndChildThreadActions) {
-				action.run();
-			}
-		}
 		if (childThread==null || coordinator==null) {
-			log.debug("[{}] endChildThread() in thread [{}], no childThread started or no transaction or not the last in chain", ()->toString(), ()->Thread.currentThread().getName());
+			log.debug("[{}] endChildThread() in thread [{}], no childThread started or no transaction or not the last in chain", this::toString, ()->Thread.currentThread().getName());
 			return;
 		}
 		Thread currentThread = Thread.currentThread();
 		if (currentThread != childThread) {
 			throw new IllegalStateException("["+this+"] endChildThread() must be called from childThread ["+childThread.getName()+"]");
 		}
-		log.debug("[{}] endChildThread() called in thread [{}]", ()->toString(), ()->Thread.currentThread().getName());
+		log.debug("[{}] endChildThread() called in thread [{}]", this::toString, ()->Thread.currentThread().getName());
 		coordinator.suspendTransaction();
 		childThreadTransactionSuspended=true;
 	}
 
-	public void onEndChildThread(List<ThrowingRunnable<?>> actions) {
-		onEndChildThreadActions = actions;
-	}
 	/**
 	 * close() to be called from parent thread, when child thread has ended.
 	 */
@@ -133,7 +120,7 @@ public class TransactionConnector<T,R> implements AutoCloseable {
 			log.warn("childThread transaction was not suspended");
 		}
 		if (coordinator!=null) {
-			log.debug("[{}] closing coordinator in thread [{}] after child thread [{}] ended", ()->toString(), ()->parentThread.getName(), ()->childThread==null?null:childThread.getName());
+			log.debug("[{}] closing coordinator in thread [{}] after child thread [{}] ended", this::toString, parentThread::getName, ()->childThread==null?null:childThread.getName());
 			coordinator.close();
 		}
 	}
