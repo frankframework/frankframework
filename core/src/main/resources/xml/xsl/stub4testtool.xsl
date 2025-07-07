@@ -71,7 +71,7 @@
 					<xsl:value-of select="$receiverName" />
 				</xsl:attribute>
 				<xsl:if test="errorMessageFormatter">
-					<xsl:attribute name="throwException">false</xsl:attribute>
+					<xsl:attribute name="onException">FORMAT_AND_RETURN</xsl:attribute>
 				</xsl:if>
 			</xsl:element>
 			<xsl:call-template name="stubNameForStorage">
@@ -99,7 +99,7 @@
 					<xsl:value-of select="$receiverName" />
 				</xsl:attribute>
 				<xsl:if test="parent::adapter/errorMessageFormatter">
-					<xsl:attribute name="throwException">false</xsl:attribute>
+					<xsl:attribute name="onException">FORMAT_AND_RETURN</xsl:attribute>
 				</xsl:if>
 			</xsl:element>
 			<xsl:call-template name="stubNameForStorage">

@@ -1,5 +1,6 @@
 package org.frankframework.console.controllers;
 
+import static org.frankframework.console.util.MatchUtils.assertJsonEquals;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -7,18 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.net.URL;
-import java.util.HashMap;
-import java.util.Map;
-
-import jakarta.json.Json;
-import jakarta.json.JsonReader;
-import jakarta.json.JsonStructure;
-import jakarta.json.JsonWriter;
-import jakarta.json.JsonWriterFactory;
-import jakarta.json.stream.JsonGenerator;
 
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -163,7 +153,7 @@ public class MonitorsTest extends FrankApiTestBase {
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andReturn();
 
-		assertEquals(jsonPretty(jsonOutput), jsonPretty(result.getResponse().getContentAsString()));
+		assertJsonEquals(jsonOutput, result.getResponse().getContentAsString());
 	}
 
 	@Test
@@ -193,23 +183,6 @@ public class MonitorsTest extends FrankApiTestBase {
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andReturn();
 
-		assertEquals(jsonPretty(jsonOutput), jsonPretty(result.getResponse().getContentAsString()));
+		assertJsonEquals(jsonOutput, result.getResponse().getContentAsString());
 	}
-
-	private static String jsonPretty(String json) {
-		StringWriter sw = new StringWriter();
-		try(JsonReader jr = Json.createReader(new StringReader(json))) {
-			JsonStructure jobj = jr.read();
-
-			Map<String, Object> properties = new HashMap<>(1);
-			properties.put(JsonGenerator.PRETTY_PRINTING, true);
-
-			JsonWriterFactory writerFactory = Json.createWriterFactory(properties);
-			try (JsonWriter jsonWriter = writerFactory.createWriter(sw)) {
-				jsonWriter.write(jobj);
-			}
-		}
-		return sw.toString().trim();
-	}
-
 }

@@ -102,7 +102,7 @@ import org.frankframework.util.StringUtil;
 @FrankDocGroup(FrankDocGroupValue.OTHER)
 public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, FrankElement, ConfigurationAware {
 	private @Getter ApplicationContext applicationContext;
-	private @Getter @Setter Configuration configuration;
+	private @Getter @Setter Configuration configuration; // Required for the Ladybug
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 	public static final String PIPELINE_NAME = "pipeline";

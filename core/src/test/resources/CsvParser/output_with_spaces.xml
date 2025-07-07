@@ -1,0 +1,47 @@
+<csv>
+	<record>
+		<Identifier>9012</Identifier>
+		<_AccessCode> 12se74</_AccessCode>
+		<_RecoveryCode> rb9012</_RecoveryCode>
+		<_FirstName> Rachel</_FirstName>
+		<_LastName> Booker</_LastName>
+		<_Department> Sales</_Department>
+		<_Location> Manchester</_Location>
+	</record>
+	<record>
+		<Identifier>2070</Identifier>
+		<_AccessCode> 04ap67</_AccessCode>
+		<_RecoveryCode> lg2070</_RecoveryCode>
+		<_FirstName> Laura</_FirstName>
+		<_LastName> Grey</_LastName>
+		<_Department> Depot</_Department>
+		<_Location> London</_Location>
+	</record>
+	<record>
+		<Identifier>4081</Identifier>
+		<_AccessCode> 30no86</_AccessCode>
+		<_RecoveryCode> cj4081</_RecoveryCode>
+		<_FirstName> Craig</_FirstName>
+		<_LastName> Johnson</_LastName>
+		<_Department> Depot</_Department>
+		<_Location> London</_Location>
+	</record>
+	<record>
+		<Identifier>9346</Identifier>
+		<_AccessCode> 14ju73</_AccessCode>
+		<_RecoveryCode> mj9346</_RecoveryCode>
+		<_FirstName> Mary</_FirstName>
+		<_LastName> Jenkins</_LastName>
+		<_Department> Engineering</_Department>
+		<_Location> Manchester</_Location>
+	</record>
+	<record>
+		<Identifier>5079</Identifier>
+		<_AccessCode> 09ja61</_AccessCode>
+		<_RecoveryCode> js5079</_RecoveryCode>
+		<_FirstName> Jamie</_FirstName>
+		<_LastName> Smith</_LastName>
+		<_Department> Engineering</_Department>
+		<_Location> Manchester</_Location>
+	</record>
+</csv>

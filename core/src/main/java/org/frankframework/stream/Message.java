@@ -1010,4 +1010,8 @@ public class Message implements Serializable, Closeable {
 		}
 		return new Message(copyContext(), newRef);
 	}
+
+	public static boolean isFormattedErrorMessage(Message message) {
+		return (message != null && Boolean.TRUE.equals(message.getContext().get(MessageContext.IS_ERROR_MESSAGE)));
+	}
 }

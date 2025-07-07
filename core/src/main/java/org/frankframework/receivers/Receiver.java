@@ -94,6 +94,7 @@ import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
+import org.frankframework.core.RequestReplyListener;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.core.TransactionAttribute;
@@ -210,7 +211,7 @@ import org.frankframework.util.XmlUtils;
 @FrankDocGroup(FrankDocGroupValue.OTHER)
 public class Receiver<M> extends TransactionAttributes implements ManagableLifecycle, IMessageHandler<M>, IProvidesMessageBrowsers<M>, EventThrowing, IbisExceptionListener, HasSender, FrankElement, IThreadCountControllable, NameAware {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-	private @Getter @Setter ApplicationContext applicationContext;
+	private @Getter ApplicationContext applicationContext;
 
 	public static final TransactionDefinition TXSUPPORTED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
 	public static final TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
@@ -323,8 +324,8 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 
 	private final List<DistributionSummary> processStatistics = new ArrayList<>();
 
-	// the adapter that handles the messages and initiates this listener
-	private @Getter @Setter Adapter adapter;
+	// The adapter that handles the messages and initiates this listener
+	private @Getter Adapter adapter;
 
 	private @Getter IListener<M> listener;
 
@@ -420,6 +421,16 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		if (adapter != null) {
 			adapter.getMessageKeeper().add("ERROR: " + getLogPrefix() + msg+(t!=null?": "+t.getMessage():""), MessageKeeperLevel.ERROR);
 		}
+	}
+
+	@Override
+	public final void setApplicationContext(@Nonnull ApplicationContext context) {
+		if (!(context instanceof Adapter adapter)) {
+			throw new IllegalArgumentException("ApplicationContext must always be of type Adapter");
+		}
+
+		this.adapter = adapter;
+		this.applicationContext = context;
 	}
 
 	protected void openAllResources() throws ListenerException, TimeoutException {
@@ -1316,7 +1327,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 					statusMessage = t.getMessage();
 					if (pipeLineResult==null) {
 						pipeLineResult=new PipeLineResult();
-						pipeLineResult.setExitCode(500); // If there was an exception that was not handled by the pipeline, consider it an internal server error.
+						pipeLineResult.setExitCode(session.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 500)); // If there was an exception that was not handled by the pipeline, consider it an internal server error.
 					}
 					messageInError = true;
 					// If processing before this step set ExitState to REJECTED, do not overwrite. Do make sure that when message is in error, ExitState = ERROR before calling Listener.afterMessageProcessed().
@@ -1324,7 +1335,11 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 						pipeLineResult.setState(ExitState.ERROR);
 					}
 					if (Message.isEmpty(pipeLineResult.getResult())) {
-						pipeLineResult.setResult(adapter.formatErrorMessage("exception caught",t,compactedMessage, session, this));
+						pipeLineResult.setResult(adapter.formatErrorMessage(null, t, compactedMessage, session, null));
+					}
+					session.setExitState(pipeLineResult);
+					if (getListener() instanceof RequestReplyListener requestReplyListener && requestReplyListener.getOnException() == RequestReplyListener.ExceptionHandlingMethod.FORMAT_AND_RETURN) {
+						return pipeLineResult.getResult();
 					}
 					throw wrapExceptionAsListenerException(t);
 				}

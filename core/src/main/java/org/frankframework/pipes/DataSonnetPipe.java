@@ -26,6 +26,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
+import org.frankframework.doc.Mandatory;
 import org.frankframework.json.DataSonnetOutputType;
 import org.frankframework.json.JsonMapper;
 import org.frankframework.json.JsonUtil;
@@ -114,6 +115,7 @@ public class DataSonnetPipe extends FixedForwardPipe {
 	}
 
 	/** Location of the stylesheet to apply to the input message. */
+	@Mandatory
 	public void setStyleSheetName(String stylesheetName) {
 		this.styleSheetName = stylesheetName;
 	}

@@ -15,6 +15,7 @@ import {
   ActivatedRoute,
   convertToParamMap,
   Data,
+  NavigationCancel,
   NavigationEnd,
   NavigationSkipped,
   NavigationStart,
@@ -135,6 +136,10 @@ export class AppComponent implements OnInit, OnDestroy {
         this.routeQueryParams = childRoute.snapshot.queryParamMap;
         this.routeData = childRoute.snapshot.data;
       }
+    });
+
+    this.router.events.pipe(filter((event) => event instanceof NavigationCancel)).subscribe(() => {
+      if (this.loading) setTimeout(() => this.router.navigate(['loading']));
     });
 
     this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {

@@ -52,10 +52,7 @@ public class CmisEventListener extends PushingListenerAdapter implements HasPhys
 
 	@Override
 	public String getPhysicalDestinationName() {
-		StringBuilder sb = new StringBuilder("event: ");
-		sb.append(cmisEvent.name());
-
-		return sb.toString();
+		return "event: " + cmisEvent.name();
 	}
 
 	@Override

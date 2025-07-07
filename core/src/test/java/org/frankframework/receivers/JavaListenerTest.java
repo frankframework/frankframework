@@ -86,7 +86,7 @@ public class JavaListenerTest {
 	}
 
 	<M> Adapter setupAdapter() throws Exception {
-		Adapter adapter = spy(configuration.createBean(Adapter.class));
+		Adapter adapter = configuration.createBean(Adapter.class);
 		adapter.setName("ReceiverTestAdapterName");
 
 		// Overwrite the default so we don't have to worry about a tx manager

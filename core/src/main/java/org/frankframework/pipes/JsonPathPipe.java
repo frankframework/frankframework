@@ -80,6 +80,8 @@ import org.frankframework.stream.Message;
  *     </table>
  *     If the input message does not have a match with the expression, then the Exception Forward path will be taken.
  * </p>
+ *
+ * @since 9.2
  */
 @EnterpriseIntegrationPattern(Type.TRANSLATOR)
 public class JsonPathPipe extends FixedForwardPipe {

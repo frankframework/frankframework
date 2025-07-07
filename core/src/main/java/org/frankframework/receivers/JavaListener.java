@@ -34,7 +34,7 @@ import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.dispatcher.RequestProcessor;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.Adapter;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
@@ -42,6 +42,7 @@ import org.frankframework.core.IbisExceptionListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.RequestReplyListener;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.errormessageformatters.ErrorMessageFormatter;
@@ -52,33 +53,42 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 
 
-// TODO: When anchors are supported by the Frank!Doc, link to https://github.com/frankframework/servicedispatcher
 /**
  * Use this listener to receive messages from other adapters or a scheduler within the same Frank-application or from other components residing in the same JVM.
  * JavaListeners can receive calls made via de ibis-servicedispatcher, which should be located on the JVM classpath to receive calls from other components in the JVM. If you want to call an adapter in the same Frank-application, consider using the IbisLocalSender.
- * <br/>
+ * <p>
  * To understand what this listener does exactly, please remember that the Frank!Framework is a Java application.
  * The JavaListener listens to Java method calls. You can issue Java method calls using a {@link IbisJavaSender} (external call)
  * or {@link IbisLocalSender} (internal call).
- * For more information see the ibis-servicedispatcher project.
- *
- * @author  Gerrit van Brakel
+ * </p>
+ * <p>
+ *     Calling the JavaListener via the {@link IbisJavaSender} forces all request messages to be passed as strings without
+ *     metadata.
+ * </p>
+ * <p>
+ *     When calling the JavaListener via the {@link IbisLocalSender} all messages are passed in their native format,
+ *     retaining all their metadata.
+ * </p>
+ * <p>
+ *     @see <a href="https://github.com/frankframework/servicedispatcher">The ServiceDispatcher project on Gitbug for more information.</a>
+ * </p>
+ * @author Gerrit van Brakel
  */
 @Category(Category.Type.BASIC)
-public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, HasPhysicalDestination, ServiceClient {
+public class JavaListener<M> implements RequestReplyListener, IPushingListener<M>, RequestProcessor, HasPhysicalDestination, ServiceClient {
 
 	private final @Getter String domain = "JVM";
 	protected Logger log = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
+	private @Getter @Setter ExceptionHandlingMethod onException = ExceptionHandlingMethod.RETHROW;
 
 	private @Getter String name;
 	private @Getter String serviceName;
-	private @Getter String returnedSessionKeys=null;
-	private @Getter boolean throwException = true;
+	private @Getter String returnedSessionKeys = null;
 	private @Getter boolean httpWsdl = false;
 
-	private @Getter boolean open=false;
+	private @Getter boolean open = false;
 	private static Map<String, JavaListener<?>> registeredListeners;
 	private @Getter @Setter IMessageHandler<M> handler;
 
@@ -175,29 +185,11 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 
 			try {
 				return handler.processRequest(this, messageWrapper, session);
-			} catch (ListenerException e) {
-				if (throwException) {
-					throw e;
-				}
-
-				// Message with error contains a String so does not need to be preserved.
-				// (Trying to preserve means dealing with extra IOException for which there is no reason here)
-				return formatExceptionUsingErrorMessageFormatter(session, message, e);
 			} finally {
 				session.unscheduleCloseOnSessionExit(message); // The input message should not be managed by this PipelineSession but rather the method invoker
 				session.mergeToParentSession(getReturnedSessionKeys(), parentSession);
 			}
 		}
-	}
-
-	// The ApplicationContext is practically always an Adapter except when the listener is created directly via the LarvaScenarioContext
-	private Message formatExceptionUsingErrorMessageFormatter(PipeLineSession session, Message inputMessage, Throwable t) {
-		if (applicationContext instanceof Adapter adapter) {
-			return adapter.formatErrorMessage(null, t, inputMessage, session, null);
-		}
-
-		log.warn("unformatted exception while processing input request [{}]", inputMessage, t);
-		return new Message(t.getMessage());
 	}
 
 	/**
@@ -282,8 +274,10 @@ public class JavaListener<M> implements IPushingListener<M>, RequestProcessor, H
 	 * 
 	 * @ff.default true
 	 */
+	@Deprecated(since = "9.2")
+	@ConfigurationWarning("Replaced with 'exceptionHandlingMethod'")
 	public void setThrowException(boolean throwException) {
-		this.throwException = throwException;
+		this.onException = throwException ? ExceptionHandlingMethod.RETHROW : ExceptionHandlingMethod.FORMAT_AND_RETURN;
 	}
 
 	/**

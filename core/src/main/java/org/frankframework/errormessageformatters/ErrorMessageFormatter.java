@@ -53,6 +53,10 @@ import org.frankframework.util.XmlEncodingUtils;
 /**
  * This is the default {@link IErrorMessageFormatter} implementation that is used when no specific {@code ErrorMessageFormatter} has
  * been configured. It wraps an error in an XML or JSON string. XML is the default.
+ *
+ * <p>
+ *     {@inheritClassDoc}
+ * </p>
  * <p>
  *     If the exception is a {@link PipeRunException} that has parameters set on it, then these parameters
  *     are added to a {@code params} element in the error message. These parameters can be set from an
@@ -60,8 +64,8 @@ import org.frankframework.util.XmlEncodingUtils;
  * </p>
  * <p>
  *     If you need more control over the layout of the error message, then configure your {@link org.frankframework.core.Adapter} or
- *     {@link org.frankframework.configuration.Configuration} with a {@link IErrorMessageFormatter} implementation
- *     that can reformat the error message to the desired layout, the {@link XslErrorMessageFormatter} for XML error formats or the
+ *     {@link org.frankframework.configuration.Configuration} with an {@code ErrorMessageFormatter} implementation
+ *     that can reformat the error message to the desired layout: the {@link XslErrorMessageFormatter} for XML error formats or the
  *     {@link DataSonnetErrorMessageFormatter} for JSON error messages.
  * </p>
  * <p>
@@ -75,6 +79,7 @@ import org.frankframework.util.XmlEncodingUtils;
  *    <details>Exception and stacktrace</details>
  *    <params>
  *      <param name="sampleParam>paramValue</param>
+ *      <param name="errorCode>535</param>
  *    </params>
  *    <originalMessage messageId="..." receivedTime="Mon Oct 27 12:10:18 CET 2003" >
  *        <![CDATA[contents of message for which the error occurred]]>
@@ -85,28 +90,30 @@ import org.frankframework.util.XmlEncodingUtils;
  * <p>
  *     Sample JSON:
  *     <pre>{@code
- *         {
- *             "errorMessage": {
- *                 "timestamp": "Mon Oct 13 12:01:57 CEST 2003",
- *                 "originator": "IAF 9.2",
- *                 "message": "Message describing error and location",
- *                 "location": {
- *                     "class": "org.frankframework.pipes.SwitchPipe",
- *                     "name": "ServiceSwitch"
- *                 },
- *                 "details": "Exception and stacktrace",
- *                 "params": {
- *                     "sampleParam": "paramValue"
- *                 },
- *                 "originalMessage": {
- *                     "messageId": "...",
- *                     "receivedTime": "Mon Oct 27 12:10:18 CET 2003",
- *                     "message": "contents of message for which the error occurred"
- *                 }
- *             }
+ * {
+ *     "errorMessage": {
+ *         "timestamp": "Mon Oct 13 12:01:57 CEST 2003",
+ *         "originator": "IAF 9.2",
+ *         "message": "Message describing error and location",
+ *         "location": {
+ *             "class": "org.frankframework.pipes.SwitchPipe",
+ *             "name": "ServiceSwitch"
+ *         },
+ *         "details": "Exception and stacktrace",
+ *         "params": {
+ *             "sampleParam": "paramValue",
+ *             "errorCode": 535
+ *         },
+ *         "originalMessage": {
+ *             "messageId": "...",
+ *             "receivedTime": "Mon Oct 27 12:10:18 CET 2003",
+ *             "message": "contents of message for which the error occurred"
  *         }
- *     }</pre>
+ *     }
+ * }
+ * }</pre>
  * </p>
+ *
  * @author  Gerrit van Brakel
  */
 @Log4j2
@@ -134,7 +141,8 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		String messageId = session.getMessageId();
 		String correlationId = session.getCorrelationId();
 		String msgIdToUse = StringUtils.isNotEmpty(messageId) && !MessageUtils.isFallbackMessageId(messageId) ? messageId : correlationId;
-		String prefix = location != null ? ClassUtils.nameOf(location) : null;
+
+		String prefix = (location != null) ? ClassUtils.nameOf(location) : null;
 		if (StringUtils.isNotEmpty(msgIdToUse)) {
 			prefix = StringUtil.concatStrings(prefix, " ", "msgId [" + msgIdToUse + "]");
 		}
@@ -159,7 +167,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 			errorObject.addAttribute("originator", originator);
 			errorObject.addAttribute("message", XmlEncodingUtils.replaceNonValidXmlCharacters(errorMessage));
 
-			addLocation(location, errorObject);
+			addLocation(getLocation(location, t), errorObject);
 
 			if (StringUtils.isNotEmpty(details)) {
 				errorObject.add("details", XmlEncodingUtils.replaceNonValidXmlCharacters(details));
@@ -254,17 +262,36 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 	}
 
 	/**
+	 * Get the location, either from a nested PipeRunException if present or from
+	 * the location passed to the ErrorMessageFormatter.
+	 */
+	private static @Nullable HasName getLocation(@Nullable HasName location, @Nullable Throwable t) {
+		PipeRunException pre = extractPipeRunException(t);
+		if (pre != null && pre.getPipeInError() != null) {
+			return pre.getPipeInError();
+		}
+		return location;
+	}
+
+	/**
 	 * Extract parameters from (nested) PipeRunException, or empty map.
 	 */
 	private static @Nonnull Map<String, Object> getPipeRunExceptionParams(@Nullable Throwable t) {
-		if (t == null) {
+		PipeRunException pre = extractPipeRunException(t);
+		if (pre == null) {
 			return Map.of();
 		}
-		if (t instanceof PipeRunException pre) {
-			return pre.getParameters();
-		} else {
-			return getPipeRunExceptionParams(t.getCause());
+		return pre.getParameters();
+	}
+
+	private static @Nullable PipeRunException extractPipeRunException(@Nullable Throwable t) {
+		if (t == null) {
+			return null;
 		}
+		if (t instanceof PipeRunException pre) {
+			return pre;
+		}
+		return extractPipeRunException(t.getCause());
 	}
 
 	private @Nullable String getMessageAsString(@Nullable Message originalMessage, @Nullable String messageId) {
@@ -291,7 +318,8 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 	/**
 	 * Format the error message as XML or as JSON.
 	 *
-	 * ff.default XML
+	 * @ff.default XML
+	 * @since 9.2
 	 */
 	public void setMessageFormat(@Nonnull DocumentFormat messageFormat) {
 		this.messageFormat = messageFormat;

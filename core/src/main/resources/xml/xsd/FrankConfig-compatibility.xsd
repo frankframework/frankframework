@@ -6475,6 +6475,20 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="applicationFaultsAsExceptions" type="frankBoolean" />
+    <xs:attribute name="onException">
+      <xs:annotation>
+        <xs:documentation>When an exception happens in the execution of the pipeline, with &lt;code&gt;RETHROW&lt;/code&gt; the
+ exception is thrown to the caller. With &lt;code&gt;FORMAT_AND_RETURN&lt;/code&gt; the exception is processed
+ by the Adapter#setErrorMessageFormatter(IErrorMessageFormatter) and returned as result-message
+ of the Adapter.
+
+ &lt;br/&gt;
+ The default is currently &lt;code&gt;RETHROW&lt;/code&gt; for backwards compatibility but will become &lt;code&gt;FORMAT_AND_RETURN&lt;/code&gt; in a future version. Default: RETHROW</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="ExceptionHandlingMethodAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -6569,8 +6583,8 @@
     </xs:attribute>
     <xs:attribute name="pollGuardInterval" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Interval &lt;i&gt;in milliseconds&lt;/i&gt; for the poll guard to check whether a successful poll was done by the receive
- (https://docs.oracle.com/javaee/7/api/javax/jms/messageconsumer.html#receive-long-) since last check. If polling has stopped this will be logged
+        <xs:documentation>Interval &lt;i&gt;in milliseconds&lt;/i&gt; for the poll guard to check whether a successful poll was done by the
+ (&lt;a href="https://docs.oracle.com/javaee/7/api/javax/jms/messageconsumer.html#receive-long-"&gt;JMS Receive call&lt;/a&gt;) since last check. If polling has stopped this will be logged
  and the listener will be stopped and started in an attempt to workaround problems with polling.
  Polling might stop due to bugs in the JMS driver/implementation which should be fixed by the supplier. As the poll time includes reading
  and processing of the message no successful poll might be registered since the last check when message processing takes a long time, hence
@@ -7025,6 +7039,20 @@
  The name of the &lt;code&gt;FrankListener&lt;/code&gt; must be unique across the configuration.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="onException">
+      <xs:annotation>
+        <xs:documentation>When an exception happens in the execution of the pipeline, with &lt;code&gt;RETHROW&lt;/code&gt; the
+ exception is thrown to the caller. With &lt;code&gt;FORMAT_AND_RETURN&lt;/code&gt; the exception is processed
+ by the Adapter#setErrorMessageFormatter(IErrorMessageFormatter) and returned as result-message
+ of the Adapter.
+
+ &lt;br/&gt;
+ The default is currently &lt;code&gt;RETHROW&lt;/code&gt; for backwards compatibility but will become &lt;code&gt;FORMAT_AND_RETURN&lt;/code&gt; in a future version. Default: RETHROW</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="ExceptionHandlingMethodAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -7346,6 +7374,20 @@
       <xs:annotation>
         <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the WSDL of the service provided by this listener will available for download Default: false</xs:documentation>
       </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="onException">
+      <xs:annotation>
+        <xs:documentation>When an exception happens in the execution of the pipeline, with &lt;code&gt;RETHROW&lt;/code&gt; the
+ exception is thrown to the caller. With &lt;code&gt;FORMAT_AND_RETURN&lt;/code&gt; the exception is processed
+ by the Adapter#setErrorMessageFormatter(IErrorMessageFormatter) and returned as result-message
+ of the Adapter.
+
+ &lt;br/&gt;
+ The default is currently &lt;code&gt;RETHROW&lt;/code&gt; for backwards compatibility but will become &lt;code&gt;FORMAT_AND_RETURN&lt;/code&gt; in a future version. Default: RETHROW</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="ExceptionHandlingMethodAttributeValuesType variableRef" />
+      </xs:simpleType>
     </xs:attribute>
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -16209,6 +16251,12 @@
       <xs:pattern value="[hH][eE][aA][dD][eE][rR]" />
       <xs:pattern value="[aA][uU][tT][hH][rR][oO][lL][eE]" />
       <xs:pattern value="[jJ][wW][tT]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ExceptionHandlingMethodAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[rR][eE][tT][hH][rR][oO][wW]" />
+      <xs:pattern value="[fF][oO][rR][mM][aA][tT][__][aA][nN][dD][__][rR][eE][tT][uU][rR][nN]" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="CacheModeAttributeValuesType">

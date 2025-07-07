@@ -156,13 +156,13 @@ class OpenApiTest extends OpenApiTestBase {
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
 		Parameter param = ParameterBuilder.create("parameter", "parameter").withSessionKey("parameter");
 
-		new AdapterBuilder(DEFAULT_ADAPTER_NAME, "get envelope adapter description")
+		new AdapterBuilder(DEFAULT_ADAPTER_NAME+ "1", "get envelope adapter description")
 				.setListener(uri, HttpMethod.GET, null)
 				.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
 				.addExit(200)
 				.build(true);
 
-		new AdapterBuilder(DEFAULT_ADAPTER_NAME, "get envelope adapter description")
+		new AdapterBuilder(DEFAULT_ADAPTER_NAME+ "2", "get envelope adapter description")
 				.setListener(uri, HttpMethod.POST, null)
 				.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
 				.addExit(200)
@@ -181,7 +181,7 @@ class OpenApiTest extends OpenApiTestBase {
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
 		Parameter param = ParameterBuilder.create("parameter", "parameter").withSessionKey("parameter");
 
-		new AdapterBuilder(DEFAULT_ADAPTER_NAME, "get envelope adapter description")
+		new AdapterBuilder(DEFAULT_ADAPTER_NAME+ "1", "get envelope adapter description")
 				.setListener(uri + "/{pattern}", HttpMethod.GET, null)
 				.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
 				.addExit(200)
@@ -189,7 +189,7 @@ class OpenApiTest extends OpenApiTestBase {
 				.addExit(403)
 				.build(true);
 
-		new AdapterBuilder(DEFAULT_ADAPTER_NAME, "get envelope adapter description")
+		new AdapterBuilder(DEFAULT_ADAPTER_NAME+ "2", "get envelope adapter description")
 				.setListener(uri + "/{pattern}/sub/{path}", HttpMethod.POST, null)
 				.setInputValidator("envelope.xsd", "EnvelopeRequest", "EnvelopeResponse", param)
 				.addExit(200)
@@ -214,7 +214,7 @@ class OpenApiTest extends OpenApiTestBase {
 		Parameter param = ParameterBuilder.create("parameter", "parameter").withSessionKey("parameter");
 
 		String responseRoot = "EnvelopeResponse,EnvelopeError403,EnvelopeError500";
-		new AdapterBuilder(DEFAULT_ADAPTER_NAME, "each exit have specific element name")
+		new AdapterBuilder(DEFAULT_ADAPTER_NAME+ "1", "each exit have specific element name")
 				.setListener(uri, HttpMethod.GET, null)
 				.setInputValidator("envelope.xsd", "EnvelopeRequest", responseRoot, param)
 				.addExit(200, "EnvelopeResponse", false)
@@ -222,7 +222,7 @@ class OpenApiTest extends OpenApiTestBase {
 				.addExit(403, "EnvelopeError403", false)
 				.build(true);
 
-		new AdapterBuilder(DEFAULT_ADAPTER_NAME, "200 code will retrieve the ref from first of response root")
+		new AdapterBuilder(DEFAULT_ADAPTER_NAME + "2", "200 code will retrieve the ref from first of response root")
 				.setListener(uri + "/test", HttpMethod.GET, null)
 				.setInputValidator("envelope.xsd", "EnvelopeRequest", responseRoot, param)
 				.addExit(200, null, false)
@@ -230,7 +230,7 @@ class OpenApiTest extends OpenApiTestBase {
 				.addExit(403, "EnvelopeError403", false)
 				.build(true);
 
-		new AdapterBuilder(DEFAULT_ADAPTER_NAME, "no element name responseRoot will be used as source for refs")
+		new AdapterBuilder(DEFAULT_ADAPTER_NAME+ "3", "no element name responseRoot will be used as source for refs")
 				.setListener(uri + "/elementNames", HttpMethod.GET, null)
 				.setInputValidator("envelope.xsd", "EnvelopeRequest", responseRoot, param)
 				.addExit(200)
@@ -238,7 +238,7 @@ class OpenApiTest extends OpenApiTestBase {
 				.addExit(403)
 				.build(true);
 
-		new AdapterBuilder(DEFAULT_ADAPTER_NAME, "403 empty exit")
+		new AdapterBuilder(DEFAULT_ADAPTER_NAME+ "4", "403 empty exit")
 				.setListener(uri + "/{pattern}/sub/{path}", HttpMethod.POST, null)
 				.setInputValidator("envelope.xsd", "EnvelopeRequest", responseRoot, param)
 				.addExit(200)
@@ -300,14 +300,14 @@ class OpenApiTest extends OpenApiTestBase {
 		String uri = "/";
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
 
-		new AdapterBuilder(DEFAULT_ADAPTER_NAME, DEFAULT_SUMMARY)
+		new AdapterBuilder(DEFAULT_ADAPTER_NAME+ "1", DEFAULT_SUMMARY)
 				.setListener(uri + "users", HttpMethod.GET, null)
 				.setInputValidator("simple.xsd", null, "user", null)
 				.addExit(200)
 				.addExit(500)
 				.build(true);
 
-		new AdapterBuilder(DEFAULT_ADAPTER_NAME, DEFAULT_SUMMARY)
+		new AdapterBuilder(DEFAULT_ADAPTER_NAME+ "2", DEFAULT_SUMMARY)
 				.setListener(uri + "test", HttpMethod.GET, null)
 				.setInputValidator("simple.xsd", null, "user", null)
 				.addExit(200)
@@ -326,21 +326,21 @@ class OpenApiTest extends OpenApiTestBase {
 		String uri = "/";
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
 
-		new AdapterBuilder(DEFAULT_ADAPTER_NAME, DEFAULT_SUMMARY)
+		new AdapterBuilder(DEFAULT_ADAPTER_NAME+"1", DEFAULT_SUMMARY)
 				.setListener(uri + "**", HttpMethod.GET, null)
 				.setInputValidator("simple.xsd", null, "user", null)
 				.addExit(200)
 				.addExit(500)
 				.build(true);
 
-		new AdapterBuilder(DEFAULT_ADAPTER_NAME, DEFAULT_SUMMARY)
+		new AdapterBuilder(DEFAULT_ADAPTER_NAME+"2", DEFAULT_SUMMARY)
 				.setListener(uri + "users", HttpMethod.GET, null)
 				.setInputValidator("simple.xsd", null, "user", null)
 				.addExit(200)
 				.addExit(500)
 				.build(true);
 
-		new AdapterBuilder(DEFAULT_ADAPTER_NAME, DEFAULT_SUMMARY)
+		new AdapterBuilder(DEFAULT_ADAPTER_NAME+"3", DEFAULT_SUMMARY)
 				.setListener(uri + "test", HttpMethod.GET, null)
 				.setInputValidator("simple.xsd", null, "user", null)
 				.addExit(200)
@@ -359,14 +359,14 @@ class OpenApiTest extends OpenApiTestBase {
 		String uri = "/path";
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uri).size(), "there are still registered patterns! Threading issue?");
 
-		new AdapterBuilder(DEFAULT_ADAPTER_NAME, DEFAULT_SUMMARY)
+		new AdapterBuilder(DEFAULT_ADAPTER_NAME+"1", DEFAULT_SUMMARY)
 				.setListener(uri + "/validator", HttpMethod.GET, null)
 				.setInputValidator("simple.xsd", null, "user", null)
 				.addExit(200)
 				.addExit(500)
 				.build(true);
 
-		new AdapterBuilder(DEFAULT_ADAPTER_NAME, DEFAULT_SUMMARY)
+		new AdapterBuilder(DEFAULT_ADAPTER_NAME+"2", DEFAULT_SUMMARY)
 				.setListener(uri + "/noValidator", HttpMethod.GET, null)
 				.addExit(200)
 				.addExit(500)

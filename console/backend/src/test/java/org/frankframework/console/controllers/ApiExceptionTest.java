@@ -1,5 +1,6 @@
 package org.frankframework.console.controllers;
 
+import static org.frankframework.console.util.MatchUtils.assertJsonEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -24,8 +25,19 @@ public class ApiExceptionTest {
 
 	public static List<Arguments> data() {
 		return List.of(
-				Arguments.of("cannot configure", new IbisException("cannot configure")),
-				Arguments.of("cannot configure: (IllegalStateException) something is wrong", new IbisException("cannot configure", new IllegalStateException("something is wrong")))
+				Arguments.of("cannot configure", new IbisException("cannot configure"),
+						"{\"error\":\"api endpoint exception message: cannot configure\",\"status\":\"Internal Server Error\"}"),
+				Arguments.of("cannot configure: (IllegalStateException) something is wrong", new IbisException("cannot configure", new IllegalStateException("something is wrong")),
+						"{\"error\":\"api endpoint exception message: cannot configure: (IllegalStateException) something is wrong\",\"status\":\"Internal Server Error\"}")
+		);
+	}
+
+	public static List<Arguments> dataNoMessage() {
+		return List.of(
+				Arguments.of("cannot configure", new IbisException("cannot configure"),
+						"{\"error\":\"cannot configure\",\"status\":\"Internal Server Error\"}"),
+				Arguments.of("cannot configure: (IllegalStateException) something is wrong", new IbisException("cannot configure", new IllegalStateException("something is wrong")),
+						"{\"error\":\"cannot configure: (IllegalStateException) something is wrong\",\"status\":\"Internal Server Error\"}")
 		);
 	}
 
@@ -35,19 +47,20 @@ public class ApiExceptionTest {
 		assertEquals(API_EXCEPTION_MESSAGE, exception.getMessage());
 		ResponseEntity<?> response = exception.getResponse();
 		assertEquals(500, response.getStatusCode().value());
-		String jsonMessage = asJsonString(response.getBody());
-		assertEquals(API_EXCEPTION_MESSAGE, jsonMessage);
+		String jsonMessage = JacksonUtils.convertToJson(response.getBody());
+		assertJsonEquals("{\"error\":\"api endpoint exception message\",\"status\":\"Internal Server Error\"}", jsonMessage);
 	}
 
 	@ParameterizedTest
-	@MethodSource(value = "data")
-	public void nestedNoMessage(String expectedMessage, Exception causedByException) {
+	@MethodSource(value = "dataNoMessage")
+	public void nestedNoMessage(String expectedMessage, Exception causedByException, String expectedJsonMessage) {
 		ApiException exception = new ApiException(causedByException);
 		assertThat(exception.getMessage(), Matchers.startsWith(expectedMessage));
 		ResponseEntity<?> response = exception.getResponse();
 		assertEquals(500, response.getStatusCode().value());
-		String jsonMessage = asJsonString(response.getBody());
-		assertThat(jsonMessage, Matchers.startsWith(expectedMessage));
+		String jsonMessage = JacksonUtils.convertToJson(response.getBody());
+
+		assertJsonEquals(expectedJsonMessage, jsonMessage);
 	}
 
 	@Test
@@ -56,8 +69,8 @@ public class ApiExceptionTest {
 		assertEquals(API_EXCEPTION_MESSAGE, exception.getMessage());
 		ResponseEntity<?> response = exception.getResponse();
 		assertEquals(404, response.getStatusCode().value());
-		String jsonMessage = asJsonString(response.getBody());
-		assertEquals(API_EXCEPTION_MESSAGE, jsonMessage);
+		String jsonMessage = JacksonUtils.convertToJson(response.getBody());
+		assertJsonEquals("{\"error\":\"api endpoint exception message\",\"status\":\"Not Found\"}", jsonMessage);
 	}
 
 	@Test
@@ -66,21 +79,20 @@ public class ApiExceptionTest {
 		assertEquals(API_EXCEPTION_MESSAGE, exception.getMessage());
 		ResponseEntity<?> response = exception.getResponse();
 		assertEquals(400, response.getStatusCode().value());
-		String jsonMessage = asJsonString(response.getBody());
-		assertEquals(API_EXCEPTION_MESSAGE, jsonMessage);
+		String jsonMessage = JacksonUtils.convertToJson(response.getBody());
+		assertEquals("{\"error\":\"api endpoint exception message\",\"status\":\"Bad Request\"}", jsonMessage);
 	}
 
 	@ParameterizedTest
 	@MethodSource("data")
-	public void nestedException(String expectedMessage, Exception causedByException) {
+	public void nestedException(String expectedMessage, Exception causedByException, String expectedJsonMessage) {
 		ApiException exception = new ApiException(API_EXCEPTION_MESSAGE, causedByException);
 		assertThat(exception.getMessage(), Matchers.startsWith(API_EXCEPTION_MESSAGE +": "+ expectedMessage));
 		ResponseEntity<?> response = exception.getResponse();
 		assertEquals(500, response.getStatusCode().value());
-		String jsonMessage = asJsonString(response.getBody());
-		assertThat(jsonMessage, Matchers.startsWith("api endpoint exception message: cannot configure"));
+		String jsonMessage = JacksonUtils.convertToJson(response.getBody());
 
-		assertThat(jsonMessage, Matchers.startsWith(API_EXCEPTION_MESSAGE +": "+ expectedMessage));
+		assertJsonEquals(expectedJsonMessage, jsonMessage);
 	}
 
 	@Test
@@ -91,18 +103,4 @@ public class ApiExceptionTest {
 		assertEquals(500, response.getStatusCode().value());
 		assertNull(response.getBody());
 	}
-
-	public record ApiErrorResponse (String error, String status) { }
-
-	private String asJsonString(final Object obj) {
-		try {
-			String json = JacksonUtils.convertToJson(obj);
-			ApiErrorResponse response = JacksonUtils.convertToDTO(json, ApiErrorResponse.class);
-			return response.error();
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-
 }
