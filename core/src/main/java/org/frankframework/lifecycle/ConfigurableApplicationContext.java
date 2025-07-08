@@ -42,7 +42,7 @@ public class ConfigurableApplicationContext extends GenericApplicationContext im
 
 	@Override
 	protected final void initLifecycleProcessor() {
-		ConfiguringLifecycleProcessor defaultProcessor = new ConfiguringLifecycleProcessor();
+		ConfiguringLifecycleProcessor defaultProcessor = new ConfiguringLifecycleProcessor(this);
 		defaultProcessor.setBeanFactory(getBeanFactory());
 		getBeanFactory().registerSingleton(LIFECYCLE_PROCESSOR_BEAN_NAME, defaultProcessor);
 		super.initLifecycleProcessor();

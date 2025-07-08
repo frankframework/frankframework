@@ -337,7 +337,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 	@Override
 	protected void initLifecycleProcessor() {
-		ConfiguringLifecycleProcessor defaultProcessor = new ConfiguringLifecycleProcessor();
+		ConfiguringLifecycleProcessor defaultProcessor = new ConfiguringLifecycleProcessor(this);
 		defaultProcessor.setBeanFactory(getBeanFactory());
 		defaultProcessor.setMessageKeeper(getMessageKeeper());
 		getBeanFactory().registerSingleton(LIFECYCLE_PROCESSOR_BEAN_NAME, defaultProcessor);
@@ -987,15 +987,9 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 		// Since we are catching all exceptions in the thread, the super start will always be called,
 		// not a problem for now but something we should look into in the future...
-		CompletableFuture.runAsync(this::startLifecycleBeans, taskExecutor) // Start all smart-lifecycles
+		CompletableFuture.runAsync(this::start, taskExecutor) // Start all smart-lifecycles
 				.thenRun(runnable) // Then start the adapter it self
 				.whenComplete((e,t) -> handleException(t)); // The exception from the previous stage, if any, will propagate further.
-	}
-
-	private void startLifecycleBeans() {
-		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_ADAPTER_KEY, getName())) {
-			super.start();
-		}
 	}
 
 	private void handleException(Throwable t) {
@@ -1114,14 +1108,8 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 		CompletableFuture.runAsync(runnable, taskExecutor) // Stop asynchronous from other adapters
 				.handle((e, t) -> { handleException(t); return e; }) // The exception from the previous stage, if any, will NOT propagate further.
-				.thenRun(this::stopLifecycleBeans) // Stop other LifeCycle aware beans
+				.thenRun(this::stop) // Stop other LifeCycle aware beans
 				.thenRun(callback); // Call the callback 'CountDownLatch' to confirm we've stopped
-	}
-
-	private void stopLifecycleBeans() {
-		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_ADAPTER_KEY, getName())) {
-			super.stop();
-		}
 	}
 
 	/**
