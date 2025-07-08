@@ -34,9 +34,6 @@ import java.io.StringWriter;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
-import java.time.temporal.TemporalAccessor;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.Map.Entry;
 import java.util.Objects;
 
@@ -111,14 +108,6 @@ public class Message implements Serializable, Closeable {
 			this.request = new RepeatableInputStreamWrapper(source);
 		} else if (this.request instanceof Reader source) {
 			this.request = new RepeatableReaderWrapper(source);
-		} else if (!isRepeatable()) {
-			LOG.warn("Non-repeatable type of request object passed: [{}]. Request will be preserved.", this.requestClass);
-			try {
-				this.preserve(false);
-			} catch (IOException e) {
-				// TODO: Don't want IOException on the constructor. What to do then? RuntimeException? IllegalArgumentException? Lombok SneakThrows?
-				throw new RuntimeException("Cannot read message / preserve message", e);
-			}
 		}
 
 		if (request != null) {
@@ -405,10 +394,6 @@ public class Message implements Serializable, Closeable {
 		}
 
 		return request instanceof ThrowingSupplier || request instanceof byte[] || request instanceof Number || request instanceof Boolean;
-	}
-
-	private boolean isRepeatable() {
-		return request == null || request instanceof String || request instanceof Number || request instanceof Boolean || request instanceof Date || request instanceof Calendar || request instanceof TemporalAccessor || request instanceof ThrowingSupplier || request instanceof byte[] || request instanceof Node || request instanceof SerializableFileReference || request instanceof RequestBuffer;
 	}
 
 	/**
@@ -702,7 +687,7 @@ public class Message implements Serializable, Closeable {
 		// save the generated String as the request before returning it
 		// Specify initial capacity a little larger than file-size just as extra safeguard we do not re-allocate buffer.
 		String result = StreamUtil.readerToString(asReader(decodingCharset), null, false, (int) size() + 32);
-		if (!(request instanceof SerializableFileReference) && (!isBinary() || !isRepeatable())) {
+		if (!(request instanceof SerializableFileReference) && !isBinary()) {
 			if (request instanceof AutoCloseable closeable) {
 				try {
 					closeable.close();
@@ -1010,7 +995,7 @@ public class Message implements Serializable, Closeable {
 	 */
 	@Nonnull
 	public Message copyMessage() throws IOException {
-		if (!isRepeatable() || request instanceof RequestBuffer) {
+		if (request instanceof RequestBuffer) {
 			preserve(false);
 		}
 		if (!(request instanceof SerializableFileReference)) {
