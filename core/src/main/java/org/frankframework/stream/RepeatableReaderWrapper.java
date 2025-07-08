@@ -100,20 +100,19 @@ public class RepeatableReaderWrapper implements RequestBuffer, AutoCloseable {
 		}
 		if (charsReadTotal > maxInMemorySize) {
 			fileLocation = allocateTemporaryFile();
-			writer = transferBuffersToFile(fileLocation, buffers);
+			writer = Files.newBufferedWriter(fileLocation, StreamUtil.DEFAULT_CHARSET);
+			transferBuffersToFile(writer, buffers);
 			buffers.clear();
 			currentBuffer = null;
 		}
 		return true;
 	}
 
-	private @Nonnull Writer transferBuffersToFile(Path fileLocation, List<CharBufferBlock> buffers) throws IOException {
-		Writer out = Files.newBufferedWriter(fileLocation, StreamUtil.DEFAULT_CHARSET);
+	private void transferBuffersToFile(Writer out, List<CharBufferBlock> buffers) throws IOException {
 		for (CharBufferBlock buffer: buffers) {
 			buffer.transferToWriter(out);
 		}
 		out.flush();
-		return out;
 	}
 
 	private @Nonnull Path allocateTemporaryFile() throws IOException {
@@ -157,6 +156,7 @@ public class RepeatableReaderWrapper implements RequestBuffer, AutoCloseable {
 
 	@Override
 	public synchronized Serializable asSerializable() throws IOException {
+		//noinspection StatementWithEmptyBody
 		while (bufferDataFromSource(StreamUtil.BUFFER_SIZE)) ; // Empty while because of side-effects in the condition
 		if (fileLocation != null) {
 			return new SerializableFileReference(fileLocation, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, true);
@@ -229,11 +229,16 @@ public class RepeatableReaderWrapper implements RequestBuffer, AutoCloseable {
 		@Nonnull
 		private Reader openFileInputStream(Path file, long skipTo) throws IOException {
 			Reader fis = Files.newBufferedReader(file, StandardCharsets.UTF_8);
-			if (skipTo > 0L) {
-				long skipped = fis.skip(skipTo);
-				if (skipped != skipTo) {
-					throw new IllegalStateException("Skipped file position " + skipped + " != " + skipTo);
+			try {
+				if (skipTo > 0L) {
+					long skipped = fis.skip(skipTo);
+					if (skipped != skipTo) {
+						throw new IllegalStateException("Skipped file position " + skipped + " != " + skipTo);
+					}
 				}
+			} catch (IOException | RuntimeException e) {
+				fis.close();
+				throw e;
 			}
 			return fis;
 		}

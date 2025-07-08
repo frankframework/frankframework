@@ -98,20 +98,19 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 		}
 		if (bytesReadTotal > maxInMemorySize) {
 			fileLocation = allocateTemporaryFile();
-			outputStream = transferBuffersToFile(fileLocation, buffers);
+			outputStream = Files.newOutputStream(fileLocation);
+			transferBuffersToFile(outputStream, buffers);
 			buffers.clear();
 			currentBuffer = null;
 		}
 		return true;
 	}
 
-	private @Nonnull OutputStream transferBuffersToFile(Path fileLocation, List<ByteBufferBlock> buffers) throws IOException {
-		OutputStream out = Files.newOutputStream(fileLocation);
+	private void transferBuffersToFile(OutputStream out, List<ByteBufferBlock> buffers) throws IOException {
 		for (ByteBufferBlock buffer: buffers) {
 			buffer.transferToStream(out);
 		}
 		out.flush();
-		return out;
 	}
 
 	private @Nonnull Path allocateTemporaryFile() throws IOException {
@@ -155,6 +154,7 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 
 	@Override
 	public synchronized Serializable asSerializable() throws IOException {
+		//noinspection StatementWithEmptyBody
 		while (bufferDataFromSource(StreamUtil.BUFFER_SIZE)) ; // Empty while because of side-effects in the condition
 		if (fileLocation != null) {
 			return new SerializableFileReference(fileLocation, true);
@@ -232,11 +232,16 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 		@Nonnull
 		private InputStream openFileInputStream(Path file, long skipTo) throws IOException {
 			InputStream fis = Files.newInputStream(file, StandardOpenOption.READ);
-			if (skipTo > 0L) {
-				long skipped = fis.skip(skipTo);
-				if (skipped != skipTo) {
-					throw new IllegalStateException("Skipped file position " + skipped + " != " + skipTo);
+			try {
+				if (skipTo > 0L) {
+					long skipped = fis.skip(skipTo);
+					if (skipped != skipTo) {
+						throw new IllegalStateException("Skipped file position " + skipped + " != " + skipTo);
+					}
 				}
+			} catch (IOException | RuntimeException e) {
+				fis.close();
+				throw e;
 			}
 			return fis;
 		}
