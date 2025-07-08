@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Compatibility XSD, internal use only! -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.2.0-SNAPSHOT">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.2.0">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -95,7 +95,14 @@
         <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, the length of the message is shown in the msg log instead of the content of the message Default: &lt;code&gt;false&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="targetDesignDocument" type="xs:string" />
+    <xs:attribute name="targetDesignDocument" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>An optional field for documentation-purposes where you can add a reference to the design-document
+ used for the design of this adapter.
+ &lt;br/&gt;
+ Setting this field has no impact on the behaviour of the Adapter.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.core.Adapter" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="adapter" />
@@ -8437,7 +8444,7 @@
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="DataSonnetErrorMessageFormatterDeclaredAttributeGroup">
-    <xs:attribute name="styleSheetName" type="xs:string">
+    <xs:attribute name="styleSheetName" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Set a DataSonnet stylesheet to transform the default JSON error message to a custom format.</xs:documentation>
       </xs:annotation>
@@ -8469,9 +8476,7 @@
   <xs:attributeGroup name="ErrorMessageFormatterDeclaredAttributeGroup">
     <xs:attribute name="messageFormat">
       <xs:annotation>
-        <xs:documentation>Format the error message as XML or as JSON.
-
- ff.default XML</xs:documentation>
+        <xs:documentation>Format the error message as XML or as JSON. Default: XML</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="DocumentFormatAttributeValuesType variableRef" />
@@ -12657,6 +12662,11 @@
  See &lt;a href="https://en.wikipedia.org/wiki/C0_and_C1_control_codes#Field_separators"&gt;WIKI Control Codes&lt;/a&gt;.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="trimWhitespace" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>When set to true, whitespace is trimmed from the beginning and end of each header and field value. Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="CsvParserPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="CsvParserPipeDeclaredAttributeGroup" />
@@ -12672,7 +12682,7 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.DataSonnetPipe" />
   </xs:complexType>
   <xs:attributeGroup name="DataSonnetPipeDeclaredAttributeGroup">
-    <xs:attribute name="styleSheetName" type="xs:string">
+    <xs:attribute name="styleSheetName" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Location of the stylesheet to apply to the input message.</xs:documentation>
       </xs:annotation>
