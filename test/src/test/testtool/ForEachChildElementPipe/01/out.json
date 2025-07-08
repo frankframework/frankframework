@@ -1,6 +1,7 @@
 {
     "message": "<results>\n<result item=\"1\">\n<reply>goodbye</reply>\n</result>\n<result item=\"2\">\n<reply>ha</reply>\n</result>\n</results>",
     "messageContext": {
+        "Metadata.Size": "117",
         "Pipeline.PreviousPipe": "ForEachChildElementPipe_Record"
     },
     "logContext": {
