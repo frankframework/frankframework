@@ -43,6 +43,7 @@ import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
 
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
@@ -67,6 +68,7 @@ public class CloudAgentOutboundGateway implements InitializingBean, OutboundGate
 	private static final String PUBLIC_KEY_FIELD = "publicKey";
 	private AbstractJwtKeyGenerator jwtKeyGenerator;
 
+	@Autowired
 	public CloudAgentOutboundGateway(JwtGeneratorFactoryBean keyGeneratorFactory) {
 		this.jwtKeyGenerator = keyGeneratorFactory.getObject();
 		this.mtlsHelper = new MtlsHelper();
