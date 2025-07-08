@@ -63,7 +63,7 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 		}
 
 		// Already more bytes read than should be buffered in memory
-		if (outputStream != null) {
+		if (!isBufferedInMemory()) {
 			byte[] data = new byte[size];
 			int bytesRead = source.read(data, 0, size);
 			if (bytesRead == -1) {
@@ -124,7 +124,7 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 		CloseUtils.closeSilently(source, outputStream);
 		buffers.clear();
 		currentBuffer = null;
-		if (fileLocation != null) {
+		if (!isBufferedInMemory()) {
 			Files.deleteIfExists(fileLocation);
 		}
 	}
@@ -141,7 +141,7 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 	@Override
 	public boolean isEmpty() throws IOException {
 		bufferDataFromSource(StreamUtil.BUFFER_SIZE);
-		if (fileLocation != null) {
+		if (!isBufferedInMemory()) {
 			return false;
 		}
 		return bytesReadTotal == 0L;
@@ -156,7 +156,7 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 	public synchronized Serializable asSerializable() throws IOException {
 		//noinspection StatementWithEmptyBody
 		while (bufferDataFromSource(StreamUtil.BUFFER_SIZE)) ; // Empty while because of side-effects in the condition
-		if (fileLocation != null) {
+		if (!isBufferedInMemory()) {
 			return new SerializableFileReference(fileLocation, true);
 		}
 
