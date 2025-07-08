@@ -31,7 +31,7 @@ import org.frankframework.util.StreamUtil;
 public class HttpMessageEntityTest {
 	private String messageContent;
 	private Message repeatableMessage;
-	private Message nonRepeatableMessage; // TODO: Rename this variable b/c all is now made repeatable
+	private Message nonRepeatableMessage;
 	private Message binaryMessage;
 
 	@BeforeEach

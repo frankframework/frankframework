@@ -294,7 +294,7 @@ public class Message implements Serializable, Closeable {
 		}
 		if (request instanceof RequestBuffer requestBuffer) {
 			// RequestBuffer knows how to preserve itself, intelligently deciding to preserve to memory or disk
-			request = requestBuffer.preserve();
+			request = requestBuffer.asSerializable();
 			return;
 		}
 
@@ -306,7 +306,7 @@ public class Message implements Serializable, Closeable {
 			if (requestSize == MESSAGE_SIZE_UNKNOWN && size() <= maxInMemory && request instanceof SerializableFileReference serializableFileReference) {
 				if (isBinary()) {
 					try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
-					BufferedInputStream inputStream = serializableFileReference.getInputStream()) {
+						InputStream inputStream = serializableFileReference.getInputStream()) {
 						inputStream.transferTo(bos);
 						this.request = bos.toByteArray();
 					}
@@ -400,7 +400,11 @@ public class Message implements Serializable, Closeable {
 			return reference.isBinary();
 		}
 
-		return request instanceof RepeatableInputStreamWrapper || request instanceof ThrowingSupplier || request instanceof byte[] || request instanceof Number || request instanceof Boolean;
+		if (request instanceof RequestBuffer requestBuffer) {
+			return requestBuffer.isBinary();
+		}
+
+		return request instanceof ThrowingSupplier || request instanceof byte[] || request instanceof Number || request instanceof Boolean;
 	}
 
 	private boolean isRepeatable() {
@@ -526,7 +530,11 @@ public class Message implements Serializable, Closeable {
 
 			if (request instanceof RequestBuffer requestBuffer) {
 				LOG.debug("returning InputStream {} from RequestBuffer", this::getObjectId);
-				return requestBuffer.asInputStream();
+				if (requestBuffer.isBinary()) {
+					return requestBuffer.asInputStream();
+				}
+				String charset = getEncodingCharset(defaultEncodingCharset);
+				return requestBuffer.asInputStream(Charset.forName(charset));
 			}
 
 			if (request instanceof SerializableFileReference reference) {
@@ -565,20 +573,16 @@ public class Message implements Serializable, Closeable {
 
 	@Nonnull
 	public synchronized String peek(int readLimit) throws IOException {
-		Reader r = asReader();
-		if (r == null) {
-			return "";
-		}
-		r.mark(readLimit);
-		try {
+		try (Reader r = asReader()) {
+			if (r == null) {
+				return "";
+			}
 			char[] buffer = new char[readLimit];
 			int len = r.read(buffer);
 			if (len <= 0) {
 				return "";
 			}
 			return new String(buffer, 0, len);
-		} finally {
-			r.reset();
 		}
 	}
 
@@ -730,7 +734,14 @@ public class Message implements Serializable, Closeable {
 	 * @return {@code true} if the message is empty, {@code false} if message is not empty or if the size cannot be determined up-front.
 	 */
 	public boolean isEmpty() {
-		return size() == 0;
+		if (request instanceof RequestBuffer requestBuffer) {
+			try {
+				return requestBuffer.isEmpty();
+			} catch (IOException e) {
+				throw Lombok.sneakyThrow(e);
+			}
+		}
+		return size() == 0L;
 	}
 
 	private void toStringPrefix(StringBuilder writer) {
@@ -835,6 +846,10 @@ public class Message implements Serializable, Closeable {
 		if (Message.isNull(message)) {
 			return false;
 		}
+		// TODO: Rewrite "message.isEmpty()" to give a truthful answer always? Don't yet know what the fallout of that will be.
+		if (message.asObject() instanceof RequestBuffer requestBuffer) {
+			return !requestBuffer.isEmpty();
+		}
 		long size = message.size();
 		if (size != MESSAGE_SIZE_UNKNOWN) {
 			return size != 0;
@@ -850,13 +865,10 @@ public class Message implements Serializable, Closeable {
 		if (r == null) {
 			return false;
 		}
-		r.mark(1);
-		try {
+		try (Reader ignored = r) {
 			return r.read() != -1;
 		} catch (EOFException e) {
 			return false;
-		}  finally {
-			r.reset();
 		}
 	}
 
@@ -864,13 +876,10 @@ public class Message implements Serializable, Closeable {
 		if (is == null) {
 			return false;
 		}
-		is.mark(1);
-		try {
+		try (InputStream ignored = is){
 			return is.read() != -1;
 		} catch (EOFException e) {
 			return false;
-		} finally {
-			is.reset();
 		}
 	}
 

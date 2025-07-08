@@ -187,8 +187,12 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 		}
 	}
 
-	public BufferedInputStream getInputStream() throws IOException {
-		return new BufferedInputStream(Files.newInputStream(path));
+	public InputStream getInputStream() throws IOException {
+		InputStream in = Files.newInputStream(path);
+		if (in.markSupported()) {
+			return in;
+		}
+		return new BufferedInputStream(in);
 	}
 
 	private long getFileSize() {

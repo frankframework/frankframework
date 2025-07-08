@@ -18,6 +18,7 @@ package org.frankframework.stream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.io.Serializable;
 import java.nio.charset.Charset;
 
 /**
@@ -27,10 +28,13 @@ import java.nio.charset.Charset;
 public interface RequestBuffer {
 
 	InputStream asInputStream() throws IOException;
+	InputStream asInputStream(Charset encodingCharset) throws IOException;
 	Reader asReader() throws IOException;
-	Reader asReader(Charset charset) throws IOException;
+	Reader asReader(Charset decodingCharset) throws IOException;
 
 	long size();
+	boolean isEmpty() throws IOException;
+	boolean isBinary();
 
-	Object preserve() throws IOException;
+	Serializable asSerializable() throws IOException;
 }

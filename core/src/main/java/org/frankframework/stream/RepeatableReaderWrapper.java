@@ -1,9 +1,25 @@
+/*
+   Copyright 2025 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
 package org.frankframework.stream;
 
 import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.io.Serializable;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -126,7 +142,21 @@ public class RepeatableReaderWrapper implements RequestBuffer, AutoCloseable {
 	}
 
 	@Override
-	public synchronized Object preserve() throws IOException {
+	public boolean isEmpty() throws IOException {
+		bufferDataFromSource(StreamUtil.BUFFER_SIZE);
+		if (fileLocation != null) {
+			return false;
+		}
+		return charsReadTotal == 0L;
+	}
+
+	@Override
+	public boolean isBinary() {
+		return false;
+	}
+
+	@Override
+	public synchronized Serializable asSerializable() throws IOException {
 		while (bufferDataFromSource(StreamUtil.BUFFER_SIZE)) ; // Empty while because of side-effects in the condition
 		if (fileLocation != null) {
 			return new SerializableFileReference(fileLocation, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, true);
@@ -141,10 +171,19 @@ public class RepeatableReaderWrapper implements RequestBuffer, AutoCloseable {
 		return new String(out);
 	}
 
-
 	@Override
 	public InputStream asInputStream() throws IOException {
-		return new BufferedInputStream(ReaderInputStream.builder().setReader(new BufferReadingReader()).get());
+		return new BufferedInputStream(ReaderInputStream.builder()
+				.setReader(new BufferReadingReader())
+				.get());
+	}
+
+	@Override
+	public InputStream asInputStream(Charset encodingCharset) throws IOException {
+		return new BufferedInputStream(ReaderInputStream.builder()
+				.setReader(new BufferReadingReader())
+				.setCharset(encodingCharset)
+				.get());
 	}
 
 	@Override
@@ -153,7 +192,7 @@ public class RepeatableReaderWrapper implements RequestBuffer, AutoCloseable {
 	}
 
 	@Override
-	public Reader asReader(Charset charset) throws IOException {
+	public Reader asReader(Charset decodingCharset) throws IOException {
 		// Ignore the decoding charset
 		return new BufferReadingReader();
 	}

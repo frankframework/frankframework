@@ -314,7 +314,6 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 
 		ContentHandler handler = new XmlWriter();
 		XMLReader xmlReader = XmlUtils.getXMLReader(handler);
-		System.err.println(message.asString());
 
 		// Act
 		InputSource source = message.asInputSource();

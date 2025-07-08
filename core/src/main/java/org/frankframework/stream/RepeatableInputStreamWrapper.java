@@ -15,12 +15,11 @@
 */
 package org.frankframework.stream;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
+import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -141,7 +140,21 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 	}
 
 	@Override
-	public synchronized Object preserve() throws IOException {
+	public boolean isEmpty() throws IOException {
+		bufferDataFromSource(StreamUtil.BUFFER_SIZE);
+		if (fileLocation != null) {
+			return false;
+		}
+		return bytesReadTotal == 0L;
+	}
+
+	@Override
+	public boolean isBinary() {
+		return true;
+	}
+
+	@Override
+	public synchronized Serializable asSerializable() throws IOException {
 		while (bufferDataFromSource(StreamUtil.BUFFER_SIZE)) ; // Empty while because of side-effects in the condition
 		if (fileLocation != null) {
 			return new SerializableFileReference(fileLocation, true);
@@ -162,13 +175,19 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 	}
 
 	@Override
+	public InputStream asInputStream(Charset encodingCharset) throws IOException {
+		// Ignore the encodingCharset
+		return new BufferReadingInputStream();
+	}
+
+	@Override
 	public Reader asReader() throws IOException {
 		return StreamUtil.getCharsetDetectingInputStreamReader(asInputStream());
 	}
 
 	@Override
-	public Reader asReader(Charset charset) throws IOException {
-		return new BufferedReader(new InputStreamReader(asInputStream(), charset));
+	public Reader asReader(Charset decodingCharset) throws IOException {
+		return StreamUtil.getCharsetDetectingInputStreamReader(asInputStream(), decodingCharset.name());
 	}
 
 	private class BufferReadingInputStream extends InputStream {

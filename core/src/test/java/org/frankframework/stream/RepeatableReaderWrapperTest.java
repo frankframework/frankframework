@@ -264,12 +264,12 @@ class RepeatableReaderWrapperTest {
 
 	@ParameterizedTest
 	@MethodSource("characterInputs")
-	void preserveNothingYetRead(String input) throws IOException {
+	void asSerializableNothingYetRead(String input) throws IOException {
 		// Arrange
 		readerWrapper = new RepeatableReaderWrapper(wrapWithReader(input));
 
 		// Act
-		Object result = readerWrapper.preserve();
+		Object result = readerWrapper.asSerializable();
 
 		// Assert
 		int size = Math.toIntExact(readerWrapper.size());
@@ -283,7 +283,7 @@ class RepeatableReaderWrapperTest {
 
 	@ParameterizedTest
 	@MethodSource("characterInputs")
-	void preservePartiallyRead(String input) throws IOException {
+	void asSerializablePartiallyRead(String input) throws IOException {
 		// Arrange
 		readerWrapper = new RepeatableReaderWrapper(wrapWithReader(input));
 
@@ -292,7 +292,7 @@ class RepeatableReaderWrapperTest {
 		inputStream.read(destination, 0, destination.length);
 
 		// Act
-		Object result = readerWrapper.preserve();
+		Object result = readerWrapper.asSerializable();
 
 		// Assert
 		int size = Math.toIntExact(readerWrapper.size());
@@ -306,7 +306,7 @@ class RepeatableReaderWrapperTest {
 
 	@ParameterizedTest
 	@MethodSource("characterInputs")
-	void preserveFullyRead(String input) throws IOException {
+	void asSerializableFullyRead(String input) throws IOException {
 		// Arrange
 		readerWrapper = new RepeatableReaderWrapper(wrapWithReader(input));
 
@@ -315,7 +315,7 @@ class RepeatableReaderWrapperTest {
 		inputStream.read(destination, 0, destination.length);
 
 		// Act
-		Object result = readerWrapper.preserve();
+		Object result = readerWrapper.asSerializable();
 
 		// Assert
 		int size = Math.toIntExact(readerWrapper.size());
