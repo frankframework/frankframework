@@ -16,6 +16,7 @@
 package org.frankframework.extensions.kafka;
 
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.CommonClientConfigs;
@@ -72,15 +73,16 @@ public abstract class AbstractKafkaFacade implements HasPhysicalDestination, ICo
 
 		try (AdminClient adminClient = AdminClient.create(adminProperties)) {
 			DescribeClusterOptions describeClusterOptions = new DescribeClusterOptions();
-			describeClusterOptions.timeoutMs(5000); // set to 5 seconds to avoid long waits in case of issues
+			describeClusterOptions.timeoutMs(5000);
 
 			DescribeClusterResult clusterResult = adminClient.describeCluster(describeClusterOptions);
 			KafkaFuture<String> clusterIdFuture = clusterResult.clusterId();
 			clusterIdFuture.get();
-		} catch (Exception e) {
-			// Check if this can be access denied or something similar
-			Thread.currentThread().interrupt();
+		} catch (ExecutionException e) {
 			throw new LifecycleException("Didn't get a response from Kafka while connecting for Listening.", e);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new LifecycleException("Connection was interrupted while connecting to kafka", e);
 		}
 	}
 }

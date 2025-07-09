@@ -69,8 +69,6 @@ public class KafkaSender extends AbstractKafkaFacade implements ISender {
 
 	@Override
 	public void start() {
-		checkConnection();
-
 		producer = new KafkaProducer<>(properties, new StringSerializer(), new ByteArraySerializer());
 	}
 

@@ -123,12 +123,12 @@ public class KafkaListener extends AbstractKafkaFacade implements IPullingListen
 	public void start() {
 		lock.lock();
 		try {
-			checkConnection();
-
 			consumer = buildConsumer();
 			consumer.subscribe(topicPattern);
-			waiting = consumer.poll(pollDuration).iterator();
+			checkConnection();
 
+			// Consumer.poll will return the same whether there's a backend server or not. CheckConnection above will throw if there's no connection available.
+			waiting = consumer.poll(Duration.ofMillis(10000)).iterator();
 		} finally {
 			lock.unlock();
 		}
