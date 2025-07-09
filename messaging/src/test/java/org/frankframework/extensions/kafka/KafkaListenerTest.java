@@ -16,6 +16,7 @@
 package org.frankframework.extensions.kafka;
 
 import static org.apache.kafka.clients.consumer.ConsumerRecord.NULL_SIZE;
+import static org.mockito.Mockito.spy;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -50,23 +51,24 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 
 @SuppressWarnings("deprecation")
-public class KafkaReceiverTest {
-	final MockConsumer<String, byte[]> mockListener = Mockito.spy(new MockConsumer<>(OffsetResetStrategy.EARLIEST));
+public class KafkaListenerTest {
+	final MockConsumer<String, byte[]> mockListener = spy(new MockConsumer<>(OffsetResetStrategy.EARLIEST));
 	KafkaListener listener;
 
 	@BeforeEach
 	void setUp() throws Exception {
-		listener = new KafkaListener() {
+		listener = spy(new KafkaListener() {
 			@Override
 			protected org.apache.kafka.clients.consumer.Consumer<String, byte[]> buildConsumer() {
 				return mockListener;
 			}
-		};
+		});
 		listener.setTopics("test.*.test2, anothertopic");
 		listener.setClientId("test");
 		listener.setGroupId("testGroup");
 		listener.setBootstrapServers("example.com:9092"); //dummy, doesn't connect.
 		listener.configure();
+
 		Map<MetricName, Metric> metrics = new HashMap<>();
 		MetricName metricName = new MetricName("response-total", "consumer-node-metrics", "The total number of responses received", Collections.singletonMap("client-id", "test"));
 		Value value = new Value();
@@ -78,7 +80,8 @@ public class KafkaReceiverTest {
 				null,
 				Time.SYSTEM
 		));
-		Mockito.when(mockListener.metrics()).thenReturn((Map)metrics);
+
+		Mockito.doNothing().when(listener).checkConnection();
 	}
 
 	@ParameterizedTest
@@ -88,6 +91,7 @@ public class KafkaReceiverTest {
 		if(shouldSucceed) Assertions.assertDoesNotThrow(listener::configure, name);
 		else Assertions.assertThrows(ConfigurationException.class, listener::configure, name);
 	}
+
 	public static Consumer<KafkaListener> configure(Consumer<KafkaListener> function) {
 		return function;
 	}
@@ -157,7 +161,9 @@ public class KafkaReceiverTest {
 	@Test
 	void throwsErrorOnBadConnection() {
 		Assertions.assertDoesNotThrow(listener::start, "shouldn't throw on valid connection");
-		Mockito.when(mockListener.metrics()).thenReturn(new HashMap<>());
+
+		Mockito.reset(listener);
+
 		Assertions.assertThrows(LifecycleException.class, listener::start, "should throw on (simulated) bad connection");
 	}
 }
