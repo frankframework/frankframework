@@ -21,6 +21,8 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.nio.charset.Charset;
 
+import jakarta.annotation.Nonnull;
+
 /**
  * An interface that provides a uniform and repeatable way to access a request object.
  * <p>
@@ -34,7 +36,7 @@ public interface RequestBuffer {
 	 * Provide access to the underlying request data as InputStream. If the underlying data is not binary,
 	 * use {@code UTF-8} to encode it to binary representation.
 	 */
-	InputStream asInputStream() throws IOException;
+	@Nonnull InputStream asInputStream() throws IOException;
 
 	/**
 	 * Provide access to the underlying request data as InputStream.
@@ -42,25 +44,25 @@ public interface RequestBuffer {
 	 * if the underlying data is character data then use the {@code encodingCharset} to make the binary encoding
 	 * of that character data.
 	 */
-	InputStream asInputStream(Charset encodingCharset) throws IOException;
+	@Nonnull InputStream asInputStream(@Nonnull Charset encodingCharset) throws IOException;
 
 	/**
 	 * Provide access to the underlying request data as Reader.
 	 * If the underlying data is binary, assume it is encoded in {@code UTF-8}.
 	 */
-	Reader asReader() throws IOException;
+	@Nonnull Reader asReader() throws IOException;
 
 	/**
 	 * Provide access to the underlying request data as Reader.
 	 * If the underlying data is binary, use the provided {@code decodingCharset} to decode to characters.
 	 * If the underlying data is character data then the {@code decodingCharset} may be ignored.
 	 */
-	Reader asReader(Charset decodingCharset) throws IOException;
+	@Nonnull Reader asReader(@Nonnull Charset decodingCharset) throws IOException;
 
 	/**
 	 * Convert all data to a serializable format and return this.
 	 */
-	Serializable asSerializable() throws IOException;
+	@Nonnull Serializable asSerializable() throws IOException;
 
 	/**
 	 * Return the size of the data, if known. If the full source request has not yet been accessed, return

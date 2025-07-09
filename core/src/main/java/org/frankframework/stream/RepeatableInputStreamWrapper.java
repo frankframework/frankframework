@@ -39,7 +39,7 @@ import org.frankframework.util.TemporaryDirectoryUtils;
  * Wrap a {@link InputStream} to provide repeatable access to its contents.
  */
 public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseable {
-	private final long maxInMemorySize = AppConstants.getInstance().getLong(Message.MESSAGE_MAX_IN_MEMORY_PROPERTY, Message.MESSAGE_MAX_IN_MEMORY_DEFAULT);
+	private static final long MAX_IN_MEMORY_SIZE = AppConstants.getInstance().getLong(Message.MESSAGE_MAX_IN_MEMORY_PROPERTY, Message.MESSAGE_MAX_IN_MEMORY_DEFAULT);
 
 	private final InputStream source;
 	private boolean isEof = false; // True when EOF has been reached on the source InputStream
@@ -48,11 +48,12 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 	private ByteBufferBlock currentBuffer;
 
 	private OutputStream outputStream;
-	private Path fileLocation;
+	private Path tempFileLocation;
+	private boolean tempFileOwner = true;
 
 	private long bytesReadTotal = 0L;
 
-	public RepeatableInputStreamWrapper(InputStream source) {
+	public RepeatableInputStreamWrapper(@Nonnull InputStream source) {
 		this.source = source;
 		this.buffers = new ArrayList<>();
 		this.currentBuffer = new ByteBufferBlock();
@@ -60,7 +61,7 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 	}
 
 	private boolean isBufferedOnDisk() {
-		return fileLocation != null;
+		return tempFileLocation != null;
 	}
 
 	private synchronized boolean bufferDataFromSource(int size) throws IOException {
@@ -102,16 +103,16 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 			bytesReadTotal += bytesRead;
 			toRead -= bytesRead;
 		}
-		if (bytesReadTotal > maxInMemorySize) {
-			fileLocation = allocateTemporaryFile();
-			outputStream = transferBuffersToFile(fileLocation, buffers);
+		if (bytesReadTotal > MAX_IN_MEMORY_SIZE) {
+			tempFileLocation = allocateTemporaryFile();
+			outputStream = transferBuffersToFile(tempFileLocation, buffers);
 			buffers.clear();
 			currentBuffer = null;
 		}
 		return true;
 	}
 
-	private @Nullable OutputStream transferBuffersToFile(Path path, List<ByteBufferBlock> buffers) throws IOException {
+	private @Nullable OutputStream transferBuffersToFile(@Nonnull Path path, @Nonnull List<ByteBufferBlock> buffers) throws IOException {
 		OutputStream out = Files.newOutputStream(path);
 		try {
 			for (ByteBufferBlock buffer: buffers) {
@@ -136,13 +137,13 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() throws IOException {
 		closed = true;
 		CloseUtils.closeSilently(source, outputStream);
 		buffers.clear();
 		currentBuffer = null;
-		if (isBufferedOnDisk()) {
-			Files.deleteIfExists(fileLocation);
+		if (isBufferedOnDisk() && tempFileOwner) {
+			Files.deleteIfExists(tempFileLocation);
 		}
 	}
 
@@ -172,11 +173,12 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 	}
 
 	@Override
-	public synchronized Serializable asSerializable() throws IOException {
+	public synchronized @Nonnull Serializable asSerializable() throws IOException {
 		//noinspection StatementWithEmptyBody
 		while (bufferDataFromSource(StreamUtil.BUFFER_SIZE)) ; // Empty while because of side-effects in the condition
 		if (isBufferedOnDisk()) {
-			return new SerializableFileReference(fileLocation, true);
+			tempFileOwner = false;
+			return new SerializableFileReference(tempFileLocation, true);
 		}
 
 		byte[] out = new byte[Math.toIntExact(bytesReadTotal)];
@@ -189,23 +191,23 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 	}
 
 	@Override
-	public InputStream asInputStream() throws IOException {
+	public @Nonnull InputStream asInputStream() throws IOException {
 		return new BufferReadingInputStream();
 	}
 
 	@Override
-	public InputStream asInputStream(Charset encodingCharset) throws IOException {
+	public @Nonnull InputStream asInputStream(@Nonnull Charset encodingCharset) throws IOException {
 		// Ignore the encodingCharset
 		return new BufferReadingInputStream();
 	}
 
 	@Override
-	public Reader asReader() throws IOException {
+	public @Nonnull Reader asReader() throws IOException {
 		return StreamUtil.getCharsetDetectingInputStreamReader(asInputStream());
 	}
 
 	@Override
-	public Reader asReader(Charset decodingCharset) throws IOException {
+	public @Nonnull Reader asReader(@Nonnull Charset decodingCharset) throws IOException {
 		return StreamUtil.getCharsetDetectingInputStreamReader(asInputStream(), decodingCharset.name());
 	}
 
@@ -215,8 +217,8 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 		private InputStream fileInputStream;
 
 		BufferReadingInputStream() throws IOException {
-			if (fileLocation != null) {
-				fileInputStream = openFileInputStream(fileLocation, position);
+			if (tempFileLocation != null) {
+				fileInputStream = openFileInputStream(tempFileLocation, position);
 			}
 		}
 
@@ -243,7 +245,7 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 				bufferDataFromSource(Math.max(minToBuffer, StreamUtil.BUFFER_SIZE));
 			}
 			if (isBufferedOnDisk() && fileInputStream == null) {
-				fileInputStream = openFileInputStream(fileLocation, position);
+				fileInputStream = openFileInputStream(tempFileLocation, position);
 			}
 		}
 

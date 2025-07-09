@@ -3,21 +3,26 @@ package org.frankframework.stream;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.params.provider.Arguments.arguments;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.params.provider.Arguments.argumentSet;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
 
-import org.junit.jupiter.api.AfterAll;
+import org.apache.commons.io.input.NullInputStream;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -28,69 +33,81 @@ import org.frankframework.util.StreamUtil;
 
 class RepeatableInputStreamWrapperTest {
 
-	private static final int MAX_IN_MEMORY = 15;
-	// TODO: Move AppConstants to commons and configure this in tests to very small size to fully test the partial buffering
-	private static final int STREAM_BUFFER_SIZE = 6;
+	private static final int MAX_IN_MEMORY = AppConstants.getInstance().getInt(Message.MESSAGE_MAX_IN_MEMORY_PROPERTY, (int) Message.MESSAGE_MAX_IN_MEMORY_DEFAULT);
 
-	private static final String STD_INPUT_SHORT = "ABCDEFGHIJ";
-	private static final String STD_INPUT_LONG = "ABCDEFGHIJKLMNOPQRSTUVWXYX";
-	private static final String INPUT_SHORT_SPECIAL_CHARS = "håndværkere";
-	private static final String INPUT_LONG_SPECIAL_CHARS = "håndværkere værgeløn håndværkere";
+	// These different input-sizes are chosen to get full coverage of all critical code paths
+	private static final int SHORT_INPUT_KB = 1; // Shorter than standard stream buffer
+	private static final int MEDIUM_INPUT_KB = (StreamUtil.BUFFER_SIZE / 1024) + 1; // Longer than standard stream buffer
+	private static final int LONG_INPUT_KB = MEDIUM_INPUT_KB + (MAX_IN_MEMORY / 1024); // Longer than the in-memory limit
+
+	private static final String STD_INPUT = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+	private static final String INPUT_SPECIAL_CHARS = "håndværkere værgeløn håndværkere";
 
 	private RepeatableInputStreamWrapper inputStreamWrapper;
-
-	@BeforeAll
-	static void beforeAll() {
-		AppConstants.removeInstance(); // This property may have already been set by previous tests
-
-		// Set this to a low value between the sizes of "short" and "long" inputs to force the "long"
-		// inputs to a size that will overflow to disk and test that path.
-		System.setProperty(Message.MESSAGE_MAX_IN_MEMORY_PROPERTY, String.valueOf(MAX_IN_MEMORY));
-
-	}
-
-	@AfterAll
-	static void afterAll() {
-		System.clearProperty(Message.MESSAGE_MAX_IN_MEMORY_PROPERTY);
-	}
 
 	@AfterEach
 	void tearDown() {
 		CloseUtils.closeSilently(inputStreamWrapper);
 	}
 
-	static Stream<Arguments> characterInputs() {
-		return Stream.of(arguments(STD_INPUT_SHORT), arguments(STD_INPUT_LONG),
-				arguments(INPUT_SHORT_SPECIAL_CHARS), arguments(INPUT_LONG_SPECIAL_CHARS));
+	static Stream<Arguments> expandedCharacterInputsWithEncoding() {
+		List<String> inputs = List.of(STD_INPUT, INPUT_SPECIAL_CHARS);
+		List<Integer> sizes = List.of(SHORT_INPUT_KB, MEDIUM_INPUT_KB, LONG_INPUT_KB);
+		List<Charset> charsets = List.of(StandardCharsets.UTF_8, StandardCharsets.UTF_16LE, StandardCharsets.ISO_8859_1);
+
+		// Create a stream with all combinations of inputs, sizes, and charsets
+		return inputs.stream()
+				.flatMap(input -> sizes.stream()
+						.flatMap(size -> charsets.stream().map(cs -> {
+							String data = expandToSize(input, size);
+							byte[] bytes = data.getBytes(cs);
+							InputStream source = new ByteArrayInputStream(bytes);
+							return argumentSet("[" + input + "] " + size + "KiB", cs, data, source);
+						})));
+	}
+
+	static Stream<Arguments> expandedCharacterInputsWithoutEncoding() {
+		List<String> inputs = List.of(STD_INPUT, INPUT_SPECIAL_CHARS);
+		List<Integer> sizes = List.of(SHORT_INPUT_KB, MEDIUM_INPUT_KB, LONG_INPUT_KB);
+
+		// Create a stream with all combinations of inputs and sizes
+		return inputs.stream()
+				.flatMap(input -> sizes.stream()
+						.map(size -> {
+							String data = expandToSize(input, size);
+							byte[] bytes = data.getBytes();
+							InputStream source = new ByteArrayInputStream(bytes);
+							return argumentSet("[" + input + "] " + size + "KiB", data, source);
+						}));
+	}
+
+	@Nonnull
+	private static String expandToSize(String input, int sizeInKb) {
+		int nrRepetitions = 1 + (sizeInKb * 1024 / input.length());
+		return StringUtils.repeat(input, nrRepetitions);
 	}
 
 	@ParameterizedTest
-	@MethodSource("characterInputs")
-	void asInputStreamReadOnce(String input) {
+	@MethodSource("expandedCharacterInputsWithoutEncoding")
+	void asInputStreamReadOnce(String expected, InputStream source) throws IOException {
 		// Arrange
-		inputStreamWrapper = new RepeatableInputStreamWrapper(wrapWithInputStream(input));
-
+		inputStreamWrapper = new RepeatableInputStreamWrapper(source);
 		assertEquals(Message.MESSAGE_SIZE_UNKNOWN, inputStreamWrapper.size());
 
 		// Act
 		String result = assertDoesNotThrow(() -> StreamUtil.streamToString(inputStreamWrapper.asInputStream()));
 
 		// Assert
-		assertEquals(input, result);
-		assertEquals(input.getBytes().length, inputStreamWrapper.size());
+		assertEquals(expected, result);
+		assertEquals(expected.getBytes().length, inputStreamWrapper.size());
+		assertFalse(inputStreamWrapper.isEmpty());
 	}
-
-	@Nonnull
-	private static ByteArrayInputStream wrapWithInputStream(String input) {
-		return new ByteArrayInputStream(input.getBytes());
-	}
-
 
 	@ParameterizedTest
-	@MethodSource("characterInputs")
-	void asInputStreamReadMultipleTimes(String input) {
+	@MethodSource("expandedCharacterInputsWithoutEncoding")
+	void asInputStreamReadMultipleTimes(String expected, InputStream source) {
 		// Arrange
-		inputStreamWrapper = new RepeatableInputStreamWrapper(wrapWithInputStream(input));
+		inputStreamWrapper = new RepeatableInputStreamWrapper(source);
 
 		// Act
 		String result1 = assertDoesNotThrow(() -> StreamUtil.streamToString(inputStreamWrapper.asInputStream()));
@@ -98,17 +115,18 @@ class RepeatableInputStreamWrapperTest {
 
 		// Assert
 		assertAll(
-				() -> assertEquals(input, result1),
-				() -> assertEquals(input, result2)
+				() -> assertEquals(expected, result1),
+				() -> assertEquals(expected, result2)
 		);
 	}
 
 	@ParameterizedTest
-	@MethodSource("characterInputs")
-	void asInputStreamReadParallelSingleBytes(String input) throws IOException {
+	@MethodSource("expandedCharacterInputsWithoutEncoding")
+	void asInputStreamReadParallelSingleBytes(String expected, InputStream source) throws IOException {
 		// Arrange
-		inputStreamWrapper = new RepeatableInputStreamWrapper(wrapWithInputStream(input));
+		inputStreamWrapper = new RepeatableInputStreamWrapper(source);
 
+		// Arrange
 		ByteArrayOutputStream boas1 = new ByteArrayOutputStream();
 		ByteArrayOutputStream boas2 = new ByteArrayOutputStream();
 
@@ -138,18 +156,17 @@ class RepeatableInputStreamWrapperTest {
 		String result1 = boas1.toString();
 		String result2 = boas2.toString();
 		assertAll(
-				() -> assertEquals(input, result1),
-				() -> assertEquals(input, result2),
-				() -> assertEquals(input.getBytes().length, inputStreamWrapper.size())
+				() -> assertEquals(expected, result1),
+				() -> assertEquals(expected, result2),
+				() -> assertEquals(expected.getBytes().length, inputStreamWrapper.size())
 		);
 	}
 
 	@ParameterizedTest
-	@MethodSource("characterInputs")
-	void asInputStreamReadParallelMultipleBytes(String input) throws IOException {
+	@MethodSource("expandedCharacterInputsWithoutEncoding")
+	void asInputStreamReadParallelMultipleBytes(String expected, InputStream source) throws IOException {
 		// Arrange
-		inputStreamWrapper = new RepeatableInputStreamWrapper(wrapWithInputStream(input));
-
+		inputStreamWrapper = new RepeatableInputStreamWrapper(source);
 		ByteArrayOutputStream boas1 = new ByteArrayOutputStream();
 		ByteArrayOutputStream boas2 = new ByteArrayOutputStream();
 
@@ -182,18 +199,17 @@ class RepeatableInputStreamWrapperTest {
 		String result1 = boas1.toString();
 		String result2 = boas2.toString();
 		assertAll(
-				() -> assertEquals(input, result1),
-				() -> assertEquals(input, result2),
-				() -> assertEquals(input.getBytes().length, inputStreamWrapper.size())
+				() -> assertEquals(expected, result1),
+				() -> assertEquals(expected, result2),
+				() -> assertEquals(expected.getBytes().length, inputStreamWrapper.size())
 		);
 	}
 
 	@ParameterizedTest
-	@MethodSource("characterInputs")
-	void asInputStreamReadParallelMixed(String input) throws IOException {
+	@MethodSource("expandedCharacterInputsWithoutEncoding")
+	void asInputStreamReadParallelMixed(String expected, InputStream source) throws IOException {
 		// Arrange
-		inputStreamWrapper = new RepeatableInputStreamWrapper(wrapWithInputStream(input));
-
+		inputStreamWrapper = new RepeatableInputStreamWrapper(source);
 		ByteArrayOutputStream boas1 = new ByteArrayOutputStream();
 		ByteArrayOutputStream boas2 = new ByteArrayOutputStream();
 
@@ -225,17 +241,33 @@ class RepeatableInputStreamWrapperTest {
 		String result1 = boas1.toString();
 		String result2 = boas2.toString();
 		assertAll(
-				() -> assertEquals(input, result1),
-				() -> assertEquals(input, result2),
-				() -> assertEquals(input.getBytes().length, inputStreamWrapper.size())
+				() -> assertEquals(expected, result1),
+				() -> assertEquals(expected, result2),
+				() -> assertEquals(expected.getBytes().length, inputStreamWrapper.size())
 		);
 	}
 
 	@ParameterizedTest
-	@MethodSource("characterInputs")
-	void asReader(String input) {
+	@MethodSource("expandedCharacterInputsWithEncoding")
+	void asReaderWithEncoding(Charset charset, String expected, InputStream source) {
 		// Arrange
-		inputStreamWrapper = new RepeatableInputStreamWrapper(wrapWithInputStream(input));
+		inputStreamWrapper = new RepeatableInputStreamWrapper(source);
+
+		// Act
+		String result1 = assertDoesNotThrow(() -> StreamUtil.readerToString(inputStreamWrapper.asReader(charset), null));
+		String result2 = assertDoesNotThrow(() -> StreamUtil.readerToString(inputStreamWrapper.asReader(charset), null));
+
+		// Assert
+		assertAll(
+				() -> assertEquals(expected, result1),
+				() -> assertEquals(expected, result2)
+		);
+	}
+	@ParameterizedTest
+	@MethodSource("expandedCharacterInputsWithoutEncoding")
+	void asReaderWithoutEncoding(String expected, InputStream source) {
+		// Arrange
+		inputStreamWrapper = new RepeatableInputStreamWrapper(source);
 
 		// Act
 		String result1 = assertDoesNotThrow(() -> StreamUtil.readerToString(inputStreamWrapper.asReader(), null));
@@ -243,54 +275,42 @@ class RepeatableInputStreamWrapperTest {
 
 		// Assert
 		assertAll(
-				() -> assertEquals(input, result1),
-				() -> assertEquals(input, result2)
+				() -> assertEquals(expected, result1),
+				() -> assertEquals(expected, result2)
 		);
 	}
 
 	@ParameterizedTest
-	@MethodSource("characterInputs")
-	void asReaderWithCharset(String input) {
+	@MethodSource("expandedCharacterInputsWithoutEncoding")
+	void asSerializableNothingYetRead(String expected, InputStream source) throws IOException {
 		// Arrange
-		inputStreamWrapper = new RepeatableInputStreamWrapper(wrapWithInputStream(input));
-
-		// Act
-		String result1 = assertDoesNotThrow(() -> StreamUtil.readerToString(inputStreamWrapper.asReader(StandardCharsets.UTF_8), null));
-		String result2 = assertDoesNotThrow(() -> StreamUtil.readerToString(inputStreamWrapper.asReader(StandardCharsets.UTF_8), null));
-
-		// Assert
-		assertAll(
-				() -> assertEquals(input, result1),
-				() -> assertEquals(input, result2)
-		);
-	}
-
-	@ParameterizedTest
-	@MethodSource("characterInputs")
-	void asSerializableNothingYetRead(String input) throws IOException {
-		// Arrange
-		inputStreamWrapper = new RepeatableInputStreamWrapper(wrapWithInputStream(input));
+		inputStreamWrapper = new RepeatableInputStreamWrapper(source);
 
 		// Act
 		Object result = inputStreamWrapper.asSerializable();
+
+		// Close the inputStreamWrapper, and the serializable result should still have all data available
+		inputStreamWrapper.close();
 
 		// Assert
 		int size = Math.toIntExact(inputStreamWrapper.size());
 
 		if (size < MAX_IN_MEMORY) {
-			assertInstanceOf(byte[].class, result);
+			byte[] bytes = assertInstanceOf(byte[].class, result);
+			String output = new  String(bytes);
+			assertEquals(expected, output);
 		} else  {
-			assertInstanceOf(SerializableFileReference.class, result);
+			SerializableFileReference output = assertInstanceOf(SerializableFileReference.class, result);
+			assertEquals(expected, StreamUtil.streamToString(output.getInputStream()));
 		}
 	}
 
 	@ParameterizedTest
-	@MethodSource("characterInputs")
-	void asSerializablePartiallyRead(String input) throws IOException {
+	@MethodSource("expandedCharacterInputsWithoutEncoding")
+	void asSerializablePartiallyRead(String expected, InputStream source) throws IOException {
 		// Arrange
-		inputStreamWrapper = new RepeatableInputStreamWrapper(wrapWithInputStream(input));
-
-		byte[] destination = new byte[input.length() / 2];
+		inputStreamWrapper = new RepeatableInputStreamWrapper(source);
+		byte[] destination = new byte[expected.length() / 2];
 		InputStream inputStream = inputStreamWrapper.asInputStream();
 		inputStream.read(destination, 0, destination.length);
 
@@ -308,12 +328,11 @@ class RepeatableInputStreamWrapperTest {
 	}
 
 	@ParameterizedTest
-	@MethodSource("characterInputs")
-	void asSerializableFullyRead(String input) throws IOException {
+	@MethodSource("expandedCharacterInputsWithoutEncoding")
+	void asSerializableFullyRead(String expected, InputStream source) throws IOException {
 		// Arrange
-		inputStreamWrapper = new RepeatableInputStreamWrapper(wrapWithInputStream(input));
-
-		byte[] destination = new byte[input.length() * 2]; // Ensure we read everything by trying to read more than everything
+		inputStreamWrapper = new RepeatableInputStreamWrapper(source);
+		byte[] destination = new byte[expected.length() + 100]; // Ensure we read everything by trying to read more than everything
 		InputStream inputStream = inputStreamWrapper.asInputStream();
 		inputStream.read(destination, 0, destination.length);
 
@@ -328,5 +347,14 @@ class RepeatableInputStreamWrapperTest {
 		} else  {
 			assertInstanceOf(SerializableFileReference.class, result);
 		}
+	}
+
+	@Test
+	void isEmpty() throws IOException {
+		// Arrange
+		inputStreamWrapper = new RepeatableInputStreamWrapper(new NullInputStream());
+
+		// Act / Assert
+		assertTrue(inputStreamWrapper.isEmpty());
 	}
 }

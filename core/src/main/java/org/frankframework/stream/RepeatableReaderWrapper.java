@@ -51,11 +51,12 @@ public class RepeatableReaderWrapper implements RequestBuffer, AutoCloseable {
 	private CharBufferBlock currentBuffer;
 
 	private Writer writer;
-	private Path fileLocation;
+	private Path tempFileLocation;
+	private boolean tempFileOwner = true;
 
 	private long charsReadTotal = 0L;
 
-	public RepeatableReaderWrapper(Reader source) {
+	public RepeatableReaderWrapper(@Nonnull Reader source) {
 		this.source = source;
 		this.buffers = new ArrayList<>();
 		this.currentBuffer = new CharBufferBlock();
@@ -63,7 +64,7 @@ public class RepeatableReaderWrapper implements RequestBuffer, AutoCloseable {
 	}
 
 	private boolean isBufferedOnDisk() {
-		return fileLocation != null;
+		return tempFileLocation != null;
 	}
 
 	private synchronized boolean bufferDataFromSource(int size) throws IOException {
@@ -106,15 +107,15 @@ public class RepeatableReaderWrapper implements RequestBuffer, AutoCloseable {
 			toRead -= charsRead;
 		}
 		if (charsReadTotal > maxInMemorySize) {
-			fileLocation = allocateTemporaryFile();
-			writer = transferBuffersToFile(fileLocation, buffers);
+			tempFileLocation = allocateTemporaryFile();
+			writer = transferBuffersToFile(tempFileLocation, buffers);
 			buffers.clear();
 			currentBuffer = null;
 		}
 		return true;
 	}
 
-	private @Nullable Writer transferBuffersToFile(Path path, List<CharBufferBlock> buffers) throws IOException {
+	private @Nullable Writer transferBuffersToFile(@Nonnull Path path, @Nonnull List<CharBufferBlock> buffers) throws IOException {
 		Writer out = Files.newBufferedWriter(path, StreamUtil.DEFAULT_CHARSET);
 		try {
 			for (CharBufferBlock buffer: buffers) {
@@ -139,13 +140,13 @@ public class RepeatableReaderWrapper implements RequestBuffer, AutoCloseable {
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() throws IOException {
 		closed = true;
 		CloseUtils.closeSilently(source, writer);
 		buffers.clear();
 		currentBuffer = null;
-		if (isBufferedOnDisk()) {
-			Files.deleteIfExists(fileLocation);
+		if (isBufferedOnDisk() && tempFileOwner) {
+			Files.deleteIfExists(tempFileLocation);
 		}
 	}
 
@@ -173,11 +174,12 @@ public class RepeatableReaderWrapper implements RequestBuffer, AutoCloseable {
 	}
 
 	@Override
-	public synchronized Serializable asSerializable() throws IOException {
+	public synchronized @Nonnull Serializable asSerializable() throws IOException {
 		//noinspection StatementWithEmptyBody
 		while (bufferDataFromSource(StreamUtil.BUFFER_SIZE)) ; // Empty while because of side-effects in the condition
 		if (isBufferedOnDisk()) {
-			return new SerializableFileReference(fileLocation, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, true);
+			tempFileOwner = false;
+			return new SerializableFileReference(tempFileLocation, StreamUtil.DEFAULT_INPUT_STREAM_ENCODING, true);
 		}
 
 		char[] out = new char[Math.toIntExact(charsReadTotal)];
@@ -190,14 +192,14 @@ public class RepeatableReaderWrapper implements RequestBuffer, AutoCloseable {
 	}
 
 	@Override
-	public InputStream asInputStream() throws IOException {
+	public @Nonnull InputStream asInputStream() throws IOException {
 		return new BufferedInputStream(ReaderInputStream.builder()
 				.setReader(new BufferReadingReader())
 				.get());
 	}
 
 	@Override
-	public InputStream asInputStream(Charset encodingCharset) throws IOException {
+	public @Nonnull InputStream asInputStream(@Nonnull Charset encodingCharset) throws IOException {
 		return new BufferedInputStream(ReaderInputStream.builder()
 				.setReader(new BufferReadingReader())
 				.setCharset(encodingCharset)
@@ -205,12 +207,12 @@ public class RepeatableReaderWrapper implements RequestBuffer, AutoCloseable {
 	}
 
 	@Override
-	public Reader asReader() throws IOException {
+	public @Nonnull Reader asReader() throws IOException {
 		return new BufferReadingReader();
 	}
 
 	@Override
-	public Reader asReader(Charset decodingCharset) throws IOException {
+	public @Nonnull Reader asReader(@Nonnull Charset decodingCharset) throws IOException {
 		// Ignore the decoding charset
 		return new BufferReadingReader();
 	}
@@ -239,7 +241,7 @@ public class RepeatableReaderWrapper implements RequestBuffer, AutoCloseable {
 				bufferDataFromSource(Math.max(minToBuffer, StreamUtil.BUFFER_SIZE));
 			}
 			if (isBufferedOnDisk() && fileReader == null) {
-				fileReader = openFileInputStream(fileLocation, position);
+				fileReader = openFileInputStream(tempFileLocation, position);
 			}
 		}
 
