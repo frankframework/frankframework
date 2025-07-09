@@ -963,16 +963,17 @@ public class Message implements Serializable, Closeable {
 			return reference.getSize();
 		}
 
+		if (request instanceof RequestBuffer requestBuffer) {
+			return requestBuffer.size();
+		}
+
 		if (request instanceof FileInputStream fileStream) {
+			// This can happen during initial check of request-size before creating the RequestBuffer
 			try {
 				return fileStream.getChannel().size();
 			} catch (IOException e) {
 				LOG.debug("unable to determine size of stream [{}], error: {}", (Supplier<?>) () -> ClassUtils.nameOf(request), (Supplier<?>) e::getMessage, e);
 			}
-		}
-
-		if (request instanceof RequestBuffer requestBuffer) {
-			return requestBuffer.size();
 		}
 
 		if (!(request instanceof InputStream || request instanceof Reader)) {

@@ -35,11 +35,14 @@ import org.frankframework.util.CloseUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.TemporaryDirectoryUtils;
 
+/**
+ * Wrap a {@link InputStream} to provide repeatable access to its contents.
+ */
 public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseable {
 	private final long maxInMemorySize = AppConstants.getInstance().getLong(Message.MESSAGE_MAX_IN_MEMORY_PROPERTY, Message.MESSAGE_MAX_IN_MEMORY_DEFAULT);
 
 	private final InputStream source;
-	private boolean isEof = false;
+	private boolean isEof = false; // True when EOF has been reached on the source InputStream
 	private boolean closed = false;
 	private final List<ByteBufferBlock> buffers; // temporary buffer, once full, write to disk
 	private ByteBufferBlock currentBuffer;
@@ -49,12 +52,15 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 
 	private long bytesReadTotal = 0L;
 
-
 	public RepeatableInputStreamWrapper(InputStream source) {
 		this.source = source;
 		this.buffers = new ArrayList<>();
 		this.currentBuffer = new ByteBufferBlock();
 		this.buffers.add(currentBuffer);
+	}
+
+	private boolean isBufferedOnDisk() {
+		return fileLocation != null;
 	}
 
 	private synchronized boolean bufferDataFromSource(int size) throws IOException {
@@ -63,7 +69,7 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 		}
 
 		// Already more bytes read than should be buffered in memory
-		if (!isBufferedInMemory()) {
+		if (isBufferedOnDisk()) {
 			byte[] data = new byte[size];
 			int bytesRead = source.read(data, 0, size);
 			if (bytesRead == -1) {
@@ -98,19 +104,30 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 		}
 		if (bytesReadTotal > maxInMemorySize) {
 			fileLocation = allocateTemporaryFile();
-			outputStream = Files.newOutputStream(fileLocation);
-			transferBuffersToFile(outputStream, buffers);
+			outputStream = transferBuffersToFile(fileLocation, buffers);
 			buffers.clear();
 			currentBuffer = null;
 		}
 		return true;
 	}
 
-	private void transferBuffersToFile(OutputStream out, List<ByteBufferBlock> buffers) throws IOException {
-		for (ByteBufferBlock buffer: buffers) {
-			buffer.transferToStream(out);
+	private @Nullable OutputStream transferBuffersToFile(Path path, List<ByteBufferBlock> buffers) throws IOException {
+		OutputStream out = Files.newOutputStream(path);
+		try {
+			for (ByteBufferBlock buffer: buffers) {
+				buffer.transferToStream(out);
+			}
+			out.flush();
+			if (isEof) {
+				out.close();
+				return null;
+			}
+		} catch (IOException | RuntimeException e) {
+			out.close();
+			throw e;
 		}
-		out.flush();
+
+		return out;
 	}
 
 	private @Nonnull Path allocateTemporaryFile() throws IOException {
@@ -124,7 +141,7 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 		CloseUtils.closeSilently(source, outputStream);
 		buffers.clear();
 		currentBuffer = null;
-		if (!isBufferedInMemory()) {
+		if (isBufferedOnDisk()) {
 			Files.deleteIfExists(fileLocation);
 		}
 	}
@@ -140,8 +157,10 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 
 	@Override
 	public boolean isEmpty() throws IOException {
+		// Read some data from source so that we can check if it has data
 		bufferDataFromSource(StreamUtil.BUFFER_SIZE);
-		if (!isBufferedInMemory()) {
+		if (isBufferedOnDisk()) {
+			// When we are already buffering to disk, then for sure the input was not empty
 			return false;
 		}
 		return bytesReadTotal == 0L;
@@ -156,7 +175,7 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 	public synchronized Serializable asSerializable() throws IOException {
 		//noinspection StatementWithEmptyBody
 		while (bufferDataFromSource(StreamUtil.BUFFER_SIZE)) ; // Empty while because of side-effects in the condition
-		if (!isBufferedInMemory()) {
+		if (isBufferedOnDisk()) {
 			return new SerializableFileReference(fileLocation, true);
 		}
 
@@ -223,8 +242,7 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 			if (available() == 0) {
 				bufferDataFromSource(Math.max(minToBuffer, StreamUtil.BUFFER_SIZE));
 			}
-			boolean inMemoryAfter = isBufferedInMemory();
-			if (!inMemoryAfter && fileInputStream == null) {
+			if (isBufferedOnDisk() && fileInputStream == null) {
 				fileInputStream = openFileInputStream(fileLocation, position);
 			}
 		}
@@ -333,9 +351,5 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 				fileInputStream.reset();
 			}
 		}
-	}
-
-	private boolean isBufferedInMemory() {
-		return fileLocation == null;
 	}
 }

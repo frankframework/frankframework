@@ -22,19 +22,60 @@ import java.io.Serializable;
 import java.nio.charset.Charset;
 
 /**
- * An interface for a wrapper around an input that can be opened and read in different formats, such as InputStream or Reader, while preserving the original
- * input so that it can be re-read time and time again without having to fully consume any InputStream immediately.
+ * An interface that provides a uniform and repeatable way to access a request object.
+ * <p>
+ *     Implementations should allow request objects to be repeatably accessed in requested form and optionally provide
+ *     extra information on the request object, such as size.
+ * </p>
  */
 public interface RequestBuffer {
 
+	/**
+	 * Provide access to the underlying request data as InputStream. If the underlying data is not binary,
+	 * use {@code UTF-8} to encode it to binary representation.
+	 */
 	InputStream asInputStream() throws IOException;
+
+	/**
+	 * Provide access to the underlying request data as InputStream.
+	 * If the underlying data is binary, the provided {@code encodingCharset} may be ignored, otherwise
+	 * if the underlying data is character data then use the {@code encodingCharset} to make the binary encoding
+	 * of that character data.
+	 */
 	InputStream asInputStream(Charset encodingCharset) throws IOException;
+
+	/**
+	 * Provide access to the underlying request data as Reader.
+	 * If the underlying data is binary, assume it is encoded in {@code UTF-8}.
+	 */
 	Reader asReader() throws IOException;
+
+	/**
+	 * Provide access to the underlying request data as Reader.
+	 * If the underlying data is binary, use the provided {@code decodingCharset} to decode to characters.
+	 * If the underlying data is character data then the {@code decodingCharset} may be ignored.
+	 */
 	Reader asReader(Charset decodingCharset) throws IOException;
 
+	/**
+	 * Convert all data to a serializable format and return this.
+	 */
+	Serializable asSerializable() throws IOException;
+
+	/**
+	 * Return the size of the data, if known. If the full source request has not yet been accessed, return
+	 * {@value Message#MESSAGE_SIZE_UNKNOWN}.
+	 */
 	long size();
+
+	/**
+	 * Check if the request contains any data or not. Will try to access the data to see if any is available.
+	 */
 	boolean isEmpty() throws IOException;
+
+	/**
+	 * Check if the underlying data format is binary or character data.
+	 */
 	boolean isBinary();
 
-	Serializable asSerializable() throws IOException;
 }
