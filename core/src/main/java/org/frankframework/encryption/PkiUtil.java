@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2021 WeAreFrank!
+   Copyright 2020, 2021, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package org.frankframework.encryption;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.security.KeyFactory;
 import java.security.KeyStore;
@@ -52,15 +51,16 @@ import jakarta.annotation.Nonnull;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.util.TimeProvider;
 
+@Log4j2
 public class PkiUtil {
-	private static final Logger log = LogUtil.getLogger(MethodHandles.lookup().lookupClass());
 
 	public static HasTruststore keyStoreAsTrustStore(HasKeystore keystoreOwner) {
 		return new HasTruststore() {
@@ -298,7 +298,7 @@ public class PkiUtil {
 	@Nonnull
 	public static List<String> getExpiringCertificates(KeyStore keystore, TemporalAmount duration) throws EncryptionException {
 		List<String> certificates = new ArrayList<>();
-		Instant dateAfterWhichCertsAreExpired = Instant.now().minus(duration);
+		Instant dateAfterWhichCertsAreExpired = TimeProvider.now().minus(duration);
 		try {
 			for (String certAlias : Collections.list(keystore.aliases())) {
 				Certificate cert = keystore.getCertificate(certAlias);
