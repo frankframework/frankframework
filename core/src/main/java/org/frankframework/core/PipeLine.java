@@ -179,10 +179,13 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	/**
 	 * Used by {@link MetricsInitializer} and {@link ConfigurationWarnings}.
 	 * When null either the ClassName or nothing is used.
+	 * 
+	 * See PipeLineTest#testDuplicateExits, which right now does not add a name to the ConfigurationWarnings.
+	 * Ideally it copies over the adapter name.
 	 */
 	@Override
 	public String getName() {
-		return ClassUtils.classNameOf(this);
+		return null;
 	}
 
 	public IPipe getPipe(String pipeName) {

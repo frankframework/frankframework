@@ -899,7 +899,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 */
 	public void setPipeLine(PipeLine pipeline) {
 		this.pipeline = pipeline;
-		SpringUtils.registerSingleton(this, pipeline.getName(), pipeline);
+		SpringUtils.registerSingleton(this, "PipeLine", pipeline);
 		log.debug("Adapter [{}] registered pipeline [{}]", name, pipeline);
 	}
 
@@ -987,7 +987,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 		// Since we are catching all exceptions in the thread, the super start will always be called,
 		// not a problem for now but something we should look into in the future...
-		CompletableFuture.runAsync(this::start, taskExecutor) // Start all smart-lifecycles
+		CompletableFuture.runAsync(super::start, taskExecutor) // Start all smart-lifecycles
 				.thenRun(runnable) // Then start the adapter it self
 				.whenComplete((e,t) -> handleException(t)); // The exception from the previous stage, if any, will propagate further.
 	}
@@ -1108,7 +1108,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 		CompletableFuture.runAsync(runnable, taskExecutor) // Stop asynchronous from other adapters
 				.handle((e, t) -> { handleException(t); return e; }) // The exception from the previous stage, if any, will NOT propagate further.
-				.thenRun(this::stop) // Stop other LifeCycle aware beans
+				.thenRun(super::stop) // Stop other LifeCycle aware beans
 				.thenRun(callback); // Call the callback 'CountDownLatch' to confirm we've stopped
 	}
 

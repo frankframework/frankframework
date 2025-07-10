@@ -76,8 +76,6 @@ public class ConfigurableApplicationContext extends GenericApplicationContext im
 			throw new ConfigurationException("wrong lifecycle processor found, unable to configure beans");
 		}
 
-		log.debug("configuring {} [{}]", () -> className, this::getId);
-
 		// Trigger a configure on all (Configurable) Lifecycle beans
 		configurableLifecycle.configure();
 		isConfigured = true;
