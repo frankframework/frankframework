@@ -67,6 +67,19 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
 
+/**
+ * A {@link Serializable} wrapper around data passed to the Frank!Framework and between pipes in the
+ * pipeline.
+ * <p>
+ *     Regardless of the original format of the data, the system will always allow repeatable access to the data
+ *     in multiple formats, such as {@code InputStream}, {@code Reader}, {@code byte[]}, {@code String} and
+ *     for XML data, also as {@code InputSource} or {@code Source}.
+ * </p>
+ * <p>
+ *     The Frank!Framework will intelligently buffer message data to memory or disk depending on size and
+ *     configured limits.
+ * </p>
+ */
 public class Message implements Serializable, Closeable {
 	public static final long MESSAGE_SIZE_UNKNOWN = -1L;
 	public static final long MESSAGE_MAX_IN_MEMORY_DEFAULT = 5120L * 1024L;
@@ -351,16 +364,7 @@ public class Message implements Serializable, Closeable {
 			// Should not happen but just in case.
 			return;
 		}
-		if (request instanceof Reader reader) {
-			LOG.debug("preserving Reader {} as SerializableFileReference", this::getObjectId);
-			request = SerializableFileReference.of(reader, computeDecodingCharset(null));
-		} else if (request instanceof InputStream stream) {
-			LOG.debug("preserving InputStream {} as SerializableFileReference", this::getObjectId);
-			request = SerializableFileReference.of(stream);
-		} else if (request instanceof RequestBuffer requestBuffer) {
-			LOG.debug("preserving RequestWrapper {} as SerializableFileReference", this::getObjectId);
-			request = SerializableFileReference.of(requestBuffer.asInputStream());
-		} else if (request instanceof String string) {
+		if (request instanceof String string) {
 			request = SerializableFileReference.of(string, computeDecodingCharset(null));
 		} else if (request instanceof byte[] bytes) {
 			request = SerializableFileReference.of(bytes);
@@ -400,7 +404,7 @@ public class Message implements Serializable, Closeable {
 	 * If true, the Message should preferably be read using a streaming method, i.e. asReader() or asInputStream(), to avoid copying it into memory.
 	 */
 	public boolean requiresStream() {
-		return request instanceof InputStream || request instanceof ThrowingSupplier || request instanceof Reader || request instanceof SerializableFileReference;
+		return request instanceof ThrowingSupplier || request instanceof SerializableFileReference || request instanceof RequestBuffer;
 	}
 
 	@Override
@@ -831,7 +835,7 @@ public class Message implements Serializable, Closeable {
 		if (Message.isNull(message)) {
 			return false;
 		}
-		// TODO: Rewrite "message.isEmpty()" to give a truthful answer always? Don't yet know what the fallout of that will be.
+		// TODO: Rewrite "message.isEmpty()" to give a truthful answer always? Then we can delegate to that instead. Don't yet know if that will break some other tests though, so this will be a future change.
 		if (message.asObject() instanceof RequestBuffer requestBuffer) {
 			return !requestBuffer.isEmpty();
 		}

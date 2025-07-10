@@ -53,7 +53,6 @@ import org.apache.tika.Tika;
 import org.springframework.http.MediaType;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.MimeType;
-import org.springframework.util.StreamUtils;
 import org.xml.sax.SAXException;
 
 import com.ibm.icu.text.CharsetDetector;
@@ -211,7 +210,9 @@ public class MessageUtils {
 		}
 
 		CharsetDetector detector = new CharsetDetector();
-		detector.setText(message.asInputStream());
+		try (InputStream inputStream = message.asInputStream()) {
+			detector.setText(inputStream);
+		}
 		CharsetMatch match = detector.detect();
 		String charset = match.getName();
 
@@ -312,8 +313,8 @@ public class MessageUtils {
 			name = filename;
 		}
 
-		try {
-			String mediaType = TIKA.detect(message.asInputStream(), name);
+		try (InputStream inputStream = message.asInputStream()) {
+			String mediaType = TIKA.detect(inputStream, name);
 			MimeType mimeType = MimeType.valueOf(mediaType);
 			if (MediaType.TEXT_PLAIN.equalsTypeAndSubtype(mimeType) && name == null) {
 				// TIKA detects XML or JSON as text/plain when there is no filename, so manually do a check for JSON.
@@ -361,14 +362,10 @@ public class MessageUtils {
 		if (!"{".equals(firstChar) && !"[".equals(firstChar)) {
 			return MediaType.TEXT_PLAIN;
 		}
-		try {
-			InputStream inputStream = message.asInputStream();
-			inputStream.mark(20_000);
-			try (JsonParser parser = Json.createParser(StreamUtils.nonClosing(inputStream))) {
+		try (InputStream inputStream = message.asInputStream()) {
+			try (JsonParser parser = Json.createParser(inputStream)) {
 				parser.next();
 				return MediaType.APPLICATION_JSON;
-			} finally {
-				inputStream.reset();
 			}
 		} catch (JsonParsingException | IOException e) {
 			return MediaType.TEXT_PLAIN;
