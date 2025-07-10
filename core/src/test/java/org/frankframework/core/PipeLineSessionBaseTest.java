@@ -179,7 +179,7 @@ public class PipeLineSessionBaseTest {
 		ma.closeOnCloseOf(session);
 		InputStream q = ma.asInputStream();
 
-		assertNotSame(p, q, "scheduling a resource twice must not yield the same object anymore");
+		assertNotSame(p, q, "Getting the input-stream of a message twice must not yield the same instance anymore");
 
 		mb.closeOnCloseOf(session);
 		mc.closeOnCloseOf(session);

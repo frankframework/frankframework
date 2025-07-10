@@ -21,6 +21,10 @@ import java.io.OutputStream;
 
 import org.frankframework.util.StreamUtil;
 
+/**
+ * A buffer of bytes to be used when buffering binary message data. This buffer can be used as part
+ * of a list that grows memory usage linearly.
+ */
 class ByteBufferBlock {
 
 	final byte[] buffer = new byte[StreamUtil.BUFFER_SIZE];

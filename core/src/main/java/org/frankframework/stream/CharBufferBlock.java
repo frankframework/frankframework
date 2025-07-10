@@ -21,6 +21,10 @@ import java.io.Writer;
 
 import org.frankframework.util.StreamUtil;
 
+/**
+ * A buffer of characters to be used when buffering character message data. This buffer can be used as part
+ * of a list to grow memory usage linearly, instead of the exponential growth of StringBuffer.
+ */
 class CharBufferBlock {
 
 	final char[] buffer = new char[StreamUtil.BUFFER_SIZE];

@@ -355,6 +355,13 @@ class RepeatableReaderWrapperTest {
 		readerWrapper = new RepeatableReaderWrapper(new NullReader());
 
 		// Act / Assert
+
+		// Before we read the message or check empty, size should be unknown
+		assertEquals(Message.MESSAGE_SIZE_UNKNOWN, readerWrapper.size());
+
 		assertTrue(readerWrapper.isEmpty());
+
+		// After checking size, we should know it to be 0
+		assertEquals(0L, readerWrapper.size());
 	}
 }

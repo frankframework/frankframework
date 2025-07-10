@@ -355,6 +355,13 @@ class RepeatableInputStreamWrapperTest {
 		inputStreamWrapper = new RepeatableInputStreamWrapper(new NullInputStream());
 
 		// Act / Assert
+
+		// Before we read the message or check empty, size should be unknown
+		assertEquals(Message.MESSAGE_SIZE_UNKNOWN, inputStreamWrapper.size());
+
 		assertTrue(inputStreamWrapper.isEmpty());
+
+		// After checking size, we should know it to be 0
+		assertEquals(0L, inputStreamWrapper.size());
 	}
 }
