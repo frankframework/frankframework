@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import java.time.Clock;
 import java.time.Duration;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
@@ -24,12 +23,12 @@ public class PkiUtilTest {
 	@BeforeEach
 	public void setup() {
 		ZonedDateTime testTime = ZonedDateTime.of(2025, 6, 15, 10, 0, 0, 0, ZoneId.systemDefault());
-		TimeProvider.clock = Clock.fixed(testTime.toInstant(), ZoneId.systemDefault());
+		TimeProvider.setTime(testTime);
 	}
 
 	@AfterEach
 	public void tearDown() {
-		TimeProvider.clock = Clock.systemUTC();
+		TimeProvider.resetClock();
 	}
 
 	@Test
