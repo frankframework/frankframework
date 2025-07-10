@@ -7,9 +7,6 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.kafka.clients.consumer.ConsumerRecord;
-import org.apache.kafka.clients.producer.KafkaProducer;
-import org.apache.kafka.common.serialization.ByteArraySerializer;
-import org.apache.kafka.common.serialization.StringSerializer;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,7 +37,7 @@ public class KafkaIntegrationTest {
 		sender.setClientId("test");
 		sender.setBootstrapServers(kafkaContainer.getBootstrapServers());
 		sender.configure();
-		sender.setProducer(new KafkaProducer<>(sender.properties, new StringSerializer(), new ByteArraySerializer()));
+		sender.start();
 
 		listener.setTopics("test.test2.*, anothertopic");
 		listener.setClientId("test");

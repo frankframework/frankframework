@@ -82,7 +82,7 @@ public abstract class AbstractKafkaFacade implements HasPhysicalDestination, ICo
 			throw new LifecycleException("Didn't get a response from Kafka while connecting for Listening.", e);
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
-			throw new LifecycleException("Connection was interrupted while connecting to kafka", e);
+			throw new LifecycleException("Thread was interrupted while connecting to kafka", e);
 		}
 	}
 }
