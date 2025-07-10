@@ -14359,7 +14359,7 @@
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="RemoveFromSessionCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.RemoveFromSession" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.RemoveFromSessionPipe" />
   </xs:complexType>
   <xs:attributeGroup name="RemoveFromSessionDeclaredAttributeGroup">
     <xs:attribute name="sessionKey" type="xs:string">

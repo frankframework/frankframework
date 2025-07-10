@@ -61,7 +61,7 @@ import org.frankframework.util.SpringUtils;
  */
 @Log4j2
 public abstract class AbstractSpringPoweredDigesterFactory implements IDigesterFactory {
-	private static final List<String> OLD_IMPLICIT_CLASSNAMES = List.of("org.frankframework.pipes.PutInSession");
+	private static final List<String> OLD_IMPLICIT_CLASSNAMES = List.of("org.frankframework.pipes.PutInSession", "org.frankframework.pipes.RemoveFromSession");
 	private @Getter @Setter Digester digester;
 	private DigesterRule rule = null;
 

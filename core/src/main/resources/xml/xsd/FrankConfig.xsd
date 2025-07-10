@@ -16717,7 +16717,7 @@
   <xs:complexType name="RemoveFromSessionType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="RemoveFromSessionCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.RemoveFromSession" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.RemoveFromSessionPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="RemoveFromSessionDeclaredAttributeGroup">
     <xs:attribute name="sessionKey" type="xs:string">

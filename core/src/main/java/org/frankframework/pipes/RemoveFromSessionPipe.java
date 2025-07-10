@@ -38,10 +38,10 @@ import org.frankframework.util.StringUtil;
  * @see PipeLineSession
  */
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.SESSION)
-public class RemoveFromSession extends FixedForwardPipe {
+public class RemoveFromSessionPipe extends FixedForwardPipe {
 	private String sessionKey;
 
-	public RemoveFromSession() {
+	public RemoveFromSessionPipe() {
 		super.setPreserveInput(true);
 	}
 
