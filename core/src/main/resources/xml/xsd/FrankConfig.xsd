@@ -5688,7 +5688,7 @@
   <xs:complexType name="XmlWellFormedCheckerType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="XmlWellFormedCheckerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.XmlWellFormedChecker" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.XmlWellFormedCheckerPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="XmlWellFormedCheckerDeclaredAttributeGroup">
     <xs:attribute name="root" type="xs:string">
@@ -15744,7 +15744,7 @@
   <xs:complexType name="JsonWellFormedCheckerType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.JsonWellFormedChecker" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.JsonWellFormedCheckerPipe" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="JsonXsltPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />

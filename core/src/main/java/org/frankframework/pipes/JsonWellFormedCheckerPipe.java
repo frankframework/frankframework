@@ -39,15 +39,15 @@ import org.frankframework.stream.Message;
  */
 @Forward(name = "failure", description = "a validation error occurred, probably caused by non-well-formed JSON")
 @EnterpriseIntegrationPattern(Type.VALIDATOR)
-public class JsonWellFormedChecker extends FixedForwardPipe {
+public class JsonWellFormedCheckerPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		if(Message.isEmpty(message)) {
+		if (Message.isEmpty(message)) {
 			return new PipeRunResult(findForward("failure"), message);
 		}
 
-		try(Reader reader = message.asReader(); JsonReader jr = Json.createReader(reader)) {
+		try (Reader reader = message.asReader(); JsonReader jr = Json.createReader(reader)) {
 			jr.read();
 			message.getContext().withMimeType(MediaType.APPLICATION_JSON);
 		} catch (JsonException e) {

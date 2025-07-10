@@ -32,12 +32,12 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
 
-public class LargeBlockTester extends FixedForwardPipe {
+public class LargeBlockTesterPipe extends FixedForwardPipe {
 
 	private @Setter int blockSize = 10000;
 	private @Setter int blockCount = 20;
 	private @Setter int sleepBetweenServedBlocks = 0;
-	private @Setter Direction direction=Direction.PRODUCE;
+	private @Setter Direction direction = Direction.PRODUCE;
 
 	private static final AtomicInteger totalBlocksServed = new AtomicInteger();
 

@@ -9259,7 +9259,7 @@
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="XmlWellFormedCheckerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.XmlWellFormedChecker" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.XmlWellFormedCheckerPipe" />
   </xs:complexType>
   <xs:attributeGroup name="XmlWellFormedCheckerDeclaredAttributeGroup">
     <xs:attribute name="root" type="xs:string">
@@ -13293,7 +13293,7 @@
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.JsonWellFormedChecker" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.JsonWellFormedCheckerPipe" />
   </xs:complexType>
   <xs:complexType name="JsonXsltPipeType">
     <xs:sequence>
