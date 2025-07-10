@@ -13019,7 +13019,7 @@
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="GetFromSessionCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.GetFromSession" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.GetFromSessionPipe" />
   </xs:complexType>
   <xs:attributeGroup name="GetFromSessionDeclaredAttributeGroup">
     <xs:attribute name="sessionKey" type="xs:string">
