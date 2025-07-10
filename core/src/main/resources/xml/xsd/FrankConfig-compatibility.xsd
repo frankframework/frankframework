@@ -14243,7 +14243,7 @@
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="RekenBoxCallerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.rekenbox.RekenBoxCaller" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.rekenbox.RekenBoxCallerPipe" />
   </xs:complexType>
   <xs:attributeGroup name="RekenBoxCallerDeclaredAttributeGroup">
     <xs:attribute name="rekenBoxName" type="xs:string">
@@ -14587,7 +14587,7 @@
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="SapLUWManagerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.sap.jco3.SapLUWManager" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.sap.jco3.SapLUWManagerPipe" />
   </xs:complexType>
   <xs:attributeGroup name="SapLUWManagerDeclaredAttributeGroup">
     <xs:attribute name="sapSystemName" type="xs:string">
