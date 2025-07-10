@@ -2,7 +2,6 @@ package org.frankframework.management.bus.endpoints;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.time.Clock;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
@@ -42,7 +41,7 @@ public class TestSecurityItems extends BusTestBase {
 	public void setUp() throws Exception {
 		super.setUp();
 		ZonedDateTime testTime = ZonedDateTime.of(2025, 6, 15, 10, 0, 0, 0, ZoneId.systemDefault());
-		TimeProvider.clock = Clock.fixed(testTime.toInstant(), ZoneId.systemDefault());
+		TimeProvider.setTime(testTime);
 
 		JmsRealmFactory.getInstance().clear();
 		JmsRealm jdbcRealm = new JmsRealm();
@@ -77,7 +76,7 @@ public class TestSecurityItems extends BusTestBase {
 
 	@AfterEach
 	public void tearDown() {
-		TimeProvider.clock = Clock.systemUTC();
+		TimeProvider.resetClock();
 	}
 
 	@Test
