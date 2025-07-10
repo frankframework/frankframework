@@ -878,7 +878,12 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	@SuppressWarnings("java:S3457") // Cast arguments to String before invocation so that we do not have a recursive call to logger when trace-level logging is enabled
 	public void addReceiver(Receiver<?> receiver) {
 		receivers.add(receiver);
-		if (log.isDebugEnabled()) log.debug("Adapter [{}] registered receiver [{}] with properties [{}]", name, receiver.getName(), receiver.toString());
+
+		if (log.isTraceEnabled()) {
+			log.trace("Adapter [{}] registered receiver [{}]", name, receiver.toString());
+		} else {
+			log.debug("Adapter [{}] registered receiver [{}]", this::getId, receiver::getName); // Receivers don't always have a name...
+		}
 	}
 
 	/**
@@ -900,6 +905,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	public void setPipeLine(PipeLine pipeline) {
 		this.pipeline = pipeline;
 		SpringUtils.registerSingleton(this, "PipeLine", pipeline);
+
 		log.debug("Adapter [{}] registered pipeline [{}]", name, pipeline);
 	}
 

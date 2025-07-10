@@ -71,8 +71,9 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 	@Override
 	public void configure() throws ConfigurationException {
 		long startTime = System.currentTimeMillis();
-		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(className, applicationContext.getDisplayName())) {
-			log.debug("configuring all ConfigurableLifecycle beans: {}", this::getConfigurableLifecycleBeanNames);
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(className, applicationContext.getId())) {
+			if (log.isDebugEnabled()) log.debug("configuring all ConfigurableLifecycle beans: {}", this::getConfigurableLifecycleBeanNames);
+			else log.info("configuring {}", () -> StringUtil.ucFirst(className));
 
 			doConfigure();
 			log.info("configured {} in {}", () -> StringUtil.ucFirst(className), () -> Misc.getDurationInMs(startTime));
@@ -80,11 +81,13 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 	}
 
 	// This triggers an internal startBeans method, and does not call #start().
+	// NOTE: the name/id has not been set yet (as this point), so it uses the hashcode instead. At the moment this is useful for the partent's context.
 	@Override
 	public void onRefresh() {
 		long startTime = System.currentTimeMillis();
-		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(className, applicationContext.getDisplayName())) {
-			log.debug("refresh, starting all 'autostart' LifeCycle beans: {}", this::getConfigurableLifecycleBeanNames);
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(className, applicationContext.getId())) {
+			if (log.isDebugEnabled()) log.debug("refresh (start) all 'autostart' LifeCycle beans: {}", this::getConfigurableLifecycleBeanNames);
+			else log.info("refreshing {}", () -> StringUtil.ucFirst(className));
 
 			super.onRefresh();
 			log.info("refreshed {} in {}", () -> StringUtil.ucFirst(className), () -> Misc.getDurationInMs(startTime));
@@ -94,8 +97,9 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 	@Override
 	public void start() {
 		long startTime = System.currentTimeMillis();
-		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(className, applicationContext.getDisplayName())) {
-			log.debug("starting all LifeCycle beans: {}", this::getConfigurableLifecycleBeanNames);
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(className, applicationContext.getId())) {
+			if (log.isDebugEnabled()) log.debug("starting all LifeCycle beans: {}", this::getConfigurableLifecycleBeanNames);
+			else log.info("starting {}", () -> StringUtil.ucFirst(className));
 
 			super.start();
 			log.info("started {} in {}", () -> StringUtil.ucFirst(className), () -> Misc.getDurationInMs(startTime));
@@ -105,8 +109,9 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 	@Override
 	public void stop() {
 		long startTime = System.currentTimeMillis();
-		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(className, applicationContext.getDisplayName())) {
-			log.debug("stopping all LifeCycle beans: {}", this::getConfigurableLifecycleBeanNames);
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(className, applicationContext.getId())) {
+			if (log.isDebugEnabled()) log.debug("stopping all LifeCycle beans: {}", this::getConfigurableLifecycleBeanNames);
+			else log.info("stopping {}", () -> StringUtil.ucFirst(className));
 
 			super.stop();
 			log.info("stopped {} in {}", () -> StringUtil.ucFirst(className), () -> Misc.getDurationInMs(startTime));
