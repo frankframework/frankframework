@@ -20,6 +20,7 @@ import java.util.Map;
 
 import javax.xml.transform.TransformerException;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 import org.xml.sax.SAXException;
 
@@ -27,8 +28,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.FrankElement;
 import org.frankframework.core.IConfigurable;
+import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.Resource;
 import org.frankframework.stream.Message;
@@ -45,6 +48,8 @@ public class XsltProviderListener implements IConfigurable, AutoCloseable, Frank
 	private @Getter @Setter String name;
 
 	private @Setter String filename;
+	private @Setter String configurationName;
+
 	private @Setter int xsltVersion=0; // set to 0 for auto-detect.
 	private @Setter boolean namespaceAware = true;
 	private TransformerPool transformerPool = null;
@@ -55,8 +60,11 @@ public class XsltProviderListener implements IConfigurable, AutoCloseable, Frank
 		if(filename == null) {
 			throw new ConfigurationException("Could not find filename property for " + getName());
 		}
+
+		IScopeProvider scope = (StringUtils.isNotEmpty(configurationName)) ? findScope() : this;
+
 		try {
-			Resource stylesheet = Resource.getResource(this, filename);
+			Resource stylesheet = Resource.getResource(scope, filename);
 			if(stylesheet == null) {
 				throw new ConfigurationException("Could not find file ["+filename+"]");
 			}
@@ -64,6 +72,19 @@ public class XsltProviderListener implements IConfigurable, AutoCloseable, Frank
 		} catch (Exception e) {
 			throw new ConfigurationException("Exception creating transformer pool for file '" + filename + "': " + e.getMessage(), e);
 		}
+	}
+
+	private IScopeProvider findScope() throws ConfigurationException {
+		IScopeProvider config = null;
+		if (applicationContext.containsBean("ibisManager")) {
+			IbisManager ibisManager = applicationContext.getBean("ibisManager", IbisManager.class);
+			config = ibisManager.getConfiguration(configurationName);
+		}
+
+		if (config == null) {
+			throw new ConfigurationException("configuration ["+configurationName+"] not found");
+		}
+		return config;
 	}
 
 	public void processRequest(Message message, Map<String, Object> parameters) throws ListenerException {
