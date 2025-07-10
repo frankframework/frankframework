@@ -2,10 +2,13 @@ package org.frankframework.management.bus.endpoints;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 import javax.sql.DataSource;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -28,6 +31,7 @@ import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.SpringUtils;
+import org.frankframework.util.TimeProvider;
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 public class TestSecurityItems extends BusTestBase {
@@ -36,6 +40,9 @@ public class TestSecurityItems extends BusTestBase {
 	@Override
 	public void setUp() throws Exception {
 		super.setUp();
+		ZonedDateTime testTime = ZonedDateTime.of(2025, 6, 15, 10, 0, 0, 0, ZoneId.systemDefault());
+		TimeProvider.setTime(testTime);
+
 		JmsRealmFactory.getInstance().clear();
 		JmsRealm jdbcRealm = new JmsRealm();
 		jdbcRealm.setRealmName("dummyJmsRealm1");
@@ -65,6 +72,11 @@ public class TestSecurityItems extends BusTestBase {
 		pipeline.addPipe(pipe);
 		adapter.setPipeLine(pipeline);
 		getConfiguration().addAdapter(adapter);
+	}
+
+	@AfterEach
+	public void tearDown() {
+		TimeProvider.resetClock();
 	}
 
 	@Test
