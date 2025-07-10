@@ -39,16 +39,22 @@ public class TimeProvider {
 		// Private constructor to prevent creating instances of static utility classes
 	}
 
+	/**
+	 * Get the current system time as {@link Instant}.
+	 */
 	public static Instant now() {
 		return clock.instant();
 	}
 
+	/**
+	 * Get the current system time as a legacy {@link Date}.
+	 */
 	public static Date nowAsDate() {
 		return Date.from(now());
 	}
 
 	/**
-	 * Set a clock to use. Typically this is for testing, when you want to use a more specialized {@link Clock} to set a specific time or behaviour than can
+	 * ONLY FOR UNIT TESTING! Set a clock to use. Typically this is for testing, when you want to use a more specialized {@link Clock} to set a specific time or behaviour than can
 	 * be done by setting a clock with a fixed point in time.
 	 *
 	 * @param clock {@link Clock} to use.
@@ -58,7 +64,7 @@ public class TimeProvider {
 	}
 
 	/**
-	 * Get the {@link Clock} currently being used. This clock can be used as a base-clock to create other specialized clocks for testing, which is the
+	 * Get the {@link Clock} currently being used. This clock can be used to get the current time, or as a base-clock to create other specialized clocks for testing, which is the
 	 * reason to make it accessible.
 	 */
 	public static Clock getClock() {
@@ -66,7 +72,7 @@ public class TimeProvider {
 	}
 
 	/**
-	 * Set the clock to a fixed date-time from the local date-time passed in.
+	 * ONLY FOR UNIT TESTING! Set the clock to a fixed date-time from the local date-time passed in.
 	 * @param localDateTime Time to which to set the clock.
 	 */
 	public static void setTime(LocalDateTime localDateTime) {
@@ -74,7 +80,7 @@ public class TimeProvider {
 	}
 
 	/**
-	 * Set the clock to a fixed date-time from the date-time & timezone passed in.
+	 * ONLY FOR UNIT TESTING! Set the clock to a fixed date-time from the date-time & timezone passed in.
 	 * @param zonedDateTime The time to which to set the clock.
 	 */
 	public static void setTime(ZonedDateTime zonedDateTime) {
@@ -82,7 +88,8 @@ public class TimeProvider {
 	}
 
 	/**
-	 * Resets the clock to the default System UTC clock.
+	 * ONLY FOR UNIT TESTING! Resets the clock to the default System UTC clock.
+	 * This should be used in the test-teardown method of unit tests when the unit tests have set the clock to a none-default clock.
 	 */
 	public static void resetClock() {
 		TimeProvider.clock = Clock.systemUTC();

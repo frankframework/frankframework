@@ -35,7 +35,6 @@ import java.time.Instant;
 import java.time.temporal.TemporalAmount;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -298,7 +297,7 @@ public class PkiUtil {
 	@Nonnull
 	public static List<String> getExpiringCertificates(KeyStore keystore, TemporalAmount duration) throws EncryptionException {
 		List<String> certificates = new ArrayList<>();
-		Instant dateAfterWhichCertsAreExpired = TimeProvider.now().minus(duration);
+		Instant dateAfterWhichCertsAreExpired = TimeProvider.now().plus(duration);
 		try {
 			for (String certAlias : Collections.list(keystore.aliases())) {
 				Certificate cert = keystore.getCertificate(certAlias);
@@ -314,8 +313,8 @@ public class PkiUtil {
 
 	private static boolean isDueToExpire(Certificate cert, Instant dateAfterWhichCertsAreExpired) {
 		if (cert instanceof X509Certificate x509Cert) {
-			Date notAfter = x509Cert.getNotAfter();
-			return dateAfterWhichCertsAreExpired.isBefore(notAfter.toInstant());
+			Instant notAfter = x509Cert.getNotAfter().toInstant();
+			return dateAfterWhichCertsAreExpired.isAfter(notAfter);
 		}
 
 		return false;
