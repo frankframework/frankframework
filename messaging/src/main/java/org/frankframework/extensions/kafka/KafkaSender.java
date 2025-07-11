@@ -38,7 +38,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.doc.Category;
-import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
 
 /**
@@ -51,7 +50,7 @@ import org.frankframework.stream.Message;
 @Log4j2
 public class KafkaSender extends AbstractKafkaFacade implements ISender {
 
-	//setter is for testing purposes only.
+	// setter is for testing purposes only.
 	private @Setter(AccessLevel.PACKAGE) Producer<String, byte[]> producer;
 
 	/** The topic to send messages to. Only one topic per sender. Wildcards are not supported. */
@@ -71,17 +70,6 @@ public class KafkaSender extends AbstractKafkaFacade implements ISender {
 	@Override
 	public void start() {
 		producer = new KafkaProducer<>(properties, new StringSerializer(), new ByteArraySerializer());
-
-		// TODO find a better alternative, perhaps attempting to create (and close) a transaction? Definitely don't use Thread.sleep!
-		try {
-			Thread.sleep(100);
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			throw new LifecycleException(e);
-		}
-
-		Double metric = (Double) producer.metrics().values().stream().filter(item -> "response-total".equals(item.metricName().name())).findFirst().orElseThrow(() -> new LifecycleException("Failed to get response-total metric.")).metricValue();
-		if (metric.intValue() == 0) throw new LifecycleException("Didn't get a response from Kafka while connecting for Sending.");
 	}
 
 	@Override
