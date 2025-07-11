@@ -18,10 +18,10 @@ package org.frankframework.jta;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionException;
 
-public interface IThreadConnectableTransactionManager<T,R> extends PlatformTransactionManager{
+public interface IThreadConnectableTransactionManager extends PlatformTransactionManager{
 
-	T getCurrentTransaction() throws TransactionException;
+	Object getCurrentTransaction() throws TransactionException;
 
-	R suspendTransaction(T transaction);
-	void resumeTransaction(T transaction, R resources);
+	Object suspendTransaction(Object transaction);
+	void resumeTransaction(Object transaction, Object resources);
 }

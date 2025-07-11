@@ -54,10 +54,10 @@ public class ThreadConnector<T> implements AutoCloseable {
 	}
 
 	private ThreadState threadState=ThreadState.ANNOUNCED;
-	private final TransactionConnector<?,?> transactionConnector;
+	private final TransactionConnector transactionConnector;
 
 
-	public ThreadConnector(Object owner, String description, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager<?,?> txManager, String correlationId) {
+	public ThreadConnector(Object owner, String description, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, String correlationId) {
 		super();
 		this.threadLifeCycleEventListener = threadLifeCycleEventListener;
 		threadInfo = threadLifeCycleEventListener != null ? threadLifeCycleEventListener.announceChildThread(owner, correlationId) : null;
@@ -69,7 +69,7 @@ public class ThreadConnector<T> implements AutoCloseable {
 		saveThreadContext();
 	}
 
-	public ThreadConnector(Object owner, String description, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager<?,?> txManager, PipeLineSession session) {
+	public ThreadConnector(Object owner, String description, ThreadLifeCycleEventListener<T> threadLifeCycleEventListener, IThreadConnectableTransactionManager txManager, PipeLineSession session) {
 		this(owner, description, threadLifeCycleEventListener, txManager, session==null?null:session.getCorrelationId());
 	}
 
