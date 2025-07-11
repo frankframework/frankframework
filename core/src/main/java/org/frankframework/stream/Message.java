@@ -289,9 +289,11 @@ public class Message implements Serializable, Closeable {
 	/**
 	 * Notify the message object that the request object will be used multiple times.
 	 * If the request object can only be read one time, it can turn it into a less volatile representation.
-	 * For instance, it could replace an InputStream with a byte array or String.
+	 * <p>
+	 *     This operation can potentially modify the contents of the Message object.
+	 * </p>
 	 *
-	 * @throws IOException Throws IOException if the Message can not be read or writing fails.
+	 * @throws IOException Throws IOException if the Message cannot be read or writing fails.
 	 */
 	private void preserve(boolean deepPreserve) throws IOException {
 		if (request == null) {
@@ -999,7 +1001,8 @@ public class Message implements Serializable, Closeable {
 	 * Creates a copy of this Message object.
 	 * <p>
 	 * <b>NB:</b> To copy the underlying value of the message object, the message
-	 * may be preserved if it was not repeatable.
+	 * may be preserved if it was not repeatable. Thus this operation may modify the
+	 * state of the message object.
 	 * </p>
 	 *
 	 * @return A new Message object that is a copy of this Message.

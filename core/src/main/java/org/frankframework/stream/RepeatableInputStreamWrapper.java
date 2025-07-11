@@ -52,7 +52,7 @@ import org.frankframework.util.TemporaryDirectoryUtils;
  * </p>
  * <p>
  *     The implementation ensures that this works even when multiple independent streams are open and reading
- *     the data at the same time.
+ *     the data at the same time from different threads.
  * </p>
  */
 public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseable {
