@@ -16,6 +16,7 @@
 package org.frankframework.extensions.kafka;
 
 import static org.apache.kafka.clients.consumer.ConsumerRecord.NULL_SIZE;
+import static org.mockito.Mockito.spy;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -50,23 +51,24 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 
 @SuppressWarnings("deprecation")
-public class KafkaReceiverTest {
-	final MockConsumer<String, byte[]> mockListener = Mockito.spy(new MockConsumer<>(OffsetResetStrategy.EARLIEST));
+public class KafkaListenerTest {
+	final MockConsumer<String, byte[]> mockConsumer = spy(new MockConsumer<>(OffsetResetStrategy.EARLIEST));
 	KafkaListener listener;
 
 	@BeforeEach
 	void setUp() throws Exception {
-		listener = new KafkaListener() {
+		listener = spy(new KafkaListener() {
 			@Override
 			protected org.apache.kafka.clients.consumer.Consumer<String, byte[]> buildConsumer() {
-				return mockListener;
+				return mockConsumer;
 			}
-		};
+		});
 		listener.setTopics("test.*.test2, anothertopic");
 		listener.setClientId("test");
 		listener.setGroupId("testGroup");
 		listener.setBootstrapServers("example.com:9092"); //dummy, doesn't connect.
 		listener.configure();
+
 		Map<MetricName, Metric> metrics = new HashMap<>();
 		MetricName metricName = new MetricName("response-total", "consumer-node-metrics", "The total number of responses received", Collections.singletonMap("client-id", "test"));
 		Value value = new Value();
@@ -78,7 +80,8 @@ public class KafkaReceiverTest {
 				null,
 				Time.SYSTEM
 		));
-		Mockito.when(mockListener.metrics()).thenReturn((Map)metrics);
+
+		Mockito.doNothing().when(listener).checkConnection();
 	}
 
 	@ParameterizedTest
@@ -88,6 +91,7 @@ public class KafkaReceiverTest {
 		if(shouldSucceed) Assertions.assertDoesNotThrow(listener::configure, name);
 		else Assertions.assertThrows(ConfigurationException.class, listener::configure, name);
 	}
+
 	public static Consumer<KafkaListener> configure(Consumer<KafkaListener> function) {
 		return function;
 	}
@@ -118,32 +122,32 @@ public class KafkaReceiverTest {
 		HashMap<TopicPartition, Long> startOffsets = new HashMap<>();
 		TopicPartition topicPartition = new TopicPartition(topic, 0);
 		startOffsets.put(topicPartition, 0L);
-		mockListener.updateBeginningOffsets(startOffsets);
-		mockListener.rebalance(Collections.singletonList(topicPartition));
+		mockConsumer.updateBeginningOffsets(startOffsets);
+		mockConsumer.rebalance(Collections.singletonList(topicPartition));
 		RecordHeaders headers = new RecordHeaders();
 		headers.add("headerKey", "headerValue".getBytes());
 		ConsumerRecord<String, byte[]> record = new ConsumerRecord<>(topic, 0, 0, ConsumerRecord.NO_TIMESTAMP, TimestampType.NO_TIMESTAMP_TYPE, NULL_SIZE, NULL_SIZE, "", "testtesttest".getBytes(),
 				headers, Optional.empty());
-		mockListener.addRecord(record);
+		mockConsumer.addRecord(record);
 
-		Assertions.assertNull(mockListener.committed(Set.of(topicPartition)).get(topicPartition));
+		Assertions.assertNull(mockConsumer.committed(Set.of(topicPartition)).get(topicPartition));
 
 		RawMessageWrapper<ConsumerRecord<String, byte[]>> wrapper = listener.getRawMessage(new HashMap<>());
-		Assertions.assertEquals(1L, mockListener.committed(Set.of(topicPartition)).get(topicPartition).offset());
+		Assertions.assertEquals(1L, mockConsumer.committed(Set.of(topicPartition)).get(topicPartition).offset());
 		Message message = listener.extractMessage(wrapper, new HashMap<>());
 
-		Assertions.assertEquals(1L, mockListener.committed(Set.of(topicPartition)).get(topicPartition).offset());
+		Assertions.assertEquals(1L, mockConsumer.committed(Set.of(topicPartition)).get(topicPartition).offset());
 
 		Assertions.assertEquals(topic, message.getContext().get("kafkaTopic"));
 		Assertions.assertEquals("testtesttest",message.asString());
 		Map<String, String> receivedHeaders = (Map<String, String>) message.getContext().get("kafkaHeaders");
 		Assertions.assertEquals("headerValue", receivedHeaders.get("headerKey"));
 
-		Assertions.assertEquals(1L, mockListener.committed(Set.of(topicPartition)).get(topicPartition).offset());
+		Assertions.assertEquals(1L, mockConsumer.committed(Set.of(topicPartition)).get(topicPartition).offset());
 
 		Assertions.assertNull(listener.getRawMessage(new HashMap<>()));
 
-		Assertions.assertEquals(1L, mockListener.committed(Set.of(topicPartition)).get(topicPartition).offset());
+		Assertions.assertEquals(1L, mockConsumer.committed(Set.of(topicPartition)).get(topicPartition).offset());
 		listener.stop();
 	}
 
@@ -156,8 +160,13 @@ public class KafkaReceiverTest {
 
 	@Test
 	void throwsErrorOnBadConnection() {
+		// Assert that it works, because of the `Mockito.doNothing()` in the setUp method.
 		Assertions.assertDoesNotThrow(listener::start, "shouldn't throw on valid connection");
-		Mockito.when(mockListener.metrics()).thenReturn(new HashMap<>());
+
+		// Reset that mock
+		Mockito.reset(listener);
+
+		// And now expect an exception
 		Assertions.assertThrows(LifecycleException.class, listener::start, "should throw on (simulated) bad connection");
 	}
 }
