@@ -77,7 +77,8 @@ import org.frankframework.util.XmlUtils;
  * </p>
  * <p>
  *     The Frank!Framework will intelligently buffer message data to memory or disk depending on size and
- *     configured limits.
+ *     configured limits. The limit for data held in memory is controlled via property {@value MESSAGE_MAX_IN_MEMORY_PROPERTY}. The default
+ *     value is {@value MESSAGE_MAX_IN_MEMORY_DEFAULT}.
  * </p>
  */
 public class Message implements Serializable, Closeable {
@@ -297,6 +298,7 @@ public class Message implements Serializable, Closeable {
 		if (request instanceof RequestBuffer requestBuffer) {
 			// RequestBuffer knows how to preserve itself, intelligently deciding to preserve to memory or disk
 			request = requestBuffer.asSerializable();
+			requestBuffer.close();
 			return;
 		}
 

@@ -40,6 +40,23 @@ import org.frankframework.util.TemporaryDirectoryUtils;
 
 /**
  * Wrap a {@link Reader} to provide repeatable access to its contents.
+ * <p>
+ *     As data is read from the source {@link InputStream} it is first buffered into memory, and once
+ *     the limit of {@value Message#MESSAGE_MAX_IN_MEMORY_PROPERTY} is reached the memory buffer is
+ *     flushed to disk and the remainder of the stream, as it is being read, is further streamed to disk.
+ * </p>
+ * <p>
+ *     Reading the data is first read from the memory buffer, and once the data has been transferred to disk,
+ *     it is read from disk.
+ * </p>
+ * <p>
+ *     When reading the data from either memory or disk buffer, the implementation first ensures that the
+ *     requested amount of data is available from the source stream.
+ * </p>
+ * <p>
+ *     The implementation ensures that this works even when multiple independent streams are open and reading
+ *     the data at the same time.
+ * </p>
  */
 public class RepeatableReaderWrapper implements RequestBuffer, AutoCloseable {
 	private final long maxInMemorySize = AppConstants.getInstance().getLong(Message.MESSAGE_MAX_IN_MEMORY_PROPERTY, Message.MESSAGE_MAX_IN_MEMORY_DEFAULT);

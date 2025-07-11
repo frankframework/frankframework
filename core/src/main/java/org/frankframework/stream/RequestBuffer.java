@@ -30,7 +30,7 @@ import jakarta.annotation.Nonnull;
  *     extra information on the request object, such as size.
  * </p>
  */
-public interface RequestBuffer {
+public interface RequestBuffer extends AutoCloseable {
 
 	/**
 	 * Provide access to the underlying request data as InputStream. If the underlying data is not binary,
@@ -80,4 +80,6 @@ public interface RequestBuffer {
 	 */
 	boolean isBinary();
 
+	@Override
+	void close() throws IOException;
 }
