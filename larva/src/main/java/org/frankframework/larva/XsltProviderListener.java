@@ -20,6 +20,8 @@ import java.util.Map;
 
 import javax.xml.transform.TransformerException;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 import org.xml.sax.SAXException;
@@ -57,7 +59,7 @@ public class XsltProviderListener implements IConfigurable, AutoCloseable, Frank
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if(filename == null) {
+		if(StringUtils.isEmpty(filename)) {
 			throw new ConfigurationException("Could not find filename property for " + getName());
 		}
 
@@ -74,7 +76,8 @@ public class XsltProviderListener implements IConfigurable, AutoCloseable, Frank
 		}
 	}
 
-	private IScopeProvider findScope() throws ConfigurationException {
+	@Nonnull
+	protected IScopeProvider findScope() throws ConfigurationException {
 		IScopeProvider config = null;
 		if (applicationContext.containsBean("ibisManager")) {
 			IbisManager ibisManager = applicationContext.getBean("ibisManager", IbisManager.class);
@@ -114,7 +117,7 @@ public class XsltProviderListener implements IConfigurable, AutoCloseable, Frank
 	}
 
 	@Override
-	public void close() throws Exception {
+	public void close() throws ConfigurationException {
 		if(getResult() != null) {
 			throw new ConfigurationException("Found remaining message on XsltProviderListener ["+getName()+"]");
 		}
