@@ -26,7 +26,7 @@ import org.frankframework.util.StreamUtil;
 
 public class MessageCapturerTest {
 
-	private MessageCapturer capturer = new MessageCapturer();
+	private final MessageCapturer capturer = new MessageCapturer();
 
 	// Similar to StreamCaptureUtilsTest
 	@ParameterizedTest
@@ -178,7 +178,7 @@ public class MessageCapturerTest {
 	}
 
 	@Test
-	void testCaptureEmptyMessageButNotRead() {
+	void testCaptureEmptyMessageButNotRead() throws IOException {
 		Message message = new Message("");
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -186,8 +186,7 @@ public class MessageCapturerTest {
 		capturer.setMaxMessageLength(1024);
 
 		try (Message spyMessaged = capturer.toWriter(message, capture, Lombok::sneakyThrow)) {
-			// Prove that after a message has been closed, but not read, it still captures it's content for the Ladybug.
-			//assertEquals(-1, spyMessaged.size());
+			assertEquals("", spyMessaged.asString());
 		}
 
 		assertEquals("", baos.toString());
@@ -200,6 +199,7 @@ public class MessageCapturerTest {
 	@Test
 	void testCaptureMessageButNotRead() throws IOException {
 		URL testFileURL = getTestFileURL("/testString.txt");
+		String expected = StreamUtil.resourceToString(testFileURL);
 		InputStream stream = spy(testFileURL.openStream());
 		Message message = spy(new Message(stream));
 
@@ -207,11 +207,9 @@ public class MessageCapturerTest {
 		capturer.setMaxMessageLength(1024);
 
 		try (Message spyMessaged = capturer.toWriter(message, capture, Lombok::sneakyThrow)) {
-			// Prove that after a message has been closed, but not read, it still captures it's content for the Ladybug.
-//			assertEquals(-1, spyMessaged.size());
+			assertEquals(expected, spyMessaged.asString());
 		}
 
-		String expected = new String(testFileURL.openStream().readAllBytes());
 		assertEquals(expected, capture.toString());
 
 		verify(message, times(1)).close();
