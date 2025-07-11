@@ -53,10 +53,10 @@ import org.frankframework.util.StreamUtil;
  * @author Gerrit van Brakel
  */
 @Category(Category.Type.NN_SPECIAL)
-public class RekenBoxCaller extends FixedForwardPipe {
+public class RekenBoxCallerPipe extends FixedForwardPipe {
 
 	private String runPath="";
-	private String executableExtension="exe"; //bat, com or exe
+	private String executableExtension="exe"; // bat, com or exe
 	private String inputOutputDirectory;
 	private String templateDir;
 	private String rekenBoxName; // can be set for fixed rekenbox

@@ -8,15 +8,15 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.core.PipeRunResult;
 
 /**
- * RemoveFromSession Tester.
+ * RemoveFromSessionPipe Tester.
  *
  * @author <Sina Sen>
  */
-public class RemoveFromSessionTest extends PipeTestBase<RemoveFromSession> {
+public class RemoveFromSessionPipeTest extends PipeTestBase<RemoveFromSessionPipe> {
 
 	@Override
-	public RemoveFromSession createPipe() {
-		return new RemoveFromSession();
+	public RemoveFromSessionPipe createPipe() {
+		return new RemoveFromSessionPipe();
 	}
 
 	@Test

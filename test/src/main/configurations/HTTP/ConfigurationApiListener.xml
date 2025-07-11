@@ -196,7 +196,7 @@
 			<exits>
 				<exit name="READY" state="success" />
 			</exits>
-			<pipe name="ManyBlocks" className="org.frankframework.pipes.LargeBlockTester" direction="produce" blockSize="10000" blockCount="20" sleepBetweenServedBlocks="100"/>
+			<pipe name="ManyBlocks" className="org.frankframework.pipes.LargeBlockTesterPipe" direction="produce" blockSize="10000" blockCount="20" sleepBetweenServedBlocks="100"/>
 		</pipeline>
 	</adapter>
 
@@ -217,7 +217,7 @@
 			</pipe>
 
 			<pipe name="consume"
-				className="org.frankframework.pipes.LargeBlockTester" direction="consume" blockSize="10000" blockCount="20"
+                  className="org.frankframework.pipes.LargeBlockTesterPipe" direction="consume" blockSize="10000" blockCount="20"
 			/>
 		</pipeline>
 	</adapter>

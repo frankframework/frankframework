@@ -81,7 +81,7 @@ public class ForEachChildElementPipe extends StringIteratorPipe implements IThre
 
 	private TransformerPool extractElementsTp = null;
 	private @Setter ThreadLifeCycleEventListener<Object> threadLifeCycleEventListener;
-	private @Setter IThreadConnectableTransactionManager<?,?> txManager;
+	private @Setter IThreadConnectableTransactionManager txManager;
 	private @Getter @Setter IXmlDebugger xmlDebugger;
 
 	private boolean createThreadConnectorForXsltStreaming;

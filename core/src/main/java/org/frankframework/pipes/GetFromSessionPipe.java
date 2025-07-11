@@ -39,7 +39,7 @@ import org.frankframework.util.XmlBuilder;
  * @see PipeLineSession
  */
 @EnterpriseIntegrationPattern(Type.SESSION)
-public class GetFromSession  extends FixedForwardPipe {
+public class GetFromSessionPipe extends FixedForwardPipe {
 
 	private String sessionKey;
 	private ParameterType type = null;
