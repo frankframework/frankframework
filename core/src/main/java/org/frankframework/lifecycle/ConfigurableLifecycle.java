@@ -32,7 +32,7 @@ public interface ConfigurableLifecycle extends SmartLifecycle, IConfigurable {
 
 	@Override
 	default int getPhase() {
-		return Integer.MAX_VALUE; // Starts later, stops first
+		return Integer.MAX_VALUE / 2; // Starts later, stops first
 	}
 
 	/**
@@ -42,5 +42,21 @@ public interface ConfigurableLifecycle extends SmartLifecycle, IConfigurable {
 	@Override
 	default boolean isAutoStartup() {
 		return false;
+	}
+
+	/**
+	 * Just like {@link #isRunning()} this method is called before the {@link #configure()} method.
+	 * 
+	 * @return If the return value is {@code true} the {@link #configure()} method won't be executed.
+	 */
+	default boolean isConfigured() {
+		return false;
+	}
+
+	@Override
+	default void start() {
+		if (!isConfigured()) {
+			throw new LifecycleException("not yet configured");
+		}
 	}
 }

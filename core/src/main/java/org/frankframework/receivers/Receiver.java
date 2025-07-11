@@ -41,7 +41,6 @@ import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.ThreadContext;
@@ -1920,6 +1919,11 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		return runState.getRunState();
 	}
 
+	@Override
+	public int getPhase() {
+		return Integer.MAX_VALUE; // Starts at the very last moment, is stopped first
+	}
+
 	public boolean isInRunState(RunState someRunState) {
 		RunState currentRunState = runState.getRunState();
 		log.trace("Receiver [{}] check if runState=[{}] - current runState=[{}]", name, someRunState, currentRunState);
@@ -2023,12 +2027,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 */
 	@Override
 	public String toString() {
-		String result = super.toString();
-		ToStringBuilder ts=new ToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE);
-		ts.append("name", getName() );
-		result += ts.toString();
-		result+=" listener ["+(listener==null ? "-none-" : listener.toString())+"]";
-		return result;
+		return ToStringBuilder.reflectionToString(this);
 	}
 
 

@@ -89,7 +89,7 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 	}
 
 	private String findName(HasName namedObject) {
-		return StringUtils.isNotEmpty(namedObject.getName()) ? namedObject.getName():ClassUtils.nameOf(namedObject);
+		return StringUtils.isNotEmpty(namedObject.getName()) ? namedObject.getName() : ClassUtils.nameOf(namedObject);
 	}
 
 	public Timer.ResourceSample createTimerResource(@Nonnull FrankElement frankElement, @Nonnull FrankMeterType type, String... tags) {

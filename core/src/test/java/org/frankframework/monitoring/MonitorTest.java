@@ -27,7 +27,7 @@ public class MonitorTest {
 
 	@BeforeEach
 	public void setup() {
-		configuration = new TestConfiguration("testMonitoringContext.xml");
+		configuration = new TestConfiguration(false, "testMonitoringContext.xml");
 		configuration.refresh();
 		manager = configuration.getBean("monitorManager", MonitorManager.class);
 	}

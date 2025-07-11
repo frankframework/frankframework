@@ -49,6 +49,7 @@ import org.frankframework.doc.Category;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Mandatory;
+import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.processors.PipeLineProcessor;
@@ -100,7 +101,7 @@ import org.frankframework.util.StringUtil;
  */
 @Category(Category.Type.BASIC)
 @FrankDocGroup(FrankDocGroupValue.OTHER)
-public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, FrankElement, ConfigurationAware {
+public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, FrankElement, ConfigurationAware, ConfigurableLifecycle {
 	private @Getter ApplicationContext applicationContext;
 	private @Getter @Setter Configuration configuration; // Required for the Ladybug
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
@@ -147,10 +148,11 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private final Map<String, DistributionSummary> pipeWaitStatistics = new ConcurrentHashMap<>();
 	private final Map<String, DistributionSummary> pipeSizeStats = new ConcurrentHashMap<>();
 
-	private boolean configurationSucceeded = false;
-
 	private @Getter String expectsSessionKeys;
 	private Set<String> expectsSessionKeysSet;
+
+	private boolean started = false;
+	private @Getter boolean configured = false;
 
 	public enum ExitState {
 		SUCCESS,
@@ -174,6 +176,9 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	/**
 	 * Used by {@link MetricsInitializer} and {@link ConfigurationWarnings}.
 	 * When null either the ClassName or nothing is used.
+	 * 
+	 * See PipeLineTest#testDuplicateExits, which right now does not add a name to the ConfigurationWarnings.
+	 * Ideally it copies over the adapter name.
 	 */
 	@Override
 	public String getName() {
@@ -295,7 +300,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 		super.configure();
 		log.debug("successfully configured");
-		configurationSucceeded = true;
+		configured = true;
 		if (configurationException != null) {
 			throw configurationException;
 		}
@@ -356,10 +361,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			throw e;
 		}
 		log.debug("Pipe successfully configured");
-	}
-
-	public boolean configurationSucceeded() {
-		return configurationSucceeded;
 	}
 
 	public Optional<PipeLineExit> findExitByState(ExitState state) {
@@ -445,6 +446,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		return nextPipe;
 	}
 
+	@Override
 	public void start() {
 		log.info("starting pipeline");
 
@@ -463,6 +465,17 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		}
 
 		log.info("successfully started pipeline");
+		started = true;
+	}
+
+	@Override
+	public boolean isRunning() {
+		return started;
+	}
+
+	@Override
+	public int getPhase() {
+		return Integer.MIN_VALUE; // Starts first, stops last
 	}
 
 	protected void startPipe(String type, IPipe pipe) {
@@ -480,6 +493,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 * of all registered <code>Pipes</code>
 	 * @see IPipe#stop
 	 */
+	@Override
 	public void stop() {
 		log.info("is closing pipeline");
 
@@ -497,7 +511,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			cache.close();
 		}
 		log.debug("successfully closed pipeline");
-
+		started = false;
 	}
 
 	// Method may not be called getGlobalForwards, because of the FrankDoc...
@@ -651,7 +665,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	}
 
 	/**
-	 * Name of the first pipe to execute when a message is to be processed
+	 * Name of the first pipe to execute when a message is to be processed.
 	 * @ff.default first pipe of the pipeline
 	 */
 	public void setFirstPipe(String pipeName) {

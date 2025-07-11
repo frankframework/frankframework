@@ -14,6 +14,6 @@ describe('Status page', () => {
     cy.get('[data-cy="adapter-status__box"]').first().click();
     cy.get('[data-cy="adapter-status__table__message"]')
       .first()
-      .should('contain.text', 'pipeline successfully configured');
+      .should('contain.text', 'successfully configured PipeLine');
   });
 });

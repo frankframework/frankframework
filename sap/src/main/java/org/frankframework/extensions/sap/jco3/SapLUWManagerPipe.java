@@ -45,7 +45,7 @@ import org.frankframework.stream.Message;
  * @author  Jaco de Groot
  * @since   5.0
  */
-public class SapLUWManager extends FixedForwardPipe {
+public class SapLUWManagerPipe extends FixedForwardPipe {
 
 	public static final String ACTION_BEGIN="begin";
 	public static final String ACTION_COMMIT="commit";
@@ -55,9 +55,7 @@ public class SapLUWManager extends FixedForwardPipe {
 	private @Getter String luwHandleSessionKey;
 	private @Getter String action;
 	private @Getter String sapSystemName;
-
 	private @Getter SapSystemImpl sapSystem;
-
 
 	@Override
 	public void configure() throws ConfigurationException {
