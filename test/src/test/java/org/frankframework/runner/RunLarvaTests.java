@@ -88,7 +88,6 @@ public class RunLarvaTests {
 			"WsdlGeneratorPipe/scenario01",
 			"WsdlGeneratorPipe/scenario02",
 			"WsdlGeneratorPipe/scenario03",
-			"XsltProviderListener/scenario04",
 
 			// These scenarios likely fail when Narayana is used
 			"JdbcListener/scenario02",
