@@ -80,6 +80,11 @@ import org.frankframework.util.XmlUtils;
  *     configured limits. The limit for data held in memory is controlled via property {@value MESSAGE_MAX_IN_MEMORY_PROPERTY}. The default
  *     value is {@value MESSAGE_MAX_IN_MEMORY_DEFAULT}.
  * </p>
+ * <p>
+ *     Operations on a Message that change state, such as {@link #preserve(boolean)} (and implicitly {@link #copyMessage()}) are
+ *     not thread-safe. If there is a chance that these operations are simultanuously executed from multiple threads, they need to be
+ *     wrapped in a {@code synchronized} block that synchronizes on the message instance.
+ * </p>
  */
 public class Message implements Serializable, Closeable {
 	public static final long MESSAGE_SIZE_UNKNOWN = -1L;
