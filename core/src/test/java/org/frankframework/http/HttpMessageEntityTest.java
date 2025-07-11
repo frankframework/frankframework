@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
 
 import org.apache.http.HttpEntity;
@@ -23,7 +22,6 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import org.frankframework.stream.Message;
-import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.MessageTestUtils.MessageType;
 import org.frankframework.util.StreamUtil;
@@ -38,9 +36,7 @@ public class HttpMessageEntityTest {
 	public void setup() throws Exception {
 		messageContent = MessageTestUtils.getMessage(MessageType.CHARACTER_UTF8).asString();
 		repeatableMessage = MessageTestUtils.getMessage(MessageType.CHARACTER_UTF8);
-		Message nre = MessageTestUtils.getNonRepeatableMessage(MessageType.CHARACTER_UTF8);
-		nonRepeatableMessage = Message.asMessage(SerializableFileReference.of(nre.asReader(), StandardCharsets.UTF_8.name()));
-		nonRepeatableMessage.getContext().putAll(nre.getContext().getAll());
+		nonRepeatableMessage = MessageTestUtils.getNonRepeatableMessage(MessageType.CHARACTER_UTF8);
 		binaryMessage = MessageTestUtils.getMessage(MessageType.BINARY);
 	}
 
@@ -55,7 +51,7 @@ public class HttpMessageEntityTest {
 		assertEquals(repeatableMessage.size(), bae.getContentLength());
 		assertEquals(-1L, ise.getContentLength());
 		assertEquals(repeatableMessage.size(), hmeRepeatable.getContentLength());
-		assertEquals(29L, hmeNonRepeatable.getContentLength());
+		assertEquals(-1L, hmeNonRepeatable.getContentLength());
 		assertEquals(26358, hmeUrlRepeatable.getContentLength());
 	}
 

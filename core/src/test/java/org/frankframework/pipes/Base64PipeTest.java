@@ -36,7 +36,6 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.Base64Pipe.Direction;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
-import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.testutil.ThrowingAfterCloseInputStream;
 import org.frankframework.util.StreamUtil;
 
@@ -283,7 +282,7 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 
 	private PipeRunResult doBase64PipeWithInputStream(final InputStream stream) throws PipeRunException, IOException {
 
-		Message input = Message.asMessage(SerializableFileReference.of(new ThrowingAfterCloseInputStream(stream)));
+		Message input = new Message(new ThrowingAfterCloseInputStream(stream));
 		input.closeOnCloseOf(session);
 
 		assertTrue(input.isScheduledForCloseOnExitOf(session), "Before Base64Pipe, streaming input message should be scheduled for close on close of session");
