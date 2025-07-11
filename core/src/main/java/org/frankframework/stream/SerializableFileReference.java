@@ -73,7 +73,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	 * @throws IOException If the {@link InputStream} cannot be read or a temporary file cannot be created / written to.
 	 */
 	public static SerializableFileReference of(InputStream in) throws IOException {
-		try (InputStream ignored = in) {
+		try (in) {
 			return new SerializableFileReference(true, null, true, copyToTempFile(in, -1L));
 		}
 	}

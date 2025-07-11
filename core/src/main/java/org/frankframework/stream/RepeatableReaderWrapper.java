@@ -258,6 +258,7 @@ public class RepeatableReaderWrapper implements RequestBuffer, AutoCloseable {
 				bufferDataFromSource(Math.max(minToBuffer, StreamUtil.BUFFER_SIZE));
 			}
 			if (isBufferedOnDisk() && fileReader == null) {
+				// In this case, our previous read was from memory but now we have to continue reading from disk
 				fileReader = openFileInputStream(tempFileLocation, position);
 			}
 		}
@@ -273,6 +274,7 @@ public class RepeatableReaderWrapper implements RequestBuffer, AutoCloseable {
 					}
 				}
 			} catch (IOException | RuntimeException e) {
+				// Close the file on exception
 				fis.close();
 				throw e;
 			}

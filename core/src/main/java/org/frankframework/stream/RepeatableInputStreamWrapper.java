@@ -262,6 +262,7 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 				bufferDataFromSource(Math.max(minToBuffer, StreamUtil.BUFFER_SIZE));
 			}
 			if (isBufferedOnDisk() && fileInputStream == null) {
+				// In this case, our previous read was from memory but now we have to continue reading from disk
 				fileInputStream = openFileInputStream(tempFileLocation, position);
 			}
 		}
@@ -277,6 +278,7 @@ public class RepeatableInputStreamWrapper implements RequestBuffer, AutoCloseabl
 					}
 				}
 			} catch (IOException | RuntimeException e) {
+				// Close the file on exception
 				fis.close();
 				throw e;
 			}

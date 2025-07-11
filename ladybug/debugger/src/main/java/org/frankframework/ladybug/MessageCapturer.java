@@ -49,9 +49,8 @@ public class MessageCapturer extends MessageCapturerImpl {
 	@Override
 	public <T> T toWriter(T message, Writer writer, Consumer<Throwable> exceptionNotifier) {
 		if (message instanceof Message message1) {
-			try {
+			try (writer) {
 				StreamUtil.copyPartialReader(message1.asReader(), writer, maxMessageLength, StreamUtil.BUFFER_SIZE);
-				writer.close();
 			} catch (Throwable t) {
 				exceptionNotifier.accept(t);
 				CloseUtils.closeSilently(writer);
@@ -70,9 +69,8 @@ public class MessageCapturer extends MessageCapturerImpl {
 	public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier, Consumer<Throwable> exceptionNotifier) {
 		if (message instanceof Message m) {
 			charsetNotifier.accept(m.getCharset());
-			try {
+			try (outputStream) {
 				StreamUtil.copyPartialStream(m.asInputStream(), outputStream, maxMessageLength, StreamUtil.BUFFER_SIZE);
-				outputStream.close();
 			} catch (Throwable t) {
 				exceptionNotifier.accept(t);
 				CloseUtils.closeSilently(outputStream);

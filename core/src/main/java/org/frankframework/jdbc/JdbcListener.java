@@ -291,6 +291,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 				switch (getMessageFieldType()) {
 					case CLOB:
 						try (Reader clobReader = getDbmsSupport().getClobReader(rs, getMessageField())) {
+							// Since the blobReader is closed before the message is returned, make sure the entire stream is read while creating the message
 							message = MessageUtils.fromReader(clobReader);
 						}
 						break;
@@ -299,6 +300,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 							message = new Message(JdbcUtil.getBlobAsString(getDbmsSupport(), rs,getMessageField(), getBlobCharset(), isBlobsCompressed(), isBlobSmartGet(),false));
 						} else {
 							try (InputStream blobStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, getMessageField(), isBlobsCompressed())) {
+								// Since the blobStream is closed before the message is returned, make sure the entire stream is read while creating the message
 								message = MessageUtils.fromInputStream(blobStream);
 							}
 						}
