@@ -13,7 +13,7 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
 
-public class JsonWellFormedCheckerTest extends PipeTestBase<JsonWellFormedChecker> {
+public class JsonWellFormedCheckerPipeTest extends PipeTestBase<JsonWellFormedCheckerPipe> {
 	public String input = null;
 	public String forward = null;
 
@@ -31,8 +31,8 @@ public class JsonWellFormedCheckerTest extends PipeTestBase<JsonWellFormedChecke
 	}
 
 	@Override
-	public JsonWellFormedChecker createPipe() {
-		return new JsonWellFormedChecker();
+	public JsonWellFormedCheckerPipe createPipe() {
+		return new JsonWellFormedCheckerPipe();
 	}
 
 	@MethodSource("data")

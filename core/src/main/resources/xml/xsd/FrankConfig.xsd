@@ -5688,7 +5688,7 @@
   <xs:complexType name="XmlWellFormedCheckerType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="XmlWellFormedCheckerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.XmlWellFormedChecker" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.XmlWellFormedCheckerPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="XmlWellFormedCheckerDeclaredAttributeGroup">
     <xs:attribute name="root" type="xs:string">
@@ -15455,7 +15455,7 @@
   <xs:complexType name="GetFromSessionType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="GetFromSessionCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.GetFromSession" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.GetFromSessionPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="GetFromSessionDeclaredAttributeGroup">
     <xs:attribute name="sessionKey" type="xs:string">
@@ -15744,7 +15744,7 @@
   <xs:complexType name="JsonWellFormedCheckerType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.JsonWellFormedChecker" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.JsonWellFormedCheckerPipe" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="JsonXsltPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
@@ -16609,7 +16609,7 @@
   <xs:complexType name="RekenBoxCallerType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="RekenBoxCallerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.rekenbox.RekenBoxCaller" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.rekenbox.RekenBoxCallerPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="RekenBoxCallerDeclaredAttributeGroup">
     <xs:attribute name="rekenBoxName" type="xs:string">
@@ -16717,7 +16717,7 @@
   <xs:complexType name="RemoveFromSessionType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="RemoveFromSessionCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.RemoveFromSession" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.RemoveFromSessionPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="RemoveFromSessionDeclaredAttributeGroup">
     <xs:attribute name="sessionKey" type="xs:string">
@@ -16869,7 +16869,7 @@
   <xs:complexType name="SapLUWManagerType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="SapLUWManagerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.sap.jco3.SapLUWManager" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.sap.jco3.SapLUWManagerPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="SapLUWManagerDeclaredAttributeGroup">
     <xs:attribute name="sapSystemName" type="xs:string">

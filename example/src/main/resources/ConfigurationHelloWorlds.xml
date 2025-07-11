@@ -22,7 +22,7 @@
 			</exits>
 			<pipe
 				name="CheckInputIsXml"
-				className="org.frankframework.pipes.XmlWellFormedChecker"
+				className="org.frankframework.pipes.XmlWellFormedCheckerPipe"
 				>
 				<forward name="success" path="CallHelloWorld"/>
 				<forward name="failure" path="ConvertEmptyMessageToDummyMessage"/>

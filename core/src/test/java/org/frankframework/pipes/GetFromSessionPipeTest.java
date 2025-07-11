@@ -22,7 +22,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.util.StreamUtil;
 
-public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
+public class GetFromSessionPipeTest extends PipeTestBase<GetFromSessionPipe> {
 
 	private PipeLineSession session;
 
@@ -43,8 +43,8 @@ public class GetFromSessionTest extends PipeTestBase<GetFromSession> {
 	}
 
 	@Override
-	public GetFromSession createPipe() {
-		return new GetFromSession();
+	public GetFromSessionPipe createPipe() {
+		return new GetFromSessionPipe();
 	}
 
 	@Test

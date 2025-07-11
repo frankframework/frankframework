@@ -413,7 +413,7 @@
 				  elementToMove="contents"
 				  elementToMoveSessionKey="fileContents"/>
 			<pipe name="Get File Contents For Zip"
-				  className="org.frankframework.pipes.GetFromSession"
+				  className="org.frankframework.pipes.GetFromSessionPipe"
 				  sessionKey="fileContents"/>
 
 			<!-- Encode/decode causes the original to be registered for close at end of this sub-adapter, issue 5702 -->
