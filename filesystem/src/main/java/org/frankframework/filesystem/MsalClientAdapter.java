@@ -50,6 +50,8 @@ import com.microsoft.aad.msal4j.IAuthenticationResult;
 import com.microsoft.aad.msal4j.IHttpClient;
 import com.microsoft.aad.msal4j.IHttpResponse;
 
+import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -92,7 +94,7 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 	private ExecutorService executor;
 	private ClientCredentialParameters clientCredentialParam;
 
-	private boolean configured = false;
+	private @Getter boolean configured = false;
 
 	public MsalClientAdapter() {
 		setName("MSAL Autentication Sender");
@@ -109,14 +111,6 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 	public void configure() throws ConfigurationException {
 		super.configure();
 		configured = true;
-	}
-
-	@Override
-	public void start() {
-		if (!configured) {
-			throw new LifecycleException("not yet configured");
-		}
-		super.start();
 	}
 
 	@Override
