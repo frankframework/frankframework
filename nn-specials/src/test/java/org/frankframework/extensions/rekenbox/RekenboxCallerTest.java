@@ -28,7 +28,7 @@ public class RekenboxCallerTest {
 	public void testFileToStringFileNameEndLine() throws Exception {
 		// Misc.resourceToString()
 		writeToTestFile();
-		assertEquals("inside the lebron file", RekenBoxCaller.fileToString(file.toString(), " the end", false));
+		assertEquals("inside the lebron file", RekenBoxCallerPipe.fileToString(file.toString(), " the end", false));
 	}
 
 	private void writeToTestFile() throws IOException {

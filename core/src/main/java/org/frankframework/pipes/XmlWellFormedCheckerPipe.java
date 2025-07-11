@@ -37,7 +37,7 @@ import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
  */
 @Forward(name = "parserError", description = "a parser exception occurred, probably caused by non-well-formed XML. If not specified, \"failure\" is used in such a case")
 @Forward(name = "failure", description = "the document is not well formed")
-public class XmlWellFormedChecker extends FixedForwardPipe implements IValidator {
+public class XmlWellFormedCheckerPipe extends FixedForwardPipe implements IValidator {
 	private String root = null;
 
 	@Override
@@ -46,8 +46,7 @@ public class XmlWellFormedChecker extends FixedForwardPipe implements IValidator
 		registerEvent(ValidationResult.PARSER_ERROR.getEvent());
 		registerEvent(ValidationResult.VALID.getEvent());
 	}
-
-
+	
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		return validate(message, session, getRoot());

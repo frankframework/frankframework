@@ -21,7 +21,7 @@ import jakarta.transaction.UserTransaction;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.jta.JtaTransactionManager;
 
-public class ThreadConnectableJtaTransactionManager extends JtaTransactionManager implements IThreadConnectableTransactionManager<Object,Object> {
+public class ThreadConnectableJtaTransactionManager extends JtaTransactionManager implements IThreadConnectableTransactionManager {
 
 	public ThreadConnectableJtaTransactionManager() {
 		super();
@@ -45,7 +45,7 @@ public class ThreadConnectableJtaTransactionManager extends JtaTransactionManage
 	}
 
 	@Override
-	public SuspendedResourcesHolder suspendTransaction(Object transaction) {
+	public Object suspendTransaction(Object transaction) {
 		return suspend(transaction);
 	}
 
