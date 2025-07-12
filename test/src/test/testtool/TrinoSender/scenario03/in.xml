@@ -1,0 +1,6 @@
+<request action="Insert">
+    <id>1</id>
+    <name>John Doe</name>
+    <email>john@example.com</email>
+    <created_at>2025-01-01 10:00:00</created_at>
+</request>
