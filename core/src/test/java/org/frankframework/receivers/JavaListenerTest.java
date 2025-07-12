@@ -13,7 +13,6 @@ import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
-import java.io.Reader;
 import java.io.StringReader;
 import java.util.HashMap;
 
@@ -36,6 +35,7 @@ import org.frankframework.processors.CorePipeLineProcessor;
 import org.frankframework.processors.CorePipeProcessor;
 import org.frankframework.processors.PipeProcessor;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.RequestBuffer;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.RunState;
@@ -84,7 +84,7 @@ public class JavaListenerTest {
 		return listener;
 	}
 
-	<M> Adapter setupAdapter() throws Exception {
+	Adapter setupAdapter() throws Exception {
 		Adapter adapter = configuration.createBean(Adapter.class);
 		adapter.setName("ReceiverTestAdapterName");
 
@@ -156,7 +156,7 @@ public class JavaListenerTest {
 
 		// Assert
 		assertTrue(result.requiresStream(), "Result message should be a stream");
-		assertTrue(result.isRequestOfType(Reader.class), "Result message should be of type Reader");
+		assertTrue(result.isRequestOfType(RequestBuffer.class), "Result message should be of type RequestBuffer");
 		assertEquals(rawTestMessage, result.asString());
 		testMessage.close();
 	}
@@ -179,7 +179,7 @@ public class JavaListenerTest {
 
 		// Assert
 		assertTrue(result.requiresStream(), "Result message should be a stream");
-		assertTrue(result.isRequestOfType(Reader.class), "Result message should be of type Reader");
+		assertTrue(result.isRequestOfType(RequestBuffer.class), "Result message should be of type RequestBuffer");
 		assertEquals(rawTestMessage, result.asString());
 		result.close();
 	}

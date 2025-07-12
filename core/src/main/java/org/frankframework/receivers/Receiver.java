@@ -1290,7 +1290,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 						result = pipeLineResult.getResult();
 
 						statusMessage = "exitState ["+pipeLineResult.getState()+"], result [";
-						if(!Message.isEmpty(result) && result.isRepeatable() && result.size() > ITransactionalStorage.MAXCOMMENTLEN - statusMessage.length()) { //Since we can determine the size, assume the message is preserved
+						if(!Message.isEmpty(result) && result.size() > ITransactionalStorage.MAXCOMMENTLEN - statusMessage.length()) { //Since we can determine the size, assume the message is preserved
 							String resultString = result.asString();
 							statusMessage += resultString.substring(0, Math.min(ITransactionalStorage.MAXCOMMENTLEN - statusMessage.length(), resultString.length()));
 						} else {
@@ -1457,7 +1457,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		if (getChompCharSize() != null || getElementToMove() != null || getElementToMoveChain() != null) {
 			log.debug("{} compact received message", getLogPrefix());
 			try {
-				message.preserve();
 				message = compactMessage(message, session);
 			} catch (IOException | SAXException e) {
 				String msg = "error during compacting received message to more compact format";
@@ -1521,7 +1520,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	private String extractLabel(Message message) {
 		if (labelTp != null) {
 			try {
-				message.preserve();
 				return labelTp.transformToString(message);
 			} catch (Exception e) {
 				log.warn("{} could not extract label: ({}) {}", this::getLogPrefix, ()-> ClassUtils.nameOf(e), e::getMessage);
@@ -1535,7 +1533,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		String businessCorrelationId = session.get(PipeLineSession.CORRELATION_ID_KEY, messageWrapper.getCorrelationId());
 		if (correlationIDTp != null) {
 			try {
-				messageWrapper.getMessage().preserve();
 				businessCorrelationId = correlationIDTp.transformToString(messageWrapper.getMessage());
 			} catch (Exception e) {
 				log.warn("{} could not extract businessCorrelationId", logPrefix);

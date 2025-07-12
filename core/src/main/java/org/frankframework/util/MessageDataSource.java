@@ -45,7 +45,6 @@ public class MessageDataSource implements DataSource, Closeable {
 		}
 
 		this.message = message;
-		this.message.preserve();
 		this.name = (String) message.getContext().get(MessageContext.METADATA_NAME);
 
 		determineContentType(newContentType);

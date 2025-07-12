@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018-2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2016, 2018-2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.frankframework.jdbc;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.sql.Connection;
 import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
@@ -57,6 +58,7 @@ import org.frankframework.receivers.ReceiverAware;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.JdbcUtil;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StringUtil;
 
 /**
@@ -288,16 +290,18 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 			if (StringUtils.isNotEmpty(getMessageField())) {
 				switch (getMessageFieldType()) {
 					case CLOB:
-						message = new Message(getDbmsSupport().getClobReader(rs, getMessageField()));
-						message.preserve(); // Prevent problems with stream closed after ResultSet is closed. Needed for MS SQL, Oracle
+						try (Reader clobReader = getDbmsSupport().getClobReader(rs, getMessageField())) {
+							// Since the blobReader is closed before the message is returned, make sure the entire stream is read while creating the message
+							message = MessageUtils.fromReader(clobReader);
+						}
 						break;
 					case BLOB:
 						if (isBlobSmartGet() || StringUtils.isNotEmpty(getBlobCharset())) { // in this case blob contains a String
 							message = new Message(JdbcUtil.getBlobAsString(getDbmsSupport(), rs,getMessageField(), getBlobCharset(), isBlobsCompressed(), isBlobSmartGet(),false));
 						} else {
 							try (InputStream blobStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, getMessageField(), isBlobsCompressed())) {
-								message = new Message(blobStream);
-								message.preserve();
+								// Since the blobStream is closed before the message is returned, make sure the entire stream is read while creating the message
+								message = MessageUtils.fromInputStream(blobStream);
 							}
 						}
 						break;

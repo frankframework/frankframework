@@ -460,6 +460,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 
 
 	@Test //Mocking a Non-Repeatable Message (avoids a NonRepeatableRequestException)
+	@Disabled("Messages are now always repeatable")
 	void testRetryNonRepeatablePayloadOnResetOAuth() throws Exception {
 		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.oauthPath);
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
@@ -517,6 +518,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 
 
 	@Test //Mocking a Non-Repeatable Multipart Message (avoids a NonRepeatableRequestException)
+	@Disabled("Messages are now always repeatable")
 	void testRetryNonRepeatableMultipartPayloadOnResetOAuth() throws Exception {
 		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.oauthPath);
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
@@ -573,6 +575,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 	}
 
 	@Test
+	@Disabled("Messages are now always repeatable")
 	void testRetryNonRepeatableMultipartPayloadOnOAuthAuthenticationTokenExpired() throws Exception {
 		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.oauthPath);
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);

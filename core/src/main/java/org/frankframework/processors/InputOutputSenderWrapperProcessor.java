@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2022, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
    limitations under the License.
 */
 package org.frankframework.processors;
-
-import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -36,11 +34,6 @@ public class InputOutputSenderWrapperProcessor extends AbstractSenderWrapperProc
 	public SenderResult sendMessage(AbstractSenderWrapper abstractSenderWrapper, Message message, PipeLineSession session) throws SenderException, TimeoutException {
 		Message senderInput=message;
 		if (StringUtils.isNotEmpty(abstractSenderWrapper.getStoreInputInSessionKey())) {
-			try {
-				message.preserve();
-			} catch (IOException e) {
-				throw new SenderException("Could not preserve input",e);
-			}
 			session.put(abstractSenderWrapper.getStoreInputInSessionKey(), message);
 		}
 
@@ -58,26 +51,10 @@ public class InputOutputSenderWrapperProcessor extends AbstractSenderWrapperProc
 			}
 		}
 
-		if (abstractSenderWrapper.isPreserveInput() && message==senderInput) { // test if it is the same object, not if the contents is the same
-			try {
-				message.preserve();
-			} catch (IOException e) {
-				throw new SenderException("Could not preserve input",e);
-			}
-		}
-
 		SenderResult result = senderWrapperProcessor.sendMessage(abstractSenderWrapper, senderInput, session);
 
 		if (result.isSuccess()) {
 			if (StringUtils.isNotEmpty(abstractSenderWrapper.getStoreResultInSessionKey())) {
-				if (!abstractSenderWrapper.isPreserveInput()) {
-					try {
-						message.preserve();
-					} catch (IOException e) {
-						throw new SenderException("Could not preserve result",e);
-					}
-				}
-
 				log.debug("storing results in session variable [{}]", abstractSenderWrapper::getStoreResultInSessionKey);
 				session.put(abstractSenderWrapper.getStoreResultInSessionKey(), result.getResult());
 			}

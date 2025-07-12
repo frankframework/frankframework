@@ -73,7 +73,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	 * @throws IOException If the {@link InputStream} cannot be read or a temporary file cannot be created / written to.
 	 */
 	public static SerializableFileReference of(InputStream in) throws IOException {
-		try (InputStream ignored = in) {
+		try (in) {
 			return new SerializableFileReference(true, null, true, copyToTempFile(in, -1L));
 		}
 	}
@@ -137,6 +137,10 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 		this(true, null, deleteOnClose, path);
 	}
 
+	public SerializableFileReference(Path path, String charset, boolean deleteOnClose) {
+		this(false, charset, deleteOnClose, path);
+	}
+
 	private SerializableFileReference(boolean binary, String charset, boolean isFileOwner, Path path) {
 		this.binary = binary;
 		this.charset = charset;
@@ -183,8 +187,12 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 		}
 	}
 
-	public BufferedInputStream getInputStream() throws IOException {
-		return new BufferedInputStream(Files.newInputStream(path));
+	public InputStream getInputStream() throws IOException {
+		InputStream in = Files.newInputStream(path);
+		if (in.markSupported()) {
+			return in;
+		}
+		return new BufferedInputStream(in);
 	}
 
 	private long getFileSize() {

@@ -45,7 +45,6 @@ import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.sql.SQLException;
@@ -118,6 +117,7 @@ import org.frankframework.monitoring.events.FireMonitorEvent;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
+import org.frankframework.stream.RequestBuffer;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestConfiguration;
@@ -745,7 +745,7 @@ public class ReceiverTest {
 			// Assert
 			assertFalse(result.isScheduledForCloseOnExitOf(session), "Result message should not be scheduled for closure on exit of session");
 			assertTrue(result.requiresStream(), "Result message should be a stream");
-			assertTrue(result.isRequestOfType(Reader.class), "Result message should be of type Reader");
+			assertTrue(result.isRequestOfType(RequestBuffer.class), "Result message should be of type RequestBuffer");
 			assertEquals("TEST", result.asString());
 		}
 	}

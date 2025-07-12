@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,8 +14,6 @@
    limitations under the License.
 */
 package org.frankframework.pipes;
-
-import java.io.IOException;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -56,11 +54,6 @@ public class PutInSessionPipe extends FixedForwardPipe {
 		if (StringUtils.isNotEmpty(getSessionKey())) {
 			Message v;
 			if (getValue() == null) {
-				try {
-					message.preserve();
-				} catch (IOException e) {
-					throw new PipeRunException(this, "cannot preserve message", e);
-				}
 				v = message;
 			} else {
 				v = new Message(getValue());

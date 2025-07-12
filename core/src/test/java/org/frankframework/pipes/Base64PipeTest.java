@@ -17,6 +17,7 @@ package org.frankframework.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -257,6 +258,7 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 		// Assert
 		assertTrue(prr.getResult().isBinary());
 		byte[] result = prr.getResult().asByteArray();
+		assertNotNull(result);
 		assertEquals(plainText, new String(result).trim());
 	}
 
@@ -278,7 +280,7 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 		assertEquals(plainText, result.trim());
 	}
 
-	private PipeRunResult doBase64PipeWithInputStream(final InputStream stream) throws PipeRunException {
+	private PipeRunResult doBase64PipeWithInputStream(final InputStream stream) throws PipeRunException, IOException {
 
 		Message input = new Message(new ThrowingAfterCloseInputStream(stream));
 		input.closeOnCloseOf(session);

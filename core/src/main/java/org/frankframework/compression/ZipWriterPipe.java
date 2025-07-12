@@ -86,7 +86,6 @@ public class ZipWriterPipe extends AbstractCollectorPipe<ZipWriter, MessageZipEn
 					return handleStreamAction(input, session);
 				}
 
-				input.preserve();
 				super.doPipe(input, session);
 
 				return new PipeRunResult(getSuccessForward(), input);

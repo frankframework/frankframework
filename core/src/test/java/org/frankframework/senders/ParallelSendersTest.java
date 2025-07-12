@@ -175,7 +175,9 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 			int random = (int) (Math.random() * 20);
 			try {
 				Thread.sleep(random);
-				return new SenderResult(message.asString());
+				synchronized (message) {
+					return new SenderResult(message.asString());
+				}
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 				throw new SenderException(e);

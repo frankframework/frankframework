@@ -16,7 +16,6 @@
 package org.frankframework.stream;
 
 import java.io.BufferedInputStream;
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -27,21 +26,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Serial;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.Writer;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
-import java.util.LinkedHashSet;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.Set;
 
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
@@ -50,8 +44,6 @@ import javax.xml.transform.dom.DOMSource;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-import org.apache.commons.io.input.ReaderInputStream;
-import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -71,11 +63,29 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CleanerProvider;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.MessageUtils;
-import org.frankframework.util.StreamCaptureUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlUtils;
 
+/**
+ * A {@link Serializable} wrapper around data passed to the Frank!Framework and between pipes in the
+ * pipeline.
+ * <p>
+ *     Regardless of the original format of the data, the system will always allow repeatable access to the data
+ *     in multiple formats, such as {@code InputStream}, {@code Reader}, {@code byte[]}, {@code String} and
+ *     for XML data, also as {@code InputSource} or {@code Source}.
+ * </p>
+ * <p>
+ *     The Frank!Framework will intelligently buffer message data to memory or disk depending on size and
+ *     configured limits. The limit for data held in memory is controlled via property {@value MESSAGE_MAX_IN_MEMORY_PROPERTY}. The default
+ *     value is {@value MESSAGE_MAX_IN_MEMORY_DEFAULT}.
+ * </p>
+ * <p>
+ *     Operations on a Message that change state, such as {@link #preserve(boolean)} (and implicitly {@link #copyMessage()}) are
+ *     not thread-safe. If there is a chance that these operations are simultanuously executed from multiple threads, they need to be
+ *     wrapped in a {@code synchronized} block that synchronizes on the message instance.
+ * </p>
+ */
 public class Message implements Serializable, Closeable {
 	public static final long MESSAGE_SIZE_UNKNOWN = -1L;
 	public static final long MESSAGE_MAX_IN_MEMORY_DEFAULT = 5120L * 1024L;
@@ -93,7 +103,6 @@ public class Message implements Serializable, Closeable {
 	private boolean failedToDetermineCharset = false;
 
 	private @Getter boolean closed = false;
-	private Set<AutoCloseable> resourcesToClose;
 
 	private Message(@Nonnull MessageContext context, @Nullable Object request, @Nullable Class<?> requestClass) {
 		if (request instanceof Message) {
@@ -105,6 +114,20 @@ public class Message implements Serializable, Closeable {
 		}
 		this.context = context;
 		this.requestClass = requestClass != null ? ClassUtils.nameOf(requestClass) : ClassUtils.nameOf(request);
+
+		// Cache size before possibly replacing FileInputStream or other streams of which the size is knowable with a wrapper
+		if (!context.containsKey(MessageContext.METADATA_SIZE)) {
+			long cacheSize = size();
+			if (cacheSize != MESSAGE_SIZE_UNKNOWN) {
+				context.put(MessageContext.METADATA_SIZE, cacheSize);
+			}
+		}
+
+		if (this.request instanceof InputStream source) {
+			this.request = new RepeatableInputStreamWrapper(source);
+		} else if (this.request instanceof Reader source) {
+			this.request = new RepeatableReaderWrapper(source);
+		}
 
 		if (request != null) {
 			messageNotClosedAction = new MessageNotClosedAction();
@@ -266,14 +289,12 @@ public class Message implements Serializable, Closeable {
 	/**
 	 * Notify the message object that the request object will be used multiple times.
 	 * If the request object can only be read one time, it can turn it into a less volatile representation.
-	 * For instance, it could replace an InputStream with a byte array or String.
+	 * <p>
+	 *     This operation can potentially modify the contents of the Message object.
+	 * </p>
 	 *
-	 * @throws IOException Throws IOException if the Message can not be read or writing fails.
+	 * @throws IOException Throws IOException if the Message cannot be read or writing fails.
 	 */
-	public void preserve() throws IOException {
-		preserve(false);
-	}
-
 	private void preserve(boolean deepPreserve) throws IOException {
 		if (request == null) {
 			return;
@@ -281,11 +302,34 @@ public class Message implements Serializable, Closeable {
 		if (request instanceof SerializableFileReference) {
 			return;
 		}
+		if (request instanceof RequestBuffer requestBuffer) {
+			// RequestBuffer knows how to preserve itself, intelligently deciding to preserve to memory or disk
+			request = requestBuffer.asSerializable();
+			requestBuffer.close();
+			return;
+		}
 
 		long requestSize = size();
-		if (requestSize == MESSAGE_SIZE_UNKNOWN || requestSize > AppConstants.getInstance()
-				.getLong(MESSAGE_MAX_IN_MEMORY_PROPERTY, MESSAGE_MAX_IN_MEMORY_DEFAULT)) {
+		long maxInMemory = AppConstants.getInstance().getLong(MESSAGE_MAX_IN_MEMORY_PROPERTY, MESSAGE_MAX_IN_MEMORY_DEFAULT);
+		if (requestSize == MESSAGE_SIZE_UNKNOWN || requestSize > maxInMemory) {
 			preserveToDisk(deepPreserve);
+			// Check again the size now that we know it for sure. If it fits into memory, better for performance to keep it in memory!
+			if (requestSize == MESSAGE_SIZE_UNKNOWN && size() <= maxInMemory && request instanceof SerializableFileReference serializableFileReference) {
+				if (isBinary()) {
+					try (ByteArrayOutputStream bos = new ByteArrayOutputStream();
+						InputStream inputStream = serializableFileReference.getInputStream()) {
+						inputStream.transferTo(bos);
+						this.request = bos.toByteArray();
+					}
+				} else {
+					try (StringWriter sw = new StringWriter();
+						 Reader reader = serializableFileReference.getReader()) {
+						reader.transferTo(sw);
+						this.request = sw.toString();
+					}
+				}
+				serializableFileReference.close();
+			}
 		} else {
 			preserveToMemory(deepPreserve);
 		}
@@ -329,13 +373,7 @@ public class Message implements Serializable, Closeable {
 			// Should not happen but just in case.
 			return;
 		}
-		if (request instanceof Reader reader) {
-			LOG.debug("preserving Reader {} as SerializableFileReference", this::getObjectId);
-			request = SerializableFileReference.of(reader, computeDecodingCharset(null));
-		} else if (request instanceof InputStream stream) {
-			LOG.debug("preserving InputStream {} as SerializableFileReference", this::getObjectId);
-			request = SerializableFileReference.of(stream);
-		} else if (request instanceof String string) {
+		if (request instanceof String string) {
 			request = SerializableFileReference.of(string, computeDecodingCharset(null));
 		} else if (request instanceof byte[] bytes) {
 			request = SerializableFileReference.of(bytes);
@@ -364,18 +402,18 @@ public class Message implements Serializable, Closeable {
 			return reference.isBinary();
 		}
 
-		return request instanceof InputStream || request instanceof ThrowingSupplier || request instanceof byte[];
-	}
+		if (request instanceof RequestBuffer requestBuffer) {
+			return requestBuffer.isBinary();
+		}
 
-	public boolean isRepeatable() {
-		return request instanceof String || request instanceof Number || request instanceof Boolean || request instanceof ThrowingSupplier || request instanceof byte[] || request instanceof Node || request instanceof SerializableFileReference;
+		return request instanceof ThrowingSupplier || request instanceof byte[] || request instanceof Number || request instanceof Boolean;
 	}
 
 	/**
 	 * If true, the Message should preferably be read using a streaming method, i.e. asReader() or asInputStream(), to avoid copying it into memory.
 	 */
 	public boolean requiresStream() {
-		return request instanceof InputStream || request instanceof ThrowingSupplier || request instanceof Reader || request instanceof SerializableFileReference;
+		return request instanceof ThrowingSupplier || request instanceof SerializableFileReference || request instanceof RequestBuffer;
 	}
 
 	@Override
@@ -384,16 +422,8 @@ public class Message implements Serializable, Closeable {
 			CloseUtils.closeSilently(closeable);
 		}
 		request = null;
-		CloseUtils.closeSilently(resourcesToClose);
 		closed = true;
 		CleanerProvider.clean(messageNotClosedAction);
-	}
-
-	private void closeOnClose(@Nonnull AutoCloseable resource) {
-		if (resourcesToClose == null) {
-			resourcesToClose = new LinkedHashSet<>();
-		}
-		resourcesToClose.add(resource);
 	}
 
 	public void closeOnCloseOf(@Nonnull PipeLineSession session) {
@@ -425,8 +455,6 @@ public class Message implements Serializable, Closeable {
 
 	/**
 	 * Return a {@link Reader} backed by the data in this message. {@link Reader#markSupported()} is guaranteed to be true for the returned stream.
-	 * Should not be called more than once, unless the request is {@link #isRepeatable() repeatable} or the Reader is reset to its starting position. If
-	 * the message is not {@link #isRepeatable() repeatable} then {@link #preserve()} can be called on the message to make it repeatable.
 	 */
 	@Nullable
 	public Reader asReader() throws IOException {
@@ -435,8 +463,6 @@ public class Message implements Serializable, Closeable {
 
 	/**
 	 * Return a {@link Reader} backed by the data in this message. {@link Reader#markSupported()} is guaranteed to be true for the returned stream.
-	 * Should not be called more than once, unless the request is {@link #isRepeatable() repeatable} or the Reader is reset to its starting position. If
-	 * the message is not {@link #isRepeatable() repeatable} then {@link #preserve()} can be called on the message to make it repeatable.
 	 *
 	 * @param defaultDecodingCharset is only used when {@link #isBinary()} is {@code true}.
 	 */
@@ -445,30 +471,25 @@ public class Message implements Serializable, Closeable {
 		if (request == null) {
 			return null;
 		}
-		if (request instanceof Reader reader) {
-			if (!reader.markSupported()) {
-				reader = new BufferedReader(reader);
-				request = reader;
-			}
-			LOG.debug("returning Reader {} as Reader", this::getObjectId);
-			return reader;
-		}
+
 		if (request instanceof SerializableFileReference reference && !reference.isBinary()) {
 			LOG.debug("returning SerializableFileReference {} as Reader", this::getObjectId);
 			// The Message was saved with a Charset (see PreserveToDisk), so read it with the Charset
 			return reference.getReader();
 		}
+
+		if (request instanceof RequestBuffer requestBuffer) {
+			String readerCharset = computeDecodingCharset(defaultDecodingCharset); // Don't overwrite the Message's charset unless it's set to AUTO
+			return requestBuffer.asReader(Charset.forName(readerCharset));
+		}
+
 		if (isBinary()) {
 			String readerCharset = computeDecodingCharset(defaultDecodingCharset); // Don't overwrite the Message's charset unless it's set to AUTO
 
 			LOG.debug("returning InputStream {} as Reader", this::getObjectId);
 			InputStream inputStream = asInputStream();
 			try {
-				BufferedReader reader = StreamUtil.getCharsetDetectingInputStreamReader(inputStream, readerCharset);
-				if (this.request instanceof InputStream) {
-					this.request = reader;
-				}
-				return reader;
+				return StreamUtil.getCharsetDetectingInputStreamReader(inputStream, readerCharset);
 			} catch (IOException e) {
 				onExceptionClose(e);
 				throw e;
@@ -487,8 +508,6 @@ public class Message implements Serializable, Closeable {
 
 	/**
 	 * Return an {@link InputStream} backed by the data in this message. {@link InputStream#markSupported()} is guaranteed to be true for the returned stream.
-	 * Should not be called more than once, unless the request is {@link #isRepeatable() repeatable} or the InputStream is reset to its starting position. If
-	 * the message is not {@link #isRepeatable() repeatable} then {@link #preserve()} can be called on the message to make it repeatable.
 	 */
 	@Nullable
 	public InputStream asInputStream() throws IOException {
@@ -497,8 +516,6 @@ public class Message implements Serializable, Closeable {
 
 	/**
 	 * Return an {@link InputStream} backed by the data in this message. {@link InputStream#markSupported()} is guaranteed to be true for the returned stream.
-	 * Should not be called more than once, unless the request is {@link #isRepeatable() repeatable} or the InputStream is reset to its starting position. If
-	 * the message is not {@link #isRepeatable() repeatable} then {@link #preserve()} can be called on the message to make it repeatable.
 	 *
 	 * @param defaultEncodingCharset is only used when the Message object is of character type (String)
 	 */
@@ -508,14 +525,16 @@ public class Message implements Serializable, Closeable {
 			if (request == null) {
 				return null;
 			}
-			if (request instanceof InputStream stream) {
-				if (!stream.markSupported()) {
-					stream = new BufferedInputStream(stream);
-					request = stream;
+
+			if (request instanceof RequestBuffer requestBuffer) {
+				LOG.debug("returning InputStream {} from RequestBuffer", this::getObjectId);
+				if (requestBuffer.isBinary()) {
+					return requestBuffer.asInputStream();
 				}
-				LOG.debug("returning InputStream {} as InputStream", this::getObjectId);
-				return stream;
+				String charset = getEncodingCharset(defaultEncodingCharset);
+				return requestBuffer.asInputStream(Charset.forName(charset));
 			}
+
 			if (request instanceof SerializableFileReference reference) {
 				LOG.debug("returning InputStream {} from SerializableFileReference", this::getObjectId);
 				return reference.getInputStream();
@@ -539,12 +558,6 @@ public class Message implements Serializable, Closeable {
 				return new ByteArrayInputStream(asByteArray());
 			}
 			String charset = getEncodingCharset(defaultEncodingCharset);
-			if (request instanceof Reader reader) {
-				LOG.debug("returning Reader {} as InputStream", this::getObjectId);
-				BufferedInputStream inputStream = new BufferedInputStream(new ReaderInputStream(reader, charset));
-				this.request = inputStream;
-				return inputStream;
-			}
 			LOG.debug("returning String {} as InputStream", this::getObjectId);
 			return new ByteArrayInputStream(request.toString().getBytes(charset));
 		} catch (IOException e) {
@@ -558,25 +571,21 @@ public class Message implements Serializable, Closeable {
 
 	@Nonnull
 	public synchronized String peek(int readLimit) throws IOException {
-		Reader r = asReader();
-		if (r == null) {
-			return "";
-		}
-		r.mark(readLimit);
-		try {
+		try (Reader r = asReader()) {
+			if (r == null) {
+				return "";
+			}
 			char[] buffer = new char[readLimit];
 			int len = r.read(buffer);
 			if (len <= 0) {
 				return "";
 			}
 			return new String(buffer, 0, len);
-		} finally {
-			r.reset();
 		}
 	}
 
 	/**
-	 * return the request object as a {@link InputSource}. Should not be called more than once, if request is not {@link #preserve() preserved}.
+	 * return the request object as a {@link InputSource}.
 	 */
 	@Nullable
 	public InputSource asInputSource() throws IOException {
@@ -603,7 +612,7 @@ public class Message implements Serializable, Closeable {
 	}
 
 	/**
-	 * return the request object as a {@link Source}. Should not be called more than once, if request is not {@link #preserve() preserved}.
+	 * return the request object as a {@link Source}.
 	 */
 	@Nullable
 	public Source asSource() throws IOException, SAXException {
@@ -623,13 +632,18 @@ public class Message implements Serializable, Closeable {
 	}
 
 	/**
-	 * return the request object as a byte array. Has the side effect of preserving the input as byte array.
+	 * Return the request object as a byte array. This may have the side effect of preserving the input as byte array.
+	 * This operation is not thread-safe.
 	 */
 	@Nullable
 	public byte[] asByteArray() throws IOException {
 		return asByteArray(null);
 	}
 
+	/**
+	 * Return the request object as a byte array. This may have the side effect of preserving the input as byte array.
+	 * This operation is not thread-safe.
+	 */
 	@Nullable
 	public byte[] asByteArray(@Nullable String defaultEncodingCharset) throws IOException {
 		if (request == null) {
@@ -654,20 +668,29 @@ public class Message implements Serializable, Closeable {
 			LOG.debug("returning InputStream {} from supplier", this::getObjectId);
 			return StreamUtil.streamToBytes(asInputStream());
 		}
-		// save the generated byte array as the request before returning it
-		// Specify initial capacity a little larger than file-size just as extra safeguard we do not re-allocate buffer.
-		request = StreamUtil.streamToBytes(asInputStream(charset));
-		return (byte[]) request;
+		// save the generated byte array as the request before returning it, unless it's too big
+		byte[] result = StreamUtil.streamToBytes(asInputStream(charset));
+		if (result.length < AppConstants.getInstance().getInt(MESSAGE_MAX_IN_MEMORY_PROPERTY, (int) MESSAGE_MAX_IN_MEMORY_DEFAULT)) {
+			request = result;
+		}
+		return result;
 	}
 
 	/**
-	 * return the request object as a String. Has the side effect of preserving the input as a String.
+	 * return the request object as a String. This may have the side effect of preserving the input as a String, thus
+	 * modifying the state of the Message object.
+	 * This operation is not thread-safe.
 	 */
 	@Nullable
 	public String asString() throws IOException {
 		return asString(null);
 	}
 
+	/**
+	 * return the request object as a String. This may have the side effect of preserving the input as a String, thus
+	 * modifying the state of the Message object.
+	 * This operation is not thread-safe.
+	 */
 	@Nullable
 	public String asString(@Nullable String decodingCharset) throws IOException {
 		if (request == null) {
@@ -691,7 +714,7 @@ public class Message implements Serializable, Closeable {
 		// save the generated String as the request before returning it
 		// Specify initial capacity a little larger than file-size just as extra safeguard we do not re-allocate buffer.
 		String result = StreamUtil.readerToString(asReader(decodingCharset), null, false, (int) size() + 32);
-		if (!(request instanceof SerializableFileReference) && (!isBinary() || !isRepeatable())) {
+		if (!(request instanceof SerializableFileReference) && !isBinary() && result.length() < AppConstants.getInstance().getInt(MESSAGE_MAX_IN_MEMORY_PROPERTY, (int) MESSAGE_MAX_IN_MEMORY_DEFAULT)) {
 			if (request instanceof AutoCloseable closeable) {
 				try {
 					closeable.close();
@@ -723,7 +746,14 @@ public class Message implements Serializable, Closeable {
 	 * @return {@code true} if the message is empty, {@code false} if message is not empty or if the size cannot be determined up-front.
 	 */
 	public boolean isEmpty() {
-		return size() == 0;
+		if (request instanceof RequestBuffer requestBuffer) {
+			try {
+				return requestBuffer.isEmpty();
+			} catch (IOException e) {
+				throw Lombok.sneakyThrow(e);
+			}
+		}
+		return size() == 0L;
 	}
 
 	private void toStringPrefix(StringBuilder writer) {
@@ -828,6 +858,10 @@ public class Message implements Serializable, Closeable {
 		if (Message.isNull(message)) {
 			return false;
 		}
+		// TODO: Rewrite "message.isEmpty()" to give a truthful answer always? Then we can delegate to that instead. Don't yet know if that will break some other tests though, so this will be a future change.
+		if (message.asObject() instanceof RequestBuffer requestBuffer) {
+			return !requestBuffer.isEmpty();
+		}
 		long size = message.size();
 		if (size != MESSAGE_SIZE_UNKNOWN) {
 			return size != 0;
@@ -843,13 +877,10 @@ public class Message implements Serializable, Closeable {
 		if (r == null) {
 			return false;
 		}
-		r.mark(1);
-		try {
+		try (r) {
 			return r.read() != -1;
 		} catch (EOFException e) {
 			return false;
-		}  finally {
-			r.reset();
 		}
 	}
 
@@ -857,13 +888,10 @@ public class Message implements Serializable, Closeable {
 		if (is == null) {
 			return false;
 		}
-		is.mark(1);
-		try {
+		try (is){
 			return is.read() != -1;
 		} catch (EOFException e) {
 			return false;
-		} finally {
-			is.reset();
 		}
 	}
 
@@ -962,7 +990,12 @@ public class Message implements Serializable, Closeable {
 			return reference.getSize();
 		}
 
+		if (request instanceof RequestBuffer requestBuffer) {
+			return requestBuffer.size();
+		}
+
 		if (request instanceof FileInputStream fileStream) {
+			// This can happen during initial check of request-size before creating the RequestBuffer
 			try {
 				return fileStream.getChannel().size();
 			} catch (IOException e) {
@@ -979,79 +1012,11 @@ public class Message implements Serializable, Closeable {
 	}
 
 	/**
-	 * Can be called when {@link #requiresStream()} is true to retrieve a copy of (part of) the stream that is in this
-	 * message, after the stream has been closed. Primarily for debugging purposes.
-	 */
-	public ByteArrayOutputStream captureBinaryStream() throws IOException {
-		var result = new ByteArrayOutputStream();
-		captureBinaryStream(result);
-		return result;
-	}
-
-	public void captureBinaryStream(OutputStream outputStream) throws IOException {
-		captureBinaryStream(outputStream, StreamCaptureUtils.DEFAULT_STREAM_CAPTURE_LIMIT);
-	}
-
-	public void captureBinaryStream(OutputStream outputStream, int maxSize) throws IOException {
-		LOG.debug("creating capture of {}", ClassUtils.nameOf(request));
-		if (isNull()) {
-			CloseUtils.closeSilently(outputStream);
-			LOG.debug("message is NULL, nothing to capture");
-			return;
-		}
-		if (isRepeatable()) {
-			LOG.warn("repeatability of {} of type [{}] will be lost by capturing stream", this.getObjectId(), request.getClass().getTypeName());
-		}
-		if (isBinary()) {
-			request = StreamCaptureUtils.captureInputStream(asInputStream(), outputStream, maxSize);
-		} else {
-			request = StreamCaptureUtils.captureReader(asReader(), new OutputStreamWriter(outputStream, StreamUtil.DEFAULT_CHARSET), maxSize);
-		}
-		closeOnClose(outputStream);
-	}
-
-	/**
-	 * Can be called when {@link #requiresStream()} is true to retrieve a copy of (part of) the stream that is in this
-	 * message, after the stream has been closed. Primarily for debugging purposes.
-	 * <p>
-	 * When isBinary() is true the Message's charset is used when present to create a Reader that reads the InputStream.
-	 * When charset not present {@link StreamUtil#DEFAULT_INPUT_STREAM_ENCODING} is used.
-	 */
-	public StringWriter captureCharacterStream() throws IOException {
-		var result = new StringWriter();
-		captureCharacterStream(result);
-		return result;
-	}
-
-	public void captureCharacterStream(Writer writer) throws IOException {
-		captureCharacterStream(writer, StreamCaptureUtils.DEFAULT_STREAM_CAPTURE_LIMIT);
-	}
-
-	public void captureCharacterStream(Writer writer, int maxSize) throws IOException {
-		LOG.debug("creating capture of {}", () -> ClassUtils.nameOf(request));
-		if (isNull()) {
-			CloseUtils.closeSilently(writer);
-			LOG.debug("message is NULL, nothing to capture");
-			return;
-		}
-		if (isRepeatable()) {
-			LOG.warn("repeatability of {} of type [{}] will be lost by capturing stream", this.getObjectId(), request.getClass().getTypeName());
-		}
-
-		if (!isBinary()) {
-			request = StreamCaptureUtils.captureReader(asReader(), writer, maxSize);
-		} else {
-			String charset = StringUtils.isNotEmpty(getCharset()) ? getCharset() : StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-			request = StreamCaptureUtils.captureInputStream(asInputStream(), new WriterOutputStream(writer, charset, StreamUtil.BUFFER_SIZE, true), maxSize);
-		}
-		closeOnClose(writer);
-	}
-
-	/**
 	 * Creates a copy of this Message object.
 	 * <p>
 	 * <b>NB:</b> To copy the underlying value of the message object, the message
-	 * may be preserved if it was not repeatable.
+	 * may be preserved if it was not repeatable. Thus this operation may modify the
+	 * state of the message object.
 	 * </p>
 	 *
 	 * @return A new Message object that is a copy of this Message.
@@ -1059,8 +1024,8 @@ public class Message implements Serializable, Closeable {
 	 */
 	@Nonnull
 	public Message copyMessage() throws IOException {
-		if (!isRepeatable()) {
-			preserve();
+		if (request instanceof RequestBuffer) {
+			preserve(false);
 		}
 		if (!(request instanceof SerializableFileReference)) {
 			return new Message(copyContext(), request);

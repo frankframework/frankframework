@@ -1,5 +1,5 @@
 /*
-   Copyright 2017, 2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2017, 2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -428,7 +428,6 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 			log.debug("Target namespace or schema location is empty, not changing namespace in input");
 			return xml;
 		}
-		xml.preserve();
 		String currentRootNamespace = XmlUtils.getRootNamespace(xml);
 		if (StringUtils.isNotEmpty(currentRootNamespace)) {
 			log.debug("Message already has namespace [{}]", currentRootNamespace);

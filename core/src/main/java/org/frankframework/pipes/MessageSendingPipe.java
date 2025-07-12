@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015-2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2015-2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -320,30 +320,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		propagateName();
 	}
 
-	/**
-	 * Call {@link Message#preserve()} so it can be consumed multiple times, and wrap potential {@link IOException}
-	 * in a {@link PipeRunException}.
-	 *
-	 * @param input The {@link Message} to be preserved.
-	 * @throws PipeRunException If an {@link IOException} is thrown from {@link Message#preserve()}, wrap and rethrow it
-	 * in a {@link PipeRunException}.
-	 *
-	 */
-	protected void preserve(@Nonnull Message input) throws PipeRunException {
-		try {
-			input.preserve();
-		} catch (IOException e) {
-			throw new PipeRunException(this,"cannot preserve message",e);
-		}
-	}
-
 	@Override
 	public PipeRunResult doPipe(@Nonnull Message input, @Nonnull PipeLineSession session) throws PipeRunException {
 		Message originalMessage = null;
 		PipeForward forward = getSuccessForward();
 
 		if (messageLog != null) {
-			preserve(input);
 			originalMessage = input;
 		}
 		PipeRunResult preProcessingResult = preProcessInput(input, session);
@@ -571,15 +553,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				return wrapResult;
 			}
 			input = wrapResult.getResult();
-			if (messageLog != null) {
-				preserve(input);
-			}
 
 			log.debug("input after wrapping [{}]", input);
 		}
 
 		if (inputValidator != null) {
-			preserve(input);
 			log.debug("validating input");
 			PipeRunResult validationResult = pipeProcessor.processPipe(getPipeLine(), inputValidator, input, session);
 			if (validationResult == null) {

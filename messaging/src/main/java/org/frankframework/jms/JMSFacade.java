@@ -765,7 +765,6 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 		}
 
 		// Only for SOAP messages we do a bit of extra work
-		message.preserve();
 		Message messageText = extractMessageBody(message, context, soapWrapper);
 		if (StringUtils.isNotEmpty(soapHeaderSessionKey)) {
 			String soapHeader;

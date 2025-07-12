@@ -162,9 +162,6 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		// test
 		Message in = fileSystem.readFile(file, null);
 
-		// preserve() converts non repeatable messages to byte array
-		in.preserve();
-
 		// test if message can actually be read multiple times, without turning it explicitly into a String or byte array.
 		// This will fail if a message declared that it was repeatable, but actually was not repeatable.
 		String actual1 = StreamUtil.readerToString(in.asReader(), null);

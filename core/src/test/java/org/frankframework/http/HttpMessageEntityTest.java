@@ -63,11 +63,10 @@ public class HttpMessageEntityTest {
 		HttpMessageEntity hmeNonRepeatable = new HttpMessageEntity(nonRepeatableMessage);
 		HttpMessageEntity hmeUrlRepeatable = new HttpMessageEntity(binaryMessage);
 
-		assertTrue(repeatableMessage.isRepeatable());
 		assertTrue(bae.isRepeatable());
 		assertFalse(ise.isRepeatable());
 		assertTrue(hmeRepeatable.isRepeatable());
-		assertFalse(hmeNonRepeatable.isRepeatable());
+		assertTrue(hmeNonRepeatable.isRepeatable());
 		assertTrue(hmeUrlRepeatable.isRepeatable());
 	}
 
@@ -163,21 +162,17 @@ public class HttpMessageEntityTest {
 
 	public static Stream<Arguments> testWriteToCharacterData() {
 		return Stream.of(
-				Arguments.of(MessageType.CHARACTER_UTF8, true),
-				Arguments.of(MessageType.CHARACTER_UTF8, false),
-				Arguments.of(MessageType.CHARACTER_ISO88591, true),
-				Arguments.of(MessageType.CHARACTER_ISO88591, false),
-				Arguments.of(MessageType.BINARY, true),
-				Arguments.of(MessageType.BINARY, false)
+				Arguments.of(MessageType.CHARACTER_UTF8),
+				Arguments.of(MessageType.CHARACTER_ISO88591),
+				Arguments.of(MessageType.BINARY)
 			);
 	}
 
 	// see MessageContentBody
 	@ParameterizedTest
 	@MethodSource
-	public void testWriteToCharacterData(MessageType type, boolean preserved) throws Exception {
+	public void testWriteToCharacterData(MessageType type) throws Exception {
 		Message message = MessageTestUtils.getNonRepeatableMessage(type);
-		if(preserved) message.preserve();
 
 		HttpMessageEntity entity = new HttpMessageEntity(message);
 
@@ -189,17 +184,12 @@ public class HttpMessageEntityTest {
 			assertEquals(message.getCharset(), entity.getContentEncoding().getValue());
 		}
 
-		// Check length before reading
-		if (!preserved && type != MessageType.BINARY) {
-			assertEquals(-1L, entity.getContentLength());
-		}
-
 		// Act
 		ByteArrayOutputStream boas = new ByteArrayOutputStream();
 		entity.writeTo(boas);
 
 		// Assert
-		if(preserved || type == MessageType.BINARY) {
+		if(type == MessageType.BINARY) {
 			assertEquals(entity.getContentLength(), boas.toByteArray().length);
 		} else {
 			// Check again after reading, expect to be now known

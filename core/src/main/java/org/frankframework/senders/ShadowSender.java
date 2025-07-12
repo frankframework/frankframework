@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020, 2022, 2024 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020, 2022, 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -131,14 +131,6 @@ public class ShadowSender extends ParallelSenders {
 	 */
 	@Override
 	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
-		try {
-			if (!message.isRepeatable()) {
-				message.preserve();
-			}
-		} catch (IOException e) {
-			throw new SenderException("could not preserve input message", e);
-		}
-
 		Phaser primaryGuard = new Phaser(2); // Itself and the added originalSender
 		Phaser shadowGuard = new Phaser(getSecondarySenders().size() + 1); // Itself and all secondary senders
 		Map<ISender, ParallelSenderExecutor> executorMap = new ConcurrentHashMap<>();
