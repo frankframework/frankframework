@@ -125,7 +125,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 	public void testOAuthAuthenticationWrongTokenEndpoint() throws Exception {
 		sender.setUrl(authtenticatedService.getOAuthEndpoint());
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
-		sender.setTokenEndpoint(tokenServer.getEndpoint() + "-wrongEndPoint");
+		sender.setTokenEndpoint(tokenServer.getEndpoint() + "/xxxxx");
 		sender.setClientId(tokenServer.getClientId());
 		sender.setClientSecret(tokenServer.getClientSecret());
 		sender.setTimeout(10);
