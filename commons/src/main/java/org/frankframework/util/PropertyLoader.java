@@ -110,6 +110,16 @@ public class PropertyLoader extends Properties {
 		return super.getProperty(key);
 	}
 
+	@Override
+	public final boolean containsKey(Object objKey) {
+		if (!(objKey instanceof String key)) {
+			return false;
+		}
+
+		String value = getSystemProperty(key); // First try system properties and environment variables.
+		return value != null || super.containsKey(key); // Property could be unresolved but that's ok, it will exist and that's what we verify.
+	}
+
 	/**
 	 * the method is like the <code>Properties.getProperty</code>, but provides functionality to resolve <code>${variable}</code>
 	 * Syntaxes. It uses the property values and system values to resolve the variables, and does so recursively.
@@ -145,6 +155,7 @@ public class PropertyLoader extends Properties {
 	}
 
 	@Nonnull
+	@SuppressWarnings("unchecked")
 	public <T extends Enum<T>> T getOrDefault(@Nonnull String key, @Nonnull T dfault) {
 		String value = getProperty(key);
 		if (value == null) {

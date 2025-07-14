@@ -11,6 +11,10 @@ import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.processors.CorePipeLineProcessor;
+import org.frankframework.processors.CorePipeProcessor;
+import org.frankframework.processors.InputOutputPipeProcessor;
+import org.frankframework.processors.PipeProcessor;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 
@@ -207,5 +211,36 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 		result.peek(10);
 
 		assertEquals("statuscodeselectable: [Exit201]", result.asString());
+	}
+
+	@Test
+	public void replaceSystemVarWithParamVar() throws Exception {
+		session.put("prefix.value.suffix", "ignore me");
+		System.setProperty("prefix.value.suffix", "replacedPropertyValue");
+
+		try {
+			// Correctly chain the pipe processors
+			CorePipeLineProcessor pipeLineProcessor = new CorePipeLineProcessor();
+			InputOutputPipeProcessor inputOutputPipeProcessor = new InputOutputPipeProcessor();
+			PipeProcessor pipeProcessor = new CorePipeProcessor();
+			inputOutputPipeProcessor.setPipeProcessor(pipeProcessor);
+
+			pipeLineProcessor.setPipeProcessor(inputOutputPipeProcessor);
+
+			pipeline.setPipeLineProcessor(pipeLineProcessor);
+
+			pipe.setGetInputFromFixedValue("^{prefix.?{variable}.suffix}");
+			pipe.setFind("^");
+			pipe.setReplace("$");
+			pipe.setSubstituteVars(true);
+			pipe.addParameter(ParameterBuilder.create("variable", "value"));
+			configureAndStartPipe();
+
+			Message result = pipeline.process("123-456", new Message("dummy"), session).getResult();
+			assertEquals("replacedPropertyValue", result.asString());
+		} finally {
+			session.remove("prefix.value.suffix");
+			System.clearProperty("prefix.value.suffix");
+		}
 	}
 }
