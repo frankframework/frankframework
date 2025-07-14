@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, TrackByFunction } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, TrackByFunction } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ConfigurationFilter, ConfigurationFilterPipe } from 'src/app/pipes/configuration-filter.pipe';
@@ -62,14 +62,11 @@ export class StatusComponent implements OnInit, OnDestroy {
   private _subscriptions = new Subscription();
   private hasExpendedAdaptersLoaded = false;
 
-  constructor(
-    private Poller: PollerService,
-    private route: ActivatedRoute,
-    private router: Router,
-    private statusService: StatusService,
-    private appService: AppService,
-    private serverInfoService: ServerInfoService,
-  ) {}
+  private route: ActivatedRoute = inject(ActivatedRoute);
+  private router: Router = inject(Router);
+  private statusService: StatusService = inject(StatusService);
+  private appService: AppService = inject(AppService);
+  private serverInfoService: ServerInfoService = inject(ServerInfoService);
 
   ngOnInit(): void {
     this.route.fragment.subscribe((fragment) => {
