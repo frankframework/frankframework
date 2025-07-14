@@ -43,7 +43,7 @@ import org.frankframework.dbms.GenericDbmsSupport;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jms.JmsRealm;
 import org.frankframework.jms.JmsRealmFactory;
-import org.frankframework.lifecycle.ApplicationMessageEvent;
+import org.frankframework.lifecycle.events.ApplicationMessageEvent;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.StreamUtil;

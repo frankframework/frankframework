@@ -13,18 +13,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package org.frankframework.lifecycle;
+package org.frankframework.lifecycle.events;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.context.ApplicationListener;
 
-import org.frankframework.configuration.ConfigurationMessageEvent;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.util.MessageKeeper;
 
-public class MessageEventListener implements ApplicationListener<ApplicationMessageEvent> {
+public class MessageEventListener implements ApplicationListener<MessageEvent<?>> {
 	private static final int MESSAGEKEEPER_SIZE = 10;
 
 	private final Map<String, MessageKeeper> messageKeepers = new HashMap<>();
@@ -68,11 +67,13 @@ public class MessageEventListener implements ApplicationListener<ApplicationMess
 	}
 
 	@Override
-	public void onApplicationEvent(ApplicationMessageEvent event) {
+	public void onApplicationEvent(MessageEvent<?> event) {
 		if(event instanceof ConfigurationMessageEvent messageEvent) {
 			String configurationName = messageEvent.getSource().getName();
 			configLog(configurationName).add(event.getMessageKeeperMessage());
+			globalLog().add(messageEvent.getMessageKeeperMessage());
+		} else if(event instanceof ApplicationMessageEvent messageEvent) {
+			globalLog().add(messageEvent.getMessageKeeperMessage());
 		}
-		globalLog().add(event.getMessageKeeperMessage());
 	}
 }
