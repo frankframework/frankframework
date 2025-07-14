@@ -170,9 +170,9 @@ public class TestLogMessages {
 
 			String expected = """
 					DEBUG - Oh no, something went wrong! java.lang.Throwable: my exception message
-						at TestLogMessages.logWithStacktrace(TestLogMessages:0) ~[?:?]\
+						at TestLogMessages.logWithStacktrace(TestLogMessages:0)
 					""";
-			TestAssertions.assertEqualsIgnoreCRLF(expected, message);
+			TestAssertions.assertEqualsIgnoreRNTSpace(expected, message);
 		}
 	}
 
@@ -200,7 +200,7 @@ public class TestLogMessages {
 
 	@Test
 	public void testChangeLogLevel() {
-		String rootLoggerName = LogUtil.getLogger(this).getName(); //For tests, we use the `org.frankframework` logger instead of the rootlogger
+		String rootLoggerName = LogUtil.getLogger(this).getName(); // For tests, we use the `org.frankframework` logger instead of the rootlogger
 
 		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build()) {
 			Configurator.setLevel(rootLoggerName, Level.DEBUG);
@@ -228,7 +228,7 @@ public class TestLogMessages {
 	}
 
 	@Test
-	public void testMessageLogThreadContext() throws Exception {
+	public void testMessageLogThreadContext() {
 		PatternLayout layout =  PatternLayout.newBuilder().withPattern("%level - %m %TC").build();
 		try (TestAppender appender = TestAppender.newBuilder().setLayout(layout).build()) {
 			try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put("key", "value").put("key.two", "value2")) {
