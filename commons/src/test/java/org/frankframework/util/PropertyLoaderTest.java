@@ -47,6 +47,51 @@ public class PropertyLoaderTest {
 	}
 
 	@Test
+	public void testMultiCyclesWithSystemOverrides() {
+		try {
+			System.setProperty("key3", "overridden");
+
+			assertEquals("value1.overridden", constants.getProperty("key4"));
+		} finally {
+			System.clearProperty("key3");
+		}
+	}
+
+	@Test
+	public void testSystemPropertyThatReferencesAppConstant() {
+		try {
+			System.setProperty("ref_to_key4", "444_${key4}");
+			System.setProperty("key3", "overridden");
+
+			assertEquals("444_value1.overridden", constants.getProperty("ref_to_key4"));
+		} finally {
+			System.clearProperty("ref_to_key4");
+			System.clearProperty("key3");
+		}
+	}
+
+	@Test
+	public void testContainsKeyInApplicationProperties() {
+		assertTrue(constants.containsKey("key4"));
+	}
+
+	@Test
+	public void testContainsKeyInSystemProperties() {
+		try {
+			System.setProperty("dummy.property", "value");
+
+			assertTrue(constants.containsKey("dummy.property"));
+		} finally {
+			System.clearProperty("dummy.property");
+		}
+	}
+
+	@Test
+	public void testContainsKeyInEnvironmentProperties() {
+		assertTrue(constants.containsKey("java.version"));
+	}
+
+	@Test
 	public void getBoolean() {
 		assertTrue(constants.getBoolean("boolean", false));
 		assertFalse(constants.getBoolean("non.existing.boolean", false));
