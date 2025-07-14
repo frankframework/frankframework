@@ -49,9 +49,14 @@ export interface JobMessage extends Message {
 }
 
 export interface AdapterMessage extends Message {
-  capacity: number;
   message: string;
 }
+
+export type ConfigurationMessage = {
+  date: string; // Date string
+  level: MessageLevel;
+  message: string;
+};
 
 export type Pipe = {
   forwards: Record<'success' | 'exception', string>;
@@ -135,7 +140,7 @@ export type Alert = {
 
 export type MessageLog = {
   errorStoreCount: number;
-  messages: AdapterMessage[];
+  messages: ConfigurationMessage[];
   messageLevel: MessageLevel;
   exception?: string;
   warnings?: string[];

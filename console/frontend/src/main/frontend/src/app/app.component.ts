@@ -8,6 +8,7 @@ import {
   appInitState,
   AppService,
   ClusterMember,
+  ConfigurationMessage,
   ConsoleState,
   MessageLog,
 } from './app.service';
@@ -414,7 +415,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   processWarnings(configurations: Record<string, Partial<MessageLog> | number | string>): void {
     configurations['All'] = {
-      messages: configurations['messages'] as AdapterMessage[],
+      messages: configurations['messages'] as ConfigurationMessage[],
       errorStoreCount: configurations['totalErrorStoreCount'] as number,
       messageLevel: 'ERROR',
       serverTime: configurations['serverTime'] as number,
@@ -455,6 +456,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
       configuration.messageLevel = existingConfiguration?.messageLevel ?? 'INFO';
       if (configuration.messages) {
+        configuration.messages = configuration.messages.sort((a: ConfigurationMessage, b: ConfigurationMessage) => {
+          return new Date(b.date).getTime() - new Date(a.date).getTime();
+        });
         for (const x in configuration.messages) {
           const level = configuration.messages[x].level;
           if (level == 'WARN' && configuration.messageLevel != 'ERROR') configuration.messageLevel = 'WARN';
