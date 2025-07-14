@@ -19,6 +19,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.http.HttpSender.PostType;
@@ -118,6 +119,25 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		Message result = sendMessage();
 		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
 		assertNotNull(result.asString());
+	}
+
+	@Test
+	public void testOAuthAuthenticationWrongTokenEndpoint() throws Exception {
+		sender.setUrl(authtenticatedService.getOAuthEndpoint());
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setTokenEndpoint(tokenServer.getEndpoint() + "-wrongEndPoint");
+		sender.setClientId(tokenServer.getClientId());
+		sender.setClientSecret(tokenServer.getClientSecret());
+
+		sender.configure();
+		sender.open();
+
+		SenderResult result = sender.sendMessage(new Message(""), session);
+		assertEquals("404", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
+		assertNotNull(result);
+		assertTrue(result.isSuccess());
+		assertNotNull(result.getResult());
+		assertNotNull(result.getResult().asString());
 	}
 
 	@Test

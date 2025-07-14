@@ -112,14 +112,15 @@
 					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/ThisUrlDoesNotExistAtThisHost"
 					firstBodyPartName="request"
 					sharedResourceRef="SharedHttpSession"
-					resultStatusCodeSessionKey="HttpStatusCode"
+					resultStatusCodeSessionKey="StatusCode"
 				/>
 				<forward name="success" path="Get Status From Session" />
 				<forward name="exception" path="ERROR" />
 			</pipe>
+			<pipe className="nl.nn.adapterframework.pipes.ExceptionPipe" name="This pipe should be Skipped"/>
 			<pipe className="nl.nn.adapterframework.pipes.GetFromSession"
 				name="Get Status From Session"
-				sessionKey="HttpStatusCode"/>
+				sessionKey="StatusCode"/>
 		</pipeline>
 	</adapter>
 </module>
