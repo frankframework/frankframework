@@ -78,6 +78,7 @@ public class PropertyLoaderTest {
 	@Test
 	public void testContainsKeyInSystemProperties() {
 		try {
+			assertFalse(constants.containsKey("dummy.property"));
 			System.setProperty("dummy.property", "value");
 
 			assertTrue(constants.containsKey("dummy.property"));
