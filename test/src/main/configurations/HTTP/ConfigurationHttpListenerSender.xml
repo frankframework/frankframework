@@ -96,4 +96,30 @@
 			</pipe>
 		</pipeline>
 	</adapter>
+	<adapter name="HttpSender404ResultInSession">
+		<receiver>
+			<listener className="nl.nn.adapterframework.receivers.JavaListener"
+				serviceName="${web.contextpath}-HttpSender404ResultInSession" />
+		</receiver>
+		<pipeline firstPipe="LocalHttp">
+			<exits>
+				<exit path="EXIT" state="success" />
+				<exit path="ERROR" state="ERROR" />
+			</exits>
+			<pipe name="LocalHttp">
+				<sender className="nl.nn.adapterframework.http.HttpSender"
+					methodType="POST"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/ThisUrlDoesNotExistAtThisHost"
+					firstBodyPartName="request"
+					sharedResourceRef="SharedHttpSession"
+					resultStatusCodeSessionKey="HttpStatusCode"
+				/>
+				<forward name="success" path="Get Status From Session" />
+				<forward name="exception" path="ERROR" />
+			</pipe>
+			<pipe className="nl.nn.adapterframework.pipes.GetFromSession"
+				name="Get Status From Session"
+				sessionKey="HttpStatusCode"/>
+		</pipeline>
+	</adapter>
 </module>
