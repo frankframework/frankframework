@@ -581,6 +581,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   processAdapterMessages(adapter: Partial<Adapter>, existingAdapter?: Adapter): void {
     if (!adapter.messages) adapter.messages = existingAdapter?.messages ?? [];
+    adapter.messages.sort((a, b) => b.date - a.date);
   }
 
   updateAdapterNotifications(adapterName: string, adapter: Partial<Adapter>): void {
