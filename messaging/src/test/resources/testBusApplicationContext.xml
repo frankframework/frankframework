@@ -31,7 +31,7 @@
 
 	<bean id="servletManager" class="org.frankframework.testutil.mock.ServletManagerMock" />
 
-	<bean id="MessageEventListener" class="org.frankframework.lifecycle.MessageEventListener" scope="singleton" />
+	<bean id="MessageEventListener" class="org.frankframework.lifecycle.events.MessageEventListener" scope="singleton" />
 	<bean primary="true" name="meterRegistry" class="org.frankframework.metrics.LocalStatisticsRegistry" autowire="byName" />
 
 	<!-- We're not importing the unmanagedDeployment because we don't want to use JMS/JDBC endpoints -->

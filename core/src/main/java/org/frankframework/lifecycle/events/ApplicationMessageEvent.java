@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,29 +13,17 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.lifecycle;
+package org.frankframework.lifecycle.events;
 
-import java.time.Instant;
-
-import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.event.ApplicationContextEvent;
-
-import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
-import org.frankframework.util.MessageKeeperMessage;
 
-public class ApplicationMessageEvent extends ApplicationContextEvent {
-	private @Getter MessageKeeperMessage messageKeeperMessage;
-	protected final Logger log = LogUtil.getLogger(ApplicationMessageEvent.class);
+public class ApplicationMessageEvent extends MessageEvent<ApplicationContext> {
 
-	protected ApplicationMessageEvent(ApplicationContext source) {
-		super(source);
-	}
+	private static final long serialVersionUID = 1L;
 
 	public ApplicationMessageEvent(ApplicationContext source, String message) {
 		this(source, message, MessageKeeperLevel.INFO);
@@ -50,33 +38,23 @@ public class ApplicationMessageEvent extends ApplicationContextEvent {
 	}
 
 	public ApplicationMessageEvent(ApplicationContext source, String message, MessageKeeperLevel level, Exception e) {
-		this(source);
+		super(source, message, level, e);
+	}
 
+	@Override
+	protected String getMessagePrefix() {
 		StringBuilder m = new StringBuilder();
-
-		String applicationName = source.getId();
-		m.append("Application [").append(applicationName).append("] ");
+		m.append("Application [").append(getSource().getId()).append("] ");
 
 		String version = ConfigurationUtils.getApplicationVersion();
 		if (version != null) {
 			m.append("[").append(version).append("] ");
 		}
+		return m.toString();
+	}
 
-		m.append(message);
-
-		//We must use .toString() here else the StringBuilder will be passed on which add the stacktrace Message to the log
-		if (MessageKeeperLevel.ERROR == level) {
-			log.error(m.toString(), e);
-		} else if (MessageKeeperLevel.WARN == level) {
-			log.warn(m.toString(), e);
-		} else {
-			log.info(m.toString(), e);
-		}
-
-		if (e != null) {
-			m.append(": (").append(ClassUtils.nameOf(e)).append(") ").append(e.getMessage());
-		}
-
-		messageKeeperMessage = new MessageKeeperMessage(m.toString(), Instant.ofEpochMilli(getTimestamp()), level);
+	@Override
+	protected String getExceptionMessage(Exception e) {
+		return ": (" + ClassUtils.nameOf(e) + ") " + e.getMessage();
 	}
 }

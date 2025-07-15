@@ -55,6 +55,7 @@ import org.frankframework.jms.JmsRealm;
 import org.frankframework.jms.JmsRealmFactory;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.lifecycle.SpringContextScope;
+import org.frankframework.lifecycle.events.ConfigurationMessageEvent;
 import org.frankframework.monitoring.MonitorManager;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.scheduler.AbstractJobDef;

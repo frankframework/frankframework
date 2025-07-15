@@ -11,7 +11,7 @@
 
 	<bean name="ibisManager" class="org.frankframework.testutil.mock.MockIbisManager" />
 
-	<bean id="MessageEventListener" class="org.frankframework.lifecycle.MessageEventListener" scope="singleton" />
+	<bean id="MessageEventListener" class="org.frankframework.lifecycle.events.MessageEventListener" scope="singleton" />
 	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory" />
 
 	<bean id="ResourceObjectLocator" class="org.frankframework.jdbc.datasource.ResourceObjectLocator" />
