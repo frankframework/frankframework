@@ -27,7 +27,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.nio.file.attribute.FileTime;
 import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.util.Comparator;
@@ -58,6 +57,7 @@ import org.frankframework.stream.PathMessage;
  *
  */
 public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritableFileSystem<Path>, ISupportsCustomFileAttributes<Path> {
+	public static final String ORIGINAL_LAST_MODIFIED_TIME_ATTRIBUTE = "originalLastModifiedTime";
 	private final @Getter String domain = "LocalFilesystem";
 
 	private @Getter boolean createRootFolder = false;
@@ -147,13 +147,37 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	private static void addCustomFileAttributes(Path file, Map<String, String> customFileAttributes) throws IOException {
 		// We need to restore the original file modified time, because we use it to append to the filename in some configurations of the DirectoryListener.
 		FileTime lastModifiedTime = Files.getLastModifiedTime(file);
-		UserDefinedFileAttributeView userDefinedAttributes = Files.getFileAttributeView(file, UserDefinedFileAttributeView.class);
+		UserDefinedFileAttributeView userDefinedAttributes = getUserDefinedAttributes(file);
 
-		// Stream can't handle the possible IOException
+		// Cannot do this with Java Stream operation because of the IOException thrown by write operation
 		for (Map.Entry<String, String> entry : customFileAttributes.entrySet()) {
 			userDefinedAttributes.write(entry.getKey(), Charset.defaultCharset().encode(entry.getValue()));
 		}
-		Files.setLastModifiedTime(file, lastModifiedTime);
+
+		// Writing the attributes changes the lastModifiedTime, but FS listener functionality depends on that value.
+		// So we store it in another attribute and try to restore the original value.
+		if (!hasOriginalLastModifiedTime(userDefinedAttributes)) {
+			userDefinedAttributes.write(ORIGINAL_LAST_MODIFIED_TIME_ATTRIBUTE, Charset.defaultCharset().encode(String.valueOf(lastModifiedTime.toMillis())));
+		}
+		try {
+			Files.setLastModifiedTime(file, lastModifiedTime);
+		} catch (IOException e) {
+			// If this fails, ignore. Can be a Docker related permission-issue that shouldn't affect functionality.
+		}
+	}
+
+	private static UserDefinedFileAttributeView getUserDefinedAttributes(@Nonnull Path file) {
+		return Files.getFileAttributeView(file, UserDefinedFileAttributeView.class);
+	}
+
+	private static boolean hasOriginalLastModifiedTime(@Nonnull UserDefinedFileAttributeView userDefinedAttributes) throws IOException {
+		return userDefinedAttributes.list().stream().anyMatch(ORIGINAL_LAST_MODIFIED_TIME_ATTRIBUTE::equals);
+	}
+
+	private static @Nonnull String readAttribute(@Nonnull UserDefinedFileAttributeView userDefinedAttributes, @Nonnull String attributeName) throws IOException {
+		ByteBuffer bfr = ByteBuffer.allocate(userDefinedAttributes.size(attributeName));
+		userDefinedAttributes.read(attributeName, bfr);
+		return new String(bfr.array());
 	}
 
 	@Override
@@ -327,7 +351,14 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	@Override
 	public Date getModificationTime(Path f) throws FileSystemException {
 		try {
-			return new Date(Files.readAttributes(f, BasicFileAttributes.class).lastModifiedTime().toMillis());
+			// If the original LastModifiedTime is stored in a user-defined attribute, return that value
+			UserDefinedFileAttributeView userDefinedAttributes = getUserDefinedAttributes(f);
+			if (hasOriginalLastModifiedTime(userDefinedAttributes)) {
+				String lastModifiedTime = readAttribute(userDefinedAttributes, ORIGINAL_LAST_MODIFIED_TIME_ATTRIBUTE);
+				return new Date(Long.parseLong(lastModifiedTime));
+			}
+
+			return new Date(Files.getLastModifiedTime(f).toMillis());
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
@@ -338,7 +369,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	public Map<String, Object> getAdditionalFileProperties(Path file) throws FileSystemException {
 		try {
 			if (!Files.exists(file)) return null;
-			UserDefinedFileAttributeView userDefinedAttributes = Files.getFileAttributeView(file, UserDefinedFileAttributeView.class);
+			UserDefinedFileAttributeView userDefinedAttributes = getUserDefinedAttributes(file);
 			List<String> attributeNames = userDefinedAttributes.list();
 			if (attributeNames == null || attributeNames.isEmpty()) return null;
 			String attrSpec = "user:" + String.join(",", attributeNames);
