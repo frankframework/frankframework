@@ -22,7 +22,7 @@ import org.springframework.context.ApplicationListener;
 
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.util.MessageKeeper;
-
+import org.frankframework.util.MessageKeeperMessage;
 public class MessageEventListener implements ApplicationListener<MessageEvent<?>> {
 	private static final int MESSAGEKEEPER_SIZE = 10;
 
@@ -58,22 +58,19 @@ public class MessageEventListener implements ApplicationListener<MessageEvent<?>
 	}
 
 	private MessageKeeper configLog(String key) {
-		MessageKeeper messageKeeper = messageKeepers.get(key);
-		if (messageKeeper == null) {
-			messageKeeper = new MessageKeeper(MESSAGEKEEPER_SIZE);
-			messageKeepers.put(key, messageKeeper);
-		}
-		return messageKeeper;
+		return messageKeepers.computeIfAbsent(key, k -> new MessageKeeper(MESSAGEKEEPER_SIZE));
 	}
 
 	@Override
 	public void onApplicationEvent(MessageEvent<?> event) {
+		MessageKeeperMessage messageKeeperMessage = MessageKeeperMessage.fromEvent(event);
+
 		if(event instanceof ConfigurationMessageEvent messageEvent) {
 			String configurationName = messageEvent.getSource().getName();
-			configLog(configurationName).add(event.getMessageKeeperMessage());
-			globalLog().add(messageEvent.getMessageKeeperMessage());
-		} else if(event instanceof ApplicationMessageEvent messageEvent) {
-			globalLog().add(messageEvent.getMessageKeeperMessage());
+			configLog(configurationName).add(messageKeeperMessage);
+			globalLog().add(messageKeeperMessage);
+		} else if(event instanceof ApplicationMessageEvent) {
+			globalLog().add(messageKeeperMessage);
 		}
 	}
 }

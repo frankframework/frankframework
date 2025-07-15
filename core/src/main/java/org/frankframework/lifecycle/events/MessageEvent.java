@@ -15,7 +15,7 @@
 */
 package org.frankframework.lifecycle.events;
 
-import java.time.Instant;
+import java.io.Serial;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
@@ -24,14 +24,14 @@ import org.springframework.context.event.ApplicationContextEvent;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
-import org.frankframework.util.MessageKeeperMessage;
-
 @Log4j2
 public abstract class MessageEvent<T extends ApplicationContext> extends ApplicationContextEvent {
+
+	@Serial
 	private static final long serialVersionUID = 1L;
 
-	private final @Getter MessageKeeperMessage messageKeeperMessage;
+	private final @Getter String message;
+	private final @Getter MessageEventLevel level;
 
 	@Override
 	@SuppressWarnings("unchecked")
@@ -56,7 +56,7 @@ public abstract class MessageEvent<T extends ApplicationContext> extends Applica
 		return ": " + e.getMessage();
 	}
 
-	protected MessageEvent(T source, String message, MessageKeeperLevel level, Exception e) {
+	protected MessageEvent(T source, String message, MessageEventLevel level, Exception e) {
 		super(source);
 		StringBuilder m = new StringBuilder();
 		m.append(getMessagePrefix());
@@ -76,6 +76,7 @@ public abstract class MessageEvent<T extends ApplicationContext> extends Applica
 			}
 		}
 
-		messageKeeperMessage = new MessageKeeperMessage(m.toString(), Instant.ofEpochMilli(getTimestamp()), level);
+		this.message = m.toString();
+		this.level = level;
 	}
 }

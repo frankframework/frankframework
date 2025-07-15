@@ -13,7 +13,8 @@ public class ConfigurationMessageEventListener implements ApplicationListener<Co
 
 	@Override
 	public void onApplicationEvent(ConfigurationMessageEvent event) {
-		configurationMessages.add(event.getMessageKeeperMessage());
+		MessageKeeperMessage messageKeeperMessage = MessageKeeperMessage.fromEvent(event);
+		configurationMessages.add(messageKeeperMessage);
 	}
 
 	public boolean contains(String message) {
