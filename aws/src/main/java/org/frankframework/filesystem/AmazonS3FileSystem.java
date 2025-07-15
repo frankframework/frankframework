@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2024 WeAreFrank!
+   Copyright 2018-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 import software.amazon.awssdk.auth.credentials.AwsCredentialsProvider;
 import software.amazon.awssdk.awscore.exception.AwsServiceException;
 import software.amazon.awssdk.core.ResponseInputStream;
@@ -75,6 +76,7 @@ import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 
+@Log4j2
 public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements IWritableFileSystem<S3FileRef>, ISupportsCustomFileAttributes<S3FileRef> {
 	private final @Getter String domain = "Amazon";
 

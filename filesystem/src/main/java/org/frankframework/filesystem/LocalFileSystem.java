@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2024 WeAreFrank!
+   Copyright 2019-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,6 +44,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.Default;
@@ -56,6 +57,7 @@ import org.frankframework.stream.PathMessage;
  * @author Gerrit van Brakel
  *
  */
+@Log4j2
 public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritableFileSystem<Path>, ISupportsCustomFileAttributes<Path> {
 	public static final String ORIGINAL_LAST_MODIFIED_TIME_ATTRIBUTE = "originalLastModifiedTime";
 	private final @Getter String domain = "LocalFilesystem";
@@ -163,6 +165,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 			Files.setLastModifiedTime(file, lastModifiedTime);
 		} catch (IOException e) {
 			// If this fails, ignore. Can be a Docker related permission-issue that shouldn't affect functionality.
+			log.trace(() -> "Cannot set last modified time for [%s]".formatted(file), e);
 		}
 	}
 
