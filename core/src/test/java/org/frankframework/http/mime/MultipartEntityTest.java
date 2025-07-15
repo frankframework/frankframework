@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -17,6 +16,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import org.frankframework.stream.Message;
+import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.MessageTestUtils.MessageType;
 import org.frankframework.testutil.TestAssertions;
@@ -156,7 +156,7 @@ public class MultipartEntityTest {
 		builder.setBoundary("test-boundary");
 
 		Message repeatable = Message.asMessage("dummy-content-here".getBytes(StandardCharsets.UTF_8));
-		Message nonRepeatable = new Message(new FilterInputStream(repeatable.asInputStream()) {});
+		Message nonRepeatable = Message.asMessage(SerializableFileReference.of(repeatable.asInputStream()));
 
 		builder.addPart("part1", repeatable);
 		builder.addPart("part2", nonRepeatable);

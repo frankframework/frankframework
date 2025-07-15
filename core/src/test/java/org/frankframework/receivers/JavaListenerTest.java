@@ -14,6 +14,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 
 import java.io.StringReader;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -35,7 +36,7 @@ import org.frankframework.processors.CorePipeLineProcessor;
 import org.frankframework.processors.CorePipeProcessor;
 import org.frankframework.processors.PipeProcessor;
 import org.frankframework.stream.Message;
-import org.frankframework.stream.RequestBuffer;
+import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.RunState;
@@ -84,7 +85,7 @@ public class JavaListenerTest {
 		return listener;
 	}
 
-	Adapter setupAdapter() throws Exception {
+	<M> Adapter setupAdapter() throws Exception {
 		Adapter adapter = configuration.createBean(Adapter.class);
 		adapter.setName("ReceiverTestAdapterName");
 
@@ -145,7 +146,7 @@ public class JavaListenerTest {
 	public void testProcessRequestMessage() throws Exception {
 		// Arrange
 		String rawTestMessage = "TEST";
-		Message testMessage = new Message(new StringReader(rawTestMessage));
+		Message testMessage = Message.asMessage(SerializableFileReference.of(rawTestMessage, Charset.defaultCharset().name()));
 		listener.setThrowException(true);
 
 		// start adapter
@@ -156,7 +157,7 @@ public class JavaListenerTest {
 
 		// Assert
 		assertTrue(result.requiresStream(), "Result message should be a stream");
-		assertTrue(result.isRequestOfType(RequestBuffer.class), "Result message should be of type RequestBuffer");
+		assertTrue(result.isRequestOfType(SerializableFileReference.class), "Result message should be of type SerializableFileReference");
 		assertEquals(rawTestMessage, result.asString());
 		testMessage.close();
 	}
@@ -165,7 +166,7 @@ public class JavaListenerTest {
 	public void testProcessRequestMessageWithHttpRequest() throws Exception {
 		// Arrange
 		String rawTestMessage = "TEST";
-		Message testMessage = new Message(new StringReader(rawTestMessage));
+		Message testMessage = Message.asMessage(SerializableFileReference.of(rawTestMessage, Charset.defaultCharset().name()));
 		listener.setThrowException(true);
 
 		HttpServletRequest servletRequest = mock(HttpServletRequest.class);
@@ -179,7 +180,7 @@ public class JavaListenerTest {
 
 		// Assert
 		assertTrue(result.requiresStream(), "Result message should be a stream");
-		assertTrue(result.isRequestOfType(RequestBuffer.class), "Result message should be of type RequestBuffer");
+		assertTrue(result.isRequestOfType(SerializableFileReference.class), "Result message should be of type SerializableFileReference");
 		assertEquals(rawTestMessage, result.asString());
 		result.close();
 	}
