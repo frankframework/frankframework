@@ -15,23 +15,25 @@
 */
 package org.frankframework.lifecycle.events;
 
+import java.io.Serial;
+
 import org.frankframework.configuration.Configuration;
-import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 
 public class ConfigurationMessageEvent extends MessageEvent<Configuration> {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	public ConfigurationMessageEvent(Configuration source, String message) {
-		this(source, message, MessageKeeperLevel.INFO);
+		this(source, message, MessageEventLevel.INFO);
 	}
 
-	public ConfigurationMessageEvent(Configuration source, String message, MessageKeeperLevel level) {
+	public ConfigurationMessageEvent(Configuration source, String message, MessageEventLevel level) {
 		super(source, message, level, null);
 	}
 
 	public ConfigurationMessageEvent(Configuration source, String message, Exception e) {
-		super(source, message, MessageKeeperLevel.ERROR, e);
+		super(source, message, MessageEventLevel.ERROR, e);
 	}
 
 	@Override

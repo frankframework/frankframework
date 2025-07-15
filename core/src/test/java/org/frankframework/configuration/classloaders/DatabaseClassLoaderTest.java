@@ -45,8 +45,8 @@ import org.frankframework.jms.JmsRealm;
 import org.frankframework.jms.JmsRealmFactory;
 import org.frankframework.lifecycle.events.ApplicationMessageEvent;
 import org.frankframework.lifecycle.events.MessageEvent;
+import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.testutil.TestAppender;
-import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.StreamUtil;
 
 public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<DatabaseClassLoader> {
@@ -109,7 +109,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 			@Override
 			public Object answer(InvocationOnMock invocation) throws Throwable {
 				String message = invocation.getArgument(0);
-				MessageKeeperLevel level = invocation.getArgument(1);
+				MessageEventLevel level = invocation.getArgument(1);
 				Exception exception = invocation.getArgument(2);
 				new ApplicationMessageEvent(spy(ApplicationContext.class), message, level, exception);
 				return null;
@@ -120,7 +120,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 		// During testing, the IbisContext never initialises and thus there is no ApplicationContext. The
 		// creation of the ApplicationContext during the test phase causes IllegalStateExceptions
 		// In turn this causes the actual thing we want to test to never be 'hit', aka the log message.
-		doAnswer(answer).when(ibisContext).log(anyString(), any(MessageKeeperLevel.class), any(Exception.class));
+		doAnswer(answer).when(ibisContext).log(anyString(), any(MessageEventLevel.class), any(Exception.class));
 	}
 
 	/* test files that are only present in the JAR_FILE zip */

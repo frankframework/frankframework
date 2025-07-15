@@ -15,29 +15,31 @@
 */
 package org.frankframework.lifecycle.events;
 
+import java.io.Serial;
+
 import org.springframework.context.ApplicationContext;
 
 import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 
 public class ApplicationMessageEvent extends MessageEvent<ApplicationContext> {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	public ApplicationMessageEvent(ApplicationContext source, String message) {
-		this(source, message, MessageKeeperLevel.INFO);
+		this(source, message, MessageEventLevel.INFO);
 	}
 
-	public ApplicationMessageEvent(ApplicationContext source, String message, MessageKeeperLevel level) {
+	public ApplicationMessageEvent(ApplicationContext source, String message, MessageEventLevel level) {
 		this(source, message, level, null);
 	}
 
 	public ApplicationMessageEvent(ApplicationContext source, String message, Exception e) {
-		this(source, message, MessageKeeperLevel.ERROR, e);
+		this(source, message, MessageEventLevel.ERROR, e);
 	}
 
-	public ApplicationMessageEvent(ApplicationContext source, String message, MessageKeeperLevel level, Exception e) {
+	public ApplicationMessageEvent(ApplicationContext source, String message, MessageEventLevel level, Exception e) {
 		super(source, message, level, e);
 	}
 
