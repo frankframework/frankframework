@@ -39,24 +39,19 @@ export type Receiver = {
   threadCountControllable?: true;
 };
 
-type Message = {
+export type Message = {
   date: number;
   level: MessageLevel;
 };
 
-export interface JobMessage extends Message {
-  text: string;
-}
-
 export interface AdapterMessage extends Message {
   message: string;
+  capacity: number;
 }
 
-export type ConfigurationMessage = {
-  date: string; // Date string
-  level: MessageLevel;
+export interface ConfigurationMessage extends Message {
   message: string;
-};
+}
 
 export type Pipe = {
   forwards: Record<'success' | 'exception', string>;

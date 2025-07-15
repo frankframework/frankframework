@@ -19,6 +19,7 @@ import java.io.File;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -227,7 +228,7 @@ public class ServerStatistics extends BusEndpointBase {
 			}
 			configurationMessage.put("message", msg);
 			Instant date = messageKeeper.getMessage(t).getMessageDate();
-			configurationMessage.put("date", DateFormatUtils.format(date, DateFormatUtils.FULL_GENERIC_FORMATTER));
+			configurationMessage.put("date", Date.from(date));
 			String level = messageKeeper.getMessage(t).getMessageLevel();
 			configurationMessage.put("level", level);
 			messages.add(configurationMessage);

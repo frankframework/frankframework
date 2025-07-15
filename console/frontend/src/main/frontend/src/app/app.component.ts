@@ -456,9 +456,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
       configuration.messageLevel = existingConfiguration?.messageLevel ?? 'INFO';
       if (configuration.messages) {
-        configuration.messages = configuration.messages.sort((a: ConfigurationMessage, b: ConfigurationMessage) => {
-          return new Date(b.date).getTime() - new Date(a.date).getTime();
-        });
+        configuration.messages = configuration.messages.sort(
+          (a: ConfigurationMessage, b: ConfigurationMessage) => b.date - a.date,
+        );
         for (const x in configuration.messages) {
           const level = configuration.messages[x].level;
           if (level == 'WARN' && configuration.messageLevel != 'ERROR') configuration.messageLevel = 'WARN';
