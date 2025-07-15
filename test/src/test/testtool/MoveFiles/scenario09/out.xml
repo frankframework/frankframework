@@ -1,3 +1,3 @@
 <directory>
-	<file name="new_test.txt" size="4" fSize="4 B" canonicalName="TESTDATA_DIR\mfp2\new_test.txt" type="file" modificationDate="17-02-16" modificationTime="14:03:44"/>
+	<file name="new_test.txt" size="4" fSize="4 B" canonicalName="TESTDATA_DIR\mfp2\new_test.txt" type="file" modificationDate="17-02-16" modificationTime="14:03:44" originalLastModifiedTime="IGNORED"/>
 </directory>

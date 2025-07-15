@@ -11,7 +11,7 @@ README.MD
 </result>
 		<result item="3">
 			<directory>
-				<file name="README.MD" size="144" fSize="144 B" canonicalName="TESTDATA_DIR\ManageFileSystem\test\README.MD" type="file" modificationDate="2022-06-21" modificationTime="08:49:50"/>
+				<file name="README.MD" size="144" fSize="144 B" canonicalName="TESTDATA_DIR\ManageFileSystem\test\README.MD" type="file" modificationDate="2022-06-21" modificationTime="08:49:50" originalLastModifiedTime="IGNORED"/>
 			</directory>
 		</result>
 		<result item="4">
