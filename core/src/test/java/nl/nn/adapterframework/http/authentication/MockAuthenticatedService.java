@@ -25,6 +25,7 @@ public class MockAuthenticatedService extends WireMockRule {
 
 	private @Getter String basicPath = "/basic";
 	private @Getter String oauthPath = "/oauth";
+	private @Getter String oauthPathResourceNotFound = "/oauth/resourceNotFound";
 	private @Getter String basicPathUnchallenged = "/basicUnchallenged";
 	private @Getter String oauthPathUnchallenged = "/oauthUnchallenged";
 	private @Getter String failing = "/failing";
@@ -96,6 +97,23 @@ public class MockAuthenticatedService extends WireMockRule {
 						.withHeader("WWW-Authenticate", "Bearer realm=test")
 						.withBody("{\"message\":\"token expired\"}")));
 
+		stubFor(any(urlPathMatching(oauthPathResourceNotFound))
+					.willReturn(aResponse()
+						.withStatus(401)
+						.withHeader("WWW-Authenticate", "Bearer realm=test")
+						.withBody("{\"message\":\"no bearer authorization header\"}")));
+		stubFor(any(urlPathMatching(oauthPathResourceNotFound))
+					.withHeader(AUTHORIZATION_HEADER, matching("Bearer ([A-Za-z0-9]+)"))
+					.willReturn(aResponse()
+						.withStatus(404)
+						.withBody("")));
+		stubFor(any(urlPathMatching(oauthPathResourceNotFound))
+					.withHeader(AUTHORIZATION_HEADER, matching("Bearer "+MockTokenServer.EXPIRED_TOKEN))
+					.willReturn(aResponse()
+						.withStatus(401)
+						.withHeader("WWW-Authenticate", "Bearer realm=test")
+						.withBody("{\"message\":\"token expired\"}")));
+
 		stubFor(any(urlPathMatching(basicPathUnchallenged))
 					.willReturn(aResponse()
 						.withStatus(401)
@@ -149,6 +167,9 @@ public class MockAuthenticatedService extends WireMockRule {
 	}
 	public String getOAuthEndpoint() {
 		return getServer() + oauthPath;
+	}
+	public String getOAuthResourceNotFoundEndpoint() {
+		return getServer() + oauthPathResourceNotFound;
 	}
 	public String getBasicEndpointUnchallenged() {
 		return getServer() + basicPathUnchallenged;
