@@ -166,7 +166,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 
 		// Writing the attributes changes the lastModifiedTime, but FS listener functionality depends on that value.
 		// So we store it in another attribute and try to restore the original value.
-		if (!hasOriginalLastModifiedTime(userDefinedAttributes)) {
+		if (!hasAttribute(userDefinedAttributes, ORIGINAL_LAST_MODIFIED_TIME_ATTRIBUTE)) {
 			userDefinedAttributes.write(ORIGINAL_LAST_MODIFIED_TIME_ATTRIBUTE, Charset.defaultCharset().encode(String.valueOf(lastModifiedTime.toMillis())));
 		}
 		try {
@@ -181,8 +181,8 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		return Files.getFileAttributeView(file, UserDefinedFileAttributeView.class);
 	}
 
-	private static boolean hasOriginalLastModifiedTime(@Nonnull UserDefinedFileAttributeView userDefinedAttributes) throws IOException {
-		return userDefinedAttributes.list().stream().anyMatch(ORIGINAL_LAST_MODIFIED_TIME_ATTRIBUTE::equals);
+	private static boolean hasAttribute(@Nonnull UserDefinedFileAttributeView userDefinedAttributes, String attributeName) throws IOException {
+		return userDefinedAttributes.list().stream().anyMatch(attributeName::equals);
 	}
 
 	private static @Nonnull String readAttribute(@Nonnull UserDefinedFileAttributeView userDefinedAttributes, @Nonnull String attributeName) throws IOException {
@@ -365,7 +365,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 			// If the original LastModifiedTime is stored in a user-defined attribute, return that value
 			if (Files.getFileStore(f).supportsFileAttributeView(UserDefinedFileAttributeView.class)) {
 				UserDefinedFileAttributeView userDefinedAttributes = getUserDefinedAttributes(f);
-				if (hasOriginalLastModifiedTime(userDefinedAttributes)) {
+				if (hasAttribute(userDefinedAttributes, ORIGINAL_LAST_MODIFIED_TIME_ATTRIBUTE)) {
 					String lastModifiedTime = readAttribute(userDefinedAttributes, ORIGINAL_LAST_MODIFIED_TIME_ATTRIBUTE);
 					return new Date(Long.parseLong(lastModifiedTime));
 				}
