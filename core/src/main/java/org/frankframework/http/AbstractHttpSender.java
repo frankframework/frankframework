@@ -534,8 +534,8 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 	}
 
 	/** If set, the status code of the HTTP response is put in the specified sessionKey and the (error or okay) response message is returned.
-	 * Setting this property has a side effect. If a 4xx or 5xx result code is returned and if the pipeline does not implement
-	 * the specific forward, pipeline-global forward or pipeline-exit for the returned HTTP result code, then the success forward is followed instead of the exception forward.
+	 * Setting this property has a side effect. If a 4xx or 5xx result code is returned and if the configuration does not implement
+	 * the specific forward for the returned HTTP result code, then the success forward is followed instead of the exception forward.
 	 */
 	public void setResultStatusCodeSessionKey(String resultStatusCodeSessionKey) {
 		this.resultStatusCodeSessionKey = resultStatusCodeSessionKey;
