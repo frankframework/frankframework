@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, computed, OnDestroy, OnInit, Signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AppService, Message } from 'src/app/app.service';
 import { PollerService } from 'src/app/services/poller.service';
@@ -82,7 +82,10 @@ export class SchedulerComponent implements OnInit, OnDestroy {
   };
   protected searchFilter: string = '';
   protected refreshing: boolean = false;
-  protected databaseSchedulesEnabled: boolean = this.appService.databaseSchedulesEnabled;
+  protected databaseSchedulesEnabled: Signal<boolean> = computed(
+    // eslint-disable-next-line unicorn/consistent-function-scoping
+    () => this.appService.appConstants()['loadDatabaseSchedules.active'] === 'true',
+  );
   protected jobShowContent: Record<keyof typeof this.jobGroups, boolean> = {};
   protected selectedJobGroup: string = 'All';
 
@@ -119,10 +122,6 @@ export class SchedulerComponent implements OnInit, OnDestroy {
       },
       5000,
     );
-
-    this.appService.databaseSchedulesEnabled$.subscribe(() => {
-      this.databaseSchedulesEnabled = this.appService.databaseSchedulesEnabled;
-    });
   }
 
   ngOnDestroy(): void {

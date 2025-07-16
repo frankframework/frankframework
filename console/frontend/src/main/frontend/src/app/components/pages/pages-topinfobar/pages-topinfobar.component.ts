@@ -36,7 +36,7 @@ export class PagesTopinfobarComponent implements OnInit, OnDestroy {
     const loadingSubscription = this.appService.loading$.subscribe((loading) => (this.loading = loading));
     this._subscriptions.add(loadingSubscription);
 
-    const customBreadcrumbsSubscription = this.appService.customBreadscrumb$.subscribe(
+    const customBreadcrumbsSubscription = this.appService.customBreadcrumbs$.subscribe(
       (breadcrumbs) => (this.breadcrumbs = breadcrumbs),
     );
     this._subscriptions.add(customBreadcrumbsSubscription);
