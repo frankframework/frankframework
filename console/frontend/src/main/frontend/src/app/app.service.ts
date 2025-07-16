@@ -1,6 +1,6 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
-import { BehaviorSubject, catchError, Observable, of, Subject } from 'rxjs';
+import { inject, Injectable, signal, Signal, WritableSignal } from '@angular/core';
+import { catchError, Observable, of, Subject } from 'rxjs';
 import { DebugService } from './services/debug.service';
 import { Title } from '@angular/platform-browser';
 import { computeServerPath, deepMerge } from './utils';
@@ -225,52 +225,30 @@ export const appInitState = {
 } as const;
 export type AppInitState = (typeof appInitState)[keyof typeof appInitState];
 
-export type ConsoleState = {
-  server: string;
-  init: AppInitState;
-};
-
 @Injectable({
   providedIn: 'root',
 })
 export class AppService {
-  private loadingSubject: Subject<boolean> = new Subject();
+  public absoluteApiPath = `${this.getServerPath()}iaf/api/`;
+  public loading: WritableSignal<boolean> = signal(true);
+  public alerts: WritableSignal<Alert[]> = signal([]);
+  public startupError: WritableSignal<string | null> = signal(null);
+  public instanceName: WritableSignal<string> = signal('');
+  public dtapStage: WritableSignal<string> = signal('');
+  public iframePopoutUrl: WritableSignal<string | null> = signal(null);
+  public selectedConfigurationTab: WritableSignal<string | null> = signal(null);
+
   private reloadSubject: Subject<void> = new Subject();
-  private customBreadcrumbsSubject: Subject<string> = new Subject();
-  private appConstantsSubject: Subject<void> = new Subject();
-  private adaptersSubject: Subject<Record<string, Adapter>> = new Subject();
-  private alertsSubject: Subject<Alert[]> = new Subject();
-  private startupErrorSubject: Subject<string | null> = new Subject();
-  private configurationsSubject: Subject<Configuration[]> = new Subject();
-  private messageLogSubject: Subject<Record<string, MessageLog>> = new Subject();
-  private instanceNameSubject: Subject<string> = new Subject();
-  private dtapStageSubject: Subject<string> = new Subject();
-  private databaseSchedulesEnabledSubject: Subject<boolean> = new Subject();
-  private summariesSubject: Subject<void> = new Subject();
-  private iframePopoutUrlSubject: Subject<string> = new Subject();
+  public reload$ = this.reloadSubject.asObservable();
   private toggleSidebarSubject: Subject<void> = new Subject();
-  private selectedConfigurationTab: BehaviorSubject<string | null> = new BehaviorSubject<string | null>(null);
+  public toggleSidebar$ = this.toggleSidebarSubject.asObservable();
+  private customBreadcrumbsSubject: Subject<string> = new Subject();
+  public customBreadcrumbs$ = this.customBreadcrumbsSubject.asObservable();
 
-  public loading$: Observable<boolean> = this.loadingSubject.asObservable();
-  public reload$: Observable<void> = this.reloadSubject.asObservable();
-  public customBreadscrumb$: Observable<string> = this.customBreadcrumbsSubject.asObservable();
-  public appConstants$: Observable<void> = this.appConstantsSubject.asObservable();
-  public adapters$: Observable<Record<string, Adapter>> = this.adaptersSubject.asObservable();
-  public alerts$: Observable<Alert[]> = this.alertsSubject.asObservable();
-  public startupError$: Observable<string | null> = this.startupErrorSubject.asObservable();
-  public configurations$: Observable<Configuration[]> = this.configurationsSubject.asObservable();
-  public messageLog$: Observable<Record<string, MessageLog>> = this.messageLogSubject.asObservable();
-  public databaseSchedulesEnabled$: Observable<boolean> = this.databaseSchedulesEnabledSubject.asObservable();
-  public summaries$: Observable<void> = this.summariesSubject.asObservable();
-  public iframePopoutUrl$: Observable<string> = this.iframePopoutUrlSubject.asObservable();
-  public toggleSidebar$: Observable<void> = this.toggleSidebarSubject.asObservable();
-  public selectedConfigurationTab$: Observable<string | null> = this.selectedConfigurationTab.asObservable();
-
-  adapters: Record<string, Adapter> = {};
-  alerts: Alert[] = [];
-  configurationLengths: Record<string, number> = {};
-
-  adapterSummary: Summary = {
+  private _adapters: WritableSignal<Record<string, Adapter>> = signal({});
+  private _configurations: WritableSignal<Configuration[]> = signal([]);
+  private _messageLog: WritableSignal<Record<string, MessageLog>> = signal({});
+  private _adapterSummary: WritableSignal<Summary> = signal({
     started: 0,
     stopped: 0,
     starting: 0,
@@ -278,8 +256,8 @@ export class AppService {
     exception_starting: 0,
     exception_stopping: 0,
     error: 0,
-  };
-  receiverSummary: Summary = {
+  });
+  private _receiverSummary: WritableSignal<Summary> = signal({
     started: 0,
     stopped: 0,
     starting: 0,
@@ -287,17 +265,13 @@ export class AppService {
     exception_starting: 0,
     exception_stopping: 0,
     error: 0,
-  };
-  messageSummary: MessageSummary = {
+  });
+  private _messageSummary: WritableSignal<MessageSummary> = signal({
     info: 0,
     warn: 0,
     error: 0,
-  };
-
-  APP_CONSTANTS: AppConstants = {
-    //Configure these in the server AppConstants!!!
-    //The settings here are defaults and will be overwritten upon set in any .properties file.
-
+  });
+  private _appConstants: WritableSignal<AppConstants> = signal({
     //How often the interactive frontend should poll the FF API for new data
     'console.pollerInterval': 10_000,
 
@@ -309,148 +283,141 @@ export class AppService {
 
     //After x minutes the user will be forcefully logged out
     'console.idle.timeout': 0,
-  };
-
-  CONSOLE_STATE: ConsoleState = {
-    server: computeServerPath(),
-    init: appInitState.UN_INIT,
-  };
-
-  absoluteApiPath = `${this.getServerPath()}iaf/api/`;
+  });
 
   private lastUpdated = 0;
   private timeout?: number;
 
-  constructor(
-    private title: Title,
-    private http: HttpClient,
-    private debugService: DebugService,
-  ) {}
+  private title: Title = inject(Title);
+  private http: HttpClient = inject(HttpClient);
+  private debugService: DebugService = inject(DebugService);
 
-  triggerReload(): void {
-    this.reloadSubject.next();
+  get adapters(): Signal<Record<string, Adapter>> {
+    return this._adapters.asReadonly();
   }
-
-  updateLoading(loading: boolean): void {
-    this.loadingSubject.next(loading);
+  get configurations(): Signal<Configuration[]> {
+    return this._configurations.asReadonly();
   }
-
-  customBreadcrumbs(breadcrumbs: string): void {
-    this.customBreadcrumbsSubject.next(breadcrumbs);
+  get messageLog(): Signal<Record<string, MessageLog>> {
+    return this._messageLog.asReadonly();
   }
-
-  triggerAppConstants(): void {
-    this.appConstantsSubject.next();
+  get adapterSummary(): Signal<Summary> {
+    return this._adapterSummary.asReadonly();
   }
-
-  updateConfigurationLengths(): void {
-    this.configurationLengths = {};
-    for (const adapter of Object.values(this.adapters)) {
-      const configuration = adapter.configuration;
-      this.configurationLengths[configuration] ??= 0;
-      this.configurationLengths[configuration]++;
-    }
+  get receiverSummary(): Signal<Summary> {
+    return this._receiverSummary.asReadonly();
+  }
+  get messageSummary(): Signal<MessageSummary> {
+    return this._messageSummary.asReadonly();
+  }
+  get appConstants(): Signal<AppConstants> {
+    return this._appConstants.asReadonly();
   }
 
   updateAdapters(adapters: Record<string, Partial<Adapter>>): void {
-    this.adapters = deepMerge({}, this.adapters, adapters);
-    this.updateConfigurationLengths();
-    this.adaptersSubject.next({ ...this.adapters });
+    const mergedAdapters = deepMerge({}, this.adapters(), adapters);
+    this._adapters.set(mergedAdapters);
   }
 
   resetAdapters(): void {
-    this.adapters = {};
-    this.adaptersSubject.next(this.adapters);
+    this._adapters.set({});
   }
 
   removeAdapter(adapter: string): void {
-    delete this.adapters[adapter];
+    const adapters = this.adapters();
+    delete adapters[adapter];
+    this._adapters.set(adapters);
   }
 
-  updateAlerts(alerts: Alert[]): void {
-    this.alerts = alerts;
-    this.alertsSubject.next(alerts);
-  }
-
-  resetAlerts(): void {
-    this.alerts = [];
-    this.alertsSubject.next(this.alerts);
-  }
-
-  startupError: string | null = null;
-  updateStartupError(startupError: string): void {
-    this.startupError = startupError;
-    this.startupErrorSubject.next(startupError);
-  }
-
-  configurations: Configuration[] = [];
   updateConfigurations(configurations: Configuration[]): void {
     const updatedConfigurations: Configuration[] = [];
-    for (const index in configurations) {
-      const config = configurations[index];
+    for (const config of configurations) {
       if (config.name.startsWith('IAF_')) updatedConfigurations.unshift(config);
       else updatedConfigurations.push(config);
     }
-    this.configurations = updatedConfigurations;
-    this.configurationsSubject.next(updatedConfigurations);
+    this._configurations.set(updatedConfigurations);
   }
 
-  messageLog: Record<string, MessageLog> = {};
   updateMessageLog(messageLog: Record<string, Partial<MessageLog>>): void {
-    this.messageLog = deepMerge({}, this.messageLog, messageLog);
-    this.messageLogSubject.next({ ...this.messageLog });
+    const mergedMessageLog = deepMerge({}, this.messageLog(), messageLog);
+    this._messageLog.set(mergedMessageLog);
   }
 
   resetMessageLog(): void {
-    this.messageLog = {};
-    this.messageLogSubject.next(this.messageLog);
+    this._messageLog.set({});
   }
 
-  instanceName = '';
-  updateInstanceName(instanceName: string): void {
-    this.instanceName = instanceName;
-    this.instanceNameSubject.next(instanceName);
+  updateAppConstants(appConstants: AppConstants): void {
+    this._appConstants.set(appConstants);
   }
 
-  dtapStage = '';
-  updateDtapStage(dtapStage: string): void {
-    this.dtapStage = dtapStage;
-    this.dtapStageSubject.next(dtapStage);
-  }
+  updateAdapterSummary(configurationName: string, changedConfiguration: boolean): void {
+    const updated = Date.now();
+    if (updated - 3000 < this.lastUpdated && !changedConfiguration) {
+      //3 seconds
+      clearTimeout(this.timeout);
+      this.timeout = window.setTimeout(() => {
+        this.updateAdapterSummary(configurationName, false);
+      }, 1000);
+      return;
+    }
 
-  databaseSchedulesEnabled = false;
-  updateDatabaseSchedulesEnabled(databaseSchedulesEnabled: boolean): void {
-    this.databaseSchedulesEnabled = databaseSchedulesEnabled;
-    this.databaseSchedulesEnabledSubject.next(databaseSchedulesEnabled);
-  }
+    const adapterSummary: Record<Lowercase<RunState>, number> = {
+      started: 0,
+      stopped: 0,
+      starting: 0,
+      stopping: 0,
+      exception_starting: 0,
+      exception_stopping: 0,
+      error: 0,
+    };
+    const receiverSummary: Record<Lowercase<RunState>, number> = {
+      started: 0,
+      stopped: 0,
+      starting: 0,
+      stopping: 0,
+      exception_starting: 0,
+      exception_stopping: 0,
+      error: 0,
+    };
+    const messageSummary: Record<Lowercase<MessageLevel>, number> = {
+      info: 0,
+      warn: 0,
+      error: 0,
+    };
 
-  updateTitle(title: string): void {
-    this.title.setTitle(`${this.dtapStage}-${this.instanceName} | ${title}`);
-  }
+    for (const adapter of Object.values(this.adapters())) {
+      if (adapter.configuration == configurationName || configurationName == 'All') {
+        // Only adapters for active config
+        adapterSummary[adapter.state]++;
+        for (const index in adapter.receivers) {
+          receiverSummary[adapter.receivers[+index].state.toLowerCase() as Lowercase<RunState>]++;
+        }
+        for (const index in adapter.messages) {
+          const level = adapter.messages[+index].level.toLowerCase() as Lowercase<MessageLevel>;
+          messageSummary[level]++;
+        }
+      }
+    }
 
-  setIframePopoutUrl(url: string): void {
-    this.iframePopoutUrlSubject.next(url);
-  }
-
-  toggleSidebar(): void {
-    this.toggleSidebarSubject.next();
-  }
-
-  updateSelectedConfigurationTab(tab: string): void {
-    this.selectedConfigurationTab.next(tab);
+    this._adapterSummary.set(adapterSummary);
+    this._receiverSummary.set(receiverSummary);
+    this._messageSummary.set(messageSummary);
+    this.lastUpdated = updated;
   }
 
   addAlert(type: string, configuration: string, message: string): void {
     const line = message.match(/line \[(\d+)]/);
     const isValidationAlert = message.includes('Validation');
     const link = line && !isValidationAlert ? { name: configuration, '#': `L${line[1]}` } : undefined;
-    this.alerts.push({
+    const alerts = this.alerts();
+    alerts.push({
       link: link,
       type: type,
       configuration: configuration,
       message: message,
     });
-    this.updateAlerts(this.alerts);
+    this.alerts.set(alerts);
   }
   addWarning(configuration: string, message: string): void {
     this.addAlert('warning', configuration, message);
@@ -460,12 +427,29 @@ export class AppService {
   }
 
   removeAlerts(configuration: string): void {
-    const updatedAlerts = this.alerts.filter((alert) => alert.configuration !== configuration);
-    this.updateAlerts(updatedAlerts);
+    const alerts = this.alerts();
+    const updatedAlerts = alerts.filter((alert) => alert.configuration !== configuration);
+    this.alerts.set(updatedAlerts);
+  }
+
+  triggerReload(): void {
+    this.reloadSubject.next();
+  }
+
+  customBreadcrumbs(breadcrumbs: string): void {
+    this.customBreadcrumbsSubject.next(breadcrumbs);
+  }
+
+  toggleSidebar(): void {
+    this.toggleSidebarSubject.next();
+  }
+
+  updateTitle(title: string): void {
+    this.title.setTitle(`${this.dtapStage}-${this.instanceName} | ${title}`);
   }
 
   getServerPath(): string {
-    let absolutePath = this.CONSOLE_STATE.server;
+    let absolutePath = computeServerPath();
     if (absolutePath && absolutePath.slice(-1) != '/') absolutePath += '/';
     return absolutePath;
   }
@@ -507,64 +491,5 @@ export class AppService {
     return this.http.get(`${this.absoluteApiPath}server/health`, {
       responseType: 'text',
     });
-  }
-
-  updateAdapterSummary(configurationName: string, changedConfiguration: boolean): void {
-    const updated = Date.now();
-    if (updated - 3000 < this.lastUpdated && !changedConfiguration) {
-      //3 seconds
-      clearTimeout(this.timeout);
-      this.timeout = window.setTimeout(() => {
-        this.updateAdapterSummary(configurationName, false);
-      }, 1000);
-      return;
-    }
-
-    const adapterSummary: Record<Lowercase<RunState>, number> = {
-      started: 0,
-      stopped: 0,
-      starting: 0,
-      stopping: 0,
-      exception_starting: 0,
-      exception_stopping: 0,
-      error: 0,
-    };
-    const receiverSummary: Record<Lowercase<RunState>, number> = {
-      started: 0,
-      stopped: 0,
-      starting: 0,
-      stopping: 0,
-      exception_starting: 0,
-      exception_stopping: 0,
-      error: 0,
-    };
-    const messageSummary: Record<Lowercase<MessageLevel>, number> = {
-      info: 0,
-      warn: 0,
-      error: 0,
-    };
-
-    const allAdapters = this.adapters;
-    for (const adapterName in allAdapters) {
-      const adapter = allAdapters[adapterName];
-
-      if (adapter.configuration == configurationName || configurationName == 'All') {
-        // Only adapters for active config
-        adapterSummary[adapter.state]++;
-        for (const index in adapter.receivers) {
-          receiverSummary[adapter.receivers[+index].state.toLowerCase() as Lowercase<RunState>]++;
-        }
-        for (const index in adapter.messages) {
-          const level = adapter.messages[+index].level.toLowerCase() as Lowercase<MessageLevel>;
-          messageSummary[level]++;
-        }
-      }
-    }
-
-    this.adapterSummary = adapterSummary;
-    this.receiverSummary = receiverSummary;
-    this.messageSummary = messageSummary;
-    this.lastUpdated = updated;
-    this.summariesSubject.next();
   }
 }

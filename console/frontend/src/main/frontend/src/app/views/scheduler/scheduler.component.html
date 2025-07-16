@@ -3,7 +3,7 @@
     <div class="col-lg-12" [hidden]="!scheduler.name">
       <div class="ibox float-e-margins">
         <div class="ibox-title">
-          @if (databaseSchedulesEnabled) {
+          @if (databaseSchedulesEnabled()) {
             <div class="pull-right">
               <button routerLink="new" class="btn btn-xs btn-info pull-right" type="button">
                 <i class="fa fa-plus-circle" aria-hidden="true"></i>
