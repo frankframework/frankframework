@@ -1,5 +1,5 @@
 import { Component, Input } from '@angular/core';
-import { AdapterMessage, MessageLog } from '../../../app.service';
+import { ConfigurationMessage, MessageLog } from '../../../app.service';
 import { NgClass } from '@angular/common';
 import { ToDateDirective } from '../../../components/to-date.directive';
 
@@ -14,7 +14,7 @@ export class ConfigurationMessagesComponent {
   @Input({ required: true }) selectedConfiguration: string = '';
   protected msgBoxExpanded = false;
 
-  protected getMessageLog(selectedConfiguration: string): AdapterMessage[] {
+  protected getMessageLog(selectedConfiguration: string): ConfigurationMessage[] {
     return this.messageLog[selectedConfiguration]?.messages ?? [];
   }
 }
