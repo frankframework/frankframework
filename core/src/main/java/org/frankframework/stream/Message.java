@@ -33,6 +33,7 @@ import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URL;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Map.Entry;
 import java.util.Objects;
@@ -123,10 +124,27 @@ public class Message implements Serializable, Closeable {
 			}
 		}
 
-		if (this.request instanceof InputStream source) {
-			this.request = new RepeatableInputStreamWrapper(source);
-		} else if (this.request instanceof Reader source) {
-			this.request = new RepeatableReaderWrapper(source);
+		try {
+			if (this.request instanceof InputStream source) {
+				try (Message message = MessageUtils.fromInputStream(source)) {
+					this.request = message.request;
+					message.request = null; // Prevent from potential temp file being closed
+					this.context.putAll(message.context.getAll());
+				}
+			} else if (this.request instanceof Reader source) {
+				try (Message message = MessageUtils.fromReader(source)) {
+					this.request = message.request;
+					message.request = null; // Prevent from potential temp file being closed
+					this.context.putAll(message.context.getAll());
+					if (this.context.containsKey(MessageContext.METADATA_CHARSET)) {
+						// Ensure charset is now always UTF-8 because that's what it is after converting from stream
+						this.context.withCharset(StandardCharsets.UTF_8);
+					}
+				}
+			}
+		} catch (IOException e) {
+			// TODO: For future, add I/O Exception on constructor?
+			throw Lombok.sneakyThrow(e);
 		}
 
 		if (request != null) {

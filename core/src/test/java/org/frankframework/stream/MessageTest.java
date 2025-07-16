@@ -979,7 +979,7 @@ public class MessageTest {
 	@Test
 	public void testMessageSizeReader() {
 		try (Message message = new Message(new StringReader("string"))) {
-			assertEquals(-1L, message.size(), "size differs or could not be determined");
+			assertEquals(6L, message.size(), "size differs or could not be determined");
 			assertDoesNotThrow(() -> message.asString());
 			assertEquals(6L, message.size(), "size differs or could not be determined");
 		}

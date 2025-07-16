@@ -195,7 +195,7 @@ public class PipeLineSessionBaseTest {
 
 		assertEquals(1, a.closes);
 		assertEquals(1, b.closes);
-		assertEquals(0, c.closes);
+		assertEquals(1, c.closes);
 		assertEquals(1, d.closes);
 		ma.close();
 		mb.close();

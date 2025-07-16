@@ -180,9 +180,20 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 	 * If the contents was small enough to be kept in memory a ByteArray-message will be returned.
 	 * If the contents was written to disk a {@link PathMessage TemporaryMessage} will be returned.
 	 * Once read the buffer will be removed.
+	 *
 	 * @return A new {@link Message} object representing the contents written to this {@link OutputStream}.
 	 */
 	public Message toMessage() {
+		return toMessage(true);
+	}
+
+	/**
+	 * If the contents was small enough to be kept in memory a ByteArray-message will be returned.
+	 * If the contents was written to disk a {@link PathMessage TemporaryMessage} will be returned.
+	 * Once read the buffer will be removed.
+	 * @return A new {@link Message} object representing the contents written to this {@link OutputStream}.
+	 */
+	public Message toMessage(boolean binary) {
 		if(!closed) throw new IllegalStateException("stream has not yet been closed");
 		if(fileLocation == null && buffers == null) throw new IllegalStateException("stream has already been read");
 
@@ -209,7 +220,11 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 			}
 
 			buffers = null; // clear everything that's kept in memory
-			return new Message(out);
+			if (binary) {
+				return new Message(out);
+			} else {
+				return new Message(new String(out));
+			}
 		}
 	}
 

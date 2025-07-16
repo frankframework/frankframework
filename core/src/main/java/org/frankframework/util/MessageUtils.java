@@ -42,6 +42,7 @@ import jakarta.xml.soap.AttachmentPart;
 import jakarta.xml.soap.MimeHeader;
 import jakarta.xml.soap.SOAPException;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
@@ -85,7 +86,7 @@ public class MessageUtils {
 	 */
 	public static Message fromInputStream(InputStream inputStream) throws IOException {
 		MessageBuilder messageBuilder = new MessageBuilder();
-		try (OutputStream outputStream = messageBuilder.asOutputStream()) {
+		try (inputStream; OutputStream outputStream = messageBuilder.asOutputStream()) {
 			inputStream.transferTo(outputStream);
 		}
 		return messageBuilder.build();
@@ -97,7 +98,7 @@ public class MessageUtils {
 	 */
 	public static Message fromReader(Reader reader) throws IOException {
 		MessageBuilder messageBuilder = new MessageBuilder();
-		try (Writer writer = messageBuilder.asWriter()) {
+		try (reader; Writer writer = messageBuilder.asWriter()) {
 			reader.transferTo(writer);
 		}
 		return messageBuilder.build();
@@ -316,7 +317,7 @@ public class MessageUtils {
 		try (InputStream inputStream = message.asInputStream()) {
 			String mediaType = TIKA.detect(inputStream, name);
 			MimeType mimeType = MimeType.valueOf(mediaType);
-			if (MediaType.TEXT_PLAIN.equalsTypeAndSubtype(mimeType) && name == null) {
+			if (MediaType.TEXT_PLAIN.equalsTypeAndSubtype(mimeType) && StringUtils.isBlank(FilenameUtils.getExtension(name))) {
 				// TIKA detects XML or JSON as text/plain when there is no filename, so manually do a check for JSON.
 				// See also: https://stackoverflow.com/questions/48618629/apache-tika-detect-json-pdf-specific-mime-type#48619266
 				mimeType = guessMimeType(message);

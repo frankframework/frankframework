@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -42,6 +42,7 @@ public class MessageBuilder {
 	private final OutputStream outputStream;
 	private Path location;
 	private @Setter MimeType mimeType;
+	private boolean binary = true;
 
 	/**
 	 * Stores the message in the {@code temp-messages} folder.
@@ -69,6 +70,7 @@ public class MessageBuilder {
 	}
 
 	public Writer asWriter() {
+		binary = false;
 		return new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
 	}
 
@@ -100,7 +102,7 @@ public class MessageBuilder {
 	public Message build() {
 		final Message result;
 		if(outputStream instanceof OverflowToDiskOutputStream odo) {
-			result = odo.toMessage();
+			result = odo.toMessage(binary);
 		} else {
 			result = new PathMessage(location);
 		}

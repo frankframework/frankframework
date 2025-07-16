@@ -298,8 +298,8 @@ public class PipeLineSessionTest {
 		assertFalse(m5.isClosed());
 		assertFalse(m6.isClosed());
 		assertFalse(m7.isClosed());
-		assertTrue(m8.isClosed());
-		assertTrue(m9.isClosed());
+		assertFalse(m8.isClosed());
+		assertFalse(m9.isClosed());
 	}
 
 	/**
