@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { AppService, JobMessage } from 'src/app/app.service';
+import { AppService, Message } from 'src/app/app.service';
 import { PollerService } from 'src/app/services/poller.service';
 import { SchedulerService, Trigger } from './scheduler.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
@@ -29,6 +29,10 @@ type Scheduler = {
 };
 
 export type JobState = 'NONE' | 'NORMAL' | 'PAUSED' | 'COMPLETE' | 'ERROR' | 'BLOCKED';
+
+export interface JobMessage extends Message {
+  text: string;
+}
 
 export type Job = {
   name: string;
