@@ -3,7 +3,9 @@ package nl.nn.adapterframework.http.authentication;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -19,6 +21,7 @@ import org.junit.Test;
 
 import nl.nn.adapterframework.configuration.ConfigurationException;
 import nl.nn.adapterframework.core.SenderException;
+import nl.nn.adapterframework.core.SenderResult;
 import nl.nn.adapterframework.core.TimeoutException;
 import nl.nn.adapterframework.http.HttpSender;
 import nl.nn.adapterframework.http.HttpSender.PostType;
@@ -118,6 +121,64 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender>{
 		Message result = sendMessage();
 		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
 		assertNotNull(result.asString());
+	}
+
+	@Test
+	public void testOAuthAuthenticationWrongEndpoint() throws Exception {
+		sender.setUrl(authtenticatedService.getOAuthResourceNotFoundEndpoint());
+		sender.setResultStatusCodeSessionKey(null);
+		sender.setTokenEndpoint(tokenServer.getEndpoint());
+		sender.setClientId(tokenServer.getClientId());
+		sender.setClientSecret(tokenServer.getClientSecret());
+
+		sender.configure();
+		sender.open();
+
+		SenderResult result = sender.sendMessage(new Message(""), session);
+
+		assertFalse(session.containsKey(RESULT_STATUS_CODE_SESSIONKEY));
+		assertNotNull(result);
+		assertFalse(result.isSuccess());
+		assertNotNull(result.getResult());
+		assertNotNull(result.getResult().asString());
+		assertEquals("404", result.getForwardName());
+	}
+
+	@Test
+	public void testOAuthAuthenticationWrongEndpointStatusInSessionKey() throws Exception {
+		sender.setUrl(authtenticatedService.getOAuthResourceNotFoundEndpoint());
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setTokenEndpoint(tokenServer.getEndpoint());
+		sender.setClientId(tokenServer.getClientId());
+		sender.setClientSecret(tokenServer.getClientSecret());
+
+		sender.configure();
+		sender.open();
+
+		SenderResult result = sender.sendMessage(new Message(""), session);
+
+		assertEquals("404", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
+		assertNotNull(result);
+		assertTrue(result.isSuccess());
+		assertNotNull(result.getResult());
+		assertNotNull(result.getResult().asString());
+		assertEquals("404", result.getForwardName());
+	}
+
+	@Test
+	public void testOAuthAuthenticationWrongTokenEndpoint() throws Exception {
+		sender.setUrl(authtenticatedService.getOAuthEndpoint());
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setTokenEndpoint(tokenServer.getEndpoint() + "/xxxxx");
+		sender.setClientId(tokenServer.getClientId());
+		sender.setClientSecret(tokenServer.getClientSecret());
+		sender.setTimeout(10);
+
+		sender.configure();
+		sender.open();
+
+		assertThrows(TimeoutException.class, () -> sender.sendMessage(new Message(""), session));
+		assertNull(session.getString(RESULT_STATUS_CODE_SESSIONKEY));
 	}
 
 	@Test
