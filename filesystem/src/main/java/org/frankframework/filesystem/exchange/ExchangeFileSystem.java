@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.springframework.context.ApplicationContextAware;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.encryption.HasKeystore;
@@ -68,6 +69,7 @@ import org.frankframework.util.StringUtil;
  * 		<li>Make sure your application is able to reach <code>https://login.microsoftonline.com</code>. Required for token retrieval. </li>
  * </ol>
  */
+@Log4j2
 public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implements HasKeystore, HasTruststore, ApplicationContextAware {
 	private final @Getter String domain = "Azure";
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();

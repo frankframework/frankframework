@@ -31,10 +31,10 @@ import jakarta.annotation.Nonnull;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -56,7 +56,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.EnumUtils;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 
 /**
@@ -71,8 +70,8 @@ import org.frankframework.util.StreamUtil;
  *
  * @author Gerrit van Brakel
  */
+@Log4j2
 public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
-	protected Logger log = LogUtil.getLogger(this);
 	private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
 	public static final String ACTION_CREATE="create";
