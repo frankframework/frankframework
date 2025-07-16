@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2024 WeAreFrank!
+   Copyright 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -54,6 +54,7 @@ import org.eclipse.angus.mail.imap.IMAPMessage;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.http.PartMessage;
@@ -62,6 +63,7 @@ import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.StringUtil;
 import org.frankframework.xml.SaxElementBuilder;
 
+@Log4j2
 public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart, IMAPFolder> {
 	private final @Getter String domain = "IMAP";
 

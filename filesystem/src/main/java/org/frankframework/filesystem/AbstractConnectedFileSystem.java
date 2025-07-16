@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!
+   Copyright 2020, 2022, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.apache.commons.pool2.impl.GenericObjectPool;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.util.ClassUtils;
 
@@ -32,6 +33,7 @@ import org.frankframework.util.ClassUtils;
  * @author Gerrit van Brakel
  *
  */
+@Log4j2
 public abstract class AbstractConnectedFileSystem<F,C> extends AbstractFileSystem<F> {
 
 	// implementations that have a thread-safe connection can set pooledConnection = false to use a shared connection.
