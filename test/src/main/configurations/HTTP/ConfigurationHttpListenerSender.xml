@@ -109,7 +109,7 @@
 			<pipe name="LocalHttp">
 				<sender className="nl.nn.adapterframework.http.HttpSender"
 					methodType="POST"
-					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/ThisUrlDoesNotExistAtThisHost"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/ThisUrlDoesNotExistAtThisHost"
 					firstBodyPartName="request"
 					sharedResourceRef="SharedHttpSession"
 					resultStatusCodeSessionKey="StatusCode"
