@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2024 WeAreFrank!
+   Copyright 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,18 +19,15 @@ import java.io.IOException;
 import java.nio.file.DirectoryStream;
 import java.util.Iterator;
 
-import org.apache.logging.log4j.Logger;
-
-import org.frankframework.util.LogUtil;
+import lombok.extern.log4j.Log4j2;
 
 /**
  * Baseclass for {@link IBasicFileSystem FileSystems}.
  *
  * @author Gerrit van Brakel
  */
+@Log4j2
 public abstract class AbstractFileSystem<F> implements IBasicFileSystem<F> {
-	protected final Logger log = LogUtil.getLogger(this);
-
 	private int maxNumberOfMessagesToList=-1;
 
 	private boolean open;
