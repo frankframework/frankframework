@@ -15,10 +15,6 @@
 */
 package org.frankframework.stream;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
 import org.frankframework.util.StreamUtil;
 
 /**
@@ -33,23 +29,5 @@ class ByteBufferBlock {
 
 	boolean isFull() {
 		return count == buffer.length;
-	}
-
-	int available() {
-		return buffer.length - count;
-	}
-
-	int addFromStream(InputStream source, int maxBytesToRead) throws IOException {
-		final int n = Math.min(available(), maxBytesToRead);
-		int bytesRead = source.read(buffer, count, n);
-		if (bytesRead == -1) {
-			return -1;
-		}
-		count += bytesRead;
-		return bytesRead;
-	}
-
-	void transferToStream(OutputStream out) throws IOException {
-		out.write(buffer, 0, count);
 	}
 }

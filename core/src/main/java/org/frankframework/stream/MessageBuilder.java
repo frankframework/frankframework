@@ -31,13 +31,12 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.documentbuilder.json.JsonWriter;
-import org.frankframework.util.AppConstants;
 import org.frankframework.util.TemporaryDirectoryUtils;
 import org.frankframework.xml.XmlWriter;
 
 @Log4j2
 public class MessageBuilder {
-	private static final long MAX_IN_MEMORY_SIZE = AppConstants.getInstance().getLong(Message.MESSAGE_MAX_IN_MEMORY_PROPERTY, Message.MESSAGE_MAX_IN_MEMORY_DEFAULT);
+	public static final int MAX_BUFFER_SIZE = Math.toIntExact(Message.MESSAGE_MAX_IN_MEMORY);
 
 	private final OutputStream outputStream;
 	private Path location;
@@ -49,9 +48,8 @@ public class MessageBuilder {
 	 * Attempts to store the result in memory and automatically overflows to disk.
 	 */
 	public MessageBuilder() throws IOException {
-		int maxBufferSize = Math.toIntExact(MAX_IN_MEMORY_SIZE);
-		Path tempdir = TemporaryDirectoryUtils.getTempDirectory(SerializableFileReference.TEMP_MESSAGE_DIRECTORY);
-		outputStream = new OverflowToDiskOutputStream(maxBufferSize, tempdir);
+		Path tempDir = TemporaryDirectoryUtils.getTempDirectory(SerializableFileReference.TEMP_MESSAGE_DIRECTORY);
+		outputStream = new OverflowToDiskOutputStream(MAX_BUFFER_SIZE, tempDir);
 	}
 
 	/**

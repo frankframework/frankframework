@@ -21,6 +21,7 @@ import java.io.Flushable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ref.Cleaner;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -223,7 +224,7 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 			if (binary) {
 				return new Message(out);
 			} else {
-				return new Message(new String(out));
+				return new Message(new String(out, StandardCharsets.UTF_8));
 			}
 		}
 	}
