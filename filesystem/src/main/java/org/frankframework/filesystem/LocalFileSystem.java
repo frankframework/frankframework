@@ -146,7 +146,11 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		}
 	}
 
-	private static void addCustomFileAttributes(Path file, Map<String, String> customFileAttributes) throws IOException {
+	private static void addCustomFileAttributes(@Nonnull Path file, @Nonnull Map<String, String> customFileAttributes) throws IOException {
+		if (customFileAttributes.isEmpty()) {
+			return;
+		}
+
 		// We need to restore the original file modified time, because we use it to append to the filename in some configurations of the DirectoryListener.
 		FileTime lastModifiedTime = Files.getLastModifiedTime(file);
 		UserDefinedFileAttributeView userDefinedAttributes = getUserDefinedAttributes(file);
