@@ -52,18 +52,6 @@ public class ParallelSenderExecutor extends AbstractRequestReplyExecutor {
 			long startTime = System.currentTimeMillis();
 			try {
 				reply = sender.sendMessage(request, session);
-
-				// To make sure that message is fully read and any potential resources held by open connections
-				// are closed, create a copy of the result-message but don't use it.
-				// (We used to achieve this with message.preserve() but that method is no longer exposed)
-				//
-				// NB: If multiple threads get the same result-message then they can try to copy/preserve it
-				// at the same time, causing potential race conditions. Therefore have to synchronize on the
-				// result-message.
-				Message result = reply.getResult();
-				synchronized (result) {
-					reply.getResult().copyMessage().close();
-				}
 			} catch (Throwable tr) {
 				throwable = tr;
 				log.warn("SenderExecutor caught exception", tr);

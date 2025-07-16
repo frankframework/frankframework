@@ -21,7 +21,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
 import java.io.EOFException;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -35,6 +34,8 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.time.temporal.TemporalAccessor;
+import java.util.Date;
 import java.util.Map.Entry;
 import java.util.Objects;
 
@@ -48,7 +49,6 @@ import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.util.Supplier;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -105,7 +105,7 @@ public class Message implements Serializable, Closeable {
 
 	private @Getter boolean closed = false;
 
-	private Message(@Nonnull MessageContext context, @Nullable Object request, @Nullable Class<?> requestClass) {
+	private Message(final @Nonnull MessageContext context, final @Nullable Object request, final @Nullable Class<?> requestClass) {
 		if (request instanceof Message) {
 			// this code could be reached when this constructor was public and the actual type of the parameter was not known at compile time.
 			// e.g. new Message(pipeRunResult.getResult());
@@ -115,14 +115,6 @@ public class Message implements Serializable, Closeable {
 		}
 		this.context = context;
 		this.requestClass = requestClass != null ? ClassUtils.nameOf(requestClass) : ClassUtils.nameOf(request);
-
-		// Cache size before possibly replacing FileInputStream or other streams of which the size is knowable with a wrapper
-		if (!context.containsKey(MessageContext.METADATA_SIZE)) {
-			long cacheSize = size();
-			if (cacheSize != MESSAGE_SIZE_UNKNOWN) {
-				context.put(MessageContext.METADATA_SIZE, cacheSize);
-			}
-		}
 
 		try {
 			if (this.request instanceof InputStream source) {
@@ -308,7 +300,7 @@ public class Message implements Serializable, Closeable {
 	 * Notify the message object that the request object will be used multiple times.
 	 * If the request object can only be read one time, it can turn it into a less volatile representation.
 	 * <p>
-	 *     This operation can potentially modify the contents of the Message object.
+	 *     This operation can potentially modify the contents of the Message object. This is not thread-safe.
 	 * </p>
 	 *
 	 * @throws IOException Throws IOException if the Message cannot be read or writing fails.
@@ -320,16 +312,10 @@ public class Message implements Serializable, Closeable {
 		if (request instanceof SerializableFileReference) {
 			return;
 		}
-		if (request instanceof RequestBuffer requestBuffer) {
-			// RequestBuffer knows how to preserve itself, intelligently deciding to preserve to memory or disk
-			request = requestBuffer.asSerializable();
-			requestBuffer.close();
-			return;
-		}
 
 		long requestSize = size();
 		long maxInMemory = AppConstants.getInstance().getLong(MESSAGE_MAX_IN_MEMORY_PROPERTY, MESSAGE_MAX_IN_MEMORY_DEFAULT);
-		if (requestSize == MESSAGE_SIZE_UNKNOWN || requestSize > maxInMemory) {
+		if ((requestSize == MESSAGE_SIZE_UNKNOWN || requestSize > maxInMemory) && !(request instanceof Date || request instanceof TemporalAccessor)) {
 			preserveToDisk(deepPreserve);
 			// Check again the size now that we know it for sure. If it fits into memory, better for performance to keep it in memory!
 			if (requestSize == MESSAGE_SIZE_UNKNOWN && size() <= maxInMemory && request instanceof SerializableFileReference serializableFileReference) {
@@ -420,10 +406,6 @@ public class Message implements Serializable, Closeable {
 			return reference.isBinary();
 		}
 
-		if (request instanceof RequestBuffer requestBuffer) {
-			return requestBuffer.isBinary();
-		}
-
 		return request instanceof ThrowingSupplier || request instanceof byte[] || request instanceof Number || request instanceof Boolean;
 	}
 
@@ -431,7 +413,7 @@ public class Message implements Serializable, Closeable {
 	 * If true, the Message should preferably be read using a streaming method, i.e. asReader() or asInputStream(), to avoid copying it into memory.
 	 */
 	public boolean requiresStream() {
-		return request instanceof ThrowingSupplier || request instanceof SerializableFileReference || request instanceof RequestBuffer;
+		return request instanceof ThrowingSupplier || request instanceof SerializableFileReference;
 	}
 
 	@Override
@@ -496,11 +478,6 @@ public class Message implements Serializable, Closeable {
 			return reference.getReader();
 		}
 
-		if (request instanceof RequestBuffer requestBuffer) {
-			String readerCharset = computeDecodingCharset(defaultDecodingCharset); // Don't overwrite the Message's charset unless it's set to AUTO
-			return requestBuffer.asReader(Charset.forName(readerCharset));
-		}
-
 		if (isBinary()) {
 			String readerCharset = computeDecodingCharset(defaultDecodingCharset); // Don't overwrite the Message's charset unless it's set to AUTO
 
@@ -542,15 +519,6 @@ public class Message implements Serializable, Closeable {
 		try {
 			if (request == null) {
 				return null;
-			}
-
-			if (request instanceof RequestBuffer requestBuffer) {
-				LOG.debug("returning InputStream {} from RequestBuffer", this::getObjectId);
-				if (requestBuffer.isBinary()) {
-					return requestBuffer.asInputStream();
-				}
-				String charset = getEncodingCharset(defaultEncodingCharset);
-				return requestBuffer.asInputStream(Charset.forName(charset));
 			}
 
 			if (request instanceof SerializableFileReference reference) {
@@ -764,13 +732,6 @@ public class Message implements Serializable, Closeable {
 	 * @return {@code true} if the message is empty, {@code false} if message is not empty or if the size cannot be determined up-front.
 	 */
 	public boolean isEmpty() {
-		if (request instanceof RequestBuffer requestBuffer) {
-			try {
-				return requestBuffer.isEmpty();
-			} catch (IOException e) {
-				throw Lombok.sneakyThrow(e);
-			}
-		}
 		return size() == 0L;
 	}
 
@@ -875,10 +836,6 @@ public class Message implements Serializable, Closeable {
 	public static boolean hasDataAvailable(Message message) throws IOException {
 		if (Message.isNull(message)) {
 			return false;
-		}
-		// TODO: Rewrite "message.isEmpty()" to give a truthful answer always? Then we can delegate to that instead. Don't yet know if that will break some other tests though, so this will be a future change.
-		if (message.asObject() instanceof RequestBuffer requestBuffer) {
-			return !requestBuffer.isEmpty();
 		}
 		long size = message.size();
 		if (size != MESSAGE_SIZE_UNKNOWN) {
@@ -1008,24 +965,7 @@ public class Message implements Serializable, Closeable {
 			return reference.getSize();
 		}
 
-		if (request instanceof RequestBuffer requestBuffer) {
-			return requestBuffer.size();
-		}
-
-		if (request instanceof FileInputStream fileStream) {
-			// This can happen during initial check of request-size before creating the RequestBuffer
-			try {
-				return fileStream.getChannel().size();
-			} catch (IOException e) {
-				LOG.debug("unable to determine size of stream [{}], error: {}", (Supplier<?>) () -> ClassUtils.nameOf(request), (Supplier<?>) e::getMessage, e);
-			}
-		}
-
-		if (!(request instanceof InputStream || request instanceof Reader)) {
-			//Unable to determine the size of a Stream
-			LOG.debug("unable to determine size of Message [{}]", () -> ClassUtils.nameOf(request));
-		}
-
+		LOG.debug("unable to determine size of Message [{}]", () -> ClassUtils.nameOf(request));
 		return MESSAGE_SIZE_UNKNOWN;
 	}
 
@@ -1042,9 +982,6 @@ public class Message implements Serializable, Closeable {
 	 */
 	@Nonnull
 	public Message copyMessage() throws IOException {
-		if (request instanceof RequestBuffer) {
-			preserve(false);
-		}
 		if (!(request instanceof SerializableFileReference)) {
 			return new Message(copyContext(), request);
 		}

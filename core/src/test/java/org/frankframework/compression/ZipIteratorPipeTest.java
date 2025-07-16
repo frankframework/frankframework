@@ -87,10 +87,10 @@ class ZipIteratorPipeTest extends PipeTestBase<ZipIteratorPipe> {
 		assertEquals("""
 				<results>
 				<result item="1">
-				{Metadata.Name=fileaa.txt, Metadata.ModificationTime=2021-04-07 15:09:20.000, Metadata.Size=3}
+				{Metadata.Name=fileaa.txt, Metadata.ModificationTime=2021-04-07 15:09:20.000}
 				</result>
 				<result item="2">
-				{Metadata.Name=filebb.log, Metadata.ModificationTime=2021-04-07 15:09:28.000, Metadata.Size=3}
+				{Metadata.Name=filebb.log, Metadata.ModificationTime=2021-04-07 15:09:28.000}
 				</result>
 				</results>""", prr.getResult().asString());
 	}
