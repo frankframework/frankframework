@@ -52,9 +52,6 @@ import lombok.extern.log4j.Log4j2;
  */
 @Log4j2
 public class StreamUtil {
-	// TODO: Move AppConstants to commons and make this configurable for tests
-	public static final String BUFFER_SIZE_PROPERTY = "stream.buffer.size";
-
 	public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING = DEFAULT_CHARSET.displayName();
 	public static final String AUTO_DETECT_CHARSET = "auto";
