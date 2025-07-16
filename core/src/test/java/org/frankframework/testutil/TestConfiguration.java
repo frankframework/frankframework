@@ -11,7 +11,7 @@ import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisManager;
-import org.frankframework.lifecycle.MessageEventListener;
+import org.frankframework.lifecycle.events.MessageEventListener;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.SpringUtils;

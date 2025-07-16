@@ -13,18 +13,17 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 */
-package org.frankframework.lifecycle;
+package org.frankframework.lifecycle.events;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import org.springframework.context.ApplicationListener;
 
-import org.frankframework.configuration.ConfigurationMessageEvent;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.util.MessageKeeper;
-
-public class MessageEventListener implements ApplicationListener<ApplicationMessageEvent> {
+import org.frankframework.util.MessageKeeperMessage;
+public class MessageEventListener implements ApplicationListener<MessageEvent<?>> {
 	private static final int MESSAGEKEEPER_SIZE = 10;
 
 	private final Map<String, MessageKeeper> messageKeepers = new HashMap<>();
@@ -59,20 +58,19 @@ public class MessageEventListener implements ApplicationListener<ApplicationMess
 	}
 
 	private MessageKeeper configLog(String key) {
-		MessageKeeper messageKeeper = messageKeepers.get(key);
-		if (messageKeeper == null) {
-			messageKeeper = new MessageKeeper(MESSAGEKEEPER_SIZE);
-			messageKeepers.put(key, messageKeeper);
-		}
-		return messageKeeper;
+		return messageKeepers.computeIfAbsent(key, k -> new MessageKeeper(MESSAGEKEEPER_SIZE));
 	}
 
 	@Override
-	public void onApplicationEvent(ApplicationMessageEvent event) {
+	public void onApplicationEvent(MessageEvent<?> event) {
+		MessageKeeperMessage messageKeeperMessage = MessageKeeperMessage.fromEvent(event);
+
 		if(event instanceof ConfigurationMessageEvent messageEvent) {
 			String configurationName = messageEvent.getSource().getName();
-			configLog(configurationName).add(event.getMessageKeeperMessage());
+			configLog(configurationName).add(messageKeeperMessage);
+			globalLog().add(messageKeeperMessage);
+		} else if(event instanceof ApplicationMessageEvent) {
+			globalLog().add(messageKeeperMessage);
 		}
-		globalLog().add(event.getMessageKeeperMessage());
 	}
 }

@@ -37,7 +37,7 @@ import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.ProcessState;
-import org.frankframework.lifecycle.MessageEventListener;
+import org.frankframework.lifecycle.events.MessageEventListener;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;

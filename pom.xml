@@ -12,7 +12,7 @@
 		<maven.compiler.target>17</maven.compiler.target>
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.proc>full</maven.compiler.proc>
-		<log4j2.version>2.24.3</log4j2.version>
+		<log4j2.version>2.25.1</log4j2.version>
 
 		<sonar.organization>frank-framework</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -31,7 +31,7 @@
 
 		<narayana.version>7.2.2.Final</narayana.version>
 		<jboss-logging.version>3.6.1.Final</jboss-logging.version>
-		<micrometer.version>1.15.1</micrometer.version>
+		<micrometer.version>1.15.2</micrometer.version>
 		<argLine/> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>4.0-SNAPSHOT</frankdoc.version>
@@ -55,7 +55,7 @@
 		<rabbitmq.driver.version>5.25.0</rabbitmq.driver.version>
 		<rabbitmq.jms.version>3.4.0</rabbitmq.jms.version>
 
-		<aws.java.sdk.version>2.31.0</aws.java.sdk.version>
+		<aws.java.sdk.version>2.32.0</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
 		<mockito.version>5.18.0</mockito.version>
@@ -174,7 +174,7 @@
 			<dependency>
 				<groupId>com.nimbusds</groupId>
 				<artifactId>nimbus-jose-jwt</artifactId>
-				<version>9.48</version>
+				<version>10.3.1</version>
 			</dependency>
 			<!-- End Lock transient deps -->
 
@@ -403,7 +403,7 @@
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-bom</artifactId>
-				<version>4.2.2.Final</version>
+				<version>4.2.3.Final</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>

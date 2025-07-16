@@ -6,6 +6,14 @@
       total disk size ({{ serverInfo.fileSystem.totalSpace | humanFileSize }})
     </li>
   }
+  @if (securityItemsService.hasExpiringCertificates()) {
+    <li class="list-group-item alert-danger">
+      <div (click)="navigateTo('security-items')" class="pointer">
+        <i class="m-r-md fa fa-info-circle"></i>
+        <span>One or more certificates are due to expire</span>
+      </div>
+    </li>
+  }
   @if (messageLog[selectedConfiguration]) {
     @if (messageLog[selectedConfiguration].errorStoreCount === 1) {
       <li class="list-group-item alert-danger">

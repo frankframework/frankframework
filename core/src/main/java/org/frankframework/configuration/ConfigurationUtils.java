@@ -54,12 +54,12 @@ import org.frankframework.core.IbisTransaction;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
-import org.frankframework.lifecycle.ApplicationMessageEvent;
 import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.lifecycle.events.ApplicationMessageEvent;
+import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
@@ -502,7 +502,7 @@ public class ConfigurationUtils {
 					}
 				}
 			} catch (IOException e) {
-				applicationContext.publishEvent(new ApplicationMessageEvent(applicationContext, "failed to autoload configurations", MessageKeeperLevel.WARN, e));
+				applicationContext.publishEvent(new ApplicationMessageEvent(applicationContext, "failed to autoload configurations", MessageEventLevel.WARN, e));
 			}
 		}
 		if (databaseConfigurations) {
@@ -518,7 +518,7 @@ public class ConfigurationUtils {
 				}
 			}
 			catch (ConfigurationException e) {
-				applicationContext.publishEvent(new ApplicationMessageEvent(applicationContext, "error retrieving database configurations", MessageKeeperLevel.WARN, e));
+				applicationContext.publishEvent(new ApplicationMessageEvent(applicationContext, "error retrieving database configurations", MessageEventLevel.WARN, e));
 			}
 		}
 
