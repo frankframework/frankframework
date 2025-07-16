@@ -150,6 +150,10 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		if (customFileAttributes.isEmpty()) {
 			return;
 		}
+		if (!Files.getFileStore(file).supportsFileAttributeView(UserDefinedFileAttributeView.class)) {
+			log.warn("Custom file attributes not supported by FileStore [{}]", Files.getFileStore(file));
+			return;
+		}
 
 		// We need to restore the original file modified time, because we use it to append to the filename in some configurations of the DirectoryListener.
 		FileTime lastModifiedTime = Files.getLastModifiedTime(file);
@@ -359,10 +363,12 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	public Date getModificationTime(Path f) throws FileSystemException {
 		try {
 			// If the original LastModifiedTime is stored in a user-defined attribute, return that value
-			UserDefinedFileAttributeView userDefinedAttributes = getUserDefinedAttributes(f);
-			if (hasOriginalLastModifiedTime(userDefinedAttributes)) {
-				String lastModifiedTime = readAttribute(userDefinedAttributes, ORIGINAL_LAST_MODIFIED_TIME_ATTRIBUTE);
-				return new Date(Long.parseLong(lastModifiedTime));
+			if (Files.getFileStore(f).supportsFileAttributeView(UserDefinedFileAttributeView.class)) {
+				UserDefinedFileAttributeView userDefinedAttributes = getUserDefinedAttributes(f);
+				if (hasOriginalLastModifiedTime(userDefinedAttributes)) {
+					String lastModifiedTime = readAttribute(userDefinedAttributes, ORIGINAL_LAST_MODIFIED_TIME_ATTRIBUTE);
+					return new Date(Long.parseLong(lastModifiedTime));
+				}
 			}
 
 			return new Date(Files.getLastModifiedTime(f).toMillis());
