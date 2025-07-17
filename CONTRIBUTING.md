@@ -224,10 +224,12 @@ Please ensure that your Javadoc comments are correct. Eclipse can check this for
 
 ## Developing with IntelliJ
 
-### Install latest LTS NodeJS
+### Install the Latest LTS Version of Node.js
 
-- Download the latest [LTS version of NodeJS](https://nodejs.org/en) or check the [Angular Version compatability](https://angular.dev/reference/versions) to decide which version to install.
-- Test if NodeJS is correctly installed then you should be able to open a terminal/cmd and type in `node -v` and `npm -v` without any errors.
+* Download the latest [LTS version of Node.js](https://nodejs.org/en), or refer to the [Angular version compatibility guide](https://angular.dev/reference/versions) to choose the appropriate version.
+* To verify your installation, open a terminal or command prompt and run `node -v`. If installed correctly, this will display the Node.js version without errors.
+* We use [PNPM](https://pnpm.io/) as our package manager. Enable it by running `corepack enable pnpm`, or follow the [PNPM installation guide](https://pnpm.io/installation).
+* Confirm PNPM is installed by running `pnpm -v`, similar to the Node.js check.
 
 ### Setup IntelliJ
 
