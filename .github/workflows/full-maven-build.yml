@@ -87,6 +87,7 @@ jobs:
       with:
         node-version: 20.x
         cache: pnpm
+        cache-dependency-path: console/frontend/src/main/frontend/pnpm-lock.yaml
 
     - name: Create Maven settings.xml file
       if: ${{ env.USE_PROPRIETARY == 'true' }}
