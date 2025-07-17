@@ -1,4 +1,4 @@
-import { Injectable, isDevMode } from '@angular/core';
+import { inject, Injectable, isDevMode } from '@angular/core';
 import { Client, IFrame, IMessage, IStompSocket, StompSubscription } from '@stomp/stompjs';
 import { AppService, ClusterMember } from '../app.service';
 import { Subject } from 'rxjs';
@@ -35,6 +35,9 @@ export class WebsocketService {
   onWebSocketError$ = this.onWebSocketErrorSubject.asObservable();
   onMessage$ = this.onMessageSubject.asObservable();
 
+  private readonly appService: AppService = inject(AppService);
+  private readonly sweetalertService: SweetalertService = inject(SweetalertService);
+  private readonly toastsService: ToastService = inject(ToastService);
   private baseUrl: string = `${window.location.host}${this.appService.absoluteApiPath}`;
   private errorCount: number = 0;
   private httpProtocol: string = window.location.protocol == 'https:' ? 'https:' : 'http:';
@@ -66,12 +69,6 @@ export class WebsocketService {
     },
   });
   private stompSubscriptions: Map<string, StompSubscription> = new Map<string, StompSubscription>();
-
-  constructor(
-    private appService: AppService,
-    private sweetalertService: SweetalertService,
-    private toastsService: ToastService,
-  ) {}
 
   activate(): void {
     if (!this.client.connected) {

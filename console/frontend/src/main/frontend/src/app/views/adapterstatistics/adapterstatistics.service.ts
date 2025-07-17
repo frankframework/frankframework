@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
@@ -59,11 +59,9 @@ export type Statistics = {
   providedIn: 'root',
 })
 export class AdapterstatisticsService {
-  constructor(
-    private http: HttpClient,
-    private appService: AppService,
-    private Misc: MiscService,
-  ) {}
+  private readonly http: HttpClient = inject(HttpClient);
+  private readonly appService: AppService = inject(AppService);
+  private readonly Misc: MiscService = inject(MiscService);
 
   getStatistics(configurationName: string, adapterName: string): Observable<Statistics> {
     return this.http.get<Statistics>(

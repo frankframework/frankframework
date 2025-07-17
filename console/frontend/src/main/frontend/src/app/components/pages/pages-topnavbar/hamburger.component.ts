@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { AppService } from '../../../app.service';
 
 @Component({
@@ -7,7 +7,7 @@ import { AppService } from '../../../app.service';
   standalone: true,
 })
 export class HamburgerComponent {
-  constructor(private appService: AppService) {}
+  private readonly appService: AppService = inject(AppService);
 
   toggle(): void {
     this.appService.toggleSidebar();

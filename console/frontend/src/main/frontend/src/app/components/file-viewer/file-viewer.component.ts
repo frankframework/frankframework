@@ -6,7 +6,7 @@ import {
   HttpEventType,
   HttpResponse,
 } from '@angular/common/http';
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, inject, Input, OnInit } from '@angular/core';
 import { debounceTime, filter } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
@@ -27,11 +27,9 @@ export class FileViewerComponent implements OnInit {
   protected loading = true;
   protected error = false;
 
-  constructor(
-    private http: HttpClient,
-    private appService: AppService,
-    private miscService: MiscService,
-  ) {}
+  private readonly http: HttpClient = inject(HttpClient);
+  private readonly appService: AppService = inject(AppService);
+  private readonly miscService: MiscService = inject(MiscService);
 
   ngOnInit(): void {
     const requestOptions = {

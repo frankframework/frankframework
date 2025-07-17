@@ -1,13 +1,14 @@
 import {
   AfterViewInit,
   Component,
+  computed,
   EventEmitter,
   inject,
   Input,
   OnChanges,
-  OnDestroy,
   OnInit,
   Output,
+  Signal,
 } from '@angular/core';
 import { convertToParamMap, Router, RouterModule } from '@angular/router';
 import { MinimalizaSidebarComponent } from './minimaliza-sidebar.component';
@@ -18,8 +19,7 @@ import { CdkAccordionItem, CdkAccordionModule } from '@angular/cdk/accordion';
 import { SidebarDirective } from './sidebar.directive';
 import { HasAccessToLinkDirective } from '../../has-access-to-link.directive';
 import { NgClass } from '@angular/common';
-import { AppConstants, AppService } from '../../../app.service';
-import { Subscription } from 'rxjs';
+import { AppService } from '../../../app.service';
 import { ConditionalOnPropertyDirective } from '../../conditional-on-property.directive';
 
 type ExpandedItem = {
@@ -43,23 +43,23 @@ type ExpandedItem = {
     ConditionalOnPropertyDirective,
   ],
 })
-export class PagesNavigationComponent implements OnChanges, OnInit, AfterViewInit, OnDestroy {
+export class PagesNavigationComponent implements OnChanges, OnInit, AfterViewInit {
   @Input() queryParams = convertToParamMap({});
   @Output() shouldOpenInfo = new EventEmitter<void>();
 
   protected frankframeworkLogoPath: string = 'assets/images/ff-kawaii.svg';
   protected frankExclamationPath: string = 'assets/images/frank-exclemation.svg';
-  protected showOldLadybug: boolean = false;
+  protected showOldLadybug: Signal<boolean> = computed(
+    // eslint-disable-next-line unicorn/consistent-function-scoping
+    () => this.appService.appConstants()['testtool.echo2.enabled'] === 'true',
+  );
   protected encodedServerInfo: string = '';
 
+  private readonly router: Router = inject(Router);
+  private readonly serverInfoService: ServerInfoService = inject(ServerInfoService);
+  private readonly appService: AppService = inject(AppService);
   private readonly IMAGES_BASE_PATH = 'assets/images/';
   private readonly ANIMATION_SPEED = 250;
-
-  private _subscriptions = new Subscription();
-  private router: Router = inject(Router);
-  private serverInfoService: ServerInfoService = inject(ServerInfoService);
-  private readonly appService: AppService = inject(AppService);
-  private appConstants: AppConstants = this.appService.APP_CONSTANTS;
   private expandedItem: ExpandedItem | null = null;
   private initializing: boolean = true;
 
@@ -68,12 +68,6 @@ export class PagesNavigationComponent implements OnChanges, OnInit, AfterViewIni
     this.serverInfoService.serverInfo$.subscribe(() => {
       this.updateServerInfo();
     });
-    const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
-      this.appConstants = this.appService.APP_CONSTANTS;
-      this.showOldLadybug = this.appConstants['testtool.echo2.enabled'] === 'true';
-    });
-    this._subscriptions.add(appConstantsSubscription);
-    this.showOldLadybug = this.appConstants['testtool.echo2.enabled'] === 'true';
   }
 
   ngOnChanges(): void {
@@ -86,10 +80,6 @@ export class PagesNavigationComponent implements OnChanges, OnInit, AfterViewIni
     setTimeout(() => {
       this.initializing = false;
     });
-  }
-
-  ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
   }
 
   openInfo(): void {

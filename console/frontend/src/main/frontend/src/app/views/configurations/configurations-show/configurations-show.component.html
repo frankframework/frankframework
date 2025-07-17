@@ -1,7 +1,7 @@
 <div class="wrapper wrapper-content animated fadeInRight">
   <div class="row">
     <app-configuration-tab-list
-      [configurations]="configurations"
+      [configurations]="configurations()"
       [showAll]="true"
       (selectedTabChange)="changeConfiguration($event)"
     ></app-configuration-tab-list>

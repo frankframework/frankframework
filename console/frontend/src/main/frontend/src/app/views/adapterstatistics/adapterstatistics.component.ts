@@ -3,7 +3,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import type { ChartData, ChartDataset, ChartOptions } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { Subscription } from 'rxjs';
-import { AppConstants, AppService } from 'src/app/app.service';
+import { AppService } from 'src/app/app.service';
 import { DebugService } from 'src/app/services/debug.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { AdapterstatisticsService, Statistics, StatisticsKeeper } from './adapterstatistics.service';
@@ -12,6 +12,7 @@ import { LaddaModule } from 'angular2-ladda';
 import { FormatStatKeysPipe } from './format-stat-keys.pipe';
 import { FormatStatisticsPipe } from './format-statistics.pipe';
 import { ServerTimeService } from '../../services/server-time.service';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-adapterstatistics',
@@ -69,17 +70,6 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
     sizePerPipe: true,
   };
 
-  private _subscriptions = new Subscription();
-  private dataset: Partial<ChartDataset<'line', number[]>> = {
-    fill: false,
-    backgroundColor: '#2f4050',
-    pointBackgroundColor: '#2f4050',
-    borderColor: '#2f4050',
-    pointBorderColor: '#2f4050',
-    // hoverBackgroundColor: "#2f4050",
-    hoverBorderColor: '#2f4050',
-  };
-
   private defaults = {
     name: 'Name',
     count: 'Count',
@@ -94,13 +84,22 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
   protected statisticsTimeBoundaries: Record<string, string> = { ...this.defaults };
   protected statisticsSizeBoundaries: Record<string, string> = { ...this.defaults };
 
-  private appService: AppService = inject(AppService);
-  private route: ActivatedRoute = inject(ActivatedRoute);
-  private statisticsService: AdapterstatisticsService = inject(AdapterstatisticsService);
-  private SweetAlert: SweetalertService = inject(SweetalertService);
-  private Debug: DebugService = inject(DebugService);
-  private serverTimeService: ServerTimeService = inject(ServerTimeService);
-  private appConstants: AppConstants = this.appService.APP_CONSTANTS;
+  private readonly appService: AppService = inject(AppService);
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
+  private readonly statisticsService: AdapterstatisticsService = inject(AdapterstatisticsService);
+  private readonly SweetAlert: SweetalertService = inject(SweetalertService);
+  private readonly Debug: DebugService = inject(DebugService);
+  private readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
+  private appConstantsSubscription: Subscription | null = null;
+  private dataset: Partial<ChartDataset<'line', number[]>> = {
+    fill: false,
+    backgroundColor: '#2f4050',
+    pointBackgroundColor: '#2f4050',
+    borderColor: '#2f4050',
+    pointBorderColor: '#2f4050',
+    // hoverBackgroundColor: "#2f4050",
+    hoverBorderColor: '#2f4050',
+  };
 
   ngOnInit(): void {
     const routeParameters = this.route.snapshot.paramMap;
@@ -112,15 +111,10 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
-      this.appConstants = this.appService.APP_CONSTANTS;
-      this.populateBoundaries();
-    });
-    this._subscriptions.add(appConstantsSubscription);
-
-    if (this.appConstants['Statistics.boundaries']) {
-      this.populateBoundaries(); //AppConstants already loaded
-    }
+    this.appConstantsSubscription = toObservable(this.appService.appConstants).subscribe(() =>
+      this.populateBoundaries(),
+    );
+    this.populateBoundaries();
 
     window.setTimeout(() => {
       this.refresh();
@@ -128,7 +122,7 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
+    this.appConstantsSubscription?.unsubscribe();
   }
 
   refresh(): void {
@@ -168,12 +162,15 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
   }
 
   private populateBoundaries(): void {
-    const timeBoundaries: string[] = (this.appConstants['Statistics.boundaries'] as string).split(',');
-    const sizeBoundaries: string[] = (this.appConstants['Statistics.size.boundaries'] as string).split(',');
-    const percBoundaries: string[] = (this.appConstants['Statistics.percentiles'] as string).split(',');
+    const appConstants = this.appService.appConstants();
+    if (!appConstants['Statistics.boundaries']) return;
 
-    const publishPercentiles = this.appConstants['Statistics.percentiles.publish'] == 'true';
-    const publishHistograms = this.appConstants['Statistics.histograms.publish'] == 'true';
+    const timeBoundaries: string[] = (appConstants['Statistics.boundaries'] as string).split(',');
+    const sizeBoundaries: string[] = (appConstants['Statistics.size.boundaries'] as string).split(',');
+    const percBoundaries: string[] = (appConstants['Statistics.percentiles'] as string).split(',');
+
+    const publishPercentiles = appConstants['Statistics.percentiles.publish'] == 'true';
+    const publishHistograms = appConstants['Statistics.histograms.publish'] == 'true';
     const displayPercentiles = publishPercentiles || publishHistograms;
 
     this.Debug.info('appending Statistic.boundaries', timeBoundaries, sizeBoundaries, percBoundaries);

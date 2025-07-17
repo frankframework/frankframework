@@ -44,22 +44,18 @@ export type ConsoleInfo = {
   providedIn: 'root',
 })
 export class ServerInfoService {
-  private readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
   private serverInfoSubject = new ReplaySubject<ServerInfo>(1);
+  public serverInfo$ = this.serverInfoSubject.asObservable();
   private consoleInfoSubject = new BehaviorSubject<ConsoleInfo>({
     version: null,
   });
+  public consoleVersion$ = this.consoleInfoSubject.asObservable();
 
-  serverInfo$ = this.serverInfoSubject.asObservable();
-  consoleVersion$ = this.consoleInfoSubject.asObservable();
-
+  private readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
+  private readonly appService: AppService = inject(AppService);
+  private readonly http: HttpClient = inject(HttpClient);
   private serverInfo?: ServerInfo;
   private consoleInfo?: ConsoleInfo;
-
-  constructor(
-    private appService: AppService,
-    private http: HttpClient,
-  ) {}
 
   fetchServerInfo(): Observable<ServerInfo> {
     return this.http.get<ServerInfo>(`${this.appService.absoluteApiPath}server/info`);

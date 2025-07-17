@@ -20,7 +20,7 @@ export class ConfigurationTabListComponent extends TabListComponent implements O
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
   private readonly router: Router = inject(Router);
   private readonly appService: AppService = inject(AppService);
-  private readonly subscriptions: Subscription = new Subscription();
+  private adaptersSubscription: Subscription | null = null;
   private configurationsList: string[] = [];
 
   @Input({ required: true })
@@ -31,10 +31,9 @@ export class ConfigurationTabListComponent extends TabListComponent implements O
   }
 
   ngOnInit(): void {
-    const adaptersSubscription = toObservable(this.appService.adapters).subscribe((adapters) =>
+    this.adaptersSubscription = toObservable(this.appService.adapters).subscribe((adapters) =>
       this.processTabList(adapters),
     );
-    this.subscriptions.add(adaptersSubscription);
 
     this.route.queryParamMap.subscribe((parameters) => {
       const tab = parameters.get(this.queryParamName);
@@ -59,7 +58,7 @@ export class ConfigurationTabListComponent extends TabListComponent implements O
   }
 
   ngOnDestroy(): void {
-    this.subscriptions.unsubscribe();
+    this.adaptersSubscription?.unsubscribe();
   }
 
   protected override changeTab(tab: string): void {
