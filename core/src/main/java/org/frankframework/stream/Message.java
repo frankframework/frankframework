@@ -55,6 +55,7 @@ import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import lombok.Lombok;
+import lombok.SneakyThrows;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.functional.ThrowingSupplier;
@@ -114,31 +115,14 @@ public class Message implements Serializable, Closeable {
 		} else {
 			this.request = request;
 		}
+		if (this.request instanceof InputStream) {
+			throw new IllegalArgumentException("Cannot pass object of type InputStream to Message constructor");
+		} else if (this.request instanceof Reader) {
+			throw new IllegalArgumentException("Cannot pass object of type Reader to Message constructor");
+		}
+
 		this.context = context;
 		this.requestClass = requestClass != null ? ClassUtils.nameOf(requestClass) : ClassUtils.nameOf(request);
-
-		try {
-			if (this.request instanceof InputStream source) {
-				try (Message message = MessageUtils.fromInputStream(source)) {
-					this.request = message.request;
-					message.request = null; // Prevent potential temp files being closed
-					this.context.putAll(message.context.getAll());
-				}
-			} else if (this.request instanceof Reader source) {
-				try (Message message = MessageUtils.fromReader(source)) {
-					this.request = message.request;
-					message.request = null; // Prevent potential temp files being closed
-					this.context.putAll(message.context.getAll());
-					if (this.context.containsKey(MessageContext.METADATA_CHARSET)) {
-						// Ensure charset is now always UTF-8 because that's what it is after converting from stream
-						this.context.withCharset(StandardCharsets.UTF_8);
-					}
-				}
-			}
-		} catch (IOException e) {
-			// TODO: For future, add I/O Exception on constructor?
-			throw Lombok.sneakyThrow(e);
-		}
 
 		if (request != null) {
 			messageNotClosedAction = new MessageNotClosedAction();
@@ -172,12 +156,24 @@ public class Message implements Serializable, Closeable {
 		this(new MessageContext(), request);
 	}
 
-	public Message(Reader request, @Nonnull MessageContext context) {
-		this(context, request);
+	public Message(Reader request, @Nonnull MessageContext context) throws IOException {
+		this.context = context;
+		this.requestClass = ClassUtils.nameOf(request);
+		try (Message message = MessageUtils.fromReader(request)) {
+			this.request = message.request;
+			message.request = null; // Prevent potential temp files being closed
+			this.context.putAll(message.context.getAll());
+			if (this.context.containsKey(MessageContext.METADATA_CHARSET)) {
+				// Ensure charset is now always UTF-8 because that's what it is after converting from stream
+				this.context.withCharset(StandardCharsets.UTF_8);
+			}
+		}
+		messageNotClosedAction = new MessageNotClosedAction();
+		CleanerProvider.register(this, messageNotClosedAction);
 	}
 
-	public Message(Reader request) {
-		this(new MessageContext(), request);
+	public Message(Reader request) throws IOException {
+		this(request, new MessageContext());
 	}
 
 	/**
@@ -198,16 +194,24 @@ public class Message implements Serializable, Closeable {
 		this(context, request, requestClass);
 	}
 
-	public Message(InputStream request, String charset) {
-		this(new MessageContext(charset), request);
+	public Message(InputStream request, String charset) throws IOException {
+		this(request, new MessageContext(charset));
 	}
 
-	public Message(InputStream request, @Nonnull MessageContext context) {
-		this(context, request);
+	public Message(InputStream request, @Nonnull MessageContext context) throws IOException {
+		this.context = context;
+		this.requestClass = ClassUtils.nameOf(request);
+		try (Message message = MessageUtils.fromInputStream(request)) {
+			this.request = message.request;
+			message.request = null; // Prevent potential temp files being closed
+			this.context.putAll(message.context.getAll());
+		}
+		messageNotClosedAction = new MessageNotClosedAction();
+		CleanerProvider.register(this, messageNotClosedAction);
 	}
 
-	public Message(InputStream request) {
-		this(new MessageContext(), request);
+	public Message(InputStream request) throws IOException {
+		this(request, new MessageContext());
 	}
 
 	public Message(Node request, @Nonnull MessageContext context) {
@@ -774,6 +778,7 @@ public class Message implements Serializable, Closeable {
 	 *
 	 * @return a Message of the correct type for the given object
 	 */
+	@SneakyThrows(IOException.class)
 	public static Message asMessage(Object object) {
 		if (object == null) {
 			return nullMessage();
@@ -782,6 +787,12 @@ public class Message implements Serializable, Closeable {
 			// NB: This case can lead to hard-to-debug issues with messages either not being closed, or closed too early. Should ideally be avoided.
 			message.assertNotClosed();
 			return message;
+		}
+		if (object instanceof Reader reader) {
+			return MessageUtils.fromReader(reader);
+		}
+		if (object instanceof InputStream stream) {
+			return MessageUtils.fromInputStream(stream);
 		}
 		if (object instanceof URL rL) {
 			return new UrlMessage(rL);

@@ -394,7 +394,12 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 
 		if (getProperties) {
 			if (getDocumentContent) {
-				Message content = getMessageFromContentStream(document.getContentStream());
+				Message content;
+				try {
+					content = getMessageFromContentStream(document.getContentStream());
+				} catch (IOException e) {
+					throw new SenderException("Cannot read content stream", e);
+				}
 
 				content.closeOnCloseOf(session);
 				session.put(getFileSessionKey(), content);
@@ -410,7 +415,12 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 			return new SenderResult(cmisXml.asMessage());
 		}
 
-		Message content = getMessageFromContentStream(document.getContentStream());
+		Message content;
+		try {
+			content = getMessageFromContentStream(document.getContentStream());
+		} catch (IOException e) {
+			throw new SenderException("Cannot read content stream", e);
+		}
 		content.closeOnCloseOf(session);
 
 		if (StringUtils.isNotEmpty(getFileSessionKey())) {
@@ -421,7 +431,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 		return new SenderResult(content);
 	}
 
-	private Message getMessageFromContentStream(ContentStream contentStream) {
+	private Message getMessageFromContentStream(ContentStream contentStream) throws IOException {
 		InputStream inputStream = contentStream.getStream();
 		MessageContext context = new MessageContext();
 		context.withName(contentStream.getFileName()).withMimeType(contentStream.getMimeType());

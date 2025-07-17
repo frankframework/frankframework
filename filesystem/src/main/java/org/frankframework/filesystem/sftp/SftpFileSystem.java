@@ -175,7 +175,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 			getFileAttributes(f);
 			InputStream inputStream = ftpClient.get(f.getName());
 			return new Message(inputStream, FileSystemUtils.getContext(this, f, charset));
-		} catch (SftpException e) {
+		} catch (SftpException | IOException e) {
 			throw new FileSystemException(e);
 		}
 	}

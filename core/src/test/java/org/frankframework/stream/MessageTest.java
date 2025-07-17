@@ -224,7 +224,7 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testInputStreamToString() {
+	public void testInputStreamToString() throws IOException {
 		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
 		adapter = new Message(source);
 		testToString(adapter, ByteArrayInputStream.class);
@@ -308,7 +308,7 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testReaderToString() {
+	public void testReaderToString() throws IOException {
 		StringReader source = new StringReader(testString);
 		adapter = new Message(source);
 		testToString(adapter, StringReader.class);
@@ -977,7 +977,7 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testMessageSizeReader() {
+	public void testMessageSizeReader() throws IOException {
 		try (Message message = new Message(new StringReader("string"))) {
 			assertEquals(6L, message.size(), "size differs or could not be determined");
 			assertDoesNotThrow(() -> message.asString());

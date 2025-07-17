@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.IOException;
 import java.io.StringReader;
 import java.util.stream.Stream;
 
@@ -269,7 +270,7 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 		return jsonMessage;
 	}
 
-	static Message getStreamingJsonMessage(String json) {
+	static Message getStreamingJsonMessage(String json) throws IOException {
 		Message jsonMessage = new Message(new StringReader(json));
 		jsonMessage.getContext().withMimeType("application/json");
 		return jsonMessage;
