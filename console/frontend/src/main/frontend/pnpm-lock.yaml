@@ -98,6 +98,9 @@ importers:
       tslib:
         specifier: ^2.8.1
         version: 2.8.1
+      uuid:
+        specifier: ^11.1.0
+        version: 11.1.0
       ws:
         specifier: ^8.18.3
         version: 8.18.3

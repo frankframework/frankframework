@@ -75,10 +75,16 @@ jobs:
         distribution: 'temurin'
         java-version: ${{ matrix.java }}
 
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10
+
     - name: Set up Node.js 20.x
       uses: actions/setup-node@v4
       with:
         node-version: 20.x
+        cache: pnpm
 
     - name: Create Maven settings.xml file
       if: ${{ env.USE_PROPRIETARY == 'true' }}
