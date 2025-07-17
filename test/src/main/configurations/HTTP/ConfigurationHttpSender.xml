@@ -1,0 +1,29 @@
+<module>
+	<adapter name="HttpSender404ResultInSession">
+		<receiver>
+			<listener className="org.frankframework.receivers.JavaListener"
+				serviceName="${web.contextpath}-HttpSender404ResultInSession" />
+		</receiver>
+		<pipeline firstPipe="LocalHttp">
+			<exits>
+				<exit name="EXIT" state="success" />
+				<exit name="ERROR" state="ERROR" />
+			</exits>
+			<pipe name="LocalHttp">
+				<sender className="org.frankframework.http.HttpSender"
+					methodType="POST"
+					url="${web.protocol}://${web.host}:${web.port}${web.contextpath}/api/ThisUrlDoesNotExistAtThisHost"
+					firstBodyPartName="request"
+					sharedResourceRef="SharedHttpSession"
+					resultStatusCodeSessionKey="StatusCode"
+				/>
+				<forward name="success" path="Get Status From Session" />
+				<forward name="exception" path="ERROR" />
+			</pipe>
+			<pipe className="org.frankframework.pipes.ExceptionPipe" name="This pipe should be Skipped"/>
+			<pipe className="org.frankframework.pipes.GetFromSessionPipe"
+				name="Get Status From Session"
+				sessionKey="StatusCode"/>
+		</pipeline>
+	</adapter>
+</module>

@@ -18,6 +18,7 @@ public class MockAuthenticatedService {
 
 	public static final String basicPath = "/basic";
 	public static final String oauthPath = "/oauth";
+	public static final String oauthPathResourceNotFound = "/oauth/resourceNotFound";
 	public static final String basicPathUnchallenged = "/basicUnchallenged";
 	public static final String oauthPathUnchallenged = "/oauthUnchallenged";
 	public static final String failing = "/failing";
@@ -75,6 +76,23 @@ public class MockAuthenticatedService {
 						.withBody("{}")));
 		extension.stubFor(any(urlPathMatching(oauthPath))
 					.withHeader(AUTHORIZATION_HEADER, matching("Bearer " + MockTokenServer.EXPIRED_TOKEN))
+					.willReturn(aResponse()
+						.withStatus(401)
+						.withHeader("WWW-Authenticate", "Bearer realm=test")
+						.withBody("{\"message\":\"token expired\"}")));
+
+		extension.stubFor(any(urlPathMatching(oauthPathResourceNotFound))
+					.willReturn(aResponse()
+						.withStatus(401)
+						.withHeader("WWW-Authenticate", "Bearer realm=test")
+						.withBody("{\"message\":\"no bearer authorization header\"}")));
+		extension.stubFor(any(urlPathMatching(oauthPathResourceNotFound))
+					.withHeader(AUTHORIZATION_HEADER, matching("Bearer ([A-Za-z0-9]+)"))
+					.willReturn(aResponse()
+						.withStatus(404)
+						.withBody("")));
+		extension.stubFor(any(urlPathMatching(oauthPathResourceNotFound))
+					.withHeader(AUTHORIZATION_HEADER, matching("Bearer "+MockTokenServer.EXPIRED_TOKEN))
 					.willReturn(aResponse()
 						.withStatus(401)
 						.withHeader("WWW-Authenticate", "Bearer realm=test")
