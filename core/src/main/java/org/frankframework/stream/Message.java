@@ -108,17 +108,12 @@ public class Message implements Serializable, Closeable {
 	private @Getter boolean closed = false;
 
 	private Message(final @Nonnull MessageContext context, final @Nullable Object request, final @Nullable Class<?> requestClass) {
-		if (request instanceof Message) {
+		if (request instanceof Message || request instanceof InputStream || request instanceof Reader) {
 			// this code could be reached when this constructor was public and the actual type of the parameter was not known at compile time.
 			// e.g. new Message(pipeRunResult.getResult());
-			throw new IllegalArgumentException("Cannot pass object of type Message to Message constructor");
+			throw new IllegalArgumentException("Cannot pass object of type %s to Message constructor".formatted(ClassUtils.classNameOf(request)));
 		} else {
 			this.request = request;
-		}
-		if (this.request instanceof InputStream) {
-			throw new IllegalArgumentException("Cannot pass object of type InputStream to Message constructor");
-		} else if (this.request instanceof Reader) {
-			throw new IllegalArgumentException("Cannot pass object of type Reader to Message constructor");
 		}
 
 		this.context = context;
