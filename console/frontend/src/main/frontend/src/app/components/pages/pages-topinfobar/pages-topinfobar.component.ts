@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, Signal } from '@angular/core';
 import { ActivatedRoute, ActivationEnd, NavigationEnd, Router } from '@angular/router';
 import { Subscription, filter } from 'rxjs';
 import { AppService } from 'src/app/app.service';
@@ -10,39 +10,36 @@ import { AppService } from 'src/app/app.service';
   imports: [],
 })
 export class PagesTopinfobarComponent implements OnInit, OnDestroy {
-  loading: boolean = true;
-  breadcrumbs: string = 'Loading';
-  popoutUrl: string | null = null;
+  protected breadcrumbs: string = 'Loading';
 
-  private _subscriptions = new Subscription();
-
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private appService: AppService,
-  ) {}
+  private _subscriptions: Subscription = new Subscription();
+  private readonly router: Router = inject(Router);
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
+  private readonly appService: AppService = inject(AppService);
+  protected loading: Signal<boolean> = this.appService.loading;
+  protected popoutUrl: Signal<string | null> = this.appService.iframePopoutUrl;
 
   ngOnInit(): void {
-    this.router.events.pipe(filter((event) => event instanceof ActivationEnd)).subscribe(() => {
-      this.popoutUrl = null;
-    });
-    this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
-      const childRoute = this.route.children.pop()!;
-      if (!childRoute.snapshot.data['breadcrumbIsCustom']) {
-        this.breadcrumbs = childRoute.snapshot.data['breadcrumbs'] ?? 'Error';
-      }
-    });
-
-    const loadingSubscription = this.appService.loading$.subscribe((loading) => (this.loading = loading));
-    this._subscriptions.add(loadingSubscription);
-
+    const navigationActivationSubscription = this.router.events
+      .pipe(filter((event) => event instanceof ActivationEnd))
+      .subscribe(() => {
+        this.appService.iframePopoutUrl.set(null);
+      });
+    const navigationEndSubscription = this.router.events
+      .pipe(filter((event) => event instanceof NavigationEnd))
+      .subscribe(() => {
+        const childRoute = this.route.children.pop()!;
+        if (!childRoute.snapshot.data['breadcrumbIsCustom']) {
+          this.breadcrumbs = childRoute.snapshot.data['breadcrumbs'] ?? 'Error';
+        }
+      });
     const customBreadcrumbsSubscription = this.appService.customBreadcrumbs$.subscribe(
       (breadcrumbs) => (this.breadcrumbs = breadcrumbs),
     );
-    this._subscriptions.add(customBreadcrumbsSubscription);
 
-    const iframePopoutUrlSubscription = this.appService.iframePopoutUrl$.subscribe((url) => (this.popoutUrl = url));
-    this._subscriptions.add(iframePopoutUrlSubscription);
+    this._subscriptions.add(navigationActivationSubscription);
+    this._subscriptions.add(navigationEndSubscription);
+    this._subscriptions.add(customBreadcrumbsSubscription);
   }
 
   ngOnDestroy(): void {
@@ -50,6 +47,7 @@ export class PagesTopinfobarComponent implements OnInit, OnDestroy {
   }
 
   navigateToUrl(): void {
-    if (this.popoutUrl) window.open(this.popoutUrl, '_blank');
+    const popoutUrl = this.popoutUrl();
+    if (popoutUrl) window.open(popoutUrl, '_blank');
   }
 }

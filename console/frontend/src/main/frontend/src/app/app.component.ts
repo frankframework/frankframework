@@ -3,8 +3,6 @@ import { Idle } from '@ng-idle/core';
 import { filter, first, Subscription } from 'rxjs';
 import {
   Adapter,
-  AdapterMessage,
-  AppConstants,
   AppInitState,
   appInitState,
   AppService,
@@ -67,7 +65,6 @@ export class AppComponent implements OnInit, OnDestroy {
   protected loading = true;
   protected dtapStage = '';
   protected dtapSide = '';
-  protected startupError: Signal<string | null> = this.appService.startupError;
   protected userName?: string;
   protected routeData: Data = {};
   protected routeQueryParams: ParamMap = convertToParamMap({});
@@ -98,12 +95,13 @@ export class AppComponent implements OnInit, OnDestroy {
   private debugService: DebugService = inject(DebugService);
   private sweetAlertService: SweetalertService = inject(SweetalertService);
   private toastService: ToastService = inject(ToastService);
-  private appService: AppService = inject(AppService);
   private idle: Idle = inject(Idle);
   private modalService: NgbModal = inject(NgbModal);
   private serverInfoService: ServerInfoService = inject(ServerInfoService);
   private websocketService: WebsocketService = inject(WebsocketService);
   private serverTimeService: ServerTimeService = inject(ServerTimeService);
+  private appService: AppService = inject(AppService);
+  protected startupError: Signal<string | null> = this.appService.startupError;
 
   constructor() {
     Pace.start({
@@ -389,10 +387,10 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   initializeWarnings(): void {
-    const startupErrorSubscription = this.appService.startupError$.subscribe(() => {
+    /*const startupErrorSubscription = this.appService.startupError$.subscribe(() => {
       this.startupError = this.appService.startupError();
     });
-    this._subscriptionsReloadable.add(startupErrorSubscription);
+    this._subscriptionsReloadable.add(startupErrorSubscription);*/
 
     this.http
       .get<Record<string, MessageLog>>(`${this.appService.absoluteApiPath}server/warnings`)

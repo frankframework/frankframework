@@ -1,4 +1,4 @@
-import { Directive, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
+import { Directive, ElementRef, AfterViewInit, OnDestroy, inject } from '@angular/core';
 import { AppService } from '../../../app.service';
 import { Subscription } from 'rxjs';
 
@@ -7,14 +7,11 @@ import { Subscription } from 'rxjs';
   standalone: true,
 })
 export class SidebarDirective implements AfterViewInit, OnDestroy {
-  private bodyElement = document.querySelector<HTMLElement>('body')!;
+  private readonly appService: AppService = inject(AppService);
+  private readonly sideMenuElementReference: ElementRef<HTMLElement> = inject(ElementRef);
   private sideMenuElement = this.sideMenuElementReference.nativeElement;
+  private bodyElement = document.querySelector<HTMLElement>('body')!;
   private subscription = new Subscription();
-
-  constructor(
-    private sideMenuElementReference: ElementRef<HTMLElement>,
-    private appService: AppService,
-  ) {}
 
   ngAfterViewInit(): void {
     const sidebarSubscription = this.appService.toggleSidebar$.subscribe(() => {

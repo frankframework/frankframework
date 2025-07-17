@@ -101,7 +101,7 @@
             <li data-cy-nav="testingLarva" routerLinkActive="active" appConditionalOnProperty="larva.enabled">
               <a routerLink="/testing/larva">Larva</a>
             </li>
-            @if (showOldLadybug) {
+            @if (showOldLadybug()) {
               <li data-cy-nav="testingLadybugLegacy" routerLinkActive="active">
                 <a routerLink="/testing/ladybug-legacy">Ladybug (legacy)</a>
               </li>
