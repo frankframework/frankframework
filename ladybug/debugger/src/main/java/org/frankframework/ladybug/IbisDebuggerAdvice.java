@@ -15,6 +15,7 @@
 */
 package org.frankframework.ladybug;
 
+import java.io.IOException;
 import java.io.Writer;
 import java.util.Iterator;
 import java.util.TreeSet;
@@ -63,7 +64,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.threading.ThreadConnector;
 import org.frankframework.threading.ThreadLifeCycleEventListener;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.StreamCaptureUtils;
 import org.frankframework.xml.IXmlDebugger;
 import org.frankframework.xml.PrettyPrintFilter;
 import org.frankframework.xml.XmlWriter;
@@ -306,10 +306,40 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		if (writerPlaceHolder!=null && writerPlaceHolder.getWriter()!=null) {
 			Writer writer = writerPlaceHolder.getWriter();
 			session.scheduleCloseOnSessionExit(writer);
-			XmlWriter xmlWriter = new XmlWriter(StreamCaptureUtils.limitSize(writer, writerPlaceHolder.getSizeLimit()), true);
+			XmlWriter xmlWriter = new XmlWriter(limitSize(writer, writerPlaceHolder.getSizeLimit()), true);
 			contentHandler = new XmlTee(contentHandler, new PrettyPrintFilter(xmlWriter));
 		}
 		return contentHandler;
+	}
+
+	public static Writer limitSize(Writer writer, int maxSize) {
+		return new Writer() {
+
+			private long written;
+
+			@Override
+			public void write(char[] buffer, int offset, int length) throws IOException {
+				if (written <= maxSize) {
+					writer.write(buffer, offset, length);
+					written += length;
+					if (written > maxSize) {
+						writer.close();
+					}
+				}
+			}
+
+			@Override
+			public void flush() throws IOException {
+				writer.flush();
+			}
+
+			@Override
+			public void close() throws IOException {
+				if (written<=maxSize) {
+					writer.close();
+				}
+			}
+		};
 	}
 
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021-2022 WeAreFrank!
+   Copyright 2019, 2021-2022, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -56,9 +56,6 @@ class CellsConvertor extends AbstractConvertor {
 
 	@Override
 	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
-		if(!message.isRepeatable()) {
-			message.preserve(); // required for attaching the original Excel to produced PDF
-		}
 		// Convert Excel to pdf and store in result
 		try (InputStream inputStream = message.asInputStream(charset)) {
 			Workbook workbook = new Workbook(inputStream, defaultLoadOptions);

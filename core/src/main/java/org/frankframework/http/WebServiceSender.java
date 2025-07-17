@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017-2020 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013, 2017-2020 Nationale-Nederlanden, 2020, 2022, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -143,7 +143,6 @@ public class WebServiceSender extends HttpSender {
 		Message httpResult;
 		try {
 			httpResult = super.extractResult(responseHandler, session);
-			httpResult.preserve();
 		} catch (SenderException e) {
 			soapWrapper.checkForSoapFault(getResponseBody(responseHandler), e, session);
 			throw e;

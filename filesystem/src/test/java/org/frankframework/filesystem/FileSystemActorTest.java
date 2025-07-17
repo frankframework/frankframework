@@ -456,7 +456,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		Message message = new Message(fileViaAttribute ? null : id);
 		ParameterValueList pvl = null;
 
-		result = Message.asMessage(actor.doAction(message, pvl, session));
+		result = actor.doAction(message, pvl, session);
 
 		if(contents == null) {
 			assertTrue(Message.isEmpty(result));

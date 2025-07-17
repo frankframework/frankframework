@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -81,7 +81,6 @@ public class KafkaSender extends AbstractKafkaFacade implements ISender {
 	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 		byte[] messageData;
 		try {
-			message.preserve();
 			messageData = message.asByteArray();
 		} catch (Exception e) {
 			throw new SenderException("Failed to convert message to message type:", e);

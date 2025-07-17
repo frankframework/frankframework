@@ -130,14 +130,6 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 			log.debug("storing result in session under key [{}]", pipe::getStoreResultInSessionKey);
 			Message result = pipeRunResult.getResult();
 			pipeLineSession.put(pipe.getStoreResultInSessionKey(), result);
-			if (!pipe.isPreserveInput() && !result.isRepeatable()) {
-				// When there is a `duplicate use` of the result (in a sessionKey as well as as the result), then message must be repeatable!
-				try {
-					result.preserve();
-				} catch (IOException e) {
-					throw new PipeRunException(pipe, "could not preserve output", e);
-				}
-			}
 		}
 		if (pipe.isPreserveInput()) {
 			pipeRunResult.getResult().closeOnCloseOf(pipeLineSession);
@@ -250,8 +242,6 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 
 	private static InputSource getInputSourceFromResult(Message result, IPipe pipe) throws PipeRunException {
 		try {
-			// Preserve the message so that it can be read again, in case there was an error during compacting
-			result.preserve();
 			return result.asInputSource();
 		} catch (IOException e) {
 			throw new PipeRunException(pipe, "could not read received message during restoring/compaction of moved elements", e);

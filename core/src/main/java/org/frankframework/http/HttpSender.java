@@ -201,7 +201,6 @@ public class HttpSender extends AbstractHttpSender {
 			Message responseBody = responseHandler.getResponseMessage();
 			String body = "";
 			if(responseBody != null) {
-				responseBody.preserve();
 				try {
 					body = responseBody.asString();
 				} catch(IOException e) {

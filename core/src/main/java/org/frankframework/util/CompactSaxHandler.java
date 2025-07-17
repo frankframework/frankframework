@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden, 2023-2024 WeAreFrank!
+   Copyright 2016 Nationale-Nederlanden, 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,6 @@
  */
 package org.frankframework.util;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -137,13 +136,6 @@ public class CompactSaxHandler extends FullXmlFilter {
 
 		if (moveElementFound) {
 			Message message = new Message(charDataBuilder.toString());
-			try {
-				message.preserve();
-			} catch (IOException e) {
-				message.close();
-				throw new SAXException(e);
-			}
-
 			int lastIndex = elements.size() - 1;
 			String lastElement = elements.get(lastIndex);
 			String elementToMoveSK = determineElementToMoveSessionKey(lastElement);

@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
 
 import org.apache.http.HttpEntity;
@@ -22,6 +23,7 @@ import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import org.frankframework.stream.Message;
+import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.MessageTestUtils.MessageType;
 import org.frankframework.util.StreamUtil;
@@ -36,7 +38,9 @@ public class HttpMessageEntityTest {
 	public void setup() throws Exception {
 		messageContent = MessageTestUtils.getMessage(MessageType.CHARACTER_UTF8).asString();
 		repeatableMessage = MessageTestUtils.getMessage(MessageType.CHARACTER_UTF8);
-		nonRepeatableMessage = MessageTestUtils.getNonRepeatableMessage(MessageType.CHARACTER_UTF8);
+		Message nre = MessageTestUtils.getNonRepeatableMessage(MessageType.CHARACTER_UTF8);
+		nonRepeatableMessage = Message.asMessage(SerializableFileReference.of(nre.asReader(), StandardCharsets.UTF_8.name()));
+		nonRepeatableMessage.getContext().putAll(nre.getContext().getAll());
 		binaryMessage = MessageTestUtils.getMessage(MessageType.BINARY);
 	}
 
@@ -51,7 +55,7 @@ public class HttpMessageEntityTest {
 		assertEquals(repeatableMessage.size(), bae.getContentLength());
 		assertEquals(-1L, ise.getContentLength());
 		assertEquals(repeatableMessage.size(), hmeRepeatable.getContentLength());
-		assertEquals(-1L, hmeNonRepeatable.getContentLength());
+		assertEquals(29L, hmeNonRepeatable.getContentLength());
 		assertEquals(26358, hmeUrlRepeatable.getContentLength());
 	}
 
@@ -63,11 +67,10 @@ public class HttpMessageEntityTest {
 		HttpMessageEntity hmeNonRepeatable = new HttpMessageEntity(nonRepeatableMessage);
 		HttpMessageEntity hmeUrlRepeatable = new HttpMessageEntity(binaryMessage);
 
-		assertTrue(repeatableMessage.isRepeatable());
 		assertTrue(bae.isRepeatable());
 		assertFalse(ise.isRepeatable());
 		assertTrue(hmeRepeatable.isRepeatable());
-		assertFalse(hmeNonRepeatable.isRepeatable());
+		assertTrue(hmeNonRepeatable.isRepeatable());
 		assertTrue(hmeUrlRepeatable.isRepeatable());
 	}
 
@@ -163,21 +166,17 @@ public class HttpMessageEntityTest {
 
 	public static Stream<Arguments> testWriteToCharacterData() {
 		return Stream.of(
-				Arguments.of(MessageType.CHARACTER_UTF8, true),
-				Arguments.of(MessageType.CHARACTER_UTF8, false),
-				Arguments.of(MessageType.CHARACTER_ISO88591, true),
-				Arguments.of(MessageType.CHARACTER_ISO88591, false),
-				Arguments.of(MessageType.BINARY, true),
-				Arguments.of(MessageType.BINARY, false)
+				Arguments.of(MessageType.CHARACTER_UTF8),
+				Arguments.of(MessageType.CHARACTER_ISO88591),
+				Arguments.of(MessageType.BINARY)
 			);
 	}
 
 	// see MessageContentBody
 	@ParameterizedTest
 	@MethodSource
-	public void testWriteToCharacterData(MessageType type, boolean preserved) throws Exception {
+	public void testWriteToCharacterData(MessageType type) throws Exception {
 		Message message = MessageTestUtils.getNonRepeatableMessage(type);
-		if(preserved) message.preserve();
 
 		HttpMessageEntity entity = new HttpMessageEntity(message);
 
@@ -189,17 +188,12 @@ public class HttpMessageEntityTest {
 			assertEquals(message.getCharset(), entity.getContentEncoding().getValue());
 		}
 
-		// Check length before reading
-		if (!preserved && type != MessageType.BINARY) {
-			assertEquals(-1L, entity.getContentLength());
-		}
-
 		// Act
 		ByteArrayOutputStream boas = new ByteArrayOutputStream();
 		entity.writeTo(boas);
 
 		// Assert
-		if(preserved || type == MessageType.BINARY) {
+		if(type == MessageType.BINARY) {
 			assertEquals(entity.getContentLength(), boas.toByteArray().length);
 		} else {
 			// Check again after reading, expect to be now known

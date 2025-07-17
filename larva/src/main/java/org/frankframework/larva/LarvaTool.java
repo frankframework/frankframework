@@ -368,7 +368,6 @@ public class LarvaTool {
 	public @Nullable String messageToString(Message message) {
 		// TODO: This should just throw instead of returning NULL, and the caller should catch instead of checking NULL return value
 		try {
-			message.preserve();
 			String r = message.asString();
 			if (r == null) {
 				return "";

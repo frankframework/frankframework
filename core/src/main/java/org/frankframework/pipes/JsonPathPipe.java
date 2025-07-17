@@ -102,7 +102,6 @@ public class JsonPathPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String result;
 		try {
-			message.preserve();
 			result = JsonUtil.evaluateJsonPath(jsonPath, message);
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Failed to evaluate json path expression [" + jsonPathExpression + "] on input [" + message + "]", e);

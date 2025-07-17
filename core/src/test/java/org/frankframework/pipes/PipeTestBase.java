@@ -87,7 +87,7 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 			// will verify the original input-stream of the input-message is not used beyond due-date.
 			// Do not close session when input message did not have a stream, due to some tests depending on
 			// an open session after running the pipe.
-			try (PipeLineSession ignored = session) {
+			try (session) {
 				input.unscheduleFromCloseOnExitOf(session);
 				Message wrappedInput;
 				try {

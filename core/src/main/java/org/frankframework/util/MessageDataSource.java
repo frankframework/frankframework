@@ -35,17 +35,16 @@ public class MessageDataSource implements DataSource, Closeable {
 	private String contentType;
 	private static final MimeType DEFAULT_MIMETYPE = MimeTypeUtils.APPLICATION_OCTET_STREAM;
 
-	public MessageDataSource(Message message) throws IOException {
+	public MessageDataSource(Message message) {
 		this(message, null);
 	}
 
-	public MessageDataSource(Message message, String newContentType) throws IOException {
+	public MessageDataSource(Message message, String newContentType) {
 		if(Message.isNull(message)) {
 			throw new IllegalArgumentException("message may not be null");
 		}
 
 		this.message = message;
-		this.message.preserve();
 		this.name = (String) message.getContext().get(MessageContext.METADATA_NAME);
 
 		determineContentType(newContentType);

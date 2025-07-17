@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2024 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -79,7 +79,6 @@ public abstract class AbstractValidator extends FixedForwardPipe implements IDua
 
 	public PipeRunResult doPipe(Message input, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
 		try {
-			input.preserve();
 			PipeForward forward = validate(input, session, responseMode, messageRoot);
 			return new PipeRunResult(forward, input);
 		} catch (Exception e) {

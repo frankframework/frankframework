@@ -115,7 +115,6 @@ public class JsonUtil {
 		}
 		// Try to match the jsonPath expression on the given json string
 		try {
-			message.preserve();
 			Object jsonPathResult = jsonPath.read(message.asInputStream());
 
 			// if we get to this point, we have a match (and no PathNotFoundException)

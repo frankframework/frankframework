@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017-2018 Nationale-Nederlanden, 2020-2022, 2024 WeAreFrank!
+   Copyright 2013, 2017-2018 Nationale-Nederlanden, 2020-2022, 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -70,14 +70,6 @@ public class ParallelSenders extends SenderSeries {
 
 	@Override
 	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException {
-		try {
-			if (!message.isRepeatable()) {
-				message.preserve();
-			}
-		} catch (IOException e) {
-			throw new SenderException("could not preserve input message", e);
-		}
-
 		Map<ISender, ParallelSenderExecutor> executorMap = new LinkedHashMap<>();
 		Phaser senderGuard = new Phaser(((List<ISender>) getSenders()).size() + 1); // Itself and all senders
 		for (ISender sender : getSenders()) {
