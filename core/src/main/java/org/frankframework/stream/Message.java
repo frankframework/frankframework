@@ -185,17 +185,21 @@ public class Message implements Serializable, Closeable {
 	 * @param context      {@link MessageContext}
 	 * @param requestClass {@link Class} of the original request from which the {@link SerializableFileReference} request was created
 	 */
-	protected Message(SerializableFileReference request, @Nonnull MessageContext context, Class<?> requestClass) {
+	protected Message(@Nonnull SerializableFileReference request, @Nonnull MessageContext context, Class<?> requestClass) {
 		this(context, request, requestClass);
 	}
 
-	public Message(InputStream request, String charset) throws IOException {
+	public Message(@Nonnull InputStream request, String charset) throws IOException {
 		this(request, new MessageContext(charset));
 	}
 
-	public Message(InputStream request, @Nonnull MessageContext context) throws IOException {
+	public Message(@Nonnull InputStream request, @Nonnull MessageContext context) throws IOException {
+		this(request, context, request.getClass());
+	}
+
+	protected Message(@Nonnull InputStream request, @Nonnull MessageContext context, Class<?> requestClass) throws IOException {
 		this.context = context;
-		this.requestClass = ClassUtils.nameOf(request);
+		this.requestClass = ClassUtils.nameOf(requestClass);
 		try (Message message = MessageUtils.fromInputStream(request)) {
 			this.request = message.request;
 			message.request = null; // Prevent potential temp files being closed
@@ -572,10 +576,6 @@ public class Message implements Serializable, Closeable {
 			LOG.debug("returning InputSource {} as InputSource", this::getObjectId);
 			return source;
 		}
-		if (request instanceof Reader reader) {
-			LOG.debug("returning Reader {} as InputSource", this::getObjectId);
-			return new InputSource(reader);
-		}
 		if (request instanceof String string) {
 			LOG.debug("returning String {} as InputSource", this::getObjectId);
 			return new InputSource(new StringReader(string));
@@ -716,13 +716,12 @@ public class Message implements Serializable, Closeable {
 	}
 
 	/**
-	 * Check if a message is empty. If message size cannot be determined, return {@code false} to be on the safe side although this
-	 * might not be strictly correct.
+	 * Check if a message is empty. If message size cannot be determined, check if any data can be read from the message.
 	 *
-	 * @return {@code true} if the message is empty, {@code false} if message is not empty or if the size cannot be determined up-front.
+	 * @return {@code true} if the message is empty or no data can be read from it, {@code false} if the size if larger than 0 or data can be read from it.
 	 */
 	public boolean isEmpty() {
-		return size() == 0L;
+		return !hasDataAvailable();
 	}
 
 	private void toStringPrefix(StringBuilder writer) {
@@ -821,27 +820,27 @@ public class Message implements Serializable, Closeable {
 	 * However, to do so, some I/O may have to be performed on the message thus making this a
 	 * potentially expensive operation which may throw an {@link IOException}.
 	 * <p/>
-	 * All I/O is done in such a way that no message data is lost .
+	 * All I/O is done in such a way that no message data is lost.
 	 *
-	 * @param message Message to check. May be {@code null}.
 	 * @return Returns {@code false} if the message is {@code null} or of {@link Message#size()} returns 0.
 	 * 		Returns {@code true} if {@link Message#size()} returns a positive value.
 	 * 		If {@link Message#size()} returns {@link Message#MESSAGE_SIZE_UNKNOWN} then checks if any data can
 	 * 		be read. Data read is pushed back onto the stream.
-	 * @throws IOException Throws an IOException if checking for data in the message throws an IOException.
 	 */
-	public static boolean hasDataAvailable(Message message) throws IOException {
-		if (Message.isNull(message)) {
-			return false;
-		}
-		long size = message.size();
+	private boolean hasDataAvailable() {
+		long size = size();
 		if (size != MESSAGE_SIZE_UNKNOWN) {
 			return size != 0;
 		}
-		if (message.isBinary()) {
-			return checkIfStreamHasData(message.asInputStream());
-		} else {
-			return checkIfReaderHasData(message.asReader());
+		try {
+			if (isBinary()) {
+				return checkIfStreamHasData(asInputStream());
+			} else {
+				return checkIfReaderHasData(asReader());
+			}
+		} catch (IOException e) {
+			LOG.debug("Cannot read message data, treating as empty message", e);
+			return false;
 		}
 	}
 

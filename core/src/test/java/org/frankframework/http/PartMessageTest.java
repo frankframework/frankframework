@@ -14,6 +14,7 @@ import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeBodyPart;
 
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.io.input.NullInputStream;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -66,11 +67,12 @@ public class PartMessageTest {
 	}
 
 	private static class TestPart extends MimeBodyPart {
-		private InputStream stream = null;//non-repeatable
+		private final InputStream stream;//non-repeatable
 
 		public TestPart(String contentType) {
 			super();
 			headers.addHeader("Content-Type", contentType);
+			stream = new NullInputStream();
 		}
 
 		public TestPart(URL url) throws IOException {
