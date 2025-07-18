@@ -643,7 +643,9 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 				case "now":
 					if ("date".equalsIgnoreCase(formatType) || "time".equalsIgnoreCase(formatType)) {
 						substitutionValue = new Date();
-					} else{
+					} else if ("millis".equalsIgnoreCase(formatType)) {
+						substitutionValue = System.currentTimeMillis();
+					} else {
 						substitutionValue = formatDateToString(new Date(), formatString);
 					}
 

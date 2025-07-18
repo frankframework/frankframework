@@ -56,6 +56,9 @@ public enum ParameterType {
 	/** Similar to <code>DATETIME</code>, except for the formatString that is <code>yyyy-MM-dd HH:mm:ss.SSS</code> by default */
 	TIMESTAMP(DateParameter.class, true),
 
+	/** Converts the result to a Date, formatted as a unix timestamp in ms since Jan 01 1970. (UTC).*/
+	UNIX(DateParameter.class, true),
+
 	/** Converts the result from a XML formatted dateTime to a Date.
 	 * When applied as a JDBC parameter, the method setTimestamp() is used */
 	XMLDATETIME(DateParameter.class, true),
