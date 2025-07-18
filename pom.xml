@@ -22,7 +22,7 @@
 
 		<jackson.version>2.19.1</jackson.version>
 		<cxf.version>4.1.2</cxf.version>
-		<spring.version>6.2.8</spring.version>
+		<spring.version>6.2.9</spring.version>
 		<spring-security.version>6.4.6</spring-security.version>
 		<spring-integration.version>6.5.0</spring-integration.version>
 		<spring.boot.version>3.5.3</spring.boot.version>
@@ -55,7 +55,7 @@
 		<rabbitmq.driver.version>5.25.0</rabbitmq.driver.version>
 		<rabbitmq.jms.version>3.4.0</rabbitmq.jms.version>
 
-		<aws.java.sdk.version>2.32.2</aws.java.sdk.version>
+		<aws.java.sdk.version>2.32.3</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
 		<mockito.version>5.18.0</mockito.version>
