@@ -62,7 +62,6 @@ jobs:
       run: |
         mkdir -p ~/.m2/repository
         mkdir -p ~/.sonar/cache
-        mkdir -p console/frontend/src/main/frontend/node_modules
 
     - name: Restore cached directories
       uses: actions/cache/restore@v4
@@ -70,7 +69,6 @@ jobs:
         path: |
           ~/.m2/repository
           ~/.sonar/cache
-          console/frontend/src/main/frontend/node_modules
         key: project-cache-
 
     - name: Set up JDK ${{ env.JDK_VERSION }}
@@ -79,10 +77,17 @@ jobs:
         distribution: 'temurin'
         java-version: ${{ env.JDK_VERSION }}
 
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10
+
     - name: Set up Node.js 20.x
       uses: actions/setup-node@v4
       with:
         node-version: 20.x
+        cache: pnpm
+        cache-dependency-path: console/frontend/src/main/frontend/pnpm-lock.yaml
 
     - name: Create Maven settings.xml file
       if: ${{ env.USE_PROPRIETARY == 'true' }}
@@ -170,5 +175,4 @@ jobs:
         path: |
           ~/.m2/repository
           ~/.sonar/cache
-          console/frontend/src/main/frontend/node_modules
         key: project-cache-${{ github.run_id }}-${{ github.run_attempt }}

@@ -92,7 +92,6 @@ jobs:
       run: |
         mkdir -p ~/.m2/repository
         mkdir -p ~/.sonar/cache
-        mkdir -p console/frontend/src/main/frontend/node_modules
 
     - name: Restore cached directories
       uses: actions/cache/restore@v4
@@ -100,7 +99,6 @@ jobs:
         path: |
           ~/.m2/repository
           ~/.sonar/cache
-          console/frontend/src/main/frontend/node_modules
         key: project-cache-
 
     - name: Create Maven settings.xml file
@@ -148,5 +146,4 @@ jobs:
         path: |
           ~/.m2/repository
           ~/.sonar/cache
-          console/frontend/src/main/frontend/node_modules
         key: project-cache-${{ github.run_id }}-${{ github.run_attempt }}
