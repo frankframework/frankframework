@@ -480,9 +480,11 @@ public class Message implements Serializable, Closeable {
 			try {
 				return StreamUtil.getCharsetDetectingInputStreamReader(inputStream, readerCharset);
 			} catch (IOException e) {
+				CloseUtils.closeSilently(inputStream);
 				onExceptionClose(e);
 				throw e;
 			} catch (Exception e) {
+				CloseUtils.closeSilently(inputStream);
 				onExceptionClose(e);
 				throw Lombok.sneakyThrow(e);
 			}
