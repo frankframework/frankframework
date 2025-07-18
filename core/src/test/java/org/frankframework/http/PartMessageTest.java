@@ -1,6 +1,7 @@
 package org.frankframework.http;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -10,7 +11,6 @@ import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Path;
 
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeBodyPart;
 
 import org.apache.commons.codec.binary.Hex;
@@ -49,10 +49,10 @@ public class PartMessageTest {
 	public void testCharset() throws Exception {
 		TestPart testPart = new TestPart("application/pdf; charset=UTF-8");
 
-		PartMessage partMessage = new PartMessage(testPart);
-
-		assertEquals("UTF-8", partMessage.getCharset());
-		assertEquals(MimeType.valueOf("application/pdf; charset=UTF-8"), partMessage.getContext().get(MessageContext.METADATA_MIMETYPE));
+		try (PartMessage partMessage = new PartMessage(testPart)) {
+			assertEquals("UTF-8", partMessage.getCharset());
+			assertEquals(MimeType.valueOf("application/pdf; charset=UTF-8"), partMessage.getContext().get(MessageContext.METADATA_MIMETYPE));
+		}
 	}
 
 	@Test
@@ -60,14 +60,14 @@ public class PartMessageTest {
 
 		TestPart testPart = new TestPart("application/pdf; charset=application/pdf");
 
-		PartMessage partMessage = new PartMessage(testPart);
-
-		assertNull(partMessage.getCharset());
-		assertEquals(MimeType.valueOf("application/pdf"), (MimeType)partMessage.getContext().get(MessageContext.METADATA_MIMETYPE));
+		try (PartMessage partMessage = new PartMessage(testPart)) {
+			assertNull(partMessage.getCharset());
+			assertEquals(MimeType.valueOf("application/pdf"), partMessage.getContext().get(MessageContext.METADATA_MIMETYPE));
+		}
 	}
 
 	private static class TestPart extends MimeBodyPart {
-		private final InputStream stream;//non-repeatable
+		private final InputStream stream; // Non-repeatable
 
 		public TestPart(String contentType) {
 			super();
@@ -81,7 +81,7 @@ public class PartMessageTest {
 		}
 
 		@Override
-		public InputStream getInputStream() throws IOException, MessagingException {
+		public InputStream getInputStream() {
 			return stream;
 		}
 	}
@@ -103,7 +103,7 @@ public class PartMessageTest {
 		Message message = new Message("fakeMessage");
 
 		Object value = p.getValue(pvl, message, session, false);
-		assertTrue(value instanceof Message);
+		assertInstanceOf(Message.class, value);
 		assertEquals("<file>in root of classpath</file>", ((Message)value).asString());
 	}
 
@@ -130,16 +130,16 @@ public class PartMessageTest {
 	@Test
 	public void testDeserializationCompatibility() throws Exception {
 
-		for (int i=0; i< wires.length; i++) {
-			String label = wires[i][0];
+		for (String[] strings : wires) {
+			String label = strings[0];
 			log.debug("testDeserializationCompatibility() {}", label);
-			byte[] wire = Hex.decodeHex(wires[i][1]);
+			byte[] wire = Hex.decodeHex(strings[1]);
 			Message out = serializationTester.deserialize(wire);
 
 			assertEquals(PartMessage.class, out.getClass());
 			assertTrue(out.isBinary(), label);
 			assertEquals("UTF-8", out.getCharset(), label);
-			assertEquals(testString,out.asString(), label);
+			assertEquals(testString, out.asString(), label);
 			assertEquals(testStringLength, out.size());
 		}
 	}
