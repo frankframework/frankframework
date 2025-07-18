@@ -119,5 +119,4 @@ jobs:
       with:
         path: |
           ~/.m2/repository
-          console/frontend/src/main/frontend/node_modules
         key: project-cache-${{ github.run_id }}-${{ github.run_attempt }}

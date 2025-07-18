@@ -175,5 +175,4 @@ jobs:
         path: |
           ~/.m2/repository
           ~/.sonar/cache
-          console/frontend/src/main/frontend/node_modules
         key: project-cache-${{ github.run_id }}-${{ github.run_attempt }}
