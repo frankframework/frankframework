@@ -241,7 +241,11 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	@Override
 	public Message readFile(MockFile f, String charset) throws FileSystemException {
 		checkOpenAndExists(f);
-		return new Message(f.getInputStream(), charset);
+		try {
+			return new Message(f.getInputStream(), charset);
+		} catch (IOException e) {
+			throw new FileSystemException(e);
+		}
 	}
 
 	@Override

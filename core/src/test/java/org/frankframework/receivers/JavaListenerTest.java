@@ -100,7 +100,7 @@ public class JavaListenerTest {
 
 		EchoPipe pipe = new EchoPipe() {
 			@Override
-			public PipeRunResult doPipe(Message message, PipeLineSession session) {
+			public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 				session.put("key-not-configured-for-copy", "dummy");
 				session.put("copy-this", "return-value");
 				return super.doPipe(message, session);

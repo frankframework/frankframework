@@ -55,6 +55,7 @@ import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import lombok.Lombok;
+import lombok.SneakyThrows;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.functional.ThrowingSupplier;
@@ -107,38 +108,16 @@ public class Message implements Serializable, Closeable {
 	private @Getter boolean closed = false;
 
 	private Message(final @Nonnull MessageContext context, final @Nullable Object request, final @Nullable Class<?> requestClass) {
-		if (request instanceof Message) {
+		if (request instanceof Message || request instanceof InputStream || request instanceof Reader) {
 			// this code could be reached when this constructor was public and the actual type of the parameter was not known at compile time.
 			// e.g. new Message(pipeRunResult.getResult());
-			throw new IllegalArgumentException("Cannot pass object of type Message to Message constructor");
+			throw new IllegalArgumentException("Cannot pass object of type %s to Message constructor".formatted(ClassUtils.classNameOf(request)));
 		} else {
 			this.request = request;
 		}
+
 		this.context = context;
 		this.requestClass = requestClass != null ? ClassUtils.nameOf(requestClass) : ClassUtils.nameOf(request);
-
-		try {
-			if (this.request instanceof InputStream source) {
-				try (Message message = MessageUtils.fromInputStream(source)) {
-					this.request = message.request;
-					message.request = null; // Prevent potential temp files being closed
-					this.context.putAll(message.context.getAll());
-				}
-			} else if (this.request instanceof Reader source) {
-				try (Message message = MessageUtils.fromReader(source)) {
-					this.request = message.request;
-					message.request = null; // Prevent potential temp files being closed
-					this.context.putAll(message.context.getAll());
-					if (this.context.containsKey(MessageContext.METADATA_CHARSET)) {
-						// Ensure charset is now always UTF-8 because that's what it is after converting from stream
-						this.context.withCharset(StandardCharsets.UTF_8);
-					}
-				}
-			}
-		} catch (IOException e) {
-			// TODO: For future, add I/O Exception on constructor?
-			throw Lombok.sneakyThrow(e);
-		}
 
 		if (request != null) {
 			messageNotClosedAction = new MessageNotClosedAction();
@@ -172,12 +151,24 @@ public class Message implements Serializable, Closeable {
 		this(new MessageContext(), request);
 	}
 
-	public Message(Reader request, @Nonnull MessageContext context) {
-		this(context, request);
+	public Message(Reader request, @Nonnull MessageContext context) throws IOException {
+		this.context = context;
+		this.requestClass = ClassUtils.nameOf(request);
+		try (Message message = MessageUtils.fromReader(request)) {
+			this.request = message.request;
+			message.request = null; // Prevent potential temp files being closed
+			this.context.putAll(message.context.getAll());
+			if (this.context.containsKey(MessageContext.METADATA_CHARSET)) {
+				// Ensure charset is now always UTF-8 because that's what it is after converting from stream
+				this.context.withCharset(StandardCharsets.UTF_8);
+			}
+		}
+		messageNotClosedAction = new MessageNotClosedAction();
+		CleanerProvider.register(this, messageNotClosedAction);
 	}
 
-	public Message(Reader request) {
-		this(new MessageContext(), request);
+	public Message(Reader request) throws IOException {
+		this(request, new MessageContext());
 	}
 
 	/**
@@ -194,20 +185,32 @@ public class Message implements Serializable, Closeable {
 	 * @param context      {@link MessageContext}
 	 * @param requestClass {@link Class} of the original request from which the {@link SerializableFileReference} request was created
 	 */
-	protected Message(SerializableFileReference request, @Nonnull MessageContext context, Class<?> requestClass) {
+	protected Message(@Nonnull SerializableFileReference request, @Nonnull MessageContext context, Class<?> requestClass) {
 		this(context, request, requestClass);
 	}
 
-	public Message(InputStream request, String charset) {
-		this(new MessageContext(charset), request);
+	public Message(@Nonnull InputStream request, String charset) throws IOException {
+		this(request, new MessageContext(charset));
 	}
 
-	public Message(InputStream request, @Nonnull MessageContext context) {
-		this(context, request);
+	public Message(@Nonnull InputStream request, @Nonnull MessageContext context) throws IOException {
+		this(request, context, request.getClass());
 	}
 
-	public Message(InputStream request) {
-		this(new MessageContext(), request);
+	protected Message(@Nonnull InputStream request, @Nonnull MessageContext context, Class<?> requestClass) throws IOException {
+		this.context = context;
+		this.requestClass = ClassUtils.nameOf(requestClass);
+		try (Message message = MessageUtils.fromInputStream(request)) {
+			this.request = message.request;
+			message.request = null; // Prevent potential temp files being closed
+			this.context.putAll(message.context.getAll());
+		}
+		messageNotClosedAction = new MessageNotClosedAction();
+		CleanerProvider.register(this, messageNotClosedAction);
+	}
+
+	public Message(InputStream request) throws IOException {
+		this(request, new MessageContext());
 	}
 
 	public Message(Node request, @Nonnull MessageContext context) {
@@ -477,9 +480,11 @@ public class Message implements Serializable, Closeable {
 			try {
 				return StreamUtil.getCharsetDetectingInputStreamReader(inputStream, readerCharset);
 			} catch (IOException e) {
+				CloseUtils.closeSilently(inputStream);
 				onExceptionClose(e);
 				throw e;
 			} catch (Exception e) {
+				CloseUtils.closeSilently(inputStream);
 				onExceptionClose(e);
 				throw Lombok.sneakyThrow(e);
 			}
@@ -572,10 +577,6 @@ public class Message implements Serializable, Closeable {
 		if (request instanceof InputSource source) {
 			LOG.debug("returning InputSource {} as InputSource", this::getObjectId);
 			return source;
-		}
-		if (request instanceof Reader reader) {
-			LOG.debug("returning Reader {} as InputSource", this::getObjectId);
-			return new InputSource(reader);
 		}
 		if (request instanceof String string) {
 			LOG.debug("returning String {} as InputSource", this::getObjectId);
@@ -717,13 +718,12 @@ public class Message implements Serializable, Closeable {
 	}
 
 	/**
-	 * Check if a message is empty. If message size cannot be determined, return {@code false} to be on the safe side although this
-	 * might not be strictly correct.
+	 * Check if a message is empty. If message size cannot be determined, check if any data can be read from the message.
 	 *
-	 * @return {@code true} if the message is empty, {@code false} if message is not empty or if the size cannot be determined up-front.
+	 * @return {@code true} if the message is empty or no data can be read from it, {@code false} if the size if larger than 0 or data can be read from it.
 	 */
 	public boolean isEmpty() {
-		return size() == 0L;
+		return !hasDataAvailable();
 	}
 
 	private void toStringPrefix(StringBuilder writer) {
@@ -774,6 +774,7 @@ public class Message implements Serializable, Closeable {
 	 *
 	 * @return a Message of the correct type for the given object
 	 */
+	@SneakyThrows(IOException.class)
 	public static Message asMessage(Object object) {
 		if (object == null) {
 			return nullMessage();
@@ -782,6 +783,12 @@ public class Message implements Serializable, Closeable {
 			// NB: This case can lead to hard-to-debug issues with messages either not being closed, or closed too early. Should ideally be avoided.
 			message.assertNotClosed();
 			return message;
+		}
+		if (object instanceof Reader reader) {
+			return MessageUtils.fromReader(reader);
+		}
+		if (object instanceof InputStream stream) {
+			return MessageUtils.fromInputStream(stream);
 		}
 		if (object instanceof URL rL) {
 			return new UrlMessage(rL);
@@ -815,27 +822,27 @@ public class Message implements Serializable, Closeable {
 	 * However, to do so, some I/O may have to be performed on the message thus making this a
 	 * potentially expensive operation which may throw an {@link IOException}.
 	 * <p/>
-	 * All I/O is done in such a way that no message data is lost .
+	 * All I/O is done in such a way that no message data is lost.
 	 *
-	 * @param message Message to check. May be {@code null}.
 	 * @return Returns {@code false} if the message is {@code null} or of {@link Message#size()} returns 0.
 	 * 		Returns {@code true} if {@link Message#size()} returns a positive value.
 	 * 		If {@link Message#size()} returns {@link Message#MESSAGE_SIZE_UNKNOWN} then checks if any data can
 	 * 		be read. Data read is pushed back onto the stream.
-	 * @throws IOException Throws an IOException if checking for data in the message throws an IOException.
 	 */
-	public static boolean hasDataAvailable(Message message) throws IOException {
-		if (Message.isNull(message)) {
-			return false;
-		}
-		long size = message.size();
+	private boolean hasDataAvailable() {
+		long size = size();
 		if (size != MESSAGE_SIZE_UNKNOWN) {
 			return size != 0;
 		}
-		if (message.isBinary()) {
-			return checkIfStreamHasData(message.asInputStream());
-		} else {
-			return checkIfReaderHasData(message.asReader());
+		try {
+			if (isBinary()) {
+				return checkIfStreamHasData(asInputStream());
+			} else {
+				return checkIfReaderHasData(asReader());
+			}
+		} catch (IOException e) {
+			LOG.debug("Cannot read message data, treating as empty message", e);
+			return false;
 		}
 	}
 

@@ -17,6 +17,7 @@ import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.jta.narayana.NarayanaJtaTransactionManager;
 import org.frankframework.parameters.Parameter;
@@ -90,7 +91,7 @@ public class ConditionalPipelineCallerTest {
 
 		EchoPipe pipe = new EchoPipe() {
 			@Override
-			public PipeRunResult doPipe(Message message, PipeLineSession session) {
+			public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 				session.put(SESSION_VALUE_ECHO_PIPE_CALLED, "true");
 				return super.doPipe(message, session);
 			}

@@ -126,7 +126,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 			}
 
 			response = super.processRequest(message, session);
-			if(response != null && !response.isEmpty())
+			if(!Message.isEmpty(response))
 				eTag = response.hashCode();
 
 			if(automaticallyTransformToAndFromJson && getProduces()== MediaTypes.JSON) {
@@ -139,7 +139,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		}
 		else {
 			response = super.processRequest(message, session);
-			if(response != null && !response.isEmpty())
+			if(!Message.isEmpty(response))
 				eTag = response.hashCode();
 		}
 

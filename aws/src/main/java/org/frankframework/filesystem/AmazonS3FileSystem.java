@@ -333,7 +333,7 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 			}
 
 			return new Message(s3ClientObject, FileSystemUtils.getContext(this, file, charset));
-		} catch (AwsServiceException e) {
+		} catch (AwsServiceException | IOException e) {
 			throw new FileSystemException(e);
 		}
 	}
