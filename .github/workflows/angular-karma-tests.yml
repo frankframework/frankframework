@@ -29,10 +29,17 @@ jobs:
     - name: Set timezone
       run: sudo timedatectl set-timezone Europe/Amsterdam
 
+    - name: Install pnpm
+      uses: pnpm/action-setup@v4
+      with:
+        version: 10
+
     - name: Set up Node.js 20.x
       uses: actions/setup-node@v4
       with:
         node-version: 20.x
+        cache: pnpm
+        cache-dependency-path: console/frontend/src/main/frontend/pnpm-lock.yaml
 
     - name: Install dependencies
       run: npm install
