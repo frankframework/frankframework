@@ -44,6 +44,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.CleanerProvider;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.TimeProvider;
 
 /**
  * Basic implementation of <code>PipeLineSession</code>.
@@ -283,7 +284,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * Sets the current date-time as TS-Received.
 	 */
 	public static void updateListenerParameters(@Nonnull Map<String, Object> map, @Nullable String messageId, @Nullable String correlationId) {
-		updateListenerParameters(map, messageId, correlationId, Instant.now(), null);
+		updateListenerParameters(map, messageId, correlationId, TimeProvider.now(), null);
 	}
 
 	/**
@@ -298,7 +299,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			map.put(CORRELATION_ID_KEY, correlationId);
 		}
 		if (tsReceived == null) {
-			tsReceived = Instant.now();
+			tsReceived = TimeProvider.now();
 		}
 		map.put(TS_RECEIVED_KEY, DateFormatUtils.format(tsReceived, DateFormatUtils.FULL_GENERIC_FORMATTER));
 		if (tsSent != null) {

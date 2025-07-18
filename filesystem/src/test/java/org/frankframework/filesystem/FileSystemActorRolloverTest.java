@@ -14,6 +14,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestAssertions;
 import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.TimeProvider;
 
 public abstract class FileSystemActorRolloverTest<F,S extends IWritableFileSystem<F>> extends FileSystemActorCustomFileAttributesTest<F, S> {
 
@@ -30,7 +31,7 @@ public abstract class FileSystemActorRolloverTest<F,S extends IWritableFileSyste
 		String contents = "thanos car ";
 		int numOfBackups = 12;
 		int numOfWrites = 10;
-		Date currentDate = new Date();
+		Date currentDate = TimeProvider.nowAsDate();
 		Date firstDate;
 		long millisPerDay = 1000L * 60L * 60L * 24L;
 

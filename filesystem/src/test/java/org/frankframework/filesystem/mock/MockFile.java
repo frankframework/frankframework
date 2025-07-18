@@ -11,12 +11,14 @@ import java.util.Map;
 
 import lombok.Getter;
 
+import org.frankframework.util.TimeProvider;
+
 public class MockFile {
 
 	private String name;
 	private MockFolder owner;
 	private byte[] contents;
-	private Date lastModified = new Date();
+	private Date lastModified = TimeProvider.nowAsDate();
 	private Map<String,Object> additionalProperties;
 	private final @Getter Map<String,String> customAttributes;
 
@@ -52,14 +54,14 @@ public class MockFile {
 			public void close() throws IOException {
 				super.close();
 				contents = toByteArray();
-				lastModified =new Date();
+				lastModified = TimeProvider.nowAsDate();
 			}
 
 			@Override
 			public void flush() throws IOException {
 				super.flush();
 				contents = toByteArray();
-				lastModified =new Date();
+				lastModified =TimeProvider.nowAsDate();
 			}
 
 		};

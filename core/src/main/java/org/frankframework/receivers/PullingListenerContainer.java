@@ -51,6 +51,7 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.RunState;
 import org.frankframework.util.StringUtil;
+import org.frankframework.util.TimeProvider;
 
 
 /**
@@ -313,7 +314,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								if (receiver.isSupportProgrammaticRetry() || !receiver.isDeliveryRetryLimitExceededBeforeMessageProcessing(rawMessage, session, false)) {
 									receiver.processRawMessage(listener, rawMessage, session, true);
 								} else {
-									Instant receivedDate = Instant.now();
+									Instant receivedDate = TimeProvider.now();
 									String errorMessage = StringUtil.concatStrings("too many retries", "; ", receiver.getCachedErrorMessage(rawMessage));
 									receiver.moveInProcessToError(rawMessage, session, receivedDate, errorMessage, Receiver.TXREQUIRED);
 								}

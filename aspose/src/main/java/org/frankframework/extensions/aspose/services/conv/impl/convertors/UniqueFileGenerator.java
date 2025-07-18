@@ -16,11 +16,12 @@
 package org.frankframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.io.File;
-import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.StringUtils;
+
+import org.frankframework.util.TimeProvider;
 
 /**
  * @author Gerard van der Hoorn
@@ -49,7 +50,7 @@ class UniqueFileGenerator {
 		}
 
 		// Save to disc
-		String fileNamePdf = "%s_%s_%05d%s".formatted(prefix, DATE_TIME_FORMATTER.format(LocalDateTime.now()), count, fileType);
+		String fileNamePdf = "%s_%s_%05d%s".formatted(prefix, DATE_TIME_FORMATTER.format(TimeProvider.nowAsLocalDateTime()), count, fileType);
 
 		return new File(directory, fileNamePdf);
 	}

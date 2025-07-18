@@ -48,6 +48,7 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StringUtil;
+import org.frankframework.util.TimeProvider;
 import org.frankframework.util.XmlEncodingUtils;
 
 /**
@@ -163,7 +164,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 				rootObjectBuilder = documentBuilder.asObjectBuilder();
 				errorObject = rootObjectBuilder.addObjectField("errorMessage");
 			}
-			errorObject.addAttribute("timestamp", new Date().toString());
+			errorObject.addAttribute("timestamp", TimeProvider.nowAsDate().toString());
 			errorObject.addAttribute("originator", originator);
 			errorObject.addAttribute("message", XmlEncodingUtils.replaceNonValidXmlCharacters(errorMessage));
 

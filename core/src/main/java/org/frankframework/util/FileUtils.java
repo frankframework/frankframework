@@ -21,7 +21,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
@@ -239,7 +238,7 @@ public class FileUtils {
 			excludeFilter = new WildCardFilter(excludeWildcard);
 		}
 
-		long lastChangedAllowed=minStability>0?new Date().getTime()-minStability:0;
+		long lastChangedAllowed = minStability > 0 ? TimeProvider.nowAsMillis() - minStability : 0;
 
 		List<File> result = new ArrayList<>();
 		int count = files == null ? 0 : files.length;

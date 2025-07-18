@@ -47,6 +47,27 @@ public class TimeProvider {
 	}
 
 	/**
+	 * Get the current system time as clock millis (equivalent to {@link System#currentTimeMillis()}).
+	 */
+	public static long nowAsMillis() {
+		return clock.millis();
+	}
+
+	/**
+	 * Get the current system time as {@link ZonedDateTime}
+	 */
+	public static ZonedDateTime nowAsZonedDateTime() {
+		return ZonedDateTime.now(clock);
+	}
+
+	/**
+	 * Get the current system time as {@link LocalDateTime}
+	 */
+	public static LocalDateTime nowAsLocalDateTime() {
+		return LocalDateTime.now(clock);
+	}
+
+	/**
 	 * Get the current system time as a legacy {@link Date}.
 	 */
 	public static Date nowAsDate() {

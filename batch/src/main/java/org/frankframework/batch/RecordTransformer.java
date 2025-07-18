@@ -35,6 +35,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.StringUtil;
+import org.frankframework.util.TimeProvider;
 
 /**
  * Translate a record using an outputFields description.
@@ -492,7 +493,7 @@ public class RecordTransformer extends AbstractRecordHandler {
 
 		private Instant getInstant(List<String> inputFields) throws ConfigurationException {
 			if (inputFieldIndex < 0) {
-				return Instant.now();
+				return TimeProvider.now();
 
 			} else {
 				if (inputFieldIndex >= inputFields.size()) {

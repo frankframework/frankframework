@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -40,6 +39,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.extensions.akamai.NetStorageSender.Action;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.util.TimeProvider;
 
 @Log4j2
 public class NetStorageSenderResultTest {
@@ -172,7 +172,7 @@ public class NetStorageSenderResultTest {
 		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH).withZone(ZoneId.of("GMT"));
 		InputStream content = new ByteArrayInputStream("<error />".getBytes());
 
-		CloseableHttpResponse httpResponse = createHttpResponse(content, 400, "text/xml", Map.of("Date", dateFormatter.format(Instant.now())));
+		CloseableHttpResponse httpResponse = createHttpResponse(content, 400, "text/xml", Map.of("Date", dateFormatter.format(TimeProvider.now())));
 		NetStorageSender sender = createHttpSender(httpResponse);
 		sender.setResultStatusCodeSessionKey("dummy");
 		sender.setAction(Action.DIR);

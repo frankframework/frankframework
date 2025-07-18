@@ -29,6 +29,7 @@ import lombok.AllArgsConstructor;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.util.TimeProvider;
 
 public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> extends FileSystemTestBase {
 
@@ -241,7 +242,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 	public void basicFileSystemTestModificationTime() throws Exception {
 		String filename = "readModificationTime" + FILE1;
 		String contents = "Tekst om te lezen";
-		Date date = new Date();
+		Date date = TimeProvider.nowAsDate();
 
 		fileSystem.configure();
 		fileSystem.open();
