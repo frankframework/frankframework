@@ -104,7 +104,7 @@ class IbisLocalSenderTest {
 		ServiceDispatcher.getInstance().registerServiceClient(listener.getServiceName(), listener);
 	}
 
-	private static Message createVirtualInputStream(long streamSize) {
+	private static Message createVirtualInputStream(long streamSize) throws IOException {
 		InputStream virtualInputStream = new VirtualInputStream(streamSize);
 		return new Message(new ThrowingAfterCloseInputStream(virtualInputStream));
 	}
@@ -598,7 +598,7 @@ class IbisLocalSenderTest {
 		}
 
 		@Override
-		public PipeRunResult doPipe(Message message, PipeLineSession session) {
+		public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 			try {
 				log.info("{}: start reading virtual stream", Thread.currentThread().getName());
 				// Often this assert is done in PipeLineProcessor but they're not part of the test-spring-configuration, and it is important to make this assertion
@@ -609,6 +609,8 @@ class IbisLocalSenderTest {
 				asyncCounterResult.set(counter);
 				// Return a stream from message which will be read by caller, testing that stream is not closed.
 				return new PipeRunResult(getSuccessForward(), createVirtualInputStream(counter));
+			} catch (IOException e) {
+				throw new PipeRunException(this, "Cannot read stream", e);
 			} finally {
 				asyncCompletionSemaphore.release();
 				log.info("{}: pipe done and semaphore released", Thread.currentThread().getName());

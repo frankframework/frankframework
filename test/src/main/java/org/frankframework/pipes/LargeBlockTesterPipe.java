@@ -53,57 +53,61 @@ public class LargeBlockTesterPipe extends FixedForwardPipe {
 
 			final byte[] filler = buildDataBuffer();
 			final long bytesToServe = blockCount * (long) blockSize;
-			result = new Message(new InputStream() {
-				int i;
-				long bytesLeftToServe = bytesToServe;
+			try {
+				result = new Message(new InputStream() {
+					int i;
+					long bytesLeftToServe = bytesToServe;
 
-				@Override
-				public int read(byte[] buf, int off, int len) throws IOException {
-					if (bytesLeftToServe <= 0L) {
-						return -1;
+					@Override
+					public int read(byte[] buf, int off, int len) throws IOException {
+						if (bytesLeftToServe <= 0L) {
+							return -1;
+						}
+						final int servedSize = (int) min(len, bytesLeftToServe);
+						log.debug("serve block [{}] of size [{}]", i, servedSize);
+
+						copyToOutputBuffer(buf, off, servedSize);
+						bytesLeftToServe -= servedSize;
+						totalBlocksServed.incrementAndGet();
+
+						if (sleepBetweenServedBlocks > 0) {
+							try {
+								Thread.sleep(sleepBetweenServedBlocks);
+							} catch (InterruptedException e) {
+								Thread.currentThread().interrupt();
+								throw new IOException(e);
+							}
+						}
+						return servedSize;
 					}
-					final int servedSize = (int) min(len, bytesLeftToServe);
-					log.debug("serve block [{}] of size [{}]", i, servedSize);
 
-					copyToOutputBuffer(buf, off, servedSize);
-					bytesLeftToServe -= servedSize;
-					totalBlocksServed.incrementAndGet();
-
-					if (sleepBetweenServedBlocks > 0) {
-						try {
-							Thread.sleep(sleepBetweenServedBlocks);
-						} catch (InterruptedException e) {
-							Thread.currentThread().interrupt();
-							throw new IOException(e);
+					private void copyToOutputBuffer(byte[] buf, int off, int servedSize) {
+						byte[] blockStart = ("[" + i + "]").getBytes(Charset.defaultCharset());
+						System.arraycopy(blockStart, 0, buf, off, min(blockStart.length, servedSize));
+						int bytesLeft = servedSize - blockStart.length;
+						int offset = off + blockStart.length;
+						while (bytesLeft > 0) {
+							int blockCopySize = min(filler.length, bytesLeft);
+							System.arraycopy(filler, 0, buf, offset, blockCopySize);
+							offset += blockCopySize;
+							bytesLeft -= blockCopySize;
 						}
 					}
-					return servedSize;
-				}
 
-				private void copyToOutputBuffer(byte[] buf, int off, int servedSize) {
-					byte[] blockStart = ("[" + i + "]").getBytes(Charset.defaultCharset());
-					System.arraycopy(blockStart, 0, buf, off, min(blockStart.length, servedSize));
-					int bytesLeft = servedSize - blockStart.length;
-					int offset = off + blockStart.length;
-					while (bytesLeft > 0) {
-						int blockCopySize = min(filler.length, bytesLeft);
-						System.arraycopy(filler, 0, buf, offset, blockCopySize);
-						offset += blockCopySize;
-						bytesLeft -= blockCopySize;
+					@Override
+					public int read() throws IOException {
+						if (bytesLeftToServe <= 0) {
+							return -1;
+						}
+						log.debug("serve byte");
+						--bytesLeftToServe;
+						return 'x';
 					}
-				}
 
-				@Override
-				public int read() throws IOException {
-					if (bytesLeftToServe <= 0) {
-						return -1;
-					}
-					log.debug("serve byte");
-					--bytesLeftToServe;
-					return 'x';
-				}
-
-			});
+				});
+			} catch (IOException e) {
+				throw new PipeRunException(this, "Cannot read input stream", e);
+			}
 		} else {
 			try (Reader reader=message.asReader()) {
 				int blocksServedAfterFirstBlockRead=Integer.MAX_VALUE;

@@ -283,7 +283,7 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 	}
 
 	@Override
-	public Message readFile(SmbFileRef filename, String charset) throws FileSystemException {
+	public Message readFile(SmbFileRef filename, String charset) throws FileSystemException, IOException {
 		File file = getFile(filename, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN);
 		MessageContext context = FileSystemUtils.getContext(this, filename, charset);
 		return new Message(wrapInputStream(file), context);

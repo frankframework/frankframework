@@ -91,16 +91,11 @@ public class HttpMessageEntity extends AbstractHttpEntity {
 
 	private long computeContentLength() {
 		long messageSize = message.size();
-		try {
-			// To get an accurate value if the size is unknown we need to check if data is available.
-			if (messageSize == Message.MESSAGE_SIZE_UNKNOWN && !Message.hasDataAvailable(message)) {
-				return 0L;
-			}
-			return messageSize;
-		} catch (IOException e) {
-			log.warn("IOException while checking if message has data", e);
+		// To get an accurate value if the size is unknown we need to check if data is available.
+		if (messageSize == Message.MESSAGE_SIZE_UNKNOWN && message.isEmpty()) {
 			return 0L;
 		}
+		return messageSize;
 	}
 
 	// size (getContentLength) and encoding (getContentEncoding) of the InputStream must match the way it is being read / sent!
