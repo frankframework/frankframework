@@ -30,6 +30,7 @@ import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.Locker;
+import org.frankframework.util.TimeProvider;
 
 @WithLiquibase(tableName = "IBISLOCK") //Lock table must exist
 @WithLiquibase(tableName = CleanupDatabaseJobTest.txStorageTableName) //Actual JdbcTXStorage table
@@ -118,7 +119,7 @@ public class CleanupDatabaseJobTest {
 
 	private void prepareInsertQuery(DatabaseTestEnvironment database, int numRows) throws Exception {
 		IDbmsSupport dbmsSupport = database.getDbmsSupport();
-		Date date = new Date();
+		Date date = TimeProvider.nowAsDate();
 		Date expiryDate = new Date(date.getTime() - 3600 * 1000 * 24);
 		StringBuilder sb = new StringBuilder();
 		for(int i = 1; i <= numRows; i++) {

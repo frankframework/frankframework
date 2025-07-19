@@ -106,16 +106,16 @@ public class DateFormatUtils {
 	}
 
 	public static String now() {
-		return format(Instant.now());
+		return format(TimeProvider.now());
 	}
 
 	@Deprecated
 	public static String now(String format) {
-		return format(Instant.now(), buildFormatter(format));
+		return format(TimeProvider.now(), buildFormatter(format));
 	}
 
 	public static String now(@Nonnull DateTimeFormatter formatter) {
-		return format(Instant.now(), formatter);
+		return format(TimeProvider.now(), formatter);
 	}
 
 	@Deprecated
@@ -148,7 +148,7 @@ public class DateFormatUtils {
 	 * Get current date-time timestamp in generic format.
 	 */
 	public static String getTimeStamp() {
-		return GENERIC_DATETIME_FORMATTER.format(Instant.now());
+		return GENERIC_DATETIME_FORMATTER.format(TimeProvider.now());
 	}
 
 	public static Instant parseToInstant(String s, @Nonnull DateTimeFormatter parser) throws DateTimeParseException {

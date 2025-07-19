@@ -16,7 +16,6 @@ limitations under the License.
 package org.frankframework.console.filters;
 
 import java.io.IOException;
-import java.util.Date;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -26,8 +25,11 @@ import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+
+import org.frankframework.util.TimeProvider;
 
 public class CacheControlFilter implements Filter {
 
@@ -43,7 +45,7 @@ public class CacheControlFilter implements Filter {
 		HttpServletResponse resp = (HttpServletResponse) response;
 		HttpServletRequest req = (HttpServletRequest) request;
 		//resp.setHeader("Expires", "Tue, 03 Jul 2001 06:00:00 GMT");
-		resp.setDateHeader("Last-Modified", new Date().getTime());
+		resp.setDateHeader("Last-Modified", TimeProvider.nowAsMillis());
 		resp.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0");
 		resp.setHeader("Pragma", "no-cache");
 		log.trace("disabling cache for uri [{}]", req::getRequestURI);

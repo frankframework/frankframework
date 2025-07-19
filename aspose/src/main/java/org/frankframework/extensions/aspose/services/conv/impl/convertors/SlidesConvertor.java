@@ -17,7 +17,6 @@ package org.frankframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.io.InputStream;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -68,9 +67,9 @@ public class SlidesConvertor extends AbstractConvertor {
 				loadOptions.setResourceLoadingCallback(new OfflineResourceLoader());
 			}
 			Presentation presentation = new Presentation(inputStream, loadOptions);
-			long startTime = new Date().getTime();
+			long startTime = System.currentTimeMillis();
 			presentation.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.Pdf);
-			long endTime = new Date().getTime();
+			long endTime = System.currentTimeMillis();
 			log.debug("conversion (save operation in convert method) took [{}ms]", (endTime - startTime));
 			presentation.dispose();
 			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));

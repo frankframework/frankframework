@@ -61,6 +61,7 @@ import org.frankframework.testutil.JdbcTestUtil;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
+import org.frankframework.util.TimeProvider;
 
 @Log4j2
 @WithLiquibase(file = "Migrator/ChangelogBlobTests.xml", tableName = JdbcTableListenerTest.TEST_TABLE)
@@ -412,8 +413,8 @@ public class JdbcTableListenerTest {
 		browser.setCorrelationIdField("CIDFLD");
 		browser.setIdField("IDFLD");
 
-		Date start = new Date();
-		Date end = new Date();
+		Date start = TimeProvider.nowAsDate();
+		Date end = TimeProvider.nowAsDate();
 
 		//assertEquals("SELECT TKEY,IDFLD,CIDFLD FROM "+TEST_TABLE+" t WHERE (TINT='1' AND (fakeSelectCondition))", browser.getSelectListQuery(dbmsSupport, null, null, null));
 		assertEquals("SELECT TKEY,IDFLD,CIDFLD,TMFLD,CMTFLD FROM " + TEST_TABLE + " t WHERE (TINT='1' AND (fakeSelectCondition)) AND TMFLD>=? ORDER BY TMFLD DESC", browser.getSelectListQuery(env.getDbmsSupport(), start, null, SortOrder.NONE));

@@ -16,7 +16,6 @@
 package org.frankframework.management.security;
 
 import java.security.interfaces.ECPrivateKey;
-import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -48,6 +47,7 @@ import com.nimbusds.jwt.SignedJWT;
 import lombok.Getter;
 
 import org.frankframework.util.Environment;
+import org.frankframework.util.TimeProvider;
 import org.frankframework.util.UUIDUtil;
 
 public class JwtKeyGenerator implements InitializingBean {
@@ -102,8 +102,8 @@ public class JwtKeyGenerator implements InitializingBean {
 		try {
 			return new JWTClaimsSet.Builder()
 					.subject(getPrincipalName(authentication))
-					.expirationTime(Date.from(Instant.now().plusSeconds(120)))
-					.issueTime(Date.from(Instant.now()))
+					.expirationTime(Date.from(TimeProvider.now().plusSeconds(120)))
+					.issueTime(Date.from(TimeProvider.now()))
 					.jwtID(UUIDUtil.createRandomUUID())
 					.claim("scope", mapAuthorities(authentication))
 					.build();

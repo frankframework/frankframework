@@ -10,7 +10,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
@@ -28,6 +27,7 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.util.CloseUtils;
+import org.frankframework.util.TimeProvider;
 
 @TestMethodOrder(MethodName.class)
 public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> extends HelperedFileSystemTestBase {
@@ -564,9 +564,9 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 
 	@Test
 	public void fileSystemActorMoveActionTestWithWildCard() throws Exception {
-		String srcFolderName = "src" + new Date().getTime();
+		String srcFolderName = "src" + TimeProvider.nowAsMillis();
 		_createFolder(srcFolderName);
-		String destFolderName = "dest" + new Date().getTime();
+		String destFolderName = "dest" + TimeProvider.nowAsMillis();
 		for (int i = 0; i < 3; i++) {
 			String filename = "tobemoved" + i + FILE1;
 
@@ -606,9 +606,9 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 
 	@Test
 	public void fileSystemActorMoveActionTestWithExcludeWildCard() throws Exception {
-		String srcFolderName = "src" + new Date().getTime();
+		String srcFolderName = "src" + TimeProvider.nowAsMillis();
 		_createFolder(srcFolderName);
-		String destFolderName = "dest" + new Date().getTime();
+		String destFolderName = "dest" + TimeProvider.nowAsMillis();
 		for (int i = 0; i < 3; i++) {
 			String filename = "tobemoved" + i + FILE1;
 
@@ -750,9 +750,9 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 
 	@Test
 	public void fileSystemActorCopyActionTestWithWildCard() throws Exception {
-		String srcFolderName = "src" + new Date().getTime();
+		String srcFolderName = "src" + TimeProvider.nowAsMillis();
 		_createFolder(srcFolderName);
-		String destFolderName = "dest" + new Date().getTime();
+		String destFolderName = "dest" + TimeProvider.nowAsMillis();
 		for (int i = 0; i < 3; i++) {
 			String filename = "tobemoved" + i + FILE1;
 
@@ -794,9 +794,9 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 
 	@Test
 	public void fileSystemActorCopyActionTestWithExcludeWildCard() throws Exception {
-		String srcFolderName = "src" + new Date().getTime();
+		String srcFolderName = "src" + TimeProvider.nowAsMillis();
 		_createFolder(srcFolderName);
-		String destFolderName = "dest" + new Date().getTime();
+		String destFolderName = "dest" + TimeProvider.nowAsMillis();
 		for (int i = 0; i < 3; i++) {
 			String filename = "tobemoved" + i + FILE1;
 
@@ -1082,7 +1082,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 
 	@Test
 	public void fileSystemActorDeleteActionTestWithWildCard() throws Exception {
-		String srcFolderName = "src" + new Date().getTime();
+		String srcFolderName = "src" + TimeProvider.nowAsMillis();
 		if(!_folderExists(srcFolderName)) {
 			_createFolder(srcFolderName);
 		}
@@ -1122,7 +1122,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 
 	@Test
 	public void fileSystemActorDeleteActionTestWithExcludeWildCard() throws Exception {
-		String srcFolderName = "src" + new Date().getTime();
+		String srcFolderName = "src" + TimeProvider.nowAsMillis();
 		_createFolder(srcFolderName);
 
 		for (int i = 0; i < 3; i++) {

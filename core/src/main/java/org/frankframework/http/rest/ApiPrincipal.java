@@ -18,11 +18,12 @@ package org.frankframework.http.rest;
 import java.io.Serializable;
 
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.TimeProvider;
 
 public class ApiPrincipal implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	public long init = System.currentTimeMillis();
+	public long init = TimeProvider.nowAsMillis();
 	public long ttl = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7) * 1000L;
 	public long expires = 0;
 
@@ -43,11 +44,11 @@ public class ApiPrincipal implements Serializable {
 	}
 
 	public boolean isLoggedIn() {
-		return expires - System.currentTimeMillis() >= 0;
+		return expires - TimeProvider.nowAsMillis() >= 0;
 	}
 
 	public void updateExpiry() {
-		this.expires = System.currentTimeMillis() + this.ttl;
+		this.expires = TimeProvider.nowAsMillis() + this.ttl;
 	}
 
 	public void setData(String data) {

@@ -20,12 +20,13 @@ import java.time.Instant;
 import lombok.Getter;
 
 import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.TimeProvider;
 
 public class LarvaMessage {
 	private final @Getter LarvaLogLevel logLevel;
 	private final @Getter String message;
 	private final @Getter Exception exception;
-	private final @Getter Instant timestamp = Instant.now();
+	private final @Getter Instant timestamp = TimeProvider.now();
 
 	public LarvaMessage(LarvaLogLevel logLevel, String message) {
 		this.logLevel = logLevel;

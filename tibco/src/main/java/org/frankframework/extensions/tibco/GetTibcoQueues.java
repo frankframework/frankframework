@@ -64,6 +64,7 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.Misc;
+import org.frankframework.util.TimeProvider;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
 
@@ -381,7 +382,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 		if (resolvedUrl != null) {
 			qInfosXml.addAttribute("resolvedUrl", resolvedUrl);
 		}
-		Instant currentTime = Instant.now();
+		Instant currentTime = TimeProvider.now();
 		qInfosXml.addAttribute("timestamp", DateFormatUtils.format(currentTime));
 		long startTime = serverInfo.getStartTime();
 		qInfosXml.addAttribute("startTime", DateFormatUtils.format(startTime));

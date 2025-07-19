@@ -27,6 +27,8 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 import com.nimbusds.jwt.JWTClaimsSet;
 
+import org.frankframework.util.TimeProvider;
+
 public class JwtAuthenticationToken extends AbstractAuthenticationToken {
 
 	private static final long serialVersionUID = 1L;
@@ -47,7 +49,7 @@ public class JwtAuthenticationToken extends AbstractAuthenticationToken {
 
 	@Override
 	public boolean isAuthenticated() {
-		return new Date().before(expiresAt);
+		return TimeProvider.nowAsDate().before(expiresAt);
 	}
 
 	private static List<GrantedAuthority> createAuthorityList(JWTClaimsSet claimsSet) throws ParseException {

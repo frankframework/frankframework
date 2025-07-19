@@ -17,7 +17,6 @@ package org.frankframework.http.rest;
 
 import java.io.IOException;
 import java.io.Serial;
-import java.time.Instant;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -70,6 +69,7 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
+import org.frankframework.util.TimeProvider;
 import org.frankframework.util.XmlBuilder;
 
 /**
@@ -560,7 +560,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				/*
 				 * If a Last Modified value is present, set the 'Last-Modified' header.
 				 */
-				long lastModDate = Instant.now().toEpochMilli();
+				long lastModDate = TimeProvider.now().toEpochMilli();
 				if(!Message.isEmpty(result)) {
 					String lastModified = (String) result.getContext().get(MessageContext.METADATA_MODIFICATIONTIME);
 					if(StringUtils.isNotEmpty(lastModified)) {

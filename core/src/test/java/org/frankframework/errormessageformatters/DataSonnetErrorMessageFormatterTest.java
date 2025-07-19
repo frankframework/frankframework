@@ -4,7 +4,6 @@ import static org.frankframework.testutil.MatchUtils.assertJsonEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
-import java.time.Instant;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -17,6 +16,7 @@ import org.frankframework.parameters.NumberParameter;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.NumberParameterBuilder;
 import org.frankframework.util.CloseUtils;
+import org.frankframework.util.TimeProvider;
 
 class DataSonnetErrorMessageFormatterTest {
 
@@ -38,7 +38,7 @@ class DataSonnetErrorMessageFormatterTest {
 		errorMessage = "dummy-error-message";
 		location = new MyLocation();
 		session = new PipeLineSession();
-		PipeLineSession.updateListenerParameters(session, "dummy-message-id", "dummy-cid", Instant.now(), Instant.now());
+		PipeLineSession.updateListenerParameters(session, "dummy-message-id", "dummy-cid", TimeProvider.now(), TimeProvider.now());
 	}
 
 	@AfterEach

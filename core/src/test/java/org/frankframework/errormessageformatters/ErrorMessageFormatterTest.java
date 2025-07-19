@@ -4,7 +4,6 @@ import static org.frankframework.testutil.MatchUtils.assertJsonEquals;
 import static org.frankframework.testutil.MatchUtils.assertXmlEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import java.time.Instant;
 import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
@@ -17,6 +16,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CloseUtils;
+import org.frankframework.util.TimeProvider;
 
 class ErrorMessageFormatterTest {
 
@@ -35,7 +35,7 @@ class ErrorMessageFormatterTest {
 		errorMessage = "dummy-error-message";
 		location = new MyLocation();
 		session = new PipeLineSession();
-		PipeLineSession.updateListenerParameters(session, "dummy-message-id", "dummy-cid", Instant.now(), Instant.now());
+		PipeLineSession.updateListenerParameters(session, "dummy-message-id", "dummy-cid", TimeProvider.now(), TimeProvider.now());
 	}
 
 	@AfterEach

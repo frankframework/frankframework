@@ -31,6 +31,7 @@ import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.TimeProvider;
 
 /**
  * Puts the system date/time under a key in the {@link PipeLineSession pipeLineSession}.
@@ -116,7 +117,7 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 					// Synchronize on a static value to generate unique value's for the
 					// whole virtual machine.
 					synchronized(OBJECT) {
-						formattedDate = formatter.format(Instant.now());
+						formattedDate = formatter.format(TimeProvider.now());
 						while (formattedDate.equals(previousFormattedDate)) {
 							try {
 								OBJECT.wait(sleepWhenEqualToPrevious);
@@ -124,12 +125,12 @@ public class PutSystemDateInSession extends FixedForwardPipe {
 								log.debug("interrupted");
 								Thread.currentThread().interrupt();
 							}
-							formattedDate = formatter.format(Instant.now());
+							formattedDate = formatter.format(TimeProvider.now());
 						}
 						previousFormattedDate = formattedDate;
 					}
 				} else {
-					formattedDate = formatter.format(Instant.now());
+					formattedDate = formatter.format(TimeProvider.now());
 				}
 			}
 		}

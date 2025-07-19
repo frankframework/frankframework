@@ -17,7 +17,6 @@ package org.frankframework.util;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.Date;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.logging.log4j.Logger;
@@ -156,7 +155,7 @@ public class Misc {
 	}
 
 	public static String getAge(long value) {
-		long currentTime = (new Date()).getTime();
+		long currentTime = System.currentTimeMillis();
 		long age = currentTime - value;
 		String ageString = DurationFormatUtils.formatDuration(age, "d") + "d";
 		if ("0d".equals(ageString)) {
@@ -175,7 +174,7 @@ public class Misc {
 	}
 
 	public static String getDurationInMs(long value) {
-		long currentTime = (new Date()).getTime();
+		long currentTime = System.currentTimeMillis();
 		long duration = currentTime - value;
 		return duration + "ms";
 	}

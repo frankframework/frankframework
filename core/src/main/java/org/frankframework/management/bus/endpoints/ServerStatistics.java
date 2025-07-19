@@ -52,6 +52,7 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.Misc;
 import org.frankframework.util.ProcessMetrics;
+import org.frankframework.util.TimeProvider;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.APPLICATION)
@@ -96,7 +97,7 @@ public class ServerStatistics extends BusEndpointBase {
 		returnMap.put("processMetrics", ProcessMetrics.toMap());
 		returnMap.put("machineName" , Misc.getHostname());
 
-		ZonedDateTime zonedDateTime = ZonedDateTime.now();
+		ZonedDateTime zonedDateTime = TimeProvider.nowAsZonedDateTime();
 		returnMap.put("serverTime", zonedDateTime.toInstant().toEpochMilli());
 		returnMap.put("serverTimezone", zonedDateTime.getZone().getId());
 		returnMap.put("serverTimezoneOffset", zonedDateTime.getOffset().getTotalSeconds());

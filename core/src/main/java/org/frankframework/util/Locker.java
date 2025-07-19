@@ -163,7 +163,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 			}
 			IbisTransaction itx = new IbisTransaction(getTxManager(), getTxDef(), "locker [" + getName() + "]");
 			try {
-				Instant instant = Instant.now();
+				Instant instant = TimeProvider.now();
 
 				objectIdWithSuffix = getObjectId();
 				if (StringUtils.isNotEmpty(getDateFormatSuffix())) {

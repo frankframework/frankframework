@@ -44,6 +44,7 @@ import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.JacksonUtils;
+import org.frankframework.util.TimeProvider;
 
 @Log4j2
 public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator {
@@ -137,7 +138,7 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 				log.debug("no accessToken lifetime found in accessTokenResponse, and no expiry specified. Token will not be refreshed preemptively");
 				accessTokenRefreshTime = -1;
 			} else {
-				accessTokenRefreshTime = System.currentTimeMillis() + (overwriteExpiryMs < 0 ? 500 * accessTokenLifetime : overwriteExpiryMs);
+				accessTokenRefreshTime = TimeProvider.nowAsMillis() + (overwriteExpiryMs < 0 ? 500 * accessTokenLifetime : overwriteExpiryMs);
 				log.debug("set accessTokenRefreshTime [{}]", ()-> DateFormatUtils.format(accessTokenRefreshTime));
 			}
 		} catch (IOException | RuntimeException e) {
@@ -157,7 +158,7 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 	}
 
 	public final String getOrRefreshAccessToken(Credentials credentials, boolean forceRefresh) throws HttpAuthenticationException {
-		if (forceRefresh || accessToken == null || accessTokenRefreshTime > 0 && System.currentTimeMillis() > accessTokenRefreshTime) {
+		if (forceRefresh || accessToken == null || accessTokenRefreshTime > 0 && TimeProvider.nowAsMillis() > accessTokenRefreshTime) {
 			log.debug("Refreshing accessToken");
 			refreshAccessToken(credentials);
 		}

@@ -123,6 +123,7 @@ import org.frankframework.util.RunState;
 import org.frankframework.util.RunStateEnquiring;
 import org.frankframework.util.RunStateManager;
 import org.frankframework.util.StringUtil;
+import org.frankframework.util.TimeProvider;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlEncodingUtils;
@@ -911,7 +912,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				rcvDate=prci.receiveDate;
 				prci.exitState = ExitState.REJECTED;
 			} else {
-				rcvDate=Instant.now();
+				rcvDate = TimeProvider.now();
 			}
 			if (isTransacted() || getListener() instanceof IHasProcessState ||
 					(getErrorStorage() != null &&
@@ -1274,7 +1275,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				try {
 					if (getMessageLog() != null) {
 						final String label = extractLabel(compactedMessage);
-						getMessageLog().storeMessage(messageId, businessCorrelationId, new Date(), RCV_MESSAGE_LOG_COMMENTS, label, messageWrapper);
+						getMessageLog().storeMessage(messageId, businessCorrelationId, TimeProvider.nowAsDate(), RCV_MESSAGE_LOG_COMMENTS, label, messageWrapper);
 					}
 					log.debug("{} preparing TimeoutGuard", logPrefix);
 					TimeoutGuard tg = new TimeoutGuard("Receiver "+getName());
@@ -1585,7 +1586,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			log.debug("{} caching first status for messageId [{}]", this::getLogPrefix, ()->messageId);
 			ProcessStatusCacheItem item = new ProcessStatusCacheItem();
 			item.receiveCount = 0;
-			item.receiveDate = Instant.now();
+			item.receiveDate = TimeProvider.now();
 			return item;
 		});
 		if (getListener() instanceof IKnowsDeliveryCount<M> knowsDeliveryCount) {
@@ -1617,7 +1618,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		return processStatusCache.computeIfAbsent(rawMessageWrapper.getId(), k -> {
 					log.debug("{} recreating cached process status for messageId [{}]", this::getLogPrefix, rawMessageWrapper::getId);
 					ProcessStatusCacheItem item = new ProcessStatusCacheItem();
-					item.receiveDate = Instant.now();
+					item.receiveDate = TimeProvider.now();
 					if (getListener() instanceof IKnowsDeliveryCount<M> knowsDeliveryCount) {
 						item.receiveCount = knowsDeliveryCount.getDeliveryCount(rawMessageWrapper);
 					} else {

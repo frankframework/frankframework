@@ -45,6 +45,7 @@ import org.frankframework.stream.MessageContext;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.Misc;
+import org.frankframework.util.TimeProvider;
 import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.WildCardFilter;
 
@@ -272,7 +273,7 @@ public class FileSystemUtils {
 
 	public static <F> void rolloverByDay(IWritableFileSystem<F> fileSystem, F file, String folder, int rotateDays) throws FileSystemException {
 		Date lastModified = fileSystem.getModificationTime(file);
-		Date sysTime = new Date();
+		Date sysTime = TimeProvider.nowAsDate();
 		if (DateUtils.isSameDay(lastModified, sysTime) || lastModified.after(sysTime)) {
 			return;
 		}
