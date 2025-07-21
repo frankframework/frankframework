@@ -30,10 +30,15 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.core.SpringSecurityHandler;
 import org.frankframework.doc.Forward;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlBuilder;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import nl.nn.testtool.Report;
 import nl.nn.testtool.SecurityContext;
@@ -88,6 +93,7 @@ public class LadybugPipe extends FixedForwardPipe {
 
 		List<Report> reports = new ArrayList<>();
 		try {
+			testStorage.getReport(-1); // Workaround XmlStorage.getStorageIds() returning empty list while waiting for fix in Ladybug
 			List<Integer> storageIds = testStorage.getStorageIds();
 			for (Integer storageId : storageIds) {
 				Report report = testStorage.getReport(storageId);
@@ -100,10 +106,17 @@ public class LadybugPipe extends FixedForwardPipe {
 		} catch (StorageException e) {
 			addExceptionElement(results, e);
 		}
+
+		// Rare lelijke hack, ik snap niet dat het mogelijk is om hier geen Spring security-context te hebben.
+		org.springframework.security.core.context.SecurityContext context = SecurityContextHolder.getContextHolderStrategy().createEmptyContext();
+		Authentication wsAuthentication = new AnonymousAuthenticationToken("IbisTester", "IbisTester", Collections.singletonList(new SimpleGrantedAuthority("ROLE_IbisTester")));
+		context.setAuthentication(wsAuthentication);
+		SecurityContextHolder.getContextHolderStrategy().setContext(context);
+
 		ReportRunner reportRunner = new ReportRunner();
 		reportRunner.setTestTool(testTool);
 		reportRunner.setDebugStorage(debugStorage);
-		reportRunner.setSecurityContext(new IbisSecurityContext(session, checkRoles));
+		reportRunner.setSecurityContext(new IbisSecurityContext(checkRoles)); // Dit zou in theory niet nodig moeten zijn omdat we Spring Security gebruiken.
 
 		Collections.sort(reports, reportNameComparator);
 		long startTime = System.currentTimeMillis();
@@ -257,23 +270,21 @@ public class LadybugPipe extends FixedForwardPipe {
 
 }
 
-class IbisSecurityContext implements SecurityContext {
-	private final PipeLineSession session;
+class IbisSecurityContext extends SpringSecurityHandler implements SecurityContext {
 	private final boolean checkRoles;
 
-	IbisSecurityContext(PipeLineSession session, boolean checkRoles) {
-		this.session = session;
+	IbisSecurityContext(boolean checkRoles) {
 		this.checkRoles = checkRoles;
 	}
 
 	@Override
 	public Principal getUserPrincipal() {
-		return checkRoles ? session.getSecurityHandler().getPrincipal() : null;
+		return checkRoles ? super.getPrincipal() : null;
 	}
 
 	@Override
 	public boolean isUserInRoles(List<String> roles) {
-		return !checkRoles || roles.stream().anyMatch(role -> session.getSecurityHandler().isUserInRole(role));
+		return !checkRoles || roles.stream().anyMatch(role -> super.isUserInRole(role));
 	}
 }
 

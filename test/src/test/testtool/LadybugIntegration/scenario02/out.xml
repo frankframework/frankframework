@@ -1,0 +1,23 @@
+<Results>
+	<Result>
+		<Path/>
+		<Name>Diacritics</Name>
+		<OriginalDuration>-9223372036854775808</OriginalDuration>
+		<Duration>0</Duration>
+		<Equal>true</Equal>
+	</Result>
+	<Result>
+		<Path/>
+		<Name>Hello World</Name>
+		<OriginalDuration>-9223372036854775808</OriginalDuration>
+		<Duration>1</Duration>
+		<Equal>true</Equal>
+	</Result>
+	<Result>
+		<Path/>
+		<Name>Pipeline MainConfig_EchoPipe</Name>
+		<OriginalDuration>2</OriginalDuration>
+		<Duration>1</Duration>
+		<Equal>true</Equal>
+	</Result>
+</Results>
