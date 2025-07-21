@@ -155,9 +155,7 @@ public class Message implements Serializable, Closeable {
 		this.context = context;
 		this.requestClass = ClassUtils.nameOf(request);
 		try (Message message = MessageUtils.fromReader(request)) {
-			this.request = message.request;
-			message.request = null; // Prevent potential temp files being closed
-			this.context.putAll(message.context.getAll());
+			copyFromTemporaryMessage(message);
 			if (this.context.containsKey(MessageContext.METADATA_CHARSET)) {
 				// Ensure charset is now always UTF-8 because that's what it is after converting from stream
 				this.context.withCharset(StandardCharsets.UTF_8);
@@ -201,12 +199,20 @@ public class Message implements Serializable, Closeable {
 		this.context = context;
 		this.requestClass = ClassUtils.nameOf(requestClass);
 		try (Message message = MessageUtils.fromInputStream(request)) {
-			this.request = message.request;
-			message.request = null; // Prevent potential temp files being closed
-			this.context.putAll(message.context.getAll());
+			copyFromTemporaryMessage(message);
 		}
 		messageNotClosedAction = new MessageNotClosedAction();
 		CleanerProvider.register(this, messageNotClosedAction);
+	}
+
+	private void copyFromTemporaryMessage(Message message) {
+		this.request = message.request;
+		message.request = null; // Prevent potential temp files being closed
+		// Copy all keys except the name, so we do not overwrite the original name (if given) with a potential temporary-file name.
+		message.context.getAll().keySet()
+				.stream()
+				.filter(key -> !key.equals(MessageContext.METADATA_NAME))
+				.forEachOrdered(key -> this.context.put(key, message.context.get(key)));
 	}
 
 	public Message(InputStream request) throws IOException {
