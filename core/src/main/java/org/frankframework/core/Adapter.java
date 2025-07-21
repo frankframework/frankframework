@@ -35,6 +35,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NamedBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -42,8 +43,12 @@ import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostP
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextException;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.SmartLifecycle;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.event.ContextStartedEvent;
+import org.springframework.context.event.ContextStoppedEvent;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.task.TaskExecutor;
 
@@ -66,6 +71,9 @@ import org.frankframework.errormessageformatters.ErrorMessageFormatter;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.lifecycle.ConfiguringLifecycleProcessor;
 import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.lifecycle.events.AdapterMessageEvent;
+import org.frankframework.lifecycle.events.MessageEventLevel;
+import org.frankframework.lifecycle.events.MessageKeepingEventListener;
 import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.FrankMeterType;
@@ -73,11 +81,9 @@ import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper;
-import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.Misc;
 import org.frankframework.util.RunState;
@@ -339,7 +345,6 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	protected void initLifecycleProcessor() {
 		ConfiguringLifecycleProcessor defaultProcessor = new ConfiguringLifecycleProcessor(this);
 		defaultProcessor.setBeanFactory(getBeanFactory());
-		defaultProcessor.setMessageKeeper(getMessageKeeper());
 		getBeanFactory().registerSingleton(LIFECYCLE_PROCESSOR_BEAN_NAME, defaultProcessor);
 		super.initLifecycleProcessor();
 	}
@@ -373,6 +378,16 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 		SpringContextFlowDiagramProvider bean = SpringUtils.createBean(this);
 		getBeanFactory().registerSingleton("FlowGenerator", bean);
+	}
+
+	/**
+	 * I'm unsure if we should make this part of {@link #afterPropertiesSet()}, seems a bit out of place.
+	 * Should happen before {{@link #refresh()}, in order to capture all events.
+	 */
+	@Override
+	public void refresh() throws BeansException, IllegalStateException {
+		addApplicationListener(new MessageKeepingEventListener(messageKeeperSize));
+		super.refresh();
 	}
 
 	/**
@@ -420,7 +435,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 		if (getPipeLine() == null) {
 			String msg = "No pipeline configured for adapter [" + getName() + "]";
-			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
+			this.publishEvent(new AdapterMessageEvent(this, msg, MessageEventLevel.ERROR));
 			throw new ConfigurationException(msg);
 		}
 
@@ -493,9 +508,9 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		log.info("Adapter [{}] is initializing receiver [{}]", name, receiver.getName());
 		try {
 			receiver.configure();
-			getMessageKeeper().info(receiver, "successfully configured");
+			this.publishEvent(new AdapterMessageEvent(this, receiver, "successfully configured"));
 		} catch (ConfigurationException e) {
-			getMessageKeeper().error(this, "error initializing " + ClassUtils.nameOf(receiver) + ": " + e.getMessage());
+			this.publishEvent(new AdapterMessageEvent(this, receiver, "unable to initialize", e));
 			throw e;
 		}
 	}
@@ -504,8 +519,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * send a warning to the log and to the messagekeeper of the adapter
 	 */
 	protected void warn(String msg) {
-		log.warn("Adapter [{}] {}", name, msg);
-		getMessageKeeper().warn(msg);
+		this.publishEvent(new AdapterMessageEvent(this, msg, MessageEventLevel.WARN));
 	}
 
 	/**
@@ -516,9 +530,22 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		if (!(t instanceof IbisException)) {
 			msg += " (" + t.getClass().getName() + ")";
 		}
-		getMessageKeeper().error(msg + ": " + t.getMessage());
+		this.publishEvent(new AdapterMessageEvent(this, msg, t));
 	}
 
+	@Override
+	public void publishEvent(ApplicationEvent event) {
+		if (event instanceof ContextStartedEvent) {
+			statsUpSince = System.currentTimeMillis(); // Update the adapter uptime.
+			publishEvent(new AdapterMessageEvent(this, "up and running"));
+		} else if (event instanceof ContextStoppedEvent) {
+			publishEvent(new AdapterMessageEvent(this, "stopped"));
+		} else if (event instanceof ContextClosedEvent) {
+			publishEvent(new AdapterMessageEvent(this, "closed"));
+		}
+
+		super.publishEvent(event);
+	}
 
 	/**
 	 * Increase the number of messages in process
@@ -629,17 +656,6 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			result = new Date(lastMessageDate);
 		}
 		return result;
-	}
-
-	/**
-	 * the MessageKeeper is for keeping the last <code>messageKeeperSize</code>
-	 * messages available, for instance for displaying it in the webcontrol
-	 * @see MessageKeeper
-	 */
-	public synchronized MessageKeeper getMessageKeeper() {
-		if (messageKeeper == null)
-			messageKeeper = new MessageKeeper(getMessageKeeperSize() < 1 ? 1 : getMessageKeeperSize());
-		return messageKeeper;
 	}
 
 	/**
@@ -940,52 +956,44 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 				break;
 		}
 
+		if (!isConfigured()) {
+			warn("configuration did not succeed. Starting the adapter ["+getName()+"] is not possible");
+			runState.setRunState(RunState.ERROR);
+			return;
+		}
+		if (configuration.isUnloadInProgressOrDone()) {
+			warn("configuration unload in progress or done. Starting the adapter ["+getName()+"] is not possible");
+			return;
+		}
+
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_ADAPTER_KEY, getName())) {
+			log.trace("Start Adapter thread - synchronize (lock) on Adapter runState[{}]", runState);
+			synchronized (runState) {
+				RunState currentRunState = getRunState();
+				if (currentRunState!=RunState.STOPPED) {
+					warn("currently in state [" + currentRunState + "], ignoring start() command");
+					return;
+				}
+				runState.setRunState(RunState.STARTING);
+			}
+			log.trace("Start Adapter thread - lock released on Adapter runState[{}]", runState);
+		}
+
 		Runnable runnable = new Runnable() {
 			@Override
 			public void run() {
 				try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_ADAPTER_KEY, getName())) {
-					// See also Receiver.startRunning()
-					if (!isConfigured) {
-						log.error("configuration of adapter [{}] did not succeed, therefore starting the adapter is not possible", name);
-						warn("configuration did not succeed. Starting the adapter ["+getName()+"] is not possible");
-						runState.setRunState(RunState.ERROR);
-						return;
-					}
-					if (configuration.isUnloadInProgressOrDone()) {
-						log.error("configuration of adapter [{}] unload in progress or done, therefore starting the adapter is not possible", name);
-						warn("configuration unload in progress or done. Starting the adapter ["+getName()+"] is not possible");
-						return;
-					}
-
-					log.info("starting adapter");
-					log.trace("Start Adapter thread - synchronize (lock) on Adapter runState[{}]", runState);
-
-					synchronized (runState) {
-						RunState currentRunState = getRunState();
-						if (currentRunState!=RunState.STOPPED) {
-							String msg = "currently in state [" + currentRunState + "], ignoring start() command";
-							warn(msg);
-							return;
-						}
-						runState.setRunState(RunState.STARTING);
-					}
-					log.trace("Start Adapter thread - lock released on Adapter runState[{}]", runState);
-
-					// Update the adapter uptime.
-					statsUpSince = System.currentTimeMillis();
-
 					// as from version 3.0 the adapter is started,
 					// regardless of receivers are correctly started.
 					// this allows the use of test-pipeline without (running) receivers
 					runState.setRunState(RunState.STARTED);
-					getMessageKeeper().add("Adapter [" + getName() + "] up and running");
-					log.info("Adapter [{}] up and running", name);
 
 					// starting receivers
 					for (Receiver<?> receiver: receivers) {
 						receiver.start();
 					}
 
+					log.info("Adapter [{}] and receivers up and running", name);
 					log.trace("Start Adapter thread - finished and completed");
 				}
 			}
@@ -1100,7 +1108,6 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 					// Set the adapter uptime to 0 as the adapter is stopped.
 					statsUpSince = 0;
 					runState.setRunState(RunState.STOPPED);
-					getMessageKeeper().add("Adapter [" + name + "] stopped");
 					log.debug("Adapter [{}] now in state STOPPED", name);
 				} catch (Throwable t) {
 					addErrorMessageToMessageKeeper("got error stopping Adapter", t);

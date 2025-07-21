@@ -66,6 +66,7 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Forward;
 import org.frankframework.jdbc.DirectQuerySender;
 import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.lifecycle.events.AdapterMessageEvent;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.processors.PipeProcessor;
@@ -253,9 +254,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			messageLog.configure();
 			if (messageLog instanceof HasPhysicalDestination destination) {
 				String msg = "has messageLog in "+destination.getPhysicalDestinationName();
-				log.debug(msg);
-				if (getAdapter() != null)
-					getAdapter().getMessageKeeper().add(msg);
+				if (getAdapter() != null) {
+					getAdapter().publishEvent(new AdapterMessageEvent(getAdapter(), this, msg));
+				} else {
+					log.debug(msg);
+				}
 			}
 		}
 		if (StringUtils.isNotEmpty(getRetryXPath())) {

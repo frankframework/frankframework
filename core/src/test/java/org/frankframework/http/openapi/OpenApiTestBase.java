@@ -7,14 +7,27 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.net.URL;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.apache.logging.log4j.Logger;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.mockito.Mockito;
+import org.springframework.context.ApplicationListener;
+import org.springframework.core.task.SyncTaskExecutor;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
@@ -25,30 +38,20 @@ import org.frankframework.http.rest.ApiListener;
 import org.frankframework.http.rest.ApiListenerServlet;
 import org.frankframework.http.rest.ApiServiceDispatcher;
 import org.frankframework.http.rest.MediaTypes;
+import org.frankframework.lifecycle.events.AdapterMessageEvent;
+import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.pipes.Json2XmlValidator;
 import org.frankframework.receivers.Receiver;
+import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.HttpUtils;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.RunState;
 import org.frankframework.util.SpringUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.mockito.Mockito;
-import org.springframework.core.task.SyncTaskExecutor;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.mock.web.MockHttpServletRequest;
-import org.springframework.mock.web.MockHttpServletResponse;
-
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
 
 public class OpenApiTestBase extends Mockito {
 
@@ -165,7 +168,7 @@ public class OpenApiTestBase extends Mockito {
 
 		public AdapterBuilder(String name, String description) {
 			adapter = spy(SpringUtils.createBean(configuration, Adapter.class));
-			when(adapter.getMessageKeeper()).thenReturn(new SysOutMessageKeeper());
+			adapter.addApplicationListener(new SysOutMessageKeeper());
 			adapter.setName(name);
 			adapter.setDescription(description);
 			configuration.addAdapter(adapter);
@@ -279,7 +282,7 @@ public class OpenApiTestBase extends Mockito {
 		public Adapter build(boolean start) throws ConfigurationException {
 			PipeLine pipeline = SpringUtils.createBean(adapter);
 
-			Receiver receiver = SpringUtils.createBean(adapter);
+			Receiver<Message> receiver = SpringUtils.createBean(adapter);
 			receiver.setName("receiver");
 			receiver.setListener(listener);
 			receiver.setApplicationContext(adapter); // Required because we have to spy the Adapter
@@ -323,16 +326,10 @@ public class OpenApiTestBase extends Mockito {
 			}
 		}
 
-		private class SysOutMessageKeeper extends MessageKeeper {
+		private class SysOutMessageKeeper implements ApplicationListener<AdapterMessageEvent> {
 			@Override
-			public synchronized void add(String message, MessageKeeperLevel level) {
-				add(message, null, level);
-			}
-
-			@Override
-			public synchronized void add(String message, Instant date, MessageKeeperLevel level) {
-				log.debug("SysOutMessageKeeper {} - {}", level, message);
-				if (MessageKeeperLevel.ERROR == level) fail(message);
+			public void onApplicationEvent(AdapterMessageEvent event) {
+				if (MessageEventLevel.ERROR == event.getLevel()) fail(event.getMessage());
 			}
 		}
 	}

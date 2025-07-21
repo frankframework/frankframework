@@ -104,6 +104,8 @@ import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Protected;
 import org.frankframework.jdbc.MessageStoreListener;
 import org.frankframework.jta.SpringTxManagerProxy;
+import org.frankframework.lifecycle.events.AdapterMessageEvent;
+import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.monitoring.EventPublisher;
 import org.frankframework.monitoring.EventThrowing;
@@ -117,7 +119,6 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CompactSaxHandler;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.RunState;
 import org.frankframework.util.RunStateEnquiring;
@@ -396,9 +397,10 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * sends an informational message to the log and to the messagekeeper of the adapter
 	 */
 	protected void info(String msg) {
-		log.info("{}{}", getLogPrefix(), msg);
 		if (adapter != null) {
-			adapter.getMessageKeeper().add(getLogPrefix() + msg);
+			adapter.publishEvent(new AdapterMessageEvent(adapter, this, msg));
+		} else {
+			log.info("{}{}", getLogPrefix(), msg);
 		}
 	}
 
@@ -406,9 +408,10 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * sends a warning to the log and to the messagekeeper of the adapter
 	 */
 	protected void warn(String msg) {
-		log.warn("{}{}", getLogPrefix(), msg);
 		if (adapter != null) {
-			adapter.getMessageKeeper().add("WARNING: " + getLogPrefix() + msg, MessageKeeperLevel.WARN);
+			adapter.publishEvent(new AdapterMessageEvent(adapter, this, msg, MessageEventLevel.WARN));
+		} else {
+			log.warn("{}{}", getLogPrefix(), msg);
 		}
 	}
 
@@ -416,9 +419,10 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * sends a error message to the log and to the messagekeeper of the adapter
 	 */
 	protected void error(@Nonnull String msg, @Nullable Throwable t) {
-		log.error(() -> "%s%s".formatted(getLogPrefix(), msg), t);
 		if (adapter != null) {
-			adapter.getMessageKeeper().add("ERROR: " + getLogPrefix() + msg+(t!=null?": "+t.getMessage():""), MessageKeeperLevel.ERROR);
+			adapter.publishEvent(new AdapterMessageEvent(adapter, this, msg, MessageEventLevel.ERROR));
+		} else {
+			log.error(() -> "%s%s".formatted(getLogPrefix(), msg), t);
 		}
 	}
 
@@ -731,7 +735,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		}
 
 		if (adapter != null) {
-			adapter.getMessageKeeper().add(getLogPrefix()+"initialization complete");
+//			adapter.getMessageKeeper().add(getLogPrefix()+"initialization complete");
 		}
 		throwEvent(RCV_CONFIGURED_MONITOR_EVENT);
 		isConfigured = true;
@@ -754,16 +758,12 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	@Override
 	public void start() {
 		try {
-			// if this receiver is on an adapter, the StartListening method
-			// may only be executed when the adapter is started.
-			if (adapter != null) {
-				RunState adapterRunState = adapter.getRunState();
-				if (adapterRunState!=RunState.STARTED) {
-					log.warn("{}on adapter [{}] was tried to start, but the adapter is in state [{}]. Ignoring command.", getLogPrefix(), adapter.getName(), adapterRunState);
-					adapter.getMessageKeeper().add("ignored start command on [" + getName()  + "]; adapter is in state ["+adapterRunState+"]");
-					return;
-				}
+			RunState adapterRunState = adapter.getRunState();
+			if (adapterRunState != RunState.STARTED) {
+				adapter.publishEvent(new AdapterMessageEvent(adapter, this, "ignored start command; adapter is in state ["+adapterRunState+"]", MessageEventLevel.WARN));
+				return;
 			}
+
 			// See also Adapter.startRunning()
 			if (!isConfigured) {
 				log.error("configuration of receiver [{}] did not succeed, therefore starting the receiver is not possible", getName());
@@ -785,8 +785,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 						&& currentRunState!=RunState.ERROR
 						&& isConfigured) { // Only start the receiver if it is properly configured, and is not already starting or still stopping
 					if (currentRunState==RunState.STARTING || currentRunState==RunState.STARTED) {
-						log.info("already in state [{}]", currentRunState);
-						adapter.getMessageKeeper().info(this, "already in state [" + currentRunState + "]");
+						adapter.publishEvent(new AdapterMessageEvent(adapter, this, "already in state [" + currentRunState + "]"));
 					} else {
 						log.warn("currently in state [{}], ignoring start() command", currentRunState);
 					}
@@ -823,8 +822,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				case STOPPED:
 				case STOPPING:
 				case EXCEPTION_STOPPING:
-					log.info("receiver already in state [{}]", currentRunState);
-					adapter.getMessageKeeper().info(this, "already in state [" + currentRunState + "]");
+					adapter.publishEvent(new AdapterMessageEvent(adapter, this, "already in state [" + currentRunState + "]"));
 					return;
 				case EXCEPTION_STARTING:
 					if (getListener() instanceof IPullingListener) {
@@ -1740,7 +1738,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			case RECOVER:
 				// Make JobDef.recoverAdapters() try to recover
 				error(errorMessage+", will try to recover",t);
-				setRunState(RunState.ERROR); //Setting the state to ERROR automatically stops the receiver
+				setRunState(RunState.ERROR); // Setting the state to ERROR automatically stops the receiver
 				break;
 			case CLOSE:
 				error(errorMessage+", stopping receiver", t);

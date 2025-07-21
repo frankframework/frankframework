@@ -50,6 +50,7 @@ import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
+import org.frankframework.lifecycle.events.AdapterMessageEvent;
 import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.processors.PipeLineProcessor;
@@ -357,7 +358,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 		} catch (Throwable t) {
 			ConfigurationException e = new ConfigurationException("Exception configuring "+ ClassUtils.nameOf(pipe),t);
-			getAdapter().getMessageKeeper().error("Error initializing adapter ["+ getAdapter().getName()+"]: " +e.getMessage());
+			adapter.publishEvent(new AdapterMessageEvent(adapter, pipe, "unable to initialize", e));
 			throw e;
 		}
 		log.debug("Pipe successfully configured");
