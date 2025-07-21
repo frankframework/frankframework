@@ -33,7 +33,7 @@ public class TimeProvider {
 	/**
 	 * Clock currently being used.
 	 */
-	private static Clock clock = Clock.systemUTC();
+	private static Clock clock = Clock.systemDefaultZone();
 
 	private TimeProvider() {
 		// Private constructor to prevent creating instances of static utility classes
