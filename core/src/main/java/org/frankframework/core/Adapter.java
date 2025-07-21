@@ -418,7 +418,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			throw new LifecycleException("already configured");
 		}
 
-		if (pipeline == null) {
+		if (getPipeLine() == null) {
 			String msg = "No pipeline configured for adapter [" + getName() + "]";
 			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
 			throw new ConfigurationException(msg);
@@ -468,8 +468,12 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	}
 
 	@Nonnull
-	String computeCombinedHideRegex() {
-		String combinedHideRegex = pipeline.getPipes().stream()
+	protected final String computeCombinedHideRegex() {
+		if (getPipeLine() == null) {
+			return "";
+		}
+
+		String combinedHideRegex = getPipeLine().getPipes().stream()
 				.map(IPipe::getHideRegex)
 				.filter(StringUtils::isNotEmpty)
 				.distinct()
@@ -626,6 +630,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		}
 		return result;
 	}
+
 	/**
 	 * the MessageKeeper is for keeping the last <code>messageKeeperSize</code>
 	 * messages available, for instance for displaying it in the webcontrol
@@ -1135,7 +1140,8 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		for (Receiver<?> receiver: receivers) {
 			sb.append(" ").append(receiver.getName());
 		}
-		sb.append("] [pipeLine=").append(pipeline != null ? pipeline.toString() : "none registered").append("][started=").append(getRunState()).append("]");
+		sb.append("] [pipeLine=").append(getPipeLine() != null ? getPipeLine() : "none registered");
+		sb.append("][started=").append(getRunState()).append("]");
 		return sb.toString();
 	}
 
