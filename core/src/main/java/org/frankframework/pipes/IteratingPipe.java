@@ -293,7 +293,6 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			} else {
 				log.debug("iteration [{}] item [{}]", totalItems, message);
 			}
-			message.closeOnCloseOf(childSession);
 
 			if (childLimiter != null) {
 				try {

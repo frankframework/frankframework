@@ -266,7 +266,6 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 
 		Message capturedResult = reportGenerator.senderOutput(sender, correlationId, senderResult.getResult());
 		senderResult.setResult(capturedResult);
-		session.scheduleCloseOnSessionExit(capturedResult); // The Ladybug may change the result (when stubbed).
 		return senderResult;
 	}
 
@@ -491,7 +490,6 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			input = Message.asMessage(reportGenerator.getEmptyInputReplacement(correlationId, emptyInputReplacement));
 		}
 
-		pipeLineSession.scheduleCloseOnSessionExit(input); // If we're pointcutting and manipulating the Message, we need to schedule it to be closed...
 		return input;
 	}
 

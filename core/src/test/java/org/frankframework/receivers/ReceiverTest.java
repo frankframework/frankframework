@@ -743,7 +743,6 @@ public class ReceiverTest {
 			Message result = receiver.processRequest(listener, rawTestMessageWrapper, session);
 
 			// Assert
-			assertFalse(result.isScheduledForCloseOnExitOf(session), "Result message should not be scheduled for closure on exit of session");
 			assertTrue(result.requiresStream(), "Result message should be a stream");
 			assertTrue(result.isRequestOfType(SerializableFileReference.class), "Result message should be of type SerializableFileReference");
 			assertEquals("TEST", result.asString());

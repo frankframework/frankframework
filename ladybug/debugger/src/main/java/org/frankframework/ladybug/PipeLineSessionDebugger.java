@@ -70,11 +70,6 @@ public class PipeLineSessionDebugger implements MethodHandler {
 
 	private Object put(final String name, final Object originalValue) {
 		Object newValue = reportGenerator.sessionOutputPoint(pipeLineSession.getCorrelationId(), name, originalValue);
-		if (newValue != originalValue && newValue instanceof Message message) {
-			// If a session key is stubbed with a stream and this session key is not used (stream is not read) it will
-			// keep the report in progress (waiting for the stream to be read, captured and closed).
-			message.closeOnCloseOf(pipeLineSession);
-		}
 		return pipeLineSession.put(name, newValue);
 	}
 

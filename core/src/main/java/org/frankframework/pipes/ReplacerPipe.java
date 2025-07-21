@@ -98,9 +98,6 @@ public class ReplacerPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
-			// Make sure to close the incoming message
-			message.unscheduleFromCloseOnExitOf(session);
-
 			// Create a ReplacingInputStream for find/replace
 			ReplacingInputStream replacingInputStream = new ReplacingInputStream(message.asInputStream(), find, replace, isReplaceNonXmlChars(),
 					getNonXmlReplacementCharacter(), isAllowUnicodeSupplementaryCharacters()
@@ -115,8 +112,6 @@ public class ReplacerPipe extends FixedForwardPipe {
 			ReplacingVariablesInputStream inputStream = wrapWithSubstituteVarsInputStreamIfNeeded(replaceParametersStream);
 
 			Message result = new Message(inputStream);
-			result.closeOnCloseOf(session);
-
 			return new PipeRunResult(getSuccessForward(), result);
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot open stream", e);

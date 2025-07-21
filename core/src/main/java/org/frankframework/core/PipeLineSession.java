@@ -236,7 +236,6 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		}
 		if(obj != null) {
 			Message message = Message.asMessage(obj);
-			message.closeOnCloseOf(this);
 			return message;
 		}
 		return Message.nullMessage();

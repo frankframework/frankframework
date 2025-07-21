@@ -428,8 +428,6 @@ public class PipeLineSessionTest {
 		from.put("__e", closeable2);
 		from.put("f", messageOfCloseable);
 
-		from.scheduleCloseOnSessionExit(message);
-
 		// Act
 		from.mergeToParentSession(keysToCopy, to);
 
@@ -480,8 +478,6 @@ public class PipeLineSessionTest {
 		from.put("d", message1);
 		from.put("e", message2);
 		to.put("d", message2);
-
-		from.scheduleCloseOnSessionExit(message1);
 
 		// Act
 		from.mergeToParentSession(keys, to);

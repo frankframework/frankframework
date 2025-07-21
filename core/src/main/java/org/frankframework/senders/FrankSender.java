@@ -372,11 +372,6 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 			setupChildSession(parentSession, pvl, childSession);
 
 			Message resultMessage = doCallService(serviceClient, scope, target, message, parentSession, childSession);
-
-			// Detach the result message from the child session, and attach to the parent session
-			resultMessage.unscheduleFromCloseOnExitOf(childSession);
-			resultMessage.closeOnCloseOf(parentSession);
-
 			return createSenderResult(resultMessage, childSession);
 		}
 	}

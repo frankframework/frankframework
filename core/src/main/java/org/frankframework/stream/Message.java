@@ -57,7 +57,6 @@ import lombok.Getter;
 import lombok.Lombok;
 import lombok.SneakyThrows;
 
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.util.AppConstants;
@@ -403,21 +402,6 @@ public class Message implements Serializable, Closeable {
 		}
 		request = null;
 		closed = true;
-	}
-
-	public void closeOnCloseOf(@Nonnull PipeLineSession session) {
-		// No-op for now
-	}
-
-	public boolean isScheduledForCloseOnExitOf(@Nonnull PipeLineSession session) {
-		return false;
-	}
-
-	public void unscheduleFromCloseOnExitOf(@Nonnull PipeLineSession session) {
-		if (request instanceof AutoCloseable closeable && session.isScheduledForCloseOnExit(closeable)) {
-			LOG.warn("Contents of message was scheduled for closure", new Exception());
-			session.unscheduleCloseOnSessionExit(closeable);
-		}
 	}
 
 	private void onExceptionClose(@Nonnull Exception e) {

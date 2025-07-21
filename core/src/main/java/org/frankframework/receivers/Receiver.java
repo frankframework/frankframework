@@ -1063,10 +1063,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			} finally {
 				itx.complete();
 			}
-
-			if(!Message.isNull(result)) {
-				result.unscheduleFromCloseOnExitOf(session);
-			}
 			return result;
 		}
 	}

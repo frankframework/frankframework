@@ -96,9 +96,6 @@ public class Base64Pipe extends FixedForwardPipe {
 			if (directionEncode) {
 				result = new Message(result.asReader(), result.copyContext());
 			}
-			// As we wrap the input-stream, we should make sure it's not closed when the session is closed as that might close this stream before reading it.
-			message.unscheduleFromCloseOnExitOf(session);
-			result.closeOnCloseOf(session);
 			return new PipeRunResult(getSuccessForward(), result);
 		} catch (IOException e) {
 			throw new PipeRunException(this,"cannot open stream", e);
