@@ -16,12 +16,7 @@ export class ServerTimeService {
   private serverTimezoneOffset: number = 0;
 
   getIntialTime(): string {
-    try {
-      return formatDate(this.baseTime, this.dateFormat, this.locale, this.timezone);
-    } catch (error) {
-      console.error("Couldn't format initial time with a valid timezone", error);
-      return formatDate(this.baseTime, this.dateFormat, this.locale);
-    }
+    return formatDate(this.baseTime, this.dateFormat, this.locale, this.timezone);
   }
 
   // doesnt contain timezone data so will return everything in locale time
@@ -31,13 +26,8 @@ export class ServerTimeService {
 
   // does use timezone so will show in server timezone
   getCurrentTimeFormatted(): string {
-    try {
-      const zonedTime = this.currentTime.toLocaleString(this.locale, { timeZone: this.timezone });
-      return formatDate(zonedTime, this.dateFormat, this.locale, this.timezone);
-    } catch (error) {
-      console.error("Couldn't format current time with a valid timezone", error);
-      return formatDate(this.currentTime, this.dateFormat, this.locale);
-    }
+    const zonedTime = this.currentTime.toLocaleString(this.locale, { timeZone: this.timezone });
+    return formatDate(zonedTime, this.dateFormat, this.locale, this.timezone);
   }
 
   getDateWithOffset(): Date {
@@ -47,13 +37,8 @@ export class ServerTimeService {
   }
 
   toServerTime(value: number | Date): string {
-    try {
-      const zonedTime = new Date(value).toLocaleString(this.locale, { timeZone: this.timezone });
-      return formatDate(zonedTime, this.dateFormat, this.locale, this.timezone);
-    } catch (error) {
-      console.error("Couldn't format date with a valid timezone", error);
-      return formatDate(value, this.dateFormat, this.locale);
-    }
+    const zonedTime = new Date(value).toLocaleString(this.locale, { timeZone: this.timezone });
+    return formatDate(zonedTime, this.dateFormat, this.locale, this.timezone);
   }
 
   setServerTime(serverTime: number, timezone?: string, timezoneOffset?: number): void {
@@ -66,6 +51,8 @@ export class ServerTimeService {
     if (this.timeUpdateIntervalId > -1) window.clearInterval(this.timeUpdateIntervalId);
     this.timeUpdateIntervalId = window.setInterval(() => this.updateTime(), 200);
     this.updateTime();
+
+    this.checkValidTimezone();
   }
 
   private updateTime(): void {
@@ -78,5 +65,14 @@ export class ServerTimeService {
 
   private getTimezoneOffsetToUTCInSeconds(): number {
     return this.currentTime.getTimezoneOffset() * 60;
+  }
+
+  private checkValidTimezone(): void {
+    try {
+      this.currentTime.toLocaleString(this.locale, { timeZone: this.timezone });
+    } catch (error) {
+      console.error("Couldn't format current time with a valid timezone, using UTC as fallback", error);
+      this.timezone = 'Etc/UTC';
+    }
   }
 }
