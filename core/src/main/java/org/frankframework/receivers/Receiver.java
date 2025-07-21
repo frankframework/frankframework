@@ -734,9 +734,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			throw e;
 		}
 
-		if (adapter != null) {
-//			adapter.getMessageKeeper().add(getLogPrefix()+"initialization complete");
-		}
 		throwEvent(RCV_CONFIGURED_MONITOR_EVENT);
 		isConfigured = true;
 

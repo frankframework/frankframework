@@ -35,7 +35,6 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.config.Configurator;
-import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.NamedBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -374,20 +373,11 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			addBeanFactoryPostProcessor(new AopProxyBeanFactoryPostProcessor());
 		}
 
+		addApplicationListener(new MessageKeepingEventListener(messageKeeperSize));
 		refresh();
 
 		SpringContextFlowDiagramProvider bean = SpringUtils.createBean(this);
 		getBeanFactory().registerSingleton("FlowGenerator", bean);
-	}
-
-	/**
-	 * I'm unsure if we should make this part of {@link #afterPropertiesSet()}, seems a bit out of place.
-	 * Should happen before {{@link #refresh()}, in order to capture all events.
-	 */
-	@Override
-	public void refresh() throws BeansException, IllegalStateException {
-		addApplicationListener(new MessageKeepingEventListener(messageKeeperSize));
-		super.refresh();
 	}
 
 	/**
@@ -1051,6 +1041,19 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		Objects.requireNonNull(callback, "callback may not be null");
 
 		log.info("Stopping Adapter named [{}] with {} receivers", this::getName, receivers::size);
+
+		// See also Receiver.stopRunning()
+		switch(getRunState()) {
+			case STARTING:
+			case STOPPING:
+			case STOPPED:
+				if (log.isWarnEnabled()) log.warn("adapter [{}] currently in state [{}], ignoring stop() command", getName(), getRunState());
+				return;
+			default:
+				break;
+		}
+		runState.setRunState(RunState.STOPPING);
+
 		Runnable runnable = new Runnable() {
 			// Cannot use a closable ThreadContext as it's cleared in the Receiver STOP method.
 			@Override
@@ -1058,23 +1061,13 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 				try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_ADAPTER_KEY, getName())) {
 					log.trace("Adapter.stopRunning - stop adapter thread for [{}] starting", () -> getName());
 
-					// See also Receiver.stopRunning()
-					switch(getRunState()) {
-						case STARTING:
-						case STOPPING:
-						case STOPPED:
-							if (log.isWarnEnabled()) log.warn("adapter [{}] currently in state [{}], ignoring stop() command", getName(), getRunState());
-							return;
-						default:
-							break;
-					}
-					runState.setRunState(RunState.STOPPING);
 					log.debug("Adapter [{}] is stopping receivers", name);
 					for (Receiver<?> receiver: receivers) {
 						// Will not stop receivers that are in state "STARTING"
 						log.debug("Adapter.stopRunning: Stopping receiver [{}] in state [{}]", receiver::getName, receiver::getRunState);
 						receiver.stop();
 					}
+
 					// IPullingListeners might still be running, see also
 					// comment in method Receiver.tellResourcesToStop()
 					for (Receiver<?> receiver: receivers) {
