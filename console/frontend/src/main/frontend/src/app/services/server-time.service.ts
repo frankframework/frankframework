@@ -16,7 +16,12 @@ export class ServerTimeService {
   private serverTimezoneOffset: number = 0;
 
   getIntialTime(): string {
-    return formatDate(this.baseTime, this.dateFormat, this.locale, this.timezone);
+    try {
+      return formatDate(this.baseTime, this.dateFormat, this.locale, this.timezone);
+    } catch (error) {
+      console.error("Couldn't format initial time with a valid timezone", error);
+      return formatDate(this.baseTime, this.dateFormat, this.locale);
+    }
   }
 
   // doesnt contain timezone data so will return everything in locale time
@@ -26,8 +31,13 @@ export class ServerTimeService {
 
   // does use timezone so will show in server timezone
   getCurrentTimeFormatted(): string {
-    const zonedTime = this.currentTime.toLocaleString(this.locale, { timeZone: this.timezone });
-    return formatDate(zonedTime, this.dateFormat, this.locale, this.timezone);
+    try {
+      const zonedTime = this.currentTime.toLocaleString(this.locale, { timeZone: this.timezone });
+      return formatDate(zonedTime, this.dateFormat, this.locale, this.timezone);
+    } catch (error) {
+      console.error("Couldn't format current time with a valid timezone", error);
+      return formatDate(this.currentTime, this.dateFormat, this.locale);
+    }
   }
 
   getDateWithOffset(): Date {
@@ -37,8 +47,13 @@ export class ServerTimeService {
   }
 
   toServerTime(value: number | Date): string {
-    const zonedTime = new Date(value).toLocaleString(this.locale, { timeZone: this.timezone });
-    return formatDate(zonedTime, this.dateFormat, this.locale, this.timezone);
+    try {
+      const zonedTime = new Date(value).toLocaleString(this.locale, { timeZone: this.timezone });
+      return formatDate(zonedTime, this.dateFormat, this.locale, this.timezone);
+    } catch (error) {
+      console.error("Couldn't format date with a valid timezone", error);
+      return formatDate(value, this.dateFormat, this.locale);
+    }
   }
 
   setServerTime(serverTime: number, timezone?: string, timezoneOffset?: number): void {
