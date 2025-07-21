@@ -406,20 +406,16 @@ public class Message implements Serializable, Closeable {
 	}
 
 	public void closeOnCloseOf(@Nonnull PipeLineSession session) {
-		if (this.request == null || isScheduledForCloseOnExitOf(session)) {
-			return;
-		}
-		LOG.debug("registering Message [{}] for close on exit", this);
-		session.scheduleCloseOnSessionExit(this);
+		// No-op for now
 	}
 
 	public boolean isScheduledForCloseOnExitOf(@Nonnull PipeLineSession session) {
-		return session.isScheduledForCloseOnExit(this);
+		return false;
 	}
 
 	public void unscheduleFromCloseOnExitOf(@Nonnull PipeLineSession session) {
-		session.unscheduleCloseOnSessionExit(this);
-		if (request instanceof AutoCloseable closeable) {
+		if (request instanceof AutoCloseable closeable && session.isScheduledForCloseOnExit(closeable)) {
+			LOG.warn("Contents of message was scheduled for closure", new Exception());
 			session.unscheduleCloseOnSessionExit(closeable);
 		}
 	}
