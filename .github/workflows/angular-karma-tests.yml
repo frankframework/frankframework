@@ -42,7 +42,7 @@ jobs:
         cache-dependency-path: console/frontend/src/main/frontend/pnpm-lock.yaml
 
     - name: Install dependencies
-      run: npm install
+      run: pnpm install
 
     - name: Run Karma tests
       run: npm run test -- --watch=false --browsers=ChromeHeadless --code-coverage

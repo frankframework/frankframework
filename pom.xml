@@ -20,7 +20,7 @@
 		<junit.excludedTags></junit.excludedTags>
 		<junit.includedTags></junit.includedTags>
 
-		<jackson.version>2.19.1</jackson.version>
+		<jackson.version>2.19.2</jackson.version>
 		<cxf.version>4.1.2</cxf.version>
 		<spring.version>6.2.9</spring.version>
 		<spring-security.version>6.4.6</spring-security.version>
@@ -174,7 +174,7 @@
 			<dependency>
 				<groupId>com.nimbusds</groupId>
 				<artifactId>nimbus-jose-jwt</artifactId>
-				<version>10.3.1</version>
+				<version>10.4</version>
 			</dependency>
 			<!-- End Lock transient deps -->
 
