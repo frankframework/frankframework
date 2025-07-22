@@ -82,7 +82,6 @@ import org.frankframework.stream.MessageContext;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.Misc;
 import org.frankframework.util.RunState;
@@ -322,7 +321,6 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 	private final RunStateManager runState = new RunStateManager();
 	private @Getter boolean isConfigured = false;
-	private MessageKeeper messageKeeper; // Instantiated in configure()
 	private final boolean msgLogHumanReadable = appConstants.getBoolean("msg.log.humanReadable", false);
 
 	private @Getter @Setter TaskExecutor taskExecutor;

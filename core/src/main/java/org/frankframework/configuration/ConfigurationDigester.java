@@ -52,6 +52,7 @@ import org.frankframework.configuration.filters.SkipContainersFilter;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.Resource;
 import org.frankframework.documentbuilder.xml.XmlTee;
+import org.frankframework.lifecycle.events.ConfigurationMessageEvent;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.LogUtil;
@@ -197,7 +198,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		}
 
 		if(ConfigurationUtils.isConfigurationXmlOptional(configuration)) {
-			configuration.log("no configuration file found, skipping xml digest");
+			configuration.publishEvent(new ConfigurationMessageEvent(configuration, "no configuration file found, skipping xml digest"));
 			return null;
 		}
 
