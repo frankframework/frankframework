@@ -139,7 +139,7 @@ public class HttpSender extends AbstractHttpSender {
 			switch (getHttpMethod()) {
 			case GET:
 				if (parameters.size() > 0) {
-					queryParametersAppended = appendParameters(queryParametersAppended,relativePath,parameters);
+					appendParameters(queryParametersAppended, relativePath, parameters);
 					log.debug("path after appending of parameters [{}]", relativePath);
 				}
 

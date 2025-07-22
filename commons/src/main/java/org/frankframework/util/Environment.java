@@ -39,6 +39,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class Environment {
+
+	private Environment() {
+		// Private constructor so that the utility-class cannot be instantiated.
+	}
+
 	private static final Logger log = LogManager.getLogger(Environment.class);
 	private static final String FRANKFRAMEWORK_NAMESPACE = "META-INF/maven/org.frankframework/";
 
@@ -84,14 +89,14 @@ public class Environment {
 	}
 
 	private static String determineOsSpecificEnvCommand() {
-		String OS = System.getProperty("os.name").toLowerCase();
+		String osName = System.getProperty("os.name").toLowerCase();
 		String envCommand;
-		if (OS.contains("windows 9")) {
+		if (osName.contains("windows 9")) {
 			envCommand = "command.com /c set";
 		} else if (
-				(OS.contains("nt"))
-						|| (OS.contains("windows 20"))
-						|| (OS.contains("windows xp"))) {
+				(osName.contains("nt"))
+						|| (osName.contains("windows 20"))
+						|| (osName.contains("windows xp"))) {
 			envCommand = "cmd.exe /c set";
 		} else {
 			// assume Unix

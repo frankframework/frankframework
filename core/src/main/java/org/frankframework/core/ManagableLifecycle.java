@@ -35,6 +35,7 @@ public interface ManagableLifecycle extends ConfigurableLifecycle {
 	 * Check whether this component has successfully been configured.
 	 * Similar to {@link #isRunning()}, verifies if this object may be started.
 	 */
+	@Override
 	boolean isConfigured();
 
 	/**

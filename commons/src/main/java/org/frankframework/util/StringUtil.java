@@ -247,8 +247,7 @@ public class StringUtil {
 	 */
 	@Nonnull
 	public static List<String> split(@Nullable String input) {
-		return splitToStream(input)
-				.collect(Collectors.toList());
+		return splitToStream(input).toList();
 	}
 
 	/**

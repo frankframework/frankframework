@@ -29,6 +29,10 @@ import lombok.extern.log4j.Log4j2;
 public class XmlEncodingUtils {
 	public static final char REPLACE_NON_XML_CHAR = 0x00BF; // Inverted question mark.
 
+	private XmlEncodingUtils() {
+		// Private constructor so that the utility-class cannot be instantiated.
+	}
+
 	/**
 	 * See {@link #encodeChars(String, boolean)}.
 	 */

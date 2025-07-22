@@ -38,15 +38,6 @@ class FieldNameSensitiveToStringStyle extends ToStringStyle {
 		this.setUseIdentityHashCode(false);
 	}
 
-	/**
-	 * Ensure <code>Singleton</code> after serialization.
-	 * 
-	 * @return the singleton
-	 */
-	private Object readResolve() {
-		return StringUtil.OMIT_PASSWORD_FIELDS_STYLE;
-	}
-
 	@Override
 	protected void appendDetail(StringBuffer buffer, final String fieldName, final Object value) {
 		if (containsHiddenWord(fieldName) && value instanceof String) {

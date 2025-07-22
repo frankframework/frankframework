@@ -25,6 +25,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -95,8 +96,8 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	private @Setter @Getter boolean trace=false;
 	private @Getter boolean peekUntransacted=true;
 
-	private Map<ProcessState, String> updateStatusQueries = new HashMap<>();
-	private Map<ProcessState,Set<ProcessState>> targetProcessStates = new HashMap<>();
+	private Map<ProcessState, String> updateStatusQueries = new EnumMap<>(ProcessState.class);
+	private Map<ProcessState, Set<ProcessState>> targetProcessStates = new EnumMap<>(ProcessState.class);
 
 	protected Connection connection=null;
 
@@ -151,7 +152,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		} else {
 			//noinspection EmptyTryBlock
 			try (Connection ignored = getConnection()) {
-				//do nothing, eat a connection from the pool to validate connectivity
+				// do nothing, eat a connection from the pool to validate connectivity
 			} catch (JdbcException | SQLException e) {
 				throw new LifecycleException(e);
 			}
@@ -365,9 +366,9 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		return Message.asMessage(rawMessage.getRawMessage());
 	}
 
+	@SuppressWarnings("unchecked")
 	protected void addAdditionalQueryFieldsToSession(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String, Object> context) {
 		if (rawMessage.getContext().containsKey(ADDITIONAL_QUERY_FIELDS_KEY)) {
-			//noinspection unchecked
 			context.putAll((Map<String, String>) rawMessage.getContext().get(ADDITIONAL_QUERY_FIELDS_KEY));
 		}
 	}

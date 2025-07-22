@@ -37,8 +37,8 @@ public class StreamUtilTest {
 	public static Path testFolder;
 
 	private static Path file;
-	private final String UTF8_EXPECTED = "ABC één euro: €1,00";
-	private final String OTHER_EXPECTED = "ABC néé hè";
+	private static final String UTF8_EXPECTED = "ABC één euro: €1,00";
+	private static final String OTHER_EXPECTED = "ABC néé hè";
 
 	@BeforeAll
 	public static void setUp() throws IOException {
@@ -172,19 +172,6 @@ public class StreamUtilTest {
 	 */
 	@Test
 	public void testStreamToStreamForInputOutput() throws Exception {
-		String test = "test";
-		ByteArrayInputStream bais = new ByteArrayInputStream(test.getBytes());
-		OutputStream baos = new ByteArrayOutputStream();
-		StreamUtil.streamToStream(bais, baos);
-		assertEquals("test", baos.toString());
-	}
-
-	/**
-	 * Method: streamToStream(InputStream input, OutputStream output, boolean
-	 * closeInput)
-	 */
-	@Test
-	public void testStreamToStreamForInputOutputCloseInput() throws Exception {
 		String test = "test";
 		ByteArrayInputStream bais = new ByteArrayInputStream(test.getBytes());
 		OutputStream baos = new ByteArrayOutputStream();

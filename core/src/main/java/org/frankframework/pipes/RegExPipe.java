@@ -70,8 +70,8 @@ import org.frankframework.util.XmlBuilder;
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ROUTER)
 public class RegExPipe extends AbstractPipe {
 
-	protected final static String THEN_FORWARD = "then";
-	protected final static String ELSE_FORWARD = "else";
+	protected static final String THEN_FORWARD = "then";
+	protected static final String ELSE_FORWARD = "else";
 
 	public enum RegExFlag {
 		CANON_EQ(Pattern.CANON_EQ),
