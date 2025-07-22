@@ -1,6 +1,5 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { SchedulerAddEditParent } from '../scheduler-add-edit-parent';
-import { AppService } from 'src/app/app.service';
 import { SchedulerService } from '../scheduler.service';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -33,30 +32,13 @@ export class SchedulerEditComponent extends SchedulerAddEditParent implements On
 
   private groupName = '';
   private jobName = '';
-  private subscriptions: Subscription = new Subscription();
+  private routeSubscription: Subscription | null = null;
 
-  constructor(
-    private route: ActivatedRoute,
-    private appService: AppService,
-    private schedulerService: SchedulerService,
-  ) {
-    super();
-  }
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
+  private readonly schedulerService: SchedulerService = inject(SchedulerService);
 
   ngOnInit(): void {
-    this.configurations = this.appService.configurations;
-    const configurationsSubscription = this.appService.configurations$.subscribe(() => {
-      this.configurations = this.appService.configurations;
-    });
-    this.subscriptions.add(configurationsSubscription);
-
-    this.adapters = this.appService.adapters;
-    const adaptersSubscription = this.appService.adapters$.subscribe(() => {
-      this.adapters = this.appService.adapters;
-    });
-    this.subscriptions.add(adaptersSubscription);
-
-    this.route.paramMap.subscribe((parameters) => {
+    this.routeSubscription = this.route.paramMap.subscribe((parameters) => {
       this.groupName = parameters.get('group')!;
       this.jobName = parameters.get('name')!;
 
@@ -79,7 +61,7 @@ export class SchedulerEditComponent extends SchedulerAddEditParent implements On
   }
 
   ngOnDestroy(): void {
-    this.subscriptions.unsubscribe();
+    this.routeSubscription?.unsubscribe();
   }
 
   submit(): void {

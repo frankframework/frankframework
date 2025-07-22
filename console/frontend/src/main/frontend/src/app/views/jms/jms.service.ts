@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 
@@ -31,10 +31,8 @@ export interface Message {
   providedIn: 'root',
 })
 export class JmsService {
-  constructor(
-    private http: HttpClient,
-    private appService: AppService,
-  ) {}
+  private readonly http: HttpClient = inject(HttpClient);
+  private readonly appService: AppService = inject(AppService);
 
   getJms(): Observable<{
     connectionFactories: string[];
