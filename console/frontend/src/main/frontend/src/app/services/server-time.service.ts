@@ -51,6 +51,8 @@ export class ServerTimeService {
     if (this.timeUpdateIntervalId > -1) window.clearInterval(this.timeUpdateIntervalId);
     this.timeUpdateIntervalId = window.setInterval(() => this.updateTime(), 200);
     this.updateTime();
+
+    this.checkValidTimezone();
   }
 
   private updateTime(): void {
@@ -63,5 +65,14 @@ export class ServerTimeService {
 
   private getTimezoneOffsetToUTCInSeconds(): number {
     return this.currentTime.getTimezoneOffset() * 60;
+  }
+
+  private checkValidTimezone(): void {
+    try {
+      this.currentTime.toLocaleString(this.locale, { timeZone: this.timezone });
+    } catch (error) {
+      console.error("Couldn't format current time with a valid timezone, using UTC as fallback", error);
+      this.timezone = 'Etc/UTC';
+    }
   }
 }
