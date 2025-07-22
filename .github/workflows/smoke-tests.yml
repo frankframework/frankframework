@@ -87,6 +87,7 @@ jobs:
         cache-dependency-path: console/frontend/src/main/frontend/pnpm-lock.yaml
 
     - name: Install dependencies
+      working-directory: ./console/frontend/src/main/frontend/
       run: pnpm install --frozen-lockfile
 
     - name: Create Maven settings.xml file
