@@ -46,6 +46,7 @@ import { PagesTopinfobarComponent } from './components/pages/pages-topinfobar/pa
 import { PagesFooterComponent } from './components/pages/pages-footer/pages-footer.component';
 // @ts-expect-error pace-js does not have types
 import Pace from 'pace-js';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-root',
@@ -237,47 +238,55 @@ export class AppComponent implements OnInit, OnDestroy {
     this.debugService.log('Initializing Frank!Console');
 
     this.consoleState = appInitState.INIT;
-    this.serverInfoService.serverInfo$.pipe(first()).subscribe({
-      next: (data) => {
-        this.serverInfo = data;
+    toObservable(this.serverInfoService.serverInfo)
+      .pipe(first())
+      .subscribe({
+        next: (data) => {
+          if (data === null) return;
+          debugger;
+          this.serverInfo = data;
 
-        this.dtapStage = data['dtap.stage'];
-        this.appService.dtapStage.set(data['dtap.stage']);
-        this.dtapSide = data['dtap.side'];
-        this.userName = data['userName'];
-        this.appService.instanceName.set(data.instance.name);
-        this.authService.setLoggedIn(this.userName);
-        this.appService.updateTitle(this.title.getTitle().split(' | ')[1]);
+          this.dtapStage = data['dtap.stage'];
+          this.appService.dtapStage.set(data['dtap.stage']);
+          this.dtapSide = data['dtap.side'];
+          this.userName = data['userName'];
+          this.appService.instanceName.set(data.instance.name);
+          this.authService.setLoggedIn(this.userName);
+          this.appService.updateTitle(this.title.getTitle().split(' | ')[1]);
 
-        this.consoleState = appInitState.POST_INIT;
-        if (!this.router.url.includes('login')) {
-          this.idle.watch();
-          this.renderer.removeClass(document.body, 'gray-bg');
-        }
+          this.consoleState = appInitState.POST_INIT;
+          if (!this.router.url.includes('login')) {
+            this.idle.watch();
+            this.renderer.removeClass(document.body, 'gray-bg');
+          }
 
-        this.serverTimeService.setServerTime(data['serverTime'], data['serverTimezone'], data['serverTimezoneOffset']);
+          this.serverTimeService.setServerTime(
+            data['serverTime'],
+            data['serverTimezone'],
+            data['serverTimezoneOffset'],
+          );
 
-        const iafInfoElement = document.querySelector<HTMLElement>('.iaf-info');
-        if (iafInfoElement)
-          iafInfoElement.textContent = `${data.framework.name} ${data.framework.version}: ${data.instance.name} ${data.instance.version}`;
+          const iafInfoElement = document.querySelector<HTMLElement>('.iaf-info');
+          if (iafInfoElement)
+            iafInfoElement.textContent = `${data.framework.name} ${data.framework.version}: ${data.instance.name} ${data.instance.version}`;
 
-        if (this.appService.dtapStage() == 'LOC') {
-          this.debugService.setLevel(3);
-        }
+          if (this.appService.dtapStage() == 'LOC') {
+            this.debugService.setLevel(3);
+          }
 
-        //Was it able to retrieve the serverinfo without logging in?
-        if (!this.authService.isLoggedIn()) {
-          this.idle.setTimeout(0);
-        }
+          //Was it able to retrieve the serverinfo without logging in?
+          if (!this.authService.isLoggedIn()) {
+            this.idle.setTimeout(0);
+          }
 
-        this.appService.getConfigurations().subscribe((data) => {
-          this.appService.updateConfigurations(data);
-        });
+          this.appService.getConfigurations().subscribe((data) => {
+            this.appService.updateConfigurations(data);
+          });
 
-        this.initializeWarnings();
-        this.checkIafVersions();
-      },
-    });
+          this.initializeWarnings();
+          this.checkIafVersions();
+        },
+      });
     this.serverInfoService.refresh().subscribe({
       error: (error: HttpErrorResponse) => {
         // HTTP 5xx error

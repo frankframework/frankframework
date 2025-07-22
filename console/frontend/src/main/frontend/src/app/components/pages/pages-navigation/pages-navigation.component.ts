@@ -6,7 +6,6 @@ import {
   inject,
   Input,
   OnChanges,
-  OnInit,
   Output,
   Signal,
 } from '@angular/core';
@@ -43,7 +42,7 @@ type ExpandedItem = {
     ConditionalOnPropertyDirective,
   ],
 })
-export class PagesNavigationComponent implements OnChanges, OnInit, AfterViewInit {
+export class PagesNavigationComponent implements OnChanges, AfterViewInit {
   @Input() queryParams = convertToParamMap({});
   @Output() shouldOpenInfo = new EventEmitter<void>();
 
@@ -53,7 +52,11 @@ export class PagesNavigationComponent implements OnChanges, OnInit, AfterViewIni
     // eslint-disable-next-line unicorn/consistent-function-scoping
     () => this.appService.appConstants()['testtool.echo2.enabled'] === 'true',
   );
-  protected encodedServerInfo: string = '';
+  // eslint-disable-next-line unicorn/consistent-function-scoping
+  protected encodedServerInfo: Signal<string> = computed(() => {
+    if (!this.serverInfoService.serverInfo()) return '';
+    return encodeURIComponent(this.serverInfoService.getMarkdownFormatedServerInfo());
+  });
 
   private readonly router: Router = inject(Router);
   private readonly serverInfoService: ServerInfoService = inject(ServerInfoService);
@@ -62,13 +65,6 @@ export class PagesNavigationComponent implements OnChanges, OnInit, AfterViewIni
   private readonly ANIMATION_SPEED = 250;
   private expandedItem: ExpandedItem | null = null;
   private initializing: boolean = true;
-
-  ngOnInit(): void {
-    this.updateServerInfo();
-    this.serverInfoService.serverInfo$.subscribe(() => {
-      this.updateServerInfo();
-    });
-  }
 
   ngOnChanges(): void {
     const uwuEnabledString = localStorage.getItem('uwu') ? 'uwu-' : '';
@@ -100,10 +96,6 @@ export class PagesNavigationComponent implements OnChanges, OnInit, AfterViewIni
       this.expandedItem = templateInfo;
     }
     return expanded;
-  }
-
-  getConfigurationsQueryParam(): string | null {
-    return this.queryParams.get('configuration');
   }
 
   collapseItem(element: HTMLElement, accordionItem: CdkAccordionItem): void {
@@ -145,9 +137,5 @@ export class PagesNavigationComponent implements OnChanges, OnInit, AfterViewIni
       this.collapseItem(this.expandedItem.element, this.expandedItem.accordionItem);
       this.expandedItem = null;
     }
-  }
-
-  private updateServerInfo(): void {
-    this.encodedServerInfo = encodeURIComponent(this.serverInfoService.getMarkdownFormatedServerInfo());
   }
 }

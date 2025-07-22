@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 
@@ -32,10 +32,8 @@ interface WebServices {
   providedIn: 'root',
 })
 export class WebservicesService {
-  constructor(
-    private http: HttpClient,
-    private appService: AppService,
-  ) {}
+  private readonly http: HttpClient = inject(HttpClient);
+  private readonly appService: AppService = inject(AppService);
 
   getWebservices(): Observable<WebServices> {
     return this.http.get<WebServices>(`${this.appService.absoluteApiPath}webservices`);

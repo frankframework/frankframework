@@ -1,5 +1,4 @@
-import { Component, inject, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Component, computed, inject, Input, OnChanges, Signal } from '@angular/core';
 import { NotificationService, Notification } from 'src/app/services/notification.service';
 import { HamburgerComponent } from './hamburger.component';
 import { TimeSinceDirective } from '../../time-since.directive';
@@ -16,7 +15,7 @@ import { ServerTimeService } from '../../../services/server-time.service';
   styleUrls: ['./pages-topnavbar.component.scss'],
   imports: [FormsModule, HamburgerComponent, RouterModule, TimeSinceDirective, NgbDropdownModule],
 })
-export class PagesTopnavbarComponent implements OnInit, OnChanges, OnDestroy {
+export class PagesTopnavbarComponent implements OnChanges {
   @Input() dtapSide: string = '';
   @Input() dtapStage: string = '';
   @Input() clusterMembers: ClusterMember[] = [];
@@ -24,28 +23,18 @@ export class PagesTopnavbarComponent implements OnInit, OnChanges, OnDestroy {
   @Input() userName?: string;
 
   protected readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
-  protected notificationCount: number = 0;
-  protected notificationList: Notification[] = [];
+  // eslint-disable-next-line unicorn/consistent-function-scoping
+  protected notificationList: Signal<Notification[]> = computed(() => this.Notification.getLatest(5));
   protected loggedIn: boolean = false;
 
   private readonly appService: AppService = inject(AppService);
   private readonly authService: AuthService = inject(AuthService);
   private readonly Notification: NotificationService = inject(NotificationService);
-  private notificationCountSubscription: Subscription | null = null;
-
-  ngOnInit(): void {
-    this.notificationCountSubscription = this.Notification.onCountUpdate$.subscribe(() => {
-      this.notificationCount = this.Notification.getCount();
-      this.notificationList = this.Notification.getLatest(5);
-    });
-  }
+  // eslint-disable-next-line unicorn/consistent-function-scoping
+  protected notificationCount: Signal<number> = this.Notification.count;
 
   ngOnChanges(): void {
     this.loggedIn = this.authService.isLoggedIn();
-  }
-
-  ngOnDestroy(): void {
-    this.notificationCountSubscription?.unsubscribe();
   }
 
   resetNotificationCount(): void {

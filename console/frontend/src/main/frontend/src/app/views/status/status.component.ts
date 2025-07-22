@@ -50,20 +50,6 @@ export class StatusComponent implements OnInit, OnDestroy {
   protected isConfigAutoReloadable: Record<string, boolean> = {};
   protected adapterShowContent: Record<string, boolean> = {};
   protected loadFlowInline = true;
-  protected serverInfo?: ServerInfo;
-  protected freeDiskSpacePercentage?: number;
-
-  private adapterName = '';
-  private _subscriptions = new Subscription();
-  private hasExpendedAdaptersLoaded = false;
-
-  private readonly route: ActivatedRoute = inject(ActivatedRoute);
-  private readonly router: Router = inject(Router);
-  private readonly statusService: StatusService = inject(StatusService);
-  private readonly serverInfoService: ServerInfoService = inject(ServerInfoService);
-  private readonly appService: AppService = inject(AppService);
-  protected readonly alerts: Signal<Alert[]> = this.appService.alerts;
-  protected readonly messageLog: Signal<Record<string, MessageLog>> = this.appService.messageLog;
   // eslint-disable-next-line unicorn/consistent-function-scoping
   protected readonly configurations: Signal<Configuration[]> = computed(() => {
     const configurations = this.appService.configurations();
@@ -85,6 +71,28 @@ export class StatusComponent implements OnInit, OnDestroy {
     }
     return adapters;
   });
+  // eslint-disable-next-line unicorn/consistent-function-scoping
+  protected serverInfo: Signal<ServerInfo | null> = computed(() => {
+    const serverInfo = this.serverInfoService.serverInfo();
+    if (serverInfo) {
+      this.freeDiskSpacePercentage =
+        Math.round((serverInfo.fileSystem.freeSpace / serverInfo.fileSystem.totalSpace) * 1000) / 10;
+    }
+    return serverInfo;
+  });
+  protected freeDiskSpacePercentage?: number;
+
+  private adapterName = '';
+  private _subscriptions = new Subscription();
+  private hasExpendedAdaptersLoaded = false;
+
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
+  private readonly router: Router = inject(Router);
+  private readonly statusService: StatusService = inject(StatusService);
+  private readonly serverInfoService: ServerInfoService = inject(ServerInfoService);
+  private readonly appService: AppService = inject(AppService);
+  protected readonly alerts: Signal<Alert[]> = this.appService.alerts;
+  protected readonly messageLog: Signal<Record<string, MessageLog>> = this.appService.messageLog;
 
   ngOnInit(): void {
     const fragmentSubscription = this.route.fragment.subscribe((fragment) => {
@@ -122,8 +130,6 @@ export class StatusComponent implements OnInit, OnDestroy {
       if (configurationParameter) this.changeConfiguration(configurationParameter);
     });
     this._subscriptions.add(queryParameterSubscription);
-
-    this.getFreeDiskSpacePercentage();
   }
 
   ngOnDestroy(): void {
@@ -221,15 +227,6 @@ export class StatusComponent implements OnInit, OnDestroy {
       this.isConfigAutoReloadable[config.name] = config.autoreload ?? false;
       this.isConfigReloading[config.name] = config.state == 'STARTING' || config.state == 'STOPPING'; //Assume reloading when in state STARTING (LOADING) or in state STOPPING (UNLOADING)
     }
-  }
-
-  private getFreeDiskSpacePercentage(): void {
-    const serverInfoSubscription = this.serverInfoService.serverInfo$.subscribe((serverInfo) => {
-      this.serverInfo = serverInfo;
-      this.freeDiskSpacePercentage =
-        Math.round((serverInfo.fileSystem.freeSpace / serverInfo.fileSystem.totalSpace) * 1000) / 10;
-    });
-    this._subscriptions.add(serverInfoSubscription);
   }
 
   // Commented out in template, so unused
