@@ -17,7 +17,6 @@ package org.frankframework.senders;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -49,6 +48,7 @@ import org.frankframework.core.ISender;
 import org.frankframework.core.SenderException;
 import org.frankframework.doc.Category;
 import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.util.TimeProvider;
 import org.frankframework.util.XmlUtils;
 
 /**
@@ -319,7 +319,7 @@ public class MailSender extends AbstractMailSender implements HasPhysicalDestina
 			log.debug(logBuffer.toString());
 		}
 		try {
-			msg.setSentDate(new Date());
+			msg.setSentDate(TimeProvider.nowAsDate());
 		} catch (MessagingException e) {
 			throw new SenderException("Error occurred while setting the date", e);
 		}

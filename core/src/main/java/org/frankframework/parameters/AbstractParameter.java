@@ -66,6 +66,7 @@ import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.Misc;
 import org.frankframework.util.StringUtil;
+import org.frankframework.util.TimeProvider;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.UUIDUtil;
@@ -642,9 +643,9 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			switch (namelc) {
 				case "now":
 					if ("date".equalsIgnoreCase(formatType) || "time".equalsIgnoreCase(formatType)) {
-						substitutionValue = new Date();
+						substitutionValue = TimeProvider.nowAsDate();
 					} else{
-						substitutionValue = formatDateToString(new Date(), formatString);
+						substitutionValue = formatDateToString(TimeProvider.nowAsDate(), formatString);
 					}
 
 					break;

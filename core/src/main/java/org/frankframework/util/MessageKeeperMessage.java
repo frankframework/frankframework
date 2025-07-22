@@ -48,7 +48,7 @@ public class MessageKeeperMessage {
 	*/
 	public MessageKeeperMessage(String message, MessageKeeper.MessageKeeperLevel level){
 		this.messageText = maskMessage(message);
-		this.messageDate = Instant.now();
+		this.messageDate = TimeProvider.now();
 		this.messageLevel=level;
 	}
 

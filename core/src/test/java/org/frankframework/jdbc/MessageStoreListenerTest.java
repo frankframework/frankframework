@@ -8,7 +8,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
@@ -26,6 +25,7 @@ import org.frankframework.receivers.Receiver;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
+import org.frankframework.util.TimeProvider;
 
 @WithLiquibase(tableName = MessageStoreListenerTest.TEST_TABLE_NAME)
 public class MessageStoreListenerTest {
@@ -298,7 +298,7 @@ public class MessageStoreListenerTest {
 		storage.configure();
 		storage.start();
 		try {
-			return storage.storeMessage("fakeMid", "fakeCid", new Date(), "fakeComments", "fakeLabel", message);
+			return storage.storeMessage("fakeMid", "fakeCid", TimeProvider.nowAsDate(), "fakeComments", "fakeLabel", message);
 		} finally {
 			storage.stop();
 		}
