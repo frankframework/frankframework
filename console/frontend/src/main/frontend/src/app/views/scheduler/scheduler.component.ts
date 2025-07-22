@@ -107,6 +107,7 @@ export class SchedulerComponent implements OnInit, OnDestroy {
         this.scheduler = result.scheduler;
         this.jobGroups = result.jobs;
         this.jobGroupNames = Object.keys(this.jobGroups);
+        this.sortJobMessages();
 
         this.refreshing = false;
         if (!this.initialized) {
@@ -164,5 +165,13 @@ export class SchedulerComponent implements OnInit, OnDestroy {
 
   edit(jobGroup: string, jobName: string): void {
     this.router.navigate(['scheduler', 'edit', jobGroup, jobName]);
+  }
+
+  private sortJobMessages(): void {
+    for (const jobs of Object.values(this.jobGroups)) {
+      for (const job of jobs) {
+        job.messages.sort((a, b) => b.date - a.date);
+      }
+    }
   }
 }
