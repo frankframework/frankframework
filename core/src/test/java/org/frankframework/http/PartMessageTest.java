@@ -9,8 +9,10 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
+import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeBodyPart;
 
 import org.apache.commons.codec.binary.Hex;
@@ -26,6 +28,8 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.MessageTest;
+import org.frankframework.stream.SerializableFileReference;
+import org.frankframework.testutil.LargeStructuredMockData;
 import org.frankframework.testutil.SerializationTester;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.LogUtil;
@@ -80,6 +84,11 @@ public class PartMessageTest {
 			headers.addHeader("Content-Type", "application/octet-stream");
 		}
 
+		public TestPart(InputStream stream, String filename) {
+			this.stream = stream;
+			headers.addHeader("Content-Disposition", "attachment; filename=\"%s\"".formatted(filename));
+		}
+
 		@Override
 		public InputStream getInputStream() {
 			return stream;
@@ -105,6 +114,26 @@ public class PartMessageTest {
 		Object value = p.getValue(pvl, message, session, false);
 		assertInstanceOf(Message.class, value);
 		assertEquals("<file>in root of classpath</file>", ((Message)value).asString());
+	}
+
+	@Test
+	public void testLargeInputPreservesCorrectName() throws MessagingException, IOException {
+		// Arrange
+		InputStream stream = LargeStructuredMockData.getLargeJsonDataInputStream(Message.MESSAGE_MAX_IN_MEMORY * 2L, StandardCharsets.UTF_8);
+		String testFilename = "largefile.json";
+
+		TestPart part = new TestPart(stream, testFilename);
+
+		// Act
+		PartMessage message = new PartMessage(part);
+
+		// Assert
+
+		// Check that attachment-filename is preserved
+		assertEquals(testFilename, message.getContext().get(MessageContext.METADATA_NAME));
+
+		// Check that message was indeed too large to be preserved in memory
+		assertInstanceOf(SerializableFileReference.class, message.asObject());
 	}
 
 	@Test
