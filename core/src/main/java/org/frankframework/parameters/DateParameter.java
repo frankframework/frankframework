@@ -75,7 +75,7 @@ public class DateParameter extends AbstractParameter {
 			}
 		}
 
-		if(formatType != DateFormatType.XMLDATETIME) {
+		if(formatType != DateFormatType.XMLDATETIME && formatType != DateFormatType.UNIX) {
 			try {
 				new SimpleDateFormat(getFormatString());
 			} catch (IllegalArgumentException e) {
