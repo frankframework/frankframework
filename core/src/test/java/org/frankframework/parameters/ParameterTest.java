@@ -1187,7 +1187,7 @@ public class ParameterTest {
 		Parameter p = new Parameter();
 		try (PipeLineSession session = new PipeLineSession()) {
 			p.setName("unixTimestamp");
-			p.setPattern("{now,number,#}");
+			p.setPattern("{now,millis,#}");
 			p.configure();
 
 			ParameterValueList alreadyResolvedParameters = new ParameterValueList();

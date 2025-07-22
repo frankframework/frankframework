@@ -428,7 +428,7 @@ public class DateParameterTest {
 		DateParameter p = new DateParameter();
 		try (PipeLineSession session = new PipeLineSession()) {
 			p.setName("unixTimestamp");
-			p.setPattern("{now,number,#}");
+			p.setPattern("{now,millis,#}");
 			p.setFormatType(DateFormatType.UNIX);
 			p.configure();
 
@@ -447,7 +447,7 @@ public class DateParameterTest {
 		DateParameter p = new DateParameter();
 		try (PipeLineSession session = new PipeLineSession()) {
 			p.setName("unixTimestamp");
-			p.setPattern("{now,number}");
+			p.setPattern("{now,millis}");
 			p.configure();
 
 			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
