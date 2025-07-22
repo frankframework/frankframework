@@ -33,7 +33,7 @@ public class TimeProvider {
 	/**
 	 * Clock currently being used.
 	 */
-	private static Clock clock = Clock.systemUTC();
+	private static Clock clock = Clock.systemDefaultZone();
 
 	private TimeProvider() {
 		// Private constructor to prevent creating instances of static utility classes
@@ -44,6 +44,27 @@ public class TimeProvider {
 	 */
 	public static Instant now() {
 		return clock.instant();
+	}
+
+	/**
+	 * Get the current system time as clock millis (equivalent to {@link System#currentTimeMillis()}).
+	 */
+	public static long nowAsMillis() {
+		return clock.millis();
+	}
+
+	/**
+	 * Get the current system time as {@link ZonedDateTime}
+	 */
+	public static ZonedDateTime nowAsZonedDateTime() {
+		return ZonedDateTime.now(clock);
+	}
+
+	/**
+	 * Get the current system time as {@link LocalDateTime}
+	 */
+	public static LocalDateTime nowAsLocalDateTime() {
+		return LocalDateTime.now(clock);
 	}
 
 	/**
@@ -92,6 +113,6 @@ public class TimeProvider {
 	 * This should be used in the test-teardown method of unit tests when the unit tests have set the clock to a none-default clock.
 	 */
 	public static void resetClock() {
-		TimeProvider.clock = Clock.systemUTC();
+		TimeProvider.clock = Clock.systemDefaultZone();
 	}
 }

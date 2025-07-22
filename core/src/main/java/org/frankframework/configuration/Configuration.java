@@ -281,27 +281,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 		super.publishEvent(event);
 	}
 
-	/**
-	 * Log a message to the MessageKeeper that corresponds to this configuration
-	 */
-	public void log(String message) {
-		log(message, (MessageEventLevel) null);
-	}
-
-	/**
-	 * Log a message to the MessageKeeper that corresponds to this configuration
-	 */
-	public void log(String message, MessageEventLevel level) {
-		this.publishEvent(new ConfigurationMessageEvent(this, message, level));
-	}
-
-	/**
-	 * Log a message to the MessageKeeper that corresponds to this configuration
-	 */
-	public void log(String message, Exception e) {
-		this.publishEvent(new ConfigurationMessageEvent(this, message, e));
-	}
-
 	public boolean isUnloadInProgressOrDone() {
 		return !isActive() || inState(RunState.STOPPING);
 	}

@@ -44,6 +44,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.CleanerProvider;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.TimeProvider;
 
 /**
  * Basic implementation of <code>PipeLineSession</code>.
@@ -183,15 +184,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * @return {@code true} if {@code value} is not a {@link Message}, or if it is a Message with a request that is not a scalar or array type. Returns {@code false} otherwise.
 	 */
 	private static boolean isValueToBeClosed(AutoCloseable value) {
-		if (!(value instanceof Message message)) return true; // Should be closed, value is not a message.
-		if (message.isNull()) return false; // NULL message doesn't have to be closed.
-
-		return !(message.isRequestOfType(String.class) ||
-				message.isRequestOfType(Number.class) ||
-				message.isRequestOfType(Date.class) ||
-				message.isRequestOfType(Temporal.class) ||
-				message.isRequestOfType(Boolean.class) ||
-				message.asObject().getClass().isArray()); // Arrays we have are mostly byte[] but I think all arrays should count, for simplicity.
+		return (!(value instanceof Message)); // Don't close-on-close messages anymore
 	}
 
 	/**
@@ -244,7 +237,6 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		}
 		if(obj != null) {
 			Message message = Message.asMessage(obj);
-			message.closeOnCloseOf(this);
 			return message;
 		}
 		return Message.nullMessage();
@@ -283,7 +275,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * Sets the current date-time as TS-Received.
 	 */
 	public static void updateListenerParameters(@Nonnull Map<String, Object> map, @Nullable String messageId, @Nullable String correlationId) {
-		updateListenerParameters(map, messageId, correlationId, Instant.now(), null);
+		updateListenerParameters(map, messageId, correlationId, TimeProvider.now(), null);
 	}
 
 	/**
@@ -298,7 +290,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			map.put(CORRELATION_ID_KEY, correlationId);
 		}
 		if (tsReceived == null) {
-			tsReceived = Instant.now();
+			tsReceived = TimeProvider.now();
 		}
 		map.put(TS_RECEIVED_KEY, DateFormatUtils.format(tsReceived, DateFormatUtils.FULL_GENERIC_FORMATTER));
 		if (tsSent != null) {

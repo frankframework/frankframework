@@ -16,7 +16,6 @@
 package org.frankframework.pipes;
 
 import java.io.IOException;
-import java.time.Instant;
 import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
@@ -51,6 +50,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.MessageUtils;
+import org.frankframework.util.TimeProvider;
 
 /**
  * Creates a JWT with a shared secret using the HmacSHA256 algorithm.
@@ -107,10 +107,10 @@ public class JwtPipe extends FixedForwardPipe {
 		parameterMap.forEach(claimsSetBuilder::claim);
 
 		if (expirationTime > 0) {
-			Date expirationDate = Date.from(Instant.now().plusSeconds(expirationTime));
+			Date expirationDate = Date.from(TimeProvider.now().plusSeconds(expirationTime));
 			claimsSetBuilder.expirationTime(expirationDate);
 		}
-		claimsSetBuilder.issueTime(Date.from(Instant.now()));
+		claimsSetBuilder.issueTime(Date.from(TimeProvider.now()));
 
 		final JWSSigner signer = getSigner(sharedSecretParam);
 		String jwtToken = createAndSignJwtToken(signer, claimsSetBuilder.build());

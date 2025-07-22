@@ -371,12 +371,8 @@ public class SoapProviderTest {
 				try {
 					MatchUtils.assertXmlEquals(getFile("VrijeBerichten_PipelineRequest.xml").asString(), message.asString());
 
-					// Ensure the message is registered on the PipelineSession.
-					pipelineResult.closeOnCloseOf(pipelineSession);
-
 					// Add an attachment, which is registered on the PipelineSession.
 					pipelineSession.put("attachmentXmlSessionKey", MULTIPART_XML);
-					attachmentMessage.closeOnCloseOf(pipelineSession);
 					pipelineSession.put("part_file", attachmentMessage);
 					return pipelineResult;
 				} catch (IOException e) {

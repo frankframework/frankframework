@@ -14,36 +14,26 @@
           <h4>Scheduler</h4>
         </div>
         <div class="ibox-content">
-          <div class="col-md-6">
+          <div class="col-md-12">
             <table class="table">
+              <thead>
+                <tr>
+                  <th class="col-xs-6">State</th>
+                  <th>Running Since</th>
+                  <th>Jobs Executed</th>
+                </tr>
+              </thead>
               <tbody>
                 <tr>
-                  <td>Name</td>
-                  <td>{{ scheduler.name }}</td>
-                </tr>
-                <tr>
-                  <td>Version</td>
-                  <td>{{ scheduler.version }}</td>
-                </tr>
-                <tr>
-                  <td>Started</td>
-                  <td>
-                    <i class="fa {{ scheduler.started ? 'fa-check-square' : 'fa-times-circle' }}"></i>
-                  </td>
-                </tr>
-                <tr>
-                  <td class="col-xs-6">State</td>
                   @if (scheduler.state === 'started') {
                     <td>
                       <span><i class="fa fa-play m-r-xs"></i> Started</span>
-                      <!-- <button style="float:right;" title="Stop Scheduler" ng-click="stop()" class="btn btn-xs btn-danger m-l-xs" type="button"><i class="fa fa-stop m-r-xs"></i> Stop</button> -->
                       <button
                         appHasAccessToLink="updateScheduler"
-                        style="float: right"
                         [ladda]="refreshing"
                         title="Pause Scheduler"
                         (click)="pauseScheduler()"
-                        class="btn btn-xs btn-warning"
+                        class="btn btn-xs btn-warning btn-change-state"
                         type="button"
                       >
                         <i class="fa fa-pause m-r-xs"></i> Pause
@@ -53,14 +43,12 @@
                   @if (scheduler.state === 'paused') {
                     <td>
                       <span><i class="fa fa-pause m-r-xs"></i> Paused</span>
-                      <!-- <button style="float:right;" title="Stop Scheduler" ng-click="stop()" class="btn btn-xs btn-danger m-l-xs" type="button"><i class="fa fa-stop m-r-xs"></i> Stop</button> -->
                       <button
                         appHasAccessToLink="updateScheduler"
-                        style="float: right"
                         [ladda]="refreshing"
                         title="Start Scheduler"
                         (click)="start()"
-                        class="btn btn-xs btn-primary"
+                        class="btn btn-xs btn-primary btn-change-state"
                         type="button"
                       >
                         <i class="fa fa-play m-r-xs"></i> Start
@@ -72,63 +60,20 @@
                       <span><i class="fa fa-stop m-r-xs"></i> Stopped</span>
                       <button
                         appHasAccessToLink="updateScheduler"
-                        style="float: right"
                         [ladda]="refreshing"
                         title="Start Scheduler"
                         (click)="start()"
-                        class="btn btn-xs btn-primary"
+                        class="btn btn-xs btn-primary btn-change-state"
                         type="button"
                       >
                         <i class="fa fa-play m-r-xs"></i> Start
                       </button>
                     </td>
                   }
-                </tr>
-                <tr>
-                  <td>Running Since</td>
                   <td>
                     <span appToDate [time]="scheduler.runningSince"></span>
                   </td>
-                </tr>
-                <tr>
-                  <td>Jobs Executed</td>
                   <td>{{ scheduler.jobsExecuted }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-          <div class="col-md-6">
-            <table class="table">
-              <tbody>
-                <tr>
-                  <td>Remote Scheduler</td>
-                  <td>
-                    <i class="fa {{ scheduler.isSchedulerRemote ? 'fa-check-square' : 'fa-times-circle' }}"></i>
-                  </td>
-                </tr>
-                <tr>
-                  <td>Instance ID</td>
-                  <td>{{ scheduler.instanceId }}</td>
-                </tr>
-                <tr>
-                  <td>Supports Persistence</td>
-                  <td>
-                    <i
-                      class="fa {{ scheduler.jobStoreSupportsPersistence ? 'fa-check-square' : 'fa-times-circle' }}"
-                    ></i>
-                  </td>
-                </tr>
-                <tr>
-                  <td>Thread Pool Size</td>
-                  <td>{{ scheduler.threadPoolSize }}</td>
-                </tr>
-                <tr>
-                  <td>Scheduler Class</td>
-                  <td>{{ scheduler.schedulerClass }}</td>
-                </tr>
-                <tr>
-                  <td>JobStore Class</td>
-                  <td>{{ scheduler.jobStoreClass }}</td>
                 </tr>
               </tbody>
             </table>
@@ -182,7 +127,7 @@
               @if (showContent(jobGroupKV.key)) {
                 <div class="ibox-content">
                   <div class="col-md-12">
-                    <div class="pull-right">
+                    <div class="pull-right trigger-actions">
                       @if (job.type === 'DATABASE') {
                         <button
                           appHasAccessToLink="updateTrigger"
@@ -194,7 +139,6 @@
                           <i class="fa fa-pencil"></i> Edit
                         </button>
                       }
-                      &nbsp;
                       @if (job.type === 'DATABASE') {
                         <button
                           appHasAccessToLink="deleteTrigger"
@@ -206,7 +150,6 @@
                           <i class="fa fa-times"></i> Delete
                         </button>
                       }
-                      &nbsp;
                       @if (job.state === 'PAUSED') {
                         <button
                           appHasAccessToLink="updateTrigger"
@@ -218,7 +161,6 @@
                           <i class="fa fa-play"></i> Resume
                         </button>
                       }
-                      &nbsp;
                       @if (job.state !== 'PAUSED') {
                         <button
                           appHasAccessToLink="updateTrigger"
@@ -230,7 +172,6 @@
                           <i class="fa fa-pause"></i> Pause
                         </button>
                       }
-                      &nbsp;
                       <button
                         appHasAccessToLink="trigger"
                         title="Trigger Job {{ job.name }}"
@@ -256,7 +197,7 @@
                         </tr>
                       </thead>
                       <tbody>
-                        @for (message of job.messages; track message) {
+                        @for (message of job.messages; track $index) {
                           <tr>
                             @if (message.level === 'INFO') {
                               <td class="text-center">&nbsp;<i class="fa fa-info"></i></td>
@@ -281,24 +222,6 @@
                             }
                           </tr>
                         }
-                      </tbody>
-                    </table>
-                  </div>
-                  <div class="col-md-4">
-                    <table class="table">
-                      <tbody>
-                        <tr>
-                          <td>Stateful</td>
-                          <td>
-                            <i class="fa {{ job.stateful ? 'fa-check-square' : 'fa-times-circle' }}"></i>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td>Durable</td>
-                          <td>
-                            <i class="fa {{ job.durable ? 'fa-check-square' : 'fa-times-circle' }}"></i>
-                          </td>
-                        </tr>
                       </tbody>
                     </table>
                   </div>

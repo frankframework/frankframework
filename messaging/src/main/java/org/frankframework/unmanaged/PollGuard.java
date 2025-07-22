@@ -27,8 +27,10 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Setter;
 
+import org.frankframework.core.Adapter;
+import org.frankframework.lifecycle.events.AdapterMessageEvent;
+import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.RunState;
 
 public class PollGuard extends TimerTask {
@@ -60,7 +62,7 @@ public class PollGuard extends TimerTask {
 				previousLastPollFinishedTime = lastPollFinishedTime;						// then we consider this too long, and suspect a problem.
 				timeoutDetected = true;
 				int pollTimeoutNr=pollTimeouts.incrementAndGet();
-				warn("JMS poll timeout ["+pollTimeoutNr+"] last poll finished ["+((currentCheck-lastPollFinishedTime)/1000)+"] s ago, an attempt will be made to stop and start listener");
+				logMessage("JMS poll timeout ["+pollTimeoutNr+"] last poll finished ["+((currentCheck-lastPollFinishedTime)/1000)+"] s ago, an attempt will be made to stop and start listener", MessageEventLevel.WARN);
 
 				// Try to auto-recover the listener, when PollGuard detects `no activity` AND `threadsProcessing` == 0
 				try {
@@ -76,7 +78,7 @@ public class PollGuard extends TimerTask {
 						springJmsConnector.setLastPollFinishedTime(currentCheck);
 						springJmsConnector.getReceiver().start();
 						if (springJmsConnector.getReceiver().isInRunState(RunState.EXCEPTION_STARTING)) {
-							error("PollGuard: Failed to restart receiver [" + springJmsConnector.getReceiver().getName() + "], no exception");
+							logMessage("PollGuard: Failed to restart, no exception", MessageEventLevel.ERROR);
 						} else {
 							log.warn("JMS poll timeout [{}] handling restarted receiver [{}]",
 									pollTimeoutNr, springJmsConnector.getListener().getReceiver().getName());
@@ -89,23 +91,21 @@ public class PollGuard extends TimerTask {
 		} else {
 			if (timeoutDetected) {
 				timeoutDetected = false;
-				warn("JMS poll timeout appears to be resolved, total number of timeouts detected ["+pollTimeouts.intValue()+"]");
+				logMessage("JMS poll timeout appears to be resolved, total number of timeouts detected ["+pollTimeouts.intValue()+"]", MessageEventLevel.WARN);
 			}
 		}
 		lastCheck = currentCheck;
 	}
 
-	private void warn(String message) {
+	private void logMessage(String message, MessageEventLevel level) {
 		log.warn("{}{}", springJmsConnector.getLogPrefix(), message);
-		springJmsConnector.getReceiver().getAdapter().getMessageKeeper().add(message, MessageKeeper.MessageKeeperLevel.WARN);
-	}
-	private void error(String message) {
-		log.error("{}{}", springJmsConnector.getLogPrefix(), message);
-		springJmsConnector.getReceiver().getAdapter().getMessageKeeper().add(message, MessageKeeper.MessageKeeperLevel.ERROR);
-	}
-	private void error(String message, @Nonnull Throwable t) {
-		log.error(() -> "%s%s".formatted(springJmsConnector.getLogPrefix(), message), t);
-		springJmsConnector.getReceiver().getAdapter().getMessageKeeper().add(message + "; " + t.getMessage(), MessageKeeper.MessageKeeperLevel.ERROR);
+		Adapter adapter = springJmsConnector.getReceiver().getAdapter();
+		adapter.publishEvent(new AdapterMessageEvent(adapter, springJmsConnector.getReceiver(), message, level));
 	}
 
+	private void error(String message, @Nonnull Throwable t) {
+		log.error(() -> "%s%s".formatted(springJmsConnector.getLogPrefix(), message), t);
+		Adapter adapter = springJmsConnector.getReceiver().getAdapter();
+		adapter.publishEvent(new AdapterMessageEvent(adapter, message, t));
+	}
 }

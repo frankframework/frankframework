@@ -366,8 +366,6 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	public Message doAction(@Nonnull Message input, ParameterValueList pvl, @Nonnull PipeLineSession session) throws FileSystemException {
 		FileSystemAction action = null;
 		try {
-			input.closeOnCloseOf(session); // don't know if the input will be used
-
 			action = getAction(pvl);
 
 			switch(action) {

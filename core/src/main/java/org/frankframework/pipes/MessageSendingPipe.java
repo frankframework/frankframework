@@ -17,7 +17,6 @@ package org.frankframework.pipes;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -66,6 +65,7 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Forward;
 import org.frankframework.jdbc.DirectQuerySender;
 import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.lifecycle.events.AdapterMessageEvent;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.processors.PipeProcessor;
@@ -79,6 +79,7 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.Misc;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.util.TimeProvider;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlUtils;
@@ -253,9 +254,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			messageLog.configure();
 			if (messageLog instanceof HasPhysicalDestination destination) {
 				String msg = "has messageLog in "+destination.getPhysicalDestinationName();
-				log.debug(msg);
-				if (getAdapter() != null)
-					getAdapter().getMessageKeeper().add(msg);
+				if (getAdapter() != null) {
+					getAdapter().publishEvent(new AdapterMessageEvent(getAdapter(), this, msg));
+				} else {
+					log.debug(msg);
+				}
 			}
 		}
 		if (StringUtils.isNotEmpty(getRetryXPath())) {
@@ -498,7 +501,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	}
 
 	protected final String storeMessage(String messageID, String correlationID, Message messageToStore, String messageTrail, String label) throws SenderException {
-		messageLog.storeMessage(messageID, correlationID, new Date(), messageTrail, null, new MessageWrapper(messageToStore, messageID, correlationID));
+		messageLog.storeMessage(messageID, correlationID, TimeProvider.nowAsDate(), messageTrail, null, new MessageWrapper(messageToStore, messageID, correlationID));
 		return correlationID;
 	}
 

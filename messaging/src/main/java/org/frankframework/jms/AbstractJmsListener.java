@@ -19,7 +19,6 @@ import static org.frankframework.functional.FunctionalUtil.logValue;
 
 import java.io.IOException;
 import java.time.Instant;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,6 +56,7 @@ import org.frankframework.receivers.ReceiverAware;
 import org.frankframework.soap.SoapWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.TimeProvider;
 
 /**
  * {@inheritClassDoc}
@@ -269,7 +269,7 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 						jakarta.jms.Message messageReceived = rawMessageWrapper.getRawMessage();
 						long expiration = messageReceived.getJMSExpiration();
 						if (expiration != 0) {
-							timeToLive = expiration - new Date().getTime();
+							timeToLive = expiration - TimeProvider.nowAsMillis();
 							if (timeToLive <= 0) {
 								log.warn("{} message [{}] expired [{}]ms, sending response with 1 second time to live", this::getLogPrefix, logValue(replyCid), logValue(timeToLive));
 								timeToLive = 1000;

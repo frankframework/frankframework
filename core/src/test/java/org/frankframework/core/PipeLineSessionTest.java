@@ -18,7 +18,6 @@ import java.io.InputStream;
 import java.io.StringReader;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -35,6 +34,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.MessageTestUtils.MessageType;
+import org.frankframework.util.TimeProvider;
 
 /**
  * Lots of bugs tests, focus on getMessage(String)
@@ -64,7 +64,7 @@ public class PipeLineSessionTest {
 		session.put("key4", new ByteArrayInputStream("test4".getBytes()));
 		session.put("key5", list);
 		session.put("key6", list.toArray());
-		session.put("key7", new Date());
+		session.put("key7", TimeProvider.nowAsDate());
 		session.put("key8", 123);
 		session.put("key8b", "456");
 		session.put("key8c", new Message("456"));
@@ -274,11 +274,11 @@ public class PipeLineSessionTest {
 		session.put("key2", m2);
 		Message m3 = Message.asMessage(true);
 		session.put("key3", m3);
-		Message m4 = Message.asMessage(new Date());
+		Message m4 = Message.asMessage(TimeProvider.nowAsDate());
 		session.put("key4", m4);
-		Message m5 = Message.asMessage(Instant.now());
+		Message m5 = Message.asMessage(TimeProvider.now());
 		session.put("key5", m5);
-		Message m6 = Message.asMessage(ZonedDateTime.now());
+		Message m6 = Message.asMessage(TimeProvider.nowAsZonedDateTime());
 		session.put("key6", m6);
 		Message m7 = Message.asMessage("123".getBytes());
 		session.put("key7", m7);
@@ -388,7 +388,7 @@ public class PipeLineSessionTest {
 					}
 
 					assertEquals(1, sub.getCloseables().size()); // <<< Keeps growing without the change!
-					verify(streamMessage, times(1)).close();
+					verify(streamMessage, times(0)).close();
 					assertEquals(j, sub.getInteger("d")); // Only 1 `d`, with the correct value.
 				}
 
@@ -428,8 +428,6 @@ public class PipeLineSessionTest {
 		from.put("__e", closeable2);
 		from.put("f", messageOfCloseable);
 
-		from.scheduleCloseOnSessionExit(message);
-
 		// Act
 		from.mergeToParentSession(keysToCopy, to);
 
@@ -439,7 +437,7 @@ public class PipeLineSessionTest {
 		assertEquals(from,to);
 
 		assertFalse(to.getCloseables().contains(message));
-		assertTrue(to.getCloseables().contains(messageOfCloseable));
+		assertFalse(to.getCloseables().contains(messageOfCloseable));
 		assertTrue(to.getCloseables().contains(closeable1));
 		assertFalse(to.getCloseables().contains(closeable2));
 		assertFalse(((Message) to.get("c")).isNull());
@@ -451,8 +449,11 @@ public class PipeLineSessionTest {
 
 		// Assert
 		assertFalse(((Message) to.get("c")).isNull()); // String message are no longer closed
+		assertFalse(((Message) to.get("c")).isClosed()); // String message are no longer closed
 		assertFalse(((Message) to.get("__e")).isNull());
-		assertTrue(((Message) to.get("f")).isNull());
+		assertFalse(((Message) to.get("__e")).isClosed());
+		assertFalse(((Message) to.get("f")).isNull());
+		assertFalse(((Message) to.get("f")).isClosed());
 	}
 
 	@Test
@@ -478,8 +479,6 @@ public class PipeLineSessionTest {
 		from.put("e", message2);
 		to.put("d", message2);
 
-		from.scheduleCloseOnSessionExit(message1);
-
 		// Act
 		from.mergeToParentSession(keys, to);
 
@@ -494,8 +493,7 @@ public class PipeLineSessionTest {
 		assertEquals(15, to.get("a"));
 		assertNull(to.get("c"));
 
-		assertTrue(message1.isClosed());
-		assertTrue(message1.isNull());
+		assertFalse(message1.isClosed());
 		assertFalse(message2.isClosed());
 		assertEquals("m2", message2.asString());
 	}

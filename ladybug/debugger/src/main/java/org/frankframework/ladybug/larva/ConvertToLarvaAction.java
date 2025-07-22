@@ -57,6 +57,7 @@ import nl.nn.testtool.extensions.CustomReportActionResult;
 import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.core.Resource;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.TimeProvider;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
 
@@ -90,7 +91,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 		);
 
 		//get minutes since 2020
-		int minutesSince2020 = (int) TimeUnit.MILLISECONDS.toMinutes(Instant.now().toEpochMilli()) - MINUTES_2020;
+		int minutesSince2020 = (int) TimeUnit.MILLISECONDS.toMinutes(TimeProvider.now().toEpochMilli()) - MINUTES_2020;
 
 		List<Scenario> scenarios = reports.stream()
 				.collect(Collectors.groupingBy(report -> report.getInputCheckpoint().getName().substring(9))).entrySet()

@@ -617,7 +617,6 @@ public class JdbcUtil {
 			// noinspection deprecation
 			case BINARY: {
 				Message message = Message.asMessage(value);
-				message.closeOnCloseOf(session);
 				if (message.requiresStream()) {
 					statement.setBinaryStream(parameterIndex, message.asInputStream());
 				} else {
@@ -627,7 +626,6 @@ public class JdbcUtil {
 			}
 			case CHARACTER: {
 				Message message = Message.asMessage(value);
-				message.closeOnCloseOf(session);
 				if (message.requiresStream()) {
 					statement.setCharacterStream(parameterIndex, message.asReader());
 				} else {
@@ -637,7 +635,6 @@ public class JdbcUtil {
 			}
 			default:
 				Message message = Message.asMessage(value);
-				message.closeOnCloseOf(session);
 				setParameter(statement, parameterIndex, message.asString(), parameterTypeMatchRequired);
 		}
 	}

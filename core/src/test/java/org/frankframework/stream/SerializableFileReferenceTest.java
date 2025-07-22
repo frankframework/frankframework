@@ -297,11 +297,10 @@ public class SerializableFileReferenceTest {
 		// Arrange
 		reference = SerializableFileReference.of(testDataEnriched, StandardCharsets.UTF_8.name());
 		Path path = reference.getPath();
-		Message message = new Message(reference, new MessageContext(), reference.getClass());
 
 		// Act
 		try (PipeLineSession session = new PipeLineSession()) {
-			message.closeOnCloseOf(session);
+			session.scheduleCloseOnSessionExit(reference);
 		}
 
 		// Assert

@@ -52,11 +52,11 @@ public abstract class MessageEvent<T extends ApplicationContext> extends Applica
 	 * @param e The exception that was thrown (if any)
 	 * @return The formatted exception message.
 	 */
-	protected String getExceptionMessage(Exception e) {
+	protected String getExceptionMessage(Throwable e) {
 		return ": " + e.getMessage();
 	}
 
-	protected MessageEvent(T source, String message, MessageEventLevel level, Exception e) {
+	protected MessageEvent(T source, String message, MessageEventLevel level, Throwable e) {
 		super(source);
 		StringBuilder m = new StringBuilder();
 		m.append(getMessagePrefix());

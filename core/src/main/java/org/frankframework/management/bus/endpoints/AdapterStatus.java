@@ -26,6 +26,7 @@ import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -56,9 +57,11 @@ import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.http.RestListener;
 import org.frankframework.jdbc.AbstractJdbcSender;
+import org.frankframework.lifecycle.events.MessageKeepingEventListener;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
+import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.TopicSelector;
@@ -71,7 +74,6 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.MessageKeeperMessage;
 import org.frankframework.util.RunState;
 
 @Log4j2
@@ -375,21 +377,28 @@ public class AdapterStatus extends BusEndpointBase {
 		return receivers;
 	}
 
-	private ArrayList<Object> mapAdapterMessages(Adapter adapter) {
-		int totalMessages = adapter.getMessageKeeper().size();
-		ArrayList<Object> messages = new ArrayList<>(totalMessages);
-		for (int t=0; t<totalMessages; t++) {
-			Map<String, Object> message = new HashMap<>();
-			MessageKeeperMessage msg = adapter.getMessageKeeper().getMessage(t);
-
-			message.put("message", msg.getMessageText());
-			message.put("date", Date.from(msg.getMessageDate()));
-			message.put("level", msg.getMessageLevel());
-			message.put("capacity", adapter.getMessageKeeper().capacity());
-
-			messages.add(message);
-		}
-		return messages;
+	/**
+	 * Traverse the {@link Adapter#getApplicationListeners()} and look for a MessageKeeper.
+	 * If none can be found, throws and exception.
+	 * Else return the messages in the MessageKeeper.
+	 */
+	private List<Map<String, Object>> mapAdapterMessages(Adapter adapter) {
+		return adapter.getApplicationListeners()
+				.stream()
+				.filter(MessageKeepingEventListener.class::isInstance)
+				.map(MessageKeepingEventListener.class::cast)
+				.findFirst()
+				.orElseThrow(()-> new BusException("no MessageKeeper found"))
+				.getMessages()
+				.stream()
+				.map(msg -> {
+					Map<String, Object> message = new HashMap<>();
+					message.put("message", msg.getMessageText());
+					message.put("date", Date.from(msg.getMessageDate()));
+					message.put("level", msg.getMessageLevel());
+					return message;
+				})
+				.toList();
 	}
 
 	private Map<String, Object> mapAdapter(Adapter adapter) {

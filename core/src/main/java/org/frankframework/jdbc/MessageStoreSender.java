@@ -16,7 +16,6 @@
 package org.frankframework.jdbc;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -41,6 +40,7 @@ import org.frankframework.parameters.ParameterList;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StringUtil;
+import org.frankframework.util.TimeProvider;
 
 /**
  * Send messages to the IBISSTORE database table to have them processed exactly-once by another
@@ -134,7 +134,7 @@ public class MessageStoreSender extends JdbcTransactionalStorage<Serializable> i
 			messageWrapper.getContext().putAll(sessionValuesToStore);
 			messageToStore = messageWrapper;
 		}
-		return new SenderResult(storeMessage(messageId, correlationID, new Date(), null, null, messageToStore));
+		return new SenderResult(storeMessage(messageId, correlationID, TimeProvider.nowAsDate(), null, null, messageToStore));
 	}
 
 	/**

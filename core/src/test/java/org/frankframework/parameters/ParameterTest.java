@@ -56,6 +56,7 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.SpringUtils;
+import org.frankframework.util.TimeProvider;
 import org.frankframework.util.XmlUtils;
 
 public class ParameterTest {
@@ -1107,7 +1108,7 @@ public class ParameterTest {
 			assertTrue(result instanceof String);
 
 			SimpleDateFormat sdf = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
-			String expectedDate = sdf.format(new Date()); // dit gaat echt meestal wel goed
+			String expectedDate = sdf.format(TimeProvider.nowAsDate()); // dit gaat echt meestal wel goed
 			assertEquals(expectedDate.substring(0, 10), ((String) result).substring(0, 10));
 
 		} finally {
@@ -1132,7 +1133,7 @@ public class ParameterTest {
 			assertInstanceOf(String.class, result);
 
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-			String expectedDate = sdf.format(new Date()); // dit gaat echt meestal wel goed
+			String expectedDate = sdf.format(TimeProvider.nowAsDate()); // dit gaat echt meestal wel goed
 			assertEquals(expectedDate.substring(0, 10), ((String) result).substring(0, 10));
 
 		} finally {
@@ -1221,7 +1222,7 @@ public class ParameterTest {
 			p.configure();
 			PipeLineSession session = new PipeLineSession();
 
-			Date expectedDate = new Date();
+			Date expectedDate = TimeProvider.nowAsDate();
 			DateFormat df = new SimpleDateFormat(patternFormatString);
 			String expectedDateAsString = df.format(expectedDate);
 
@@ -1252,7 +1253,7 @@ public class ParameterTest {
 			p.configure();
 			PipeLineSession session = new PipeLineSession();
 
-			Date expectedDate = new Date();
+			Date expectedDate = TimeProvider.nowAsDate();
 			DateFormat df = new SimpleDateFormat(patternFormatString);
 			String expectedDateAsString = df.format(expectedDate);
 

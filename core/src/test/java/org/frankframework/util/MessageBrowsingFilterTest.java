@@ -46,8 +46,8 @@ public class MessageBrowsingFilterTest {
 		String messageRoot = "message";
 		filter.setMessageMask(messageRoot, storage);
 		storage.configure();
-		storage.storeMessage("1", "corrId", new Date(), "comments", "label", messageRoot);
-		storage.storeMessage("2", "corrId2", new Date(), "comments", "label", "out filter");
+		storage.storeMessage("1", "corrId", TimeProvider.nowAsDate(), "comments", "label", messageRoot);
+		storage.storeMessage("2", "corrId2", TimeProvider.nowAsDate(), "comments", "label", "out filter");
 
 		int count = 0 ;
 		try(IMessageBrowsingIterator iterator = storage.getIterator()){
@@ -75,7 +75,7 @@ public class MessageBrowsingFilterTest {
 				+ storage.getCommentField() + ","
 				+ storage.getExpiryDateField()  +","
 				+ storage.getLabelField() + ")");
-		Date date = new Date();
+		Date date = TimeProvider.nowAsDate();
 
 		if (dbmsSupport.getDbms() == Dbms.ORACLE) {
 			sb.append(" WITH valuesTable AS (" + "SELECT 1,'E','MessageBrowsingFilter','localhost','messageId','correlationId',")
@@ -198,8 +198,8 @@ public class MessageBrowsingFilterTest {
 
 		filter.setMessageMask(messageRoot, storage, listener);
 		storage.configure();
-		storage.storeMessage("1", "corrId", new Date(), "comments", "label", messageInFilter);
-		storage.storeMessage("2", "corrId2", new Date(), "comments", "label", messageOutOfFilter);
+		storage.storeMessage("1", "corrId", TimeProvider.nowAsDate(), "comments", "label", messageInFilter);
+		storage.storeMessage("2", "corrId2", TimeProvider.nowAsDate(), "comments", "label", messageOutOfFilter);
 
 		int count = 0 ;
 		try(IMessageBrowsingIterator iterator = storage.getIterator()){

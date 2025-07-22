@@ -57,12 +57,10 @@ import lombok.Getter;
 import lombok.Lombok;
 import lombok.SneakyThrows;
 
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.CleanerProvider;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamUtil;
@@ -97,7 +95,6 @@ public class Message implements Serializable, Closeable {
 	private static final Logger LOG = LogManager.getLogger(Message.class);
 
 	private static final @Serial long serialVersionUID = 437863352486501445L;
-	private transient MessageNotClosedAction messageNotClosedAction;
 
 	private @Nullable Object request;
 	private @Getter @Nonnull String requestClass;
@@ -118,13 +115,6 @@ public class Message implements Serializable, Closeable {
 
 		this.context = context;
 		this.requestClass = requestClass != null ? ClassUtils.nameOf(requestClass) : ClassUtils.nameOf(request);
-
-		if (request != null) {
-			messageNotClosedAction = new MessageNotClosedAction();
-			CleanerProvider.register(this, messageNotClosedAction);
-		} else {
-			messageNotClosedAction = null;
-		}
 	}
 
 	private Message(@Nonnull MessageContext context, Object request) {
@@ -155,16 +145,12 @@ public class Message implements Serializable, Closeable {
 		this.context = context;
 		this.requestClass = ClassUtils.nameOf(request);
 		try (Message message = MessageUtils.fromReader(request)) {
-			this.request = message.request;
-			message.request = null; // Prevent potential temp files being closed
-			this.context.putAll(message.context.getAll());
+			copyFromTemporaryMessage(message);
 			if (this.context.containsKey(MessageContext.METADATA_CHARSET)) {
 				// Ensure charset is now always UTF-8 because that's what it is after converting from stream
 				this.context.withCharset(StandardCharsets.UTF_8);
 			}
 		}
-		messageNotClosedAction = new MessageNotClosedAction();
-		CleanerProvider.register(this, messageNotClosedAction);
 	}
 
 	public Message(Reader request) throws IOException {
@@ -201,12 +187,18 @@ public class Message implements Serializable, Closeable {
 		this.context = context;
 		this.requestClass = ClassUtils.nameOf(requestClass);
 		try (Message message = MessageUtils.fromInputStream(request)) {
-			this.request = message.request;
-			message.request = null; // Prevent potential temp files being closed
-			this.context.putAll(message.context.getAll());
+			copyFromTemporaryMessage(message);
 		}
-		messageNotClosedAction = new MessageNotClosedAction();
-		CleanerProvider.register(this, messageNotClosedAction);
+	}
+
+	private void copyFromTemporaryMessage(Message message) {
+		this.request = message.request;
+		message.request = null; // Prevent potential temp files being closed
+		// Copy all keys except the name, so we do not overwrite the original name (if given) with a potential temporary-file name.
+		message.context.getAll().keySet()
+				.stream()
+				.filter(key -> !key.equals(MessageContext.METADATA_NAME))
+				.forEachOrdered(key -> this.context.put(key, message.context.get(key)));
 	}
 
 	public Message(InputStream request) throws IOException {
@@ -234,13 +226,6 @@ public class Message implements Serializable, Closeable {
 	@Nonnull
 	public MessageContext copyContext() {
 		return new MessageContext(getContext());
-	}
-
-	private static class MessageNotClosedAction implements Runnable {
-		@Override
-		public void run() {
-			// No-op for now
-		}
 	}
 
 	/**
@@ -417,26 +402,6 @@ public class Message implements Serializable, Closeable {
 		}
 		request = null;
 		closed = true;
-		CleanerProvider.clean(messageNotClosedAction);
-	}
-
-	public void closeOnCloseOf(@Nonnull PipeLineSession session) {
-		if (this.request == null || isScheduledForCloseOnExitOf(session)) {
-			return;
-		}
-		LOG.debug("registering Message [{}] for close on exit", this);
-		session.scheduleCloseOnSessionExit(this);
-	}
-
-	public boolean isScheduledForCloseOnExitOf(@Nonnull PipeLineSession session) {
-		return session.isScheduledForCloseOnExit(this);
-	}
-
-	public void unscheduleFromCloseOnExitOf(@Nonnull PipeLineSession session) {
-		session.unscheduleCloseOnSessionExit(this);
-		if (request instanceof AutoCloseable closeable) {
-			session.unscheduleCloseOnSessionExit(closeable);
-		}
 	}
 
 	private void onExceptionClose(@Nonnull Exception e) {
@@ -926,9 +891,6 @@ public class Message implements Serializable, Closeable {
 			contextFromStream = new MessageContext().withCharset(charset);
 		}
 		context = contextFromStream;
-		// Register the message for cleaning later
-		messageNotClosedAction = new MessageNotClosedAction();
-		CleanerProvider.register(this, messageNotClosedAction);
 	}
 
 	public void assertNotClosed() {

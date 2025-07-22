@@ -154,7 +154,6 @@ public class ParallelSendersTest extends SenderTestBase<ParallelSenders> {
 		sender.start();
 
 		Message inputMessage = MessageTestUtils.getNonRepeatableMessage(MessageTestUtils.MessageType.CHARACTER_UTF8);
-		session.scheduleCloseOnSessionExit(inputMessage);
 
 		// Act
 		String result = sender.sendMessageOrThrow(inputMessage, session).asString();

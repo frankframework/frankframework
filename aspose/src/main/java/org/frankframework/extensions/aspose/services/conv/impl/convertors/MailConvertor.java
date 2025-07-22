@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -130,7 +129,7 @@ class MailConvertor extends AbstractConvertor {
 			loadOptions.setResourceLoadingCallback(new OfflineResourceLoader());
 		}
 
-		Long startTime = new Date().getTime();
+		Long startTime = System.currentTimeMillis();
 		try(FileInputStream fis = new FileInputStream(tempMHtmlFile)){
 			Document doc = new Document(fis, loadOptions);
 			new FontManager(configuration.getFontsDirectory()).setFontSettings(doc);
@@ -139,7 +138,7 @@ class MailConvertor extends AbstractConvertor {
 			doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.PDF);
 
 			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
-			Long endTime = new Date().getTime();
+			Long endTime = System.currentTimeMillis();
 			log.debug("document converted in [{}ms]", (endTime - startTime));
 		} finally {
 			Files.delete(tempMHtmlFile.toPath());

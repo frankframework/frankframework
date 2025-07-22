@@ -122,11 +122,11 @@ public class MultipartUtils {
 	 */
 	@Nullable
 	private static String getFileName(String[] contentDispositionHeader) {
-		if(contentDispositionHeader != null) {
+		if(contentDispositionHeader != null && contentDispositionHeader.length > 0) {
 			String cdFields = contentDispositionHeader[0];
 			if (cdFields.startsWith(FORM_DATA) || cdFields.startsWith(ATTACHMENT)) {
 				String filename = parseParameterField(cdFields, "filename");
-				if(StringUtils.isNotEmpty(filename)) {
+				if(StringUtils.isNotBlank(filename)) {
 					return filename.trim();
 				}
 			}
@@ -209,10 +209,10 @@ public class MultipartUtils {
 		return null;
 	}
 
-	public static record MultipartMessages(Message multipartXml, Map<String, Message> messages) {}
+	public record MultipartMessages(Message multipartXml, Map<String, Message> messages) {}
 
 	public static MultipartMessages parseMultipart(InputStream inputStream, String contentType) throws IOException {
-		try (InputStream unused = inputStream) {
+		try (InputStream ignored = inputStream) {
 			final InputStreamDataSource dataSource = new InputStreamDataSource(contentType, inputStream); // The entire InputStream will be read here!
 			final MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
 			final XmlBuilder attachments = new XmlBuilder("parts");

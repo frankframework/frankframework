@@ -29,10 +29,10 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.extensions.esb.EsbJmsListener;
+import org.frankframework.lifecycle.events.AdapterMessageEvent;
+import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.receivers.RawMessageWrapper;
-import org.frankframework.receivers.Receiver;
 import org.frankframework.util.FileUtils;
-import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 
 /**
  * FxF extension of EsbJmsListener.
@@ -119,22 +119,25 @@ public class FxfListener extends EsbJmsListener {
 		} catch (Exception e) {
 			String sourcePath = srcFile != null ? srcFile.getAbsolutePath() : "<unknown>";
 			String destinationPath = dstFile != null ? dstFile.getAbsolutePath() : "<unknown>";
-			warn("Error while moving file [" + sourcePath + "] to file [" + destinationPath + "]: " + e.getMessage(), e);
+			error("Error while moving file [" + sourcePath + "] to file [" + destinationPath + "]: " + e.getMessage(), e);
 		}
 	}
 
 	private void warn(String msg) {
-		warn(msg, null);
+		if (getReceiver() != null && getReceiver().getAdapter() != null) {
+			Adapter adapter = getReceiver().getAdapter();
+			adapter.publishEvent(new AdapterMessageEvent(adapter, this, msg, MessageEventLevel.WARN));
+		} else {
+			log.warn(msg);
+		}
 	}
 
-	private void warn(String msg, Throwable t) {
-		log.warn(msg, t);
-		Receiver<Message> receiver = getReceiver();
-		if (receiver != null) {
-			Adapter adapter = receiver.getAdapter();
-			if (adapter != null) {
-				adapter.getMessageKeeper().add("WARNING: " + msg + (t != null ? ": " + t.getMessage() : ""), MessageKeeperLevel.WARN);
-			}
+	private void error(String msg, Throwable t) {
+		if (getReceiver() != null && getReceiver().getAdapter() != null) {
+			Adapter adapter = getReceiver().getAdapter();
+			adapter.publishEvent(new AdapterMessageEvent(adapter, this, msg, t));
+		} else {
+			log.warn(msg, t);
 		}
 	}
 

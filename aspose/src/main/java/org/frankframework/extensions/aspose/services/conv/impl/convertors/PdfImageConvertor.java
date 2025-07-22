@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -140,9 +139,9 @@ public class PdfImageConvertor extends AbstractConvertor {
 				page.getParagraphs().add(pdfImage);
 			}
 
-			long startTime = new Date().getTime();
+			long startTime = System.currentTimeMillis();
 			doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.Pdf);
-			long endTime = new Date().getTime();
+			long endTime = System.currentTimeMillis();
 			LOGGER.info("Conversion(save operation in convert method) takes  ::: {} ms", () -> (endTime - startTime));
 			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 

@@ -48,6 +48,7 @@ import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.TimeProvider;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
 
@@ -232,7 +233,7 @@ public class NetStorageSender extends AbstractHttpSender {
 				// Validate Server-Time drift
 				String dateString = responseHandler.getHeader("Date");
 				if(!StringUtils.isEmpty(dateString)) {
-					Date currentDate = new Date();
+					Date currentDate = TimeProvider.nowAsDate();
 					long responseDate = parseDateHeader(dateString);
 					if (responseDate != 0 && currentDate.getTime() - responseDate > 30*1000)
 						throw new SenderException("Local server Date is more than 30s out of sync with Remote server");

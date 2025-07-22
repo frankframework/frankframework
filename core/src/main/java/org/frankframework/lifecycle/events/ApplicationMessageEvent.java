@@ -56,7 +56,7 @@ public class ApplicationMessageEvent extends MessageEvent<ApplicationContext> {
 	}
 
 	@Override
-	protected String getExceptionMessage(Exception e) {
+	protected String getExceptionMessage(Throwable e) {
 		return ": (" + ClassUtils.nameOf(e) + ") " + e.getMessage();
 	}
 }

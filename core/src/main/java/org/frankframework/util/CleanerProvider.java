@@ -58,7 +58,7 @@ public class CleanerProvider {
 			// Write a log message with each stack-trace, for finding the traces where problems originate. Order by largest nr of leaks from origin, ascending.
 			LEAK_MAP.entrySet().stream()
 					.sorted(Comparator.comparingInt(entry -> entry.getValue().get()))
-					.forEachOrdered(entry -> LEAK_LOG.warn("Class [{}] has {} leaks recorded from instances created at:", entry.getKey().owningClassName, entry.getValue().get(), entry.getKey()));
+					.forEachOrdered(entry -> LEAK_LOG.warn("Class [%s] has %s leaks recorded from instances created at:".formatted(entry.getKey().owningClassName, entry.getValue().get()), entry.getKey()));
 
 			// Count total leaks and write a log message with each stack-trace, for finding the traces where problems originate.
 			int totalLeaks = LEAK_MAP.values().stream()
@@ -184,7 +184,7 @@ public class CleanerProvider {
 				return fullStackTrace.length - 1;
 			}
 			StackTraceElement first = fullStackTrace[2];
-			for (int i = 3; i < fullStackTrace.length; i++) {
+			for (int i = 3; i < fullStackTrace.length-1; i++) {
 				StackTraceElement element = fullStackTrace[i];
 				if (((element.getFileName() != null && !element.getFileName().equals(first.getFileName()))
 				|| (element.getFileName() == null && !element.getClassName().equals(first.getClassName())))
@@ -193,7 +193,7 @@ public class CleanerProvider {
 						&& !element.getClassName().endsWith("Message") && !element.getClassName().endsWith("OverflowToDiskOutputStream")
 				&& !element.getClassName().endsWith("Result") && !element.getClassName().endsWith("MessageBuilder") && !element.getMethodName().endsWith("createResultMessage")
 				&& !(element.getClassName().endsWith("TransformerPool") && element.getMethodName().endsWith("transform"))) {
-					return i;
+					return i + 1;
 				}
 			}
 			return fullStackTrace.length - 1;
