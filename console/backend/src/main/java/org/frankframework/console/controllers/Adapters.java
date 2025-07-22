@@ -63,7 +63,7 @@ public class Adapters {
 	@AllowAllIbisUserRoles
 	@Relation("adapter")
 	@Description("view an adapter receivers/pipes/messages")
-	@GetMapping(value = "/configurations/{configuration}/adapters/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/configurations/{configuration}/adapters/{adapter}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getAdapter(AdapterPathVariables path,
 										GetAdapterParams params) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.FIND);
@@ -77,7 +77,7 @@ public class Adapters {
 	@PermitAll
 	@Relation("adapter")
 	@Description("view an adapter health")
-	@GetMapping(value = "/configurations/{configuration}/adapters/{name}/health", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(value = "/configurations/{configuration}/adapters/{adapter}/health", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getAdapterHealth(AdapterPathVariables path) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.HEALTH);
 		addConfigurationAndAdapterNameHeaders(path, builder);
