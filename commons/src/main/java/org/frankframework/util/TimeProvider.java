@@ -113,6 +113,6 @@ public class TimeProvider {
 	 * This should be used in the test-teardown method of unit tests when the unit tests have set the clock to a none-default clock.
 	 */
 	public static void resetClock() {
-		TimeProvider.clock = Clock.systemUTC();
+		TimeProvider.clock = Clock.systemDefaultZone();
 	}
 }

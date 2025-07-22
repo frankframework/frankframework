@@ -99,7 +99,12 @@ public class ServerStatistics extends BusEndpointBase {
 
 		ZonedDateTime zonedDateTime = TimeProvider.nowAsZonedDateTime();
 		returnMap.put("serverTime", zonedDateTime.toInstant().toEpochMilli());
-		returnMap.put("serverTimezone", zonedDateTime.getZone().getId());
+		if ("Z".equals(zonedDateTime.getZone().getId())) {
+			// The front-end timezone parser does not understand "Z", which is what Java sends for System UTC time
+			returnMap.put("serverTimezone", "ETC/UTC");
+		} else {
+			returnMap.put("serverTimezone", zonedDateTime.getZone().getId());
+		}
 		returnMap.put("serverTimezoneOffset", zonedDateTime.getOffset().getTotalSeconds());
 
 		try {
