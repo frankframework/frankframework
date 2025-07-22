@@ -17,7 +17,6 @@ package org.frankframework.ladybug;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -25,23 +24,13 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.PipeForward;
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeRunException;
-import org.frankframework.core.PipeRunResult;
-import org.frankframework.core.SpringSecurityHandler;
-import org.frankframework.doc.Forward;
-import org.frankframework.pipes.FixedForwardPipe;
-import org.frankframework.stream.Message;
-import org.frankframework.util.XmlBuilder;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import nl.nn.testtool.Report;
-import nl.nn.testtool.SecurityContext;
 import nl.nn.testtool.TestTool;
 import nl.nn.testtool.run.ReportRunner;
 import nl.nn.testtool.run.RunResult;
@@ -49,6 +38,16 @@ import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.Storage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.transform.ReportXmlTransformer;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeForward;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeRunException;
+import org.frankframework.core.PipeRunResult;
+import org.frankframework.doc.Forward;
+import org.frankframework.pipes.FixedForwardPipe;
+import org.frankframework.stream.Message;
+import org.frankframework.util.XmlBuilder;
 
 /**
  * Call Ladybug Test Tool to rerun the reports present in test storage (see Test tab in Ladybug)
@@ -107,16 +106,9 @@ public class LadybugPipe extends FixedForwardPipe {
 			addExceptionElement(results, e);
 		}
 
-		// Rare lelijke hack, ik snap niet dat het mogelijk is om hier geen Spring security-context te hebben.
-		org.springframework.security.core.context.SecurityContext context = SecurityContextHolder.getContextHolderStrategy().createEmptyContext();
-		Authentication wsAuthentication = new AnonymousAuthenticationToken("IbisTester", "IbisTester", Collections.singletonList(new SimpleGrantedAuthority("ROLE_IbisTester")));
-		context.setAuthentication(wsAuthentication);
-		SecurityContextHolder.getContextHolderStrategy().setContext(context);
-
 		ReportRunner reportRunner = new ReportRunner();
 		reportRunner.setTestTool(testTool);
 		reportRunner.setDebugStorage(debugStorage);
-		reportRunner.setSecurityContext(new IbisSecurityContext(checkRoles)); // Dit zou in theory niet nodig moeten zijn omdat we Spring Security gebruiken.
 
 		Collections.sort(reports, reportNameComparator);
 		long startTime = System.currentTimeMillis();
@@ -125,7 +117,9 @@ public class LadybugPipe extends FixedForwardPipe {
 			testTool.setReportGeneratorEnabled(true);
 			testTool.sendReportGeneratorStatusUpdate();
 		}
-		reportRunner.run(reports, false, true);
+
+		runReports(reportRunner, reports);
+
 		if(enableReportGenerator) {
 			testTool.setReportGeneratorEnabled(reportGeneratorEnabledOldValue);
 			testTool.sendReportGeneratorStatusUpdate();
@@ -193,6 +187,22 @@ public class LadybugPipe extends FixedForwardPipe {
 		return new PipeRunResult(forward, results.asMessage());
 	}
 
+	private void runReports(ReportRunner reportRunner, List<Report> reports) {
+		if (checkRoles) {
+			reportRunner.run(reports, false, true);
+		} else {
+			SecurityContext context = SecurityContextHolder.getContext();
+			Authentication originalAuthentication = context.getAuthentication();
+			try {
+				Authentication allowAllAuthentication = new AnonymousAuthenticationToken("LadybugPipe", "allow-all", Collections.singletonList(new SimpleGrantedAuthority("ROLE_IbisTester")));
+				context.setAuthentication(allowAllAuthentication);
+				reportRunner.run(reports, false, true);
+			} finally {
+				context.setAuthentication(originalAuthentication);
+			}
+		}
+	}
+
 	private void writeToLogOrSysOut(String message) {
 		if (writeToLog) {
 			log.info(message);
@@ -229,9 +239,9 @@ public class LadybugPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * Set to <code>true</code> when the pipeline is triggered by a user (e.g. using an http based listener
-	 * that will add a securityHandler session key) and you don't want the listener to check whether the user
-	 * is autorised and/or you want the enforce the roles as configured for the Ladybug
+	 * Set this to {@code true} if you wish to enforce the
+	 * user roles (e.g. when using an HTTP based listener).
+	 * When set to false the Ladybug is run anonymously.
 	 * @ff.default false
 	 */
 	public void setCheckRoles(boolean checkRoles) {
@@ -268,24 +278,6 @@ public class LadybugPipe extends FixedForwardPipe {
 		this.reportXmlTransformer = reportXmlTransformer;
 	}
 
-}
-
-class IbisSecurityContext extends SpringSecurityHandler implements SecurityContext {
-	private final boolean checkRoles;
-
-	IbisSecurityContext(boolean checkRoles) {
-		this.checkRoles = checkRoles;
-	}
-
-	@Override
-	public Principal getUserPrincipal() {
-		return checkRoles ? super.getPrincipal() : null;
-	}
-
-	@Override
-	public boolean isUserInRoles(List<String> roles) {
-		return !checkRoles || roles.stream().anyMatch(role -> super.isUserInRole(role));
-	}
 }
 
 class ReportNameComparator implements Comparator<Report> {

@@ -132,7 +132,7 @@ public class LadybugDebugger implements ApplicationContextAware, ApplicationList
 	}
 
 	@Override
-	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext, ReportRunner reportRunner) {
+	public String rerun(String correlationId, Report originalReport, SecurityContext ingored, ReportRunner reportRunner) {
 		if (!isAllowed()) {
 			return "Not allowed";
 		}
