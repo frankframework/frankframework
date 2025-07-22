@@ -152,18 +152,17 @@ public class DateParameterTest {
 	public void testFixedDate() throws Exception {
 		DateParameter p = new DateParameter();
 		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
-		try {
+		try (PipeLineSession session = new PipeLineSession()) {
 			p.setName("date");
 			p.setPattern("{fixedDate}");
 			p.setFormatType(DateFormatType.DATE);
 			p.configure();
-			PipeLineSession session = new PipeLineSession();
 
 			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
 
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
-			assertTrue(result instanceof Date);
+			assertInstanceOf(Date.class, result);
 
 			Date resultDate = (Date) result;
 			SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
@@ -190,7 +189,7 @@ public class DateParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(result instanceof Date);
+		assertInstanceOf(Date.class, result);
 
 		Date resultDate = (Date) result;
 		SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
@@ -216,7 +215,7 @@ public class DateParameterTest {
 		try {
 			System.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
-			assertTrue(result instanceof Date);
+			assertInstanceOf(Date.class, result);
 			Date resultDate = (Date) result;
 			SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
 			String formattedDate = sdf.format(resultDate);
@@ -243,7 +242,7 @@ public class DateParameterTest {
 		try {
 			System.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
-			assertTrue(result instanceof Date);
+			assertInstanceOf(Date.class, result);
 			Date resultDate = (Date) result;
 			SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
 			String formattedDate = sdf.format(resultDate);
@@ -269,7 +268,7 @@ public class DateParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertTrue(result instanceof Date);
+		assertInstanceOf(Date.class, result);
 
 		Date resultDate = (Date) result;
 		String formattedDate = sdf.format(resultDate);
@@ -280,18 +279,17 @@ public class DateParameterTest {
 	public void testPatternNowWithDateType() throws Exception {
 		DateParameter p = new DateParameter();
 		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
-		try {
+		try (PipeLineSession session = new PipeLineSession()) {
 			p.setName("date");
 			p.setPattern("{now}");
 			p.setFormatType(DateFormatType.DATE);
 			p.configure();
-			PipeLineSession session = new PipeLineSession();
 
 			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
 
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
-			assertTrue(result instanceof Date);
+			assertInstanceOf(Date.class, result);
 
 			Date resultDate = (Date) result;
 			SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
@@ -309,19 +307,18 @@ public class DateParameterTest {
 		String expectedDate = "2001-12-17 09:30:47.000";
 		DateParameter p = new DateParameter();
 		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
-		try {
+		try (PipeLineSession session = new PipeLineSession()) {
 			p.setName("EsbSoapWrapperPipeTimestamp");
 			p.setPattern("{fixeddate,date,yyyy-MM-dd'T'HH:mm:ss}");
 			p.setFormatType(DateFormatType.TIMESTAMP);
 			p.setFormatString("yyyy-MM-dd'T'HH:mm:ss");
 			p.configure();
-			PipeLineSession session = new PipeLineSession();
 
 			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
 
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
-			assertTrue(result instanceof Date);
+			assertInstanceOf(Date.class, result);
 
 			SimpleDateFormat sdf = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
 			assertEquals(expectedDate, sdf.format(result));
@@ -336,18 +333,17 @@ public class DateParameterTest {
 		String expectedDate = "2001-12-17 09:30:47.000";
 		DateParameter p = new DateParameter();
 		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
-		try {
+		try (PipeLineSession session = new PipeLineSession()) {
 			p.setName("EsbSoapWrapperPipeTimestamp");
 			p.setPattern("{fixeddate}");
 			p.setFormatType(DateFormatType.DATETIME);
 			p.configure();
-			PipeLineSession session = new PipeLineSession();
 
 			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
 
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
-			assertTrue(result instanceof Date);
+			assertInstanceOf(Date.class, result);
 
 			SimpleDateFormat sdf = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
 			assertEquals(expectedDate, sdf.format(result));
@@ -362,19 +358,18 @@ public class DateParameterTest {
 		String expectedDate = "2001-12-17 09:30:47.000";
 		DateParameter p = new DateParameter();
 		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
-		try {
+		try (PipeLineSession session = new PipeLineSession()) {
 			p.setName("EsbSoapWrapperPipeTimestamp");
 			p.setPattern("{fixeddate}");
 			p.setFormatString("yyyy-MM-dd HH:mm:ss");
 			p.setFormatType(DateFormatType.TIMESTAMP);
 			p.configure();
-			PipeLineSession session = new PipeLineSession();
 
 			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
 
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
-			assertTrue(result instanceof Date);
+			assertInstanceOf(Date.class, result);
 
 			SimpleDateFormat sdf = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
 			assertEquals(expectedDate, sdf.format(result));
@@ -389,18 +384,17 @@ public class DateParameterTest {
 		String expectedDate = "2001-12-17 09:30:47.000";
 		DateParameter p = new DateParameter();
 		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
-		try {
+		try (PipeLineSession session = new PipeLineSession()) {
 			p.setName("EsbSoapWrapperPipeTimestamp");
 			p.setPattern("{fixeddate,date,yyyy-MM-dd HH:mm:ss.SSS}");
 			p.setFormatType(DateFormatType.TIMESTAMP);
 			p.configure();
-			PipeLineSession session = new PipeLineSession();
 
 			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
 
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
-			assertTrue(result instanceof Date);
+			assertInstanceOf(Date.class, result);
 
 			SimpleDateFormat sdf = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
 			assertEquals(expectedDate, sdf.format(result));
@@ -413,12 +407,11 @@ public class DateParameterTest {
 	@Test
 	public void testUnixParameterConvertsToDate() throws Exception {
 		DateParameter p = new DateParameter();
-		try {
+		try (PipeLineSession session = new PipeLineSession()) {
 			p.setName("date");
 			p.setValue("1747401948");
 			p.setFormatType(DateParameter.DateFormatType.UNIX);
 			p.configure();
-			PipeLineSession session = new PipeLineSession();
 
 			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
@@ -433,12 +426,11 @@ public class DateParameterTest {
 	@Test
 	public void testUnixPatternConvertsToDate() throws Exception {
 		DateParameter p = new DateParameter();
-		try {
+		try (PipeLineSession session = new PipeLineSession()) {
 			p.setName("unixTimestamp");
 			p.setPattern("{now,number,#}");
 			p.setFormatType(DateFormatType.UNIX);
 			p.configure();
-			PipeLineSession session = new PipeLineSession();
 
 			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
@@ -453,11 +445,10 @@ public class DateParameterTest {
 	@Test
 	public void testUnixPatternConvertsToDateWithoutFormatType() throws Exception {
 		DateParameter p = new DateParameter();
-		try {
+		try (PipeLineSession session = new PipeLineSession()) {
 			p.setName("unixTimestamp");
 			p.setPattern("{now,number}");
 			p.configure();
-			PipeLineSession session = new PipeLineSession();
 
 			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
