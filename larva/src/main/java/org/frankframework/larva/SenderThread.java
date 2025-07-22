@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2024 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,12 +15,13 @@
 */
 package org.frankframework.larva;
 
-import org.apache.logging.log4j.Logger;
 import org.springframework.security.authentication.TestingAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
@@ -29,14 +30,14 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.core.SpringSecurityHandler;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.stream.Message;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.XmlEncodingUtils;
 
 /**
  * @author Jaco de Groot
  */
+@Log4j2
 public class SenderThread extends Thread {
-	private static final Logger log = LogUtil.getLogger(SenderThread.class);
+	private static final Authentication DEFAULT_TEST_AUTHENTICATION = new TestingAuthenticationToken("LarvaSender", "");
 
 	private final String name;
 	private final ISender sender;
@@ -64,7 +65,7 @@ public class SenderThread extends Thread {
 	public void run() {
 		if (securityContext == null) { // Ensure there is always a SecurityContext present, though this gets lost when using the IbisJavaSender
 			securityContext = SecurityContextHolder.getContextHolderStrategy().createEmptyContext();
-			securityContext.setAuthentication(new TestingAuthenticationToken("LarvaSender", ""));
+			securityContext.setAuthentication(DEFAULT_TEST_AUTHENTICATION);
 		}
 
 		SecurityContextHolder.getContextHolderStrategy().setContext(securityContext);
