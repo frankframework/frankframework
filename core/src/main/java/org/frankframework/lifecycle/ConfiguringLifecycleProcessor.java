@@ -32,8 +32,9 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationDigester;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.Adapter;
+import org.frankframework.lifecycle.events.AdapterMessageEvent;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.Misc;
 import org.frankframework.util.StringUtil;
 
@@ -50,18 +51,10 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 
 	private final String className;
 	private ApplicationContext applicationContext;
-	private MessageKeeper messageKeeper;
 
 	public ConfiguringLifecycleProcessor(ApplicationContext context) {
 		applicationContext = context;
 		className = ClassUtils.classNameOf(context).toLowerCase();
-	}
-
-	/**
-	 * Temporary until message events are used.
-	 */
-	public void setMessageKeeper(MessageKeeper messageKeeper) {
-		this.messageKeeper = messageKeeper;
 	}
 
 	/**
@@ -199,14 +192,10 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 			try {
 				member.configure();
 
-				if (messageKeeper != null) {
-					messageKeeper.add("successfully configured " + ClassUtils.classNameOf(member));
-				}
+				if (applicationContext instanceof Adapter adapter) adapter.publishEvent(new AdapterMessageEvent(adapter, member, "successfully configured"));
 			}
 			catch (ConfigurationException e) {
-				if (messageKeeper != null) {
-					messageKeeper.error("error initializing %s: %s".formatted(ClassUtils.classNameOf(member), e.getMessage()));
-				}
+				if (applicationContext instanceof Adapter adapter) adapter.publishEvent(new AdapterMessageEvent(adapter, member, "unable to initialize", e));
 				throw e;
 			}
 

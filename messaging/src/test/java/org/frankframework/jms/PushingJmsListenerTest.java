@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import jakarta.annotation.Nonnull;
 import jakarta.jms.Destination;
 import jakarta.jms.Message;
 import jakarta.jms.TextMessage;
@@ -36,7 +35,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.springframework.context.ApplicationListener;
 
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.Adapter;
@@ -46,12 +47,15 @@ import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.lifecycle.events.AdapterMessageEvent;
+import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.management.Action;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
+import org.frankframework.util.MessageKeeperMessage;
 import org.frankframework.util.RunState;
 import org.frankframework.util.SpringUtils;
 
@@ -211,6 +215,8 @@ public class PushingJmsListenerTest {
 		listener.setMockLastPollDelayMs(10_000); // Last Poll always before PollGuard triggered
 
 		Adapter adapter = setupAdapter();
+		LogEventMessages messageKeeper = new LogEventMessages(MessageEventLevel.ERROR);
+		adapter.addApplicationListener(messageKeeper);
 		Receiver<jakarta.jms.Message> receiver = setupReceiver(adapter, listener);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());
@@ -241,7 +247,7 @@ public class PushingJmsListenerTest {
 		assertEquals(RunState.EXCEPTION_STARTING, receiver.getRunState());
 
 		await().atMost(5, TimeUnit.SECONDS)
-				.until(()-> getAdapterMessages(adapter, "ERROR"), hasItem(containsString("Failed to restart receiver")));
+				.until(()-> messageKeeper.getMessages(), hasItem(containsString("Receiver [receiver] PollGuard: Failed to restart, no exception")));
 
 		// After
 		configuration.getIbisManager().handleAction(Action.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
@@ -251,15 +257,6 @@ public class PushingJmsListenerTest {
 		log.info("Receiver RunState: {}", receiver.getRunState());
 
 		assertEquals(RunState.STOPPED, receiver.getRunState());
-	}
-
-	private @Nonnull List<String> getAdapterMessages(@Nonnull Adapter adapter, @Nonnull String messageLogLevel) {
-		log.info("Collecting {} messages from Adapter MessageKeeper", messageLogLevel);
-		return new ArrayList<>(adapter.getMessageKeeper())
-				.stream()
-				.filter(msg -> msg != null && messageLogLevel.equals(msg.getMessageLevel()))
-				.map(Object::toString)
-				.toList();
 	}
 
 	@Test
@@ -272,6 +269,8 @@ public class PushingJmsListenerTest {
 		listener.setMockLastPollDelayMs(10_000); // Last Poll always before PollGuard triggered
 
 		Adapter adapter = setupAdapter();
+		LogEventMessages messageKeeper = new LogEventMessages(MessageEventLevel.WARN);
+		adapter.addApplicationListener(messageKeeper);
 		Receiver<jakarta.jms.Message> receiver = setupReceiver(adapter, listener);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());
@@ -309,13 +308,24 @@ public class PushingJmsListenerTest {
 		assertEquals(RunState.EXCEPTION_STOPPING, receiver.getRunState());
 
 		await().atMost(5, TimeUnit.SECONDS)
-				.until(()-> getAdapterMessages(adapter, "WARN"), everyItem(containsString("JMS poll timeout")));
-		
-		List<String> warnings = new ArrayList<>(adapter.getMessageKeeper())
-				.stream()
-				.filter(msg -> msg != null && "WARN".equals(msg.getMessageLevel()))
-				.map(Object::toString)
-				.toList();
-		assertThat(warnings, everyItem(containsString("JMS poll timeout")));
+				.until(()-> messageKeeper.getMessages(), everyItem(containsString("JMS poll timeout")));
+
+		assertThat(messageKeeper.getMessages(), everyItem(containsString("JMS poll timeout")));
+	}
+
+	private static class LogEventMessages implements ApplicationListener<AdapterMessageEvent> {
+		private final @Getter List<String> messages = new ArrayList<>();
+		private final MessageEventLevel minLevel;
+
+		public LogEventMessages(MessageEventLevel minLevel) {
+			this.minLevel = minLevel;
+		}
+
+		@Override
+		public void onApplicationEvent(AdapterMessageEvent event) {
+			if (event.getLevel() == minLevel) {
+				messages.add(MessageKeeperMessage.fromEvent(event).toString());
+			}
+		}
 	}
 }
