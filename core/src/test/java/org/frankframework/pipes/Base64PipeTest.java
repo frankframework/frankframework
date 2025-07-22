@@ -17,6 +17,7 @@ package org.frankframework.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -35,6 +36,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.Base64Pipe.Direction;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
+import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.testutil.ThrowingAfterCloseInputStream;
 import org.frankframework.util.StreamUtil;
 
@@ -257,6 +259,7 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 		// Assert
 		assertTrue(prr.getResult().isBinary());
 		byte[] result = prr.getResult().asByteArray();
+		assertNotNull(result);
 		assertEquals(plainText, new String(result).trim());
 	}
 
@@ -278,21 +281,13 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 		assertEquals(plainText, result.trim());
 	}
 
-	private PipeRunResult doBase64PipeWithInputStream(final InputStream stream) throws PipeRunException {
+	private PipeRunResult doBase64PipeWithInputStream(final InputStream stream) throws PipeRunException, IOException {
 
-		Message input = new Message(new ThrowingAfterCloseInputStream(stream));
-		input.closeOnCloseOf(session);
-
-		assertTrue(input.isScheduledForCloseOnExitOf(session), "Before Base64Pipe, streaming input message should be scheduled for close on close of session");
-
+		Message input = Message.asMessage(SerializableFileReference.of(new ThrowingAfterCloseInputStream(stream)));
 		PipeRunResult prr;
 		try (PipeLineSession ignored = session) {
 			prr = pipe.doPipe(input, session);
-
-			// Before session closes, unschedule result from close-on-close.
-			prr.getResult().unscheduleFromCloseOnExitOf(session);
 		}
-		assertFalse(session.isScheduledForCloseOnExit(input), "After Base64Pipe, input message should no longer be scheduled for close on close of session");
 		return prr;
 	}
 }

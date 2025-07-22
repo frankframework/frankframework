@@ -71,6 +71,7 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.Misc;
 import org.frankframework.util.RenamingObjectInputStream;
+import org.frankframework.util.TimeProvider;
 
 /**
  * Implements a message log (<code>JdbcMessageLog</code>) or error store (<code>JdbcErrorStorage</code>) that uses database
@@ -532,7 +533,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 				if (getRetention() < 0) {
 					stmt.setTimestamp(++parPos, null);
 				} else {
-					Date date = new Date();
+					Date date = TimeProvider.nowAsDate();
 					Calendar cal = Calendar.getInstance();
 					cal.setTime(date);
 					cal.add(Calendar.DAY_OF_MONTH, getRetention());

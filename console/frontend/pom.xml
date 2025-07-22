@@ -53,26 +53,27 @@
 				</configuration>
 				<executions>
 					<execution>
-						<id>npm install</id>
+						<id>pnpm install</id>
 						<goals>
 							<goal>exec</goal>
 						</goals>
 						<phase>prepare-package</phase>
 						<configuration>
-							<executable>npm</executable>
+							<executable>pnpm</executable>
 							<arguments>
-								<argument>ci</argument>
+								<argument>i</argument>
+								<argument>--frozen-lockfile</argument>
 							</arguments>
 						</configuration>
 					</execution>
 					<execution>
-						<id>npm build</id>
+						<id>pnpm build</id>
 						<goals>
 							<goal>exec</goal>
 						</goals>
 						<phase>prepare-package</phase>
 						<configuration>
-							<executable>npm</executable>
+							<executable>pnpm</executable>
 							<arguments>
 								<argument>run</argument>
 								<argument>build</argument>

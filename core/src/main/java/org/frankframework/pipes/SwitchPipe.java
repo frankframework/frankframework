@@ -50,6 +50,7 @@ import org.frankframework.util.XmlUtils;
  * Selects an exitState, based on either the content of the input message, by means
  * of an XSLT-stylesheet, the content of a session variable, a JSON Path expression, or, by default, by returning the name of the root-element.
  *
+ * @since 9.2
  * @author Johan Verrips
  */
 @Forward(name = "*", description = "name of the root-element")
@@ -149,11 +150,6 @@ public class SwitchPipe extends AbstractPipe {
 	private String getForwardName(Message message, PipeLineSession session) throws PipeRunException {
 		if (StringUtils.isNotEmpty(getForwardNameSessionKey())) {
 			return session.getString(getForwardNameSessionKey());
-		}
-		try {
-			message.preserve();
-		} catch (IOException e) {
-			throw new PipeRunException(this, "got exception reading input message", e);
 		}
 		if (message.isEmpty()) {
 			return getEmptyForwardName();

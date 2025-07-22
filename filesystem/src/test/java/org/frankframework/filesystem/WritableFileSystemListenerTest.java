@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2023 WeAreFrank!
+   Copyright 2019-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,7 +30,11 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.Date;
@@ -62,6 +66,7 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StreamUtil;
 
 public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileSystem<F>> extends BasicFileSystemListenerTest<F, S> {
@@ -355,7 +360,7 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 		assertTrue(_fileExists(fileName));
 		assertTrue(_folderExists(processedFolder));
 
-		Receiver<F> receiver = new Receiver<>();
+		Receiver<F> receiver = SpringUtils.createBean(adapter);
 		receiver.setListener(fileSystemListener);
 		MetricsInitializer metrics = mock();
 		when(metrics.createCounter(any(), any())).thenAnswer(invocation -> mock(Counter.class));
@@ -364,11 +369,10 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 		receiver.setConfigurationMetrics(metrics);
 		PlatformTransactionManager transactionManager = mock();
 		when(transactionManager.getTransaction(any())).thenAnswer(invocation -> mock(TransactionStatus.class));
-		ApplicationContext applicationContext = mock();
-		when(applicationContext.getBean("listenerContainer", PullingListenerContainer.class)).thenAnswer((Answer<PullingListenerContainer<F>>) invocation -> new PullingListenerContainer<F>());
-		when(applicationContext.getBean("transactionManager")).thenReturn(transactionManager);
+		ApplicationContext applicationContext = spy(receiver.getApplicationContext());
+		doAnswer((Answer<PullingListenerContainer<F>>) invocation -> new PullingListenerContainer<F>()).when(applicationContext).getBean(eq("listenerContainer"));
+		doReturn(transactionManager).when(applicationContext).getBean(eq("transactionManager"));
 		receiver.setApplicationContext(applicationContext);
-		receiver.setAdapter(adapter);
 		receiver.setTxManager(transactionManager);
 		receiver.configure();
 

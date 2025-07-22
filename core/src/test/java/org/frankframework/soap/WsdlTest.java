@@ -281,7 +281,7 @@ public class WsdlTest {
 		when(receiverBase.getListener()).thenReturn(listener);
 		when(adp.getReceivers()).thenAnswer((Answer<Iterable<Receiver>>) invocation -> List.of(receiverBase));
 		when(adp.getName()).thenReturn(adapterName);
-		when(cfg.getClassLoader()).thenReturn(this.getClass().getClassLoader());
+		when(adp.getClassLoader()).thenReturn(this.getClass().getClassLoader());
 		when(adp.getConfigurationClassLoader()).thenReturn(this.getClass().getClassLoader());
 		when(simple.getConfigurationClassLoader()).thenReturn(this.getClass().getClassLoader());
 		return simple;

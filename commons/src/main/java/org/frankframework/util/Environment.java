@@ -211,7 +211,7 @@ public class Environment {
 				// if URL-encoded file exists, don't decode it
 				return cleanPath;
 			}
-			return URLDecoder.decode(urlPath, StandardCharsets.UTF_8.name());
+			return URLDecoder.decode(urlPath, StandardCharsets.UTF_8);
 		} catch (URISyntaxException e) {
 			throw new IOException("unable to read path from URL ["+url+"]", e);
 		}

@@ -134,7 +134,6 @@ public class BrowseJdbcTable extends BusEndpointBase {
 			query = XmlUtils.transformXml(transformer, browseJdbcTableExecuteREQ);
 			try(PipeLineSession session = new PipeLineSession()) {
 				result = qs.sendMessageOrThrow(new org.frankframework.stream.Message(query), session);
-				result.unscheduleFromCloseOnExitOf(session);
 			} catch (Exception t) {
 				throw new BusException("an error occurred on executing jdbc query ["+query+"]", t);
 			}

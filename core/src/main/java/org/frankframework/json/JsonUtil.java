@@ -57,8 +57,6 @@ public class JsonUtil {
 	public static JsonMapper buildJsonMapper(IScopeProvider scopeProvider, String stylesheetName, DataSonnetOutputType outputType, boolean computeMimeType, ParameterList parameters) throws ConfigurationException {
 		try {
 			return new JsonMapper(getStyleSheet(scopeProvider, stylesheetName), outputType, computeMimeType, parameters.getParameterNames());
-		} catch (ConfigurationException e) {
-			throw e;
 		} catch (RuntimeException e) {
 			throw new ConfigurationException("Cannot configure DataSonnet Mapper", e);
 		}
@@ -117,7 +115,6 @@ public class JsonUtil {
 		}
 		// Try to match the jsonPath expression on the given json string
 		try {
-			message.preserve();
 			Object jsonPathResult = jsonPath.read(message.asInputStream());
 
 			// if we get to this point, we have a match (and no PathNotFoundException)

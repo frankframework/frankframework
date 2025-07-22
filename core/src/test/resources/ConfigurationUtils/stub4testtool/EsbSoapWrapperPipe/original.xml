@@ -2,7 +2,7 @@
 	<adapter name="EsbSoapWrapperPipe (mode='reg')">
 		<errorMessageFormatter className="org.frankframework.errormessageformatters.SoapErrorMessageFormatter" />
 		<receiver>
-			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-EsbSoapWrapperPipe2" throwException="false" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-EsbSoapWrapperPipe2" onException="FORMAT_AND_RETURN" />
 		</receiver>
 		<pipeline firstPipe="switch">
 			<exits>

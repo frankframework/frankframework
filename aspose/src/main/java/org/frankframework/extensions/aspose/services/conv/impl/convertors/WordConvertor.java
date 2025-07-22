@@ -17,7 +17,6 @@ package org.frankframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.io.InputStream;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -91,9 +90,9 @@ class WordConvertor extends AbstractConvertor {
 			SaveOptions saveOptions = SaveOptions.createSaveOptions(SaveFormat.PDF);
 			saveOptions.setMemoryOptimization(true);
 
-			long startTime = new Date().getTime();
+			long startTime = System.currentTimeMillis();
 			doc.save(result.getPdfResultFile().getAbsolutePath(), saveOptions);
-			long endTime = new Date().getTime();
+			long endTime = System.currentTimeMillis();
 			log.debug("conversion (save operation in convert method) took [{}ms]", (endTime - startTime));
 			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 		}

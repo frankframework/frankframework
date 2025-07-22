@@ -48,7 +48,7 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.pipes.ExceptionPipe;
-import org.frankframework.pipes.GetFromSession;
+import org.frankframework.pipes.GetFromSessionPipe;
 import org.frankframework.processors.CorePipeLineProcessor;
 import org.frankframework.processors.CorePipeProcessor;
 import org.frankframework.receivers.FrankListener;
@@ -399,7 +399,7 @@ class FrankSenderTest {
 		// Arrange
 		log.debug("Creating Configuration");
 		configuration = new TestConfiguration(false);
-		GetFromSession pipe = new GetFromSession();
+		GetFromSessionPipe pipe = new GetFromSessionPipe();
 		pipe.setSessionKey("session-key");
 		pipe.setName("test-pipe");
 
@@ -532,8 +532,8 @@ class FrankSenderTest {
 		return sender;
 	}
 
-	private void createFrankListener(TestConfiguration configuration, Adapter targetAdapter) {
-		Receiver<Message> receiver = configuration.createBean();
+	private void createFrankListener(TestConfiguration configuration, Adapter adapter) {
+		Receiver<Message> receiver = SpringUtils.createBean(adapter);
 		receiver.setName("TargetAdapter-receiver");
 
 		FrankListener listener = configuration.createBean();
@@ -542,15 +542,14 @@ class FrankSenderTest {
 		receiver.setListener(listener);
 		receiver.setTxManager(configuration.createBean(NarayanaJtaTransactionManager.class));
 
-		targetAdapter.addReceiver(receiver);
-		receiver.setAdapter(targetAdapter);
+		adapter.addReceiver(receiver);
 
 		listener.configure();
 		listener.start();
 	}
 
-	private void createJavaListener(TestConfiguration configuration, Adapter targetAdapter) {
-		Receiver<String> receiver = configuration.createBean();
+	private void createJavaListener(TestConfiguration configuration, Adapter adapter) {
+		Receiver<String> receiver = SpringUtils.createBean(adapter);
 		receiver.setName("TargetAdapter-receiver");
 
 		JavaListener<String> listener = configuration.createBean();
@@ -561,8 +560,7 @@ class FrankSenderTest {
 		receiver.setListener(listener);
 		receiver.setTxManager(configuration.createBean(NarayanaJtaTransactionManager.class));
 
-		targetAdapter.addReceiver(receiver);
-		receiver.setAdapter(targetAdapter);
+		adapter.addReceiver(receiver);
 
 		listener.start();
 	}

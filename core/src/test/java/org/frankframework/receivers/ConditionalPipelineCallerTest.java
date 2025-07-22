@@ -17,6 +17,7 @@ import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.jta.narayana.NarayanaJtaTransactionManager;
 import org.frankframework.parameters.Parameter;
@@ -43,36 +44,37 @@ public class ConditionalPipelineCallerTest {
 
 	@BeforeEach
 	public void setUp() throws Exception {
-		configuration = new TestConfiguration(false);
+		configuration = new TestConfiguration();
+		adapter = setupAdapter();
 		listener = setupJavaListener();
 		receiver = setupReceiver(listener);
-		adapter = setupAdapter(receiver);
 		session = new PipeLineSession();
 	}
 
 	Receiver<String> setupReceiver(JavaListener<String> listener) {
-		Receiver<String> receiverBean = configuration.createBean();
+		Receiver<String> receiverBean = SpringUtils.createBean(adapter);
 		receiverBean.setListener(listener);
 		receiverBean.setName("receiver");
-		DummySender sender = configuration.createBean();
+		DummySender sender = SpringUtils.createBean(adapter);
 		receiverBean.setSender(sender);
 
 		NarayanaJtaTransactionManager transactionManager = configuration.createBean();
 		receiverBean.setTxManager(transactionManager);
+		adapter.addReceiver(receiverBean);
 
 		return receiverBean;
 	}
 
 	JavaListener<String> setupJavaListener() {
-		JavaListener<String> listenerBean = spy(configuration.createBean(JavaListener.class));
+		JavaListener<String> listenerBean = spy(SpringUtils.createBean(adapter, JavaListener.class));
 		listenerBean.setReturnedSessionKeys(SESSION_VALUE_ECHO_PIPE_CALLED);
 		listenerBean.setThrowException(true);
 
 		return listenerBean;
 	}
 
-	<M> Adapter setupAdapter(Receiver<M> receiver) throws Exception {
-		Adapter adapterBean = spy(configuration.createBean(Adapter.class));
+	<M> Adapter setupAdapter() throws Exception {
+		Adapter adapterBean = configuration.createBean(Adapter.class);
 		adapterBean.setName("ReceiverTestAdapterName");
 
 		// Correctly chain the pipe processors
@@ -83,13 +85,13 @@ public class ConditionalPipelineCallerTest {
 
 		pipeLineProcessor.setPipeProcessor(inputOutputPipeProcessor);
 
-		PipeLine pl = spy(SpringUtils.createBean(adapterBean, PipeLine.class));
+		PipeLine pl = SpringUtils.createBean(adapterBean, PipeLine.class);
 		pl.setFirstPipe("dummy");
 		pl.setPipeLineProcessor(pipeLineProcessor);
 
 		EchoPipe pipe = new EchoPipe() {
 			@Override
-			public PipeRunResult doPipe(Message message, PipeLineSession session) {
+			public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 				session.put(SESSION_VALUE_ECHO_PIPE_CALLED, "true");
 				return super.doPipe(message, session);
 			}
@@ -103,7 +105,6 @@ public class ConditionalPipelineCallerTest {
 		pl.addPipeLineExit(ple);
 		adapterBean.setPipeLine(pl);
 
-		adapterBean.addReceiver(receiver);
 		configuration.addAdapter(adapterBean);
 		return adapterBean;
 	}

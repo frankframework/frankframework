@@ -121,58 +121,49 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 
 			// Transform result string to SOAP message
 			log.debug("transforming process result [{}] to SOAP message", response);
-			response.unscheduleFromCloseOnExitOf(pipelineSession); // Make sure we can read the pipe result.
 			String soapProtocol = pipelineSession.get(SOAP_PROTOCOL_KEY, SOAPConstants.SOAP_1_1_PROTOCOL);
 			SOAPMessage soapMessage = convertResponseToSoapMessage(response, soapProtocol);
 
-			try {
-				String multipartXml = pipelineSession.getString(attachmentXmlSessionKey);
-				log.debug("building multipart message with MultipartXmlSessionKey [{}]", multipartXml);
-				if (StringUtils.isNotEmpty(multipartXml)) {
-					Element partsElement;
-					try {
-						partsElement = XmlUtils.buildElement(multipartXml);
-					}
-					catch (DomBuilderException e) {
-						String m = "error building multipart xml";
-						log.error(m, e);
-						throw new WebServiceException(m, e);
-					}
-					Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
-					if (parts.isEmpty()) {
-						log.warn("no part(s) in multipart xml [{}]", multipartXml);
-					}
-					else {
-						for (final Node part : parts) {
-							Element partElement = (Element) part;
+			String multipartXml = pipelineSession.getString(attachmentXmlSessionKey);
+			log.debug("building multipart message with MultipartXmlSessionKey [{}]", multipartXml);
+			if (StringUtils.isNotEmpty(multipartXml)) {
+				Element partsElement;
+				try {
+					partsElement = XmlUtils.buildElement(multipartXml);
+				}
+				catch (DomBuilderException e) {
+					String m = "error building multipart xml";
+					log.error(m, e);
+					throw new WebServiceException(m, e);
+				}
+				Collection<Node> parts = XmlUtils.getChildTags(partsElement, "part");
+				if (parts.isEmpty()) {
+					log.warn("no part(s) in multipart xml [{}]", multipartXml);
+				} else {
+					for (final Node part : parts) {
+						Element partElement = (Element) part;
 
-							String partSessionKey = partElement.getAttribute("sessionKey");
-							String name = partElement.getAttribute("name");
-							Message partObject = pipelineSession.getMessage(partSessionKey);
+						String partSessionKey = partElement.getAttribute("sessionKey");
+						String name = partElement.getAttribute("name");
+						Message partObject = pipelineSession.getMessage(partSessionKey);
 
-							if (!partObject.isNull()) {
-								String mimeType = partElement.getAttribute("mimeType"); // Optional, auto-detected if not set
-								partObject.unscheduleFromCloseOnExitOf(pipelineSession); // Closed by the SourceClosingDataHandler
-								MessageDataSource ds = new MessageDataSource(partObject, mimeType);
-								SourceClosingDataHandler dataHander = new SourceClosingDataHandler(ds);
-								AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);
-								attachmentPart.setContentId(partSessionKey); // ContentID is URLDecoded, it may not contain special characters, see #4661
+						if (!partObject.isNull()) {
+							String mimeType = partElement.getAttribute("mimeType"); // Optional, auto-detected if not set
+							MessageDataSource ds = new MessageDataSource(partObject, mimeType);
+							SourceClosingDataHandler dataHander = new SourceClosingDataHandler(ds);
+							AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);
+							attachmentPart.setContentId(partSessionKey); // ContentID is URLDecoded, it may not contain special characters, see #4661
 
-								String filename = StringUtils.isNotBlank(name) ? name : ds.getName();
-								attachmentPart.addMimeHeader("Content-Disposition", "attachment; name=\""+filename+"\"; filename=\""+filename+"\"");
-								soapMessage.addAttachmentPart(attachmentPart);
+							String filename = StringUtils.isNotBlank(name) ? name : ds.getName();
+							attachmentPart.addMimeHeader("Content-Disposition", "attachment; name=\""+filename+"\"; filename=\""+filename+"\"");
+							soapMessage.addAttachmentPart(attachmentPart);
 
-								log.debug("appended filepart [{}] key [{}]", filename, partSessionKey);
-							} else {
-								log.debug("skipping filepart [{}] key [{}], content is <NULL>", name, partSessionKey);
-							}
+							log.debug("appended filepart [{}] key [{}]", filename, partSessionKey);
+						} else {
+							log.debug("skipping filepart [{}] key [{}], content is <NULL>", name, partSessionKey);
 						}
 					}
 				}
-			} catch (IOException e) {
-				String m = "could not transform attachment";
-				log.error(m);
-				throw new WebServiceException(m, e);
 			}
 
 			return soapMessage;

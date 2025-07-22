@@ -127,7 +127,6 @@ public class TestPipeline extends BusEndpointBase {
 					return null; // Abort here, we do not need a reply.
 				}
 
-				plr.getResult().unscheduleFromCloseOnExitOf(pls);
 				BinaryMessage response = new BinaryMessage(plr.getResult().asInputStream());
 				response.setHeader(MessageBase.STATE_KEY, plr.getState().name());
 				return response;

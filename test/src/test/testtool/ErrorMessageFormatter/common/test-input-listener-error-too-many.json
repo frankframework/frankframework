@@ -1,0 +1,13 @@
+{
+    "target": "ParameterizedErrorMessage-CallListener-PassViaSession",
+    "results": [
+        {
+            "name": "Dune",
+            "genre": "Science Fiction"
+        },
+        {
+            "name": "Lord of the Rings",
+            "genre": "Fantasy"
+        }
+    ]
+}

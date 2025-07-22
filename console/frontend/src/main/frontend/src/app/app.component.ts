@@ -8,6 +8,7 @@ import {
   appInitState,
   AppService,
   ClusterMember,
+  ConfigurationMessage,
   ConsoleState,
   MessageLog,
 } from './app.service';
@@ -15,6 +16,7 @@ import {
   ActivatedRoute,
   convertToParamMap,
   Data,
+  NavigationCancel,
   NavigationEnd,
   NavigationSkipped,
   NavigationStart,
@@ -135,6 +137,10 @@ export class AppComponent implements OnInit, OnDestroy {
         this.routeQueryParams = childRoute.snapshot.queryParamMap;
         this.routeData = childRoute.snapshot.data;
       }
+    });
+
+    this.router.events.pipe(filter((event) => event instanceof NavigationCancel)).subscribe(() => {
+      if (this.loading) setTimeout(() => this.router.navigate(['loading']));
     });
 
     this.router.events.pipe(filter((event) => event instanceof NavigationEnd)).subscribe(() => {
@@ -409,7 +415,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   processWarnings(configurations: Record<string, Partial<MessageLog> | number | string>): void {
     configurations['All'] = {
-      messages: configurations['messages'] as AdapterMessage[],
+      messages: configurations['messages'] as ConfigurationMessage[],
       errorStoreCount: configurations['totalErrorStoreCount'] as number,
       messageLevel: 'ERROR',
       serverTime: configurations['serverTime'] as number,
@@ -450,6 +456,9 @@ export class AppComponent implements OnInit, OnDestroy {
 
       configuration.messageLevel = existingConfiguration?.messageLevel ?? 'INFO';
       if (configuration.messages) {
+        configuration.messages = configuration.messages.sort(
+          (a: ConfigurationMessage, b: ConfigurationMessage) => b.date - a.date,
+        );
         for (const x in configuration.messages) {
           const level = configuration.messages[x].level;
           if (level == 'WARN' && configuration.messageLevel != 'ERROR') configuration.messageLevel = 'WARN';
@@ -572,6 +581,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   processAdapterMessages(adapter: Partial<Adapter>, existingAdapter?: Adapter): void {
     if (!adapter.messages) adapter.messages = existingAdapter?.messages ?? [];
+    adapter.messages.sort((a, b) => b.date - a.date);
   }
 
   updateAdapterNotifications(adapterName: string, adapter: Partial<Adapter>): void {

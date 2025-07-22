@@ -1,0 +1,9 @@
+{
+    "target": "ParameterizedErrorMessage-CallDirect-PassViaException",
+    "results": [
+        {
+            "name": "Lord of the Rings",
+            "genre": "Fantasy"
+        }
+    ]
+}

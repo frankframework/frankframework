@@ -29,7 +29,7 @@
 			"name": "getAdapterHealth",
 			"rel": "adapter",
 			"description": "view an adapter health",
-			"href": "http://localhost/configurations/{configuration}/adapters/{name}/health",
+			"href": "http://localhost/configurations/{configuration}/adapters/{adapter}/health",
 			"type": "GET"
 		},
 		{
@@ -60,7 +60,7 @@
 			"name": "getAdapter",
 			"rel": "adapter",
 			"description": "view an adapter receivers/pipes/messages",
-			"href": "http://localhost/configurations/{configuration}/adapters/{name}",
+			"href": "http://localhost/configurations/{configuration}/adapters/{adapter}",
 			"type": "GET",
 			"roles": [
 				"IbisObserver",

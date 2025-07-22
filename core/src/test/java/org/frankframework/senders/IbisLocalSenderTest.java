@@ -104,7 +104,7 @@ class IbisLocalSenderTest {
 		ServiceDispatcher.getInstance().registerServiceClient(listener.getServiceName(), listener);
 	}
 
-	private static Message createVirtualInputStream(long streamSize) {
+	private static Message createVirtualInputStream(long streamSize) throws IOException {
 		InputStream virtualInputStream = new VirtualInputStream(streamSize);
 		return new Message(new ThrowingAfterCloseInputStream(virtualInputStream));
 	}
@@ -142,7 +142,6 @@ class IbisLocalSenderTest {
 
 		log.info("**>>> Calling Local Sender");
 		Message message = createVirtualInputStream(EXPECTED_BYTE_COUNT);
-		message.closeOnCloseOf(session);
 		SenderResult result = ibisLocalSender.sendMessage(message, session);
 
 		long localCounterResult = countStreamSize(result.getResult());
@@ -186,7 +185,6 @@ class IbisLocalSenderTest {
 
 		log.info("**>>> Calling Local Sender");
 		Message message = createVirtualInputStream(EXPECTED_BYTE_COUNT);
-		message.closeOnCloseOf(session);
 		ibisLocalSender.sendMessage(message, session);
 
 		session.close();
@@ -499,7 +497,6 @@ class IbisLocalSenderTest {
 
 		adapter.addReceiver(receiver);
 		receiver.setListener(listener);
-		receiver.setAdapter(adapter);
 		receiver.setTxManager(configuration.createBean(NarayanaJtaTransactionManager.class));
 
 		listener.setHandler(receiver);
@@ -551,8 +548,6 @@ class IbisLocalSenderTest {
 			session.put("key-not-configured-for-copy", "dummy-value");
 			session.put("key-to-copy", "dummy-value");
 			session.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, message);
-			session.scheduleCloseOnSessionExit(Message.asMessage(session.get("my-parameter1")));
-			session.scheduleCloseOnSessionExit(Message.asMessage(session.get("my-parameter2")));
 			try {
 				return session.getMessage(message.asString());
 			} catch (IOException e) {
@@ -599,7 +594,7 @@ class IbisLocalSenderTest {
 		}
 
 		@Override
-		public PipeRunResult doPipe(Message message, PipeLineSession session) {
+		public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 			try {
 				log.info("{}: start reading virtual stream", Thread.currentThread().getName());
 				// Often this assert is done in PipeLineProcessor but they're not part of the test-spring-configuration, and it is important to make this assertion
@@ -610,6 +605,8 @@ class IbisLocalSenderTest {
 				asyncCounterResult.set(counter);
 				// Return a stream from message which will be read by caller, testing that stream is not closed.
 				return new PipeRunResult(getSuccessForward(), createVirtualInputStream(counter));
+			} catch (IOException e) {
+				throw new PipeRunException(this, "Cannot read stream", e);
 			} finally {
 				asyncCompletionSemaphore.release();
 				log.info("{}: pipe done and semaphore released", Thread.currentThread().getName());

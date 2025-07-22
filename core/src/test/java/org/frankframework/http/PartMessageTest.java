@@ -1,6 +1,7 @@
 package org.frankframework.http;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -8,12 +9,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeBodyPart;
 
 import org.apache.commons.codec.binary.Hex;
+import org.apache.commons.io.input.NullInputStream;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -25,6 +28,8 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.MessageTest;
+import org.frankframework.stream.SerializableFileReference;
+import org.frankframework.testutil.LargeStructuredMockData;
 import org.frankframework.testutil.SerializationTester;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.LogUtil;
@@ -48,10 +53,10 @@ public class PartMessageTest {
 	public void testCharset() throws Exception {
 		TestPart testPart = new TestPart("application/pdf; charset=UTF-8");
 
-		PartMessage partMessage = new PartMessage(testPart);
-
-		assertEquals("UTF-8", partMessage.getCharset());
-		assertEquals(MimeType.valueOf("application/pdf; charset=UTF-8"), partMessage.getContext().get(MessageContext.METADATA_MIMETYPE));
+		try (PartMessage partMessage = new PartMessage(testPart)) {
+			assertEquals("UTF-8", partMessage.getCharset());
+			assertEquals(MimeType.valueOf("application/pdf; charset=UTF-8"), partMessage.getContext().get(MessageContext.METADATA_MIMETYPE));
+		}
 	}
 
 	@Test
@@ -59,18 +64,19 @@ public class PartMessageTest {
 
 		TestPart testPart = new TestPart("application/pdf; charset=application/pdf");
 
-		PartMessage partMessage = new PartMessage(testPart);
-
-		assertNull(partMessage.getCharset());
-		assertEquals(MimeType.valueOf("application/pdf"), (MimeType)partMessage.getContext().get(MessageContext.METADATA_MIMETYPE));
+		try (PartMessage partMessage = new PartMessage(testPart)) {
+			assertNull(partMessage.getCharset());
+			assertEquals(MimeType.valueOf("application/pdf"), partMessage.getContext().get(MessageContext.METADATA_MIMETYPE));
+		}
 	}
 
 	private static class TestPart extends MimeBodyPart {
-		private InputStream stream = null;//non-repeatable
+		private final InputStream stream; // Non-repeatable
 
 		public TestPart(String contentType) {
 			super();
 			headers.addHeader("Content-Type", contentType);
+			stream = new NullInputStream();
 		}
 
 		public TestPart(URL url) throws IOException {
@@ -78,8 +84,13 @@ public class PartMessageTest {
 			headers.addHeader("Content-Type", "application/octet-stream");
 		}
 
+		public TestPart(InputStream stream, String filename) {
+			this.stream = stream;
+			headers.addHeader("Content-Disposition", "attachment; filename=\"%s\"".formatted(filename));
+		}
+
 		@Override
-		public InputStream getInputStream() throws IOException, MessagingException {
+		public InputStream getInputStream() {
 			return stream;
 		}
 	}
@@ -101,8 +112,28 @@ public class PartMessageTest {
 		Message message = new Message("fakeMessage");
 
 		Object value = p.getValue(pvl, message, session, false);
-		assertTrue(value instanceof Message);
+		assertInstanceOf(Message.class, value);
 		assertEquals("<file>in root of classpath</file>", ((Message)value).asString());
+	}
+
+	@Test
+	public void testLargeInputPreservesCorrectName() throws MessagingException, IOException {
+		// Arrange
+		InputStream stream = LargeStructuredMockData.getLargeJsonDataInputStream(Message.MESSAGE_MAX_IN_MEMORY * 2L, StandardCharsets.UTF_8);
+		String testFilename = "largefile.json";
+
+		TestPart part = new TestPart(stream, testFilename);
+
+		// Act
+		PartMessage message = new PartMessage(part);
+
+		// Assert
+
+		// Check that attachment-filename is preserved
+		assertEquals(testFilename, message.getContext().get(MessageContext.METADATA_NAME));
+
+		// Check that message was indeed too large to be preserved in memory
+		assertInstanceOf(SerializableFileReference.class, message.asObject());
 	}
 
 	@Test
@@ -128,16 +159,16 @@ public class PartMessageTest {
 	@Test
 	public void testDeserializationCompatibility() throws Exception {
 
-		for (int i=0; i< wires.length; i++) {
-			String label = wires[i][0];
+		for (String[] strings : wires) {
+			String label = strings[0];
 			log.debug("testDeserializationCompatibility() {}", label);
-			byte[] wire = Hex.decodeHex(wires[i][1]);
+			byte[] wire = Hex.decodeHex(strings[1]);
 			Message out = serializationTester.deserialize(wire);
 
 			assertEquals(PartMessage.class, out.getClass());
 			assertTrue(out.isBinary(), label);
 			assertEquals("UTF-8", out.getCharset(), label);
-			assertEquals(testString,out.asString(), label);
+			assertEquals(testString, out.asString(), label);
 			assertEquals(testStringLength, out.size());
 		}
 	}

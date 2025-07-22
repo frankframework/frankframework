@@ -26,7 +26,7 @@ import org.frankframework.util.StreamUtil;
 
 public class MessageCapturerTest {
 
-	private MessageCapturer capturer = new MessageCapturer();
+	private final MessageCapturer capturer = new MessageCapturer();
 
 	// Similar to StreamCaptureUtilsTest
 	@ParameterizedTest
@@ -54,23 +54,12 @@ public class MessageCapturerTest {
 		}
 
 		verify(message, times(1)).close();
-		verify(stream, times(2)).close();
-		verify(capture, times(2)).close();
+		verify(capture, times(1)).close();
 
 		String expected = new String(testFileURL.openStream().readAllBytes());
 		String captureString = capture.toString();
-		int maxMessageLength = getExpectedCapturedLength(ladybugMaxLength);
-		assertEquals(maxMessageLength, captureString.length(), "expected length ["+maxMessageLength+"], capture text was: "+captureString);
-		assertEquals(expected.substring(0, maxMessageLength), captureString);
-	}
-
-	/**
-	 * This is either 1, 2 or 3 buffers (see StreamUtil#copyStream).
-	 * @param ladybugMaxLength Max capture length of the MessageCapturer
-	 * @return Expected length, max-size rounded to the nearest buffer-size +1
-	 */
-	private int getExpectedCapturedLength(int ladybugMaxLength) {
-		return ((ladybugMaxLength / 20) +1) * 20;
+		assertEquals(ladybugMaxLength, captureString.length(), "expected length ["+ladybugMaxLength+"], capture text was: "+captureString);
+		assertEquals(expected.substring(0, ladybugMaxLength), captureString);
 	}
 
 	@ParameterizedTest
@@ -90,10 +79,9 @@ public class MessageCapturerTest {
 		String expected = new String(testFileURL.openStream().readAllBytes());
 		assertEquals(expected, baos.toString());
 
-		int maxMessageLength = getExpectedCapturedLength(ladybugMaxLength);
 		String captureString = capture.toString();
-		assertEquals(maxMessageLength, captureString.length(), "expected length ["+maxMessageLength+"], capture text was: "+captureString);
-		assertEquals(expected.substring(0, maxMessageLength), captureString);
+		assertEquals(ladybugMaxLength, captureString.length(), "expected length ["+ladybugMaxLength+"], capture text was: "+captureString);
+		assertEquals(expected.substring(0, ladybugMaxLength), captureString);
 	}
 
 	// Similar to StreamCaptureUtilsTest
@@ -114,12 +102,11 @@ public class MessageCapturerTest {
 
 		assertEquals(input, baos.toString());
 		verify(message, times(1)).close();
-		verify(capture, times(2)).close();
+		verify(capture, times(1)).close();
 
-		int maxMessageLength = getExpectedCapturedLength(ladybugMaxLength);
 		String captureString = capture.toString();
-		assertEquals(maxMessageLength, captureString.length(), "expected length ["+maxMessageLength+"], capture text was: "+captureString);
-		assertEquals(input.substring(0, maxMessageLength), captureString);
+		assertEquals(ladybugMaxLength, captureString.length(), "expected length ["+ladybugMaxLength+"], capture text was: "+captureString);
+		assertEquals(input.substring(0, ladybugMaxLength), captureString);
 	}
 
 	@ParameterizedTest
@@ -146,10 +133,9 @@ public class MessageCapturerTest {
 			}
 		}
 
-		int maxMessageLength = getExpectedCapturedLength(ladybugMaxLength);
 		String captureString = capture.toString();
-		assertEquals(maxMessageLength, captureString.length(), "expected length ["+maxMessageLength+"], capture text was: "+captureString);
-		assertEquals(input.substring(0, maxMessageLength), captureString);
+		assertEquals(ladybugMaxLength, captureString.length(), "expected length ["+ladybugMaxLength+"], capture text was: "+captureString);
+		assertEquals(input.substring(0, ladybugMaxLength), captureString);
 	}
 
 	@Test
@@ -192,7 +178,7 @@ public class MessageCapturerTest {
 	}
 
 	@Test
-	void testCaptureEmptyMessageButNotRead() {
+	void testCaptureEmptyMessageButNotRead() throws IOException {
 		Message message = new Message("");
 
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -200,8 +186,7 @@ public class MessageCapturerTest {
 		capturer.setMaxMessageLength(1024);
 
 		try (Message spyMessaged = capturer.toWriter(message, capture, Lombok::sneakyThrow)) {
-			// Prove that after a message has been closed, but not read, it still captures it's content for the Ladybug.
-			assertEquals(-1, spyMessaged.size());
+			assertEquals("", spyMessaged.asString());
 		}
 
 		assertEquals("", baos.toString());
@@ -214,6 +199,7 @@ public class MessageCapturerTest {
 	@Test
 	void testCaptureMessageButNotRead() throws IOException {
 		URL testFileURL = getTestFileURL("/testString.txt");
+		String expected = StreamUtil.resourceToString(testFileURL);
 		InputStream stream = spy(testFileURL.openStream());
 		Message message = spy(new Message(stream));
 
@@ -221,16 +207,14 @@ public class MessageCapturerTest {
 		capturer.setMaxMessageLength(1024);
 
 		try (Message spyMessaged = capturer.toWriter(message, capture, Lombok::sneakyThrow)) {
-			// Prove that after a message has been closed, but not read, it still captures it's content for the Ladybug.
-			assertEquals(-1, spyMessaged.size());
+			assertEquals(expected, spyMessaged.asString());
 		}
 
-		String expected = new String(testFileURL.openStream().readAllBytes());
 		assertEquals(expected, capture.toString());
 
 		verify(message, times(1)).close();
 		verify(stream, times(1)).close();
-		verify(capture, times(2)).close();
+		verify(capture, times(1)).close();
 	}
 
 	@Test

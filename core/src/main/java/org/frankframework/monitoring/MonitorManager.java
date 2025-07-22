@@ -78,7 +78,7 @@ public class MonitorManager extends ConfigurableApplicationContext implements Ap
 		if(type.isAssignableFrom(ApplicationListener.class)) {
 			List<String> blacklist = Arrays.asList(super.getBeanNamesForType(LazyLoadingEventListener.class, includeNonSingletons, allowEagerInit));
 			List<String> beanNames = Arrays.asList(super.getBeanNamesForType(type, includeNonSingletons, allowEagerInit));
-			log.info("removing LazyLoadingEventListeners {} from Spring auto-magic event-based initialization", blacklist);
+			log.debug("removing LazyLoadingEventListeners {} from Spring auto-magic event-based initialization", blacklist);
 
 			return beanNames.stream().filter(str -> !blacklist.contains(str)).toArray(String[]::new);
 		}
@@ -102,9 +102,10 @@ public class MonitorManager extends ConfigurableApplicationContext implements Ap
 	private void registerEvent(RegisterMonitorEvent registerEvent) {
 		EventThrowing eventThrowing = registerEvent.getSource();
 		String eventCode = registerEvent.getEventCode();
-		log.debug("{} registerEvent [{}] for adapter [{}] object [{}]", this::getDisplayName, () -> eventCode, eventThrowing::getAdapter, eventThrowing::getEventSourceName);
 
 		Adapter adapter = eventThrowing.getAdapter();
+		log.trace("registerEvent [{}] for adapter [{}] object [{}]", () -> eventCode, adapter::getId, eventThrowing::getEventSourceName);
+
 		if(adapter == null || StringUtils.isEmpty(adapter.getName())) {
 			throw new IllegalStateException("adapter ["+adapter+"] has no (usable) name");
 		}

@@ -26,6 +26,7 @@ import nl.nn.testtool.MessageCapturerImpl;
 
 import org.frankframework.stream.Message;
 import org.frankframework.util.CloseUtils;
+import org.frankframework.util.StreamUtil;
 
 public class MessageCapturer extends MessageCapturerImpl {
 
@@ -34,7 +35,7 @@ public class MessageCapturer extends MessageCapturerImpl {
 	@Override
 	public StreamingType getStreamingType(Object message) {
 		if (message instanceof Message m) {
-			if (m.requiresStream() && !m.isRepeatable()) {
+			if (m.requiresStream()) {
 				return m.isBinary() ? StreamingType.BYTE_STREAM : StreamingType.CHARACTER_STREAM;
 			}
 		} else {
@@ -48,9 +49,8 @@ public class MessageCapturer extends MessageCapturerImpl {
 	@Override
 	public <T> T toWriter(T message, Writer writer, Consumer<Throwable> exceptionNotifier) {
 		if (message instanceof Message message1) {
-			try {
-				// should call StreamCaptureUtils.captureReader directly...
-				message1.captureCharacterStream(writer, maxMessageLength);
+			try (writer) {
+				StreamUtil.copyPartialReader(message1.asReader(), writer, maxMessageLength, StreamUtil.BUFFER_SIZE);
 			} catch (Throwable t) {
 				exceptionNotifier.accept(t);
 				CloseUtils.closeSilently(writer);
@@ -69,8 +69,8 @@ public class MessageCapturer extends MessageCapturerImpl {
 	public <T> T toOutputStream(T message, OutputStream outputStream, Consumer<String> charsetNotifier, Consumer<Throwable> exceptionNotifier) {
 		if (message instanceof Message m) {
 			charsetNotifier.accept(m.getCharset());
-			try {
-				m.captureBinaryStream(outputStream, maxMessageLength);
+			try (outputStream) {
+				StreamUtil.copyPartialStream(m.asInputStream(), outputStream, maxMessageLength, StreamUtil.BUFFER_SIZE);
 			} catch (Throwable t) {
 				exceptionNotifier.accept(t);
 				CloseUtils.closeSilently(outputStream);

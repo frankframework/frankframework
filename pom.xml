@@ -7,12 +7,12 @@
 	<packaging>pom</packaging>
 
 	<properties>
-		<revision>9.2.0-SNAPSHOT</revision>
+		<revision>9.3.0-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>17</maven.compiler.target>
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.proc>full</maven.compiler.proc>
-		<log4j2.version>2.24.3</log4j2.version>
+		<log4j2.version>2.25.1</log4j2.version>
 
 		<sonar.organization>frank-framework</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
@@ -20,21 +20,21 @@
 		<junit.excludedTags></junit.excludedTags>
 		<junit.includedTags></junit.includedTags>
 
-		<jackson.version>2.19.1</jackson.version>
+		<jackson.version>2.19.2</jackson.version>
 		<cxf.version>4.1.2</cxf.version>
-		<spring.version>6.2.8</spring.version>
+		<spring.version>6.2.9</spring.version>
 		<spring-security.version>6.4.6</spring-security.version>
 		<spring-integration.version>6.5.0</spring-integration.version>
 		<spring.boot.version>3.5.3</spring.boot.version>
-		<tomcat.version>10.1.42</tomcat.version>
+		<tomcat.version>10.1.43</tomcat.version>
 		<bouncycastle.version>1.81</bouncycastle.version>
 
 		<narayana.version>7.2.2.Final</narayana.version>
 		<jboss-logging.version>3.6.1.Final</jboss-logging.version>
-		<micrometer.version>1.15.1</micrometer.version>
+		<micrometer.version>1.15.2</micrometer.version>
 		<argLine/> <!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
-		<frankdoc.version>4.0-SNAPSHOT</frankdoc.version>
+		<frankdoc.version>4.1-SNAPSHOT</frankdoc.version>
 		<javadoc-plugin.version>3.11.2</javadoc-plugin.version>
 
 		<!-- DB Driver Versions -->
@@ -50,16 +50,16 @@
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
 		<activemq.driver.version>6.1.7</activemq.driver.version>
-		<artemis.driver.version>2.41.0</artemis.driver.version>
+		<artemis.driver.version>2.42.0</artemis.driver.version>
 
 		<rabbitmq.driver.version>5.25.0</rabbitmq.driver.version>
 		<rabbitmq.jms.version>3.4.0</rabbitmq.jms.version>
 
-		<aws.java.sdk.version>2.31.0</aws.java.sdk.version>
+		<aws.java.sdk.version>2.32.5</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
 		<mockito.version>5.18.0</mockito.version>
-		<junit.version>5.13.2</junit.version>
+		<junit.version>5.13.4</junit.version>
 	</properties>
 
 	<name>Frank!Framework parent</name>
@@ -174,7 +174,7 @@
 			<dependency>
 				<groupId>com.nimbusds</groupId>
 				<artifactId>nimbus-jose-jwt</artifactId>
-				<version>9.48</version>
+				<version>10.4</version>
 			</dependency>
 			<!-- End Lock transient deps -->
 
@@ -403,7 +403,7 @@
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-bom</artifactId>
-				<version>4.2.2.Final</version>
+				<version>4.2.3.Final</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -493,7 +493,7 @@
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-lang3</artifactId>
-				<version>3.17.0</version>
+				<version>3.18.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
@@ -518,7 +518,7 @@
 			<dependency>
 				<groupId>commons-io</groupId>
 				<artifactId>commons-io</artifactId>
-				<version>2.19.0</version>
+				<version>2.20.0</version>
 			</dependency>
 			<dependency>
 				<groupId>jakarta.mail</groupId>
@@ -1153,7 +1153,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-enforcer-plugin</artifactId>
-					<version>3.6.0</version>
+					<version>3.6.1</version>
 					<executions>
 						<execution>
 							<id>enforce-lib-ban</id>
@@ -1524,7 +1524,7 @@
 					<plugin>
 						<groupId>org.frankframework</groupId>
 						<artifactId>frank-doc-plugin</artifactId>
-						<version>1.0</version>
+						<version>1.1-20250708.131331-1</version>
 						<inherited>false</inherited> <!-- Only run the Frank!Doc once and include all modules -->
 						<configuration>
 							<doclint>none</doclint>

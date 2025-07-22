@@ -1,5 +1,5 @@
 <errorMessage timestamp="IGNORE" originator="IAFIGNORE" message="SenderPipe [Call ExceptionPipe] msgId [IGNORE]: exception calling JavaListener [ExceptionPipe]: Pipe [Generate exception] &lt;test/&gt;">
-	<location class="org.frankframework.pipes.SenderPipe" name="Call ExceptionPipe"/>
+	<location class="org.frankframework.pipes.ExceptionPipe" name="Generate exception"/>
 	<details>IGNORE</details>
 	<originalMessage messageId="IGNORE" receivedTime="IGNORE">&lt;test/&gt;</originalMessage>
 </errorMessage>

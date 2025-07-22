@@ -28,13 +28,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.Adapter;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
 import org.frankframework.core.IbisExceptionListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.RequestReplyListener;
 import org.frankframework.doc.Protected;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
@@ -50,12 +51,12 @@ import org.frankframework.util.LogUtil;
  * @author  Gerrit van Brakel
  * @since   4.12
  */
-public class PushingListenerAdapter implements IPushingListener<Message>, ServiceClient {
+public class PushingListenerAdapter implements RequestReplyListener, IPushingListener<Message>, ServiceClient {
 	protected Logger log = LogUtil.getLogger(this);
 
 	private @Getter String name;
-	private @Getter boolean applicationFaultsAsExceptions=true;
 	private @Getter boolean running;
+	private @Getter @Setter ExceptionHandlingMethod onException = ExceptionHandlingMethod.RETHROW;
 
 	private IMessageHandler<Message> handler;
 
@@ -104,29 +105,9 @@ public class PushingListenerAdapter implements IPushingListener<Message>, Servic
 		try {
 			log.debug("PushingListenerAdapter.processRequest() for correlationId [{}]", session::getCorrelationId);
 			return handler.processRequest(this, messageWrapper, session);
-		} catch (ListenerException e) {
-			if (isApplicationFaultsAsExceptions()) {
-				log.debug("PushingListenerAdapter.processRequest() rethrows ListenerException...");
-				throw e;
-			}
-
-			log.debug("PushingListenerAdapter.processRequest() formats ListenerException to errormessage");
-			// NB: This seems pointless, but I guess that a subclass could override extractMessage() and make it do something more revolutionary.
-			Message message = extractMessage(messageWrapper, session);
-			return formatExceptionUsingErrorMessageFormatter(session, message, e);
 		} finally {
 			ThreadContext.clearAll();
 		}
-	}
-
-	// The ApplicationContext is practically always an Adapter except when the listener is created directly via the LarvaScenarioContext
-	private Message formatExceptionUsingErrorMessageFormatter(PipeLineSession session, Message inputMessage, Throwable t) {
-		if (applicationContext instanceof Adapter adapter) {
-			return adapter.formatErrorMessage(null, t, inputMessage, session, null);
-		}
-
-		log.warn("unformatted exception while processing input request [{}]", inputMessage, t);
-		return new Message(t.getMessage());
 	}
 
 	@Override
@@ -147,13 +128,16 @@ public class PushingListenerAdapter implements IPushingListener<Message>, Servic
 	public void setHandler(IMessageHandler<Message> handler) {
 		this.handler=handler;
 	}
+
 	@Override
 	public void setExceptionListener(IbisExceptionListener exceptionListener) {
-//		this.exceptionListener=exceptionListener;
+		//	Not Implemented
 	}
 
-	public void setApplicationFaultsAsExceptions(boolean b) {
-		applicationFaultsAsExceptions = b;
+	@Deprecated(since = "9.2")
+	@ConfigurationWarning("Replaced with 'exceptionHandlingMethod'")
+	public void setApplicationFaultsAsExceptions(boolean applicationFaultsAsExceptions) {
+		this.onException = applicationFaultsAsExceptions ? ExceptionHandlingMethod.RETHROW : ExceptionHandlingMethod.FORMAT_AND_RETURN;
 	}
 
 	@Protected

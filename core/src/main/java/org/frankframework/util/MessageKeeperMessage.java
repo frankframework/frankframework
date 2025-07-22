@@ -21,6 +21,7 @@ import java.time.format.DateTimeFormatter;
 
 import org.apache.commons.lang3.StringUtils;
 
+import org.frankframework.lifecycle.events.MessageEvent;
 import org.frankframework.logging.IbisMaskingLayout;
 
 /**
@@ -37,12 +38,17 @@ public class MessageKeeperMessage {
 	private final String messageText;
 	private final MessageKeeper.MessageKeeperLevel messageLevel;
 
+	public static MessageKeeperMessage fromEvent(MessageEvent<?> event) {
+		MessageKeeper.MessageKeeperLevel level = EnumUtils.parse(MessageKeeper.MessageKeeperLevel.class, event.getLevel().name());
+		return new MessageKeeperMessage(event.getMessage(), Instant.ofEpochMilli(event.getTimestamp()), level);
+	}
+
 	/**
 	* Set the message-text of this message. The text will be xml-encoded.
 	*/
 	public MessageKeeperMessage(String message, MessageKeeper.MessageKeeperLevel level){
 		this.messageText = maskMessage(message);
-		this.messageDate = Instant.now();
+		this.messageDate = TimeProvider.now();
 		this.messageLevel=level;
 	}
 

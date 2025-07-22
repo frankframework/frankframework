@@ -16,10 +16,15 @@
 package org.frankframework.extensions.kafka;
 
 import java.util.Properties;
+import java.util.concurrent.ExecutionException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.CommonClientConfigs;
+import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.DescribeClusterOptions;
+import org.apache.kafka.clients.admin.DescribeClusterResult;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.ApplicationContext;
@@ -32,6 +37,7 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IConfigurable;
+import org.frankframework.lifecycle.LifecycleException;
 
 @Log4j2
 public abstract class AbstractKafkaFacade implements HasPhysicalDestination, IConfigurable {
@@ -56,5 +62,27 @@ public abstract class AbstractKafkaFacade implements HasPhysicalDestination, ICo
 		properties.setProperty(CommonClientConfigs.CLIENT_ID_CONFIG, clientId);
 		properties.setProperty(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getCanonicalName());
 		properties.setProperty(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, ByteArrayDeserializer.class.getCanonicalName());
+	}
+
+	/**
+	 * There's no good way to check if the Kafka cluster is available, besides using the AdminClient which we have on board anyway.
+	 */
+	protected void checkConnection() {
+		Properties adminProperties = new Properties();
+		adminProperties.putAll(properties);
+
+		try (AdminClient adminClient = AdminClient.create(adminProperties)) {
+			DescribeClusterOptions describeClusterOptions = new DescribeClusterOptions();
+			describeClusterOptions.timeoutMs(5000);
+
+			DescribeClusterResult clusterResult = adminClient.describeCluster(describeClusterOptions);
+			KafkaFuture<String> clusterIdFuture = clusterResult.clusterId();
+			clusterIdFuture.get();
+		} catch (ExecutionException e) {
+			throw new LifecycleException("Didn't get a response from Kafka while connecting for Listening.", e);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new LifecycleException("Thread was interrupted while connecting to kafka", e);
+		}
 	}
 }

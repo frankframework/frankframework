@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015-2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2015-2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package org.frankframework.pipes;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -66,6 +65,7 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Forward;
 import org.frankframework.jdbc.DirectQuerySender;
 import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.lifecycle.events.AdapterMessageEvent;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.processors.PipeProcessor;
@@ -79,6 +79,7 @@ import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.Misc;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.util.TimeProvider;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlUtils;
@@ -253,9 +254,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			messageLog.configure();
 			if (messageLog instanceof HasPhysicalDestination destination) {
 				String msg = "has messageLog in "+destination.getPhysicalDestinationName();
-				log.debug(msg);
-				if (getAdapter() != null)
-					getAdapter().getMessageKeeper().add(msg);
+				if (getAdapter() != null) {
+					getAdapter().publishEvent(new AdapterMessageEvent(getAdapter(), this, msg));
+				} else {
+					log.debug(msg);
+				}
 			}
 		}
 		if (StringUtils.isNotEmpty(getRetryXPath())) {
@@ -320,30 +323,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		propagateName();
 	}
 
-	/**
-	 * Call {@link Message#preserve()} so it can be consumed multiple times, and wrap potential {@link IOException}
-	 * in a {@link PipeRunException}.
-	 *
-	 * @param input The {@link Message} to be preserved.
-	 * @throws PipeRunException If an {@link IOException} is thrown from {@link Message#preserve()}, wrap and rethrow it
-	 * in a {@link PipeRunException}.
-	 *
-	 */
-	protected void preserve(@Nonnull Message input) throws PipeRunException {
-		try {
-			input.preserve();
-		} catch (IOException e) {
-			throw new PipeRunException(this,"cannot preserve message",e);
-		}
-	}
-
 	@Override
 	public PipeRunResult doPipe(@Nonnull Message input, @Nonnull PipeLineSession session) throws PipeRunException {
 		Message originalMessage = null;
 		PipeForward forward = getSuccessForward();
 
 		if (messageLog != null) {
-			preserve(input);
 			originalMessage = input;
 		}
 		PipeRunResult preProcessingResult = preProcessInput(input, session);
@@ -516,7 +501,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	}
 
 	protected final String storeMessage(String messageID, String correlationID, Message messageToStore, String messageTrail, String label) throws SenderException {
-		messageLog.storeMessage(messageID, correlationID, new Date(), messageTrail, null, new MessageWrapper(messageToStore, messageID, correlationID));
+		messageLog.storeMessage(messageID, correlationID, TimeProvider.nowAsDate(), messageTrail, null, new MessageWrapper(messageToStore, messageID, correlationID));
 		return correlationID;
 	}
 
@@ -571,15 +556,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				return wrapResult;
 			}
 			input = wrapResult.getResult();
-			if (messageLog != null) {
-				preserve(input);
-			}
 
 			log.debug("input after wrapping [{}]", input);
 		}
 
 		if (inputValidator != null) {
-			preserve(input);
 			log.debug("validating input");
 			PipeRunResult validationResult = pipeProcessor.processPipe(getPipeLine(), inputValidator, input, session);
 			if (validationResult == null) {

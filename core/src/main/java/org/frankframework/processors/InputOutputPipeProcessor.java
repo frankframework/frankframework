@@ -83,7 +83,6 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 			message.close(); // Cleanup
 			log.debug("replacing empty input with fixed value [{}]", pipe::getEmptyInputReplacement);
 			message = new Message(pipe.getEmptyInputReplacement());
-			message.closeOnCloseOf(pipeLineSession); // Technically not required but prevents the CleanerProvider from complaining.
 		}
 
 		// Do the actual pipe processing.
@@ -130,17 +129,8 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 			log.debug("storing result in session under key [{}]", pipe::getStoreResultInSessionKey);
 			Message result = pipeRunResult.getResult();
 			pipeLineSession.put(pipe.getStoreResultInSessionKey(), result);
-			if (!pipe.isPreserveInput() && !result.isRepeatable()) {
-				// When there is a `duplicate use` of the result (in a sessionKey as well as as the result), then message must be repeatable!
-				try {
-					result.preserve();
-				} catch (IOException e) {
-					throw new PipeRunException(pipe, "could not preserve output", e);
-				}
-			}
 		}
 		if (pipe.isPreserveInput()) {
-			pipeRunResult.getResult().closeOnCloseOf(pipeLineSession);
 			pipeRunResult.setResult(originalMessage);
 		}
 
@@ -156,15 +146,12 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 		// The order of these two methods has been changed to make it backwards compatible.
 		if (StringUtils.isNotEmpty(pipe.getGetInputFromFixedValue())) {
 			log.debug("replacing input with fixed value [{}]", pipe::getGetInputFromFixedValue);
-			if (!Message.isNull(message)) message.closeOnCloseOf(pipeLineSession);
 			Message newMessage = new Message(pipe.getGetInputFromFixedValue());
-			newMessage.closeOnCloseOf(pipeLineSession); // Technically not required but prevents the CleanerProvider from complaining.
 			return newMessage;
 		}
 
 		if (StringUtils.isNotEmpty(pipe.getGetInputFromSessionKey())) {
 			log.debug("replacing input with contents of sessionKey [{}]", pipe::getGetInputFromSessionKey);
-			if (!Message.isNull(message)) message.closeOnCloseOf(pipeLineSession);
 			if (!pipeLineSession.containsKey(pipe.getGetInputFromSessionKey()) && StringUtils.isEmpty(pipe.getEmptyInputReplacement())) {
 				boolean throwOnMissingSessionKey;
 				if (pipe instanceof FixedForwardPipe ffp) {
@@ -194,8 +181,6 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 		InputSource inputSource = getInputSourceFromResult(result, pipe);
 
 		try {
-			result.closeOnCloseOf(pipeLineSession); // Directly closing the result fails, because the message can also exist and used in the session
-
 			MessageBuilder messageBuilder = new MessageBuilder();
 
 			CompactSaxHandler handler = new CompactSaxHandler(messageBuilder.asXmlWriter());
@@ -211,7 +196,6 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 
 			// restore MessageContext#CONTEXT_PREVIOUS_PIPE
 			compactedResult.getContext().put(MessageContext.CONTEXT_PREVIOUS_PIPE, pipe.getName());
-			compactedResult.closeOnCloseOf(pipeLineSession);
 			pipeRunResult.setResult(compactedResult);
 		} catch (IOException | SAXException e) {
 			log.warn("could not compact received message", e);
@@ -225,9 +209,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 			return;
 		}
 
-		result.closeOnCloseOf(pipeLineSession);
 		InputSource inputSource = getInputSourceFromResult(result, pipe);
-
 		try {
 			MessageBuilder messageBuilder = new MessageBuilder();
 
@@ -241,7 +223,6 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 
 			// restore MessageContext#CONTEXT_PREVIOUS_PIPE
 			restoredResult.getContext().put(MessageContext.CONTEXT_PREVIOUS_PIPE, pipe.getName());
-			restoredResult.closeOnCloseOf(pipeLineSession);
 			pipeRunResult.setResult(restoredResult);
 		} catch (SAXException | IOException e) {
 			throw new PipeRunException(pipe, "could not restore moved elements", e);
@@ -250,8 +231,6 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 
 	private static InputSource getInputSourceFromResult(Message result, IPipe pipe) throws PipeRunException {
 		try {
-			// Preserve the message so that it can be read again, in case there was an error during compacting
-			result.preserve();
 			return result.asInputSource();
 		} catch (IOException e) {
 			throw new PipeRunException(pipe, "could not read received message during restoring/compaction of moved elements", e);

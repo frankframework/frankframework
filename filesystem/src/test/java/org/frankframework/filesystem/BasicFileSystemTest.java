@@ -29,6 +29,7 @@ import lombok.AllArgsConstructor;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.util.TimeProvider;
 
 public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> extends FileSystemTestBase {
 
@@ -162,9 +163,6 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		// test
 		Message in = fileSystem.readFile(file, null);
 
-		// preserve() converts non repeatable messages to byte array
-		in.preserve();
-
 		// test if message can actually be read multiple times, without turning it explicitly into a String or byte array.
 		// This will fail if a message declared that it was repeatable, but actually was not repeatable.
 		String actual1 = StreamUtil.readerToString(in.asReader(), null);
@@ -244,7 +242,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 	public void basicFileSystemTestModificationTime() throws Exception {
 		String filename = "readModificationTime" + FILE1;
 		String contents = "Tekst om te lezen";
-		Date date = new Date();
+		Date date = TimeProvider.nowAsDate();
 
 		fileSystem.configure();
 		fileSystem.open();

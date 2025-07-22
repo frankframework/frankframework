@@ -16,6 +16,7 @@
 package org.frankframework.pipes;
 
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
@@ -32,7 +33,7 @@ import org.frankframework.stream.Message;
 public class EchoPipe extends FixedForwardPipe {
 
 	@Override
-	public PipeRunResult doPipe(Message message, PipeLineSession session) {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		return new PipeRunResult(getSuccessForward(), message);
 	}
 

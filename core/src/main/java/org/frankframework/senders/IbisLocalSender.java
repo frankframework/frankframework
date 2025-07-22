@@ -269,8 +269,6 @@ public class IbisLocalSender extends AbstractSenderWithParameters implements Has
 						log.debug("calling {} in separate Thread", () -> serviceIndication);
 						result = isolatedServiceCaller.callServiceIsolated(serviceClient, message, subAdapterSession, threadLifeCycleEventListener);
 					} else {
-						// We return same message as we send, so it should be preserved in case it's not repeatable
-						message.preserve();
 						log.debug("calling {} in asynchronously", () -> serviceIndication);
 						isolatedServiceCaller.callServiceAsynchronous(serviceClient, message, subAdapterSession, threadLifeCycleEventListener);
 						result = new SenderResult(message);
@@ -303,9 +301,6 @@ public class IbisLocalSender extends AbstractSenderWithParameters implements Has
 			result.setForwardName(forwardName);
 			result.setSuccess(exitState==null || exitState==ExitState.SUCCESS);
 			result.setErrorMessage("exitState="+exitState);
-
-			result.getResult().unscheduleFromCloseOnExitOf(subAdapterSession);
-			result.getResult().closeOnCloseOf(session);
 
 			return result;
 		}

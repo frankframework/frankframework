@@ -23,7 +23,6 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
-import java.util.Date;
 
 import jakarta.annotation.Nonnull;
 
@@ -39,6 +38,7 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
+import org.frankframework.util.TimeProvider;
 
 /**
  * QuerySender that writes each row in a ResultSet to a file.
@@ -131,7 +131,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 		}
 		if ("timestamp".equalsIgnoreCase(getStatusFieldType())) {
 			//TODO: statusFieldType is nu altijd een timestamp (dit moeten ook andere types kunnen zijn)
-			resultset.updateTimestamp(2 , new Timestamp((new Date()).getTime()));
+			resultset.updateTimestamp(2 , new Timestamp(TimeProvider.nowAsMillis()));
 			resultset.updateRow();
 		}
 		if (rec_str!=null) {

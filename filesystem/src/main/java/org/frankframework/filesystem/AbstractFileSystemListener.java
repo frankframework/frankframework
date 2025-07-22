@@ -29,13 +29,13 @@ import jakarta.annotation.Nullable;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -56,7 +56,6 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DateFormatUtils;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.xml.XmlWriter;
 
@@ -75,8 +74,8 @@ import org.frankframework.xml.XmlWriter;
  * to avoid potential duplicate filename errors. Prior to release 9.0, it is recommended to configure {@code numberOfBackups} to avoid these issues.
  *
  */
+@Log4j2
 public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F>, HasPhysicalDestination, IProvidesMessageBrowsers<F> {
-	protected Logger log = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 

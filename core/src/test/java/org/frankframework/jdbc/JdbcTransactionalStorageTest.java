@@ -29,7 +29,6 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.Date;
 import java.util.zip.DeflaterOutputStream;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -42,6 +41,7 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.WithLiquibase;
+import org.frankframework.util.TimeProvider;
 
 @WithLiquibase(tableName = JdbcTransactionalStorageTest.tableName)
 public class JdbcTransactionalStorageTest {
@@ -189,7 +189,7 @@ public class JdbcTransactionalStorageTest {
 				+ storage.getMessageField() + ","
 				+ storage.getExpiryDateField() + ","
 				+ storage.getLabelField() + ")"
-				+ " VALUES(" + (dbmsSupport.autoIncrementKeyMustBeInserted() ? 1 + "," : "") + "'" + type + "','test','localhost','messageId','correlationId'," + dbmsSupport.getDatetimeLiteral(new Date()) + ",'comments', ? ," + dbmsSupport.getDatetimeLiteral(new Date()) + ",'label')";
+				+ " VALUES(" + (dbmsSupport.autoIncrementKeyMustBeInserted() ? 1 + "," : "") + "'" + type + "','test','localhost','messageId','correlationId'," + dbmsSupport.getDatetimeLiteral(TimeProvider.nowAsDate()) + ",'comments', ? ," + dbmsSupport.getDatetimeLiteral(TimeProvider.nowAsDate()) + ",'label')";
 		return !dbmsSupport.autoIncrementKeyMustBeInserted() ? connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS) : connection.prepareStatement(query, new String[]{storage.getKeyField()});
 	}
 
@@ -218,7 +218,7 @@ public class JdbcTransactionalStorageTest {
 		String message = createMessage();
 
 		try (Connection connection = env.getConnection()) {
-			String storeMessageOutput = storage.storeMessage(connection, "1", "correlationId", new Date(), "comment", "label", message);
+			String storeMessageOutput = storage.storeMessage(connection, "1", "correlationId", TimeProvider.nowAsDate(), "comment", "label", message);
 
 			String key = storeMessageOutput.substring(storeMessageOutput.indexOf(">") + 1, storeMessageOutput.lastIndexOf("<"));
 			String selectQuery = "SELECT * FROM " + tableName + " where " + storage.getKeyField() + "=" + key;
@@ -241,7 +241,7 @@ public class JdbcTransactionalStorageTest {
 		String message = createMessage();
 		String key;
 		try (Connection connection = env.getConnection()) {
-			String storeMessageOutput = storage.storeMessage(connection, "1", "correlationId", new Date(), "comment", "label", message);
+			String storeMessageOutput = storage.storeMessage(connection, "1", "correlationId", TimeProvider.nowAsDate(), "comment", "label", message);
 
 			key = storeMessageOutput.substring(storeMessageOutput.indexOf(">") + 1, storeMessageOutput.lastIndexOf("<"));
 		}
@@ -257,7 +257,7 @@ public class JdbcTransactionalStorageTest {
 
 		String message = createMessage();
 		try (Connection connection = env.getConnection()) {
-			String storeMessageOutput = storage.storeMessage(connection, "1", "correlationId", new Date(), "comment", "label", message);
+			String storeMessageOutput = storage.storeMessage(connection, "1", "correlationId", TimeProvider.nowAsDate(), "comment", "label", message);
 
 			key = storeMessageOutput.substring(storeMessageOutput.indexOf(">") + 1, storeMessageOutput.lastIndexOf("<"));
 		}

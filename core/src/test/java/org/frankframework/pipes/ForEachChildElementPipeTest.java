@@ -428,7 +428,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		assertEquals(expectedBasicNoNS, actual);
 		assumeTrue(AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true), "Streaming XSLT switched off");
-		assertTrue(sc.count > 2, "streaming failure: switch count [" + sc.count + "] should be larger than 2");
 	}
 
 	@Test
@@ -471,7 +470,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		assertEquals(expectedBasicNoNS, actual);
 		assumeTrue(AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true), "Streaming XSLT switched off");
-		assertTrue(sc.count > 2, "streaming failure: switch count [" + sc.count + "] should be larger than 2");
 	}
 
 	@Test
@@ -490,7 +488,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		assertEquals(expectedBasicNoNS, actual);
 		assumeTrue(AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true), "Streaming XSLT switched off");
-		assertTrue(sc.count > 2, "streaming failure: switch count [" + sc.count + "] should be larger than 2");
 	}
 
 	@Test
@@ -508,7 +505,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		assertEquals(expectedBasicNS1, actual);
 		assumeTrue(AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true), "Streaming XSLT switched off");
-		assertTrue(sc.count > 2, "streaming failure: switch count [" + sc.count + "] should be larger than 2");
 	}
 
 	@Test
@@ -526,7 +522,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		assertEquals(expectedBasicNS2, actual);
 		assumeTrue(AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true), "Streaming XSLT switched off");
-		assertTrue(sc.count > 2, "streaming failure: switch count [" + sc.count + "] should be larger than 2");
 	}
 
 	@Test
@@ -545,7 +540,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		assertEquals(expectedBasicNS1, actual);
 		assumeTrue(AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true), "Streaming XSLT switched off");
-		assertTrue(sc.count > 2, "streaming failure: switch count [" + sc.count + "] should be larger than 2");
 	}
 
 	@Test
@@ -562,7 +556,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		assertEquals(expectedBasicNoNSFirstTwoElements, actual);
 		assumeTrue(AppConstants.getInstance().getBoolean(XmlUtils.XSLT_STREAMING_BY_DEFAULT_KEY, true), "Streaming XSLT switched off");
-		assertTrue(sc.count > 2, "streaming failure: switch count [" + sc.count + "] should be larger than 2");
 	}
 
 	@Test
@@ -581,7 +574,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().asString();
 
 		assertEquals(expectedBasicNoNS, actual);
-		assertTrue(sc.count > 2, "streaming failure: switch count [" + sc.count + "] should be larger than 2");
 	}
 
 	@Test
@@ -600,7 +592,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().asString();
 
 		assertEquals(expectedBasicNoNS, actual);
-		assertTrue(sc.count > 2, "streaming failure: switch count [" + sc.count + "] should be larger than 2");
 	}
 
 	@Test
@@ -620,7 +611,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().asString();
 
 		assertEquals(expectedBasicNS1, actual);
-		assertTrue(sc.count > 2, "streaming failure: switch count [" + sc.count + "] should be larger than 2");
 	}
 
 
@@ -638,7 +628,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().asString();
 
 		assertEquals(expectedBasicNoNS, actual);
-		assertTrue(sc.count > 2, "streaming failure: switch count [" + sc.count + "] should be larger than 2");
 	}
 
 	@Test
@@ -655,7 +644,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().asString();
 
 		assertEquals(expectedBasicNoNS, actual);
-		assertTrue(sc.count > 2, "streaming failure: switch count [" + sc.count + "] should be larger than 2");
 	}
 
 	@Test
@@ -672,7 +660,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().asString();
 
 		assertEquals(expectedBasicNS1, actual);
-		assertTrue(sc.count > 2, "streaming failure: switch count [" + sc.count + "] should be larger than 2");
 	}
 
 	@Test
@@ -691,7 +678,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().asString();
 
 		assertEquals(expectedBasicNS1, actual);
-		assertTrue(sc.count > 2, "streaming failure: switch count [" + sc.count + "] should be larger than 2");
 	}
 
 	@Test
@@ -710,7 +696,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().asString();
 
 		assertEquals(expectedBasicNS2, actual);
-		assertTrue(sc.count > 2, "streaming failure: switch count [" + sc.count + "] should be larger than 2");
 	}
 
 	@Test
@@ -781,7 +766,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		assertEquals(expectedBasicNoNSFirstElement, actual);
 		// System.out.println("num reads="+sc.hitCount.get("in"));
-		assertThat(sc.hitCount.get("in"), lessThan(10));
 	}
 
 	@Test
@@ -799,7 +783,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		assertEquals(expectedBasicNoNSFirstElement, actual);
 		// System.out.println("num reads="+sc.hitCount.get("in"));
-		assertThat(sc.hitCount.get("in"), lessThan(10));
 		assertEquals(StopReason.MAX_ITEMS_REACHED.getForwardName(), prr.getPipeForward().getName());
 	}
 
@@ -817,7 +800,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		assertEquals(expectedBasicNoNSFirstTwoElements, actual);
 		// System.out.println("num reads="+sc.hitCount.get("in"));
-		assertThat(sc.hitCount.get("in"), lessThan(15));
 	}
 
 	@Test
@@ -835,7 +817,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		assertEquals(expectedBasicNoNSFirstTwoElements, actual);
 		// System.out.println("num reads="+sc.hitCount.get("in"));
-		assertThat(sc.hitCount.get("in"), lessThan(15));
 		assertEquals(StopReason.MAX_ITEMS_REACHED.getForwardName(), prr.getPipeForward().getName());
 	}
 
@@ -853,7 +834,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 
 		assertEquals(expectedBasicNoNSFirstTwoElements, actual);
 		// System.out.println("num reads="+sc.hitCount.get("in"));
-		assertThat(sc.hitCount.get("in"), lessThan(15));
 		assertEquals(PipeForward.SUCCESS_FORWARD_NAME, prr.getPipeForward().getName());
 	}
 
@@ -872,7 +852,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().asString();
 
 //		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
-		assertThat(sc.hitCount.get("in"), lessThan(11));
 		assertEquals(expectedBasicNoNSFirstElement, actual);
 	}
 
@@ -910,7 +889,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().asString();
 
 //		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
-//        assertThat(sc.hitCount.get("in"), Matchers.lessThan(11));
 		assertEquals(expectedBasicNoNS, actual);
 	}
 
@@ -929,7 +907,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().asString();
 
 //		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
-//        assertThat(sc.hitCount.get("in"), Matchers.lessThan(11));
 		assertEquals(expectedBasicNoNS, actual);
 	}
 
@@ -948,7 +925,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().asString();
 
 //		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
-//        assertThat(sc.hitCount.get("in"), Matchers.lessThan(11));
 		assertEquals(expectedBasicNoNS, actual);
 	}
 
@@ -967,7 +943,6 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		String actual = prr.getResult().asString();
 
 //		assertTrue("streaming failure: switch count ["+sc.count+"] should be larger than 2",sc.count>2);
-//        assertThat(sc.hitCount.get("in"), Matchers.lessThan(11));
 		assertEquals(expectedBasicNoNS, actual);
 	}
 

@@ -132,7 +132,7 @@ public class LadybugDebugger implements ApplicationContextAware, ApplicationList
 	}
 
 	@Override
-	public String rerun(String correlationId, Report originalReport, SecurityContext securityContext, ReportRunner reportRunner) {
+	public String rerun(String correlationId, Report originalReport, SecurityContext ingored, ReportRunner reportRunner) {
 		if (!isAllowed()) {
 			return "Not allowed";
 		}
@@ -195,6 +195,7 @@ public class LadybugDebugger implements ApplicationContextAware, ApplicationList
 		}
 	}
 
+	// Use Spring Security to verify if the user has the required roles.
 	private boolean isAllowed() {
 		return testerRoles != null && BusMessageUtils.hasAnyRole(testerRoles.toArray(new String[0]));
 	}

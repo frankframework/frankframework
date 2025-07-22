@@ -98,12 +98,15 @@ public class TestSendJmsMessage extends BusTestBase {
 
 		mockConnectionFactoryFactory.addEchoReceiverOnQueue(DUMMY_DESTINATION);
 
-		assertNotNull(callSyncGateway(request).getPayload());
+		org.springframework.messaging.Message<?> response = callSyncGateway(request);
+		assertNotNull(response.getPayload());
+		assertEquals(payload.asString(), Message.asMessage(response.getPayload()).asString());
 
 		jakarta.jms.Message jmsResponse = mockConnectionFactoryFactory.getLastMessageFromQueue(DUMMY_DESTINATION);
 		assertNotNull(jmsResponse, "expected a response");
-		assertTrue(jmsResponse instanceof jakarta.jms.BytesMessage);
-		String responseMessage = readBytesMessageToString((BytesMessage) jmsResponse);
+		BytesMessage bytesMessage = assertInstanceOf(BytesMessage.class, jmsResponse);
+
+		String responseMessage = readBytesMessageToString(bytesMessage);
 		assertEquals(payload.asString(), responseMessage);
 	}
 
@@ -128,6 +131,7 @@ public class TestSendJmsMessage extends BusTestBase {
 	}
 
 	private static String readBytesMessageToString(final BytesMessage jmsResponse) throws JMSException {
+		jmsResponse.reset();
 		byte[] data = new byte[(int)jmsResponse.getBodyLength()];
 		jmsResponse.readBytes(data);
 		return new String(data);

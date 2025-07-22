@@ -15,6 +15,9 @@
 */
 package org.frankframework.http;
 
+import java.io.IOException;
+import java.io.Serial;
+
 import jakarta.mail.MessagingException;
 import jakarta.mail.Part;
 
@@ -28,20 +31,21 @@ import org.frankframework.stream.MessageContext;
 
 public class PartMessage extends Message {
 
+	@Serial
 	private static final long serialVersionUID = 4740404985426114492L;
 
 	private static final Logger LOG = LogManager.getLogger(PartMessage.class);
 
-	public PartMessage(Part part) throws MessagingException {
+	public PartMessage(Part part) throws MessagingException, IOException {
 		this(part, MultipartUtils.getContext(part));
 	}
 
-	public PartMessage(Part part, String charset) throws MessagingException {
+	public PartMessage(Part part, String charset) throws MessagingException, IOException {
 		this(part, MultipartUtils.getContext(part).withCharset(charset));
 	}
 
-	public PartMessage(Part part, MessageContext context) throws MessagingException {
-		super(part::getInputStream, context, part.getClass());
+	public PartMessage(Part part, MessageContext context) throws MessagingException, IOException {
+		super(part.getInputStream(), context, part.getClass());
 
 		String charset = (String)context.get(MessageContext.METADATA_CHARSET);
 		if (StringUtils.isEmpty(charset)) { // If not explicitly set

@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonStructure;
-import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
@@ -176,7 +175,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 	}
 
 	@Override
-	protected org.frankframework.stream.Message getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws SQLException {
+	protected org.frankframework.stream.Message getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar) throws SQLException {
 		JsonArrayBuilder types = Json.createArrayBuilder();
 		String previousType=null;
 		JsonObjectBuilder typeBuilder=null;

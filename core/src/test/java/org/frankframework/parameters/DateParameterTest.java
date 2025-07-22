@@ -19,6 +19,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.DateParameter.DateFormatType;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.TimeProvider;
 
 public class DateParameterTest {
 
@@ -114,7 +115,7 @@ public class DateParameterTest {
 
 	@Test
 	public void testParameterFromDateToXmlDateTime() throws Exception {
-		Date date = new Date();
+		Date date = TimeProvider.nowAsDate();
 
 		PipeLineSession session = new PipeLineSession();
 		session.put("originalMessage", date);
@@ -233,7 +234,7 @@ public class DateParameterTest {
 		p.setFormatType(DateFormatType.DATE);
 		p.configure();
 		PipeLineSession session = new PipeLineSession();
-		Date date = new Date();
+		Date date = TimeProvider.nowAsDate();
 		session.put("stub4testtool.fixeddate", date);
 
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
@@ -295,7 +296,7 @@ public class DateParameterTest {
 			Date resultDate = (Date) result;
 			SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
 			String formattedDate = sdf.format(resultDate);
-			String expectedDate = sdf.format(new Date()); // dit gaat echt meestal wel goed
+			String expectedDate = sdf.format(TimeProvider.nowAsDate()); // dit gaat echt meestal wel goed
 			assertEquals(expectedDate, formattedDate);
 
 		} finally {
@@ -470,7 +471,7 @@ public class DateParameterTest {
 
 	@Test
 	public void testParameterFromDateToDate() throws Exception {
-		Date date = new Date();
+		Date date = TimeProvider.nowAsDate();
 
 		PipeLineSession session = new PipeLineSession();
 		session.put("originalMessage", date);

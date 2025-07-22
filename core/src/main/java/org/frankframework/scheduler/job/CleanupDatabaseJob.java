@@ -50,6 +50,7 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.SpringUtils;
+import org.frankframework.util.TimeProvider;
 
 /**
  * Frank!Framework job to cleanup the {@code IBISSTORE} and {@code IBISLOCK} tables.
@@ -153,7 +154,7 @@ public class CleanupDatabaseJob extends AbstractJobDef {
 
 	@Override
 	public void execute() {
-		Instant instant = Instant.now();
+		Instant instant = TimeProvider.now();
 
 		int maxRows = AppConstants.getInstance().getInt("cleanup.database.maxrows", 25000);
 

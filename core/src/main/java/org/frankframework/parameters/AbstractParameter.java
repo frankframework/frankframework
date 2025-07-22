@@ -66,6 +66,7 @@ import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.Misc;
 import org.frankframework.util.StringUtil;
+import org.frankframework.util.TimeProvider;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.UUIDUtil;
@@ -75,13 +76,14 @@ import org.frankframework.util.XmlUtils;
 /**
  * Generic parameter definition.
  *
+ * <p>
  * A parameter resembles an attribute. However, while attributes get their value at configuration-time,
  * parameters get their value at the time of processing the message. Value can be retrieved from the message itself,
  * a fixed value, or from the pipelineSession. If this does not result in a value (or if neither of these is specified), a default value
  * can be specified. If an XPathExpression, XSLT stylesheet or JSONPathExpression is specified, it will be applied to the message, the value retrieved
  * from the pipelineSession or the fixed value specified. If the transformation produces no output, the default value
  * of the parameter is taken if provided.
- * <br/><br/>
+ * </p>
  * Examples:
  * <pre><code>
  * stored under SessionKey 'TransportInfo':
@@ -102,7 +104,7 @@ import org.frankframework.util.XmlUtils;
  * </code></pre>
  *
  * N.B. to obtain a fixed value: a non-existing 'dummy' <code>sessionKey</code> in combination with the fixed value in <code>defaultValue</code> is used traditionally.
- * The current version of parameter supports the 'value' attribute, that is sufficient to set a fixed value.
+ * The current version of parameter supports the {@code value} attribute, that is sufficient to set a fixed value.
  * @author Gerrit van Brakel
  * @ff.parameters Parameters themselves can have parameters too, for instance if a XSLT transformation is used, that transformation can have parameters.
  */
@@ -450,7 +452,6 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 						break;
 					case INPUT:
 						try {
-							message.preserve();
 							valueByDefault=message.asString();
 						} catch (IOException e) {
 							throw new ParameterException(getName(), e);
@@ -490,15 +491,10 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 
 	private Object getParameterValueFromInputMessage(Message message) throws ParameterException {
 		Object input;
-		try {
-			if (StringUtils.isNotEmpty(getContextKey())) {
-				input = message.getContext().get(getContextKey());
-			} else {
-				message.preserve();
-				input = message;
-			}
-		} catch (IOException e) {
-			throw new ParameterException(getName(), e);
+		if (StringUtils.isNotEmpty(getContextKey())) {
+			input = message.getContext().get(getContextKey());
+		} else {
+			input = message;
 		}
 		return input;
 	}
@@ -647,11 +643,11 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			switch (namelc) {
 				case "now":
 					if ("date".equalsIgnoreCase(formatType) || "time".equalsIgnoreCase(formatType)) {
-						substitutionValue = new Date();
+						substitutionValue = TimeProvider.nowAsDate();
 					} else if ("millis".equalsIgnoreCase(formatType)) {
-						substitutionValue = System.currentTimeMillis();
+						substitutionValue = TimeProvider.nowAsMillis();
 					} else {
-						substitutionValue = formatDateToString(new Date(), formatString);
+						substitutionValue = formatDateToString(TimeProvider.nowAsDate(), formatString);
 					}
 
 					break;

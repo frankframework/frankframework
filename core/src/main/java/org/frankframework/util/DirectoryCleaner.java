@@ -100,7 +100,7 @@ public class DirectoryCleaner {
 	}
 
 	private static long getLastModifiedDelta(File file) {
-		return System.currentTimeMillis() - file.lastModified();
+		return TimeProvider.nowAsMillis() - file.lastModified();
 	}
 
 	/** directory to be cleaned up */

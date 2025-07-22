@@ -1,4 +1,4 @@
-FROM tomcat:10.1.42-jre21
+FROM tomcat:10.1.43-jre21
 ARG GID=2000
 ARG UID=2000
 
@@ -9,6 +9,9 @@ RUN chmod -R 751 /usr/bin /usr/sbin
 RUN set -eux && \
 	# Create default directory for configurations, properties and credential filesystem
 	mkdir -p /opt/frank/secrets && \
+	mkdir -p /opt/frank/configurations && \
+    mkdir -p /opt/frank/testtool && \
+    mkdir -p /opt/frank/testtool-ext && \
 	# Create tomcat user for stepping down from root
 	groupadd -g ${GID} tomcat && \
 	useradd -u ${UID} -g tomcat -s /usr/sbin/nologin -l tomcat -d ${CATALINA_HOME} && \
@@ -25,7 +28,7 @@ RUN cat /scripts/catalinaAdditional.properties >> /usr/local/tomcat/conf/catalin
     rm -f /scripts/catalinaAdditional.properties
 
 # Copy JDBC and JMS drivers
-COPY --chown=tomcat target/dependencies/*.jar /usr/local/tomcat/lib/
+COPY --chown=tomcat target/dependencies/*.jar /opt/frank/drivers/
 
 # Copy webapp war
 COPY --chown=tomcat target/dependencies/war/ /usr/local/tomcat/webapps/ROOT/

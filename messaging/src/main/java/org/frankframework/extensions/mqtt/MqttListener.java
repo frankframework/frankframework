@@ -27,12 +27,14 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.Adapter;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
 import org.frankframework.core.IbisExceptionListener;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.lifecycle.events.AdapterMessageEvent;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ReceiverAware;
@@ -109,7 +111,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 
 	@Override
 	public void connectComplete(boolean reconnect, String brokerUrl) {
-		String message = getLogPrefix() + "connection ";
+		String message = "connection ";
 		if (reconnect) {
 			// Automatic reconnect by mqtt lib
 			receiver.setRunState(RunState.STARTED);
@@ -117,15 +119,16 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 		} else {
 			message = message + "established";
 		}
-		receiver.getAdapter().getMessageKeeper().add(message);
-		log.debug(message);
+
+		Adapter adapter = getReceiver().getAdapter();
+		adapter.publishEvent(new AdapterMessageEvent(adapter, this, message));
 	}
 
 	@Override
 	public void connectionLost(Throwable throwable) {
-		String message = getLogPrefix() + "connection lost";
-		receiver.getAdapter().getMessageKeeper().add(message);
-		log.debug(message);
+		Adapter adapter = getReceiver().getAdapter();
+		adapter.publishEvent(new AdapterMessageEvent(adapter, this, "connection lost"));
+
 		// Call receiver which will set status to error after which recover job
 		// will try to recover. Note that at configure time
 		// receiver.setOnError(Receiver.ONERROR_RECOVER) was called. Also

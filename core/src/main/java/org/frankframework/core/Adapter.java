@@ -22,10 +22,12 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
@@ -39,8 +41,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextException;
+import org.springframework.context.ApplicationEvent;
 import org.springframework.context.LifecycleProcessor;
 import org.springframework.context.SmartLifecycle;
+import org.springframework.context.event.ContextClosedEvent;
+import org.springframework.context.event.ContextStartedEvent;
+import org.springframework.context.event.ContextStoppedEvent;
 import org.springframework.context.support.GenericApplicationContext;
 import org.springframework.core.task.TaskExecutor;
 
@@ -63,17 +70,18 @@ import org.frankframework.errormessageformatters.ErrorMessageFormatter;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.lifecycle.ConfiguringLifecycleProcessor;
 import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.lifecycle.events.AdapterMessageEvent;
+import org.frankframework.lifecycle.events.MessageEventLevel;
+import org.frankframework.lifecycle.events.MessageKeepingEventListener;
 import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageContext;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.MessageKeeper;
-import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.Misc;
 import org.frankframework.util.RunState;
@@ -83,14 +91,15 @@ import org.frankframework.util.StringUtil;
 import org.frankframework.util.flow.SpringContextFlowDiagramProvider;
 
 /**
- * The Adapter is the central manager in the framework. It has knowledge of both
+ * The Adapter is the central manager in the framework. It has knowledge both of the
  * {@link Receiver}s as well as the {@link PipeLine} and statistics.
  * The Adapter is the class that is responsible for configuring, initializing and
  * accessing/activating Receivers, Pipelines, statistics etc.
- * <br/>
+ * <p>
  * An Adapter receives a specific type of messages and processes them. It has {@link Receiver Receivers}
  * that receive the messages and a {@link PipeLine} that transforms the incoming messages. Each adapter is part of a {@link Configuration}.
- * <br/>
+ * </p>
+ * <p>
  * If an adapter can receive its messages through multiple channels (e.g. RESTful HTTP requests, incoming files, etc),
  * each channel appears as a separate {@link Receiver} nested in the adapter. Each {@link Receiver} is also responsible
  * for dealing with
@@ -100,10 +109,168 @@ import org.frankframework.util.flow.SpringContextFlowDiagramProvider;
  * and that are not processed by the {@link PipeLine}. If the exit state is ERROR, the result message may
  * not be usable by the calling system. This can be fixed by adding an
  * errorMessageFormatter that formats the result message if the state is ERROR.
- * <br/><br/>
+ * </p>
+ * <p>
  * Adapters gather statistics about the messages they process.
- * <br/>
+ * </p>
+ * <p>
  * Adapters can process messages in parallel. They are thread-safe.
+ *</p>
+ * <h2>Error Handling in Adapters</h2>
+ * <p>
+ *     When an exception occurs in the execution of the Adapter pipeline, you can configure the listener to return
+ *     a formatter error message using an {@link ErrorMessageFormatter} or to throw an exception (see {@link org.frankframework.receivers.JavaListener#setOnException(RequestReplyListener.ExceptionHandlingMethod)},
+ *     {@link org.frankframework.receivers.FrankListener#setOnException(RequestReplyListener.ExceptionHandlingMethod)}, {@link org.frankframework.http.PushingListenerAdapter#setOnException(RequestReplyListener.ExceptionHandlingMethod)}).
+ *
+ * </p>
+ * <p>
+ *     Listeners that do not return a reply will roll back the transaction (if any) and after a maximum number of
+ *     retries, move the message to an error storage.
+ * </p>
+ * <p>
+ *     When one adapter calls another adapter using a {@link org.frankframework.senders.FrankSender} or
+ *     {@link org.frankframework.senders.IbisLocalSender}, and the adapter returns a formatted error message,
+ *     the SenderPipe can either use the {@code exception} forward or pick a forward based on the pipeline {@code exitCode}.
+ *     The default {@code exitCode} in case of an error is {@literal 500}, but you can set a different {@code exitCode}
+ *     in the {@literal PipeLineSession}, for instance by passing it as a {@link org.frankframework.parameters.NumberParameter} to an
+ *     {@link org.frankframework.pipes.ExceptionPipe}. The {@code exitCode} has to be a numerical value.
+ * </p>
+ *
+ * <h3>Error Handling Example 1 - Call Sub-Adapter Direct</h3>
+ *
+ * This example uses a {@link org.frankframework.senders.FrankSender} to call another adapter without the overhead of
+ * a listener. The callee sets an {@code exitCode} on error, so the caller can choose a different path.
+ *
+ * <h4>Calling Adapter:</h4>
+ * <p>
+ * <pre> {@code
+ * 	<Adapter name="ErrorHandling-Example-1">
+ * 		<Receiver>
+ * 			<!-- Listener omitted, not relevant for the example -->
+ * 		</Receiver>
+ * 		<Pipeline>
+ * 			<Exits>
+ * 				<Exit name="done" state="SUCCESS"/>
+ * 				<Exit name="error" state="ERROR"/>
+ * 			</Exits>
+ * 			<SenderPipe name="Call Subadapter To Test">
+ * 				<FrankSender scope="ADAPTER" target="Validate-Message"/>
+ * 				<Forward name="42" path="error"/>
+ * 			</SenderPipe>
+ * 			<DataSonnetPipe name="Extract Name" styleSheetName="stylesheets/buildResponse.jsonnet"/>
+ * 		</Pipeline>
+ * 	</Adapter>
+ * }</pre>
+ * </p>
+ *
+ * <h4>Sub Adapter:</h4>
+ * <p>
+ * <pre> {@code
+ *  <Adapter name="Validate-Message">
+ * 		<DataSonnetErrorMessageFormatter styleSheetName="stylesheets/BuildErrorMessage.jsonnet"/>
+ * 		<Pipeline>
+ * 			<Exits>
+ * 				<Exit name="done" state="SUCCESS"/>
+ * 				<Exit name="error" state="ERROR"/>
+ * 			</Exits>
+ *			<!-- For simplicity of the example we assume the input message is valid if it contains a single item in an array 'results' -->
+ * 			<SwitchPipe name="Check Success" jsonPathExpression='concat("result-count=", $.results.length())' notFoundForwardName="result-count-too-many"/>
+ *
+ * 			<!-- For simplicity we return the input unmodified in case of success. A realistic adapter might fetch a message remotely and return that after validations -->
+ * 			<EchoPipe name="result-count=1" getInputFromSessionKey="originalMessage">
+ * 				<Forward name="success" path="done"/>
+ * 			</EchoPipe>
+ *
+ * 			<!-- No results: use this ExceptionPipe to pass parameters to the error message formatter and set an exitCode -->
+ * 			<ExceptionPipe name="result-count=0">
+ * 				<!-- When we do not set exitCode it will default to 500 when an adapter ends with an exception -->
+ * 				<NumberParam name="exitCode" value="42"/>
+ * 				<NumberParam name="errorCode" value="-1"/>
+ * 				<Param name="errorMessage" value="No results found"/>
+ * 			</ExceptionPipe>
+ *
+ * 			<!-- Too many results: use this ExceptionPipe to pass different parameters to the error message formatter and set an exitCode -->
+ * 			<ExceptionPipe name="result-count-too-many">
+ * 				<NumberParam name="exitCode" value="42"/>
+ * 				<NumberParam name="errorCode" value="2"/>
+ * 				<Param name="errorMessage" value="Too many results found, expected only single result"/>
+ * 			</ExceptionPipe>
+ * 		</Pipeline>
+ * 	</Adapter>
+ * }</pre>
+ * </p>
+ *
+ * <h3>Error Handling Example 2 - Call Sub-Adapter via a Listener</h3>
+ *
+ * This example uses a {@link org.frankframework.senders.FrankSender} to call another adapter via a {@link org.frankframework.receivers.FrankListener}.
+ * Instead of a FrankSender / FrankListener, an {@link org.frankframework.senders.IbisLocalSender} / {@link org.frankframework.receivers.JavaListener}
+ * pair can also be used to the same effect.
+ * In this example we use the {@code exception} forward on the {@link org.frankframework.pipes.SenderPipe} to take the error-path after
+ * an error result, but we could also use the {@code exitCode} instead as in the previous example. When
+ * a sub-adapter ends with a state {@code ERROR}, and the calling {@link org.frankframework.pipes.SenderPipe} does not have a forward
+ * for the {@code exitCode} returned from the sub-adapter, but does have an {@code exception} forward, then
+ * the {@code exception} forward is chosen.
+ *
+ * <h4>Calling Adapter:</h4>
+ * <p>
+ * <pre> {@code
+ * 	<Adapter name="ErrorHandling-Example-2">
+ * 		<Receiver>
+ * 			<!-- Listener omitted, not relevant for the example -->
+ * 		</Receiver>
+ * 		<Pipeline>
+ * 			<Exits>
+ * 				<Exit name="done" state="SUCCESS"/>
+ * 				<Exit name="error" state="ERROR"/>
+ * 			</Exits>
+ * 			<SenderPipe name="Call Subadapter To Test">
+ * 				<FrankSender scope="LISTENER" target="Validate-Message"/>
+ * 				<Forward name="exception" path="error"/>
+ * 			</SenderPipe>
+ * 			<DataSonnetPipe name="Extract Name" styleSheetName="stylesheets/buildResponse.jsonnet"/>
+ * 		</Pipeline>
+ * 	</Adapter>
+ * }</pre>
+ * </p>
+ *
+ * <h4>Sub Adapter:</h4>
+ * <p>
+ * <pre> {@code
+ *  <Adapter name="Validate-Message">
+ * 		<Receiver>
+ * 			<!-- We need to set onException="format_and_return" to make sure error message is returned instead of an exception thrown -->
+ * 			<FrankListener name="Validate-Message" onException="format_and_return"/>
+ * 		</Receiver>
+ * 		<DataSonnetErrorMessageFormatter styleSheetName="stylesheets/BuildErrorMessage.jsonnet"/>
+ * 		<Pipeline>
+ * 			<Exits>
+ * 				<Exit name="done" state="SUCCESS"/>
+ * 				<Exit name="error" state="ERROR"/>
+ * 			</Exits>
+ *			<!-- For simplicity of the example we assume the input message is valid if it contains a single item in an array 'results' -->
+ * 			<SwitchPipe name="Check Success" jsonPathExpression='concat("result-count=", $.results.length())' notFoundForwardName="result-count-too-many"/>
+ *
+ * 			<!-- For simplicity we return the input unmodified in case of success. A realistic adapter might fetch a message remotely and return that after validations -->
+ * 			<EchoPipe name="result-count=1" getInputFromSessionKey="originalMessage">
+ * 				<Forward name="success" path="done"/>
+ * 			</EchoPipe>
+ *
+ * 			<!-- No results: use this ExceptionPipe to pass parameters to the error message formatter -->
+ * 			<ExceptionPipe name="result-count=0">
+ * 				<NumberParam name="errorCode" value="-1"/>
+ * 				<Param name="errorMessage" value="No results found"/>
+ * 			</ExceptionPipe>
+ *
+ * 			<!-- Too many results: use this ExceptionPipe to pass different parameters to the error message formatter -->
+ * 			<ExceptionPipe name="result-count-too-many">
+ * 				<NumberParam name="errorCode" value="2"/>
+ * 				<Param name="errorMessage" value="Too many results found, expected only single result"/>
+ * 			</ExceptionPipe>
+ * 		</Pipeline>
+ * 	</Adapter>
+ * }</pre>
+ * </p>
+ *
  *
  * @author Niels Meijer
  */
@@ -126,7 +293,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	private @Getter int messageKeeperSize = 10; // Default length of MessageKeeper
 	private Level msgLogLevel = Level.toLevel(appConstants.getProperty("msg.log.level.default", "INFO"));
 	private @Getter boolean msgLogHidden = appConstants.getBoolean("msg.log.hidden.default", true);
-	private @Setter @Getter String targetDesignDocument;
+	private @Getter String targetDesignDocument;
 
 	private @Getter Configuration configuration;
 
@@ -154,7 +321,6 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 	private final RunStateManager runState = new RunStateManager();
 	private @Getter boolean isConfigured = false;
-	private MessageKeeper messageKeeper; // Instantiated in configure()
 	private final boolean msgLogHumanReadable = appConstants.getBoolean("msg.log.humanReadable", false);
 
 	private @Getter @Setter TaskExecutor taskExecutor;
@@ -174,7 +340,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 	@Override
 	protected void initLifecycleProcessor() {
-		ConfiguringLifecycleProcessor defaultProcessor = new ConfiguringLifecycleProcessor();
+		ConfiguringLifecycleProcessor defaultProcessor = new ConfiguringLifecycleProcessor(this);
 		defaultProcessor.setBeanFactory(getBeanFactory());
 		getBeanFactory().registerSingleton(LIFECYCLE_PROCESSOR_BEAN_NAME, defaultProcessor);
 		super.initLifecycleProcessor();
@@ -182,8 +348,12 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) {
+		if (!(applicationContext instanceof Configuration config)) {
+			throw new IllegalStateException();
+		}
+
 		setParent(applicationContext);
-		setConfiguration((Configuration) applicationContext);
+		this.configuration = config;
 	}
 
 	@Override
@@ -201,6 +371,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			addBeanFactoryPostProcessor(new AopProxyBeanFactoryPostProcessor());
 		}
 
+		addApplicationListener(new MessageKeepingEventListener(messageKeeperSize));
 		refresh();
 
 		SpringContextFlowDiagramProvider bean = SpringUtils.createBean(this);
@@ -219,7 +390,10 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		postProcessor.setAutowiredAnnotationType(Autowired.class);
 		postProcessor.setBeanFactory(beanFactory);
 		beanFactory.addBeanPostProcessor(postProcessor);
-		beanFactory.addBeanPostProcessor(new ConfigurationAwareBeanPostProcessor(configuration));
+
+		if (configuration != null) {
+			beanFactory.addBeanPostProcessor(new ConfigurationAwareBeanPostProcessor(configuration));
+		}
 	}
 
 	/**
@@ -247,9 +421,9 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			throw new LifecycleException("already configured");
 		}
 
-		if (pipeline == null) {
+		if (getPipeLine() == null) {
 			String msg = "No pipeline configured for adapter [" + getName() + "]";
-			getMessageKeeper().add(msg, MessageKeeperLevel.ERROR);
+			this.publishEvent(new AdapterMessageEvent(this, msg, MessageEventLevel.ERROR));
 			throw new ConfigurationException(msg);
 		}
 
@@ -272,17 +446,6 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			numOfMessagesInError = configurationMetrics.createCounter(this, FrankMeterType.PIPELINE_IN_ERROR);
 			configurationMetrics.createGauge(this, FrankMeterType.PIPELINE_IN_PROCESS, () -> numOfMessagesInProcess);
 			statsMessageProcessingDuration = configurationMetrics.createDistributionSummary(this, FrankMeterType.PIPELINE_DURATION);
-
-			if(!pipeline.configurationSucceeded()) { // only reconfigure pipeline when it hasn't been configured yet!
-				try {
-					pipeline.configure();
-					getMessageKeeper().add("pipeline successfully configured");
-				}
-				catch (ConfigurationException e) {
-					getMessageKeeper().error("error initializing pipeline, " + e.getMessage());
-					throw e;
-				}
-			}
 
 			// Receivers must be configured for the adapter to start up, but they don't need to start
 			for (Receiver<?> receiver: receivers) {
@@ -308,8 +471,12 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	}
 
 	@Nonnull
-	String computeCombinedHideRegex() {
-		String combinedHideRegex = pipeline.getPipes().stream()
+	protected final String computeCombinedHideRegex() {
+		if (getPipeLine() == null) {
+			return "";
+		}
+
+		String combinedHideRegex = getPipeLine().getPipes().stream()
 				.map(IPipe::getHideRegex)
 				.filter(StringUtils::isNotEmpty)
 				.distinct()
@@ -327,12 +494,11 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		}
 
 		log.info("Adapter [{}] is initializing receiver [{}]", name, receiver.getName());
-		receiver.setAdapter(this);
 		try {
 			receiver.configure();
-			getMessageKeeper().info(receiver, "successfully configured");
+			this.publishEvent(new AdapterMessageEvent(this, receiver, "successfully configured"));
 		} catch (ConfigurationException e) {
-			getMessageKeeper().error(this, "error initializing " + ClassUtils.nameOf(receiver) + ": " + e.getMessage());
+			this.publishEvent(new AdapterMessageEvent(this, receiver, "unable to initialize", e));
 			throw e;
 		}
 	}
@@ -341,8 +507,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * send a warning to the log and to the messagekeeper of the adapter
 	 */
 	protected void warn(String msg) {
-		log.warn("Adapter [{}] {}", name, msg);
-		getMessageKeeper().warn(msg);
+		this.publishEvent(new AdapterMessageEvent(this, msg, MessageEventLevel.WARN));
 	}
 
 	/**
@@ -353,9 +518,22 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		if (!(t instanceof IbisException)) {
 			msg += " (" + t.getClass().getName() + ")";
 		}
-		getMessageKeeper().error(msg + ": " + t.getMessage());
+		this.publishEvent(new AdapterMessageEvent(this, msg, t));
 	}
 
+	@Override
+	public void publishEvent(ApplicationEvent event) {
+		if (event instanceof ContextStartedEvent) {
+			statsUpSince = System.currentTimeMillis(); // Update the adapter uptime.
+			publishEvent(new AdapterMessageEvent(this, "up and running"));
+		} else if (event instanceof ContextStoppedEvent) {
+			publishEvent(new AdapterMessageEvent(this, "stopped"));
+		} else if (event instanceof ContextClosedEvent) {
+			publishEvent(new AdapterMessageEvent(this, "closed"));
+		}
+
+		super.publishEvent(event);
+	}
 
 	/**
 	 * Increase the number of messages in process
@@ -431,7 +609,10 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		}
 	}
 
-	public Message formatErrorMessage(String errorMessage, Throwable t, Message originalMessage, PipeLineSession session, HasName objectInError) {
+	public @Nonnull Message formatErrorMessage(@Nullable String errorMessage, @Nullable Throwable t, @Nullable Message originalMessage, @Nonnull PipeLineSession session, @Nullable HasName objectInError) {
+		if (Message.isFormattedErrorMessage(originalMessage)) {
+			return originalMessage;
+		}
 		try {
 			if (errorMessageFormatter == null) {
 				if (getConfiguration().getErrorMessageFormatter() != null) {
@@ -443,7 +624,9 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 					}
 				}
 			}
-			return errorMessageFormatter.format(errorMessage, t, objectInError, originalMessage, session);
+			Message errorResult = errorMessageFormatter.format(errorMessage, t, objectInError, originalMessage, session);
+			errorResult.getContext().put(MessageContext.IS_ERROR_MESSAGE, true);
+			return errorResult;
 		} catch (Exception e) {
 			String msg = "got error while formatting errormessage, original errorMessage [" + errorMessage + "]";
 			msg = msg + " from [" + (objectInError == null ? "unknown-null" : objectInError.getName()) + "]";
@@ -461,16 +644,6 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			result = new Date(lastMessageDate);
 		}
 		return result;
-	}
-	/**
-	 * the MessageKeeper is for keeping the last <code>messageKeeperSize</code>
-	 * messages available, for instance for displaying it in the webcontrol
-	 * @see MessageKeeper
-	 */
-	public synchronized MessageKeeper getMessageKeeper() {
-		if (messageKeeper == null)
-			messageKeeper = new MessageKeeper(getMessageKeeperSize() < 1 ? 1 : getMessageKeeperSize());
-		return messageKeeper;
 	}
 
 	/**
@@ -522,7 +695,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		}
 	}
 
-	public Receiver<?> getReceiverByName(String receiverName) {
+	public @Nullable Receiver<?> getReceiverByName(String receiverName) {
 		for (Receiver<?> receiver: receivers) {
 			if (receiver.getName().equalsIgnoreCase(receiverName)) {
 				return receiver;
@@ -531,12 +704,12 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		return null;
 	}
 
-	public Iterable<Receiver<?>> getReceivers() {
+	public @Nonnull Iterable<Receiver<?>> getReceivers() {
 		return receivers;
 	}
 
 	@Override
-	public RunState getRunState() {
+	public @Nonnull RunState getRunState() {
 		RunState state = runState.getRunState();
 		log.trace("Adapter [{}] runstate: [{}]", name, state);
 		return state;
@@ -547,7 +720,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * Creation date: (19-02-2003 12:16:53)
 	 * @return String  Date
 	 */
-	public Date getStatsUpSinceDate() {
+	public @Nonnull Date getStatsUpSinceDate() {
 		return new Date(statsUpSince);
 	}
 
@@ -589,6 +762,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			} catch (Throwable t) {
 				log.warn("Adapter [{}] error processing message with ID [{}]", name, messageId, t);
 				result.setState(ExitState.ERROR);
+				result.setExitCode(pipeLineSession.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 500)); // If there was an exception that was not handled by the pipeline, consider it an internal server error.
 				String msg = "Illegal exception ["+t.getClass().getName()+"]";
 				HasName objectInError = null;
 				if (t instanceof ListenerException) {
@@ -654,7 +828,6 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			if (Message.isEmpty(message) && isReplaceNullMessage()) {
 				log.debug("Adapter [{}] replaces null message with messageId [{}] by empty message", name, messageId);
 				message = new Message("");
-				message.closeOnCloseOf(pipeLineSession);
 			}
 			result = pipeline.process(messageId, message, pipeLineSession);
 			return result;
@@ -713,15 +886,20 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	@SuppressWarnings("java:S3457") // Cast arguments to String before invocation so that we do not have a recursive call to logger when trace-level logging is enabled
 	public void addReceiver(Receiver<?> receiver) {
 		receivers.add(receiver);
-		if (log.isDebugEnabled()) log.debug("Adapter [{}] registered receiver [{}] with properties [{}]", name, receiver.getName(), receiver.toString());
+
+		if (log.isTraceEnabled()) {
+			log.trace("Adapter [{}] registered receiver [{}]", name, receiver.toString());
+		} else {
+			log.debug("Adapter [{}] registered receiver [{}]", this::getId, receiver::getName); // Receivers don't always have a name...
+		}
 	}
 
 	/**
-	 * Set an {@link IErrorMessageFormatter} that will be used to format an error-message when an exception occurs in this adapter.
+	 * Set an {@link ErrorMessageFormatter} that will be used to format an error-message when an exception occurs in this adapter.
 	 * If not set, then, when an exception occurs, the adapter will first check the {@link Configuration#setErrorMessageFormatter(IErrorMessageFormatter)}
 	 * to see if a configuration-wide default error message formatter is set and otherwise create a new instance of {@link ErrorMessageFormatter} as default.
 	 *
-	 * @see IErrorMessageFormatter for general information on error message formatters.
+	 * @see ErrorMessageFormatter ErrorMessageFormatter for general information on error message formatters.
 	 */
 	public void setErrorMessageFormatter(IErrorMessageFormatter errorMessageFormatter) {
 		this.errorMessageFormatter = errorMessageFormatter;
@@ -734,15 +912,13 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 */
 	public void setPipeLine(PipeLine pipeline) {
 		this.pipeline = pipeline;
+		SpringUtils.registerSingleton(this, "PipeLine", pipeline);
+
 		log.debug("Adapter [{}] registered pipeline [{}]", name, pipeline);
 	}
 
 	public PipeLine getPipeLine() {
 		return pipeline;
-	}
-
-	public void setConfiguration(Configuration configuration) {
-		this.configuration = configuration;
 	}
 
 	/**
@@ -767,66 +943,45 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 				break;
 		}
 
+		if (!isConfigured()) {
+			warn("configuration did not succeed. Starting the adapter ["+getName()+"] is not possible");
+			runState.setRunState(RunState.ERROR);
+			return;
+		}
+		if (configuration.isUnloadInProgressOrDone()) {
+			warn("configuration unload in progress or done. Starting the adapter ["+getName()+"] is not possible");
+			return;
+		}
+
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_ADAPTER_KEY, getName())) {
+			log.trace("Start Adapter thread - synchronize (lock) on Adapter runState[{}]", runState);
+			synchronized (runState) {
+				RunState currentRunState = getRunState();
+				if (currentRunState!=RunState.STOPPED) {
+					warn("currently in state [" + currentRunState + "], ignoring start() command");
+					return;
+				}
+				runState.setRunState(RunState.STARTING);
+			}
+			log.trace("Start Adapter thread - lock released on Adapter runState[{}]", runState);
+		}
+
 		Runnable runnable = new Runnable() {
 			@Override
 			public void run() {
 				try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_ADAPTER_KEY, getName())) {
-					// See also Receiver.startRunning()
-					if (!isConfigured) {
-						log.error("configuration of adapter [{}] did not succeed, therefore starting the adapter is not possible", name);
-						warn("configuration did not succeed. Starting the adapter ["+getName()+"] is not possible");
-						runState.setRunState(RunState.ERROR);
-						return;
-					}
-					if (configuration.isUnloadInProgressOrDone()) {
-						log.error("configuration of adapter [{}] unload in progress or done, therefore starting the adapter is not possible", name);
-						warn("configuration unload in progress or done. Starting the adapter ["+getName()+"] is not possible");
-						return;
-					}
-
-					log.info("starting adapter");
-					log.trace("Start Adapter thread - synchronize (lock) on Adapter runState[{}]", runState);
-
-					synchronized (runState) {
-						RunState currentRunState = getRunState();
-						if (currentRunState!=RunState.STOPPED) {
-							String msg = "currently in state [" + currentRunState + "], ignoring start() command";
-							warn(msg);
-							return;
-						}
-						runState.setRunState(RunState.STARTING);
-					}
-					log.trace("Start Adapter thread - lock released on Adapter runState[{}]", runState);
-
-					// start the pipeline
-					try {
-						log.debug("Adapter [{}] is starting pipeline", name);
-						pipeline.start();
-					} catch (LifecycleException lifecycleException) {
-						addErrorMessageToMessageKeeper("got error starting PipeLine", lifecycleException);
-						runState.setRunState(RunState.ERROR);
-						return;
-					}
-
-					// Update the adapter uptime.
-					statsUpSince = System.currentTimeMillis();
-
 					// as from version 3.0 the adapter is started,
 					// regardless of receivers are correctly started.
 					// this allows the use of test-pipeline without (running) receivers
 					runState.setRunState(RunState.STARTED);
-					getMessageKeeper().add("Adapter [" + getName() + "] up and running");
-					log.info("Adapter [{}] up and running", name);
 
 					// starting receivers
 					for (Receiver<?> receiver: receivers) {
 						receiver.start();
 					}
 
+					log.info("Adapter [{}] and receivers up and running", name);
 					log.trace("Start Adapter thread - finished and completed");
-				} catch (Throwable t) {
-					addErrorMessageToMessageKeeper("got error starting Adapter", t);
-					runState.setRunState(RunState.ERROR);
 				}
 			}
 
@@ -837,9 +992,26 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		};
 
 		// Since we are catching all exceptions in the thread, the super start will always be called,
-		// not a problem for now but something we should look into in the furture...
-		CompletableFuture.runAsync(runnable, taskExecutor) // Start all smart-lifecycles
-				.thenRun(super::start); // Then start the adapter it self
+		// not a problem for now but something we should look into in the future...
+		CompletableFuture.runAsync(super::start, taskExecutor) // Start all smart-lifecycles
+				.thenRun(runnable) // Then start the adapter it self
+				.whenComplete((e,t) -> handleException(t)); // The exception from the previous stage, if any, will propagate further.
+	}
+
+	private void handleException(Throwable t) {
+		if (t == null) {
+			return;
+		}
+		if (t instanceof ExecutionException ee) {
+			handleException(ee);
+			return;
+		} else if (t instanceof ApplicationContextException ace) {
+			handleException(ace);
+			return;
+		}
+
+		runState.setRunState(RunState.ERROR);
+		addErrorMessageToMessageKeeper(t.getMessage(), t);
 	}
 
 	@Override
@@ -866,6 +1038,19 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		Objects.requireNonNull(callback, "callback may not be null");
 
 		log.info("Stopping Adapter named [{}] with {} receivers", this::getName, receivers::size);
+
+		// See also Receiver.stopRunning()
+		switch(getRunState()) {
+			case STARTING:
+			case STOPPING:
+			case STOPPED:
+				if (log.isWarnEnabled()) log.warn("adapter [{}] currently in state [{}], ignoring stop() command", getName(), getRunState());
+				return;
+			default:
+				break;
+		}
+		runState.setRunState(RunState.STOPPING);
+
 		Runnable runnable = new Runnable() {
 			// Cannot use a closable ThreadContext as it's cleared in the Receiver STOP method.
 			@Override
@@ -873,23 +1058,13 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 				try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(LogUtil.MDC_ADAPTER_KEY, getName())) {
 					log.trace("Adapter.stopRunning - stop adapter thread for [{}] starting", () -> getName());
 
-					// See also Receiver.stopRunning()
-					switch(getRunState()) {
-						case STARTING:
-						case STOPPING:
-						case STOPPED:
-							if (log.isWarnEnabled()) log.warn("adapter [{}] currently in state [{}], ignoring stop() command", getName(), getRunState());
-							return;
-						default:
-							break;
-					}
-					runState.setRunState(RunState.STOPPING);
 					log.debug("Adapter [{}] is stopping receivers", name);
 					for (Receiver<?> receiver: receivers) {
 						// Will not stop receivers that are in state "STARTING"
 						log.debug("Adapter.stopRunning: Stopping receiver [{}] in state [{}]", receiver::getName, receiver::getRunState);
 						receiver.stop();
 					}
+
 					// IPullingListeners might still be running, see also
 					// comment in method Receiver.tellResourcesToStop()
 					for (Receiver<?> receiver: receivers) {
@@ -919,12 +1094,10 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 						warn(msg);
 					}
 					waitForNoMessagesInProcess();
-					log.debug("Adapter [{}] is stopping pipeline", name);
-					pipeline.stop();
+
 					// Set the adapter uptime to 0 as the adapter is stopped.
 					statsUpSince = 0;
 					runState.setRunState(RunState.STOPPED);
-					getMessageKeeper().add("Adapter [" + name + "] stopped");
 					log.debug("Adapter [{}] now in state STOPPED", name);
 				} catch (Throwable t) {
 					addErrorMessageToMessageKeeper("got error stopping Adapter", t);
@@ -942,6 +1115,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		};
 
 		CompletableFuture.runAsync(runnable, taskExecutor) // Stop asynchronous from other adapters
+				.handle((e, t) -> { handleException(t); return e; }) // The exception from the previous stage, if any, will NOT propagate further.
 				.thenRun(super::stop) // Stop other LifeCycle aware beans
 				.thenRun(callback); // Call the callback 'CountDownLatch' to confirm we've stopped
 	}
@@ -957,15 +1131,14 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	}
 
 	@Override
-	public String toString() {
+	public @Nonnull String toString() {
 		StringBuilder sb = new StringBuilder(super.toString());
-		sb.append(" ");
-		sb.append("[receivers=");
+		sb.append(" [receivers=");
 		for (Receiver<?> receiver: receivers) {
 			sb.append(" ").append(receiver.getName());
 		}
-		sb.append("]");
-		sb.append("[pipeLine=").append(pipeline != null ? pipeline.toString() : "none registered").append("][started=").append(getRunState()).append("]");
+		sb.append("] [pipeLine=").append(getPipeLine() != null ? getPipeLine() : "none registered");
+		sb.append("][started=").append(getRunState()).append("]");
 		return sb.toString();
 	}
 
@@ -973,7 +1146,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		if (Message.isEmpty(message)) {
 			return null;
 		}
-		if(message.size() == -1) {
+		if(message.size() == Message.MESSAGE_SIZE_UNKNOWN) {
 			return "unknown";
 		}
 
@@ -1057,7 +1230,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		this.messageKeeperSize = size;
 	}
 
-	private enum MessageLogLevel {
+	public enum MessageLogLevel {
 		/** No logging */
 		OFF(Level.OFF),
 		/** Logs information from adapter level messages */
@@ -1103,5 +1276,15 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 */
 	public void setMsgLogHidden(boolean b) {
 		msgLogHidden = b;
+	}
+
+	/**
+	 * An optional field for documentation-purposes where you can add a reference to the design-document
+	 * used for the design of this adapter.
+	 * <br/>
+	 * Setting this field has no impact on the behaviour of the Adapter.
+	 */
+	public void setTargetDesignDocument(String targetDesignDocument) {
+		this.targetDesignDocument = targetDesignDocument;
 	}
 }

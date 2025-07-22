@@ -31,10 +31,10 @@ import jakarta.annotation.Nonnull;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -47,6 +47,8 @@ import org.frankframework.documentbuilder.ArrayBuilder;
 import org.frankframework.documentbuilder.DocumentBuilderFactory;
 import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.documentbuilder.INodeBuilder;
+import org.frankframework.filesystem.smb.Samba1FileSystem;
+import org.frankframework.filesystem.smb.Samba2FileSystem;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
@@ -54,7 +56,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.EnumUtils;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 
 /**
@@ -69,8 +70,8 @@ import org.frankframework.util.StreamUtil;
  *
  * @author Gerrit van Brakel
  */
+@Log4j2
 public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
-	protected Logger log = LogUtil.getLogger(this);
 	private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
 	public static final String ACTION_CREATE="create";
@@ -365,8 +366,6 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	public Message doAction(@Nonnull Message input, ParameterValueList pvl, @Nonnull PipeLineSession session) throws FileSystemException {
 		FileSystemAction action = null;
 		try {
-			input.closeOnCloseOf(session); // don't know if the input will be used
-
 			action = getAction(pvl);
 
 			switch(action) {
@@ -389,10 +388,8 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 					final F file = getFile(input, pvl);
 					Message result = fileSystem.readFile(file, getCharset());
 					// Make a copy of a local file, otherwise the file is deleted after this method returns.
-					if (fileSystem instanceof LocalFileSystem) {
+					if (fileSystem instanceof LocalFileSystem || fileSystem instanceof Samba2FileSystem || fileSystem instanceof Samba1FileSystem) {
 						result = result.copyMessage();
-					} else {
-						result.preserve();
 					}
 					fileSystem.deleteFile(file);
 					deleteEmptyFolder(file);

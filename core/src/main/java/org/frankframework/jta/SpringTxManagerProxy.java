@@ -37,10 +37,10 @@ import org.frankframework.util.LogUtil;
  * @author  Tim van der Leeuw
  * @since   4.8
  */
-public class SpringTxManagerProxy implements IThreadConnectableTransactionManager<Object,Object>, InitializingBean {
+public class SpringTxManagerProxy implements IThreadConnectableTransactionManager, InitializingBean {
 	private static final Logger log = LogUtil.getLogger(SpringTxManagerProxy.class);
 
-	private IThreadConnectableTransactionManager<Object,Object> threadConnectableProxy;
+	private IThreadConnectableTransactionManager threadConnectableProxy;
 	private @Getter @Setter PlatformTransactionManager realTxManager;
 
 	/**
@@ -80,8 +80,7 @@ public class SpringTxManagerProxy implements IThreadConnectableTransactionManage
 		getRealTxManager().rollback(txStatus);
 	}
 
-	@SuppressWarnings("unchecked")
-	public IThreadConnectableTransactionManager<Object,Object> getThreadConnectableProxy() {
+	public IThreadConnectableTransactionManager getThreadConnectableProxy() {
 		if (threadConnectableProxy==null) {
 			PlatformTransactionManager realTxManager = getRealTxManager();
 			if (realTxManager instanceof IThreadConnectableTransactionManager manager) {

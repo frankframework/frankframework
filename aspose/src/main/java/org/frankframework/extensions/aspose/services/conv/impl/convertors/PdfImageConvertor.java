@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021-2022 WeAreFrank!
+   Copyright 2019, 2021-2022, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -84,7 +83,6 @@ public class PdfImageConvertor extends AbstractConvertor {
 		if (!MEDIA_TYPE_LOAD_FORMAT_MAPPING.containsKey(mediaType)) {
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
-		message.preserve();
 
 		File tmpImageFile = null;
 		com.aspose.imaging.Image image = null;
@@ -141,9 +139,9 @@ public class PdfImageConvertor extends AbstractConvertor {
 				page.getParagraphs().add(pdfImage);
 			}
 
-			long startTime = new Date().getTime();
+			long startTime = System.currentTimeMillis();
 			doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.Pdf);
-			long endTime = new Date().getTime();
+			long endTime = System.currentTimeMillis();
 			LOGGER.info("Conversion(save operation in convert method) takes  ::: {} ms", () -> (endTime - startTime));
 			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 

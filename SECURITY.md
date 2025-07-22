@@ -27,12 +27,13 @@ best practices and perform security testing before releasing your application.
 | Version | Supported                  | Security Fixes*          | Minimal JRE | Released         |
 | ------- | -------------------------- | ------------------------ | ----------- | ---------------- |
 | latest  | :white_check_mark:         |:white_check_mark:        | Java SE 17  |                  |
-| 9.1.x   | :white_check_mark:         |:white_check_mark:        | Java SE 17  | Apr 10, 2025     |
+| 9.2.x   | :white_check_mark:         |:white_check_mark:        | Java SE 17  | Jul 9, 2025      |
+| 9.1.x   | :x:                        |:white_check_mark:        | Java SE 17  | Apr 10, 2025     |
 | 9.0.x   | :eight_pointed_black_star: |:white_check_mark:        | Java SE 17  | Jan 06, 2025     |
-| 8.3.x   | :white_check_mark:         |:white_check_mark:        | Java SE 17  | Oct 10, 2024     |
+| 8.3.x   | :x:                        |:eight_pointed_black_star:| Java SE 17  | Oct 10, 2024     |
 | 8.2.x   | :x:                        |:x:                       | Java SE 17  | Jul 11, 2024     |
 | 8.1.x   | :x:                        |:x:                       | Java SE 17  | Apr 5, 2024      |
-| 8.0.x   | :x:                        |:eight_pointed_black_star:| Java SE 11  | Dec 23, 2023     |
+| 8.0.x   | :x:                        |:x:                       | Java SE 11  | Dec 23, 2023     |
 | 7.9.x   | :x:                        |:eight_pointed_black_star:| Java SE 8   | Dec 14, 2023     |
 | < 7.8   | :x:                        |:x:                       | Java SE 8   | Apr 5, 2023      |
 

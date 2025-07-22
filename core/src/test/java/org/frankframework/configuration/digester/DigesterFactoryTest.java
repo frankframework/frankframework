@@ -8,12 +8,21 @@ import static org.mockito.Mockito.mock;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import org.frankframework.pipes.EchoPipe;
+import org.frankframework.pipes.GetFromSessionPipe;
+import org.frankframework.pipes.JsonWellFormedCheckerPipe;
 import org.frankframework.pipes.PutInSessionPipe;
+import org.frankframework.pipes.RemoveFromSessionPipe;
+import org.frankframework.pipes.XmlWellFormedCheckerPipe;
 import org.frankframework.testutil.TestConfiguration;
 
 public class DigesterFactoryTest {
@@ -52,13 +61,29 @@ public class DigesterFactoryTest {
 		assertTrue(configuration.getConfigurationWarnings().isEmpty());
 	}
 
-	@Test
-	public void testImplicitClassName() throws ClassNotFoundException {
+	@ParameterizedTest
+	@MethodSource
+	public void testImplicitClassName(String originalClassName, Class<?> expectedClass) throws ClassNotFoundException {
+		String expectedClassName = originalClassName + "Pipe";
+		String expectedPipeName = StringUtils.substringAfterLast(expectedClassName, ".");
+
 		Map<String, String> attrs = new HashMap<>();
-		attrs.put("className", "org.frankframework.pipes.PutInSession");
-		assertInstanceOf(PutInSessionPipe.class, factory.createBean(configuration, attrs));
-		String expected = "PutInSessionPipe [org.frankframework.pipes.PutInSession] has been renamed to [org.frankframework.pipes.PutInSessionPipe]"
-				+ ". Please use the new syntax or change the className attribute.";
+		attrs.put("className", originalClassName);
+		assertInstanceOf(expectedClass, factory.createBean(configuration, attrs));
+
+		String expected = "%s [%s] has been renamed to [%s]. Please use the new syntax or change the className attribute."
+				.formatted(expectedPipeName, originalClassName, expectedClassName);
+
 		assertEquals(expected, configuration.getConfigurationWarnings().get(0));
+	}
+
+	public static Stream<Arguments> testImplicitClassName() {
+		return Stream.of(
+			Arguments.of("org.frankframework.pipes.PutInSession", PutInSessionPipe.class),
+			Arguments.of("org.frankframework.pipes.RemoveFromSession", RemoveFromSessionPipe.class),
+			Arguments.of("org.frankframework.pipes.GetFromSession", GetFromSessionPipe.class),
+			Arguments.of("org.frankframework.pipes.XmlWellFormedChecker", XmlWellFormedCheckerPipe.class),
+			Arguments.of("org.frankframework.pipes.JsonWellFormedChecker", JsonWellFormedCheckerPipe.class)
+		);
 	}
 }

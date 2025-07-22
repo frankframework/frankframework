@@ -19,6 +19,7 @@ import java.io.File;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,7 +38,7 @@ import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.ProcessState;
-import org.frankframework.lifecycle.MessageEventListener;
+import org.frankframework.lifecycle.events.MessageEventListener;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
@@ -47,11 +48,11 @@ import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.Misc;
 import org.frankframework.util.ProcessMetrics;
+import org.frankframework.util.TimeProvider;
 
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.APPLICATION)
@@ -96,9 +97,14 @@ public class ServerStatistics extends BusEndpointBase {
 		returnMap.put("processMetrics", ProcessMetrics.toMap());
 		returnMap.put("machineName" , Misc.getHostname());
 
-		ZonedDateTime zonedDateTime = ZonedDateTime.now();
+		ZonedDateTime zonedDateTime = TimeProvider.nowAsZonedDateTime();
 		returnMap.put("serverTime", zonedDateTime.toInstant().toEpochMilli());
-		returnMap.put("serverTimezone", zonedDateTime.getZone().getId());
+		if ("Z".equals(zonedDateTime.getZone().getId())) {
+			// The front-end timezone parser does not understand "Z", which is what Java sends for System UTC time
+			returnMap.put("serverTimezone", "ETC/UTC");
+		} else {
+			returnMap.put("serverTimezone", zonedDateTime.getZone().getId());
+		}
 		returnMap.put("serverTimezoneOffset", zonedDateTime.getOffset().getTotalSeconds());
 
 		try {
@@ -227,7 +233,7 @@ public class ServerStatistics extends BusEndpointBase {
 			}
 			configurationMessage.put("message", msg);
 			Instant date = messageKeeper.getMessage(t).getMessageDate();
-			configurationMessage.put("date", DateFormatUtils.format(date, DateFormatUtils.FULL_GENERIC_FORMATTER));
+			configurationMessage.put("date", Date.from(date));
 			String level = messageKeeper.getMessage(t).getMessageLevel();
 			configurationMessage.put("level", level);
 			messages.add(configurationMessage);

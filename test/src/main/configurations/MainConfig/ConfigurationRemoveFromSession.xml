@@ -13,7 +13,7 @@
 				<forward name="success" path="removeOneKey" />
 			</pipe>
 			<!-- removeOneKey -->
-			<pipe name="removeOneKey" className="org.frankframework.pipes.RemoveFromSession" sessionKey="request" preserveInput="false">
+			<pipe name="removeOneKey" className="org.frankframework.pipes.RemoveFromSessionPipe" sessionKey="request" preserveInput="false">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- putAndRemoveMultipleKeys -->
@@ -24,14 +24,14 @@
 				<forward name="success" path="removeMultipleKeys" />
 			</pipe>
 			<!-- removeMultipleKeys -->
-			<pipe name="removeMultipleKeys" className="org.frankframework.pipes.RemoveFromSession" sessionKey="request1,request2,request3" preserveInput="false">
+			<pipe name="removeMultipleKeys" className="org.frankframework.pipes.RemoveFromSessionPipe" sessionKey="request1,request2,request3" preserveInput="false">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<!-- removeFromInput -->
 			<pipe name="removeFromInput" className="org.frankframework.pipes.XsltPipe" xpathExpression="request">
 				<forward name="success" path="removeFromInput2" />
 			</pipe>
-			<pipe name="removeFromInput2" className="org.frankframework.pipes.RemoveFromSession">
+			<pipe name="removeFromInput2" className="org.frankframework.pipes.RemoveFromSessionPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>

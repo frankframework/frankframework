@@ -1,6 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { AppService, JobMessage } from 'src/app/app.service';
+import { AppService, Message } from 'src/app/app.service';
 import { PollerService } from 'src/app/services/poller.service';
 import { SchedulerService, Trigger } from './scheduler.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
@@ -29,6 +29,10 @@ type Scheduler = {
 };
 
 export type JobState = 'NONE' | 'NORMAL' | 'PAUSED' | 'COMPLETE' | 'ERROR' | 'BLOCKED';
+
+export interface JobMessage extends Message {
+  text: string;
+}
 
 export type Job = {
   name: string;
@@ -103,6 +107,7 @@ export class SchedulerComponent implements OnInit, OnDestroy {
         this.scheduler = result.scheduler;
         this.jobGroups = result.jobs;
         this.jobGroupNames = Object.keys(this.jobGroups);
+        this.sortJobMessages();
 
         this.refreshing = false;
         if (!this.initialized) {
@@ -160,5 +165,13 @@ export class SchedulerComponent implements OnInit, OnDestroy {
 
   edit(jobGroup: string, jobName: string): void {
     this.router.navigate(['scheduler', 'edit', jobGroup, jobName]);
+  }
+
+  private sortJobMessages(): void {
+    for (const jobs of Object.values(this.jobGroups)) {
+      for (const job of jobs) {
+        job.messages.sort((a, b) => b.date - a.date);
+      }
+    }
   }
 }

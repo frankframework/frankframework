@@ -55,6 +55,8 @@ import org.frankframework.jms.JmsRealm;
 import org.frankframework.jms.JmsRealmFactory;
 import org.frankframework.lifecycle.ConfigurableLifecycle;
 import org.frankframework.lifecycle.SpringContextScope;
+import org.frankframework.lifecycle.events.ConfigurationMessageEvent;
+import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.monitoring.MonitorManager;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.scheduler.AbstractJobDef;
@@ -62,7 +64,6 @@ import org.frankframework.scheduler.ScheduleManager;
 import org.frankframework.scheduler.job.IJob;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.RunState;
 import org.frankframework.util.SpringUtils;
 
@@ -280,27 +281,6 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 		super.publishEvent(event);
 	}
 
-	/**
-	 * Log a message to the MessageKeeper that corresponds to this configuration
-	 */
-	public void log(String message) {
-		log(message, (MessageKeeperLevel) null);
-	}
-
-	/**
-	 * Log a message to the MessageKeeper that corresponds to this configuration
-	 */
-	public void log(String message, MessageKeeperLevel level) {
-		this.publishEvent(new ConfigurationMessageEvent(this, message, level));
-	}
-
-	/**
-	 * Log a message to the MessageKeeper that corresponds to this configuration
-	 */
-	public void log(String message, Exception e) {
-		this.publishEvent(new ConfigurationMessageEvent(this, message, e));
-	}
-
 	public boolean isUnloadInProgressOrDone() {
 		return !isActive() || inState(RunState.STOPPING);
 	}
@@ -374,7 +354,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	 * Add adapter.
 	 */
 	public void addAdapter(Adapter adapter) {
-		log.debug("registering adapter [{}] with Configuration [{}]", adapter::toString, this::toString);
+		log.trace("registering adapter [{}] with Configuration [{}]", adapter::toString, this::toString);
 		if(adapter.getName() == null) {
 			throw new IllegalStateException("adapter has no name");
 		}
@@ -437,7 +417,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	public void setName(String name) {
 		if(StringUtils.isNotEmpty(name)) {
 			if(state == RunState.STARTING && !getName().equals(name)) {
-				publishEvent(new ConfigurationMessageEvent(this, "name ["+getName()+"] does not match XML name attribute ["+name+"]", MessageKeeperLevel.WARN));
+				publishEvent(new ConfigurationMessageEvent(this, "name ["+getName()+"] does not match XML name attribute ["+name+"]", MessageEventLevel.WARN));
 			}
 			setBeanName(name);
 		}
@@ -453,7 +433,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	public void setVersion(String version) {
 		if(StringUtils.isNotEmpty(version)) {
 			if(state == RunState.STARTING && this.version != null && !this.version.equals(version)) {
-				publishEvent(new ConfigurationMessageEvent(this, "version ["+this.version+"] does not match XML version attribute ["+version+"]", MessageKeeperLevel.WARN));
+				publishEvent(new ConfigurationMessageEvent(this, "version ["+this.version+"] does not match XML version attribute ["+version+"]", MessageEventLevel.WARN));
 			}
 
 			this.version = version;

@@ -10,6 +10,7 @@ bin
 .settings
 .apt_generated
 .factorypath
+.externalToolBuilders
 
 **/META-INF/maven
 **/META-INF/MANIFEST.MF

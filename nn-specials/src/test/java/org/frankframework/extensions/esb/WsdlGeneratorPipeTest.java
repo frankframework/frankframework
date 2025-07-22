@@ -7,12 +7,12 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Date;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import org.frankframework.testutil.TestAssertions;
+import org.frankframework.util.TimeProvider;
 
 class WsdlGeneratorPipeTest {
 
@@ -36,8 +36,8 @@ class WsdlGeneratorPipeTest {
 		String base = "/GetFirstFile/";
 		File copyFromFile = new File(this.getClass().getResource(base + "copyFrom.txt").getPath());
 		File copyFile = new File(this.getClass().getResource(base + "copyFile.txt").getPath());
-		copyFromFile.setLastModified(new Date().getTime()-(stabilityPeriod + 500)); //mark file as stable (add 500ms to the stability period because of HDD latency)
-		copyFile.setLastModified(new Date().getTime()); //update last modified to now, so it fails the stability period
+		copyFromFile.setLastModified(TimeProvider.nowAsMillis()-(stabilityPeriod + 500)); //mark file as stable (add 500ms to the stability period because of HDD latency)
+		copyFile.setLastModified(TimeProvider.nowAsMillis()); //update last modified to now, so it fails the stability period
 
 		File directory = new File(this.getClass().getResource(base).getPath());
 		File file = WsdlGeneratorPipe.getFirstFile(directory);

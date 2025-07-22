@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2016, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013-2016, 2020 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -125,12 +125,7 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		int replyTimeout_work;
 		String soapAction_work;
 
-		String result = null;
-		try {
-			input.preserve();
-		} catch (IOException e) {
-			throw new PipeRunException(this,"cannot preserve input",e);
-		}
+		String result;
 		ParameterValueList pvl;
 		try {
 			pvl = getParameterList().getValues(input, session);

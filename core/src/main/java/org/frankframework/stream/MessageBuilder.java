@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,26 +31,25 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.documentbuilder.json.JsonWriter;
-import org.frankframework.util.AppConstants;
 import org.frankframework.util.TemporaryDirectoryUtils;
 import org.frankframework.xml.XmlWriter;
 
 @Log4j2
 public class MessageBuilder {
-	private static final long MAX_IN_MEMORY_SIZE = AppConstants.getInstance().getLong(Message.MESSAGE_MAX_IN_MEMORY_PROPERTY, Message.MESSAGE_MAX_IN_MEMORY_DEFAULT);
+	public static final int MAX_BUFFER_SIZE = Math.toIntExact(Message.MESSAGE_MAX_IN_MEMORY);
 
 	private final OutputStream outputStream;
 	private Path location;
 	private @Setter MimeType mimeType;
+	private boolean binary = true;
 
 	/**
 	 * Stores the message in the {@code temp-messages} folder.
 	 * Attempts to store the result in memory and automatically overflows to disk.
 	 */
 	public MessageBuilder() throws IOException {
-		int maxBufferSize = Math.toIntExact(MAX_IN_MEMORY_SIZE);
-		Path tempdir = TemporaryDirectoryUtils.getTempDirectory(SerializableFileReference.TEMP_MESSAGE_DIRECTORY);
-		outputStream = new OverflowToDiskOutputStream(maxBufferSize, tempdir);
+		Path tempDir = TemporaryDirectoryUtils.getTempDirectory(SerializableFileReference.TEMP_MESSAGE_DIRECTORY);
+		outputStream = new OverflowToDiskOutputStream(MAX_BUFFER_SIZE, tempDir);
 	}
 
 	/**
@@ -69,6 +68,7 @@ public class MessageBuilder {
 	}
 
 	public Writer asWriter() {
+		binary = false;
 		return new OutputStreamWriter(outputStream, StandardCharsets.UTF_8);
 	}
 
@@ -100,7 +100,7 @@ public class MessageBuilder {
 	public Message build() {
 		final Message result;
 		if(outputStream instanceof OverflowToDiskOutputStream odo) {
-			result = odo.toMessage();
+			result = odo.toMessage(binary);
 		} else {
 			result = new PathMessage(location);
 		}

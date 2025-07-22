@@ -20,6 +20,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
+import org.apache.logging.log4j.CloseableThreadContext;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.Lifecycle;
 import org.springframework.context.support.DefaultLifecycleProcessor;
 
@@ -27,15 +32,30 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationDigester;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.Adapter;
+import org.frankframework.lifecycle.events.AdapterMessageEvent;
+import org.frankframework.util.ClassUtils;
+import org.frankframework.util.Misc;
+import org.frankframework.util.StringUtil;
 
 /**
  * This class is a custom implementation of the Spring {@link DefaultLifecycleProcessor} that adds support for
  * {@link ConfigurableLifecycle} beans. It allows for the configuration of lifecycle beans before they are started.
+ * 
+ * Additionally it adds logging capabilities to track the context that's being lifecycled.
  * <p>
  * See {@link ConfigurableApplicationContext} for more information.
  */
 @Log4j2
 public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor implements ConfigurableLifecycle {
+
+	private final String className;
+	private ApplicationContext applicationContext;
+
+	public ConfiguringLifecycleProcessor(ApplicationContext context) {
+		applicationContext = context;
+		className = ClassUtils.classNameOf(context).toLowerCase();
+	}
 
 	/**
 	 * The {@link ConfigurationDigester} may add new Lifecycle beans.
@@ -43,7 +63,67 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 	 */
 	@Override
 	public void configure() throws ConfigurationException {
-		log.trace("configuring all LifeCycle beans");
+		long startTime = System.currentTimeMillis();
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(className, applicationContext.getId())) {
+			if (log.isDebugEnabled()) log.debug("configuring all ConfigurableLifecycle beans: {}", this::getConfigurableLifecycleBeanNames);
+			else log.info("configuring {}", () -> StringUtil.ucFirst(className));
+
+			doConfigure();
+			log.info("configured {} in {}", () -> StringUtil.ucFirst(className), () -> Misc.getDurationInMs(startTime));
+		}
+	}
+
+	// This triggers an internal startBeans method, and does not call #start().
+	// NOTE: the name/id has not been set yet (as this point), so it uses the hashcode instead. At the moment this is useful for the partent's context.
+	@Override
+	public void onRefresh() {
+		long startTime = System.currentTimeMillis();
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(className, applicationContext.getId())) {
+			if (log.isDebugEnabled()) log.debug("refresh (start) all 'autostart' LifeCycle beans: {}", this::getConfigurableLifecycleBeanNames);
+			else log.info("refreshing {}", () -> StringUtil.ucFirst(className));
+
+			super.onRefresh();
+			log.info("refreshed {} in {}", () -> StringUtil.ucFirst(className), () -> Misc.getDurationInMs(startTime));
+		}
+	}
+
+	@Override
+	public void start() {
+		long startTime = System.currentTimeMillis();
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(className, applicationContext.getId())) {
+			if (log.isDebugEnabled()) log.debug("starting all LifeCycle beans: {}", this::getConfigurableLifecycleBeanNames);
+			else log.info("starting {}", () -> StringUtil.ucFirst(className));
+
+			super.start();
+			log.info("started {} in {}", () -> StringUtil.ucFirst(className), () -> Misc.getDurationInMs(startTime));
+		}
+	}
+
+	@Override
+	public void stop() {
+		long startTime = System.currentTimeMillis();
+		try (final CloseableThreadContext.Instance ctc = CloseableThreadContext.put(className, applicationContext.getId())) {
+			if (log.isDebugEnabled()) log.debug("stopping all LifeCycle beans: {}", this::getConfigurableLifecycleBeanNames);
+			else log.info("stopping {}", () -> StringUtil.ucFirst(className));
+
+			super.stop();
+			log.info("stopped {} in {}", () -> StringUtil.ucFirst(className), () -> Misc.getDurationInMs(startTime));
+		}
+	}
+
+	/**
+	 * Get a list of all bean names that implement ConfigurableLifecycle.
+	 */
+	private List<String> getConfigurableLifecycleBeanNames() {
+		return getLifecycleBeans()
+				.values()
+				.stream()
+				.filter(ConfigurableLifecycle.class::isInstance)
+				.map(ClassUtils::nameOf)
+				.toList();
+	}
+
+	private void doConfigure() throws ConfigurationException {
 		Map<String, Lifecycle> lifecycleBeans = getLifecycleBeans();
 		Map<Integer, LifecycleGroup> phases = new TreeMap<>();
 
@@ -64,19 +144,6 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 				throw e;
 			}
 		}
-	}
-
-	// This triggers an internal startBeans method, and does not call #start().
-	@Override
-	public void onRefresh() {
-		log.trace("refresh, starting all LifeCycle beans");
-		super.onRefresh();
-	}
-
-	@Override
-	public void start() {
-		log.trace("starting all LifeCycle beans");
-		super.start();
 	}
 
 	/**
@@ -101,10 +168,48 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 				return;
 			}
 			log.debug("configuring beans in phase " + this.phase);
+			ConfigurationException exceptionDuringPhase = null;
+
 			for (ConfigurableLifecycle member : this.members) {
+				if (member.isConfigured()) {
+					log.debug("already configured [{}]", member);
+					return;
+				}
 				log.trace("configuring [{}]", member);
-				member.configure();
+
+				try {
+					doConfigure(member);
+				} catch (ConfigurationException e) {
+					exceptionDuringPhase = addException(exceptionDuringPhase, e);
+				}
 			}
+			if (exceptionDuringPhase != null) {
+				throw exceptionDuringPhase;
+			}
+		}
+
+		private void doConfigure(ConfigurableLifecycle member) throws ConfigurationException {
+			try {
+				member.configure();
+
+				if (applicationContext instanceof Adapter adapter) adapter.publishEvent(new AdapterMessageEvent(adapter, member, "successfully configured"));
+			}
+			catch (ConfigurationException e) {
+				if (applicationContext instanceof Adapter adapter) adapter.publishEvent(new AdapterMessageEvent(adapter, member, "unable to initialize", e));
+				throw e;
+			}
+
+			log.debug("successfully configured bean [{}]", () -> ClassUtils.nameOf(member));
+		}
+
+		@Nonnull
+		private static ConfigurationException addException(@Nullable final ConfigurationException originalEx, @Nonnull final ConfigurationException newEx) {
+			if (originalEx == null) {
+				return newEx;
+			}
+
+			originalEx.addSuppressed(newEx);
+			return originalEx;
 		}
 	}
 

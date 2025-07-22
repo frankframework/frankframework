@@ -2410,7 +2410,20 @@
         <xs:documentation>Name of the listener as known to the adapter</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="applicationFaultsAsExceptions" type="frankBoolean" />
+    <xs:attribute name="onException">
+      <xs:annotation>
+        <xs:documentation>When an exception happens in the execution of the pipeline, with &lt;code&gt;RETHROW&lt;/code&gt; the
+ exception is thrown to the caller. With &lt;code&gt;FORMAT_AND_RETURN&lt;/code&gt; the exception is processed
+ by the Adapter#setErrorMessageFormatter(IErrorMessageFormatter) and returned as result-message
+ of the Adapter.
+
+ &lt;br/&gt;
+ The default is currently &lt;code&gt;RETHROW&lt;/code&gt; for backwards compatibility but will become &lt;code&gt;FORMAT_AND_RETURN&lt;/code&gt; in a future version. Default: RETHROW</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="ExceptionHandlingMethodAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
@@ -2769,8 +2782,8 @@
     </xs:attribute>
     <xs:attribute name="pollGuardInterval" type="frankInt">
       <xs:annotation>
-        <xs:documentation>Interval &lt;i&gt;in milliseconds&lt;/i&gt; for the poll guard to check whether a successful poll was done by the receive
- (https://docs.oracle.com/javaee/7/api/javax/jms/messageconsumer.html#receive-long-) since last check. If polling has stopped this will be logged
+        <xs:documentation>Interval &lt;i&gt;in milliseconds&lt;/i&gt; for the poll guard to check whether a successful poll was done by the
+ (&lt;a href="https://docs.oracle.com/javaee/7/api/javax/jms/messageconsumer.html#receive-long-"&gt;JMS Receive call&lt;/a&gt;) since last check. If polling has stopped this will be logged
  and the listener will be stopped and started in an attempt to workaround problems with polling.
  Polling might stop due to bugs in the JMS driver/implementation which should be fixed by the supplier. As the poll time includes reading
  and processing of the message no successful poll might be registered since the last check when message processing takes a long time, hence
@@ -2986,6 +2999,20 @@
  is not configured, the name will default to the name of the org.frankframework.core.Adapter.
  The name of the &lt;code&gt;FrankListener&lt;/code&gt; must be unique across the configuration.</xs:documentation>
       </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="onException">
+      <xs:annotation>
+        <xs:documentation>When an exception happens in the execution of the pipeline, with &lt;code&gt;RETHROW&lt;/code&gt; the
+ exception is thrown to the caller. With &lt;code&gt;FORMAT_AND_RETURN&lt;/code&gt; the exception is processed
+ by the Adapter#setErrorMessageFormatter(IErrorMessageFormatter) and returned as result-message
+ of the Adapter.
+
+ &lt;br/&gt;
+ The default is currently &lt;code&gt;RETHROW&lt;/code&gt; for backwards compatibility but will become &lt;code&gt;FORMAT_AND_RETURN&lt;/code&gt; in a future version. Default: RETHROW</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="ExceptionHandlingMethodAttributeValuesType variableRef" />
+      </xs:simpleType>
     </xs:attribute>
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -3288,16 +3315,24 @@
  If not set (not even to an empty value), all session keys can be returned. Default: all session keys can be returned</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="throwException" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Should the JavaListener throw a ListenerException when it occurs or return an error message.
- Please consider using an ErrorMessageFormatter instead of disabling Exception from being thrown. Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="httpWsdl" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the WSDL of the service provided by this listener will available for download Default: false</xs:documentation>
       </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="onException">
+      <xs:annotation>
+        <xs:documentation>When an exception happens in the execution of the pipeline, with &lt;code&gt;RETHROW&lt;/code&gt; the
+ exception is thrown to the caller. With &lt;code&gt;FORMAT_AND_RETURN&lt;/code&gt; the exception is processed
+ by the Adapter#setErrorMessageFormatter(IErrorMessageFormatter) and returned as result-message
+ of the Adapter.
+
+ &lt;br/&gt;
+ The default is currently &lt;code&gt;RETHROW&lt;/code&gt; for backwards compatibility but will become &lt;code&gt;FORMAT_AND_RETURN&lt;/code&gt; in a future version. Default: RETHROW</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="ExceptionHandlingMethodAttributeValuesType variableRef" />
+      </xs:simpleType>
     </xs:attribute>
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
@@ -4696,7 +4731,7 @@
     <xs:choice>
       <xs:element name="DataSonnetErrorMessageFormatter">
         <xs:annotation>
-          <xs:documentation>Applies an DataSonnet &lt;code&gt;.jsonnet&lt;/code&gt; JSON transformation file to the standard JSON error message generated by the ErrorMessageFormatter.
+          <xs:documentation>Applies a DataSonnet &lt;code&gt;.jsonnet&lt;/code&gt; JSON transformation file to the standard JSON error message generated by the ErrorMessageFormatter.
 
  &lt;p&gt;
      If the transformation does not succeed, this 'standard' error message is returned in JSON format and an exception is logged.
@@ -4732,7 +4767,7 @@
              originator=&amp;quot;NN IOS AdapterFramework(set from 'application.name' and 'application.version')&amp;quot;
              message=&amp;quot;message describing the error that occurred&amp;quot;&amp;gt;
     &amp;lt;location class=&amp;quot;org.frankframework.pipes.SwitchPipe&amp;quot; name=&amp;quot;ServiceSwitch&amp;quot;/&amp;gt;
-    &amp;lt;detailsException and stacktrace&amp;lt;/details&amp;gt;
+    &amp;lt;details&amp;gt;Exception and stacktrace&amp;lt;/details&amp;gt;
     &amp;lt;params&amp;gt;
       &amp;lt;param name=&amp;quot;sampleParam&amp;gt;paramValue&amp;lt;/param&amp;gt;
     &amp;lt;/params&amp;gt;
@@ -5653,7 +5688,7 @@
   <xs:complexType name="XmlWellFormedCheckerType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="XmlWellFormedCheckerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.XmlWellFormedChecker" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.XmlWellFormedCheckerPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="XmlWellFormedCheckerDeclaredAttributeGroup">
     <xs:attribute name="root" type="xs:string">
@@ -15420,7 +15455,7 @@
   <xs:complexType name="GetFromSessionType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="GetFromSessionCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.GetFromSession" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.GetFromSessionPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="GetFromSessionDeclaredAttributeGroup">
     <xs:attribute name="sessionKey" type="xs:string">
@@ -15709,7 +15744,7 @@
   <xs:complexType name="JsonWellFormedCheckerType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.JsonWellFormedChecker" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.JsonWellFormedCheckerPipe" use="prohibited" />
   </xs:complexType>
   <xs:complexType name="JsonXsltPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
@@ -16574,7 +16609,7 @@
   <xs:complexType name="RekenBoxCallerType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="RekenBoxCallerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.rekenbox.RekenBoxCaller" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.rekenbox.RekenBoxCallerPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="RekenBoxCallerDeclaredAttributeGroup">
     <xs:attribute name="rekenBoxName" type="xs:string">
@@ -16682,7 +16717,7 @@
   <xs:complexType name="RemoveFromSessionType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="RemoveFromSessionCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.RemoveFromSession" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.RemoveFromSessionPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="RemoveFromSessionDeclaredAttributeGroup">
     <xs:attribute name="sessionKey" type="xs:string">
@@ -16834,7 +16869,7 @@
   <xs:complexType name="SapLUWManagerType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="SapLUWManagerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.sap.jco3.SapLUWManager" use="prohibited" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.sap.jco3.SapLUWManagerPipe" use="prohibited" />
   </xs:complexType>
   <xs:attributeGroup name="SapLUWManagerDeclaredAttributeGroup">
     <xs:attribute name="sapSystemName" type="xs:string">
@@ -19394,6 +19429,12 @@
           <xs:documentation>Yields a MTOM multipart/related form entity</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="ExceptionHandlingMethodAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="RETHROW" />
+      <xs:enumeration value="FORMAT_AND_RETURN" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="MessageTypeAttributeValuesType">

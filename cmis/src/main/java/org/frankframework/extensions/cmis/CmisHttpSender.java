@@ -144,6 +144,7 @@ public abstract class CmisHttpSender extends AbstractHttpSender {
 		return method;
 	}
 
+	@Override
 	protected boolean validateResponseCode(int statusCode) {
 		return true; //Always success
 	}

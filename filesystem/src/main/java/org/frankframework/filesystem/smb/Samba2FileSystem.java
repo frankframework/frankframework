@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2024 WeAreFrank!
+   Copyright 2019-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -66,10 +66,11 @@ import com.hierynomus.smbj.share.DiskShare;
 import com.hierynomus.smbj.share.File;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.filesystem.FileAlreadyExistsException;
 import org.frankframework.filesystem.AbstractFileSystem;
+import org.frankframework.filesystem.FileAlreadyExistsException;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
 import org.frankframework.filesystem.FolderAlreadyExistsException;
@@ -94,6 +95,7 @@ import org.frankframework.util.CredentialFactory;
  * @author Niels Meijer
  *
  */
+@Log4j2
 public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements IWritableFileSystem<SmbFileRef> {
 	private final @Getter String domain = "SMB";
 
@@ -281,7 +283,7 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 	}
 
 	@Override
-	public Message readFile(SmbFileRef filename, String charset) throws FileSystemException {
+	public Message readFile(SmbFileRef filename, String charset) throws FileSystemException, IOException {
 		File file = getFile(filename, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN);
 		MessageContext context = FileSystemUtils.getContext(this, filename, charset);
 		return new Message(wrapInputStream(file), context);
