@@ -74,7 +74,6 @@ public class MonitorDestination extends AbstractMonitorDestination {
 			if(!Message.isNull(message)) {
 				Message newMessage = message.copyMessage();
 				session.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, newMessage);
-				session.scheduleCloseOnSessionExit(newMessage);
 			}
 			getSender().sendMessageOrThrow(new Message(makeXml(monitorName, eventType, severity, eventCode, event)), session); // close() disables unit testing Message result
 		} catch (Exception e) {

@@ -121,7 +121,6 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 
 			// Transform result string to SOAP message
 			log.debug("transforming process result [{}] to SOAP message", response);
-			response.unscheduleFromCloseOnExitOf(pipelineSession); // Make sure we can read the pipe result.
 			String soapProtocol = pipelineSession.get(SOAP_PROTOCOL_KEY, SOAPConstants.SOAP_1_1_PROTOCOL);
 			SOAPMessage soapMessage = convertResponseToSoapMessage(response, soapProtocol);
 
@@ -150,7 +149,6 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 
 						if (!partObject.isNull()) {
 							String mimeType = partElement.getAttribute("mimeType"); // Optional, auto-detected if not set
-							partObject.unscheduleFromCloseOnExitOf(pipelineSession); // Closed by the SourceClosingDataHandler
 							MessageDataSource ds = new MessageDataSource(partObject, mimeType);
 							SourceClosingDataHandler dataHander = new SourceClosingDataHandler(ds);
 							AttachmentPart attachmentPart = soapMessage.createAttachmentPart(dataHander);

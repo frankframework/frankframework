@@ -229,7 +229,6 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		Message inputMessage = MessageTestUtils.getNonRepeatableMessage(MessageTestUtils.MessageType.CHARACTER_UTF8);
 
 		// Act
-		inputMessage.closeOnCloseOf(session);
 		String result = sender.sendMessageOrThrow(inputMessage, session).asString();
 		session.close();
 

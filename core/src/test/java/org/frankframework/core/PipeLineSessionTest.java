@@ -388,7 +388,7 @@ public class PipeLineSessionTest {
 					}
 
 					assertEquals(1, sub.getCloseables().size()); // <<< Keeps growing without the change!
-					verify(streamMessage, times(1)).close();
+					verify(streamMessage, times(0)).close();
 					assertEquals(j, sub.getInteger("d")); // Only 1 `d`, with the correct value.
 				}
 
@@ -428,8 +428,6 @@ public class PipeLineSessionTest {
 		from.put("__e", closeable2);
 		from.put("f", messageOfCloseable);
 
-		from.scheduleCloseOnSessionExit(message);
-
 		// Act
 		from.mergeToParentSession(keysToCopy, to);
 
@@ -439,7 +437,7 @@ public class PipeLineSessionTest {
 		assertEquals(from,to);
 
 		assertFalse(to.getCloseables().contains(message));
-		assertTrue(to.getCloseables().contains(messageOfCloseable));
+		assertFalse(to.getCloseables().contains(messageOfCloseable));
 		assertTrue(to.getCloseables().contains(closeable1));
 		assertFalse(to.getCloseables().contains(closeable2));
 		assertFalse(((Message) to.get("c")).isNull());
@@ -451,8 +449,11 @@ public class PipeLineSessionTest {
 
 		// Assert
 		assertFalse(((Message) to.get("c")).isNull()); // String message are no longer closed
+		assertFalse(((Message) to.get("c")).isClosed()); // String message are no longer closed
 		assertFalse(((Message) to.get("__e")).isNull());
-		assertTrue(((Message) to.get("f")).isNull());
+		assertFalse(((Message) to.get("__e")).isClosed());
+		assertFalse(((Message) to.get("f")).isNull());
+		assertFalse(((Message) to.get("f")).isClosed());
 	}
 
 	@Test
@@ -478,8 +479,6 @@ public class PipeLineSessionTest {
 		from.put("e", message2);
 		to.put("d", message2);
 
-		from.scheduleCloseOnSessionExit(message1);
-
 		// Act
 		from.mergeToParentSession(keys, to);
 
@@ -494,8 +493,7 @@ public class PipeLineSessionTest {
 		assertEquals(15, to.get("a"));
 		assertNull(to.get("c"));
 
-		assertTrue(message1.isClosed());
-		assertTrue(message1.isNull());
+		assertFalse(message1.isClosed());
 		assertFalse(message2.isClosed());
 		assertEquals("m2", message2.asString());
 	}

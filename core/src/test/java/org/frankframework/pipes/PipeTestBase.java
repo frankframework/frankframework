@@ -88,18 +88,14 @@ public abstract class PipeTestBase<P extends IPipe> extends ConfiguredTestBase {
 			// Do not close session when input message did not have a stream, due to some tests depending on
 			// an open session after running the pipe.
 			try (session) {
-				input.unscheduleFromCloseOnExitOf(session);
 				Message wrappedInput;
 				try {
 					wrappedInput = new Message(new ThrowingAfterCloseInputStream(input.asInputStream()));
 				} catch (IOException e) {
 					throw new PipeRunException(pipe, "Error getting inputStream of input message", e);
 				}
-				wrappedInput.closeOnCloseOf(session);
 				session.putIfAbsent(PipeLineSession.ORIGINAL_MESSAGE_KEY, wrappedInput);
-				PipeRunResult result = pipe.doPipe(wrappedInput, session);
-				session.unscheduleCloseOnSessionExit(result.getResult());
-				return result;
+				return pipe.doPipe(wrappedInput, session);
 			}
 		}
 		session.computeIfAbsent(PipeLineSession.ORIGINAL_MESSAGE_KEY, k -> input);

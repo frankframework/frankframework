@@ -401,7 +401,6 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 					throw new SenderException("Cannot read content stream", e);
 				}
 
-				content.closeOnCloseOf(session);
 				session.put(getFileSessionKey(), content);
 			}
 
@@ -421,7 +420,6 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 		} catch (IOException e) {
 			throw new SenderException("Cannot read content stream", e);
 		}
-		content.closeOnCloseOf(session);
 
 		if (StringUtils.isNotEmpty(getFileSessionKey())) {
 			session.put(getFileSessionKey(), content);

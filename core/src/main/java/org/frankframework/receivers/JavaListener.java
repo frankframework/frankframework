@@ -169,9 +169,7 @@ public class JavaListener<M> implements RequestReplyListener, IPushingListener<M
 	@Override
 	public Message processRequest(Message message, @Nonnull PipeLineSession session) throws ListenerException {
 		MessageWrapper<M> messageWrapper = new MessageWrapper<>(message, session.getMessageId(), session.getCorrelationId());
-		Message response = processRequest(messageWrapper, session);
-		response.closeOnCloseOf(session);
-		return  response;
+		return processRequest(messageWrapper, session);
 	}
 
 	private Message processRequest(@Nonnull MessageWrapper<M> messageWrapper, @Nonnull PipeLineSession parentSession) throws ListenerException {

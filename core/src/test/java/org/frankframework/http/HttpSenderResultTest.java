@@ -167,7 +167,6 @@ class HttpSenderResultTest extends Mockito {
 
 			// Use InputStream 'content' as result.
 			Message result = httpSender.sendMessageOrThrow(new Message("{\"temperature\": 0}"), session);
-			result.closeOnCloseOf(session);
 			assertTrue(result.isNull());
 		}
 

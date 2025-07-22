@@ -83,7 +83,6 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 			message.close(); // Cleanup
 			log.debug("replacing empty input with fixed value [{}]", pipe::getEmptyInputReplacement);
 			message = new Message(pipe.getEmptyInputReplacement());
-			message.closeOnCloseOf(pipeLineSession); // Technically not required but prevents the CleanerProvider from complaining.
 		}
 
 		// Do the actual pipe processing.
@@ -132,7 +131,6 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 			pipeLineSession.put(pipe.getStoreResultInSessionKey(), result);
 		}
 		if (pipe.isPreserveInput()) {
-			pipeRunResult.getResult().closeOnCloseOf(pipeLineSession);
 			pipeRunResult.setResult(originalMessage);
 		}
 
@@ -148,15 +146,12 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 		// The order of these two methods has been changed to make it backwards compatible.
 		if (StringUtils.isNotEmpty(pipe.getGetInputFromFixedValue())) {
 			log.debug("replacing input with fixed value [{}]", pipe::getGetInputFromFixedValue);
-			if (!Message.isNull(message)) message.closeOnCloseOf(pipeLineSession);
 			Message newMessage = new Message(pipe.getGetInputFromFixedValue());
-			newMessage.closeOnCloseOf(pipeLineSession); // Technically not required but prevents the CleanerProvider from complaining.
 			return newMessage;
 		}
 
 		if (StringUtils.isNotEmpty(pipe.getGetInputFromSessionKey())) {
 			log.debug("replacing input with contents of sessionKey [{}]", pipe::getGetInputFromSessionKey);
-			if (!Message.isNull(message)) message.closeOnCloseOf(pipeLineSession);
 			if (!pipeLineSession.containsKey(pipe.getGetInputFromSessionKey()) && StringUtils.isEmpty(pipe.getEmptyInputReplacement())) {
 				boolean throwOnMissingSessionKey;
 				if (pipe instanceof FixedForwardPipe ffp) {
@@ -186,8 +181,6 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 		InputSource inputSource = getInputSourceFromResult(result, pipe);
 
 		try {
-			result.closeOnCloseOf(pipeLineSession); // Directly closing the result fails, because the message can also exist and used in the session
-
 			MessageBuilder messageBuilder = new MessageBuilder();
 
 			CompactSaxHandler handler = new CompactSaxHandler(messageBuilder.asXmlWriter());
@@ -203,7 +196,6 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 
 			// restore MessageContext#CONTEXT_PREVIOUS_PIPE
 			compactedResult.getContext().put(MessageContext.CONTEXT_PREVIOUS_PIPE, pipe.getName());
-			compactedResult.closeOnCloseOf(pipeLineSession);
 			pipeRunResult.setResult(compactedResult);
 		} catch (IOException | SAXException e) {
 			log.warn("could not compact received message", e);
@@ -217,9 +209,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 			return;
 		}
 
-		result.closeOnCloseOf(pipeLineSession);
 		InputSource inputSource = getInputSourceFromResult(result, pipe);
-
 		try {
 			MessageBuilder messageBuilder = new MessageBuilder();
 
@@ -233,7 +223,6 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 
 			// restore MessageContext#CONTEXT_PREVIOUS_PIPE
 			restoredResult.getContext().put(MessageContext.CONTEXT_PREVIOUS_PIPE, pipe.getName());
-			restoredResult.closeOnCloseOf(pipeLineSession);
 			pipeRunResult.setResult(restoredResult);
 		} catch (SAXException | IOException e) {
 			throw new PipeRunException(pipe, "could not restore moved elements", e);
