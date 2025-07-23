@@ -123,11 +123,11 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 	@Override
 	public PipeRunResult doPipeWithTimeoutGuarded(Message input, PipeLineSession session) throws PipeRunException {
 		String result;
-		String url_work;
-		String authAlias_work;
-		String userName_work;
-		String password_work;
-		String queueName_work = null;
+		String urlWork;
+		String authAliasWork;
+		String userNameWork;
+		String passwordWork;
+		String queueNameWork = null;
 
 		ParameterValueList pvl;
 		try {
@@ -136,30 +136,28 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 			throw new PipeRunException(this, "exception on extracting parameters", e);
 		}
 
-		url_work = getParameterValue(pvl, "url");
-		if (url_work == null) {
-			url_work = getUrl();
+		urlWork = getParameterValue(pvl, "url");
+		if (urlWork == null) {
+			urlWork = getUrl();
 		}
-		authAlias_work = getParameterValue(pvl, "authAlias");
-		if (authAlias_work == null) {
-			authAlias_work = getAuthAlias();
+		authAliasWork = getParameterValue(pvl, "authAlias");
+		if (authAliasWork == null) {
+			authAliasWork = getAuthAlias();
 		}
-		userName_work = pvl.contains("username") ? getParameterValue(pvl, "username") : getParameterValue(pvl, "userName");
-		if (userName_work == null) {
-			userName_work = getUsername();
+		userNameWork = pvl.contains("username") ? getParameterValue(pvl, "username") : getParameterValue(pvl, "userName");
+		if (userNameWork == null) {
+			userNameWork = getUsername();
 		}
-		password_work = getParameterValue(pvl, "password");
-		if (password_work == null) {
-			password_work = getPassword();
+		passwordWork = getParameterValue(pvl, "password");
+		if (passwordWork == null) {
+			passwordWork = getPassword();
 		}
 
-		CredentialFactory cf = new CredentialFactory(authAlias_work, userName_work, password_work);
+		CredentialFactory cf = new CredentialFactory(authAliasWork, userNameWork, passwordWork);
 
-		Connection connection = null;
-		Session jSession;
 		TibjmsAdmin admin = null;
 		try {
-			admin = TibcoUtils.getActiveServerAdmin(url_work, cf, emsProperties);
+			admin = TibcoUtils.getActiveServerAdmin(urlWork, cf, emsProperties);
 			if (admin == null) {
 				throw new PipeRunException(this, "could not find an active server");
 			}
@@ -170,51 +168,39 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 				ldapSender = retrieveLdapSender(ldapUrl, cf);
 			}
 
-			queueName_work = getParameterValue(pvl, "queueName");
-			if (StringUtils.isNotEmpty(queueName_work)) {
-				String countOnly_work = getParameterValue(pvl, "countOnly");
-				boolean countOnly = "true".equalsIgnoreCase(countOnly_work);
+			queueNameWork = getParameterValue(pvl, "queueName");
+			if (StringUtils.isNotEmpty(queueNameWork)) {
+				String countOnlyStr = getParameterValue(pvl, "countOnly");
+				boolean countOnly = "true".equalsIgnoreCase(countOnlyStr);
 				if (countOnly) {
-					return new PipeRunResult(getSuccessForward(), getQueueMessageCountOnly(admin, queueName_work));
+					return new PipeRunResult(getSuccessForward(), getQueueMessageCountOnly(admin, queueNameWork));
 				}
 			}
 
-			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(url_work, null, emsProperties);
-			connection = factory.createConnection(cf.getUsername(), cf.getPassword());
-			jSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(urlWork, null, emsProperties);
+			try (Connection connection = factory.createConnection(cf.getUsername(), cf.getPassword());
+				 Session jSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE)) {
 
-			if (StringUtils.isNotEmpty(queueName_work)) {
-				String queueItem_work = getParameterValue(pvl, "queueItem");
-				int qi;
-				if (StringUtils.isNumeric(queueItem_work)) {
-					qi = Integer.parseInt(queueItem_work);
+				if (StringUtils.isNotEmpty(queueNameWork)) {
+					String queueItemStr = getParameterValue(pvl, "queueItem");
+					int qi;
+					if (StringUtils.isNumeric(queueItemStr)) {
+						qi = Integer.parseInt(queueItemStr);
+					} else {
+						qi = 1;
+					}
+					result = getQueueMessage(jSession, admin, queueNameWork, qi, ldapSender);
 				} else {
-					qi = 1;
+					String showAgeStr = getParameterValue(pvl, "showAge");
+					boolean showAge = "true".equalsIgnoreCase(showAgeStr);
+					result = getQueuesInfo(jSession, admin, showAge, ldapSender);
 				}
-				result = getQueueMessage(jSession, admin, queueName_work, qi, ldapSender);
-			} else {
-				String showAge_work = getParameterValue(pvl, "showAge");
-				boolean showAge = "true".equalsIgnoreCase(showAge_work);
-				result = getQueuesInfo(jSession, admin, showAge, ldapSender);
 			}
 		} catch (Exception e) {
-			String msg = "exception on showing Tibco queues, url [" + url_work + "]" + (StringUtils.isNotEmpty(queueName_work) ? " queue [" + queueName_work + "]" : "");
+			String msg = "exception on showing Tibco queues, url [" + urlWork + "]" + (StringUtils.isNotEmpty(queueNameWork) ? " queue [" + queueNameWork + "]" : "");
 			throw new PipeRunException(this, msg, e);
 		} finally {
-			if (admin != null) {
-				try {
-					admin.close();
-				} catch (TibjmsAdminException e) {
-					log.warn("exception on closing Tibjms Admin", e);
-				}
-			}
-			if (connection != null) {
-				try {
-					connection.close();
-				} catch (JMSException e) {
-					log.warn("exception on closing connection", e);
-				}
-			}
+			TibcoUtils.closeAdminClient(admin);
 		}
 		return new PipeRunResult(getSuccessForward(), result);
 	}
@@ -579,8 +565,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 	private Map<String, List<String>> getConnectedConsumersMap(TibjmsAdmin admin) throws TibjmsAdminException {
 		Map<Long, String> connectionMap = new HashMap<>();
 		ConnectionInfo[] connectionInfos = admin.getConnections();
-		for (int i = 0; i < connectionInfos.length; i++) {
-			ConnectionInfo connectionInfo = connectionInfos[i];
+		for (ConnectionInfo connectionInfo : connectionInfos) {
 			long id = connectionInfo.getID();
 			String clientId = connectionInfo.getClientID();
 			if (StringUtils.isNotEmpty(clientId)) {
