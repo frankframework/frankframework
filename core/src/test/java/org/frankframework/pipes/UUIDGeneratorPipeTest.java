@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.junit.jupiter.api.Test;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.pipes.UUIDGeneratorPipe.Type;
 
@@ -20,7 +19,7 @@ public class UUIDGeneratorPipeTest extends PipeTestBase<UUIDGeneratorPipe> {
 	}
 
 	@Test
-	void testTypeIsNormal() throws ConfigurationException {
+	void testTypeIsNormal() {
 		pipe.setType(Type.NUMERIC);
 		assertDoesNotThrow(pipe::configure);
 	}

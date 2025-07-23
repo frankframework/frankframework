@@ -89,16 +89,17 @@ public class TestBindingTypes extends CmisSenderTestBase {
 		return sender;
 	}
 
-	public void configure(CmisSessionBuilder.BindingTypes bindingType, CmisSender.CmisAction action) throws Exception {
+	public void configure(CmisSessionBuilder.BindingTypes bindingType, CmisSender.CmisAction action) {
 		sender.setBindingType(bindingType);
 		sender.setAction(action);
-		sender.configure();
-		sender.start();
+		assertDoesNotThrow(sender::configure);
+		assertDoesNotThrow(sender::start);
+
 	}
 
 	@ParameterizedTest(name = "{0} - {1}")
 	@MethodSource("allImplementations")
-	public void canConfigure(CmisSessionBuilder.BindingTypes bindingType, CmisSender.CmisAction action, String input, String expectedResult) throws Exception {
+	public void canConfigure(CmisSessionBuilder.BindingTypes bindingType, CmisSender.CmisAction action, String input, String expectedResult) {
 		assertDoesNotThrow( () -> configure(bindingType, action) );
 	}
 

@@ -11,7 +11,7 @@ import org.frankframework.testutil.TestAssertions;
 public class CmisDynamicAction extends CmisSenderTestBase {
 
 	@Test
-	public void canConfigure() throws Exception {
+	public void canConfigure() {
 		sender.setBindingType(CmisSessionBuilder.BindingTypes.BROWSER);
 		sender.setAction(CmisSender.CmisAction.DYNAMIC);
 

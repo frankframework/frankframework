@@ -56,12 +56,12 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 	}
 
 	@Test
-	public void basicFileSystemTestConfigure() throws Exception {
+	public void basicFileSystemTestConfigure() {
 		assertDoesNotThrow(fileSystem::configure);
 	}
 
 	@Test
-	public void basicFileSystemTestOpen() throws Exception {
+	public void basicFileSystemTestOpen() {
 		assertDoesNotThrow(fileSystem::configure);
 		assertDoesNotThrow(fileSystem::open);
 	}

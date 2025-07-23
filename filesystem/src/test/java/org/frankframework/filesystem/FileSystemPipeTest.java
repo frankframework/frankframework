@@ -68,14 +68,14 @@ public abstract class FileSystemPipeTest<FSP extends AbstractFileSystemPipe<F, F
 	}
 
 	@Test
-	public void fileSystemPipeTestConfigure() throws Exception {
+	public void fileSystemPipeTestConfigure() {
 		fileSystemPipe.setAction(FileSystemAction.LIST);
 
 		assertDoesNotThrow(fileSystemPipe::configure);
 	}
 
 	@Test
-	public void fileSystemPipeTestOpen() throws Exception {
+	public void fileSystemPipeTestOpen() {
 		fileSystemPipe.setAction(FileSystemAction.LIST);
 
 		assertDoesNotThrow(fileSystemPipe::configure);
@@ -785,7 +785,7 @@ public abstract class FileSystemPipeTest<FSP extends AbstractFileSystemPipe<F, F
 	}
 
 	@Test()
-	public void fileSystemPipeTestForFolderExistenceWithRoot() throws Exception {
+	public void fileSystemPipeTestForFolderExistenceWithRoot() {
 		fileSystemPipe.setAction(FileSystemAction.LIST);
 
 		assertDoesNotThrow(fileSystemPipe::configure);

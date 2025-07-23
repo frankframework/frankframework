@@ -17,7 +17,7 @@ public class CmisDeleteAction extends CmisSenderTestBase {
 	private static final String NOT_FOUND_SELECTOR = "<cmis><id>NOT_FOUND</id></cmis>";
 
 	@Test
-	public void canConfigure() throws Exception {
+	public void canConfigure() {
 		sender.setBindingType(BindingTypes.BROWSER);
 		sender.setAction(CmisSender.CmisAction.DELETE);
 
@@ -25,10 +25,10 @@ public class CmisDeleteAction extends CmisSenderTestBase {
 	}
 
 	@Test
-	public void notAllowedToDelete() throws Exception {
+	public void notAllowedToDelete() {
 		sender.setBindingType(BindingTypes.BROWSER);
 		sender.setAction(CmisSender.CmisAction.DELETE);
-		sender.configure();
+		assertDoesNotThrow(sender::configure);
 
 		SenderException exception = assertThrows(
 			SenderException.class, () -> {

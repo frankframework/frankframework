@@ -58,14 +58,14 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 	}
 
 	@Test
-	public void fileSystemSenderTestConfigure() throws Exception {
+	public void fileSystemSenderTestConfigure() {
 		fileSystemSender.setAction(FileSystemAction.LIST);
 
 		assertDoesNotThrow(fileSystemSender::configure);
 	}
 
 	@Test
-	public void fileSystemSenderTestStart() throws Exception {
+	public void fileSystemSenderTestStart() {
 		fileSystemSender.setAction(FileSystemAction.LIST);
 
 		assertDoesNotThrow(fileSystemSender::configure);
@@ -386,7 +386,7 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 	}
 
 	@Test()
-	public void fileSystemSenderTestForFolderExistenceWithRoot() throws Exception {
+	public void fileSystemSenderTestForFolderExistenceWithRoot() {
 		fileSystemSender.setAction(FileSystemAction.LIST);
 
 		assertDoesNotThrow(fileSystemSender::configure);
