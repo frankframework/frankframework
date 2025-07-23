@@ -1,6 +1,7 @@
 package org.frankframework.extensions.cmis;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.hamcrest.Matchers;
@@ -19,7 +20,8 @@ public class CmisDeleteAction extends CmisSenderTestBase {
 	public void canConfigure() throws Exception {
 		sender.setBindingType(BindingTypes.BROWSER);
 		sender.setAction(CmisSender.CmisAction.DELETE);
-		sender.configure();
+
+		assertDoesNotThrow(sender::configure);
 	}
 
 	@Test

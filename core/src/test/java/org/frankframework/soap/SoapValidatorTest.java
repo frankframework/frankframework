@@ -1,5 +1,6 @@
 package org.frankframework.soap;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
@@ -69,7 +70,6 @@ class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 		pipe.start();
 		String inputFile = INPUT_FILE_GPBDB_INVALID_SOAP;
 		Message input = MessageTestUtils.getMessage(inputFile);
-		String expected = TestFileUtils.getTestFile(inputFile);
 
 		assertThrows(PipeRunException.class, () -> doPipe(input));
 	}
@@ -148,8 +148,9 @@ class SoapValidatorTest extends PipeTestBase<SoapValidator> {
 	void issue4183CharsetProblemInXSD() throws Exception {
 		configureSoapValidator(false);
 		pipe.setSchemaLocation("urn:namespacer Validation/CharsetProblem/non-utf8.xsd");
-		pipe.configure();
-		pipe.start();
+
+		assertDoesNotThrow(pipe::configure);
+		assertDoesNotThrow(pipe::start);
 	}
 
 	private void configureSoapValidator() throws ConfigurationException {

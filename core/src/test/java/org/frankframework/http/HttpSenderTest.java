@@ -1263,8 +1263,8 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.GET);
 
-		sender.configure();
-		sender.start();
+		assertDoesNotThrow(sender::configure);
+		assertDoesNotThrow(sender::start);
 	}
 
 	@Test
@@ -1294,8 +1294,8 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.GET);
 
-		sender.configure();
-		sender.start();
+		assertDoesNotThrow(sender::configure);
+		assertDoesNotThrow(sender::start);
 	}
 
 	@Test
@@ -1330,8 +1330,8 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setKeystoreAliasPassword("test2");
 
 		sender.setMethodType(HttpMethod.GET);
-		sender.configure();
-		sender.start();
+		assertDoesNotThrow(sender::configure);
+		assertDoesNotThrow(sender::start);
 	}
 
 	@Test
@@ -1343,8 +1343,8 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		sender.setMethodType(HttpMethod.HEAD);
 
-		sender.configure();
-		sender.start();
+		assertDoesNotThrow(sender::configure);
+		assertDoesNotThrow(sender::start);
 
 		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpHead.txt"), result.trim());

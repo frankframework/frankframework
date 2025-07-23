@@ -1,5 +1,7 @@
 package org.frankframework.extensions.cmis;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.extensions.cmis.server.CmisEvent;
@@ -12,7 +14,8 @@ public class CmisDynamicAction extends CmisSenderTestBase {
 	public void canConfigure() throws Exception {
 		sender.setBindingType(CmisSessionBuilder.BindingTypes.BROWSER);
 		sender.setAction(CmisSender.CmisAction.DYNAMIC);
-		sender.configure();
+
+		assertDoesNotThrow(sender::configure);
 	}
 
 	@Test

@@ -587,9 +587,33 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	}
 	public String send(Session session, Destination dest, String correlationId, Message message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException, Map<String, Object> properties) throws JMSException, SenderException, IOException {
 		jakarta.jms.Message msg = createMessage(session, correlationId, message, messageClass);
-		MessageProducer mp;
-		try {
-			mp = session.createProducer(dest);
+		try (MessageProducer mp = session.createProducer(dest)) {
+			if (messageType!=null) {
+				msg.setJMSType(messageType);
+			}
+			if (deliveryMode>0) {
+				msg.setJMSDeliveryMode(deliveryMode);
+				mp.setDeliveryMode(deliveryMode);
+			}
+			if (priority>=0) {
+				msg.setJMSPriority(priority);
+				mp.setPriority(priority);
+			}
+			if (timeToLive>0) {
+				mp.setTimeToLive(timeToLive);
+			}
+			if (properties!=null) {
+				for (Map.Entry<String, Object> entry: properties.entrySet()) {
+					String key = entry.getKey();
+					Object value = entry.getValue();
+					if (value instanceof Message message1) {
+						value = message1.asString();
+					}
+					msg.setObjectProperty(key, value);
+				}
+			}
+
+			return send(mp, msg, ignoreInvalidDestinationException);
 		} catch (InvalidDestinationException e) {
 			if (ignoreInvalidDestinationException) {
 				log.warn("queue [{}] doesn't exist", dest);
@@ -597,34 +621,6 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 			}
 			throw e;
 		}
-		if (messageType!=null) {
-			msg.setJMSType(messageType);
-		}
-		if (deliveryMode>0) {
-			msg.setJMSDeliveryMode(deliveryMode);
-			mp.setDeliveryMode(deliveryMode);
-		}
-		if (priority>=0) {
-			msg.setJMSPriority(priority);
-			mp.setPriority(priority);
-		}
-		if (timeToLive>0) {
-			mp.setTimeToLive(timeToLive);
-		}
-		if (properties!=null) {
-			for (Map.Entry<String, Object> entry: properties.entrySet()) {
-				String key = entry.getKey();
-				Object value = entry.getValue();
-				if (value instanceof Message message1) {
-					value = message1.asString();
-				}
-				msg.setObjectProperty(key, value);
-			}
-		}
-		logMessageDetails(msg, mp);
-		String result = send(mp, msg, ignoreInvalidDestinationException);
-		mp.close();
-		return result;
 	}
 
 	/**
@@ -703,17 +699,17 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	}
 
 	protected String sendByQueue(QueueSession session, Queue destination, jakarta.jms.Message message) throws JMSException {
-		QueueSender tqs = session.createSender(destination);
-		tqs.send(message);
-		tqs.close();
-		return message.getJMSMessageID();
+		try (QueueSender tqs = session.createSender(destination)) {
+			tqs.send(message);
+			return message.getJMSMessageID();
+		}
 	}
 
 	protected String sendByTopic(TopicSession session, Topic destination, jakarta.jms.Message message) throws JMSException {
-		TopicPublisher tps = session.createPublisher(destination);
-		tps.publish(message);
-		tps.close();
-		return message.getJMSMessageID();
+		try (TopicPublisher tps = session.createPublisher(destination)) {
+			tps.publish(message);
+			return message.getJMSMessageID();
+		}
 	}
 
 	public boolean isSessionsArePooled() {

@@ -3,6 +3,7 @@ package org.frankframework.filesystem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.endsWith;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -120,7 +121,8 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 	public void fileSystemActorTestBasicOpen() throws Exception {
 		actor.setAction(FileSystemAction.LIST);
 		actor.configure(fileSystem, parameters, adapter);
-		actor.open();
+
+		assertDoesNotThrow(actor::open);
 	}
 
 	@Test
@@ -140,7 +142,8 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		actor.setCreateFolder(true);
 		actor.setInputFolder("xxx");
 		actor.configure(fileSystem, parameters, adapter);
-		actor.open();
+
+		assertDoesNotThrow(actor::open);
 	}
 
 
@@ -150,14 +153,16 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		actor.setAction(FileSystemAction.LIST);
 		actor.setInputFolder("folder");
 		actor.configure(fileSystem, parameters, adapter);
-		actor.open();
+
+		assertDoesNotThrow(actor::open);
 	}
 
 	@Test()
 	public void fileSystemActorListActionTestForFolderExistenceWithRoot() throws Exception {
 		actor.setAction(FileSystemAction.LIST);
 		actor.configure(fileSystem, parameters, adapter);
-		actor.open();
+
+		assertDoesNotThrow(actor::open);
 	}
 
 	@Test()

@@ -246,8 +246,10 @@ public class StringUtil {
 	 * @return a (modifiable) {@link List} of strings. An empty list if the input was {@literal null}.
 	 */
 	@Nonnull
+	@SuppressWarnings("java:S6204") // Returns a modifiable list
 	public static List<String> split(@Nullable String input) {
-		return splitToStream(input).toList();
+		return splitToStream(input)
+				.collect(Collectors.toList());
 	}
 
 	/**
@@ -275,6 +277,7 @@ public class StringUtil {
 	 * @return a (modifiable) {@link List} of strings. An empty list if the input was {@literal null}.
 	 */
 	@Nonnull
+	@SuppressWarnings("java:S6204") // Returns a modifiable list
 	public static List<String> split(@Nullable String input, @Nonnull String delim) {
 		return splitToStream(input, delim)
 				.collect(Collectors.toList());

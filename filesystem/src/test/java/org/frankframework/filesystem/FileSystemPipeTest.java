@@ -3,6 +3,7 @@ package org.frankframework.filesystem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.startsWith;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -69,14 +70,16 @@ public abstract class FileSystemPipeTest<FSP extends AbstractFileSystemPipe<F, F
 	@Test
 	public void fileSystemPipeTestConfigure() throws Exception {
 		fileSystemPipe.setAction(FileSystemAction.LIST);
-		fileSystemPipe.configure();
+
+		assertDoesNotThrow(fileSystemPipe::configure);
 	}
 
 	@Test
 	public void fileSystemPipeTestOpen() throws Exception {
 		fileSystemPipe.setAction(FileSystemAction.LIST);
-		fileSystemPipe.configure();
-		fileSystemPipe.start();
+
+		assertDoesNotThrow(fileSystemPipe::configure);
+		assertDoesNotThrow(fileSystemPipe::start);
 	}
 
 	@Test
@@ -776,15 +779,17 @@ public abstract class FileSystemPipeTest<FSP extends AbstractFileSystemPipe<F, F
 		_createFolder("folder");
 		fileSystemPipe.setAction(FileSystemAction.LIST);
 		fileSystemPipe.setInputFolder("folder");
-		fileSystemPipe.configure();
-		fileSystemPipe.start();
+
+		assertDoesNotThrow(fileSystemPipe::configure);
+		assertDoesNotThrow(fileSystemPipe::start);
 	}
 
 	@Test()
 	public void fileSystemPipeTestForFolderExistenceWithRoot() throws Exception {
 		fileSystemPipe.setAction(FileSystemAction.LIST);
-		fileSystemPipe.configure();
-		fileSystemPipe.start();
+
+		assertDoesNotThrow(fileSystemPipe::configure);
+		assertDoesNotThrow(fileSystemPipe::start);
 	}
 
 	@Test

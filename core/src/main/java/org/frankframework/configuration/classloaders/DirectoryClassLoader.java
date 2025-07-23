@@ -44,9 +44,9 @@ public class DirectoryClassLoader extends AbstractClassLoader {
 			setDirectory(configurationsDirectory);
 		}
 
-		if(getBasePath() != null) { //Append BasePath, because legacy
+		if(getBasePath() != null) { // Append BasePath, because legacy
 			log.debug("appending basepath [{}] to directory [{}]", getBasePath(), directory);
-			directory = new File(directory, getBasePath()); //Append BasePath, because legacy
+			directory = new File(directory, getBasePath()); // Append BasePath, because legacy
 		}
 
 		if (!this.directory.isDirectory()) {

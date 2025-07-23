@@ -1,6 +1,7 @@
 package org.frankframework.filesystem;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -56,13 +57,13 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 	@Test
 	public void basicFileSystemTestConfigure() throws Exception {
-		fileSystem.configure();
+		assertDoesNotThrow(fileSystem::configure);
 	}
 
 	@Test
 	public void basicFileSystemTestOpen() throws Exception {
-		fileSystem.configure();
-		fileSystem.open();
+		assertDoesNotThrow(fileSystem::configure);
+		assertDoesNotThrow(fileSystem::open);
 	}
 
 	@Test

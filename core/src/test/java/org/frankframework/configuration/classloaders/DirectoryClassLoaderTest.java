@@ -33,11 +33,13 @@ public class DirectoryClassLoaderTest extends ConfigurationClassLoaderTestBase<D
 
 	/* test files that are only present in the JAR_FILE zip */
 	@Test
+	@SuppressWarnings("java:S2699") // Method contains indirect assertion
 	public void classloaderOnlyFile() {
 		resourceExists("fileOnlyOnDirectoryClassPath.xml");
 	}
 
 	@Test
+	@SuppressWarnings("java:S2699") // Method contains indirect assertion
 	public void classloaderOnlyFolder() {
 		resourceExists("ClassLoader/fileOnlyOnDirectoryClassPath.xml");
 	}

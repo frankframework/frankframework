@@ -1,6 +1,7 @@
 package org.frankframework.pipes;
 
 import static org.frankframework.testutil.MatchUtils.assertXmlEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import java.io.IOException;
 
@@ -43,12 +44,12 @@ public class MessageSendingPipeTest extends PipeTestBase<MessageSendingPipe> {
 
 	@Test
 	public void testConfigure() throws Exception {
-		pipe.configure();
+		assertDoesNotThrow(pipe::configure);
 	}
 
 	@Test
 	public void testConfigureAndStart() throws Exception {
-		configureAndStartPipe();
+		assertDoesNotThrow(this::configureAndStartPipe);
 	}
 
 	@Test

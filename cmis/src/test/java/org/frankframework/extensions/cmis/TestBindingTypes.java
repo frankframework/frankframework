@@ -1,5 +1,6 @@
 package org.frankframework.extensions.cmis;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.stream.Stream;
@@ -98,7 +99,7 @@ public class TestBindingTypes extends CmisSenderTestBase {
 	@ParameterizedTest(name = "{0} - {1}")
 	@MethodSource("allImplementations")
 	public void canConfigure(CmisSessionBuilder.BindingTypes bindingType, CmisSender.CmisAction action, String input, String expectedResult) throws Exception {
-		configure(bindingType, action);
+		assertDoesNotThrow( () -> configure(bindingType, action) );
 	}
 
 	@ParameterizedTest(name = "{0} - {1}")
