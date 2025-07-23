@@ -38,7 +38,7 @@ import org.frankframework.util.UUIDUtil;
 
 public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLoader> extends Mockito {
 
-	protected final static String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
+	protected static final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
 
 	private AbstractClassLoader classLoader = null;
 	protected IbisContext ibisContext = spy(new IbisContext());
@@ -182,7 +182,7 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 
 	// test uppercase level
 	@Test
-	public void testReportLevelDEBUGUppdercase() {
+	public void testReportLevelDEBUGUppercase() {
 		classLoader.setReportLevel("DEBUG");
 		assertSame(ReportLevel.DEBUG, classLoader.getReportLevel());
 	}
