@@ -61,6 +61,10 @@ public class DateFormatUtils {
 
 	private static final Map<Pattern, DateTimeFormatter> DATE_EXPRESSION_PARSER_MAP;
 
+	private DateFormatUtils() {
+		// Private constructor so that the utility-class cannot be instantiated.
+	}
+
 	static {
 		DATE_EXPRESSION_PARSER_MAP = Map.ofEntries(
 				Map.entry(Pattern.compile("^\\d{8}$"), buildFormatter("yyyyMMdd")),

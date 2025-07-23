@@ -56,11 +56,13 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 
 	/* test files that are only present in the JAR_FILE zip */
 	@Test
+	@SuppressWarnings("java:S2699") // Method contains indirect assertion
 	public void classloaderOnlyFile() {
 		resourceExists("fileOnlyOnZipClassPath.xml");
 	}
 
 	@Test
+	@SuppressWarnings("java:S2699") // Method contains indirect assertion
 	public void classloaderOnlyFolder() {
 		resourceExists("ClassLoader/fileOnlyOnZipClassPath.xml");
 	}

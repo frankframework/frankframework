@@ -195,6 +195,7 @@ public class ClassUtils {
 		return StringUtils.isNotEmpty(simpleName) ? simpleName : clazz.getTypeName();
 	}
 
+	@SuppressWarnings("java:S1181") // Use Throwable to catch all when unable to load the class in any way or form.
 	public static boolean isClassPresent(String className) {
 		try {
 			Class.forName(className);

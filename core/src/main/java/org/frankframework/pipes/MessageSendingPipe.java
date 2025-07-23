@@ -196,10 +196,10 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			propagateName();
 			// copying of pipe parameters to sender must be done at configure(), not by overriding addParam()
 			// because sender might not have been set when addPipe() is called.
-			if (getSender() instanceof ISenderWithParameters) {
+			if (getSender() instanceof ISenderWithParameters senderWithParams) {
 				for (IParameter p : getParameterList()) {
 					if (!p.getName().equals(STUBFILENAME)) {
-						((ISenderWithParameters)getSender()).addParameter(p);
+						senderWithParams.addParameter(p);
 					}
 				}
 			}

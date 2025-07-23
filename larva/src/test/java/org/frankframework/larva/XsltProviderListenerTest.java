@@ -3,7 +3,6 @@ package org.frankframework.larva;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -39,8 +38,8 @@ public class XsltProviderListenerTest {
 
 		try (XsltProviderListener listener = new XsltProviderListener()) {
 			ApplicationContext applicationContext = mock(ApplicationContext.class);
-			when(applicationContext.containsBean(eq("ibisManager"))).thenReturn(true);
-			when(applicationContext.getBean(eq("ibisManager"), eq(IbisManager.class))).thenReturn(mockIbisManager);
+			when(applicationContext.containsBean("ibisManager")).thenReturn(true);
+			when(applicationContext.getBean("ibisManager", IbisManager.class)).thenReturn(mockIbisManager);
 			listener.setApplicationContext(applicationContext);
 			listener.setConfigurationName("testConfigName");
 
@@ -59,7 +58,7 @@ public class XsltProviderListenerTest {
 
 		try (XsltProviderListener listener = new XsltProviderListener()) {
 			ApplicationContext applicationContext = mock(ApplicationContext.class);
-			when(applicationContext.containsBean(eq("ibisManager"))).thenReturn(false);
+			when(applicationContext.containsBean("ibisManager")).thenReturn(false);
 			listener.setApplicationContext(applicationContext);
 			listener.setConfigurationName("testConfigName");
 

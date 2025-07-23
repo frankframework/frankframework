@@ -18,6 +18,12 @@ package org.frankframework.http;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -39,7 +45,6 @@ import org.apache.http.impl.io.EmptyInputStream;
 import org.apache.http.protocol.HttpContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -53,13 +58,9 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
 
 @Log4j2
-class HttpSenderResultTest extends Mockito {
+public class HttpSenderResultTest {
 
-	private HttpSender sender = null;
-
-	public HttpSender createHttpSender() throws IOException {
-		return createHttpSender(200);
-	}
+	private HttpSender dontForgetToCloseMe = null;
 
 	public HttpSender createHttpSender(int returnStatusCode) throws IOException {
 		InputStream dummyXmlString = new ByteArrayInputStream("<dummy result/>".getBytes());
@@ -90,7 +91,7 @@ class HttpSenderResultTest extends Mockito {
 		httpSender.setVerifyHostname(false);
 		httpSender.setAllowSelfSignedCertificates(true);
 
-		this.sender = httpSender;
+		this.dontForgetToCloseMe = httpSender;
 		return httpSender;
 	}
 
@@ -122,9 +123,9 @@ class HttpSenderResultTest extends Mockito {
 
 	@AfterEach
 	public void setDown() {
-		if (sender != null) {
-			sender.stop();
-			sender = null;
+		if (dontForgetToCloseMe != null) {
+			dontForgetToCloseMe.stop();
+			dontForgetToCloseMe = null;
 		}
 	}
 
@@ -139,7 +140,7 @@ class HttpSenderResultTest extends Mockito {
 
 	@Test
 	void simpleMockedHttpGet() throws Exception {
-		HttpSender httpSender = createHttpSender();
+		HttpSender httpSender = createHttpSender(200);
 
 		PipeLineSession session = new PipeLineSession();
 

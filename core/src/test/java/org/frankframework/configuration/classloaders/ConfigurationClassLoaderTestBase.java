@@ -143,46 +143,54 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 
 	/* getResource() */
 	@Test
+	@SuppressWarnings("java:S2699") // Method contains indirect assertion
 	public void testFile() {
 		resourceExists("ClassLoaderTestFile");
 	}
 
 	@Test
+	@SuppressWarnings("java:S2699") // Method contains indirect assertion
 	public void testFileTxt() {
 		resourceExists("ClassLoaderTestFile.txt");
 	}
 
 	@Test
+	@SuppressWarnings("java:S2699") // Method contains indirect assertion
 	public void textFileXml() {
 		resourceExists("ClassLoaderTestFile.xml");
 	}
 
 	@Test
+	@SuppressWarnings("java:S2699") // Method contains indirect assertion
 	public void textFolderFile() {
 		resourceExists("ClassLoader/ClassLoaderTestFile");
 	}
 
 	@Test
+	@SuppressWarnings("java:S2699") // Method contains indirect assertion
 	public void textFolderFileTxt() {
 		resourceExists("ClassLoader/ClassLoaderTestFile.txt");
 	}
 
 	@Test
+	@SuppressWarnings("java:S2699") // Method contains indirect assertion
 	public void textFolderFileXml() {
 		resourceExists("ClassLoader/ClassLoaderTestFile.xml");
 	}
 
 	@Test
+	@SuppressWarnings("java:S2699") // Method contains indirect assertion
 	public void parentOnlyFile() {
 		resourceExists("parent_only.xml", "file");
 	}
 
 	@Test
+	@SuppressWarnings("java:S2699") // Method contains indirect assertion
 	public void parentOnlyFolder() {
 		resourceExists("folder/parent_only.xml", "file");
 	}
 
-	//Not only test through setters and getters but also properties
+	// Not only test through setters and getters but also properties
 	@Test
 	public void testSchemeWithClassLoaderManager() {
 		URL resource = getResource("ClassLoaderTestFile.xml");

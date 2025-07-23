@@ -15,7 +15,6 @@
 */
 package org.frankframework.util;
 
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -39,65 +38,27 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class Environment {
+
+	private Environment() {
+		// Private constructor so that the utility-class cannot be instantiated.
+	}
+
 	private static final Logger log = LogManager.getLogger(Environment.class);
 	private static final String FRANKFRAMEWORK_NAMESPACE = "META-INF/maven/org.frankframework/";
 
 	public static Properties getEnvironmentVariables() throws IOException {
-		Properties props = new Properties();
-
 		try {
-			System.getenv().forEach(props::setProperty);
-		} catch (Exception e) {
-			getLogger().debug("Exception getting environment variables", e);
-		}
-
-		if (!props.isEmpty()) {
+			Properties props = new Properties();
+			props.putAll(System.getenv());
 			return props;
+		} catch (Exception e) {
+			throw new IOException("exception getting environment variables", e);
 		}
-		return readEnvironmentFromOsCommand();
-
-	}
-
-	private static Properties readEnvironmentFromOsCommand() throws IOException {
-		Properties props = new Properties();
-		String command = determineOsSpecificEnvCommand();
-		getLogger().debug("Reading environment variables from OS using command [{}]", command);
-		Runtime r = Runtime.getRuntime();
-		Process p = r.exec(command);
-
-		BufferedReader br = new BufferedReader(StreamUtil.getCharsetDetectingInputStreamReader(p.getInputStream()));
-		String line;
-		while ((line = br.readLine()) != null) {
-			int idx = line.indexOf('=');
-			if (idx >= 0) {
-				String key = line.substring(0, idx);
-				String value = line.substring(idx + 1);
-				props.setProperty(key, value);
-			}
-		}
-		return props;
 	}
 
 	private static Logger getLogger() {
 		// Delay getting the Log manager configuration may depend on configuration code calling this class.
 		return LogManager.getLogger(Environment.class);
-	}
-
-	private static String determineOsSpecificEnvCommand() {
-		String OS = System.getProperty("os.name").toLowerCase();
-		String envCommand;
-		if (OS.contains("windows 9")) {
-			envCommand = "command.com /c set";
-		} else if (
-				(OS.contains("nt"))
-						|| (OS.contains("windows 20"))
-						|| (OS.contains("windows xp"))) {
-			envCommand = "cmd.exe /c set";
-		} else {
-			// assume Unix
-			envCommand = "env";
-		}
-		return envCommand;
 	}
 
 	/**

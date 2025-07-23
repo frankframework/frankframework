@@ -32,6 +32,11 @@ import org.apache.commons.lang3.StringUtils;
  * @author Johan Verrips
  */
 public class StringResolver {
+
+	private StringResolver() {
+		// Private constructor so that the utility-class cannot be instantiated.
+	}
+
 	public static final String DELIM_START = "${";
 	// Not allowed to use a static reference to the logger in this class.
 	// Log4j2 uses StringResolver during instantiation.
@@ -471,7 +476,7 @@ public class StringResolver {
 			try {
 				additionalStringResolvers = CollectionUtils.collect(serviceLoader.iterator(), input -> input);
 			} catch (Throwable t) {
-				t.printStackTrace(); //Cannot log this because it's used before Log4j2 initializes.
+				t.printStackTrace(); // Cannot log this because it's used before Log4j2 initializes.
 				additionalStringResolvers = Collections.emptyList();
 			}
 		}

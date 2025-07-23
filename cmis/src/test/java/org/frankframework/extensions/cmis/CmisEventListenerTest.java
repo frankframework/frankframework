@@ -1,5 +1,7 @@
 package org.frankframework.extensions.cmis;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -21,6 +23,6 @@ public class CmisEventListenerTest extends ListenerTestBase<Message, CmisEventLi
 
 	@Test
 	public void testEventAttribute() {
-		listener.setEventListener("getObject");
+		assertDoesNotThrow(() -> listener.setEventListener("getObject"));
 	}
 }

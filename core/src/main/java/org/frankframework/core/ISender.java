@@ -72,10 +72,12 @@ public interface ISender extends IConfigurable, FrankElement, NameAware {
 	default @Nonnull Message sendMessageOrThrow(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		SenderResult senderResult = sendMessage(message, session);
 		Message result = senderResult.getResult();
+
 		if (!senderResult.isSuccess()) {
-			String reason = StringUtils.isNotEmpty(senderResult.getErrorMessage()) ? senderResult.getErrorMessage() : "sender finished processing using undefined error forward";
-			SenderException se = new SenderException(reason);
-			throw se;
+			if (StringUtils.isNotEmpty(senderResult.getErrorMessage())) {
+				throw new SenderException(senderResult.getErrorMessage());
+			}
+			throw new SenderException("sender finished processing using undefined error forward");
 		}
 		return result;
 	}

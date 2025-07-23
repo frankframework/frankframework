@@ -64,6 +64,7 @@ import org.frankframework.pipes.Base64Pipe.Direction;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.DB2DocumentWriter;
 import org.frankframework.util.DB2XMLWriter;
 import org.frankframework.util.DateFormatUtils;
@@ -244,8 +245,15 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 		String callQuery = "BEGIN " + query + " RETURNING ROWID INTO ?; END;";
 		log.debug("preparing statement for query [{}]", () -> callQuery);
 		CallableStatement callableStatement = con.prepareCall(callQuery);
-		callableStatement.setQueryTimeout(getTimeout());
-		return callableStatement;
+
+		try {
+			callableStatement.setQueryTimeout(getTimeout());
+			return callableStatement;
+		} catch (SQLException e) {
+			// Since we are modifying the statement which may throw an Exception, handle it here and close the statement.
+			CloseUtils.closeSilently(callableStatement);
+			throw e;
+		}
 	}
 
 	protected ResultSet getReturnedColumns(PreparedStatement st) throws SQLException {

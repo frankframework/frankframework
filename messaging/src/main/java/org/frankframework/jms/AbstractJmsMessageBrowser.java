@@ -33,7 +33,6 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
@@ -257,17 +256,6 @@ public abstract class AbstractJmsMessageBrowser<M, J extends jakarta.jms.Message
 			result.append(" AND ").append(getSelector());
 		}
 		return result.toString();
-	}
-
-	/**
-	 * Timeout <i>in milliseconds</i> for receiving a message from the queue
-	 * @deprecated use {@link #setTimeout(long)} instead
-	 * @ff.default 3000
-	 */
-	@Deprecated(since = "8.1")
-	@ConfigurationWarning("Use attribute timeout instead")
-	public void setTimeOut(long newTimeOut) {
-		timeout = newTimeOut;
 	}
 
 	/**

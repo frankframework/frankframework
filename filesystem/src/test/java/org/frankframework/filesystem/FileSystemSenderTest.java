@@ -3,6 +3,7 @@ package org.frankframework.filesystem;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.startsWith;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -57,16 +58,10 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 	}
 
 	@Test
-	public void fileSystemSenderTestConfigure() throws Exception {
+	public void fileSystemSenderTestConfigure() {
 		fileSystemSender.setAction(FileSystemAction.LIST);
-		fileSystemSender.configure();
-	}
 
-	@Test
-	public void fileSystemSenderTestStart() throws Exception {
-		fileSystemSender.setAction(FileSystemAction.LIST);
-		fileSystemSender.configure();
-		fileSystemSender.start();
+		assertDoesNotThrow(fileSystemSender::configure);
 	}
 
 	@Test
@@ -377,15 +372,17 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 		fileSystemSender.setAction(FileSystemAction.LIST);
 		fileSystemSender.setTypeFilter(TypeFilter.FILES_ONLY);
 		fileSystemSender.setInputFolder(FOLDER_NAME);
-		fileSystemSender.configure();
-		fileSystemSender.start();
+
+		assertDoesNotThrow(fileSystemSender::configure);
+		assertDoesNotThrow(fileSystemSender::start);
 	}
 
 	@Test()
-	public void fileSystemSenderTestForFolderExistenceWithRoot() throws Exception {
+	public void fileSystemSenderTestForFolderExistenceWithRoot() {
 		fileSystemSender.setAction(FileSystemAction.LIST);
-		fileSystemSender.configure();
-		fileSystemSender.start();
+
+		assertDoesNotThrow(fileSystemSender::configure);
+		assertDoesNotThrow(fileSystemSender::start);
 	}
 
 	@Test

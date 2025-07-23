@@ -74,9 +74,11 @@ public class TestSecurityItems extends BusTestBase {
 		getConfiguration().addAdapter(adapter);
 	}
 
+	@Override
 	@AfterEach
 	public void tearDown() {
 		TimeProvider.resetClock();
+		super.tearDown();
 	}
 
 	@Test

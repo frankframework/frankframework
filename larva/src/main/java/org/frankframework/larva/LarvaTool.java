@@ -54,6 +54,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.text.StringEscapeUtils;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
@@ -510,9 +511,9 @@ public class LarvaTool {
 			String testDataDirNative = new File(testDataDirPropertyValue).getAbsolutePath();
 			String testDataDirWindows = FilenameUtils.normalize(testDataDirPropertyValue, false);
 			String testDataDirUnix = FilenameUtils.normalize(testDataDirPropertyValue, true);
-			result = result.replace(testDataDirNative, "TESTDATA_DIR")
-					.replace(testDataDirWindows, "TESTDATA_DIR")
-					.replace(testDataDirUnix, "TESTDATA_DIR");
+			result = Strings.CI.replace(result, testDataDirNative, "TESTDATA_DIR");
+			result = Strings.CI.replace(result, testDataDirWindows, "TESTDATA_DIR");
+			result = Strings.CI.replace(result, testDataDirUnix, "TESTDATA_DIR");
 		}
 
 		result = doActionBetweenKeys("decodeUnzipContentBetweenKeys", result, properties, ignoreMap, (value, pp, key1, key2)-> {

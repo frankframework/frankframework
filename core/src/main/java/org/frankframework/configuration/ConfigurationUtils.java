@@ -90,6 +90,10 @@ public class ConfigurationUtils {
 
 	private static final String DUMMY_SELECT_QUERY = "SELECT COUNT(*) FROM IBISCONFIG";
 
+	private ConfigurationUtils() {
+		// Private constructor so that the utility-class cannot be instantiated.
+	}
+
 	/**
 	 * Checks if a configuration is stubbed or not
 	 */
@@ -113,7 +117,7 @@ public class ConfigurationUtils {
 			configurationFile = DEFAULT_CONFIGURATION_FILE;
 		} else {
 			int i = configurationFile.lastIndexOf('/');
-			if (i != -1) { //Trim the BasePath, why is it even here!?
+			if (i != -1) { // Trim the BasePath, why is it even here!?
 				configurationFile = configurationFile.substring(i + 1);
 			}
 		}
@@ -186,7 +190,7 @@ public class ConfigurationUtils {
 			workdataSourceName = IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 		}
 		if (StringUtils.isEmpty(version)) {
-			version = null; //Make sure this is null when empty!
+			version = null; // Make sure this is null when empty!
 		}
 		if(log.isInfoEnabled()) log.info("trying to fetch configuration [{}] version [{}] from database with dataSourceName [{}]", name, version, workdataSourceName);
 

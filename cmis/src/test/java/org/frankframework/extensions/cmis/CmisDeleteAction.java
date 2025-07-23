@@ -1,6 +1,7 @@
 package org.frankframework.extensions.cmis;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.hamcrest.Matchers;
@@ -16,17 +17,18 @@ public class CmisDeleteAction extends CmisSenderTestBase {
 	private static final String NOT_FOUND_SELECTOR = "<cmis><id>NOT_FOUND</id></cmis>";
 
 	@Test
-	public void canConfigure() throws Exception {
+	public void canConfigure() {
 		sender.setBindingType(BindingTypes.BROWSER);
 		sender.setAction(CmisSender.CmisAction.DELETE);
-		sender.configure();
+
+		assertDoesNotThrow(sender::configure);
 	}
 
 	@Test
-	public void notAllowedToDelete() throws Exception {
+	public void notAllowedToDelete() {
 		sender.setBindingType(BindingTypes.BROWSER);
 		sender.setAction(CmisSender.CmisAction.DELETE);
-		sender.configure();
+		assertDoesNotThrow(sender::configure);
 
 		SenderException exception = assertThrows(
 			SenderException.class, () -> {

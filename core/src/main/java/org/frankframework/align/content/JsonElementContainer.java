@@ -77,17 +77,17 @@ public class JsonElementContainer {
 				XSComplexTypeDefinition complexTypeDefinition=(XSComplexTypeDefinition)typeDefinition;
 				switch (complexTypeDefinition.getContentType()) {
 				case XSComplexTypeDefinition.CONTENTTYPE_EMPTY:
-					if (log.isTraceEnabled()) log.trace("JsonElementContainer complexTypeDefinition.contentType is Empty, no child elements");
+					log.trace("JsonElementContainer complexTypeDefinition.contentType is Empty, no child elements");
 					break;
 				case XSComplexTypeDefinition.CONTENTTYPE_SIMPLE:
-					if (log.isTraceEnabled()) log.trace("JsonElementContainer complexTypeDefinition.contentType is Simple, no child elements (only characters)");
+					log.trace("JsonElementContainer complexTypeDefinition.contentType is Simple, no child elements (only characters)");
 					setType(ScalarType.findType((XSSimpleType)complexTypeDefinition.getBaseType()));
 					break;
 				case XSComplexTypeDefinition.CONTENTTYPE_ELEMENT:
-					if (log.isTraceEnabled()) log.trace("JsonElementContainer complexTypeDefinition.contentType is Element");
+					log.trace("JsonElementContainer complexTypeDefinition.contentType is Element");
 					break;
 				case XSComplexTypeDefinition.CONTENTTYPE_MIXED:
-					if (log.isTraceEnabled()) log.trace("JsonElementContainer complexTypeDefinition.contentType is Mixed");
+					log.trace("JsonElementContainer complexTypeDefinition.contentType is Mixed");
 					break;
 				}
 			}
@@ -159,6 +159,7 @@ public class JsonElementContainer {
 	/*
 	 * connects child to parent
 	 */
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void addContent(JsonElementContainer content) {
 		String childName = content.getName();
 		if (log.isTraceEnabled()) {
@@ -196,7 +197,6 @@ public class JsonElementContainer {
 					throw new IllegalArgumentException("element [" + childName + "] is not an array");
 				}
 			}
-			// noinspection unchecked,rawtypes
 			((List) current).add(content.getContent());
 		} else {
 			if (current != null) {
