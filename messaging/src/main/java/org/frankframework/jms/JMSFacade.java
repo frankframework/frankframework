@@ -579,12 +579,6 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 		return messageConsumer;
 	}
 
-	public String send(Session session, Destination dest, String correlationId, Message message, String messageType, long timeToLive, int deliveryMode, int priority) throws JMSException, SenderException, IOException {
-		return send(session, dest, correlationId, message, messageType, timeToLive, deliveryMode, priority, false);
-	}
-	public String send(Session session, Destination dest, String correlationId, Message message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException) throws JMSException, SenderException, IOException {
-		return send(session, dest, correlationId, message, messageType, timeToLive, deliveryMode, priority, ignoreInvalidDestinationException, null);
-	}
 	public String send(Session session, Destination dest, String correlationId, Message message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException, Map<String, Object> properties) throws JMSException, SenderException, IOException {
 		jakarta.jms.Message msg = createMessage(session, correlationId, message, messageClass);
 		try (MessageProducer mp = session.createProducer(dest)) {
@@ -683,11 +677,9 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	}
 
 	public String send(Session session, Destination dest, jakarta.jms.Message message, boolean ignoreInvalidDestinationException) throws JMSException {
-		try {
-			MessageProducer mp = session.createProducer(dest);
+		try (MessageProducer mp = session.createProducer(dest)) {
 			logMessageDetails(message, mp);
 			mp.send(message);
-			mp.close();
 			return message.getJMSMessageID();
 		} catch (InvalidDestinationException e) {
 			if (ignoreInvalidDestinationException) {
