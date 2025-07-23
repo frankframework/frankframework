@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.jms.JMSException;
 import jakarta.jms.MessageConsumer;
 import jakarta.jms.Queue;
 import jakarta.jms.QueueBrowser;
@@ -38,6 +37,7 @@ import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.MessageBrowserField;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.StringUtil;
 
@@ -125,13 +125,7 @@ public abstract class AbstractJmsMessageBrowser<M, J extends jakarta.jms.Message
 		} catch (Exception e) {
 			throw new ListenerException("cannot determin messagecount",e);
 		} finally {
-			try {
-				if (queueBrowser!=null) {
-					queueBrowser.close();
-				}
-			} catch (JMSException e) {
-				throw new ListenerException("error closing queuebrowser",e);
-			}
+			CloseUtils.closeSilently(queueBrowser);
 			closeSession(session);
 		}
 	}
@@ -148,13 +142,7 @@ public abstract class AbstractJmsMessageBrowser<M, J extends jakarta.jms.Message
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		} finally {
-			try {
-				if (mc != null) {
-					mc.close();
-				}
-			} catch (JMSException e1) {
-				throw new ListenerException("exception closing message consumer",e1);
-			}
+			CloseUtils.closeSilently(mc);
 			closeSession(session);
 		}
 	}
@@ -182,13 +170,7 @@ public abstract class AbstractJmsMessageBrowser<M, J extends jakarta.jms.Message
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		} finally {
-			try {
-				if (queueBrowser != null) {
-					queueBrowser.close();
-				}
-			} catch (JMSException e1) {
-				throw new ListenerException("exception closing queueBrowser",e1);
-			}
+			CloseUtils.closeSilently(queueBrowser);
 			closeSession(session);
 		}
 	}
@@ -211,13 +193,7 @@ public abstract class AbstractJmsMessageBrowser<M, J extends jakarta.jms.Message
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		} finally {
-			try {
-				if (mc != null) {
-					mc.close();
-				}
-			} catch (JMSException e1) {
-				throw new ListenerException("exception closing message consumer",e1);
-			}
+			CloseUtils.closeSilently(mc);
 			closeSession(session);
 		}
 	}

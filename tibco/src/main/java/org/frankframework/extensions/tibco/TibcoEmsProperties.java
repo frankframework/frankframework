@@ -18,6 +18,7 @@ package org.frankframework.extensions.tibco;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+import java.io.Serial;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Properties;
@@ -34,6 +35,7 @@ import org.frankframework.util.StreamUtil;
 @Log4j2
 public class TibcoEmsProperties extends HashMap<String, Object> {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	public TibcoEmsProperties(IScopeProvider scope, String jndiPropertiesFile) throws IOException {
@@ -43,12 +45,12 @@ public class TibcoEmsProperties extends HashMap<String, Object> {
 	public TibcoEmsProperties(URL externalURL) throws IOException {
 		if(externalURL == null) throw new IOException("file ["+externalURL+"] not found");
 		Properties properties = new Properties();
-		try(InputStream is = externalURL.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
+		try (InputStream is = externalURL.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
 			properties.load(reader);
 			log.info("Tibco EMS properties loaded from url [{}]", externalURL::toString);
 		}
 
-		for(Object keyObj : properties.keySet()) {
+		for (Object keyObj : properties.keySet()) {
 			final String key = (String) keyObj;
 			Object parseToValue = parseValue(properties.getProperty(key));
 			log.debug("mapped key [{}] to type [{}]", () -> key, () -> parseToValue.getClass().getSimpleName());
@@ -57,7 +59,7 @@ public class TibcoEmsProperties extends HashMap<String, Object> {
 	}
 
 	private Object parseValue(String value) {
-		if("true".equals(value) || "false".equals(value)) {
+		if ("true".equals(value) || "false".equals(value)) {
 			return Boolean.parseBoolean(value);
 		}
 		try {
