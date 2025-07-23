@@ -567,11 +567,13 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			// get name of parameter in pattern to be substituted
 			startNdx = pattern.indexOf("{", endNdx);
 			if (startNdx == -1) {
-				formatPattern.append(pattern.substring(endNdx));
+				// For unix-timestamp as milliseconds we specify 'millis' in the pattern but that breaks in the Java MessageFormatter which needs 'number'. Ugly replacement. Always append a ',#' so the number is formatted without separators.
+				String remainingPattern = pattern.substring(endNdx);
+				formatPattern.append(fixFormatPattern(remainingPattern));
 				break;
-			}
-			else {
-				formatPattern.append(pattern, endNdx, startNdx);
+			} else {
+				String remainingPattern = pattern.substring(endNdx, startNdx);
+				formatPattern.append(fixFormatPattern(remainingPattern));
 			}
 			int tmpEndNdx = pattern.indexOf("}", startNdx);
 			endNdx = pattern.indexOf(",", startNdx);
@@ -603,6 +605,11 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		}
 	}
 
+	@Nonnull
+	private static String fixFormatPattern(String remainingPattern) {
+		return remainingPattern.replaceFirst("(?<=,)millis(,#)?(?=})", "number,#");
+	}
+
 	private Object preFormatDateType(String rawValue, String formatType, String patternFormatString) throws ParameterException {
 		if ("date".equalsIgnoreCase(formatType) || "time".equalsIgnoreCase(formatType)) {
 			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateFormatUtils.FORMAT_DATETIME_GENERIC);
@@ -618,33 +625,35 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 
 	private Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, PipeLineSession session, String targetPattern) throws ParameterException {
 		String[] patternElements = targetPattern.split(",");
-		String name = patternElements[0].trim();
+		String formatName = patternElements[0].trim();
 		String formatType = patternElements.length>1 ? patternElements[1].trim() : null;
 		String formatString = patternElements.length>2 ? patternElements[2].trim() : null;
 
-		ParameterValue paramValue = alreadyResolvedParameters.get(name);
+		ParameterValue paramValue = alreadyResolvedParameters.get(formatName);
 		Object substitutionValue = paramValue == null ? null : paramValue.getValue();
 
 		if (substitutionValue == null) {
-			Object substitutionValueMessage = session.get(name);
+			Object substitutionValueMessage = session.get(formatName);
 			if (substitutionValueMessage != null) {
 				if (substitutionValueMessage instanceof Date substitutionValueDate) {
 					substitutionValue = getSubstitutionValueForDate(substitutionValueDate, formatType);
 				} else if (substitutionValueMessage instanceof String stringValue) {
 					substitutionValue = preFormatDateType(stringValue, formatType, formatString);
 				} else {
-					substitutionValue = session.getString(name);
-					if (substitutionValue == null) throw new ParameterException(getName(), "Cannot get substitution value from session key: " + name);
+					substitutionValue = session.getString(formatName);
+					if (substitutionValue == null) throw new ParameterException(getName(), "Cannot get substitution value from session key: " + formatName);
 				}
 			}
 		}
 		if (substitutionValue == null) {
-			String namelc=name.toLowerCase();
+			String namelc=formatName.toLowerCase();
 			switch (namelc) {
 				case "now":
 					if ("date".equalsIgnoreCase(formatType) || "time".equalsIgnoreCase(formatType)) {
 						substitutionValue = TimeProvider.nowAsDate();
-					} else{
+					} else if ("millis".equalsIgnoreCase(formatType)) {
+						substitutionValue = TimeProvider.nowAsMillis();
+					} else {
 						substitutionValue = formatDateToString(TimeProvider.nowAsDate(), formatString);
 					}
 
@@ -660,7 +669,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 					break;
 				case "fixeddate":
 					if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
-						throw new ParameterException(getName(), "Parameter pattern [" + name + "] only allowed in stub mode");
+						throw new ParameterException(getName(), "Parameter pattern [" + formatName + "] only allowed in stub mode");
 					}
 
 					// Parameter can be provided as a Date or a String. If using session.getString on a Date parameter, it will be formatted incorrectly
@@ -680,13 +689,13 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 					break;
 				case "fixeduid":
 					if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
-						throw new ParameterException(getName(), "Parameter pattern [" + name + "] only allowed in stub mode");
+						throw new ParameterException(getName(), "Parameter pattern [" + formatName + "] only allowed in stub mode");
 					}
 					substitutionValue = FIXEDUID;
 					break;
 				case "fixedhostname":
 					if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
-						throw new ParameterException(getName(), "Parameter pattern [" + name + "] only allowed in stub mode");
+						throw new ParameterException(getName(), "Parameter pattern [" + formatName + "] only allowed in stub mode");
 					}
 					substitutionValue = FIXEDHOSTNAME;
 					break;
@@ -702,7 +711,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			if (isIgnoreUnresolvablePatternElements()) {
 				substitutionValue="";
 			} else {
-				throw new ParameterException(getName(), "Parameter or session variable with name [" + name + "] in pattern [" + getPattern() + "] cannot be resolved");
+				throw new ParameterException(getName(), "Parameter or session variable with name [" + formatName + "] in pattern [" + getPattern() + "] cannot be resolved");
 			}
 		}
 		return substitutionValue;
