@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2020 - 2024 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2020 - 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package org.frankframework.extensions.cmis.server;
 
+import java.io.Serial;
 import java.lang.reflect.Method;
 
 import org.apache.chemistry.opencmis.client.api.Session;
@@ -30,7 +31,8 @@ import org.apache.chemistry.opencmis.commons.spi.PolicyService;
 import org.apache.chemistry.opencmis.commons.spi.RelationshipService;
 import org.apache.chemistry.opencmis.commons.spi.RepositoryService;
 import org.apache.chemistry.opencmis.commons.spi.VersioningService;
-import org.apache.logging.log4j.Logger;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.extensions.cmis.CmisSessionBuilder;
 import org.frankframework.extensions.cmis.CmisSessionException;
@@ -40,17 +42,17 @@ import org.frankframework.extensions.cmis.server.impl.IbisObjectService;
 import org.frankframework.extensions.cmis.server.impl.IbisRepositoryService;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
 
 /**
  * After each request the CallContext is removed.
  * The CmisBinding is kept, unless property cmisbridge.closeConnection = true
  */
+@Log4j2
 public class BridgedCmisService extends FilterCmisService {
 
+	@Serial
 	private static final long serialVersionUID = 2L;
-	private final Logger log = LogUtil.getLogger(this);
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	public static final boolean CMIS_BRIDGE_CLOSE_CONNECTION = APP_CONSTANTS.getBoolean(RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX+"closeConnection", false);
 
