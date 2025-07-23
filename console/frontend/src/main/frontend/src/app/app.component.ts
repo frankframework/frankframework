@@ -307,7 +307,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.appService.getEnvironmentVariables().subscribe((data) => {
       if (data['Application Constants']) {
-        const appConstants = Object.assign(this.appService.appConstants(), data['Application Constants']['Global']); //make FF!Application Constants default
+        const appConstants = { ...this.appService.appConstants(), ...data['Application Constants']['Global'] }; //make FF!Application Constants default
 
         const idleTime =
           Number.parseInt(appConstants['console.idle.time'] as string) > 0

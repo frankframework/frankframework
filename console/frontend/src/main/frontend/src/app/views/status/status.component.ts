@@ -174,14 +174,14 @@ export class StatusComponent implements OnInit, OnDestroy {
 
   collapseAll(): void {
     this.loadFlowInline = true;
-    for (const adapter of Object.keys(this.adapters)) {
+    for (const adapter of Object.keys(this.adapters())) {
       this.adapterShowContent[adapter] = false;
     }
   }
 
   expandAll(): void {
     this.loadFlowInline = false;
-    for (const adapter of Object.keys(this.adapters)) {
+    for (const adapter of Object.keys(this.adapters())) {
       this.adapterShowContent[adapter] = true;
     }
   }

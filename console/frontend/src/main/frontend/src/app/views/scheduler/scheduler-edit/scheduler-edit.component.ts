@@ -47,7 +47,7 @@ export class SchedulerEditComponent extends SchedulerAddEditParent implements On
         this.form = {
           name: data.name,
           group: data.group,
-          adapter: Object.values(this.adapters).find((adapter) => adapter.name === data.adapter) ?? null,
+          adapter: Object.values(this.adapters()).find((adapter) => adapter.name === data.adapter) ?? null,
           listener: data.listener,
           cron: data.triggers[0].cronExpression || '',
           interval: data.triggers[0].repeatInterval || '',
