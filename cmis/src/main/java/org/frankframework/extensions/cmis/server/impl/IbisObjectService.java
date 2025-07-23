@@ -18,7 +18,6 @@ package org.frankframework.extensions.cmis.server.impl;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.util.EnumSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -42,15 +41,15 @@ import org.apache.chemistry.opencmis.commons.impl.dataobjects.PropertiesImpl;
 import org.apache.chemistry.opencmis.commons.server.CallContext;
 import org.apache.chemistry.opencmis.commons.spi.Holder;
 import org.apache.chemistry.opencmis.commons.spi.ObjectService;
-import org.apache.logging.log4j.Logger;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.extensions.cmis.CmisUtils;
 import org.frankframework.extensions.cmis.server.CmisEvent;
 import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
 
@@ -59,10 +58,11 @@ import org.frankframework.util.XmlUtils;
  *
  * @author Niels
  */
+@Log4j2
 public class IbisObjectService implements ObjectService {
 
+	public static final String REPOSITORY_ID_ELEMENT = "repositoryId";
 	private final ObjectService objectService;
-	private final Logger log = LogUtil.getLogger(this);
 	private final CmisEventDispatcher eventDispatcher = CmisEventDispatcher.getInstance();
 	private final CallContext callContext;
 
@@ -72,12 +72,7 @@ public class IbisObjectService implements ObjectService {
 	}
 
 	private XmlBuilder buildXml(String name, Object value) {
-		XmlBuilder filterXml = new XmlBuilder(name);
-
-		if(value != null)
-			filterXml.setValue(value.toString());
-
-		return filterXml;
+		return CmisUtils.buildXml(name, value);
 	}
 
 	@Override
@@ -91,7 +86,7 @@ public class IbisObjectService implements ObjectService {
 		}
 		else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
-			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
+			cmisXml.addSubElement(buildXml(REPOSITORY_ID_ELEMENT, repositoryId));
 			cmisXml.addSubElement(buildXml("folderId", folderId));
 			cmisXml.addSubElement(buildXml("versioningState", versioningState));
 
@@ -129,7 +124,7 @@ public class IbisObjectService implements ObjectService {
 		}
 		else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
-			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
+			cmisXml.addSubElement(buildXml(REPOSITORY_ID_ELEMENT, repositoryId));
 			cmisXml.addSubElement(buildXml("folderId", folderId));
 			cmisXml.addSubElement(buildXml("policies", policies));
 
@@ -165,13 +160,13 @@ public class IbisObjectService implements ObjectService {
 		}
 		else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
-			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
+			cmisXml.addSubElement(buildXml(REPOSITORY_ID_ELEMENT, repositoryId));
 			cmisXml.addSubElement(buildXml("folderId", folderId));
 			cmisXml.addSubElement(buildXml("policies", policies));
 
 			XmlBuilder propertiesXml = new XmlBuilder("properties");
-			for (Iterator<PropertyData<?>> it = properties.getPropertyList().iterator(); it.hasNext();) {
-				propertiesXml.addSubElement(CmisUtils.getPropertyXml(it.next()));
+			for (PropertyData<?> propertyData : properties.getPropertyList()) {
+				propertiesXml.addSubElement(CmisUtils.getPropertyXml(propertyData));
 			}
 			cmisXml.addSubElement(propertiesXml);
 
@@ -188,7 +183,7 @@ public class IbisObjectService implements ObjectService {
 		}
 		else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
-			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
+			cmisXml.addSubElement(buildXml(REPOSITORY_ID_ELEMENT, repositoryId));
 			cmisXml.addSubElement(buildXml("objectId", objectId));
 			AllowableActionsImpl allowableActions = new AllowableActionsImpl();
 
@@ -197,9 +192,8 @@ public class IbisObjectService implements ObjectService {
 			if(allowableActionsElem != null) {
 				Set<Action> actions = EnumSet.noneOf(Action.class);
 
-				Iterator<Node> actionIterator = XmlUtils.getChildTags(allowableActionsElem, "action").iterator();
-				while (actionIterator.hasNext()) {
-					String property = XmlUtils.getStringValue((Element) actionIterator.next());
+				for (Node node : XmlUtils.getChildTags(allowableActionsElem, "action")) {
+					String property = XmlUtils.getStringValue((Element) node);
 					actions.add(Action.fromValue(property));
 				}
 
@@ -215,10 +209,9 @@ public class IbisObjectService implements ObjectService {
 
 		if(!eventDispatcher.contains(CmisEvent.GET_OBJECT)) {
 			return objectService.getObject(repositoryId, objectId, filter, includeAllowableActions, includeRelationships, renditionFilter, includePolicyIds, includeAcl, extensions);
-		}
-		else {
+		} else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
-			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
+			cmisXml.addSubElement(buildXml(REPOSITORY_ID_ELEMENT, repositoryId));
 			cmisXml.addSubElement(buildXml("objectId", objectId));
 			cmisXml.addSubElement(buildXml("filter", filter));
 			cmisXml.addSubElement(buildXml("includeAllowableActions", includeAllowableActions));
@@ -238,10 +231,9 @@ public class IbisObjectService implements ObjectService {
 
 		if(!eventDispatcher.contains(CmisEvent.GET_PROPERTIES)) {
 			return objectService.getProperties(repositoryId, objectId, filter, extension);
-		}
-		else {
+		} else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
-			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
+			cmisXml.addSubElement(buildXml(REPOSITORY_ID_ELEMENT, repositoryId));
 			cmisXml.addSubElement(buildXml("objectId", objectId));
 			cmisXml.addSubElement(buildXml("filter", filter));
 			try {
@@ -272,10 +264,9 @@ public class IbisObjectService implements ObjectService {
 
 		if(!eventDispatcher.contains(CmisEvent.GET_OBJECT_BY_PATH)) {
 			return objectService.getObjectByPath(repositoryId, path, filter, includeAllowableActions, includeRelationships, renditionFilter, includePolicyIds, includeAcl, extension);
-		}
-		else {
+		} else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
-			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
+			cmisXml.addSubElement(buildXml(REPOSITORY_ID_ELEMENT, repositoryId));
 			cmisXml.addSubElement(buildXml("path", path));
 			cmisXml.addSubElement(buildXml("filter", filter));
 			cmisXml.addSubElement(buildXml("includeAllowableActions", includeAllowableActions));
@@ -297,18 +288,17 @@ public class IbisObjectService implements ObjectService {
 
 		if(!eventDispatcher.contains(CmisEvent.UPDATE_PROPERTIES)) {
 			objectService.updateProperties(repositoryId, objectId, changeToken, properties, extension);
-		}
-		else {
+		} else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
-			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
+			cmisXml.addSubElement(buildXml(REPOSITORY_ID_ELEMENT, repositoryId));
 			if(objectId != null)
 				cmisXml.addSubElement(buildXml("objectId", objectId.getValue()));
 			if(changeToken != null)
 				cmisXml.addSubElement(buildXml("changeToken", changeToken.getValue()));
 
 			XmlBuilder propertiesXml = new XmlBuilder("properties");
-			for (Iterator<PropertyData<?>> it = properties.getPropertyList().iterator(); it.hasNext();) {
-				propertiesXml.addSubElement(CmisUtils.getPropertyXml(it.next()));
+			for (PropertyData<?> propertyData : properties.getPropertyList()) {
+				propertiesXml.addSubElement(CmisUtils.getPropertyXml(propertyData));
 			}
 			cmisXml.addSubElement(propertiesXml);
 
@@ -327,10 +317,9 @@ public class IbisObjectService implements ObjectService {
 
 		if(!eventDispatcher.contains(CmisEvent.MOVE_OBJECT)) {
 			objectService.moveObject(repositoryId, objectId, targetFolderId, sourceFolderId, extension);
-		}
-		else {
+		} else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
-			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
+			cmisXml.addSubElement(buildXml(REPOSITORY_ID_ELEMENT, repositoryId));
 			if(objectId != null)
 				cmisXml.addSubElement(buildXml("objectId", objectId.getValue()));
 			cmisXml.addSubElement(buildXml("targetFolderId", targetFolderId));
@@ -345,10 +334,9 @@ public class IbisObjectService implements ObjectService {
 
 		if(!eventDispatcher.contains(CmisEvent.DELETE_OBJECT)) {
 			objectService.deleteObject(repositoryId, objectId, allVersions, extension);
-		}
-		else {
+		} else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
-			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
+			cmisXml.addSubElement(buildXml(REPOSITORY_ID_ELEMENT, repositoryId));
 			cmisXml.addSubElement(buildXml("objectId", objectId));
 			cmisXml.addSubElement(buildXml("allVersions", allVersions));
 
@@ -368,10 +356,9 @@ public class IbisObjectService implements ObjectService {
 
 		if(!eventDispatcher.contains(CmisEvent.GET_CONTENTSTREAM)) {
 			return objectService.getContentStream(repositoryId, objectId, streamId, offset, length, extension);
-		}
-		else {
+		} else {
 			XmlBuilder cmisXml = new XmlBuilder("cmis");
-			cmisXml.addSubElement(buildXml("repositoryId", repositoryId));
+			cmisXml.addSubElement(buildXml(REPOSITORY_ID_ELEMENT, repositoryId));
 			cmisXml.addSubElement(buildXml("objectId", objectId));
 			cmisXml.addSubElement(buildXml("streamId", streamId));
 			cmisXml.addSubElement(buildXml("offset", offset));

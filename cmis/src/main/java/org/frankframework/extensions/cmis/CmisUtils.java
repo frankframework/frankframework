@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2020 Nationale-Nederlanden, 2023 WeAreFrank!
+   Copyright 2019-2020 Nationale-Nederlanden, 2023, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,6 +35,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeSet;
+
+import jakarta.annotation.Nullable;
 
 import org.apache.chemistry.opencmis.client.api.CmisObject;
 import org.apache.chemistry.opencmis.client.api.ObjectId;
@@ -149,6 +151,10 @@ public class CmisUtils {
 	private static final Logger log = LogUtil.getLogger(CmisUtils.class);
 	private static final String CMIS_SECURITYHANDLER = AppConstants.getInstance().getString("cmis.securityHandler.type", "wsse");
 
+	private CmisUtils() {
+		// Private constructor so that no instance of utility-class can be created
+	}
+
 	public static void populateCmisAttributes(PipeLineSession session) {
 		CallContext callContext = (CallContext) session.get(CMIS_CALLCONTEXT_KEY);
 		if(callContext != null) {
@@ -192,10 +198,9 @@ public class CmisUtils {
 		propertyXml.addAttribute("queryName", property.getQueryName());
 
 		PropertyType propertyType = PropertyType.STRING;
-		if(property instanceof Property property1) {
+		if(property instanceof Property<?> property1) {
 			propertyType = property1.getType();
-		}
-		else {
+		} else {
 			if(property instanceof PropertyId) {
 				propertyType = PropertyType.ID;
 			} else if(property instanceof PropertyBoolean) {
@@ -268,86 +273,85 @@ public class CmisUtils {
 		PropertiesImpl properties = new PropertiesImpl();
 
 		Element propertiesElement = XmlUtils.getFirstChildTag(cmisElement, "properties");
-		Iterator<Node> propertyIterator = XmlUtils.getChildTags(propertiesElement, "property").iterator();
-		while (propertyIterator.hasNext()) {
-			Element propertyElement = (Element) propertyIterator.next();
+		for (Node node : XmlUtils.getChildTags(propertiesElement, "property")) {
+			Element propertyElement = (Element) node;
 			String propertyValue = XmlUtils.getStringValue(propertyElement);
 			String nameAttr = propertyElement.getAttribute("name");
 			String typeAttr = propertyElement.getAttribute("type");
 			PropertyType propertyType = PropertyType.STRING;
-			if(StringUtils.isNotEmpty(typeAttr)) {
+			if (StringUtils.isNotEmpty(typeAttr)) {
 				propertyType = PropertyType.fromValue(typeAttr);
 			}
-			if(StringUtils.isEmpty(typeAttr) && nameAttr.startsWith("cmis:")) {
+			if (StringUtils.isEmpty(typeAttr) && nameAttr.startsWith("cmis:")) {
 				propertyType = PropertyType.ID;
 			}
 
 			boolean isNull = Boolean.parseBoolean(propertyElement.getAttribute("isNull"));
-			if(isNull)
+			if (isNull)
 				propertyValue = null;
 
 			switch (propertyType) {
-			case ID:
-				properties.addProperty(new PropertyIdImpl(addStandardDefinitions(new PropertyIdDefinitionImpl(), propertyElement, propertyType), propertyValue));
-				break;
-			case STRING:
-				properties.addProperty(new PropertyStringImpl(addStandardDefinitions(new PropertyStringDefinitionImpl(), propertyElement, propertyType), propertyValue));
-				break;
-			case INTEGER:
-				BigInteger bigInt = null;
-				if(StringUtils.isNotEmpty(propertyValue)) {
-					bigInt = new BigInteger(propertyValue);
-				}
-				properties.addProperty(new PropertyIntegerImpl(addStandardDefinitions(new PropertyIntegerDefinitionImpl(), propertyElement, propertyType), bigInt));
-				break;
-			case DATETIME:
-				GregorianCalendar gregorianCalendar = null;
-				if(StringUtils.isNotEmpty(propertyValue)) {
-					String formatStringAttr = propertyElement.getAttribute("formatString");
-					String timezoneAttr = propertyElement.getAttribute("timezone");
-					if (StringUtils.isEmpty(formatStringAttr)) {
-						formatStringAttr = FORMATSTRING_BY_DEFAULT;
+				case ID:
+					properties.addProperty(new PropertyIdImpl(addStandardDefinitions(new PropertyIdDefinitionImpl(), propertyElement, propertyType), propertyValue));
+					break;
+				case STRING:
+					properties.addProperty(new PropertyStringImpl(addStandardDefinitions(new PropertyStringDefinitionImpl(), propertyElement, propertyType), propertyValue));
+					break;
+				case INTEGER:
+					BigInteger bigInt = null;
+					if (StringUtils.isNotEmpty(propertyValue)) {
+						bigInt = new BigInteger(propertyValue);
 					}
-
-					DateTimeFormatter formatter = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(formatStringAttr);
-					try {
-						TemporalAccessor parse = formatter.parse(propertyValue);
-
-						gregorianCalendar = new GregorianCalendar();
-						gregorianCalendar.setTimeInMillis(Instant.from(parse).getEpochSecond());
-
-						if (StringUtils.isNotEmpty(timezoneAttr)) {
-							gregorianCalendar.setTimeZone(TimeZone.getTimeZone(timezoneAttr));
+					properties.addProperty(new PropertyIntegerImpl(addStandardDefinitions(new PropertyIntegerDefinitionImpl(), propertyElement, propertyType), bigInt));
+					break;
+				case DATETIME:
+					GregorianCalendar gregorianCalendar = null;
+					if (StringUtils.isNotEmpty(propertyValue)) {
+						String formatStringAttr = propertyElement.getAttribute("formatString");
+						String timezoneAttr = propertyElement.getAttribute("timezone");
+						if (StringUtils.isEmpty(formatStringAttr)) {
+							formatStringAttr = FORMATSTRING_BY_DEFAULT;
 						}
-					} catch (DateTimeParseException e) {
-						log.warn("exception parsing date [{}] using formatString [{}]", propertyValue, formatStringAttr, e);
+
+						DateTimeFormatter formatter = DateFormatUtils.getDateTimeFormatterWithOptionalComponents(formatStringAttr);
+						try {
+							TemporalAccessor parse = formatter.parse(propertyValue);
+
+							gregorianCalendar = new GregorianCalendar();
+							gregorianCalendar.setTimeInMillis(Instant.from(parse).getEpochSecond());
+
+							if (StringUtils.isNotEmpty(timezoneAttr)) {
+								gregorianCalendar.setTimeZone(TimeZone.getTimeZone(timezoneAttr));
+							}
+						} catch (DateTimeParseException e) {
+							log.warn("exception parsing date [{}] using formatString [{}]", propertyValue, formatStringAttr, e);
+						}
 					}
-				}
-				properties.addProperty(new PropertyDateTimeImpl(addStandardDefinitions(new PropertyDateTimeDefinitionImpl(), propertyElement, propertyType), gregorianCalendar));
-				break;
-			case BOOLEAN:
-				Boolean bool = null;
-				if(StringUtils.isNotEmpty(propertyValue)) {
-					bool = Boolean.parseBoolean(propertyValue);
-				}
-				properties.addProperty(new PropertyBooleanImpl(addStandardDefinitions(new PropertyBooleanDefinitionImpl(), propertyElement, propertyType), bool));
-				break;
-			case DECIMAL:
-				BigDecimal decimal = null;
-				if(StringUtils.isNotEmpty(propertyValue)) {
-					decimal = new BigDecimal(propertyValue);
-				}
-				properties.addProperty(new PropertyDecimalImpl(addStandardDefinitions(new PropertyDecimalDefinitionImpl(), propertyElement, propertyType), decimal));
-				break;
-			case URI:
-				properties.addProperty(new PropertyUriImpl(addStandardDefinitions(new PropertyUriDefinitionImpl(), propertyElement, propertyType), propertyValue));
-				break;
-			case HTML:
-				properties.addProperty(new PropertyHtmlImpl(addStandardDefinitions(new PropertyHtmlDefinitionImpl(), propertyElement, propertyType), propertyValue));
-				break;
-			default:
-				log.warn("unparsable type [{}] for property [{}]", typeAttr, propertyValue);
-				continue; //Skip all and continue with the next property!
+					properties.addProperty(new PropertyDateTimeImpl(addStandardDefinitions(new PropertyDateTimeDefinitionImpl(), propertyElement, propertyType), gregorianCalendar));
+					break;
+				case BOOLEAN:
+					Boolean bool = null;
+					if (StringUtils.isNotEmpty(propertyValue)) {
+						bool = Boolean.parseBoolean(propertyValue);
+					}
+					properties.addProperty(new PropertyBooleanImpl(addStandardDefinitions(new PropertyBooleanDefinitionImpl(), propertyElement, propertyType), bool));
+					break;
+				case DECIMAL:
+					BigDecimal decimal = null;
+					if (StringUtils.isNotEmpty(propertyValue)) {
+						decimal = new BigDecimal(propertyValue);
+					}
+					properties.addProperty(new PropertyDecimalImpl(addStandardDefinitions(new PropertyDecimalDefinitionImpl(), propertyElement, propertyType), decimal));
+					break;
+				case URI:
+					properties.addProperty(new PropertyUriImpl(addStandardDefinitions(new PropertyUriDefinitionImpl(), propertyElement, propertyType), propertyValue));
+					break;
+				case HTML:
+					properties.addProperty(new PropertyHtmlImpl(addStandardDefinitions(new PropertyHtmlDefinitionImpl(), propertyElement, propertyType), propertyValue));
+					break;
+				default:
+					log.warn("unparsable type [{}] for property [{}]", typeAttr, propertyValue);
+					continue; //Skip all and continue with the next property!
 			}
 
 			log.debug("set property name [{}] value [{}]", nameAttr, propertyValue);
@@ -465,23 +469,22 @@ public class CmisUtils {
 		TypeDefinitionFactory factory = TypeDefinitionFactory.newInstance();
 		MutableTypeDefinition definition = null;
 
-		if(BaseTypeId.CMIS_DOCUMENT == BaseTypeId.fromValue(baseTypeId)) {
+		BaseTypeId baseTypeId1 = BaseTypeId.fromValue(baseTypeId);
+		if(BaseTypeId.CMIS_DOCUMENT == baseTypeId1) {
 			definition = factory.createBaseDocumentTypeDefinition(cmisVersion);
-		}
-		else if(BaseTypeId.CMIS_FOLDER == BaseTypeId.fromValue(baseTypeId)) {
+		} else if(BaseTypeId.CMIS_FOLDER == baseTypeId1) {
 			definition = factory.createBaseFolderTypeDefinition(cmisVersion);
-		}
-		else if(BaseTypeId.CMIS_ITEM == BaseTypeId.fromValue(baseTypeId)) {
+		} else if(BaseTypeId.CMIS_ITEM == baseTypeId1) {
 			definition = factory.createBaseItemTypeDefinition(cmisVersion);
-		}
-		else if(BaseTypeId.CMIS_POLICY == BaseTypeId.fromValue(baseTypeId)) {
+		} else if(BaseTypeId.CMIS_POLICY == baseTypeId1) {
 			definition = factory.createBasePolicyTypeDefinition(cmisVersion);
-		}
-		else if(BaseTypeId.CMIS_RELATIONSHIP == BaseTypeId.fromValue(baseTypeId)) {
+		} else if(BaseTypeId.CMIS_RELATIONSHIP == baseTypeId1) {
 			definition = factory.createBaseRelationshipTypeDefinition(cmisVersion);
-		}
-		else if(BaseTypeId.CMIS_SECONDARY == BaseTypeId.fromValue(baseTypeId)) {
+		} else if(BaseTypeId.CMIS_SECONDARY == baseTypeId1) {
 			definition = factory.createBaseSecondaryTypeDefinition(cmisVersion);
+		}
+		if (definition == null) {
+			throw new IllegalStateException("'definition' cannot still be null; baseTypeId=[" + baseTypeId + "]");
 		}
 		definition.setDescription(description);
 		definition.setDisplayName(displayName);
@@ -493,10 +496,8 @@ public class CmisUtils {
 
 		Element propertyDefinitions = XmlUtils.getFirstChildTag(typeXml, "propertyDefinitions");
 		Collection<Node> propertyDefinitionList = XmlUtils.getChildTags(propertyDefinitions, "propertyDefinition");
-		if(propertyDefinitionList != null) {
-			for (Node node : propertyDefinitionList) {
-				definition.addPropertyDefinition(CmisUtils.xml2PropertyDefinition((Element) node));
-			}
+		for (Node node : propertyDefinitionList) {
+			definition.addPropertyDefinition(CmisUtils.xml2PropertyDefinition((Element) node));
 		}
 
 		definition.setIsControllableAcl(CmisUtils.parseBooleanAttr(typeXml, "controllableACL"));
@@ -515,37 +516,21 @@ public class CmisUtils {
 		return definition;
 	}
 
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	private static PropertyDefinition<?> xml2PropertyDefinition(Element propertyDefinitionXml) {
-		MutablePropertyDefinition<?> definition = null;
+		MutablePropertyDefinition<?> definition;
 
 		PropertyType type = PropertyType.fromValue(propertyDefinitionXml.getAttribute("propertyType"));
-		switch (type) {
-		case ID:
-			definition = new PropertyIdDefinitionImpl();
-			break;
-		case BOOLEAN:
-			definition = new PropertyBooleanDefinitionImpl();
-			break;
-		case DATETIME:
-			definition = new PropertyDateTimeDefinitionImpl();
-			break;
-		case DECIMAL:
-			definition = new PropertyDecimalDefinitionImpl();
-			break;
-		case INTEGER:
-			definition = new PropertyIntegerDefinitionImpl();
-			break;
-		case HTML:
-			definition = new PropertyHtmlDefinitionImpl();
-			break;
-		case URI:
-			definition = new PropertyUriDefinitionImpl();
-			break;
-		case STRING:
-		default:
-			definition = new PropertyStringDefinitionImpl();
-			break;
-		}
+		definition = switch (type) {
+			case ID -> new PropertyIdDefinitionImpl();
+			case BOOLEAN -> new PropertyBooleanDefinitionImpl();
+			case DATETIME -> new PropertyDateTimeDefinitionImpl();
+			case DECIMAL -> new PropertyDecimalDefinitionImpl();
+			case INTEGER -> new PropertyIntegerDefinitionImpl();
+			case HTML -> new PropertyHtmlDefinitionImpl();
+			case URI -> new PropertyUriDefinitionImpl();
+			default -> new PropertyStringDefinitionImpl();
+		};
 
 		definition.setPropertyType(type);
 		definition.setId(propertyDefinitionXml.getAttribute("id"));
@@ -569,7 +554,6 @@ public class CmisUtils {
 		definition.setIsRequired(CmisUtils.parseBooleanAttr(propertyDefinitionXml, "required"));
 
 		if(propertyDefinitionXml.hasAttribute("defaultValue")) {
-			// TODO: turn this into a list
 			List defaultValues = new ArrayList();
 			String defaultValue = propertyDefinitionXml.getAttribute("defaultValue");
 			defaultValues.add(defaultValue);
@@ -581,7 +565,7 @@ public class CmisUtils {
 	/**
 	 * Helper class
 	 */
-	private static String parseStringAttr(Element xml, String attribute) {
+	private static @Nullable String parseStringAttr(Element xml, String attribute) {
 		if(xml.hasAttribute(attribute)) {
 			return xml.getAttribute(attribute);
 		}
@@ -591,7 +575,7 @@ public class CmisUtils {
 	/**
 	 * Helper class because Boolean can also be NULL in some cases with CMIS
 	 */
-	private static Boolean parseBooleanAttr(Element xml, String attribute) {
+	private static @Nullable Boolean parseBooleanAttr(Element xml, String attribute) {
 		if(xml.hasAttribute(attribute)) {
 			return Boolean.parseBoolean(xml.getAttribute(attribute));
 		}
@@ -601,10 +585,10 @@ public class CmisUtils {
 	/**
 	 * Helper class because BigInteger can also be NULL in some cases with CMIS
 	 */
-	private static BigInteger parseBigIntegerAttr(Element xml, String attribute) {
+	private static @Nullable BigInteger parseBigIntegerAttr(Element xml, String attribute) {
 		if(xml.hasAttribute(attribute)) {
 			String value = xml.getAttribute(attribute);
-			Long longValue = Long.parseLong(value);
+			long longValue = Long.parseLong(value);
 			return BigInteger.valueOf(longValue);
 		}
 		return null;
@@ -613,7 +597,7 @@ public class CmisUtils {
 
 	public static XmlBuilder repositoryInfo2xml(RepositoryInfo repository) {
 		XmlBuilder repositoryXml = new XmlBuilder("repository");
-		repositoryXml.addAttribute("cmisVersion", repository.getCmisVersion().value());
+		repositoryXml.addAttribute(CMIS_VERSION_KEY, repository.getCmisVersion().value());
 		repositoryXml.addAttribute("cmisVersionSupported", repository.getCmisVersionSupported());
 		repositoryXml.addAttribute("description", repository.getDescription());
 		repositoryXml.addAttribute("id", repository.getId());
@@ -776,7 +760,7 @@ public class CmisUtils {
 	public static RepositoryInfo xml2repositoryInfo(Element cmisResult) {
 		RepositoryInfoImpl repositoryInfo = new RepositoryInfoImpl();
 
-		repositoryInfo.setCmisVersion(CmisVersion.fromValue(cmisResult.getAttribute("cmisVersion")));
+		repositoryInfo.setCmisVersion(CmisVersion.fromValue(cmisResult.getAttribute(CMIS_VERSION_KEY)));
 		repositoryInfo.setCmisVersionSupported(cmisResult.getAttribute("cmisVersionSupported"));
 		repositoryInfo.setDescription(cmisResult.getAttribute("description"));
 		repositoryInfo.setId(cmisResult.getAttribute("id"));
