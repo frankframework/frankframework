@@ -20,6 +20,7 @@ import java.io.ByteArrayInputStream;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
@@ -29,6 +30,7 @@ import java.util.UUID;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -61,6 +63,11 @@ import org.frankframework.util.TimeProvider;
 import org.frankframework.util.XmlUtils;
 
 public class ParameterTest {
+
+	@AfterEach
+	void tearDown() {
+		System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
+	}
 
 	@Test
 	public void testParameterWithHiddenValue() throws Exception {
@@ -1035,7 +1042,7 @@ public class ParameterTest {
 	// Test for #2256 PutInSessionPipe with xpathExpression with type=domdoc
 	// results in "Content is not allowed in prolog"
 	public void testPutInSessionPipeWithDomdocParamsUsedMoreThanOnce() throws Exception {
-		try(TestConfiguration configuration = new TestConfiguration()) {
+		try (TestConfiguration configuration = new TestConfiguration()) {
 			Adapter adapter = configuration.createBean();
 			adapter.setName("testAdapter"); // Required for Metrics
 			PipeLine pipeline = SpringUtils.createBean(adapter);
@@ -1095,7 +1102,7 @@ public class ParameterTest {
 	@Test
 	public void testPatternNowWithStringType() throws Exception {
 		Parameter p = new Parameter();
-		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		TimeProvider.setTime(LocalDateTime.of(2025, 3, 5, 22, 22, 22));
 		try (PipeLineSession session = new PipeLineSession()) {
 			p.setName("date");
 			p.setPattern("{now}");
@@ -1104,22 +1111,19 @@ public class ParameterTest {
 			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
 
-			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
 			assertInstanceOf(String.class, result);
 
 			SimpleDateFormat sdf = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
-			String expectedDate = sdf.format(TimeProvider.nowAsDate()); // dit gaat echt meestal wel goed
+			String expectedDate = sdf.format(TimeProvider.nowAsDate());
 			assertEquals(expectedDate.substring(0, 10), ((String) result).substring(0, 10));
-
-		} finally {
-			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
 	}
 
 	@Test
 	public void testPatternNowWithDateFormatType() throws Exception {
 		Parameter p = new Parameter();
-		System.getProperties().setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		TimeProvider.setTime(LocalDateTime.of(2025, 3, 5, 22, 22, 22));
 		try (PipeLineSession session = new PipeLineSession()) {
 			p.setName("EsbSoapWrapperPipeTimestamp");
 			p.setPattern("{now,date,yyyy-MM-dd'T'HH:mm:ss}");
@@ -1128,15 +1132,12 @@ public class ParameterTest {
 			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
 
-			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
-			assertInstanceOf(String.class, result);
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+			String resultString = assertInstanceOf(String.class, result);
 
 			SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
-			String expectedDate = sdf.format(TimeProvider.nowAsDate()); // dit gaat echt meestal wel goed
-			assertEquals(expectedDate.substring(0, 10), ((String) result).substring(0, 10));
-
-		} finally {
-			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
+			String expectedDate = sdf.format(TimeProvider.nowAsDate());
+			assertEquals(expectedDate, resultString);
 		}
 	}
 
@@ -1176,14 +1177,12 @@ public class ParameterTest {
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
 			assertInstanceOf(String.class, result);
 			assertEquals(expectedDate, result);
-
-		} finally {
-			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
 	}
 
 	@Test
 	public void testPatternFixedDateWithUnixTimestamp() throws Exception {
+		TimeProvider.setTime(1747401948_000L);
 		Parameter p = new Parameter();
 		try (PipeLineSession session = new PipeLineSession()) {
 			p.setName("unixTimestamp");
@@ -1194,10 +1193,8 @@ public class ParameterTest {
 			Message message = new Message("fakeMessage");
 
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
-			assertInstanceOf(String.class, result);
-			assertDoesNotThrow(() -> Long.parseLong(result.toString()));
-		} finally {
-			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
+			Long millis = assertDoesNotThrow(() -> Long.parseLong(result.toString()));
+			assertEquals(1747401948_000L, millis);
 		}
 	}
 
@@ -1217,8 +1214,6 @@ public class ParameterTest {
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
 			assertInstanceOf(String.class, result);
 			assertEquals(expectedDate, result);
-		} finally {
-			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
 	}
 
@@ -1245,8 +1240,6 @@ public class ParameterTest {
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
 			assertInstanceOf(String.class, result);
 			assertEquals(expectedDateAsString, result);
-		} finally {
-			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
 	}
 
@@ -1273,8 +1266,6 @@ public class ParameterTest {
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
 			assertInstanceOf(String.class, result);
 			assertEquals(expectedDateAsString, result);
-		} finally {
-			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
 	}
 
@@ -1471,13 +1462,14 @@ public class ParameterTest {
 
 	@Test
 	// see https://github.com/frankframework/frankframework/issues/3232
-	public void testPotentialProblematicSysId() throws ConfigurationException {
+	public void testPotentialProblematicSysId() {
 		Parameter p = new Parameter();
 		p.setName("pid");
 		p.setXpathExpression("'#'"); // when this xpath expression is made part of the sysid, then an Exception
 										// occurs: '(TransformerException) Did not find the stylesheet root!'
 		p.setXsltVersion(1);
-		p.configure();
+
+		assertDoesNotThrow(p::configure);
 	}
 
 	@Test
@@ -1512,8 +1504,8 @@ public class ParameterTest {
 		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
 
 		// Assert
-		assertInstanceOf(String.class, result);
-		assertTrue(((String)result).matches("\\d{1,2}:\\d{2}"));
+		String stringResult = assertInstanceOf(String.class, result);
+		assertTrue((stringResult).matches("\\d{1,2}:\\d{2}"));
 	}
 
 	@Test
@@ -1533,7 +1525,8 @@ public class ParameterTest {
 		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
 
 		// Assert
-		assertTrue(((String)result).matches("\\d{1,2}:\\d{2}"));
+		String stringResult = assertInstanceOf(String.class, result);
+		assertTrue((stringResult).matches("\\d{1,2}:\\d{2}"));
 	}
 
 	@Test

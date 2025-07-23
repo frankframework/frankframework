@@ -128,7 +128,7 @@ public class DateParameter extends AbstractParameter {
 			long epoch = Long.parseLong(sanitized);
 
 			if (epoch < 1_000_000_000_000L) {
-				epoch *= 1000; // convert seconds to milliseconds
+				epoch *= 1000L; // convert seconds to milliseconds
 			}
 			return new Date(epoch);
 		} catch (NumberFormatException e) {

@@ -8,8 +8,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.text.SimpleDateFormat;
+import java.time.Clock;
+import java.time.LocalDateTime;
+import java.util.Calendar;
 import java.util.Date;
+import java.util.TimeZone;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -22,6 +28,20 @@ import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.TimeProvider;
 
 public class DateParameterTest {
+
+	private TimeZone systemTimeZone;
+
+	@BeforeEach
+	void setup() {
+		systemTimeZone = TimeZone.getDefault();
+	}
+
+	@AfterEach
+	void tearDown() {
+		System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
+		TimeZone.setDefault(systemTimeZone);
+		TimeProvider.resetClock();
+	}
 
 	protected void testFromStringToDateType(String input, String expected, DateFormatType type) throws ConfigurationException, ParameterException {
 		DateParameter parameter = new DateParameter();
@@ -162,15 +182,10 @@ public class DateParameterTest {
 			Message message = new Message("fakeMessage");
 
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
-			assertInstanceOf(Date.class, result);
-
-			Date resultDate = (Date) result;
+			Date resultDate = assertInstanceOf(Date.class, result);
 			SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
 			String formattedDate = sdf.format(resultDate);
 			assertEquals("2001-12-17", formattedDate);
-
-		} finally {
-			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
 	}
 
@@ -189,9 +204,7 @@ public class DateParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertInstanceOf(Date.class, result);
-
-		Date resultDate = (Date) result;
+		Date resultDate = assertInstanceOf(Date.class, result);
 		SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
 		String formattedDate = sdf.format(resultDate);
 		assertEquals("1995-01-23", formattedDate);
@@ -212,17 +225,13 @@ public class DateParameterTest {
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		try {
-			System.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
-			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
-			assertInstanceOf(Date.class, result);
-			Date resultDate = (Date) result;
-			SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
-			String formattedDate = sdf.format(resultDate);
-			assertEquals("1996-02-24", formattedDate);
-		} finally {
-			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
-		}
+		System.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+		Date resultDate = assertInstanceOf(Date.class, result);
+		SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
+		String formattedDate = sdf.format(resultDate);
+		assertEquals("1996-02-24", formattedDate);
 	}
 
 	@Test
@@ -239,18 +248,14 @@ public class DateParameterTest {
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		try {
-			System.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
-			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
-			assertInstanceOf(Date.class, result);
-			Date resultDate = (Date) result;
-			SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
-			String formattedDate = sdf.format(resultDate);
-			String formattedExpected = sdf.format(date);
-			assertEquals(formattedExpected, formattedDate);
-		} finally {
-			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
-		}
+		System.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+
+		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+		Date resultDate = assertInstanceOf(Date.class, result);
+		SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
+		String formattedDate = sdf.format(resultDate);
+		String formattedExpected = sdf.format(date);
+		assertEquals(formattedExpected, formattedDate);
 	}
 
 	@Test
@@ -268,9 +273,7 @@ public class DateParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertInstanceOf(Date.class, result);
-
-		Date resultDate = (Date) result;
+		Date resultDate = assertInstanceOf(Date.class, result);
 		String formattedDate = sdf.format(resultDate);
 		assertEquals("1995-01-23", formattedDate);
 	}
@@ -289,16 +292,11 @@ public class DateParameterTest {
 			Message message = new Message("fakeMessage");
 
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
-			assertInstanceOf(Date.class, result);
-
-			Date resultDate = (Date) result;
+			Date resultDate = assertInstanceOf(Date.class, result);
 			SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
 			String formattedDate = sdf.format(resultDate);
 			String expectedDate = sdf.format(TimeProvider.nowAsDate()); // dit gaat echt meestal wel goed
 			assertEquals(expectedDate, formattedDate);
-
-		} finally {
-			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
 	}
 
@@ -322,9 +320,6 @@ public class DateParameterTest {
 
 			SimpleDateFormat sdf = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
 			assertEquals(expectedDate, sdf.format(result));
-
-		} finally {
-			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
 	}
 
@@ -347,9 +342,6 @@ public class DateParameterTest {
 
 			SimpleDateFormat sdf = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
 			assertEquals(expectedDate, sdf.format(result));
-
-		} finally {
-			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
 	}
 
@@ -373,9 +365,6 @@ public class DateParameterTest {
 
 			SimpleDateFormat sdf = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
 			assertEquals(expectedDate, sdf.format(result));
-
-		} finally {
-			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
 	}
 
@@ -398,9 +387,6 @@ public class DateParameterTest {
 
 			SimpleDateFormat sdf = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
 			assertEquals(expectedDate, sdf.format(result));
-
-		} finally {
-			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		}
 	}
 
@@ -409,7 +395,7 @@ public class DateParameterTest {
 		DateParameter p = new DateParameter();
 		try (PipeLineSession session = new PipeLineSession()) {
 			p.setName("date");
-			p.setValue("1747401948");
+			p.setValue("1747401948"); // Value in seconds, not millis!!
 			p.setFormatType(DateParameter.DateFormatType.UNIX);
 			p.configure();
 
@@ -417,14 +403,36 @@ public class DateParameterTest {
 			Message message = new Message("fakeMessage");
 
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
-			assertInstanceOf(Date.class, result);
-		} finally {
-			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
+			Date resultDate = assertInstanceOf(Date.class, result);
+			assertEquals(1747401948_000L, resultDate.getTime());
+		}
+	}
+
+	@Test
+	public void testUnixParameterConvertsToDateChangeTZ() throws Exception {
+		DateParameter p = new DateParameter();
+		try (PipeLineSession session = new PipeLineSession()) {
+			p.setName("date");
+			p.setValue("1747401948"); // Value in seconds, not millis!!
+			p.setFormatType(DateParameter.DateFormatType.UNIX);
+			p.configure();
+
+			// Change the system timezone to see if that affects how the date is resolved
+			TimeProvider.setClock(Clock.systemUTC());
+			TimeZone.setDefault(TimeZone.getTimeZone("Z"));
+
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+			Date resultDate = assertInstanceOf(Date.class, result);
+			assertEquals(1747401948_000L, resultDate.getTime());
 		}
 	}
 
 	@Test
 	public void testUnixPatternConvertsToDate() throws Exception {
+		TimeProvider.setTime(1747401948_000L);
 		DateParameter p = new DateParameter();
 		try (PipeLineSession session = new PipeLineSession()) {
 			p.setName("unixTimestamp");
@@ -436,14 +444,14 @@ public class DateParameterTest {
 			Message message = new Message("fakeMessage");
 
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
-			assertInstanceOf(Date.class, result);
-		} finally {
-			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
+			Date resultDate = assertInstanceOf(Date.class, result);
+			assertEquals(1747401948_000L, resultDate.getTime());
 		}
 	}
 
 	@Test
 	public void testUnixPatternConvertsToDateWithoutFormatType() throws Exception {
+		TimeProvider.setTime(1747401948_000L);
 		DateParameter p = new DateParameter();
 		try (PipeLineSession session = new PipeLineSession()) {
 			p.setName("unixTimestamp");
@@ -454,9 +462,8 @@ public class DateParameterTest {
 			Message message = new Message("fakeMessage");
 
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
-			assertInstanceOf(Date.class, result);
-		} finally {
-			System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
+			Date resultDate = assertInstanceOf(Date.class, result);
+			assertEquals(1747401948_000L, resultDate.getTime());
 		}
 	}
 
@@ -485,6 +492,7 @@ public class DateParameterTest {
 	public void testTimeParameterWithTimePatternWithoutFormat() throws Exception {
 
 		// Arrange
+		TimeProvider.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
 		DateParameter parameter = new DateParameter();
 		parameter.setName("time");
 		parameter.setFormatType(DateFormatType.TIME);
@@ -499,13 +507,26 @@ public class DateParameterTest {
 		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
 
 		// Assert
-		assertInstanceOf(Date.class, result);
+		Date resultDate = assertInstanceOf(Date.class, result);
+		Calendar resultCalendar = Calendar.getInstance();
+		resultCalendar.setTime(resultDate);
+
+		// Only a value for the time should be set. Year / Monday / Day are at Epoch start
+		assertEquals(1970, resultCalendar.get(Calendar.YEAR));
+		assertEquals(Calendar.JANUARY, resultCalendar.get(Calendar.MONTH));
+		assertEquals(1, resultCalendar.get(Calendar.DAY_OF_MONTH));
+
+		// Time-part should be set
+		assertEquals(11, resultCalendar.get(Calendar.HOUR_OF_DAY));
+		assertEquals(12, resultCalendar.get(Calendar.MINUTE));
+		assertEquals(55, resultCalendar.get(Calendar.SECOND));
 	}
 
 	@Test
 	public void testTimeParameterWithTimePatternWithFormat() throws Exception {
 
 		// Arrange
+		TimeProvider.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
 		DateParameter parameter = new DateParameter();
 		parameter.setName("time");
 		parameter.setFormatType(DateFormatType.TIME);
@@ -520,13 +541,26 @@ public class DateParameterTest {
 		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
 
 		// Assert
-		assertInstanceOf(Date.class, result);
+		Date resultDate = assertInstanceOf(Date.class, result);
+		Calendar resultCalendar = Calendar.getInstance();
+		resultCalendar.setTime(resultDate);
+
+		// Only a value for the time should set. Year / Monday / Day are at Epoch start
+		assertEquals(1970, resultCalendar.get(Calendar.YEAR));
+		assertEquals(Calendar.JANUARY, resultCalendar.get(Calendar.MONTH));
+		assertEquals(1, resultCalendar.get(Calendar.DAY_OF_MONTH));
+
+		// Time-part should be set
+		assertEquals(11, resultCalendar.get(Calendar.HOUR_OF_DAY));
+		assertEquals(12, resultCalendar.get(Calendar.MINUTE));
+		assertEquals(55, resultCalendar.get(Calendar.SECOND));
 	}
 
 	@Test
 	public void testDateParameterWithDatePatternWithoutFormat() throws Exception {
 
 		// Arrange
+		TimeProvider.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
 		DateParameter parameter = new DateParameter();
 		parameter.setName("date");
 		parameter.setFormatType(DateFormatType.DATE);
@@ -541,13 +575,26 @@ public class DateParameterTest {
 		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
 
 		// Assert
-		assertInstanceOf(Date.class, result);
+		Date resultDate = assertInstanceOf(Date.class, result);
+		Calendar resultCalendar = Calendar.getInstance();
+		resultCalendar.setTime(resultDate);
+
+		// Only a value for the date should be set.
+		assertEquals(2025, resultCalendar.get(Calendar.YEAR));
+		assertEquals(Calendar.MARCH, resultCalendar.get(Calendar.MONTH));
+		assertEquals(5, resultCalendar.get(Calendar.DAY_OF_MONTH));
+
+		// Time-part should not be set
+		assertEquals(0, resultCalendar.get(Calendar.HOUR_OF_DAY));
+		assertEquals(0, resultCalendar.get(Calendar.MINUTE));
+		assertEquals(0, resultCalendar.get(Calendar.SECOND));
 	}
 
 	@Test
 	public void testDateParameterWithDatePatternWithFormat() throws Exception {
 
 		// Arrange
+		TimeProvider.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
 		DateParameter parameter = new DateParameter();
 		parameter.setName("date");
 		parameter.setFormatType(DateFormatType.DATE);
@@ -562,6 +609,16 @@ public class DateParameterTest {
 		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
 
 		// Assert
-		assertInstanceOf(Date.class, result);
+		Date resultDate = assertInstanceOf(Date.class, result);
+		Calendar resultCalendar = Calendar.getInstance();
+		resultCalendar.setTime(resultDate);
+		assertEquals(2025, resultCalendar.get(Calendar.YEAR));
+		assertEquals(Calendar.MARCH, resultCalendar.get(Calendar.MONTH));
+		assertEquals(5, resultCalendar.get(Calendar.DAY_OF_MONTH));
+
+		// Time-part should not be set
+		assertEquals(0, resultCalendar.get(Calendar.HOUR_OF_DAY));
+		assertEquals(0, resultCalendar.get(Calendar.MINUTE));
+		assertEquals(0, resultCalendar.get(Calendar.SECOND));
 	}
 }
