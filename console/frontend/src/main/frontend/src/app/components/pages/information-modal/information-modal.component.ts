@@ -56,6 +56,7 @@ export class InformationModalComponent implements OnInit, OnDestroy {
   private activeModal: NgbActiveModal = inject(NgbActiveModal);
   private toastService: ToastService = inject(ToastService);
   private serverInfoService: ServerInfoService = inject(ServerInfoService);
+  private serverInfo$ = toObservable(this.serverInfoService.serverInfo);
   private subscriptions?: Subscription;
 
   ngOnInit(): void {
@@ -68,7 +69,7 @@ export class InformationModalComponent implements OnInit, OnDestroy {
   }
 
   subscribeToServerInfo(): void {
-    this.subscriptions = toObservable(this.serverInfoService.serverInfo).subscribe({
+    this.subscriptions = this.serverInfo$.subscribe({
       next: (data) => {
         if (data === null) return;
 

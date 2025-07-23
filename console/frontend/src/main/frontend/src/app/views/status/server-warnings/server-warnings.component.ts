@@ -17,7 +17,7 @@ export class ServerWarningsComponent {
   @Input({ required: true }) messageLog: Record<string, MessageLog> = {};
   @Input({ required: true }) selectedConfiguration: string = 'All';
   @Input() serverInfo: ServerInfo | null = null;
-  @Input() freeDiskSpacePercentage?: number;
+  @Input() freeDiskSpacePercentage: number | null = null;
 
   protected readonly FREE_DISK_SPACE_ALERT_THRESHOLD = 5;
   protected securityItemsService: SecurityItemsService = inject(SecurityItemsService);

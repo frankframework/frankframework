@@ -41,13 +41,14 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
   protected result: string[][] = [];
   protected query: string = '';
 
-  private readonly appService: AppService = inject(AppService);
   private readonly jdbcService: JdbcService = inject(JdbcService);
   private readonly webStorageService: WebStorageService = inject(WebStorageService);
+  private readonly appService: AppService = inject(AppService);
+  private appConstants$ = toObservable(this.appService.appConstants);
   private appConstantsSubscription: Subscription | null = null;
 
   ngOnInit(): void {
-    this.appConstantsSubscription = toObservable(this.appService.appConstants).subscribe((appConstants) => {
+    this.appConstantsSubscription = this.appConstants$.subscribe((appConstants) => {
       this.form.datasource = appConstants['jdbc.datasource.default'] as string;
     });
 

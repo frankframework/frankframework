@@ -19,10 +19,11 @@ export class CustomViewsComponent implements OnInit, OnDestroy {
   }[] = [];
 
   private appService: AppService = inject(AppService);
+  private appConstants$ = toObservable(this.appService.appConstants);
   private subscription: Subscription | null = null;
 
   ngOnInit(): void {
-    this.subscription = toObservable(this.appService.appConstants).subscribe(() => this.updateCustomViews());
+    this.subscription = this.appConstants$.subscribe(() => this.updateCustomViews());
     this.updateCustomViews();
   }
 

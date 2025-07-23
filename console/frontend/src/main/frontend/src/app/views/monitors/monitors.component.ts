@@ -37,8 +37,9 @@ export class MonitorsComponent implements OnInit, OnDestroy {
   private subscriptions: Subscription = new Subscription();
 
   private route: ActivatedRoute = inject(ActivatedRoute);
-  private appService: AppService = inject(AppService);
   private monitorsService: MonitorsService = inject(MonitorsService);
+  private appService: AppService = inject(AppService);
+  private configurations$ = toObservable(this.appService.configurations);
 
   ngOnInit(): void {
     this.route.queryParamMap.subscribe((parameters) => {
@@ -47,7 +48,7 @@ export class MonitorsComponent implements OnInit, OnDestroy {
         this.updateConfigurations();
       }
     });
-    const configurationsSubscription = toObservable(this.appService.configurations).subscribe((configurations) => {
+    const configurationsSubscription = this.configurations$.subscribe((configurations) => {
       this.configurations = configurations;
       if (this.configurations.length > 0) {
         this.updateConfigurations();

@@ -73,6 +73,26 @@ export class AppComponent implements OnInit, OnDestroy {
   protected clusterMembers: ClusterMember[] = [];
   protected selectedClusterMember: ClusterMember | null = null;
 
+  private readonly http: HttpClient = inject(HttpClient);
+  private readonly router: Router = inject(Router);
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
+  private readonly renderer: Renderer2 = inject(Renderer2);
+  private readonly title: Title = inject(Title);
+  private readonly authService: AuthService = inject(AuthService);
+  private readonly notificationService: NotificationService = inject(NotificationService);
+  private readonly miscService: MiscService = inject(MiscService);
+  private readonly sessionService: SessionService = inject(SessionService);
+  private readonly debugService: DebugService = inject(DebugService);
+  private readonly sweetAlertService: SweetalertService = inject(SweetalertService);
+  private readonly toastService: ToastService = inject(ToastService);
+  private readonly idle: Idle = inject(Idle);
+  private readonly modalService: NgbModal = inject(NgbModal);
+  private readonly serverInfoService: ServerInfoService = inject(ServerInfoService);
+  private readonly websocketService: WebsocketService = inject(WebsocketService);
+  private readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
+  private readonly appService: AppService = inject(AppService);
+  protected startupError: Signal<string | null> = this.appService.startupError;
+
   private serverInfo: ServerInfo | null = null;
   private consoleState: AppInitState = appInitState.UN_INIT;
   private _subscriptions = new Subscription();
@@ -83,26 +103,6 @@ export class AppComponent implements OnInit, OnDestroy {
   };
 
   private messageKeeperSize = 10; // see Adapter.java#messageKeeperSize
-
-  private http: HttpClient = inject(HttpClient);
-  private router: Router = inject(Router);
-  private route: ActivatedRoute = inject(ActivatedRoute);
-  private renderer: Renderer2 = inject(Renderer2);
-  private title: Title = inject(Title);
-  private authService: AuthService = inject(AuthService);
-  private notificationService: NotificationService = inject(NotificationService);
-  private miscService: MiscService = inject(MiscService);
-  private sessionService: SessionService = inject(SessionService);
-  private debugService: DebugService = inject(DebugService);
-  private sweetAlertService: SweetalertService = inject(SweetalertService);
-  private toastService: ToastService = inject(ToastService);
-  private idle: Idle = inject(Idle);
-  private modalService: NgbModal = inject(NgbModal);
-  private serverInfoService: ServerInfoService = inject(ServerInfoService);
-  private websocketService: WebsocketService = inject(WebsocketService);
-  private serverTimeService: ServerTimeService = inject(ServerTimeService);
-  private appService: AppService = inject(AppService);
-  protected startupError: Signal<string | null> = this.appService.startupError;
 
   constructor() {
     Pace.start({
@@ -238,57 +238,49 @@ export class AppComponent implements OnInit, OnDestroy {
     this.debugService.log('Initializing Frank!Console');
 
     this.consoleState = appInitState.INIT;
-    toObservable(this.serverInfoService.serverInfo)
-      .pipe(first())
-      .subscribe({
-        next: (data) => {
-          if (data === null) return;
-          debugger;
-          this.serverInfo = data;
-
-          this.dtapStage = data['dtap.stage'];
-          this.appService.dtapStage.set(data['dtap.stage']);
-          this.dtapSide = data['dtap.side'];
-          this.userName = data['userName'];
-          this.appService.instanceName.set(data.instance.name);
-          this.authService.setLoggedIn(this.userName);
-          this.appService.updateTitle(this.title.getTitle().split(' | ')[1]);
-
-          this.consoleState = appInitState.POST_INIT;
-          if (!this.router.url.includes('login')) {
-            this.idle.watch();
-            this.renderer.removeClass(document.body, 'gray-bg');
-          }
-
-          this.serverTimeService.setServerTime(
-            data['serverTime'],
-            data['serverTimezone'],
-            data['serverTimezoneOffset'],
-          );
-
-          const iafInfoElement = document.querySelector<HTMLElement>('.iaf-info');
-          if (iafInfoElement)
-            iafInfoElement.textContent = `${data.framework.name} ${data.framework.version}: ${data.instance.name} ${data.instance.version}`;
-
-          if (this.appService.dtapStage() == 'LOC') {
-            this.debugService.setLevel(3);
-          }
-
-          //Was it able to retrieve the serverinfo without logging in?
-          if (!this.authService.isLoggedIn()) {
-            this.idle.setTimeout(0);
-          }
-
-          this.appService.getConfigurations().subscribe((data) => {
-            this.appService.updateConfigurations(data);
-          });
-
-          this.initializeWarnings();
-          this.checkIafVersions();
-        },
-      });
     this.serverInfoService.refresh().subscribe({
+      next: (data) => {
+        if (data === null) return;
+        this.serverInfo = data;
+
+        this.dtapStage = data['dtap.stage'];
+        this.appService.dtapStage.set(data['dtap.stage']);
+        this.dtapSide = data['dtap.side'];
+        this.userName = data['userName'];
+        this.appService.instanceName.set(data.instance.name);
+        this.authService.setLoggedIn(this.userName);
+        this.appService.updateTitle(this.title.getTitle().split(' | ')[1]);
+
+        this.consoleState = appInitState.POST_INIT;
+        if (!this.router.url.includes('login')) {
+          this.idle.watch();
+          this.renderer.removeClass(document.body, 'gray-bg');
+        }
+
+        this.serverTimeService.setServerTime(data['serverTime'], data['serverTimezone'], data['serverTimezoneOffset']);
+
+        const iafInfoElement = document.querySelector<HTMLElement>('.iaf-info');
+        if (iafInfoElement)
+          iafInfoElement.textContent = `${data.framework.name} ${data.framework.version}: ${data.instance.name} ${data.instance.version}`;
+
+        if (this.appService.dtapStage() == 'LOC') {
+          this.debugService.setLevel(3);
+        }
+
+        //Was it able to retrieve the serverinfo without logging in?
+        if (!this.authService.isLoggedIn()) {
+          this.idle.setTimeout(0);
+        }
+
+        this.appService.getConfigurations().subscribe((data) => {
+          this.appService.updateConfigurations(data);
+        });
+
+        this.initializeWarnings();
+        this.checkIafVersions();
+      },
       error: (error: HttpErrorResponse) => {
+        this.appService.loading.set(false);
         // HTTP 5xx error
         if (error.status.toString().startsWith('5')) {
           this.router.navigate(['error']);

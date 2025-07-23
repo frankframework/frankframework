@@ -3,7 +3,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import type { ChartData, ChartDataset, ChartOptions } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { Subscription } from 'rxjs';
-import { AppService } from 'src/app/app.service';
+import { AppConstants, AppService } from 'src/app/app.service';
 import { DebugService } from 'src/app/services/debug.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { AdapterstatisticsService, Statistics, StatisticsKeeper } from './adapterstatistics.service';
@@ -90,6 +90,7 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
   private readonly SweetAlert: SweetalertService = inject(SweetalertService);
   private readonly Debug: DebugService = inject(DebugService);
   private readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
+  private appConstants$ = toObservable(this.appService.appConstants);
   private appConstantsSubscription: Subscription | null = null;
   private dataset: Partial<ChartDataset<'line', number[]>> = {
     fill: false,
@@ -111,10 +112,9 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
       return;
     }
 
-    this.appConstantsSubscription = toObservable(this.appService.appConstants).subscribe(() =>
-      this.populateBoundaries(),
+    this.appConstantsSubscription = this.appConstants$.subscribe((appConstants) =>
+      this.populateBoundaries(appConstants),
     );
-    this.populateBoundaries();
 
     window.setTimeout(() => {
       this.refresh();
@@ -161,8 +161,7 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
     return receiver.processing.sort((a: StatisticsKeeper, b: StatisticsKeeper) => a.name.localeCompare(b.name));
   }
 
-  private populateBoundaries(): void {
-    const appConstants = this.appService.appConstants();
+  private populateBoundaries(appConstants: AppConstants): void {
     if (!appConstants['Statistics.boundaries']) return;
 
     const timeBoundaries: string[] = (appConstants['Statistics.boundaries'] as string).split(',');

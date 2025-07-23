@@ -24,12 +24,13 @@ export class IbisstoreSummaryComponent implements OnInit, OnDestroy {
 
   private readonly router: Router = inject(Router);
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
-  private readonly appService: AppService = inject(AppService);
   private readonly jdbcService: JdbcService = inject(JdbcService);
+  private readonly appService: AppService = inject(AppService);
+  private appConstants$ = toObservable(this.appService.appConstants);
   private appConstantsSubscription: Subscription | null = null;
 
   ngOnInit(): void {
-    this.appConstantsSubscription = toObservable(this.appService.appConstants).subscribe((appConstants) => {
+    this.appConstantsSubscription = this.appConstants$.subscribe((appConstants) => {
       this.form.datasource = appConstants['jdbc.datasource.default'] as string;
     });
 
