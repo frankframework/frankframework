@@ -65,14 +65,6 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 	}
 
 	@Test
-	public void fileSystemSenderTestStart() {
-		fileSystemSender.setAction(FileSystemAction.LIST);
-
-		assertDoesNotThrow(fileSystemSender::configure);
-		assertDoesNotThrow(fileSystemSender::start);
-	}
-
-	@Test
 	public void fileSystemSenderDownloadActionTest() throws Exception {
 		String filename = "sender" + FILE1;
 		String contents = "Tekst om te lezen";

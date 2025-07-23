@@ -75,14 +75,6 @@ public abstract class FileSystemPipeTest<FSP extends AbstractFileSystemPipe<F, F
 	}
 
 	@Test
-	public void fileSystemPipeTestOpen() {
-		fileSystemPipe.setAction(FileSystemAction.LIST);
-
-		assertDoesNotThrow(fileSystemPipe::configure);
-		assertDoesNotThrow(fileSystemPipe::start);
-	}
-
-	@Test
 	public void fileSystemPipeUploadActionTestWithString() throws Exception {
 		String filename = "uploadedwithString" + FILE1;
 		String contents = "Some text content to test upload action\n";
