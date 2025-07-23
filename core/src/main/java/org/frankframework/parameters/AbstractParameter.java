@@ -567,8 +567,8 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			// get name of parameter in pattern to be substituted
 			startNdx = pattern.indexOf("{", endNdx);
 			if (startNdx == -1) {
-				// For unix-timestamp as millis we specify 'millis' in the pattern but that break in the Java MessageFormatter which needs 'number'. Ugly replacement.
-				String patternFormat = pattern.substring(endNdx).replaceFirst("(?<=,)millis(?=[,}])", "number");
+				// For unix-timestamp as milliseconds we specify 'millis' in the pattern but that breaks in the Java MessageFormatter which needs 'number'. Ugly replacement. Always append a ',#' so the number is formatted without separators.
+				String patternFormat = pattern.substring(endNdx).replaceFirst("(?<=,)millis(,#)?(?=})", "number,#");
 				formatPattern.append(patternFormat);
 				break;
 			} else {

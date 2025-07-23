@@ -1199,6 +1199,24 @@ public class ParameterTest {
 	}
 
 	@Test
+	public void testPatternFixedDateWithUnixTimestampNoHashInFormat() throws Exception {
+		TimeProvider.setTime(1747401948_000L);
+		Parameter p = new Parameter();
+		try (PipeLineSession session = new PipeLineSession()) {
+			p.setName("unixTimestamp");
+			p.setPattern("{now,millis}");
+			p.configure();
+
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+			Long millis = assertDoesNotThrow(() -> Long.parseLong(result.toString()));
+			assertEquals(1747401948_000L, millis);
+		}
+	}
+
+	@Test
 	public void testPatternFixedDateWithExtendedDateFormatType() throws Exception {
 		String expectedDate = "2001-12-17 09:30:47.000";
 		Parameter p = new Parameter();
