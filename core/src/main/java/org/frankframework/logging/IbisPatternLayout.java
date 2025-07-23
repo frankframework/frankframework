@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2023-2024 WeAreFrank!
+   Copyright 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -51,6 +51,8 @@ public class IbisPatternLayout extends IbisMaskingLayout {
 	IbisPatternLayout(final Configuration config, final String pattern, final Charset charset, final boolean alwaysWriteExceptions, final boolean disableAnsi, final boolean noConsoleNoAnsi) {
 		super(config, charset);
 
+		initLogExpressionHiding(config);
+
 		try {
 			final PatternParser parser = PatternLayout.createPatternParser(configuration);
 			final List<PatternFormatter> list = parser.parse(pattern, alwaysWriteExceptions, disableAnsi, noConsoleNoAnsi);
@@ -58,6 +60,14 @@ public class IbisPatternLayout extends IbisMaskingLayout {
 			serializer = new PatternSerializer(formatters);
 		} catch (final RuntimeException ex) {
 			throw new IllegalArgumentException("Cannot parse pattern '" + pattern + "'", ex);
+		}
+	}
+
+	private static void initLogExpressionHiding(final Configuration config) {
+		String hideRegex = config.getStrSubstitutor().replace("${ff:log.hideRegex}");
+
+		if (hideRegex != null && !hideRegex.isBlank()) {
+			IbisMaskingLayout.addToGlobalReplace(hideRegex);
 		}
 	}
 
