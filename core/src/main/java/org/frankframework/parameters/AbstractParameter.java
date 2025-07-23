@@ -568,11 +568,12 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			startNdx = pattern.indexOf("{", endNdx);
 			if (startNdx == -1) {
 				// For unix-timestamp as milliseconds we specify 'millis' in the pattern but that breaks in the Java MessageFormatter which needs 'number'. Ugly replacement. Always append a ',#' so the number is formatted without separators.
-				String patternFormat = pattern.substring(endNdx).replaceFirst("(?<=,)millis(,#)?(?=})", "number,#");
-				formatPattern.append(patternFormat);
+				String remainingPattern = pattern.substring(endNdx);
+				formatPattern.append(fixFormatPattern(remainingPattern));
 				break;
 			} else {
-				formatPattern.append(pattern, endNdx, startNdx);
+				String remainingPattern = pattern.substring(endNdx, startNdx);
+				formatPattern.append(fixFormatPattern(remainingPattern));
 			}
 			int tmpEndNdx = pattern.indexOf("}", startNdx);
 			endNdx = pattern.indexOf(",", startNdx);
@@ -602,6 +603,11 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		} catch (Exception e) {
 			throw new ParameterException(getName(), "Cannot parse ["+ formatPattern +"]", e);
 		}
+	}
+
+	@Nonnull
+	private static String fixFormatPattern(String remainingPattern) {
+		return remainingPattern.replaceFirst("(?<=,)millis(,#)?(?=})", "number,#");
 	}
 
 	private Object preFormatDateType(String rawValue, String formatType, String patternFormatString) throws ParameterException {
