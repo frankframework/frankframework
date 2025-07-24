@@ -20,9 +20,11 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.lang.ref.SoftReference;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.Enumeration;
+import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 
 import jakarta.annotation.Nonnull;
@@ -56,19 +58,45 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 	private static final String LOG4J_PROPS_FILE = "log4j4ibis.properties";
 	private static final String DS_PROPERTIES_FILE = "DeploymentSpecifics.properties";
 
-	private final Properties properties;
+	private static SoftReference<Properties> propertiesRef = null;
 
 	public FrankPropertyLookupProvider() throws IOException {
-		properties = getProperties();
+		getProperties(); // Load once, throw potential errors if any...
+	}
+
+	/**
+	 * Cache the properties once, let the GC clean this up whenever possible, we can just load the properties again if needed.
+	 * 
+	 * Each Log4j2 configuration loads all plugins, which would otherwise cause this plugin to load the properties over and over again.
+	 * This allows them to be cached, if the configuration is reloaded at a later time, and the `reference` might be gone we can load
+	 * the properties again.
+	 * 
+	 * @return a cached instance of the Frank!Framework properties
+	 */
+	private static synchronized Properties getProperties() {
+		if (propertiesRef == null || propertiesRef.get() == null) {
+			Properties properties;
+			try {
+				properties = computeProperties();
+			} catch (IOException e) {
+				LOGGER.fatal(LOOKUP, "unable to load Frank!Framework properties", e);
+				properties = new Properties();
+			}
+
+			propertiesRef = new SoftReference<>(properties);
+		}
+		return propertiesRef.get();
 	}
 
 	@Override
 	public String lookup(LogEvent ignored, String key) { // Always ignore the event
+		Properties properties = getProperties();
 		String value = properties.getProperty(key);
 
-		// We have to return a 'lookup' value, else it will not be resolved and the XML will break.
+		// Default values are handled by Log4j2 and will only work when the lookup returns {@code null}.
+		// If a default value does not exist Log4k2 will use the key as value, e.g. the key `index` will get value `ff:index`.
 		if(StringUtils.isEmpty(value)) {
-			return "";
+			return null;
 		}
 
 		if(StringResolver.needsResolution(value)) {
@@ -78,7 +106,7 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 	}
 
 	@Nonnull
-	protected Properties getProperties() throws IOException {
+	protected static Properties computeProperties() throws IOException {
 		Properties log4jProperties = getParseProperties(LOG4J_PROPS_FILE);
 		if(log4jProperties == null) {
 			log4jProperties = new Properties();
@@ -99,13 +127,39 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 		return log4jProperties;
 	}
 
-	private @Nullable Properties getParseProperties(String filename) throws IOException {
-		ClassLoader cl = Thread.currentThread().getContextClassLoader();
-		Enumeration<URL> urls = cl.getResources(filename);
-		URL url = null;
-		while (urls.hasMoreElements()) {
-			url = urls.nextElement();
+	/**
+	 * Sort entries `EXTERNAL CLASSPATH` > `WEB-INF/CLASSES` > `JAR FILES`.
+	 * Other files should keep their order.
+	 */
+	protected static class UrlLocationComparator implements java.util.Comparator<URL> {
+		@Override
+		public int compare(URL o1, URL o2) {
+			int o1i = 0;
+			int o2i = 0;
+
+			if (o1.toExternalForm().contains("/opt/frank/resources/")) o1i += -2;
+			if (o2.toExternalForm().contains("/opt/frank/resources/")) o2i += -2;
+
+			if (o1.toExternalForm().contains("/WEB-INF/classes/")) o1i += -1;
+			if (o2.toExternalForm().contains("/WEB-INF/classes/")) o2i += -1;
+
+			return o1i - o2i;
 		}
+	}
+
+	/**
+	 * Scan the classpath and find the correct resource to use.
+	 * See the UrlLocationComparator for the order.
+	 */
+	private static URL findResource(String filename) throws IOException {
+		ClassLoader cl = Thread.currentThread().getContextClassLoader();
+		List<URL> urls = Collections.list(cl.getResources(filename));
+		urls.sort(new UrlLocationComparator());
+		return urls.get(0);
+	}
+
+	private static @Nullable Properties getParseProperties(String filename) throws IOException {
+		URL url = findResource(filename);
 
 		if(url != null) {
 			Properties properties = new Properties();
@@ -114,6 +168,7 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 			}
 			return properties;
 		}
+
 		return null;
 	}
 

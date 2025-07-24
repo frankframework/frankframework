@@ -64,7 +64,7 @@ public class IbisPatternLayout extends IbisMaskingLayout {
 	}
 
 	private static void initLogExpressionHiding(final Configuration config) {
-		String hideRegex = config.getStrSubstitutor().replace("${ff:log.hideRegex}");
+		String hideRegex = config.getStrSubstitutor().replace("${ff:log.hideRegex:-}");
 
 		if (hideRegex != null && !hideRegex.isBlank()) {
 			IbisMaskingLayout.addToGlobalReplace(hideRegex);
