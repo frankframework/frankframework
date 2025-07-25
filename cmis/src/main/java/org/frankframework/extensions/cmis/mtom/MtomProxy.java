@@ -51,7 +51,10 @@ public class MtomProxy extends AbstractHttpServlet implements InitializingBean, 
 
 	private static final boolean ACTIVE = AppConstants.getInstance().getBoolean("cmis.mtomproxy.active", false);
 	private static final String PROXY_SERVLET = AppConstants.getInstance().getProperty("cmis.mtomproxy.servlet", "WebServices11");
+
+	@SuppressWarnings("java:S2226") // Initialized through Spring (which is a Sonar Exception)
 	private transient Servlet cmisWebServiceServlet = null;
+	@SuppressWarnings("java:S2226") // Initialized through Spring (which is a Sonar Exception)
 	private transient ApplicationContext applicationContext;
 
 	@Override

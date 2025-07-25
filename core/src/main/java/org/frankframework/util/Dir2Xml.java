@@ -22,7 +22,8 @@ import java.util.Collection;
 import java.util.Date;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.logging.log4j.Logger;
+
+import lombok.extern.log4j.Log4j2;
 
 /**
  * List the contents of a directory as XML.
@@ -30,8 +31,8 @@ import org.apache.logging.log4j.Logger;
  *
  * @author Johan Verrips IOS
  */
+@Log4j2
 public class Dir2Xml {
-	protected static Logger log = LogUtil.getLogger(Dir2Xml.class);
 
 	private String path;
 	private String wildcard = "*.*";
