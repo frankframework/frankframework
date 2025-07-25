@@ -39,6 +39,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.core.HasPhysicalDestination.DestinationType;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.Forward;
 import org.frankframework.http.WebServiceListener;
@@ -113,7 +114,7 @@ import org.frankframework.util.MessageUtils;
 @Category(Category.Type.BASIC)
 public class IbisLocalSender extends AbstractSenderWithParameters implements HasPhysicalDestination, IThreadCreator, ConfigurationAware {
 
-	private final @Getter String domain = "Local";
+	private final @Getter DestinationType domain = DestinationType.LOCAL;
 
 	private @Setter Configuration configuration;
 	private @Getter String serviceName;

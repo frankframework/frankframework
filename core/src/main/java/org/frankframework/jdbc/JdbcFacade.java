@@ -34,6 +34,7 @@ import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IXAEnabled;
 import org.frankframework.core.NameAware;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.core.HasPhysicalDestination.DestinationType;
 import org.frankframework.dbms.DbmsSupportFactory;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
@@ -67,7 +68,8 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 
 	private @Getter String name;
 
-	private final @Getter String domain = "JDBC";
+	private final @Getter DestinationType domain = DestinationType.JDBC;
+
 	private String datasourceName = null;
 	@Getter private String authAlias = null;
 	@Getter private String username = null;

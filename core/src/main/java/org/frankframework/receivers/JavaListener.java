@@ -43,6 +43,7 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.RequestReplyListener;
+import org.frankframework.core.HasPhysicalDestination.DestinationType;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.errormessageformatters.ErrorMessageFormatter;
@@ -77,7 +78,8 @@ import org.frankframework.util.LogUtil;
 @Category(Category.Type.BASIC)
 public class JavaListener<M> implements RequestReplyListener, IPushingListener<M>, RequestProcessor, HasPhysicalDestination, ServiceClient {
 
-	private final @Getter String domain = "JVM";
+	private final @Getter DestinationType domain = DestinationType.JVM;
+
 	protected Logger log = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;

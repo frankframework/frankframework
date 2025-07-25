@@ -132,7 +132,7 @@ public abstract class AbstractFileSystemPipe<F, FS extends IBasicFileSystem<F>> 
 	}
 
 	@Override
-	public String getDomain() {
+	public DestinationType getDomain() {
 		return getFileSystem().getDomain();
 	}
 

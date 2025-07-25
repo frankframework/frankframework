@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -52,7 +52,8 @@ import org.frankframework.util.XmlUtils;
  * @since   5.0
  */
 public abstract class SapFunctionFacade implements ISapFunctionFacade, FrankElement, NameAware {
-	private final @Getter String domain = "SAP";
+	private final @Getter DestinationType domain = DestinationType.SAP;
+
 	protected static Logger log = LogUtil.getLogger(SapFunctionFacade.class);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -94,10 +95,10 @@ public abstract class SapFunctionFacade implements ISapFunctionFacade, FrankElem
 			sapSystem.openSystem();
 			log.info("open SapSystem [{}]", sapSystem);
 
-			//Something has changed, so remove the cached templates
+			// Something has changed, so remove the cached templates
 			SapSystemDataProvider.getInstance().updateSystem(sapSystem);
 
-			if (StringUtils.isNotEmpty(getFunctionName())) { //Listeners and IdocSenders don't use a functionName
+			if (StringUtils.isNotEmpty(getFunctionName())) { // Listeners and IdocSenders don't use a functionName
 				ftemplate = getFunctionTemplate(sapSystem, getFunctionName());
 				log.debug("found JCoFunctionTemplate [{}]", ftemplate);
 				try {

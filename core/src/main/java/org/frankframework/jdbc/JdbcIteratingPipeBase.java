@@ -27,6 +27,7 @@ import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IDataIterator;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
+import org.frankframework.core.HasPhysicalDestination.DestinationType;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.doc.ReferTo;
 import org.frankframework.parameters.IParameter;
@@ -43,7 +44,8 @@ import org.frankframework.util.SpringUtils;
  */
 public abstract class JdbcIteratingPipeBase extends StringIteratorPipe implements HasPhysicalDestination {
 
-	private final @Getter String domain = "JDBC";
+	private final @Getter DestinationType domain = DestinationType.JDBC;
+
 	protected MixedQuerySender querySender = new MixedQuerySender();
 
 	protected class MixedQuerySender extends DirectQuerySender {

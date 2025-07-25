@@ -22,6 +22,7 @@ import org.frankframework.core.FrankElement;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.NameAware;
+import org.frankframework.core.HasPhysicalDestination.DestinationType;
 import org.frankframework.doc.Mandatory;
 import org.springframework.context.ApplicationContext;
 
@@ -49,7 +50,9 @@ import lombok.Setter;
  * flag can be used to set the disk storage location.
  */
 public abstract class MqttFacade implements HasPhysicalDestination, IConfigurable, NameAware, FrankElement {
-	private final @Getter String domain = "MQTT";
+
+	private final @Getter DestinationType domain = DestinationType.MQTT;
+
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 

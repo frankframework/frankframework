@@ -40,6 +40,7 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.RequestReplyListener;
+import org.frankframework.core.HasPhysicalDestination.DestinationType;
 import org.frankframework.doc.Category;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
@@ -56,9 +57,10 @@ import org.frankframework.stream.Message;
 @Log4j2
 public class FrankListener implements RequestReplyListener, IPushingListener<Message>, HasPhysicalDestination, ServiceClient, ConfigurationAware {
 
+	private final @Getter DestinationType domain = DestinationType.JVM;
+
 	private static final ConcurrentMap<String, FrankListener> listeners = new ConcurrentHashMap<>();
 
-	private final @Getter String domain = "JVM";
 	private @Setter @Getter ApplicationContext applicationContext;
 	private @Setter Configuration configuration;
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();

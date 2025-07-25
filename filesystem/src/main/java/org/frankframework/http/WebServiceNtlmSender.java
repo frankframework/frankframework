@@ -59,6 +59,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.core.HasPhysicalDestination.DestinationType;
 import org.frankframework.senders.AbstractSenderWithParameters;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
@@ -74,7 +75,8 @@ import org.frankframework.util.StreamUtil;
 @ConfigurationWarning("NTLM authentication is unsecure and should be avoided.")
 public class WebServiceNtlmSender extends AbstractSenderWithParameters implements HasPhysicalDestination {
 
-	private final @Getter String domain = "Http";
+	private final @Getter DestinationType domain = DestinationType.HTTP;
+
 	private String contentType = "text/xml; charset="+ StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 	private String url;
 	private int timeout = 10000;

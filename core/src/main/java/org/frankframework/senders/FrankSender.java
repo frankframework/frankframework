@@ -344,12 +344,15 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	}
 
 	@Override
-	public String getDomain() {
+	public DestinationType getDomain() {
 		ParameterList pl = getParameterList();
 		if (pl.hasParameter(SCOPE_PARAM_NAME)) {
-			return "Dynamic";
+			return DestinationType.JVM; // It could be anything?
 		} else {
-			return getScope().name();
+			return switch (getScope()) {
+				case ADAPTER, LISTENER -> DestinationType.LOCAL;
+				case JVM, DLL -> DestinationType.JVM;
+			};
 		}
 	}
 

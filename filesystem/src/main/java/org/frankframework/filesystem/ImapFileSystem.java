@@ -65,7 +65,7 @@ import org.frankframework.xml.SaxElementBuilder;
 
 @Log4j2
 public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart, IMAPFolder> {
-	private final @Getter String domain = "IMAP";
+	private final @Getter DestinationType domain = DestinationType.MAIL;
 
 	private @Getter String host;
 	private @Getter int port = 993;

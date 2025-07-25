@@ -34,6 +34,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.core.HasPhysicalDestination.DestinationType;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.Forward;
 import org.frankframework.receivers.JavaListener;
@@ -71,7 +72,7 @@ import org.frankframework.stream.Message;
 @Category(Category.Type.ADVANCED)
 public class IbisJavaSender extends AbstractSenderWithParameters implements HasPhysicalDestination {
 
-	private final @Getter String domain = "JVM";
+	private final @Getter DestinationType domain = DestinationType.JVM;
 
 	private @Getter String serviceName;
 	private @Getter String serviceNameSessionKey;

@@ -99,7 +99,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 
 	public static final String JMS_MESSAGECLASS_KEY = "jms.messageClass.default";
 
-	private final @Getter String domain = "JMS";
+	private final @Getter DestinationType domain = DestinationType.JMS;
 	private final boolean createDestination = AppConstants.getInstance().getBoolean("jms.createDestination", true);
 	private final MessageClass messageClassDefault = AppConstants.getInstance().getOrDefault(JMS_MESSAGECLASS_KEY, MessageClass.AUTO);
 	private @Getter MessageClass messageClass = messageClassDefault;
@@ -116,7 +116,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	private @Getter String authAlias;
 	private @Getter boolean lookupDestination = AppConstants.getInstance().getBoolean("jms.lookupDestination", true);
 
-	private @Getter DestinationType destinationType = DestinationType.QUEUE; // QUEUE or TOPIC
+	private @Getter JmsDestinationType destinationType = JmsDestinationType.QUEUE;
 
 	protected MessagingSource messagingSource;
 	private final Map<String,Destination> destinations = new ConcurrentHashMap<>();
@@ -204,7 +204,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 		TRANSIENT
 	}
 
-	public enum DestinationType {
+	public enum JmsDestinationType {
 		QUEUE,
 		TOPIC
 	}
@@ -549,14 +549,14 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 
 	@Override
 	public String getPhysicalDestinationName() {
-		StringBuilder builder = new StringBuilder(getDestinationType().toString());
+		StringBuilder builder = new StringBuilder(destinationType.toString());
 		builder.append("(").append(getDestinationName()).append(") [").append(getPhysicalDestinationShortName()).append("]");
 		if (StringUtils.isNotEmpty(getMessageSelector())) {
 			builder.append(" selector [").append(getMessageSelector()).append("]");
 		}
 
 		builder.append(" on (");
-		builder.append(destinationType == DestinationType.QUEUE ? getQueueConnectionFactoryName() : getTopicConnectionFactoryName());
+		builder.append(destinationType == JmsDestinationType.QUEUE ? getQueueConnectionFactoryName() : getTopicConnectionFactoryName());
 		builder.append(")");
 
 		return builder.toString();
@@ -808,14 +808,14 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	}
 
 	/**
-	 * Type of the messageing destination.
+	 * Type of the messaging destination.
 	 * This function also sets the <code>useTopicFunctions</code> field,
 	 * that controls whether Topic functions are used or Queue functions.
 	 * @ff.default QUEUE
 	 */
-	public void setDestinationType(DestinationType destinationType) {
+	public void setDestinationType(JmsDestinationType destinationType) {
 		this.destinationType=destinationType;
-		useTopicFunctions = this.destinationType==DestinationType.TOPIC;
+		useTopicFunctions = this.destinationType == JmsDestinationType.TOPIC;
 	}
 
 	/**
@@ -845,7 +845,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	}
 
 	/**
-	 * Used when {@link #setDestinationType destinationType} = {@link DestinationType#QUEUE QUEUE}.
+	 * Used when {@link #setDestinationType destinationType} = {@link JmsDestinationType#QUEUE QUEUE}.
 	 * The JNDI-name of the queueConnectionFactory to use to connect to a <code>queue</code> if {@link #isTransacted()} returns <code>false</code>.
 	 * The corresponding connection factory should be configured not to support XA transactions.
 	 */
@@ -854,7 +854,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	}
 
 	/**
-	 * Used when {@link #setDestinationType destinationType} = {@link DestinationType#TOPIC TOPIC}.
+	 * Used when {@link #setDestinationType destinationType} = {@link JmsDestinationType#TOPIC TOPIC}.
 	 * The JNDI-name of the connection factory to use to connect to a <i>topic</i> if {@link #isTransacted()} returns <code>false</code>.
 	 * The corresponding connection factory should be configured not to support XA transactions.
 	 */

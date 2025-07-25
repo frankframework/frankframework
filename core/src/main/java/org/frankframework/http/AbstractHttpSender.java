@@ -52,6 +52,7 @@ import org.frankframework.core.Resource;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.core.HasPhysicalDestination.DestinationType;
 import org.frankframework.doc.Forward;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
@@ -99,7 +100,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 	public static final String MESSAGE_ID_HEADER = "Message-Id";
 	public static final String CORRELATION_ID_HEADER = "Correlation-Id";
 
-	private final @Getter String domain = "Http";
+	private final @Getter DestinationType domain = DestinationType.HTTP;
 
 	private @Setter String sharedResourceRef;
 

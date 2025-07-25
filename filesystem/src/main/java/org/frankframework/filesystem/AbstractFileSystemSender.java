@@ -121,7 +121,7 @@ public abstract class AbstractFileSystemSender<F, S extends IBasicFileSystem<F>>
 	}
 
 	@Override
-	public String getDomain() {
+	public DestinationType getDomain() {
 		return getFileSystem().getDomain();
 	}
 

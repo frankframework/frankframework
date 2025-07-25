@@ -73,7 +73,7 @@ import org.frankframework.util.XmlUtils;
  * @author Niels Meijer
  */
 public class IdinSender extends AbstractSenderWithParameters implements HasPhysicalDestination {
-	private @Getter final String domain = "iDin";
+	private final @Getter DestinationType domain = DestinationType.IDIN;
 
 	private @Getter String merchantID = null;
 	private @Getter int merchantSubID = 0;

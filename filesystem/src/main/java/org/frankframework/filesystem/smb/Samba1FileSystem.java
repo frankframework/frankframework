@@ -57,7 +57,7 @@ import org.frankframework.util.CredentialFactory;
  */
 @Log4j2
 public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWritableFileSystem<SmbFile> {
-	private final @Getter String domain = "SMB";
+	private final @Getter DestinationType domain = DestinationType.FILE_SYSTEM;
 
 	private @Getter String share = null;
 	private @Getter String username = null;

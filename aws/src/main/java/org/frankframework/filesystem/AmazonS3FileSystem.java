@@ -78,7 +78,7 @@ import org.frankframework.util.StringUtil;
 
 @Log4j2
 public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements IWritableFileSystem<S3FileRef>, ISupportsCustomFileAttributes<S3FileRef> {
-	private final @Getter String domain = "Amazon";
+	private final @Getter DestinationType domain = DestinationType.FILE_SYSTEM;
 
 	private static final String FILE_DELIMITER = "/";
 

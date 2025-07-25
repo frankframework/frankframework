@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.springframework.messaging.Message;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.HasPhysicalDestination;
+import org.frankframework.core.HasPhysicalDestination.DestinationType;
 import org.frankframework.core.IListener;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.ISender;
@@ -52,10 +53,10 @@ public class ConnectionOverview extends BusEndpointBase {
 			for(Adapter adapter: config.getRegisteredAdapters()) {
 				for (Receiver<?> receiver: adapter.getReceivers()) {
 					IListener<?> listener=receiver.getListener();
-					if (listener instanceof HasPhysicalDestination) {
-						String destination = ((HasPhysicalDestination)receiver.getListener()).getPhysicalDestinationName();
-						String domain = ((HasPhysicalDestination)receiver.getListener()).getDomain();
-						connectionsIncoming.add(addToMap(adapter.getName(), destination, listener.getName(), "Inbound", domain));
+					if (listener instanceof HasPhysicalDestination physicalDestination) {
+						String destination = physicalDestination.getPhysicalDestinationName();
+						DestinationType domain = physicalDestination.getDomain();
+						connectionsIncoming.add(addToMap(adapter.getName(), destination, listener.getName(), "Inbound", domain.name()));
 					}
 				}
 
@@ -65,15 +66,15 @@ public class ConnectionOverview extends BusEndpointBase {
 						ISender sender = msp.getSender();
 						if (sender instanceof HasPhysicalDestination physicalDestination) {
 							String destination = physicalDestination.getPhysicalDestinationName();
-							String domain = physicalDestination.getDomain();
-							connectionsIncoming.add(addToMap(adapter.getName(), destination, sender.getName(), "Outbound", domain));
+							DestinationType domain = physicalDestination.getDomain();
+							connectionsIncoming.add(addToMap(adapter.getName(), destination, sender.getName(), "Outbound", domain.name()));
 						}
 						if (pipe instanceof AsyncSenderWithListenerPipe slp) {
 							IListener<?> listener = slp.getListener();
 							if (listener instanceof HasPhysicalDestination physicalDestination) {
 								String destination = physicalDestination.getPhysicalDestinationName();
-								String domain = physicalDestination.getDomain();
-								connectionsIncoming.add(addToMap(adapter.getName(), destination, listener.getName(), "Inbound", domain));
+								DestinationType domain = physicalDestination.getDomain();
+								connectionsIncoming.add(addToMap(adapter.getName(), destination, listener.getName(), "Inbound", domain.name()));
 							}
 						}
 					}

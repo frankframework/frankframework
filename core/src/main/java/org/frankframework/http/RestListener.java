@@ -30,6 +30,7 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.core.HasPhysicalDestination.DestinationType;
 import org.frankframework.http.rest.ApiListener;
 import org.frankframework.pipes.JsonPipe;
 import org.frankframework.pipes.JsonPipe.Direction;
@@ -52,7 +53,8 @@ import org.frankframework.stream.Message;
  */
 public class RestListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues {
 
-	private final @Getter String domain = "Http";
+	private final @Getter DestinationType domain = DestinationType.HTTP;
+
 	private @Getter String uriPattern;
 	private @Getter String method;
 	private @Getter String etagSessionKey;

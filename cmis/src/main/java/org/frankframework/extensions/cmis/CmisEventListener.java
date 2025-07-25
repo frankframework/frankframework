@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,7 +26,8 @@ import org.frankframework.util.EnumUtils;
 
 public class CmisEventListener extends PushingListenerAdapter implements HasPhysicalDestination {
 
-	private final @Getter String domain = "CMIS Event";
+	private final @Getter DestinationType domain = DestinationType.CMIS;
+
 	private CmisEvent cmisEvent = null;
 
 	@Override

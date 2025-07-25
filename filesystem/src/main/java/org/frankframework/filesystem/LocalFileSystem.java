@@ -60,7 +60,7 @@ import org.frankframework.stream.PathMessage;
 @Log4j2
 public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritableFileSystem<Path>, ISupportsCustomFileAttributes<Path> {
 	public static final String ORIGINAL_LAST_MODIFIED_TIME_ATTRIBUTE = "originalLastModifiedTime";
-	private final @Getter String domain = "LocalFilesystem";
+	private final @Getter DestinationType domain = DestinationType.FILE_SYSTEM;
 
 	private @Getter boolean createRootFolder = false;
 

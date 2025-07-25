@@ -24,5 +24,10 @@ package org.frankframework.core;
  */
 public interface HasPhysicalDestination {
 	String getPhysicalDestinationName();
-	String getDomain();
+
+	DestinationType getDomain();
+
+	public enum DestinationType {
+		HTTP, MQTT, JVM, LOCAL, CMIS, KAFKA, IDIN, JDBC, JMS, MONGODB, MAIL, SAP, FILE_SYSTEM;
+	}
 }

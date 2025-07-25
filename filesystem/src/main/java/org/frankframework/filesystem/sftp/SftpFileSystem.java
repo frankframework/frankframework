@@ -1,5 +1,5 @@
 /*
-   Copyright 2023-2024 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ import org.frankframework.util.LogUtil;
 public class SftpFileSystem extends SftpSession implements IWritableFileSystem<SftpFileRef> {
 	private final Logger log = LogUtil.getLogger(this);
 
-	private final @Getter String domain = "FTP";
+	private final @Getter DestinationType domain = DestinationType.FILE_SYSTEM;
 	private String remoteDirectory = "";
 
 	private ChannelSftp ftpClient;

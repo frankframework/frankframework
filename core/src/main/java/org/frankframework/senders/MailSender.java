@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -105,6 +105,8 @@ import org.frankframework.util.XmlUtils;
 @Category(Category.Type.ADVANCED)
 public class MailSender extends AbstractMailSender implements HasPhysicalDestination {
 
+	private final @Getter DestinationType domain = DestinationType.MAIL;
+
 	private @Getter String smtpHost;
 	private @Getter int smtpPort=25;
 	/**
@@ -134,7 +136,7 @@ public class MailSender extends AbstractMailSender implements HasPhysicalDestina
 			properties.put("mail.smtp.user", userId);
 			properties.put("mail.smtp.password", getCredentialFactory().getPassword());
 		}
-		//Even though this is called mail.smtp.from, it actually adds the Return-Path header and does not overwrite the MAIL FROM header
+		// Even though this is called mail.smtp.from, it actually adds the Return-Path header and does not overwrite the MAIL FROM header
 		if(StringUtils.isNotEmpty(getBounceAddress())) {
 			properties.put("mail.smtp.from", getBounceAddress());
 		}
@@ -398,11 +400,6 @@ public class MailSender extends AbstractMailSender implements HasPhysicalDestina
 	@Override
 	public String getPhysicalDestinationName() {
 		return getSmtpHost() + ":" + getSmtpPort() + "; TLS=" + useSsl;
-	}
-
-	@Override
-	public String getDomain() {
-		return "SMTP";
 	}
 
 	public class MailSession extends MailSessionBase {
