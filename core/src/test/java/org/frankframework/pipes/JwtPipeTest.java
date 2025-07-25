@@ -48,6 +48,9 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 
 		JWSKeySelector<SecurityContext> keySelector = new JWSVerificationKeySelector<>(JWSAlgorithm.HS256, immutableSecret);
 		JWT_PROCESSOR.setJWSKeySelector(keySelector);
+
+		// If timeprovider has a clock set to time in the past, JWTs might always be invalid.
+		TimeProvider.resetClock();
 	}
 
 	@Override

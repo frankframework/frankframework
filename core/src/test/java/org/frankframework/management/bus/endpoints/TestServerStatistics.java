@@ -9,6 +9,7 @@ import java.time.Clock;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.springframework.messaging.Message;
 
 import org.frankframework.management.bus.BusAction;
@@ -16,6 +17,7 @@ import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.util.TimeProvider;
 
+@Isolated // Tests manipulate current time, so should not be run concurrently with other tests
 public class TestServerStatistics extends BusTestBase {
 
 	@AfterEach

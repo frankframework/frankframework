@@ -17,6 +17,7 @@ import java.util.TimeZone;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationUtils;
@@ -27,6 +28,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.TimeProvider;
 
+@Isolated // Tests manipulate current time, so should not be run concurrently with other tests
 public class DateParameterTest {
 
 	private TimeZone systemTimeZone;

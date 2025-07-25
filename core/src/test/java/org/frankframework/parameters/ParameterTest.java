@@ -32,6 +32,7 @@ import javax.xml.transform.dom.DOMSource;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.w3c.dom.Document;
@@ -62,11 +63,13 @@ import org.frankframework.util.SpringUtils;
 import org.frankframework.util.TimeProvider;
 import org.frankframework.util.XmlUtils;
 
+@Isolated // Tests manipulate current time, so should not be run concurrently with other tests
 public class ParameterTest {
 
 	@AfterEach
 	void tearDown() {
 		System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
+		TimeProvider.resetClock();
 	}
 
 	@Test

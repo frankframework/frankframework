@@ -15,9 +15,11 @@ import jakarta.annotation.Nonnull;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 
 import org.frankframework.util.TimeProvider;
 
+@Isolated // Tests manipulate current time, so should not be run concurrently with other tests
 public class PkiUtilTest {
 	private final String MULTI_KEY_KEYSTORE = "Encryption/MultiKeyKeystore.jks";
 
