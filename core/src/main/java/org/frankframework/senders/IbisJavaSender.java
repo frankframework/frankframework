@@ -27,6 +27,8 @@ import lombok.Getter;
 import nl.nn.adapterframework.dispatcher.DispatcherManager;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLine.ExitState;
@@ -34,7 +36,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.core.HasPhysicalDestination.DestinationType;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.Forward;
 import org.frankframework.receivers.JavaListener;
@@ -68,11 +69,10 @@ import org.frankframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.4.5
  */
+@DestinationType(Type.JVM)
 @Forward(name = "*", description = "Exit code")
 @Category(Category.Type.ADVANCED)
 public class IbisJavaSender extends AbstractSenderWithParameters implements HasPhysicalDestination {
-
-	private final @Getter DestinationType domain = DestinationType.JVM;
 
 	private @Getter String serviceName;
 	private @Getter String serviceNameSessionKey;

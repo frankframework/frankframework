@@ -32,6 +32,8 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationAware;
 import org.frankframework.core.Adapter;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
@@ -40,7 +42,6 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.RequestReplyListener;
-import org.frankframework.core.HasPhysicalDestination.DestinationType;
 import org.frankframework.doc.Category;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
@@ -53,11 +54,10 @@ import org.frankframework.stream.Message;
  * <br/>
  * See the {@link org.frankframework.senders.FrankSender} documentation for more information.
  */
+@DestinationType(Type.ADAPTER)
 @Category(Category.Type.BASIC)
 @Log4j2
 public class FrankListener implements RequestReplyListener, IPushingListener<Message>, HasPhysicalDestination, ServiceClient, ConfigurationAware {
-
-	private final @Getter DestinationType domain = DestinationType.JVM;
 
 	private static final ConcurrentMap<String, FrankListener> listeners = new ConcurrentHashMap<>();
 

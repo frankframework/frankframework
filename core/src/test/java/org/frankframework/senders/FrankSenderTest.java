@@ -35,7 +35,6 @@ import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
-import org.frankframework.core.HasPhysicalDestination.DestinationType;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
@@ -189,32 +188,6 @@ class FrankSenderTest {
 
 		// Assert
 		assertEquals(expected, actual);
-	}
-
-	@ParameterizedTest
-	@CsvSource({
-			"ADAPTER, false, LOCAL",
-			"DLL, false, JVM",
-			"JVM, false, JVM",
-			"JVM, true, JVM",
-			"LISTENER, false, LOCAL",
-			"LISTENER, true, JVM",
-			"DLL, true, JVM",
-			"ADAPTER, true, JVM",
-	})
-	void getDomain(FrankSender.Scope scope, boolean scopeParam, String expected) {
-		// Arrange
-		FrankSender sender = new FrankSender();
-		sender.setScope(scope);
-		if (scopeParam) {
-			sender.addParameter(ParameterBuilder.create("scope", ""));
-		}
-
-		// Act
-		DestinationType actual = sender.getDomain();
-
-		// Assert
-		assertEquals(expected, actual.name());
 	}
 
 	@ParameterizedTest

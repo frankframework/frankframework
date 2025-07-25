@@ -68,6 +68,8 @@ import software.amazon.awssdk.services.s3.model.StorageClass;
 
 import org.frankframework.aws.AwsUtil;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.filesystem.utils.AmazonEncodingUtils;
 import org.frankframework.stream.Message;
@@ -77,8 +79,8 @@ import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 
 @Log4j2
+@DestinationType(Type.FILE_SYSTEM)
 public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements IWritableFileSystem<S3FileRef>, ISupportsCustomFileAttributes<S3FileRef> {
-	private final @Getter DestinationType domain = DestinationType.FILE_SYSTEM;
 
 	private static final String FILE_DELIMITER = "/";
 

@@ -34,7 +34,6 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.HasPhysicalDestination.DestinationType;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
 import org.frankframework.encryption.KeystoreType;
@@ -72,7 +71,6 @@ import org.frankframework.util.StringUtil;
  */
 @Log4j2
 public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implements HasKeystore, HasTruststore, ApplicationContextAware {
-	private final @Getter DestinationType domain = DestinationType.MAIL;
 
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;

@@ -57,7 +57,6 @@ import org.frankframework.util.CredentialFactory;
  */
 @Log4j2
 public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWritableFileSystem<SmbFile> {
-	private final @Getter DestinationType domain = DestinationType.FILE_SYSTEM;
 
 	private @Getter String share = null;
 	private @Getter String username = null;
@@ -79,8 +78,8 @@ public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWr
 		if(!getShare().endsWith("/"))
 			setShare(getShare()+"/");
 
-		//Setup credentials if applied, may be null.
-		//NOTE: When using NtmlPasswordAuthentication without username it returns GUEST
+		// Setup credentials if applied, may be null.
+		// NOTE: When using NtmlPasswordAuthentication without username it returns GUEST
 		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 		if (StringUtils.isNotEmpty(cf.getUsername())) {
 			auth = new NtlmPasswordAuthentication(getAuthenticationDomain(), cf.getUsername(), cf.getPassword());

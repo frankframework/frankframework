@@ -23,12 +23,13 @@ import java.util.Map;
 
 import jakarta.annotation.security.RolesAllowed;
 
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.messaging.Message;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
+import org.frankframework.core.DestinationType;
 import org.frankframework.core.HasPhysicalDestination;
-import org.frankframework.core.HasPhysicalDestination.DestinationType;
 import org.frankframework.core.IListener;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.ISender;
@@ -55,8 +56,8 @@ public class ConnectionOverview extends BusEndpointBase {
 					IListener<?> listener=receiver.getListener();
 					if (listener instanceof HasPhysicalDestination physicalDestination) {
 						String destination = physicalDestination.getPhysicalDestinationName();
-						DestinationType domain = physicalDestination.getDomain();
-						connectionsIncoming.add(addToMap(adapter.getName(), destination, listener.getName(), "Inbound", domain.name()));
+						DestinationType type = AnnotationUtils.findAnnotation(listener.getClass(), DestinationType.class);
+						connectionsIncoming.add(addToMap(adapter.getName(), destination, listener.getName(), "Inbound", type.value().name()));
 					}
 				}
 
@@ -66,15 +67,15 @@ public class ConnectionOverview extends BusEndpointBase {
 						ISender sender = msp.getSender();
 						if (sender instanceof HasPhysicalDestination physicalDestination) {
 							String destination = physicalDestination.getPhysicalDestinationName();
-							DestinationType domain = physicalDestination.getDomain();
-							connectionsIncoming.add(addToMap(adapter.getName(), destination, sender.getName(), "Outbound", domain.name()));
+							DestinationType type = AnnotationUtils.findAnnotation(sender.getClass(), DestinationType.class);
+							connectionsIncoming.add(addToMap(adapter.getName(), destination, sender.getName(), "Outbound", type.value().name()));
 						}
 						if (pipe instanceof AsyncSenderWithListenerPipe slp) {
 							IListener<?> listener = slp.getListener();
 							if (listener instanceof HasPhysicalDestination physicalDestination) {
 								String destination = physicalDestination.getPhysicalDestinationName();
-								DestinationType domain = physicalDestination.getDomain();
-								connectionsIncoming.add(addToMap(adapter.getName(), destination, listener.getName(), "Inbound", domain.name()));
+								DestinationType type = AnnotationUtils.findAnnotation(listener.getClass(), DestinationType.class);
+								connectionsIncoming.add(addToMap(adapter.getName(), destination, listener.getName(), "Inbound", type.value().name()));
 							}
 						}
 					}

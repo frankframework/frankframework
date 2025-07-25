@@ -101,11 +101,8 @@ import org.frankframework.util.XmlUtils;
  * @author Johan Verrips
  * @author Gerrit van Brakel
  */
-
 @Category(Category.Type.ADVANCED)
 public class MailSender extends AbstractMailSender implements HasPhysicalDestination {
-
-	private final @Getter DestinationType domain = DestinationType.MAIL;
 
 	private @Getter String smtpHost;
 	private @Getter int smtpPort=25;
@@ -151,7 +148,7 @@ public class MailSender extends AbstractMailSender implements HasPhysicalDestina
 	 */
 	@Override
 	public void start() {
-		createSession(); //Test connection to SMTP host
+		createSession(); // Test connection to SMTP host
 	}
 
 	/**
@@ -280,7 +277,7 @@ public class MailSender extends AbstractMailSender implements HasPhysicalDestina
 			}
 		}
 
-		//Even though this is called EnvelopeFrom/mail.smtp.from, it actually adds the Return-Path header and does not overwrite the MAIL FROM header
+		// Even though this is called EnvelopeFrom/mail.smtp.from, it actually adds the Return-Path header and does not overwrite the MAIL FROM header
 		if (StringUtils.isNotEmpty(mailSession.getBounceAddress())) {
 			//TODO: use session.setProperty("mail.smtp.from", mailSession.getBounceAddress()); here, or do not globally share the session...
 			msg.setEnvelopeFrom(mailSession.getBounceAddress());

@@ -35,9 +35,10 @@ import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
 
-import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.filesystem.FileAlreadyExistsException;
 import org.frankframework.filesystem.FileNotFoundException;
 import org.frankframework.filesystem.FileSystemException;
@@ -56,9 +57,8 @@ import org.frankframework.stream.SerializableFileReference;
  * @author Niels Meijer
  */
 @Log4j2
+@DestinationType(Type.FILE_SYSTEM)
 public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTPFileRef> {
-
-	private final @Getter DestinationType domain = DestinationType.FILE_SYSTEM;
 
 	private String remoteDirectory = "";
 	private FTPClient ftpClient;
@@ -336,7 +336,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public String getCanonicalName(FTPFileRef f) {
-		return f.getName(); //Should include folder structure if known
+		return f.getName(); // Should include folder structure if known
 	}
 
 	@Override

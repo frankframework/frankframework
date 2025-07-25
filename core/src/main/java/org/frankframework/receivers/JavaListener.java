@@ -24,17 +24,19 @@ import java.util.Set;
 import jakarta.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import nl.nn.adapterframework.dispatcher.DispatcherManagerFactory;
 import nl.nn.adapterframework.dispatcher.RequestProcessor;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
@@ -43,7 +45,6 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.RequestReplyListener;
-import org.frankframework.core.HasPhysicalDestination.DestinationType;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.errormessageformatters.ErrorMessageFormatter;
@@ -51,7 +52,6 @@ import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.senders.IbisJavaSender;
 import org.frankframework.senders.IbisLocalSender;
 import org.frankframework.stream.Message;
-import org.frankframework.util.LogUtil;
 
 
 /**
@@ -75,12 +75,11 @@ import org.frankframework.util.LogUtil;
  * </p>
  * @author Gerrit van Brakel
  */
+@Log4j2
+@DestinationType(Type.JVM)
 @Category(Category.Type.BASIC)
 public class JavaListener<M> implements RequestReplyListener, IPushingListener<M>, RequestProcessor, HasPhysicalDestination, ServiceClient {
 
-	private final @Getter DestinationType domain = DestinationType.JVM;
-
-	protected Logger log = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private @Getter @Setter ExceptionHandlingMethod onException = ExceptionHandlingMethod.RETHROW;
@@ -143,7 +142,7 @@ public class JavaListener<M> implements RequestReplyListener, IPushingListener<M
 
 	// ### RequestProcessor
 	@Override
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public String processRequest(String correlationId, String rawMessage, HashMap context) throws ListenerException {
 		try (PipeLineSession processContext = new PipeLineSession()) {
 			if (context != null) {

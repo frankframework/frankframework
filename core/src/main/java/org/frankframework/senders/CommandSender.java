@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ public class CommandSender extends AbstractSenderWithParameters {
 
 	@Override
 	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
-		List commandline;
+		List<String> commandline;
 		if (StringUtils.isNotEmpty(getCommand())) {
 			commandline = commandToList(getCommand());
 		} else {
@@ -68,7 +68,7 @@ public class CommandSender extends AbstractSenderWithParameters {
 			throw new SenderException("Could not extract parametervalues",e);
 		}
 		for(ParameterValue pv : pvl) {
-			commandline.add(pv.getValue());
+			commandline.add(pv.asStringValue());
 		}
 		return new SenderResult(ProcessUtil.executeCommand(commandline, timeout));
 	}

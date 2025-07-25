@@ -17,17 +17,19 @@ package org.frankframework.extensions.mqtt;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.FrankElement;
-import org.frankframework.core.HasPhysicalDestination;
-import org.frankframework.core.IConfigurable;
-import org.frankframework.core.NameAware;
-import org.frankframework.core.HasPhysicalDestination.DestinationType;
-import org.frankframework.doc.Mandatory;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
+
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
+import org.frankframework.core.FrankElement;
+import org.frankframework.core.HasPhysicalDestination;
+import org.frankframework.core.IConfigurable;
+import org.frankframework.core.NameAware;
+import org.frankframework.doc.Mandatory;
 
 /**
  * Requires a resource to be configured. Example {@literal resources.yml}:
@@ -49,9 +51,8 @@ import lombok.Setter;
  * Inbound and outbound messages are persisted while they are in flight to prevent data loss. The default is an in memory store, but the {@literal persistenceDirectory}
  * flag can be used to set the disk storage location.
  */
+@DestinationType(Type.MQTT)
 public abstract class MqttFacade implements HasPhysicalDestination, IConfigurable, NameAware, FrankElement {
-
-	private final @Getter DestinationType domain = DestinationType.MQTT;
 
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;

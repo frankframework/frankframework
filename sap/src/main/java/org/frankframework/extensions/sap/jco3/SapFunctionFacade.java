@@ -31,6 +31,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.FrankElement;
 import org.frankframework.core.NameAware;
 import org.frankframework.extensions.sap.ISapFunctionFacade;
@@ -51,8 +53,8 @@ import org.frankframework.util.XmlUtils;
  * @author  Jaco de Groot
  * @since   5.0
  */
+@DestinationType(Type.SAP)
 public abstract class SapFunctionFacade implements ISapFunctionFacade, FrankElement, NameAware {
-	private final @Getter DestinationType domain = DestinationType.SAP;
 
 	protected static Logger log = LogUtil.getLogger(SapFunctionFacade.class);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();

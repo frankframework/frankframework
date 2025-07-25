@@ -54,6 +54,8 @@ import lombok.Lombok;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -85,9 +87,8 @@ import org.frankframework.util.StringResolver;
  * @author Gerrit van Brakel
  *
  */
+@DestinationType(Type.MONGODB)
 public class MongoDbSender extends AbstractSenderWithParameters implements HasPhysicalDestination {
-
-	private final @Getter DestinationType domain = DestinationType.MONGODB;
 
 	public static final String PARAM_DATABASE="database";
 	public static final String PARAM_COLLECTION="collection";

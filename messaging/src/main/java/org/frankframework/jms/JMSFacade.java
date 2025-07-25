@@ -58,6 +58,8 @@ import lombok.SneakyThrows;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.FrankElement;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IXAEnabled;
@@ -90,6 +92,7 @@ import org.frankframework.util.XmlException;
  *
  * @author 	Gerrit van Brakel
  */
+@DestinationType(Type.JMS)
 public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankElement, NameAware, HasPhysicalDestination, IXAEnabled {
 	protected Logger log = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
@@ -99,7 +102,6 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 
 	public static final String JMS_MESSAGECLASS_KEY = "jms.messageClass.default";
 
-	private final @Getter DestinationType domain = DestinationType.JMS;
 	private final boolean createDestination = AppConstants.getInstance().getBoolean("jms.createDestination", true);
 	private final MessageClass messageClassDefault = AppConstants.getInstance().getOrDefault(JMS_MESSAGECLASS_KEY, MessageClass.AUTO);
 	private @Getter MessageClass messageClass = messageClassDefault;

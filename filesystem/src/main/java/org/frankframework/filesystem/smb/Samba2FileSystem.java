@@ -97,7 +97,6 @@ import org.frankframework.util.CredentialFactory;
  */
 @Log4j2
 public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements IWritableFileSystem<SmbFileRef> {
-	private final @Getter DestinationType domain = DestinationType.FILE_SYSTEM;
 
 	private @Getter Samba2AuthType authType = Samba2AuthType.SPNEGO;
 	private @Getter String share = null;
@@ -440,7 +439,7 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 
 	@Override
 	public String getCanonicalName(SmbFileRef f) {
-		return f.getName(); //Should include folder structure if known
+		return f.getName(); // Should include folder structure if known
 	}
 
 	@Override

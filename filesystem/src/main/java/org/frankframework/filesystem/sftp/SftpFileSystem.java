@@ -37,8 +37,8 @@ import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 
-import lombok.Getter;
-
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.filesystem.FileAlreadyExistsException;
 import org.frankframework.filesystem.FileNotFoundException;
 import org.frankframework.filesystem.FileSystemException;
@@ -56,10 +56,10 @@ import org.frankframework.util.LogUtil;
  *
  * @author Niels Meijer
  */
+@DestinationType(Type.FILE_SYSTEM)
 public class SftpFileSystem extends SftpSession implements IWritableFileSystem<SftpFileRef> {
 	private final Logger log = LogUtil.getLogger(this);
 
-	private final @Getter DestinationType domain = DestinationType.FILE_SYSTEM;
 	private String remoteDirectory = "";
 
 	private ChannelSftp ftpClient;
@@ -202,7 +202,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 				if (folder.startsWith("/")) {
 					ftpClient.cd(folder);
 				} else {
-					ftpClient.cd(pwd + "/" + folder); //Faster and more fail-safe method to ensure the target is a folder and not secretly a file
+					ftpClient.cd(pwd + "/" + folder); // Faster and more fail-safe method to ensure the target is a folder and not secretly a file
 				}
 				return true;
 			} finally {

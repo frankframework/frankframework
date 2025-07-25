@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2024 WeAreFrank!
+   Copyright 2019-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,12 +24,14 @@ import jakarta.annotation.Nullable;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.DestinationType;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.Forward;
 import org.frankframework.doc.ReferTo;
@@ -55,11 +57,12 @@ import org.frankframework.util.SpringUtils;
  *
  * @author Gerrit van Brakel
  */
+@DestinationType(Type.FILE_SYSTEM)
+@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ENDPOINT)
 @Forward(name = "fileNotFound", description = "the input file was expected to exist, but was not found")
 @Forward(name = "folderNotFound", description = "the folder does not exist")
 @Forward(name = "fileAlreadyExists", description = "a file that should have been created as new already exists, or if a file already exists when it should have been created as folder")
 @Forward(name = "folderAlreadyExists", description = "a folder is to be created that already exists.")
-@EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ENDPOINT)
 public abstract class AbstractFileSystemPipe<F, FS extends IBasicFileSystem<F>> extends FixedForwardPipe implements HasPhysicalDestination {
 
 	private final FileSystemActor<F, FS> actor = new FileSystemActor<>();
@@ -129,11 +132,6 @@ public abstract class AbstractFileSystemPipe<F, FS extends IBasicFileSystem<F>> 
 	@Override
 	public String getPhysicalDestinationName() {
 		return getFileSystem().getPhysicalDestinationName();
-	}
-
-	@Override
-	public DestinationType getDomain() {
-		return getFileSystem().getDomain();
 	}
 
 	protected void setFileSystem(FS fileSystem) {

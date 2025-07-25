@@ -260,13 +260,13 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								if (receiver.isOnErrorContinue()) {
 									increaseRetryIntervalAndWait(e);
 								} else {
-									receiver.exceptionThrown("exception occurred while retrieving message", e); //actually use ON_ERROR and don't just stop the receiver
+									receiver.exceptionThrown("exception occurred while retrieving message", e); // Actually use ON_ERROR and don't just stop the receiver
 									return;
 								}
 							}
 							if (rawMessage == null) {
 								if (txStatus!=null) {
-									log.trace("Rollback; raw message == null"); //Why do we do a rollback here? There is no message to process?
+									log.trace("Rollback; raw message == null"); // Why do we do a rollback here? There is no message to process?
 									txManager.rollback(txStatus);
 								}
 								return;
@@ -346,7 +346,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 								if (receiver.isOnErrorContinue()) {
 									receiver.error("caught Exception processing message, will continue processing next message", e);
 								} else {
-									receiver.exceptionThrown("exception occurred while processing message", e); //actually use ON_ERROR and don't just stop the receiver
+									receiver.exceptionThrown("exception occurred while processing message", e); // Actually use ON_ERROR and don't just stop the receiver
 								}
 							}
 						}
@@ -386,7 +386,7 @@ public class PullingListenerContainer<M> implements IThreadCountControllable {
 						receiver.error("Exception closing listener thread", e);
 					}
 				}
-				ThreadContext.removeStack(); //Cleanup the MDC stack that was created during message processing
+				ThreadContext.removeStack(); // Cleanup the MDC stack that was created during message processing
 			}
 		}
 

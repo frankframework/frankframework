@@ -30,6 +30,8 @@ import lombok.Setter;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationAware;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.ParameterException;
@@ -39,7 +41,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.core.HasPhysicalDestination.DestinationType;
 import org.frankframework.doc.Category;
 import org.frankframework.doc.Forward;
 import org.frankframework.http.WebServiceListener;
@@ -110,11 +111,10 @@ import org.frankframework.util.MessageUtils;
  * @author Gerrit van Brakel
  * @since  4.2
  */
+@DestinationType(Type.ADAPTER)
 @Forward(name = "*", description = "Exit code")
 @Category(Category.Type.BASIC)
 public class IbisLocalSender extends AbstractSenderWithParameters implements HasPhysicalDestination, IThreadCreator, ConfigurationAware {
-
-	private final @Getter DestinationType domain = DestinationType.LOCAL;
 
 	private @Setter Configuration configuration;
 	private @Getter String serviceName;
