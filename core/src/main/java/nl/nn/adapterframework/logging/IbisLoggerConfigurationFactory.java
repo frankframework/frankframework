@@ -24,6 +24,7 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -33,6 +34,8 @@ import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.apache.commons.io.ByteOrderMark;
+import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.LoggerContext;
@@ -41,7 +44,6 @@ import org.apache.logging.log4j.core.config.ConfigurationFactory;
 import org.apache.logging.log4j.core.config.ConfigurationSource;
 import org.apache.logging.log4j.core.config.xml.XmlConfiguration;
 
-import nl.nn.adapterframework.util.StreamUtil;
 import nl.nn.adapterframework.util.StringResolver;
 
 /**
@@ -172,12 +174,25 @@ public class IbisLoggerConfigurationFactory extends ConfigurationFactory {
 		URL url = this.getClass().getClassLoader().getResource(filename);
 		if(url != null) {
 			Properties properties = new Properties();
-			try(InputStream is = url.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
+			try(InputStream is = url.openStream(); Reader reader = getCharsetDetectingInputStreamReader(is)) {
 				properties.load(reader);
 			}
 			return properties;
 		}
 		return null;
+	}
+
+	/* May be duplicate code, but the LogFactory may not depend on any class that uses a logger. */
+	private static Reader getCharsetDetectingInputStreamReader(InputStream inputStream) throws IOException {
+		BOMInputStream bOMInputStream = BOMInputStream.builder()
+				.setInputStream(inputStream)
+				.setByteOrderMarks(ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE)
+				.get();
+
+		ByteOrderMark bom = bOMInputStream.getBOM();
+		String charsetName = bom == null ? StandardCharsets.UTF_8.displayName() : bom.getCharsetName();
+
+		return new InputStreamReader(new BufferedInputStream(bOMInputStream), charsetName);
 	}
 
 	private static void setInstanceNameLc(Properties log4jProperties) {
