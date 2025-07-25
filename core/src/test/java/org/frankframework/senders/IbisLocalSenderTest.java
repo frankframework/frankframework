@@ -261,6 +261,42 @@ class IbisLocalSenderTest {
 	}
 
 	@Test
+	public void testSendMessageWithParamsAndReturnSessionKeys() throws Exception {
+		// Arrange
+		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient(false);
+		sender.setReturnedSessionKeys("*");
+
+		Parameter parameter = new Parameter();
+		parameter.setName("*");
+		parameter.setSessionKey("*");
+		parameter.configure();
+		sender.addParameter(parameter);
+		sender.configure();
+
+		try (PipeLineSession session = new PipeLineSession();
+			 Message message = new Message("mid")) {
+
+			String originalMid = "original-main-adapter-mid";
+			session.put(PipeLineSession.MESSAGE_ID_KEY, originalMid);
+			session.put("my-parameter1", "parameter1-value");
+
+			// Act
+			// NB: The dummy service client will return the session-key from the sub-adapter-session that is in the incoming message. Here we retrieve session-key "mid"
+			SenderResult result = sender.sendMessage(message, session);
+
+			// Assert
+			assertAll(
+				() -> assertNotEquals(originalMid, result.getResult().asString()),
+				() -> assertEquals(originalMid, session.get(PipeLineSession.MESSAGE_ID_KEY)),
+				() -> assertTrue(session.containsKey("my-parameter1"), "After request the pipeline-session should contain key [my-parameter1]"),
+				() -> assertEquals("parameter1-value", session.get("my-parameter1")),
+				() -> assertFalse(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should not contain key [this-doesnt-exist]"),
+				() -> assertTrue(session.containsKey("key-not-configured-for-copy"), "Session should contain key 'key-not-configured-for-copy' b/c all keys should be copied")
+			);
+		}
+	}
+
+	@Test
 	public void testSendMessageWithExitStateError() throws Exception {
 		// Arrange
 		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient(false);
