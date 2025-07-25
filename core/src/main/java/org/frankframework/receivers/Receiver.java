@@ -54,6 +54,8 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.xml.sax.SAXException;
 
+import com.jayway.jsonpath.JsonPath;
+
 import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
 import lombok.Setter;
@@ -103,6 +105,8 @@ import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Protected;
 import org.frankframework.jdbc.MessageStoreListener;
+import org.frankframework.json.JsonException;
+import org.frankframework.json.JsonUtil;
 import org.frankframework.jta.SpringTxManagerProxy;
 import org.frankframework.lifecycle.events.AdapterMessageEvent;
 import org.frankframework.lifecycle.events.MessageEventLevel;
@@ -286,6 +290,9 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	private @Getter String correlationIDXPath;
 	private @Getter String correlationIDNamespaceDefs;
 	private @Getter String correlationIDStyleSheet;
+
+	private @Getter String correlationIDJsonPath;
+	private JsonPath correlationIDJsonPathCompiled;
 
 	private @Getter String labelXPath;
 	private @Getter String labelNamespaceDefs;
@@ -699,6 +706,10 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 
 			if (StringUtils.isNotEmpty(getCorrelationIDXPath()) || StringUtils.isNotEmpty(getCorrelationIDStyleSheet())) {
 				correlationIDTp=TransformerPool.configureTransformer0(this, getCorrelationIDNamespaceDefs(), getCorrelationIDXPath(), getCorrelationIDStyleSheet(), OutputType.TEXT,false,null,0);
+			}
+
+			if (StringUtils.isNotBlank(correlationIDJsonPath)) {
+				correlationIDJsonPathCompiled = JsonUtil.compileJsonPath(correlationIDJsonPath);
 			}
 
 			if (StringUtils.isNotEmpty(hideRegex)) {
@@ -1541,6 +1552,16 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 					businessCorrelationId = messageWrapper.getCorrelationId();
 				}
 			}
+		} else if (correlationIDJsonPathCompiled != null) {
+			try {
+				businessCorrelationId = JsonUtil.evaluateJsonPath(correlationIDJsonPathCompiled, messageWrapper.getMessage());
+			} catch (JsonException e) {
+				log.warn("{} could not extract businessCorrelationId using correlationIDJsonPath expression", logPrefix);
+			}
+			if (StringUtils.isEmpty(businessCorrelationId) && StringUtils.isNotEmpty(messageWrapper.getCorrelationId())) {
+				log.info("{} did not find correlationId using JSONPath expression [{}], reverting to correlationId of transfer [{}]", logPrefix, correlationIDJsonPath, messageWrapper.getCorrelationId());
+				businessCorrelationId = messageWrapper.getCorrelationId();
+			}
 		}
 		if (StringUtils.isEmpty(businessCorrelationId) && StringUtils.isNotEmpty(messageId)) {
 			log.info("{} did not find (technical) correlationId, reverting to messageId [{}]", logPrefix, messageId);
@@ -2173,6 +2194,11 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	/** XPath expression to extract correlationId from message */
 	public void setCorrelationIDXPath(String string) {
 		correlationIDXPath = string;
+	}
+
+	/** JsonPath expression to extract correlationId from message */
+	public void setCorrelationIDJsonPath(String string) {
+		correlationIDJsonPath = string;
 	}
 
 	/** Namespace definitions for correlationIDXPath. Must be in the form of a comma or space separated list of <code>prefix=namespaceuri</code>-definitions */
