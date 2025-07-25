@@ -63,7 +63,7 @@ import org.frankframework.util.SpringUtils;
 import org.frankframework.util.TimeProvider;
 import org.frankframework.util.XmlUtils;
 
-@Isolated // Tests manipulate current time, so should not be run concurrently with other tests
+@Isolated("Tests manipulate current time, so should not be run concurrently with other tests")
 public class ParameterTest {
 
 	@AfterEach

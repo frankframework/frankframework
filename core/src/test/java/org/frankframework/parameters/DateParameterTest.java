@@ -28,7 +28,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.TimeProvider;
 
-@Isolated // Tests manipulate current time, so should not be run concurrently with other tests
+@Isolated("Tests manipulate current time, so should not be run concurrently with other tests")
 public class DateParameterTest {
 
 	private TimeZone systemTimeZone;

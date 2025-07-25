@@ -35,7 +35,7 @@ import org.frankframework.util.SpringUtils;
 import org.frankframework.util.TimeProvider;
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
-@Isolated // Tests manipulate current time, so should not be run concurrently with other tests
+@Isolated("Tests manipulate current time, so should not be run concurrently with other tests")
 public class TestSecurityItems extends BusTestBase {
 
 	@BeforeEach

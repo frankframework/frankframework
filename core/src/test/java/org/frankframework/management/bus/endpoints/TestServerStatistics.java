@@ -17,7 +17,7 @@ import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.util.TimeProvider;
 
-@Isolated // Tests manipulate current time, so should not be run concurrently with other tests
+@Isolated("Tests manipulate current time, so should not be run concurrently with other tests")
 public class TestServerStatistics extends BusTestBase {
 
 	@AfterEach
