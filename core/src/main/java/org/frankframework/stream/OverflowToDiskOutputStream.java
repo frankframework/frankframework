@@ -200,13 +200,13 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 
 		if(fileLocation != null) {
 			log.trace("creating message from reference on disk");
-			try {
-				return PathMessage.asTemporaryMessage(fileLocation);
-			} finally {
-				//Since we were successfully able to create a PathMessage (which will cleanup the file on close) remove the reference here.
-				cleanupFileAction.shouldClean = false;
-				CleanerProvider.clean(cleanupFileAction);
-			}
+			PathMessage result = PathMessage.asTemporaryMessage(fileLocation);
+			//Since we were successfully able to create a PathMessage (which will cleanup the file on close) remove the reference here.
+			fileLocation = null;
+			cleanupFileAction.shouldClean = false;
+			CleanerProvider.clean(cleanupFileAction);
+
+			return result;
 		} else {
 			log.trace("creating message from in-memory buffer");
 			final byte[] out = new byte[currentBufferSize];
