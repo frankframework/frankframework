@@ -119,6 +119,8 @@ public class RunCypressE2eTest {
 
 	@AfterAll
 	public static void tearDown() {
+		if (run == null) return;
+
 		run.stop();
 		container.stop();
 
