@@ -176,7 +176,7 @@ public abstract class CmisHttpSender extends AbstractHttpSender {
 		return Message.nullMessage();
 	}
 
-	public Response invoke(HttpMethod method, String url, Map<String, String> headers, Output writer, BindingSession session) {
+	public Response invoke(HttpMethod method, String url, Map<String, String> headers, Output writer) {
 		//Prepare the message. We will overwrite things later...
 		int responseCode = -1;
 

@@ -531,17 +531,13 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 
 	private Optional<String> getStubFilename(final Message input, final PipeLineSession session) throws PipeRunException {
 		ParameterList pl = getParameterList();
-		if (pl == null) {
-			return Optional.empty();
-		} else {
-			Map<String, Object> params;
-			try {
-				params = pl.getValues(input, session).getValueMap();
-			} catch (ParameterException e1) {
-				throw new PipeRunException(this, "got exception evaluating parameters", e1);
-			}
-			return !params.isEmpty() ? Optional.ofNullable((String) params.get(STUBFILENAME)) : Optional.empty();
+		Map<String, Object> params;
+		try {
+			params = pl.getValues(input, session).getValueMap();
+		} catch (ParameterException e1) {
+			throw new PipeRunException(this, "got exception evaluating parameters", e1);
 		}
+		return !params.isEmpty() ? Optional.ofNullable((String) params.get(STUBFILENAME)) : Optional.empty();
 	}
 
 	private PipeRunResult preProcessInput(Message input, PipeLineSession session) throws PipeRunException {

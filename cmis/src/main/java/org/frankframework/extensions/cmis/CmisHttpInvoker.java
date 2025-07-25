@@ -279,7 +279,7 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 
 			log.trace("invoking CmisHttpSender: content-type[{}] headers[{}]", contentType, headers);
 
-			response = sender.invoke(method, url.toString(), headers, writer, session);
+			response = sender.invoke(method, url.toString(), headers, writer);
 		} catch (Exception e) {
 			log.trace("exception creating or retrieving sender instance", e);
 			throw new CmisConnectionException(url.toString(), -1, e);

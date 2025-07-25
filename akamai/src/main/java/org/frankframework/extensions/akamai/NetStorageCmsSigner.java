@@ -143,6 +143,8 @@ public class NetStorageCmsSigner {
 	 * @param authData data header values {@link #getAuthDataHeaderValue()}
 	 * @return a base64 encoded return string
 	 */
+
+	@SuppressWarnings("java:S3457") // Changing \n to %n so the 'platform separator' is used will break the hash!
 	protected String getAuthSignHeaderValue(String action, String authData) {
 		String signData =
 				"%s%s\n%s:%s\n".formatted(
