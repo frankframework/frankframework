@@ -142,6 +142,9 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 
 	@Test
 	public void testSleepWhenEqualsToPrevious() throws Exception {
+		// If timeprovider has a fixed clock, this test will hang
+		TimeProvider.resetClock();
+
 		long sleep = 100;
 		pipe.setSleepWhenEqualToPrevious(sleep);
 		configureAndStartPipe();

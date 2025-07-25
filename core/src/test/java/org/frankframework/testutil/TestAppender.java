@@ -26,6 +26,7 @@ import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.Logger;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
+import org.apache.logging.log4j.core.config.Configuration;
 
 import lombok.Setter;
 
@@ -54,7 +55,9 @@ public class TestAppender extends AbstractAppender implements AutoCloseable {
 
 		// Default pattern: %d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %x %c{2} - %m%n
 		public B useIbisPatternLayout(String pattern) {
-			IbisPatternLayout layout = IbisPatternLayout.createLayout(pattern, getConfiguration(), null, true, false, false);
+			Configuration logConfig = getRootLogger().getContext().getConfiguration();
+			setConfiguration(logConfig);
+			IbisPatternLayout layout = IbisPatternLayout.createLayout(pattern, logConfig, null, true, false, false);
 			return setLayout(layout);
 		}
 

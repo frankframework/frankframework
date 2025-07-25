@@ -54,7 +54,10 @@ public class ConsoleFrontend extends HttpServlet implements EnvironmentAware, In
 	private static final String WELCOME_FILE = "index.html";
 	private static final String DEFAULT_CONSOLE_PATH = "console"; //WebSphere doesn't like the classpath: protocol and resources should not start with a slash?
 
+	@SuppressWarnings("java:S2226") // Initialized through Spring (which is a Sonar Exception)
 	private String frontendPath = null;
+
+	@SuppressWarnings("java:S2226") // Initialized through Spring (which is a Sonar Exception)
 	@Setter private transient Environment environment;
 
 	@Override

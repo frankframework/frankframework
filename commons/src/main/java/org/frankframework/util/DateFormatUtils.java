@@ -59,6 +59,8 @@ public class DateFormatUtils {
 	private static final String FORMAT_TIME_HMS = "HH:mm:ss";
 	public static final DateTimeFormatter TIME_HMS_FORMATTER = buildFormatter(FORMAT_TIME_HMS);
 
+	public static final DateTimeFormatter HTTP_DATE_HEADER_FORMAT = DateTimeFormatter.RFC_1123_DATE_TIME;
+
 	private static final Map<Pattern, DateTimeFormatter> DATE_EXPRESSION_PARSER_MAP;
 
 	private DateFormatUtils() {

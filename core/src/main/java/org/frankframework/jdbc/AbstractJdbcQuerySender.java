@@ -243,7 +243,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 
 	protected CallableStatement getCallWithRowIdReturned(Connection con, String query) throws SQLException {
 		String callQuery = "BEGIN " + query + " RETURNING ROWID INTO ?; END;";
-		log.debug("preparing statement for query [{}]", () -> callQuery);
+		log.debug("preparing statement for query [{}]", callQuery);
 		CallableStatement callableStatement = con.prepareCall(callQuery);
 
 		try {

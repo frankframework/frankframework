@@ -21,6 +21,10 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public class CookieUtil {
 
+	private CookieUtil() {
+		// Private constructor so that the utility-class cannot be instantiated.
+	}
+
 	public static Cookie getCookie(HttpServletRequest request, String name) {
 		Cookie[] cookies = request.getCookies();
 		if(cookies != null) {

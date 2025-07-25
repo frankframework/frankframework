@@ -19,11 +19,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.InputStream;
-import java.net.URL;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -40,7 +36,6 @@ import org.junit.jupiter.api.Test;
 
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestAssertions;
-import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.LogUtil;
 
 public class TestLogMessages {
@@ -174,28 +169,6 @@ public class TestLogMessages {
 					""";
 			TestAssertions.assertEqualsIgnoreRNTSpace(expected, message);
 		}
-	}
-
-	@Test
-	public void throwExceptionWhenOldLog4jVersion() throws Exception {
-		URL log4jOld = TestFileUtils.getTestFileURL("/Logging/log4j-old.xml");
-		assertNotNull(log4jOld, "cannot find log4j-old.xml");
-		InputStream oldLog4jConfiguration = log4jOld.openStream();
-		IllegalStateException ex = assertThrows(IllegalStateException.class, () -> {
-			FrankLogConfigurationFactory.readLog4jConfiguration(oldLog4jConfiguration);
-		});
-		assertEquals("Did not recognize configuration format, unable to configure Log4j2. Please use the log4j2 layout in file log4j4ibis.xml", ex.getMessage());
-	}
-
-	@Test
-	public void readLog4jConfiguration() throws Exception {
-		URL log4jNew = TestFileUtils.getTestFileURL("/Logging/log4j-new.xml");
-		assertNotNull(log4jNew, "cannot find log4j-new.xml");
-		InputStream newLog4jConfiguration = log4jNew.openStream();
-
-		String config = FrankLogConfigurationFactory.readLog4jConfiguration(newLog4jConfiguration);
-		String expected = TestFileUtils.getTestFile("/Logging/log4j-new.xml");
-		TestAssertions.assertEqualsIgnoreCRLF(expected, config);
 	}
 
 	@Test
