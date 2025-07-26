@@ -17,10 +17,8 @@
 package org.frankframework.runner;
 
 import static org.awaitility.Awaitility.await;
-import static org.frankframework.testutil.TestAssertions.isTestRunningOnGitHub;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.IOException;
 import java.time.Duration;
