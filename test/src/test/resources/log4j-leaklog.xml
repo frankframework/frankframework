@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<log4j2:Configuration status="WARN" xmlns:log4j2="log4j-config.xsd" name="${ff:instance.name}-test">
+	<Appenders>
+		<Console name="container">
+			<PatternLayout>
+				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} - %m%n%xEx{short}</Pattern>
+			</PatternLayout>
+		</Console>
+	</Appenders>
+
+	<!-- Since we don't want to overwrite the default log4j4ibis.xml the leak-log is the easiest way to print to stdout. -->
+
+	<Loggers>
+		<Logger name="LEAK_LOG" additivity="false" level="INFO">
+			<AppenderRef ref="leak-log-appender"/>
+			<AppenderRef ref="stdout"/>
+		</Logger>
+
+		<Logger name="org.frankframework" level="DEBUG" />
+
+		<Logger name="cypress" level="INFO">
+			<AppenderRef ref="container"/>
+		</Logger>
+		<Logger name="org.frankframework.runner" level="INFO">
+			<AppenderRef ref="stdout"/>
+		</Logger>
+		<Logger name="org.testcontainers" level="INFO">
+			<AppenderRef ref="container"/>
+		</Logger>
+
+		<Root level="${ff:log.level}">
+			<AppenderRef ref="file"/>
+			<AppenderRef ref="stdout"/>
+		</Root>
+	</Loggers>
+</log4j2:Configuration>

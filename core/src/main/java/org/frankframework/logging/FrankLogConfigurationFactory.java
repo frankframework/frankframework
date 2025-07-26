@@ -70,9 +70,10 @@ public class FrankLogConfigurationFactory extends ConfigurationFactory {
 		if (System.getProperty("log.dir") == null) {
 			File logDir = findLogDir();
 			if (logDir != null) {
+				LOGGER.info(LOOKUP, "did not find system property [log.dir] found suitable path ["+logDir+"]");
 				System.setProperty("log.dir", fixLogDirectorySlashes(logDir.getPath()));
 			} else {
-				LOGGER.warn(LOOKUP, "did not find system property log.dir and unable to locate it automatically");
+				LOGGER.warn(LOOKUP, "did not find system property [log.dir] and unable to locate it automatically");
 			}
 		}
 	}

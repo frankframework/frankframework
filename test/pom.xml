@@ -135,13 +135,6 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-core</artifactId>
-			<version>${project.version}</version>
-			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>io.github.wimdeblauwe</groupId>
 			<artifactId>testcontainers-cypress</artifactId>
 			<version>1.9.1</version>

@@ -57,6 +57,7 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 	private static final Marker LOOKUP = MarkerManager.getMarker("LOOKUP");
 	private static final String LOG4J_PROPS_FILE = "log4j4ibis.properties";
 	private static final String DS_PROPERTIES_FILE = "DeploymentSpecifics.properties";
+	private static final String LOG_LEVEL_KEY = "log.level";
 
 	private static SoftReference<Properties> propertiesRef = null;
 
@@ -78,8 +79,9 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 			Properties properties;
 			try {
 				properties = computeProperties();
+				LOGGER.info(LOOKUP, "FrankPropertyLookupProvider finished loading Frank!Framework properties");
 			} catch (IOException e) {
-				LOGGER.fatal(LOOKUP, "unable to load Frank!Framework properties", e);
+				LOGGER.fatal(LOOKUP, "FrankPropertyLookupProvider unable to load Frank!Framework properties", e);
 				properties = new Properties();
 			}
 
@@ -102,6 +104,8 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 		if(StringResolver.needsResolution(value)) {
 			value = StringResolver.substVars(value, properties);
 		}
+
+		LOGGER.debug(LOOKUP, "FrankPropertyLookupProvider found key ["+key+"] and resolved it to ["+value+"]");
 		return value;
 	}
 
@@ -111,7 +115,7 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 		if(log4jProperties == null) {
 			log4jProperties = new Properties();
 
-			LOGGER.warn(LOOKUP, "did not find " + LOG4J_PROPS_FILE + ", leaving it up to log4j's default initialization procedure");
+			LOGGER.warn(LOOKUP, "FrankPropertyLookupProvider did not find " + LOG4J_PROPS_FILE + ", leaving it up to log4j's default initialization procedure");
 		}
 
 		Properties dsProperties = getParseProperties(DS_PROPERTIES_FILE);
@@ -201,7 +205,7 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 	 * is {@code ACC} or {@code PRD} then the log level is set to {@code WARN}, otherwise to {@code INFO}.
 	 */
 	private static void setLevel(Properties properties) {
-		if (properties.getProperty("log.level") == null) {
+		if (properties.getProperty(LOG_LEVEL_KEY) == null) {
 			// In the log4j4ibis.xml the rootlogger contains the loglevel: ${log.level}
 			// You can set this property in the log4j4ibis.properties, or as system property.
 			// To make sure the IBIS can start up if no log.level property has been found, it has to be explicitly set
@@ -210,8 +214,8 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 			if("ACC".equalsIgnoreCase(stage) || "PRD".equalsIgnoreCase(stage)) {
 				logLevel = "WARN";
 			}
-			properties.setProperty("log.level", logLevel);
-			System.setProperty("log.level", logLevel);
+			properties.setProperty(LOG_LEVEL_KEY, logLevel);
+			System.setProperty(LOG_LEVEL_KEY, logLevel);
 		}
 	}
 }

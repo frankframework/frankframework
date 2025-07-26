@@ -31,7 +31,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import dasniko.testcontainers.keycloak.KeycloakContainer;
-import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.util.AppConstants;
 
@@ -43,10 +42,10 @@ import org.frankframework.util.AppConstants;
  */
 @Testcontainers(disabledWithoutDocker = true)
 @Tag("integration")
-@Log4j2
 public class KeycloakBearerOnlyAuthenticatorIntegrationTest {
 
 	@Container
+	@SuppressWarnings("resource") // Should we close KeyCloak? I'm assuming TestContainers handles this?
 	private static final KeycloakContainer keycloak = new KeycloakContainer()
 			.withRealmImportFile("/test-realm.json");
 
@@ -57,7 +56,7 @@ public class KeycloakBearerOnlyAuthenticatorIntegrationTest {
 	/**
 	 * Since we don't use @SpringBootApplication, we can't use @SpringBootTest here and need to manually configure the application
 	 */
- 	@BeforeAll
+	@BeforeAll
 	static void setup() throws IOException {
 		// Set system properties for the application to use the Keycloak container and start the framework initializer
 		System.setProperty("application.security.console.authentication.type", "BEARER_ONLY");
