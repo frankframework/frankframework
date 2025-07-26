@@ -126,7 +126,7 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 		log4jProperties.putAll(System.getProperties()); // Set these after reading DeploymentSpecifics as we want to override the properties
 		log4jProperties.putAll(System.getenv()); // let environment properties override system properties and appConstants
 		setInstanceNameLc(log4jProperties); // Set instance.name.lc for log file names
-		setLevel(dsProperties); // Set the log.level if it does not exist yet
+		setLevel(log4jProperties); // Set the log.level if it does not exist yet
 
 		return log4jProperties;
 	}
