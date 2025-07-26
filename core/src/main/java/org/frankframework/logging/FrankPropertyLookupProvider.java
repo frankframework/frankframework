@@ -98,6 +98,9 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 		// Default values are handled by Log4j2 and will only work when the lookup returns {@code null}.
 		// If a default value does not exist Log4k2 will use the key as value, e.g. the key `index` will get value `ff:index`.
 		if(StringUtils.isEmpty(value)) {
+			if ("log.dir".equals(key)) {
+				System.err.println("big oops");
+			}
 			return null;
 		}
 
