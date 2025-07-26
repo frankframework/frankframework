@@ -54,10 +54,11 @@ public class ConnectionOverview extends BusEndpointBase {
 			for(Adapter adapter: config.getRegisteredAdapters()) {
 				for (Receiver<?> receiver: adapter.getReceivers()) {
 					IListener<?> listener=receiver.getListener();
+					DestinationType type = AnnotationUtils.findAnnotation(listener.getClass(), DestinationType.class);
+					String typeName = type != null ? type.value().name() : "-";
 					if (listener instanceof HasPhysicalDestination physicalDestination) {
 						String destination = physicalDestination.getPhysicalDestinationName();
-						DestinationType type = AnnotationUtils.findAnnotation(listener.getClass(), DestinationType.class);
-						connectionsIncoming.add(addToMap(adapter.getName(), destination, listener.getName(), "Inbound", type.value().name()));
+						connectionsIncoming.add(addToMap(adapter.getName(), destination, listener.getName(), "Inbound", typeName));
 					}
 				}
 
@@ -68,14 +69,16 @@ public class ConnectionOverview extends BusEndpointBase {
 						if (sender instanceof HasPhysicalDestination physicalDestination) {
 							String destination = physicalDestination.getPhysicalDestinationName();
 							DestinationType type = AnnotationUtils.findAnnotation(sender.getClass(), DestinationType.class);
-							connectionsIncoming.add(addToMap(adapter.getName(), destination, sender.getName(), "Outbound", type.value().name()));
+							String typeName = type != null ? type.value().name() : "-";
+							connectionsIncoming.add(addToMap(adapter.getName(), destination, sender.getName(), "Outbound", typeName));
 						}
 						if (pipe instanceof AsyncSenderWithListenerPipe slp) {
 							IListener<?> listener = slp.getListener();
 							if (listener instanceof HasPhysicalDestination physicalDestination) {
 								String destination = physicalDestination.getPhysicalDestinationName();
 								DestinationType type = AnnotationUtils.findAnnotation(listener.getClass(), DestinationType.class);
-								connectionsIncoming.add(addToMap(adapter.getName(), destination, listener.getName(), "Inbound", type.value().name()));
+								String typeName = type != null ? type.value().name() : "-";
+								connectionsIncoming.add(addToMap(adapter.getName(), destination, listener.getName(), "Inbound", typeName));
 							}
 						}
 					}
