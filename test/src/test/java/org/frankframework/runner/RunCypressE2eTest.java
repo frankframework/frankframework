@@ -76,9 +76,6 @@ public class RunCypressE2eTest {
 
 	@BeforeAll
 	public static void setUp() throws IOException {
-		// For now the Cypress Tests fail too often on Github and only on Github for reasons we cannot yet explain
-		assumeFalse(isTestRunningOnGitHub());
-
 		startIafTestInitializer();
 		startTestContainer();
 	}
