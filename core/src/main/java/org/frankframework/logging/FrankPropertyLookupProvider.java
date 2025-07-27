@@ -226,10 +226,11 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 	/**
 	 * Checks if log.dir property exists.
 	 * Sets it with findLogDir function.
+	 * If it exists, expand the value and set it again.
 	 */
 	private static void setLogDir(Properties properties) {
 		String originalLogDir = properties.getProperty(LOG_DIR_KEY);
-		File logDir = null;
+		File logDir;
 		if (originalLogDir == null) {
 			logDir = findLogDir();
 			if (logDir != null) {
@@ -240,6 +241,7 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 		} else {
 			if(StringResolver.needsResolution(originalLogDir)) {
 				originalLogDir = StringResolver.substVars(originalLogDir, properties);
+				LOGGER.info(LOOKUP, "found system property [log.dir] which required property expansion to suitable path ["+originalLogDir+"]");
 			}
 			logDir = new File(originalLogDir);
 		}
@@ -279,6 +281,7 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 	 * @see #getDefaultLogDirectories()
 	 * @return File object that is a directory. Or null, if no directories were found.
 	 */
+	@Nullable
 	private static File findLogDir() {
 		for(String option : getDefaultLogDirectories()) {
 			int splitIndex = option.indexOf('/');
