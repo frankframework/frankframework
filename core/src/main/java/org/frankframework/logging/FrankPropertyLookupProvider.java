@@ -16,6 +16,7 @@
 package org.frankframework.logging;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -58,6 +59,7 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 	private static final String LOG4J_PROPS_FILE = "log4j4ibis.properties";
 	private static final String DS_PROPERTIES_FILE = "DeploymentSpecifics.properties";
 	private static final String LOG_LEVEL_KEY = "log.level";
+	private static final String LOG_DIR_KEY = "log.dir";
 
 	private static SoftReference<Properties> propertiesRef = null;
 
@@ -98,9 +100,6 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 		// Default values are handled by Log4j2 and will only work when the lookup returns {@code null}.
 		// If a default value does not exist Log4k2 will use the key as value, e.g. the key `index` will get value `ff:index`.
 		if(StringUtils.isEmpty(value)) {
-			if ("log.dir".equals(key)) {
-				System.err.println("big oops");
-			}
 			return null;
 		}
 
@@ -108,7 +107,7 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 			value = StringResolver.substVars(value, properties);
 		}
 
-		LOGGER.debug(LOOKUP, "FrankPropertyLookupProvider found key ["+key+"] and resolved it to ["+value+"]");
+		LOGGER.debug(LOOKUP, "FrankPropertyLookupProvider found key [{}] and resolved it to [{}]", key, value);
 		return value;
 	}
 
@@ -130,6 +129,7 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 		log4jProperties.putAll(System.getenv()); // let environment properties override system properties and appConstants
 		setInstanceNameLc(log4jProperties); // Set instance.name.lc for log file names
 		setLevel(log4jProperties); // Set the log.level if it does not exist yet
+		setLogDir(log4jProperties);
 
 		return log4jProperties;
 	}
@@ -220,5 +220,72 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 			properties.setProperty(LOG_LEVEL_KEY, logLevel);
 			System.setProperty(LOG_LEVEL_KEY, logLevel);
 		}
+	}
+
+	/**
+	 * Checks if log.dir property exists.
+	 * Sets it with findLogDir function.
+	 */
+	private static void setLogDir(Properties properties) {
+		if (properties.getProperty(LOG_DIR_KEY) == null) {
+			File logDir = findLogDir();
+			if (logDir != null) {
+				String directory = fixLogDirectorySlashes(logDir.getPath());
+				LOGGER.info(LOOKUP, "did not find system property [log.dir] found suitable path ["+directory+"]");
+
+				System.setProperty(LOG_DIR_KEY, directory);
+				properties.setProperty(LOG_LEVEL_KEY, directory);
+			} else {
+				LOGGER.warn(LOOKUP, "did not find system property [log.dir] and unable to locate it automatically");
+			}
+		}
+	}
+
+	/**
+	 * Replace backslashes because log.dir is used in log4j2.xml
+	 * on which substVars is done (see below) which will replace
+	 * double backslashes into one backslash and after that the same
+	 * is done by Log4j:
+	 * https://issues.apache.org/bugzilla/show_bug.cgi?id=22894
+	 * */
+	private static String fixLogDirectorySlashes(String directory) {
+		return directory.replace("\\", "/");
+	}
+
+
+	/**
+	 * Hierarchy of log directories to search for. Strings will be split by "/".
+	 * Before "/" split will be assumed to be a property, and after the split will be a (sub-) directory.
+	 * The property has to exist, and if a sub-directory is configured it must also exist
+	 */
+	private static List<String> getDefaultLogDirectories() {
+		return List.of("site.logdir", "user.dir/logs", "user.dir/log", "jboss.server.base.dir/log", "wtp.deploy/../logs", "catalina.base/logs");
+	}
+
+	/**
+	 * Finds the first directory in the given hierarchy.
+	 * @see #getDefaultLogDirectories()
+	 * @return File object that is a directory. Or null, if no directories were found.
+	 */
+	private static File findLogDir() {
+		for(String option : getDefaultLogDirectories()) {
+			int splitIndex = option.indexOf('/');
+
+			String property = option.substring(0, splitIndex == -1 ? option.length() : splitIndex);
+			String value = System.getProperty(property);
+			if(value == null || value.isBlank())
+				continue;
+
+			File dir;
+			if(splitIndex == -1) {
+				dir = new File(value);
+			} else {
+				dir = new File(value, option.substring(splitIndex));
+			}
+
+			if(dir.isDirectory())
+				return dir;
+		}
+		return null;
 	}
 }
