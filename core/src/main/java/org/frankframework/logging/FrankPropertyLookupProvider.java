@@ -24,6 +24,7 @@ import java.io.Reader;
 import java.lang.ref.SoftReference;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -227,17 +228,28 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 	 * Sets it with findLogDir function.
 	 */
 	private static void setLogDir(Properties properties) {
-		if (properties.getProperty(LOG_DIR_KEY) == null) {
-			File logDir = findLogDir();
+		String originalLogDir = properties.getProperty(LOG_DIR_KEY);
+		File logDir = null;
+		if (originalLogDir == null) {
+			logDir = findLogDir();
 			if (logDir != null) {
-				String directory = fixLogDirectorySlashes(logDir.getPath());
-				LOGGER.info(LOOKUP, "did not find system property [log.dir] found suitable path ["+directory+"]");
-
-				System.setProperty(LOG_DIR_KEY, directory);
-				properties.setProperty(LOG_LEVEL_KEY, directory);
+				LOGGER.info(LOOKUP, "did not find system property [log.dir] found suitable path ["+logDir.getPath()+"]");
 			} else {
 				LOGGER.warn(LOOKUP, "did not find system property [log.dir] and unable to locate it automatically");
 			}
+		} else {
+			if(StringResolver.needsResolution(originalLogDir)) {
+				originalLogDir = StringResolver.substVars(originalLogDir, properties);
+			}
+			logDir = new File(originalLogDir);
+		}
+
+		if (logDir != null) {
+			// Whether it was previously set or not, overwrite it with the fully-expanded value.
+			String expanded = fixLogDirectorySlashesAndExpand(logDir.getPath());
+
+			System.setProperty(LOG_DIR_KEY, expanded);
+			properties.setProperty(LOG_DIR_KEY, expanded);
 		}
 	}
 
@@ -248,8 +260,8 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 	 * is done by Log4j:
 	 * https://issues.apache.org/bugzilla/show_bug.cgi?id=22894
 	 * */
-	private static String fixLogDirectorySlashes(String directory) {
-		return directory.replace("\\", "/");
+	private static String fixLogDirectorySlashesAndExpand(String directory) {
+		return Path.of(directory).toAbsolutePath().toString().replace("\\", "/");
 	}
 
 

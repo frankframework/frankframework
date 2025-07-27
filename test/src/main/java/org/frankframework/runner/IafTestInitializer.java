@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,21 +38,19 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
 
-import lombok.extern.log4j.Log4j2;
-
 import org.frankframework.console.runner.ConsoleWarInitializer;
 import org.frankframework.ladybug.runner.LadybugWarInitializer;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.lifecycle.SpringContextScope;
 import org.frankframework.lifecycle.servlets.ApplicationServerConfigurer;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.LogUtil;
 
 /**
  * Spring Boot entrypoint or main class defined in the pom.xml when packaging using the 'spring-boot:repackage' goal.
  *
  * @author Niels Meijer
  */
-@Log4j2
 public class IafTestInitializer {
 
 	public static class ApplicationInitializerWrapper implements ServletContextInitializer {
@@ -129,7 +127,11 @@ public class IafTestInitializer {
 		System.setProperty("application.security.http.authentication", "false");
 		System.setProperty("application.security.http.transportGuarantee", "none");
 		System.setProperty("dtap.stage", "LOC");
-		System.setProperty("log.dir", getLogDir(projectDir));
+
+		if (System.getProperty("log.dir") == null) {
+			System.setProperty("log.dir", getLogDir(projectDir));
+		}
+
 		System.setProperty("active.jms", jmsProvider != null ? "true" : "false");
 		if (jmsProvider != null) {
 			System.setProperty("jms.provider.default", jmsProvider);
@@ -162,7 +164,7 @@ public class IafTestInitializer {
 	public static Path getProjectDir() throws IOException {
 		Path runFromDir = Path.of(System.getProperty("user.dir")).toAbsolutePath();
 		Path projectDir = validateIfEclipseOrIntelliJ(runFromDir);
-		log.info("found project dir [{}]", projectDir);
+		LogUtil.getLogger("APPLICATION").info("found project dir [{}]", projectDir);
 		return projectDir;
 	}
 
