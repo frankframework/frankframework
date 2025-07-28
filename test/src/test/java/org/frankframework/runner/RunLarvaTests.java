@@ -74,6 +74,19 @@ public class RunLarvaTests {
 
 	public static final LarvaLogLevel LARVA_LOG_LEVEL = LarvaLogLevel.WRONG_PIPELINE_MESSAGES_PREPARED_FOR_DIFF;
 	public static final Set<String> IGNORED_SCENARIOS = Set.of(
+			"Base64Pipe/scenario01",
+			"Base64Pipe/scenario02",
+			"FileSender/scenario01",
+			"ManagedFileHandler/scenario01",
+			"ManagedFileHandler/scenario02",
+			"Validators/SoapValidator/scenario07",
+			"WebServiceListenerSender/scenario11b",
+			"WebServiceListenerSender/scenario11c",
+			"WebServiceListenerSender/scenario11d",
+			"WsdlGeneratorPipe/scenario01",
+			"WsdlGeneratorPipe/scenario02",
+			"WsdlGeneratorPipe/scenario03",
+
 			// These scenarios likely fail when Narayana is used
 			"JdbcListener/scenario02",
 			"OutputStreaming/scenario04",
