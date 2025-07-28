@@ -13,6 +13,7 @@
 	<Loggers>
 		<!-- Supress ActiveMQ log -->
 		<Logger name="org.apache.activemq" level="WARN" />
+		<Logger name="io.netty" level="WARN" />
 
 		<Logger name="LEAK_LOG" additivity="false" level="INFO">
 			<AppenderRef ref="leak-log-appender"/>

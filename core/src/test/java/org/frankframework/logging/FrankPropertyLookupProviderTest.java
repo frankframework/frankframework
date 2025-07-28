@@ -1,7 +1,10 @@
 package org.frankframework.logging;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -12,6 +15,24 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.logging.FrankPropertyLookupProvider.UrlLocationComparator;
 
 public class FrankPropertyLookupProviderTest {
+
+	@Test
+	public void simpleLookup() throws IOException {
+		FrankPropertyLookupProvider provider = new FrankPropertyLookupProvider();
+		assertNull(provider.lookup("i-do-not-exist"));
+		assertNull(provider.lookup(null, "i-do-not-exist"));
+		assertEquals("-1", provider.lookup("log.lengthLogRecords"));
+		assertEquals("-1", provider.lookup(null, "log.lengthLogRecords"));
+	}
+
+	@Test
+	public void hasLogLevelAndDirectory() throws IOException {
+		FrankPropertyLookupProvider provider = new FrankPropertyLookupProvider();
+		assertNotNull(provider.lookup("log.level"));
+		assertNotNull(provider.lookup(null, "log.level"));
+		assertNotNull(provider.lookup("log.dir"));
+		assertNotNull(provider.lookup(null, "log.dir"));
+	}
 
 	@Test
 	public void dockerClassPath() throws MalformedURLException {

@@ -45,7 +45,7 @@ import org.frankframework.util.AppConstants;
 public class KeycloakBearerOnlyAuthenticatorIntegrationTest {
 
 	@Container
-	@SuppressWarnings("resource") // Should we close KeyCloak? I'm assuming TestContainers handles this?
+	@SuppressWarnings("resource") // TestContainers closes this resources.
 	private static final KeycloakContainer keycloak = new KeycloakContainer()
 			.withRealmImportFile("/test-realm.json");
 
