@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.containsStringIgnoringCase;
 import static org.hamcrest.Matchers.hasKey;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -44,6 +45,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.jta.narayana.NarayanaJtaTransactionManager;
+import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.pipes.EchoPipe;
@@ -428,6 +430,50 @@ class FrankSenderTest {
 			assertThat(session, hasKey(PipeLineSession.CORRELATION_ID_KEY));
 			assertEquals(correlationId, session.getCorrelationId());
 		}
+	}
+
+	@ParameterizedTest
+	@CsvSource({ // Cannot test with DLL Scope
+			"ADAPTER",
+			"LISTENER",
+			"JVM"
+	})
+	void sendMessageWithWildcardParam(FrankSender.Scope scope) throws Exception {
+		// Arrange
+		log.debug("Creating Configuration");
+		configuration = new TestConfiguration(false);
+		GetFromSessionPipe pipe = new GetFromSessionPipe();
+		pipe.setSessionKey(PipeLineSession.MESSAGE_ID_KEY);
+		pipe.setName("test-pipe");
+
+		FrankSender sender = createFrankSender(scope, true, pipe);
+		Parameter param = new Parameter();
+		param.setName("*");
+		param.setSessionKey("*");
+		param.configure();
+		sender.addParameter(param);
+		sender.configure();
+
+		session = new PipeLineSession();
+		session.put("session-key", "reply");
+		session.put(PipeLineSession.MESSAGE_ID_KEY, "mid");
+		session.put(PipeLineSession.CORRELATION_ID_KEY, "cid");
+
+		input = new Message("request");
+
+		// Act
+		log.debug("starting actual test");
+		result = sender.sendMessage(input, session);
+
+		// Assert
+		assertNotNull(result);
+		assertTrue(result.isSuccess(), "Expected sender to succeed calling target adapter");
+		assertNotNull(result.getResult());
+
+		Message resultMessage = result.getResult();
+		assertNotNull(resultMessage.asString());
+		String resultString = resultMessage.asString();
+		assertNotEquals("mid", resultString);
 	}
 
 	@ParameterizedTest

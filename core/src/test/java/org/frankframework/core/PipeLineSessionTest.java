@@ -456,6 +456,27 @@ public class PipeLineSessionTest {
 		assertFalse(((Message) to.get("f")).isClosed());
 	}
 
+	@ParameterizedTest
+	@CsvSource(value = {"*", ","})
+	public void testMergeToParentSessionCopyAllKeysExceptMessageId(String keysToCopy) {
+		// Arrange
+		PipeLineSession from = new PipeLineSession();
+		PipeLineSession to = new PipeLineSession();
+		from.put("key-1", "value-1");
+		from.put(PipeLineSession.MESSAGE_ID_KEY, "sub-adapter-mid");
+
+		to.put(PipeLineSession.MESSAGE_ID_KEY, "parent-adapter-mid");
+
+		// Act
+		from.mergeToParentSession(keysToCopy, to);
+
+		from.close();
+
+		// Assert
+		assertEquals("value-1", to.get("key-1"));
+		assertEquals("parent-adapter-mid", to.get(PipeLineSession.MESSAGE_ID_KEY));
+	}
+
 	@Test
 	public void testMergeToParentSessionLimitedKeys() throws Exception {
 		// Arrange

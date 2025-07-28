@@ -2390,7 +2390,7 @@ public class ApiListenerServletTest {
 			assertNotNull(message, "input message may not be null");
 
 			handlerInvoked = true;
-			context.mergeToParentSession("*", session);
+			session.putAll(context);
 			requestMessage = message;
 			if (shouldThrow) {
 				throw new ListenerException("Hard Throw");

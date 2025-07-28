@@ -107,17 +107,12 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private @Getter @Setter Configuration configuration; // Required for the Ladybug
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
-	public static final String PIPELINE_NAME = "pipeline";
 	public static final String INPUT_VALIDATOR_NAME  = "- pipeline inputValidator";
 	public static final String OUTPUT_VALIDATOR_NAME = "- pipeline outputValidator";
 	public static final String INPUT_WRAPPER_NAME    = "- pipeline inputWrapper";
 	public static final String OUTPUT_WRAPPER_NAME   = "- pipeline outputWrapper";
 
 	private @Setter MetricsInitializer configurationMetrics;
-
-	public static final String PIPELINE_DURATION_STATS  = "duration";
-	public static final String PIPELINE_WAIT_STATS  = "wait";
-	public static final String PIPELINE_SIZE_STATS  = "msgsize";
 
 	public static final String DEFAULT_SUCCESS_EXIT_NAME = "READY";
 

@@ -142,10 +142,16 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			StringTokenizer st = new StringTokenizer(keysToCopy,",;");
 			while (st.hasMoreTokens()) {
 				String key = st.nextToken();
-				parentSession.put(key, get(key));
+				if (StringUtils.isNotBlank(key) && !MESSAGE_ID_KEY.equals(key)) {
+					parentSession.put(key, get(key));
+				}
 			}
-		} else if (keysToCopy == null || "*".equals(keysToCopy)) { // if keys are not set explicitly ...
-			parentSession.putAll(this);                                      // ... all keys will be copied
+		} else if (keysToCopy == null || "*".equals(keysToCopy)) { // if keys are not set explicitly, all keys will be copied
+			forEach((key, value) -> {
+				if (!key.equals(MESSAGE_ID_KEY)) {
+					parentSession.put(key, value);
+				}
+			});
 		}
 		Set<AutoCloseable> closeablesInDestination = parentSession.values().stream()
 				.filter(AutoCloseable.class::isInstance)
