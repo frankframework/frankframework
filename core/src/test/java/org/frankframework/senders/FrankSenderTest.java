@@ -193,30 +193,6 @@ class FrankSenderTest {
 	}
 
 	@ParameterizedTest
-	@CsvSource({
-			"ADAPTER, false, ADAPTER",
-			"DLL, false, DLL",
-			"JVM, false, JVM",
-			"JVM, true, Dynamic",
-			"DLL, true, Dynamic",
-			"ADAPTER, true, Dynamic",
-	})
-	void getDomain(FrankSender.Scope scope, boolean scopeParam, String expected) {
-		// Arrange
-		FrankSender sender = new FrankSender();
-		sender.setScope(scope);
-		if (scopeParam) {
-			sender.addParameter(ParameterBuilder.create("scope", ""));
-		}
-
-		// Act
-		String actual = sender.getDomain();
-
-		// Assert
-		assertEquals(expected, actual);
-	}
-
-	@ParameterizedTest
 	@ValueSource(strings = {
 			"adapterName",
 			"configurationName/adapterName",

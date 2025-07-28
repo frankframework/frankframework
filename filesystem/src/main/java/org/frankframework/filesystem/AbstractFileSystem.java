@@ -21,12 +21,16 @@ import java.util.Iterator;
 
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
+
 /**
  * Baseclass for {@link IBasicFileSystem FileSystems}.
  *
  * @author Gerrit van Brakel
  */
 @Log4j2
+@DestinationType(Type.FILE_SYSTEM)
 public abstract class AbstractFileSystem<F> implements IBasicFileSystem<F> {
 	private int maxNumberOfMessagesToList=-1;
 

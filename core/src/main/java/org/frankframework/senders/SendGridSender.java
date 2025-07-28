@@ -247,7 +247,7 @@ public class SendGridSender extends AbstractMailSender implements HasKeystore, H
 		}
 	}
 
-	//Properties inherited from HttpSessionBase
+	// Properties inherited from HttpSessionBase
 
 	@Override
 	@ReferTo(AbstractHttpSession.class)

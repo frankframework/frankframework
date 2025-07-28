@@ -29,6 +29,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.FrankElement;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IXAEnabled;
@@ -60,6 +62,7 @@ import org.frankframework.util.LogUtil;
  * @author  Gerrit van Brakel
  * @since 	4.1
  */
+@DestinationType(Type.JDBC)
 public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, ConfigurableLifecycle, FrankElement, NameAware {
 	protected Logger log = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
@@ -67,7 +70,6 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 
 	private @Getter String name;
 
-	private final @Getter String domain = "JDBC";
 	private String datasourceName = null;
 	@Getter private String authAlias = null;
 	@Getter private String username = null;

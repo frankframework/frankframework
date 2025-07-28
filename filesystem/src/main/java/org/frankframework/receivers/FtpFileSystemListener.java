@@ -40,4 +40,8 @@ public class FtpFileSystemListener extends AbstractFileSystemListener<FTPFileRef
 		super.setMessageType(messageType);
 	}
 
+	@Override
+	public MessageType getMessageType() {
+		return (MessageType) super.getMessageType();
+	}
 }

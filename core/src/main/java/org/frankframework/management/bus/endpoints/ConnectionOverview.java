@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,10 +23,12 @@ import java.util.Map;
 
 import jakarta.annotation.security.RolesAllowed;
 
+import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.messaging.Message;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
+import org.frankframework.core.DestinationType;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IListener;
 import org.frankframework.core.IPipe;
@@ -52,10 +54,11 @@ public class ConnectionOverview extends BusEndpointBase {
 			for(Adapter adapter: config.getRegisteredAdapters()) {
 				for (Receiver<?> receiver: adapter.getReceivers()) {
 					IListener<?> listener=receiver.getListener();
-					if (listener instanceof HasPhysicalDestination) {
-						String destination = ((HasPhysicalDestination)receiver.getListener()).getPhysicalDestinationName();
-						String domain = ((HasPhysicalDestination)receiver.getListener()).getDomain();
-						connectionsIncoming.add(addToMap(adapter.getName(), destination, listener.getName(), "Inbound", domain));
+					DestinationType type = AnnotationUtils.findAnnotation(listener.getClass(), DestinationType.class);
+					String typeName = type != null ? type.value().name() : "-";
+					if (listener instanceof HasPhysicalDestination physicalDestination) {
+						String destination = physicalDestination.getPhysicalDestinationName();
+						connectionsIncoming.add(addToMap(adapter.getName(), destination, listener.getName(), "Inbound", typeName));
 					}
 				}
 
@@ -65,15 +68,17 @@ public class ConnectionOverview extends BusEndpointBase {
 						ISender sender = msp.getSender();
 						if (sender instanceof HasPhysicalDestination physicalDestination) {
 							String destination = physicalDestination.getPhysicalDestinationName();
-							String domain = physicalDestination.getDomain();
-							connectionsIncoming.add(addToMap(adapter.getName(), destination, sender.getName(), "Outbound", domain));
+							DestinationType type = AnnotationUtils.findAnnotation(sender.getClass(), DestinationType.class);
+							String typeName = type != null ? type.value().name() : "-";
+							connectionsIncoming.add(addToMap(adapter.getName(), destination, sender.getName(), "Outbound", typeName));
 						}
 						if (pipe instanceof AsyncSenderWithListenerPipe slp) {
 							IListener<?> listener = slp.getListener();
 							if (listener instanceof HasPhysicalDestination physicalDestination) {
 								String destination = physicalDestination.getPhysicalDestinationName();
-								String domain = physicalDestination.getDomain();
-								connectionsIncoming.add(addToMap(adapter.getName(), destination, listener.getName(), "Inbound", domain));
+								DestinationType type = AnnotationUtils.findAnnotation(listener.getClass(), DestinationType.class);
+								String typeName = type != null ? type.value().name() : "-";
+								connectionsIncoming.add(addToMap(adapter.getName(), destination, listener.getName(), "Inbound", typeName));
 							}
 						}
 					}

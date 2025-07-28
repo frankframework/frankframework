@@ -65,4 +65,8 @@ public class DirectoryListener extends AbstractFileSystemListener<Path, LocalFil
 		super.setMessageType(messageType);
 	}
 
+	@Override
+	public MessageType getMessageType() {
+		return (MessageType) super.getMessageType();
+	}
 }

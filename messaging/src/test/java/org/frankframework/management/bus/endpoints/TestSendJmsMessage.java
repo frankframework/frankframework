@@ -17,7 +17,7 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import org.frankframework.jms.JMSFacade;
-import org.frankframework.jms.JMSFacade.DestinationType;
+import org.frankframework.jms.JMSFacade.JmsDestinationType;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.BusTestBase;
@@ -34,6 +34,7 @@ public class TestSendJmsMessage extends BusTestBase {
 
 	protected MockRunnerConnectionFactoryFactory mockConnectionFactoryFactory;
 
+	@Override
 	@BeforeEach
 	public void setUp() throws Exception {
 		super.setUp();
@@ -45,7 +46,7 @@ public class TestSendJmsMessage extends BusTestBase {
 		String payload = "<dummy message=\"true\" />";
 		MessageBuilder<String> request = createRequestMessage(payload, BusTopic.QUEUE, BusAction.UPLOAD);
 		request.setHeader("destination", DUMMY_DESTINATION);
-		request.setHeader("type", DestinationType.QUEUE.name());
+		request.setHeader("type", JmsDestinationType.QUEUE.name());
 
 		try {
 			callAsyncGateway(request);
@@ -61,7 +62,7 @@ public class TestSendJmsMessage extends BusTestBase {
 		String payload = "<dummy message=\"true\" />";
 		MessageBuilder<String> request = createRequestMessage(payload, BusTopic.QUEUE, BusAction.UPLOAD);
 		request.setHeader("connectionFactory", MockRunnerConnectionFactoryFactory.MOCK_CONNECTION_FACTORY_NAME);
-		request.setHeader("type", DestinationType.QUEUE.name());
+		request.setHeader("type", JmsDestinationType.QUEUE.name());
 
 		try {
 			callAsyncGateway(request);
@@ -94,7 +95,7 @@ public class TestSendJmsMessage extends BusTestBase {
 		MessageBuilder<InputStream> request = createRequestMessage(payload.asInputStream(), BusTopic.QUEUE, BusAction.UPLOAD);
 		request.setHeader("connectionFactory", MockRunnerConnectionFactoryFactory.MOCK_CONNECTION_FACTORY_NAME);
 		request.setHeader("destination", DUMMY_DESTINATION);
-		request.setHeader("type", DestinationType.QUEUE.name());
+		request.setHeader("type", JmsDestinationType.QUEUE.name());
 
 		mockConnectionFactoryFactory.addEchoReceiverOnQueue(DUMMY_DESTINATION);
 
@@ -116,7 +117,7 @@ public class TestSendJmsMessage extends BusTestBase {
 		MessageBuilder<InputStream> request = createRequestMessage(payload.asInputStream(), BusTopic.QUEUE, BusAction.UPLOAD);
 		request.setHeader("connectionFactory", MockRunnerConnectionFactoryFactory.MOCK_CONNECTION_FACTORY_NAME);
 		request.setHeader("destination", DUMMY_DESTINATION);
-		request.setHeader("type", DestinationType.QUEUE.name());
+		request.setHeader("type", JmsDestinationType.QUEUE.name());
 		request.setHeader("messageClass", JMSFacade.MessageClass.TEXT.name());
 
 		mockConnectionFactoryFactory.addEchoReceiverOnQueue(DUMMY_DESTINATION);
@@ -143,7 +144,7 @@ public class TestSendJmsMessage extends BusTestBase {
 		MessageBuilder<String> request = createRequestMessage(payload, BusTopic.QUEUE, BusAction.UPLOAD);
 		request.setHeader("connectionFactory", MockRunnerConnectionFactoryFactory.MOCK_CONNECTION_FACTORY_NAME);
 		request.setHeader("destination", DUMMY_DESTINATION);
-		request.setHeader("type", DestinationType.QUEUE.name());
+		request.setHeader("type", JmsDestinationType.QUEUE.name());
 
 		mockConnectionFactoryFactory.addEchoReceiverOnQueue(DUMMY_DESTINATION);
 
@@ -162,7 +163,7 @@ public class TestSendJmsMessage extends BusTestBase {
 		MessageBuilder<String> request = createRequestMessage(payload, BusTopic.QUEUE, BusAction.UPLOAD);
 		request.setHeader("connectionFactory", MockRunnerConnectionFactoryFactory.MOCK_CONNECTION_FACTORY_NAME);
 		request.setHeader("destination", DUMMY_DESTINATION);
-		request.setHeader("type", DestinationType.QUEUE.name());
+		request.setHeader("type", JmsDestinationType.QUEUE.name());
 
 		callAsyncGateway(request);
 

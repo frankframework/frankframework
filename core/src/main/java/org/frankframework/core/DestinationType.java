@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2025 WeAreFrank!
+   Copyright 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,13 +15,24 @@
 */
 package org.frankframework.core;
 
-/**
- * Allows objects to declare that they have a physical destination.
- * This is used for instance in ShowConfiguration, to show the physical destination of receivers
- * that have one.
- *
- * @author Gerrit van Brakel
- */
-public interface HasPhysicalDestination {
-	String getPhysicalDestinationName();
+import static java.lang.annotation.ElementType.TYPE;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+import org.frankframework.doc.Label;
+
+@Target(TYPE)
+@Label(name = "TYPE")
+@Documented
+@Retention(RetentionPolicy.RUNTIME)
+public @interface DestinationType {
+
+	Type value();
+
+	enum Type {
+		HTTP, MQTT, JVM, ADAPTER, CMIS, KAFKA, IDIN, JDBC, JMS, MONGODB, MAIL, SAP, FILE_SYSTEM;
+	}
 }

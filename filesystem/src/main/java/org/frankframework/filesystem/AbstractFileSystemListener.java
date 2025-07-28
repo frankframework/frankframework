@@ -39,6 +39,7 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.core.DestinationType;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IProvidesMessageBrowsers;
@@ -47,6 +48,7 @@ import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.documentbuilder.ObjectBuilder;
 import org.frankframework.documentbuilder.XmlDocumentBuilder;
@@ -75,6 +77,7 @@ import org.frankframework.xml.XmlWriter;
  *
  */
 @Log4j2
+@DestinationType(Type.FILE_SYSTEM)
 public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F>, HasPhysicalDestination, IProvidesMessageBrowsers<F> {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -249,11 +252,6 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 
 		log.trace("Physical destination name: [{}]", destination);
 		return destination.toString();
-	}
-
-	@Override
-	public String getDomain() {
-		return getFileSystem().getDomain();
 	}
 
 	@Override

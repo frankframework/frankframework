@@ -87,8 +87,8 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 
 	private static final List<String> IGNORE_HEADERS = List.of("connection", "transfer-encoding", "content-type", "authorization");
 
-	private final int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); //Defaults to 7 days
-	private final String corsAllowOrigin = AppConstants.getInstance().getString("api.auth.cors.allowOrigin", "*"); //Defaults to everything
+	private final int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); // Defaults to 7 days
+	private final String corsAllowOrigin = AppConstants.getInstance().getString("api.auth.cors.allowOrigin", "*"); // Defaults to everything
 	private final String corsExposeHeaders = AppConstants.getInstance().getString("api.auth.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
 
 	private ApiServiceDispatcher dispatcher = null;

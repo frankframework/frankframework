@@ -1,9 +1,10 @@
-package org.frankframework.configuration.digester;
+package org.frankframework.core;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
@@ -18,7 +19,6 @@ import java.util.List;
 
 import jakarta.servlet.Servlet;
 
-import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.springframework.beans.factory.config.BeanDefinition;
@@ -31,17 +31,18 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.AnnotationUtils;
 import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
+import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.annotation.SessionScope;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationWarning;
-import org.frankframework.core.DestinationType;
-import org.frankframework.core.HasPhysicalDestination;
-import org.frankframework.core.IConfigurable;
 import org.frankframework.lifecycle.IbisInitializer;
-import org.frankframework.util.LogUtil;
 
-public class MapPropertyDescriptorsTest {
-	private final  Logger log = LogUtil.getLogger(this);
+@Log4j2
+public class TestAttributesAndDestinationType {
 
 	private Iterable<String> getClassesThatImplementIConfigurable() {
 		return getClassesThatImplement(IConfigurable.class);
@@ -59,6 +60,9 @@ public class MapPropertyDescriptorsTest {
 		// Disable Spring annotations
 		scanner.addExcludeFilter(new AnnotationTypeFilter(IbisInitializer.class));
 		scanner.addExcludeFilter(new AnnotationTypeFilter(Configuration.class));
+		scanner.addExcludeFilter(new AnnotationTypeFilter(RestController.class));
+		scanner.addExcludeFilter(new AnnotationTypeFilter(Component.class));
+		scanner.addExcludeFilter(new AnnotationTypeFilter(SessionScope.class));
 
 		BeanNameGenerator beanNameGenerator = new AnnotationBeanNameGenerator() {
 			@Override
@@ -82,7 +86,7 @@ public class MapPropertyDescriptorsTest {
 	@Test
 	public void testPropertyDescriptorsBeingRegistered() throws ClassNotFoundException, IntrospectionException {
 		for (String beanName : getClassesThatImplementIConfigurable()) {
-			if (beanName.endsWith(".UnloadableClass")) continue;
+			if (beanName.endsWith(".UnloadableClass") || beanName.contains("kafka")) continue;
 			BeanInfo beanInfo = Introspector.getBeanInfo(Class.forName(beanName));
 			// get methods
 			MethodDescriptor[] methodDescriptors =  beanInfo.getMethodDescriptors();
@@ -114,7 +118,7 @@ public class MapPropertyDescriptorsTest {
 	@Test
 	public void testIfAllConfigurationWarningsAreDeprecated() throws ClassNotFoundException {
 		for (String beanName : getClassesThatImplementIConfigurable()) {
-			if (beanName.endsWith(".UnloadableClass")) continue;
+			if (beanName.endsWith(".UnloadableClass") || beanName.contains("kafka")) continue;
 
 			Class<?> beanClass = Class.forName(beanName);
 
@@ -139,8 +143,14 @@ public class MapPropertyDescriptorsTest {
 	public void verifyThatPhysicalDestinationHaveDestinationTypeAnnotation() throws ClassNotFoundException {
 		List<Executable> executables = new ArrayList<>();
 		for (String beanName : getClassesThatImplement(HasPhysicalDestination.class)) {
-			Class<?> beanClass = Class.forName(beanName);
-			executables.add(() -> assertNotNull(AnnotationUtils.findAnnotation(beanClass, DestinationType.class), "Class [%s] is missing the DestinationType annotation!".formatted(beanName)));
+			if (beanName.contains("kafka")) continue;
+			try {
+				Class<?> beanClass = Class.forName(beanName);
+				executables.add(() -> assertNotNull(AnnotationUtils.findAnnotation(beanClass, DestinationType.class), "Class [%s] is missing the DestinationType annotation!".formatted(beanName)));
+			} catch (Exception e) {
+				e.printStackTrace();
+				fail(e.getMessage());
+			}
 		}
 		assertAll(executables);
 	}

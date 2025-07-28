@@ -47,6 +47,8 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.doc.Default;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
@@ -58,9 +60,9 @@ import org.frankframework.stream.PathMessage;
  *
  */
 @Log4j2
+@DestinationType(Type.FILE_SYSTEM)
 public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritableFileSystem<Path>, ISupportsCustomFileAttributes<Path> {
 	public static final String ORIGINAL_LAST_MODIFIED_TIME_ATTRIBUTE = "originalLastModifiedTime";
-	private final @Getter String domain = "LocalFilesystem";
 
 	private @Getter boolean createRootFolder = false;
 

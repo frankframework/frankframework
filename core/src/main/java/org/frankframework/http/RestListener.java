@@ -25,6 +25,8 @@ import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.HasSpecialDefaultValues;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
@@ -50,9 +52,9 @@ import org.frankframework.stream.Message;
  * @author  Niels Meijer
  * @author  Gerrit van Brakel
  */
+@DestinationType(Type.HTTP)
 public class RestListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues {
 
-	private final @Getter String domain = "Http";
 	private @Getter String uriPattern;
 	private @Getter String method;
 	private @Getter String etagSessionKey;

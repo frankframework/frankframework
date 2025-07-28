@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2024 WeAreFrank!
+   Copyright 2019-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,10 +34,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
 import org.apache.commons.net.ftp.FTPReply;
-import org.apache.logging.log4j.Logger;
 
-import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.filesystem.FileAlreadyExistsException;
 import org.frankframework.filesystem.FileNotFoundException;
 import org.frankframework.filesystem.FileSystemException;
@@ -48,7 +49,6 @@ import org.frankframework.filesystem.IWritableFileSystem;
 import org.frankframework.filesystem.TypeFilter;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.SerializableFileReference;
-import org.frankframework.util.LogUtil;
 
 /**
  * Implementation of FTP and FTPs FileSystem
@@ -56,12 +56,11 @@ import org.frankframework.util.LogUtil;
  * @author Daniël Meyer
  * @author Niels Meijer
  */
+@Log4j2
+@DestinationType(Type.FILE_SYSTEM)
 public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTPFileRef> {
-	private final Logger log = LogUtil.getLogger(this);
 
-	private final @Getter String domain = "FTP";
 	private String remoteDirectory = "";
-
 	private FTPClient ftpClient;
 
 	@Override
@@ -337,7 +336,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public String getCanonicalName(FTPFileRef f) {
-		return f.getName(); //Should include folder structure if known
+		return f.getName(); // Should include folder structure if known
 	}
 
 	@Override

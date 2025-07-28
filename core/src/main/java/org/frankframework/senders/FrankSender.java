@@ -37,6 +37,8 @@ import org.frankframework.configuration.ConfigurationAware;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
@@ -272,6 +274,7 @@ import org.frankframework.util.MessageUtils;
  * @ff.parameter target Determine target dynamically at runtime. If the parameter value is empty, fall back to the target configured via the attribute.
  * @ff.parameters All parameters except {@code scope} and {@code target} are copied to the {@link PipeLineSession} of the adapter called.
  */
+@DestinationType(Type.ADAPTER)
 @Forward(name = "*", description = "Exit code")
 @Category(Category.Type.BASIC)
 public class FrankSender extends AbstractSenderWithParameters implements HasPhysicalDestination, IThreadCreator, ConfigurationAware {
@@ -341,16 +344,6 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 			result.append(getTarget());
 		}
 		return result.toString();
-	}
-
-	@Override
-	public String getDomain() {
-		ParameterList pl = getParameterList();
-		if (pl.hasParameter(SCOPE_PARAM_NAME)) {
-			return "Dynamic";
-		} else {
-			return getScope().name();
-		}
 	}
 
 	@Override

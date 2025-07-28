@@ -43,7 +43,6 @@ import org.frankframework.align.XmlAligner;
 import org.frankframework.align.XmlTypeToJsonSchemaConverter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
-import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -70,10 +69,9 @@ import org.frankframework.xml.XmlWriter;
  *
  * @author Gerrit van Brakel
  */
-public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestination {
+public class Json2XmlValidator extends XmlValidator {
 
 	public static final int READ_AHEAD_LIMIT = 1024;
-	private final @Getter String domain = "XML Schema";
 	public static final String INPUT_FORMAT_SESSION_KEY_PREFIX = "Json2XmlValidator.inputFormat ";
 
 	private @Getter boolean compactJsonArrays=true;
@@ -214,7 +212,7 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 	private Message determineJsonInputMessage(Message input, PipeLineSession session, boolean responseMode, DocumentFormat inputFormat) {
 		Message messageToValidate;
 		if (inputFormat == null) {
-			storeInputFormat(getOutputFormat(), input, session, responseMode); //Message is empty, but could be either XML or JSON. Look at the accept header, and if not set fall back to the default OutputFormat.
+			storeInputFormat(getOutputFormat(), input, session, responseMode); // Message is empty, but could be either XML or JSON. Look at the accept header, and if not set fall back to the default OutputFormat.
 
 			messageToValidate = new Message("{}");
 		} else {
@@ -446,26 +444,6 @@ public class Json2XmlValidator extends XmlValidator implements HasPhysicalDestin
 		XmlTypeToJsonSchemaConverter converter = new XmlTypeToJsonSchemaConverter(models, isCompactJsonArrays(), !isJsonWithRootElements(), getSchemaLocation());
 		return converter.createJsonSchema(elementName, namespace);
 	}
-
-	@Override
-	public String getPhysicalDestinationName() {
-		StringBuilder result = new StringBuilder();
-		if (StringUtils.isNotEmpty(getRoot())) {
-			result.append("request message [")
-					.append(getRoot())
-					.append("]");
-		}
-		if (StringUtils.isNotEmpty(getResponseRoot())) {
-			if (!result.isEmpty()) {
-				result.append("; ");
-			}
-			result.append("response message [")
-					.append(getResponseRoot())
-					.append("]");
-		}
-		return result.toString();
-	}
-
 
 	/** Only for JSON input: namespace of the resulting XML. Need only be specified when the namespace of root name is ambiguous in the schema */
 	public void setTargetNamespace(String targetNamespace) {

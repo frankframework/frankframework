@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.ListenerException;
 import org.frankframework.jms.IConnectionFactoryFactory;
-import org.frankframework.jms.JMSFacade.DestinationType;
+import org.frankframework.jms.JMSFacade.JmsDestinationType;
 import org.frankframework.jms.JmsBrowser;
 import org.frankframework.jms.JmsMessageBrowserIteratorItem;
 import org.frankframework.jms.JmsRealmFactory;
@@ -83,7 +83,7 @@ public class BrowseQueue extends BusEndpointBase {
 		boolean lookupDestination = BusMessageUtils.getBooleanHeader(message, "lookupDestination", false);
 		boolean showPayload = BusMessageUtils.getBooleanHeader(message, "showPayload", false);
 		boolean rowNumbersOnly = BusMessageUtils.getBooleanHeader(message, "rowNumbersOnly", false);
-		DestinationType type = BusMessageUtils.getEnumHeader(message, "type", DestinationType.class);
+		JmsDestinationType type = BusMessageUtils.getEnumHeader(message, "type", JmsDestinationType.class);
 		if(type == null) {
 			throw new BusException("a DestinationType must be provided");
 		}
@@ -94,7 +94,7 @@ public class BrowseQueue extends BusEndpointBase {
 			@SuppressWarnings("unchecked")
 			JmsBrowser<jakarta.jms.Message> jmsBrowser = createBean(JmsBrowser.class);
 			jmsBrowser.setName("BrowseQueueAction");
-			if(type == DestinationType.QUEUE) {
+			if(type == JmsDestinationType.QUEUE) {
 				jmsBrowser.setQueueConnectionFactoryName(connectionFactory);
 			} else {
 				jmsBrowser.setTopicConnectionFactoryName(connectionFactory);
