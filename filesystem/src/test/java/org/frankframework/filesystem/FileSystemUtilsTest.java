@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.nio.file.DirectoryStream;
 import java.nio.file.Path;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.stream.Stream;
 
@@ -255,12 +256,26 @@ public abstract class FileSystemUtilsTest<F, FS extends IWritableFileSystem<F>> 
 	}
 
 	@Test
-	public void testEmptyFilteredStream() throws Exception {
+	public void testNullFilteredStream() throws Exception {
 		IBasicFileSystem<?> fs = new LocalFileSystem() {
 
 			@Override
 			public DirectoryStream<Path> list(String folder, TypeFilter filter) {
 				return FileSystemUtils.getDirectoryStream((Iterator<Path>) null);
+			}
+		};
+
+		Stream<?> stream = FileSystemUtils.getFilteredStream(fs, null, null, null, TypeFilter.FILES_ONLY);
+		assertFalse(stream.findAny().isPresent());
+	}
+
+	@Test
+	public void testEmptyFilteredStream() throws Exception {
+		IBasicFileSystem<?> fs = new LocalFileSystem() {
+
+			@Override
+			public DirectoryStream<Path> list(String folder, TypeFilter filter) {
+				return FileSystemUtils.getDirectoryStream(Collections.emptyIterator());
 			}
 		};
 
