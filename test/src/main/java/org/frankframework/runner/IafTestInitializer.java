@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,21 +38,20 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
 
-import lombok.extern.log4j.Log4j2;
-
 import org.frankframework.console.runner.ConsoleWarInitializer;
 import org.frankframework.ladybug.runner.LadybugWarInitializer;
 import org.frankframework.lifecycle.FrankApplicationInitializer;
 import org.frankframework.lifecycle.SpringContextScope;
 import org.frankframework.lifecycle.servlets.ApplicationServerConfigurer;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.LogUtil;
 
 /**
  * Spring Boot entrypoint or main class defined in the pom.xml when packaging using the 'spring-boot:repackage' goal.
  *
  * @author Niels Meijer
  */
-@Log4j2
+// Careful.. don't log here!!
 public class IafTestInitializer {
 
 	public static class ApplicationInitializerWrapper implements ServletContextInitializer {
@@ -124,12 +123,28 @@ public class IafTestInitializer {
 	static SpringApplication configureApplication(@Nullable String appServerCustom, @Nullable String dbms, @Nullable String jmsProvider) throws IOException {
 		Path projectDir = getProjectDir();
 
+		// Ensure a log.dir has been set
+		if (System.getProperty("log.dir") == null) {
+			String foundLogDir = getLogDir(projectDir);
+			System.setProperty("log.dir", foundLogDir);
+			LogUtil.getLogger("APPLICATION").info("set log.dir to [{}]", foundLogDir);
+		}
+
+		// Find and configure the configurations
+		LogUtil.getLogger("APPLICATION").info("using project.dir [{}]", projectDir);
 		setConfigurationsDirectory(projectDir);
 
 		System.setProperty("application.security.http.authentication", "false");
 		System.setProperty("application.security.http.transportGuarantee", "none");
 		System.setProperty("dtap.stage", "LOC");
-		System.setProperty("log.dir", getLogDir(projectDir));
+
+		// Configure a CredentialProvider
+		System.setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory");
+		Path secrets = projectDir.resolve("src/main/secrets/credentials.properties").toAbsolutePath();
+		System.setProperty("credentialFactory.map.properties", secrets.toString().replace("\\", "/"));
+		System.setProperty("authAliases.expansion.allowed", "testalias");
+
+		// Configure JMS
 		System.setProperty("active.jms", jmsProvider != null ? "true" : "false");
 		if (jmsProvider != null) {
 			System.setProperty("jms.provider.default", jmsProvider);
@@ -146,6 +161,8 @@ public class IafTestInitializer {
 				System.setProperty("active.storedProcedureTests", "true");
 			}
 		}
+
+		// Start the actual application
 		SpringApplication app = new SpringApplication();
 		app.addInitializers(new ConfigureAppConstants());
 		app.setWebApplicationType(WebApplicationType.SERVLET);
@@ -158,12 +175,14 @@ public class IafTestInitializer {
 		return app;
 	}
 
+	/**
+	 * Find the iaf-test module directory
+	 * NOTE: Since we still need to determine the log.dir, we may not log anything here!
+	 */
 	@Nonnull
 	public static Path getProjectDir() throws IOException {
 		Path runFromDir = Path.of(System.getProperty("user.dir")).toAbsolutePath();
-		Path projectDir = validateIfEclipseOrIntelliJ(runFromDir);
-		log.info("found project dir [{}]", projectDir);
-		return projectDir;
+		return validateIfEclipseOrIntelliJ(runFromDir);
 	}
 
 	private static void setConfigurationsDirectory(Path projectDir) throws IOException {
@@ -181,8 +200,11 @@ public class IafTestInitializer {
 		}
 	}
 
-	// Eclipse runs from the module (relative) directory.
-	// IntelliJ runs from the project root directory.
+	/**
+	 * Eclipse runs from the module (relative) directory.
+	 * IntelliJ runs from the project root directory.
+	 * NOTE: Since we still need to determine the log.dir, we may not log anything here!
+	 */
 	private static @Nonnull Path validateIfEclipseOrIntelliJ(Path runFromDir) throws IOException {
 		if(Files.exists(runFromDir.resolve(".github"))) { // this folder exists in the project ROOT directory
 			Path module = runFromDir.resolve("test");
@@ -196,6 +218,7 @@ public class IafTestInitializer {
 	}
 
 	// Store the logs by default in ./test/target/logs
+	// NOTE: Since we still need to determine the log.dir, we may not log anything here!
 	public static String getLogDir(Path projectPath) throws IOException {
 		Path targetPath = projectPath.resolve("target");
 		if(Files.exists(targetPath) && Files.isDirectory(targetPath)) {

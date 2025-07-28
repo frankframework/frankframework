@@ -16,6 +16,7 @@
 package org.frankframework.logging;
 
 import java.io.BufferedInputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -23,6 +24,7 @@ import java.io.Reader;
 import java.lang.ref.SoftReference;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -57,6 +59,8 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 	private static final Marker LOOKUP = MarkerManager.getMarker("LOOKUP");
 	private static final String LOG4J_PROPS_FILE = "log4j4ibis.properties";
 	private static final String DS_PROPERTIES_FILE = "DeploymentSpecifics.properties";
+	private static final String LOG_LEVEL_KEY = "log.level";
+	private static final String LOG_DIR_KEY = "log.dir";
 
 	private static SoftReference<Properties> propertiesRef = null;
 
@@ -78,8 +82,9 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 			Properties properties;
 			try {
 				properties = computeProperties();
+				LOGGER.info(LOOKUP, "FrankPropertyLookupProvider finished loading Frank!Framework properties");
 			} catch (IOException e) {
-				LOGGER.fatal(LOOKUP, "unable to load Frank!Framework properties", e);
+				LOGGER.fatal(LOOKUP, "FrankPropertyLookupProvider unable to load Frank!Framework properties", e);
 				properties = new Properties();
 			}
 
@@ -102,6 +107,8 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 		if(StringResolver.needsResolution(value)) {
 			value = StringResolver.substVars(value, properties);
 		}
+
+		LOGGER.debug(LOOKUP, "FrankPropertyLookupProvider found key [{}] and resolved it to [{}]", key, value);
 		return value;
 	}
 
@@ -111,7 +118,7 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 		if(log4jProperties == null) {
 			log4jProperties = new Properties();
 
-			LOGGER.warn(LOOKUP, "did not find " + LOG4J_PROPS_FILE + ", leaving it up to log4j's default initialization procedure");
+			LOGGER.warn(LOOKUP, "FrankPropertyLookupProvider did not find " + LOG4J_PROPS_FILE + ", leaving it up to log4j's default initialization procedure");
 		}
 
 		Properties dsProperties = getParseProperties(DS_PROPERTIES_FILE);
@@ -122,7 +129,8 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 		log4jProperties.putAll(System.getProperties()); // Set these after reading DeploymentSpecifics as we want to override the properties
 		log4jProperties.putAll(System.getenv()); // let environment properties override system properties and appConstants
 		setInstanceNameLc(log4jProperties); // Set instance.name.lc for log file names
-		setLevel(dsProperties); // Set the log.level if it does not exist yet
+		setLevel(log4jProperties); // Set the log.level if it does not exist yet
+		setLogDir(log4jProperties);
 
 		return log4jProperties;
 	}
@@ -201,7 +209,7 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 	 * is {@code ACC} or {@code PRD} then the log level is set to {@code WARN}, otherwise to {@code INFO}.
 	 */
 	private static void setLevel(Properties properties) {
-		if (properties.getProperty("log.level") == null) {
+		if (properties.getProperty(LOG_LEVEL_KEY) == null) {
 			// In the log4j4ibis.xml the rootlogger contains the loglevel: ${log.level}
 			// You can set this property in the log4j4ibis.properties, or as system property.
 			// To make sure the IBIS can start up if no log.level property has been found, it has to be explicitly set
@@ -210,8 +218,89 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 			if("ACC".equalsIgnoreCase(stage) || "PRD".equalsIgnoreCase(stage)) {
 				logLevel = "WARN";
 			}
-			properties.setProperty("log.level", logLevel);
-			System.setProperty("log.level", logLevel);
+			properties.setProperty(LOG_LEVEL_KEY, logLevel);
+			System.setProperty(LOG_LEVEL_KEY, logLevel);
 		}
+	}
+
+	/**
+	 * Checks if log.dir property exists.
+	 * Sets it with findLogDir function.
+	 * If it exists, expand the value and set it again.
+	 */
+	private static void setLogDir(Properties properties) {
+		String originalLogDir = properties.getProperty(LOG_DIR_KEY);
+		File logDir;
+		if (originalLogDir == null) {
+			logDir = findLogDir();
+			if (logDir != null) {
+				LOGGER.info(LOOKUP, "did not find system property [log.dir] found suitable path ["+logDir.getPath()+"]");
+			} else {
+				LOGGER.fatal(LOOKUP, "did not find system property [log.dir] and unable to locate it automatically");
+			}
+		} else {
+			if(StringResolver.needsResolution(originalLogDir)) {
+				originalLogDir = StringResolver.substVars(originalLogDir, properties);
+				LOGGER.info(LOOKUP, "found system property [log.dir] which required property expansion to suitable path ["+originalLogDir+"]");
+			}
+			logDir = new File(originalLogDir);
+		}
+
+		if (logDir != null) {
+			// Whether it was previously set or not, overwrite it with the fully-expanded value.
+			String expanded = fixLogDirectorySlashesAndExpand(logDir.getPath());
+
+			System.setProperty(LOG_DIR_KEY, expanded);
+			properties.setProperty(LOG_DIR_KEY, expanded);
+		}
+	}
+
+	/**
+	 * Replace backslashes because log.dir is used in log4j2.xml
+	 * on which substVars is done (see below) which will replace
+	 * double backslashes into one backslash and after that the same
+	 * is done by Log4j:
+	 * https://issues.apache.org/bugzilla/show_bug.cgi?id=22894
+	 * */
+	private static String fixLogDirectorySlashesAndExpand(String directory) {
+		return Path.of(directory).toAbsolutePath().toString().replace("\\", "/");
+	}
+
+
+	/**
+	 * Hierarchy of log directories to search for. Strings will be split by "/".
+	 * Before "/" split will be assumed to be a property, and after the split will be a (sub-) directory.
+	 * The property has to exist, and if a sub-directory is configured it must also exist
+	 */
+	private static List<String> getDefaultLogDirectories() {
+		return List.of("site.logdir", "user.dir/logs", "user.dir/log", "jboss.server.base.dir/log", "wtp.deploy/../logs", "catalina.base/logs");
+	}
+
+	/**
+	 * Finds the first directory in the given hierarchy.
+	 * @see #getDefaultLogDirectories()
+	 * @return File object that is a directory. Or null, if no directories were found.
+	 */
+	@Nullable
+	private static File findLogDir() {
+		for(String option : getDefaultLogDirectories()) {
+			int splitIndex = option.indexOf('/');
+
+			String property = option.substring(0, splitIndex == -1 ? option.length() : splitIndex);
+			String value = System.getProperty(property);
+			if(value == null || value.isBlank())
+				continue;
+
+			File dir;
+			if(splitIndex == -1) {
+				dir = new File(value);
+			} else {
+				dir = new File(value, option.substring(splitIndex));
+			}
+
+			if(dir.isDirectory())
+				return dir;
+		}
+		return null;
 	}
 }
