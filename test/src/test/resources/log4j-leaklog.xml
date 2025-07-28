@@ -11,6 +11,9 @@
 	<!-- Since we don't want to overwrite the default log4j4ibis.xml the leak-log is the easiest way to print to stdout. -->
 
 	<Loggers>
+		<!-- Supress ActiveMQ log -->
+		<Logger name="org.apache.activemq" level="WARN" />
+
 		<Logger name="LEAK_LOG" additivity="false" level="INFO">
 			<AppenderRef ref="leak-log-appender"/>
 			<AppenderRef ref="stdout"/>
