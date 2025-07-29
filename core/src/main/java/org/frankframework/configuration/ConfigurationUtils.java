@@ -58,10 +58,10 @@ import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.lifecycle.events.ApplicationMessageEvent;
 import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.SpringUtils;
-import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 
 /**
@@ -283,7 +283,7 @@ public class ConfigurationUtils {
 				while ((zipEntry = zipInputStream.getNextEntry()) != null) {
 					String entryName = zipEntry.getName();
 					try {
-						String configName = ConfigurationUtils.addConfigToDatabase(applicationContext, datasource, activate_config, automatic_reload, entryName, StreamUtil.dontClose(zipInputStream), ruser);
+						String configName = ConfigurationUtils.addConfigToDatabase(applicationContext, datasource, activate_config, automatic_reload, entryName, CloseUtils.dontClose(zipInputStream), ruser);
 						result.put(configName, "loaded");
 					} catch (ConfigurationException e) {
 						log.error("an error occurred while trying to store new configuration using datasource [{}]", datasource, e);

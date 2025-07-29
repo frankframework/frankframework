@@ -44,6 +44,7 @@ import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.soap.WsdlGenerator;
 import org.frankframework.stream.Message;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.Dir2Xml;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.StreamUtil;
@@ -325,7 +326,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 
 						try (FileOutputStream fos = new FileOutputStream(zipFile)) {
 							log.debug("writing ZipEntry [{}] to file [{}]", ze.getName(), zipFile.getPath());
-							StreamUtil.streamToStream(StreamUtil.dontClose(zis), fos);
+							StreamUtil.streamToStream(CloseUtils.dontClose(zis), fos);
 						}
 					}
 				}

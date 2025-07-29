@@ -33,6 +33,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.pipes.IteratingPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.StreamUtil;
 
 /**
@@ -185,11 +186,11 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 					}
 
 					log.debug("storing stream to contents of zip entries under session key [{}]", ZipIteratorPipe.this::getContentsSessionKey);
-					Message message = new Message(StreamUtil.dontClose(source), context);
+					Message message = new Message(CloseUtils.dontClose(source), context);
 					session.put(getContentsSessionKey(), message); // do this each time, to allow reuse of the session key when an item is optionally encoded
 				} else {
 					log.debug("storing contents of zip entry under session key [{}]", ZipIteratorPipe.this::getContentsSessionKey);
-					String content = StreamUtil.streamToString(StreamUtil.dontClose(source), null, getCharset());
+					String content = StreamUtil.streamToString(CloseUtils.dontClose(source), null, getCharset());
 					session.put(getContentsSessionKey(), content);
 				}
 				return filename;

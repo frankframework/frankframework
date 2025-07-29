@@ -42,6 +42,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.stream.Message;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlEncodingUtils;
 
@@ -209,7 +210,7 @@ public class UnzipPipe extends FixedForwardPipe {
 						} else {
 							entryNameWithoutExtension=entryname;
 						}
-						InputStream inputStream = StreamUtil.dontClose(zis);
+						InputStream inputStream = CloseUtils.dontClose(zis);
 						byte[] fileContentBytes = null;
 						if (isCollectFileContents()) {
 							fileContentBytes = StreamUtil.streamToBytes(inputStream);

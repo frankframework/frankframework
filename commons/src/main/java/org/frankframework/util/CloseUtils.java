@@ -15,6 +15,8 @@
 */
 package org.frankframework.util;
 
+import java.io.FilterInputStream;
+import java.io.InputStream;
 import java.util.Collection;
 
 import jakarta.annotation.Nullable;
@@ -62,5 +64,20 @@ public class CloseUtils {
 		if (closeables != null) {
 			closeables.forEach(CloseUtils::closeSilently);
 		}
+	}
+
+	public static InputStream dontClose(InputStream stream) {
+		class NonClosingInputStreamFilter extends FilterInputStream {
+			public NonClosingInputStreamFilter(InputStream in) {
+				super(in);
+			}
+	
+			@Override
+			public void close() {
+				// do not close
+			}
+		}
+	
+		return new NonClosingInputStreamFilter(stream);
 	}
 }

@@ -44,6 +44,7 @@ import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlEncodingUtils;
 
@@ -122,7 +123,7 @@ public class TestPipeline {
 			ZipEntry zipEntry;
 			while ((zipEntry = archive.getNextEntry()) != null) {
 				String name = zipEntry.getName();
-				String currentMessage = XmlEncodingUtils.readXml(StreamUtil.streamToBytes(StreamUtil.dontClose(archive)), null);
+				String currentMessage = XmlEncodingUtils.readXml(StreamUtil.streamToBytes(CloseUtils.dontClose(archive)), null);
 
 				builder.setPayload(currentMessage);
 				Message<?> response = frankApiService.sendSyncMessage(builder);
