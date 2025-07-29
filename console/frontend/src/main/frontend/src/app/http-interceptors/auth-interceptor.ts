@@ -4,9 +4,6 @@ import { Injectable } from '@angular/core';
 
 @Injectable()
 export class AuthInterceptor implements HttpInterceptor {
-  // private authService: AuthService = inject(AuthService);
-  // private appService: AppService = inject(AppService);
-
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     /* const authToken = this.authService.getAuthToken();
 

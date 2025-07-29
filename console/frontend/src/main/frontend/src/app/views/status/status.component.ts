@@ -50,14 +50,12 @@ export class StatusComponent implements OnInit, OnDestroy {
   protected isConfigAutoReloadable: Record<string, boolean> = {};
   protected adapterShowContent: Record<string, boolean> = {};
   protected loadFlowInline = true;
-  // eslint-disable-next-line unicorn/consistent-function-scoping
   protected readonly configurations: Signal<Configuration[]> = computed(() => {
     const configurations = this.appService.configurations();
     this.check4StubbedConfigs(configurations);
     this.updateConfigurationFlowDiagram(this.selectedConfiguration);
     return configurations;
   });
-  // eslint-disable-next-line unicorn/consistent-function-scoping
   protected readonly adapters: Signal<Record<string, Adapter>> = computed(() => {
     const adapters = this.appService.adapters();
     if (this.hasExpendedAdaptersLoaded) {
@@ -71,7 +69,6 @@ export class StatusComponent implements OnInit, OnDestroy {
     }
     return adapters;
   });
-  // eslint-disable-next-line unicorn/consistent-function-scoping
   protected freeDiskSpacePercentage: Signal<number | null> = computed(() => {
     const serverInfo = this.serverInfo();
     if (serverInfo) return Math.round((serverInfo.fileSystem.freeSpace / serverInfo.fileSystem.totalSpace) * 1000) / 10;
@@ -86,9 +83,8 @@ export class StatusComponent implements OnInit, OnDestroy {
   private readonly router: Router = inject(Router);
   private readonly statusService: StatusService = inject(StatusService);
   private readonly serverInfoService: ServerInfoService = inject(ServerInfoService);
-  // eslint-disable-next-line unicorn/consistent-function-scoping
-  protected serverInfo: Signal<ServerInfo | null> = this.serverInfoService.serverInfo;
   private readonly appService: AppService = inject(AppService);
+  protected serverInfo: Signal<ServerInfo | null> = this.serverInfoService.serverInfo;
   protected readonly alerts: Signal<Alert[]> = this.appService.alerts;
   protected readonly messageLog: Signal<Record<string, MessageLog>> = this.appService.messageLog;
 

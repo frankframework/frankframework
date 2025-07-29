@@ -83,7 +83,6 @@ export class SchedulerComponent implements OnInit, OnDestroy {
   protected searchFilter: string = '';
   protected refreshing: boolean = false;
   protected databaseSchedulesEnabled: Signal<boolean> = computed(
-    // eslint-disable-next-line unicorn/consistent-function-scoping
     () => this.appService.appConstants()['loadDatabaseSchedules.active'] === 'true',
   );
   protected jobShowContent: Record<keyof typeof this.jobGroups, boolean> = {};

@@ -23,14 +23,12 @@ export class PagesTopnavbarComponent implements OnChanges {
   @Input() userName?: string;
 
   protected readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
-  // eslint-disable-next-line unicorn/consistent-function-scoping
   protected notificationList: Signal<Notification[]> = computed(() => this.Notification.getLatest(5));
   protected loggedIn: boolean = false;
 
   private readonly appService: AppService = inject(AppService);
   private readonly authService: AuthService = inject(AuthService);
   private readonly Notification: NotificationService = inject(NotificationService);
-  // eslint-disable-next-line unicorn/consistent-function-scoping
   protected notificationCount: Signal<number> = this.Notification.count;
 
   ngOnChanges(): void {

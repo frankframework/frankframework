@@ -50,7 +50,6 @@ export class InformationModalComponent implements OnInit, OnDestroy {
     totalSpace: -1,
   };
   protected uptime: number = 0;
-  // eslint-disable-next-line unicorn/consistent-function-scoping
   protected consoleVersion = computed(() => this.serverInfoService.consoleInfo().version ?? 'null');
 
   private activeModal: NgbActiveModal = inject(NgbActiveModal);

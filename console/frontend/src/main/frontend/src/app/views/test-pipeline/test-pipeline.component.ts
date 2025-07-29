@@ -56,11 +56,9 @@ type TestPipelineSession = {
 })
 export class TestPipelineComponent implements OnInit {
   @ViewChild(InputFileUploadComponent) formFile!: InputFileUploadComponent;
-  // eslint-disable-next-line unicorn/consistent-function-scoping
   protected configurationOptions: Signal<Option[]> = computed(() =>
     this.configurations().map((configuration) => ({ label: configuration.name })),
   );
-  // eslint-disable-next-line unicorn/consistent-function-scoping
   protected adapters: Signal<Record<string, Adapter>> = computed(() => {
     const adapters = this.appService.adapters();
     if (this.selectedConfiguration) this.setAdapterOptions(this.selectedConfiguration, adapters);

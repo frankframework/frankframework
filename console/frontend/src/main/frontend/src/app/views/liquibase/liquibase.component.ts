@@ -26,7 +26,6 @@ export class LiquibaseComponent {
   protected generateSql: boolean = false;
   protected error: string | null = null;
   protected result: string | null = null;
-  // eslint-disable-next-line unicorn/consistent-function-scoping
   protected filteredConfigurations: Signal<Configuration[]> = computed(() =>
     this.findFirstAvailabeConfiguration(this.appService.configurations()),
   );

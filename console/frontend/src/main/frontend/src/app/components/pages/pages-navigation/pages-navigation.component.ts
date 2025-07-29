@@ -49,10 +49,8 @@ export class PagesNavigationComponent implements OnChanges, AfterViewInit {
   protected frankframeworkLogoPath: string = 'assets/images/ff-kawaii.svg';
   protected frankExclamationPath: string = 'assets/images/frank-exclemation.svg';
   protected showOldLadybug: Signal<boolean> = computed(
-    // eslint-disable-next-line unicorn/consistent-function-scoping
     () => this.appService.appConstants()['testtool.echo2.enabled'] === 'true',
   );
-  // eslint-disable-next-line unicorn/consistent-function-scoping
   protected encodedServerInfo: Signal<string> = computed(() => {
     if (!this.serverInfoService.serverInfo()) return '';
     return encodeURIComponent(this.serverInfoService.getMarkdownFormatedServerInfo());

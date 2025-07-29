@@ -18,7 +18,6 @@ export class MonitorsNewComponent implements OnInit, OnDestroy {
   protected selectedConfiguration: string = '';
   protected monitorName: string = '';
   protected ladda: boolean = false;
-  // eslint-disable-next-line unicorn/consistent-function-scoping
   protected configurations: Signal<Option[]> = computed(() =>
     this.appService.configurations().map((config) => ({ label: config.name })),
   );

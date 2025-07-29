@@ -6,7 +6,6 @@ import { ServerInfoService } from '../../../services/server-info.service';
   templateUrl: './pages-footer.component.html',
 })
 export class PagesFooterComponent {
-  // eslint-disable-next-line unicorn/consistent-function-scoping
   protected consoleVersion = computed(() => this.serverInfoService.consoleInfo().version ?? '');
 
   private readonly serverInfoService: ServerInfoService = inject(ServerInfoService);

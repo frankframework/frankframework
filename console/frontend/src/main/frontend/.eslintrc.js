@@ -26,6 +26,7 @@ module.exports = {
         'unicorn/prefer-ternary': 'warn',
         'unicorn/no-null': 'off',
         'unicorn/prefer-dom-node-text-content': 'warn',
+        'unicorn/consistent-function-scoping': 'off',
       },
     },
     {

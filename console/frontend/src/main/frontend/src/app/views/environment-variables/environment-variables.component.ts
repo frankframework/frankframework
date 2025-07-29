@@ -23,7 +23,6 @@ export class EnvironmentVariablesComponent implements OnInit {
   protected systemProperties: keyValueProperty[] = [];
 
   private readonly appService: AppService = inject(AppService);
-  // eslint-disable-next-line unicorn/consistent-function-scoping
   protected configurationNames: Signal<string[]> = computed(() =>
     this.appService.configurations().map((configuration) => configuration.name),
   );
