@@ -92,7 +92,6 @@ public class LadybugPipe extends FixedForwardPipe {
 
 		List<Report> reports = new ArrayList<>();
 		try {
-			testStorage.getReport(-1); // Workaround XmlStorage.getStorageIds() returning empty list while waiting for fix in Ladybug.
 			List<Integer> storageIds = testStorage.getStorageIds();
 			for (Integer storageId : storageIds) {
 				Report report = testStorage.getReport(storageId);
