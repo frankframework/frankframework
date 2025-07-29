@@ -75,7 +75,7 @@ public class StreamUtil {
 				.setByteOrderMarks(ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE)
 				.get();
 
-		String charsetName = bomInputStream.hasBOM() ? defaultCharset : bomInputStream.getBOM().getCharsetName();
+		String charsetName = !bomInputStream.hasBOM() ? defaultCharset : bomInputStream.getBOM().getCharsetName();
 
 		if (StringUtils.isEmpty(charsetName)) {
 			charsetName = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
