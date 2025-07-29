@@ -378,7 +378,7 @@ public class StreamUtil {
 	 * @see #streamToString(InputStream, String, String, boolean)
 	 */
 	public static String streamToString(InputStream stream, String streamEncoding) throws IOException {
-		return streamToString(stream, streamEncoding, false);
+		return streamToString(stream, null, streamEncoding, false);
 	}
 
 	/**
