@@ -222,9 +222,9 @@ public class MessageUtils {
 			return updateMessageCharset(message, charset);
 		}
 
-		//Guesstimate, encoding is not UTF-8 but either CP1252/Latin1/ISO-8859-1.
+		// Guesstimate, encoding is not UTF-8 but either CP1252/Latin1/ISO-8859-1.
 		if(charset.startsWith("windows-125")) {
-			charset = "windows-1252";//1250/1/3 have a combined adoption rate of 1.6% assume 1252 instead!
+			charset = "windows-1252"; // 1250/1/3 have a combined adoption rate of 1.6% assume 1252 instead!
 		}
 		if(match.getConfidence() >= confidence) {
 			LOG.debug("update charset for message [{}], potential match [{}] with confidence level [{}/{}]", message, charset, match.getConfidence(), confidence);
@@ -232,14 +232,14 @@ public class MessageUtils {
 		}
 
 		LOG.info("unable to detect charset for message [{}] closest match [{}] did not meet confidence level [{}/{}]", message, charset, match.getConfidence(), confidence);
-		return updateMessageCharset(message, null); //return NULL so calling method can fall back to the default charset.
+		return updateMessageCharset(message, null); // Return NULL so calling method can fall back to the default charset.
 	}
 
-	//Update the MessageContext charset field, it may not remain StreamUtil.AUTO_DETECT_CHARSET
+	// Update the MessageContext charset field, it may not remain StreamUtil.AUTO_DETECT_CHARSET
 	private static Charset updateMessageCharset(Message message, String charsetName) {
 		try {
 			if(charsetName != null) {
-				return Charset.forName(charsetName); //parse it first to validate the charset
+				return Charset.forName(charsetName); // Parse it first to validate the charset
 			}
 			return null;
 		} finally {
@@ -262,7 +262,7 @@ public class MessageUtils {
 			return null;
 		}
 
-		if(message.getCharset() != null) { //and is character data?
+		if(message.getCharset() != null) { // And is character data?
 			LOG.trace("found mimetype [{}] in MessageContext with charset [{}]", ()->mimeType, message::getCharset);
 			return new MimeType(mimeType, Charset.forName(message.getCharset()));
 		}
@@ -293,7 +293,7 @@ public class MessageUtils {
 	 *    applied. If the message starts with {@literal '<'} the mime type {@literal application/xml} is returned.
 	 *    If the message starts with {@literal '['} or {@literal '{'} the mime type {@literal application/json} is returned.
 	 *    Otherwise it will be {@literal text/plain} as Apache TIKA returned.
- *     </p>
+	 * </p>
 	 * @ff.note This might be a resource intensive operation, the first kilobytes of the message are potentially being read and stored in memory.
 	 */
 	public static MimeType computeMimeType(Message message, String filename) {

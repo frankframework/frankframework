@@ -79,7 +79,9 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 				unzipStream(inputStream, tempDirectoryBase);
 			} else {
 				File file = new File(tempDirectoryBase, fileName);
-				StreamUtil.streamToFile(inputStream, file);
+				try (OutputStream fileOut = Files.newOutputStream(file.toPath())) {
+					StreamUtil.streamToStream(inputStream, fileOut);
+				}
 				Files.delete(file.toPath());
 			}
 		} catch (IOException e) {

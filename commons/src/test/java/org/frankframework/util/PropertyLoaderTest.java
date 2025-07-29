@@ -2,7 +2,8 @@ package org.frankframework.util;
 
 import static org.hamcrest.CoreMatchers.everyItem;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.isIn;
+import static org.hamcrest.Matchers.in;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -236,8 +237,8 @@ public class PropertyLoaderTest {
 		YamlParser parser = new YamlParser();
 		Properties yamlProperties = parser.load(new StringReader(p2y));
 
-		assertThat(yamlConstants.entrySet(), everyItem(isIn(yamlProperties.entrySet())));
-		assertThat(yamlProperties.entrySet(), everyItem(isIn(yamlConstants.entrySet())));
+		assertThat(yamlConstants.entrySet(), everyItem(is(in(yamlProperties.entrySet()))));
+		assertThat(yamlProperties.entrySet(), everyItem(is(in(yamlConstants.entrySet()))));
 	}
 
 	private StringReader property2Reader(PropertyLoader constants) {
