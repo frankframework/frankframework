@@ -17,8 +17,6 @@ package org.frankframework.util;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.FilterOutputStream;
-import java.io.FilterReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -51,36 +49,6 @@ public class StreamUtil {
 
 	private StreamUtil() {
 		// Private constructor so that the utility-class cannot be instantiated.
-	}
-
-	public static Reader dontClose(Reader reader) {
-		class NonClosingReaderFilter extends FilterReader {
-			public NonClosingReaderFilter(Reader in) {
-				super(in);
-			}
-
-			@Override
-			public void close() {
-				// do not close
-			}
-		}
-
-		return new NonClosingReaderFilter(reader);
-	}
-
-	public static OutputStream dontClose(OutputStream stream) {
-		class NonClosingOutputStreamFilter extends FilterOutputStream {
-			public NonClosingOutputStreamFilter(OutputStream out) {
-				super(out);
-			}
-
-			@Override
-			public void close() {
-				// do not close
-			}
-		}
-
-		return new NonClosingOutputStreamFilter(stream);
 	}
 
 	public static String readerToString(Reader reader, String endOfLineString) throws IOException {

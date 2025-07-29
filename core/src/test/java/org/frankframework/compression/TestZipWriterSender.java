@@ -16,6 +16,7 @@ import org.frankframework.collection.TestCollectorPart;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.StreamUtil;
 
 class TestZipWriterSender extends SenderTestBase<ZipWriterSender>{
@@ -72,7 +73,7 @@ class TestZipWriterSender extends SenderTestBase<ZipWriterSender>{
 		try (ZipInputStream zipin = new ZipInputStream(result.asInputStream())) {
 			ZipEntry entry = zipin.getNextEntry();
 			assertEquals("fakeFilename", entry.getName());
-			assertEquals(fileContents, StreamUtil.readerToString(StreamUtil.dontClose(new InputStreamReader(zipin)), null));
+			assertEquals(fileContents, StreamUtil.readerToString(CloseUtils.dontClose(new InputStreamReader(zipin)), null));
 		}
 	}
 
@@ -93,7 +94,7 @@ class TestZipWriterSender extends SenderTestBase<ZipWriterSender>{
 		try (ZipInputStream zipin = new ZipInputStream(result.asInputStream())) {
 			ZipEntry entry = zipin.getNextEntry();
 			assertEquals("fakeFilename", entry.getName());
-			assertEquals(fileContents, StreamUtil.readerToString(StreamUtil.dontClose(new InputStreamReader(zipin)), null));
+			assertEquals(fileContents, StreamUtil.readerToString(CloseUtils.dontClose(new InputStreamReader(zipin)), null));
 		}
 	}
 
