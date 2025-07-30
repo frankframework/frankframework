@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,14 +35,9 @@ import java.util.regex.Pattern;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-import lombok.extern.log4j.Log4j2;
-
 /**
  * Utilities for formatting and parsing dates.
- *
- * @author Johan Verrips IOS
  */
-@Log4j2
 public class DateFormatUtils {
 	public static final String FORMAT_FULL_ISO = "yyyy-MM-dd'T'HH:mm:sszzz";
 	public static final String FORMAT_FULL_ISO_TIMESTAMP_NO_TZ = "yyyy-MM-dd'T'HH:mm:ss.SSS";

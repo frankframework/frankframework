@@ -15,6 +15,12 @@
 */
 package org.frankframework.util;
 
+import java.io.FilterInputStream;
+import java.io.FilterOutputStream;
+import java.io.FilterReader;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
 import java.util.Collection;
 
 import jakarta.annotation.Nullable;
@@ -23,6 +29,7 @@ import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class CloseUtils {
+
 	private CloseUtils() {
 		// Don't construct utils class
 	}
@@ -62,5 +69,50 @@ public class CloseUtils {
 		if (closeables != null) {
 			closeables.forEach(CloseUtils::closeSilently);
 		}
+	}
+
+	public static InputStream dontClose(InputStream stream) {
+		class NonClosingInputStreamFilter extends FilterInputStream {
+			public NonClosingInputStreamFilter(InputStream in) {
+				super(in);
+			}
+
+			@Override
+			public void close() {
+				// do not close
+			}
+		}
+
+		return new NonClosingInputStreamFilter(stream);
+	}
+
+	public static Reader dontClose(Reader reader) {
+		class NonClosingReaderFilter extends FilterReader {
+			public NonClosingReaderFilter(Reader in) {
+				super(in);
+			}
+
+			@Override
+			public void close() {
+				// do not close
+			}
+		}
+
+		return new NonClosingReaderFilter(reader);
+	}
+
+	public static OutputStream dontClose(OutputStream stream) {
+		class NonClosingOutputStreamFilter extends FilterOutputStream {
+			public NonClosingOutputStreamFilter(OutputStream out) {
+				super(out);
+			}
+
+			@Override
+			public void close() {
+				// do not close
+			}
+		}
+
+		return new NonClosingOutputStreamFilter(stream);
 	}
 }

@@ -24,6 +24,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
 import org.frankframework.configuration.ClassLoaderException;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.StreamUtil;
 
 public abstract class AbstractJarBytesClassLoader extends AbstractBytesClassLoader {
@@ -58,7 +59,7 @@ public abstract class AbstractJarBytesClassLoader extends AbstractBytesClassLoad
 						}
 					}
 				}
-				resources.put(fileName, StreamUtil.streamToBytes(StreamUtil.dontClose(jarInputStream)));
+				resources.put(fileName, StreamUtil.streamToBytes(CloseUtils.dontClose(jarInputStream)));
 			}
 			return resources;
 		} catch (IOException e) {

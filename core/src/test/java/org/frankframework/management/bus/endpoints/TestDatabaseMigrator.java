@@ -32,6 +32,7 @@ import org.frankframework.management.bus.message.MessageBase;
 import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.TestScopeProvider;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.StreamUtil;
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
@@ -66,7 +67,7 @@ public class TestDatabaseMigrator extends BusTestBase {
 			while((entry = is.getNextEntry()) != null) {
 				String name = entry.getName();
 				assertFalse(name.contains(":"));
-				changelogs.add(new BytesResource(StreamUtil.dontClose(is), name, new TestScopeProvider()));
+				changelogs.add(new BytesResource(CloseUtils.dontClose(is), name, new TestScopeProvider()));
 			}
 		}
 		assertEquals(1, changelogs.size());
