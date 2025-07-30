@@ -21,6 +21,8 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.logging.log4j.LogManager;
@@ -35,8 +37,8 @@ import lombok.NoArgsConstructor;
 public class CleanerProvider {
 	private static final Logger LEAK_LOG = LogManager.getLogger("LEAK_LOG");
 
-	private static final Map<Integer, CleaningActionWrapper> CLEANER_MAP = new HashMap<>();
-	private static final Map<LeakedResourceException, AtomicInteger> LEAK_MAP = new HashMap<>();
+	private static final ConcurrentMap<Integer, CleaningActionWrapper> CLEANER_MAP = new ConcurrentHashMap<>();
+	private static final Map<LeakedResourceException, AtomicInteger> LEAK_MAP = new HashMap<>(); // Should be used only in Cleaner thread so doesn't need to be thread-safe
 	private static final Cleaner CLEANER = Cleaner.create();
 
 	static {
