@@ -156,7 +156,7 @@ public class DateFormatUtils {
 		return parser.parse(s, Instant::from);
 	}
 
-	public static java.time.LocalDate parseToLocalDate(String dateString) throws DateTimeParseException {
+	public static LocalDate parseToLocalDate(String dateString) throws DateTimeParseException {
 		DateTimeFormatter parser = determineDateFormat(dateString);
 		if (parser == null) {
 			throw new IllegalArgumentException("Cannot determine date-format for input [" + dateString + "]");
@@ -164,7 +164,7 @@ public class DateFormatUtils {
 		return parser.parse(dateString, TemporalQueries.localDate());
 	}
 
-	public static java.time.LocalDate parseToLocalDate(String dateString, @Nonnull DateTimeFormatter parser) throws DateTimeParseException {
+	public static LocalDate parseToLocalDate(String dateString, @Nonnull DateTimeFormatter parser) throws DateTimeParseException {
 		return parser.parse(dateString, TemporalQueries.localDate());
 	}
 

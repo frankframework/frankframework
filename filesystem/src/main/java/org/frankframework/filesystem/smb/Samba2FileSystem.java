@@ -16,10 +16,8 @@
 package org.frankframework.filesystem.smb;
 
 import java.io.Closeable;
-import java.io.FilterInputStream;
 import java.io.FilterOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
@@ -526,7 +524,7 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 		public FilesIterator(String folder, TypeFilter filter, List<FileIdBothDirectoryInformation> list) {
 			files = new ArrayList<>();
 			for (FileIdBothDirectoryInformation info : list) {
-				if (!StringUtils.equals(".", info.getFileName()) && !StringUtils.equals("..", info.getFileName())) {
+				if (!".".equals(info.getFileName()) && !"..".equals(info.getFileName())) {
 					SmbFileRef file = new SmbFileRef(info.getFileName(), folder);
 					try {
 						FileAllInformation fileInfo = getAttributes(file);

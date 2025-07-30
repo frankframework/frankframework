@@ -52,6 +52,7 @@ import org.frankframework.core.DestinationType.Type;
 import org.frankframework.doc.Default;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
+import org.frankframework.util.StreamUtil;
 
 /**
  * {@link IWritableFileSystem FileSystem} representation of the local filesystem.
@@ -130,8 +131,10 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	}
 
 	@Override
-	public OutputStream createFile(Path f) throws IOException {
-		return Files.newOutputStream(f);
+	public void createFile(Path file, InputStream content) throws IOException {
+		try (OutputStream out = Files.newOutputStream(file)) {
+			StreamUtil.streamToStream(content, out);
+		}
 	}
 
 	@Override
