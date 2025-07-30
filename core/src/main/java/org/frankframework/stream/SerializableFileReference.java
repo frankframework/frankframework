@@ -27,6 +27,7 @@ import java.io.Reader;
 import java.io.Serial;
 import java.io.Serializable;
 import java.io.StringReader;
+import java.lang.ref.Cleaner;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -59,7 +60,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	private String charset;
 	@Getter private transient Path path;
 	private transient CleanupFileAction cleanupFileAction;
-
+	private transient Cleaner.Cleanable cleanable;
 
 	/**
 	 * Create a new {@link SerializableFileReference} from the given {@link InputStream}. The {@link InputStream} will be copied
@@ -148,7 +149,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 
 	private void createCleanerAction(final Path path) {
 		cleanupFileAction = new CleanupFileAction(path);
-		CleanerProvider.register(this, cleanupFileAction);
+		cleanable = CleanerProvider.register(this, cleanupFileAction);
 	}
 
 	private static class CleanupFileAction implements Runnable {
@@ -202,8 +203,8 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 
 	@Override
 	public void close() {
-		if (cleanupFileAction != null) {
-			CleanerProvider.clean(cleanupFileAction);
+		if (cleanable != null) {
+			CleanerProvider.clean(cleanable);
 		}
 	}
 

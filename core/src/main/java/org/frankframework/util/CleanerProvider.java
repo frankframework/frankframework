@@ -82,11 +82,13 @@ public class CleanerProvider {
 	 * @param cleaningAction Cleaning Action to register
 	 * @return ID of the cleaning action, which can be used to execute it.
 	 */
-	public static int register(Object obj, Runnable cleaningAction) {
+	public static Cleaner.Cleanable register(Object obj, Runnable cleaningAction) {
 		CleaningActionWrapper wrapper = new CleaningActionWrapper(obj, cleaningAction);
-		CLEANER_MAP.put(wrapper.actionId, wrapper);
-		wrapper.cleanable = CLEANER.register(obj, wrapper);
-		return wrapper.actionId;
+		Cleaner.Cleanable cleanable = CLEANER.register(obj, wrapper);
+		int actionId = getActionId(cleanable);
+		wrapper.actionId = actionId;
+		CLEANER_MAP.put(actionId, wrapper);
+		return cleanable;
 	}
 
 	/**
@@ -94,47 +96,30 @@ public class CleanerProvider {
 	 * is out of scope, for instance from a close-method.
 	 * This de-registers the cleaning action and marks it so that it is not counted as leaked.
 	 *
-	 * @param cleaningAction Cleaning Action to execute.
+	 * @param cleanable Cleaning Action to execute.
 	 */
-	public static void clean(Runnable cleaningAction) {
-		if (cleaningAction == null) {
+	public static void clean(Cleaner.Cleanable cleanable) {
+		if (cleanable == null) {
 			return;
 		}
-		int actionId = getActionId(cleaningAction);
+		int actionId = getActionId(cleanable);
 		CleaningActionWrapper wrapper = CLEANER_MAP.get(actionId);
 		if (wrapper != null) {
 			wrapper.cleaned = true;
-			wrapper.cleanable.clean();
-		} else {
-			cleaningAction.run();
 		}
-	}
-
-	/**
-	 * Execute cleaning action by ID.
-	 *
-	 * @param actionId ID of the cleaning action.
-	 */
-	public static void clean(int actionId) {
-		CleaningActionWrapper wrapper = CLEANER_MAP.get(actionId);
-		if (wrapper != null) {
-			wrapper.cleaned = true;
-			wrapper.cleanable.clean();
-		}
+		cleanable.clean();
 	}
 
 	private static class CleaningActionWrapper implements Runnable {
 		private final Runnable cleaningAction;
-		private final int actionId;
 		private final String owningClassName;
 		private final boolean isProxyClass;
 		private final LeakedResourceException creationTrace;
+		private int actionId;
 		private boolean cleaned = false;
-		private Cleaner.Cleanable cleanable;
 
 		private CleaningActionWrapper(Object owner, Runnable cleaningAction) {
 			this.cleaningAction = cleaningAction;
-			actionId = getActionId(cleaningAction);
 			owningClassName = owner.getClass().getName();
 			isProxyClass = Proxy.isProxyClass(owner.getClass()) || owningClassName.contains(org.springframework.util.ClassUtils.CGLIB_CLASS_SEPARATOR);
 			creationTrace = new LeakedResourceException(owner);
@@ -156,8 +141,8 @@ public class CleanerProvider {
 		}
 	}
 
-	private static int getActionId(Runnable cleaningAction) {
-		return System.identityHashCode(cleaningAction);
+	private static int getActionId(Cleaner.Cleanable cleanable) {
+		return System.identityHashCode(cleanable);
 	}
 
 	private static class LeakedResourceException extends RuntimeException {

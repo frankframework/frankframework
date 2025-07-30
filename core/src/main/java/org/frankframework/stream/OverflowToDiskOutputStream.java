@@ -50,6 +50,7 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 	private boolean closed = false;
 
 	private CleanupFileAction cleanupFileAction;
+	private Cleaner.Cleanable cleanable;
 
 	/**
 	 * The number of bytes in the buffer. This value is always in the range
@@ -89,7 +90,7 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 	 */
 	private void createCleanerAction(final Path path, final Closeable closable) {
 		cleanupFileAction = new CleanupFileAction(path, closable);
-		CleanerProvider.register(this, cleanupFileAction);
+		cleanable = CleanerProvider.register(this, cleanupFileAction);
 	}
 
 	private static class CleanupFileAction implements Runnable {
@@ -204,7 +205,7 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 			//Since we were successfully able to create a PathMessage (which will cleanup the file on close) remove the reference here.
 			fileLocation = null;
 			cleanupFileAction.shouldClean = false;
-			CleanerProvider.clean(cleanupFileAction);
+			CleanerProvider.clean(cleanable);
 
 			return result;
 		} else {
