@@ -53,13 +53,13 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	public static final String TEMP_MESSAGE_DIRECTORY = "temp-messages";
 
 	@Serial private static final long serialVersionUID = 1L;
+	@SuppressWarnings("java:S115")
 	private static final long customSerializationVersion = 1L;
 
 	private long size = Message.MESSAGE_SIZE_UNKNOWN;
 	@Getter private boolean binary;
 	private String charset;
 	@Getter private transient Path path;
-	private transient CleanupFileAction cleanupFileAction;
 	private transient Cleaner.Cleanable cleanable;
 
 	/**
@@ -148,7 +148,7 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	}
 
 	private void createCleanerAction(final Path path) {
-		cleanupFileAction = new CleanupFileAction(path);
+		CleanupFileAction cleanupFileAction = new CleanupFileAction(path);
 		cleanable = CleanerProvider.register(this, cleanupFileAction);
 	}
 

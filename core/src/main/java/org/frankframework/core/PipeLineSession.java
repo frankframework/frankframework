@@ -77,9 +77,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	public static final String EXIT_STATE_CONTEXT_KEY="exitState";
 	public static final String EXIT_CODE_CONTEXT_KEY="exitCode";
 
-	private ISecurityHandler securityHandler = null;
-
-	private transient PipeLineSessionCloseAction closeAction;
+	private transient ISecurityHandler securityHandler = null;
 	private transient Cleaner.Cleanable cleanable;
 
 	// closeables.keySet is a List of wrapped resources. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
@@ -102,6 +100,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	}
 
 	private void createCloseAction() {
+  PipeLineSessionCloseAction closeAction;
 		closeAction = new PipeLineSessionCloseAction(this.closeables);
 		cleanable = CleanerProvider.CLEANER.register(this, closeAction);
 	}
