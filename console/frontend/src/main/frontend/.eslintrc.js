@@ -26,7 +26,12 @@ module.exports = {
         'unicorn/prefer-ternary': 'warn',
         'unicorn/no-null': 'off',
         'unicorn/prefer-dom-node-text-content': 'warn',
-        'unicorn/consistent-function-scoping': 'off',
+        'unicorn/consistent-function-scoping': [
+          'error',
+          {
+            checkArrowFunctions: 'false',
+          },
+        ],
       },
     },
     {
