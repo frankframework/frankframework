@@ -134,7 +134,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
       this.displayedColumns = [
         ...this.initialDisplayedColumns,
         ...response.fields.map<DataTableColumn<MessageData>>((field) => ({
-          name: field.fieldName,
+          name: field.fieldName ?? field.property,
           property: field.property,
           displayName: field.displayName,
           className: field.type === 'date' ? 'date' : undefined,
