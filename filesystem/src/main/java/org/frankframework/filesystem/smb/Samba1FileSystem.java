@@ -50,7 +50,6 @@ import org.frankframework.filesystem.IWritableFileSystem;
 import org.frankframework.filesystem.TypeFilter;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.StreamUtil;
 
 /**
  * Uses the (old) SMB 1 protocol.
@@ -135,14 +134,18 @@ public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWr
 	@Override
 	public void createFile(SmbFile file, InputStream content) throws IOException {
 		try (OutputStream out = new SmbFileOutputStream(file)) {
-			StreamUtil.streamToStream(content, out);
+			if (content != null) {
+				content.transferTo(out);
+			}
 		}
 	}
 
 	@Override
 	public void appendFile(SmbFile file, InputStream content) throws IOException {
 		try (OutputStream out = new SmbFileOutputStream(file, true)) {
-			StreamUtil.streamToStream(content, out);
+			if (content != null) {
+				content.transferTo(out);
+			}
 		}
 	}
 

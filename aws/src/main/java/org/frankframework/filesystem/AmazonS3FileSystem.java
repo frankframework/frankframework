@@ -75,7 +75,6 @@ import org.frankframework.filesystem.utils.AmazonEncodingUtils;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 
 @Log4j2
@@ -268,7 +267,9 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 		// When uploading of unknown size is needed, the S3AsyncClient or S3TransferManager can be used in the future.
 		MessageBuilder messageBuilder = new MessageBuilder();
 		try (OutputStream fos = messageBuilder.asOutputStream()) {
-			StreamUtil.streamToStream(content, fos);
+			if (content != null) {
+				content.transferTo(fos);
+			}
 		}
 
 		try (Message message = messageBuilder.build()) {
