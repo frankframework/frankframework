@@ -5,8 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import java.io.OutputStream;
-import java.io.PrintWriter;
+import java.io.ByteArrayInputStream;
 import java.net.URL;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -48,11 +47,8 @@ public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem> {
 		waitForActionToFinish();
 
 		Path file = fileSystem.toFile(fileSystem.getRoot() + "/" + filename);
-		OutputStream out = fileSystem.createFile(file);
-		PrintWriter pw = new PrintWriter(out);
-		pw.println(contents);
-		pw.close();
-		out.close();
+		fileSystem.createFile(file, new ByteArrayInputStream(contents.getBytes()));
+
 		waitForActionToFinish();
 		// test
 		existsCheck(filename);

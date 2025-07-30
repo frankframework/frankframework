@@ -17,7 +17,6 @@ package org.frankframework.filesystem.sftp;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
 import java.util.Date;
@@ -29,6 +28,7 @@ import java.util.NoSuchElementException;
 
 import jakarta.annotation.Nullable;
 
+import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -152,19 +152,19 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	@Override
-	public OutputStream createFile(SftpFileRef f) throws FileSystemException, IOException {
-		try {
-			return ftpClient.put(f.getName());
-		} catch (SftpException e) {
+	public void createFile(SftpFileRef file, InputStream content) throws FileSystemException {
+		try (InputStream isToUse = content != null ? content : NullInputStream.nullInputStream()) {
+			ftpClient.put(isToUse, file.getName());
+		} catch (IOException | SftpException e) {
 			throw new FileSystemException(e);
 		}
 	}
 
 	@Override
-	public OutputStream appendFile(SftpFileRef f) throws FileSystemException {
-		try {
-			return ftpClient.put(f.getName(), ChannelSftp.APPEND);
-		} catch (SftpException e) {
+	public void appendFile(SftpFileRef file, InputStream content) throws FileSystemException {
+		try (InputStream isToUse = content != null ? content : NullInputStream.nullInputStream()) {
+			ftpClient.put(isToUse, file.getName(), ChannelSftp.APPEND);
+		} catch (IOException | SftpException e) {
 			throw new FileSystemException(e);
 		}
 	}
@@ -392,7 +392,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 
 	@Override
 	public String getCanonicalName(SftpFileRef f) {
-		return f.getName(); //Should include folder structure if known
+		return f.getName(); // Should include folder structure if known
 	}
 
 	@Override

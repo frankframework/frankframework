@@ -15,9 +15,6 @@
 */
 package org.frankframework.filesystem.smb;
 
-import java.io.Closeable;
-import java.io.FilterInputStream;
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -236,56 +233,37 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 	}
 
 	@Override
-	public OutputStream createFile(SmbFileRef f) throws FileSystemException, IOException {
+	public void createFile(SmbFileRef file, InputStream content) throws IOException {
 		Set<AccessMask> accessMask = new HashSet<>(EnumSet.of(AccessMask.FILE_ADD_FILE));
 		Set<SMB2CreateOptions> createOptions = new HashSet<>(
 				EnumSet.of(SMB2CreateOptions.FILE_NON_DIRECTORY_FILE, SMB2CreateOptions.FILE_WRITE_THROUGH));
 
-		final File file = diskShare.openFile(f.getName(), accessMask, null, SMB2ShareAccess.ALL, SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions);
-		return wrapOutputStream(file, file.getOutputStream());
+		try (File smbFile = diskShare.openFile(file.getName(), accessMask, null, SMB2ShareAccess.ALL, SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions)) {
+			if (content != null) {
+				try (OutputStream out = smbFile.getOutputStream()) {
+					content.transferTo(out);
+				}
+			}
+		}
 	}
 
 	@Override
-	public OutputStream appendFile(SmbFileRef f) throws FileSystemException, IOException {
-		final File file = getFile(f, AccessMask.FILE_APPEND_DATA, SMB2CreateDisposition.FILE_OPEN_IF);
-		return wrapOutputStream(file, file.getOutputStream(true));
-	}
-
-	private static OutputStream wrapOutputStream(Closeable file, OutputStream stream) {
-		return new FilterOutputStream(stream) {
-
-			boolean isOpen = true;
-			@Override
-			public void close() throws IOException {
-				if(isOpen) {
-					super.close();
-					isOpen=false;
+	public void appendFile(SmbFileRef file, InputStream content) throws IOException {
+		try (File smbFile = getFile(file, AccessMask.FILE_APPEND_DATA, SMB2CreateDisposition.FILE_OPEN_IF)) {
+			if (content != null) {
+				try (OutputStream out = smbFile.getOutputStream(true)) {
+					content.transferTo(out);
 				}
-				file.close();
 			}
-		};
-	}
-
-	private static InputStream wrapInputStream(File file) {
-		return new FilterInputStream(file.getInputStream()) {
-
-			boolean isOpen = true;
-			@Override
-			public void close() throws IOException {
-				if(isOpen) {
-					super.close();
-					isOpen=false;
-				}
-				file.close();
-			}
-		};
+		}
 	}
 
 	@Override
 	public Message readFile(SmbFileRef filename, String charset) throws FileSystemException, IOException {
-		File file = getFile(filename, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN);
-		MessageContext context = FileSystemUtils.getContext(this, filename, charset);
-		return new Message(wrapInputStream(file), context);
+		try (File file = getFile(filename, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN)) {
+			MessageContext context = FileSystemUtils.getContext(this, filename, charset);
+			return new Message(file.getInputStream(), context);
+		}
 	}
 
 	@Override
@@ -540,7 +518,7 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 		public FilesIterator(String folder, TypeFilter filter, List<FileIdBothDirectoryInformation> list) {
 			files = new ArrayList<>();
 			for (FileIdBothDirectoryInformation info : list) {
-				if (!StringUtils.equals(".", info.getFileName()) && !StringUtils.equals("..", info.getFileName())) {
+				if (!".".equals(info.getFileName()) && !"..".equals(info.getFileName())) {
 					SmbFileRef file = new SmbFileRef(info.getFileName(), folder);
 					try {
 						FileAllInformation fileInfo = getAttributes(file);
