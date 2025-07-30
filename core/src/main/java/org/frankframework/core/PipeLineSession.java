@@ -16,6 +16,7 @@
 package org.frankframework.core;
 
 import java.io.IOException;
+import java.lang.ref.Cleaner;
 import java.time.Instant;
 import java.time.temporal.Temporal;
 import java.util.Collections;
@@ -79,6 +80,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	private ISecurityHandler securityHandler = null;
 
 	private transient PipeLineSessionCloseAction closeAction;
+	private transient Cleaner.Cleanable cleanable;
 
 	// closeables.keySet is a List of wrapped resources. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
 	// Values are labels to help debugging
@@ -101,7 +103,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	private void createCloseAction() {
 		closeAction = new PipeLineSessionCloseAction(this.closeables);
-		CleanerProvider.register(this, closeAction);
+		cleanable = CleanerProvider.CLEANER.register(this, closeAction);
 	}
 
 	public void setExitState(PipeLine.ExitState state, Integer code) {
@@ -483,7 +485,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	@Override
 	public void close() {
 		LOG.debug("Closing PipeLineSession");
-		CleanerProvider.clean(closeAction);
+		cleanable.clean();
 	}
 
 	private static class PipeLineSessionCloseAction implements Runnable {

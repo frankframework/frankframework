@@ -39,7 +39,8 @@ public class CleanerProvider {
 
 	private static final ConcurrentMap<Integer, CleaningActionWrapper> CLEANER_MAP = new ConcurrentHashMap<>();
 	private static final Map<LeakedResourceException, AtomicInteger> LEAK_MAP = new HashMap<>(); // Should be used only in Cleaner thread so doesn't need to be thread-safe
-	private static final Cleaner CLEANER = Cleaner.create();
+
+	public static final Cleaner CLEANER = Cleaner.create();
 
 	static {
 		// Shutdown hook to generate report of leaks at end of process
