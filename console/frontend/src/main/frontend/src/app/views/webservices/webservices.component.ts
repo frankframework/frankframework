@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { AppService } from 'src/app/app.service';
 import { ApiListener, Service, WebservicesService, Wsdl } from './webservices.service';
 
@@ -11,15 +11,13 @@ import { HasAccessToLinkDirective } from '../../components/has-access-to-link.di
   imports: [HasAccessToLinkDirective],
 })
 export class WebservicesComponent implements OnInit {
-  protected rootURL: string = this.appService.getServerPath();
   protected services: Service[] = [];
   protected apiListeners: ApiListener[] = [];
   protected wsdls: Wsdl[] = [];
 
-  constructor(
-    private appService: AppService,
-    private wsService: WebservicesService,
-  ) {}
+  private readonly wsService: WebservicesService = inject(WebservicesService);
+  private readonly appService: AppService = inject(AppService);
+  protected rootURL: string = this.appService.getServerPath();
 
   ngOnInit(): void {
     this.wsService.getWebservices().subscribe((data) => {

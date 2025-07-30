@@ -32,7 +32,7 @@
               <label class="col-sm-3 control-label">Configuration</label>
               <div class="col-sm-9">
                 <select class="form-control" name="configuration" [(ngModel)]="selectedConfiguration">
-                  @for (config of configurations; track config.name) {
+                  @for (config of configurations(); track config.name) {
                     <option [ngValue]="config.name">
                       {{ config.name }}
                     </option>
@@ -50,7 +50,7 @@
                   [disabled]="selectedConfiguration === ''"
                 >
                   @for (
-                    adapter of adapters | configurationFilter: selectedConfiguration | withJavaListener;
+                    adapter of adapters() | configurationFilter: selectedConfiguration | withJavaListener;
                     track adapter.name
                   ) {
                     <option [ngValue]="adapter">

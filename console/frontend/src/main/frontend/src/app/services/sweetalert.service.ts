@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import Swal, { SweetAlertOptions, SweetAlertResult } from 'sweetalert2';
 import { DebugService } from './debug.service';
 
@@ -6,11 +6,11 @@ import { DebugService } from './debug.service';
   providedIn: 'root',
 })
 export class SweetalertService {
-  defaultSettings: SweetAlertOptions = {
+  private defaultSettings: SweetAlertOptions = {
     //			confirmButtonColor: "#449d44"
   };
 
-  constructor(private Debug: DebugService) {}
+  private readonly Debug: DebugService = inject(DebugService);
 
   defaults(title: string | SweetAlertOptions, text?: string): SweetAlertOptions {
     // let args = arguments || [];

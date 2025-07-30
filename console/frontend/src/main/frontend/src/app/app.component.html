@@ -16,10 +16,10 @@
         [userName]="userName"
       ></app-pages-topnavbar>
       <app-pages-topinfobar class="topinfobar"></app-pages-topinfobar>
-      @if (startupError) {
+      @if (startupError()) {
         <div class="m-sm alert alert-danger pointer" role="alert" type="danger" routerLink="/error">
           <h4>Startup error:</h4>
-          <span [innerHtml]="startupError"></span>
+          <span [innerHtml]="startupError()"></span>
         </div>
       }
       <!-- Main view  -->

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Base64Service } from './base64.service';
 import { ServerInfo } from './server-info.service';
 
@@ -6,22 +6,22 @@ import { ServerInfo } from './server-info.service';
   providedIn: 'root',
 })
 export class MiscService {
-  constructor(private Base64: Base64Service) {}
+  private readonly Base64: Base64Service = inject(Base64Service);
 
   escapeURL(uri: string | number | boolean): string {
     return encodeURIComponent(uri);
   }
 
   isMobile(): boolean {
-    return /android/i.test(navigator.userAgent) ||
+    return (
+      /android/i.test(navigator.userAgent) ||
       /webos/i.test(navigator.userAgent) ||
       /iphone/i.test(navigator.userAgent) ||
       /ipad/i.test(navigator.userAgent) ||
       /ipod/i.test(navigator.userAgent) ||
       /blackberry/i.test(navigator.userAgent) ||
       /windows phone/i.test(navigator.userAgent)
-      ? true
-      : false;
+    );
   }
 
   getUID(serverInfo: ServerInfo): string {

@@ -1,15 +1,13 @@
-import { Component, OnDestroy, OnInit, Renderer2 } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, Renderer2, Signal } from '@angular/core';
 import { Idle } from '@ng-idle/core';
 import { filter, first, Subscription } from 'rxjs';
 import {
   Adapter,
-  AdapterMessage,
-  AppConstants,
+  AppInitState,
   appInitState,
   AppService,
   ClusterMember,
   ConfigurationMessage,
-  ConsoleState,
   MessageLog,
 } from './app.service';
 import {
@@ -48,6 +46,7 @@ import { PagesTopinfobarComponent } from './components/pages/pages-topinfobar/pa
 import { PagesFooterComponent } from './components/pages/pages-footer/pages-footer.component';
 // @ts-expect-error pace-js does not have types
 import Pace from 'pace-js';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-root',
@@ -67,7 +66,6 @@ export class AppComponent implements OnInit, OnDestroy {
   protected loading = true;
   protected dtapStage = '';
   protected dtapSide = '';
-  protected startupError: string | null = null;
   protected userName?: string;
   protected routeData: Data = {};
   protected routeQueryParams: ParamMap = convertToParamMap({});
@@ -75,9 +73,28 @@ export class AppComponent implements OnInit, OnDestroy {
   protected clusterMembers: ClusterMember[] = [];
   protected selectedClusterMember: ClusterMember | null = null;
 
+  private readonly http: HttpClient = inject(HttpClient);
+  private readonly router: Router = inject(Router);
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
+  private readonly renderer: Renderer2 = inject(Renderer2);
+  private readonly title: Title = inject(Title);
+  private readonly authService: AuthService = inject(AuthService);
+  private readonly notificationService: NotificationService = inject(NotificationService);
+  private readonly miscService: MiscService = inject(MiscService);
+  private readonly sessionService: SessionService = inject(SessionService);
+  private readonly debugService: DebugService = inject(DebugService);
+  private readonly sweetAlertService: SweetalertService = inject(SweetalertService);
+  private readonly toastService: ToastService = inject(ToastService);
+  private readonly idle: Idle = inject(Idle);
+  private readonly modalService: NgbModal = inject(NgbModal);
+  private readonly serverInfoService: ServerInfoService = inject(ServerInfoService);
+  private readonly websocketService: WebsocketService = inject(WebsocketService);
+  private readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
+  private readonly appService: AppService = inject(AppService);
+  protected startupError: Signal<string | null> = this.appService.startupError;
+
   private serverInfo: ServerInfo | null = null;
-  private appConstants: AppConstants;
-  private consoleState: ConsoleState;
+  private consoleState: AppInitState = appInitState.UN_INIT;
   private _subscriptions = new Subscription();
   private _subscriptionsReloadable = new Subscription();
   private readonly MODAL_OPTIONS_CLASSES: NgbModalOptions = {
@@ -87,29 +104,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   private messageKeeperSize = 10; // see Adapter.java#messageKeeperSize
 
-  constructor(
-    private http: HttpClient,
-    private router: Router,
-    private route: ActivatedRoute,
-    private renderer: Renderer2,
-    private title: Title,
-    private authService: AuthService,
-    private notificationService: NotificationService,
-    private miscService: MiscService,
-    private sessionService: SessionService,
-    private debugService: DebugService,
-    private sweetAlertService: SweetalertService,
-    private toastService: ToastService,
-    private appService: AppService,
-    private idle: Idle,
-    private modalService: NgbModal,
-    private serverInfoService: ServerInfoService,
-    private websocketService: WebsocketService,
-    private serverTimeService: ServerTimeService,
-  ) {
-    this.appConstants = this.appService.APP_CONSTANTS;
-    this.consoleState = this.appService.CONSOLE_STATE;
-
+  constructor() {
     Pace.start({
       eventLag: {
         minSamples: 10,
@@ -159,11 +154,9 @@ export class AppComponent implements OnInit, OnDestroy {
     });
 
     const idleStartSubscription = this.idle.onIdleStart.subscribe(() => {
-      const idleTimeout =
-        Number.parseInt(this.appConstants['console.idle.timeout'] as string) > 0
-          ? Number.parseInt(this.appConstants['console.idle.timeout'] as string)
-          : false;
-      if (!idleTimeout) return;
+      const idleTimeoutConstant = this.appService.appConstants()['console.idle.timeout'];
+      const idleTimeout = Number.parseInt(idleTimeoutConstant as string);
+      if (Number.isNaN(idleTimeout)) return;
 
       this.sweetAlertService.Warning({
         title: 'Idle timer...',
@@ -215,12 +208,12 @@ export class AppComponent implements OnInit, OnDestroy {
   onAppReload(): void {
     this.websocketService.deactivate();
     this._subscriptionsReloadable.unsubscribe();
-    this.consoleState.init = appInitState.UN_INIT;
+    this.consoleState = appInitState.UN_INIT;
 
-    this.appService.resetAlerts();
+    this.appService.alerts.set([]);
     this.appService.resetMessageLog();
     this.appService.resetAdapters();
-    this.appService.updateLoading(true);
+    this.appService.loading.set(true);
 
     this.initializeFrankConsole();
   }
@@ -236,28 +229,29 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   initializeFrankConsole(): void {
-    if (this.consoleState.init !== appInitState.UN_INIT) {
+    if (this.consoleState !== appInitState.UN_INIT) {
       this.debugService.log('Cancelling 2nd initialization attempt');
       Pace.stop();
       return;
     }
-    this.consoleState.init = appInitState.PRE_INIT;
+    this.consoleState = appInitState.PRE_INIT;
     this.debugService.log('Initializing Frank!Console');
 
-    this.consoleState.init = appInitState.INIT;
-    this.serverInfoService.serverInfo$.pipe(first()).subscribe({
+    this.consoleState = appInitState.INIT;
+    this.serverInfoService.refresh().subscribe({
       next: (data) => {
+        if (data === null) return;
         this.serverInfo = data;
 
         this.dtapStage = data['dtap.stage'];
-        this.appService.updateDtapStage(data['dtap.stage']);
+        this.appService.dtapStage.set(data['dtap.stage']);
         this.dtapSide = data['dtap.side'];
         this.userName = data['userName'];
-        this.appService.updateInstanceName(data.instance.name);
+        this.appService.instanceName.set(data.instance.name);
         this.authService.setLoggedIn(this.userName);
         this.appService.updateTitle(this.title.getTitle().split(' | ')[1]);
 
-        this.consoleState.init = appInitState.POST_INIT;
+        this.consoleState = appInitState.POST_INIT;
         if (!this.router.url.includes('login')) {
           this.idle.watch();
           this.renderer.removeClass(document.body, 'gray-bg');
@@ -269,7 +263,7 @@ export class AppComponent implements OnInit, OnDestroy {
         if (iafInfoElement)
           iafInfoElement.textContent = `${data.framework.name} ${data.framework.version}: ${data.instance.name} ${data.instance.version}`;
 
-        if (this.appService.dtapStage == 'LOC') {
+        if (this.appService.dtapStage() == 'LOC') {
           this.debugService.setLevel(3);
         }
 
@@ -285,9 +279,8 @@ export class AppComponent implements OnInit, OnDestroy {
         this.initializeWarnings();
         this.checkIafVersions();
       },
-    });
-    this.serverInfoService.refresh().subscribe({
       error: (error: HttpErrorResponse) => {
+        this.appService.loading.set(false);
         // HTTP 5xx error
         if (error.status.toString().startsWith('5')) {
           this.router.navigate(['error']);
@@ -314,24 +307,23 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.appService.getEnvironmentVariables().subscribe((data) => {
       if (data['Application Constants']) {
-        this.appConstants = Object.assign(this.appConstants, data['Application Constants']['Global']); //make FF!Application Constants default
+        const appConstants = { ...this.appService.appConstants(), ...data['Application Constants']['Global'] }; //make FF!Application Constants default
 
         const idleTime =
-          Number.parseInt(this.appConstants['console.idle.time'] as string) > 0
-            ? Number.parseInt(this.appConstants['console.idle.time'] as string)
+          Number.parseInt(appConstants['console.idle.time'] as string) > 0
+            ? Number.parseInt(appConstants['console.idle.time'] as string)
             : 0;
         if (idleTime > 0) {
           const idleTimeout =
-            Number.parseInt(this.appConstants['console.idle.timeout'] as string) > 0
-              ? Number.parseInt(this.appConstants['console.idle.timeout'] as string)
+            Number.parseInt(appConstants['console.idle.timeout'] as string) > 0
+              ? Number.parseInt(appConstants['console.idle.timeout'] as string)
               : 0;
           this.idle.setIdle(idleTime);
           this.idle.setTimeout(idleTimeout);
         } else {
           this.idle.stop();
         }
-        this.appService.updateDatabaseSchedulesEnabled(this.appConstants['loadDatabaseSchedules.active'] === 'true');
-        this.appService.triggerAppConstants();
+        this.appService.updateAppConstants(appConstants);
       }
     });
   }
@@ -346,7 +338,7 @@ export class AppComponent implements OnInit, OnDestroy {
       const release = response[0]; //Not sure what ID to pick, smallest or latest?
 
       const newVersion = release.tag_name.slice(0, 1) == 'v' ? release.tag_name.slice(1) : release.tag_name;
-      const currentVersion = this.appConstants['application.version'] as string;
+      const currentVersion = this.appService.appConstants()['application.version'] as string;
       const version = this.miscService.compare_version(newVersion, currentVersion) ?? 0;
       if (!currentVersion || currentVersion === '') {
         this.debugService.warn(`Latest version is '${newVersion}' but can't retrieve current version.`);
@@ -367,7 +359,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   initializeWebsocket(): void {
-    this.appService.updateLoading(false);
+    this.appService.loading.set(false);
     if (this.loading) {
       this.websocketService.onConnected$.subscribe(() => {
         this.loading = false;
@@ -396,10 +388,10 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   initializeWarnings(): void {
-    const startupErrorSubscription = this.appService.startupError$.subscribe(() => {
-      this.startupError = this.appService.startupError;
+    /*const startupErrorSubscription = this.appService.startupError$.subscribe(() => {
+      this.startupError = this.appService.startupError();
     });
-    this._subscriptionsReloadable.add(startupErrorSubscription);
+    this._subscriptionsReloadable.add(startupErrorSubscription);*/
 
     this.http
       .get<Record<string, MessageLog>>(`${this.appService.absoluteApiPath}server/warnings`)
@@ -429,7 +421,7 @@ export class AppComponent implements OnInit, OnDestroy {
     }
 
     for (const index in configurations) {
-      const existingConfiguration = this.appService.messageLog[index] as MessageLog | undefined;
+      const existingConfiguration = this.appService.messageLog()[index] as MessageLog | undefined;
       const configuration = configurations[index];
       if (configuration === null) {
         this.appService.removeAlerts(configuration);
@@ -477,7 +469,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     for (const adapterIndex in adapters) {
       const adapter = adapters[adapterIndex];
-      const existingAdapter = this.appService.adapters[adapterIndex];
+      const existingAdapter = this.appService.adapters()[adapterIndex];
 
       if (adapter === null) {
         deletedAdapters.push(adapterIndex);
@@ -606,7 +598,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
   hasAdapterReloaded(adapter: Partial<Adapter>): boolean {
     if (adapter.upSince) {
-      const oldAdapter = this.appService.adapters[`${adapter.configuration}/${adapter.name}`];
+      const oldAdapter = this.appService.adapters()[`${adapter.configuration}/${adapter.name}`];
       return adapter.upSince > oldAdapter?.upSince;
     }
     return false;

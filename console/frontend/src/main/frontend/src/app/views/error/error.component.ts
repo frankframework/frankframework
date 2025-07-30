@@ -44,7 +44,7 @@ export class ErrorComponent implements OnInit, OnDestroy {
     if (httpCode < 400 || httpCode > 502) this.router.navigate(['/status']);
 
     this.cooldownCounter = 60;
-    this.appService.updateStartupError(error);
+    this.appService.startupError.set(error);
     this.stackTrace = stackTrace;
 
     this.interval = window.setInterval(() => {

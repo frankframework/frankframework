@@ -38,7 +38,7 @@ export class SecurityItemsComponent implements OnInit {
   private readonly securityItemsService: SecurityItemsService = inject(SecurityItemsService);
 
   ngOnInit(): void {
-    for (const adapter of Object.values(this.appService.adapters)) {
+    for (const adapter of Object.values(this.appService.adapters())) {
       if (adapter.pipes) {
         for (const p in adapter.pipes) {
           const pipe: Pipe = adapter.pipes[p];

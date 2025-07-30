@@ -32,10 +32,10 @@ export class FlowComponent implements OnChanges {
   protected loadInline = true;
   protected flowName = '';
 
-  private appService: AppService = inject(AppService);
-  private Misc: MiscService = inject(MiscService);
-  private statusService: StatusService = inject(StatusService);
-  private modalService: NgbModal = inject(NgbModal);
+  private readonly appService: AppService = inject(AppService);
+  private readonly Misc: MiscService = inject(MiscService);
+  private readonly statusService: StatusService = inject(StatusService);
+  private readonly modalService: NgbModal = inject(NgbModal);
 
   ngOnChanges(): void {
     if (!!this.adapter || this.configurationFlowDiagram) {

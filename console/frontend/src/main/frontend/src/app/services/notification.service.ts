@@ -1,5 +1,4 @@
-import { Injectable } from '@angular/core';
-import { Subject } from 'rxjs';
+import { Injectable, signal, Signal, WritableSignal } from '@angular/core';
 import Tinycon from 'tinycon';
 
 export type Notification = {
@@ -15,10 +14,16 @@ export type Notification = {
   providedIn: 'root',
 })
 export class NotificationService {
-  list: Notification[] = [];
-  count: number = 0;
-  private onCountUpdateSource = new Subject<void>();
-  onCountUpdate$ = this.onCountUpdateSource.asObservable();
+  private _list: WritableSignal<Notification[]> = signal([]);
+  private _count: WritableSignal<number> = signal(0);
+
+  get list(): Signal<Notification[]> {
+    return this._list.asReadonly();
+  }
+
+  get count(): Signal<number> {
+    return this._count.asReadonly();
+  }
 
   constructor() {
     Tinycon.setOptions({
@@ -27,24 +32,23 @@ export class NotificationService {
   }
 
   add(icon: string, title: string, message?: string | boolean, function_?: (notification: Notification) => void): void {
-    const object: Notification = {
+    const newNotification: Notification = {
       icon: icon,
       title: title,
       message: message ?? false,
       fn: function_ ?? false,
       time: Date.now(),
     };
-    this.list.unshift(object);
-    object.id = this.list.length;
-    this.count++;
-    this.onCountUpdateSource.next();
+    this._list.set([newNotification, ...this.list()]);
+    newNotification.id = this.list.length;
+    this._count.set(this.count() + 1);
 
-    Tinycon.setBubble(this.count);
+    Tinycon.setBubble(this.count());
   }
 
   get(id: number): Notification | null {
-    for (let index = 0; index < this.list.length; index++) {
-      const notification = this.list[index];
+    for (let index = 0; index < this.list().length; index++) {
+      const notification = this.list()[index];
       if (notification.id == id) {
         if (notification.fn) {
           window.setTimeout(() => {
@@ -60,16 +64,11 @@ export class NotificationService {
 
   resetCount(): void {
     Tinycon.setBubble(0);
-    this.count = 0;
-    this.onCountUpdateSource.next();
-  }
-
-  getCount(): number {
-    return this.count;
+    this._count.set(0);
   }
 
   getLatest(amount: number): Notification[] {
     if (amount < 1) amount = 1;
-    return this.list.slice(0, amount);
+    return this.list().slice(0, amount);
   }
 }
