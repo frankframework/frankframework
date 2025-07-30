@@ -479,7 +479,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		return messageBuilder.build();
 	}
 
-	@SuppressWarnings("unchecked") //Casts to the required FileSystem type
+	@SuppressWarnings("unchecked") // Casts to the required FileSystem type
 	private Message createFile(@Nonnull Message input, ParameterValueList pvl, InputStream contents) throws FileSystemException, IOException {
 		F file = getFileAndCreateFolder(input, pvl);
 		if (fileSystem.exists(file)) {
