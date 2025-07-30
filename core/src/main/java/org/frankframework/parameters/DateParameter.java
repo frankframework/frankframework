@@ -87,8 +87,21 @@ public class DateParameter extends AbstractParameter {
 	}
 
 	@Override
+	protected String getMessageFormat(ParameterPatternSubstitution substitution) {
+		String messageFormat = super.getMessageFormat(substitution);
+		if (StringUtils.isEmpty(messageFormat) && StringUtils.isNotEmpty(getFormatString())) {
+			return "," + (formatType == DateFormatType.TIME ? "time," : "date,") + getFormatString();
+		}
+		return messageFormat;
+	}
+
+	@Override
 	protected Date getValueAsType(@Nonnull Message request, boolean namespaceAware) throws ParameterException, IOException {
+		@SuppressWarnings("deprecation")
 		Object rawValue = request.asObject();
+		if (rawValue == null) {
+			return null;
+		}
 		if (rawValue instanceof Date date) {
 			return date;
 		}
@@ -96,27 +109,27 @@ public class DateParameter extends AbstractParameter {
 		String value = request.asString().trim();
 
 		if (formatType == DateFormatType.UNIX) {
-			log.debug("Parameter [{}] interpreting result [{}] as UNIX timestamp", this::getName, () -> request);
+			log.debug("Parameter [{}] interpreting result [{}] as UNIX timestamp", this::getName, () -> value);
 			return parseUnixTimestamp(value);
 		}
 
 		if (formatType == DateFormatType.XMLDATETIME) {
-			log.debug("Parameter [{}] converting result [{}] from XML dateTime to Date", this::getName, () -> request);
+			log.debug("Parameter [{}] converting result [{}] from XML dateTime to Date", this::getName, () -> value);
 			return XmlUtils.parseXmlDateTime(value);
 		}
 
-		log.debug("Parameter [{}] converting result [{}] to Date using formatString [{}]", this::getName, () -> request, this::getFormatString);
+		log.debug("Parameter [{}] converting result [{}] to Date using formatString [{}]", this::getName, () -> value, this::getFormatString);
 		try {
 			DateFormat df = new SimpleDateFormat(getFormatString());
 			return df.parse(value);
 		} catch (ParseException e) {
 			// Fallback: if value looks numeric, try to parse as unix timestamp before failing
 			if (value.matches("^[\\d.,_]+$")) {
-				log.debug("Parameter [{}] fallback: interpreting numeric result [{}] as UNIX timestamp", this::getName, () -> request);
+				log.debug("Parameter [{}] fallback: interpreting numeric result [{}] as UNIX timestamp", this::getName, () -> value);
 				log.warn("Date parameter formatType was inferred to be UNIX, but should be manually set to avoid possible parsing errors");
 				return parseUnixTimestamp(value);
 			}
-			throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + request + "] to Date using formatString [" + getFormatString() + "]", e);
+			throw new ParameterException(getName(), "Parameter [" + getName() + "] could not parse result [" + value + "] to Date using formatString [" + getFormatString() + "]", e);
 		}
 	}
 
