@@ -653,7 +653,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		return "," + substitution.formatType + "," + substitution.formatString;
 	}
 
-	private Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, PipeLineSession session, ParameterPatternSubstitution substitutionPattern) throws ParameterException {
+	private @Nonnull Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, PipeLineSession session, ParameterPatternSubstitution substitutionPattern) throws ParameterException {
 
 		ParameterValue paramValue = alreadyResolvedParameters.get(substitutionPattern.name);
 		if (paramValue != null && paramValue.getValue() != null) {
@@ -667,26 +667,20 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			}
 		}
 
-		Object substitutionValue = null;
 		String nameLc = substitutionPattern.name.toLowerCase();
-		switch (nameLc) {
+		Object substitutionValue = switch (nameLc) {
 			case "now":
 				if ("millis".equalsIgnoreCase(substitutionPattern.formatType) || ParameterType.UNIX == type) {
-					substitutionValue = TimeProvider.nowAsMillis();
+					yield TimeProvider.nowAsMillis();
 				} else {
-					substitutionValue = TimeProvider.nowAsDate();
+					yield TimeProvider.nowAsDate();
 				}
-
-				break;
 			case "uid":
-				substitutionValue = UUIDUtil.createSimpleUUID();
-				break;
+				yield UUIDUtil.createSimpleUUID();
 			case "uuid":
-				substitutionValue = UUIDUtil.createRandomUUID();
-				break;
+				yield UUIDUtil.createRandomUUID();
 			case "hostname":
-				substitutionValue = Misc.getHostname();
-				break;
+				yield Misc.getHostname();
 			case "fixeddate":
 				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
 					throw new ParameterException(getName(), "Parameter pattern [" + substitutionPattern.name + "] only allowed in stub mode");
@@ -697,44 +691,41 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 
 				if (fixedDateTime != null) {
 					if (fixedDateTime instanceof Date date) {
-						substitutionValue = date;
+						yield date;
 					} else if (fixedDateTime instanceof String string) {
-						substitutionValue = preParseDateType(string, substitutionPattern.formatType, substitutionPattern.formatString);
+						yield preParseDateType(string, substitutionPattern.formatType, substitutionPattern.formatString);
+					} else {
+						yield null;
 					}
 				} else {
 					// Get the default value
-					substitutionValue = preParseDateType(PutSystemDateInSession.FIXEDDATETIME, substitutionPattern.formatType, DateFormatUtils.FORMAT_DATETIME_GENERIC);
+					yield preParseDateType(PutSystemDateInSession.FIXEDDATETIME, substitutionPattern.formatType, DateFormatUtils.FORMAT_DATETIME_GENERIC);
 				}
-
-				break;
 			case "fixeduid":
 				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
 					throw new ParameterException(getName(), "Parameter pattern [" + substitutionPattern.name + "] only allowed in stub mode");
 				}
-				substitutionValue = FIXEDUID;
-				break;
+				yield FIXEDUID;
 			case "fixedhostname":
 				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
 					throw new ParameterException(getName(), "Parameter pattern [" + substitutionPattern.name + "] only allowed in stub mode");
 				}
-				substitutionValue = FIXEDHOSTNAME;
-				break;
+				yield FIXEDHOSTNAME;
 			case "username":
-				substitutionValue = cf != null ? cf.getUsername() : "";
-				break;
+				yield cf != null ? cf.getUsername() : "";
 			case "password":
-				substitutionValue = cf != null ? cf.getPassword() : "";
-				break;
+				yield cf != null ? cf.getPassword() : "";
 			default:
+				yield null;
+		};
+		if (substitutionValue != null) {
+			return substitutionValue;
 		}
-		if (substitutionValue == null) {
-			if (isIgnoreUnresolvablePatternElements()) {
-				substitutionValue="";
-			} else {
-				throw new ParameterException(getName(), "Parameter or session variable with name [" + substitutionPattern.name + "] in pattern [" + getPattern() + "] cannot be resolved");
-			}
+		if (isIgnoreUnresolvablePatternElements()) {
+			return "";
+		} else {
+			throw new ParameterException(getName(), "Parameter or session variable with name [" + substitutionPattern.name + "] in pattern [" + getPattern() + "] cannot be resolved");
 		}
-		return substitutionValue;
 	}
 
 	private Object getSubstitutionValueFromSession(PipeLineSession session, ParameterPatternSubstitution substitutionPattern) throws ParameterException {
