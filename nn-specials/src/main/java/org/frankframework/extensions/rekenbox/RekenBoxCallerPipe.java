@@ -18,7 +18,11 @@ package org.frankframework.extensions.rekenbox;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Writer;
 import java.net.URL;
+import java.nio.charset.Charset;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -173,7 +177,9 @@ public class RekenBoxCallerPipe extends FixedForwardPipe {
 
 		try {
 			// put input in a file
-			StreamUtil.stringToFile(rekenboxInput, inputFileName);
+			try (Writer fw = Files.newBufferedWriter(Paths.get(inputFileName), Charset.defaultCharset())) {
+				fw.write(rekenboxInput);
+			}
 
 			// precreating outputfile is necessary for L76HB000
 			log.debug("precreating outputfile [{}]", outputFileName);

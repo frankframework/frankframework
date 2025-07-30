@@ -37,6 +37,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.StreamUtil;
 
 @SuppressWarnings("removal")
@@ -206,7 +207,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 			URL url = TestFileUtils.getTestFileURL("/Pipes/CompressPipe/" + entry.getName());
 			assertNotNull(url);
 			UrlMessage urlMessage = new UrlMessage(url);
-			assertEquals(urlMessage.asString(), StreamUtil.readerToString(StreamUtil.dontClose(new InputStreamReader(zipin)), null));
+			assertEquals(urlMessage.asString(), StreamUtil.streamToString(CloseUtils.dontClose(zipin)));
 			urlMessage.close();
 
 			entry = zipin.getNextEntry();
@@ -216,7 +217,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 			URL url2 = TestFileUtils.getTestFileURL("/Pipes/CompressPipe/" + entry.getName());
 			assertNotNull(url2);
 			UrlMessage urlMessage2 = new UrlMessage(url2);
-			assertEquals(urlMessage2.asString(), StreamUtil.readerToString(StreamUtil.dontClose(new InputStreamReader(zipin)), null));
+			assertEquals(urlMessage2.asString(), StreamUtil.streamToString(CloseUtils.dontClose(zipin)));
 			urlMessage2.close();
 		}
 	}
@@ -234,7 +235,7 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 
 	@Test
 	public void testGetterSetterResultIsContent() {
-		assertFalse(pipe.isResultIsContent()); //Default NULL
+		assertFalse(pipe.isResultIsContent()); // Default NULL
 
 		pipe.setResultIsContent(true);
 		assertTrue(pipe.isResultIsContent());
