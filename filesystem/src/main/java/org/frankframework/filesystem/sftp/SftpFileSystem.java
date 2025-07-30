@@ -28,7 +28,6 @@ import java.util.NoSuchElementException;
 
 import jakarta.annotation.Nullable;
 
-import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
@@ -153,7 +152,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 
 	@Override
 	public void createFile(SftpFileRef file, InputStream content) throws FileSystemException {
-		try (InputStream isToUse = content != null ? content : NullInputStream.nullInputStream()) {
+		try (InputStream isToUse = content != null ? content : InputStream.nullInputStream()) {
 			ftpClient.put(isToUse, file.getName());
 		} catch (IOException | SftpException e) {
 			throw new FileSystemException(e);
@@ -162,7 +161,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 
 	@Override
 	public void appendFile(SftpFileRef file, InputStream content) throws FileSystemException {
-		try (InputStream isToUse = content != null ? content : NullInputStream.nullInputStream()) {
+		try (InputStream isToUse = content != null ? content : InputStream.nullInputStream()) {
 			ftpClient.put(isToUse, file.getName(), ChannelSftp.APPEND);
 		} catch (IOException | SftpException e) {
 			throw new FileSystemException(e);
