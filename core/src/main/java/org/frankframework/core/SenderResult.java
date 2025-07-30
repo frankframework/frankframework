@@ -28,7 +28,7 @@ import org.frankframework.stream.Message;
  * The SenderResult is a type to store both the result of the processing of a message by a Sender,
  * as well as the exitState.
  */
-public class SenderResult implements AutoCloseable {
+public class SenderResult {
 
 	private @Getter @Setter boolean success;
 	private @Getter @Setter Message result;
@@ -52,12 +52,5 @@ public class SenderResult implements AutoCloseable {
 		this.forwardName = forwardName;
 		this.result = result;
 		this.errorMessage = errorMessage;
-	}
-
-	@Override
-	public void close() {
-		if (result != null) {
-			result.close();
-		}
 	}
 }
