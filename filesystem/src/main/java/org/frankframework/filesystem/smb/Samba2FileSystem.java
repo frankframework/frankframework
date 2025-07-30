@@ -266,26 +266,12 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 		};
 	}
 
-	private static InputStream wrapInputStream(File file) {
-		return new FilterInputStream(file.getInputStream()) {
-
-			boolean isOpen = true;
-			@Override
-			public void close() throws IOException {
-				if(isOpen) {
-					super.close();
-					isOpen=false;
-				}
-				file.close();
-			}
-		};
-	}
-
 	@Override
 	public Message readFile(SmbFileRef filename, String charset) throws FileSystemException, IOException {
-		File file = getFile(filename, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN);
-		MessageContext context = FileSystemUtils.getContext(this, filename, charset);
-		return new Message(wrapInputStream(file), context);
+		try (File file = getFile(filename, AccessMask.GENERIC_READ, SMB2CreateDisposition.FILE_OPEN)) {
+			MessageContext context = FileSystemUtils.getContext(this, filename, charset);
+			return new Message(file.getInputStream(), context);
+		}
 	}
 
 	@Override

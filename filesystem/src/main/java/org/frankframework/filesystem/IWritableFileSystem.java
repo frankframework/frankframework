@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2024 WeAreFrank!
+   Copyright 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ import org.frankframework.util.StreamUtil;
  */
 public interface IWritableFileSystem<F> extends IBasicFileSystem<F> {
 
+	@Deprecated
 	OutputStream createFile(F f) throws FileSystemException, IOException;
 
 	/**
@@ -48,6 +49,7 @@ public interface IWritableFileSystem<F> extends IBasicFileSystem<F> {
 		}
 	}
 
+	@Deprecated
 	OutputStream appendFile(F f) throws FileSystemException, IOException;
 
 	default void appendFile(F f, InputStream content) throws FileSystemException, IOException {
