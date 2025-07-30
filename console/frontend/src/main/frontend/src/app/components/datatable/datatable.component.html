@@ -24,30 +24,32 @@
     </div>
     <table cdk-table [dataSource]="datasource" class="table table-striped table-hover">
       @for (column of displayColumns; track column.name) {
-        <ng-container [cdkColumnDef]="column.name">
-          <th cdk-header-cell *cdkHeaderCellDef [className]="column.className" [hidden]="column.hidden">
-            {{ column.displayName }}
-          </th>
-          <td
-            cdk-cell
-            *cdkCellDef="let element"
-            [hidden]="column.hidden"
-            [title]="truncate ? element[column.property] : ''"
-          >
-            @if (!column.html) {
-              @if (checkIfNotDate(column)) {
-                {{ truncate ? (element[column.property] | truncate: truncateLength) : element[column.property] }}
+        @if (column.name && column.name !== '') {
+          <ng-container [cdkColumnDef]="column.name">
+            <th cdk-header-cell *cdkHeaderCellDef [className]="column.className" [hidden]="column.hidden">
+              {{ column.displayName }}
+            </th>
+            <td
+              cdk-cell
+              *cdkCellDef="let element"
+              [hidden]="column.hidden"
+              [title]="truncate ? element[column.property] : ''"
+            >
+              @if (!column.html) {
+                @if (checkIfNotDate(column)) {
+                  {{ truncate ? (element[column.property] | truncate: truncateLength) : element[column.property] }}
+                } @else {
+                  <span appToDate [time]="element[column.property]">{{ element[column.property] }}</span>
+                }
               } @else {
-                <span appToDate [time]="element[column.property]">{{ element[column.property] }}</span>
+                <ng-container
+                  [ngTemplateOutlet]="content.templateReference"
+                  [ngTemplateOutletContext]="{ rowElement: element }"
+                ></ng-container>
               }
-            } @else {
-              <ng-container
-                [ngTemplateOutlet]="content.templateReference"
-                [ngTemplateOutletContext]="{ rowElement: element }"
-              ></ng-container>
-            }
-          </td>
-        </ng-container>
+            </td>
+          </ng-container>
+        }
       }
       <tr cdk-header-row *cdkHeaderRowDef="displayedColumns"></tr>
       <tr cdk-row *cdkRowDef="let row; columns: displayedColumns"></tr>
