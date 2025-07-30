@@ -1,5 +1,5 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
-import { AppConstants, AppService } from 'src/app/app.service';
+import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AppService } from 'src/app/app.service';
 import { InputFileUploadComponent } from 'src/app/components/input-file-upload/input-file-upload.component';
 import { JdbcService } from '../../jdbc/jdbc.service';
 import { ConfigurationsService } from '../configurations.service';
@@ -9,6 +9,7 @@ import { FormsModule } from '@angular/forms';
 
 import { RouterLink } from '@angular/router';
 import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 type Form = {
   name: string;
@@ -42,27 +43,26 @@ export class ConfigurationsUploadComponent implements OnInit, OnDestroy {
     automatic_reload: false,
   };
 
+  private readonly configurationsService: ConfigurationsService = inject(ConfigurationsService);
+  private readonly jdbcService: JdbcService = inject(JdbcService);
+  private readonly appService: AppService = inject(AppService);
   private file: File | null = null;
-  private appConstants: AppConstants = this.appService.APP_CONSTANTS;
+  private appConstants$ = toObservable(this.appService.appConstants);
   private appConstantsSubscription: Subscription | null = null;
 
-  constructor(
-    private configurationsService: ConfigurationsService,
-    private jdbcService: JdbcService,
-    private appService: AppService,
-  ) {}
-
   ngOnInit(): void {
-    this.appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
-      this.form.datasource = this.appConstants['jdbc.datasource.default'] as string;
+    this.appConstantsSubscription = this.appConstants$.subscribe((appConstants) => {
+      this.form.datasource = appConstants['jdbc.datasource.default'] as string;
     });
 
     this.jdbcService.getJdbc().subscribe((data) => {
+      const appConstants = this.appService.appConstants();
       Object.assign(this, data);
+
       this.form.datasource =
-        this.appConstants['jdbc.datasource.default'] === undefined
+        appConstants['jdbc.datasource.default'] === undefined
           ? data.datasources[0]
-          : (this.appConstants['jdbc.datasource.default'] as string);
+          : (appConstants['jdbc.datasource.default'] as string);
     });
   }
 

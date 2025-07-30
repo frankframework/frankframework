@@ -1,8 +1,9 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AppConstants, AppService } from 'src/app/app.service';
 import { RouterModule } from '@angular/router';
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-custom-views',
@@ -17,30 +18,30 @@ export class CustomViewsComponent implements OnInit, OnDestroy {
     url: string;
   }[] = [];
 
-  private appConstants: AppConstants = this.appService.APP_CONSTANTS;
-  private _subscriptions = new Subscription();
-
-  constructor(private appService: AppService) {}
+  private appService: AppService = inject(AppService);
+  private appConstants$ = toObservable(this.appService.appConstants);
+  private subscription: Subscription | null = null;
 
   ngOnInit(): void {
-    const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
-      this.appConstants = this.appService.APP_CONSTANTS;
-      this.updateCustomViews();
-    });
-    this._subscriptions.add(appConstantsSubscription);
+    this.subscription = this.appConstants$.subscribe(() => this.updateCustomViews());
     this.updateCustomViews();
   }
 
+  ngOnDestroy(): void {
+    this.subscription?.unsubscribe();
+  }
+
   updateCustomViews(): void {
-    const customViews = this.appConstants['customViews.names'] as string;
+    const appConstants: AppConstants = this.appService.appConstants();
+    const customViews = appConstants['customViews.names'] as string | undefined;
     if (typeof customViews !== 'string') return;
 
     if (customViews.length > 0) {
       const views = customViews.split(',');
       for (const index in views) {
         const viewId = views[index];
-        const name = this.appConstants[`customViews.${viewId}.name`] as string;
-        const url = this.appConstants[`customViews.${viewId}.url`] as string;
+        const name = appConstants[`customViews.${viewId}.name`] as string;
+        const url = appConstants[`customViews.${viewId}.url`] as string;
         if (name && url)
           this.customViews.push({
             view: viewId,
@@ -49,9 +50,5 @@ export class CustomViewsComponent implements OnInit, OnDestroy {
           });
       }
     }
-  }
-
-  ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
   }
 }

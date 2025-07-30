@@ -45,7 +45,9 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 	@Override
 	@AfterEach
 	public void tearDown() {
-		CloseUtils.closeSilently(senderResult);
+		if (senderResult != null) {
+			CloseUtils.closeSilently(senderResult.getResult());
+		}
 		try {
 			if (fileSystemSender != null) {
 				fileSystemSender.stop();

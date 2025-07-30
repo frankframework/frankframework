@@ -47,8 +47,6 @@ import org.frankframework.documentbuilder.ArrayBuilder;
 import org.frankframework.documentbuilder.DocumentBuilderFactory;
 import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.documentbuilder.INodeBuilder;
-import org.frankframework.filesystem.smb.Samba1FileSystem;
-import org.frankframework.filesystem.smb.Samba2FileSystem;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
@@ -388,8 +386,10 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 					final F file = getFile(input, pvl);
 					Message result = fileSystem.readFile(file, getCharset());
 					// Make a copy of a local file, otherwise the file is deleted after this method returns.
-					if (fileSystem instanceof LocalFileSystem || fileSystem instanceof Samba2FileSystem || fileSystem instanceof Samba1FileSystem) {
-						result = result.copyMessage();
+					if (fileSystem instanceof LocalFileSystem) {
+						try (Message originalResult = result) { // This ensures the original result will be closed and its file reference cleaned up
+							result = originalResult.copyMessage();
+						}
 					}
 					fileSystem.deleteFile(file);
 					deleteEmptyFolder(file);

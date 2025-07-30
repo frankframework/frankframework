@@ -22,10 +22,8 @@ export type DuplicateToast = ToastBody & { count: number };
   providedIn: 'root',
 })
 export class ToastService {
-  toasts: Toast[] = [];
+  public toasts: Toast[] = [];
   private duplicates: DuplicateToast[] = [];
-
-  constructor() {}
 
   error = (title: string, body?: string, options?: ToastOptions): void => this.show('error', title, body, options);
   success = (title: string, body?: string, options?: ToastOptions): void => this.show('success', title, body, options);

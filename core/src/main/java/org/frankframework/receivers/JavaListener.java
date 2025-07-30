@@ -274,7 +274,7 @@ public class JavaListener<M> implements RequestReplyListener, IPushingListener<M
 	 * @ff.default true
 	 */
 	@Deprecated(since = "9.2")
-	@ConfigurationWarning("Replaced with 'exceptionHandlingMethod'")
+	@ConfigurationWarning("Replaced with attribute 'onException', true = 'RETHROW' and false 'FORMAT_AND_RETURN'")
 	public void setThrowException(boolean throwException) {
 		this.onException = throwException ? ExceptionHandlingMethod.RETHROW : ExceptionHandlingMethod.FORMAT_AND_RETURN;
 	}

@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 
@@ -70,10 +70,8 @@ export interface JdbcSummary {
   providedIn: 'root',
 })
 export class JdbcService {
-  constructor(
-    private http: HttpClient,
-    private appService: AppService,
-  ) {}
+  private readonly http: HttpClient = inject(HttpClient);
+  private readonly appService: AppService = inject(AppService);
 
   getJdbc(): Observable<JDBC> {
     return this.http.get<JDBC>(`${this.appService.absoluteApiPath}jdbc`);

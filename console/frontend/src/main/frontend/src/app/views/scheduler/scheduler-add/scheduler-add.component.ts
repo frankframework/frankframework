@@ -1,9 +1,8 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { SchedulerAddEditParent } from '../scheduler-add-edit-parent';
-import { AppService, ServerErrorResponse } from 'src/app/app.service';
+import { ServerErrorResponse } from 'src/app/app.service';
 import { SchedulerService } from '../scheduler.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Subscription } from 'rxjs';
 import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
 
 import { RouterLink } from '@angular/router';
@@ -29,32 +28,11 @@ import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-
   templateUrl: '../scheduler-add-edit-parent.component.html',
   styleUrls: ['./scheduler-add.component.scss'],
 })
-export class SchedulerAddComponent extends SchedulerAddEditParent implements OnInit, OnDestroy {
-  private subscriptions: Subscription = new Subscription();
+export class SchedulerAddComponent extends SchedulerAddEditParent {
+  private readonly schedulerService: SchedulerService = inject(SchedulerService);
 
-  constructor(
-    private appService: AppService,
-    private schedulerService: SchedulerService,
-  ) {
+  constructor() {
     super();
-  }
-
-  ngOnInit(): void {
-    this.configurations = this.appService.configurations;
-    const configurationsSubscription = this.appService.configurations$.subscribe(() => {
-      this.configurations = this.appService.configurations;
-    });
-    this.subscriptions.add(configurationsSubscription);
-
-    this.adapters = this.appService.adapters;
-    const adaptersSubscription = this.appService.adapters$.subscribe(() => {
-      this.adapters = this.appService.adapters;
-    });
-    this.subscriptions.add(adaptersSubscription);
-  }
-
-  ngOnDestroy(): void {
-    this.subscriptions.unsubscribe();
   }
 
   submit(): void {

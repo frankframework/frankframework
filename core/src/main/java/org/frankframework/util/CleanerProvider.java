@@ -168,7 +168,7 @@ public class CleanerProvider {
 			// Find part of stacktrace that is relevant to point where leaking item was created
 			StackTraceElement[] originalStackTrace = getStackTrace();
 			int bottom = findOriginPointInStackTrace(originalStackTrace);
-			this.topOfStackTrace = Arrays.copyOfRange(originalStackTrace, 2, bottom+1);
+			this.topOfStackTrace = Arrays.copyOfRange(originalStackTrace, 2, bottom+2);
 			this.looksLikeUnitTest = isLikelyUnitTest(originalStackTrace[bottom]);
 			setStackTrace(topOfStackTrace);
 		}
@@ -181,10 +181,10 @@ public class CleanerProvider {
 		 */
 		private int findOriginPointInStackTrace(StackTraceElement[] fullStackTrace) {
 			if (fullStackTrace.length < 3) {
-				return fullStackTrace.length - 1;
+				return fullStackTrace.length - 2;
 			}
 			StackTraceElement first = fullStackTrace[2];
-			for (int i = 3; i < fullStackTrace.length-1; i++) {
+			for (int i = 3; i < fullStackTrace.length-4; i++) {
 				StackTraceElement element = fullStackTrace[i];
 				if (((element.getFileName() != null && !element.getFileName().equals(first.getFileName()))
 				|| (element.getFileName() == null && !element.getClassName().equals(first.getClassName())))
@@ -193,10 +193,10 @@ public class CleanerProvider {
 						&& !element.getClassName().endsWith("Message") && !element.getClassName().endsWith("OverflowToDiskOutputStream")
 				&& !element.getClassName().endsWith("Result") && !element.getClassName().endsWith("MessageBuilder") && !element.getMethodName().endsWith("createResultMessage")
 				&& !(element.getClassName().endsWith("TransformerPool") && element.getMethodName().endsWith("transform"))) {
-					return i + 1;
+					return i + 3;
 				}
 			}
-			return fullStackTrace.length - 1;
+			return fullStackTrace.length - 2;
 		}
 
 		/**

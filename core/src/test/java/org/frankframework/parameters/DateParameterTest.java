@@ -16,6 +16,7 @@ import java.util.TimeZone;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 
@@ -491,6 +492,40 @@ public class DateParameterTest {
 	}
 
 	@Test
+	public void testTimeParameterWithTimePatternWithoutFormatPattern() throws Exception {
+
+		// Arrange
+		TimeProvider.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
+		DateParameter parameter = new DateParameter();
+		parameter.setName("time");
+		parameter.setFormatType(DateFormatType.TIME);
+		parameter.setPattern("{now}"); // Now no longer necessary to specify "time" as part of the pattern when type is TIME.
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+		PipeLineSession session = new PipeLineSession();
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		Date resultDate = assertInstanceOf(Date.class, result);
+		Calendar resultCalendar = Calendar.getInstance();
+		resultCalendar.setTime(resultDate);
+
+		// Only a value for the time should be set. Year / Monday / Day are at Epoch start
+		assertEquals(1970, resultCalendar.get(Calendar.YEAR));
+		assertEquals(Calendar.JANUARY, resultCalendar.get(Calendar.MONTH));
+		assertEquals(1, resultCalendar.get(Calendar.DAY_OF_MONTH));
+
+		// Time-part should be set
+		assertEquals(11, resultCalendar.get(Calendar.HOUR_OF_DAY));
+		assertEquals(12, resultCalendar.get(Calendar.MINUTE));
+		assertEquals(55, resultCalendar.get(Calendar.SECOND));
+	}
+
+	@Test
 	public void testTimeParameterWithTimePatternWithoutFormat() throws Exception {
 
 		// Arrange
@@ -498,7 +533,8 @@ public class DateParameterTest {
 		DateParameter parameter = new DateParameter();
 		parameter.setName("time");
 		parameter.setFormatType(DateFormatType.TIME);
-		parameter.setPattern("{now,time}"); // Does not work if you do not specify 'time' in the pattern. Seems like a bug to me, inconsistent with how DateFormatType.DATE works
+		parameter.setPattern("{now,time}"); // Specifying "time" in the pattern used to be required for TIME parameters now it is optional
+
 		parameter.configure();
 
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
@@ -532,7 +568,7 @@ public class DateParameterTest {
 		DateParameter parameter = new DateParameter();
 		parameter.setName("time");
 		parameter.setFormatType(DateFormatType.TIME);
-		parameter.setPattern("{now,time,HH:mm:ss}"); // Does not work if you do not specify 'time' in the pattern. If you specify a format, it HAS to be this format.
+		parameter.setPattern("{now,time,HH:mm:ss}"); // Specifying "time" in the pattern used to be required for TIME parameters now it is optional. A formatString if specified has to be this format for TIME parameters, cannot exclude the seconds (yet).
 		parameter.configure();
 
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
@@ -556,6 +592,41 @@ public class DateParameterTest {
 		assertEquals(11, resultCalendar.get(Calendar.HOUR_OF_DAY));
 		assertEquals(12, resultCalendar.get(Calendar.MINUTE));
 		assertEquals(55, resultCalendar.get(Calendar.SECOND));
+	}
+
+	@Test
+	@Disabled("Formatting time without seconds does not yet work and the change to make that possible looks too big to add to this PR")
+	public void testTimeParameterWithTimePatternWithFormatNoSeconds() throws Exception {
+
+		// Arrange
+		TimeProvider.setTime(LocalDateTime.of(2025, 3, 5, 11, 12, 55));
+		DateParameter parameter = new DateParameter();
+		parameter.setName("time");
+		parameter.setFormatType(DateFormatType.TIME);
+		parameter.setPattern("{now,time,HH:mm}"); // Does not work if you do not specify 'time' in the pattern. If you specify a format, it HAS to be this format.
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+		PipeLineSession session = new PipeLineSession();
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		Date resultDate = assertInstanceOf(Date.class, result);
+		Calendar resultCalendar = Calendar.getInstance();
+		resultCalendar.setTime(resultDate);
+
+		// Only a value for the time should set. Year / Monday / Day are at Epoch start
+		assertEquals(1970, resultCalendar.get(Calendar.YEAR));
+		assertEquals(Calendar.JANUARY, resultCalendar.get(Calendar.MONTH));
+		assertEquals(1, resultCalendar.get(Calendar.DAY_OF_MONTH));
+
+		// Time-part should be set but without seconds
+		assertEquals(11, resultCalendar.get(Calendar.HOUR_OF_DAY));
+		assertEquals(12, resultCalendar.get(Calendar.MINUTE));
+		assertEquals(0, resultCalendar.get(Calendar.SECOND));
 	}
 
 	@Test

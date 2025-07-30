@@ -8,7 +8,7 @@
 
 	<Adapter name="XslErrorMessageFormatter" description="Test the functioning of the ErrorMessageFormatter">
 		<Receiver>
-			<JavaListener name="ibis4test-XslErrorMessageFormatter" serviceName="ibis4test-XslErrorMessageFormatter" throwException="false" />
+			<JavaListener name="ibis4test-XslErrorMessageFormatter" serviceName="ibis4test-XslErrorMessageFormatter" onException="FORMAT_AND_RETURN" />
 		</Receiver>
 		<XslErrorMessageFormatter styleSheetName="stylesheets/buildGenericError.xsl">
 			<Param name="foutCode" value="1001" />
@@ -24,7 +24,7 @@
 	</Adapter>
 	<Adapter name="JsonErrorMessageFormatter" description="Test the functioning of the ErrorMessageFormatter">
 		<Receiver>
-			<JavaListener name="ibis4test-JsonErrorMessageFormatter" serviceName="ibis4test-JsonErrorMessageFormatter" throwException="false" />
+			<JavaListener name="ibis4test-JsonErrorMessageFormatter" serviceName="ibis4test-JsonErrorMessageFormatter" onException="FORMAT_AND_RETURN" />
 		</Receiver>
 		<ErrorMessageFormatter messageFormat="JSON"/>
 		<Pipeline firstPipe="GenerateException">
@@ -38,7 +38,7 @@
 	</Adapter>
 	<Adapter name="DataSonnetErrorMessageFormatter" description="Test the functioning of the ErrorMessageFormatter">
 		<Receiver>
-			<JavaListener name="ibis4test-DataSonnetErrorMessageFormatter" serviceName="ibis4test-DataSonnetErrorMessageFormatter" throwException="false" />
+			<JavaListener name="ibis4test-DataSonnetErrorMessageFormatter" serviceName="ibis4test-DataSonnetErrorMessageFormatter" onException="FORMAT_AND_RETURN" />
 		</Receiver>
 		<DataSonnetErrorMessageFormatter styleSheetName="stylesheets/buildJsonError.jsonnet">
 			<Param name="exitCode" value="500"/>
@@ -54,7 +54,7 @@
 	</Adapter>
 	<Adapter name="ConfigurationDefaultErrorMessageFormatter" description="Test the functioning of the ErrorMessageFormatter">
 		<Receiver>
-			<JavaListener name="ibis4test-ConfigurationDefaultErrorMessageFormatter" serviceName="ibis4test-ConfigurationDefaultErrorMessageFormatter" throwException="false" />
+			<JavaListener name="ibis4test-ConfigurationDefaultErrorMessageFormatter" serviceName="ibis4test-ConfigurationDefaultErrorMessageFormatter" onException="FORMAT_AND_RETURN" />
 		</Receiver>
 		<Pipeline firstPipe="GenerateException">
 			<Exits>

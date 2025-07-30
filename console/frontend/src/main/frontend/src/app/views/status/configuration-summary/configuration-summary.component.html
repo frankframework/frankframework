@@ -17,6 +17,8 @@
   <div class="ibox-content">
     <div class="row">
       <div class="col-md-5">
+        @let adapterSummary = adapterSummarySignal();
+        @let receiverSummary = receiverSummarySignal();
         <table class="table">
           <thead>
             <tr>
@@ -94,6 +96,7 @@
         </table>
       </div>
       <div class="col-md-4">
+        @let messageSummary = messageSummarySignal();
         <table class="table">
           <thead>
             <tr>

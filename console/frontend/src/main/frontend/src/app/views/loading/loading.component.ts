@@ -1,5 +1,5 @@
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { AppService } from 'src/app/app.service';
 
@@ -10,10 +10,8 @@ import { AppService } from 'src/app/app.service';
   styleUrls: ['./loading.component.scss'],
 })
 export class LoadingComponent implements OnInit {
-  constructor(
-    private router: Router,
-    private appService: AppService,
-  ) {}
+  private readonly router: Router = inject(Router);
+  private readonly appService: AppService = inject(AppService);
 
   ngOnInit(): void {
     this.appService.getServerHealth().subscribe({

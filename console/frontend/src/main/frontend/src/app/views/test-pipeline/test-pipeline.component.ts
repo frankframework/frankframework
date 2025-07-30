@@ -1,8 +1,7 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, computed, inject, OnInit, Signal, ViewChild } from '@angular/core';
 import { Adapter, AppService, Configuration } from 'src/app/app.service';
 import { InputFileUploadComponent } from 'src/app/components/input-file-upload/input-file-upload.component';
-import { Subscription } from 'rxjs';
 import { ComboboxComponent, Option } from '../../components/combobox/combobox.component';
 import { ConfigurationFilter } from '../../pipes/configuration-filter.pipe';
 import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
@@ -55,11 +54,16 @@ type TestPipelineSession = {
     LaddaModule,
   ],
 })
-export class TestPipelineComponent implements OnInit, OnDestroy {
+export class TestPipelineComponent implements OnInit {
   @ViewChild(InputFileUploadComponent) formFile!: InputFileUploadComponent;
-  protected configurations: Configuration[] = [];
-  protected configurationOptions: Option[] = [];
-  protected adapters: Record<string, Adapter> = {};
+  protected configurationOptions: Signal<Option[]> = computed(() =>
+    this.configurations().map((configuration) => ({ label: configuration.name })),
+  );
+  protected adapters: Signal<Record<string, Adapter>> = computed(() => {
+    const adapters = this.appService.adapters();
+    if (this.selectedConfiguration) this.setAdapterOptions(this.selectedConfiguration, adapters);
+    return adapters;
+  });
   protected adapterOptions: Option[] = [];
   protected state: AlertState[] = [];
   protected selectedConfiguration = '';
@@ -83,43 +87,14 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
   };
 
   private file: File | null = null;
-  private subscriptions: Subscription = new Subscription();
 
   private http: HttpClient = inject(HttpClient);
-  private appService: AppService = inject(AppService);
   private webStorageService: WebStorageService = inject(WebStorageService);
+  private appService: AppService = inject(AppService);
+  protected configurations: Signal<Configuration[]> = this.appService.configurations;
 
   ngOnInit(): void {
     this.setTestPipelineSession();
-    this.setConfigurations();
-    const configurationsSubscription = this.appService.configurations$.subscribe(() => {
-      this.setConfigurations();
-    });
-    this.subscriptions.add(configurationsSubscription);
-
-    this.setAdapters();
-    const adaptersSubscription = this.appService.adapters$.subscribe(() => {
-      this.setAdapters();
-    });
-    this.subscriptions.add(adaptersSubscription);
-  }
-
-  ngOnDestroy(): void {
-    this.subscriptions.unsubscribe();
-  }
-
-  private setConfigurations(): void {
-    this.configurations = this.appService.configurations;
-    this.configurationOptions = this.configurations.map((configuration) => ({
-      label: configuration.name,
-    }));
-  }
-
-  private setAdapters(): void {
-    this.adapters = this.appService.adapters;
-    if (this.selectedConfiguration) {
-      this.setAdapterOptions(this.selectedConfiguration);
-    }
   }
 
   private setTestPipelineSession(): void {
@@ -131,8 +106,8 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
     }
   }
 
-  private setAdapterOptions(selectedConfiguration: string): void {
-    const filteredAdapters = ConfigurationFilter(this.adapters, selectedConfiguration);
+  private setAdapterOptions(selectedConfiguration: string, adapters: Record<string, Adapter>): void {
+    const filteredAdapters = ConfigurationFilter(adapters, selectedConfiguration);
     this.adapterOptions = Object.entries(filteredAdapters).map(([, adapter]) => ({
       label: adapter.name,
       description: adapter.description ?? '',
@@ -250,6 +225,6 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
 
   protected setSelectedConfiguration(): void {
     this.form.adapter = '';
-    this.setAdapterOptions(this.selectedConfiguration);
+    this.setAdapterOptions(this.selectedConfiguration, this.adapters());
   }
 }

@@ -1,8 +1,8 @@
 /// <reference path="../../../../../node_modules/monaco-editor/monaco.d.ts" />
 
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { AppConstants, AppService, ServerErrorResponse } from 'src/app/app.service';
+import { AppService, ServerErrorResponse } from 'src/app/app.service';
 import { WebStorageService } from 'src/app/services/web-storage.service';
 import { JdbcQueryForm, JdbcService } from '../jdbc.service';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -11,6 +11,7 @@ import { LaddaModule } from 'angular2-ladda';
 
 import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
 import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-editor.component';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-jdbc-execute-query',
@@ -42,25 +43,21 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
     },
   };
 
-  private _subscriptions = new Subscription();
-  private appConstants: AppConstants = this.appService.APP_CONSTANTS;
-
-  constructor(
-    private webStorageService: WebStorageService,
-    private appService: AppService,
-    private jdbcService: JdbcService,
-  ) {}
+  private readonly webStorageService: WebStorageService = inject(WebStorageService);
+  private readonly jdbcService: JdbcService = inject(JdbcService);
+  private readonly appService: AppService = inject(AppService);
+  private appConstants$ = toObservable(this.appService.appConstants);
+  private appConstantsSubscription: Subscription | null = null;
 
   ngOnInit(): void {
-    const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
-      this.appConstants = this.appService.APP_CONSTANTS;
-      this.form.datasource = this.appConstants['jdbc.datasource.default'] as string;
+    this.appConstantsSubscription = this.appConstants$.subscribe((appConstants) => {
+      this.form.datasource = appConstants['jdbc.datasource.default'] as string;
     });
-    this._subscriptions.add(appConstantsSubscription);
 
     const executeQueryCookie = this.webStorageService.get<JdbcQueryForm>('executeQuery');
 
     this.jdbcService.getJdbc().subscribe((data) => {
+      const appConstants = this.appService.appConstants();
       this.datasources = data.datasources;
       this.queryTypes = data.queryTypes;
       this.resultTypes = data.resultTypes;
@@ -69,9 +66,9 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
         this.form = executeQueryCookie;
       } else {
         this.form.datasource =
-          this.appConstants['jdbc.datasource.default'] == undefined
+          appConstants['jdbc.datasource.default'] == undefined
             ? data.datasources[0]
-            : (this.appConstants['jdbc.datasource.default'] as string);
+            : (appConstants['jdbc.datasource.default'] as string);
         this.form.queryType = data.queryTypes[0];
         this.form.resultType = data.resultTypes[0];
       }
@@ -79,7 +76,7 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
+    this.appConstantsSubscription?.unsubscribe();
   }
 
   submit(formData: JdbcQueryForm): void {
