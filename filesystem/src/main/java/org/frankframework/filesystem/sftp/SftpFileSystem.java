@@ -17,7 +17,6 @@ package org.frankframework.filesystem.sftp;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
 import java.util.Date;
@@ -152,18 +151,18 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	@Override
-	public OutputStream createFile(SftpFileRef f) throws FileSystemException, IOException {
+	public void createFile(SftpFileRef file, InputStream content) throws FileSystemException {
 		try {
-			return ftpClient.put(f.getName());
+			ftpClient.put(content, file.getName());
 		} catch (SftpException e) {
 			throw new FileSystemException(e);
 		}
 	}
 
 	@Override
-	public OutputStream appendFile(SftpFileRef f) throws FileSystemException {
+	public void appendFile(SftpFileRef file, InputStream content) throws FileSystemException, IOException {
 		try {
-			return ftpClient.put(f.getName(), ChannelSftp.APPEND);
+			ftpClient.put(content, file.getName(), ChannelSftp.APPEND);
 		} catch (SftpException e) {
 			throw new FileSystemException(e);
 		}

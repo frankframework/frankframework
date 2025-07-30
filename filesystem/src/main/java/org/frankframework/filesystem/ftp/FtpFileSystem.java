@@ -15,10 +15,8 @@
 */
 package org.frankframework.filesystem.ftp;
 
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,7 +31,6 @@ import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
-import org.apache.commons.net.ftp.FTPReply;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -130,28 +127,14 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		return null;
 	}
 
-	private FilterOutputStream completePendingCommand(OutputStream os) {
-		return new FilterOutputStream(os) {
-			@Override
-			public void close() throws IOException {
-				super.close();
-				if(ftpClient.getReplyCode() == FTPReply.FILE_STATUS_OK) {
-					ftpClient.completePendingCommand();
-				}
-			}
-		};
+	@Override
+	public void createFile(FTPFileRef file, InputStream content) throws FileSystemException, IOException {
+		ftpClient.storeFile(file.getName(), content);
 	}
 
 	@Override
-	public OutputStream createFile(FTPFileRef f) throws FileSystemException, IOException {
-		OutputStream outputStream = ftpClient.storeFileStream(f.getName());
-		return completePendingCommand(outputStream);
-	}
-
-	@Override
-	public OutputStream appendFile(FTPFileRef f) throws FileSystemException, IOException {
-		OutputStream outputStream = ftpClient.appendFileStream(f.getName());
-		return completePendingCommand(outputStream);
+	public void appendFile(FTPFileRef file, InputStream content) throws FileSystemException, IOException {
+		ftpClient.appendFile(file.getName(), content);
 	}
 
 	@Override

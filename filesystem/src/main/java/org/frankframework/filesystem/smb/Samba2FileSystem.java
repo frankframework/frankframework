@@ -15,9 +15,8 @@
 */
 package org.frankframework.filesystem.smb;
 
-import java.io.Closeable;
-import java.io.FilterOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
@@ -79,6 +78,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.StreamUtil;
 
 /**
  *
@@ -234,34 +234,23 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 	}
 
 	@Override
-	public OutputStream createFile(SmbFileRef f) throws FileSystemException, IOException {
+	public void createFile(SmbFileRef file, InputStream content) throws FileSystemException, IOException {
 		Set<AccessMask> accessMask = new HashSet<>(EnumSet.of(AccessMask.FILE_ADD_FILE));
 		Set<SMB2CreateOptions> createOptions = new HashSet<>(
 				EnumSet.of(SMB2CreateOptions.FILE_NON_DIRECTORY_FILE, SMB2CreateOptions.FILE_WRITE_THROUGH));
 
-		final File file = diskShare.openFile(f.getName(), accessMask, null, SMB2ShareAccess.ALL, SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions);
-		return wrapOutputStream(file, file.getOutputStream());
+		try (File smbFile = diskShare.openFile(file.getName(), accessMask, null, SMB2ShareAccess.ALL, SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions);
+				OutputStream out = smbFile.getOutputStream()) {
+			StreamUtil.streamToStream(content, out);
+		}
 	}
 
 	@Override
-	public OutputStream appendFile(SmbFileRef f) throws FileSystemException, IOException {
-		final File file = getFile(f, AccessMask.FILE_APPEND_DATA, SMB2CreateDisposition.FILE_OPEN_IF);
-		return wrapOutputStream(file, file.getOutputStream(true));
-	}
-
-	private static OutputStream wrapOutputStream(Closeable file, OutputStream stream) {
-		return new FilterOutputStream(stream) {
-
-			boolean isOpen = true;
-			@Override
-			public void close() throws IOException {
-				if(isOpen) {
-					super.close();
-					isOpen=false;
-				}
-				file.close();
-			}
-		};
+	public void appendFile(SmbFileRef file, InputStream content) throws FileSystemException, IOException {
+		try (File smbFile = getFile(file, AccessMask.FILE_APPEND_DATA, SMB2CreateDisposition.FILE_OPEN_IF);
+				OutputStream out = smbFile.getOutputStream(true)) {
+			StreamUtil.streamToStream(content, out);
+		}
 	}
 
 	@Override
