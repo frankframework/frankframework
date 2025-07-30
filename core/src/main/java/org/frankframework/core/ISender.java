@@ -76,7 +76,7 @@ public interface ISender extends IConfigurable, FrankElement, NameAware {
 		if (!senderResult.isSuccess()) {
 			if (result != null && result != message) {
 				result.close();
-			};
+			}
 			if (StringUtils.isNotEmpty(senderResult.getErrorMessage())) {
 				throw new SenderException(senderResult.getErrorMessage());
 			}

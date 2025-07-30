@@ -28,7 +28,6 @@ import java.util.NoSuchElementException;
 
 import jakarta.annotation.Nullable;
 
-import org.apache.commons.io.input.NullInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
@@ -130,14 +129,14 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public void createFile(FTPFileRef file, InputStream content) throws IOException {
-		try (InputStream isToUse = content != null ? content : NullInputStream.nullInputStream()) {
+		try (InputStream isToUse = content != null ? content : InputStream.nullInputStream()) {
 			ftpClient.storeFile(file.getName(), isToUse);
 		}
 	}
 
 	@Override
 	public void appendFile(FTPFileRef file, InputStream content) throws IOException {
-		try (InputStream isToUse = content != null ? content : NullInputStream.nullInputStream()) {
+		try (InputStream isToUse = content != null ? content : InputStream.nullInputStream()) {
 			ftpClient.appendFile(file.getName(), isToUse);
 		}
 	}

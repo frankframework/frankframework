@@ -241,7 +241,7 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 		} else {
 			if(StringResolver.needsResolution(originalLogDir)) {
 				originalLogDir = StringResolver.substVars(originalLogDir, properties);
-				LOGGER.info(LOOKUP, "found system property [log.dir] which required property expansion to suitable path ["+originalLogDir+"]");
+				LOGGER.info(LOOKUP, "found system property [log.dir] which required property expansion to suitable path [{}]", originalLogDir);
 			}
 			logDir = new File(originalLogDir);
 		}
