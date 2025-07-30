@@ -37,7 +37,7 @@
               </tr>
             </thead>
             <tbody>
-              @for (configuration of configurations; track configuration.name) {
+              @for (configuration of configurations(); track configuration.name) {
                 <tr [ngClass]="{ 'text-danger': configuration.exception }" [title]="configuration.exception ?? ''">
                   @if (configuration.type === 'DatabaseClassLoader') {
                     <td>

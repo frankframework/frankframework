@@ -1,10 +1,9 @@
-import { Component, inject, OnDestroy, OnInit, TrackByFunction } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, Signal, TrackByFunction } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { ConfigurationFilter, ConfigurationFilterPipe } from 'src/app/pipes/configuration-filter.pipe';
 import { StatusService } from './status.service';
 import { Adapter, AdapterStatus, Alert, AppService, Configuration, MessageLog } from 'src/app/app.service';
-import { PollerService } from 'src/app/services/poller.service';
 import { ServerInfo, ServerInfoService } from '../../services/server-info.service';
 import { KeyValue, KeyValuePipe, NgClass } from '@angular/common';
 import { ServerWarningsComponent } from './server-warnings/server-warnings.component';
@@ -42,8 +41,6 @@ export class StatusComponent implements OnInit, OnDestroy {
     stopped: true,
     warning: true,
   };
-  protected configurations: Configuration[] = [];
-  protected adapters: Record<string, Adapter> = {};
   protected searchText = '';
   protected selectedConfiguration = 'All';
   protected reloading = false;
@@ -51,31 +48,56 @@ export class StatusComponent implements OnInit, OnDestroy {
   protected isConfigStubbed: Record<string, boolean> = {};
   protected isConfigReloading: Record<string, boolean> = {};
   protected isConfigAutoReloadable: Record<string, boolean> = {};
-  protected adapterShowContent: Record<keyof typeof this.adapters, boolean> = {};
+  protected adapterShowContent: Record<string, boolean> = {};
   protected loadFlowInline = true;
-  protected alerts: Alert[] = [];
-  protected messageLog: Record<string, MessageLog> = {};
-  protected serverInfo?: ServerInfo;
-  protected freeDiskSpacePercentage?: number;
+  protected readonly configurations: Signal<Configuration[]> = computed(() => {
+    const configurations = this.appService.configurations();
+    this.check4StubbedConfigs(configurations);
+    this.updateConfigurationFlowDiagram(this.selectedConfiguration);
+    return configurations;
+  });
+  protected readonly adapters: Signal<Record<string, Adapter>> = computed(() => {
+    const adapters = this.appService.adapters();
+    if (this.hasExpendedAdaptersLoaded) {
+      this.updateAdapterShownContent(adapters);
+      return adapters;
+    }
+    const adaptersList = Object.values(adapters);
+    if (adaptersList.length > 0 && 'messages' in adaptersList[0]) {
+      this.hasExpendedAdaptersLoaded = true;
+      this.updateAdapterShownContent(adapters);
+    }
+    return adapters;
+  });
+  protected freeDiskSpacePercentage: Signal<number | null> = computed(() => {
+    const serverInfo = this.serverInfo();
+    if (serverInfo) return Math.round((serverInfo.fileSystem.freeSpace / serverInfo.fileSystem.totalSpace) * 1000) / 10;
+    return null;
+  });
 
   private adapterName = '';
   private _subscriptions = new Subscription();
   private hasExpendedAdaptersLoaded = false;
 
-  private route: ActivatedRoute = inject(ActivatedRoute);
-  private router: Router = inject(Router);
-  private statusService: StatusService = inject(StatusService);
-  private appService: AppService = inject(AppService);
-  private serverInfoService: ServerInfoService = inject(ServerInfoService);
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
+  private readonly router: Router = inject(Router);
+  private readonly statusService: StatusService = inject(StatusService);
+  private readonly serverInfoService: ServerInfoService = inject(ServerInfoService);
+  private readonly appService: AppService = inject(AppService);
+  protected serverInfo: Signal<ServerInfo | null> = this.serverInfoService.serverInfo;
+  protected readonly alerts: Signal<Alert[]> = this.appService.alerts;
+  protected readonly messageLog: Signal<Record<string, MessageLog>> = this.appService.messageLog;
 
   ngOnInit(): void {
-    this.route.fragment.subscribe((fragment) => {
+    const fragmentSubscription = this.route.fragment.subscribe((fragment) => {
       if (fragment && fragment != '' && this.adapterName == '') {
         //If the adapter param hasn't explicitly been set
         this.adapterName = fragment;
       }
     });
-    this.route.queryParamMap.subscribe((parameters) => {
+    this._subscriptions.add(fragmentSubscription);
+
+    const queryParameterSubscription = this.route.queryParamMap.subscribe((parameters) => {
       const adapterName = parameters.get('adapter');
       if (adapterName && adapterName != '' && this.adapterName == '') {
         this.adapterName = adapterName;
@@ -101,46 +123,7 @@ export class StatusComponent implements OnInit, OnDestroy {
       const configurationParameter = parameters.get('configuration');
       if (configurationParameter) this.changeConfiguration(configurationParameter);
     });
-
-    this.updateConfigurationFlowDiagram(this.selectedConfiguration);
-    this.appService.appConstants$.subscribe(() => {
-      this.updateConfigurationFlowDiagram(this.selectedConfiguration);
-    });
-
-    this.check4StubbedConfigs();
-    this.getFreeDiskSpacePercentage();
-    this.alerts = this.appService.alerts;
-    this.messageLog = this.appService.messageLog;
-    this.adapters = this.appService.adapters;
-
-    const configurationsSubscription = this.appService.configurations$.subscribe(() => this.check4StubbedConfigs());
-    this._subscriptions.add(configurationsSubscription);
-
-    const alertsSubscription = this.appService.alerts$.subscribe(() => {
-      this.alerts = [...this.appService.alerts];
-    });
-    this._subscriptions.add(alertsSubscription);
-
-    const messageLogSubscription = this.appService.messageLog$.subscribe(() => {
-      this.messageLog = { ...this.appService.messageLog };
-    });
-    this._subscriptions.add(messageLogSubscription);
-
-    const adaptersSubscription = this.appService.adapters$.subscribe(() => {
-      this.adapters = { ...this.appService.adapters };
-
-      if (this.hasExpendedAdaptersLoaded) {
-        this.updateAdapterShownContent();
-      } else {
-        const adaptersList = Object.values(this.adapters);
-        if (adaptersList.length > 0 && 'messages' in adaptersList[0]) {
-          this.hasExpendedAdaptersLoaded = true;
-          this.updateAdapterShownContent();
-        }
-      }
-    });
-    this._subscriptions.add(adaptersSubscription);
-    this.updateAdapterShownContent();
+    this._subscriptions.add(queryParameterSubscription);
   }
 
   ngOnDestroy(): void {
@@ -187,14 +170,14 @@ export class StatusComponent implements OnInit, OnDestroy {
 
   collapseAll(): void {
     this.loadFlowInline = true;
-    for (const adapter of Object.keys(this.adapters)) {
+    for (const adapter of Object.keys(this.adapters())) {
       this.adapterShowContent[adapter] = false;
     }
   }
 
   expandAll(): void {
     this.loadFlowInline = false;
-    for (const adapter of Object.keys(this.adapters)) {
+    for (const adapter of Object.keys(this.adapters())) {
       this.adapterShowContent[adapter] = true;
     }
   }
@@ -232,29 +215,19 @@ export class StatusComponent implements OnInit, OnDestroy {
     this.configurationFlowDiagram = this.statusService.getConfigurationFlowDiagramUrl(flowUrl);
   }
 
-  check4StubbedConfigs(): void {
-    this.configurations = this.appService.configurations;
-    for (const index in this.appService.configurations) {
-      const config = this.appService.configurations[index];
+  check4StubbedConfigs(configurations: Configuration[]): void {
+    for (const config of configurations) {
       this.isConfigStubbed[config.name] = config.stubbed;
       this.isConfigAutoReloadable[config.name] = config.autoreload ?? false;
       this.isConfigReloading[config.name] = config.state == 'STARTING' || config.state == 'STOPPING'; //Assume reloading when in state STARTING (LOADING) or in state STOPPING (UNLOADING)
     }
   }
 
-  private getFreeDiskSpacePercentage(): void {
-    const serverInfoSubscription = this.serverInfoService.serverInfo$.subscribe((serverInfo) => {
-      this.serverInfo = serverInfo;
-      this.freeDiskSpacePercentage =
-        Math.round((serverInfo.fileSystem.freeSpace / serverInfo.fileSystem.totalSpace) * 1000) / 10;
-    });
-    this._subscriptions.add(serverInfoSubscription);
-  }
-
   // Commented out in template, so unused
   closeAlert(index: number): void {
-    this.appService.alerts.splice(index, 1);
-    this.appService.updateAlerts(this.appService.alerts);
+    const alerts = this.alerts();
+    alerts.splice(index, 1);
+    this.appService.alerts.set(alerts);
   }
 
   changeConfiguration(name: string): void {
@@ -275,7 +248,7 @@ export class StatusComponent implements OnInit, OnDestroy {
 
   private getCompiledAdapterList(): string[] {
     const compiledAdapterList: string[] = [];
-    const adapters = ConfigurationFilter(this.adapters, this.selectedConfiguration, this.filter, this.searchText);
+    const adapters = ConfigurationFilter(this.adapters(), this.selectedConfiguration, this.filter, this.searchText);
     for (const adapter of Object.values(adapters)) {
       const configuration = adapter.configuration;
       const adapterName = adapter.name;
@@ -288,12 +261,12 @@ export class StatusComponent implements OnInit, OnDestroy {
     return adapter.status == 'stopped' || (this.adapterName != '' && adapter.name == this.adapterName);
   }
 
-  private updateAdapterShownContent(): void {
-    for (const adapter in this.adapters) {
+  private updateAdapterShownContent(adapters: Record<string, Adapter>): void {
+    for (const adapter in adapters) {
       if (!this.adapterShowContent.hasOwnProperty(adapter)) {
-        this.adapterShowContent[adapter] = this.determineShowContent(this.adapters[adapter]);
+        this.adapterShowContent[adapter] = this.determineShowContent(adapters[adapter]);
 
-        if (this.adapterName === this.adapters[adapter].name) {
+        if (this.adapterName === adapters[adapter].name) {
           setTimeout(() => {
             document.querySelector(`#${this.adapterName}`)?.scrollIntoView();
           });

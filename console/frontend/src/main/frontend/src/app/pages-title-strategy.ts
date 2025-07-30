@@ -7,7 +7,7 @@ import { AppService } from './app.service';
 export class PagesTitleStrategy extends TitleStrategy {
   constructor(
     private readonly title: Title,
-    private appService: AppService,
+    private readonly appService: AppService,
   ) {
     super();
   }
@@ -15,8 +15,8 @@ export class PagesTitleStrategy extends TitleStrategy {
   override updateTitle(routerState: RouterStateSnapshot): void {
     const title = this.buildTitle(routerState);
     if (title !== undefined) {
-      const dtapStage = this.appService.dtapStage;
-      const instanceName = this.appService.instanceName;
+      const dtapStage = this.appService.dtapStage();
+      const instanceName = this.appService.instanceName();
       this.title.setTitle(`${dtapStage}-${instanceName} | ${title}`);
     }
   }

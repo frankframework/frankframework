@@ -2,7 +2,7 @@
   <div class="row">
     <app-tab-list
       [allTabName]="GLOBAL_TAB_NAME"
-      [tabs]="configurationNames"
+      [tabs]="configurationNames()"
       (selectedTabChange)="changeConfiguration($event)"
     ></app-tab-list>
     <div class="col-lg-12">

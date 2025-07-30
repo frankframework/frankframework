@@ -1,23 +1,30 @@
-import { Directive, ElementRef, inject, Input, OnInit } from '@angular/core';
-import { AppService } from '../app.service';
+import { Directive, ElementRef, inject, Input, OnDestroy, OnInit } from '@angular/core';
+import { AppConstants, AppService } from '../app.service';
+import { toObservable } from '@angular/core/rxjs-interop';
+import { Subscription } from 'rxjs';
 
 @Directive({
   selector: '[appConditionalOnProperty]',
 })
-export class ConditionalOnPropertyDirective implements OnInit {
+export class ConditionalOnPropertyDirective implements OnInit, OnDestroy {
   @Input({ required: true }) appConditionalOnProperty!: string;
   @Input() onFalseConditionClassName: string = 'disabled';
 
   private readonly elementRef: ElementRef<HTMLElement> = inject(ElementRef);
   private readonly appService: AppService = inject(AppService);
+  private appConstants$ = toObservable(this.appService.appConstants);
+  private subscription: Subscription | null = null;
 
   ngOnInit(): void {
-    this.appService.appConstants$.subscribe(() => this.checkCondition());
-    this.checkCondition();
+    this.subscription = this.appConstants$.subscribe((appConstants) => this.checkCondition(appConstants));
   }
 
-  checkCondition(): void {
-    if (this.appService.APP_CONSTANTS[this.appConditionalOnProperty] === 'true') {
+  ngOnDestroy(): void {
+    this.subscription?.unsubscribe();
+  }
+
+  checkCondition(appConstants: AppConstants): void {
+    if (appConstants[this.appConditionalOnProperty] === 'true') {
       this.elementRef.nativeElement.classList.remove(this.onFalseConditionClassName);
       this.elementRef.nativeElement.style.removeProperty('pointer-events');
       return;

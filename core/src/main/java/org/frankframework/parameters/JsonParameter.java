@@ -40,8 +40,10 @@ public class JsonParameter extends AbstractParameter {
 	@Override
 	protected Object getValueAsType(@Nonnull Message request, boolean namespaceAware) throws ParameterException, IOException {
 		try {
-			// Caller closes the message so since we pass a message to `asJsonMessage` we get back the same instance and need to copy it.
-			return MessageUtils.convertToJsonMessage(request, getName()).copyMessage();
+			Message result = MessageUtils.convertToJsonMessage(request, getName());
+			// Caller closes the request-message. So if we get back the same instance as passed in we need to copy it.
+			if (result == request) return result.copyMessage();
+			return result;
 		} catch (XmlException e) {
 			throw new ParameterException("Cannot convert value to JSON", e);
 		}

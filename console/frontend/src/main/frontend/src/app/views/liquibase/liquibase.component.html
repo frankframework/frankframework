@@ -27,7 +27,7 @@
               <label class="col-sm-3 control-label label-height-30">Configuration</label>
               <div class="col-sm-9">
                 <select class="form-control" name="configuration" [(ngModel)]="form.configuration">
-                  @for (configuration of filteredConfigurations; track configuration.name) {
+                  @for (configuration of filteredConfigurations(); track configuration.name) {
                     <option>
                       {{ configuration.name }}
                     </option>
