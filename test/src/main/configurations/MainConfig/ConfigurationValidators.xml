@@ -1,7 +1,7 @@
 <module name="validators">
 	<adapter name="SoapValidator">
 		<receiver>
-			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-SoapValidator" throwException="false" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-SoapValidator" onException="FORMAT_AND_RETURN" />
 		</receiver>
 		<receiver>
 			<listener className="org.frankframework.http.WebServiceListener" serviceNamespaceURI="urn:items"/>
@@ -64,7 +64,7 @@
 
 	<adapter name="Json2XmlValidator">
 		<receiver>
-			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-Json2XmlValidator" throwException="false" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-Json2XmlValidator" onException="FORMAT_AND_RETURN" />
 		</receiver>
 		<receiver>
 			<listener className="org.frankframework.http.rest.ApiListener" uriPattern="json2xmlvalidator/item" allowedParameters="Status,ItemId,AttributeId"/>
@@ -121,7 +121,7 @@
 
 	<adapter name="Json2XmlValidator-NoErrMsg" description="to test forwards from validator to exit" >
 		<receiver>
-			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-Json2XmlValidator-NoErrMsg" throwException="false" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-Json2XmlValidator-NoErrMsg" onException="FORMAT_AND_RETURN" />
 		</receiver>
 		<pipeline firstPipe="CopyItem">
 			<exits>
@@ -151,7 +151,7 @@
 
 	<adapter name="JsonValidator">
 		<receiver>
-			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-JsonValidator" throwException="false" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-JsonValidator" onException="FORMAT_AND_RETURN" />
 		</receiver>
 		<receiver>
 			<listener className="org.frankframework.http.rest.ApiListener" uriPattern="jsonvalidator/item/post" method="POST" allowAllParams="false"/>

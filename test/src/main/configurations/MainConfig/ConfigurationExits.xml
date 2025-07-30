@@ -1,7 +1,7 @@
 <module name="exits">
 	<adapter name="exit tests">
 		<receiver>
-			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-exittests" throwException="false" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-exittests" onException="FORMAT_AND_RETURN" />
 		</receiver>
 		<pipeline>
 			<exits>
@@ -44,7 +44,7 @@
 	</adapter>
 	<adapter name="exits local, java, api, soap">
 		<receiver >
-			<listener className="org.frankframework.receivers.JavaListener" name="local-exits" serviceName="ibis4test-exits" throwException="false" />
+			<listener className="org.frankframework.receivers.JavaListener" name="local-exits" serviceName="ibis4test-exits" onException="FORMAT_AND_RETURN" />
 		</receiver>
 		<receiver maxRetries="-1" processResultCacheSize="0"> <!-- running larva scenarios multiple times result in errors therefore removing cache -->
 			<listener className="org.frankframework.http.rest.ApiListener" uriPattern="exits" method="POST" allowAllParams="false" />

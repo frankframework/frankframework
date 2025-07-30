@@ -1,4 +1,6 @@
-<module>
+<Module
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd">
 	<adapter name="ChecksumTest-Java" >
 		<receiver
 			name="Checksum-Java">
@@ -18,34 +20,19 @@
 				className="org.frankframework.pipes.SwitchPipe" >
 			</pipe>
 
+			<HashPipe name="CRC32" algorithm="CRC32" hashEncoding="HEX">
+				<forward name="success" path="READY"/>
+			</HashPipe>
+			<HashPipe name="Adler32" algorithm="Adler32" hashEncoding="HEX">
+				<forward name="success" path="READY"/>
+			</HashPipe>
+			<HashPipe name="MD5" algorithm="MD5" hashEncoding="HEX">
+				<forward name="success" path="READY"/>
+			</HashPipe>
+			<HashPipe name="SHA" algorithm="SHA" hashEncoding="HEX">
+				<forward name="success" path="READY"/>
+			</HashPipe>
 
-			<pipe
-				name="CRC32"
-				className="org.frankframework.pipes.ChecksumPipe"
-				type="CRC32"
-				>
-				<forward name="success" path="READY"/>
-			</pipe>
-			<pipe
-				name="Adler32"
-				className="org.frankframework.pipes.ChecksumPipe"
-				type="Adler32"
-				>
-				<forward name="success" path="READY"/>
-			</pipe>
-			<pipe
-				name="MD5"
-				className="org.frankframework.pipes.ChecksumPipe"
-				>
-				<forward name="success" path="READY"/>
-			</pipe>
-			<pipe
-				name="SHA"
-				className="org.frankframework.pipes.ChecksumPipe"
-				type="SHA"
-				>
-				<forward name="success" path="READY"/>
-			</pipe>
 		</pipeline>
 	</adapter>
 
@@ -76,38 +63,19 @@
 				getInputFromSessionKey="FxfTransferName" >
 			</pipe>
 
+			<HashPipe name="CRC32" algorithm="CRC32" hashEncoding="HEX">
+				<forward name="success" path="ResponseSender"/>
+			</HashPipe>
+			<HashPipe name="Adler32" algorithm="Adler32" hashEncoding="HEX">
+				<forward name="success" path="ResponseSender"/>
+			</HashPipe>
+			<HashPipe name="MD5" algorithm="MD5" hashEncoding="HEX">
+				<forward name="success" path="ResponseSender"/>
+			</HashPipe>
+			<HashPipe name="SHA" algorithm="SHA" hashEncoding="HEX">
+				<forward name="success" path="ResponseSender"/>
+			</HashPipe>
 
-			<pipe
-				name="CRC32"
-				className="org.frankframework.pipes.ChecksumPipe"
-				type="CRC32"
-				inputIsFile="true"
-				>
-				<forward name="success" path="ResponseSender"/>
-			</pipe>
-			<pipe
-				name="Adler32"
-				className="org.frankframework.pipes.ChecksumPipe"
-				type="Adler32"
-				inputIsFile="true"
-				>
-				<forward name="success" path="ResponseSender"/>
-			</pipe>
-			<pipe
-				name="MD5"
-				className="org.frankframework.pipes.ChecksumPipe"
-				inputIsFile="true"
-				>
-				<forward name="success" path="ResponseSender"/>
-			</pipe>
-			<pipe
-				name="SHA"
-				className="org.frankframework.pipes.ChecksumPipe"
-				type="SHA"
-				inputIsFile="true"
-				>
-				<forward name="success" path="ResponseSender"/>
-			</pipe>
 			<pipe
 		        name="ResponseSender" >
 		        <sender
@@ -124,4 +92,4 @@
 		</pipeline>
 	</adapter>
 
-</module>
+</Module>

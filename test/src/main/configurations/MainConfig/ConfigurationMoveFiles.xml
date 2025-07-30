@@ -165,7 +165,10 @@
 				wildcard="*.txt">
 				<forward name="success" path="output-check"/>
 			</LocalFileSystemPipe>
-			<XmlIfPipe name="output-check" xpathExpression="count(/directory/file) = 2" thenForwardName="answerOk" elseForwardName="ERROR"/>
+			<XmlIfPipe name="output-check" xpathExpression="count(/directory/file) = 2">
+				<forward name="then" path="answerOk"/>
+				<forward name="else" path="ERROR"/>
+			</XmlIfPipe>
 			<FixedResultPipe name="answerOk" returnString="ok">
 				<Forward name="success" path="EXIT" />
 			</FixedResultPipe>

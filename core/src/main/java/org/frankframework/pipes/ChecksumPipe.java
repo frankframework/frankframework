@@ -49,7 +49,7 @@ import org.frankframework.stream.Message;
  * @deprecated Please use the {@link HashPipe}.
  */
 @Deprecated(forRemoval = true, since = "8.3.0")
-@ConfigurationWarning("Use the HashPipe")
+@ConfigurationWarning("Use the HashPipe with hashEncoding=\"false\"")
 public class ChecksumPipe extends HashPipe {
 
 	@Override
