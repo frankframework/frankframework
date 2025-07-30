@@ -47,7 +47,7 @@
 			<listener
 				className="org.frankframework.receivers.JavaListener"
 				name="TransactionHandlingMultiThread-Work"
-				throwException="false"
+				onException="FORMAT_AND_RETURN"
 			/>
 		</receiver>
 		<XslErrorMessageFormatter xpathExpression="/errorMessage/@message" />
@@ -124,7 +124,7 @@
 			<listener
 				className="org.frankframework.receivers.JavaListener"
 				name="TransactionHandlingMultiThread-Sub-Rollback"
-				throwException="false"
+				onException="FORMAT_AND_RETURN"
 			/>
 		</receiver>
 		<XslErrorMessageFormatter xpathExpression="/errorMessage/@message" />
@@ -145,7 +145,7 @@
 			<listener
 				className="org.frankframework.receivers.JavaListener"
 				name="TransactionHandlingMultiThread-Prepare"
-				throwException="false"
+				onException="FORMAT_AND_RETURN"
 			/>
 		</receiver>
 		<XslErrorMessageFormatter xpathExpression="/errorMessage/@message" />
