@@ -35,6 +35,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -299,6 +300,12 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 		}
 
 		por.metadata(metadata);
+	}
+
+	@Override
+	public void appendFile(S3FileRef file, InputStream content) throws FileSystemException, IOException {
+		// Amazon S3 doesn't support append operation
+		throw new NotImplementedException();
 	}
 
 	/**
