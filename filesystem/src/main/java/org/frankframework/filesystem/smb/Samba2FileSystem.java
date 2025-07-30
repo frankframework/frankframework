@@ -78,7 +78,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.StreamUtil;
 
 /**
  *
@@ -239,17 +238,23 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 		Set<SMB2CreateOptions> createOptions = new HashSet<>(
 				EnumSet.of(SMB2CreateOptions.FILE_NON_DIRECTORY_FILE, SMB2CreateOptions.FILE_WRITE_THROUGH));
 
-		try (File smbFile = diskShare.openFile(file.getName(), accessMask, null, SMB2ShareAccess.ALL, SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions);
-				OutputStream out = smbFile.getOutputStream()) {
-			StreamUtil.streamToStream(content, out);
+		try (File smbFile = diskShare.openFile(file.getName(), accessMask, null, SMB2ShareAccess.ALL, SMB2CreateDisposition.FILE_OVERWRITE_IF, createOptions)) {
+			if (content != null) {
+				try (OutputStream out = smbFile.getOutputStream()) {
+					content.transferTo(out);
+				}
+			}
 		}
 	}
 
 	@Override
 	public void appendFile(SmbFileRef file, InputStream content) throws FileSystemException, IOException {
-		try (File smbFile = getFile(file, AccessMask.FILE_APPEND_DATA, SMB2CreateDisposition.FILE_OPEN_IF);
-				OutputStream out = smbFile.getOutputStream(true)) {
-			StreamUtil.streamToStream(content, out);
+		try (File smbFile = getFile(file, AccessMask.FILE_APPEND_DATA, SMB2CreateDisposition.FILE_OPEN_IF)) {
+			if (content != null) {
+				try (OutputStream out = smbFile.getOutputStream(true)) {
+					content.transferTo(out);
+				}
+			}
 		}
 	}
 
