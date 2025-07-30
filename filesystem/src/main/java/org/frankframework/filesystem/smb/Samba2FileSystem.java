@@ -233,7 +233,7 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 	}
 
 	@Override
-	public void createFile(SmbFileRef file, InputStream content) throws FileSystemException, IOException {
+	public void createFile(SmbFileRef file, InputStream content) throws IOException {
 		Set<AccessMask> accessMask = new HashSet<>(EnumSet.of(AccessMask.FILE_ADD_FILE));
 		Set<SMB2CreateOptions> createOptions = new HashSet<>(
 				EnumSet.of(SMB2CreateOptions.FILE_NON_DIRECTORY_FILE, SMB2CreateOptions.FILE_WRITE_THROUGH));
@@ -248,7 +248,7 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 	}
 
 	@Override
-	public void appendFile(SmbFileRef file, InputStream content) throws FileSystemException, IOException {
+	public void appendFile(SmbFileRef file, InputStream content) throws IOException {
 		try (File smbFile = getFile(file, AccessMask.FILE_APPEND_DATA, SMB2CreateDisposition.FILE_OPEN_IF)) {
 			if (content != null) {
 				try (OutputStream out = smbFile.getOutputStream(true)) {
