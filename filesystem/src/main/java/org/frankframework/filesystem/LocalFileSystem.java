@@ -197,8 +197,10 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	}
 
 	@Override
-	public OutputStream appendFile(Path f) throws IOException {
-		return Files.newOutputStream(f, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+	public void appendFile(Path f, InputStream content) throws FileSystemException, IOException {
+		try (OutputStream out = Files.newOutputStream(f, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
+			StreamUtil.streamToStream(content, out);
+		}
 	}
 
 	@Override
