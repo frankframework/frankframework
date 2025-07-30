@@ -80,8 +80,10 @@ class FrankSenderTest {
 	void tearDown() {
 		log.debug("FrankSenderTest: Teardown start, has configuration? [{}]", configuration != null);
 		log.debug("FrankSenderTest: Closing Configuration and other resources");
-		CloseUtils.closeSilently(input, result, session, configuration);
-
+		CloseUtils.closeSilently(input, session, configuration);
+		if (result != null) {
+			CloseUtils.closeSilently(result.getResult());
+		}
 		// In case JavaListener didn't close after end of test, deregister the service.
 		log.debug("FrankSenderTest: Unregistering services");
 		ServiceDispatcher.getInstance().unregisterServiceClient(TARGET_SERVICE_NAME);
