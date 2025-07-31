@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,11 +38,16 @@ public class ClassNameRewriter extends FullXmlFilter {
 			"org.frankframework.pipes.GetFromSession", "org.frankframework.pipes.XmlWellFormedChecker", "org.frankframework.pipes.JsonWellFormedChecker",
 			"org.frankframework.pipes.LargeBlockTester", "org.frankframework.extensions.sap.jco3.SapLUWManager", "org.frankframework.extensions.rekenbox.RekenBoxCaller");
 
-	private final ApplicationContext applicationContext;
+	private final ConfigurationWarnings configWarning;
 
 	public ClassNameRewriter(ContentHandler handler, ApplicationContext applicationContext) {
 		super(handler);
-		this.applicationContext = applicationContext;
+
+		if (applicationContext != null && applicationContext.containsBean("configurationWarnings")) {
+			configWarning = applicationContext.getBean("configurationWarnings", ConfigurationWarnings.class);
+		} else {
+			configWarning = null;
+		}
 	}
 
 	@Override
@@ -57,19 +62,26 @@ public class ClassNameRewriter extends FullXmlFilter {
 		super.startElement(uri, localName, qName, writableAttributes);
 	}
 
-	private static String rewriteClassName(final String originalClassName) {
+	private String rewriteClassName(final String originalClassName) {
 		final String newClassName = addElementSuffix(rewritePackageName(originalClassName));
 
 		if (canLoadClass(newClassName)) {
 			return newClassName;
 		}
 		if (!canLoadClass(originalClassName)) {
-			log.warn("Cannot load class [{}] from configuration. Please check if this was a deprecated class removed in this release, or if it's a custom class that needs to be reworked.", originalClassName);
-			ConfigurationWarnings.add(applicationContext, log, newClassName);
+			addDeprecationWarning("Cannot load class [%s] from configuration. Please check if this was a deprecated class removed in this release, or if it's a custom class that needs to be reworked.".formatted(originalClassName));
 		} else {
 			log.debug("Cannot load a class named [{}], will build configuration with original classname [{}]", newClassName, originalClassName);
 		}
 		return originalClassName;
+	}
+
+	private void addDeprecationWarning(String message) {
+		if (configWarning == null) {
+			log.warn(message);
+		} else {
+			configWarning.add((Object) null, log, message, SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
+		}
 	}
 
 	private static String rewritePackageName(String originalClassName) {
@@ -83,10 +95,10 @@ public class ClassNameRewriter extends FullXmlFilter {
 		return originalClassName;
 	}
 
-	private static String addElementSuffix(String originalClassName) {
+	private String addElementSuffix(String originalClassName) {
 		if (OLD_IMPLICIT_CLASSNAMES.contains(originalClassName)) {
 			String newClassName = "%sPipe".formatted(originalClassName);
-			log.debug("Replaced classname [{}] in configuration with classname [{}]", originalClassName, newClassName);
+			addDeprecationWarning("[%s] has been renamed to [%s]. Please use the new syntax or change the className attribute.".formatted(originalClassName, newClassName));
 
 			return newClassName;
 		}
@@ -102,21 +114,4 @@ public class ClassNameRewriter extends FullXmlFilter {
 			return false;
 		}
 	}
-
-
-//	private Object fixImplicitClassnameAndCreateBean(ApplicationContext applicationContext, String className) throws ClassNotFoundException {
-//		if (!OLD_IMPLICIT_CLASSNAMES.contains(className)) {
-//			return createBeanAndAutoWire(applicationContext, className);
-//		} else {
-//			String implicitClassname = "%sPipe".formatted(className);
-//			log.debug("rewriting classname [{}] to [{}]", className, implicitClassname);
-//			final Object bean = createBeanAndAutoWire(applicationContext, implicitClassname);
-//			return applicationContext.getBean("configurationWarnings", ConfigurationWarnings.class);
-//
-//			if (bean instanceof HasApplicationContext hac) {
-//				ConfigurationWarnings.add(hac, log, "[%s] has been renamed to [%s]. Please use the new syntax or change the className attribute.".formatted(className, implicitClassname), SuppressKeys.DEPRECATION_SUPPRESS_KEY);
-//			}
-//			return bean;
-//		}
-//	}
 }

@@ -209,7 +209,7 @@ public class ConfigurationDigesterTest {
 
 		XmlWriter writer = new XmlWriter();
 		Resource resource = Resource.getResource("/Digester/OldNamespacesAndRewitePipeNames/Configuration.xml");
-		String expected = TestFileUtils.getTestFile("/Digester/OldNamespacesAndRewitePipeNames/Configuration-result.xml");
+		String expectedConfig = TestFileUtils.getTestFile("/Digester/OldNamespacesAndRewitePipeNames/Configuration-result.xml");
 		PropertyLoader properties = new PropertyLoader("Digester/ConfigurationDigesterTest.properties");
 
 		// Act
@@ -217,7 +217,14 @@ public class ConfigurationDigesterTest {
 
 		// Assert
 		String result = writer.toString();
-		MatchUtils.assertXmlEquals(expected, result);
+		MatchUtils.assertXmlEquals(expectedConfig, result);
+
+		List<String> warnings = configuration.getConfigurationWarnings().getWarnings();
+		assertFalse(warnings.isEmpty());
+		String expected = "[org.frankframework.pipes.PutInSession] has been renamed to [org.frankframework.pipes.PutInSessionPipe]."
+				+ " Please use the new syntax or change the className attribute.";
+		assertEquals(expected, warnings.get(0));
+
 	}
 
 	@Test
