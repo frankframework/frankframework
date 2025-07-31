@@ -16,6 +16,8 @@
 package org.frankframework.amqp;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.concurrent.TimeUnit;
 
@@ -24,7 +26,10 @@ import jakarta.annotation.Nonnull;
 import org.apache.qpid.protonj2.client.Client;
 import org.apache.qpid.protonj2.client.Connection;
 import org.apache.qpid.protonj2.client.ConnectionOptions;
+import org.apache.qpid.protonj2.client.OutputStreamOptions;
 import org.apache.qpid.protonj2.client.Sender;
+import org.apache.qpid.protonj2.client.StreamSender;
+import org.apache.qpid.protonj2.client.StreamSenderMessage;
 import org.apache.qpid.protonj2.client.Tracker;
 import org.apache.qpid.protonj2.client.exceptions.ClientException;
 import org.springframework.util.MimeType;
@@ -53,10 +58,12 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	private int port;
 	private String queueName;
 	private long timeout = DEFAULT_TIMEOUT_SECONDS;
+	private boolean sendStreaming = false;
 
 	private Client container;
 	private Connection connection;
 	private Sender sender;
+	private StreamSender streamSender;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -76,6 +83,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 
 			connection = container.connect(host, port, options);
 			sender = connection.openSender(queueName);
+			streamSender = connection.openStreamSender(queueName);
 		} catch (ClientException e) {
 			throw new LifecycleException("Cannot create connection to AMQP server", e);
 		}
@@ -83,7 +91,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 
 	@Override
 	public void stop() {
-		CloseUtils.closeSilently(sender, connection, container);
+		CloseUtils.closeSilently(sender, streamSender, connection, container);
 		super.stop();
 	}
 
@@ -95,6 +103,16 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	@Nonnull
 	@Override
 	public SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+		if (sendStreaming) {
+			sendStreamingMessage(message);
+		} else {
+			sendBinaryMessage(message);
+		}
+		SenderResult senderResult = new SenderResult("");
+		return senderResult;
+	}
+
+	private void sendBinaryMessage(@Nonnull Message message) throws SenderException, TimeoutException {
 		org.apache.qpid.protonj2.client.Message<byte[]> amqpMessage;
 		try {
 			amqpMessage = org.apache.qpid.protonj2.client.Message.create(message.asByteArray());
@@ -118,8 +136,30 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		} catch (ClientException e) {
 			throw new SenderException("Cannot send AMQP message to AMQP server", e);
 		}
-		SenderResult senderResult = new SenderResult("");
-		return senderResult;
+	}
+
+	private void sendStreamingMessage(@Nonnull Message message) throws SenderException {
+		try {
+			StreamSenderMessage streamSenderMessage = streamSender.beginMessage();
+			streamSenderMessage.durable(true);
+			OutputStreamOptions outputStreamOptions = new OutputStreamOptions();
+			if (!message.isEmpty() && message.size() <= Integer.MAX_VALUE) {
+				outputStreamOptions.bodyLength(Math.toIntExact(message.size()));
+			}
+			try (OutputStream outputStream = streamSenderMessage.body(outputStreamOptions);
+				 InputStream inputStream = message.asInputStream()) {
+				if (inputStream != null) {
+					inputStream.transferTo(outputStream);
+				}
+			} catch (IOException e) {
+				log.warn("Cannot send streaming AMQP message to AMQP server, aborting message", e);
+				streamSenderMessage.abort();
+				throw e;
+			}
+			streamSenderMessage.tracker().awaitAccepted(timeout, TimeUnit.SECONDS);
+		} catch (ClientException | IOException e) {
+			throw new SenderException("Cannot send streaming AMQP message to AMQP server", e);
+		}
 	}
 
 	/**
@@ -150,5 +190,9 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	 */
 	public void setQueueName(String queueName) {
 		this.queueName = queueName;
+	}
+
+	public void setSendStreaming(boolean sendStreaming) {
+		this.sendStreaming = sendStreaming;
 	}
 }
