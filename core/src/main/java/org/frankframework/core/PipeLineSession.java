@@ -82,7 +82,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 
 	// closeables.keySet is a List of wrapped resources. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
 	// Values are labels to help debugging
-	private final @Getter Set<AutoCloseable> closeables = Collections.synchronizedSet(new HashSet<>()); // needs to be concurrent, closes may happen from other threads
+	private final transient @Getter Set<AutoCloseable> closeables = Collections.synchronizedSet(new HashSet<>()); // needs to be concurrent, closes may happen from other threads
 
 	public PipeLineSession() {
 		super();
@@ -242,8 +242,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			return message;
 		}
 		if(obj != null) {
-			Message message = Message.asMessage(obj);
-			return message;
+			return Message.asMessage(obj);
 		}
 		return Message.nullMessage();
 	}
@@ -472,12 +471,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		}
 	}
 
-	public boolean isScheduledForCloseOnExit(AutoCloseable message) {
-		return closeables.contains(message);
-	}
-
-	public void unscheduleCloseOnSessionExit(AutoCloseable message) {
-		closeables.remove(message);
+	public void unscheduleCloseOnSessionExit(AutoCloseable resource) {
+		closeables.remove(resource);
 	}
 
 	@Override

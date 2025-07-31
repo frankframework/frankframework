@@ -180,12 +180,9 @@ public class JavaListener<M> implements RequestReplyListener, IPushingListener<M
 		log.debug("JavaListener [{}] processing correlationId [{}]", this::getName, messageWrapper::getCorrelationId);
 
 		try (PipeLineSession session = new PipeLineSession(parentSession)) {
-			Message message = messageWrapper.getMessage();
-
 			try {
 				return handler.processRequest(this, messageWrapper, session);
 			} finally {
-				session.unscheduleCloseOnSessionExit(message); // The input message should not be managed by this PipelineSession but rather the method invoker
 				session.mergeToParentSession(getReturnedSessionKeys(), parentSession);
 			}
 		}
