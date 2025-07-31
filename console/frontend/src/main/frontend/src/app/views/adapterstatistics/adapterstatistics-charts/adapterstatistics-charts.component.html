@@ -1,0 +1,13 @@
+<div class="col-md-12 table-responsive">
+  <h4>Adapter statistics by the hour</h4>
+  <div style="height: 300px">
+    <canvas
+      id="line"
+      class="chart chart-line"
+      baseChart
+      type="line"
+      [options]="options"
+      [data]="hourlyStatistics()"
+    ></canvas>
+  </div>
+</div>

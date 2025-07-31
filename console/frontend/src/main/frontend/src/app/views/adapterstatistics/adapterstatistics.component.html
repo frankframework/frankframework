@@ -26,19 +26,7 @@
           <h4>{{ adapterName }} Statistics</h4>
         </div>
         <div class="ibox-content">
-          <div class="col-md-12 table-responsive">
-            <h4>Adapter statistics by the hour</h4>
-            <div style="height: 300px">
-              <canvas
-                id="line"
-                class="chart chart-line"
-                baseChart
-                type="line"
-                [options]="options"
-                [data]="hourlyStatistics"
-              ></canvas>
-            </div>
-          </div>
+          <app-adapterstatistics-charts [hourlyStatistics]="hourlyStatistics"></app-adapterstatistics-charts>
           <div class="col-md-4 m-t-md table-responsive">
             <h4>Total message processing duration (in ms)</h4>
             <table class="table">
