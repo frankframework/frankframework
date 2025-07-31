@@ -203,6 +203,24 @@ public class ConfigurationDigesterTest {
 	}
 
 	@Test
+	public void testDigestConfigWithOldNamespace() throws Exception {
+		Configuration configuration = new TestConfiguration();
+		ConfigurationDigester digester = SpringUtils.createBean(configuration);
+
+		XmlWriter writer = new XmlWriter();
+		Resource resource = Resource.getResource("/Digester/OldNamespacesAndRewitePipeNames/Configuration.xml");
+		String expected = TestFileUtils.getTestFile("/Digester/OldNamespacesAndRewitePipeNames/Configuration-result.xml");
+		PropertyLoader properties = new PropertyLoader("Digester/ConfigurationDigesterTest.properties");
+
+		// Act
+		digester.parseAndResolveEntitiesAndProperties(writer, configuration, resource, properties);
+
+		// Assert
+		String result = writer.toString();
+		MatchUtils.assertXmlEquals(expected, result);
+	}
+
+	@Test
 	public void stub4testtoolTest() throws Exception {
 		String baseDirectory = "/ConfigurationUtils/stub4testtool/FullAdapter";
 

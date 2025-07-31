@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
+import org.frankframework.util.StringUtil;
 import org.frankframework.xml.AttributesWrapper;
 import org.frankframework.xml.FullXmlFilter;
 
@@ -44,7 +45,7 @@ public class ElementRoleFilter extends FullXmlFilter {
 	public void startElement(String uri, String localName, String qName, Attributes atts) throws SAXException {
 		String elementName = atts.getValue(ELEMENT_ROLE_ATTRIBUTE);
 		if (StringUtils.isEmpty(elementName)) {
-			elementName = Character.toLowerCase(localName.charAt(0))+localName.substring(1);
+			elementName = StringUtil.lcFirst(localName);
 		}
 		elementNames.push(elementName);
 		super.startElement(uri, elementName, makeQName(uri, elementName), new AttributesWrapper(atts, ELEMENT_ROLE_ATTRIBUTE));
