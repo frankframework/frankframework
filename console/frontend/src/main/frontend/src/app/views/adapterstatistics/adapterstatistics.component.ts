@@ -13,10 +13,14 @@ import { FormatStatKeysPipe } from './format-stat-keys.pipe';
 import { FormatStatisticsPipe } from './format-statistics.pipe';
 import { ServerTimeService } from '../../services/server-time.service';
 import { toObservable } from '@angular/core/rxjs-interop';
+import {
+  AdapterstatisticsChartsComponent,
+  HourlyStatistics,
+} from './adapterstatistics-charts/adapterstatistics-charts.component';
 
 @Component({
   selector: 'app-adapterstatistics',
-  imports: [LaddaModule, RouterLink, BaseChartDirective, FormatStatKeysPipe, FormatStatisticsPipe],
+  imports: [LaddaModule, RouterLink, FormatStatKeysPipe, FormatStatisticsPipe, AdapterstatisticsChartsComponent],
   templateUrl: './adapterstatistics.component.html',
   styleUrls: ['./adapterstatistics.component.scss'],
 })
@@ -26,49 +30,16 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
   protected adapterName: string | null = null;
   protected configuration: string | null = null;
   protected refreshing = false;
-  protected hourlyStatistics: ChartData<'line', Statistics['hourly'][0]['count'][], Statistics['hourly'][0]['time']> = {
+  protected hourlyStatistics: HourlyStatistics = {
     labels: [],
     datasets: [],
-  };
-  protected stats?: Statistics;
-  protected options: ChartOptions<'line'> = {
-    elements: {
-      line: {
-        tension: 0.5,
-      },
-    },
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      y: {
-        title: {
-          display: true,
-          text: 'Messages Per Hour',
-        },
-        beginAtZero: true,
-        suggestedMax: 10,
-      },
-    },
-    hover: {
-      mode: 'nearest',
-      intersect: true,
-    },
-    plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        mode: 'index',
-        intersect: false,
-        displayColors: false,
-      },
-    },
   };
   protected iboxExpanded = {
     processReceivers: true,
     durationPerPipe: true,
     sizePerPipe: true,
   };
+  protected stats?: Statistics;
 
   private defaults = {
     name: 'Name',
