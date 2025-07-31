@@ -116,14 +116,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		org.apache.qpid.protonj2.client.Message<byte[]> amqpMessage;
 		try {
 			amqpMessage = org.apache.qpid.protonj2.client.Message.create(message.asByteArray());
-			MimeType mimeType = MessageUtils.computeMimeType(message);
-			if (mimeType != null) {
-				amqpMessage.contentType(mimeType.toString());
-			}
-			Charset charset = MessageUtils.computeDecodingCharset(message);
-			if (charset != null) {
-				amqpMessage.contentEncoding(charset.toString());
-			}
+			applyContentOptions(message, amqpMessage);
 		} catch (IOException | ClientException e) {
 			throw new SenderException("Cannot create AMQP message", e);
 		}
@@ -138,9 +131,21 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		}
 	}
 
+	private static void applyContentOptions(@Nonnull Message message, org.apache.qpid.protonj2.client.Message<?> amqpMessage) throws ClientException, IOException {
+		MimeType mimeType = MessageUtils.computeMimeType(message);
+		if (mimeType != null) {
+			amqpMessage.contentType(mimeType.toString());
+		}
+		Charset charset = MessageUtils.computeDecodingCharset(message);
+		if (charset != null) {
+			amqpMessage.contentEncoding(charset.toString());
+		}
+	}
+
 	private void sendStreamingMessage(@Nonnull Message message) throws SenderException {
 		try {
 			StreamSenderMessage streamSenderMessage = streamSender.beginMessage();
+			applyContentOptions(message, streamSenderMessage);
 			streamSenderMessage.durable(true);
 			OutputStreamOptions outputStreamOptions = new OutputStreamOptions();
 			if (!message.isEmpty() && message.size() <= Integer.MAX_VALUE) {
@@ -157,6 +162,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 				throw e;
 			}
 			streamSenderMessage.tracker().awaitAccepted(timeout, TimeUnit.SECONDS);
+//			streamSenderMessage.tracker().awaitSettlement(timeout, TimeUnit.SECONDS);
 		} catch (ClientException | IOException e) {
 			throw new SenderException("Cannot send streaming AMQP message to AMQP server", e);
 		}
