@@ -134,9 +134,9 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 		return new ObjectInfo(name, StringUtil.reflectionToString(obj), null);
 	}
 
-	public static record ObjectInfo (String name, String info, String connectionPoolProperties) {
+	public record ObjectInfo (String name, String info, String connectionPoolProperties) {
 		@Override
-		public final String toString() {
+		public String toString() {
 			return "Resource [%s] %s, POOL: %s".formatted(name, info, connectionPoolProperties);
 		}
 	}

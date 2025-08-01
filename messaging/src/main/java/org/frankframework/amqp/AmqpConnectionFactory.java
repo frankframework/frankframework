@@ -26,13 +26,18 @@ import org.apache.qpid.protonj2.client.exceptions.ClientException;
 
 import org.frankframework.jdbc.datasource.FrankResource;
 import org.frankframework.jdbc.datasource.ObjectFactory;
+import org.frankframework.util.CleanerProvider;
 import org.frankframework.util.CredentialFactory;
 
 
 public class AmqpConnectionFactory extends ObjectFactory<Connection, Object> {
 
+	Client client = Client.create();
+
 	public AmqpConnectionFactory() {
 		super(null, "amqp", "AMQP 1.0");
+		// Since we cannot override DisposableBean#destroy from parent class, close the client this way
+		CleanerProvider.register(this, client::close);
 	}
 
 	@Override
@@ -47,7 +52,6 @@ public class AmqpConnectionFactory extends ObjectFactory<Connection, Object> {
 	}
 
 	private Connection map(FrankResource resource, String name) {
-		Client client = Client.create();
 
 		ConnectionOptions connectionOptions = new ConnectionOptions();
 		CredentialFactory cf = resource.getCredentials();
@@ -72,11 +76,6 @@ public class AmqpConnectionFactory extends ObjectFactory<Connection, Object> {
 		} catch (ClientException e) {
 			throw new IllegalArgumentException("Cannot connect to AMQP server [" + name + "]", e);
 		}
-	}
-
-	@Override
-	protected void destroyObject(Connection object) {
-		object.close();
 	}
 
 	public Connection getConnection(String name) {
