@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2024 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ public class OnlyActiveFilter extends FullXmlFilter {
 			active = StringResolver.substVars(active, properties);
 		}
 
-		//If an active property is present but EMPTY, assume false.
+		// If an active property is present but EMPTY, assume false.
 		if (active != null && !("true".equalsIgnoreCase(active) || "!false".equalsIgnoreCase(active))) {
 			suppressLevel = 1;
 			return;

@@ -8,6 +8,9 @@
 				<exit name="EXIT" state="success" />
 			</exits>
 			<pipe className="org.frankframework.pipes.PutInSession" name="FillSessionKey2" value="leeuw" sessionKey="sessionKey2">
+				<forward name="success" path="FillSessionKey3"/>
+			</pipe>
+			<pipe className="nl.nn.adapterframework.pipes.PutInSession" name="FillSessionKey3" value="tn" sessionKey="unused">
 				<forward name="success" path="Compare"/>
 			</pipe>
 			<pipe name="Compare" className="org.frankframework.pipes.CompareStringPipe">

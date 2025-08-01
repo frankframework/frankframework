@@ -159,14 +159,25 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 	 * Scan the classpath and find the correct resource to use.
 	 * See the UrlLocationComparator for the order.
 	 */
-	private static URL findResource(String filename) throws IOException {
+	@Nullable
+	protected static URL findResource(String filename) throws IOException {
 		ClassLoader cl = Thread.currentThread().getContextClassLoader();
 		List<URL> urls = Collections.list(cl.getResources(filename));
+
+		if (urls.isEmpty()) {
+			LOGGER.debug(LOOKUP, "FrankPropertyLookupProvider did not find any resource named [{}]", filename);
+			return null;
+		}
+		LOGGER.debug(LOOKUP, "FrankPropertyLookupProvider found [{}] resources named [{}]", urls.size(), filename);
+
 		urls.sort(new UrlLocationComparator());
-		return urls.get(0);
+		URL urlToUse = urls.get(0);
+		LOGGER.debug(LOOKUP, "FrankPropertyLookupProvider decided to use resource [{}]", urlToUse);
+		return urlToUse;
 	}
 
-	private static @Nullable Properties getParseProperties(String filename) throws IOException {
+	@Nullable
+	private static Properties getParseProperties(String filename) throws IOException {
 		URL url = findResource(filename);
 
 		if(url != null) {

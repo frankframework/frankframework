@@ -16,6 +16,7 @@
 package org.frankframework.core;
 
 import java.io.IOException;
+import java.lang.ref.Cleaner;
 import java.time.Instant;
 import java.time.temporal.Temporal;
 import java.util.Collections;
@@ -76,13 +77,12 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	public static final String EXIT_STATE_CONTEXT_KEY="exitState";
 	public static final String EXIT_CODE_CONTEXT_KEY="exitCode";
 
-	private ISecurityHandler securityHandler = null;
-
-	private transient PipeLineSessionCloseAction closeAction;
+	private transient ISecurityHandler securityHandler = null;
+	private transient Cleaner.Cleanable cleanable;
 
 	// closeables.keySet is a List of wrapped resources. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
 	// Values are labels to help debugging
-	private final @Getter Set<AutoCloseable> closeables = Collections.synchronizedSet(new HashSet<>()); // needs to be concurrent, closes may happen from other threads
+	private final transient @Getter Set<AutoCloseable> closeables = Collections.synchronizedSet(new HashSet<>()); // needs to be concurrent, closes may happen from other threads
 
 	public PipeLineSession() {
 		super();
@@ -100,8 +100,9 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	}
 
 	private void createCloseAction() {
+  PipeLineSessionCloseAction closeAction;
 		closeAction = new PipeLineSessionCloseAction(this.closeables);
-		CleanerProvider.register(this, closeAction);
+		cleanable = CleanerProvider.CLEANER.register(this, closeAction);
 	}
 
 	public void setExitState(PipeLine.ExitState state, Integer code) {
@@ -242,8 +243,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			return message;
 		}
 		if(obj != null) {
-			Message message = Message.asMessage(obj);
-			return message;
+			return Message.asMessage(obj);
 		}
 		return Message.nullMessage();
 	}
@@ -472,18 +472,14 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		}
 	}
 
-	public boolean isScheduledForCloseOnExit(AutoCloseable message) {
-		return closeables.contains(message);
-	}
-
-	public void unscheduleCloseOnSessionExit(AutoCloseable message) {
-		closeables.remove(message);
+	public void unscheduleCloseOnSessionExit(AutoCloseable resource) {
+		closeables.remove(resource);
 	}
 
 	@Override
 	public void close() {
 		LOG.debug("Closing PipeLineSession");
-		CleanerProvider.clean(closeAction);
+		cleanable.clean();
 	}
 
 	private static class PipeLineSessionCloseAction implements Runnable {

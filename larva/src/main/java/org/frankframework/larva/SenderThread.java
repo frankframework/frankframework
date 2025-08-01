@@ -75,7 +75,6 @@ public class SenderThread extends Thread {
 		try {
 			SenderResult result = sender.sendMessage(request, session);
 			response = (result.getResult() == null) ? Message.nullMessage() : result.getResult();
-			session.unscheduleCloseOnSessionExit(response);
 		} catch(SenderException e) {
 			if (convertExceptionToMessage) {
 				response = throwableToXml(e);

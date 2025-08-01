@@ -145,6 +145,20 @@ jobs:
         name: java${{ env.JDK_VERSION }}_Surefire
         path: ${{ github.workspace }}/*/target/surefire-reports/*
 
+    - name: Store Test Logs
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: java${{ env.JDK_VERSION }}_Logs
+        path: ${{ github.workspace }}/*/target/test-logs/*
+      
+    - name: Store Cypress Results
+      if: failure()
+      uses: actions/upload-artifact@v4
+      with:
+        name: java${{ env.JDK_VERSION }}_Cypress
+        path: ${{ github.workspace }}/*/target/test-classes/e2e/cypress/**
+
     - name: Store FrankDoc XSD
       uses: actions/upload-artifact@v4
       with:

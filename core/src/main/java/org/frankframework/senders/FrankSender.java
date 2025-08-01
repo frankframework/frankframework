@@ -401,9 +401,6 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 				log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
 			}
 
-			// The session-key originalMessage will be set by the InputOutputPipeLineProcessor, which adds it to the auto-closeable session resources list.
-			// The input message should not be managed by this sub-PipelineSession but rather the original pipeline and so it should be removed again.
-			childSession.unscheduleCloseOnSessionExit(message);
 			childSession.mergeToParentSession(getReturnedSessionKeys(), parentSession);
 		}
 	}
