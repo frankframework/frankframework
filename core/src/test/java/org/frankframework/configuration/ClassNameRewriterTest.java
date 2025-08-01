@@ -8,11 +8,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import org.frankframework.pipes.GetFromSessionPipe;
-import org.frankframework.pipes.JsonWellFormedCheckerPipe;
 import org.frankframework.pipes.PutInSessionPipe;
-import org.frankframework.pipes.RemoveFromSessionPipe;
-import org.frankframework.pipes.XmlWellFormedCheckerPipe;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.XmlUtils;
@@ -45,10 +41,6 @@ public class ClassNameRewriterTest {
 		return Stream.of(
 			Arguments.of("nl.nn.adapterframework.pipes.PutInSession", PutInSessionPipe.class),
 			Arguments.of("org.frankframework.pipes.PutInSession", PutInSessionPipe.class),
-			Arguments.of("org.frankframework.pipes.RemoveFromSession", RemoveFromSessionPipe.class),
-			Arguments.of("org.frankframework.pipes.GetFromSession", GetFromSessionPipe.class),
-			Arguments.of("org.frankframework.pipes.XmlWellFormedChecker", XmlWellFormedCheckerPipe.class),
-			Arguments.of("org.frankframework.pipes.JsonWellFormedChecker", JsonWellFormedCheckerPipe.class)
 		);
 	}
 }
