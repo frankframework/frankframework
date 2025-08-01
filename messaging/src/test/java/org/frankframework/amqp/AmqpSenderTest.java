@@ -105,7 +105,7 @@ public abstract class AmqpSenderTest {
 
 		assertNotNull(result);
 
-		AmqpSenderTest.log.error(result);
+		log.info(result);
 
 		String r = new String(result.body());
 
@@ -130,7 +130,7 @@ public abstract class AmqpSenderTest {
 
 		assertNotNull(result);
 
-		AmqpSenderTest.log.error(result);
+		log.info(result);
 
 		String r = result.asString();
 
