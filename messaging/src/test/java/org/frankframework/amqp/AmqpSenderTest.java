@@ -6,8 +6,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.qpid.protonj2.client.Client;
@@ -26,36 +28,63 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderResult;
+import org.frankframework.jdbc.datasource.ResourceObjectLocator;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CloseUtils;
 
 @Log4j2
 public abstract class AmqpSenderTest {
 	private static final String EXCHANGE_NAME = "testExchange";
+	private AmqpConnectionFactory factory;
 	private AmqpSender sender;
 	private PipeLineSession session;
 
 	@BeforeEach
 	void setUp() throws Exception {
+		factory = createAmqpConnectionFactory();
 		sender = new AmqpSender();
 		sender.setQueueName(AmqpSenderTest.EXCHANGE_NAME);
-		sender.setHost(getHost());
-		sender.setPort(getAmqpPort());
-
+		sender.setConnectionName(getResourceName());
+		sender.setConnectionFactory(factory);
 		sender.configure();
 		sender.start();
 
 		session = new PipeLineSession();
 	}
 
-	protected abstract Integer getAmqpPort();
+	protected AmqpConnectionFactory createAmqpConnectionFactory() throws Exception {
 
-	protected abstract String getHost();
+		System.setProperty("amqp.host", getHost());
+		System.setProperty("amqp.port", getAmqpPort().toString());
+
+		ResourceObjectLocator locator = new ResourceObjectLocator();
+		locator.setResourceFile("amqpResources.yml");
+		locator.afterPropertiesSet();
+
+		AmqpConnectionFactory factory = new AmqpConnectionFactory();
+		factory.setObjectLocators(List.of(locator));
+		factory.afterPropertiesSet();
+
+		return factory;
+	}
+
+	protected abstract @Nonnull String getResourceName();
+
+	protected abstract @Nonnull Integer getAmqpPort();
+
+	protected abstract @Nonnull String getHost();
 
 	@AfterEach
 	void tearDown() {
 		CloseUtils.closeSilently(session);
 		sender.stop();
+		System.clearProperty("amqp.host");
+		System.clearProperty("amqp.port");
+		try {
+			factory.destroy();
+		} catch (Exception e) {
+			log.warn("Failed to destroy the connection factory", e);
+		}
 	}
 
 	@ParameterizedTest

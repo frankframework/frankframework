@@ -23,9 +23,7 @@ import java.util.concurrent.TimeUnit;
 
 import jakarta.annotation.Nonnull;
 
-import org.apache.qpid.protonj2.client.Client;
 import org.apache.qpid.protonj2.client.Connection;
-import org.apache.qpid.protonj2.client.ConnectionOptions;
 import org.apache.qpid.protonj2.client.OutputStreamOptions;
 import org.apache.qpid.protonj2.client.Sender;
 import org.apache.qpid.protonj2.client.StreamSender;
@@ -33,6 +31,8 @@ import org.apache.qpid.protonj2.client.StreamSenderMessage;
 import org.apache.qpid.protonj2.client.Tracker;
 import org.apache.qpid.protonj2.client.exceptions.ClientException;
 import org.springframework.util.MimeType;
+
+import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.DestinationType;
@@ -55,14 +55,13 @@ import org.frankframework.util.StreamUtil;
 public class AmqpSender extends AbstractSenderWithParameters implements ISenderWithParameters, HasPhysicalDestination {
 	public static final long DEFAULT_TIMEOUT_SECONDS = 30L;
 
-	private String host;
-	private int port;
+	private String connectionName;
 	private String queueName;
 	private long timeout = DEFAULT_TIMEOUT_SECONDS;
 	private boolean sendStreaming = false;
 	private boolean durable = true;
 
-	private Client container;
+	private @Setter AmqpConnectionFactory connectionFactory;
 	private Connection connection;
 	private Sender sender;
 	private StreamSender streamSender;
@@ -71,19 +70,16 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	public void configure() throws ConfigurationException {
 		super.configure();
 
+		if (connectionFactory == null) {
+			throw new ConfigurationException("ConnectionFactory is null");
+		}
 	}
 
 	@Override
 	public void start() {
 		super.start();
-		container = Client.create();
 		try {
-			// TODO: Auth & Connection Factory from resources.yaml
-			ConnectionOptions options = new ConnectionOptions();
-//			options.user("admin");
-//			options.password("admin");
-
-			connection = container.connect(host, port, options);
+			connection = connectionFactory.getConnection(connectionName);
 			sender = connection.openSender(queueName);
 			streamSender = connection.openStreamSender(queueName);
 		} catch (ClientException e) {
@@ -93,13 +89,13 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 
 	@Override
 	public void stop() {
-		CloseUtils.closeSilently(sender, streamSender, connection, container);
+		CloseUtils.closeSilently(sender, streamSender, connection);
 		super.stop();
 	}
 
 	@Override
 	public String getPhysicalDestinationName() {
-		return "amqp://%s:%d/%s".formatted(host, port, queueName);
+		return connectionName;
 	}
 
 	@Nonnull
@@ -173,18 +169,8 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		}
 	}
 
-	/**
-	 * Set the address of the remote host
-	 */
-	public void setHost(String host) {
-		this.host = host;
-	}
-
-	/**
-	 * Set the port on which to connect to the remote host
-	 */
-	public void setPort(int port) {
-		this.port = port;
+	public void setConnectionName(String connectionName) {
+		this.connectionName = connectionName;
 	}
 
 	/**
