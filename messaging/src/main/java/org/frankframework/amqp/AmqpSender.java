@@ -42,6 +42,7 @@ import org.springframework.util.MimeType;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.DestinationType;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ISenderWithParameters;
@@ -98,10 +99,16 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 				offeredCapabilities = List.of();
 			}
 			log.info("AMPQ Connection Created, server offers capabilities: {}", offeredCapabilities);
+			log.info("AMQP Server Properties: {}", connection.properties());
+
 			SenderOptions senderOptions = new SenderOptions();
 			senderOptions.deliveryMode(deliveryMode);
 			if (messageProtocol == MessageProtocol.RR) {
 				senderOptions.targetOptions().capabilities("queue");
+
+				if ("RabbitMQ".equals(connection.properties().get("product"))) {
+					ConfigurationWarnings.add(this, log, "RabbitMQ does not support dynamic request-reply queues");
+				}
 			}
 			sender = connection.openSender(queueName, senderOptions);
 
