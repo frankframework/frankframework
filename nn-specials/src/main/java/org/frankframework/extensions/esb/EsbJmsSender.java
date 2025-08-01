@@ -22,6 +22,7 @@ import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.doc.Category;
+import org.frankframework.extensions.messaging.MessageProtocol;
 import org.frankframework.jms.JmsSender;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.util.SpringUtils;
@@ -35,13 +36,6 @@ import org.frankframework.util.SpringUtils;
  */
 @Category(Category.Type.NN_SPECIAL)
 public class EsbJmsSender extends JmsSender {
-
-	public enum MessageProtocol {
-		/** Fire &amp; Forget protocol */
-		FF,
-		/** Request-Reply protocol */
-		RR
-	}
 
 	private @Getter MessageProtocol messageProtocol = null;
 	private @Getter long timeout = 20_000;

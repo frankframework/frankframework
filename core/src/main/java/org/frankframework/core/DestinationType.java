@@ -33,6 +33,6 @@ public @interface DestinationType {
 	Type value();
 
 	enum Type {
-		HTTP, MQTT, JVM, ADAPTER, CMIS, KAFKA, IDIN, JDBC, JMS, MONGODB, MAIL, SAP, FILE_SYSTEM;
+		HTTP, AMQP, MQTT, JVM, ADAPTER, CMIS, KAFKA, IDIN, JDBC, JMS, MONGODB, MAIL, SAP, FILE_SYSTEM;
 	}
 }

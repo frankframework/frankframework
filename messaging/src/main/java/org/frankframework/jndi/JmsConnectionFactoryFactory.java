@@ -29,7 +29,6 @@ import org.frankframework.util.StringUtil;
  * A factory for creating JMS ConnectionFactory objects.
  */
 public class JmsConnectionFactoryFactory extends ObjectFactory<ConnectionFactory, ConnectionFactory> implements IConnectionFactoryFactory {
-	public static final String CLOSE = "], ";
 
 	public JmsConnectionFactoryFactory() {
 		super(ConnectionFactory.class, "jms", "Connection Factories");
