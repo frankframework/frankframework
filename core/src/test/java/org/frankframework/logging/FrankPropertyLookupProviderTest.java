@@ -35,6 +35,16 @@ public class FrankPropertyLookupProviderTest {
 	}
 
 	@Test
+	public void returnsNullWhenCannotFindFile() throws IOException {
+		assertNull(FrankPropertyLookupProvider.findResource("does-not-exist.properties"));
+	}
+
+	@Test
+	public void returnsURL() throws IOException {
+		assertNotNull(FrankPropertyLookupProvider.findResource("DeploymentSpecifics.properties"));
+	}
+
+	@Test
 	public void dockerClassPath() throws MalformedURLException {
 		List<URL> urls = new ArrayList<>();
 		urls.add(new URL("jar:file:/usr/local/tomcat/webapps/ROOT/WEB-INF/lib/ibis-adapterframework-core-7.9.6.jar!/log4j4ibis.properties"));

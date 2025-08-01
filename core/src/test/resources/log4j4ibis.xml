@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<log4j2:Configuration xmlns:log4j2="log4j-config.xsd" name="${ff:instance.name}-test">
+<log4j2:Configuration status="DEBUG" name="${ff:instance.name}-test" strict="true" xmlns="http://logging.apache.org/log4j/2.0/config" xmlns:log4j2="log4j-config.xsd">
 	<Appenders>
 		<Console name="stdout">
 			<PatternLayout pattern="%d{HH:mm:ss,SSS} %-5p %C{1}.%M():%L%x %m%n"/>
