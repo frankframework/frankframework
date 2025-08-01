@@ -1,0 +1,16 @@
+<configuration>
+	<adapter description="Test the functioning of the old namespaces and pipe name rewrite" name="rewritePipeName">
+		<receiver>
+			<listener className="org.frankframework.receivers.JavaListener" name="dummy"/>
+		</receiver>
+		<pipeline>
+			<exit name="EXIT" state="SUCCESS"/>
+			<pipe className="org.frankframework.pipes.PutInSessionPipe" name="one" sessionKey="uno" value="1"/>
+			<pipe className="org.frankframework.pipes.PutInSessionPipe" name="two" sessionKey="dos" value="2"/>
+			<pipe className="org.frankframework.pipes.PutInSessionPipe" name="three" sessionKey="tres" value="3"/>
+			<pipe className="org.frankframework.pipes.EchoPipe" name="old-namespace"/>
+			<pipe className="org.frankframework.pipes.EchoPipe" name="new-namespace"/>
+			<pipe className="org.frankframework.pipes.EchoPipe" name="new-type"/>
+		</pipeline>
+	</adapter>
+</configuration>
