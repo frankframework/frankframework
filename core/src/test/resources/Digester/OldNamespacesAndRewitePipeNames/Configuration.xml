@@ -1,0 +1,27 @@
+<Configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd"
+	>
+	<Adapter name="rewritePipeName" description="Test the functioning of the old namespaces and pipe name rewrite">
+		<receiver>
+			<JavaListener name="dummy"/>
+		</receiver>
+		<Pipeline>
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" />
+			</Exits>
+
+			<!-- target, should not be rewritten -->
+			<pipe className="org.frankframework.pipes.PutInSession" name="one" value="1" sessionKey="uno" />
+
+			<!-- should be rewritten to use new namespace THEN to PutInSessionPipe -->
+			<pipe className="nl.nn.adapterframework.pipes.PutInSession" name="two" value="2" sessionKey="dos" />
+
+			<!-- should be rewritten to `org.frankframework.pipes.PutInSession` -->
+			<PutInSessionPipe name="three" value="3" sessionKey="tres" />
+
+			<Pipe className="nl.nn.adapterframework.pipes.EchoPipe" name="old-namespace" />
+			<Pipe className="org.frankframework.pipes.EchoPipe" name="new-namespace" />
+			<EchoPipe name="new-type" />
+		</Pipeline>
+	</Adapter>
+</Configuration>

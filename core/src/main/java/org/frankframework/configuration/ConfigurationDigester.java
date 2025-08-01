@@ -106,7 +106,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 
 	private final boolean suppressValidationWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.CONFIGURATION_VALIDATION.getKey(), false);
 
-	private class XmlErrorHandler implements ErrorHandler  {
+	private class XmlErrorHandler implements ErrorHandler {
 		private final String schema;
 		public XmlErrorHandler(String schema) {
 			this.schema = schema;
@@ -222,9 +222,9 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		handler = new OnlyActiveFilter(handler, properties);
 		handler = new ElementPropertyResolver(handler, properties);
 
-		boolean rewriteLegacyClassNames = properties.getBoolean(MIGRATION_REWRITE_LEGACY_CLASS_NAMES_KEY, false);
+		boolean rewriteLegacyClassNames = properties.getBoolean(MIGRATION_REWRITE_LEGACY_CLASS_NAMES_KEY, true);
 		if (rewriteLegacyClassNames) {
-			handler = new ClassNameRewriter(handler);
+			handler = new ClassNameRewriter(handler, applicationContext);
 		}
 
 		XmlWriter originalConfigWriter = new XmlWriter();
