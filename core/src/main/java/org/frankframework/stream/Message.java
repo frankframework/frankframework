@@ -68,7 +68,6 @@ import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.CleanerProvider;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamCaptureUtils;
@@ -84,7 +83,6 @@ public class Message implements Serializable, Closeable {
 	private static final Logger LOG = LogManager.getLogger(Message.class);
 
 	private static final @Serial long serialVersionUID = 437863352486501445L;
-	private transient MessageNotClosedAction messageNotClosedAction;
 
 	private @Nullable Object request;
 	private @Getter @Nonnull String requestClass;
@@ -105,13 +103,6 @@ public class Message implements Serializable, Closeable {
 		}
 		this.context = context;
 		this.requestClass = requestClass != null ? ClassUtils.nameOf(requestClass) : ClassUtils.nameOf(request);
-
-		if (request != null) {
-			messageNotClosedAction = new MessageNotClosedAction();
-			CleanerProvider.register(this, messageNotClosedAction);
-		} else {
-			messageNotClosedAction = null;
-		}
 	}
 
 	private Message(@Nonnull MessageContext context, Object request) {
@@ -197,13 +188,6 @@ public class Message implements Serializable, Closeable {
 	@Nonnull
 	public MessageContext copyContext() {
 		return new MessageContext(getContext());
-	}
-
-	private static class MessageNotClosedAction implements Runnable {
-		@Override
-		public void run() {
-			// No-op for now
-		}
 	}
 
 	/**
@@ -386,7 +370,6 @@ public class Message implements Serializable, Closeable {
 		request = null;
 		CloseUtils.closeSilently(resourcesToClose);
 		closed = true;
-		CleanerProvider.clean(messageNotClosedAction);
 	}
 
 	private void closeOnClose(@Nonnull AutoCloseable resource) {
@@ -925,9 +908,6 @@ public class Message implements Serializable, Closeable {
 			contextFromStream = new MessageContext().withCharset(charset);
 		}
 		context = contextFromStream;
-		// Register the message for cleaning later
-		messageNotClosedAction = new MessageNotClosedAction();
-		CleanerProvider.register(this, messageNotClosedAction);
 	}
 
 	public void assertNotClosed() {
