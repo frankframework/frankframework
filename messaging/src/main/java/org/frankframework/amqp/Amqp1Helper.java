@@ -52,7 +52,7 @@ public class Amqp1Helper {
 			StreamDelivery delivery = receiver.receive(5, TimeUnit.SECONDS);
 			if (delivery != null) {
 				StreamReceiverMessage amqpMessage = delivery.message();
-				Message ffMessage = createFFMessage(amqpMessage);
+				Message ffMessage = convertAmqpMessageToFFMessage(amqpMessage);
 				delivery.accept();
 				return ffMessage;
 			}
@@ -62,7 +62,7 @@ public class Amqp1Helper {
 	}
 
 	@Nonnull
-	private static Message createFFMessage(@Nonnull org.apache.qpid.protonj2.client.Message<?> amqpMessage) throws IOException, ClientException {
+	public static Message convertAmqpMessageToFFMessage(@Nonnull org.apache.qpid.protonj2.client.Message<?> amqpMessage) throws IOException, ClientException {
 		Object body = amqpMessage.body();
 		Message result;
 		if (body instanceof InputStream is) {
@@ -94,7 +94,7 @@ public class Amqp1Helper {
 			Delivery delivery = receiver.receive(5, TimeUnit.SECONDS);
 			if (delivery != null) {
 				org.apache.qpid.protonj2.client.Message<Object> amqpMessage = delivery.message();
-				Message ffMessage = createFFMessage(amqpMessage);
+				Message ffMessage = convertAmqpMessageToFFMessage(amqpMessage);
 				delivery.accept();
 				return ffMessage;
 			}

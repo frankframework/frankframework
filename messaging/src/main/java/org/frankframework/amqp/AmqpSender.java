@@ -19,13 +19,17 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.Charset;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.apache.qpid.protonj2.client.Connection;
+import org.apache.qpid.protonj2.client.Delivery;
 import org.apache.qpid.protonj2.client.DeliveryMode;
 import org.apache.qpid.protonj2.client.OutputStreamOptions;
+import org.apache.qpid.protonj2.client.Receiver;
 import org.apache.qpid.protonj2.client.Sender;
 import org.apache.qpid.protonj2.client.SenderOptions;
 import org.apache.qpid.protonj2.client.StreamSender;
@@ -46,6 +50,7 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Category;
+import org.frankframework.extensions.messaging.MessageProtocol;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.senders.AbstractSenderWithParameters;
 import org.frankframework.stream.Message;
@@ -61,9 +66,10 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	private String connectionName;
 	private String queueName;
 	private long timeout = DEFAULT_TIMEOUT_SECONDS;
-	private boolean sendStreaming = false;
+	private boolean streamingMessages = false;
 	private boolean durable = true;
 	private DeliveryMode deliveryMode = DeliveryMode.AT_LEAST_ONCE;
+	private MessageProtocol messageProtocol = MessageProtocol.FF;
 
 	private @Setter AmqpConnectionFactory connectionFactory;
 	private Connection connection;
@@ -85,8 +91,18 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		try {
 			connection = connectionFactory.getConnection(connectionName);
 
+			List<String> offeredCapabilities;
+			if (connection.offeredCapabilities() != null) {
+				offeredCapabilities = List.of(connection.offeredCapabilities());
+			} else {
+				offeredCapabilities = List.of();
+			}
+			log.info("AMPQ Connection Created, server offers capabilities: {}", offeredCapabilities);
 			SenderOptions senderOptions = new SenderOptions();
 			senderOptions.deliveryMode(deliveryMode);
+			if (messageProtocol == MessageProtocol.RR) {
+				senderOptions.targetOptions().capabilities("queue");
+			}
 			sender = connection.openSender(queueName, senderOptions);
 
 			StreamSenderOptions streamSenderOptions = new StreamSenderOptions();
@@ -111,21 +127,55 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	@Nonnull
 	@Override
 	public SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
-		if (sendStreaming) {
-			sendStreamingMessage(message);
+		SenderResult senderResult;
+		if (messageProtocol == MessageProtocol.FF) {
+			senderResult = sendFireForget(message);
 		} else {
-			sendBinaryMessage(message);
+			senderResult = sendRequestResponse(message);
 		}
-		SenderResult senderResult = new SenderResult("");
 		return senderResult;
 	}
 
-	private void sendBinaryMessage(@Nonnull Message message) throws SenderException, TimeoutException {
+	@Nonnull
+	private SenderResult sendFireForget(@Nonnull Message message) throws SenderException, TimeoutException {
+		doSend(message, null);
+		return new SenderResult("");
+	}
+
+	@Nonnull
+	private SenderResult sendRequestResponse(@Nonnull Message message) throws SenderException {
+		Message responseMessage;
+		// It seems that dynamic receivers cannot be streaming?
+		try (Receiver dynamicReceiver = connection.openDynamicReceiver()) {
+			String dynamicReplyAddress = dynamicReceiver.address();
+			doSend(message, dynamicReplyAddress);
+			Delivery response = dynamicReceiver.receive(timeout, TimeUnit.SECONDS);
+			if (response == null) {
+				responseMessage = Message.nullMessage();
+			} else {
+				responseMessage = Amqp1Helper.convertAmqpMessageToFFMessage(response.message());
+				response.accept();
+			}
+		} catch (ClientException | TimeoutException | IOException e) {
+			throw new SenderException("Error sending request/response message", e);
+		}
+		return new SenderResult(responseMessage);
+	}
+
+	private void doSend(Message message, String dynamicReplyAddress) throws SenderException, TimeoutException {
+		if (streamingMessages) {
+			sendStreamingMessage(message, dynamicReplyAddress);
+		} else {
+			sendBinaryMessage(message, dynamicReplyAddress);
+		}
+	}
+
+	private void sendBinaryMessage(@Nonnull Message message, @Nullable String replyAddress) throws SenderException, TimeoutException {
 		org.apache.qpid.protonj2.client.Message<byte[]> amqpMessage;
 		try {
 			amqpMessage = org.apache.qpid.protonj2.client.Message.create(message.asByteArray());
-			applyContentOptions(message, amqpMessage);
-			amqpMessage.durable(durable);
+			applyMessageMetaData(message, amqpMessage);
+			applyMessageOptions(amqpMessage, replyAddress);
 		} catch (IOException | ClientException e) {
 			throw new SenderException("Cannot create AMQP message", e);
 		}
@@ -140,7 +190,14 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		}
 	}
 
-	private static void applyContentOptions(@Nonnull Message message, org.apache.qpid.protonj2.client.Message<?> amqpMessage) throws ClientException, IOException {
+	private void applyMessageOptions(@Nonnull org.apache.qpid.protonj2.client.Message<?> amqpMessage, @Nullable String replyAddress) throws ClientException {
+		amqpMessage.durable(durable);
+		if (replyAddress != null) {
+			amqpMessage.replyTo(replyAddress);
+		}
+	}
+
+	private static void applyMessageMetaData(@Nonnull Message message, org.apache.qpid.protonj2.client.Message<?> amqpMessage) throws ClientException, IOException {
 		MimeType mimeType = MessageUtils.computeMimeType(message);
 		if (mimeType != null) {
 			amqpMessage.contentType(mimeType.toString());
@@ -153,11 +210,11 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		}
 	}
 
-	private void sendStreamingMessage(@Nonnull Message message) throws SenderException {
+	private void sendStreamingMessage(@Nonnull Message message, @Nullable String replyAddress) throws SenderException {
 		try {
 			StreamSenderMessage streamSenderMessage = streamSender.beginMessage();
-			applyContentOptions(message, streamSenderMessage);
-			streamSenderMessage.durable(durable);
+			applyMessageMetaData(message, streamSenderMessage);
+			applyMessageOptions(streamSenderMessage, replyAddress);
 			OutputStreamOptions outputStreamOptions = new OutputStreamOptions();
 			if (!message.isEmpty() && message.size() <= Integer.MAX_VALUE) {
 				outputStreamOptions.bodyLength(Math.toIntExact(message.size()));
@@ -199,8 +256,8 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		this.queueName = queueName;
 	}
 
-	public void setSendStreaming(boolean sendStreaming) {
-		this.sendStreaming = sendStreaming;
+	public void setStreamingMessages(boolean streamingMessages) {
+		this.streamingMessages = streamingMessages;
 	}
 
 	public void setDurable(boolean durable) {
@@ -214,5 +271,15 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	 */
 	public void setDeliveryMode(DeliveryMode deliveryMode) {
 		this.deliveryMode = deliveryMode;
+	}
+
+	/**
+	 * Send message as Fire-and-Forget, or as Request-Reply
+	 * @param messageProtocol {@literal FF} for Fire-and-Forget, or {@literal RR} for Request-Reply.
+	 *
+	 * @ff.default {@literal FF}
+	 */
+	public void setMessageProtocol(MessageProtocol messageProtocol) {
+		this.messageProtocol = messageProtocol;
 	}
 }
