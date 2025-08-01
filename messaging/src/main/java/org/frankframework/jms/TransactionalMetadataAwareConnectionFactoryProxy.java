@@ -22,6 +22,7 @@ import jakarta.jms.Connection;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.ConnectionMetaData;
 import jakarta.jms.JMSException;
+import jakarta.jms.XAConnectionFactory;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy;
@@ -61,6 +62,7 @@ public class TransactionalMetadataAwareConnectionFactoryProxy extends Transactio
 		databaseMetadata.put("version", md.getJMSVersion());
 		databaseMetadata.put("provider-name", md.getJMSProviderName());
 		databaseMetadata.put("provider-version", md.getProviderVersion());
+		databaseMetadata.put("XA", String.valueOf(getTargetConnectionFactory() instanceof XAConnectionFactory));
 
 		metadata = databaseMetadata;
 	}
@@ -100,6 +102,7 @@ public class TransactionalMetadataAwareConnectionFactoryProxy extends Transactio
 			info.append("version [").append(metadata.get("version")).append(CLOSE);
 			info.append("provider-name [").append(metadata.get("provider-name")).append(CLOSE);
 			info.append("provider-version [").append(metadata.get("provider-version")).append(CLOSE);
+			info.append("XA-enabled [").append(metadata.get("XA")).append(CLOSE);
 		}
 
 		info.append(reflectionToString());

@@ -60,13 +60,14 @@ export class ConnectionInterceptor implements HttpInterceptor {
       return;
     }
 
-    if (appConstants['init'] == 1) {
+    // TODO this should be the appInitState..
+    if (appConstants['init'] == '1') {
       if (error.headers.get('Authorization') == undefined) {
         this.toastsService.error('Failed to connect to backend!');
       } else {
         console.warn('Authorization error');
       }
-    } else if (appConstants['init'] == 2) {
+    } else if (appConstants['init'] == '2') {
       console.warn('Connection to the server was lost!');
       this.errorCount++;
       if (this.errorCount > 2) {
