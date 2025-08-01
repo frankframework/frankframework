@@ -48,6 +48,7 @@ import org.frankframework.senders.AbstractSenderWithParameters;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.MessageUtils;
+import org.frankframework.util.StreamUtil;
 
 @Category(Category.Type.EXPERIMENTAL)
 @DestinationType(DestinationType.Type.AMQP)
@@ -59,6 +60,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	private String queueName;
 	private long timeout = DEFAULT_TIMEOUT_SECONDS;
 	private boolean sendStreaming = false;
+	private boolean durable = true;
 
 	private Client container;
 	private Connection connection;
@@ -117,6 +119,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		try {
 			amqpMessage = org.apache.qpid.protonj2.client.Message.create(message.asByteArray());
 			applyContentOptions(message, amqpMessage);
+			amqpMessage.durable(durable);
 		} catch (IOException | ClientException e) {
 			throw new SenderException("Cannot create AMQP message", e);
 		}
@@ -139,6 +142,8 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		Charset charset = MessageUtils.computeDecodingCharset(message);
 		if (charset != null) {
 			amqpMessage.contentEncoding(charset.toString());
+		} else if (!message.isBinary()) {
+			amqpMessage.contentEncoding(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 		}
 	}
 
@@ -146,7 +151,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		try {
 			StreamSenderMessage streamSenderMessage = streamSender.beginMessage();
 			applyContentOptions(message, streamSenderMessage);
-			streamSenderMessage.durable(true);
+			streamSenderMessage.durable(durable);
 			OutputStreamOptions outputStreamOptions = new OutputStreamOptions();
 			if (!message.isEmpty() && message.size() <= Integer.MAX_VALUE) {
 				outputStreamOptions.bodyLength(Math.toIntExact(message.size()));
@@ -200,5 +205,9 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 
 	public void setSendStreaming(boolean sendStreaming) {
 		this.sendStreaming = sendStreaming;
+	}
+
+	public void setDurable(boolean durable) {
+		this.durable = durable;
 	}
 }
