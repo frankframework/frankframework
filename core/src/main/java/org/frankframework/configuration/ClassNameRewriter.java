@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,9 @@
 */
 package org.frankframework.configuration;
 
+import java.util.List;
+
+import org.springframework.context.ApplicationContext;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -31,31 +34,73 @@ public class ClassNameRewriter extends FullXmlFilter {
 	public static final String ORG_FRANKFRAMEWORK_PACKAGE_NAME = "org.frankframework.";
 	public static final String CLASS_NAME_ATTRIBUTE = "className";
 
-	public ClassNameRewriter(ContentHandler handler) {
+	private static final List<String> OLD_IMPLICIT_CLASSNAMES = List.of("org.frankframework.pipes.PutInSession");
+
+	private final ConfigurationWarnings configWarning;
+
+	public ClassNameRewriter(ContentHandler handler, ApplicationContext applicationContext) {
 		super(handler);
+
+		if (applicationContext != null && applicationContext.containsBean("configurationWarnings")) {
+			configWarning = applicationContext.getBean("configurationWarnings", ConfigurationWarnings.class);
+		} else {
+			configWarning = null;
+		}
 	}
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
 		WritableAttributes writableAttributes = new WritableAttributes(attributes);
 		String className = writableAttributes.getValue(CLASS_NAME_ATTRIBUTE);
-		if (className != null && (className.startsWith(LEGACY_PACKAGE_NAME))) {
+
+		if (className != null && (className.startsWith(LEGACY_PACKAGE_NAME) || OLD_IMPLICIT_CLASSNAMES.contains(className))) {
 			writableAttributes.setValue(CLASS_NAME_ATTRIBUTE, rewriteClassName(className));
 		}
+
 		super.startElement(uri, localName, qName, writableAttributes);
 	}
 
-	private static String rewriteClassName(final String originalClassName) {
-		final String newClassName = originalClassName.replace(LEGACY_PACKAGE_NAME, ORG_FRANKFRAMEWORK_PACKAGE_NAME);
+	private String rewriteClassName(final String originalClassName) {
+		final String newClassName = addElementSuffix(rewritePackageName(originalClassName));
+
 		if (canLoadClass(newClassName)) {
-			log.debug("Replaced classname [{}] in configuration with classname [{}]", originalClassName, newClassName);
 			return newClassName;
 		}
 		if (!canLoadClass(originalClassName)) {
-			log.warn("Cannot load class [{}] from configuration. Please check if this was a deprecated class removed in this release, or if it's a custom class that needs to be reworked.", originalClassName);
+			addDeprecationWarning("Cannot load class [%s] from configuration. Please check if this was a deprecated class removed in this release, or if it's a custom class that needs to be reworked.".formatted(originalClassName));
 		} else {
 			log.debug("Cannot load a class named [{}], will build configuration with original classname [{}]", newClassName, originalClassName);
 		}
+		return originalClassName;
+	}
+
+	private void addDeprecationWarning(String message) {
+		if (configWarning == null) {
+			log.warn(message);
+		} else {
+			configWarning.add((Object) null, log, message, SuppressKeys.DEPRECATION_SUPPRESS_KEY, null);
+		}
+	}
+
+	private static String rewritePackageName(String originalClassName) {
+		if (originalClassName.startsWith(LEGACY_PACKAGE_NAME)) {
+			String newClassName = originalClassName.replace(LEGACY_PACKAGE_NAME, ORG_FRANKFRAMEWORK_PACKAGE_NAME);
+			log.debug("Replaced classname [{}] in configuration with classname [{}]", originalClassName, newClassName);
+
+			return newClassName;
+		}
+
+		return originalClassName;
+	}
+
+	private String addElementSuffix(String originalClassName) {
+		if (OLD_IMPLICIT_CLASSNAMES.contains(originalClassName)) {
+			String newClassName = "%sPipe".formatted(originalClassName);
+			addDeprecationWarning("[%s] has been renamed to [%s]. Please use the new syntax or change the className attribute.".formatted(originalClassName, newClassName));
+
+			return newClassName;
+		}
+
 		return originalClassName;
 	}
 

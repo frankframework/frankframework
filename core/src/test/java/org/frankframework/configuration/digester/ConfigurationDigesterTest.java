@@ -203,6 +203,31 @@ public class ConfigurationDigesterTest {
 	}
 
 	@Test
+	public void testDigestConfigWithOldNamespace() throws Exception {
+		Configuration configuration = new TestConfiguration();
+		ConfigurationDigester digester = SpringUtils.createBean(configuration);
+
+		XmlWriter writer = new XmlWriter();
+		Resource resource = Resource.getResource("/Digester/OldNamespacesAndRewitePipeNames/Configuration.xml");
+		String expectedConfig = TestFileUtils.getTestFile("/Digester/OldNamespacesAndRewitePipeNames/Configuration-result.xml");
+		PropertyLoader properties = new PropertyLoader("Digester/ConfigurationDigesterTest.properties");
+
+		// Act
+		digester.parseAndResolveEntitiesAndProperties(writer, configuration, resource, properties);
+
+		// Assert
+		String result = writer.toString();
+		MatchUtils.assertXmlEquals(expectedConfig, result);
+
+		List<String> warnings = configuration.getConfigurationWarnings().getWarnings();
+		assertFalse(warnings.isEmpty());
+		String expected = "[org.frankframework.pipes.PutInSession] has been renamed to [org.frankframework.pipes.PutInSessionPipe]."
+				+ " Please use the new syntax or change the className attribute.";
+		assertEquals(expected, warnings.get(0));
+
+	}
+
+	@Test
 	public void stub4testtoolTest() throws Exception {
 		String baseDirectory = "/ConfigurationUtils/stub4testtool/FullAdapter";
 
