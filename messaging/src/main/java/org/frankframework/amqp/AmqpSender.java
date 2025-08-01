@@ -24,10 +24,13 @@ import java.util.concurrent.TimeUnit;
 import jakarta.annotation.Nonnull;
 
 import org.apache.qpid.protonj2.client.Connection;
+import org.apache.qpid.protonj2.client.DeliveryMode;
 import org.apache.qpid.protonj2.client.OutputStreamOptions;
 import org.apache.qpid.protonj2.client.Sender;
+import org.apache.qpid.protonj2.client.SenderOptions;
 import org.apache.qpid.protonj2.client.StreamSender;
 import org.apache.qpid.protonj2.client.StreamSenderMessage;
+import org.apache.qpid.protonj2.client.StreamSenderOptions;
 import org.apache.qpid.protonj2.client.Tracker;
 import org.apache.qpid.protonj2.client.exceptions.ClientException;
 import org.springframework.util.MimeType;
@@ -60,6 +63,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	private long timeout = DEFAULT_TIMEOUT_SECONDS;
 	private boolean sendStreaming = false;
 	private boolean durable = true;
+	private DeliveryMode deliveryMode = DeliveryMode.AT_LEAST_ONCE;
 
 	private @Setter AmqpConnectionFactory connectionFactory;
 	private Connection connection;
@@ -80,8 +84,14 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		super.start();
 		try {
 			connection = connectionFactory.getConnection(connectionName);
-			sender = connection.openSender(queueName);
-			streamSender = connection.openStreamSender(queueName);
+
+			SenderOptions senderOptions = new SenderOptions();
+			senderOptions.deliveryMode(deliveryMode);
+			sender = connection.openSender(queueName, senderOptions);
+
+			StreamSenderOptions streamSenderOptions = new StreamSenderOptions();
+			streamSenderOptions.deliveryMode(deliveryMode);
+			streamSender = connection.openStreamSender(queueName, streamSenderOptions);
 		} catch (ClientException e) {
 			throw new LifecycleException("Cannot create connection to AMQP server", e);
 		}
@@ -195,5 +205,14 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 
 	public void setDurable(boolean durable) {
 		this.durable = durable;
+	}
+
+	/**
+	 * DeliveryMode: {@literal AT_LEAST_ONCE} or {@literal AT_MOST_ONCE}.
+	 *
+	 * @ff.default {@literal AT_LEAST_ONCE}
+	 */
+	public void setDeliveryMode(DeliveryMode deliveryMode) {
+		this.deliveryMode = deliveryMode;
 	}
 }

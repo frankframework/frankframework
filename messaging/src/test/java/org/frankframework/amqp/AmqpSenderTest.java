@@ -7,17 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-import org.apache.qpid.protonj2.client.Client;
-import org.apache.qpid.protonj2.client.Connection;
-import org.apache.qpid.protonj2.client.Delivery;
-import org.apache.qpid.protonj2.client.Receiver;
-import org.apache.qpid.protonj2.client.StreamDelivery;
-import org.apache.qpid.protonj2.client.StreamReceiver;
 import org.apache.qpid.protonj2.client.exceptions.ClientException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -101,14 +94,11 @@ public abstract class AmqpSenderTest {
 		assertTrue(senderResult.isSuccess());
 
 		// Check message on queue
-		org.apache.qpid.protonj2.client.Message<byte[]> result = getMessage(AmqpSenderTest.EXCHANGE_NAME);
+		Message result = getMessage(AmqpSenderTest.EXCHANGE_NAME);
 
 		assertNotNull(result);
-
 		log.info(result);
-
-		String r = new String(result.body());
-
+		String r = result.asString();
 		assertEquals("test", r);
 	}
 
@@ -129,37 +119,16 @@ public abstract class AmqpSenderTest {
 		Message result = getStreamingMessage(AmqpSenderTest.EXCHANGE_NAME);
 
 		assertNotNull(result);
-
 		log.info(result);
-
 		String r = result.asString();
-
 		assertEquals("test", r);
 	}
 
-	protected @Nullable org.apache.qpid.protonj2.client.Message<byte[]> getMessage(String queueName) throws ClientException {
-		try (Client client = Client.create();
-			 Connection connection = client.connect(getHost(), getAmqpPort());
-			 Receiver receiver = connection.openReceiver(queueName)) {
-			Delivery delivery = receiver.receive(5, TimeUnit.SECONDS);
-			if (delivery != null) {
-				return delivery.message();
-			}
-			AmqpSenderTest.log.error("Could not get message from queue [{}]", queueName);
-		}
-		return null;
+	protected @Nullable Message getMessage(String queueName) throws ClientException, IOException {
+		return Amqp1Helper.getMessage(factory, getResourceName(), queueName);
 	}
 
 	protected @Nullable Message getStreamingMessage(String queueName) throws ClientException, IOException {
-		try (Client client = Client.create();
-			 Connection connection = client.connect(getHost(), getAmqpPort());
-			 StreamReceiver receiver = connection.openStreamReceiver(queueName)) {
-			StreamDelivery delivery = receiver.receive(5, TimeUnit.SECONDS);
-			if (delivery != null) {
-				return new Message(delivery.message().body());
-			}
-			AmqpSenderTest.log.error("Could not get streaming message from queue [{}]", queueName);
-		}
-		return null;
+		return Amqp1Helper.getStreamingMessage(factory, getResourceName(),  queueName);
 	}
 }
