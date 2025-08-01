@@ -40,7 +40,7 @@ public class ClassNameRewriterTest {
 	public static Stream<Arguments> testImplicitClassName() {
 		return Stream.of(
 			Arguments.of("nl.nn.adapterframework.pipes.PutInSession", PutInSessionPipe.class),
-			Arguments.of("org.frankframework.pipes.PutInSession", PutInSessionPipe.class),
+			Arguments.of("org.frankframework.pipes.PutInSession", PutInSessionPipe.class)
 		);
 	}
 }
