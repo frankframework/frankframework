@@ -29,7 +29,7 @@ module.exports = {
         'unicorn/consistent-function-scoping': [
           'error',
           {
-            checkArrowFunctions: 'false',
+            checkArrowFunctions: false,
           },
         ],
       },
