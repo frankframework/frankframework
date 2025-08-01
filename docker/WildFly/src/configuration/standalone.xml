@@ -55,6 +55,7 @@
 		<property name="scenariosroot1.description" value="embedded testtool directory /opt/frank/testtool"/>
 		<property name="scenariosroot2.directory" value="/opt/frank/testtool-ext"/>
 		<property name="scenariosroot2.description" value="external testtool directory /opt/frank/testtool-ext"/>
+		<property name="ibistesttool.directory" value="/opt/frank/testtool"/>
 	</system-properties>
 	<!-- End of Framework properties -->
 	<management>

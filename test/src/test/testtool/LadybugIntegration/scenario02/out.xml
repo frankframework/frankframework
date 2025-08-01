@@ -1,0 +1,9 @@
+<Results>
+	<Result>
+		<Path/>
+		<Name>Pipeline MainConfig_EchoPipe</Name>
+		<OriginalDuration>2</OriginalDuration>
+		<Duration>1</Duration>
+		<Equal>true</Equal>
+	</Result>
+</Results>
