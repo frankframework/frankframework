@@ -288,10 +288,6 @@ public class IbisLocalSender extends AbstractSenderWithParameters implements Has
 				if (StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
 				}
-
-				// The original message will be set by the InputOutputPipeLineProcessor, which add it to the autocloseables list.
-				// The input message should not be managed by this sub-PipelineSession but rather the original pipeline
-				subAdapterSession.unscheduleCloseOnSessionExit(message);
 				subAdapterSession.mergeToParentSession(getReturnedSessionKeys(), session);
 			}
 
