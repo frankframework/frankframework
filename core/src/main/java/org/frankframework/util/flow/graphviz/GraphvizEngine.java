@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020, 2022 WeAreFrank!
+   Copyright 2018-2020, 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.frankframework.util.flow.graphviz;
 
 import java.io.IOException;
+import java.lang.ref.Cleaner;
 import java.net.URL;
 import java.util.Arrays;
 
@@ -48,7 +49,7 @@ public class GraphvizEngine {
 	// Available JS Engines. Lower index has priority.
 	private static final String[] engines = AppConstants.getInstance().getString("flow.javascript.engines", "org.frankframework.javascript.J2V8").split(",");
 
-	private final int cleaningActionId;
+	private final Cleaner.Cleanable cleanable;
 	private Engine engine;
 	private String graphvizVersion = AppConstants.getInstance().getProperty("graphviz.js.version", "2.0.0");
 
@@ -84,7 +85,7 @@ public class GraphvizEngine {
 		getEngine();
 
 		CleanupEngineAction cleanupEngineAction = new CleanupEngineAction(engine);
-		cleaningActionId = CleanerProvider.register(this, cleanupEngineAction);
+		cleanable = CleanerProvider.CLEANER.register(this, cleanupEngineAction);
 	}
 
 	private static class CleanupEngineAction implements Runnable {
@@ -176,7 +177,7 @@ public class GraphvizEngine {
 	 * {@link GraphvizEngine GraphvisEngines}. This method ensures that the used Javascript engine is destroyed properly.
 	 */
 	public void close() {
-		CleanerProvider.clean(cleaningActionId);
+		cleanable.clean();
 	}
 
 	private String getVisJsWrapper() {
