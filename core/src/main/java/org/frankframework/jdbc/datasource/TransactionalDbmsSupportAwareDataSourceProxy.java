@@ -22,6 +22,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.sql.DataSource;
+import javax.sql.XADataSource;
 
 import jakarta.annotation.Nullable;
 
@@ -70,6 +71,7 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 		databaseMetadata.put("product-version", md.getDatabaseProductVersion());
 		databaseMetadata.put("driver", md.getDriverName());
 		databaseMetadata.put("driver-version", md.getDriverVersion());
+		databaseMetadata.put("XA", String.valueOf(getTargetDataSource() instanceof XADataSource));
 
 		metadata = databaseMetadata;
 	}
@@ -120,6 +122,7 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 			info.append("product version [").append(metadata.get("product-version")).append(CLOSE);
 			info.append("driver [").append(metadata.get("driver")).append(CLOSE);
 			info.append("driver version [").append(metadata.get("driver-version")).append(CLOSE);
+			info.append("XA-enabled [").append(metadata.get("XA")).append(CLOSE);
 		}
 		info.append("targetDataSource [").append(obtainTargetDataSource().getClass().getName()).append("]");
 
