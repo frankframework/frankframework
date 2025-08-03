@@ -48,7 +48,7 @@ public class ClassLoaderManager {
 	private final Map<String, ClassLoader> classLoaders = new TreeMap<>();
 	private final ClassLoader classPathClassLoader = Thread.currentThread().getContextClassLoader();
 
-	static final String CLASSLOADER_PACKAGE_LOCATION = "org.frankframework.configuration.classloaders.%s";
+	public static final String CLASSLOADER_PACKAGE_LOCATION = "org.frankframework.configuration.classloaders.%s";
 
 	private IbisContext ibisContext;
 

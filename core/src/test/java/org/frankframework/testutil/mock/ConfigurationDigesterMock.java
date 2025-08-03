@@ -1,7 +1,7 @@
 package org.frankframework.testutil.mock;
 
-import org.frankframework.configuration.ConfigurationDigester;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.digester.ConfigurationDigester;
 
 public class ConfigurationDigesterMock extends ConfigurationDigester {
 	@Override

@@ -30,8 +30,8 @@ import org.springframework.context.support.DefaultLifecycleProcessor;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.configuration.ConfigurationDigester;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.digester.ConfigurationDigester;
 import org.frankframework.core.Adapter;
 import org.frankframework.lifecycle.events.AdapterMessageEvent;
 import org.frankframework.util.ClassUtils;

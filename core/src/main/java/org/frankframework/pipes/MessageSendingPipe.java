@@ -37,9 +37,9 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.DestinationValidator;
 import org.frankframework.core.HasPhysicalDestination;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
 */
 package org.frankframework.http;
 
-import java.util.Map;
-
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
@@ -24,7 +22,6 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.HasSpecialDefaultValues;
 import org.frankframework.core.DestinationType;
 import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
@@ -53,7 +50,7 @@ import org.frankframework.stream.Message;
  * @author  Gerrit van Brakel
  */
 @DestinationType(Type.HTTP)
-public class RestListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues {
+public class RestListener extends PushingListenerAdapter implements HasPhysicalDestination {
 
 	private @Getter String uriPattern;
 	private @Getter String method;
@@ -168,17 +165,6 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		JsonPipe pipe = new JsonPipe();
 		PipeRunResult pipeResult = pipe.doPipe(message, new PipeLineSession());
 		return pipeResult.getResult();
-	}
-
-	@Override
-	public Object getSpecialDefaultValue(String attributeName, Object defaultValue, Map<String, String> attributes) {
-		if ("view".equals(attributeName)) { // if attribute view is present
-			if (attributes.get("method") == null || "GET".equalsIgnoreCase(attributes.get("method"))) {// if view="true" AND no method has been supplied, or it's set to GET
-				return true; // Then the default is TRUE
-			}
-			return false;
-		}
-		return defaultValue;
 	}
 
 	@Override

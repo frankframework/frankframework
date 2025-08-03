@@ -34,6 +34,7 @@ import org.springframework.context.ApplicationContext;
 import lombok.Getter;
 
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
+import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.http.RestServiceDispatcher;
 import org.frankframework.jdbc.JdbcPropertySourceFactory;

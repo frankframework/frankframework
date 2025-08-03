@@ -36,7 +36,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.configuration.ClassNameRewriter;
+import org.frankframework.configuration.filters.ClassNameRewriter;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.PropertyLoader;
 

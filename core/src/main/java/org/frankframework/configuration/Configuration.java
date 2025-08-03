@@ -42,7 +42,9 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 import lombok.Getter;
 
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
+import org.frankframework.configuration.digester.ConfigurationDigester;
 import org.frankframework.configuration.extensions.SapSystems;
+import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.FrankElement;
 import org.frankframework.core.IConfigurable;
