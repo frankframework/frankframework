@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2018-2020 Nationale-Nederlanden
+   Copyright 2016, 2018-2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,17 @@
 */
 package org.frankframework.configuration.classloaders;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
+
+import org.apache.commons.io.FilenameUtils;
+
 import org.frankframework.configuration.ClassLoaderException;
+import org.frankframework.configuration.util.ConfigurationUtils;
 
 public class JarFileClassLoader extends AbstractJarBytesClassLoader {
 	private String jarFileName;
@@ -30,15 +36,36 @@ public class JarFileClassLoader extends AbstractJarBytesClassLoader {
 
 	@Override
 	protected Map<String, byte[]> loadResources() throws ClassLoaderException {
-		if(jarFileName == null)
-			throw new ClassLoaderException("jar file not set");
+		Path jarLocation = locateJarFile();
+		if (!isJarFile(jarLocation)) {
+			throw new ClassLoaderException("invalid jar file location [%s]".formatted(jarLocation));
+		}
 
 		try {
-			FileInputStream jarFile = new FileInputStream(jarFileName);
-			return readResources(jarFile);
-		} catch (FileNotFoundException fnfe) {
-			throw new ClassLoaderException("jar file not found");
+			return readResources(Files.newInputStream(jarLocation));
+		} catch (IOException e) {
+			throw new ClassLoaderException("unable to open JarFile", e);
 		}
+	}
+
+	@Nonnull
+	private Path locateJarFile() throws ClassLoaderException {
+		// Name has been, set is it an absolute path?
+		if(jarFileName != null) {
+			return Path.of(FilenameUtils.normalize(jarFileName, true));
+		}
+
+		// Attempt to load 'configuration-name'.jar as sub-path of 'configurations.directory'.
+		try {
+			Path configDir = ConfigurationUtils.getConfigurationDirectory();
+			return configDir.resolve("%s.jar".formatted(getConfigurationName()));
+		} catch (IOException e) {
+			throw new ClassLoaderException(e);
+		}
+	}
+
+	public static boolean isJarFile(Path path) {
+		return Files.isRegularFile(path) && "jar".equalsIgnoreCase(FilenameUtils.getExtension(path.getFileName().toString()));
 	}
 
 	public void setJar(String jar) {
