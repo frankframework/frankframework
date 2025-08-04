@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -23,6 +24,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.frankframework.configuration.classloaders.DatabaseClassLoader;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
+import org.frankframework.configuration.classloaders.JarFileClassLoader;
 import org.frankframework.configuration.classloaders.ScanningDirectoryClassLoader;
 import org.frankframework.configuration.classloaders.WebAppClassLoader;
 import org.frankframework.configuration.util.ConfigurationAutoDiscovery.ParentConfigComparator;
@@ -85,6 +87,23 @@ public class ConfigurationAutoDiscoveryTest {
 		assertEquals(DatabaseClassLoader.class, configs.get("config2"));
 	}
 
+	@DatabaseTest // Note, there is no liquibase here ;)
+	public void retrieveAllConfigNamesTestWithoutDB(DatabaseTestEnvironment env) throws Exception {
+		TestConfiguration applicationContext = env.getConfiguration();
+		ConfigurationAutoDiscovery autoDiscovery = applicationContext.createBean();
+		autoDiscovery.withDatabaseScanner(env.getDataSourceName());
+
+		try (TestAppender appender = TestAppender.newBuilder().build()) {
+			Map<String, Class<? extends IConfigurationClassLoader>> configs = autoDiscovery.scan(true);
+			assertThat("keyset was: " + configs.keySet(), configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration"));
+
+			assertNull(configs.get("IAF_Util"));
+			assertNull(configs.get("TestConfiguration"));
+
+			assertTrue(appender.contains("unable to load configurations from database, table [IBISCONFIG] is not present"));
+		}
+	}
+
 	@DatabaseTest
 	@WithLiquibase(file = "Migrator/CreateIbisConfig.xml")
 	@WithLiquibase(file = "Migrator/SetupConfigsInDatabase.xml")
@@ -96,15 +115,35 @@ public class ConfigurationAutoDiscoveryTest {
 
 		Map<String, Class<? extends IConfigurationClassLoader>> configs = autoDiscovery.scan(true);
 
-		assertThat("keyset was: " + configs.keySet(), configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "ClassLoader", "Config", "config1", "config2", "config3", "config4", "config5"));
+		assertThat("keyset was: " + configs.keySet(), configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "ClassLoader", "Config", "Configuration.jar", "config1", "config2", "config3", "config4", "config5"));
 
 		assertNull(configs.get("IAF_Util"));
 		assertNull(configs.get("TestConfiguration"));
 
 		assertEquals(DirectoryClassLoader.class, configs.get("ClassLoader"));
 		assertEquals(DirectoryClassLoader.class, configs.get("Config"));
+		assertEquals(JarFileClassLoader.class, configs.get("Configuration.jar"));
 		assertEquals(DatabaseClassLoader.class, configs.get("config1"));
 		assertEquals(DatabaseClassLoader.class, configs.get("config2"));
+	}
+
+	@Test
+	public void retrieveAllConfigNamesTestWithFS() throws Exception {
+		try (TestConfiguration applicationContext = new TestConfiguration()) {
+			ConfigurationAutoDiscovery autoDiscovery = applicationContext.createBean();
+			autoDiscovery.withDirectoryScanner();
+
+			Map<String, Class<? extends IConfigurationClassLoader>> configs = autoDiscovery.scan(true);
+
+			assertThat("keyset was: " + configs.keySet(), configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "ClassLoader", "Config", "Configuration.jar"));
+
+			assertNull(configs.get("IAF_Util"));
+			assertNull(configs.get("TestConfiguration"));
+
+			assertEquals(DirectoryClassLoader.class, configs.get("ClassLoader"));
+			assertEquals(DirectoryClassLoader.class, configs.get("Config"));
+			assertEquals(JarFileClassLoader.class, configs.get("Configuration.jar"));
+		}
 	}
 
 	@Test
@@ -113,6 +152,21 @@ public class ConfigurationAutoDiscoveryTest {
 		ParentConfigComparator comparator = new ParentConfigComparator();
 		configs.sort(comparator);
 		assertThat("keyset was: " + configs, configs, IsIterableContainingInOrder.contains("configuration1", "configuration4", "configuration2", "configuration3", "configuration5")); // checks order!
+	}
+
+	@Test
+	public void testClassloaderOrder() {
+		Map<String, Class<? extends IConfigurationClassLoader>> configs = new LinkedHashMap<>(Map.of(
+				"configuration2", DirectoryClassLoader.class,
+				"configuration4", DirectoryClassLoader.class,
+				"configuration3", DirectoryClassLoader.class,
+				"configuration1", DirectoryClassLoader.class,
+				"configuration5", DirectoryClassLoader.class
+				));
+
+		Map<String, Class<? extends IConfigurationClassLoader>> sorted = ConfigurationAutoDiscovery.sort(configs);
+
+		assertThat("keyset was: " + sorted.keySet(), sorted.keySet(), IsIterableContainingInOrder.contains("configuration1", "configuration4", "configuration2", "configuration3", "configuration5")); // checks order!
 	}
 
 	@Test

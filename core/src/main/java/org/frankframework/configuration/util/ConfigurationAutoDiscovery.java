@@ -195,7 +195,7 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 		return DirectoryClassLoader.class;
 	}
 
-	private static <T> Map<String, T> sort(final Map<String, T> allConfigNameItems) {
+	static <T> Map<String, T> sort(final Map<String, T> allConfigNameItems) {
 		List<String> sortedConfigurationNames = new ArrayList<>(allConfigNameItems.keySet());
 		sortedConfigurationNames.sort(new ParentConfigComparator());
 
@@ -206,7 +206,7 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 		return sortedConfigurations;
 	}
 
-	public static class ParentConfigComparator implements Comparator<String> {
+	static class ParentConfigComparator implements Comparator<String> {
 		AppConstants constants = AppConstants.getInstance();
 
 		@Override
