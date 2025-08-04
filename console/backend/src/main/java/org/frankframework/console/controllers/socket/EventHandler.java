@@ -31,14 +31,14 @@ import org.springframework.stereotype.Component;
 @Component
 public class EventHandler extends FrankApiWebSocketBase {
 
-	@Scheduled(fixedDelayString = "${console.socket.poller.warnings}", timeUnit = TimeUnit.SECONDS, initialDelay = 60)
+	@Scheduled(fixedDelayString = "${console.socket.poller.warnings}", timeUnit = TimeUnit.SECONDS, initialDelayString = "${console.socket.poller.startDelay}")
 	public void serverWarnings() {
 		propagateAuthenticationContext("server-warnings");
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.APPLICATION, BusAction.WARNINGS);
 		convertAndSendToMembers(builder, "server-warnings");
 	}
 
-	@Scheduled(fixedDelayString = "${console.socket.poller.adapters}", timeUnit = TimeUnit.SECONDS, initialDelay = 60)
+	@Scheduled(fixedDelayString = "${console.socket.poller.adapters}", timeUnit = TimeUnit.SECONDS, initialDelayString = "${console.socket.poller.startDelay}")
 	public void expandedAdapters() {
 		propagateAuthenticationContext("adapter-info");
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.GET);
@@ -47,7 +47,7 @@ public class EventHandler extends FrankApiWebSocketBase {
 	}
 
 	// So users get a quicker response when starting/stopping an adapter
-	@Scheduled(fixedDelayString = "${console.socket.poller.messages}", timeUnit = TimeUnit.SECONDS, initialDelay = 60)
+	@Scheduled(fixedDelayString = "${console.socket.poller.messages}", timeUnit = TimeUnit.SECONDS, initialDelayString = "${console.socket.poller.startDelay}")
 	public void adapters() {
 		propagateAuthenticationContext("adapter-info");
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.GET);

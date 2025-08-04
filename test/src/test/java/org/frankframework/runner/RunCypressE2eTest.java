@@ -76,6 +76,12 @@ public class RunCypressE2eTest {
 	public static void setUp() throws IOException {
 		startIafTestInitializer();
 		startTestContainer();
+
+		// Pollers for WebSockets have a enormous delay for larger applications.
+		System.setProperty("console.socket.poller.startDelay", "15");
+		System.setProperty("console.socket.poller.warnings", "5");
+		System.setProperty("console.socket.poller.adapters", "5");
+		System.setProperty("console.socket.poller.messages", "5");
 	}
 
 	private static void startIafTestInitializer() throws IOException {
