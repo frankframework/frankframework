@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,18 +17,14 @@ package org.frankframework.configuration.util;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -39,18 +35,17 @@ import java.util.zip.ZipInputStream;
 
 import jakarta.annotation.Nonnull;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
-import org.frankframework.configuration.ClassLoaderManager;
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.classloaders.DatabaseClassLoader;
-import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.configuration.classloaders.WebAppClassLoader;
 import org.frankframework.core.IbisTransaction;
@@ -58,14 +53,10 @@ import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.lifecycle.LifecycleException;
-import org.frankframework.lifecycle.events.ApplicationMessageEvent;
-import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.JdbcUtil;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.SpringUtils;
-import org.frankframework.util.StringUtil;
 
 /**
  * Functions to manipulate the configuration.
@@ -73,8 +64,13 @@ import org.frankframework.util.StringUtil;
  * @author  Peter Leeuwenburgh
  * @author  Jaco de Groot
  */
+@Log4j2
 public class ConfigurationUtils {
-	private static final Logger log = LogUtil.getLogger(ConfigurationUtils.class);
+	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
+	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.database.autoLoad", false);
+	private static final boolean CONFIG_AUTO_FS_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.directory.autoLoad", false);
+	private static final String INSTANCE_NAME = AppConstants.getInstance().getProperty("instance.name", null);
+	private static final String DUMMY_SELECT_QUERY = "SELECT COUNT(*) FROM IBISCONFIG";
 
 	public static final String STUB4TESTTOOL_CONFIGURATION_KEY = "stub4testtool.configuration";
 	public static final String STUB4TESTTOOL_VALIDATORS_DISABLED_KEY = "validators.disabled";
@@ -83,15 +79,7 @@ public class ConfigurationUtils {
 	public static final String STUB4TESTTOOL_XSLT_DEFAULT = "/xml/xsl/stub4testtool.xsl";
 
 	public static final String FRANK_CONFIG_XSD = "/xml/xsd/FrankConfig-compatibility.xsd";
-	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private static final boolean CONFIG_AUTO_DB_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.database.autoLoad", false);
-	private static final boolean CONFIG_AUTO_FS_CLASSLOADER = APP_CONSTANTS.getBoolean("configurations.directory.autoLoad", false);
-	private static final String DEFAULT_AUTO_DB_CLASSLOADER_TYPE = APP_CONSTANTS.getString("configurations.directory.classLoaderType", DirectoryClassLoader.class.getCanonicalName());
-	private static final String INSTANCE_NAME = AppConstants.getInstance().getProperty("instance.name", null);
-	private static final String CONFIGURATIONS = APP_CONSTANTS.getProperty("configurations.names.application");
 	public static final String DEFAULT_CONFIGURATION_FILE = "Configuration.xml";
-
-	private static final String DUMMY_SELECT_QUERY = "SELECT COUNT(*) FROM IBISCONFIG";
 
 	private ConfigurationUtils() {
 		// Private constructor so that the utility-class cannot be instantiated.
@@ -479,152 +467,32 @@ public class ConfigurationUtils {
 		return false;
 	}
 
+	@Nonnull
+	public static Path getConfigurationDirectory() throws IOException {
+		String configDir = AppConstants.getInstance().getProperty("configurations.directory");
+		if (configDir == null) {
+			throw new IOException("Could not find property configurations.directory");
+		}
+
+		Path configPath = Path.of(FilenameUtils.normalize(configDir, true));
+		if (!Files.isDirectory(configPath)) {
+			throw new IOException("path ["+configDir+"] is not a valid directory");
+		}
+		return configPath;
+	}
+
 	/**
 	 * @return A map with all configurations to load (KEY = ConfigurationName, VALUE = ClassLoaderType)
 	 */
 	public static Map<String, Class<? extends IConfigurationClassLoader>> retrieveAllConfigNames(ApplicationContext applicationContext) {
-		return retrieveAllConfigNames(applicationContext, CONFIG_AUTO_FS_CLASSLOADER, CONFIG_AUTO_DB_CLASSLOADER);
-	}
-
-	// protected because of jUnit tests
-	protected static Map<String, Class<? extends IConfigurationClassLoader>> retrieveAllConfigNames(ApplicationContext applicationContext, boolean directoryConfigurations, boolean databaseConfigurations) {
-		Map<String, Class<? extends IConfigurationClassLoader>> allConfigNameItems = new LinkedHashMap<>();
-
-		if (CONFIGURATIONS != null) {
-			for (String configFileName : StringUtil.split(CONFIGURATIONS)) {
-				allConfigNameItems.put(configFileName, null);
-			}
-		}
-
-		if (directoryConfigurations) {
-			String configDir = AppConstants.getInstance().getProperty("configurations.directory");
-			log.info("scanning directory [{}] for configurations", configDir);
-			try {
-			Class<DirectoryClassLoader> classLoaderType = getDefaultDirectoryClassLoaderType(DEFAULT_AUTO_DB_CLASSLOADER_TYPE);
-				for(String name : retrieveDirectoryConfigNames(configDir)) {
-					if (allConfigNameItems.get(name) == null) {
-						allConfigNameItems.put(name, classLoaderType);
-					} else {
-						log.warn("config [{}] already exists in {}, cannot add same config twice", name, allConfigNameItems);
-					}
-				}
-			} catch (IOException e) {
-				applicationContext.publishEvent(new ApplicationMessageEvent(applicationContext, "failed to autoload configurations", MessageEventLevel.WARN, e));
-			}
-		}
-		if (databaseConfigurations) {
-			log.info("scanning database for configurations");
-			try {
-				List<String> dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(applicationContext);
-				for (String dbConfigName : dbConfigNames) {
-					if (allConfigNameItems.get(dbConfigName) == null) {
-						allConfigNameItems.put(dbConfigName, DatabaseClassLoader.class);
-					} else {
-						log.warn("config [{}] already exists in {}, cannot add same config twice", dbConfigName, allConfigNameItems);
-					}
-				}
-			}
-			catch (ConfigurationException e) {
-				applicationContext.publishEvent(new ApplicationMessageEvent(applicationContext, "error retrieving database configurations", MessageEventLevel.WARN, e));
-			}
-		}
-
-		log.info("found configurations to load [{}]", allConfigNameItems);
-
-		return sort(allConfigNameItems);
-	}
-
-	@SuppressWarnings("unchecked")
-	protected static Class<DirectoryClassLoader> getDefaultDirectoryClassLoaderType(String classLoaderType) {
+		ConfigurationAutoDiscovery discovery = SpringUtils.createBean(applicationContext);
 		try {
-			String className = classLoaderType.contains(".") ? classLoaderType : ClassLoaderManager.CLASSLOADER_PACKAGE_LOCATION.formatted(classLoaderType);
-
-			Class<?> clazz = Class.forName(className);
-			if (DirectoryClassLoader.class.isAssignableFrom(clazz)) {
-				return (Class<DirectoryClassLoader>) clazz;
-			}
-			log.fatal("incompatible classloader type provided for [configurations.directory.classLoaderType] value [{}]", classLoaderType);
-		} catch (ClassNotFoundException e) {
-			log.fatal("invalid classloader type provided for [configurations.directory.classLoaderType] value [{}]", classLoaderType);
+			if (CONFIG_AUTO_FS_CLASSLOADER) discovery.withDirectoryScanner();
+		} catch (IOException e) {
+			throw new IllegalStateException(e);
 		}
-		return DirectoryClassLoader.class;
-	}
+		if (CONFIG_AUTO_DB_CLASSLOADER) discovery.withDatabaseScanner();
 
-	private static <T> Map<String, T> sort(final Map<String, T> allConfigNameItems) {
-		List<String> sortedConfigurationNames = new ArrayList<>(allConfigNameItems.keySet());
-		sortedConfigurationNames.sort(new ParentConfigComparator());
-
-		Map<String, T> sortedConfigurations = new LinkedHashMap<>();
-
-		sortedConfigurationNames.forEach(name -> sortedConfigurations.put(name, allConfigNameItems.get(name)) );
-
-		return sortedConfigurations;
-	}
-
-	private static class ParentConfigComparator implements Comparator<String> {
-		AppConstants constants = AppConstants.getInstance();
-
-		@Override
-		public int compare(String configName1, String configName2) {
-			String parent = constants.getString("configurations." + configName2 + ".parentConfig", null);
-			if(configName1.equals(parent)) {
-				return -1;
-			}
-			return configName1.equals(configName2) ? 0 : 1;
-		}
-	}
-
-	@Nonnull
-	private static List<String> retrieveDirectoryConfigNames(String configDir) throws IOException {
-		List<String> configurationNames = new ArrayList<>();
-		if(StringUtils.isEmpty(configDir))
-			throw new IOException("property [configurations.directory] not set");
-
-		Path directory = Paths.get(configDir);
-		if(!Files.exists(directory))
-			throw new IOException("failed to open configurations.directory ["+configDir+"]");
-		if(!Files.isDirectory(directory))
-			throw new IOException("configurations.directory ["+configDir+"] is not a valid directory");
-
-		try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory, Files::isDirectory)) {
-			for (Path path : stream) {
-				configurationNames.add(path.getFileName().toString());
-			}
-		}
-
-		log.debug("found directory configurations {}", configurationNames);
-		return configurationNames;
-	}
-
-	@Nonnull
-	public static List<String> retrieveConfigNamesFromDatabase(ApplicationContext applicationContext) throws ConfigurationException {
-		FixedQuerySender qs = SpringUtils.createBean(applicationContext);
-		qs.setDatasourceName(IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
-		qs.setQuery(DUMMY_SELECT_QUERY);
-		qs.configure();
-		try {
-			qs.start();
-			try (Connection conn = qs.getConnection()) {
-				if(!qs.getDbmsSupport().isTablePresent(conn, "IBISCONFIG")) {
-					log.warn("unable to load configurations from database, table [IBISCONFIG] is not present");
-					return Collections.emptyList();
-				}
-
-				String query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE ACTIVECONFIG="+(qs.getDbmsSupport().getBooleanValue(true));
-				try (PreparedStatement stmt = conn.prepareStatement(query); ResultSet rs = stmt.executeQuery()) {
-					List<String> configurationNames = new ArrayList<>();
-					while (rs.next()) {
-						configurationNames.add(rs.getString(1));
-					}
-
-					log.debug("found database configurations {}", configurationNames);
-					return Collections.unmodifiableList(configurationNames);
-				}
-			}
-		} catch (LifecycleException | JdbcException | SQLException e) {
-			throw new ConfigurationException(e);
-		} finally {
-			qs.stop();
-		}
+		return discovery.scan(true);
 	}
 }
