@@ -189,15 +189,29 @@ public class RunLarvaTests {
 
 	@AfterAll
 	static void tearDown() {
-		CloseUtils.closeSilently(ibisContext, parentContext);
+		parentContext.stop();
+		CloseUtils.closeSilently(parentContext);
+		parentContext = null;
+		applicationContext = null;
+		ibisContext = null;
 		try {
 			jmsServer.stop();
 		} catch (Exception e) {
 			log.error("error while stopping embedded JMS server", e);
 		}
+		jmsServer = null;
 
 		// Make sure to clear the app constants as well
 		AppConstants.removeInstance();
+
+		// Clear system properties we've set, or caused to be set by IafTestInitializer
+		System.clearProperty("wsdl.soapAction");
+		System.clearProperty("active.storedProcedureTests");
+		System.clearProperty("jdbc.dbms.default");
+		System.clearProperty("active.jms");
+		System.clearProperty("jms.provider.default");
+		System.clearProperty("jms.connectionfactory.qcf.inmem");
+		System.clearProperty("jms.destination.suffix");
 	}
 
 	/**
