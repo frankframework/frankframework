@@ -105,7 +105,6 @@ public class RunCypressE2eTest {
 
 		container = new CypressContainer();
 		container.withBaseUrl("http://host.testcontainers.internal:8080/iaf-test/iaf/gui");
-		container.withLogConsumer(frame -> CYPRESS_LOG.info(frame.getUtf8StringWithoutLineEnding()));
 
 		container.start();
 
