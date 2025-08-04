@@ -5,14 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.File;
 import java.net.URL;
 import java.sql.Connection;
 import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -26,32 +23,12 @@ import org.springframework.transaction.TransactionStatus;
 
 import org.frankframework.dbms.GenericDbmsSupport;
 import org.frankframework.jdbc.FixedQuerySender;
-import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.mock.PreparedStatementMock;
-import org.frankframework.util.AppConstants;
 
 public class ConfigurationUtilsTest extends Mockito {
 
 	private final ApplicationContext applicationContext = mock(ApplicationContext.class);
 	private PreparedStatementMock stmt;
-
-	@BeforeAll
-	public static void setUp() throws Exception {
-		AppConstants.removeInstance();
-		AppConstants.getInstance().setProperty("configurations.configuration2.parentConfig", "configuration4");
-		AppConstants.getInstance().setProperty("configurations.configuration3.parentConfig", "configuration4");
-		AppConstants.getInstance().setProperty("configurations.Config.parentConfig", "ClassLoader");
-
-		URL url = TestFileUtils.getTestFileURL("/ClassLoader/DirectoryClassLoaderRoot");
-		assertNotNull(url);
-		File directory = new File(url.toURI());
-		AppConstants.getInstance().setProperty("configurations.directory", directory.getCanonicalPath());
-	}
-
-	@AfterAll
-	public static void tearDown() {
-		AppConstants.removeInstance();
-	}
 
 	@SuppressWarnings("deprecation")
 	private void mockDatabase() throws Exception {

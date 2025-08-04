@@ -470,7 +470,7 @@ public class ConfigurationUtils {
 	@Nonnull
 	public static Path getConfigurationDirectory() throws IOException {
 		String configDir = AppConstants.getInstance().getProperty("configurations.directory");
-		if (configDir == null) {
+		if (StringUtils.isBlank(configDir)) {
 			throw new IOException("Could not find property configurations.directory");
 		}
 

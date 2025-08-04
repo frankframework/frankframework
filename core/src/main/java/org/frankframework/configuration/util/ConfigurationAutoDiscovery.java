@@ -174,9 +174,13 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 		return databaseConfigurations;
 	}
 
-	@SuppressWarnings("unchecked")
 	private Class<DirectoryClassLoader> getDefaultDirectoryClassLoaderType() {
 		String classLoaderType = APP_CONSTANTS.getString("configurations.directory.classLoaderType", DirectoryClassLoader.class.getCanonicalName());
+		return getDefaultDirectoryClassLoaderType(classLoaderType);
+	}
+
+	@SuppressWarnings("unchecked")
+	protected static Class<DirectoryClassLoader> getDefaultDirectoryClassLoaderType(String classLoaderType) {
 		try {
 			String className = classLoaderType.contains(".") ? classLoaderType : ClassLoaderManager.CLASSLOADER_PACKAGE_LOCATION.formatted(classLoaderType);
 
@@ -202,7 +206,7 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 		return sortedConfigurations;
 	}
 
-	private static class ParentConfigComparator implements Comparator<String> {
+	public static class ParentConfigComparator implements Comparator<String> {
 		AppConstants constants = AppConstants.getInstance();
 
 		@Override
