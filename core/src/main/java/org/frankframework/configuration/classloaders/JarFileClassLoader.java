@@ -15,6 +15,7 @@
 */
 package org.frankframework.configuration.classloaders;
 
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -52,7 +53,7 @@ public class JarFileClassLoader extends AbstractJarBytesClassLoader {
 	private Path locateJarFile() throws ClassLoaderException {
 		// Name has been, set is it an absolute path?
 		if(jarFileName != null) {
-			return Path.of(FilenameUtils.normalize(jarFileName, true));
+			return new File(jarFileName).toPath();
 		}
 
 		// Attempt to load 'configuration-name'.jar as sub-path of 'configurations.directory'.
@@ -65,7 +66,7 @@ public class JarFileClassLoader extends AbstractJarBytesClassLoader {
 	}
 
 	public static boolean isJarFile(Path path) {
-		return Files.isRegularFile(path) && "jar".equalsIgnoreCase(FilenameUtils.getExtension(path.getFileName().toString()));
+		return Files.isRegularFile(path) && FilenameUtils.isExtension(path.getFileName().toString(), "zip", "jar");
 	}
 
 	public void setJar(String jar) {
