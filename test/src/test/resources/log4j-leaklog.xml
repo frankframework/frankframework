@@ -14,6 +14,8 @@
 		<!-- Supress ActiveMQ log -->
 		<Logger name="org.apache.activemq" level="WARN" />
 		<Logger name="io.netty" level="WARN" />
+		<Logger name="wiremock.org.apache" level="WARN" />
+		<Logger name="org.apache.http" level="WARN" />
 
 		<Logger name="LEAK_LOG" additivity="false" level="INFO">
 			<AppenderRef ref="leak-log-appender"/>
