@@ -156,17 +156,16 @@ public class ConfigurationAutoDiscoveryTest {
 
 	@Test
 	public void testClassloaderOrder() {
-		Map<String, Class<? extends IConfigurationClassLoader>> configs = new LinkedHashMap<>(Map.of(
-				"configuration2", DirectoryClassLoader.class,
-				"configuration4", DirectoryClassLoader.class,
-				"configuration3", DirectoryClassLoader.class,
-				"configuration1", DirectoryClassLoader.class,
-				"configuration5", DirectoryClassLoader.class
-				));
+		Map<String, Class<? extends IConfigurationClassLoader>> configs = new LinkedHashMap<>();
+		configs.put("configuration2", DirectoryClassLoader.class);
+		configs.put("configuration4", DirectoryClassLoader.class);
+		configs.put("configuration3", DirectoryClassLoader.class);
+		configs.put("configuration1", DirectoryClassLoader.class);
+		configs.put("configuration5", DirectoryClassLoader.class);
 
 		Map<String, Class<? extends IConfigurationClassLoader>> sorted = ConfigurationAutoDiscovery.sort(configs);
 
-		assertThat("keyset was: " + sorted.keySet(), sorted.keySet(), IsIterableContainingInOrder.contains("configuration1", "configuration4", "configuration2", "configuration3", "configuration5")); // checks order!
+		assertThat("keyset was: " + sorted.keySet(), sorted.keySet(), IsIterableContainingInOrder.contains("configuration4", "configuration2", "configuration3", "configuration1", "configuration5")); // checks order!
 	}
 
 	@Test

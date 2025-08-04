@@ -1,5 +1,5 @@
 {
-	"count": 8,
+	"count": 9,
 	"list": [
 		{
 			"name": "ClassLoaderTestFile",
@@ -24,6 +24,14 @@
 			"type": "file",
 			"size": 37,
 			"sizeDisplay": "37 B"
+		},
+		{
+			"name": "Configuration.jar",
+			"path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/Configuration.jar",
+			"lastModified": "IGNORE",
+			"type": "file",
+			"size": 197,
+			"sizeDisplay": "197 B"
 		},
 		{
 			"name": "Configuration.xml",
