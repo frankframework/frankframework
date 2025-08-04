@@ -17,7 +17,6 @@ package org.frankframework.http;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 import jakarta.xml.soap.SOAPConstants;
 import jakarta.xml.ws.soap.SOAPBinding;
@@ -31,7 +30,6 @@ import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
-import org.frankframework.configuration.HasSpecialDefaultValues;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.DestinationType;
 import org.frankframework.core.DestinationType.Type;
@@ -70,7 +68,7 @@ import org.frankframework.util.XmlBuilder;
  * @author Niels Meijer
  */
 @DestinationType(Type.HTTP)
-public class WebServiceListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues {
+public class WebServiceListener extends PushingListenerAdapter implements HasPhysicalDestination {
 
 	private @Getter boolean soap = true;
 	private @Getter String serviceNamespaceURI;
@@ -301,13 +299,4 @@ public class WebServiceListener extends PushingListenerAdapter implements HasPhy
 	public void setMultipartXmlSessionKey(String multipartXmlSessionKey) {
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
 	}
-
-	@Override
-	public Object getSpecialDefaultValue(String attributeName, Object defaultValue, Map<String, String> attributes) {
-		if ("address".equals(attributeName)) {
-			return "/" + attributes.get("name");
-		}
-		return defaultValue;
-	}
-
 }

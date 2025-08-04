@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.configuration;
+package org.frankframework.configuration.util;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,6 +46,9 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import org.frankframework.configuration.ClassLoaderManager;
+import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.classloaders.DatabaseClassLoader;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;

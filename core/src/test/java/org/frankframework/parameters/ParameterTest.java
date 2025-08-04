@@ -39,7 +39,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationUtils;
+import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLine;
