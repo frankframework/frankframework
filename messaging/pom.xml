@@ -52,6 +52,24 @@
 			<artifactId>protonj2-client</artifactId>
 			<version>1.0.0-M23</version>
 		</dependency>
+		<dependency>
+			<groupId>com.swiftmq</groupId>
+			<artifactId>swiftmq-client</artifactId>
+			<version>13.1.2</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.jline</groupId>
+					<artifactId>jline</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<!-- Dependency of SwiftMQ, make sure we include a safe version -->
+		<dependency>
+			<groupId>org.jline</groupId>
+			<artifactId>jline</artifactId>
+			<version>3.25.0</version>
+		</dependency>
+
 
 		<dependency>
 			<groupId>com.ibm.mq</groupId>
