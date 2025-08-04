@@ -90,6 +90,11 @@ public class RunCypressE2eTest {
 				.until(() -> verifyAppIsHealthy(gateway));
 	}
 
+	private static boolean verifyAppIsHealthy() {
+		OutboundGateway gateway = SpringUtils.createBean(run, LocalGateway.class);
+		return verifyAppIsHealthy(gateway);
+	}
+
 	private static boolean verifyAppIsHealthy(OutboundGateway gateway) {
 		try {
 			Message<Object> response = gateway.sendSyncMessage(RequestMessageBuilder.create(BusTopic.HEALTH).build(null));
@@ -142,6 +147,7 @@ public class RunCypressE2eTest {
 						test.getDescription(), () -> {
 							if (!test.isSuccess()) {
 								log.error("{}:\n{}", test.getErrorMessage(), test.getStackTrace());
+								assertTrue(verifyAppIsHealthy(), "!! application not reachable !!");
 							}
 							assertTrue(test.isSuccess(), test::getErrorMessage);
 						}
