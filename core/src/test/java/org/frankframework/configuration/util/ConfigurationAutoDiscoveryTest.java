@@ -9,7 +9,6 @@ import static org.mockito.Mockito.mock;
 
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
