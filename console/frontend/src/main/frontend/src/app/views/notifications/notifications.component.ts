@@ -16,7 +16,7 @@ export class NotificationsComponent implements OnInit {
     fn: false,
     time: 0,
   };
-  protected text: string = '';
+  protected text = '';
 
   constructor(
     private route: ActivatedRoute,

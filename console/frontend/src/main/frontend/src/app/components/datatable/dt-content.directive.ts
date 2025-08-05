@@ -1,8 +1,8 @@
 import { Directive, TemplateRef } from '@angular/core';
 
-export interface DtContent<T> {
+export type DtContent<T> = {
   rowElement: T;
-}
+};
 
 @Directive({
   selector: '[appDtContent]',

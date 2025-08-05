@@ -7,7 +7,7 @@
       <div class="ibox float-e-margins">
         <div class="ibox-title">
           <div class="pull-right">
-            <button (click)="goBack()" class="btn btn-xs pull-right btn-info" type="button">
+            <button class="btn btn-xs pull-right btn-info" type="button" (click)="goBack()">
               <i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i>
               <span> Back</span>
             </button>
@@ -31,23 +31,23 @@
             @if (storageParams.processState === 'Error') {
               <button
                 appHasAccessToLink="resendReceiverMessage"
-                [ladda]="message.processing"
                 data-style="slide-down"
                 title="Resend Message"
-                (click)="resendMessage(message)"
                 class="btn btn-warning btn-xs m-r-xs pull-right"
                 type="button"
+                [ladda]="message.processing"
+                (click)="resendMessage(message)"
               >
                 <i class="fa fa-repeat"></i> Resend
               </button>
               <button
                 appHasAccessToLink="deleteReceiverMessage"
-                [ladda]="message.processing"
                 data-style="slide-down"
                 title="Delete Message"
-                (click)="deleteMessage(message)"
                 class="btn btn-danger btn-xs m-r-xs pull-right"
                 type="button"
+                [ladda]="message.processing"
+                (click)="deleteMessage(message)"
               >
                 <i class="fa fa-times"></i> Delete
               </button>
@@ -55,9 +55,9 @@
             <button
               appHasAccessToLink="downloadMessage"
               title="Download Message"
-              (click)="downloadMessage(message.id)"
               class="btn btn-info btn-xs m-r-xs pull-right"
               type="button"
+              (click)="downloadMessage(message.id)"
             >
               <i class="fa fa-arrow-circle-o-down"></i> Download
             </button>

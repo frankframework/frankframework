@@ -19,7 +19,7 @@ import { toObservable } from '@angular/core/rxjs-interop';
 })
 export class InformationModalComponent implements OnInit, OnDestroy {
   protected readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
-  protected initialized: boolean = false;
+  protected initialized = false;
   protected framework: {
     name: string;
     version: string;
@@ -28,9 +28,9 @@ export class InformationModalComponent implements OnInit, OnDestroy {
     name: string;
     version: string;
   } = { name: '', version: '' };
-  protected machineName: string = '';
-  protected applicationServer: string = '';
-  protected javaVersion: string = '';
+  protected machineName = '';
+  protected applicationServer = '';
+  protected javaVersion = '';
   protected processMetrics: {
     maxMemory: number;
     freeMemory: number;
@@ -49,7 +49,7 @@ export class InformationModalComponent implements OnInit, OnDestroy {
     freeSpace: -1,
     totalSpace: -1,
   };
-  protected uptime: number = 0;
+  protected uptime = 0;
   protected consoleVersion = computed(() => this.serverInfoService.consoleInfo().version ?? 'null');
 
   private activeModal: NgbActiveModal = inject(NgbActiveModal);

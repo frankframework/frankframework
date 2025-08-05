@@ -12,7 +12,7 @@ export class TimeSinceDirective implements OnInit, OnChanges, OnDestroy {
   private interval?: number;
 
   ngOnInit(): void {
-    this.interval = window.setInterval(() => this.updateTime(), 300_000);
+    this.interval = globalThis.setInterval(() => this.updateTime(), 300_000);
   }
 
   ngOnChanges(): void {
@@ -20,7 +20,7 @@ export class TimeSinceDirective implements OnInit, OnChanges, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    window.clearInterval(this.interval);
+    globalThis.clearInterval(this.interval);
   }
 
   updateTime(): string {

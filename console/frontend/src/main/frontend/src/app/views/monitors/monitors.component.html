@@ -2,11 +2,11 @@
   <div class="row">
     <app-configuration-tab-list
       queryParamName="configuration"
+      data-cy="monitors__configuration-tab-list"
       [showAllTab]="false"
       [configurations]="configurations"
       (selectedTabChange)="changeConfiguration($event)"
-      data-cy="monitors__configuration-tab-list"
-    ></app-configuration-tab-list>
+    />
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
         @if (monitors.length > 0) {
@@ -15,9 +15,9 @@
               <button
                 appHasAccessToLink="addMonitor"
                 class="btn btn-primary btn-xs"
+                data-cy="monitors__add-monitor-button"
                 [routerLink]="['/monitors', 'new']"
                 [queryParams]="{ configuration: selectedConfiguration }"
-                data-cy="monitors__add-monitor-button"
               >
                 <i class="fa fa-plus"></i> Add Monitor</button
               >&nbsp;
@@ -62,60 +62,60 @@
               <div class="pull-right">
                 @if (!monitor.raised && !monitor.edit) {
                   <button
-                    appHasAccessToLink="updateMonitor"
                     title="Raise alarm {{ monitor.name }}"
+                    appHasAccessToLink="updateMonitor"
                     class="btn btn-warning btn-xs space-it-out"
                     type="button"
-                    (click)="raise(monitor)"
                     data-cy="monitors__raise-monitor-button"
+                    (click)="raise(monitor)"
                   >
                     <i class="fa fa-arrow-circle-o-right"></i> Raise
                   </button>
                 }
                 @if (monitor.raised) {
                   <button
-                    appHasAccessToLink="updateMonitor"
                     title="Clear alarm {{ monitor.name }}"
+                    appHasAccessToLink="updateMonitor"
                     class="btn btn-primary btn-xs space-it-out"
                     type="button"
-                    (click)="clear(monitor)"
                     data-cy="monitors__clear-monitor-button"
+                    (click)="clear(monitor)"
                   >
                     <i class="fa fa-arrow-circle-o-right"></i> Clear
                   </button>
                 }
                 @if (!monitor.raised && monitor.edit) {
                   <button
-                    appHasAccessToLink="deleteMonitor"
                     title="Delete Monitor {{ monitor.name }}"
+                    appHasAccessToLink="deleteMonitor"
                     class="btn btn-danger btn-xs space-it-out"
                     type="button"
-                    (click)="deleteMonitor(monitor)"
                     data-cy="monitors__delete-monitor-button"
+                    (click)="deleteMonitor(monitor)"
                   >
                     <i class="fa fa-close"></i> Delete
                   </button>
                 }
                 @if (!monitor.raised && !monitor.edit) {
                   <button
-                    appHasAccessToLink="updateMonitor"
                     title="Edit Monitor {{ monitor.name }}"
+                    appHasAccessToLink="updateMonitor"
                     class="btn btn-info btn-xs space-it-out"
                     type="button"
-                    (click)="monitor.edit = true"
                     data-cy="monitors__edit-monitor-button"
+                    (click)="monitor.edit = true"
                   >
                     <i class="fa fa-pencil"></i> Edit
                   </button>
                 }
                 @if (!monitor.raised && monitor.edit) {
                   <button
-                    appHasAccessToLink="updateMonitor"
                     title="Save Monitor {{ monitor.name }}"
+                    appHasAccessToLink="updateMonitor"
                     class="btn btn-primary btn-xs space-it-out"
                     type="button"
-                    (click)="edit(monitor)"
                     data-cy="monitors__save-monitor-button"
+                    (click)="edit(monitor)"
                   >
                     <i class="fa fa-save"></i> Save
                   </button>
@@ -156,7 +156,7 @@
               }
               @if (monitor.edit) {
                 <div>
-                  <form role="form" (submit)="edit(monitor)" appQuickSubmitForm>
+                  <form role="form" appQuickSubmitForm (submit)="edit(monitor)">
                     <div class="form-group">
                       <label class="col-sm-3 control-label">Name</label>
                       <div class="col-sm-9">
@@ -274,8 +274,8 @@
                           @if (monitor.edit) {
                             <td class="pull-right">
                               <button
-                                appHasAccessToLink="updateTrigger"
                                 title="Edit trigger {{ trigger.name }}"
+                                appHasAccessToLink="updateTrigger"
                                 class="btn btn-info btn-xs space-it-out"
                                 type="button"
                                 [routerLink]="['/monitors', monitor.name, 'triggers', trigger.id]"
@@ -284,12 +284,12 @@
                                 Edit
                               </button>
                               <button
-                                appHasAccessToLink="deleteTrigger"
                                 title="Delete trigger {{ trigger.name }}"
+                                appHasAccessToLink="deleteTrigger"
                                 class="btn btn-danger btn-xs"
                                 type="button"
-                                (click)="deleteTrigger(monitor, trigger)"
                                 data-cy="monitors__delete-trigger-button"
+                                (click)="deleteTrigger(monitor, trigger)"
                               >
                                 Delete
                               </button>
@@ -303,9 +303,9 @@
                             <button
                               appHasAccessToLink="addTrigger"
                               class="btn btn-primary btn-outline btn-xs"
+                              data-cy="monitors__add-trigger-button"
                               [routerLink]="['/monitors', monitor.name, 'triggers', 'new']"
                               [queryParams]="{ configuration: selectedConfiguration }"
-                              data-cy="monitors__add-trigger-button"
                             >
                               <i class="fa fa-plus"></i> <i>Add Trigger</i>
                             </button>

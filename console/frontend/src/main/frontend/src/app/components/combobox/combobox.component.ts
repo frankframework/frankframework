@@ -26,21 +26,21 @@ export type Option = {
 })
 export class ComboboxComponent implements OnInit, OnChanges {
   @Input({ required: true }) options!: Option[];
-  @Input() required: boolean = true;
-  @Input() name: string = '';
-  @Input() id: string = '';
-  @Input() disabled: boolean = false;
+  @Input() required = true;
+  @Input() name = '';
+  @Input() id = '';
+  @Input() disabled = false;
   @Input() selectedOption?: string;
   @Output() selectedOptionChange: EventEmitter<string> = new EventEmitter<string>();
 
   @ViewChild('comboboxOptions') comboboxOptionsRef!: ElementRef;
   @ViewChild('comboboxDropdownIcon') comboboxDropdownIcon!: ElementRef;
 
-  protected input: string = '';
+  protected input = '';
   protected filteredOptions: Option[] = [];
-  protected selectedIndex: number = -1;
-  protected listShown: boolean = false;
-  protected showError: boolean = false;
+  protected selectedIndex = -1;
+  protected listShown = false;
+  protected showError = false;
 
   ngOnInit(): void {
     this.resetListItems();
@@ -89,10 +89,10 @@ export class ComboboxComponent implements OnInit, OnChanges {
   private highlightItemMatchingInput(): void {
     if (!this.listShown) return;
     const matchingItem = this.filteredOptions.findIndex(({ label }) => label === this.input);
-    if (matchingItem >= 0) {
-      this.selectItemInListDisplay(matchingItem);
-    } else {
+    if (matchingItem === -1) {
       this.selectedIndex = -1;
+    } else {
+      this.selectItemInListDisplay(matchingItem);
     }
   }
 

@@ -4,7 +4,7 @@
       <div class="ibox float-e-margins">
         <div class="ibox-title">
           <div class="pull-right">
-            <button [routerLink]="['/monitors']" class="btn btn-xs pull-right btn-info" type="button">
+            <button class="btn btn-xs pull-right btn-info" type="button" [routerLink]="['/monitors']">
               <i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i>
               <span> Back</span>
             </button>
@@ -12,7 +12,7 @@
           <h4>Create new Monitor</h4>
         </div>
         <div class="ibox-content">
-          <form role="form" (submit)="submit()" appQuickSubmitForm>
+          <form role="form" appQuickSubmitForm (submit)="submit()">
             <div class="row form-group">
               <label class="col-sm-3 control-label">Configuration</label>
               <div class="col-sm-9">
@@ -20,7 +20,7 @@
                   name="configuration"
                   [options]="configurations()"
                   [(selectedOption)]="selectedConfiguration"
-                ></app-combobox>
+                />
               </div>
             </div>
             <div class="row form-group">
@@ -30,8 +30,8 @@
                   class="form-control m-b"
                   name="name"
                   type="text"
-                  [(ngModel)]="monitorName"
                   data-cy="monitors-new__name__input"
+                  [(ngModel)]="monitorName"
                 />
               </div>
             </div>

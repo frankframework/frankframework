@@ -26,7 +26,7 @@ import { LaddaModule } from 'angular2-ladda';
   styleUrls: ['./logging-manage.component.scss'],
 })
 export class LoggingManageComponent implements OnInit {
-  protected updateDynamicParams: boolean = false;
+  protected updateDynamicParams = false;
   protected loggers: Record<string, ErrorLevels[number]> = {};
   protected errorLevels: ErrorLevels = errorLevelsConst;
   protected form: LoggingSettings = {
@@ -36,7 +36,7 @@ export class LoggingManageComponent implements OnInit {
     errorLevels: errorLevelsConst,
     enableDebugger: true,
   };
-  protected loggersLength: number = 0;
+  protected loggersLength = 0;
   protected definitions: LogInformation['definitions'] = [];
   protected alert: string | null = null;
 

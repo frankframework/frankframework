@@ -9,11 +9,11 @@
           <h4>Test a ServiceListener</h4>
         </div>
         <div class="ibox-content">
-          <form role="form" (submit)="submit($event)" appQuickSubmitForm>
+          <form role="form" appQuickSubmitForm (submit)="submit($event)">
             <div class="row form-group">
               <label class="col-sm-3 control-label label-height-30">Select a service</label>
               <div class="col-sm-9">
-                <app-combobox name="service" [options]="services" [(selectedOption)]="form.service"></app-combobox>
+                <app-combobox name="service" [options]="services" [(selectedOption)]="form.service" />
               </div>
             </div>
             <div class="row form-group">
@@ -41,11 +41,11 @@
               <div class="col-sm-9">
                 <app-monaco-editor
                   class="form-control"
-                  [(value)]="form.message"
+                  style="height: 200px"
                   [options]="{ language: 'text' }"
                   [actions]="editorActions"
-                  style="height: 200px"
-                ></app-monaco-editor>
+                  [(value)]="form.message"
+                />
               </div>
             </div>
             <div class="row form-group">
@@ -53,7 +53,7 @@
                 <button class="btn btn-info btn-w-m font-bold" type="button" (click)="reset()">Reset</button>
               </div>
               <div class="col-sm-3 m-t-md">
-                <button [ladda]="processingMessage" class="btn btn-primary btn-w-m font-bold" type="submit">
+                <button class="btn btn-primary btn-w-m font-bold" type="submit" [ladda]="processingMessage">
                   Send
                 </button>
               </div>

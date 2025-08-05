@@ -46,8 +46,8 @@ export class PagesNavigationComponent implements OnChanges, AfterViewInit {
   @Input() queryParams = convertToParamMap({});
   @Output() shouldOpenInfo = new EventEmitter<void>();
 
-  protected frankframeworkLogoPath: string = 'assets/images/ff-kawaii.svg';
-  protected frankExclamationPath: string = 'assets/images/frank-exclemation.svg';
+  protected frankframeworkLogoPath = 'assets/images/ff-kawaii.svg';
+  protected frankExclamationPath = 'assets/images/frank-exclemation.svg';
   protected showOldLadybug: Signal<boolean> = computed(
     () => this.appService.appConstants()['testtool.echo2.enabled'] === 'true',
   );
@@ -62,7 +62,7 @@ export class PagesNavigationComponent implements OnChanges, AfterViewInit {
   private readonly IMAGES_BASE_PATH = 'assets/images/';
   private readonly ANIMATION_SPEED = 250;
   private expandedItem: ExpandedItem | null = null;
-  private initializing: boolean = true;
+  private initializing = true;
 
   ngOnChanges(): void {
     const uwuEnabledString = localStorage.getItem('uwu') ? 'uwu-' : '';

@@ -18,21 +18,21 @@ type ViewBox = Point & WidthHeight;
 })
 export class ZoomPanDirective implements OnChanges, OnDestroy {
   @Input() appZoomPan?: SVGSVGElement | null;
-  @Output() newScale: EventEmitter<number> = new EventEmitter();
+  @Output() newScale = new EventEmitter<number>();
 
   private svg: SVGSVGElement | null = null;
   private svgSize: WidthHeight = { w: 0, h: 0 };
   private viewBox: ViewBox = { x: 0, y: 0, w: 0, h: 0 };
   private contentSize: WidthHeight = { w: 0, h: 0 };
-  private isPanning: boolean = false;
+  private isPanning = false;
   private startPoint: Point = { x: 0, y: 0 };
   private endPoint: Point = { x: 0, y: 0 };
   private scaleFactor = 10;
-  private zoom: number = 1;
+  private zoom = 1;
   private observer: ResizeObserver | null = null;
 
   ngOnChanges(): void {
-    if (!!this.appZoomPan) {
+    if (this.appZoomPan) {
       this.svg = this.appZoomPan!;
       this.svg.classList.add('moveable');
       this.contentSize = {

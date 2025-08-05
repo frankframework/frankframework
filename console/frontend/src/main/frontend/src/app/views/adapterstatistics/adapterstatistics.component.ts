@@ -112,7 +112,7 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
     this.configuration = routeParameters.get('configuration');
 
     if (!this.adapterName) {
-      this.SweetAlert.Warning('Adapter not found!');
+      this.SweetAlert.warning('Adapter not found!');
       return;
     }
 
@@ -120,7 +120,7 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
       this.populateBoundaries(appConstants),
     );
 
-    window.setTimeout(() => {
+    globalThis.setTimeout(() => {
       this.refresh();
     });
   }
@@ -139,7 +139,7 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
 
       this.chart?.update();
 
-      window.setTimeout(() => {
+      globalThis.setTimeout(() => {
         this.refreshing = false;
       });
     });
@@ -264,6 +264,6 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
 
   private rotateHourlyData<T>(items: T[], amount: number): T[] {
     amount = amount % items.length;
-    return [...items.slice(amount, items.length), ...items.slice(0, amount)];
+    return [...items.slice(amount), ...items.slice(0, amount)];
   }
 }

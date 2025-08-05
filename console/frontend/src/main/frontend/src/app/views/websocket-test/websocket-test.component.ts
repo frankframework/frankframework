@@ -16,7 +16,7 @@ export class WebsocketTestComponent implements OnInit, OnDestroy, AfterViewInit 
   @ViewChild('wsLog')
   private wsLog!: ElementRef<HTMLPreElement>;
 
-  protected message: string = '';
+  protected message = '';
 
   private _subscriptions = new Subscription();
 

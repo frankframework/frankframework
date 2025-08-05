@@ -44,14 +44,14 @@ export type Message = {
   level: MessageLevel;
 };
 
-export interface AdapterMessage extends Message {
+export type AdapterMessage = {
   message: string;
   capacity: number;
-}
+} & Message;
 
-export interface ConfigurationMessage extends Message {
+export type ConfigurationMessage = {
   message: string;
-}
+} & Message;
 
 export type Pipe = {
   forwards: Record<'success' | 'exception', string>;
@@ -238,11 +238,11 @@ export class AppService {
   public selectedConfigurationTab: WritableSignal<string | null> = signal(null);
   public consoleState: WritableSignal<AppInitState> = signal(appInitState.UN_INIT);
 
-  private reloadSubject: Subject<void> = new Subject();
+  private reloadSubject = new Subject<void>();
   public reload$ = this.reloadSubject.asObservable();
-  private toggleSidebarSubject: Subject<void> = new Subject();
+  private toggleSidebarSubject = new Subject<void>();
   public toggleSidebar$ = this.toggleSidebarSubject.asObservable();
-  private customBreadcrumbsSubject: Subject<string> = new Subject();
+  private customBreadcrumbsSubject = new Subject<string>();
   public customBreadcrumbs$ = this.customBreadcrumbsSubject.asObservable();
 
   private _adapters: WritableSignal<Record<string, Adapter>> = signal({});
@@ -357,7 +357,7 @@ export class AppService {
     if (updated - 3000 < this.lastUpdated && !changedConfiguration) {
       //3 seconds
       clearTimeout(this.timeout);
-      this.timeout = window.setTimeout(() => {
+      this.timeout = globalThis.setTimeout(() => {
         this.updateAdapterSummary(configurationName, false);
       }, 1000);
       return;

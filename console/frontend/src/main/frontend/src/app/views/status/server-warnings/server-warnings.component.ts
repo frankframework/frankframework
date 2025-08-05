@@ -15,7 +15,7 @@ import { SecurityItemsService } from '../../security-items/security-items.servic
 export class ServerWarningsComponent {
   @Input({ required: true }) alerts: Alert[] = [];
   @Input({ required: true }) messageLog: Record<string, MessageLog> = {};
-  @Input({ required: true }) selectedConfiguration: string = 'All';
+  @Input({ required: true }) selectedConfiguration = 'All';
   @Input() serverInfo: ServerInfo | null = null;
   @Input() freeDiskSpacePercentage: number | null = null;
 

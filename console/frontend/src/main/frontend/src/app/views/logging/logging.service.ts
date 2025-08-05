@@ -43,8 +43,8 @@ type Logging = {
   providedIn: 'root',
 })
 export class LoggingService {
-  private logSettingsBaseURL: string = `${this.appService.absoluteApiPath}server/logging`;
-  private logSettingsURL: string = `${this.logSettingsBaseURL}/settings`;
+  private logSettingsBaseURL = `${this.appService.absoluteApiPath}server/logging`;
+  private logSettingsURL = `${this.logSettingsBaseURL}/settings`;
 
   constructor(
     private http: HttpClient,

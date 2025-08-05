@@ -326,7 +326,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     const fd = this.getFormData();
     if (!this.isSelectedMessages(fd)) return;
 
-    this.SweetAlert.Warning({
+    this.SweetAlert.warning({
       title: 'Move state of messages',
       text: 'The messages might still be processing in the background. Are you sure you want to move them to Error?',
       confirmButtonText: 'Move to Error',
@@ -361,7 +361,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
             type: 'application/octet-stream',
           });
           const downloadLink = document.createElement('a');
-          downloadLink.href = window.URL.createObjectURL(blob);
+          downloadLink.href = globalThis.URL.createObjectURL(blob);
           downloadLink.setAttribute('download', 'messages.zip');
           document.body.append(downloadLink);
           downloadLink.click();
@@ -399,7 +399,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
   isSelectedMessages(data: FormData): boolean {
     const selectedMessages = data.get('messageIds') as unknown as string[];
     if (!selectedMessages || selectedMessages.length === 0) {
-      this.SweetAlert.Warning('No message selected!');
+      this.SweetAlert.warning('No message selected!');
       return false;
     } else {
       return true;

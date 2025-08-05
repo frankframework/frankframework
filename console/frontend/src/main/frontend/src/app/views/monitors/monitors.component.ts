@@ -26,11 +26,11 @@ import { toObservable } from '@angular/core/rxjs-interop';
   styleUrls: ['./monitors.component.scss'],
 })
 export class MonitorsComponent implements OnInit, OnDestroy {
-  protected selectedConfiguration: string = '';
+  protected selectedConfiguration = '';
   protected monitors: Monitor[] = [];
   protected destinations: string[] = [];
   protected eventTypes: string[] = [];
-  protected totalRaised: number = 0;
+  protected totalRaised = 0;
   protected configurations: Configuration[] = [];
 
   private routeQueryParams: ParamMap = convertToParamMap({});

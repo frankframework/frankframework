@@ -1,13 +1,13 @@
 <div class="ibox float-e-margins">
   @if (messageLog[selectedConfiguration]) {
     <div
-      (click)="msgBoxExpanded = !msgBoxExpanded"
       data-cy="configuration-messages__box"
+      class="ibox-title pointer"
       [ngClass]="{
         warning: messageLog[selectedConfiguration].messageLevel === 'WARN',
         danger: messageLog[selectedConfiguration].messageLevel === 'ERROR',
       }"
-      class="ibox-title pointer"
+      (click)="msgBoxExpanded = !msgBoxExpanded"
     >
       <div class="ibox-tools pull-right">
         <a> <i class="fa fa-chevron-{{ msgBoxExpanded ? 'up' : 'down' }}"></i></a>
@@ -19,7 +19,7 @@
       </div>
     </div>
   }
-  <div [hidden]="!msgBoxExpanded" class="ibox-content p-w-sm">
+  <div class="ibox-content p-w-sm" [hidden]="!msgBoxExpanded">
     <div class="row">
       <div class="col-md-12" style="padding: 0 1px">
         <div class="table-responsive">
@@ -35,16 +35,16 @@
                   >
                     <td class="text-center" style="width: 40px">
                       <i
+                        class="m-l-md fa"
                         [ngClass]="{
                           'fa-info': message.level === 'INFO',
                           'fa-warning': message.level === 'WARN',
                           'fa-times': message.level === 'ERROR',
                         }"
-                        class="m-l-md fa"
                       ></i>
                     </td>
                     <td class="text-center" style="width: 200px">
-                      <span [time]="message.date" appToDate></span>
+                      <span appToDate [time]="message.date"></span>
                     </td>
                     <td data-cy="configuration-messages__table__message">{{ message.message }}</td>
                   </tr>

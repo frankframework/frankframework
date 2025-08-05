@@ -86,10 +86,10 @@ export class PollerService {
 }
 
 export class Poller<T> {
-  private timesFired: number = 0;
+  private timesFired = 0;
   private state: PollerState = 'STOPPED';
-  private errorCount: number = 0;
-  private maxErrorCount: number = 3;
+  private errorCount = 0;
+  private maxErrorCount = 3;
 
   private windowIntervalId: number | null = null;
   private runningSubscription: Subscription | null = null;
@@ -116,7 +116,7 @@ export class Poller<T> {
     if (this.state !== 'STOPPED') return;
 
     this.runningSubscription = null;
-    this.windowIntervalId = window.setInterval(() => this.run(), this.intervalTime);
+    this.windowIntervalId = globalThis.setInterval(() => this.run(), this.intervalTime);
     this.state = 'WAITING';
 
     this.run();
@@ -126,7 +126,7 @@ export class Poller<T> {
     if (this.state === 'STOPPED') return;
 
     if (this.state === 'RUNNING') this.runningSubscription?.unsubscribe();
-    window.clearInterval(this.windowIntervalId!);
+    globalThis.clearInterval(this.windowIntervalId!);
     this.windowIntervalId = null;
     this.state = 'STOPPED';
   }

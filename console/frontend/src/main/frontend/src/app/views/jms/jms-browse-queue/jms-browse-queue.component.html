@@ -11,7 +11,7 @@
           <h4>Browse JMS Queue</h4>
         </div>
         <div class="ibox-content">
-          <form role="form" (submit)="submit(form)" appQuickSubmitForm>
+          <form role="form" appQuickSubmitForm (submit)="submit(form)">
             <div class="row form-group">
               <label class="col-sm-5 col-md-3 control-label label-height-30">Select a Connection Factory</label>
               <div class="col-sm-7 col-md-9">
@@ -71,7 +71,7 @@
                 <button class="btn btn-info btn-w-m font-bold" type="button" (click)="reset()">Reset</button>
               </div>
               <div class="col-xs-5 col-md-3 m-t-md">
-                <button [ladda]="processing" class="btn btn-primary btn-w-m font-bold" type="submit">Send</button>
+                <button class="btn btn-primary btn-w-m font-bold" type="submit" [ladda]="processing">Send</button>
               </div>
             </div>
           </form>

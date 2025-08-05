@@ -33,19 +33,19 @@ export class StorageComponent implements OnInit {
       }
 
       if (!adapterName) {
-        this.SweetAlert.Warning('Invalid URL', 'No adapter name provided!');
+        this.SweetAlert.warning('Invalid URL', 'No adapter name provided!');
         return;
       }
       if (!storageSourceName) {
-        this.SweetAlert.Warning('Invalid URL', 'No receiver or pipe name provided!');
+        this.SweetAlert.warning('Invalid URL', 'No receiver or pipe name provided!');
         return;
       }
       if (!storageSource) {
-        this.SweetAlert.Warning('Invalid URL', 'Component type [receivers] or [pipes] is not provided in url!');
+        this.SweetAlert.warning('Invalid URL', 'Component type [receivers] or [pipes] is not provided in url!');
         return;
       }
       if (!processState) {
-        this.SweetAlert.Warning('Invalid URL', 'No storage type provided!');
+        this.SweetAlert.warning('Invalid URL', 'No storage type provided!');
         return;
       }
 

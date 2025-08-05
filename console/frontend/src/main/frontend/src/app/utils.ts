@@ -10,7 +10,7 @@ export function whenElementExists<T extends HTMLElement>(selector: string, callb
 }
 
 export function computeServerPath(): string {
-  let path = window.location.pathname;
+  let path = globalThis.location.pathname;
 
   if (path.includes('/iaf/gui')) path = path.slice(0, Math.max(0, path.indexOf('/iaf/gui') + 1));
   else if (path.includes('/', 1)) path = path.slice(0, Math.max(0, path.indexOf('/', 1) + 1));

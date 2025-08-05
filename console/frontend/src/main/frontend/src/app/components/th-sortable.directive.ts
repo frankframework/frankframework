@@ -60,7 +60,7 @@ export function basicAnyValueTableSort<T>(
   selector: 'th[sortable]',
 })
 export class ThSortableDirective implements OnInit {
-  @Input() sortable: string = '';
+  @Input() sortable = '';
   @Input() direction: SortDirection = 'NONE';
   @Output() sorted = new EventEmitter<SortEvent>();
 

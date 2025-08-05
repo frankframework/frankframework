@@ -22,7 +22,7 @@
         </div>
       }
     </div>
-    <table cdk-table [dataSource]="datasource" class="table table-striped table-hover">
+    <table cdk-table class="table table-striped table-hover" [dataSource]="datasource">
       @for (column of displayColumns; track column.name) {
         @if (column.name && column.name !== '') {
           <ng-container [cdkColumnDef]="column.name">
@@ -45,7 +45,7 @@
                 <ng-container
                   [ngTemplateOutlet]="content.templateReference"
                   [ngTemplateOutletContext]="{ rowElement: element }"
-                ></ng-container>
+                />
               }
             </td>
           </ng-container>

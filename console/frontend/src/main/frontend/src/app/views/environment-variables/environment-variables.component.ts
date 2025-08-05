@@ -16,8 +16,8 @@ type keyValueProperty = KeyValue<string, string>;
 })
 export class EnvironmentVariablesComponent implements OnInit {
   protected readonly GLOBAL_TAB_NAME = 'Global';
-  protected searchFilter: string = '';
-  protected selectedConfiguration: string = '';
+  protected searchFilter = '';
+  protected selectedConfiguration = '';
   protected configProperties: keyValueProperty[] = [];
   protected environmentProperties: keyValueProperty[] = [];
   protected systemProperties: keyValueProperty[] = [];

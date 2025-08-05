@@ -121,8 +121,8 @@ export class TestPipelineComponent implements OnInit {
   updateSessionKeys(sessionKey: FormSessionKey): void {
     if (sessionKey?.key != '' && sessionKey?.value != '') {
       const keyIndex = this.formSessionKeys.slice(0, -1).findIndex((f) => f.key === sessionKey.key);
-      if (keyIndex > -1) {
-        if (this.state.findIndex((f) => f.message === 'Session keys cannot have the same name!') < 0)
+      if (keyIndex !== -1) {
+        if (!this.state.some((f) => f.message === 'Session keys cannot have the same name!'))
           //avoid adding it more than once
           this.addNote('warning', 'Session keys cannot have the same name!');
         return;
@@ -169,7 +169,7 @@ export class TestPipelineComponent implements OnInit {
       this.formSessionKeys.pop();
       const incompleteKeyIndex = this.formSessionKeys.findIndex((f) => f.key === '' || f.value === '');
 
-      if (incompleteKeyIndex < 0) {
+      if (incompleteKeyIndex === -1) {
         fd.append('sessionKeys', JSON.stringify(this.formSessionKeys));
       } else {
         this.addNote('warning', 'Please make sure all sessionkeys have name and value!');

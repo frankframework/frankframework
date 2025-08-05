@@ -11,7 +11,7 @@ import { ToDateDirective } from '../../../components/to-date.directive';
 })
 export class ConfigurationMessagesComponent {
   @Input({ required: true }) messageLog: Record<string, MessageLog> = {};
-  @Input({ required: true }) selectedConfiguration: string = '';
+  @Input({ required: true }) selectedConfiguration = '';
   protected msgBoxExpanded = false;
 
   protected getMessageLog(selectedConfiguration: string): ConfigurationMessage[] {

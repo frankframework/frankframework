@@ -1,12 +1,12 @@
 <div class="wrapper wrapper-content animated fadeInRight">
   @for (alert of getNotes() | orderby: 'type'; track alert) {
-    <ngb-alert [type]="alert.type" (closed)="closeNote($index)" [dismissible]="false">{{ alert.message }}</ngb-alert>
+    <ngb-alert [type]="alert.type" [dismissible]="false" (closed)="closeNote($index)">{{ alert.message }}</ngb-alert>
   }
 
   <div class="row">
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
-        <div (click)="filterBoxExpanded = !filterBoxExpanded" class="ibox-title pointer">
+        <div class="ibox-title pointer" (click)="filterBoxExpanded = !filterBoxExpanded">
           <div class="ibox-tools pull-right">
             <a> <i class="fa fa-chevron-{{ filterBoxExpanded ? 'up' : 'down' }}"></i></a>
           </div>
@@ -48,19 +48,19 @@
                     <td>
                       <select [(ngModel)]="sortDirection" (ngModelChange)="updateSort()">
                         @for (option of sortOptions; track option.value) {
-                          <option value="{{ option.value }}">{{ option.name }}</option>
+                          <option [value]="option.value">{{ option.name }}</option>
                         }
                       </select>
                     </td>
                     <td>
-                      <button [ladda]="searching" (click)="searchUpdated()" class="btn btn-info btn-sm" type="button">
+                      <button class="btn btn-info btn-sm" type="button" [ladda]="searching" (click)="searchUpdated()">
                         <i class="fa fa-search" aria-hidden="true"></i> Search
                       </button>
                       <button
-                        [ladda]="clearSearchLadda"
-                        (click)="clearSearch()"
                         class="btn btn-warning btn-sm"
                         type="button"
+                        [ladda]="clearSearchLadda"
+                        (click)="clearSearch()"
                       >
                         <i class="fa fa-times" aria-hidden="true"></i> Clear
                       </button>
@@ -81,13 +81,13 @@
         <div class="ibox-title">
           <div class="pull-right">
             <button
+              class="btn btn-xs pull-right btn-info"
+              type="button"
               [routerLink]="['/status']"
               [queryParams]="{
                 configuration: storageParams.configuration,
                 adapter: storageParams.adapterName,
               }"
-              class="btn btn-xs pull-right btn-info"
-              type="button"
             >
               <i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i>
               <span> Back</span>
@@ -106,26 +106,26 @@
         <div class="ibox-content">
           <div class="pull-right">
             <button
-              [title]="truncateButtonText"
-              (click)="truncate()"
-              [ngClass]="truncated ? 'btn btn-info btn-sm space-it-out' : 'btn btn-default btn-sm space-it-out'"
               type="button"
+              [title]="truncateButtonText"
+              [ngClass]="truncated ? 'btn btn-info btn-sm space-it-out' : 'btn btn-default btn-sm space-it-out'"
+              (click)="truncate()"
             >
               {{ truncateButtonText }}
             </button>
             <button
               title="Select All Messages"
-              (click)="selectAll()"
               class="btn btn-default btn-sm space-it-out"
               type="button"
+              (click)="selectAll()"
             >
               Select All
             </button>
             <button
               title="Unselect All Messages"
-              (click)="unselectAll()"
               class="btn btn-default btn-sm space-it-out"
               type="button"
+              (click)="unselectAll()"
             >
               Unselect All
             </button>
@@ -133,12 +133,12 @@
               @if (storageParams.processState === 'InProcess' && targetState.value.name === 'Error') {
                 <button
                   appHasAccessToLink="changeMessagesProcessState"
-                  [ladda]="messagesProcessing"
                   data-style="slide-down"
                   title="Move Message to Error"
-                  (click)="moveMessages()"
                   class="btn btn-danger btn-sm space-it-out"
                   type="button"
+                  [ladda]="messagesProcessing"
+                  (click)="moveMessages()"
                 >
                   <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
                   Move to Error
@@ -146,11 +146,11 @@
               } @else {
                 <button
                   appHasAccessToLink="changeMessagesProcessState"
-                  [ladda]="changingProcessState"
                   data-style="slide-right"
-                  (click)="changeProcessState(targetState.value.name)"
                   class="btn btn-default btn-sm space-it-out"
                   type="button"
+                  [ladda]="changingProcessState"
+                  (click)="changeProcessState(targetState.value.name)"
                 >
                   <i class="fa {{ getProcessStateIconFn(targetState.value.name) }}"></i>
                   Move to {{ targetState.value.name }}
@@ -159,43 +159,43 @@
             }
             <button
               appHasAccessToLink="downloadMessages"
-              [ladda]="messagesDownloading"
               data-style="slide-right"
               title="Download Selected Messages"
-              (click)="downloadMessages()"
               class="btn btn-info btn-sm space-it-out"
               type="button"
+              [ladda]="messagesDownloading"
+              (click)="downloadMessages()"
             >
               <i class="fa fa-arrow-circle-o-down"></i> Download Selected
             </button>
             @if (storageParams.processState === 'Error') {
               <button
                 appHasAccessToLink="resendReceiverMessages"
-                [ladda]="messagesProcessing"
                 data-style="slide-right"
                 title="Resend Selected Messages"
-                (click)="resendMessages()"
                 class="btn btn-warning btn-sm space-it-out"
                 type="button"
+                [ladda]="messagesProcessing"
+                (click)="resendMessages()"
               >
                 <i class="fa fa-repeat"></i> Resend Selected
               </button>
               <button
                 appHasAccessToLink="deleteReceiverMessages"
-                [ladda]="messagesProcessing"
                 data-style="slide-right"
                 title="Delete Selected Messages"
-                (click)="deleteMessages()"
                 class="btn btn-danger btn-sm"
                 type="button"
+                [ladda]="messagesProcessing"
+                (click)="deleteMessages()"
               >
                 <i class="fa fa-times"></i> Delete Selected
               </button>
             }
           </div>
           <app-datatable [datasource]="datasource" [displayColumns]="displayedColumns" [truncate]="truncated">
-            <ng-template appDtContent let-element="rowElement">
-              <app-storage-list-dt [message]="element"></app-storage-list-dt>
+            <ng-template let-element="rowElement" appDtContent>
+              <app-storage-list-dt [message]="element" />
             </ng-template>
           </app-datatable>
         </div>

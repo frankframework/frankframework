@@ -1,6 +1,6 @@
 <div class="wrapper wrapper-content animated fadeInRight">
   @if (alert) {
-    <ngb-alert type="danger" [dismissible]="false" data-cy="logging__alert">{{ alert }}</ngb-alert>
+    <ngb-alert type="danger" data-cy="logging__alert" [dismissible]="false">{{ alert }}</ngb-alert>
   }
   <div class="row">
     <div class="col-lg-12">
@@ -8,11 +8,11 @@
         <div class="ibox-title">
           @if (viewFile) {
             <div class="pull-right action-buttons">
-              <button (click)="popout(path)" class="btn btn-xs" type="button">
+              <button class="btn btn-xs" type="button" (click)="popout(path)">
                 <i class="fa fa-arrow-circle-right" aria-hidden="true"></i>
                 <span> Pop Out</span>
               </button>
-              <button (click)="closeFile()" class="btn btn-xs pull-right" type="button" data-cy="logging__back-button">
+              <button class="btn btn-xs pull-right" type="button" data-cy="logging__back-button" (click)="closeFile()">
                 <i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i>
                 <span> Back</span>
               </button>
@@ -23,10 +23,10 @@
             <span class="m-l-md clipboard"
               >{{ path
               }}<i
-                (click)="copyAndTrimToClipboard(path)"
                 title="copy to clipboard"
                 class="fa fa-clipboard"
                 aria-hidden="true"
+                (click)="copyAndTrimToClipboard(path)"
               ></i
             ></span>
           </h4>
@@ -40,14 +40,14 @@
                     type="text"
                     class="form-control"
                     placeholder="Search ... (Ctrl + Shift + F)"
-                    [(ngModel)]="fileName"
                     name="search"
                     data-cy="logging__search__input"
+                    [(ngModel)]="fileName"
                   />
                   <i
-                    (click)="fileName = ''"
                     class="fa fa-times input-group-closeSearch{{ fileName.length < 1 ? ' hidden' : '' }}"
                     aria-hidden="true"
+                    (click)="fileName = ''"
                   ></i>
                   <span class="input-group-addon">
                     <i class="fa fa-search" aria-hidden="true"></i>
@@ -68,9 +68,9 @@
                     <tr>
                       <td
                         class="pointer"
-                        (click)="open(file)"
-                        [attr.data-file-name]="file.name"
                         data-cy="logging__table__file"
+                        [attr.data-file-name]="file.name"
+                        (click)="open(file)"
                       >
                         {{ file.name }}
                       </td>
@@ -82,11 +82,11 @@
                       <td appToDate [time]="file.lastModified"></td>
                       @if (file.type === 'file') {
                         <td class="hideBtn1170">
-                          <button (click)="download(file)" class="btn btn-xs pull-right" type="button">
+                          <button class="btn btn-xs pull-right" type="button" (click)="download(file)">
                             <i class="fa fa-arrow-circle-o-down" aria-hidden="true"></i>
                             <span> Download</span>
                           </button>
-                          <button (click)="popout(file)" class="btn btn-xs pull-right" type="button">
+                          <button class="btn btn-xs pull-right" type="button" (click)="popout(file)">
                             <i class="fa fa-arrow-circle-right" aria-hidden="true"></i>
                             <span> Pop Out</span>
                           </button>
@@ -94,7 +94,7 @@
                       }
                       @if (file.type === 'directory') {
                         <td class="loggingBtn">
-                          <button (click)="open(file)" class="btn btn-xs pull-right" type="button">
+                          <button class="btn btn-xs pull-right" type="button" (click)="open(file)">
                             <i class="fa fa-folder-open-o" aria-hidden="true"></i>
                             <span> Open</span>
                           </button>
@@ -109,7 +109,7 @@
         }
         @if (viewFile) {
           <div>
-            <app-file-viewer [fileName]="viewFile"></app-file-viewer>
+            <app-file-viewer [fileName]="viewFile" />
           </div>
         }
       </div>

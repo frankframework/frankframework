@@ -8,7 +8,7 @@ import { Subscription } from 'rxjs';
 })
 export class ConditionalOnPropertyDirective implements OnInit, OnDestroy {
   @Input({ required: true }) appConditionalOnProperty!: string;
-  @Input() onFalseConditionClassName: string = 'disabled';
+  @Input() onFalseConditionClassName = 'disabled';
 
   private readonly elementRef: ElementRef<HTMLElement> = inject(ElementRef);
   private readonly appService: AppService = inject(AppService);

@@ -25,7 +25,7 @@ export class LoggingAddComponent {
     level: 'INFO',
   };
   protected levels: ErrorLevels = errorLevelsConst;
-  protected processing: boolean = false;
+  protected processing = false;
 
   constructor(
     private loggingService: LoggingService,

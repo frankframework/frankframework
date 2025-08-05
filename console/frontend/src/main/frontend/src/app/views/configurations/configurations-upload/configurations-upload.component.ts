@@ -31,8 +31,8 @@ export class ConfigurationsUploadComponent implements OnInit, OnDestroy {
   @ViewChild(InputFileUploadComponent) fileInput!: InputFileUploadComponent;
 
   protected datasources: string[] = [];
-  protected result: string = '';
-  protected error: string = '';
+  protected result = '';
+  protected error = '';
   protected form: Form = {
     name: '',
     datasource: '',

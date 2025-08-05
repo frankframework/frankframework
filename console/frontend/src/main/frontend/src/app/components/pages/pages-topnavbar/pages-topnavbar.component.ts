@@ -16,15 +16,15 @@ import { ServerTimeService } from '../../../services/server-time.service';
   imports: [FormsModule, HamburgerComponent, RouterModule, TimeSinceDirective, NgbDropdownModule],
 })
 export class PagesTopnavbarComponent implements OnChanges {
-  @Input() dtapSide: string = '';
-  @Input() dtapStage: string = '';
+  @Input() dtapSide = '';
+  @Input() dtapStage = '';
   @Input() clusterMembers: ClusterMember[] = [];
   @Input() selectedClusterMember: ClusterMember | null = null;
   @Input() userName?: string;
 
   protected readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
   protected notificationList: Signal<Notification[]> = computed(() => this.Notification.getLatest(5));
-  protected loggedIn: boolean = false;
+  protected loggedIn = false;
 
   private readonly appService: AppService = inject(AppService);
   private readonly authService: AuthService = inject(AuthService);

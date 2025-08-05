@@ -3,16 +3,16 @@
     <input
       type="text"
       placeholder="Select one..."
+      class="form-control"
       [name]="name"
       [id]="id"
       [disabled]="disabled"
-      class="form-control"
+      [ngClass]="{ 'combobox__input--error': showError }"
       [(ngModel)]="input"
       (ngModelChange)="onUpdateInput()"
       (blur)="hideListDisplay()"
       (focus)="showListDisplay()"
       (click)="showListDisplay()"
-      [ngClass]="{ 'combobox__input--error': showError }"
     />
     <div #comboboxDropdownIcon class="combobox__dropdown-icon">&#9660;</div>
   </div>

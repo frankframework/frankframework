@@ -4,14 +4,14 @@
       <ul class="nav metismenu" id="side-menu" appSidebar>
         <li class="nav-header">
           <div class="profile-element">
-            <img [src]="frankframeworkLogoPath" alt="Logo" />
+            <img alt="Logo" [src]="frankframeworkLogoPath" />
           </div>
           <div class="logo-element">
-            <img [src]="frankExclamationPath" alt="Logo" />
+            <img alt="Logo" [src]="frankExclamationPath" />
           </div>
         </li>
 
-        <app-custom-views></app-custom-views>
+        <app-custom-views />
 
         <li appHasAccessToLink="getAdapters" routerLinkActive="active" data-cy="pages-navigation__status">
           <a data-cy-nav="adapterStatus" routerLink="/status" (click)="closeExpandedItem()"
@@ -20,9 +20,9 @@
         </li>
 
         <li
-          cdkAccordionItem
           #configuration
           #accordionItemConfiguration="cdkAccordionItem"
+          cdkAccordionItem
           class="nav-group"
           tabindex="0"
           [appHasAccessToLink]="['getConfigurationXML', 'manageConfiguration']"
@@ -51,9 +51,9 @@
           </ul>
         </li>
         <li
-          cdkAccordionItem
           #logging
           #accordionItemLogging="cdkAccordionItem"
+          cdkAccordionItem
           class="nav-group"
           tabindex="0"
           [appHasAccessToLink]="['getLogDirectory', 'getLogConfiguration', 'getLogDefinitions']"
@@ -77,15 +77,15 @@
             >
               <a routerLink="/logging">Log Files</a>
             </li>
-            <li [appHasAccessToLink]="['getLogConfiguration', 'getLogDefinitions']" routerLinkActive="active">
+            <li routerLinkActive="active" [appHasAccessToLink]="['getLogConfiguration', 'getLogDefinitions']">
               <a routerLink="/logging/settings">Log Settings</a>
             </li>
           </ul>
         </li>
         <li
-          cdkAccordionItem
           #testing
           #accordionItemTesting="cdkAccordionItem"
+          cdkAccordionItem
           class="nav-group"
           tabindex="0"
           [attr.aria-expanded]="accordionItemTesting.expanded"
@@ -122,9 +122,9 @@
           </ul>
         </li>
         <li
-          cdkAccordionItem
           #jdbc
           #accordionItemJdbc="cdkAccordionItem"
+          cdkAccordionItem
           class="nav-group"
           tabindex="0"
           [appHasAccessToLink]="['executeJdbcQuery', 'browseJdbcTable', 'generateSQL']"
@@ -148,9 +148,9 @@
           </ul>
         </li>
         <li
-          cdkAccordionItem
           #jms
           #accordionItemJms="cdkAccordionItem"
+          cdkAccordionItem
           class="nav-group"
           tabindex="0"
           [appHasAccessToLink]="['browseQueue', 'putJmsMessage']"
@@ -191,9 +191,9 @@
           >
         </li>
         <li
-          cdkAccordionItem
           #overview
           #accordionItemOverview="cdkAccordionItem"
+          cdkAccordionItem
           class="nav-group"
           tabindex="0"
           [appHasAccessToLink]="['getConnections', 'getIbisStoreSummary', 'getMessageBrowsers']"
@@ -229,7 +229,7 @@
           >
         </li>
         <li appHasAccessToLink="getServerInformation">
-          <a (click)="openInfo()" class="pointer"
+          <a class="pointer" (click)="openInfo()"
             ><i class="fa fa-info-circle"></i> <span class="nav-label">Information</span></a
           >
         </li>
@@ -256,12 +256,12 @@
         </li>
         <li>
           <a
-            class="pointer"
-            target="_blank"
-            title="Report a Bug"
             href="https://github.com/frankframework/frankframework/issues/new?template=1-bug.yml&environment={{
               encodedServerInfo()
             }}"
+            class="pointer"
+            target="_blank"
+            title="Report a Bug"
           >
             <i class="fa fa-flag"></i>
             <span class="nav-label">Report a Bug</span>

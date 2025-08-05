@@ -1,11 +1,11 @@
 @if (flow.isImage) {
-  <a [href]="flow.url" target="_blank" rel="noopener noreferrer">
-    <img [src]="flow.url" alt="Flow Diagram" />
+  <a target="_blank" rel="noopener noreferrer" [href]="flow.url">
+    <img alt="Flow Diagram" [src]="flow.url" />
   </a>
 } @else {
-  <div (click)="prepareFlowModal()" title="Generate Flow Diagram" [style.height]="height + 'px'">
+  <div title="Generate Flow Diagram" [style.height]="height + 'px'" (click)="prepareFlowModal()">
     @if (loadInline) {
-      <ng-mermaid [nmModel]="flow.data ?? ''" [nmRefreshInterval]="500" [flowName]="flowName"></ng-mermaid>
+      <ng-mermaid [nmModel]="flow.data ?? ''" [nmRefreshInterval]="500" [flowName]="flowName" />
     } @else {
       <button appHasAccessToLink="getAdapterFlow" class="btn btn-info">
         <i class="fa fa-share-alt-square"></i> Flow Diagram

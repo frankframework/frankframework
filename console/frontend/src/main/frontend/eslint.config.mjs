@@ -33,6 +33,7 @@ export default [
       '@typescript-eslint/explicit-function-return-type': 'error',
       '@typescript-eslint/triple-slash-reference': 'warn',
       '@typescript-eslint/member-ordering': 'error',
+      '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
 
       // Angular: https://github.com/angular-eslint/angular-eslint/blob/main/packages/eslint-plugin/README.md
       ...angularPlugin.configs.recommended.rules,

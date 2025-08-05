@@ -13,9 +13,9 @@ export class ConfigurationSummaryComponent {
   @Input({ required: true }) isConfigStubbed: Record<string, boolean> = {};
   @Input({ required: true }) isConfigReloading: Record<string, boolean> = {};
   @Input({ required: true }) isConfigAutoReloadable: Record<string, boolean> = {};
-  @Input({ required: true }) selectedConfiguration: string = '';
+  @Input({ required: true }) selectedConfiguration = '';
   @Input({ required: true }) configurationFlowDiagram: string | null = null;
-  @Input({ required: true }) reloading: boolean = false;
+  @Input({ required: true }) reloading = false;
 
   private appService: AppService = inject(AppService);
   protected adapterSummarySignal: Signal<Summary> = this.appService.adapterSummary;

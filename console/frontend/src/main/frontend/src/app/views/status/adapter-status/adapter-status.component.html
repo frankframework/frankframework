@@ -1,10 +1,10 @@
 <div class="ibox float-e-margins" [id]="adapter.name">
   <div
-    (click)="adapterShowContent[adapter.configuration + '/' + adapter.name] = !showContent(adapter)"
-    [ngClass]="adapter.status === 'warning' ? 'warning' : adapter.status === 'stopped' ? 'danger' : 'primary'"
     class="ibox-title"
     title="Click to open"
     data-cy="adapter-status__box"
+    [ngClass]="adapter.status === 'warning' ? 'warning' : adapter.status === 'stopped' ? 'danger' : 'primary'"
+    (click)="adapterShowContent[adapter.configuration + '/' + adapter.name] = !showContent(adapter)"
   >
     <div class="ibox-tools pull-right">
       <a> <i class="fa fa-chevron-{{ showContent(adapter) ? 'up' : 'down' }}"></i></a>
@@ -20,7 +20,7 @@
         <div class="row">
           @if (adapter.upSince > 0) {
             <div class="col-sm-4" title="Uptime">
-              <span [time]="adapter.upSince" appToDate></span> (<span [time]="adapter.upSince" appTimeSince></span>)
+              <span appToDate [time]="adapter.upSince"></span> (<span appTimeSince [time]="adapter.upSince"></span>)
             </div>
           }
           @if (adapter.upSince === 0) {
@@ -28,9 +28,9 @@
           }
           @if ((adapter.lastMessage ?? 0) > 0) {
             <div class="col-sm-4" title="Last Message">
-              <span [time]="adapter.lastMessage!" appToDate></span> (<span
-                [time]="adapter.lastMessage!"
+              <span appToDate [time]="adapter.lastMessage!"></span> (<span
                 appTimeSince
+                [time]="adapter.lastMessage!"
               ></span
               >)
             </div>
@@ -80,9 +80,9 @@
           <span class="pull-right">
             <a
               appHasAccessToLink="getAdapterStatistics"
-              [routerLink]="['', adapter.configuration, 'adapter', adapter.name, 'statistics']"
               class="btn btn-xs btn-info pull-right m-r-xs"
               type="button"
+              [routerLink]="['', adapter.configuration, 'adapter', adapter.name, 'statistics']"
               ><i aria-hidden="true" class="fa fa-bar-chart m-r-xs"></i>More statistics</a
             >
           </span>
@@ -104,11 +104,11 @@
                     <span><i class="fa fa-check-square lh22 m-r-xs"></i> Started</span>
                     <button
                       appHasAccessToLink="updateAdapter"
-                      (click)="stopAdapter(adapter)"
                       class="btn btn-xs danger-hover"
                       style="float: right"
                       title="Stop adapter"
                       type="button"
+                      (click)="stopAdapter(adapter)"
                     >
                       <i class="fa fa-stop"></i>
                     </button>
@@ -127,11 +127,11 @@
                     <span><i class="fa fa-stop-circle lh22 m-r-xs"></i> Stopped</span>
                     <button
                       appHasAccessToLink="updateAdapter"
-                      (click)="startAdapter(adapter)"
                       class="btn btn-xs primary-hover"
                       style="float: right"
                       title="Start adapter"
                       type="button"
+                      (click)="startAdapter(adapter)"
                     >
                       <i class="fa fa-play"></i>
                     </button>
@@ -153,7 +153,7 @@
                 <td>Up since</td>
                 @if (adapter.upSince > 0) {
                   <td>
-                    <span [time]="adapter.upSince" appToDate></span> (<span [time]="adapter.upSince" appTimeSince></span
+                    <span appToDate [time]="adapter.upSince"></span> (<span appTimeSince [time]="adapter.upSince"></span
                     >)
                   </td>
                 }
@@ -165,7 +165,7 @@
                 <td>Last message</td>
                 @if (adapter.lastMessage) {
                   <td>
-                    <span [time]="adapter.lastMessage" appToDate></span>
+                    <span appToDate [time]="adapter.lastMessage"></span>
                   </td>
                 }
                 @if (!adapter.lastMessage) {
@@ -181,11 +181,11 @@
                 <td>
                   <a
                     appHasAccessToLink="getConfigurationXML"
+                    routerLink="/configurations"
                     [queryParams]="{
                       name: adapter.configuration,
                       adapter: adapter.name,
                     }"
-                    routerLink="/configurations"
                   >
                     View adapter configuration XML
                   </a>
@@ -261,21 +261,21 @@
                           <span>
                             <button
                               appHasAccessToLink="updateReceiver"
-                              (click)="addThread(adapter, receiver)"
-                              [disabled]="receiver.state === 'loading'"
                               class="btn btn-xs btn-default m-l-xs"
                               title="Increase the maximum numbers of threads"
                               type="button"
+                              [disabled]="receiver.state === 'loading'"
+                              (click)="addThread(adapter, receiver)"
                             >
                               <i class="fa fa-plus"></i> Inc
                             </button>
                             <button
                               appHasAccessToLink="updateReceiver"
-                              (click)="removeThread(adapter, receiver)"
-                              [disabled]="receiver.state === 'loading' || (receiver.maxThreadCount ?? 0) < 2"
                               class="btn btn-xs btn-default m-l-xs"
                               title="Decrease the maximum numbers of threads"
                               type="button"
+                              [disabled]="receiver.state === 'loading' || (receiver.maxThreadCount ?? 0) < 2"
+                              (click)="removeThread(adapter, receiver)"
                             >
                               <i class="fa fa-minus"></i> Dec
                             </button>
@@ -296,6 +296,8 @@
                             >
                               <a
                                 appHasAccessToLink="browseMessages"
+                                class="btn btn-xs btn-default"
+                                type="button"
                                 [routerLink]="[
                                   '',
                                   adapter.configuration,
@@ -306,8 +308,6 @@
                                   'stores',
                                   store.name,
                                 ]"
-                                class="btn btn-xs btn-default"
-                                type="button"
                               >
                                 <i class="fa {{ getProcessStateIconFn(store.name) }}"></i>
                                 ({{ store.numberOfMessages }})
@@ -318,20 +318,20 @@
                         @if (receiver.state === 'started' || receiver.state === 'exception_starting') {
                           <button
                             appHasAccessToLink="updateReceiver"
-                            (click)="stopReceiver(adapter!, receiver)"
                             class="btn btn-xs danger-hover"
                             title="Stop receiver"
                             type="button"
+                            (click)="stopReceiver(adapter!, receiver)"
                           >
                             <i class="fa fa-stop"></i>
                           </button>
                         }
                         @if (receiver.state === 'stopped' || receiver.state === 'exception_stopping') {
                           <button
-                            (click)="startReceiver(adapter!, receiver)"
                             class="btn btn-xs primary-hover"
                             title="Start receiver"
                             type="button"
+                            (click)="startReceiver(adapter!, receiver)"
                           >
                             <i class="fa fa-play"></i>
                           </button>
@@ -379,7 +379,7 @@
                         <td>
                           {{ pipes.sender }}
                           @if (pipes.destination) {
-                            <span #pipeDestination title="{{ pipes.destination }}">
+                            <span #pipeDestination [title]="pipes.destination">
                               ({{ pipes.destination | truncate: 150 : pipeDestination }})</span
                             >
                           }
@@ -391,6 +391,8 @@
                               @if (pipes.hasMessageLog) {
                                 <a
                                   appHasAccessToLink="browseMessages"
+                                  class="btn btn-xs btn-default m-l-xs"
+                                  type="button"
                                   [routerLink]="[
                                     '',
                                     adapter.configuration,
@@ -401,8 +403,6 @@
                                     'stores',
                                     'Done',
                                   ]"
-                                  class="btn btn-xs btn-default m-l-xs"
-                                  type="button"
                                 >
                                   <i
                                     [ngClass]="pipes.isSenderTransactionalStorage ? 'fa fa-sign-out' : 'fa fa-database'"
@@ -432,7 +432,7 @@
                   @if (message.level === 'INFO') {
                     <td class="text-center" style="width: 40px">&nbsp;<i class="fa fa-info"></i></td>
                     <td class="text-left" style="width: 200px">
-                      <span [time]="message.date" appToDate></span>
+                      <span appToDate [time]="message.date"></span>
                     </td>
                     <td #messageInfo data-cy="adapter-status__table__message">
                       {{ message.message | truncate: 700 : messageInfo }}
@@ -441,7 +441,7 @@
                   @if (message.level === 'WARN') {
                     <td class="text-center" style="width: 40px">&nbsp;<i class="fa fa-warning"></i></td>
                     <td class="text-left" style="width: 200px">
-                      <span [time]="message.date" appToDate></span>
+                      <span appToDate [time]="message.date"></span>
                     </td>
                     <td #messageWarn class="text-warning">
                       {{ message.message | truncate: 700 : messageWarn }}
@@ -450,7 +450,7 @@
                   @if (message.level === 'ERROR') {
                     <td class="text-center" style="width: 40px">&nbsp;<i class="fa fa-times"></i></td>
                     <td class="text-left" style="width: 200px">
-                      <span [time]="message.date" appToDate></span>
+                      <span appToDate [time]="message.date"></span>
                     </td>
                     <td #messageError class="text-danger">
                       {{ message.message | truncate: 700 : messageError }}

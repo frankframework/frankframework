@@ -11,7 +11,7 @@ export class HasAccessToLinkDirective implements OnInit {
 
   private linkNames!: LinkName[];
 
-  @Input() noAccessToLinkClassName: string = 'disabled';
+  @Input() noAccessToLinkClassName = 'disabled';
 
   @Input({ required: true, alias: 'appHasAccessToLink' }) set hasAccessToLink(linkNames: LinkName | LinkName[]) {
     this.linkNames = typeof linkNames === 'string' ? [linkNames] : linkNames;
