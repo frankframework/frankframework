@@ -76,6 +76,12 @@ public class RunCypressE2eTest {
 	public static void setUp() throws IOException {
 		startIafTestInitializer();
 		startTestContainer();
+
+		// Pollers for WebSockets have a enormous delay for larger applications.
+		System.setProperty("console.socket.poller.startDelay", "15");
+		System.setProperty("console.socket.poller.warnings", "5");
+		System.setProperty("console.socket.poller.adapters", "5");
+		System.setProperty("console.socket.poller.messages", "5");
 	}
 
 	private static void startIafTestInitializer() throws IOException {
@@ -88,6 +94,11 @@ public class RunCypressE2eTest {
 		await().pollInterval(5, TimeUnit.SECONDS)
 				.atMost(Duration.ofMinutes(5))
 				.until(() -> verifyAppIsHealthy(gateway));
+	}
+
+	private static boolean verifyAppIsHealthy() {
+		OutboundGateway gateway = SpringUtils.createBean(run, LocalGateway.class);
+		return verifyAppIsHealthy(gateway);
 	}
 
 	private static boolean verifyAppIsHealthy(OutboundGateway gateway) {
@@ -105,7 +116,6 @@ public class RunCypressE2eTest {
 
 		container = new CypressContainer();
 		container.withBaseUrl("http://host.testcontainers.internal:8080/iaf-test/iaf/gui");
-		container.withLogConsumer(frame -> CYPRESS_LOG.info(frame.getUtf8StringWithoutLineEnding()));
 
 		container.start();
 
@@ -143,6 +153,7 @@ public class RunCypressE2eTest {
 						test.getDescription(), () -> {
 							if (!test.isSuccess()) {
 								log.error("{}:\n{}", test.getErrorMessage(), test.getStackTrace());
+								assertTrue(verifyAppIsHealthy(), "!! application not reachable !!");
 							}
 							assertTrue(test.isSuccess(), test::getErrorMessage);
 						}

@@ -25,8 +25,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.configuration.IbisManager;
+import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.scheduler.AbstractJobDef;

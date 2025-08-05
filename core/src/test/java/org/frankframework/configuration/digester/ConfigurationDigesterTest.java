@@ -27,10 +27,9 @@ import org.xml.sax.SAXParseException;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.Configuration;
-import org.frankframework.configuration.ConfigurationDigester;
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.core.Resource;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestAppender;

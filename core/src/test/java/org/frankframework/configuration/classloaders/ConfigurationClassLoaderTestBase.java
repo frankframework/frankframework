@@ -30,9 +30,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import org.frankframework.configuration.ApplicationWarnings;
-import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader.ReportLevel;
+import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.UUIDUtil;
 

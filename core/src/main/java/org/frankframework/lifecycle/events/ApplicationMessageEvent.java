@@ -19,7 +19,7 @@ import java.io.Serial;
 
 import org.springframework.context.ApplicationContext;
 
-import org.frankframework.configuration.ConfigurationUtils;
+import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.util.ClassUtils;
 
 public class ApplicationMessageEvent extends MessageEvent<ApplicationContext> {

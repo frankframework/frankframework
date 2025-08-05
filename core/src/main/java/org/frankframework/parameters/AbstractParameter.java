@@ -49,7 +49,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationUtils;
+import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.IWithParameters;
 import org.frankframework.core.ParameterException;

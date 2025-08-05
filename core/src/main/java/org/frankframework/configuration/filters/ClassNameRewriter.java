@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.configuration;
+package org.frankframework.configuration.filters;
 
 import java.util.List;
 
@@ -24,6 +24,8 @@ import org.xml.sax.SAXException;
 
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.xml.FullXmlFilter;
 import org.frankframework.xml.WritableAttributes;
 

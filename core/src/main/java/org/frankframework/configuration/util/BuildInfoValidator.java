@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.configuration;
+package org.frankframework.configuration.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -27,6 +27,7 @@ import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
