@@ -33,12 +33,15 @@ import jakarta.json.stream.JsonGenerator;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
+import com.jayway.jsonpath.spi.json.JsonSmartJsonProvider;
 
 import lombok.extern.log4j.Log4j2;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
+import net.minidev.json.parser.JSONParser;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IScopeProvider;
@@ -115,7 +118,12 @@ public class JsonUtil {
 		}
 		// Try to match the jsonPath expression on the given json string
 		try {
-			Object jsonPathResult = jsonPath.read(message.asInputStream());
+			// Since 2.6.0 json-smart accepts incomplete JSON by default, so we have to use MODE_PERMISSIVE to disable that.
+			Configuration jsonPathConfiguration = Configuration.builder()
+					.jsonProvider(new JsonSmartJsonProvider(JSONParser.MODE_PERMISSIVE))
+					.build();
+
+			Object jsonPathResult = jsonPath.read(message.asInputStream(), jsonPathConfiguration);
 
 			// if we get to this point, we have a match (and no PathNotFoundException)
 

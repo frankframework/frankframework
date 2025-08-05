@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
@@ -29,7 +28,6 @@ import org.springframework.util.MimeType;
 import com.jayway.jsonpath.JsonPath;
 
 import lombok.Getter;
-import net.minidev.json.JSONArray;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
@@ -302,33 +300,6 @@ public class IfPipe extends AbstractPipe {
 		}
 		// No match was found
 		return null;
-	}
-
-	/**
-	 * When using expressions, jsonPath returns a JsonArray, even if there is only one match. Make sure to get a String from it.
-	 * If the result is not an array and not a scalar value, then return an empty string. Do not return NULL
-	 * when a result was found.
-	 */
-	private @Nonnull String getJsonPathResult(@Nonnull Object jsonPathResult) {
-		if (jsonPathResult instanceof String string) {
-			return string;
-		}
-		if (jsonPathResult instanceof Number number) {
-			return number.toString();
-		}
-		if (jsonPathResult instanceof Boolean bool) {
-			return bool.toString();
-		}
-
-		if (jsonPathResult instanceof JSONArray jsonArray
-				&& !jsonArray.isEmpty()) {
-			return getJsonPathResult(jsonArray.get(0));
-		}
-
-		// We found something, but it does not have a proper string representation
-		// usable for the IF-pipe.
-		// Do not return NULL because NULL indicates that nothing is found.
-		return "";
 	}
 
 	PipeForward getForwardForStringInput(Message message) throws PipeRunException {
