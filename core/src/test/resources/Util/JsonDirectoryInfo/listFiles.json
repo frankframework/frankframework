@@ -1,63 +1,63 @@
 {
-	"count": 9,
-	"list": [
-		{
-			"name": "ClassLoaderTestFile",
-			"path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/ClassLoaderTestFile",
-			"lastModified": 1712751022892,
-			"type": "file",
-			"size": 26,
-			"sizeDisplay": "26 B"
-		},
-		{
-			"name": "ClassLoaderTestFile.txt",
-			"path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/ClassLoaderTestFile.txt",
-			"lastModified": 1712751022893,
-			"type": "file",
-			"size": 30,
-			"sizeDisplay": "30 B"
-		},
-		{
-			"name": "ClassLoaderTestFile.xml",
-			"path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/ClassLoaderTestFile.xml",
-			"lastModified": 1712751022893,
-			"type": "file",
-			"size": 37,
-			"sizeDisplay": "37 B"
-		},
-		{
-			"name": "Configuration.jar",
-			"path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/Configuration.jar",
-			"lastModified": "IGNORE",
-			"type": "file",
-			"size": 197,
-			"sizeDisplay": "197 B"
-		},
-		{
-			"name": "Configuration.xml",
-			"path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/Configuration.xml",
-			"lastModified": 1712751022895,
-			"type": "file",
-			"size": 29,
-			"sizeDisplay": "29 B"
-		},
-		{
-			"name": "fileOnlyOnDirectoryClassPath.txt",
-			"path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/fileOnlyOnDirectoryClassPath.txt",
-			"lastModified": 1712751022895,
-			"type": "file",
-			"size": 39,
-			"sizeDisplay": "39 B"
-		},
-		{
-			"name": "fileOnlyOnDirectoryClassPath.xml",
-			"path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/fileOnlyOnDirectoryClassPath.xml",
-			"lastModified": 1712751022896,
-			"type": "file",
-			"size": 46,
-			"sizeDisplay": "46 B"
-		}
-	],
-	"directory": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot",
-	"wildcard": "*"
+    "count": 9,
+    "list": [
+        {
+            "name": "ClassLoaderTestFile",
+            "path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/ClassLoaderTestFile",
+            "lastModified": "IGNORE",
+            "type": "file",
+            "size": 26,
+            "sizeDisplay": "26 B"
+        },
+        {
+            "name": "ClassLoaderTestFile.txt",
+            "path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/ClassLoaderTestFile.txt",
+            "lastModified": "IGNORE",
+            "type": "file",
+            "size": 30,
+            "sizeDisplay": "30 B"
+        },
+        {
+            "name": "ClassLoaderTestFile.xml",
+            "path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/ClassLoaderTestFile.xml",
+            "lastModified": "IGNORE",
+            "type": "file",
+            "size": 37,
+            "sizeDisplay": "37 B"
+        },
+        {
+            "name": "Configuration.jar",
+            "path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/Configuration.jar",
+            "lastModified": "IGNORE",
+            "type": "file",
+            "size": 601,
+            "sizeDisplay": "601 B"
+        },
+        {
+            "name": "Configuration.xml",
+            "path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/Configuration.xml",
+            "lastModified": "IGNORE",
+            "type": "file",
+            "size": 29,
+            "sizeDisplay": "29 B"
+        },
+        {
+            "name": "fileOnlyOnDirectoryClassPath.txt",
+            "path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/fileOnlyOnDirectoryClassPath.txt",
+            "lastModified": "IGNORE",
+            "type": "file",
+            "size": 39,
+            "sizeDisplay": "39 B"
+        },
+        {
+            "name": "fileOnlyOnDirectoryClassPath.xml",
+            "path": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot/fileOnlyOnDirectoryClassPath.xml",
+            "lastModified": "IGNORE",
+            "type": "file",
+            "size": 46,
+            "sizeDisplay": "46 B"
+        }
+    ],
+    "directory": "IGNORE/core/target/test-classes/ClassLoader/DirectoryClassLoaderRoot",
+    "wildcard": "*"
 }
