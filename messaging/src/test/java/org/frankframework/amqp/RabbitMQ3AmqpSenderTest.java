@@ -1,14 +1,10 @@
 package org.frankframework.amqp;
 
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
-
 import java.io.IOException;
 
 import jakarta.annotation.Nonnull;
 
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.Container.ExecResult;
 import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.junit.jupiter.Container;
@@ -50,15 +46,5 @@ class RabbitMQ3AmqpSenderTest extends AmqpSenderTest {
 		log.info("Result of enabling AMQP plugin: {}", enableResult);
 	}
 
-	@AfterAll
-	static void tearDownClass() {
-//		await().atMost(1, TimeUnit.DAYS).until(() -> false);
-	}
 
-	@Override
-	@Disabled("RabbitMQ does not support Dynamic Receivers now used for RR")
-	void sendMessageRR() {
-		//noinspection DataFlowIssue
-		assumeFalse(true);
-	}
 }

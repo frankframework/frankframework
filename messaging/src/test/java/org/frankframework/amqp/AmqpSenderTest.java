@@ -19,6 +19,7 @@ import org.apache.qpid.protonj2.client.Receiver;
 import org.apache.qpid.protonj2.client.ReceiverOptions;
 import org.apache.qpid.protonj2.client.Sender;
 import org.apache.qpid.protonj2.client.exceptions.ClientException;
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -37,7 +38,7 @@ import org.frankframework.util.CloseUtils;
 
 @Log4j2
 public abstract class AmqpSenderTest {
-	private static final String EXCHANGE_NAME = "testExchange";
+	private static final String EXCHANGE_NAME = "test:testExchange";
 	private AmqpConnectionFactory factory;
 	private AmqpSender sender;
 	private PipeLineSession session;
@@ -79,13 +80,18 @@ public abstract class AmqpSenderTest {
 	void tearDown() {
 		CloseUtils.closeSilently(session);
 		sender.stop();
-		System.clearProperty("amqp.host");
-		System.clearProperty("amqp.port");
 		try {
 			factory.destroy();
 		} catch (Exception e) {
 			log.warn("Failed to destroy the connection factory", e);
 		}
+	}
+
+	@AfterAll
+	static void tearDownClass() {
+//		await().atMost(1, TimeUnit.DAYS).until(() -> false);
+		System.clearProperty("amqp.host");
+		System.clearProperty("amqp.port");
 	}
 
 	@ParameterizedTest
@@ -121,6 +127,9 @@ public abstract class AmqpSenderTest {
 		// Arrange
 		sender.setStreamingMessages(sendStreaming);
 		sender.setMessageProtocol(MessageProtocol.FF);
+
+		// To receive a message as streaming, it has to be sent as binary (Data section).
+		sender.setMessageType(AmqpSender.MessageType.BINARY);
 		sender.configure();
 		sender.start();
 
@@ -133,7 +142,7 @@ public abstract class AmqpSenderTest {
 		// Assert
 		assertTrue(senderResult.isSuccess());
 
-		// Check message on queue
+		// Check for a message on queue
 		Message result = getStreamingMessage(AmqpSenderTest.EXCHANGE_NAME);
 
 		assertNotNull(result);
@@ -143,7 +152,7 @@ public abstract class AmqpSenderTest {
 	}
 
 	@Test
-	void sendMessageRR() throws Exception {
+	void sendMessageRRDynamicReplyQueue() throws Exception {
 		// Arrange
 		sender.setStreamingMessages(false);
 		sender.setMessageProtocol(MessageProtocol.RR);
@@ -165,7 +174,7 @@ public abstract class AmqpSenderTest {
 		String r = result.asString();
 		assertEquals("my reply", r);
 
-		Message request = receivedRequest.get();
+		Message request = receivedRequest.get(1, TimeUnit.MINUTES);
 		assertNotNull(request);
 		log.info(request);
 		String rr = request.asString();
@@ -199,7 +208,7 @@ public abstract class AmqpSenderTest {
 					log.warn("Failed to read a message during the defined wait interval.");
 					future.completeExceptionally(new TimeoutException("Did not receive request-message within 60 seconds."));
 				}
-			} catch (ClientException | IOException e) {
+			} catch (RuntimeException | ClientException | IOException e) {
 				future.completeExceptionally(e);
 			}
 			return null;

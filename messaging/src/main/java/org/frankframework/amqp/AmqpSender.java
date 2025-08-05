@@ -25,6 +25,8 @@ import java.util.concurrent.TimeUnit;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.qpid.protonj2.client.Connection;
 import org.apache.qpid.protonj2.client.Delivery;
 import org.apache.qpid.protonj2.client.DeliveryMode;
@@ -57,7 +59,9 @@ import org.frankframework.senders.AbstractSenderWithParameters;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.MessageUtils;
+import org.frankframework.util.Misc;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.util.UUIDUtil;
 
 @Category(Category.Type.EXPERIMENTAL)
 @DestinationType(DestinationType.Type.AMQP)
@@ -66,7 +70,9 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 
 	private String connectionName;
 	private String queueName;
+	private String replyQueueName;
 	private long timeout = DEFAULT_TIMEOUT_SECONDS;
+	private MessageType messageType = MessageType.AUTO;
 	private boolean streamingMessages = false;
 	private boolean durable = true;
 	private DeliveryMode deliveryMode = DeliveryMode.AT_LEAST_ONCE;
@@ -77,12 +83,41 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	private Sender sender;
 	private StreamSender streamSender;
 
+	public enum MessageType {
+		/**
+		 * Automatically determine the type of the outgoing {@link org.apache.qpid.protonj2.client.Message} based
+		 * on the value of {@link Message#isBinary()}.
+		 */
+		AUTO,
+		/**
+		 * Create the outgoing message with an {@code AmqpValue} section containing character data.
+		 */
+		TEXT,
+		/**
+		 * Create the outgoing message with an AMQP {@code Body} section containing the message as binary data.
+		 * Only binary messages can be read or created in a streaming manner when messages are large.
+		 */
+		BINARY
+	}
+
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 
 		if (connectionFactory == null) {
 			throw new ConfigurationException("ConnectionFactory is null");
+		}
+
+		if (StringUtils.isEmpty(queueName)) {
+			throw new ConfigurationException("Queue name is empty");
+		}
+
+		if (messageProtocol == MessageProtocol.FF && StringUtils.isNotEmpty(replyQueueName)) {
+			ConfigurationWarnings.add(this, log, "Reply queue is ignored for Fire & Forget Senders");
+		}
+
+		if (streamingMessages && messageType != MessageType.BINARY) {
+			ConfigurationWarnings.add(this, log, "[messageType] is ignored, because [streamingMessages] is set to [true]");
 		}
 	}
 
@@ -101,13 +136,26 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 			log.info("AMPQ Connection Created, server offers capabilities: {}", offeredCapabilities);
 			log.info("AMQP Server Properties: {}", connection.properties());
 
+			// NB: There are a number of things that might go wrong only when using RabbitMQ but we don't know if we're talking to
+			// RabbitMQ or another server until we open the connection. So we give the configuration warnings here rather than from configure().
+			boolean serverIsRabbitMQ = "RabbitMQ".equals(connection.properties().get("product"));
+
+			if (serverIsRabbitMQ) {
+				// The "/" should be legal in RabbitMQ queue names, but there are errors when I use it. Perhaps because queues are not pre-created? Dunno.
+				// For now, giving a warning on it.
+				if (Strings.CS.contains(queueName, "/") || Strings.CS.contains(replyQueueName, "/")) {
+					ConfigurationWarnings.add(this, log, "RabbitMQ might not allow slashes in queue names (queue: [" + queueName + "]; reply queue: [" + replyQueueName + "])");
+				}
+			}
+
 			SenderOptions senderOptions = new SenderOptions();
 			senderOptions.deliveryMode(deliveryMode);
 			if (messageProtocol == MessageProtocol.RR) {
 				senderOptions.targetOptions().capabilities("queue");
 
-				if ("RabbitMQ".equals(connection.properties().get("product"))) {
-					ConfigurationWarnings.add(this, log, "RabbitMQ does not support dynamic request-reply queues");
+				if (StringUtils.isEmpty(replyQueueName) && serverIsRabbitMQ) {
+					replyQueueName = Misc.getHostname() + ":" + UUIDUtil.createRandomUUID();
+					ConfigurationWarnings.add(this, log, "RabbitMQ does not support dynamic request-reply queues. Using randomly generated queue name [" + replyQueueName + "]");
 				}
 			}
 			sender = connection.openSender(queueName, senderOptions);
@@ -153,34 +201,52 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	private SenderResult sendRequestResponse(@Nonnull Message message) throws SenderException {
 		Message responseMessage;
 		// It seems that dynamic receivers cannot be streaming?
-		try (Receiver dynamicReceiver = connection.openDynamicReceiver()) {
-			String dynamicReplyAddress = dynamicReceiver.address();
-			doSend(message, dynamicReplyAddress);
-			Delivery response = dynamicReceiver.receive(timeout, TimeUnit.SECONDS);
+		try (Receiver responseReceiver = StringUtils.isEmpty(replyQueueName) ? connection.openDynamicReceiver() : connection.openReceiver(replyQueueName)) {
+			String responseQueueAddress = responseReceiver.address();
+			doSend(message, responseQueueAddress);
+			Delivery response = responseReceiver.receive(timeout, TimeUnit.SECONDS);
 			if (response == null) {
 				responseMessage = Message.nullMessage();
 			} else {
-				responseMessage = Amqp1Helper.convertAmqpMessageToFFMessage(response.message());
-				response.accept();
+				responseMessage = convertAndAcceptDelivery(response);
 			}
-		} catch (ClientException | TimeoutException | IOException e) {
+		} catch (RuntimeException | ClientException | TimeoutException | IOException e) {
 			throw new SenderException("Error sending request/response message", e);
 		}
 		return new SenderResult(responseMessage);
+	}
+
+	@Nonnull
+	private static Message convertAndAcceptDelivery(Delivery delivery) throws ClientException, IOException {
+		Message responseMessage;
+		try {
+			responseMessage = Amqp1Helper.convertAmqpMessageToFFMessage(delivery.message());
+			delivery.accept();
+		} catch (RuntimeException | ClientException | IOException e) {
+			delivery.reject(e.getClass().getName(), e.getMessage());
+			throw e;
+		}
+		return responseMessage;
 	}
 
 	private void doSend(Message message, String dynamicReplyAddress) throws SenderException, TimeoutException {
 		if (streamingMessages) {
 			sendStreamingMessage(message, dynamicReplyAddress);
 		} else {
-			sendBinaryMessage(message, dynamicReplyAddress);
+			sendObjectMessage(message, dynamicReplyAddress);
 		}
 	}
 
-	private void sendBinaryMessage(@Nonnull Message message, @Nullable String replyAddress) throws SenderException, TimeoutException {
-		org.apache.qpid.protonj2.client.Message<byte[]> amqpMessage;
+	private void sendObjectMessage(@Nonnull Message message, @Nullable String replyAddress) throws SenderException, TimeoutException {
+		org.apache.qpid.protonj2.client.Message<?> amqpMessage;
 		try {
-			amqpMessage = org.apache.qpid.protonj2.client.Message.create(message.asByteArray());
+			if (isCreateBinaryMessage(message)) {
+				// Creates a message with a binary-date "Body" section
+				amqpMessage = org.apache.qpid.protonj2.client.Message.create(message.asByteArray());
+			} else {
+				// Creates a message with an "AmqpValue" section
+				amqpMessage = org.apache.qpid.protonj2.client.Message.create(message.asString());
+			}
 			applyMessageMetaData(message, amqpMessage);
 			applyMessageOptions(amqpMessage, replyAddress);
 		} catch (IOException | ClientException e) {
@@ -195,6 +261,14 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		} catch (ClientException e) {
 			throw new SenderException("Cannot send AMQP message to AMQP server", e);
 		}
+	}
+
+	private boolean isCreateBinaryMessage(@Nonnull Message message) {
+		return switch (messageType) {
+			case AUTO -> message.isBinary();
+			case BINARY -> true;
+			case TEXT -> false;
+		};
 	}
 
 	private void applyMessageOptions(@Nonnull org.apache.qpid.protonj2.client.Message<?> amqpMessage, @Nullable String replyAddress) throws ClientException {
@@ -263,6 +337,31 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		this.queueName = queueName;
 	}
 
+	public void setReplyQueueName(String replyQueueName) {
+		this.replyQueueName = replyQueueName;
+	}
+
+	/**
+	 * Set the message type: {@link MessageType#TEXT} to character data to be sent as {@code AmqpValue} section,
+	 * {@link MessageType#BINARY} for binary data to be sent as AMQP {@code Data} section, or {@link MessageType#AUTO} to
+	 * decide automatically based on the wether the input {@link Message} is binary or not.
+	 * <p>
+	 *     When a message is to be received as a streaming message by the recipient, it has to be sent as a {@link MessageType#BINARY}
+	 *     message.
+	 *     <br/>
+	 *     When {@link #setStreamingMessages(boolean)} is configured {@literal true}, the {@code messageType} is ignored.
+	 * </p>
+	 *
+	 * @ff.default {@literal AUTO}
+	 */
+	public void setMessageType(MessageType messageType) {
+		this.messageType = messageType;
+	}
+
+	/**
+	 * Set if messages should be created as streaming messages. Streaming messages are
+	 * always sent as binary messages, with an AMQP {@code Body} section.
+	 */
 	public void setStreamingMessages(boolean streamingMessages) {
 		this.streamingMessages = streamingMessages;
 	}
