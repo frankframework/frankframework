@@ -3,9 +3,15 @@
     <img alt="Flow Diagram" [src]="flow.url" />
   </a>
 } @else {
-  <div title="Generate Flow Diagram" [style.height]="height + 'px'" (click)="prepareFlowModal()">
+  <div
+    tabindex="0"
+    role="button"
+    title="Generate Flow Diagram"
+    [style.height]="`${height}px`"
+    (click)="prepareFlowModal()"
+  >
     @if (loadInline) {
-      <ng-mermaid [nmModel]="flow.data ?? ''" [nmRefreshInterval]="500" [flowName]="flowName" />
+      <app-ng-mermaid [nmModel]="flow.data ?? ''" [nmRefreshInterval]="500" [flowName]="flowName" />
     } @else {
       <button appHasAccessToLink="getAdapterFlow" class="btn btn-info">
         <i class="fa fa-share-alt-square"></i> Flow Diagram

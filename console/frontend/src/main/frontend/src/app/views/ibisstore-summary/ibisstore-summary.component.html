@@ -13,9 +13,9 @@
         <div class="ibox-content">
           <form role="form" appQuickSubmitForm (submit)="submit(form)">
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30">Datasource</label>
+              <label class="col-sm-3 control-label label-height-30" for="datasource">Datasource</label>
               <div class="col-sm-9">
-                <select class="form-control" name="datasource" [(ngModel)]="form.datasource">
+                <select class="form-control" name="datasource" id="datasource" [(ngModel)]="form.datasource">
                   @for (datasource of datasources; track datasource) {
                     <option [value]="datasource">
                       {{ datasource }}
@@ -80,7 +80,7 @@
                         }
                         @if (s.receiver) {
                           <td>
-                            <span title="View Messages Processed by {{ s.receiver }}" class="text-success">
+                            <span class="text-success" [title]="`View Messages Processed by ${s.receiver}`">
                               @if (t.type === 'A') {
                                 <button
                                   appHasAccessToLink="browseMessages"
@@ -101,7 +101,7 @@
                                 </button>
                               }
                             </span>
-                            <span title="View Messages in Error in {{ s.receiver }}" class="text-danger">
+                            <span class="text-danger" [title]="`View Messages in Error in ${s.receiver}`">
                               @if (t.type === 'E') {
                                 <button
                                   appHasAccessToLink="browseMessages"
@@ -128,7 +128,7 @@
                         @if (s.pipe) {
                           <td>
                             <span
-                              title="View Messages Processed by {{ s.pipe }}"
+                              [title]="`View Messages Processed by ${s.pipe}`"
                               [ngClass]="t.type === 'M' ? 'text-primary' : 'text-success'"
                             >
                               <button

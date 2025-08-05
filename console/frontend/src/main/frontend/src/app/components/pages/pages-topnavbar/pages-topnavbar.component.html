@@ -42,7 +42,7 @@
             <li ngbDropdownItem>
               <a routerLink="/notifications" [queryParams]="{ id: message.id }">
                 <div>
-                  <i class="fa {{ message.icon }} fa-fw"></i>
+                  <i [class]="`fa ${message.icon} fa-fw`"></i>
                   {{ message.title }}
                   <span class="pull-right text-muted small" appTimeSince [time]="message.time"></span>
                 </div>

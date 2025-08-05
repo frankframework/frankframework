@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnInit } from '@angular/core';
+import { AfterViewInit, Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Alert, AlertService } from 'src/app/services/alert.service';
 import { AuthService } from 'src/app/services/auth.service';
@@ -23,11 +23,9 @@ export class LoginComponent implements OnInit, AfterViewInit {
   protected notifications: Alert[] = [];
   protected isUwu = false;
 
-  constructor(
-    private alertService: AlertService,
-    private authService: AuthService,
-    private router: Router,
-  ) {}
+  private alertService = inject(AlertService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
 
   ngOnInit(): void {
     if (this.authService.isLoggedIn()) {

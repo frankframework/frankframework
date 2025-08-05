@@ -1,5 +1,5 @@
 @if (url.length > 0) {
-  <div style="margin: 0 -15px; height: calc(100% - {{ getTopBarHeight() }}px);">
+  <div [style]="`margin: 0 -15px; height: calc(100% - ${getTopBarHeight()}px);`">
     <iframe style="width: 100%; height: 100%; border: none; overflow: hidden" [src]="iframeSrc"></iframe>
   </div>
 }

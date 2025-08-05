@@ -1,6 +1,6 @@
 import { Component, computed, inject, OnDestroy, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { copyToClipboard } from '../../../utils';
+import { copyToClipboard } from '../../../utilities';
 import { ToastService } from '../../../services/toast.service';
 
 import { TimeSinceDirective } from '../../time-since.directive';

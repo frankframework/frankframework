@@ -50,6 +50,9 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
   };
   protected stats?: Statistics;
 
+  protected statisticsTimeBoundaries: Record<string, string>;
+  protected statisticsSizeBoundaries: Record<string, string>;
+
   private defaults = {
     name: 'Name',
     count: 'Count',
@@ -105,6 +108,11 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
     'rgb(153, 102, 255)', // purple
     'rgb(201, 203, 207)', // grey
   ];
+
+  constructor() {
+    this.statisticsTimeBoundaries = { ...this.defaults };
+    this.statisticsSizeBoundaries = { ...this.defaults };
+  }
 
   ngOnInit(): void {
     const routeParameters = this.route.snapshot.paramMap;

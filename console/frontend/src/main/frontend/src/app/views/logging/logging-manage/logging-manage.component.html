@@ -34,7 +34,9 @@
                     <ul role="menu" ngbDropdownMenu>
                       @for (loglevel of form.errorLevels; track loglevel) {
                         <li>
-                          <a ngbDropdownItem (click)="changeRootLoglevel(loglevel)">{{ loglevel }}</a>
+                          <a tabindex="0" role="button" ngbDropdownItem (click)="changeRootLoglevel(loglevel)">{{
+                            loglevel
+                          }}</a>
                         </li>
                       }
                     </ul>
@@ -171,7 +173,13 @@
                       <ul role="menu" ngbDropdownMenu="">
                         @for (loglevel of errorLevels; track loglevel) {
                           <li>
-                            <a ngbDropdownItem (click)="changeLoglevel(definition.name, loglevel)">{{ loglevel }}</a>
+                            <a
+                              tabindex="0"
+                              role="button"
+                              ngbDropdownItem
+                              (click)="changeLoglevel(definition.name, loglevel)"
+                              >{{ loglevel }}</a
+                            >
                           </li>
                         }
                       </ul>
@@ -242,7 +250,13 @@
                       <ul role="menu" ngbDropdownMenu>
                         @for (loglevel of errorLevels; track loglevel) {
                           <li>
-                            <a ngbDropdownItem (click)="changeLoglevel(logger.key, loglevel)">{{ loglevel }}</a>
+                            <a
+                              tabindex="0"
+                              role="button"
+                              ngbDropdownItem
+                              (click)="changeLoglevel(logger.key, loglevel)"
+                              >{{ loglevel }}</a
+                            >
                           </li>
                         }
                       </ul>

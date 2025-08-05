@@ -1,5 +1,5 @@
 import { Component, DebugElement, QueryList, ViewChildren } from '@angular/core';
-import { SortEvent, ThSortableDirective, basicTableSort } from './th-sortable.directive';
+import { basicTableSort, SortEvent, ThSortableDirective } from './th-sortable.directive';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 
@@ -25,12 +25,12 @@ import { By } from '@angular/platform-browser';
   imports: [ThSortableDirective],
 })
 class TestComponent {
+  @ViewChildren(ThSortableDirective) headers!: QueryList<ThSortableDirective>;
+
   items = [
     { name: 'a', value: 2 },
     { name: 'b', value: 1 },
   ];
-
-  @ViewChildren(ThSortableDirective) headers!: QueryList<ThSortableDirective>;
 
   onSort(event: SortEvent): void {
     this.items = basicTableSort(this.items, this.headers, event);

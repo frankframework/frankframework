@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 
@@ -60,10 +60,8 @@ type TriggerResponse = {
   providedIn: 'root',
 })
 export class MonitorsService {
-  constructor(
-    private http: HttpClient,
-    private appService: AppService,
-  ) {}
+  private http = inject(HttpClient);
+  private appService = inject(AppService);
 
   getUrl(selectedConfiguration: string, monitor: Monitor, trigger?: Trigger): string {
     let url = `${this.appService.absoluteApiPath}configurations/${selectedConfiguration}/monitors/${monitor.name}`;

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { ErrorLevels, errorLevelsConst, LoggingService, LoggingSettings, LogInformation } from '../logging.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -40,12 +40,10 @@ export class LoggingManageComponent implements OnInit {
   protected definitions: LogInformation['definitions'] = [];
   protected alert: string | null = null;
 
-  constructor(
-    private loggingService: LoggingService,
-    private toastService: ToastService,
-    private router: Router,
-    private route: ActivatedRoute,
-  ) {}
+  private loggingService = inject(LoggingService);
+  private toastService = inject(ToastService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   ngOnInit(): void {
     this.updateLogInformation();

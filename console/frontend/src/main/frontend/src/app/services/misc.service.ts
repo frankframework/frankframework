@@ -117,7 +117,7 @@ export class MiscService {
   }
 
   private _prepVersion(v: string | number): string[] | number[] {
-    v = `${v}`.replaceAll(/[+_\-]/g, '.');
+    v = `${v}`.replaceAll(/[+_-]/g, '.');
     v = v.replaceAll(/([^\d.]+)/g, '.$1.').replaceAll(/\.{2,}/g, '.');
     return v.length === 0 ? [-8] : v.split('.');
   }

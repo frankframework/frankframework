@@ -21,11 +21,11 @@ export class EnvironmentVariablesComponent implements OnInit {
   protected configProperties: keyValueProperty[] = [];
   protected environmentProperties: keyValueProperty[] = [];
   protected systemProperties: keyValueProperty[] = [];
-
-  private readonly appService: AppService = inject(AppService);
   protected configurationNames: Signal<string[]> = computed(() =>
     this.appService.configurations().map((configuration) => configuration.name),
   );
+
+  private readonly appService: AppService = inject(AppService);
 
   ngOnInit(): void {
     this.appService.getEnvironmentVariables().subscribe((data) => {

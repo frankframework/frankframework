@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
+import { Component, HostListener, inject, OnDestroy, OnInit } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AppService } from 'src/app/app.service';
 
@@ -10,20 +10,10 @@ export abstract class BaseIframeComponent implements OnInit, OnDestroy {
   protected iframeSrc?: SafeResourceUrl;
   protected redirectURL?: string;
 
+  protected readonly sanitizer = inject(DomSanitizer);
+  protected readonly appService = inject(AppService);
+
   private topBarHeightPx = 99;
-
-  protected constructor(
-    protected readonly sanitizer: DomSanitizer,
-    protected readonly appService: AppService,
-  ) {}
-
-  ngOnInit(): void {
-    document.body.classList.add('no-scroll');
-  }
-
-  ngOnDestroy(): void {
-    document.body.classList.remove('no-scroll');
-  }
 
   @HostListener('window:resize', ['$event'])
   calcTopBarHeight(): void {
@@ -35,13 +25,21 @@ export abstract class BaseIframeComponent implements OnInit, OnDestroy {
     }
   }
 
+  ngOnInit(): void {
+    document.body.classList.add('no-scroll');
+  }
+
+  ngOnDestroy(): void {
+    document.body.classList.remove('no-scroll');
+  }
+
   protected setIframeSource(ffPage: string): void {
     this.url = `${this.appService.getServerPath()}iaf/${ffPage}`;
     this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(this.url);
     this.appService.iframePopoutUrl.set(this.url);
   }
 
-  getTopBarHeight(): number {
+  protected getTopBarHeight(): number {
     return this.topBarHeightPx;
   }
 }

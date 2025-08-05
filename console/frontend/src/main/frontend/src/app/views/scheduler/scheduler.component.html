@@ -117,9 +117,14 @@
       <div class="col-lg-12" [ngClass]="{ hidden: jobGroupKV.key !== selectedJobGroup && selectedJobGroup !== 'All' }">
         @if (count > 0) {
           <div class="ibox float-e-margins">
-            <div class="ibox-title pointer" (click)="jobShowContent[jobGroupKV.key] = !showContent(jobGroupKV.key)">
+            <div
+              tabindex="0"
+              role="button"
+              class="ibox-title pointer"
+              (click)="jobShowContent[jobGroupKV.key] = !showContent(jobGroupKV.key)"
+            >
               <div class="ibox-tools pull-right">
-                <a> <i class="fa fa-chevron-{{ showContent(jobGroupKV.key) ? 'up' : 'down' }}"></i></a>
+                <a> <i [class]="`fa fa-chevron-${showContent(jobGroupKV.key) ? 'up' : 'down'}`"></i></a>
               </div>
               <h4>Jobgroup: {{ jobGroupKV.key }}</h4>
             </div>
@@ -130,10 +135,10 @@
                     <div class="pull-right trigger-actions">
                       @if (job.type === 'DATABASE') {
                         <button
-                          title="Edit Job {{ job.name }}"
                           appHasAccessToLink="updateTrigger"
                           class="btn btn-info btn-xs"
                           type="button"
+                          [title]="`Edit Job ${job.name}`"
                           (click)="edit(jobGroupKV.key, job.name)"
                         >
                           <i class="fa fa-pencil"></i> Edit
@@ -141,10 +146,10 @@
                       }
                       @if (job.type === 'DATABASE') {
                         <button
-                          title="Delete Job {{ job.name }}"
                           appHasAccessToLink="deleteTrigger"
                           class="btn btn-danger btn-xs"
                           type="button"
+                          [title]="`Delete Job ${job.name}`"
                           (click)="remove(jobGroupKV.key, job.name)"
                         >
                           <i class="fa fa-times"></i> Delete
@@ -152,10 +157,10 @@
                       }
                       @if (job.state === 'PAUSED') {
                         <button
-                          title="Resume Job {{ job.name }}"
                           appHasAccessToLink="updateTrigger"
                           class="btn btn-warning btn-xs"
                           type="button"
+                          [title]="`Resume Job ${job.name}`"
                           (click)="resume(jobGroupKV.key, job.name)"
                         >
                           <i class="fa fa-play"></i> Resume
@@ -163,20 +168,20 @@
                       }
                       @if (job.state !== 'PAUSED') {
                         <button
-                          title="Pause Job {{ job.name }}"
                           appHasAccessToLink="updateTrigger"
                           class="btn btn-gray btn-xs"
                           type="button"
+                          [title]="`Pause Job ${job.name}`"
                           (click)="pause(jobGroupKV.key, job.name)"
                         >
                           <i class="fa fa-pause"></i> Pause
                         </button>
                       }
                       <button
-                        title="Trigger Job {{ job.name }}"
                         appHasAccessToLink="trigger"
                         class="btn btn-info btn-xs"
                         type="button"
+                        [title]="`Trigger Job ${job.name}`"
                         (click)="trigger(jobGroupKV.key, job.name)"
                       >
                         <i class="fa fa-arrow-circle-o-right"></i> Trigger

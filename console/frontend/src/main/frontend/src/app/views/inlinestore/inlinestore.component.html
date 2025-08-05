@@ -33,8 +33,8 @@
                           <td>{{ stateItem.receiverName }}</td>
                           <td>
                             <span
-                              class="text-{{ getProcessStateIconColorFn(item.key) }}"
-                              title="Browse messages with ProcessState: {{ item.key }}"
+                              [title]="`Browse messages with ProcessState: ${item.key}`"
+                              [class]="`text-${getProcessStateIconColorFn(item.key)}`"
                             >
                               <button
                                 class="btn btn-xs btn-default m-l-xs"
@@ -50,7 +50,7 @@
                                   item.key,
                                 ]"
                               >
-                                <i class="fa {{ getProcessStateIconFn(item.key) }}"></i>
+                                <i [class]="`fa ${getProcessStateIconFn(item.key)}`"></i>
                                 ({{ stateItem.messageCount }})
                               </button>
                             </span>

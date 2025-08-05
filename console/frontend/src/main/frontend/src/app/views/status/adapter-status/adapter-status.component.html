@@ -1,5 +1,7 @@
 <div class="ibox float-e-margins" [id]="adapter.name">
   <div
+    tabindex="0"
+    role="button"
     class="ibox-title"
     title="Click to open"
     data-cy="adapter-status__box"
@@ -7,7 +9,7 @@
     (click)="adapterShowContent[adapter.configuration + '/' + adapter.name] = !showContent(adapter)"
   >
     <div class="ibox-tools pull-right">
-      <a> <i class="fa fa-chevron-{{ showContent(adapter) ? 'up' : 'down' }}"></i></a>
+      <a> <i [class]="`fa fa-chevron-${showContent(adapter) ? 'up' : 'down'}`"></i></a>
     </div>
     <div class="row almost-full-width">
       <div class="col-lg-6 col-md-12 clear">
@@ -146,7 +148,7 @@
               <tr>
                 <td>Configured</td>
                 <td>
-                  <i class="fa {{ adapter.configured ? 'fa-check-square' : 'fa-times-circle' }}"></i>
+                  <i [class]="`fa ${adapter.configured ? 'fa-check-square' : 'fa-times-circle'}`"></i>
                 </td>
               </tr>
               <tr>
@@ -291,8 +293,8 @@
                         @for (store of getTransactionalStores(receiver); track store) {
                           <span>
                             <span
-                              class="text-{{ getProcessStateIconColorFn(store.name) }}"
-                              title="Browse messages with ProcessState: {{ store.name }}"
+                              [title]="`Browse messages with ProcessState: ${store.name}`"
+                              [class]="`text-${getProcessStateIconColorFn(store.name)}`"
                             >
                               <a
                                 appHasAccessToLink="browseMessages"
@@ -309,7 +311,7 @@
                                   store.name,
                                 ]"
                               >
-                                <i class="fa {{ getProcessStateIconFn(store.name) }}"></i>
+                                <i [class]="`fa ${getProcessStateIconFn(store.name)}`"></i>
                                 ({{ store.numberOfMessages }})
                               </a>
                             </span>

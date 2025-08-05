@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { AppService } from '../../../app.service';
 
 @Component({
@@ -7,7 +7,7 @@ import { AppService } from '../../../app.service';
     '<a class="navbar-minimalize minimalize" (click)="toggle()"><i class="fa left fa-angle-double-left"></i><i class="fa right fa-angle-double-right"></i></a>',
 })
 export class MinimalizaSidebarComponent {
-  constructor(private appService: AppService) {}
+  private appService = inject(AppService);
 
   toggle(): void {
     this.appService.toggleSidebar();

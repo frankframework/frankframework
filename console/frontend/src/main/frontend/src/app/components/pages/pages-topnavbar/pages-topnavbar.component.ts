@@ -1,5 +1,5 @@
 import { Component, computed, inject, Input, OnChanges, Signal } from '@angular/core';
-import { NotificationService, Notification } from 'src/app/services/notification.service';
+import { Notification, NotificationService } from 'src/app/services/notification.service';
 import { HamburgerComponent } from './hamburger.component';
 import { TimeSinceDirective } from '../../time-since.directive';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
@@ -24,12 +24,16 @@ export class PagesTopnavbarComponent implements OnChanges {
 
   protected readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
   protected notificationList: Signal<Notification[]> = computed(() => this.Notification.getLatest(5));
+  protected notificationCount: Signal<number>;
   protected loggedIn = false;
 
   private readonly appService: AppService = inject(AppService);
   private readonly authService: AuthService = inject(AuthService);
   private readonly Notification: NotificationService = inject(NotificationService);
-  protected notificationCount: Signal<number> = this.Notification.count;
+
+  constructor() {
+    this.notificationCount = this.Notification.count;
+  }
 
   ngOnChanges(): void {
     this.loggedIn = this.authService.isLoggedIn();

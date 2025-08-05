@@ -71,7 +71,7 @@
             Previous
           </button>
           @if (datasource.currentPage > 1) {
-            <span class="dt-btn first-page" (click)="updatePage(1)">1</span>
+            <button class="dt-btn first-page" (click)="updatePage(1)">1</button>
           }
           @if (datasource.currentPage > 2) {
             <span class="dt-btn fill">...</span>
@@ -81,9 +81,9 @@
             <span class="dt-btn fill">...</span>
           }
           @if (datasource.currentPage < datasource.totalPages) {
-            <span class="dt-btn last-page" (click)="updatePage(datasource.totalPages)">{{
-              datasource.totalPages
-            }}</span>
+            <button class="dt-btn last-page" (click)="updatePage(datasource.totalPages)">
+              {{ datasource.totalPages }}
+            </button>
           }
           <button
             class="dt-btn"

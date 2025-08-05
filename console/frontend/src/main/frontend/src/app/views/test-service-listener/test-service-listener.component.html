@@ -11,35 +11,36 @@
         <div class="ibox-content">
           <form role="form" appQuickSubmitForm (submit)="submit($event)">
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30">Select a service</label>
+              <label for="service" class="col-sm-3 control-label label-height-30">Select a service</label>
               <div class="col-sm-9">
-                <app-combobox name="service" [options]="services" [(selectedOption)]="form.service" />
+                <app-combobox name="service" id="service" [options]="services" [(selectedOption)]="form.service" />
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30">Upload File</label>
+              <label for="upload" class="col-sm-3 control-label label-height-30">Upload File</label>
               <div class="col-sm-9 col-md-4">
-                <app-input-file-upload (fileUpdated)="updateFile($event)" />
+                <app-input-file-upload id="upload" (fileUpdated)="updateFile($event)" />
               </div>
               <div class="hidden-xs hidden-sm col-md-1">
-                <label class="control-label label-height-30 pull-right">Encoding</label>
+                <label class="control-label label-height-30 pull-right" for="encoding1">Encoding</label>
               </div>
               <div class="hidden-xs hidden-sm col-md-4">
-                <input class="form-control" name="encoding" type="text" [(ngModel)]="form.encoding" />
+                <input class="form-control" name="encoding" id="encoding1" type="text" [(ngModel)]="form.encoding" />
               </div>
             </div>
             <div class="row form-group hidden-md hidden-lg">
               <div class="col-sm-3">
-                <label class="control-label label-height-30">Encoding</label>
+                <label class="control-label label-height-30" for="encoding2">Encoding</label>
               </div>
               <div class="col-sm-9">
-                <input class="form-control" name="encoding" type="text" [(ngModel)]="form.encoding" />
+                <input class="form-control" name="encoding" id="encoding2" type="text" [(ngModel)]="form.encoding" />
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30">Message</label>
+              <label class="col-sm-3 control-label label-height-30" for="message">Message</label>
               <div class="col-sm-9">
                 <app-monaco-editor
+                  id="message"
                   class="form-control"
                   style="height: 200px"
                   [options]="{ language: 'text' }"

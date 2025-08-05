@@ -32,7 +32,7 @@
           "
           [ngClass]="getClassByRoute('active', 'configuration', accordionItemConfiguration.expanded)"
         >
-          <a (click)="expandCollapse(accordionItemConfiguration, $event)"
+          <a tabindex="0" role="button" (click)="expandCollapse(accordionItemConfiguration, $event)"
             ><i class="fa fa-cogs"></i>
             <span class="nav-label">Configurations</span>
             <span class="fa arrow"></span
@@ -61,7 +61,7 @@
           [expanded]="getExpandedByRoute('logging', { element: logging, accordionItem: accordionItemLogging })"
           [ngClass]="getClassByRoute('active', 'logging', accordionItemLogging.expanded)"
         >
-          <a (click)="expandCollapse(accordionItemLogging, $event)"
+          <a tabindex="0" role="button" (click)="expandCollapse(accordionItemLogging, $event)"
             ><i class="fa fa-life-ring"></i> <span class="nav-label">Logging</span> <span class="fa arrow"></span
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemLogging.expanded }">
@@ -94,7 +94,7 @@
           "
           [ngClass]="getClassByRoute('active', ['testing', 'test-'], accordionItemTesting.expanded)"
         >
-          <a data-cy-nav="testing" (click)="expandCollapse(accordionItemTesting, $event)"
+          <a tabindex="0" role="button" data-cy-nav="testing" (click)="expandCollapse(accordionItemTesting, $event)"
             ><i class="fa fa-bug"></i> <span class="nav-label">Testing</span> <span class="fa arrow"></span
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemTesting.expanded }">
@@ -132,7 +132,7 @@
           [expanded]="getExpandedByRoute(['jdbc', 'liquibase'], { element: jdbc, accordionItem: accordionItemJdbc })"
           [ngClass]="getClassByRoute('active', ['jdbc', 'liquibase'], accordionItemJdbc.expanded)"
         >
-          <a (click)="expandCollapse(accordionItemJdbc, $event)"
+          <a tabindex="0" role="button" (click)="expandCollapse(accordionItemJdbc, $event)"
             ><i class="fa fa-cubes"></i> <span class="nav-label">JDBC</span> <span class="fa arrow"></span
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemJdbc.expanded }">
@@ -158,7 +158,7 @@
           [expanded]="getExpandedByRoute('jms', { element: jms, accordionItem: accordionItemJms })"
           [ngClass]="getClassByRoute('active', 'jms', accordionItemJms.expanded)"
         >
-          <a (click)="expandCollapse(accordionItemJms, $event)"
+          <a tabindex="0" role="button" (click)="expandCollapse(accordionItemJms, $event)"
             ><i class="fa fa-th-large"></i> <span class="nav-label">JMS</span> <span class="fa arrow"></span
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemJms.expanded }">
@@ -208,7 +208,7 @@
             getClassByRoute('active', ['connections', 'ibisstore-', 'inlinestores'], accordionItemOverview.expanded)
           "
         >
-          <a (click)="expandCollapse(accordionItemOverview, $event)"
+          <a tabindex="0" role="button" (click)="expandCollapse(accordionItemOverview, $event)"
             ><i class="fa fa-sitemap"></i> <span class="nav-label">Overview</span> <span class="fa arrow"></span
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemOverview.expanded }">
@@ -229,7 +229,7 @@
           >
         </li>
         <li appHasAccessToLink="getServerInformation">
-          <a class="pointer" (click)="openInfo()"
+          <a tabindex="0" role="button" class="pointer" (click)="openInfo()"
             ><i class="fa fa-info-circle"></i> <span class="nav-label">Information</span></a
           >
         </li>
@@ -256,12 +256,12 @@
         </li>
         <li>
           <a
-            href="https://github.com/frankframework/frankframework/issues/new?template=1-bug.yml&environment={{
-              encodedServerInfo()
-            }}"
             class="pointer"
             target="_blank"
             title="Report a Bug"
+            [href]="
+              `https://github.com/frankframework/frankframework/issues/new?template=1-bug.yml&environment=${encodedServerInfo()}`
+            "
           >
             <i class="fa fa-flag"></i>
             <span class="nav-label">Report a Bug</span>

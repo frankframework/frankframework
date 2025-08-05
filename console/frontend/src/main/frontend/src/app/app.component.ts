@@ -36,7 +36,7 @@ import { InformationModalComponent } from './components/pages/information-modal/
 import { ToastService } from './services/toast.service';
 import { ServerInfo, ServerInfoService } from './services/server-info.service';
 import { ClusterMemberEvent, ClusterMemberEventType, WebsocketService } from './services/websocket.service';
-import { deepMerge } from './utils';
+import { deepMerge } from './utilities';
 import { ServerTimeService } from './services/server-time.service';
 
 import { ToastsContainerComponent } from './components/toasts-container/toasts-container.component';
@@ -71,6 +71,7 @@ export class AppComponent implements OnInit, OnDestroy {
   protected isLoginView = false;
   protected clusterMembers: ClusterMember[] = [];
   protected selectedClusterMember: ClusterMember | null = null;
+  protected startupError: Signal<string | null>;
 
   private readonly http: HttpClient = inject(HttpClient);
   private readonly router: Router = inject(Router);
@@ -90,7 +91,6 @@ export class AppComponent implements OnInit, OnDestroy {
   private readonly websocketService: WebsocketService = inject(WebsocketService);
   private readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
   private readonly appService: AppService = inject(AppService);
-  protected startupError: Signal<string | null> = this.appService.startupError;
 
   private serverInfo: ServerInfo | null = null;
   private _subscriptions = new Subscription();
@@ -104,6 +104,8 @@ export class AppComponent implements OnInit, OnDestroy {
   private messageKeeperSize = 10; // see Adapter.java#messageKeeperSize
 
   constructor() {
+    this.startupError = this.appService.startupError;
+
     Pace.start({
       eventLag: {
         minSamples: 10,

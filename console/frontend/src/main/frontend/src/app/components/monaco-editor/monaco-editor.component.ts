@@ -1,9 +1,11 @@
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
 /// <reference path="../../../../node_modules/monaco-editor/monaco.d.ts" />
 import {
   AfterViewInit,
   Component,
   ElementRef,
   EventEmitter,
+  inject,
   Input,
   NgZone,
   OnChanges,
@@ -12,7 +14,7 @@ import {
   SimpleChanges,
   ViewChild,
 } from '@angular/core';
-import { first, ReplaySubject } from 'rxjs';
+import { first, Observable, ReplaySubject } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 
 type AMDRequire = {
@@ -29,9 +31,6 @@ type AMDRequire = {
   styleUrls: ['./monaco-editor.component.scss'],
 })
 export class MonacoEditorComponent implements AfterViewInit, OnChanges, OnDestroy {
-  private editorSubject = new ReplaySubject<monaco.editor.IStandaloneCodeEditor>(1);
-  editor$ = this.editorSubject.asObservable();
-
   @Input()
   value?: string;
   @Output()
@@ -46,15 +45,21 @@ export class MonacoEditorComponent implements AfterViewInit, OnChanges, OnDestro
   @ViewChild('editor')
   protected editorContainer!: ElementRef;
 
+  editor$: Observable<monaco.editor.IStandaloneCodeEditor>;
+
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private zone = inject(NgZone);
+
+  private editorSubject = new ReplaySubject<monaco.editor.IStandaloneCodeEditor>(1);
+
   private editor?: monaco.editor.IStandaloneCodeEditor;
   private decorationsDelta: string[] = [];
   private skipFragmentUpdate = false;
 
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private zone: NgZone,
-  ) {}
+  constructor() {
+    this.editor$ = this.editorSubject.asObservable();
+  }
 
   ngAfterViewInit(): void {
     this.loadMonaco();
@@ -69,6 +74,35 @@ export class MonacoEditorComponent implements AfterViewInit, OnChanges, OnDestro
 
   ngOnDestroy(): void {
     this.editor?.dispose();
+  }
+
+  async setValue(content: string): Promise<void> {
+    return new Promise<void>((resolve) => {
+      this.editor$.pipe(first()).subscribe((editor) => {
+        editor.getModel()?.setValue(content);
+        resolve();
+      });
+    });
+  }
+
+  setLineNumberInRoute(startLineNumber: number, endLineNumber: number | undefined = undefined): void {
+    let fragment = `L${startLineNumber}`;
+    if (endLineNumber) fragment += `-${endLineNumber}`;
+    this.zone.run(() => {
+      this.router.navigate([], {
+        fragment: fragment,
+        queryParamsHandling: 'merge',
+        replaceUrl: true,
+      });
+    });
+  }
+
+  findMatchForRegex(regexp: string): monaco.editor.FindMatch[] | undefined {
+    let matches: monaco.editor.FindMatch[] | undefined;
+    this.editor$.pipe(first()).subscribe((editor) => {
+      matches = editor.getModel()?.findMatches(regexp, false, true, true, null, false);
+    });
+    return matches;
   }
 
   private loadMonaco(): void {
@@ -88,7 +122,7 @@ export class MonacoEditorComponent implements AfterViewInit, OnChanges, OnDestro
     }
   }
 
-  onAmdLoader(): void {
+  private onAmdLoader(): void {
     const windowRequire = (globalThis as unknown as AMDRequire).require;
     windowRequire.config({ paths: { vs: 'assets/monaco/vs' } });
     windowRequire(['vs/editor/editor.main'], () => {
@@ -166,18 +200,6 @@ export class MonacoEditorComponent implements AfterViewInit, OnChanges, OnDestro
     }
   }
 
-  setLineNumberInRoute(startLineNumber: number, endLineNumber: number | undefined = undefined): void {
-    let fragment = `L${startLineNumber}`;
-    if (endLineNumber) fragment += `-${endLineNumber}`;
-    this.zone.run(() => {
-      this.router.navigate([], {
-        fragment: fragment,
-        queryParamsHandling: 'merge',
-        replaceUrl: true,
-      });
-    });
-  }
-
   private highlightLine(lineNumber: number): void {
     this.highlightRange({
       startLineNumber: lineNumber,
@@ -239,22 +261,5 @@ export class MonacoEditorComponent implements AfterViewInit, OnChanges, OnDestro
     this.editor$.pipe(first()).subscribe((editor) => {
       editor.revealLineNearTop(lineNumber);
     });
-  }
-
-  async setValue(content: string): Promise<void> {
-    return new Promise<void>((resolve) => {
-      this.editor$.pipe(first()).subscribe((editor) => {
-        editor.getModel()?.setValue(content);
-        resolve();
-      });
-    });
-  }
-
-  findMatchForRegex(regexp: string): monaco.editor.FindMatch[] | undefined {
-    let matches: monaco.editor.FindMatch[] | undefined;
-    this.editor$.pipe(first()).subscribe((editor) => {
-      matches = editor.getModel()?.findMatches(regexp, false, true, true, null, false);
-    });
-    return matches;
   }
 }

@@ -1,6 +1,6 @@
-import { Component, OnInit, OnDestroy, inject, Signal } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, Signal } from '@angular/core';
 import { ActivatedRoute, ActivationEnd, NavigationEnd, Router } from '@angular/router';
-import { Subscription, filter } from 'rxjs';
+import { filter, Subscription } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 
 @Component({
@@ -11,13 +11,18 @@ import { AppService } from 'src/app/app.service';
 })
 export class PagesTopinfobarComponent implements OnInit, OnDestroy {
   protected breadcrumbs = 'Loading';
+  protected loading: Signal<boolean>;
+  protected popoutUrl: Signal<string | null>;
 
   private _subscriptions: Subscription = new Subscription();
   private readonly router: Router = inject(Router);
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
   private readonly appService: AppService = inject(AppService);
-  protected loading: Signal<boolean> = this.appService.loading;
-  protected popoutUrl: Signal<string | null> = this.appService.iframePopoutUrl;
+
+  constructor() {
+    this.loading = this.appService.loading;
+    this.popoutUrl = this.appService.iframePopoutUrl;
+  }
 
   ngOnInit(): void {
     const navigationActivationSubscription = this.router.events

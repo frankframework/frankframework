@@ -1,10 +1,10 @@
-import { Directive, ElementRef, HostListener } from '@angular/core';
+import { Directive, ElementRef, HostListener, inject } from '@angular/core';
 
 @Directive({
   selector: '[appQuickSubmitForm]',
 })
 export class QuickSubmitFormDirective {
-  constructor(private element: ElementRef<HTMLFormElement>) {}
+  private element = inject(ElementRef<HTMLFormElement>);
 
   @HostListener('keydown.control.enter', ['$event'])
   onControlEnter(event: KeyboardEvent): boolean | void {

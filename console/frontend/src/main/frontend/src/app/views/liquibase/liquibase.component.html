@@ -24,9 +24,9 @@
         <div class="ibox-content">
           <form role="form" appQuickSubmitForm (submit)="submit(form)">
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30">Configuration</label>
+              <label class="col-sm-3 control-label label-height-30" for="configuration">Configuration</label>
               <div class="col-sm-9">
-                <select class="form-control" name="configuration" [(ngModel)]="form.configuration">
+                <select class="form-control" name="configuration" id="configuration" [(ngModel)]="form.configuration">
                   @for (configuration of filteredConfigurations(); track configuration.name) {
                     <option>
                       {{ configuration.name }}
@@ -36,10 +36,11 @@
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30">Upload Changeset</label>
+              <label for="upload" class="col-sm-3 control-label label-height-30">Upload Changeset</label>
               <div class="col-sm-5">
                 <app-input-file-upload
                   accept=".zip,.xml"
+                  id="upload"
                   title="changelog file(s) to be translated into SQL script can be single xml file or a zip file with multiple xml files."
                   (fileUpdated)="file = $event"
                 />

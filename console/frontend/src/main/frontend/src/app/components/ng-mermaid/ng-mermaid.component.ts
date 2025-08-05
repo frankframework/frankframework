@@ -12,7 +12,7 @@ import {
 import { Dimensions, getFactoryDimensions, initMermaid2Svg, mermaid2svg } from '@frankframework/frank-config-layout';
 
 @Component({
-  selector: 'ng-mermaid',
+  selector: 'app-ng-mermaid',
   template: '',
   styles: [
     `

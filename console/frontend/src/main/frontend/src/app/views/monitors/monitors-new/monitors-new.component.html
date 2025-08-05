@@ -14,21 +14,23 @@
         <div class="ibox-content">
           <form role="form" appQuickSubmitForm (submit)="submit()">
             <div class="row form-group">
-              <label class="col-sm-3 control-label">Configuration</label>
+              <label for="configuration" class="col-sm-3 control-label">Configuration</label>
               <div class="col-sm-9">
                 <app-combobox
                   name="configuration"
+                  id="configuration"
                   [options]="configurations()"
                   [(selectedOption)]="selectedConfiguration"
                 />
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label">Monitor Name</label>
+              <label for="name" class="col-sm-3 control-label">Monitor Name</label>
               <div class="col-sm-9">
                 <input
                   class="form-control m-b"
                   name="name"
+                  id="name"
                   type="text"
                   data-cy="monitors-new__name__input"
                   [(ngModel)]="monitorName"

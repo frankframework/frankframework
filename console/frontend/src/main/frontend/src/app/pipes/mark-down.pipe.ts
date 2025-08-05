@@ -1,4 +1,4 @@
-import { Pipe, PipeTransform } from '@angular/core';
+import { inject, Pipe, PipeTransform } from '@angular/core';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import MarkdownIt from 'markdown-it';
 
@@ -6,7 +6,7 @@ import MarkdownIt from 'markdown-it';
   name: 'markDown',
 })
 export class MarkDownPipe implements PipeTransform {
-  constructor(private sanitizer: DomSanitizer) {}
+  private sanitizer = inject(DomSanitizer);
 
   transform(input: string): SafeHtml {
     if (!input) return '';

@@ -13,11 +13,12 @@
         <div class="ibox-content">
           <form role="form" appQuickSubmitForm (submit)="submit()">
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30">Logger name</label>
+              <label for="table" class="col-sm-3 control-label label-height-30">Logger name</label>
               <div class="col-sm-9">
                 <input
                   class="form-control"
                   name="table"
+                  id="table"
                   type="text"
                   data-cy="logging-add__logger-name__input"
                   [(ngModel)]="form.logger"
@@ -25,11 +26,12 @@
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30">Level</label>
+              <label for="configuration" class="col-sm-3 control-label label-height-30">Level</label>
               <div class="col-sm-9">
                 <select
                   class="form-control"
                   name="configuration"
+                  id="configuration"
                   data-cy="logging-add__level__select"
                   [(ngModel)]="form.level"
                 >

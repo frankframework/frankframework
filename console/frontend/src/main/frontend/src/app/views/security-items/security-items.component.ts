@@ -20,6 +20,8 @@ import { KeyValuePipe, NgClass } from '@angular/common';
   styleUrls: ['./security-items.component.scss'],
 })
 export class SecurityItemsComponent implements OnInit {
+  protected readonly Object = Object;
+
   protected sapSystems: SapSystem[] = [];
   protected authEntries: AuthEntry[] = [];
   protected jmsRealms: Record<string, string> = {};
@@ -73,6 +75,4 @@ export class SecurityItemsComponent implements OnInit {
       this.links = links;
     });
   }
-
-  protected readonly Object = Object;
 }
