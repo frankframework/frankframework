@@ -161,6 +161,15 @@
               "headless": true
             }
           }
+        },
+        "lint": {
+          "builder": "@angular-eslint/builder:lint",
+          "options": {
+            "lintFilePatterns": [
+              "src/**/*.ts",
+              "src/**/*.html"
+            ]
+          }
         }
       }
     }
@@ -170,7 +179,8 @@
     "packageManager": "pnpm",
     "schematicCollections": [
       "@schematics/angular",
-      "@cypress/schematic"
+      "@cypress/schematic",
+      "angular-eslint"
     ]
   }
 }
