@@ -53,6 +53,11 @@ import org.frankframework.util.StreamUtil;
 
 @Log4j2
 public class JsonUtil {
+	// Since 2.6.0 json-smart accepts incomplete JSON by default, so we have to use MODE_PERMISSIVE to disable that.
+	private static final Configuration JSON_PATH_CONFIGURATION = Configuration.builder()
+			.jsonProvider(new JsonSmartJsonProvider(JSONParser.MODE_PERMISSIVE))
+			.build();
+
 	private JsonUtil() {
 		// Private constructor to prevent instance creations
 	}
@@ -118,12 +123,7 @@ public class JsonUtil {
 		}
 		// Try to match the jsonPath expression on the given json string
 		try {
-			// Since 2.6.0 json-smart accepts incomplete JSON by default, so we have to use MODE_PERMISSIVE to disable that.
-			Configuration jsonPathConfiguration = Configuration.builder()
-					.jsonProvider(new JsonSmartJsonProvider(JSONParser.MODE_PERMISSIVE))
-					.build();
-
-			Object jsonPathResult = jsonPath.read(message.asInputStream(), jsonPathConfiguration);
+			Object jsonPathResult = jsonPath.read(message.asInputStream(), JSON_PATH_CONFIGURATION);
 
 			// if we get to this point, we have a match (and no PathNotFoundException)
 
