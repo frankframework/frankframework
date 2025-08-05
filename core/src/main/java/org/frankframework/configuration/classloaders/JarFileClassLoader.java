@@ -22,8 +22,10 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.apache.commons.io.FilenameUtils;
 
@@ -65,11 +67,12 @@ public class JarFileClassLoader extends AbstractJarBytesClassLoader {
 		// Attempt to load 'configuration-name'.jar as sub-path of 'configurations.directory'.
 		try {
 			Path configDir = ConfigurationUtils.getConfigurationDirectory();
-			return Files.list(configDir)
-					.filter(JarFileClassLoader::isJarFile)
-					.filter(e -> getConfigurationName().equals(findConfigurationName(e)))
-					.findFirst()
-					.orElseThrow(()-> new FileNotFoundException("no MessageKeeper found"));
+			try (Stream<Path> input = Files.list(configDir)) {
+				return input.filter(JarFileClassLoader::isJarFile)
+						.filter(e -> getConfigurationName().equals(findConfigurationName(e)))
+						.findFirst()
+						.orElseThrow(()-> new FileNotFoundException("no MessageKeeper found"));
+			}
 
 		} catch (IOException e) {
 			throw new ClassLoaderException("unable to automatically locate configuration archive", e);
@@ -84,6 +87,7 @@ public class JarFileClassLoader extends AbstractJarBytesClassLoader {
 		this.jarFileName = jar;
 	}
 
+	@Nullable
 	public static String findConfigurationName(Path path) {
 		try (InputStream potentialJarFile = Files.newInputStream(path)) {
 			BuildInfoValidator configDetails = new BuildInfoValidator(potentialJarFile);

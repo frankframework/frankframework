@@ -242,7 +242,9 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory, JarFileClassLoader::isJarFile)) {
 			for (Path path : stream) {
 				String configName = JarFileClassLoader.findConfigurationName(path);
-				configurationNames.add(configName);
+				if (configName != null) {
+					configurationNames.add(configName);
+				}
 			}
 		}
 
