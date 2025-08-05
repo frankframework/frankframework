@@ -1,4 +1,4 @@
-<pre class="viewerContainer" [innerText]="fileContents" [ngClass]="{ error }" data-cy="file-viewer__container"></pre>
+<pre class="viewerContainer" data-cy="file-viewer__container" [innerText]="fileContents" [ngClass]="{ error }"></pre>
 @if (loading) {
   <div class="text-center animated fadeInDown">
     <div>

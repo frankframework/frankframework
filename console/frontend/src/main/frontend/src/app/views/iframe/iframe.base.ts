@@ -6,7 +6,7 @@ import { AppService } from 'src/app/app.service';
   template: '',
 })
 export abstract class BaseIframeComponent implements OnInit, OnDestroy {
-  protected url: string = '';
+  protected url = '';
   protected iframeSrc?: SafeResourceUrl;
   protected redirectURL?: string;
 

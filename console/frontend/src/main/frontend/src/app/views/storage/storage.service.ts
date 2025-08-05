@@ -72,7 +72,7 @@ export class StorageService {
   private readonly Misc: MiscService = inject(MiscService);
 
   private baseUrl = '';
-  private tableUpdateTriggerSubject: Subject<void> = new Subject();
+  private tableUpdateTriggerSubject = new Subject<void>();
   public tableUpdateTrigger$: Observable<void> = this.tableUpdateTriggerSubject.asObservable();
 
   updateStorageParams(parameters: Partial<StorageParams>): void {

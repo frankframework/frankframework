@@ -38,9 +38,9 @@ export class WebsocketService {
   private readonly appService: AppService = inject(AppService);
   private readonly sweetalertService: SweetalertService = inject(SweetalertService);
   private readonly toastsService: ToastService = inject(ToastService);
-  private baseUrl: string = `${window.location.host}${this.appService.absoluteApiPath}`;
-  private errorCount: number = 0;
-  private httpProtocol: string = window.location.protocol == 'https:' ? 'https:' : 'http:';
+  private baseUrl = `${globalThis.location.host}${this.appService.absoluteApiPath}`;
+  private errorCount = 0;
+  private httpProtocol: string = globalThis.location.protocol == 'https:' ? 'https:' : 'http:';
   private webSocketProtocol: string = this.httpProtocol == 'https:' ? 'wss:' : 'ws:';
   private client: Client = new Client({
     brokerURL: `${this.webSocketProtocol}//${this.baseUrl}ws`,
@@ -112,7 +112,7 @@ export class WebsocketService {
   private enableSockJs(): void {
     setTimeout(() => {
       if (!this.client.connected) {
-        this.sweetalertService.Warning(
+        this.sweetalertService.warning(
           "Can't connect to Frank!Framework websocket endpoint",
           'Please make sure the Frank!Framework is running and set up correctly! The FF! Console will be unable to retrieve updates of configuration & adapter information.',
         );
@@ -122,7 +122,7 @@ export class WebsocketService {
 
     this.toastsService.warning('Websocket Error', 'Switching to fallback');
     this.client.webSocketFactory = (): IStompSocket => {
-      return new window.SockJS(`${this.httpProtocol}//${this.baseUrl}stomp`, undefined, {
+      return new globalThis.SockJS(`${this.httpProtocol}//${this.baseUrl}stomp`, undefined, {
         transports: [
           'xhr-streaming',
           'xhr-polling',

@@ -17,8 +17,8 @@ import { NgClass } from '@angular/common';
 export class ConfigurationsShowComponent implements OnInit, OnDestroy {
   @ViewChild('editor') editor!: MonacoEditorComponent;
 
-  protected selectedConfiguration: string = 'All';
-  protected loadedConfiguration: boolean = false;
+  protected selectedConfiguration = 'All';
+  protected loadedConfiguration = false;
 
   private readonly appService: AppService = inject(AppService);
   protected configurations: Signal<Configuration[]> = this.appService.configurations;
@@ -26,11 +26,11 @@ export class ConfigurationsShowComponent implements OnInit, OnDestroy {
   private readonly router: Router = inject(Router);
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
   private readonly configurationsService: ConfigurationsService = inject(ConfigurationsService);
-  private configuration: string = '';
+  private configuration = '';
   private fragment?: string;
   private selectedAdapter?: string;
-  private skipParamsUpdate: boolean = false;
-  private initialized: boolean = false;
+  private skipParamsUpdate = false;
+  private initialized = false;
   private configsSubscription: Subscription | null = null;
 
   ngOnInit(): void {

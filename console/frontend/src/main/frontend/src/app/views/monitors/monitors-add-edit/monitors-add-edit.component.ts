@@ -20,8 +20,8 @@ type EventSource = {
 })
 export class MonitorsAddEditComponent implements OnInit {
   protected componentLoading = true;
-  protected selectedConfiguration: string = '';
-  protected monitor: string = '';
+  protected selectedConfiguration = '';
+  protected monitor = '';
   protected eventsOptions: string[] = [];
   protected severities: string[] = [];
   protected trigger: Trigger = {
@@ -37,11 +37,11 @@ export class MonitorsAddEditComponent implements OnInit {
     events: [],
     adapters: [],
   };
-  protected disabled: boolean = false;
+  protected disabled = false;
   protected pageTitle = '';
   protected state: AlertState[] = [];
 
-  private triggerId: number = -1;
+  private triggerId = -1;
   private events: Record<string, Event> = {};
   private eventSources: Record<string, EventSource[]> = {};
 

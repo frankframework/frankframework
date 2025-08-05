@@ -15,12 +15,12 @@ import {
 import { first, ReplaySubject } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
 
-interface AMDRequire {
+type AMDRequire = {
   require: {
     (imports: string[], callback: () => void): void;
     config(config: { paths: Record<string, string> }): void;
   };
-}
+};
 
 @Component({
   selector: 'app-monaco-editor',
@@ -48,7 +48,7 @@ export class MonacoEditorComponent implements AfterViewInit, OnChanges, OnDestro
 
   private editor?: monaco.editor.IStandaloneCodeEditor;
   private decorationsDelta: string[] = [];
-  private skipFragmentUpdate: boolean = false;
+  private skipFragmentUpdate = false;
 
   constructor(
     private router: Router,
@@ -72,12 +72,12 @@ export class MonacoEditorComponent implements AfterViewInit, OnChanges, OnDestro
   }
 
   private loadMonaco(): void {
-    if (typeof window.monaco === 'object') {
+    if (typeof globalThis.monaco === 'object') {
       this.initializeMonaco();
       return;
     }
 
-    if ((window as unknown as AMDRequire).require) {
+    if ((globalThis as unknown as AMDRequire).require) {
       this.onAmdLoader();
     } else {
       const loaderScript: HTMLScriptElement = document.createElement('script');
@@ -89,7 +89,7 @@ export class MonacoEditorComponent implements AfterViewInit, OnChanges, OnDestro
   }
 
   onAmdLoader(): void {
-    const windowRequire = (window as unknown as AMDRequire).require;
+    const windowRequire = (globalThis as unknown as AMDRequire).require;
     windowRequire.config({ paths: { vs: 'assets/monaco/vs' } });
     windowRequire(['vs/editor/editor.main'], () => {
       this.initializeMonaco();
@@ -206,7 +206,7 @@ export class MonacoEditorComponent implements AfterViewInit, OnChanges, OnDestro
     });
   }
 
-  private setPosition(lineNumber: number, column: number = 0): void {
+  private setPosition(lineNumber: number, column = 0): void {
     this.editor$.pipe(first()).subscribe((editor) => {
       editor.setPosition({ lineNumber: lineNumber, column: column });
     });

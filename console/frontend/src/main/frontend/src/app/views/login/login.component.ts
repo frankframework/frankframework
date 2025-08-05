@@ -21,7 +21,7 @@ export class LoginComponent implements OnInit, AfterViewInit {
     password: '',
   };
   protected notifications: Alert[] = [];
-  protected isUwu: boolean = false;
+  protected isUwu = false;
 
   constructor(
     private alertService: AlertService,

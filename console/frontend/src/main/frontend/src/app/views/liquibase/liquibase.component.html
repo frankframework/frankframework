@@ -12,8 +12,8 @@
             <button
               class="btn btn-xs pull-right btn-info"
               type="button"
-              (click)="download()"
               title="Packs all changelog xml files in classpath as a zip file"
+              (click)="download()"
             >
               <i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i>
               <span> Download All Migration Scripts</span>
@@ -22,7 +22,7 @@
           <h4>Liquibase Migration</h4>
         </div>
         <div class="ibox-content">
-          <form role="form" (submit)="submit(form)" appQuickSubmitForm>
+          <form role="form" appQuickSubmitForm (submit)="submit(form)">
             <div class="row form-group">
               <label class="col-sm-3 control-label label-height-30">Configuration</label>
               <div class="col-sm-9">
@@ -39,22 +39,22 @@
               <label class="col-sm-3 control-label label-height-30">Upload Changeset</label>
               <div class="col-sm-5">
                 <app-input-file-upload
-                  (fileUpdated)="file = $event"
                   accept=".zip,.xml"
                   title="changelog file(s) to be translated into SQL script can be single xml file or a zip file with multiple xml files."
+                  (fileUpdated)="file = $event"
                 />
               </div>
             </div>
             <div class="row form-group">
               <div class="col-sm-offset-3 col-sm-9 m-t-md">
-                <button [ladda]="generateSql" class="btn btn-primary btn-w-m font-bold space-it-out" type="submit">
+                <button class="btn btn-primary btn-w-m font-bold space-it-out" type="submit" [ladda]="generateSql">
                   Generate SQL Changes
                 </button>
                 <button
                   class="btn btn-primary btn-w-m font-bold"
                   type="submit"
-                  (click)="download()"
                   title="Packs all changelog xml files in classpath as a zip file"
+                  (click)="download()"
                 >
                   Download Scripts
                 </button>

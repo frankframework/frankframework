@@ -8,30 +8,29 @@
       }
     </div>
     <h3>Frank<strong class="text-frank">!</strong>Console</h3>
-    <form class="m-t FrankLogin" role="form" (submit)="login()" ngNativeValidate>
+    <form class="m-t FrankLogin" role="form" ngNativeValidate (submit)="login()">
       <div class="form-group">
         <input
           id="username"
           type="text"
-          [(ngModel)]="credentials.username"
           class="form-control"
           name="username"
           placeholder="Username"
           required
-          autofocus
           disabled
+          [(ngModel)]="credentials.username"
         />
       </div>
       <div class="form-group">
         <input
           id="password"
           type="password"
-          [(ngModel)]="credentials.password"
           class="form-control"
           name="password"
           placeholder="Password"
           required
           disabled
+          [(ngModel)]="credentials.password"
         />
       </div>
       <div class="form-group">

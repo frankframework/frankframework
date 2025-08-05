@@ -10,7 +10,7 @@ import { AppService } from 'src/app/app.service';
   imports: [],
 })
 export class PagesTopinfobarComponent implements OnInit, OnDestroy {
-  protected breadcrumbs: string = 'Loading';
+  protected breadcrumbs = 'Loading';
 
   private _subscriptions: Subscription = new Subscription();
   private readonly router: Router = inject(Router);

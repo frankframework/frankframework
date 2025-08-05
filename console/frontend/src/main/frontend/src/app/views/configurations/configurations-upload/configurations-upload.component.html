@@ -22,7 +22,7 @@
           <h4>Upload Configuration</h4>
         </div>
         <div class="ibox-content">
-          <form role="form" (submit)="submit()" appQuickSubmitForm>
+          <form role="form" appQuickSubmitForm (submit)="submit()">
             <div class="row form-group">
               <label class="col-sm-3 control-label">Datasource</label>
               <div class="col-sm-9">
@@ -38,7 +38,7 @@
             <div class="row form-group">
               <label class="col-sm-3 control-label label-height-30">Upload File</label>
               <div class="col-sm-5">
-                <app-input-file-upload (fileUpdated)="updateFile($event)" accept=".zip,.jar" />
+                <app-input-file-upload accept=".zip,.jar" (fileUpdated)="updateFile($event)" />
               </div>
               <div class="col-sm-1">
                 <label class="control-label label-height-30 pull-right">Encoding</label>

@@ -92,10 +92,10 @@
                     Reset
                   </button>
                   <button
-                    [ladda]="updateDynamicParams"
                     class="btn btn-primary btn-w-m font-bold"
                     type="submit"
                     appHasAccessToLink="updateLogConfiguration"
+                    [ladda]="updateDynamicParams"
                     (click)="submit(form)"
                   >
                     Send
@@ -116,19 +116,19 @@
           <div class="pull-right">
             <button
               appHasAccessToLink="createLogDefinition"
-              (click)="addLogger()"
               class="btn btn-xs btn-primary m-r-md"
               type="button"
               data-cy="logging-settings__add-logger-button"
+              (click)="addLogger()"
             >
               <span>Add Logger</span>
             </button>
             <button
               appHasAccessToLink="updateLogConfiguration"
-              (click)="reconfigure()"
               class="btn btn-xs pull-right btn-warning m-r-xs"
               type="button"
               data-cy="logging-settings__reconfigure-button"
+              (click)="reconfigure()"
             >
               <i class="fa fa-warning" aria-hidden="true"></i>
               <span> Reconfigure</span>

@@ -32,12 +32,12 @@ export class LoggingComponent implements OnInit {
 
   protected viewFile: null | string = null;
   protected alert: boolean | string = false;
-  protected path: string = '';
-  protected fileName: string = '';
+  protected path = '';
+  protected fileName = '';
   protected sortedlist: LoggingFile[] = [];
 
-  private directory: string = '';
-  private file: string = '';
+  private directory = '';
+  private file = '';
   private previousFile: string | null = null;
   private originalList: LoggingFile[] = [];
 

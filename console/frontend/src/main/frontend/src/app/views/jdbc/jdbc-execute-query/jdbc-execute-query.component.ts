@@ -24,7 +24,7 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
   protected resultTypes: string[] = [];
   protected queryTypes: string[] = [];
   protected error: string | null = '';
-  protected processingMessage: boolean = false;
+  protected processingMessage = false;
   protected form: JdbcQueryForm = {
     query: '',
     queryType: '',
@@ -33,7 +33,7 @@ export class JdbcExecuteQueryComponent implements OnInit, OnDestroy {
     avoidLocking: false,
     trimSpaces: false,
   };
-  protected result: string = '';
+  protected result = '';
 
   protected readonly editorActions = {
     ctrlEnter: {

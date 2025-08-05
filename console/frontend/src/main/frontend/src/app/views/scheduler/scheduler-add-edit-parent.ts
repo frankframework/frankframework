@@ -2,14 +2,14 @@ import { Adapter, AppService, Configuration } from 'src/app/app.service';
 import { JobForm } from './scheduler.service';
 import { inject, Signal } from '@angular/core';
 
-interface StateItem {
+type StateItem = {
   type: string;
   message: string;
-}
+};
 
 export class SchedulerAddEditParent {
   protected state: StateItem[] = [];
-  protected selectedConfiguration: string = '';
+  protected selectedConfiguration = '';
   protected editMode = false;
   protected form: JobForm = {
     name: '',

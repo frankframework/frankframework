@@ -11,17 +11,28 @@
           <h4>Add Logging</h4>
         </div>
         <div class="ibox-content">
-          <form role="form" (submit)="submit()" appQuickSubmitForm>
+          <form role="form" appQuickSubmitForm (submit)="submit()">
             <div class="row form-group">
               <label class="col-sm-3 control-label label-height-30">Logger name</label>
               <div class="col-sm-9">
-                <input class="form-control" name="table" type="text" [(ngModel)]="form.logger" data-cy="logging-add__logger-name__input" />
+                <input
+                  class="form-control"
+                  name="table"
+                  type="text"
+                  data-cy="logging-add__logger-name__input"
+                  [(ngModel)]="form.logger"
+                />
               </div>
             </div>
             <div class="row form-group">
               <label class="col-sm-3 control-label label-height-30">Level</label>
               <div class="col-sm-9">
-                <select class="form-control" name="configuration" [(ngModel)]="form.level" data-cy="logging-add__level__select">
+                <select
+                  class="form-control"
+                  name="configuration"
+                  data-cy="logging-add__level__select"
+                  [(ngModel)]="form.level"
+                >
                   @for (level of levels; track level) {
                     <option [value]="level">
                       {{ level }}
@@ -32,7 +43,12 @@
             </div>
             <div class="row form-group">
               <div class="col-sm-offset-3 col-sm-9 m-t-md">
-                <button [ladda]="processing" class="btn btn-primary btn-w-m font-bold space-it-out" type="submit" data-cy="logging-add__send-button">
+                <button
+                  class="btn btn-primary btn-w-m font-bold space-it-out"
+                  type="submit"
+                  data-cy="logging-add__send-button"
+                  [ladda]="processing"
+                >
                   Send
                 </button>
                 <button routerLink=".." class="btn btn-w-m font-bold" type="button">Cancel</button>

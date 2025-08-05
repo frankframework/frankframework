@@ -11,7 +11,7 @@
           <h4>Browse a JDBC Table</h4>
         </div>
         <div class="ibox-content">
-          <form role="form" (submit)="submit(form)" appQuickSubmitForm>
+          <form role="form" appQuickSubmitForm (submit)="submit(form)">
             <div class="row form-group">
               <label class="col-sm-3 control-label label-height-30">Datasource</label>
               <div class="col-sm-9">
@@ -67,7 +67,7 @@
                 <button class="btn btn-info btn-w-m font-bold" type="button" (click)="reset()">Reset</button>
               </div>
               <div class="col-sm-3 m-t-md">
-                <button [ladda]="processingMessage" class="btn btn-primary btn-w-m font-bold" type="submit">
+                <button class="btn btn-primary btn-w-m font-bold" type="submit" [ladda]="processingMessage">
                   Send
                 </button>
               </div>

@@ -15,7 +15,7 @@ export class FlowModalComponent {
 
   protected showActionButtons = false;
   protected errorActionMessage: null | string = null;
-  protected isFirefox: boolean = false;
+  protected isFirefox = false;
   protected flowSvg: SVGSVGElement | null = null;
   protected zoom = '100%';
 

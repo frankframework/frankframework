@@ -12,8 +12,8 @@ export class ServerTimeService {
   private currentTime: Date = new Date();
   private timeUpdateIntervalId = -1;
   private previousLocalTime: number = Date.now();
-  private dateFormat: string = 'yyyy-MM-dd HH:mm:ss';
-  private serverTimezoneOffset: number = 0;
+  private dateFormat = 'yyyy-MM-dd HH:mm:ss';
+  private serverTimezoneOffset = 0;
 
   getIntialTime(): string {
     return formatDate(this.baseTime, this.dateFormat, this.locale, this.timezone);
@@ -48,8 +48,8 @@ export class ServerTimeService {
     this.serverTimezoneOffset = timezoneOffset ?? 0;
     this.previousLocalTime = Date.now();
 
-    if (this.timeUpdateIntervalId > -1) window.clearInterval(this.timeUpdateIntervalId);
-    this.timeUpdateIntervalId = window.setInterval(() => this.updateTime(), 200);
+    if (this.timeUpdateIntervalId > -1) globalThis.clearInterval(this.timeUpdateIntervalId);
+    this.timeUpdateIntervalId = globalThis.setInterval(() => this.updateTime(), 200);
     this.updateTime();
 
     this.checkValidTimezone();

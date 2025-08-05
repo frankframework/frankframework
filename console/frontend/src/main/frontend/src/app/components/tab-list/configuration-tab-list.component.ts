@@ -13,9 +13,9 @@ import { toObservable } from '@angular/core/rxjs-interop';
   styleUrl: './tab-list.component.scss',
 })
 export class ConfigurationTabListComponent extends TabListComponent implements OnInit, OnChanges, OnDestroy {
-  @Input() queryParamName: string = 'name';
-  @Input() showAll: boolean = false;
-  @Input() filterIAF_Util: boolean = false;
+  @Input() queryParamName = 'name';
+  @Input() showAll = false;
+  @Input() filterIAF_Util = false;
 
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
   private readonly router: Router = inject(Router);

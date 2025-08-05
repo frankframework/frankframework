@@ -25,7 +25,7 @@ export class LogoutComponent implements OnInit {
         this.router.navigate(['/login']);
       },
       error: () => {
-        window.setTimeout(() => {
+        globalThis.setTimeout(() => {
           this.router.navigate(['/']);
         }, 2000);
       },

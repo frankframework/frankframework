@@ -3,30 +3,30 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 
-export interface Service {
+export type Service = {
   name: string;
   methods: string[];
   view: string;
   uriPattern: string;
-}
+};
 
-export interface ApiListener {
+export type ApiListener = {
   methods: string[];
   uriPattern: string;
   error: string;
-}
+};
 
-export interface Wsdl {
+export type Wsdl = {
   configuration: string;
   adapter: string;
   error: string;
-}
+};
 
-interface WebServices {
+type WebServices = {
   services: Service[];
   wsdls: Wsdl[];
   apiListeners: ApiListener[];
-}
+};
 
 @Injectable({
   providedIn: 'root',

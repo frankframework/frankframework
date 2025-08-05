@@ -30,9 +30,9 @@ type Scheduler = {
 
 export type JobState = 'NONE' | 'NORMAL' | 'PAUSED' | 'COMPLETE' | 'ERROR' | 'BLOCKED';
 
-export interface JobMessage extends Message {
+export type JobMessage = {
   text: string;
-}
+} & Message;
 
 export type Job = {
   name: string;
@@ -80,13 +80,13 @@ export class SchedulerComponent implements OnInit, OnDestroy {
     schedulerClass: '',
     jobStoreClass: '',
   };
-  protected searchFilter: string = '';
-  protected refreshing: boolean = false;
+  protected searchFilter = '';
+  protected refreshing = false;
   protected databaseSchedulesEnabled: Signal<boolean> = computed(
     () => this.appService.appConstants()['loadDatabaseSchedules.active'] === 'true',
   );
   protected jobShowContent: Record<keyof typeof this.jobGroups, boolean> = {};
-  protected selectedJobGroup: string = 'All';
+  protected selectedJobGroup = 'All';
 
   private initialized = false;
 
@@ -150,7 +150,7 @@ export class SchedulerComponent implements OnInit, OnDestroy {
   }
 
   remove(jobGroup: string, jobName: string): void {
-    this.sweetAlertService.Confirm({ title: `Please confirm the deletion of '${jobName}'` }).then((result) => {
+    this.sweetAlertService.confirm({ title: `Please confirm the deletion of '${jobName}'` }).then((result) => {
       if (result.isConfirmed) {
         this.schedulerService.deleteScheduleJob(jobGroup, jobName).subscribe();
       }

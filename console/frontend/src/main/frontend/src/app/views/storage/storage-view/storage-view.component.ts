@@ -52,7 +52,7 @@ export class StorageViewComponent implements OnInit {
     this.setBreadcrumbs();
 
     if (!this.storageParams.messageId) {
-      this.SweetAlert.Warning('Invalid URL', 'No message id provided!');
+      this.SweetAlert.warning('Invalid URL', 'No message id provided!');
       return;
     }
 
@@ -66,12 +66,12 @@ export class StorageViewComponent implements OnInit {
       error: (errorData: HttpErrorResponse) => {
         const error = errorData.error ? errorData.error.error : errorData.message;
         if (errorData.status == 500) {
-          this.SweetAlert.Warning(
+          this.SweetAlert.warning(
             'An error occured while opening the message',
             `message id [${this.message.id}] error [${error}]`,
           );
         } else {
-          this.SweetAlert.Warning('Message not found', `message id [${this.message.id}] error [${error}]`);
+          this.SweetAlert.warning('Message not found', `message id [${this.message.id}] error [${error}]`);
         }
         this.goBack();
       },

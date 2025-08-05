@@ -6,18 +6,18 @@
           <div class="pull-right">
             <button
               routerLink="/status"
-              [queryParams]="{ configuration, adapter: adapterName }"
               class="btn btn-xs pull-right btn-info"
               type="button"
+              [queryParams]="{ configuration, adapter: adapterName }"
             >
               <i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i>
               <span> Back</span>
             </button>
             <button
-              [ladda]="refreshing"
-              (click)="refresh()"
               class="btn btn-xs pull-right btn-warning m-r-xs"
               type="button"
+              [ladda]="refreshing"
+              (click)="refresh()"
             >
               <i class="fa fa-refresh" aria-hidden="true"></i>
               <span> Refresh</span>

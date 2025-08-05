@@ -3,11 +3,11 @@ import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AppService } from 'src/app/app.service';
 
-interface stackTrace {
+type stackTrace = {
   className: string;
   methodName: string;
   lineNumber: string;
-}
+};
 
 type ServerError = {
   status: string;
@@ -22,8 +22,8 @@ type ServerError = {
   styleUrls: ['./error.component.scss'],
 })
 export class ErrorComponent implements OnInit, OnDestroy {
-  protected cooldownCounter: number = 0;
-  protected viewStackTrace: boolean = false;
+  protected cooldownCounter = 0;
+  protected viewStackTrace = false;
   protected stackTrace?: stackTrace[];
 
   private interval?: number;
@@ -47,7 +47,7 @@ export class ErrorComponent implements OnInit, OnDestroy {
     this.appService.startupError.set(error);
     this.stackTrace = stackTrace;
 
-    this.interval = window.setInterval(() => {
+    this.interval = globalThis.setInterval(() => {
       this.cooldownCounter--;
       if (this.cooldownCounter < 1) {
         clearInterval(this.interval);

@@ -51,7 +51,7 @@ export class NotificationService {
       const notification = this.list()[index];
       if (notification.id == id) {
         if (notification.fn) {
-          window.setTimeout(() => {
+          globalThis.setTimeout(() => {
             if (typeof notification.fn === 'function') Reflect.apply(notification.fn, this, [notification]);
           }, 50);
         }

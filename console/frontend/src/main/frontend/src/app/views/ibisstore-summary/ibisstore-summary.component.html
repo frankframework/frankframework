@@ -11,7 +11,7 @@
           <h4>IbisStore Summary</h4>
         </div>
         <div class="ibox-content">
-          <form role="form" (submit)="submit(form)" appQuickSubmitForm>
+          <form role="form" appQuickSubmitForm (submit)="submit(form)">
             <div class="row form-group">
               <label class="col-sm-3 control-label label-height-30">Datasource</label>
               <div class="col-sm-9">
@@ -62,7 +62,7 @@
                     @for (s of t.slots; track s.id; let first = $first) {
                       <tr>
                         @if (first) {
-                          <td [attr.rowspan]="t.slotcount" title="{{ t.name }}">
+                          <td [title]="t.name" [attr.rowspan]="t.slotcount">
                             {{ t.type }}
                           </td>
                           <td [attr.rowspan]="t.slotcount">
@@ -80,10 +80,12 @@
                         }
                         @if (s.receiver) {
                           <td>
-                            <span class="text-success" title="View Messages Processed by {{ s.receiver }}">
+                            <span title="View Messages Processed by {{ s.receiver }}" class="text-success">
                               @if (t.type === 'A') {
                                 <button
                                   appHasAccessToLink="browseMessages"
+                                  class="btn btn-xs btn-default m-l-xs"
+                                  type="button"
                                   [routerLink]="[
                                     '',
                                     s.configuration,
@@ -94,17 +96,17 @@
                                     'stores',
                                     'Done',
                                   ]"
-                                  class="btn btn-xs btn-default m-l-xs"
-                                  type="button"
                                 >
                                   <i class="fa fa-sign-in"></i>
                                 </button>
                               }
                             </span>
-                            <span class="text-danger" title="View Messages in Error in {{ s.receiver }}">
+                            <span title="View Messages in Error in {{ s.receiver }}" class="text-danger">
                               @if (t.type === 'E') {
                                 <button
                                   appHasAccessToLink="browseMessages"
+                                  class="btn btn-xs btn-default m-l-xs"
+                                  type="button"
                                   [routerLink]="[
                                     '',
                                     s.configuration,
@@ -115,8 +117,6 @@
                                     'stores',
                                     'Error',
                                   ]"
-                                  class="btn btn-xs btn-default m-l-xs"
-                                  type="button"
                                 >
                                   <i class="fa fa-times-circle"></i>
                                 </button>
@@ -128,10 +128,12 @@
                         @if (s.pipe) {
                           <td>
                             <span
-                              [ngClass]="t.type === 'M' ? 'text-primary' : 'text-success'"
                               title="View Messages Processed by {{ s.pipe }}"
+                              [ngClass]="t.type === 'M' ? 'text-primary' : 'text-success'"
                             >
                               <button
+                                class="btn btn-xs btn-default m-l-xs"
+                                type="button"
                                 [routerLink]="[
                                   '',
                                   s.configuration,
@@ -142,8 +144,6 @@
                                   'stores',
                                   'Done',
                                 ]"
-                                class="btn btn-xs btn-default m-l-xs"
-                                type="button"
                               >
                                 <i [ngClass]="t.type === 'M' ? 'fa fa-sign-out' : 'fa fa-database'"></i>
                               </button>
