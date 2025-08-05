@@ -1,18 +1,14 @@
 package org.frankframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileWriter;
 import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.StringReader;
@@ -20,36 +16,16 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.io.TempDir;
 
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 public class StreamUtilTest {
 
-	@TempDir
-	public static Path testFolder;
-
-	private static Path file;
-	private final String UTF8_EXPECTED = "ABC één euro: €1,00";
-	private final String OTHER_EXPECTED = "ABC néé hè";
-
-	@BeforeAll
-	public static void setUp() throws IOException {
-		file = Files.createFile(testFolder.resolve("lebron.txt"));
-	}
-
-	@AfterAll
-	public static void cleanUp() {
-		File f = new File("lebron.txt");
-		f.delete();
-	}
+	private static final String UTF8_EXPECTED = "ABC één euro: €1,00";
+	private static final String OTHER_EXPECTED = "ABC néé hè";
 
 	public void testReader(String inputFile, String expected) throws IOException {
 		testReader(inputFile, expected, null);
@@ -107,41 +83,26 @@ public class StreamUtilTest {
 		testReader("/StreamUtil/inUTF8withBOM.bin", UTF8_EXPECTED, "ISO8859-1");
 	}
 
-
-	public void testStreamToByteArray(String inputFile, boolean skipBOM, String expected, boolean expectBOM) throws IOException {
-		URL input = getClass().getResource(inputFile);
-
-		byte[] byteArray = StreamUtil.streamToByteArray(input.openStream(), skipBOM);
-
-		String actual;
-		if (expectBOM) {
-			assertEquals((byte) 0xEF, byteArray[0]);
-			assertEquals((byte) 0xBB, byteArray[1]);
-			assertEquals((byte) 0xBF, byteArray[2]);
-			actual = new String(byteArray, 3, byteArray.length - 3, StandardCharsets.UTF_8);
-		} else {
-			actual = new String(byteArray, StandardCharsets.UTF_8);
-		}
-
-		assertEquals(expected, actual);
+	@Test
+	public void testResourceToStringResource() throws Exception {
+		URL resource = getClass().getResource("/StreamUtil/test_file_for_resource_to_string_misc.txt");
+		String s1 = StreamUtil.resourceToString(resource);
+		assertEquals("<!doctype txt>this is a text file.\nnew line in the text file.", s1);
+		assertFalse(s1.isEmpty());
 	}
 
 	@Test
-	public void testStreamToByteArrayUTF8noBOM() throws IOException {
-		testStreamToByteArray("/StreamUtil/inUTF8noBOM.bin", true, UTF8_EXPECTED, false);
-		testStreamToByteArray("/StreamUtil/inUTF8noBOM.bin", false, UTF8_EXPECTED, false);
+	public void testResourceToStringForResourceEndOfLineStringXmlEncode() throws Exception {
+		URL resource = getClass().getResource("/StreamUtil/test_file_for_resource_to_string_misc.txt");
+		String s1 = StreamUtil.resourceToString(resource, " newly added string ", true);
+		assertEquals("&lt;!doctype txt&gt;this is a text file. newly added string new line in the text file.", s1);
 	}
 
 	@Test
-	public void testStreamToByteArrayUTF8withBOM() throws IOException {
-		testStreamToByteArray("/StreamUtil/inUTF8withBOM.bin", true, UTF8_EXPECTED, false);
-		testStreamToByteArray("/StreamUtil/inUTF8withBOM.bin", false, UTF8_EXPECTED, true);
-	}
-
-	private void writeToTestFile() throws IOException {
-		Writer w = new FileWriter(file.toString());
-		w.write("inside the lebron file");
-		w.close();
+	public void testResourceToStringForResourceEndOfLineString() throws Exception {
+		URL resource = getClass().getResource("/StreamUtil/test_file_for_resource_to_string_misc.txt");
+		String s1 = StreamUtil.resourceToString(resource, " newly added string ");
+		assertEquals("<!doctype txt>this is a text file. newly added string new line in the text file.", s1);
 	}
 
 	@Test
@@ -157,17 +118,6 @@ public class StreamUtilTest {
 	}
 
 	/**
-	 * Method: fileToStream(String filename, OutputStream output)
-	 */
-	@Test
-	public void testFileToStream() throws Exception {
-		writeToTestFile();
-		OutputStream os = new ByteArrayOutputStream();
-		StreamUtil.fileToStream(file.toString(), os);
-		assertEquals("inside the lebron file", os.toString());
-	}
-
-	/**
 	 * Method: streamToStream(InputStream input, OutputStream output)
 	 */
 	@Test
@@ -179,43 +129,13 @@ public class StreamUtilTest {
 		assertEquals("test", baos.toString());
 	}
 
-	/**
-	 * Method: streamToStream(InputStream input, OutputStream output, boolean
-	 * closeInput)
-	 */
 	@Test
-	public void testStreamToStreamForInputOutputCloseInput() throws Exception {
+	public void testStreamToStreamForInputOutputEof() throws Exception {
 		String test = "test";
 		ByteArrayInputStream bais = new ByteArrayInputStream(test.getBytes());
 		OutputStream baos = new ByteArrayOutputStream();
-		StreamUtil.streamToStream(bais, baos);
-		assertEquals("test", baos.toString());
-	}
-
-	/**
-	 * Method: streamToFile(InputStream inputStream, File file)
-	 */
-	@Test
-	public void testStreamToFile() throws Exception {
-		String test = "test";
-		ByteArrayInputStream bais = new ByteArrayInputStream(test.getBytes());
-		StreamUtil.streamToFile(bais, file.toFile());
-
-		// to read from the file
-		InputStream is = new FileInputStream(file.toString());
-		BufferedReader buf = new BufferedReader(new InputStreamReader(is));
-
-		String line = buf.readLine();
-		StringBuilder sb = new StringBuilder();
-
-		while (line != null) {
-			sb.append(line).append("\n");
-			line = buf.readLine();
-		}
-		buf.close();
-
-		String fileAsString = sb.toString();
-		assertEquals("test\n", fileAsString);
+		StreamUtil.streamToStream(bais, baos, "\n".getBytes());
+		assertEquals("test\n", baos.toString());
 	}
 
 	/**

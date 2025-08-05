@@ -71,7 +71,7 @@ import org.frankframework.util.StringUtil;
  */
 @Log4j2
 public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implements HasKeystore, HasTruststore, ApplicationContextAware {
-	private final @Getter String domain = "Azure";
+
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 	private final @Getter String name = "ExchangeFileSystem";

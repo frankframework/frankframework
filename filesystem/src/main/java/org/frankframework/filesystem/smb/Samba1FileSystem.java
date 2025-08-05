@@ -16,6 +16,7 @@
 package org.frankframework.filesystem.smb;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
 import java.util.Date;
@@ -57,7 +58,6 @@ import org.frankframework.util.CredentialFactory;
  */
 @Log4j2
 public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWritableFileSystem<SmbFile> {
-	private final @Getter String domain = "SMB";
 
 	private @Getter String share = null;
 	private @Getter String username = null;
@@ -79,8 +79,8 @@ public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWr
 		if(!getShare().endsWith("/"))
 			setShare(getShare()+"/");
 
-		//Setup credentials if applied, may be null.
-		//NOTE: When using NtmlPasswordAuthentication without username it returns GUEST
+		// Setup credentials if applied, may be null.
+		// NOTE: When using NtmlPasswordAuthentication without username it returns GUEST
 		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 		if (StringUtils.isNotEmpty(cf.getUsername())) {
 			auth = new NtlmPasswordAuthentication(getAuthenticationDomain(), cf.getUsername(), cf.getPassword());
@@ -132,20 +132,20 @@ public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWr
 	}
 
 	@Override
-	public OutputStream createFile(SmbFile f) throws FileSystemException {
-		try {
-			return new SmbFileOutputStream(f);
-		} catch (Exception e) {
-			throw new FileSystemException(e);
+	public void createFile(SmbFile file, InputStream content) throws IOException {
+		try (OutputStream out = new SmbFileOutputStream(file)) {
+			if (content != null) {
+				content.transferTo(out);
+			}
 		}
 	}
 
 	@Override
-	public OutputStream appendFile(SmbFile f) throws FileSystemException {
-		try {
-			return new SmbFileOutputStream(f, true);
-		} catch (Exception e) {
-			throw new FileSystemException(e);
+	public void appendFile(SmbFile file, InputStream content) throws IOException {
+		try (OutputStream out = new SmbFileOutputStream(file, true)) {
+			if (content != null) {
+				content.transferTo(out);
+			}
 		}
 	}
 

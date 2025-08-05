@@ -34,8 +34,8 @@ import org.springframework.core.SmartClassLoader;
 
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.ClassLoaderException;
-import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.configuration.IbisContext;
+import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;

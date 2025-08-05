@@ -94,7 +94,6 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 			if (StringUtils.isEmpty(filename) && contents != input) {
 				filename = input.asString();
 			}
-			session.unscheduleCloseOnSessionExit(contents); // Message will be consumed after the zip has been build.
 			MessageZipEntry entry = new MessageZipEntry(contents, filename);
 			if (includeFileHeaders) {
 				entry.computeFileHeaders();

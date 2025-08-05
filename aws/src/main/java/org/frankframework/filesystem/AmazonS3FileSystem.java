@@ -68,17 +68,18 @@ import software.amazon.awssdk.services.s3.model.StorageClass;
 
 import org.frankframework.aws.AwsUtil;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.filesystem.utils.AmazonEncodingUtils;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 
 @Log4j2
+@DestinationType(Type.FILE_SYSTEM)
 public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements IWritableFileSystem<S3FileRef>, ISupportsCustomFileAttributes<S3FileRef> {
-	private final @Getter String domain = "Amazon";
 
 	private static final String FILE_DELIMITER = "/";
 
@@ -266,7 +267,9 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 		// When uploading of unknown size is needed, the S3AsyncClient or S3TransferManager can be used in the future.
 		MessageBuilder messageBuilder = new MessageBuilder();
 		try (OutputStream fos = messageBuilder.asOutputStream()) {
-			StreamUtil.streamToStream(content, fos);
+			if (content != null) {
+				content.transferTo(fos);
+			}
 		}
 
 		try (Message message = messageBuilder.build()) {
@@ -301,14 +304,9 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	}
 
 	@Override
-	public OutputStream createFile(S3FileRef f) {
-		throw new NotImplementedException();
-	}
-
-	@Override
-	public OutputStream appendFile(S3FileRef f) {
+	public void appendFile(S3FileRef file, InputStream content) throws FileSystemException, IOException {
 		// Amazon S3 doesn't support append operation
-		return null;
+		throw new NotImplementedException();
 	}
 
 	/**

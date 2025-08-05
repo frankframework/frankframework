@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2024 WeAreFrank!
+   Copyright 2019-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,8 @@
 */
 package org.frankframework.filesystem.ftp;
 
-import java.io.FilterOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,11 +31,11 @@ import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
-import org.apache.commons.net.ftp.FTPReply;
-import org.apache.logging.log4j.Logger;
 
-import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.filesystem.FileAlreadyExistsException;
 import org.frankframework.filesystem.FileNotFoundException;
 import org.frankframework.filesystem.FileSystemException;
@@ -48,7 +46,6 @@ import org.frankframework.filesystem.IWritableFileSystem;
 import org.frankframework.filesystem.TypeFilter;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.SerializableFileReference;
-import org.frankframework.util.LogUtil;
 
 /**
  * Implementation of FTP and FTPs FileSystem
@@ -56,12 +53,11 @@ import org.frankframework.util.LogUtil;
  * @author Daniël Meyer
  * @author Niels Meijer
  */
+@Log4j2
+@DestinationType(Type.FILE_SYSTEM)
 public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTPFileRef> {
-	private final Logger log = LogUtil.getLogger(this);
 
-	private final @Getter String domain = "FTP";
 	private String remoteDirectory = "";
-
 	private FTPClient ftpClient;
 
 	@Override
@@ -131,28 +127,18 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 		return null;
 	}
 
-	private FilterOutputStream completePendingCommand(OutputStream os) {
-		return new FilterOutputStream(os) {
-			@Override
-			public void close() throws IOException {
-				super.close();
-				if(ftpClient.getReplyCode() == FTPReply.FILE_STATUS_OK) {
-					ftpClient.completePendingCommand();
-				}
-			}
-		};
+	@Override
+	public void createFile(FTPFileRef file, InputStream content) throws IOException {
+		try (InputStream isToUse = content != null ? content : InputStream.nullInputStream()) {
+			ftpClient.storeFile(file.getName(), isToUse);
+		}
 	}
 
 	@Override
-	public OutputStream createFile(FTPFileRef f) throws FileSystemException, IOException {
-		OutputStream outputStream = ftpClient.storeFileStream(f.getName());
-		return completePendingCommand(outputStream);
-	}
-
-	@Override
-	public OutputStream appendFile(FTPFileRef f) throws FileSystemException, IOException {
-		OutputStream outputStream = ftpClient.appendFileStream(f.getName());
-		return completePendingCommand(outputStream);
+	public void appendFile(FTPFileRef file, InputStream content) throws IOException {
+		try (InputStream isToUse = content != null ? content : InputStream.nullInputStream()) {
+			ftpClient.appendFile(file.getName(), isToUse);
+		}
 	}
 
 	@Override
@@ -337,7 +323,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public String getCanonicalName(FTPFileRef f) {
-		return f.getName(); //Should include folder structure if known
+		return f.getName(); // Should include folder structure if known
 	}
 
 	@Override

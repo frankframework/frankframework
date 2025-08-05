@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,16 +32,17 @@ import org.springframework.context.ApplicationContext;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.lifecycle.LifecycleException;
 
-@Log4j2
+@DestinationType(Type.KAFKA)
 public abstract class AbstractKafkaFacade implements HasPhysicalDestination, IConfigurable {
-	private final @Getter String domain = "KAFKA";
+
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 

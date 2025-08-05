@@ -1,6 +1,5 @@
-import { Component, inject, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
-import { NotificationService } from 'src/app/services/notification.service';
+import { Component, computed, inject, Input, OnChanges, Signal } from '@angular/core';
+import { NotificationService, Notification } from 'src/app/services/notification.service';
 import { HamburgerComponent } from './hamburger.component';
 import { TimeSinceDirective } from '../../time-since.directive';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
@@ -16,38 +15,24 @@ import { ServerTimeService } from '../../../services/server-time.service';
   styleUrls: ['./pages-topnavbar.component.scss'],
   imports: [FormsModule, HamburgerComponent, RouterModule, TimeSinceDirective, NgbDropdownModule],
 })
-export class PagesTopnavbarComponent implements OnInit, OnChanges, OnDestroy {
+export class PagesTopnavbarComponent implements OnChanges {
   @Input() dtapSide: string = '';
   @Input() dtapStage: string = '';
   @Input() clusterMembers: ClusterMember[] = [];
   @Input() selectedClusterMember: ClusterMember | null = null;
   @Input() userName?: string;
 
-  private Notification: NotificationService = inject(NotificationService);
-
-  protected serverTimeService: ServerTimeService = inject(ServerTimeService);
-  protected notificationCount: number = this.Notification.getCount();
-  protected notificationList: NotificationService['list'] = [];
+  protected readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
+  protected notificationList: Signal<Notification[]> = computed(() => this.Notification.getLatest(5));
   protected loggedIn: boolean = false;
 
-  private appService: AppService = inject(AppService);
-  private authService: AuthService = inject(AuthService);
-  private _subscriptions = new Subscription();
-
-  ngOnInit(): void {
-    const notifCountSub = this.Notification.onCountUpdate$.subscribe(() => {
-      this.notificationCount = this.Notification.getCount();
-      this.notificationList = this.Notification.getLatest(5);
-    });
-    this._subscriptions.add(notifCountSub);
-  }
+  private readonly appService: AppService = inject(AppService);
+  private readonly authService: AuthService = inject(AuthService);
+  private readonly Notification: NotificationService = inject(NotificationService);
+  protected notificationCount: Signal<number> = this.Notification.count;
 
   ngOnChanges(): void {
     this.loggedIn = this.authService.isLoggedIn();
-  }
-
-  ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
   }
 
   resetNotificationCount(): void {

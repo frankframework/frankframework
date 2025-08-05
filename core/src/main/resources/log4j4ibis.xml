@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<log4j2:Configuration status="warn" name="${ctx:instance.name}" strict="true" xmlns="http://logging.apache.org/log4j/2.0/config" xmlns:log4j2="log4j-config.xsd">
+<log4j2:Configuration status="WARN" name="${ff:instance.name}" strict="true" xmlns="http://logging.apache.org/log4j/2.0/config" xmlns:log4j2="log4j-config.xsd">
 	<!-- https://logging.apache.org/log4j/2.x/manual/customloglevels.html -->
 
 	<Appenders>
@@ -13,62 +13,62 @@
 				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} - %m%n%xEx{short}</Pattern>
 			</Layout>
 		</Appender>
-		<Appender name="leak-log-appender" createOnDemand="true" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-leaks.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-leaks.log.%i">
+		<Appender name="leak-log-appender" createOnDemand="true" type="RollingFile" fileName="${ff:log.dir}/${ff:instance.name.lc}-leaks.log" filePattern="${ff:log.dir}/${ff:instance.name.lc}-leaks.log.%i">
 			<Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m%n%xEx"/>
 			<Policies>
-				<SizeBasedTriggeringPolicy size="${ctx:log.maxFileSize}" />
+				<SizeBasedTriggeringPolicy size="${ff:log.maxFileSize}" />
 				<OnStartupTriggeringPolicy />
 			</Policies>
-			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min" />
+			<RolloverStrategy type="DefaultRolloverStrategy" max="${ff:log.maxBackupIndex}" fileIndex="min" />
 		</Appender>
-		<Appender name="file" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}.log.%i">
+		<Appender name="file" type="RollingFile" fileName="${ff:log.dir}/${ff:instance.name.lc}.log" filePattern="${ff:log.dir}/${ff:instance.name.lc}.log.%i">
 			<Filters>
-				<Filter type="IbisThreadFilter" onMatch="DENY" onMismatch="NEUTRAL" regex="${ctx:log.thread.rejectRegex:-}" />
+				<Filter type="IbisThreadFilter" onMatch="DENY" onMismatch="NEUTRAL" regex="${ff:log.thread.rejectRegex:-}" />
 			</Filters>
 			<Layout type="IbisPatternLayout">
-				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %X{mid,cid,configuration,adapter,listener,pipe,job,sender} %c{2} - %m%n%xEx{filters(${ctx:log.stacktrace.filters})}</Pattern>
+				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %X{mid,cid,configuration,adapter,listener,pipe,job,sender} %c{2} - %m%n%xEx{filters(${ff:log.stacktrace.filters})}</Pattern>
 			</Layout>
 			<Policies>
-				<SizeBasedTriggeringPolicy size="${ctx:log.maxFileSize}" />
+				<SizeBasedTriggeringPolicy size="${ff:log.maxFileSize}" />
 				<OnStartupTriggeringPolicy />
 			</Policies>
-			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min"  />
+			<RolloverStrategy type="DefaultRolloverStrategy" max="${ff:log.maxBackupIndex}" fileIndex="min"  />
 		</Appender>
-		<Appender name="msg-text" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-messages.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-messages.log.%i" append="true">
+		<Appender name="msg-text" type="RollingFile" fileName="${ff:log.dir}/${ff:instance.name.lc}-messages.log" filePattern="${ff:log.dir}/${ff:instance.name.lc}-messages.log.%i" append="true">
 			<Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m %TC %x%n"/>
 			<Policies>
-				<SizeBasedTriggeringPolicy size="${ctx:log.maxFileSize}" />
+				<SizeBasedTriggeringPolicy size="${ff:log.maxFileSize}" />
 				<OnStartupTriggeringPolicy />
 			</Policies>
-			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.msg.maxBackupIndex}" fileIndex="min" />
+			<RolloverStrategy type="DefaultRolloverStrategy" max="${ff:log.msg.maxBackupIndex}" fileIndex="min" />
 		</Appender>
-		<Appender name="msg-json" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-messages.json" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-messages.json.%i" append="true">
+		<Appender name="msg-json" type="RollingFile" fileName="${ff:log.dir}/${ff:instance.name.lc}-messages.json" filePattern="${ff:log.dir}/${ff:instance.name.lc}-messages.json.%i" append="true">
 			<JsonTemplateLayout eventTemplateUri="classpath:EcsLayout.json"/>
 			<Policies>
-				<SizeBasedTriggeringPolicy size="${ctx:log.maxFileSize}" />
+				<SizeBasedTriggeringPolicy size="${ff:log.maxFileSize}" />
 				<OnStartupTriggeringPolicy />
 			</Policies>
-			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.msg.maxBackupIndex}" fileIndex="min" />
+			<RolloverStrategy type="DefaultRolloverStrategy" max="${ff:log.msg.maxBackupIndex}" fileIndex="min" />
 		</Appender>
-		<Appender name="security" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-security.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-security.log.%i">
+		<Appender name="security" type="RollingFile" fileName="${ff:log.dir}/${ff:instance.name.lc}-security.log" filePattern="${ff:log.dir}/${ff:instance.name.lc}-security.log.%i">
 			<Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %X{adapter} - %m%n"/>
 			<Policies>
-				<SizeBasedTriggeringPolicy size="${ctx:log.maxFileSize}" />
+				<SizeBasedTriggeringPolicy size="${ff:log.maxFileSize}" />
 				<OnStartupTriggeringPolicy />
 			</Policies>
-			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min" />
+			<RolloverStrategy type="DefaultRolloverStrategy" max="${ff:log.maxBackupIndex}" fileIndex="min" />
 		</Appender>
-		<Appender name="heartbeat" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-heartbeat.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-heartbeat.log.%i">
+		<Appender name="heartbeat" type="RollingFile" fileName="${ff:log.dir}/${ff:instance.name.lc}-heartbeat.log" filePattern="${ff:log.dir}/${ff:instance.name.lc}-heartbeat.log.%i">
 			<Layout type="PatternLayout">
 				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p %m%n</Pattern>
 			</Layout>
 			<Policies>
-				<SizeBasedTriggeringPolicy size="${ctx:log.maxFileSize}" />
+				<SizeBasedTriggeringPolicy size="${ff:log.maxFileSize}" />
 				<OnStartupTriggeringPolicy />
 			</Policies>
-			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min" />
+			<RolloverStrategy type="DefaultRolloverStrategy" max="${ff:log.maxBackupIndex}" fileIndex="min" />
 		</Appender>
-		<Appender name="config" type="RollingFile" fileName="${ctx:log.dir}/${ctx:instance.name.lc}-config.xml" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}-config.xml.%i">
+		<Appender name="config" type="RollingFile" fileName="${ff:log.dir}/${ff:instance.name.lc}-config.xml" filePattern="${ff:log.dir}/${ff:instance.name.lc}-config.xml.%i">
 			<Layout type="PatternLayout">
 				<Pattern>&lt;event datetime=&quot;%d{yyyy-MM-dd HH:mm:ss,SSS}&quot;&gt;%n%m%n&lt;/event&gt;</Pattern>
 			</Layout>
@@ -78,12 +78,12 @@
 			</Policies>
 			<RolloverStrategy type="DefaultRolloverStrategy" max="5" fileIndex="min" />
 		</Appender>
-		<Appender name="ladybug" type="RollingFile" fileName="${ctx:log.dir}/testtool4${ctx:instance.name.lc}.log" filePattern="${ctx:log.dir}/testtool4${ctx:instance.name.lc}.log.%i">
+		<Appender name="ladybug" type="RollingFile" fileName="${ff:log.dir}/testtool4${ff:instance.name.lc}.log" filePattern="${ff:log.dir}/testtool4${ff:instance.name.lc}.log.%i">
 			<Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p [%t] %c %m%n"/>
 			<Policies>
-				<SizeBasedTriggeringPolicy size="${ctx:log.maxFileSize}" />
+				<SizeBasedTriggeringPolicy size="${ff:log.maxFileSize}" />
 			</Policies>
-			<RolloverStrategy type="DefaultRolloverStrategy" max="${ctx:log.maxBackupIndex}" fileIndex="min" />
+			<RolloverStrategy type="DefaultRolloverStrategy" max="${ff:log.maxBackupIndex}" fileIndex="min" />
 		</Appender>
 	</Appenders>
 
@@ -125,7 +125,7 @@
 			<AppenderRef ref="msg-text"/>
 			<AppenderRef ref="msg-json"/>
 		</Logger>
-		<Logger name="SEC" additivity="false" level="${ctx:security.log.level}">
+		<Logger name="SEC" additivity="false" level="${ff:security.log.level}">
 			<AppenderRef ref="security"/>
 		</Logger>
 		<Logger name="HEARTBEAT" additivity="false" level="INFO">
@@ -189,7 +189,7 @@
 			<AppenderRef ref="stdout"/>
 		</Logger -->
 
-		<Root level="${ctx:log.level}">
+		<Root level="${ff:log.level}">
 			<AppenderRef ref="file"/>
 		</Root>
 	</Loggers>

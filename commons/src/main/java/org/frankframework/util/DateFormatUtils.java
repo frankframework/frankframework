@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,14 +35,9 @@ import java.util.regex.Pattern;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
-import lombok.extern.log4j.Log4j2;
-
 /**
  * Utilities for formatting and parsing dates.
- *
- * @author Johan Verrips IOS
  */
-@Log4j2
 public class DateFormatUtils {
 	public static final String FORMAT_FULL_ISO = "yyyy-MM-dd'T'HH:mm:sszzz";
 	public static final String FORMAT_FULL_ISO_TIMESTAMP_NO_TZ = "yyyy-MM-dd'T'HH:mm:ss.SSS";
@@ -59,7 +54,13 @@ public class DateFormatUtils {
 	private static final String FORMAT_TIME_HMS = "HH:mm:ss";
 	public static final DateTimeFormatter TIME_HMS_FORMATTER = buildFormatter(FORMAT_TIME_HMS);
 
+	public static final DateTimeFormatter HTTP_DATE_HEADER_FORMAT = DateTimeFormatter.RFC_1123_DATE_TIME;
+
 	private static final Map<Pattern, DateTimeFormatter> DATE_EXPRESSION_PARSER_MAP;
+
+	private DateFormatUtils() {
+		// Private constructor so that the utility-class cannot be instantiated.
+	}
 
 	static {
 		DATE_EXPRESSION_PARSER_MAP = Map.ofEntries(
@@ -155,7 +156,7 @@ public class DateFormatUtils {
 		return parser.parse(s, Instant::from);
 	}
 
-	public static java.time.LocalDate parseToLocalDate(String dateString) throws DateTimeParseException {
+	public static LocalDate parseToLocalDate(String dateString) throws DateTimeParseException {
 		DateTimeFormatter parser = determineDateFormat(dateString);
 		if (parser == null) {
 			throw new IllegalArgumentException("Cannot determine date-format for input [" + dateString + "]");
@@ -163,7 +164,7 @@ public class DateFormatUtils {
 		return parser.parse(dateString, TemporalQueries.localDate());
 	}
 
-	public static java.time.LocalDate parseToLocalDate(String dateString, @Nonnull DateTimeFormatter parser) throws DateTimeParseException {
+	public static LocalDate parseToLocalDate(String dateString, @Nonnull DateTimeFormatter parser) throws DateTimeParseException {
 		return parser.parse(dateString, TemporalQueries.localDate());
 	}
 

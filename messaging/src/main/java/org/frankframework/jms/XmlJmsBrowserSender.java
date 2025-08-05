@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.jms.JMSFacade.DestinationType;
+import org.frankframework.jms.JMSFacade.JmsDestinationType;
 import org.frankframework.senders.AbstractSenderWithParameters;
 import org.frankframework.stream.Message;
 import org.frankframework.util.EnumUtils;
@@ -97,14 +97,14 @@ public class XmlJmsBrowserSender extends AbstractSenderWithParameters {
 		String jmsRealm = null;
 		String queueConnectionFactoryName = null;
 		String destinationName = null;
-		DestinationType destinationType = null;
+		JmsDestinationType destinationType = null;
 		try {
 			queueBrowserElement = XmlUtils.buildElement(message.asString());
 			root = queueBrowserElement.getTagName();
 			jmsRealm = XmlUtils.getChildTagAsString(queueBrowserElement, "jmsRealm");
 			queueConnectionFactoryName = XmlUtils.getChildTagAsString(queueBrowserElement, "queueConnectionFactoryName");
 			destinationName = XmlUtils.getChildTagAsString(queueBrowserElement, "destinationName");
-			destinationType = EnumUtils.parse(DestinationType.class,XmlUtils.getChildTagAsString(queueBrowserElement, "destinationType"));
+			destinationType = EnumUtils.parse(JmsDestinationType.class,XmlUtils.getChildTagAsString(queueBrowserElement, "destinationType"));
 		} catch (Exception e) {
 			throw new SenderException("got exception parsing [" + message + "]", e);
 		}

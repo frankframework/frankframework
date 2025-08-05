@@ -1,4 +1,4 @@
-package org.frankframework.configuration;
+package org.frankframework.configuration.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -11,6 +11,8 @@ import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.Test;
+
+import org.frankframework.configuration.ConfigurationException;
 
 public class BuildInfoValidatorTest {
 

@@ -1,5 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Component, computed, inject, Signal } from '@angular/core';
 import { AppService, Configuration, ServerErrorResponse } from 'src/app/app.service';
 import { JdbcService } from '../jdbc/jdbc.service';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -19,7 +18,7 @@ interface Form {
   templateUrl: './liquibase.component.html',
   styleUrls: ['./liquibase.component.scss'],
 })
-export class LiquibaseComponent implements OnInit, OnDestroy {
+export class LiquibaseComponent {
   protected form: Form = {
     configuration: '',
   };
@@ -27,27 +26,12 @@ export class LiquibaseComponent implements OnInit, OnDestroy {
   protected generateSql: boolean = false;
   protected error: string | null = null;
   protected result: string | null = null;
-  protected filteredConfigurations: Configuration[] = [];
+  protected filteredConfigurations: Signal<Configuration[]> = computed(() =>
+    this.findFirstAvailabeConfiguration(this.appService.configurations()),
+  );
 
-  private configurations: Configuration[] = [];
-  private _subscriptions = new Subscription();
-
-  constructor(
-    private appService: AppService,
-    private jdbcService: JdbcService,
-  ) {}
-
-  ngOnInit(): void {
-    const configurationsSubscription = this.appService.configurations$.subscribe(() =>
-      this.findFirstAvailabeConfiguration(),
-    );
-    this._subscriptions.add(configurationsSubscription);
-    this.findFirstAvailabeConfiguration();
-  }
-
-  ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
-  }
+  private readonly appService: AppService = inject(AppService);
+  private readonly jdbcService: JdbcService = inject(JdbcService);
 
   download(): void {
     window.open(`${this.appService.getServerPath()}iaf/api/jdbc/liquibase`);
@@ -83,17 +67,16 @@ export class LiquibaseComponent implements OnInit, OnDestroy {
     }); // TODO no intercept
   }
 
-  private findFirstAvailabeConfiguration(): void {
-    this.configurations = this.appService.configurations;
-    this.filteredConfigurations = this.configurations.filter((item) => item.jdbcMigrator);
+  private findFirstAvailabeConfiguration(configurations: Configuration[]): Configuration[] {
+    const filteredConfigurations = configurations.filter((item) => item.jdbcMigrator);
 
-    for (const index in this.filteredConfigurations) {
-      const configuration = this.configurations[index];
-
+    for (const configuration of filteredConfigurations) {
       if (configuration.jdbcMigrator) {
         this.form.configuration = configuration.name;
         break;
       }
     }
+
+    return filteredConfigurations;
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AppService, Configuration } from 'src/app/app.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
@@ -16,6 +16,10 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./configurations-manage-details.component.scss'],
 })
 export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
+  @ViewChildren(ThSortableDirective) headers!: QueryList<ThSortableDirective>;
+
+  protected versionsSorted: Configuration[] = [];
+  protected search: string = '';
   protected configuration: Configuration = {
     name: '',
     stubbed: false,
@@ -24,23 +28,18 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
     jdbcMigrator: false,
     version: '',
   };
-  protected versionsSorted: Configuration[] = [];
-  protected search: string = '';
 
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
+  private readonly router: Router = inject(Router);
+  private readonly appService: AppService = inject(AppService);
+  private readonly configurationsService: ConfigurationsService = inject(ConfigurationsService);
+  private readonly sweetalertService: SweetalertService = inject(SweetalertService);
+  private readonly toastService: ToastService = inject(ToastService);
   private promise: number = -1;
   private versions: Configuration[] = [];
   private lastSortEvent: SortEvent = { direction: 'NONE', column: '' };
 
-  @ViewChildren(ThSortableDirective) headers!: QueryList<ThSortableDirective>;
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private appService: AppService,
-    private configurationsService: ConfigurationsService,
-    private sweetalertService: SweetalertService,
-    private toastService: ToastService,
-  ) {
+  constructor() {
     const routeState = this.router.getCurrentNavigation()?.extras.state ?? {};
     if (!routeState['configuration']) {
       this.router.navigate(['..'], { relativeTo: this.route });

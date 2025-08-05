@@ -1,6 +1,5 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
-import { AppConstants, AppService, Configuration } from 'src/app/app.service';
+import { Component, computed, inject, OnInit, Signal } from '@angular/core';
+import { AppService } from 'src/app/app.service';
 import { KeyValue } from '@angular/common';
 import { TabListComponent } from '../../components/tab-list/tab-list.component';
 import { FormsModule } from '@angular/forms';
@@ -15,39 +14,26 @@ type keyValueProperty = KeyValue<string, string>;
   templateUrl: './environment-variables.component.html',
   styleUrls: ['./environment-variables.component.scss'],
 })
-export class EnvironmentVariablesComponent implements OnInit, OnDestroy {
+export class EnvironmentVariablesComponent implements OnInit {
   protected readonly GLOBAL_TAB_NAME = 'Global';
   protected searchFilter: string = '';
   protected selectedConfiguration: string = '';
   protected configProperties: keyValueProperty[] = [];
   protected environmentProperties: keyValueProperty[] = [];
   protected systemProperties: keyValueProperty[] = [];
-  protected configurations: Configuration[] = [];
-  protected configurationNames: string[] = [];
 
-  private _subscriptions = new Subscription();
-  private appConstants: AppConstants = this.appService.APP_CONSTANTS;
-
-  constructor(private appService: AppService) {}
+  private readonly appService: AppService = inject(AppService);
+  protected configurationNames: Signal<string[]> = computed(() =>
+    this.appService.configurations().map((configuration) => configuration.name),
+  );
 
   ngOnInit(): void {
-    const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
-      this.appConstants = this.appService.APP_CONSTANTS;
-    });
-    this._subscriptions.add(appConstantsSubscription);
-
-    this.configurations = this.appService.configurations;
-    this.configurationNames = this.configurations.map((configuration) => configuration.name);
-    const configurationsSubscription = this.appService.configurations$.subscribe(() => {
-      this.configurations = this.appService.configurations;
-      this.configurationNames = this.configurations.map((configuration) => configuration.name);
-    });
-    this._subscriptions.add(configurationsSubscription);
-
-    const environmentVariablesSubscription = this.appService.getEnvironmentVariables().subscribe((data) => {
+    this.appService.getEnvironmentVariables().subscribe((data) => {
       let instanceName = null;
       for (const configName in data['Application Constants']) {
-        this.appConstants[configName] = this.convertPropertiesToArray(data['Application Constants'][configName]);
+        this.appService.appConstants()[configName] = this.convertPropertiesToArray(
+          data['Application Constants'][configName],
+        );
         if (instanceName == null) {
           instanceName = data['Application Constants'][configName]['instance.name'];
         }
@@ -56,16 +42,11 @@ export class EnvironmentVariablesComponent implements OnInit, OnDestroy {
       this.environmentProperties = this.convertPropertiesToArray(data['Environment Variables']);
       this.systemProperties = this.convertPropertiesToArray(data['System Properties']);
     });
-    this._subscriptions.add(environmentVariablesSubscription);
-  }
-
-  ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
   }
 
   changeConfiguration(name: string): void {
     this.selectedConfiguration = name;
-    this.configProperties = this.appConstants[name] as keyValueProperty[];
+    this.configProperties = this.appService.appConstants()[name] as keyValueProperty[];
   }
 
   private convertPropertiesToArray(propertyList: Record<string, string>): keyValueProperty[] {

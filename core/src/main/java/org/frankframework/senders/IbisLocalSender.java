@@ -30,6 +30,8 @@ import lombok.Setter;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationAware;
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.ParameterException;
@@ -109,11 +111,10 @@ import org.frankframework.util.MessageUtils;
  * @author Gerrit van Brakel
  * @since  4.2
  */
+@DestinationType(Type.ADAPTER)
 @Forward(name = "*", description = "Exit code")
 @Category(Category.Type.BASIC)
 public class IbisLocalSender extends AbstractSenderWithParameters implements HasPhysicalDestination, IThreadCreator, ConfigurationAware {
-
-	private final @Getter String domain = "Local";
 
 	private @Setter Configuration configuration;
 	private @Getter String serviceName;
@@ -244,13 +245,13 @@ public class IbisLocalSender extends AbstractSenderWithParameters implements Has
 			if (correlationId != null) {
 				subAdapterSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 			}
-			subAdapterSession.put(PipeLineSession.MESSAGE_ID_KEY, MessageUtils.generateMessageId());
 			try {
 				Map<String, Object> paramValues = paramList.getValues(message, session).getValueMap();
 				subAdapterSession.putAll(paramValues);
 			} catch (ParameterException e) {
 				throw new SenderException("exception evaluating parameters", e);
 			}
+			subAdapterSession.put(PipeLineSession.MESSAGE_ID_KEY, MessageUtils.generateMessageId());
 			final ServiceClient serviceClient;
 			try {
 				serviceClient = getServiceImplementation(session);
@@ -287,10 +288,6 @@ public class IbisLocalSender extends AbstractSenderWithParameters implements Has
 				if (StringUtils.isNotEmpty(getReturnedSessionKeys())) {
 					log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
 				}
-
-				// The original message will be set by the InputOutputPipeLineProcessor, which add it to the autocloseables list.
-				// The input message should not be managed by this sub-PipelineSession but rather the original pipeline
-				subAdapterSession.unscheduleCloseOnSessionExit(message);
 				subAdapterSession.mergeToParentSession(getReturnedSessionKeys(), session);
 			}
 

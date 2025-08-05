@@ -1,23 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<log4j2:Configuration xmlns:log4j2="log4j-config.xsd" name="${ctx:instance.name}-test">
+<log4j2:Configuration xmlns:log4j2="log4j-config.xsd" name="${ff:instance.name}-test">
 	<Appenders>
 		<Console name="stdout">
 			<PatternLayout pattern="%d{HH:mm:ss,SSS} %-5p %C{1}.%M():%L%x %m%n"/>
 		</Console>
-		<RollingFile name="file" fileName="${ctx:log.dir}/${ctx:instance.name.lc}.log" filePattern="${ctx:log.dir}/${ctx:instance.name.lc}.log.%i">
+		<RollingFile name="file" fileName="${ff:log.dir}/${ff:instance.name.lc}.log" filePattern="${ff:log.dir}/${ff:instance.name.lc}.log.%i">
 			<PatternLayout>
 				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} %-5p - %m%n</Pattern>
 			</PatternLayout>
 			<Policies>
-				<SizeBasedTriggeringPolicy size="${ctx:log.maxFileSize}" />
+				<SizeBasedTriggeringPolicy size="${ff:log.maxFileSize}" />
 			</Policies>
-			<DefaultRolloverStrategy max="${ctx:log.maxBackupIndex}" fileIndex="min"  />
+			<DefaultRolloverStrategy max="${ff:log.maxBackupIndex}" fileIndex="min"  />
 		</RollingFile>
 	</Appenders>
 
 	<Loggers>
 		<Logger name="org.frankframework" level="DEBUG" />
-		<Logger name="org.frankframework.management.bus" level="DEBUG" />
 
 		<Root level="INFO">
 			<AppenderRef ref="file"/>

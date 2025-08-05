@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2024 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -52,10 +52,12 @@ import net.bankid.merchant.library.StatusResponse;
 import net.bankid.merchant.library.internal.DirectoryResponseBase.Issuer;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.DestinationType;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.senders.AbstractSenderWithParameters;
 import org.frankframework.stream.Message;
@@ -72,8 +74,8 @@ import org.frankframework.util.XmlUtils;
  *
  * @author Niels Meijer
  */
+@DestinationType(Type.IDIN)
 public class IdinSender extends AbstractSenderWithParameters implements HasPhysicalDestination {
-	private @Getter final String domain = "iDin";
 
 	private @Getter String merchantID = null;
 	private @Getter int merchantSubID = 0;

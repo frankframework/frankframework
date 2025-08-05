@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2019 Nationale-Nederlanden
+   Copyright 2018, 2019 Nationale-Nederlanden, WeAreFrank! 2025
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,12 +19,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
 import java.net.URL;
-import java.util.Enumeration;
-import java.util.LinkedList;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
@@ -32,15 +30,15 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import org.frankframework.configuration.ApplicationWarnings;
-import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader.ReportLevel;
+import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.UUIDUtil;
 
 public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLoader> extends Mockito {
 
-	protected final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
+	protected static final String JAR_FILE = "/ClassLoader/zip/classLoader-test.zip";
 
 	private AbstractClassLoader classLoader = null;
 	protected IbisContext ibisContext = spy(new IbisContext());
@@ -58,9 +56,6 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 		ApplicationWarnings.removeInstance();
 	}
 
-	protected void createAndConfigure() throws Exception {
-		createAndConfigure(null);
-	}
 	protected void createAndConfigure(String basePath) throws Exception {
 		ClassLoader parent = new ClassLoaderMock();
 		classLoader = createClassLoader(parent);
@@ -107,35 +102,6 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 		assertTrue(file.endsWith(resource), "name is wrong");
 	}
 
-	public void resourcesExists(String name) throws IOException {
-		resourcesExists(name, getScheme());
-	}
-	public void resourcesExists(String name, String scheme) throws IOException {
-		LinkedList<String> schemes = new LinkedList<>();
-		if(!"scheme".equals(scheme))
-			schemes.add(scheme);
-		schemes.add("file");
-		resourcesExists(name, schemes);
-	}
-
-	/**
-	 * In which resources are retrieved matters!
-	 * @param name
-	 * @param schemes
-	 * @throws IOException
-	 */
-	public void resourcesExists(String name, LinkedList<String> schemes) throws IOException {
-		Enumeration<URL> resources = classLoader.getResources(name);
-		while(resources.hasMoreElements()) {
-			URL url = resources.nextElement();
-			assertNotNull(url, "cannot find resource");
-			String file = url.toString();
-			String scheme = schemes.removeFirst();
-			assertTrue(file.startsWith(scheme + ":"), "scheme["+scheme+"] is wrong for file["+file+"]");
-			assertTrue(file.endsWith(name), "name is wrong");
-		}
-	}
-
 	@Test
 	public void fileNotFound() {
 		assertNull(getResource("not-found.txt"));
@@ -143,46 +109,54 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 
 	/* getResource() */
 	@Test
+	@SuppressWarnings("java:S2699") // Method contains indirect assertion
 	public void testFile() {
 		resourceExists("ClassLoaderTestFile");
 	}
 
 	@Test
+	@SuppressWarnings("java:S2699") // Method contains indirect assertion
 	public void testFileTxt() {
 		resourceExists("ClassLoaderTestFile.txt");
 	}
 
 	@Test
+	@SuppressWarnings("java:S2699") // Method contains indirect assertion
 	public void textFileXml() {
 		resourceExists("ClassLoaderTestFile.xml");
 	}
 
 	@Test
+	@SuppressWarnings("java:S2699") // Method contains indirect assertion
 	public void textFolderFile() {
 		resourceExists("ClassLoader/ClassLoaderTestFile");
 	}
 
 	@Test
+	@SuppressWarnings("java:S2699") // Method contains indirect assertion
 	public void textFolderFileTxt() {
 		resourceExists("ClassLoader/ClassLoaderTestFile.txt");
 	}
 
 	@Test
+	@SuppressWarnings("java:S2699") // Method contains indirect assertion
 	public void textFolderFileXml() {
 		resourceExists("ClassLoader/ClassLoaderTestFile.xml");
 	}
 
 	@Test
+	@SuppressWarnings("java:S2699") // Method contains indirect assertion
 	public void parentOnlyFile() {
 		resourceExists("parent_only.xml", "file");
 	}
 
 	@Test
+	@SuppressWarnings("java:S2699") // Method contains indirect assertion
 	public void parentOnlyFolder() {
 		resourceExists("folder/parent_only.xml", "file");
 	}
 
-	//Not only test through setters and getters but also properties
+	// Not only test through setters and getters but also properties
 	@Test
 	public void testSchemeWithClassLoaderManager() {
 		URL resource = getResource("ClassLoaderTestFile.xml");
@@ -196,21 +170,21 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 	@Test
 	public void testReportLevelERROR() {
 		classLoader.setReportLevel("dummy");
-		assertTrue(classLoader.getReportLevel() == ReportLevel.ERROR);
+		assertSame(ReportLevel.ERROR, classLoader.getReportLevel());
 	}
 
 	// test lowercase level
 	@Test
-	public void testReportLeveldebug() {
+	public void testReportLevelDebugLowercase() {
 		classLoader.setReportLevel("debug");
-		assertTrue(classLoader.getReportLevel() == ReportLevel.DEBUG);
+		assertSame(ReportLevel.DEBUG, classLoader.getReportLevel());
 	}
 
 	// test uppercase level
 	@Test
-	public void testReportLevelDEBUG() {
+	public void testReportLevelDEBUGUppercase() {
 		classLoader.setReportLevel("DEBUG");
-		assertTrue(classLoader.getReportLevel() == ReportLevel.DEBUG);
+		assertSame(ReportLevel.DEBUG, classLoader.getReportLevel());
 	}
 
 	@Test

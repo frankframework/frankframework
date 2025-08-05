@@ -27,6 +27,7 @@ import java.io.Reader;
 import java.io.Serial;
 import java.io.Serializable;
 import java.io.StringReader;
+import java.lang.ref.Cleaner;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -52,14 +53,14 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	public static final String TEMP_MESSAGE_DIRECTORY = "temp-messages";
 
 	@Serial private static final long serialVersionUID = 1L;
+	@SuppressWarnings("java:S115")
 	private static final long customSerializationVersion = 1L;
 
 	private long size = Message.MESSAGE_SIZE_UNKNOWN;
 	@Getter private boolean binary;
 	private String charset;
 	@Getter private transient Path path;
-	private transient CleanupFileAction cleanupFileAction;
-
+	private transient Cleaner.Cleanable cleanable;
 
 	/**
 	 * Create a new {@link SerializableFileReference} from the given {@link InputStream}. The {@link InputStream} will be copied
@@ -147,8 +148,8 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 	}
 
 	private void createCleanerAction(final Path path) {
-		cleanupFileAction = new CleanupFileAction(path);
-		CleanerProvider.register(this, cleanupFileAction);
+		CleanupFileAction cleanupFileAction = new CleanupFileAction(path);
+		cleanable = CleanerProvider.register(this, cleanupFileAction);
 	}
 
 	private static class CleanupFileAction implements Runnable {
@@ -202,8 +203,8 @@ public class SerializableFileReference implements Serializable, AutoCloseable {
 
 	@Override
 	public void close() {
-		if (cleanupFileAction != null) {
-			CleanerProvider.clean(cleanupFileAction);
+		if (cleanable != null) {
+			CleanerProvider.clean(cleanable);
 		}
 	}
 

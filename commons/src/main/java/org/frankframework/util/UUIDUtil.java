@@ -1,5 +1,5 @@
 /*
-   Copyright 2023-2024 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,6 +25,10 @@ import java.util.UUID;
 public class UUIDUtil {
 	public static final SecureRandom RANDOM = new SecureRandom();
 	private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
+
+	private UUIDUtil() {
+		// Private constructor so that the utility-class cannot be instantiated.
+	}
 
 	/**
 	 * Creates a Universally Unique Identifier, via the java.rmi.server.UID class.
@@ -99,7 +103,7 @@ public class UUIDUtil {
 		df = new DecimalFormat("000000");
 		String hash = df.format(hashL);
 
-		//Unique string is <ipaddress with length 4*3><currentTime with length 13><hashcode with length 6>
+		// Unique string is <ipaddress with length 4*3><currentTime with length 13><hashcode with length 6>
 
 		return ia + System.currentTimeMillis() + hash;
 	}

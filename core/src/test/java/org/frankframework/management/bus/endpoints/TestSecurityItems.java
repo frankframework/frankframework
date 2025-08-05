@@ -11,6 +11,7 @@ import javax.sql.DataSource;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.mockito.Mockito;
 import org.springframework.messaging.Message;
 import org.springframework.security.test.context.support.WithMockUser;
@@ -34,6 +35,7 @@ import org.frankframework.util.SpringUtils;
 import org.frankframework.util.TimeProvider;
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
+@Isolated("Tests manipulate current time, so should not be run concurrently with other tests")
 public class TestSecurityItems extends BusTestBase {
 
 	@BeforeEach
@@ -74,9 +76,11 @@ public class TestSecurityItems extends BusTestBase {
 		getConfiguration().addAdapter(adapter);
 	}
 
+	@Override
 	@AfterEach
 	public void tearDown() {
 		TimeProvider.resetClock();
+		super.tearDown();
 	}
 
 	@Test

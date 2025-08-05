@@ -58,6 +58,8 @@ import lombok.SneakyThrows;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.FrankElement;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IXAEnabled;
@@ -90,6 +92,7 @@ import org.frankframework.util.XmlException;
  *
  * @author 	Gerrit van Brakel
  */
+@DestinationType(Type.JMS)
 public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankElement, NameAware, HasPhysicalDestination, IXAEnabled {
 	protected Logger log = LogUtil.getLogger(this);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
@@ -99,7 +102,6 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 
 	public static final String JMS_MESSAGECLASS_KEY = "jms.messageClass.default";
 
-	private final @Getter String domain = "JMS";
 	private final boolean createDestination = AppConstants.getInstance().getBoolean("jms.createDestination", true);
 	private final MessageClass messageClassDefault = AppConstants.getInstance().getOrDefault(JMS_MESSAGECLASS_KEY, MessageClass.AUTO);
 	private @Getter MessageClass messageClass = messageClassDefault;
@@ -116,7 +118,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	private @Getter String authAlias;
 	private @Getter boolean lookupDestination = AppConstants.getInstance().getBoolean("jms.lookupDestination", true);
 
-	private @Getter DestinationType destinationType = DestinationType.QUEUE; // QUEUE or TOPIC
+	private @Getter JmsDestinationType destinationType = JmsDestinationType.QUEUE;
 
 	protected MessagingSource messagingSource;
 	private final Map<String,Destination> destinations = new ConcurrentHashMap<>();
@@ -204,7 +206,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 		TRANSIENT
 	}
 
-	public enum DestinationType {
+	public enum JmsDestinationType {
 		QUEUE,
 		TOPIC
 	}
@@ -549,14 +551,14 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 
 	@Override
 	public String getPhysicalDestinationName() {
-		StringBuilder builder = new StringBuilder(getDestinationType().toString());
+		StringBuilder builder = new StringBuilder(destinationType.toString());
 		builder.append("(").append(getDestinationName()).append(") [").append(getPhysicalDestinationShortName()).append("]");
 		if (StringUtils.isNotEmpty(getMessageSelector())) {
 			builder.append(" selector [").append(getMessageSelector()).append("]");
 		}
 
 		builder.append(" on (");
-		builder.append(destinationType == DestinationType.QUEUE ? getQueueConnectionFactoryName() : getTopicConnectionFactoryName());
+		builder.append(destinationType == JmsDestinationType.QUEUE ? getQueueConnectionFactoryName() : getTopicConnectionFactoryName());
 		builder.append(")");
 
 		return builder.toString();
@@ -579,17 +581,35 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 		return messageConsumer;
 	}
 
-	public String send(Session session, Destination dest, String correlationId, Message message, String messageType, long timeToLive, int deliveryMode, int priority) throws JMSException, SenderException, IOException {
-		return send(session, dest, correlationId, message, messageType, timeToLive, deliveryMode, priority, false);
-	}
-	public String send(Session session, Destination dest, String correlationId, Message message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException) throws JMSException, SenderException, IOException {
-		return send(session, dest, correlationId, message, messageType, timeToLive, deliveryMode, priority, ignoreInvalidDestinationException, null);
-	}
 	public String send(Session session, Destination dest, String correlationId, Message message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException, Map<String, Object> properties) throws JMSException, SenderException, IOException {
 		jakarta.jms.Message msg = createMessage(session, correlationId, message, messageClass);
-		MessageProducer mp;
-		try {
-			mp = session.createProducer(dest);
+		try (MessageProducer mp = session.createProducer(dest)) {
+			if (messageType!=null) {
+				msg.setJMSType(messageType);
+			}
+			if (deliveryMode>0) {
+				msg.setJMSDeliveryMode(deliveryMode);
+				mp.setDeliveryMode(deliveryMode);
+			}
+			if (priority>=0) {
+				msg.setJMSPriority(priority);
+				mp.setPriority(priority);
+			}
+			if (timeToLive>0) {
+				mp.setTimeToLive(timeToLive);
+			}
+			if (properties!=null) {
+				for (Map.Entry<String, Object> entry: properties.entrySet()) {
+					String key = entry.getKey();
+					Object value = entry.getValue();
+					if (value instanceof Message message1) {
+						value = message1.asString();
+					}
+					msg.setObjectProperty(key, value);
+				}
+			}
+
+			return send(mp, msg, ignoreInvalidDestinationException);
 		} catch (InvalidDestinationException e) {
 			if (ignoreInvalidDestinationException) {
 				log.warn("queue [{}] doesn't exist", dest);
@@ -597,34 +617,6 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 			}
 			throw e;
 		}
-		if (messageType!=null) {
-			msg.setJMSType(messageType);
-		}
-		if (deliveryMode>0) {
-			msg.setJMSDeliveryMode(deliveryMode);
-			mp.setDeliveryMode(deliveryMode);
-		}
-		if (priority>=0) {
-			msg.setJMSPriority(priority);
-			mp.setPriority(priority);
-		}
-		if (timeToLive>0) {
-			mp.setTimeToLive(timeToLive);
-		}
-		if (properties!=null) {
-			for (Map.Entry<String, Object> entry: properties.entrySet()) {
-				String key = entry.getKey();
-				Object value = entry.getValue();
-				if (value instanceof Message message1) {
-					value = message1.asString();
-				}
-				msg.setObjectProperty(key, value);
-			}
-		}
-		logMessageDetails(msg, mp);
-		String result = send(mp, msg, ignoreInvalidDestinationException);
-		mp.close();
-		return result;
 	}
 
 	/**
@@ -687,11 +679,9 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	}
 
 	public String send(Session session, Destination dest, jakarta.jms.Message message, boolean ignoreInvalidDestinationException) throws JMSException {
-		try {
-			MessageProducer mp = session.createProducer(dest);
+		try (MessageProducer mp = session.createProducer(dest)) {
 			logMessageDetails(message, mp);
 			mp.send(message);
-			mp.close();
 			return message.getJMSMessageID();
 		} catch (InvalidDestinationException e) {
 			if (ignoreInvalidDestinationException) {
@@ -703,17 +693,17 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	}
 
 	protected String sendByQueue(QueueSession session, Queue destination, jakarta.jms.Message message) throws JMSException {
-		QueueSender tqs = session.createSender(destination);
-		tqs.send(message);
-		tqs.close();
-		return message.getJMSMessageID();
+		try (QueueSender tqs = session.createSender(destination)) {
+			tqs.send(message);
+			return message.getJMSMessageID();
+		}
 	}
 
 	protected String sendByTopic(TopicSession session, Topic destination, jakarta.jms.Message message) throws JMSException {
-		TopicPublisher tps = session.createPublisher(destination);
-		tps.publish(message);
-		tps.close();
-		return message.getJMSMessageID();
+		try (TopicPublisher tps = session.createPublisher(destination)) {
+			tps.publish(message);
+			return message.getJMSMessageID();
+		}
 	}
 
 	public boolean isSessionsArePooled() {
@@ -820,14 +810,14 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	}
 
 	/**
-	 * Type of the messageing destination.
+	 * Type of the messaging destination.
 	 * This function also sets the <code>useTopicFunctions</code> field,
 	 * that controls whether Topic functions are used or Queue functions.
 	 * @ff.default QUEUE
 	 */
-	public void setDestinationType(DestinationType destinationType) {
+	public void setDestinationType(JmsDestinationType destinationType) {
 		this.destinationType=destinationType;
-		useTopicFunctions = this.destinationType==DestinationType.TOPIC;
+		useTopicFunctions = this.destinationType == JmsDestinationType.TOPIC;
 	}
 
 	/**
@@ -857,7 +847,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	}
 
 	/**
-	 * Used when {@link #setDestinationType destinationType} = {@link DestinationType#QUEUE QUEUE}.
+	 * Used when {@link #setDestinationType destinationType} = {@link JmsDestinationType#QUEUE QUEUE}.
 	 * The JNDI-name of the queueConnectionFactory to use to connect to a <code>queue</code> if {@link #isTransacted()} returns <code>false</code>.
 	 * The corresponding connection factory should be configured not to support XA transactions.
 	 */
@@ -866,7 +856,7 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 	}
 
 	/**
-	 * Used when {@link #setDestinationType destinationType} = {@link DestinationType#TOPIC TOPIC}.
+	 * Used when {@link #setDestinationType destinationType} = {@link JmsDestinationType#TOPIC TOPIC}.
 	 * The JNDI-name of the connection factory to use to connect to a <i>topic</i> if {@link #isTransacted()} returns <code>false</code>.
 	 * The corresponding connection factory should be configured not to support XA transactions.
 	 */

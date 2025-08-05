@@ -21,7 +21,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.jms.JMSException;
 import jakarta.jms.MessageConsumer;
 import jakarta.jms.Queue;
 import jakarta.jms.QueueBrowser;
@@ -33,21 +32,22 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.MessageBrowserField;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.StringUtil;
 
 /**
  * Basic browser of JMS Messages.
- * @param <M> the payload message type as used by IMessageBrowser.
- * @param <J> the physical JMS message to carry the payload.
  *
  * {@inheritClassDoc}
+ *
+ * @param <M> the payload message type as used by IMessageBrowser.
+ * @param <J> the physical JMS message to carry the payload.
  *
  * @author  Johan Verrips
  */
@@ -126,13 +126,7 @@ public abstract class AbstractJmsMessageBrowser<M, J extends jakarta.jms.Message
 		} catch (Exception e) {
 			throw new ListenerException("cannot determin messagecount",e);
 		} finally {
-			try {
-				if (queueBrowser!=null) {
-					queueBrowser.close();
-				}
-			} catch (JMSException e) {
-				throw new ListenerException("error closing queuebrowser",e);
-			}
+			CloseUtils.closeSilently(queueBrowser);
 			closeSession(session);
 		}
 	}
@@ -149,13 +143,7 @@ public abstract class AbstractJmsMessageBrowser<M, J extends jakarta.jms.Message
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		} finally {
-			try {
-				if (mc != null) {
-					mc.close();
-				}
-			} catch (JMSException e1) {
-				throw new ListenerException("exception closing message consumer",e1);
-			}
+			CloseUtils.closeSilently(mc);
 			closeSession(session);
 		}
 	}
@@ -183,13 +171,7 @@ public abstract class AbstractJmsMessageBrowser<M, J extends jakarta.jms.Message
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		} finally {
-			try {
-				if (queueBrowser != null) {
-					queueBrowser.close();
-				}
-			} catch (JMSException e1) {
-				throw new ListenerException("exception closing queueBrowser",e1);
-			}
+			CloseUtils.closeSilently(queueBrowser);
 			closeSession(session);
 		}
 	}
@@ -212,13 +194,7 @@ public abstract class AbstractJmsMessageBrowser<M, J extends jakarta.jms.Message
 		} catch (Exception e) {
 			throw new ListenerException(e);
 		} finally {
-			try {
-				if (mc != null) {
-					mc.close();
-				}
-			} catch (JMSException e1) {
-				throw new ListenerException("exception closing message consumer",e1);
-			}
+			CloseUtils.closeSilently(mc);
 			closeSession(session);
 		}
 	}
@@ -257,17 +233,6 @@ public abstract class AbstractJmsMessageBrowser<M, J extends jakarta.jms.Message
 			result.append(" AND ").append(getSelector());
 		}
 		return result.toString();
-	}
-
-	/**
-	 * Timeout <i>in milliseconds</i> for receiving a message from the queue
-	 * @deprecated use {@link #setTimeout(long)} instead
-	 * @ff.default 3000
-	 */
-	@Deprecated(since = "8.1")
-	@ConfigurationWarning("Use attribute timeout instead")
-	public void setTimeOut(long newTimeOut) {
-		timeout = newTimeOut;
 	}
 
 	/**

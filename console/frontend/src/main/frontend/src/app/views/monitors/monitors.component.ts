@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { AppService, Configuration } from 'src/app/app.service';
 import { Monitor, MonitorsService, Trigger } from './monitors.service';
 import { ActivatedRoute, convertToParamMap, ParamMap, RouterLink } from '@angular/router';
@@ -9,6 +9,7 @@ import { HasAccessToLinkDirective } from '../../components/has-access-to-link.di
 import { FormsModule } from '@angular/forms';
 import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
 import { ToDateDirective } from '../../components/to-date.directive';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-monitors',
@@ -30,16 +31,15 @@ export class MonitorsComponent implements OnInit, OnDestroy {
   protected destinations: string[] = [];
   protected eventTypes: string[] = [];
   protected totalRaised: number = 0;
-  protected configurations: Configuration[] = this.appService.configurations;
+  protected configurations: Configuration[] = [];
 
   private routeQueryParams: ParamMap = convertToParamMap({});
   private subscriptions: Subscription = new Subscription();
 
-  constructor(
-    private route: ActivatedRoute,
-    private appService: AppService,
-    private monitorsService: MonitorsService,
-  ) {}
+  private route: ActivatedRoute = inject(ActivatedRoute);
+  private monitorsService: MonitorsService = inject(MonitorsService);
+  private appService: AppService = inject(AppService);
+  private configurations$ = toObservable(this.appService.configurations);
 
   ngOnInit(): void {
     this.route.queryParamMap.subscribe((parameters) => {
@@ -48,8 +48,8 @@ export class MonitorsComponent implements OnInit, OnDestroy {
         this.updateConfigurations();
       }
     });
-    const configurationsSubscription = this.appService.configurations$.subscribe(() => {
-      this.configurations = this.appService.configurations;
+    const configurationsSubscription = this.configurations$.subscribe((configurations) => {
+      this.configurations = configurations;
       if (this.configurations.length > 0) {
         this.updateConfigurations();
       }

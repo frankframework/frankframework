@@ -54,6 +54,7 @@ public interface IJob extends ConfigurableLifecycle, FrankElement, NameAware {
 	public String getJobGroup();
 
 	/** Only register (and trigger) Jobs that have been successfully configured. */
+	@Override
 	public boolean isConfigured();
 
 	public MessageKeeper getMessageKeeper();

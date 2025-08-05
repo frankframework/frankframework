@@ -12,8 +12,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.configuration.IbisContext;
+import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.util.AppConstants;
 
 public class ResolveConfigurationFileTest {

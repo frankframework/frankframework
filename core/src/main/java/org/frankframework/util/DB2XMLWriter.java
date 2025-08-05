@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -80,7 +80,7 @@ public class DB2XMLWriter {
 	private boolean decompressBlobs=false;
 	private boolean getBlobSmart=false;
 	private String blobCharset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-	private static final boolean convertFieldnamesToUppercase = AppConstants.getInstance().getBoolean("jdbc.convertFieldnamesToUppercase", false);
+	private static final boolean CONVERT_FIELDNAMES_TO_UPPERCASE = AppConstants.getInstance().getBoolean("jdbc.convertFieldnamesToUppercase", false);
 
 	public static String getFieldType (int type) {
 		return JDBCType.valueOf(type).getName();
@@ -240,10 +240,7 @@ public class DB2XMLWriter {
 				addFieldDefinitions(parent, rsmeta);
 			}
 
-			//----------------------------------------
 			// Process result rows
-			//----------------------------------------
-
 			try (SaxElementBuilder queryresult = parent.startElement(recordname)) {
 				while (rs.next() && rowCounter < maxRows) {
 					getRowXml(queryresult, dbmsSupport, rs,rowCounter,rsmeta,getBlobCharset(),decompressBlobs,nullValue,trimSpaces, getBlobSmart);
@@ -268,11 +265,11 @@ public class DB2XMLWriter {
 			try (SaxElementBuilder field = fields.startElement("field")) {
 
 				String columnName = rsmeta.getColumnName(j);
-				if(convertFieldnamesToUppercase)
+				if(CONVERT_FIELDNAMES_TO_UPPERCASE)
 					columnName = columnName.toUpperCase();
 				field.addAttribute("name", columnName);
 
-				//Not every JDBC implementation implements these attributes!
+				// Not every JDBC implementation implements these attributes!
 				try {
 					field.addAttribute("type", getFieldType(rsmeta.getColumnType(j)));
 				} catch (SQLException e) {
@@ -302,7 +299,7 @@ public class DB2XMLWriter {
 				}
 				try {
 					String columnTypeName = rsmeta.getColumnTypeName(j);
-					if(convertFieldnamesToUppercase)
+					if(CONVERT_FIELDNAMES_TO_UPPERCASE)
 						columnTypeName = columnTypeName.toUpperCase();
 					field.addAttribute("columnTypeName", columnTypeName);
 				} catch (SQLException e) {
@@ -333,7 +330,7 @@ public class DB2XMLWriter {
 				try (SaxElementBuilder resultField = row.startElement("field")) {
 
 					String columnName = rsmeta.getColumnName(i);
-					if(convertFieldnamesToUppercase)
+					if(CONVERT_FIELDNAMES_TO_UPPERCASE)
 						columnName = columnName.toUpperCase();
 					resultField.addAttribute("name", columnName);
 

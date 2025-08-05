@@ -21,13 +21,11 @@ import java.io.InputStream;
 
 import jakarta.annotation.Nullable;
 
-import org.apache.commons.io.input.NullInputStream;
-
 public class ReleaseConnectionAfterReadInputStream extends FilterInputStream {
 	HttpResponseHandler responseHandler;
 
 	public ReleaseConnectionAfterReadInputStream(@Nullable HttpResponseHandler responseHandler, @Nullable InputStream inputStream) {
-		super(inputStream != null ? inputStream : new NullInputStream());
+		super(inputStream != null ? inputStream : InputStream.nullInputStream());
 		this.responseHandler = responseHandler;
 	}
 

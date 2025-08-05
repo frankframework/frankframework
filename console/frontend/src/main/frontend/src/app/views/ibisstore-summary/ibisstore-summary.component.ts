@@ -1,6 +1,6 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { first, Subscription } from 'rxjs';
-import { AppConstants, AppService, ServerErrorResponse } from 'src/app/app.service';
+import { AppService, ServerErrorResponse } from 'src/app/app.service';
 import { JdbcService, JdbcSummary, JdbcSummaryForm } from '../jdbc/jdbc.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -8,6 +8,7 @@ import { NgClass } from '@angular/common';
 import { HasAccessToLinkDirective } from '../../components/has-access-to-link.directive';
 import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
 import { FormsModule } from '@angular/forms';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-ibisstore-summary',
@@ -21,29 +22,25 @@ export class IbisstoreSummaryComponent implements OnInit, OnDestroy {
   protected error: string | null = null;
   protected result: JdbcSummary[] = [];
 
-  private _subscriptions = new Subscription();
-  private appConstants: AppConstants = this.appService.APP_CONSTANTS;
-
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private appService: AppService,
-    private jdbcService: JdbcService,
-  ) {}
+  private readonly router: Router = inject(Router);
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
+  private readonly jdbcService: JdbcService = inject(JdbcService);
+  private readonly appService: AppService = inject(AppService);
+  private appConstants$ = toObservable(this.appService.appConstants);
+  private appConstantsSubscription: Subscription | null = null;
 
   ngOnInit(): void {
-    const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
-      this.appConstants = this.appService.APP_CONSTANTS;
-      this.form.datasource = this.appConstants['jdbc.datasource.default'] as string;
+    this.appConstantsSubscription = this.appConstants$.subscribe((appConstants) => {
+      this.form.datasource = appConstants['jdbc.datasource.default'] as string;
     });
-    this._subscriptions.add(appConstantsSubscription);
 
     this.jdbcService.getJdbc().subscribe((data) => {
+      const appConstants = this.appService.appConstants();
       this.datasources = data.datasources;
       this.form.datasource =
-        this.appConstants['jdbc.datasource.default'] === undefined
+        appConstants['jdbc.datasource.default'] === undefined
           ? data.datasources[0]
-          : (this.appConstants['jdbc.datasource.default'] as string);
+          : (appConstants['jdbc.datasource.default'] as string);
     });
     this.route.queryParamMap.pipe(first()).subscribe((parameters) => {
       if (parameters.has('datasource')) this.fetch(parameters.get('datasource')!);
@@ -51,7 +48,7 @@ export class IbisstoreSummaryComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
+    this.appConstantsSubscription?.unsubscribe();
   }
 
   fetch(datasource: string): void {

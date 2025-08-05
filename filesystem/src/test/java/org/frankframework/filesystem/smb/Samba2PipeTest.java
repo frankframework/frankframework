@@ -1,5 +1,7 @@
 package org.frankframework.filesystem.smb;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -71,7 +73,7 @@ public class Samba2PipeTest extends FileSystemPipeTest<Samba2Pipe, SmbFileRef, S
 		fileSystemPipe.configure();
 		fileSystemPipe.start();
 
-		fileSystemPipe.stop();
-		fileSystemPipe.start();
+		assertDoesNotThrow(fileSystemPipe::stop);
+		assertDoesNotThrow(fileSystemPipe::start);
 	}
 }

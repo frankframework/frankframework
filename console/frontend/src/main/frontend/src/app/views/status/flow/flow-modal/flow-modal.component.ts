@@ -27,7 +27,7 @@ export class FlowModalComponent {
 
   mermaidLoaded(flowSvg: SVGSVGElement): void {
     this.flowSvg = flowSvg;
-    // this.showActionButtons = true;
+    this.showActionButtons = true;
   }
 
   downloadAsPng(event: MouseEvent): void {

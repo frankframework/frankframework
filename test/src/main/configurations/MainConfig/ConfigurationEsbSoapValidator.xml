@@ -5,7 +5,7 @@
 
 		<receiver>
 			<listener className="org.frankframework.receivers.JavaListener"
-				serviceName="ibis4test-EsbSoapValidator" throwException="false" />
+				serviceName="ibis4test-EsbSoapValidator" onException="FORMAT_AND_RETURN" />
 		</receiver>
 
 		<pipeline firstPipe="make reply">

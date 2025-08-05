@@ -1,16 +1,16 @@
 <div class="wrapper wrapper-content animated fadeInRight">
   <app-server-warnings
-    [alerts]="alerts"
-    [messageLog]="messageLog"
+    [alerts]="alerts()"
+    [messageLog]="messageLog()"
     [selectedConfiguration]="selectedConfiguration"
-    [freeDiskSpacePercentage]="freeDiskSpacePercentage"
-    [serverInfo]="serverInfo"
+    [freeDiskSpacePercentage]="freeDiskSpacePercentage()"
+    [serverInfo]="serverInfo()"
   ></app-server-warnings>
 
   <div class="row">
     <app-configuration-tab-list
       queryParamName="configuration"
-      [configurations]="configurations"
+      [configurations]="configurations()"
       [filterIAF_Util]="true"
       (selectedTabChange)="changeConfiguration($event)"
       data-cy="status__configuration-tab-list"
@@ -190,7 +190,7 @@
   <div class="row">
     <div class="col-lg-12">
       <app-configuration-messages
-        [messageLog]="messageLog"
+        [messageLog]="messageLog()"
         [selectedConfiguration]="selectedConfiguration"
       ></app-configuration-messages>
     </div>
@@ -198,7 +198,10 @@
 
   <div class="row">
     @for (
-      adapterKV of adapters | configurationFilter: selectedConfiguration : filter | searchFilter: searchText | keyvalue;
+      adapterKV of adapters()
+        | configurationFilter: selectedConfiguration : filter
+        | searchFilter: searchText
+        | keyvalue;
       track trackAdaptersByFn($index, adapterKV)
     ) {
       <div class="col-lg-12 adapters">

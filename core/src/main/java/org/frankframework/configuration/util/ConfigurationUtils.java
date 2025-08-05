@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.configuration;
+package org.frankframework.configuration.util;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,6 +46,9 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import org.frankframework.configuration.ClassLoaderManager;
+import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.classloaders.DatabaseClassLoader;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
@@ -58,10 +61,10 @@ import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.lifecycle.events.ApplicationMessageEvent;
 import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.SpringUtils;
-import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 
 /**
@@ -90,6 +93,10 @@ public class ConfigurationUtils {
 
 	private static final String DUMMY_SELECT_QUERY = "SELECT COUNT(*) FROM IBISCONFIG";
 
+	private ConfigurationUtils() {
+		// Private constructor so that the utility-class cannot be instantiated.
+	}
+
 	/**
 	 * Checks if a configuration is stubbed or not
 	 */
@@ -113,7 +120,7 @@ public class ConfigurationUtils {
 			configurationFile = DEFAULT_CONFIGURATION_FILE;
 		} else {
 			int i = configurationFile.lastIndexOf('/');
-			if (i != -1) { //Trim the BasePath, why is it even here!?
+			if (i != -1) { // Trim the BasePath, why is it even here!?
 				configurationFile = configurationFile.substring(i + 1);
 			}
 		}
@@ -186,7 +193,7 @@ public class ConfigurationUtils {
 			workdataSourceName = IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 		}
 		if (StringUtils.isEmpty(version)) {
-			version = null; //Make sure this is null when empty!
+			version = null; // Make sure this is null when empty!
 		}
 		if(log.isInfoEnabled()) log.info("trying to fetch configuration [{}] version [{}] from database with dataSourceName [{}]", name, version, workdataSourceName);
 
@@ -279,7 +286,7 @@ public class ConfigurationUtils {
 				while ((zipEntry = zipInputStream.getNextEntry()) != null) {
 					String entryName = zipEntry.getName();
 					try {
-						String configName = ConfigurationUtils.addConfigToDatabase(applicationContext, datasource, activate_config, automatic_reload, entryName, StreamUtil.dontClose(zipInputStream), ruser);
+						String configName = ConfigurationUtils.addConfigToDatabase(applicationContext, datasource, activate_config, automatic_reload, entryName, CloseUtils.dontClose(zipInputStream), ruser);
 						result.put(configName, "loaded");
 					} catch (ConfigurationException e) {
 						log.error("an error occurred while trying to store new configuration using datasource [{}]", datasource, e);

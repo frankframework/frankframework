@@ -37,6 +37,8 @@ import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.Default;
@@ -88,6 +90,7 @@ import org.frankframework.util.StringUtil;
  *
  * @author Niels Meijer
  */
+@DestinationType(Type.HTTP)
 public class ApiListener extends PushingListenerAdapter implements HasPhysicalDestination, ReceiverAware<Message> {
 
 	private static final Pattern VALID_URI_PATTERN_RE = Pattern.compile("([^/]\\*|\\*[^/\\n])");
@@ -98,7 +101,6 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 */
 	public static final Set<String> RESERVED_NAMES = Set.of(PipeLineSession.ORIGINAL_MESSAGE_KEY, PipeLineSession.API_PRINCIPAL_KEY, PipeLineSession.HTTP_METHOD_KEY, PipeLineSession.HTTP_REQUEST_KEY, PipeLineSession.HTTP_RESPONSE_KEY, PipeLineSession.SECURITY_HANDLER_KEY, "ClaimsSet", "allowedMethods", "headers", ApiListenerServlet.UPDATE_ETAG_CONTEXT_KEY, "uri", "remoteAddr", ApiListenerServlet.AUTHENTICATION_COOKIE_NAME, MultipartUtils.MULTIPART_ATTACHMENTS_SESSION_KEY);
 
-	private final @Getter String domain = "Http";
 	private @Getter String uriPattern;
 	private @Getter boolean updateEtag = AppConstants.getInstance().getBoolean("api.etag.enabled", false);
 	private @Getter String operationId;

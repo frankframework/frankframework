@@ -19,7 +19,6 @@ import java.time.Clock;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
 import java.time.ZonedDateTime;
 import java.util.Date;
 
@@ -93,11 +92,19 @@ public class TimeProvider {
 	}
 
 	/**
+	 * ONLY FOR UNIT TESTING! Set the clock to a fixed date-time from the milliseconds since 1-1-1970 passed in.
+	 * @param millis Time in epoch-milliseconds to which to set the clock.
+	 */
+	public static void setTime(long millis) {
+		TimeProvider.clock = Clock.fixed(Instant.ofEpochMilli(millis), ZoneId.systemDefault());
+	}
+
+	/**
 	 * ONLY FOR UNIT TESTING! Set the clock to a fixed date-time from the local date-time passed in.
 	 * @param localDateTime Time to which to set the clock.
 	 */
 	public static void setTime(LocalDateTime localDateTime) {
-		TimeProvider.clock = Clock.fixed(localDateTime.toInstant(ZoneOffset.from(localDateTime)), ZoneId.systemDefault());
+		TimeProvider.clock = Clock.fixed(localDateTime.atZone(ZoneId.systemDefault()).toInstant(), ZoneId.systemDefault());
 	}
 
 	/**

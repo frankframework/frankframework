@@ -110,7 +110,7 @@ public class SecurityItems extends BusEndpointBase {
 	private List<SecurityRolesDTO> getSecurityRoles() {
 		return securityRoles.stream()
 				.map(SecurityRolesDTO::new)
-				.collect(Collectors.toList());
+				.toList();
 	}
 
 	public static class SecurityRolesDTO {

@@ -27,6 +27,7 @@
     "@angular/platform-browser": "^19.2.14",
     "@angular/platform-browser-dynamic": "^19.2.14",
     "@angular/router": "^19.2.14",
+    "@frankframework/frank-config-layout": "^1.1.4",
     "@ng-bootstrap/ng-bootstrap": "^18.0.0",
     "@ng-idle/core": "^13.0.0",
     "@popperjs/core": "^2.11.8",
@@ -70,7 +71,7 @@
     "@types/uuid": "^9.0.8",
     "@typescript-eslint/eslint-plugin": "^7.1.0",
     "@typescript-eslint/parser": "^7.1.0",
-    "cypress": "^14.5.1",
+    "cypress": "^14.5.3",
     "cypress-multi-reporters": "^2.0.5",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.2",
@@ -86,5 +87,6 @@
     "mochawesome": "^7.1.3",
     "prettier": "^3.6.2",
     "typescript": "~5.7.3"
-  }
+  },
+  "packageManager": "pnpm@10.13.1+sha512.37ebf1a5c7a30d5fabe0c5df44ee8da4c965ca0c5af3dbab28c3a1681b70a256218d05c81c9c0dcf767ef6b8551eb5b960042b9ed4300c59242336377e01cfad"
 }

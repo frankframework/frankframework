@@ -1,5 +1,5 @@
-import { inject, Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, ReplaySubject, tap } from 'rxjs';
+import { inject, Injectable, Signal, signal, WritableSignal } from '@angular/core';
+import { Observable, tap } from 'rxjs';
 import { AppService } from '../app.service';
 import { HttpClient } from '@angular/common/http';
 import { HumanFileSizePipe } from '../pipes/human-file-size.pipe';
@@ -44,22 +44,22 @@ export type ConsoleInfo = {
   providedIn: 'root',
 })
 export class ServerInfoService {
-  private readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
-  private serverInfoSubject = new ReplaySubject<ServerInfo>(1);
-  private consoleInfoSubject = new BehaviorSubject<ConsoleInfo>({
+  private _serverInfo: WritableSignal<ServerInfo | null> = signal(null);
+  private _consoleInfo: WritableSignal<ConsoleInfo> = signal({
     version: null,
   });
 
-  serverInfo$ = this.serverInfoSubject.asObservable();
-  consoleVersion$ = this.consoleInfoSubject.asObservable();
+  private readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
+  private readonly appService: AppService = inject(AppService);
+  private readonly http: HttpClient = inject(HttpClient);
 
-  private serverInfo?: ServerInfo;
-  private consoleInfo?: ConsoleInfo;
+  get consoleInfo(): Signal<ConsoleInfo> {
+    return this._consoleInfo.asReadonly();
+  }
 
-  constructor(
-    private appService: AppService,
-    private http: HttpClient,
-  ) {}
+  get serverInfo(): Signal<ServerInfo | null> {
+    return this._serverInfo.asReadonly();
+  }
 
   fetchServerInfo(): Observable<ServerInfo> {
     return this.http.get<ServerInfo>(`${this.appService.absoluteApiPath}server/info`);
@@ -70,32 +70,22 @@ export class ServerInfoService {
   }
 
   refresh(): Observable<ServerInfo> {
-    this.fetchConsoleVersion().subscribe({
-      next: (info) => {
-        this.consoleInfo = info;
-        this.consoleInfoSubject.next(info);
-      },
-    });
-    return this.fetchServerInfo().pipe(
-      tap({
-        next: (data) => {
-          this.serverInfo = data;
-          this.serverInfoSubject.next(data);
-        },
-      }),
-    );
+    this.fetchConsoleVersion().subscribe((info) => this._consoleInfo.set(info));
+    return this.fetchServerInfo().pipe(tap((data) => this._serverInfo.set(data)));
   }
 
   getMarkdownFormatedServerInfo(): string {
     if (!this.serverInfo) return '**Server info not available**';
     const humanFileSize = new HumanFileSizePipe();
-    return `**${this.serverInfo?.framework.name}${this.serverInfo?.framework.version ? ` ${this.serverInfo?.framework.version}` : ''}**: ${this.serverInfo?.instance.name} ${this.serverInfo?.instance.version}
-Running on **${this.serverInfo?.machineName}** using **${this.serverInfo?.applicationServer}**
-Java Version: **${this.serverInfo?.javaVersion}**
-Heap size: **${humanFileSize.transform(this.serverInfo?.processMetrics.heapSize ?? 0)}**, total JVM memory: **${humanFileSize.transform(this.serverInfo?.processMetrics?.totalMemory ?? 0)}**
-Free memory: **${humanFileSize.transform(this.serverInfo?.processMetrics.freeMemory ?? 0)}**, max memory: **${humanFileSize.transform(this.serverInfo?.processMetrics.maxMemory ?? 0)}**
-Free disk space: **${humanFileSize.transform(this.serverInfo?.fileSystem.freeSpace ?? 0)}**, total disk space: **${humanFileSize.transform(this.serverInfo?.fileSystem.totalSpace ?? 0)}**
-Up since: **${this.serverTimeService.getIntialTime()}**, timezone: **${this.serverInfo?.serverTimezone}**
-${this.consoleInfo?.version === this.serverInfo.framework.version ? '' : `Console version: **${this.consoleInfo?.version ?? 'null'}**`}`;
+    const serverInfo = this.serverInfo();
+    const consoleVersion = this.consoleInfo().version ?? 'null';
+    return `**${serverInfo?.framework.name}${serverInfo?.framework.version ? ` ${serverInfo?.framework.version}` : ''}**: ${serverInfo?.instance.name} ${serverInfo?.instance.version}
+Running on **${serverInfo?.machineName}** using **${serverInfo?.applicationServer}**
+Java Version: **${serverInfo?.javaVersion}**
+Heap size: **${humanFileSize.transform(serverInfo?.processMetrics.heapSize ?? 0)}**, total JVM memory: **${humanFileSize.transform(serverInfo?.processMetrics?.totalMemory ?? 0)}**
+Free memory: **${humanFileSize.transform(serverInfo?.processMetrics.freeMemory ?? 0)}**, max memory: **${humanFileSize.transform(serverInfo?.processMetrics.maxMemory ?? 0)}**
+Free disk space: **${humanFileSize.transform(serverInfo?.fileSystem.freeSpace ?? 0)}**, total disk space: **${humanFileSize.transform(serverInfo?.fileSystem.totalSpace ?? 0)}**
+Up since: **${this.serverTimeService.getIntialTime()}**, timezone: **${serverInfo?.serverTimezone}**
+${consoleVersion === serverInfo?.framework.version ? '' : `Console version: **${consoleVersion}**`}`;
   }
 }

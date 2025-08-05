@@ -47,9 +47,12 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.doc.Default;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
+import org.frankframework.util.StreamUtil;
 
 /**
  * {@link IWritableFileSystem FileSystem} representation of the local filesystem.
@@ -58,9 +61,9 @@ import org.frankframework.stream.PathMessage;
  *
  */
 @Log4j2
+@DestinationType(Type.FILE_SYSTEM)
 public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritableFileSystem<Path>, ISupportsCustomFileAttributes<Path> {
 	public static final String ORIGINAL_LAST_MODIFIED_TIME_ATTRIBUTE = "originalLastModifiedTime";
-	private final @Getter String domain = "LocalFilesystem";
 
 	private @Getter boolean createRootFolder = false;
 
@@ -128,8 +131,10 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	}
 
 	@Override
-	public OutputStream createFile(Path f) throws IOException {
-		return Files.newOutputStream(f);
+	public void createFile(Path file, InputStream content) throws IOException {
+		try (OutputStream out = Files.newOutputStream(file)) {
+			StreamUtil.streamToStream(content, out);
+		}
 	}
 
 	@Override
@@ -192,8 +197,10 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	}
 
 	@Override
-	public OutputStream appendFile(Path f) throws IOException {
-		return Files.newOutputStream(f, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+	public void appendFile(Path f, InputStream content) throws FileSystemException, IOException {
+		try (OutputStream out = Files.newOutputStream(f, StandardOpenOption.CREATE, StandardOpenOption.APPEND)) {
+			StreamUtil.streamToStream(content, out);
+		}
 	}
 
 	@Override

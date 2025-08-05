@@ -22,7 +22,7 @@ public class MockAuthenticatedService {
 	public static final String basicPathUnchallenged = "/basicUnchallenged";
 	public static final String oauthPathUnchallenged = "/oauthUnchallenged";
 	public static final String failing = "/failing";
-	public static final String anyPath	 = "/any";
+	public static final String anyPath = "/any";
 
 	public static void createStubs(WireMockExtension extension) {
 		extension.stubFor(any(urlPathMatching(anyPath))

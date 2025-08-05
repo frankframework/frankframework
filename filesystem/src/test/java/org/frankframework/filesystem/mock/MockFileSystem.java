@@ -40,7 +40,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.LogUtil;
 
 public class MockFileSystem<M extends MockFile> extends MockFolder implements IWritableFileSystem<M>, ISupportsCustomFileAttributes<M>, ApplicationContextAware {
-	private final @Getter String domain = "MockFilesystem";
 	protected Logger log = LogUtil.getLogger(this);
 
 	private boolean configured=false;
@@ -220,14 +219,16 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public OutputStream createFile(MockFile f) throws IOException {
+	public void createFile(MockFile f, InputStream content) throws IOException {
 		checkOpen();
 		f.getOwner().getFiles().put(f.getName(), f);
-		return f.getOutputStream(true);
+		try (OutputStream out = f.getOutputStream(true)) {
+			content.transferTo(out);
+		}
 	}
 
 	@Override
-	public OutputStream appendFile(MockFile f) throws IOException {
+	public void appendFile(MockFile f, InputStream content) throws IOException {
 		checkOpen();
 		if (f.getOwner()!=null && f.getOwner().getFiles().containsKey(f.getName())) {
 			f=f.getOwner().getFiles().get(f.getName()); // append to existing file
@@ -235,7 +236,9 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 			f.getOwner().getFiles().put(f.getName(), f); // create new file
 			f.setOwner(this);
 		}
-		return f.getOutputStream(false);
+		try (OutputStream out = f.getOutputStream(false)) {
+			content.transferTo(out);
+		}
 	}
 
 	@Override

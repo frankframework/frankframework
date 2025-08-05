@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Compatibility XSD, internal use only! -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.2.0-SNAPSHOT">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.3.0-SNAPSHOT">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -95,7 +95,14 @@
         <xs:documentation>If set to &lt;code&gt;true&lt;/code&gt;, the length of the message is shown in the msg log instead of the content of the message Default: &lt;code&gt;false&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="targetDesignDocument" type="xs:string" />
+    <xs:attribute name="targetDesignDocument" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>An optional field for documentation-purposes where you can add a reference to the design-document
+ used for the design of this adapter.
+ &lt;br/&gt;
+ Setting this field has no impact on the behaviour of the Adapter.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.core.Adapter" use="prohibited" />
     <xs:attribute ref="active" />
     <xs:attribute name="elementRole" type="xs:string" fixed="adapter" />
@@ -315,7 +322,7 @@
     </xs:sequence>
     <xs:attribute name="firstPipe" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Name of the first pipe to execute when a message is to be processed Default: first pipe of the pipeline</xs:documentation>
+        <xs:documentation>Name of the first pipe to execute when a message is to be processed. Default: first pipe of the pipeline</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="maxThreads" type="frankInt">
@@ -8267,11 +8274,6 @@
     <xs:attributeGroup ref="AbstractJmsMessageBrowserCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:attributeGroup name="AbstractJmsMessageBrowserDeclaredAttributeGroup">
-    <xs:attribute name="timeOut" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>Timeout &lt;i&gt;in milliseconds&lt;/i&gt; for receiving a message from the queue Default: 3000</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="timeout" type="frankInt">
       <xs:annotation>
         <xs:documentation>Timeout &lt;i&gt;in milliseconds&lt;/i&gt; for receiving a message from the queue Default: 3000</xs:documentation>
@@ -8437,7 +8439,7 @@
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="DataSonnetErrorMessageFormatterDeclaredAttributeGroup">
-    <xs:attribute name="styleSheetName" type="xs:string">
+    <xs:attribute name="styleSheetName" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Set a DataSonnet stylesheet to transform the default JSON error message to a custom format.</xs:documentation>
       </xs:annotation>
@@ -8469,9 +8471,7 @@
   <xs:attributeGroup name="ErrorMessageFormatterDeclaredAttributeGroup">
     <xs:attribute name="messageFormat">
       <xs:annotation>
-        <xs:documentation>Format the error message as XML or as JSON.
-
- ff.default XML</xs:documentation>
+        <xs:documentation>Format the error message as XML or as JSON. Default: XML</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="DocumentFormatAttributeValuesType variableRef" />
@@ -8658,7 +8658,7 @@
       <xs:element name="XmlWellFormedCheckerInputValidator">
         <xs:complexType>
           <xs:complexContent>
-            <xs:extension base="XmlWellFormedCheckerType">
+            <xs:extension base="XmlWellFormedCheckerPipeType">
               <xs:attribute name="elementRole" type="xs:string" fixed="inputValidator" />
             </xs:extension>
           </xs:complexContent>
@@ -9252,16 +9252,16 @@
     <xs:attributeGroup ref="JsonValidatorDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractValidatorCumulativeAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="XmlWellFormedCheckerType">
+  <xs:complexType name="XmlWellFormedCheckerPipeType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:group ref="AbstractPipeDeclaredChildGroup" />
       </xs:choice>
     </xs:sequence>
-    <xs:attributeGroup ref="XmlWellFormedCheckerCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="XmlWellFormedCheckerPipeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.XmlWellFormedCheckerPipe" />
   </xs:complexType>
-  <xs:attributeGroup name="XmlWellFormedCheckerDeclaredAttributeGroup">
+  <xs:attributeGroup name="XmlWellFormedCheckerPipeDeclaredAttributeGroup">
     <xs:attribute name="root" type="xs:string">
       <xs:annotation>
         <xs:documentation>name of the root element</xs:documentation>
@@ -9273,8 +9273,8 @@
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
-  <xs:attributeGroup name="XmlWellFormedCheckerCumulativeAttributeGroup">
-    <xs:attributeGroup ref="XmlWellFormedCheckerDeclaredAttributeGroup" />
+  <xs:attributeGroup name="XmlWellFormedCheckerPipeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="XmlWellFormedCheckerPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeDeclaredAttributeGroup" />
     <xs:attribute ref="getInputFromSessionKey" />
     <xs:attribute ref="getInputFromFixedValue" />
@@ -9393,7 +9393,7 @@
       <xs:element name="XmlWellFormedCheckerOutputValidator">
         <xs:complexType>
           <xs:complexContent>
-            <xs:extension base="XmlWellFormedCheckerType">
+            <xs:extension base="XmlWellFormedCheckerPipeType">
               <xs:attribute name="elementRole" type="xs:string" fixed="outputValidator" />
             </xs:extension>
           </xs:complexContent>
@@ -11036,7 +11036,7 @@
       <xs:element name="GetFromSessionPipe">
         <xs:complexType>
           <xs:complexContent>
-            <xs:extension base="GetFromSessionType">
+            <xs:extension base="GetFromSessionPipeType">
               <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
             </xs:extension>
           </xs:complexContent>
@@ -11144,7 +11144,7 @@
       <xs:element name="JsonWellFormedCheckerPipe">
         <xs:complexType>
           <xs:complexContent>
-            <xs:extension base="JsonWellFormedCheckerType">
+            <xs:extension base="JsonWellFormedCheckerPipeType">
               <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
             </xs:extension>
           </xs:complexContent>
@@ -11315,7 +11315,7 @@
       <xs:element name="RekenBoxCallerPipe">
         <xs:complexType>
           <xs:complexContent>
-            <xs:extension base="RekenBoxCallerType">
+            <xs:extension base="RekenBoxCallerPipeType">
               <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
             </xs:extension>
           </xs:complexContent>
@@ -11333,7 +11333,7 @@
       <xs:element name="RemoveFromSessionPipe">
         <xs:complexType>
           <xs:complexContent>
-            <xs:extension base="RemoveFromSessionType">
+            <xs:extension base="RemoveFromSessionPipeType">
               <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
             </xs:extension>
           </xs:complexContent>
@@ -11387,7 +11387,7 @@
       <xs:element name="SapLUWManagerPipe">
         <xs:complexType>
           <xs:complexContent>
-            <xs:extension base="SapLUWManagerType">
+            <xs:extension base="SapLUWManagerPipeType">
               <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
             </xs:extension>
           </xs:complexContent>
@@ -11594,7 +11594,7 @@
       <xs:element name="XmlWellFormedCheckerPipe">
         <xs:complexType>
           <xs:complexContent>
-            <xs:extension base="XmlWellFormedCheckerType">
+            <xs:extension base="XmlWellFormedCheckerPipeType">
               <xs:attribute name="elementRole" type="xs:string" fixed="pipe" />
             </xs:extension>
           </xs:complexContent>
@@ -12657,6 +12657,11 @@
  See &lt;a href="https://en.wikipedia.org/wiki/C0_and_C1_control_codes#Field_separators"&gt;WIKI Control Codes&lt;/a&gt;.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="trimWhitespace" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>When set to true, whitespace is trimmed from the beginning and end of each header and field value. Default: false</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="CsvParserPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="CsvParserPipeDeclaredAttributeGroup" />
@@ -12672,7 +12677,7 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.DataSonnetPipe" />
   </xs:complexType>
   <xs:attributeGroup name="DataSonnetPipeDeclaredAttributeGroup">
-    <xs:attribute name="styleSheetName" type="xs:string">
+    <xs:attribute name="styleSheetName" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Location of the stylesheet to apply to the input message.</xs:documentation>
       </xs:annotation>
@@ -13012,16 +13017,16 @@
     <xs:attributeGroup ref="ForPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="GetFromSessionType">
+  <xs:complexType name="GetFromSessionPipeType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:group ref="AbstractPipeDeclaredChildGroup" />
       </xs:choice>
     </xs:sequence>
-    <xs:attributeGroup ref="GetFromSessionCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="GetFromSessionPipeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.GetFromSessionPipe" />
   </xs:complexType>
-  <xs:attributeGroup name="GetFromSessionDeclaredAttributeGroup">
+  <xs:attributeGroup name="GetFromSessionPipeDeclaredAttributeGroup">
     <xs:attribute name="sessionKey" type="xs:string">
       <xs:annotation>
         <xs:documentation>Key of the session variable to retrieve the output message from. When left unspecified, the input message is used as the key of the session variable.</xs:documentation>
@@ -13036,8 +13041,8 @@
       </xs:simpleType>
     </xs:attribute>
   </xs:attributeGroup>
-  <xs:attributeGroup name="GetFromSessionCumulativeAttributeGroup">
-    <xs:attributeGroup ref="GetFromSessionDeclaredAttributeGroup" />
+  <xs:attributeGroup name="GetFromSessionPipeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="GetFromSessionPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="GetPrincipalPipeType">
@@ -13286,7 +13291,7 @@
     <xs:attributeGroup ref="JsonPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="JsonWellFormedCheckerType">
+  <xs:complexType name="JsonWellFormedCheckerPipeType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:group ref="AbstractPipeDeclaredChildGroup" />
@@ -13546,9 +13551,9 @@
     </xs:attribute>
     <xs:attribute name="checkRoles" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Set to &lt;code&gt;true&lt;/code&gt; when the pipeline is triggered by a user (e.g. using an http based listener
- that will add a securityHandler session key) and you don't want the listener to check whether the user
- is autorised and/or you want the enforce the roles as configured for the Ladybug Default: false</xs:documentation>
+        <xs:documentation>Set this to &lt;code&gt;true&lt;/code&gt; if you wish to enforce the
+ user roles (e.g. when using an HTTP based listener).
+ When set to false the Ladybug is run anonymously. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="enableReportGenerator" type="frankBoolean">
@@ -14236,16 +14241,16 @@
     <xs:attributeGroup ref="RegExPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="RekenBoxCallerType">
+  <xs:complexType name="RekenBoxCallerPipeType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:group ref="AbstractPipeDeclaredChildGroup" />
       </xs:choice>
     </xs:sequence>
-    <xs:attributeGroup ref="RekenBoxCallerCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="RekenBoxCallerPipeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.rekenbox.RekenBoxCallerPipe" />
   </xs:complexType>
-  <xs:attributeGroup name="RekenBoxCallerDeclaredAttributeGroup">
+  <xs:attributeGroup name="RekenBoxCallerPipeDeclaredAttributeGroup">
     <xs:attribute name="rekenBoxName" type="xs:string">
       <xs:annotation>
         <xs:documentation>Fixed name of the rekenbox (or wrapper) to be called. If empty, the name is determined from the request</xs:documentation>
@@ -14300,8 +14305,8 @@
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
-  <xs:attributeGroup name="RekenBoxCallerCumulativeAttributeGroup">
-    <xs:attributeGroup ref="RekenBoxCallerDeclaredAttributeGroup" />
+  <xs:attributeGroup name="RekenBoxCallerPipeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="RekenBoxCallerPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="RemoveCacheKeyPipeType">
@@ -14352,24 +14357,24 @@
     <xs:attributeGroup ref="RemoveCacheKeyPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
-  <xs:complexType name="RemoveFromSessionType">
+  <xs:complexType name="RemoveFromSessionPipeType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:group ref="AbstractPipeDeclaredChildGroup" />
       </xs:choice>
     </xs:sequence>
-    <xs:attributeGroup ref="RemoveFromSessionCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="RemoveFromSessionPipeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.RemoveFromSessionPipe" />
   </xs:complexType>
-  <xs:attributeGroup name="RemoveFromSessionDeclaredAttributeGroup">
+  <xs:attributeGroup name="RemoveFromSessionPipeDeclaredAttributeGroup">
     <xs:attribute name="sessionKey" type="xs:string">
       <xs:annotation>
         <xs:documentation>name of the key of the entry in the &lt;code&gt;pipelinesession&lt;/code&gt; to remove. If this key is empty the input message is interpretted as key. for multiple keys use ',' as delimiter</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
-  <xs:attributeGroup name="RemoveFromSessionCumulativeAttributeGroup">
-    <xs:attributeGroup ref="RemoveFromSessionDeclaredAttributeGroup" />
+  <xs:attributeGroup name="RemoveFromSessionPipeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="RemoveFromSessionPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="ReplacerPipeType">
@@ -14580,16 +14585,16 @@
     <xs:attributeGroup ref="Samba2PipeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.SambaPipe" />
   </xs:complexType>
-  <xs:complexType name="SapLUWManagerType">
+  <xs:complexType name="SapLUWManagerPipeType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:group ref="AbstractPipeDeclaredChildGroup" />
       </xs:choice>
     </xs:sequence>
-    <xs:attributeGroup ref="SapLUWManagerCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="SapLUWManagerPipeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.sap.jco3.SapLUWManagerPipe" />
   </xs:complexType>
-  <xs:attributeGroup name="SapLUWManagerDeclaredAttributeGroup">
+  <xs:attributeGroup name="SapLUWManagerPipeDeclaredAttributeGroup">
     <xs:attribute name="sapSystemName" type="xs:string">
       <xs:annotation>
         <xs:documentation>Name of the SapSystem used by this object</xs:documentation>
@@ -14606,8 +14611,8 @@
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
-  <xs:attributeGroup name="SapLUWManagerCumulativeAttributeGroup">
-    <xs:attributeGroup ref="SapLUWManagerDeclaredAttributeGroup" />
+  <xs:attributeGroup name="SapLUWManagerPipeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="SapLUWManagerPipeDeclaredAttributeGroup" />
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="ScanTibcoSolutionPipeType">
@@ -15828,6 +15833,7 @@
       <xs:pattern value="[tT][iI][mM][eE]" />
       <xs:pattern value="[dD][aA][tT][eE][tT][iI][mM][eE]" />
       <xs:pattern value="[tT][iI][mM][eE][sS][tT][aA][mM][pP]" />
+      <xs:pattern value="[uU][nN][iI][xX]" />
       <xs:pattern value="[xX][mM][lL][dD][aA][tT][eE][tT][iI][mM][eE]" />
       <xs:pattern value="[nN][uU][mM][bB][eE][rR]" />
       <xs:pattern value="[iI][nN][tT][eE][gG][eE][rR]" />
@@ -15845,6 +15851,7 @@
       <xs:pattern value="[dD][aA][tT][eE][tT][iI][mM][eE]" />
       <xs:pattern value="[tT][iI][mM][eE][sS][tT][aA][mM][pP]" />
       <xs:pattern value="[tT][iI][mM][eE]" />
+      <xs:pattern value="[uU][nN][iI][xX]" />
       <xs:pattern value="[xX][mM][lL][dD][aA][tT][eE][tT][iI][mM][eE]" />
     </xs:restriction>
   </xs:simpleType>
@@ -15915,7 +15922,7 @@
       <xs:pattern value="[bB][yY][tT][eE][sS]" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="DestinationTypeAttributeValuesType">
+  <xs:simpleType name="JmsDestinationTypeAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[qQ][uU][eE][uU][eE]" />
       <xs:pattern value="[tT][oO][pP][iI][cC]" />
@@ -16649,12 +16656,12 @@
   <xs:attribute name="jndiContextPrefix" type="xs:string" />
   <xs:attribute name="destinationType">
     <xs:annotation>
-      <xs:documentation>Type of the messageing destination.
+      <xs:documentation>Type of the messaging destination.
  This function also sets the &lt;code&gt;useTopicFunctions&lt;/code&gt; field,
  that controls whether Topic functions are used or Queue functions. Default: QUEUE</xs:documentation>
     </xs:annotation>
     <xs:simpleType>
-      <xs:union memberTypes="DestinationTypeAttributeValuesType variableRef" />
+      <xs:union memberTypes="JmsDestinationTypeAttributeValuesType variableRef" />
     </xs:simpleType>
   </xs:attribute>
   <xs:attribute name="acknowledgeMode">
@@ -16864,8 +16871,8 @@
   <xs:attribute name="resultStatusCodeSessionKey" type="xs:string">
     <xs:annotation>
       <xs:documentation>If set, the status code of the HTTP response is put in the specified sessionKey and the (error or okay) response message is returned.
- Setting this property has a side effect. If a 4xx or 5xx result code is returned and if the configuration does not implement
- the specific forward for the returned HTTP result code, then the success forward is followed instead of the exception forward.</xs:documentation>
+ Setting this property has a side effect. If a 4xx or 5xx result code is returned and if the pipeline does not implement
+ the specific forward, pipeline-global forward or pipeline-exit for the returned HTTP result code, then the success forward is followed instead of the exception forward.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="sharedResourceRef" type="xs:string" />

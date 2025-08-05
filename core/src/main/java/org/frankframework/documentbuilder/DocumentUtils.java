@@ -28,7 +28,11 @@ import org.xml.sax.SAXException;
 
 public class DocumentUtils {
 
-	public static String DEFAULT_ARRAY_ELEMENT_NAME = "item";
+	public static final String DEFAULT_ARRAY_ELEMENT_NAME = "item";
+
+	private DocumentUtils() {
+		// Private constructor so that the utility-class cannot be instantiated.
+	}
 
 	public static void jsonValue2Document(JsonValue jValue, IDocumentBuilder documentBuilder) throws SAXException {
 		switch (jValue.getValueType()) {

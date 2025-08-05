@@ -1,9 +1,6 @@
 import { Component, HostListener, OnInit, OnDestroy } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AppService } from 'src/app/app.service';
-import { NgIf } from '@angular/common';
-
-export const baseImports = [NgIf];
 
 @Component({
   template: '',
@@ -15,9 +12,9 @@ export abstract class BaseIframeComponent implements OnInit, OnDestroy {
 
   private topBarHeightPx = 99;
 
-  constructor(
-    protected sanitizer: DomSanitizer,
-    protected appService: AppService,
+  protected constructor(
+    protected readonly sanitizer: DomSanitizer,
+    protected readonly appService: AppService,
   ) {}
 
   ngOnInit(): void {
@@ -41,7 +38,7 @@ export abstract class BaseIframeComponent implements OnInit, OnDestroy {
   protected setIframeSource(ffPage: string): void {
     this.url = `${this.appService.getServerPath()}iaf/${ffPage}`;
     this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(this.url);
-    this.appService.setIframePopoutUrl(this.url);
+    this.appService.iframePopoutUrl.set(this.url);
   }
 
   getTopBarHeight(): number {

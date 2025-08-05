@@ -40,4 +40,8 @@ public class SftpFileSystemListener extends AbstractFileSystemListener<SftpFileR
 		super.setMessageType(messageType);
 	}
 
+	@Override
+	public MessageType getMessageType() {
+		return (MessageType) super.getMessageType();
+	}
 }

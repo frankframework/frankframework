@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2021, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,18 +16,20 @@
 package org.frankframework.extensions.cmis.mtom;
 
 import java.io.IOException;
+import java.io.Serial;
 import java.util.Map;
 
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.apache.logging.log4j.Logger;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.DependsOn;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.http.AbstractHttpServlet;
@@ -36,20 +38,23 @@ import org.frankframework.lifecycle.IbisInitializer;
 import org.frankframework.lifecycle.ServletManager;
 import org.frankframework.lifecycle.servlets.ServletConfiguration;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.StringUtil;
 
 @IbisInitializer
 @DependsOn({"webServices10", "webServices11"})
 @Deprecated(forRemoval = true, since = "7.6.0") // remove this class, use default webservices endpoints in combination with the CmisFilter
+@Log4j2
 public class MtomProxy extends AbstractHttpServlet implements InitializingBean, ApplicationContextAware {
 
-	private final Logger log = LogUtil.getLogger(this);
+	@Serial
 	private static final long serialVersionUID = 3L;
 
 	private static final boolean ACTIVE = AppConstants.getInstance().getBoolean("cmis.mtomproxy.active", false);
 	private static final String PROXY_SERVLET = AppConstants.getInstance().getProperty("cmis.mtomproxy.servlet", "WebServices11");
+
+	@SuppressWarnings("java:S2226") // Initialized through Spring (which is a Sonar Exception)
 	private transient Servlet cmisWebServiceServlet = null;
+	@SuppressWarnings("java:S2226") // Initialized through Spring (which is a Sonar Exception)
 	private transient ApplicationContext applicationContext;
 
 	@Override

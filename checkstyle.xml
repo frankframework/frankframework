@@ -31,6 +31,7 @@
 			" />
 			<property name="illegalClasses" value="
 			org.apache.commons.codec.Charsets,
+			org.apache.commons.io.input.NullInputStream,
 			org.apache.cxf.helpers.FileUtils"/>
 		</module>
 		<module name="IllegalImport">

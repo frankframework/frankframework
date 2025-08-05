@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -71,6 +71,10 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 		Map<String, String> attributes = Map.of(HazelcastConfig.ATTRIBUTE_APPLICATION_KEY, instanceName);
 		hzInstance = HazelcastConfig.newHazelcastInstance(InstanceType.WORKER, attributes);
 		SpringUtils.registerSingleton(getApplicationContext(), "hazelcastInboundInstance", hzInstance);
+
+		// Ensure Hazelcast shuts down properly
+		SpringUtils.registerSingleton(getApplicationContext(), "springHazelcastLifecycle", new SpringHazelcastLifecycle(hzInstance));
+
 		requestTopic = hzInstance.getTopic(HazelcastConfig.REQUEST_TOPIC_NAME);
 
 		IMap<String, String> config = hzInstance.getMap(HazelcastConfig.FRANK_APPLICATION_CONFIG);

@@ -41,6 +41,8 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
@@ -71,6 +73,7 @@ import org.frankframework.util.XmlUtils;
  * </pre></code>
  *
  */
+@DestinationType(Type.MAIL)
 public abstract class AbstractMailSender extends AbstractSenderWithParameters {
 
 	private @Getter String authAlias;
@@ -674,7 +677,7 @@ public abstract class AbstractMailSender extends AbstractSenderWithParameters {
 	 */
 	public static class EMail {
 		private final InternetAddress emailAddress;
-		private final String type; //"cc", "to", "from", "bcc"
+		private final String type; // "cc", "to", "from", "bcc"
 
 		public EMail(String address, String name, String type) throws SenderException {
 			try {

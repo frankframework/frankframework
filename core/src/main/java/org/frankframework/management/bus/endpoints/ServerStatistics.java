@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2024 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,10 +27,11 @@ import java.util.Map;
 import jakarta.annotation.security.PermitAll;
 import jakarta.servlet.ServletContext;
 
-import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.messaging.Message;
 import org.springframework.web.context.WebApplicationContext;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.Configuration;
@@ -54,10 +55,10 @@ import org.frankframework.util.Misc;
 import org.frankframework.util.ProcessMetrics;
 import org.frankframework.util.TimeProvider;
 
+@Log4j2
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.APPLICATION)
 public class ServerStatistics extends BusEndpointBase {
-	private static final Logger log = LogUtil.getLogger(Misc.class);
 
 	private static final int MAX_MESSAGE_SIZE = AppConstants.getInstance().getInt("adapter.message.max.size", 0);
 	private static final boolean showCountErrorStore = AppConstants.getInstance().getBoolean("errorStore.count.show", true);
@@ -154,14 +155,14 @@ public class ServerStatistics extends BusEndpointBase {
 		for (Configuration configuration : getIbisManager().getConfigurations()) {
 			Map<String, Object> configurationsMap = new HashMap<>();
 
-			//Configuration specific exceptions
+			// Configuration specific exceptions
 			if (configuration.getConfigurationException()!=null) {
 				String message = configuration.getConfigurationException().getMessage();
 				configurationsMap.put("exception", message);
 			}
 
 			if (configuration.isActive()) {
-				//ErrorStore count
+				// ErrorStore count
 				if (showCountErrorStore) {
 					long esr = 0;
 					for (Adapter adapter : configuration.getRegisteredAdapters()) {
@@ -181,13 +182,13 @@ public class ServerStatistics extends BusEndpointBase {
 					configurationsMap.put("errorStoreCount", esr);
 				}
 
-				//Configuration specific warnings
+				// Configuration specific warnings
 				ConfigurationWarnings configWarns = configuration.getConfigurationWarnings();
 				if(configWarns != null && !configWarns.isEmpty()) {
 					configurationsMap.put("warnings", configWarns.getWarnings());
 				}
 
-				//Configuration specific messages
+				// Configuration specific messages
 				MessageKeeper messageKeeper = eventListener.getMessageKeeper(configuration.getName());
 				if(messageKeeper != null) {
 					List<Object> messages = mapMessageKeeperMessages(messageKeeper);
@@ -200,10 +201,10 @@ public class ServerStatistics extends BusEndpointBase {
 			returnMap.put(configuration.getName(), configurationsMap);
 		}
 
-		//Total ErrorStore Count
+		// Total ErrorStore Count
 		returnMap.put("totalErrorStoreCount", totalErrorStoreCount);
 
-		//Global warnings
+		// Global warnings
 		ApplicationWarnings globalConfigWarnings = getBean("applicationWarnings", ApplicationWarnings.class);
 		if (!globalConfigWarnings.isEmpty()) {
 			List<Object> warnings = new ArrayList<>();
@@ -213,7 +214,7 @@ public class ServerStatistics extends BusEndpointBase {
 			returnMap.put("warnings", warnings);
 		}
 
-		//Global messages
+		// Global messages
 		MessageKeeper messageKeeper = eventListener.getMessageKeeper();
 		List<Object> messages = mapMessageKeeperMessages(messageKeeper);
 		if(!messages.isEmpty()) {

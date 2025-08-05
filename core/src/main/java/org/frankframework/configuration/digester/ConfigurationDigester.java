@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.configuration;
+package org.frankframework.configuration.digester;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -42,13 +42,16 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.configuration.digester.Digester;
-import org.frankframework.configuration.digester.FrankDigesterRules;
-import org.frankframework.configuration.digester.IncludeFilter;
+import org.frankframework.configuration.Configuration;
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.configuration.SuppressKeys;
+import org.frankframework.configuration.filters.ClassNameRewriter;
 import org.frankframework.configuration.filters.ElementRoleFilter;
 import org.frankframework.configuration.filters.InitialCapsFilter;
 import org.frankframework.configuration.filters.OnlyActiveFilter;
 import org.frankframework.configuration.filters.SkipContainersFilter;
+import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.Resource;
 import org.frankframework.documentbuilder.xml.XmlTee;
@@ -72,17 +75,16 @@ import org.frankframework.xml.XmlWriter;
  * The configurationDigester reads the configuration.xml and the digester rules
  * in XML format and factors a Configuration.
  *
- * <p>Since 4.0.1, the configuration.xml is first resolved using the {@link StringResolver resolver},
+ * <p>The configuration.xml is first resolved using the {@link StringResolver resolver},
  * with tries to resolve ${variable} with the {@link AppConstants}, so that
  * both the values from the property files as the environment setting are available.<p>
- * <p>Since 4.1.1 the configuration.xml is parsed with a entityresolver that uses the classpath, which
- * means that you may specify entities that will be resolved during parsing.
+ * <pThe configuration.xml is parsed with an EntityResolver that uses the configuration's classpath,
+ * which means that you may specify entities that will be resolved during parsing.
  * </p>
  * Example:
  * <pre>{@code
  * <?xml version="1.0"?>
- * <!DOCTYPE configuration
- * [
+ * <!DOCTYPE configuration [
  * <!ENTITY HelloWorld SYSTEM "./ConfigurationHelloWorld.xml">
  * ]>
  *
@@ -92,7 +94,6 @@ import org.frankframework.xml.XmlWriter;
  *
  * </configuration>
  * }</pre>
- * @author Johan Verrips
  * @see Configuration
  */
 @Log4j2
@@ -106,7 +107,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 
 	private final boolean suppressValidationWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.CONFIGURATION_VALIDATION.getKey(), false);
 
-	private class XmlErrorHandler implements ErrorHandler  {
+	private class XmlErrorHandler implements ErrorHandler {
 		private final String schema;
 		public XmlErrorHandler(String schema) {
 			this.schema = schema;
@@ -222,9 +223,9 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		handler = new OnlyActiveFilter(handler, properties);
 		handler = new ElementPropertyResolver(handler, properties);
 
-		boolean rewriteLegacyClassNames = properties.getBoolean(MIGRATION_REWRITE_LEGACY_CLASS_NAMES_KEY, false);
+		boolean rewriteLegacyClassNames = properties.getBoolean(MIGRATION_REWRITE_LEGACY_CLASS_NAMES_KEY, true);
 		if (rewriteLegacyClassNames) {
-			handler = new ClassNameRewriter(handler);
+			handler = new ClassNameRewriter(handler, applicationContext);
 		}
 
 		XmlWriter originalConfigWriter = new XmlWriter();

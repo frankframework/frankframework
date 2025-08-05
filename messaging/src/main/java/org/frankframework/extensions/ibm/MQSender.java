@@ -15,8 +15,6 @@
 */
 package org.frankframework.extensions.ibm;
 
-import java.io.IOException;
-
 import jakarta.jms.Destination;
 import jakarta.jms.JMSException;
 import jakarta.jms.MessageProducer;
@@ -26,9 +24,7 @@ import jakarta.jms.Session;
 import jakarta.jms.Topic;
 import jakarta.jms.TopicSession;
 
-import org.frankframework.core.SenderException;
 import org.frankframework.jms.JmsSender;
-import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 
 /**
@@ -46,12 +42,6 @@ public class MQSender extends JmsSender {
 			Destination destination) throws JMSException {
 		setTargetClientMQ(destination);
 		return super.getMessageProducer(session, destination);
-	}
-
-	@Override
-	public String send(Session session, Destination dest, String correlationId, Message message, String messageType, long timeToLive, int deliveryMode, int priority, boolean ignoreInvalidDestinationException) throws JMSException, SenderException, IOException {
-		setTargetClientMQ(dest);
-		return super.send(session, dest,  correlationId, message, messageType, timeToLive, deliveryMode, priority, ignoreInvalidDestinationException);
 	}
 
 	@Override

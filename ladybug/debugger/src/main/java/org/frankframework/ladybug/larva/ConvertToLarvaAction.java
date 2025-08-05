@@ -54,7 +54,7 @@ import nl.nn.testtool.Report;
 import nl.nn.testtool.extensions.CustomReportAction;
 import nl.nn.testtool.extensions.CustomReportActionResult;
 
-import org.frankframework.configuration.ConfigurationUtils;
+import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.core.Resource;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.TimeProvider;
