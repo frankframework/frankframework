@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 Nationale-Nederlanden, 2024 WeAreFrank
+   Copyright 2019, 2020 Nationale-Nederlanden, 2024-2025 WeAreFrank
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -127,7 +127,8 @@ public class LadybugPipe extends FixedForwardPipe {
 
 		for (Report report : reports) {
 			RunResult runResult = reportRunner.getResults().get(report.getStorageId());
-			long originalDuration = report.getEndTime() - report.getStartTime();
+			boolean isOriginalExecuted = report.getEndTime() != Report.TIME_NOT_SET_VALUE;
+			String originalDuration = isOriginalExecuted ? "" + (report.getEndTime() - report.getStartTime()) :  "n/a";
 			long duration = -1;
 			boolean equal = false;
 			String error = "";
