@@ -65,7 +65,7 @@ public class ConfigurationAutoDiscoveryTest {
 	@DatabaseTest
 	@WithLiquibase(file = "Migrator/CreateIbisConfig.xml")
 	@WithLiquibase(file = "Migrator/SetupConfigsInDatabase.xml")
-	public void retrieveConfigNamesFromDatabaseTest(DatabaseTestEnvironment env) throws Exception {
+	public void retrieveConfigNamesFromDatabaseTest(DatabaseTestEnvironment env) {
 		TestConfiguration applicationContext = env.getConfiguration();
 		ConfigurationAutoDiscovery autoDiscovery = applicationContext.createBean();
 		autoDiscovery.withDatabaseScanner(env.getDataSourceName());
@@ -78,7 +78,7 @@ public class ConfigurationAutoDiscoveryTest {
 	@DatabaseTest
 	@WithLiquibase(file = "Migrator/CreateIbisConfig.xml")
 	@WithLiquibase(file = "Migrator/SetupConfigsInDatabase.xml")
-	public void retrieveAllConfigNamesTestWithDB(DatabaseTestEnvironment env) throws Exception {
+	public void retrieveAllConfigNamesTestWithDB(DatabaseTestEnvironment env) {
 		TestConfiguration applicationContext = env.getConfiguration();
 		ConfigurationAutoDiscovery autoDiscovery = applicationContext.createBean();
 		autoDiscovery.withDatabaseScanner(env.getDataSourceName());
@@ -94,7 +94,7 @@ public class ConfigurationAutoDiscoveryTest {
 	}
 
 	@DatabaseTest // Note, there is no liquibase here ;)
-	public void retrieveAllConfigNamesTestWithoutDB(DatabaseTestEnvironment env) throws Exception {
+	public void retrieveAllConfigNamesTestWithoutDB(DatabaseTestEnvironment env) {
 		TestConfiguration applicationContext = env.getConfiguration();
 		ConfigurationAutoDiscovery autoDiscovery = applicationContext.createBean();
 		autoDiscovery.withDatabaseScanner(env.getDataSourceName());
@@ -113,7 +113,7 @@ public class ConfigurationAutoDiscoveryTest {
 	@DatabaseTest
 	@WithLiquibase(file = "Migrator/CreateIbisConfig.xml")
 	@WithLiquibase(file = "Migrator/SetupConfigsInDatabase.xml")
-	public void retrieveAllConfigNamesTestWithFS(DatabaseTestEnvironment env) throws Exception {
+	public void retrieveAllConfigNamesTestWithFS(DatabaseTestEnvironment env) throws IOException {
 		TestConfiguration applicationContext = env.getConfiguration();
 		ConfigurationAutoDiscovery autoDiscovery = applicationContext.createBean();
 		autoDiscovery.withDatabaseScanner(env.getDataSourceName());
@@ -134,7 +134,7 @@ public class ConfigurationAutoDiscoveryTest {
 	}
 
 	@Test
-	public void retrieveAllConfigNamesTestWithFS() throws Exception {
+	public void retrieveAllConfigNamesTestWithFS() throws IOException {
 		try (TestConfiguration applicationContext = new TestConfiguration()) {
 			ConfigurationAutoDiscovery autoDiscovery = applicationContext.createBean();
 			autoDiscovery.withDirectoryScanner();
@@ -153,11 +153,12 @@ public class ConfigurationAutoDiscoveryTest {
 	}
 
 	@Test
-	public void findConfiguration() throws IOException, URISyntaxException, ClassLoaderException {
+	public void findConfiguration() throws ClassLoaderException {
 		ClassLoader classLoader = new JunitTestClassLoaderWrapper(); // Add ability to retrieve classes from src/test/resources
 		JarFileClassLoader cl = new JarFileClassLoader(classLoader);
 		IbisContext ibisContext = mock(IbisContext.class);
 		cl.configure(ibisContext, "JarConfig1");
+		assertNotNull(cl.getResource("Configuration.xml"));
 	}
 
 	@Test

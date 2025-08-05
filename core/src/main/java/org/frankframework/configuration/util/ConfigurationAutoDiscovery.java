@@ -58,18 +58,15 @@ import org.frankframework.util.StringUtil;
 @Log4j2
 public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
-	private static final String CONFIGURATIONS = APP_CONSTANTS.getProperty("configurations.names.application");
+	private static final String CONFIGURATIONS_NAMES = APP_CONSTANTS.getProperty("configurations.names.application");
 	private static final String DUPLICATE_CONFIG_WARNING = "config [%s] already exists, cannot add same config twice";
 
 	private final Map<String, Class<? extends IConfigurationClassLoader>> configurations = new LinkedHashMap<>();
 
 	private ApplicationContext applicationContext;
 
-	public Path configurationsDirectory;
-	public String datasourceName;
-
-	public ConfigurationAutoDiscovery() {
-	}
+	private Path configurationsDirectory;
+	private String datasourceName;
 
 	public void withDirectoryScanner() throws IOException {
 		withDirectoryScanner(null);
@@ -109,8 +106,8 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 	public Map<String, Class<? extends IConfigurationClassLoader>> scan(boolean includeExplicitlyDefinedConfigurations) {
 		configurations.clear();
 
-		if (includeExplicitlyDefinedConfigurations && CONFIGURATIONS != null) {
-			for (String configFileName : StringUtil.split(CONFIGURATIONS)) {
+		if (includeExplicitlyDefinedConfigurations && CONFIGURATIONS_NAMES != null) {
+			for (String configFileName : StringUtil.split(CONFIGURATIONS_NAMES)) {
 				configurations.put(configFileName, null);
 			}
 		}
