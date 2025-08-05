@@ -3,7 +3,7 @@ import { inject, Injectable, signal, Signal, WritableSignal } from '@angular/cor
 import { catchError, Observable, of, Subject } from 'rxjs';
 import { DebugService } from './services/debug.service';
 import { Title } from '@angular/platform-browser';
-import { computeServerPath, deepMerge } from './utils';
+import { computeServerPath, deepMerge } from './utilities';
 
 export type RunState =
   | 'ERROR'
@@ -237,13 +237,13 @@ export class AppService {
   public dtapStage: WritableSignal<string> = signal('');
   public iframePopoutUrl: WritableSignal<string | null> = signal(null);
   public selectedConfigurationTab: WritableSignal<string | null> = signal(null);
+  public reload$: Observable<void>;
+  public toggleSidebar$: Observable<void>;
+  public customBreadcrumbs$: Observable<string>;
 
   private reloadSubject = new Subject<void>();
-  public reload$ = this.reloadSubject.asObservable();
   private toggleSidebarSubject = new Subject<void>();
-  public toggleSidebar$ = this.toggleSidebarSubject.asObservable();
   private customBreadcrumbsSubject = new Subject<string>();
-  public customBreadcrumbs$ = this.customBreadcrumbsSubject.asObservable();
 
   private _adapters: WritableSignal<Record<string, Adapter>> = signal({});
   private _configurations: WritableSignal<Configuration[]> = signal([]);
@@ -291,6 +291,12 @@ export class AppService {
   private title: Title = inject(Title);
   private http: HttpClient = inject(HttpClient);
   private debugService: DebugService = inject(DebugService);
+
+  constructor() {
+    this.reload$ = this.reloadSubject.asObservable();
+    this.toggleSidebar$ = this.toggleSidebarSubject.asObservable();
+    this.customBreadcrumbs$ = this.customBreadcrumbsSubject.asObservable();
+  }
 
   get adapters(): Signal<Record<string, Adapter>> {
     return this._adapters.asReadonly();

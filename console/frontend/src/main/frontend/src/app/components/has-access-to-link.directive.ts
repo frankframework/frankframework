@@ -6,12 +6,12 @@ import { LinkName } from '../views/security-items/security-items.service';
   selector: '[appHasAccessToLink]',
 })
 export class HasAccessToLinkDirective implements OnInit {
+  @Input() noAccessToLinkClassName = 'disabled';
+
   private readonly authService: AuthService = inject(AuthService);
   private readonly elementRef: ElementRef<HTMLElement> = inject(ElementRef);
 
   private linkNames!: LinkName[];
-
-  @Input() noAccessToLinkClassName = 'disabled';
 
   @Input({ required: true, alias: 'appHasAccessToLink' }) set hasAccessToLink(linkNames: LinkName | LinkName[]) {
     this.linkNames = typeof linkNames === 'string' ? [linkNames] : linkNames;

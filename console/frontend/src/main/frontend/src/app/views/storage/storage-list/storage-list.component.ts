@@ -3,7 +3,7 @@ import { MessageField, MessageStore, Note, StorageService } from '../storage.ser
 import { StorageListDtComponent } from './storage-list-dt/storage-list-dt.component';
 import { SessionService } from 'src/app/services/session.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
-import { getProcessStateIcon } from 'src/app/utils';
+import { getProcessStateIcon } from 'src/app/utilities';
 import { AppService } from '../../../app.service';
 import {
   DataTableColumn,

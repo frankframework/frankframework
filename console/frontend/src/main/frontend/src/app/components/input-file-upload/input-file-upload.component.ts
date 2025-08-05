@@ -12,8 +12,6 @@ export class InputFileUploadComponent {
   @Input() accept?: string;
   @Input() title?: string;
 
-  constructor() {}
-
   onFilesChange(): void {
     this.handleFile(this.fileInput.nativeElement.files);
   }

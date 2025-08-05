@@ -1,5 +1,5 @@
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { map, Observable } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
@@ -8,11 +8,9 @@ import { MiscService } from 'src/app/services/misc.service';
   providedIn: 'root',
 })
 export class StatusService {
-  constructor(
-    private http: HttpClient,
-    private appService: AppService,
-    private Misc: MiscService,
-  ) {}
+  private http = inject(HttpClient);
+  private appService = inject(AppService);
+  private Misc = inject(MiscService);
 
   getConfigurationFlowDiagramUrl(flowUrl: string): string {
     return `${this.appService.getServerPath()}iaf/api/configurations${flowUrl}`;

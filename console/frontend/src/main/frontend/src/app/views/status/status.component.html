@@ -138,26 +138,29 @@
               <span style="font-weight: 700; margin-right: 4px">Filter:</span>
               <div class="btn-group state">
                 <!-- [(ngModel)]="filter.started" -->
-                <label
+                <button
                   class="btn btn-primary btn-outline btn-xs started"
                   [ngClass]="{ active: this.filter.started }"
                   (click)="applyFilter('started')"
-                  >Started</label
                 >
+                  Started
+                </button>
                 <!-- [(ngModel)]="filter.stopped" -->
-                <label
+                <button
                   class="btn btn-danger btn-outline btn-xs stopped"
                   [ngClass]="{ active: this.filter.stopped }"
                   (click)="applyFilter('stopped')"
-                  >Stopped</label
                 >
+                  Stopped
+                </button>
                 <!-- [(ngModel)]="filter.warning" -->
-                <label
+                <button
                   class="btn btn-warning btn-outline btn-xs warning"
                   [ngClass]="{ active: this.filter.warning }"
                   (click)="applyFilter('warning')"
-                  >Warning</label
                 >
+                  Warning
+                </button>
               </div>
             </div>
             <div class="ibox-stretch">

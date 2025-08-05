@@ -1,12 +1,10 @@
 import { Pipe, PipeTransform } from '@angular/core';
-import { copyToClipboard } from '../utils';
+import { copyToClipboard } from '../utilities';
 
 @Pipe({
   name: 'truncate',
 })
 export class TruncatePipe implements PipeTransform {
-  constructor() {}
-
   transform(value: string, length: number, onclickElement?: HTMLElement): string {
     if (!(value && value.length > length)) return value;
 

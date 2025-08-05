@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { StorageService } from './storage.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { ActivatedRoute, ActivationEnd, Router, RouterOutlet } from '@angular/router';
@@ -11,12 +11,10 @@ import { filter } from 'rxjs';
   imports: [RouterOutlet],
 })
 export class StorageComponent implements OnInit {
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private SweetAlert: SweetalertService,
-    private storageService: StorageService,
-  ) {}
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private SweetAlert = inject(SweetalertService);
+  private storageService = inject(StorageService);
 
   ngOnInit(): void {
     this.route.firstChild?.paramMap.subscribe((parameters) => {

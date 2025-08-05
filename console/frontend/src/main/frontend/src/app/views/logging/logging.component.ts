@@ -1,10 +1,10 @@
-import { Component, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { Component, inject, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { ActivatedRoute, ParamMap, Router } from '@angular/router';
 import { AppService, ServerErrorResponse } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
-import { LoggingService, LoggingFile } from './logging.service';
-import { SortEvent, ThSortableDirective, basicTableSort } from 'src/app/components/th-sortable.directive';
-import { copyToClipboard } from 'src/app/utils';
+import { LoggingFile, LoggingService } from './logging.service';
+import { basicTableSort, SortEvent, ThSortableDirective } from 'src/app/components/th-sortable.directive';
+import { copyToClipboard } from 'src/app/utilities';
 import { HttpErrorResponse } from '@angular/common/http';
 
 import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
@@ -41,14 +41,11 @@ export class LoggingComponent implements OnInit {
   private previousFile: string | null = null;
   private originalList: LoggingFile[] = [];
 
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private appService: AppService,
-    private miscService: MiscService,
-    private loggingService: LoggingService,
-  ) {}
-
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private appService = inject(AppService);
+  private miscService = inject(MiscService);
+  private loggingService = inject(LoggingService);
   ngOnInit(): void {
     this.route.paramMap.subscribe((parameters) => {
       this.handleUrlParameters(parameters);

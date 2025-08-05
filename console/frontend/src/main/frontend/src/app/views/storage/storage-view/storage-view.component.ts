@@ -27,17 +27,9 @@ export class StorageViewComponent implements OnInit {
     id: 'Loading...',
   };
   protected extraProperties: string[] = [];
+  protected storageParams;
 
   private readonly storageService: StorageService = inject(StorageService);
-
-  // service bindings
-  protected storageParams = this.storageService.storageParams;
-  closeNote = (index: number): void => {
-    this.storageService.closeNote(index);
-  };
-  downloadMessage = (messageId: string): void => {
-    this.storageService.downloadMessage(messageId);
-  };
 
   private readonly base64Service: Base64Service = inject(Base64Service);
   private readonly router: Router = inject(Router);
@@ -46,6 +38,18 @@ export class StorageViewComponent implements OnInit {
   private readonly appService: AppService = inject(AppService);
 
   private skipProperties: string[] = ['id', 'insertDate', 'correlationId', 'comment', 'message'];
+
+  constructor() {
+    this.storageParams = this.storageService.storageParams;
+  }
+
+  // service bindings
+  closeNote = (index: number): void => {
+    this.storageService.closeNote(index);
+  };
+  downloadMessage = (messageId: string): void => {
+    this.storageService.downloadMessage(messageId);
+  };
 
   ngOnInit(): void {
     this.storageService.closeNotes();

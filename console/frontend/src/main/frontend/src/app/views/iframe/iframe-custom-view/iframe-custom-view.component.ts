@@ -1,8 +1,6 @@
 import { LocationStrategy } from '@angular/common';
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AppService } from 'src/app/app.service';
 import { BaseIframeComponent } from '../iframe.base';
 import { Subscription } from 'rxjs';
 
@@ -18,11 +16,8 @@ export class IframeCustomViewComponent extends BaseIframeComponent implements On
   private readonly window: Window = inject(Window);
   private routeSubscription: Subscription | null = null;
 
-  constructor(
-    protected override readonly sanitizer: DomSanitizer,
-    protected override readonly appService: AppService,
-  ) {
-    super(sanitizer, appService);
+  constructor() {
+    super();
   }
 
   override ngOnInit(): void {

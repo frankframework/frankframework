@@ -1,7 +1,7 @@
 import { inject, Injectable, isDevMode } from '@angular/core';
 import { Client, IFrame, IMessage, IStompSocket, StompSubscription } from '@stomp/stompjs';
 import { AppService, ClusterMember } from '../app.service';
-import { Subject } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { SweetalertService } from './sweetalert.service';
 import { ToastService } from './toast.service';
 
@@ -21,19 +21,19 @@ export type ClusterMemberEvent = {
   providedIn: 'root',
 })
 export class WebsocketService {
+  onConnected$: Observable<void>;
+  onDisconnected$: Observable<void>;
+  onStompError$: Observable<IFrame>;
+  onWebSocketClose$: Observable<void>;
+  onWebSocketError$: Observable<Error>;
+  onMessage$: Observable<ChannelMessage>;
+
   private onConnectedSubject = new Subject<void>();
   private onDisconnectedSubject = new Subject<void>();
   private onStompErrorSubject = new Subject<IFrame>();
   private onWebSocketCloseSubject = new Subject<void>();
   private onWebSocketErrorSubject = new Subject<Error>();
   private onMessageSubject = new Subject<ChannelMessage>();
-
-  onConnected$ = this.onConnectedSubject.asObservable();
-  onDisconnected$ = this.onDisconnectedSubject.asObservable();
-  onStompError$ = this.onStompErrorSubject.asObservable();
-  onWebSocketClose$ = this.onWebSocketCloseSubject.asObservable();
-  onWebSocketError$ = this.onWebSocketErrorSubject.asObservable();
-  onMessage$ = this.onMessageSubject.asObservable();
 
   private readonly appService: AppService = inject(AppService);
   private readonly sweetalertService: SweetalertService = inject(SweetalertService);
@@ -69,6 +69,15 @@ export class WebsocketService {
     },
   });
   private stompSubscriptions: Map<string, StompSubscription> = new Map<string, StompSubscription>();
+
+  constructor() {
+    this.onConnected$ = this.onConnectedSubject.asObservable();
+    this.onDisconnected$ = this.onDisconnectedSubject.asObservable();
+    this.onStompError$ = this.onStompErrorSubject.asObservable();
+    this.onWebSocketClose$ = this.onWebSocketCloseSubject.asObservable();
+    this.onWebSocketError$ = this.onWebSocketErrorSubject.asObservable();
+    this.onMessage$ = this.onMessageSubject.asObservable();
+  }
 
   activate(): void {
     if (!this.client.connected) {

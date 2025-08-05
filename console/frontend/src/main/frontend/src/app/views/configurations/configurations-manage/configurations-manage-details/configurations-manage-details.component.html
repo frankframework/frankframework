@@ -23,8 +23,8 @@
                 [(ngModel)]="search"
               />
               <i
-                class="fa fa-times input-group-closeSearch{{ search.length < 1 ? ' hidden' : '' }}"
                 aria-hidden="true"
+                [class]="`fa fa-times input-group-closeSearch${search.length < 1 ? ' hidden' : ''}`"
                 (click)="search = ''"
               ></i>
               <span class="input-group-addon">

@@ -4,9 +4,10 @@ import { bootstrapApplication } from '@angular/platform-browser';
 import type SockJS from 'sockjs-client';
 import { AppComponent } from './app/app.component';
 import { appConfig } from './app/app.config';
-import { whenElementExists } from './app/utils';
+import { whenElementExists } from './app/utilities';
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
   interface Window {
     server: string;
     SockJS: typeof SockJS; // use premade bundle because sockjs developers don't understand using global might be a bad idea in non-node environments

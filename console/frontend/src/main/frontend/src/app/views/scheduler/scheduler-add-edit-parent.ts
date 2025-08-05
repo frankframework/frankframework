@@ -24,9 +24,15 @@ export class SchedulerAddEditParent {
     lockkey: '',
   };
 
+  protected configurations: Signal<Configuration[]>;
+  protected adapters: Signal<Record<string, Adapter>>;
+
   private readonly appService: AppService = inject(AppService);
-  protected configurations: Signal<Configuration[]> = this.appService.configurations;
-  protected adapters: Signal<Record<string, Adapter>> = this.appService.adapters;
+
+  constructor() {
+    this.configurations = this.appService.configurations;
+    this.adapters = this.appService.adapters;
+  }
 
   reset(): void {
     this.form = {

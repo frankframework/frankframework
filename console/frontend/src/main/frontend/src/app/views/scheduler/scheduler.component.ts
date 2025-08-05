@@ -1,4 +1,4 @@
-import { Component, computed, OnDestroy, OnInit, Signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, Signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AppService, Message } from 'src/app/app.service';
 import { PollerService } from 'src/app/services/poller.service';
@@ -90,13 +90,11 @@ export class SchedulerComponent implements OnInit, OnDestroy {
 
   private initialized = false;
 
-  constructor(
-    private router: Router,
-    private pollerService: PollerService,
-    private sweetAlertService: SweetalertService,
-    private appService: AppService,
-    private schedulerService: SchedulerService,
-  ) {}
+  private router = inject(Router);
+  private pollerService = inject(PollerService);
+  private sweetAlertService = inject(SweetalertService);
+  private appService = inject(AppService);
+  private schedulerService = inject(SchedulerService);
 
   ngOnInit(): void {
     this.pollerService.add(

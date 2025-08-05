@@ -45,8 +45,8 @@
                     [(ngModel)]="fileName"
                   />
                   <i
-                    class="fa fa-times input-group-closeSearch{{ fileName.length < 1 ? ' hidden' : '' }}"
                     aria-hidden="true"
+                    [class]="`fa fa-times input-group-closeSearch${fileName.length < 1 ? ' hidden' : ''}`"
                     (click)="fileName = ''"
                   ></i>
                   <span class="input-group-addon">

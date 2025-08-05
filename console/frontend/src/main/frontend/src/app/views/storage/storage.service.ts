@@ -16,9 +16,9 @@ export type MessageStore = {
 };
 
 export type Message = {
+  [key: string]: unknown;
   id: string; //StorageId
   insertDate?: number;
-  [key: string]: unknown;
 };
 
 export type PartialMessage = {
@@ -37,7 +37,7 @@ export type StorageMetadata = {
   fields: MessageField[];
 };
 
-export type StorageParams = {
+export type StorageParameters = {
   adapterName: string;
   configuration: string;
   processState: string;
@@ -56,7 +56,7 @@ export type Note = {
 })
 export class StorageService {
   public notes: Note[] = [];
-  public storageParams: StorageParams = {
+  public storageParams: StorageParameters = {
     adapterName: '',
     configuration: '',
     processState: '',
@@ -65,6 +65,7 @@ export class StorageService {
     messageId: null,
   };
   public selectedMessages: Record<string, boolean> = {};
+  public tableUpdateTrigger$: Observable<void>;
 
   private readonly base64Service: Base64Service = inject(Base64Service);
   private readonly http: HttpClient = inject(HttpClient);
@@ -73,9 +74,12 @@ export class StorageService {
 
   private baseUrl = '';
   private tableUpdateTriggerSubject = new Subject<void>();
-  public tableUpdateTrigger$: Observable<void> = this.tableUpdateTriggerSubject.asObservable();
 
-  updateStorageParams(parameters: Partial<StorageParams>): void {
+  constructor() {
+    this.tableUpdateTrigger$ = this.tableUpdateTriggerSubject.asObservable();
+  }
+
+  updateStorageParams(parameters: Partial<StorageParameters>): void {
     this.storageParams = Object.assign(this.storageParams, parameters); // dont make this a new object
     this.baseUrl = `${this.appService.absoluteApiPath}configurations/${this.Misc.escapeURL(
       this.storageParams.configuration,
@@ -100,12 +104,12 @@ export class StorageService {
     this.notes = [];
   }
 
-  deleteMessage(message: PartialMessage, callback?: (messageId: string) => void): void {
+  deleteMessage(message: PartialMessage, callback?: () => void): void {
     message.processing = true;
     const messageId = message.id;
     this.http.delete(`${this.baseUrl}/messages/${this.base64Service.encode(messageId)}`).subscribe({
       next: () => {
-        if (callback != undefined && typeof callback == 'function') callback(messageId);
+        if (callback != undefined && typeof callback == 'function') callback();
         this.addNote('success', `Successfully deleted message with ID: ${messageId}`);
         this.updateTable();
       },
@@ -121,12 +125,12 @@ export class StorageService {
     window.open(`${this.baseUrl}/messages/${this.base64Service.encode(messageId)}/download`);
   }
 
-  resendMessage(message: PartialMessage, callback?: (messageId: string) => void): void {
+  resendMessage(message: PartialMessage, callback?: () => void): void {
     message.processing = true;
     const messageId = message.id;
     this.http.put(`${this.baseUrl}/messages/${this.base64Service.encode(messageId)}`, false).subscribe({
       next: () => {
-        if (callback != undefined) callback(message.id);
+        if (callback != undefined) callback();
         message.processing = false;
         this.addNote('success', `Message with ID: ${messageId} will be reprocessed`);
         this.updateTable();
@@ -140,14 +144,14 @@ export class StorageService {
     }); // TODO no intercept
   }
 
-  moveMessage(message: PartialMessage, callback?: (messageId: string) => void): void {
+  moveMessage(message: PartialMessage, callback?: () => void): void {
     message.processing = true;
     const messageId = message.id;
     const data = new FormData();
     data.set('messageIds', messageId);
     this.http.post(`${this.baseUrl}/move/Error`, data).subscribe({
       next: () => {
-        if (callback != undefined) callback(message.id);
+        if (callback != undefined) callback();
         message.processing = false;
         this.addNote('success', `Message with ID: ${messageId} will be moved to Error state`);
         this.updateTable();

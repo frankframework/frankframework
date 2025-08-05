@@ -17,10 +17,11 @@
         <div class="ibox-content">
           <form role="form" appQuickSubmitForm (submit)="submit($event)">
             <div class="row form-group">
-              <label class="col-sm-3 control-label">Configuration</label>
+              <label for="configuration" class="col-sm-3 control-label">Configuration</label>
               <div class="col-sm-9">
                 <app-combobox
                   name="configuration"
+                  id="configuration"
                   data-cy-test-pipeline="selectConfig"
                   data-cy="test-pipeline__config__input"
                   [options]="configurationOptions()"
@@ -30,10 +31,11 @@
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30">Select an adapter</label>
+              <label for="adapters" class="col-sm-3 control-label label-height-30">Select an adapter</label>
               <div class="col-sm-9">
                 <app-combobox
                   name="adapters"
+                  id="adapters"
                   data-cy-test-pipeline="selectAdapter"
                   data-cy="test-pipeline__adapter__input"
                   [options]="adapterOptions"
@@ -44,29 +46,30 @@
             </div>
             @for (sessionKey of formSessionKeys; track sessionKey.key; let index = $index) {
               <div class="row form-group test-pipeline-session-keys">
-                <label class="col-sm-3 control-label label-height-30">
+                <label class="col-sm-3 control-label label-height-30" [for]="`sessionKey${index}`">
                   @if (index === 0) {
                     <span>Session Key</span>
                   }
                 </label>
                 <div class="col-sm-4">
                   <input
-                    name="sessionKey{{ index }}"
                     data-cy-test-pipeline="sessionKeyName"
                     class="form-control"
                     placeholder="Name"
                     type="text"
+                    [name]="`sessionKey${index}`"
+                    [id]="`sessionKey${index}`"
                     [(ngModel)]="sessionKey.key"
                     (blur)="updateSessionKeys(sessionKey)"
                   />
                 </div>
                 <div class="col-sm-5">
                   <input
-                    name="sessionKeyValue{{ index }}"
                     data-cy-test-pipeline="sessionKeyValue"
                     class="form-control"
                     placeholder="Value"
                     type="text"
+                    [name]="`sessionKeyValue${index}`"
                     [(ngModel)]="sessionKey.value"
                     (blur)="updateSessionKeys(sessionKey)"
                   />
@@ -74,30 +77,31 @@
               </div>
             }
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30">Upload File</label>
+              <label class="col-sm-3 control-label label-height-30" for="uplaoad">Upload File</label>
               <div class="col-sm-9 col-md-4">
-                <app-input-file-upload (fileUpdated)="updateFile($event)" />
+                <app-input-file-upload id="uplaoad" (fileUpdated)="updateFile($event)" />
               </div>
               <div class="hidden-xs hidden-sm col-md-1">
-                <label class="control-label label-height-30 pull-right">Encoding</label>
+                <label class="control-label label-height-30 pull-right" for="encoding1">Encoding</label>
               </div>
               <div class="hidden-xs hidden-sm col-md-4">
-                <input class="form-control" name="encoding" type="text" [(ngModel)]="form.encoding" />
+                <input class="form-control" name="encoding" id="encoding1" type="text" [(ngModel)]="form.encoding" />
               </div>
             </div>
             <div class="row form-group hidden-md hidden-lg">
               <div class="col-sm-3">
-                <label class="control-label label-height-30">Encoding</label>
+                <label class="control-label label-height-30" for="encoding2">Encoding</label>
               </div>
               <div class="col-sm-9">
-                <input class="form-control" name="encoding" type="text" [(ngModel)]="form.encoding" />
+                <input class="form-control" name="encoding" id="encoding2" type="text" [(ngModel)]="form.encoding" />
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30">Message</label>
+              <label class="col-sm-3 control-label label-height-30" for="message">Message</label>
               <div class="col-sm-9">
                 <app-monaco-editor
                   data-cy-test-pipeline="message"
+                  id="message"
                   class="form-control"
                   data-cy="test-pipeline__message__input"
                   style="height: 200px"

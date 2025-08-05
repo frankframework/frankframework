@@ -65,11 +65,11 @@ export class DatatableComponent<T> implements AfterViewInit, OnDestroy {
   protected minPageEntry = 0;
   protected maxPageEntry = 0;
 
+  private datasourceSubscription: Subscription = new Subscription();
+
   protected get displayedColumns(): string[] {
     return this.displayColumns.map((column) => column.name);
   }
-
-  private datasourceSubscription: Subscription = new Subscription();
 
   ngAfterViewInit(): void {
     if (this.datasource) {
@@ -123,7 +123,6 @@ export class DataTableDataSource<T> extends DataSource<T> {
     totalEntries: 0,
   });
   private _entriesInfo$ = this._entriesInfo.asObservable();
-
   private filteredData: T[] = [];
   private _currentPage = 1;
   private _totalPages = 0;
@@ -139,15 +138,6 @@ export class DataTableDataSource<T> extends DataSource<T> {
     if (!this.options.serverSide) this.updateRenderedData(value);
   }
 
-  get options(): TableOptions {
-    return this._options.value;
-  }
-
-  set options(value: Partial<TableOptions>) {
-    this._options.next({ ...this._options.value, ...value });
-    this.updatePage(1);
-  }
-
   get filter(): string {
     return this._filter.value;
   }
@@ -161,12 +151,21 @@ export class DataTableDataSource<T> extends DataSource<T> {
     this.updateRenderedData(this.data);
   }
 
-  get totalPages(): number {
-    return this._totalPages;
+  get options(): TableOptions {
+    return this._options.value;
+  }
+
+  set options(value: Partial<TableOptions>) {
+    this._options.next({ ...this._options.value, ...value });
+    this.updatePage(1);
   }
 
   get currentPage(): number {
     return this._currentPage;
+  }
+
+  get totalPages(): number {
+    return this._totalPages;
   }
 
   connect(): Observable<T[]> {
@@ -176,6 +175,7 @@ export class DataTableDataSource<T> extends DataSource<T> {
     return this._renderData;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   disconnect(): void {}
 
   getEntriesInfo(): Observable<DataTableEntryInfo> {

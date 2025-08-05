@@ -1,5 +1,5 @@
 import { Directive, EventEmitter, Input, OnChanges, OnDestroy, Output } from '@angular/core';
-import { fixedPointFloat } from '../utils';
+import { fixedPointFloat } from '../utilities';
 
 type WidthHeight = {
   w: number;

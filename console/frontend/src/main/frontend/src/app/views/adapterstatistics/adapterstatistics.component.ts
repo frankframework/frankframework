@@ -70,6 +70,9 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
     sizePerPipe: true,
   };
 
+  protected statisticsTimeBoundaries: Record<string, string>;
+  protected statisticsSizeBoundaries: Record<string, string>;
+
   private defaults = {
     name: 'Name',
     count: 'Count',
@@ -81,8 +84,6 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
     first: 'First',
     last: 'Last',
   };
-  protected statisticsTimeBoundaries: Record<string, string> = { ...this.defaults };
-  protected statisticsSizeBoundaries: Record<string, string> = { ...this.defaults };
 
   private readonly appService: AppService = inject(AppService);
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
@@ -101,6 +102,11 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
     // hoverBackgroundColor: "#2f4050",
     hoverBorderColor: '#2f4050',
   };
+
+  constructor() {
+    this.statisticsTimeBoundaries = { ...this.defaults };
+    this.statisticsSizeBoundaries = { ...this.defaults };
+  }
 
   ngOnInit(): void {
     const routeParameters = this.route.snapshot.paramMap;

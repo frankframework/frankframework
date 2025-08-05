@@ -5,9 +5,10 @@ import { formatDate } from '@angular/common';
   providedIn: 'root',
 })
 export class ServerTimeService {
+  @Inject(LOCALE_ID) private locale: string = inject(LOCALE_ID);
+
   public timezone?: string;
 
-  @Inject(LOCALE_ID) private locale: string = inject(LOCALE_ID);
   private baseTime: Date = new Date();
   private currentTime: Date = new Date();
   private timeUpdateIntervalId = -1;
@@ -15,11 +16,11 @@ export class ServerTimeService {
   private dateFormat = 'yyyy-MM-dd HH:mm:ss';
   private serverTimezoneOffset = 0;
 
-  getIntialTime(): string {
+  getInitialTime(): string {
     return formatDate(this.baseTime, this.dateFormat, this.locale, this.timezone);
   }
 
-  // doesnt contain timezone data so will return everything in locale time
+  // doesn't contain timezone data so will return everything in locale time
   getCurrentTime(): number {
     return this.currentTime.getTime();
   }

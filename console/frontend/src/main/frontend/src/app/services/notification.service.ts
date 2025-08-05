@@ -5,7 +5,7 @@ export type Notification = {
   icon: string;
   title: string;
   message: string | boolean;
-  fn: ((notification: Notification) => void) | boolean;
+  fn: (() => void) | boolean;
   time: number;
   id?: number;
 };
@@ -17,6 +17,12 @@ export class NotificationService {
   private _list: WritableSignal<Notification[]> = signal([]);
   private _count: WritableSignal<number> = signal(0);
 
+  constructor() {
+    Tinycon.setOptions({
+      background: '#f03d25',
+    });
+  }
+
   get list(): Signal<Notification[]> {
     return this._list.asReadonly();
   }
@@ -25,13 +31,7 @@ export class NotificationService {
     return this._count.asReadonly();
   }
 
-  constructor() {
-    Tinycon.setOptions({
-      background: '#f03d25',
-    });
-  }
-
-  add(icon: string, title: string, message?: string | boolean, function_?: (notification: Notification) => void): void {
+  add(icon: string, title: string, message?: string | boolean, function_?: () => void): void {
     const newNotification: Notification = {
       icon: icon,
       title: title,
@@ -47,8 +47,7 @@ export class NotificationService {
   }
 
   get(id: number): Notification | null {
-    for (let index = 0; index < this.list().length; index++) {
-      const notification = this.list()[index];
+    for (const notification of this.list()) {
       if (notification.id == id) {
         if (notification.fn) {
           globalThis.setTimeout(() => {

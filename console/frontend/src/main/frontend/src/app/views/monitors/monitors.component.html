@@ -58,15 +58,15 @@
       @for (monitor of monitors; track index; let index = $index) {
         <div class="col-lg-12">
           <div class="ibox float-e-margins" data-cy="monitors__monitor__ibox">
-            <div class="ibox-title {{ monitor.raised ? 'danger' : 'primary' }}">
+            <div [class]="`ibox-title ${monitor.raised ? 'danger' : 'primary'}`">
               <div class="pull-right">
                 @if (!monitor.raised && !monitor.edit) {
                   <button
-                    title="Raise alarm {{ monitor.name }}"
                     appHasAccessToLink="updateMonitor"
                     class="btn btn-warning btn-xs space-it-out"
                     type="button"
                     data-cy="monitors__raise-monitor-button"
+                    [title]="`Raise alarm ${monitor.name}`"
                     (click)="raise(monitor)"
                   >
                     <i class="fa fa-arrow-circle-o-right"></i> Raise
@@ -74,11 +74,11 @@
                 }
                 @if (monitor.raised) {
                   <button
-                    title="Clear alarm {{ monitor.name }}"
                     appHasAccessToLink="updateMonitor"
                     class="btn btn-primary btn-xs space-it-out"
                     type="button"
                     data-cy="monitors__clear-monitor-button"
+                    [title]="`Clear alarm ${monitor.name}}`"
                     (click)="clear(monitor)"
                   >
                     <i class="fa fa-arrow-circle-o-right"></i> Clear
@@ -86,11 +86,11 @@
                 }
                 @if (!monitor.raised && monitor.edit) {
                   <button
-                    title="Delete Monitor {{ monitor.name }}"
                     appHasAccessToLink="deleteMonitor"
                     class="btn btn-danger btn-xs space-it-out"
                     type="button"
                     data-cy="monitors__delete-monitor-button"
+                    [title]="`Delete Monitor ${monitor.name}`"
                     (click)="deleteMonitor(monitor)"
                   >
                     <i class="fa fa-close"></i> Delete
@@ -98,11 +98,11 @@
                 }
                 @if (!monitor.raised && !monitor.edit) {
                   <button
-                    title="Edit Monitor {{ monitor.name }}"
                     appHasAccessToLink="updateMonitor"
                     class="btn btn-info btn-xs space-it-out"
                     type="button"
                     data-cy="monitors__edit-monitor-button"
+                    [title]="`Edit Monitor ${monitor.name}`"
                     (click)="monitor.edit = true"
                   >
                     <i class="fa fa-pencil"></i> Edit
@@ -110,11 +110,11 @@
                 }
                 @if (!monitor.raised && monitor.edit) {
                   <button
-                    title="Save Monitor {{ monitor.name }}"
                     appHasAccessToLink="updateMonitor"
                     class="btn btn-primary btn-xs space-it-out"
                     type="button"
                     data-cy="monitors__save-monitor-button"
+                    [title]="`Save Monitor ${monitor.name}`"
                     (click)="edit(monitor)"
                   >
                     <i class="fa fa-save"></i> Save
@@ -158,15 +158,21 @@
                 <div>
                   <form role="form" appQuickSubmitForm (submit)="edit(monitor)">
                     <div class="form-group">
-                      <label class="col-sm-3 control-label">Name</label>
+                      <label class="col-sm-3 control-label" for="name">Name</label>
                       <div class="col-sm-9">
-                        <input class="form-control m-b" name="name" type="text" [(ngModel)]="monitor.displayName" />
+                        <input
+                          class="form-control m-b"
+                          name="name"
+                          id="name"
+                          type="text"
+                          [(ngModel)]="monitor.displayName"
+                        />
                       </div>
                     </div>
                     <div class="form-group">
-                      <label class="col-sm-3 control-label">Type</label>
+                      <label class="col-sm-3 control-label" for="type">Type</label>
                       <div class="col-sm-9">
-                        <select class="form-control m-b" name="type" [(ngModel)]="monitor.type">
+                        <select class="form-control m-b" name="type" id="type" [(ngModel)]="monitor.type">
                           @for (type of eventTypes; track type) {
                             <option [ngValue]="type">
                               {{ type }}
@@ -176,13 +182,14 @@
                       </div>
                     </div>
                     <div class="form-group">
-                      <label class="col-sm-3 control-label">Destinations</label>
+                      <label class="col-sm-3 control-label" for="destination">Destinations</label>
                       @for (destination of destinations; track destination) {
                         <div class="col-sm-2">
                           <span class="form-control m-b" style="border: none"
                             ><input
                               type="checkbox"
                               name="destination"
+                              id="destination"
                               [(ngModel)]="monitor.activeDestinations[destination]"
                             />
                             {{ destination }}</span
@@ -217,7 +224,7 @@
                     <thead>
                       <tr>
                         <th class="col-md-1">Type</th>
-                        <th class="col-md-{{ monitor.edit ? 3 : 4 }}">EventCodes</th>
+                        <th [class]="`col-md-${monitor.edit ? 3 : 4}`">EventCodes</th>
                         <th class="col-md-4">Sources</th>
                         <th class="col-md-1">Severity</th>
                         <th class="col-md-1">Threshold</th>
@@ -274,21 +281,21 @@
                           @if (monitor.edit) {
                             <td class="pull-right">
                               <button
-                                title="Edit trigger {{ trigger.name }}"
                                 appHasAccessToLink="updateTrigger"
                                 class="btn btn-info btn-xs space-it-out"
                                 type="button"
+                                [title]="`Edit trigger ${trigger.name}`"
                                 [routerLink]="['/monitors', monitor.name, 'triggers', trigger.id]"
                                 [queryParams]="{ configuration: selectedConfiguration }"
                               >
                                 Edit
                               </button>
                               <button
-                                title="Delete trigger {{ trigger.name }}"
                                 appHasAccessToLink="deleteTrigger"
                                 class="btn btn-danger btn-xs"
                                 type="button"
                                 data-cy="monitors__delete-trigger-button"
+                                [title]="`Delete trigger ${trigger.name}`"
                                 (click)="deleteTrigger(monitor, trigger)"
                               >
                                 Delete

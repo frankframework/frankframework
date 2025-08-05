@@ -65,10 +65,11 @@
                 </div>
               </div>
               <div class="row form-group">
-                <label class="col-sm-3 control-label">Filtering</label>
+                <label class="col-sm-3 control-label" for="filter">Filtering</label>
                 <div class="col-sm-9 filtering">
                   <span class="form-control m-b"
-                    ><input type="radio" name="filter" value="NONE" [(ngModel)]="trigger.filter" /> None</span
+                    ><input type="radio" name="filter" id="filter" value="NONE" [(ngModel)]="trigger.filter" />
+                    None</span
                   >
                   <span class="form-control m-b"
                     ><input type="radio" name="filter" value="ADAPTER" [(ngModel)]="trigger.filter" /> By Adapter</span

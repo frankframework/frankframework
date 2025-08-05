@@ -6,8 +6,6 @@ import { Observable, tap } from 'rxjs';
 export class AllowInterceptor implements HttpInterceptor {
   private allowed: Record<string, string> = {};
 
-  constructor() {}
-
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     return next.handle(request).pipe(
       tap({

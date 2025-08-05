@@ -42,83 +42,6 @@ export class ComboboxComponent implements OnInit, OnChanges {
   protected listShown = false;
   protected showError = false;
 
-  ngOnInit(): void {
-    this.resetListItems();
-  }
-
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['selectedOption']) {
-      this.input = changes['selectedOption'].currentValue ?? '';
-    }
-  }
-
-  private resetListItems(): void {
-    this.filteredOptions = this.options;
-  }
-
-  protected showListDisplay(): void {
-    if (this.listShown) return;
-    this.listShown = true;
-    this.comboboxDropdownIcon.nativeElement.classList.add('combobox__dropdown-icon--active');
-    this.filterListItems();
-    this.highlightItemMatchingInput();
-  }
-
-  private filterListItems(): void {
-    this.filteredOptions = this.options.filter(({ label }) => label.toLowerCase().startsWith(this.input.toLowerCase()));
-  }
-
-  hideListDisplay(): void {
-    if (!this.listShown) return;
-    this.comboboxDropdownIcon.nativeElement.classList.remove('combobox__dropdown-icon--active');
-    this.listShown = false;
-    this.setSelectedOption(this.input);
-    this.validateInput();
-  }
-
-  private validateInput(): void {
-    this.showError = !!(this.input || this.required) && !this.options.some(({ label }) => label === this.input);
-    if (this.showError) this.resetListItems();
-  }
-
-  protected onUpdateInput(): void {
-    this.filterListItems();
-    this.highlightItemMatchingInput();
-  }
-
-  private highlightItemMatchingInput(): void {
-    if (!this.listShown) return;
-    const matchingItem = this.filteredOptions.findIndex(({ label }) => label === this.input);
-    if (matchingItem === -1) {
-      this.selectedIndex = -1;
-    } else {
-      this.selectItemInListDisplay(matchingItem);
-    }
-  }
-
-  private selectItemInListDisplay(index: number): void {
-    this.selectedIndex = index;
-    this.comboboxOptionsRef?.nativeElement
-      .querySelectorAll('.combobox__list-item')
-      [this.selectedIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-
-  protected clickItem(index: number): void {
-    this.selectItem(index);
-    this.hideListDisplay();
-  }
-
-  private selectItem(index: number): void {
-    if (index < 0 || index >= this.filteredOptions.length) return;
-    this.input = this.filteredOptions[index].label;
-    this.setSelectedOption(this.input);
-  }
-
-  private setSelectedOption(option: string): void {
-    this.selectedOption = option;
-    this.selectedOptionChange.emit(this.selectedOption);
-  }
-
   @HostListener('keydown.enter', ['$event'])
   protected onEnter(event: KeyboardEvent): void {
     event.preventDefault();
@@ -142,11 +65,88 @@ export class ComboboxComponent implements OnInit, OnChanges {
     this.selectNext();
   }
 
+  ngOnInit(): void {
+    this.resetListItems();
+  }
+
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['selectedOption']) {
+      this.input = changes['selectedOption'].currentValue ?? '';
+    }
+  }
+
+  protected showListDisplay(): void {
+    if (this.listShown) return;
+    this.listShown = true;
+    this.comboboxDropdownIcon.nativeElement.classList.add('combobox__dropdown-icon--active');
+    this.filterListItems();
+    this.highlightItemMatchingInput();
+  }
+
+  protected onUpdateInput(): void {
+    this.filterListItems();
+    this.highlightItemMatchingInput();
+  }
+
+  protected clickItem(index: number): void {
+    this.selectItem(index);
+    this.hideListDisplay();
+  }
+
   protected clearSelectedItem(): void {
     this.selectedIndex = -1;
     this.input = '';
     this.setSelectedOption('');
     this.hideListDisplay();
+  }
+
+  protected hideListDisplay(): void {
+    if (!this.listShown) return;
+    this.comboboxDropdownIcon.nativeElement.classList.remove('combobox__dropdown-icon--active');
+    this.listShown = false;
+    this.setSelectedOption(this.input);
+    this.validateInput();
+  }
+
+  private resetListItems(): void {
+    this.filteredOptions = this.options;
+  }
+
+  private selectItem(index: number): void {
+    if (index < 0 || index >= this.filteredOptions.length) return;
+    this.input = this.filteredOptions[index].label;
+    this.setSelectedOption(this.input);
+  }
+
+  private setSelectedOption(option: string): void {
+    this.selectedOption = option;
+    this.selectedOptionChange.emit(this.selectedOption);
+  }
+
+  private filterListItems(): void {
+    this.filteredOptions = this.options.filter(({ label }) => label.toLowerCase().startsWith(this.input.toLowerCase()));
+  }
+
+  private validateInput(): void {
+    this.showError = !!(this.input || this.required) && !this.options.some(({ label }) => label === this.input);
+    if (this.showError) this.resetListItems();
+  }
+
+  private highlightItemMatchingInput(): void {
+    if (!this.listShown) return;
+    const matchingItem = this.filteredOptions.findIndex(({ label }) => label === this.input);
+    if (matchingItem === -1) {
+      this.selectedIndex = -1;
+    } else {
+      this.selectItemInListDisplay(matchingItem);
+    }
+  }
+
+  private selectItemInListDisplay(index: number): void {
+    this.selectedIndex = index;
+    this.comboboxOptionsRef?.nativeElement
+      .querySelectorAll('.combobox__list-item')
+      [this.selectedIndex]?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 
   private selectNext(): void {
