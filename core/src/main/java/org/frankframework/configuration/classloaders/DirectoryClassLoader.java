@@ -16,12 +16,14 @@
 package org.frankframework.configuration.classloaders;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Path;
 
 import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.IbisContext;
-import org.frankframework.util.AppConstants;
+import org.frankframework.configuration.util.ConfigurationUtils;
 
 public class DirectoryClassLoader extends AbstractClassLoader {
 	private File directory = null;
@@ -35,13 +37,12 @@ public class DirectoryClassLoader extends AbstractClassLoader {
 		super.configure(ibisContext, configurationName);
 
 		if (directory == null) {
-			AppConstants appConstants = AppConstants.getInstance();
-			String configurationsDirectory = appConstants.getProperty("configurations.directory");
-			if (configurationsDirectory == null) {
-				throw new ClassLoaderException("Could not find property configurations.directory");
+			try {
+				Path configDir = ConfigurationUtils.getConfigurationDirectory();
+				setDirectory(configDir.toString());
+			} catch (IOException e) {
+				throw new ClassLoaderException(e);
 			}
-
-			setDirectory(configurationsDirectory);
 		}
 
 		if(getBasePath() != null) { // Append BasePath, because legacy
