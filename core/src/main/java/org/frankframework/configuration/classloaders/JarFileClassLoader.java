@@ -16,7 +16,9 @@
 package org.frankframework.configuration.classloaders;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Map;
@@ -25,9 +27,13 @@ import jakarta.annotation.Nonnull;
 
 import org.apache.commons.io.FilenameUtils;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.configuration.ClassLoaderException;
+import org.frankframework.configuration.util.BuildInfoValidator;
 import org.frankframework.configuration.util.ConfigurationUtils;
 
+@Log4j2
 public class JarFileClassLoader extends AbstractJarBytesClassLoader {
 	private String jarFileName;
 
@@ -59,9 +65,14 @@ public class JarFileClassLoader extends AbstractJarBytesClassLoader {
 		// Attempt to load 'configuration-name'.jar as sub-path of 'configurations.directory'.
 		try {
 			Path configDir = ConfigurationUtils.getConfigurationDirectory();
-			return configDir.resolve("%s.jar".formatted(getConfigurationName()));
+			return Files.list(configDir)
+					.filter(JarFileClassLoader::isJarFile)
+					.filter(e -> getConfigurationName().equals(findConfigurationName(e)))
+					.findFirst()
+					.orElseThrow(()-> new FileNotFoundException("no MessageKeeper found"));
+
 		} catch (IOException e) {
-			throw new ClassLoaderException(e);
+			throw new ClassLoaderException("unable to automatically locate configuration archive", e);
 		}
 	}
 
@@ -71,5 +82,15 @@ public class JarFileClassLoader extends AbstractJarBytesClassLoader {
 
 	public void setJar(String jar) {
 		this.jarFileName = jar;
+	}
+
+	public static String findConfigurationName(Path path) {
+		try (InputStream potentialJarFile = Files.newInputStream(path)) {
+			BuildInfoValidator configDetails = new BuildInfoValidator(potentialJarFile);
+			return configDetails.getName();
+		} catch (Exception e) {
+			log.debug("unable to open file [{}] assume it's not a (valid) configuration", path, e);
+		}
+		return null;
 	}
 }

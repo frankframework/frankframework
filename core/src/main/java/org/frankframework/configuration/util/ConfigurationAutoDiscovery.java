@@ -132,7 +132,8 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 		return sort(configurations);
 	}
 
-	private Map<String, Class<? extends IConfigurationClassLoader>> scanDirectory(Path configDir) throws IOException {
+	@Nonnull
+	private Map<String, Class<? extends IConfigurationClassLoader>> scanDirectory(@Nonnull Path configDir) throws IOException {
 		log.info("scanning directory [{}] for configurations", configDir);
 
 		Map<String, Class<? extends IConfigurationClassLoader>> directoryConfigurations = new LinkedHashMap<>();
@@ -158,7 +159,8 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 		return directoryConfigurations;
 	}
 
-	private Map<String, Class<? extends IConfigurationClassLoader>> scanDatabase(String dataSourceName) throws DbmsException, SQLException {
+	@Nonnull
+	private Map<String, Class<? extends IConfigurationClassLoader>> scanDatabase(@Nonnull String dataSourceName) throws DbmsException, SQLException {
 		log.info("scanning database [{}] for configurations", dataSourceName);
 
 		Map<String, Class<? extends IConfigurationClassLoader>> databaseConfigurations = new LinkedHashMap<>();
@@ -220,7 +222,7 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 	}
 
 	@Nonnull
-	private static List<String> retrieveDirectoryConfigNames(Path directory) throws IOException {
+	private static List<String> retrieveDirectoryConfigNames(@Nonnull Path directory) throws IOException {
 		List<String> configurationNames = new ArrayList<>();
 
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory, Files::isDirectory)) {
@@ -234,12 +236,13 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 	}
 
 	@Nonnull
-	private static List<String> retrieveJarFileConfigNames(Path directory) throws IOException {
+	private static List<String> retrieveJarFileConfigNames(@Nonnull Path directory) throws IOException {
 		List<String> configurationNames = new ArrayList<>();
 
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory, JarFileClassLoader::isJarFile)) {
 			for (Path path : stream) {
-				configurationNames.add(path.getFileName().toString());
+				String configName = JarFileClassLoader.findConfigurationName(path);
+				configurationNames.add(configName);
 			}
 		}
 
@@ -248,7 +251,7 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 	}
 
 	@Nonnull
-	private List<String> retrieveConfigNamesFromDatabase(String dataSourceName) throws SQLException, DbmsException {
+	private List<String> retrieveConfigNamesFromDatabase(@Nonnull String dataSourceName) throws SQLException, DbmsException {
 		IDataSourceFactory dsFactory = applicationContext.getBean(IDataSourceFactory.class);
 		DataSource dataSource = dsFactory.getDataSource(dataSourceName);
 
@@ -260,15 +263,19 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 				return Collections.emptyList();
 			}
 
-			String query = "SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE ACTIVECONFIG="+dbmsSupport.getBooleanValue(true);
-			try (PreparedStatement stmt = conn.prepareStatement(query); ResultSet rs = stmt.executeQuery()) {
-				List<String> configurationNames = new ArrayList<>();
-				while (rs.next()) {
-					configurationNames.add(rs.getString(1));
-				}
+			try (PreparedStatement stmt = conn.prepareStatement("SELECT DISTINCT(NAME) FROM IBISCONFIG WHERE ACTIVECONFIG=?")) {
+				stmt.setBoolean(1, true);
 
-				log.debug("found database configurations {}", configurationNames);
-				return Collections.unmodifiableList(configurationNames);
+				try (ResultSet rs = stmt.executeQuery()) {
+					List<String> configurationNames = new ArrayList<>();
+					while (rs.next()) {
+						configurationNames.add(rs.getString(1));
+					}
+
+					configurationNames.sort(Comparator.naturalOrder()); // To always ensure the same order is used, do it here and not as part of the DBMS.
+					log.debug("found database configurations {}", configurationNames);
+					return Collections.unmodifiableList(configurationNames);
+				}
 			}
 		}
 	}

@@ -10,51 +10,51 @@
 			<column name="NAME" value="config1" />
 			<column name="VERSION" value="1.0" />
 			<column name="FILENAME" value="config1.jar" />
-			<column name="CONFIG" value="asdfasfasdf" />
+			<column name="CONFIG" valueBlobFile="SetupConfigsInDatabase.xml" />
 			<column name="CRE_TYDST" valueComputed="CURRENT_TIMESTAMP" />
 			<column name="RUSER" value="dummy-user" />
-			<column name="ACTIVECONFIG" value="true" type="boolean"/>
-			<column name="AUTORELOAD" value="false" type="boolean"/>
+			<column name="ACTIVECONFIG" valueBoolean="true"/>
+			<column name="AUTORELOAD" valueBoolean="false"/>
 		</insert>
 		<insert tableName="IBISCONFIG">
 			<column name="NAME" value="config2" />
 			<column name="VERSION" value="1.0" />
 			<column name="FILENAME" value="config2.jar" />
-			<column name="CONFIG" value="asdfasfasdf" />
+			<column name="CONFIG" valueBlobFile="SetupConfigsInDatabase.xml" />
 			<column name="CRE_TYDST" valueComputed="CURRENT_TIMESTAMP" />
 			<column name="RUSER" value="dummy-user" />
-			<column name="ACTIVECONFIG" value="true" type="boolean" />
-			<column name="AUTORELOAD" value="false" type="boolean"/>
+			<column name="ACTIVECONFIG" valueBoolean="true" />
+			<column name="AUTORELOAD" valueBoolean="false"/>
 		</insert>
 		<insert tableName="IBISCONFIG">
 			<column name="NAME" value="config3" />
 			<column name="VERSION" value="1.0" />
 			<column name="FILENAME" value="config3.jar" />
-			<column name="CONFIG" value="asdfasfasdf" />
+			<column name="CONFIG" valueBlobFile="SetupConfigsInDatabase.xml" />
 			<column name="CRE_TYDST" valueComputed="CURRENT_TIMESTAMP" />
 			<column name="RUSER" value="dummy-user" />
-			<column name="ACTIVECONFIG" value="true" type="boolean"/>
-			<column name="AUTORELOAD" value="false" type="boolean"/>
+			<column name="ACTIVECONFIG" valueBoolean="true"/>
+			<column name="AUTORELOAD" valueBoolean="false"/>
 		</insert>
 		<insert tableName="IBISCONFIG">
 			<column name="NAME" value="config4" />
 			<column name="VERSION" value="1.0" />
 			<column name="FILENAME" value="config4.jar" />
-			<column name="CONFIG" value="asdfasfasdf" />
+			<column name="CONFIG" valueBlobFile="SetupConfigsInDatabase.xml" />
 			<column name="CRE_TYDST" valueComputed="CURRENT_TIMESTAMP" />
 			<column name="RUSER" value="dummy-user" />
-			<column name="ACTIVECONFIG" value="true" type="boolean"/>
-			<column name="AUTORELOAD" value="false" type="boolean"/>
+			<column name="ACTIVECONFIG" valueBoolean="true"/>
+			<column name="AUTORELOAD" valueBoolean="false"/>
 		</insert>
 		<insert tableName="IBISCONFIG">
 			<column name="NAME" value="config5" />
 			<column name="VERSION" value="1.0" />
 			<column name="FILENAME" value="config5.jar" />
-			<column name="CONFIG" value="asdfasfasdf" />
+			<column name="CONFIG" valueBlobFile="SetupConfigsInDatabase.xml" />
 			<column name="CRE_TYDST" valueComputed="CURRENT_TIMESTAMP" />
 			<column name="RUSER" value="dummy-user" />
-			<column name="ACTIVECONFIG" value="true" type="boolean"/>
-			<column name="AUTORELOAD" value="false" type="boolean"/>
+			<column name="ACTIVECONFIG" valueBoolean="true"/>
+			<column name="AUTORELOAD" valueBoolean="false"/>
 		</insert>
 
 	</changeSet>

@@ -5,8 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -21,6 +24,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+import org.frankframework.configuration.ClassLoaderException;
+import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.classloaders.DatabaseClassLoader;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
@@ -28,6 +33,7 @@ import org.frankframework.configuration.classloaders.JarFileClassLoader;
 import org.frankframework.configuration.classloaders.ScanningDirectoryClassLoader;
 import org.frankframework.configuration.classloaders.WebAppClassLoader;
 import org.frankframework.configuration.util.ConfigurationAutoDiscovery.ParentConfigComparator;
+import org.frankframework.testutil.JunitTestClassLoaderWrapper;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
@@ -115,14 +121,14 @@ public class ConfigurationAutoDiscoveryTest {
 
 		Map<String, Class<? extends IConfigurationClassLoader>> configs = autoDiscovery.scan(true);
 
-		assertThat("keyset was: " + configs.keySet(), configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "ClassLoader", "Config", "Configuration.jar", "config1", "config2", "config3", "config4", "config5"));
+		assertThat("keyset was: " + configs.keySet(), configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "ClassLoader", "Config", "JarConfig1", "config1", "config2", "config3", "config4", "config5"));
 
 		assertNull(configs.get("IAF_Util"));
 		assertNull(configs.get("TestConfiguration"));
 
 		assertEquals(DirectoryClassLoader.class, configs.get("ClassLoader"));
 		assertEquals(DirectoryClassLoader.class, configs.get("Config"));
-		assertEquals(JarFileClassLoader.class, configs.get("Configuration.jar"));
+		assertEquals(JarFileClassLoader.class, configs.get("JarConfig1"));
 		assertEquals(DatabaseClassLoader.class, configs.get("config1"));
 		assertEquals(DatabaseClassLoader.class, configs.get("config2"));
 	}
@@ -135,15 +141,23 @@ public class ConfigurationAutoDiscoveryTest {
 
 			Map<String, Class<? extends IConfigurationClassLoader>> configs = autoDiscovery.scan(true);
 
-			assertThat("keyset was: " + configs.keySet(), configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "ClassLoader", "Config", "Configuration.jar"));
+			assertThat("keyset was: " + configs.keySet(), configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "ClassLoader", "Config", "JarConfig1"));
 
 			assertNull(configs.get("IAF_Util"));
 			assertNull(configs.get("TestConfiguration"));
 
 			assertEquals(DirectoryClassLoader.class, configs.get("ClassLoader"));
 			assertEquals(DirectoryClassLoader.class, configs.get("Config"));
-			assertEquals(JarFileClassLoader.class, configs.get("Configuration.jar"));
+			assertEquals(JarFileClassLoader.class, configs.get("JarConfig1"));
 		}
+	}
+
+	@Test
+	public void findConfiguration() throws IOException, URISyntaxException, ClassLoaderException {
+		ClassLoader classLoader = new JunitTestClassLoaderWrapper(); // Add ability to retrieve classes from src/test/resources
+		JarFileClassLoader cl = new JarFileClassLoader(classLoader);
+		IbisContext ibisContext = mock(IbisContext.class);
+		cl.configure(ibisContext, "JarConfig1");
 	}
 
 	@Test
