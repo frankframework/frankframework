@@ -1,4 +1,4 @@
-import { Component, input, InputSignal, Signal } from '@angular/core';
+import { Component, input, InputSignal, OnInit } from '@angular/core';
 import { BaseChartDirective } from 'ng2-charts';
 import type { ChartData, ChartOptions } from 'chart.js';
 import { Statistics } from '../adapterstatistics.service';
@@ -11,13 +11,17 @@ export type HourlyStatistics = ChartData<'line', Statistics['hourly'][0]['count'
   templateUrl: './adapterstatistics-charts.component.html',
   styleUrl: './adapterstatistics-charts.component.scss',
 })
-export class AdapterstatisticsChartsComponent {
+export class AdapterstatisticsChartsComponent implements OnInit {
   public readonly hourlyStatistics: InputSignal<HourlyStatistics> = input<HourlyStatistics>({
     labels: [],
     datasets: [],
   });
+  public readonly test: InputSignal<ChartData<'doughnut'>> = input<ChartData<'doughnut'>>({
+    labels: [],
+    datasets: [],
+  });
 
-  protected options: ChartOptions<'line'> = {
+  protected hourlyStatisticsOptions: ChartOptions<'line'> = {
     elements: {
       line: {
         tension: 0.5,
@@ -50,4 +54,8 @@ export class AdapterstatisticsChartsComponent {
       },
     },
   };
+
+  ngOnInit(): void {
+    console.log(this.hourlyStatistics());
+  }
 }

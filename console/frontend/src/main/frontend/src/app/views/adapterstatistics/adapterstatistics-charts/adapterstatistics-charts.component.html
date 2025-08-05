@@ -1,13 +1,35 @@
-<div class="col-md-12 table-responsive">
-  <h4>Adapter statistics by the hour</h4>
-  <div style="height: 300px">
-    <canvas
-      id="line"
-      class="chart chart-line"
-      baseChart
-      type="line"
-      [options]="options"
-      [data]="hourlyStatistics()"
-    ></canvas>
+<div class="row">
+  <div class="col-md-12 table-responsive">
+    <h4>Adapter statistics by the hour</h4>
+    <div style="height: 300px">
+      <canvas
+        id="line"
+        class="chart chart-line"
+        baseChart
+        type="line"
+        [options]="hourlyStatisticsOptions"
+        [data]="hourlyStatistics()"
+      ></canvas>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-4 table-responsive">
+    <h4>SLO</h4>
+    <div style="height: 300px">
+      <canvas class="chart chart-line" baseChart type="line"></canvas>
+    </div>
+  </div>
+  <div class="col-md-4 table-responsive">
+    <h4>Avg per receiver</h4>
+    <div style="height: 300px">
+      <canvas class="chart chart-line" baseChart type="line" [data]="test()"></canvas>
+    </div>
+  </div>
+  <div class="col-md-4 table-responsive">
+    <h4>Count per reciever</h4>
+    <div style="height: 300px">
+      <canvas class="chart chart-doughnut" baseChart type="doughnut" [data]="test()"></canvas>
+    </div>
   </div>
 </div>

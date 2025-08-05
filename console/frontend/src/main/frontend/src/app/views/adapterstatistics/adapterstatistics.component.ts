@@ -108,13 +108,15 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
         labels.push(hour.time);
         chartData.push(hour.count);
       }
-      this.hourlyStatistics.labels = labels;
-      this.hourlyStatistics.datasets = [
-        {
-          data: chartData,
-          ...this.dataset,
-        },
-      ];
+      this.hourlyStatistics = {
+        labels,
+        datasets: [
+          {
+            data: chartData,
+            ...this.dataset,
+          },
+        ],
+      };
 
       this.chart?.update();
 
