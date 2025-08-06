@@ -8,10 +8,6 @@ export class PagesTitleStrategy extends TitleStrategy {
   private readonly title = inject(Title);
   private readonly appService = inject(AppService);
 
-  constructor() {
-    super();
-  }
-
   override updateTitle(routerState: RouterStateSnapshot): void {
     const title = this.buildTitle(routerState);
     if (title !== undefined) {

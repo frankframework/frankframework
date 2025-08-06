@@ -16,10 +16,6 @@ export class IframeCustomViewComponent extends BaseIframeComponent implements On
   private readonly window: Window = inject(Window);
   private routeSubscription: Subscription | null = null;
 
-  constructor() {
-    super();
-  }
-
   override ngOnInit(): void {
     super.ngOnInit();
     this.routeSubscription = this.route.url.subscribe((url) => {

@@ -1,15 +1,14 @@
-import { DomSanitizer } from '@angular/platform-browser';
 import { MarkDownPipe } from './mark-down.pipe';
 import { TestBed } from '@angular/core/testing';
 
 describe('MarkDownPipe', () => {
-  let domSanitizer: DomSanitizer;
   let pipe: MarkDownPipe;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
-    domSanitizer = TestBed.inject(DomSanitizer);
-    pipe = new MarkDownPipe(domSanitizer);
+    TestBed.configureTestingModule({
+      providers: [MarkDownPipe],
+    });
+    pipe = TestBed.inject(MarkDownPipe);
   });
 
   it('create an instance', () => {
