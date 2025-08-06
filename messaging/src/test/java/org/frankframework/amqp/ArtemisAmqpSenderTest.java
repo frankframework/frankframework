@@ -2,12 +2,11 @@ package org.frankframework.amqp;
 
 import jakarta.annotation.Nonnull;
 
-import org.junit.jupiter.api.Disabled;
 import org.testcontainers.activemq.ArtemisContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-@Disabled("I don't yet know why but with ActiveMQ Artemis the test cannot receive the messages sent without error from the sender")
+//@Disabled("I don't yet know why but with ActiveMQ Artemis the test cannot receive the messages sent without error from the sender")
 @Testcontainers(disabledWithoutDocker = true)
 public class ArtemisAmqpSenderTest extends AmqpSenderTest {
 	private static final String ARTEMIS_TAG = "apache/activemq-artemis";

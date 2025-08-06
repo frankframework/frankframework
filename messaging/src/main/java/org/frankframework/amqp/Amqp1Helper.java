@@ -40,8 +40,8 @@ public class Amqp1Helper {
 		// Private constructor for utility class
 	}
 
-	public static @Nullable Message getStreamingMessage(@Nonnull AmqpConnectionFactory connectionFactory, @Nonnull String connectionName, @Nonnull String queueName) throws ClientException, IOException {
-		try (Connection connection = connectionFactory.getConnection(connectionName)) {
+	public static @Nullable Message getStreamingMessage(@Nonnull AmqpConnectionFactoryFactory connectionFactory, @Nonnull String connectionName, @Nonnull String queueName) throws ClientException, IOException {
+		try (Connection connection = connectionFactory.getConnectionFactory(connectionName).connect()) {
 			return getStreamingMessage(connection, queueName);
 		}
 	}
@@ -83,8 +83,8 @@ public class Amqp1Helper {
 		}
 	}
 
-	public static @Nullable Message getMessage(@Nonnull AmqpConnectionFactory connectionFactory, @Nonnull String connectionName, @Nonnull String queueName) throws ClientException, IOException {
-		try (Connection connection = connectionFactory.getConnection(connectionName)) {
+	public static @Nullable Message getMessage(@Nonnull AmqpConnectionFactoryFactory connectionFactory, @Nonnull String connectionName, @Nonnull String queueName) throws ClientException, IOException {
+		try (Connection connection = connectionFactory.getConnectionFactory(connectionName).connect()) {
 			return getMessage(connection, queueName);
 		}
 	}

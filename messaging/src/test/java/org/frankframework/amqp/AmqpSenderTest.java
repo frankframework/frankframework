@@ -39,7 +39,7 @@ import org.frankframework.util.CloseUtils;
 @Log4j2
 public abstract class AmqpSenderTest {
 	private static final String EXCHANGE_NAME = "test:testExchange";
-	private AmqpConnectionFactory factory;
+	private AmqpConnectionFactoryFactory factory;
 	private AmqpSender sender;
 	private PipeLineSession session;
 
@@ -54,7 +54,7 @@ public abstract class AmqpSenderTest {
 		session = new PipeLineSession();
 	}
 
-	protected AmqpConnectionFactory createAmqpConnectionFactory() throws Exception {
+	protected AmqpConnectionFactoryFactory createAmqpConnectionFactory() throws Exception {
 
 		System.setProperty("amqp.host", getHost());
 		System.setProperty("amqp.port", getAmqpPort().toString());
@@ -63,7 +63,7 @@ public abstract class AmqpSenderTest {
 		locator.setResourceFile("amqpResources.yml");
 		locator.afterPropertiesSet();
 
-		AmqpConnectionFactory factory = new AmqpConnectionFactory();
+		AmqpConnectionFactoryFactory factory = new AmqpConnectionFactoryFactory();
 		factory.setObjectLocators(List.of(locator));
 		factory.afterPropertiesSet();
 
@@ -189,7 +189,7 @@ public abstract class AmqpSenderTest {
 		return future.completeAsync(() -> {
 			ReceiverOptions receiverOptions = new ReceiverOptions();
 			receiverOptions.sourceOptions().capabilities("queue");
-			try (Connection connection = factory.getConnection(getResourceName());
+			try (Connection connection = factory.getConnectionFactory(getResourceName()).connect();
 				 Receiver receiver = connection.openReceiver(rrQueue, receiverOptions)) {
 				Delivery request = receiver.receive(60, TimeUnit.SECONDS);
 				if (request != null) {
@@ -209,6 +209,7 @@ public abstract class AmqpSenderTest {
 					future.completeExceptionally(new TimeoutException("Did not receive request-message within 60 seconds."));
 				}
 			} catch (RuntimeException | ClientException | IOException e) {
+				log.warn("Exception receiving message or sending reply", e);
 				future.completeExceptionally(e);
 			}
 			return null;

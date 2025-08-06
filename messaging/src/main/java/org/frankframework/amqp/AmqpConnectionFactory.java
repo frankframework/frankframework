@@ -17,49 +17,49 @@ package org.frankframework.amqp;
 
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.qpid.protonj2.client.Client;
 import org.apache.qpid.protonj2.client.Connection;
 import org.apache.qpid.protonj2.client.ConnectionOptions;
+import org.apache.qpid.protonj2.client.SaslOptions;
 import org.apache.qpid.protonj2.client.exceptions.ClientException;
+import org.springframework.beans.factory.DisposableBean;
 
 import org.frankframework.jdbc.datasource.FrankResource;
-import org.frankframework.jdbc.datasource.ObjectFactory;
-import org.frankframework.util.CleanerProvider;
+import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.StringUtil;
 
+public class AmqpConnectionFactory implements DisposableBean {
 
-public class AmqpConnectionFactory extends ObjectFactory<Connection, Object> {
+	private final String resourceName;
+	private final FrankResource resource;
+	private final Client client;
 
-	Client client = Client.create();
-
-	public AmqpConnectionFactory() {
-		super(null, "amqp", "AMQP 1.0");
-		// Since we cannot override DisposableBean#destroy from parent class, close the client this way
-		CleanerProvider.register(this, client::close);
+	public AmqpConnectionFactory(String resourceName, FrankResource resource, Client client){
+		this.resourceName = resourceName;
+		this.resource = resource;
+		this.client = client;
 	}
 
-	@Override
-	protected Connection augment(Object object, String objectName) {
-		if (object instanceof Connection connection) {
-			return connection;
-		}
-		if (object instanceof FrankResource resource) {
-			return map(resource, objectName);
-		}
-		throw new IllegalArgumentException("resource ["+objectName+"] not of required type");
-	}
-
-	private Connection map(FrankResource resource, String name) {
-
+	public Connection connect(){
+		// TODO: All client options and host/port can be pre-created and cached.
 		ConnectionOptions connectionOptions = new ConnectionOptions();
 		CredentialFactory cf = resource.getCredentials();
 		if (StringUtils.isNotEmpty(cf.getUsername()) && StringUtils.isNotEmpty(cf.getPassword())) {
 			connectionOptions.user(cf.getUsername());
 			connectionOptions.password(cf.getPassword());
 		}
-		// TODO: Many more options, including SASL / SSL
+		Properties properties = resource.getProperties();
+		ClassUtils.invokeSetters(connectionOptions, properties);
+		ClassUtils.invokeSetters(connectionOptions.sslOptions(), properties);
+		if (properties.containsKey("saslAllowedMechanisms")) {
+			SaslOptions saslOptions = connectionOptions.saslOptions();
+			StringUtil.split(properties.getProperty("saslAllowedMechanisms"))
+					.forEach(saslOptions::addAllowedMechanism);
+		}
 
 		// TODO: Get hostname / port directly instead of from fake URL?
 		String url = resource.getUrl();
@@ -67,18 +67,24 @@ public class AmqpConnectionFactory extends ObjectFactory<Connection, Object> {
 		try {
 			u = new URI(url);
 		} catch (URISyntaxException e) {
-			throw new IllegalArgumentException("Cannot parse URL for AMQP resource [" + name + "]", e);
+			throw new IllegalArgumentException("Cannot parse URL for AMQP resource [" + resourceName + "]", e);
 		}
 		String host = u.getHost();
 		int port = u.getPort();
 		try {
 			return client.connect(host, port, connectionOptions);
 		} catch (ClientException e) {
-			throw new IllegalArgumentException("Cannot connect to AMQP server [" + name + "]", e);
+			throw new IllegalArgumentException("Cannot connect to AMQP server [" + resourceName + "]", e);
 		}
 	}
 
-	public Connection getConnection(String name) {
-		return get(name, null);
+	@Override
+	public String toString() {
+		return "AmqpConnectionFactory [resourceName=" + resourceName + ", resource=" + resource + ", client=" + client;
+	}
+
+	@Override
+	public void destroy() throws Exception {
+		// TODO
 	}
 }

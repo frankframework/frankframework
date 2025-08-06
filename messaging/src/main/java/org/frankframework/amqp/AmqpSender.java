@@ -70,6 +70,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 
 	private String connectionName;
 	private String queueName;
+	/** Reply queue name is used internally when dynamic reply queues are not supported by the broker but until there is filtering of messages, cannot be configured */
 	private String replyQueueName;
 	private long timeout = DEFAULT_TIMEOUT_SECONDS;
 	private MessageType messageType = MessageType.AUTO;
@@ -78,10 +79,11 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	private DeliveryMode deliveryMode = DeliveryMode.AT_LEAST_ONCE;
 	private MessageProtocol messageProtocol = MessageProtocol.FF;
 
-	private @Setter AmqpConnectionFactory connectionFactory;
+	private @Setter AmqpConnectionFactoryFactory connectionFactory;
 	private Connection connection;
 	private Sender sender;
 	private StreamSender streamSender;
+	private boolean serverIsRabbitMQ;
 
 	public enum MessageType {
 		/**
@@ -119,14 +121,8 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		if (streamingMessages && messageType != MessageType.BINARY) {
 			ConfigurationWarnings.add(this, log, "[messageType] is ignored, because [streamingMessages] is set to [true]");
 		}
-	}
 
-	@Override
-	public void start() {
-		super.start();
-		try {
-			connection = connectionFactory.getConnection(connectionName);
-
+		try (Connection connection = connectionFactory.getConnectionFactory(connectionName).connect()) {
 			List<String> offeredCapabilities;
 			if (connection.offeredCapabilities() != null) {
 				offeredCapabilities = List.of(connection.offeredCapabilities());
@@ -137,8 +133,8 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 			log.info("AMQP Server Properties: {}", connection.properties());
 
 			// NB: There are a number of things that might go wrong only when using RabbitMQ but we don't know if we're talking to
-			// RabbitMQ or another server until we open the connection. So we give the configuration warnings here rather than from configure().
-			boolean serverIsRabbitMQ = "RabbitMQ".equals(connection.properties().get("product"));
+			// RabbitMQ or another server until we open the connection. So we create a test-connection here.
+			serverIsRabbitMQ = "RabbitMQ".equals(connection.properties().get("product"));
 
 			if (serverIsRabbitMQ) {
 				// The "/" should be legal in RabbitMQ queue names, but there are errors when I use it. Perhaps because queues are not pre-created? Dunno.
@@ -146,25 +142,40 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 				if (Strings.CS.contains(queueName, "/") || Strings.CS.contains(replyQueueName, "/")) {
 					ConfigurationWarnings.add(this, log, "RabbitMQ might not allow slashes in queue names (queue: [" + queueName + "]; reply queue: [" + replyQueueName + "])");
 				}
-			}
 
-			SenderOptions senderOptions = new SenderOptions();
-			senderOptions.deliveryMode(deliveryMode);
-			if (messageProtocol == MessageProtocol.RR) {
-				senderOptions.targetOptions().capabilities("queue");
-
-				if (StringUtils.isEmpty(replyQueueName) && serverIsRabbitMQ) {
+				if (messageProtocol == MessageProtocol.RR && StringUtils.isEmpty(replyQueueName)) {
 					replyQueueName = Misc.getHostname() + ":" + UUIDUtil.createRandomUUID();
 					ConfigurationWarnings.add(this, log, "RabbitMQ does not support dynamic request-reply queues. Using randomly generated queue name [" + replyQueueName + "]");
 				}
 			}
-			sender = connection.openSender(queueName, senderOptions);
-
-			StreamSenderOptions streamSenderOptions = new StreamSenderOptions();
-			streamSenderOptions.deliveryMode(deliveryMode);
-			streamSender = connection.openStreamSender(queueName, streamSenderOptions);
 		} catch (ClientException e) {
-			throw new LifecycleException("Cannot create connection to AMQP server", e);
+			throw new ConfigurationException("Cannot connection to the AMQP broker", e);
+		}
+	}
+
+	@Override
+	public void start() {
+		super.start();
+		try {
+			connection = connectionFactory.getConnectionFactory(connectionName).connect();
+
+			if (streamingMessages) {
+				StreamSenderOptions streamSenderOptions = new StreamSenderOptions();
+				streamSenderOptions.deliveryMode(deliveryMode);
+				if (messageProtocol == MessageProtocol.RR) {
+					streamSenderOptions.targetOptions().capabilities("queue");
+				}
+				streamSender = connection.openStreamSender(queueName, streamSenderOptions);
+			} else {
+				SenderOptions senderOptions = new SenderOptions();
+				senderOptions.deliveryMode(deliveryMode);
+				if (messageProtocol == MessageProtocol.RR) {
+					senderOptions.targetOptions().capabilities("queue");
+				}
+				sender = connection.openSender(queueName, senderOptions);
+			}
+		} catch (ClientException e) {
+			throw new LifecycleException("Cannot create connection to AMQP broker", e);
 		}
 	}
 
@@ -335,10 +346,6 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	 */
 	public void setQueueName(String queueName) {
 		this.queueName = queueName;
-	}
-
-	public void setReplyQueueName(String replyQueueName) {
-		this.replyQueueName = replyQueueName;
 	}
 
 	/**

@@ -23,5 +23,5 @@
 
 	<bean id="connectionFactoryFactory" class="org.frankframework.jndi.JmsConnectionFactoryFactory" />
 	<bean id="mqttClientFactory" class="org.frankframework.extensions.mqtt.MqttClientFactory" />
-	<bean id="amqpConnectionFactory" class="org.frankframework.amqp.AmqpConnectionFactory" />
+	<bean id="amqpConnectionFactory" class="org.frankframework.amqp.AmqpConnectionFactoryFactory" />
 </beans>
