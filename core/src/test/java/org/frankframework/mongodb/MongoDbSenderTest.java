@@ -86,7 +86,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 	@Override
 	public MongoDbSender createSender() throws Exception {
 		MongoDbSender mongoDbSender = new MongoDbSender();
-		mongoDbSender.setMongoClientFactory(createFactory());
+		mongoDbSender.setMongoClientFactoryFactory(createFactory());
 		mongoDbSender.setDatabase(database);
 		mongoDbSender.setCollection(collection);
 		return mongoDbSender;

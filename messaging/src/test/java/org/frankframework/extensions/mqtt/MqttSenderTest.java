@@ -47,7 +47,7 @@ public class MqttSenderTest extends SenderTestBase<MqttSender> {
 		factory.setObjectLocators(List.of(locator));
 		factory.afterPropertiesSet();
 
-		sender.setMqttClientFactory(factory);
+		sender.setMqttClientFactoryFactory(factory);
 		sender.setResourceName(RESOURCE_NAME);
 
 		return sender;

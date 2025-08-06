@@ -109,10 +109,11 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 	private @Getter DocumentFormat outputFormat=DocumentFormat.JSON;
 	private @Getter boolean prettyPrint=false;
 
-	private @Setter @Getter MongoClientFactoryFactory mongoClientFactory = null; // Spring should wire this!
+	private @Setter @Getter MongoClientFactoryFactory mongoClientFactoryFactory = null; // Spring should wire this!
 
 	private MongoClient mongoClient;
 	private final ConcurrentHashMap<String, MongoDatabase> mongoDatabases = new ConcurrentHashMap<>();
+	private MongoClientFactory clientFactory;
 
 	public enum MongoAction {
 		INSERTONE,
@@ -136,7 +137,7 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 		if (StringUtils.isEmpty(getDatasourceName())) {
 			setDatasourceName(AppConstants.getInstance(getConfigurationClassLoader()).getString(MongoClientFactoryFactory.DEFAULT_DATASOURCE_NAME_PROPERTY, MongoClientFactoryFactory.GLOBAL_DEFAULT_DATASOURCE_NAME_DEFAULT));
 		}
-		if (mongoClientFactory==null) {
+		if (mongoClientFactoryFactory ==null) {
 			throw new ConfigurationException("no mongoClientFactory available");
 		}
 		checkStringAttributeOrParameter("database", getDatabase(), PARAM_DATABASE);
@@ -151,9 +152,16 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 
 	@Override
 	public void start() {
-		mongoClient = mongoClientFactory.getMongoClientFactory(getDatasourceName()).createMongoClient();
+		mongoClient = getClientFactory().createMongoClient();
 
 		super.start();
+	}
+
+	private MongoClientFactory getClientFactory() {
+		if (clientFactory == null) {
+			clientFactory = mongoClientFactoryFactory.getMongoClientFactory(getDatasourceName());
+		}
+		return clientFactory;
 	}
 
 	@Override

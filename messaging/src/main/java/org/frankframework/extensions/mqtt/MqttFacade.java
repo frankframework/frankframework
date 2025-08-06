@@ -57,7 +57,7 @@ public abstract class MqttFacade implements HasPhysicalDestination, IConfigurabl
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
-	protected @Setter @Getter MqttClientFactoryFactory mqttClientFactory = null; // Spring should wire this!
+	protected @Setter @Getter MqttClientFactoryFactory mqttClientFactoryFactory = null; // Spring should wire this!
 
 	private @Getter String name;
 	protected @Getter String resourceName;
@@ -66,6 +66,7 @@ public abstract class MqttFacade implements HasPhysicalDestination, IConfigurabl
 	private @Getter String charset = "UTF-8";
 
 	protected MqttClient client;
+	private MqttClientFactory clientFactory;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -124,4 +125,10 @@ public abstract class MqttFacade implements HasPhysicalDestination, IConfigurabl
 		this.resourceName = resourceName;
 	}
 
+	protected MqttClientFactory getClientFactory() {
+		if (clientFactory == null) {
+			clientFactory = mqttClientFactoryFactory.getClientFactory(resourceName);
+		}
+		return clientFactory;
+	}
 }

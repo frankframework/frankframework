@@ -98,7 +98,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 	@Override
 	public void start() {
 		try {
-			client = mqttClientFactory.getClientFactory(resourceName).createMqttClient();
+			client = getClientFactory().createMqttClient();
 			client.setCallback(this);
 			client.subscribe(getTopic(), getQos());
 		} catch (Exception e) {
@@ -132,6 +132,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 		try {
 			client.reconnect();
 		} catch (MqttException e) {
+			log.warn("Failed to reconnect to MQTT server", e);
 			throwable.addSuppressed(e);
 
 			Adapter adapter = getReceiver().getAdapter();

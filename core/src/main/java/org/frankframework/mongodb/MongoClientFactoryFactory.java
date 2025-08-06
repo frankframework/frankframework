@@ -36,9 +36,6 @@ public class MongoClientFactoryFactory extends ObjectFactory<MongoClientFactory,
 
 	@Override
 	protected MongoClientFactory augment(Object object, String objectName) {
-		if (object instanceof MongoClientFactory factory) {
-			return factory;
-		}
 		if (object instanceof FrankResource resource) {
 			return new MongoClientFactory(objectName, resource);
 		}

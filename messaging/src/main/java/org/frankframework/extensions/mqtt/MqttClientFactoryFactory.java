@@ -26,9 +26,6 @@ public class MqttClientFactoryFactory extends ObjectFactory<MqttClientFactory, O
 
 	@Override
 	protected MqttClientFactory augment(Object object, String objectName) {
-		if (object instanceof MqttClientFactory clientFactory) {
-			return clientFactory;
-		}
 		if (object instanceof FrankResource resource) {
 			return new MqttClientFactory(objectName, resource);
 		}
@@ -37,10 +34,5 @@ public class MqttClientFactoryFactory extends ObjectFactory<MqttClientFactory, O
 
 	public MqttClientFactory getClientFactory(String name) {
 		return get(name, null);
-	}
-
-	@Override
-	protected void destroyObject(MqttClientFactory object) throws Exception {
-		object.destroy();
 	}
 }

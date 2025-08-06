@@ -24,7 +24,6 @@ import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 import org.eclipse.paho.client.mqttv3.persist.MqttDefaultFilePersistence;
-import org.springframework.beans.factory.DisposableBean;
 
 import org.frankframework.jdbc.datasource.FrankResource;
 import org.frankframework.util.ClassUtils;
@@ -32,7 +31,7 @@ import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.Misc;
 import org.frankframework.util.UUIDUtil;
 
-public class MqttClientFactory implements DisposableBean {
+public class MqttClientFactory {
 
 	private final String resourceName;
 	private final FrankResource resource;
@@ -100,11 +99,6 @@ public class MqttClientFactory implements DisposableBean {
 		}
 
 		return new MqttDefaultFilePersistence(persistenceDirectory);
-	}
-
-	@Override
-	public void destroy() throws Exception {
-		// TODO
 	}
 
 	@Override
