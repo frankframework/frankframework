@@ -1,13 +1,15 @@
 package org.frankframework.util.flow;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 
-import org.frankframework.testutil.TestAssertions;
-import org.frankframework.testutil.TestFileUtils;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+
+import org.frankframework.testutil.TestAssertions;
+import org.frankframework.testutil.TestFileUtils;
 
 class MermaidFlowGeneratorTest {
 

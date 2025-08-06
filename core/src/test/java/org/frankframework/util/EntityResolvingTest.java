@@ -19,10 +19,10 @@ import org.xml.sax.helpers.DefaultHandler;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.validation.AbstractValidationContext;
 import org.frankframework.validation.AbstractXmlValidator;
 import org.frankframework.validation.DummySchemasProviderImpl;
 import org.frankframework.validation.JavaxXmlValidator;
-import org.frankframework.validation.AbstractValidationContext;
 import org.frankframework.validation.XercesXmlValidator;
 import org.frankframework.validation.XmlValidatorErrorHandler;
 

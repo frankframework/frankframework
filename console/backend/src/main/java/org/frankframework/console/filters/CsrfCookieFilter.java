@@ -15,15 +15,16 @@
 */
 package org.frankframework.console.filters;
 
+import java.io.IOException;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import java.io.IOException;
 
 public class CsrfCookieFilter extends OncePerRequestFilter {
 

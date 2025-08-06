@@ -20,10 +20,10 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
+
 import org.frankframework.lifecycle.SpringContextScope;
 import org.frankframework.util.Environment;
-
-import jakarta.annotation.Nonnull;
 
 /**
  * Interface for Frank!Framework modules.

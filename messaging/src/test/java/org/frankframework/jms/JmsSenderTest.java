@@ -10,14 +10,9 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.stream.Stream;
 
-import org.frankframework.core.PipeLineSession;
-import org.frankframework.statistics.MetricsInitializer;
-import org.frankframework.stream.Message;
-import org.frankframework.testutil.MessageTestUtils;
-import org.frankframework.testutil.TestConfiguration;
-import org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory;
-import org.frankframework.util.AppConstants;
-import org.frankframework.util.EnumUtils;
+import jakarta.jms.BytesMessage;
+import jakarta.jms.TextMessage;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -27,8 +22,14 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import com.mockrunner.mock.jms.MockQueue;
 
-import jakarta.jms.BytesMessage;
-import jakarta.jms.TextMessage;
+import org.frankframework.core.PipeLineSession;
+import org.frankframework.statistics.MetricsInitializer;
+import org.frankframework.stream.Message;
+import org.frankframework.testutil.MessageTestUtils;
+import org.frankframework.testutil.TestConfiguration;
+import org.frankframework.testutil.mock.MockRunnerConnectionFactoryFactory;
+import org.frankframework.util.AppConstants;
+import org.frankframework.util.EnumUtils;
 
 class JmsSenderTest {
 	private TestConfiguration configuration;

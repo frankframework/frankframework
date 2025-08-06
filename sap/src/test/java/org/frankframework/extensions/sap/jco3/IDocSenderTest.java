@@ -1,11 +1,11 @@
 package org.frankframework.extensions.sap.jco3;
 
-import org.frankframework.util.SapSystemListItem;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import org.frankframework.util.SapSystemListItem;
 
 public class IDocSenderTest {
 

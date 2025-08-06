@@ -1,11 +1,11 @@
 package org.frankframework.extensions.sap;
 
-import org.frankframework.util.SapSystemListItem;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import org.frankframework.util.SapSystemListItem;
 
 public class SapSystemListItemTest {
 

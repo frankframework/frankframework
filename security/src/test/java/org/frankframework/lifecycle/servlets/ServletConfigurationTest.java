@@ -8,7 +8,6 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import org.frankframework.lifecycle.servlets.ServletConfigurationTest.SpringRootInitializer;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -16,6 +15,8 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
+
+import org.frankframework.lifecycle.servlets.ServletConfigurationTest.SpringRootInitializer;
 
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})

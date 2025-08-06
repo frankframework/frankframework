@@ -4,9 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.logging.log4j.Level;
-import org.frankframework.console.controllers.FrankApiTestBase;
-import org.frankframework.console.controllers.WebTestConfiguration;
-import org.frankframework.console.util.TestAppender;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +17,10 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.HandlerExecutionChain;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
+
+import org.frankframework.console.controllers.FrankApiTestBase;
+import org.frankframework.console.controllers.WebTestConfiguration;
+import org.frankframework.console.util.TestAppender;
 
 @ContextConfiguration(classes = {WebTestConfiguration.class, DeprecationInterceptorTest.ClassWithSlash.class})
 public class DeprecationInterceptorTest extends FrankApiTestBase {

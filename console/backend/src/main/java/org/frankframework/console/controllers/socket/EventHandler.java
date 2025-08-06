@@ -21,12 +21,13 @@ import java.util.concurrent.TimeUnit;
 
 import jakarta.annotation.Nullable;
 
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Component;
+
 import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.OutboundGateway.ClusterMember;
-import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
 
 @Component
 public class EventHandler extends FrankApiWebSocketBase {
