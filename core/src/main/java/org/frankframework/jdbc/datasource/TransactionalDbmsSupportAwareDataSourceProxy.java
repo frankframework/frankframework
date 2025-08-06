@@ -122,7 +122,7 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 			info.append("product version [").append(metadata.get("product-version")).append(CLOSE);
 			info.append("driver [").append(metadata.get("driver")).append(CLOSE);
 			info.append("driver version [").append(metadata.get("driver-version")).append(CLOSE);
-			info.append("XA-enabled [").append(metadata.get("XA")).append(CLOSE);
+			info.append("XA-capable [").append(metadata.get("XA")).append(CLOSE);
 		}
 		info.append("targetDataSource [").append(obtainTargetDataSource().getClass().getName()).append("]");
 

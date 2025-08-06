@@ -102,7 +102,7 @@ public class TransactionalMetadataAwareConnectionFactoryProxy extends Transactio
 			info.append("version [").append(metadata.get("version")).append(CLOSE);
 			info.append("provider-name [").append(metadata.get("provider-name")).append(CLOSE);
 			info.append("provider-version [").append(metadata.get("provider-version")).append(CLOSE);
-			info.append("XA-enabled [").append(metadata.get("XA")).append(CLOSE);
+			info.append("XA-capable [").append(metadata.get("XA")).append(CLOSE);
 		}
 
 		info.append(reflectionToString());
