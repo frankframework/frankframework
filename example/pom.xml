@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -9,8 +10,8 @@
 	</parent>
 
 	<artifactId>frankframework-example</artifactId>
-	<name>Frank!Framework example</name>
 	<packaging>war</packaging>
+	<name>Frank!Framework example</name>
 
 	<properties>
 		<m2eclipse.wtp.contextRoot>iaf-example</m2eclipse.wtp.contextRoot>
@@ -22,6 +23,11 @@
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 			<version>${h2.driver.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<scope>provided</scope>
 		</dependency>
 		<!-- Includes missing jakarta.jms.JMSExceptions class -->
 		<dependency>
@@ -36,11 +42,6 @@
 			<artifactId>junit-jupiter</artifactId>
 			<scope>test</scope>
 		</dependency>
-		<dependency>
-			<groupId>jakarta.servlet</groupId>
-			<artifactId>jakarta.servlet-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
 	</dependencies>
 
 	<build>
@@ -52,10 +53,10 @@
 				<executions>
 					<execution>
 						<id>zip-context</id>
-						<phase>package</phase>
 						<goals>
 							<goal>jar</goal>
 						</goals>
+						<phase>package</phase>
 						<configuration>
 							<classifier>context</classifier>
 							<classesDirectory>src/main/webapp/META-INF</classesDirectory>
@@ -64,10 +65,10 @@
 					</execution>
 					<execution>
 						<id>zip-configurations</id>
-						<phase>package</phase>
 						<goals>
 							<goal>jar</goal>
 						</goals>
+						<phase>package</phase>
 						<configuration>
 							<classifier>configurations</classifier>
 							<classesDirectory>src/main</classesDirectory>
@@ -76,10 +77,10 @@
 					</execution>
 					<execution>
 						<id>zip-resources</id>
-						<phase>package</phase>
 						<goals>
 							<goal>jar</goal>
 						</goals>
+						<phase>package</phase>
 						<configuration>
 							<classifier>resources</classifier>
 							<classesDirectory>src/main/resources</classesDirectory>
@@ -87,10 +88,10 @@
 					</execution>
 					<execution>
 						<id>zip-scenarios</id>
-						<phase>package</phase>
 						<goals>
 							<goal>jar</goal>
 						</goals>
+						<phase>package</phase>
 						<configuration>
 							<classifier>scenarios</classifier>
 							<classesDirectory>src/test/testtool</classesDirectory>

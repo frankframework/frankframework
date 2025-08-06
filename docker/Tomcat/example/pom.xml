@@ -1,17 +1,15 @@
-<?xml version="1.0"?>
-<project
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>frankframework-docker-tomcat-example</artifactId>
-	<name>Frank!Framework - Docker > Tomcat > Example</name>
-	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>org.frankframework</groupId>
 		<artifactId>frankframework-docker-tomcat</artifactId>
 		<version>${revision}</version>
 	</parent>
+	<artifactId>frankframework-docker-tomcat-example</artifactId>
+	<packaging>pom</packaging>
+	<name>Frank!Framework - Docker &gt; Tomcat &gt; Example</name>
 
 	<properties>
 		<config.image.repository>nexus.frankframework.org</config.image.repository>
@@ -43,10 +41,10 @@
 				<executions>
 					<execution>
 						<id>copy-dependencies</id>
-						<phase>package</phase>
 						<goals>
 							<goal>copy-dependencies</goal>
 						</goals>
+						<phase>package</phase>
 						<configuration>
 							<outputDirectory>${project.build.directory}/resources</outputDirectory>
 							<overWriteReleases>false</overWriteReleases>
@@ -58,10 +56,10 @@
 					</execution>
 					<execution>
 						<id>unpack</id>
-						<phase>package</phase>
 						<goals>
 							<goal>unpack</goal>
 						</goals>
+						<phase>package</phase>
 						<configuration>
 							<artifactItems>
 								<artifactItem>

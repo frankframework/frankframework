@@ -1,6 +1,5 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -26,12 +25,6 @@
 			<artifactId>aspectjweaver</artifactId>
 			<version>1.9.24</version>
 		</dependency>
-		<dependency>
-			<groupId>org.aspectj</groupId>
-			<artifactId>aspectjlib</artifactId>
-			<version>1.6.2</version>
-			<scope>runtime</scope>
-		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -56,11 +49,18 @@
 			<artifactId>jakarta.servlet-api</artifactId>
 			<scope>provided</scope>
 		</dependency>
-		<dependency><!-- prevent compile error on TibetView: cannot access javax.enterprise.context.Dependent -->
+		<dependency>
+			<!-- prevent compile error on TibetView: cannot access javax.enterprise.context.Dependent -->
 			<groupId>jakarta.enterprise</groupId>
 			<artifactId>jakarta.enterprise.cdi-api</artifactId>
 			<version>4.1.0</version>
 			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.aspectj</groupId>
+			<artifactId>aspectjlib</artifactId>
+			<version>1.6.2</version>
+			<scope>runtime</scope>
 		</dependency>
 
 		<!-- Test scoped dependencies -->
@@ -84,12 +84,12 @@
 			</activation>
 			<repositories>
 				<repository>
-					<id>central</id>
-					<name>Central Repository</name>
-					<url>https://repo.maven.apache.org/maven2/</url>
 					<snapshots>
 						<enabled>false</enabled>
 					</snapshots>
+					<id>central</id>
+					<name>Central Repository</name>
+					<url>https://repo.maven.apache.org/maven2/</url>
 				</repository>
 				<repository>
 					<id>frankframework</id>
