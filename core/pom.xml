@@ -269,6 +269,11 @@
 			<artifactId>wss4j-ws-security-dom</artifactId>
 			<version>3.0.4</version>
 			<exclusions>
+				<!-- we don't use the caching functionality, prevents a duplicate jar (different groupId) -->
+				<exclusion>
+					<groupId>org.ehcache</groupId>
+					<artifactId>ehcache</artifactId>
+				</exclusion>
 				<exclusion>
 					<groupId>org.opensaml</groupId>
 					<artifactId>opensaml-saml-impl</artifactId>
@@ -280,11 +285,6 @@
 				<exclusion>
 					<groupId>org.opensaml</groupId>
 					<artifactId>opensaml-xacml-saml-impl</artifactId>
-				</exclusion>
-				<!-- we don't use the caching functionality, prevents a duplicate jar (different groupId) -->
-				<exclusion>
-					<groupId>org.ehcache</groupId>
-					<artifactId>ehcache</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -593,11 +593,11 @@
 				</exclusion>
 				<exclusion>
 					<groupId>com.sun.xml.bind</groupId>
-					<artifactId>jaxb-impl</artifactId>
+					<artifactId>jaxb-core</artifactId>
 				</exclusion>
 				<exclusion>
 					<groupId>com.sun.xml.bind</groupId>
-					<artifactId>jaxb-core</artifactId>
+					<artifactId>jaxb-impl</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -613,16 +613,16 @@
 					<artifactId>logback-classic</artifactId>
 				</exclusion>
 				<exclusion>
-					<groupId>org.bouncycastle</groupId>
-					<artifactId>bcprov-jdk15on</artifactId>
+					<groupId>com.google.code.findbugs</groupId>
+					<artifactId>jsr305</artifactId>
 				</exclusion>
 				<exclusion>
 					<groupId>org.bouncycastle</groupId>
 					<artifactId>bcpg-jdk15on</artifactId>
 				</exclusion>
 				<exclusion>
-					<groupId>com.google.code.findbugs</groupId>
-					<artifactId>jsr305</artifactId>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bcprov-jdk15on</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>

@@ -81,8 +81,8 @@
 		<sonar.organization>frank-framework</sonar.organization>
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 
-		<junit.excludedTags></junit.excludedTags>
-		<junit.includedTags></junit.includedTags>
+		<junit.excludedTags />
+		<junit.includedTags />
 
 		<jackson.version>2.19.2</jackson.version>
 		<cxf.version>4.1.2</cxf.version>
@@ -96,7 +96,7 @@
 		<narayana.version>7.2.2.Final</narayana.version>
 		<jboss-logging.version>3.6.1.Final</jboss-logging.version>
 		<micrometer.version>1.15.2</micrometer.version>
-		<argLine></argLine>
+		<argLine />
 		<!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>4.1-SNAPSHOT</frankdoc.version>
@@ -556,11 +556,11 @@
 				<exclusions>
 					<exclusion>
 						<groupId>org.springframework.boot</groupId>
-						<artifactId>spring-boot-starter-logging</artifactId>
+						<artifactId>spring-boot-autoconfigure</artifactId>
 					</exclusion>
 					<exclusion>
 						<groupId>org.springframework.boot</groupId>
-						<artifactId>spring-boot-autoconfigure</artifactId>
+						<artifactId>spring-boot-starter-logging</artifactId>
 					</exclusion>
 					<exclusion>
 						<groupId>org.yaml</groupId>
@@ -616,12 +616,12 @@
 				<version>4.29.2</version>
 				<exclusions>
 					<exclusion>
-						<groupId>javax.xml.bind</groupId>
-						<artifactId>jaxb-api</artifactId>
-					</exclusion>
-					<exclusion>
 						<groupId>javax.activation</groupId>
 						<artifactId>javax.activation-api</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>javax.xml.bind</groupId>
+						<artifactId>jaxb-api</artifactId>
 					</exclusion>
 				</exclusions>
 			</dependency>
@@ -676,12 +676,12 @@
 				<scope>test</scope>
 				<exclusions>
 					<exclusion>
-						<groupId>xerces</groupId>
-						<artifactId>xercesImpl</artifactId>
-					</exclusion>
-					<exclusion>
 						<groupId>ant</groupId>
 						<artifactId>ant</artifactId>
+					</exclusion>
+					<exclusion>
+						<groupId>xerces</groupId>
+						<artifactId>xercesImpl</artifactId>
 					</exclusion>
 				</exclusions>
 			</dependency>
@@ -854,24 +854,24 @@
 					<artifactId>spotless-maven-plugin</artifactId>
 					<version>2.46.1</version>
 					<configuration>
-						<!--            <java>-->
-						<!--              <endWithNewline />-->
-						<!--              <importOrder />-->
-						<!--              <indent>-->
-						<!--                <spaces>false</spaces>-->
-						<!--              </indent>-->
-						<!--              <palantirJavaFormat>-->
-						<!--                <version>2.72.0</version>-->
-						<!--              </palantirJavaFormat>-->
-						<!--              <removeUnusedImports />-->
-						<!--              <toggleOffOn />-->
-						<!--              <trimTrailingWhitespace />-->
-						<!--            </java>-->
+						<!--<java>-->
+						<!--  <endWithNewline />-->
+						<!--  <importOrder />-->
+						<!--  <indent>-->
+						<!--    <spaces>false</spaces>-->
+						<!--  </indent>-->
+						<!--  <palantirJavaFormat>-->
+						<!--    <version>2.72.0</version>-->
+						<!--  </palantirJavaFormat>-->
+						<!--  <removeUnusedImports />-->
+						<!--  <toggleOffOn />-->
+						<!--  <trimTrailingWhitespace />-->
+						<!--</java>-->
 						<pom>
 							<sortPom>
-								<expandEmptyElements>true</expandEmptyElements>
-								<!--								<sortDependencies>groupId,artifactId,scope</sortDependencies>-->
-								<!--								<sortDependencyExclusions>groupId,artifactId</sortDependencyExclusions>-->
+								<expandEmptyElements>false</expandEmptyElements>
+								<!--<sortDependencies>groupId,artifactId,scope</sortDependencies>-->
+								<sortDependencyExclusions>groupId,artifactId</sortDependencyExclusions>
 								<spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
 								<nrOfIndentSpace>-1</nrOfIndentSpace>
 							</sortPom>
@@ -1107,7 +1107,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -1120,7 +1120,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -1133,7 +1133,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
 								</pluginExecution>
 								<pluginExecution>
@@ -1146,7 +1146,7 @@
 										</goals>
 									</pluginExecutionFilter>
 									<action>
-										<ignore></ignore>
+										<ignore />
 									</action>
 								</pluginExecution>
 							</pluginExecutions>
