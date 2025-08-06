@@ -1,0 +1,26 @@
+<Report>
+	<Checkpoint Name="Pipeline MainConfig/EchoPipe" Type="Startpoint">één euro: € 1,- 😊</Checkpoint>
+	<Checkpoint Name="Pipeline MainConfig/EchoPipe" Type="Endpoint">één euro: € 1,- 😊</Checkpoint>
+	<Transformation>
+		<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform" version="2.0">
+			<xsl:output method="xml" indent="yes" omit-xml-declaration="yes"/>
+			<xsl:strip-space elements="*"/>
+			<xsl:template match="/Report">
+				<xsl:copy>
+					<xsl:apply-templates select="Checkpoint[starts-with(@Name, 'Pipeline ')]"/>
+				</xsl:copy>
+			</xsl:template>
+			<xsl:template match="Checkpoint">
+				<xsl:copy>
+					<xsl:apply-templates select="@Name"/>
+					<xsl:apply-templates select="@Type"/>
+					<xsl:apply-templates select="@TextDecl"/>
+					<xsl:apply-templates select="node()"/>
+				</xsl:copy>
+			</xsl:template>
+			<xsl:template match="node()|@*">
+				<xsl:copy><xsl:apply-templates select="node()|@*"/></xsl:copy>
+			</xsl:template>
+		</xsl:stylesheet>
+	</Transformation>
+</Report>

@@ -76,7 +76,7 @@ public class ClassLoaderManagerTest extends Mockito {
 	public void configureClassloader(String type, String configurationName) {
 		if(type == null || "DummyClassLoader".equals(type))
 			skip = true;
-		else if(type.isEmpty()) //If empty string, it's a WebAppClassLoader
+		else if(type.isEmpty()) // If empty string, it's a WebAppClassLoader
 			type = "WebAppClassLoader";
 
 		this.type = type;
@@ -161,7 +161,7 @@ public class ClassLoaderManagerTest extends Mockito {
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
 		ClassLoader config = getClassLoader();
 
-		//in case the FQDN has been used, strip it
+		// In case the FQDN has been used, strip it
 		String name = type;
 		if(type.indexOf(".") > 0)
 			name = type.substring(type.lastIndexOf(".")+1);
@@ -183,7 +183,7 @@ public class ClassLoaderManagerTest extends Mockito {
 	@MethodSource("data")
 	public void retrieveTestFileInClassLoaderRoot(String classLoader, String configurationName) throws Exception {
 		configureClassloader(classLoader, configurationName);
-		if(skip) return; //This ClassLoader can't actually retrieve files...
+		if(skip) return; // This ClassLoader can't actually retrieve files...
 
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
 		ClassLoader config = getClassLoader();
@@ -196,7 +196,7 @@ public class ClassLoaderManagerTest extends Mockito {
 	@MethodSource("data")
 	public void retrieveTestFileInSubFolder(String classLoader, String configurationName) throws Exception {
 		configureClassloader(classLoader, configurationName);
-		if(skip) return; //This ClassLoader can't actually retrieve files...
+		if(skip) return; // This ClassLoader can't actually retrieve files...
 
 		assertNull(appConstants.get("configurations."+configurationName+".parentConfig"));
 		ClassLoader config = getClassLoader();
@@ -220,7 +220,7 @@ public class ClassLoaderManagerTest extends Mockito {
 	@MethodSource("data")
 	public void testInheritanceMakeSureFileIsFoundInBothParentAndChild(String classLoader, String configurationName) throws Exception {
 		configureClassloader(classLoader, configurationName);
-		if(skip) return; //This ClassLoader can't actually retrieve files...
+		if(skip) return; // This ClassLoader can't actually retrieve files...
 
 		String testConfiguration = "myNewClassLoader";
 		setLocalProperty("configurations."+testConfiguration+".classLoaderType", "DirectoryClassLoader");
@@ -253,7 +253,7 @@ public class ClassLoaderManagerTest extends Mockito {
 
 		manager.reload(configurationName);
 
-		//Make sure the manager returns the same classloader after reloading it
+		// Make sure the manager returns the same classloader after reloading it
 		ClassLoader config2 = manager.get(configurationName);
 		assertEquals(config1.toString(), config2.toString());
 	}
@@ -267,7 +267,7 @@ public class ClassLoaderManagerTest extends Mockito {
 
 		manager.reload(config1);
 
-		//Make sure the manager returns the same classloader after reloading it
+		// Make sure the manager returns the same classloader after reloading it
 		ClassLoader config2 = manager.get(configurationName);
 		assertEquals(config1.toString(), config2.toString());
 	}

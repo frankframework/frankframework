@@ -1,25 +1,16 @@
 package org.frankframework.configuration.util;
 
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.File;
 import java.net.URL;
 import java.sql.Connection;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.FilenameUtils;
-import org.hamcrest.collection.IsIterableContainingInOrder;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -30,42 +21,14 @@ import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
 import org.springframework.transaction.TransactionStatus;
 
-import org.frankframework.configuration.classloaders.DatabaseClassLoader;
-import org.frankframework.configuration.classloaders.DirectoryClassLoader;
-import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
-import org.frankframework.configuration.classloaders.ScanningDirectoryClassLoader;
-import org.frankframework.configuration.classloaders.WebAppClassLoader;
 import org.frankframework.dbms.GenericDbmsSupport;
 import org.frankframework.jdbc.FixedQuerySender;
-import org.frankframework.testutil.TestAppender;
-import org.frankframework.testutil.TestConfiguration;
-import org.frankframework.testutil.TestFileUtils;
-import org.frankframework.testutil.mock.FixedQuerySenderMock.ResultSetBuilder;
 import org.frankframework.testutil.mock.PreparedStatementMock;
-import org.frankframework.util.AppConstants;
 
 public class ConfigurationUtilsTest extends Mockito {
 
 	private final ApplicationContext applicationContext = mock(ApplicationContext.class);
 	private PreparedStatementMock stmt;
-
-	@BeforeAll
-	public static void setUp() throws Exception {
-		AppConstants.removeInstance();
-		AppConstants.getInstance().setProperty("configurations.configuration2.parentConfig", "configuration4");
-		AppConstants.getInstance().setProperty("configurations.configuration3.parentConfig", "configuration4");
-		AppConstants.getInstance().setProperty("configurations.Config.parentConfig", "ClassLoader");
-
-		URL url = TestFileUtils.getTestFileURL("/ClassLoader/DirectoryClassLoaderRoot");
-		assertNotNull(url);
-		File directory = new File(url.toURI());
-		AppConstants.getInstance().setProperty("configurations.directory", directory.getCanonicalPath());
-	}
-
-	@AfterAll
-	public static void tearDown() {
-		AppConstants.removeInstance();
-	}
 
 	@SuppressWarnings("deprecation")
 	private void mockDatabase() throws Exception {
@@ -211,99 +174,5 @@ public class ConfigurationUtilsTest extends Mockito {
 
 		// This field is pretty obsolete, check if it's been set
 		assertNotNull(parameters.get("FILENAME"), "FILENAME not set");
-	}
-
-	@Test
-	public void retrieveConfigNamesFromDatabaseTest() throws Exception {
-		TestConfiguration applicationContext = new TestConfiguration();
-		ResultSetBuilder builder = ResultSetBuilder.create()
-				.setValue("config1")
-				.addRow().setValue("config2")
-				.addRow().setValue("config3")
-				.addRow().setValue("config4")
-				.addRow().setValue("config5");
-		applicationContext.mockQuery("SELECT COUNT(*) FROM IBISCONFIG", builder.build());
-		List<String> configs = ConfigurationUtils.retrieveConfigNamesFromDatabase(applicationContext);
-
-		assertThat(configs, IsIterableContainingInOrder.contains("config1", "config2", "config3", "config4", "config5")); // checks order!
-	}
-
-	@Test
-	public void retrieveAllConfigNamesTestWithDB() throws Exception {
-		TestConfiguration applicationContext = new TestConfiguration();
-		ResultSetBuilder builder = ResultSetBuilder.create()
-				.setValue("configuration1")
-				.addRow().setValue("configuration2")
-				.addRow().setValue("configuration3")
-				.addRow().setValue("configuration4")
-				.addRow().setValue("configuration5");
-		applicationContext.mockQuery("SELECT COUNT(*) FROM IBISCONFIG", builder.build());
-		Map<String, Class<? extends IConfigurationClassLoader>> configs = ConfigurationUtils.retrieveAllConfigNames(applicationContext, false, true);
-
-		assertThat("keyset was: " + configs.keySet(), configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "configuration1", "configuration4", "configuration2", "configuration3", "configuration5")); // checks order!
-
-		assertNull(configs.get("IAF_Util"));
-		assertNull(configs.get("TestConfiguration"));
-
-		assertEquals(DatabaseClassLoader.class, configs.get("configuration1"));
-		assertEquals(DatabaseClassLoader.class, configs.get("configuration2"));
-	}
-
-	@Test
-	public void retrieveAllConfigNamesTestWithFS() throws Exception {
-		TestConfiguration applicationContext = new TestConfiguration();
-		ResultSetBuilder builder = ResultSetBuilder.create()
-				.setValue("configuration1")
-				.addRow().setValue("configuration2")
-				.addRow().setValue("configuration3")
-				.addRow().setValue("configuration4")
-				.addRow().setValue("configuration5");
-		applicationContext.mockQuery("SELECT COUNT(*) FROM IBISCONFIG", builder.build());
-		Map<String, Class<? extends IConfigurationClassLoader>> configs = ConfigurationUtils.retrieveAllConfigNames(applicationContext, true, true);
-
-		assertThat("keyset was: " + configs.keySet(), configs.keySet(), IsIterableContainingInOrder.contains("IAF_Util", "TestConfiguration", "ClassLoader", "Config", "configuration1", "configuration4", "configuration2", "configuration3", "configuration5")); // checks order!
-
-		assertNull(configs.get("IAF_Util"));
-		assertNull(configs.get("TestConfiguration"));
-
-		assertEquals(DirectoryClassLoader.class, configs.get("ClassLoader"));
-		assertEquals(DirectoryClassLoader.class, configs.get("Config"));
-		assertEquals(DatabaseClassLoader.class, configs.get("configuration1"));
-		assertEquals(DatabaseClassLoader.class, configs.get("configuration2"));
-	}
-
-	@Test
-	public void testConfigurationDirectoryAutoLoadInvalidClassName() {
-		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build()) {
-			Class<?> clazz = ConfigurationUtils.getDefaultDirectoryClassLoaderType("not-a-ClassLoader");
-			assertEquals(DirectoryClassLoader.class, clazz);
-
-			// Normally adapter is present in the ThreadContext, but this is not set by the pipe processors
-			assertTrue(appender.contains("FATAL - invalid classloader type provided for [configurations.directory.classLoaderType] value [not-a-ClassLoader]"));
-		}
-	}
-
-	@Test
-	public void testConfigurationDirectoryAutoLoadIncompatibleClassType() {
-		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build()) {
-			Class<?> clazz = ConfigurationUtils.getDefaultDirectoryClassLoaderType(WebAppClassLoader.class.getSimpleName());
-			assertEquals(DirectoryClassLoader.class, clazz);
-
-			// Normally adapter is present in the ThreadContext, but this is not set by the pipe processors
-			assertTrue(appender.contains("FATAL - incompatible classloader type provided for [configurations.directory.classLoaderType] value [WebAppClassLoader]"));
-		}
-	}
-
-	@Test
-	public void testConfigurationDirectoryAutoLoadDefaultClassName() {
-		Class<?> clazz = ConfigurationUtils.getDefaultDirectoryClassLoaderType("DirectoryClassLoader");
-		assertEquals(DirectoryClassLoader.class, clazz);
-	}
-
-	@ParameterizedTest
-	@ValueSource(strings = {"ScanningDirectoryClassLoader", "org.frankframework.configuration.classloaders.ScanningDirectoryClassLoader"}) // Tests both simple and canonical names
-	public void testConfigurationDirectoryAutoLoadScanningDirectoryClassName(String name) {
-		Class<?> clazz = ConfigurationUtils.getDefaultDirectoryClassLoaderType(name);
-		assertEquals(ScanningDirectoryClassLoader.class, clazz);
 	}
 }

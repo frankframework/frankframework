@@ -1,0 +1,25 @@
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd">
+
+	<changeSet id="create-ibisconfig-table" author="Niels Meijer">
+		<comment>Add IBISCONFIG Table</comment>
+		<createTable tableName="IBISCONFIG">
+			<column name="NAME" type="java.sql.Types.VARCHAR(100)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="VERSION" type="java.sql.Types.VARCHAR(120)">
+				<constraints nullable="false"/>
+			</column>
+			<column name="FILENAME" type="java.sql.Types.VARCHAR(150)"/>
+			<column name="CONFIG" type="LONGBLOB"/> <!-- LONGBLOB required for MySQL and MariaDB, compatible with BLOB for other dbmses -->
+			<column name="CRE_TYDST" type="DATETIME"/>
+			<column name="RUSER" type="java.sql.Types.VARCHAR(32)"/>
+			<column name="ACTIVECONFIG" type="BOOLEAN"/>
+			<column name="AUTORELOAD" type="BOOLEAN"/>
+		</createTable>
+		<addPrimaryKey tableName="IBISCONFIG" columnNames="NAME, VERSION" constraintName="PK_IBISCONFIG"/>
+	</changeSet>
+</databaseChangeLog>

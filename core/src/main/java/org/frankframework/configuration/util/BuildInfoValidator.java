@@ -45,7 +45,7 @@ public class BuildInfoValidator {
 	protected static String ADDITIONAL_PROPERTIES_FILE_SUFFIX = AppConstants.getInstance().getString(AppConstants.ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY, null);
 	private static final Logger LOG = LogUtil.getLogger(BuildInfoValidator.class);
 
-	protected BuildInfoValidator(InputStream stream) throws ConfigurationException {
+	public BuildInfoValidator(InputStream stream) throws ConfigurationException {
 		String buildInfo = "BuildInfo";
 		if(StringUtils.isNotEmpty(ADDITIONAL_PROPERTIES_FILE_SUFFIX)) {
 			buildInfo += ADDITIONAL_PROPERTIES_FILE_SUFFIX;
@@ -53,7 +53,7 @@ public class BuildInfoValidator {
 		this.buildInfoFilename = buildInfo + ".properties";
 
 		try {
-			jar = StreamUtil.streamToBytes(stream); //Persist Stream so it can be read multiple times.
+			jar = StreamUtil.streamToBytes(stream); // Persist Stream so it can be read multiple times.
 
 			read();
 			validate();
