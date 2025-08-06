@@ -24,6 +24,11 @@
 			<artifactId>h2</artifactId>
 			<version>${h2.driver.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
 		<!-- Includes missing jakarta.jms.JMSExceptions class -->
 		<dependency>
 			<groupId>jakarta.jms</groupId>
@@ -36,11 +41,6 @@
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>jakarta.servlet</groupId>
-			<artifactId>jakarta.servlet-api</artifactId>
-			<scope>provided</scope>
 		</dependency>
 	</dependencies>
 

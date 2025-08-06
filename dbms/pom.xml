@@ -37,6 +37,12 @@
 			<artifactId>maven-artifact</artifactId>
 			<version>3.9.11</version>
 		</dependency>
+		<dependency>
+			<!-- to prevent this module from seeing the api as test scoped as well, add it explicitly -->
+			<groupId>org.apache.logging.log4j</groupId>
+			<artifactId>log4j-api</artifactId>
+			<scope>compile</scope>
+		</dependency>
 
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
@@ -52,12 +58,6 @@
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-core</artifactId>
 			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<!-- to prevent this module from seeing the api as test scoped as well, add it explicitly -->
-			<groupId>org.apache.logging.log4j</groupId>
-			<artifactId>log4j-api</artifactId>
-			<scope>compile</scope>
 		</dependency>
 	</dependencies>
 

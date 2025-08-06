@@ -18,11 +18,6 @@
 			<artifactId>frankframework-commons</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>credentialprovider</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>
@@ -31,6 +26,11 @@
 			<groupId>io.fabric8</groupId>
 			<artifactId>kubernetes-client</artifactId>
 			<version>6.14.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>credentialprovider</artifactId>
+			<scope>provided</scope>
 		</dependency>
 
 		<!-- Test scoped dependencies -->

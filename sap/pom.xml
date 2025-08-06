@@ -17,6 +17,17 @@
 			<artifactId>frankframework-core</artifactId>
 		</dependency>
 
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
+
+		<!-- Test scoped dependencies -->
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter</artifactId>
+		</dependency>
+
 		<!-- provided scoped dependencies -->
 		<dependency>
 			<groupId>com.sap.jco3</groupId>
@@ -29,17 +40,6 @@
 			<artifactId>sapjco</artifactId>
 			<version>3.1.6</version>
 			<scope>provided</scope>
-		</dependency>
-
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-		</dependency>
-
-		<!-- Test scoped dependencies -->
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.mockito</groupId>

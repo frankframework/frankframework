@@ -38,14 +38,6 @@
 			<groupId>org.frankframework</groupId>
 			<artifactId>frankframework-console-backend</artifactId>
 		</dependency>
-
-		<!-- jboss-logging is required for Narayana -->
-		<dependency>
-			<groupId>org.jboss.logging</groupId>
-			<artifactId>jboss-logging</artifactId>
-			<version>${jboss-logging.version}</version>
-			<scope>runtime</scope>
-		</dependency>
 		<dependency>
 			<groupId>jakarta.servlet</groupId>
 			<artifactId>jakarta.servlet-api</artifactId>
@@ -55,6 +47,14 @@
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-web</artifactId>
+		</dependency>
+
+		<!-- jboss-logging is required for Narayana -->
+		<dependency>
+			<groupId>org.jboss.logging</groupId>
+			<artifactId>jboss-logging</artifactId>
+			<version>${jboss-logging.version}</version>
+			<scope>runtime</scope>
 		</dependency>
 	</dependencies>
 

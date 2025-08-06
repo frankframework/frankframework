@@ -25,6 +25,10 @@
 			<artifactId>lombok</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>jakarta.jms</groupId>
+			<artifactId>jakarta.jms-api</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>com.tibco</groupId>
 			<artifactId>tibjms</artifactId>
 			<version>10.2.1</version>
@@ -35,10 +39,6 @@
 			<artifactId>tibjmsadmin</artifactId>
 			<version>10.2.1</version>
 			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>jakarta.jms</groupId>
-			<artifactId>jakarta.jms-api</artifactId>
 		</dependency>
 
 		<!-- Test scoped and provided dependencies -->

@@ -870,7 +870,7 @@
 						<pom>
 							<sortPom>
 								<expandEmptyElements>false</expandEmptyElements>
-								<!--<sortDependencies>groupId,artifactId,scope</sortDependencies>-->
+								<sortDependencies>scope</sortDependencies>
 								<sortDependencyExclusions>groupId,artifactId</sortDependencyExclusions>
 								<spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
 								<nrOfIndentSpace>-1</nrOfIndentSpace>
@@ -1233,7 +1233,7 @@
 											<exclude>com.sun.xml.bind:jaxb-core</exclude>
 											<exclude>com.sun.xml.bind:jaxb-impl</exclude>
 										</excludes>
-										<message>Dont use com.sun but glassfish instead</message>
+										<message>Don't use com.sun but glassfish instead</message>
 									</bannedDependencies>
 								</rules>
 							</configuration>

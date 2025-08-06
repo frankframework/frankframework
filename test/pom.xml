@@ -37,64 +37,9 @@
 			<artifactId>frankframework-webapp</artifactId>
 			<type>war</type>
 		</dependency>
-
-		<dependency>
-			<groupId>com.rabbitmq</groupId>
-			<artifactId>amqp-client</artifactId>
-			<version>${rabbitmq.driver.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.rabbitmq.jms</groupId>
-			<artifactId>rabbitmq-jms</artifactId>
-			<version>${rabbitmq.jms.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-
-		<!-- these runtime dependencies are required for the Spring Boot runner, so they are on the local classpath -->
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-filesystem</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-larva</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-ladybug-debugger</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-console-frontend</artifactId>
-			<scope>runtime</scope>
-		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
 			<artifactId>frankframework-console-backend</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-akamai</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-cmis</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-aws</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-batch</artifactId>
-			<scope>runtime</scope>
 		</dependency>
 
 		<!-- provided scoped dependencies -->
@@ -125,7 +70,63 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-loader</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-ladybug-debugger</artifactId>
+			<scope>provided</scope>
+		</dependency>
 
+		<dependency>
+			<groupId>com.rabbitmq</groupId>
+			<artifactId>amqp-client</artifactId>
+			<version>${rabbitmq.driver.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.rabbitmq.jms</groupId>
+			<artifactId>rabbitmq-jms</artifactId>
+			<version>${rabbitmq.jms.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+
+		<!-- these runtime dependencies are required for the Spring Boot runner, so they are on the local classpath -->
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-filesystem</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-larva</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-console-frontend</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-akamai</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-cmis</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-aws</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-batch</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+
+		<!-- Test Scoped Dependencies -->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>

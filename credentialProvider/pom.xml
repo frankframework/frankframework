@@ -30,12 +30,6 @@
 			<artifactId>jackson-annotations</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.tomcat</groupId>
-			<artifactId>tomcat-catalina</artifactId>
-			<version>${tomcat.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
 			<groupId>de.rtner</groupId>
 			<artifactId>PBKDF2</artifactId>
 			<version>1.1.4</version>
@@ -49,6 +43,12 @@
 					<artifactId>picketbox</artifactId>
 				</exclusion>
 			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat</groupId>
+			<artifactId>tomcat-catalina</artifactId>
+			<version>${tomcat.version}</version>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.jboss.as</groupId>
