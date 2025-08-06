@@ -26,7 +26,11 @@
           <h4>{{ adapterName }} Statistics</h4>
         </div>
         <div class="ibox-content">
-          <app-adapterstatistics-charts [hourlyStatistics]="hourlyStatistics"></app-adapterstatistics-charts>
+          <app-adapterstatistics-charts
+            [hourlyStatistics]="hourlyStatistics"
+            [sloStatistics]="sloStatistics"
+            [countPerReceiverStatistics]="countPerReceiverStatistics"
+          ></app-adapterstatistics-charts>
           <div class="col-md-4 m-t-md table-responsive">
             <h4>Total message processing duration (in ms)</h4>
             <table class="table">
@@ -55,7 +59,7 @@
               </tbody>
             </table>
           </div>
-          <div class="col-md-4 m-t-md table-responsive">
+          <div class="col-md-8 m-t-md table-responsive">
             <h4>Counts for receivers</h4>
             <table class="table">
               <thead>

@@ -97,9 +97,9 @@
                 </tr>
               </thead>
               <tbody>
-                @for (row of result; track row) {
+                @for (row of result; track $index) {
                   <tr>
-                    @for (column of row; track column) {
+                    @for (column of row; track $index) {
                       <td>
                         {{ column }}
                       </td>

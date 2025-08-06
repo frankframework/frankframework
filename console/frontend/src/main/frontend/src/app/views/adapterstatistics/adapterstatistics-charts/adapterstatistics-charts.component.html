@@ -14,22 +14,22 @@
   </div>
 </div>
 <div class="row">
-  <div class="col-md-4 table-responsive">
-    <h4>SLO</h4>
+  <div class="col-md-6 table-responsive">
+    <h4>Total message SLO</h4>
     <div style="height: 300px">
-      <canvas class="chart chart-line" baseChart type="line"></canvas>
+      <canvas
+        class="chart chart-line"
+        baseChart
+        type="line"
+        [options]="sloStatisticsOptions"
+        [data]="sloStatistics()"
+      ></canvas>
     </div>
   </div>
-  <div class="col-md-4 table-responsive">
-    <h4>Avg per receiver</h4>
+  <div class="col-md-6 table-responsive">
+    <h4>Counts per receiver</h4>
     <div style="height: 300px">
-      <canvas class="chart chart-line" baseChart type="line" [data]="test()"></canvas>
-    </div>
-  </div>
-  <div class="col-md-4 table-responsive">
-    <h4>Count per reciever</h4>
-    <div style="height: 300px">
-      <canvas class="chart chart-doughnut" baseChart type="doughnut" [data]="test()"></canvas>
+      <canvas class="chart chart-doughnut" baseChart type="doughnut" [data]="countPerReceiverStatistics()"></canvas>
     </div>
   </div>
 </div>
