@@ -50,7 +50,7 @@ import org.frankframework.util.TransformerPool.OutputType;
 
 /**
  * Sends a message using an asynchronous {@link ISender sender} and receives a reply from a {@link ICorrelatedPullingListener listener}.
- * 
+ *
  * {@inheritClassDoc}
  */
 @Category(Category.Type.BASIC)

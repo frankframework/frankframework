@@ -106,7 +106,7 @@ public class RequestMessageBuilder {
 	/**
 	 * Log relevant information to the Security-log.
 	 * GET requests, and requests without payload, are logged on debug level.
-	 * 
+	 *
 	 * When a GET request contains a payload we're doing something wrong...
 	 * Ideally only the `upload` TOPIC should use a payload.
 	 */

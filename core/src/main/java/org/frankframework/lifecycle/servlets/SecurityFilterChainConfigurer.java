@@ -24,9 +24,9 @@ import org.springframework.security.web.context.AbstractSecurityWebApplicationIn
 /**
  * Add the SpringSecurity filter to enable authentication.
  * Has a high precedence so it's loaded before the EnvironmentInitializer starts.
- * 
+ *
  * Spring Security provides a base class which provides all initialization.
- * 
+ *
  * @author Niels Meijer
  */
 @Order(Ordered.HIGHEST_PRECEDENCE)

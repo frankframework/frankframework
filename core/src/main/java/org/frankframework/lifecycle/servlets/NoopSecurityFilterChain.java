@@ -31,10 +31,10 @@ import org.springframework.web.filter.DelegatingFilterProxy;
  * This in combination with the {@link WebSecurityConfigurer WebSecurityConfigurer<WebSecurity>} allows the user to configure this default SecurityFilterChain.
  * We are misusing the configurer to dynamically add new SecurityFilterChains, which we create between the INIT and CONFIGURE phase.
  * This class exist solely to make Spring not create it's own default SecurityFilterChain, but rather our 'default'.
- * 
+ *
  * This FilterChain exists of exactly 0 filters, making it a NOOP.
  * Spring is clever enough to not configure this chain in a {@link DelegatingFilterProxy} since it does not have any filters.
- * 
+ *
  * @author Niels Meijer
  */
 public class NoopSecurityFilterChain implements SecurityFilterChain {

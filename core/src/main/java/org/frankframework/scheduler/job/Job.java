@@ -29,7 +29,7 @@ import org.frankframework.scheduler.JobDefFunctions;
  * The attribute {@literal function} has been removed in favor of explicit JobDefinitions such as: {@literal SendMessageJob},
  * {@literal ExecuteQueryJob} and {@literal ActionJob}.
  * Using the new elements enables the use of auto-completion for the specified type.
- * 
+ *
  * @ff.info The job function {@literal IbisActionJob} has been renamed to {@literal ActionJob}.
  * @ff.danger This element in combination with the attribute {@literal function} has been removed.
  *

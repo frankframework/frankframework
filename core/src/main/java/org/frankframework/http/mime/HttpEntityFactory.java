@@ -216,8 +216,8 @@ public class HttpEntityFactory {
 	/**
 	 * There is no definition for parameters with multiple values so both {@code ?id=1,2} and {@code ?id=1&id=2} are valid.
 	 * For simplicity we use the latter.
-	 * 
-	 * @see <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.4">RFC 3986 section 3.4 Query</a> 
+	 *
+	 * @see <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.4">RFC 3986 section 3.4 Query</a>
 	 */
 	@Nonnull
 	private HttpEntity createUrlEncodedFormEntity(Message message, ParameterValueList parameters) throws IOException {

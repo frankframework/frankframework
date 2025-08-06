@@ -35,7 +35,7 @@ import org.frankframework.util.SpringUtils;
 
 /**
  * The DatabaseTestEnvironment will automatically be cleaned up after each test where it may throw exceptions if any connections have not been closed properly.
- * 
+ *
  * @author Niels Meijer
  */
 @Log4j2

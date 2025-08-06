@@ -42,10 +42,10 @@ import org.frankframework.util.StreamUtil;
 
 /**
  *
- * This pipe can be used to generate a hash for the given message using an algorithm. With this, you can prove the integrity of the message. 
+ * This pipe can be used to generate a hash for the given message using an algorithm. With this, you can prove the integrity of the message.
  * If you need to prove the authenticity of the message as well, use one of the Mac-based algorithms (starting with 'Hmac'). These algorithms
  * require a secret to prove both integrity and authenticity. The HMac combined with the algorithm is used
- * to create a 'hash' of a message. Only sources that have this secret are able to generate the same hash for the given message. 
+ * to create a 'hash' of a message. Only sources that have this secret are able to generate the same hash for the given message.
  * <p>
  * The hash is generated based on the bytes of the given input message.
  * <p>

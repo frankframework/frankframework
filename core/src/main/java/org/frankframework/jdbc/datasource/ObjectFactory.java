@@ -39,7 +39,7 @@ import org.frankframework.util.StringUtil;
 
 /**
  * Baseclass for Object lookups.
- * 
+ *
  * Already created Objects are stored in a ConcurrentHashMap.
  * Objects will be searched in all available {@link IObjectLocator IObjectLocators}. If it cannot find the object in the first locator, it will attempt to do so in the next available one.
  * Every Objects can be augmented before it is added.
@@ -78,7 +78,7 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	/**
 	 * Returns the object matching the name and return type.
 	 * If not cached yet, attempts to traverse all {@link IObjectLocator IObjectLocators} to do so.
-	 * 
+	 *
 	 * When using a JNDI environment it allows initial properties to use for JNDI lookups.
 	 */
 	protected final O get(String name, Properties environment) {

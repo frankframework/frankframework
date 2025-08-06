@@ -242,9 +242,9 @@ public class Message implements Serializable, Closeable {
 	 * If no Charset was provided when the Message object was created and
 	 * the requested Charset is <code>auto</auto>, try to parse the Charset using
 	 * {@link MessageUtils#computeDecodingCharset(Message)}.
-	 * 
+	 *
 	 * If unsuccessful return the default Charset: {@link StreamUtil#DEFAULT_INPUT_STREAM_ENCODING UTF_8}.
-	 * 
+	 *
 	 * @param defaultDecodingCharset The 'I know better' Charset, only used when no Charset is provided when the Message was created.
 	 */
 	@Nonnull

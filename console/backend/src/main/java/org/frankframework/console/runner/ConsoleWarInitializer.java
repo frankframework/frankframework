@@ -61,7 +61,7 @@ public class ConsoleWarInitializer extends SpringBootServletInitializer {
 
 		/**
 		 * Apparently this is required, though I'm unsure why.
-		 * 
+		 *
 		 * Prevents `Failed to register 'filter springSecurityFilterChain' on the servlet context. Possibly already registered?`.
 		 * Does not need to be disabled `bean.setEnabled(false)`. Just having the bean here is enough.
 		 */

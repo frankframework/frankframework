@@ -127,7 +127,7 @@ import org.frankframework.util.MessageUtils;
  * See also the repository of the IbisServiceDispatcher:
  *  <a href="https://github.com/frankframework/servicedispatcher">https://github.com/frankframework/servicedispatcher</a>
  * </p>
- * 
+ *
  * <h4>Using FrankSender to call an adapter from Larva tests</h4>
  * <p>
  * You can configure a FrankSender in Larva property files to use the FrankSender to invoke an adapter to test. When doing this, keep the following in mind:

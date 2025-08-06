@@ -28,10 +28,10 @@ import jakarta.annotation.Nonnull;
 /**
  * Interface for Frank!Framework modules.
  * Once plugins are introduced their use will become more tangible, as a plugin may depend on a module.
- * 
+ *
  * Modules may provide a Spring configuration file, to be loaded in the Spring Application Context.
  * See {@link SpringContextScope#APPLICATION} for more info and it's use.
- * 
+ *
  * <p>
  * Implementors of the interface should have a no-args constructor and not need any injected dependencies.
  * Classes are loaded via the JDK {@link java.util.ServiceLoader} mechanism.

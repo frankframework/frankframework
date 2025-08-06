@@ -48,7 +48,7 @@ import org.frankframework.util.StringResolver;
 
 /**
  * Add the Frank property resolver to the log configuration context. Properties starting with {@code ff:} will be substituted via this LookupProvider.
- * 
+ *
  * NOTE:
  * The use of Lombok is not allowed, this may break annotation processing! This is required now that package scanning is no longer allowed.
  * Should not depend on any (util) classes that use a logger!
@@ -70,11 +70,11 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 
 	/**
 	 * Cache the properties once, let the GC clean this up whenever possible, we can just load the properties again if needed.
-	 * 
+	 *
 	 * Each Log4j2 configuration loads all plugins, which would otherwise cause this plugin to load the properties over and over again.
 	 * This allows them to be cached, if the configuration is reloaded at a later time, and the `reference` might be gone we can load
 	 * the properties again.
-	 * 
+	 *
 	 * @return a cached instance of the Frank!Framework properties
 	 */
 	private static synchronized Properties getProperties() {

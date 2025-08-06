@@ -397,7 +397,7 @@ public class ConfigurationDigesterTest {
 		log.debug("testDigestConfigThatHasExceptions trace", e);
 
 		/*
-		 * org.frankframework.configuration.ConfigurationException: error loading configuration from file 
+		 * org.frankframework.configuration.ConfigurationException: error loading configuration from file
 		 * [URLResource url [file:/C:/Data/Git/IAF2/core/target/test-classes/UnableToDigestConfiguration.xml]
 		 * systemId [classpath:UnableToDigestConfiguration.xml]
 		 * scope [ConfigurationContext [TestConfiguration], started on Sun Jun 29 11:00:59 CEST 2025]]

@@ -79,9 +79,9 @@ public class JmsMessagingSource extends MessagingSource {
 	 * We could make it so you can fetch these dynamically through an {@link IObjectLocator}.
 	 * In our tests we always 'assume' the client can create destinations, or already know the destination.
 	 * In practice this 'used' to be nice because it allowed system administrators to dictate which queues should be used.
-	 * 
+	 *
 	 * See issue 8851.
-	 * 
+	 *
 	 * @deprecated Now that most deployments are containerized as well as the fact that the same result can be achieved
 	 * with a simple environment variable, the need for this has become obsolete.
 	 */

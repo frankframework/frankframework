@@ -35,6 +35,6 @@ public class MultipleComparators<T> implements Comparator<T> {
 			return comparatorTwo.compare(one, another);
 		}
 		return comparisonByOne;
-		
+
 	}
 }

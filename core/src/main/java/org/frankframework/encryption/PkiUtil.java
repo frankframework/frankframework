@@ -289,7 +289,7 @@ public class PkiUtil {
 
 	/**
 	 * Returns a list of certificate aliases which are due to expire.
-	 * 
+	 *
 	 * @param keystore A {@link KeyStore}.
 	 * @param duration Date after which Certificates should be classified as 'due to expire'.
 	 * @return A list with aliases of {@link Certificate Certificates}.

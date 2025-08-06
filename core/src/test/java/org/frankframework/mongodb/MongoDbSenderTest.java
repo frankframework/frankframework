@@ -154,7 +154,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 	@Test
 	void testFindOneXml() throws Exception {
 		insertStudentRecord();
-		
+
 		sender.setAction(MongoAction.FINDONE);
 		sender.setCollection("Students");
 		sender.setOutputFormat(DocumentFormat.XML);

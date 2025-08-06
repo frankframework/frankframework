@@ -62,7 +62,7 @@ import org.frankframework.util.StreamUtil;
  * <p>
  * Failure to ensure the output is a string may mean the result will look like {@code [Object object]}.
  * </p>
- * 
+ *
  * @ff.info J2V8 is not compatible with ARM based environments.
  * @ff.warning The default Javascript runtime has been changed from J2V8 to GraalJS.
  *

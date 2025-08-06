@@ -25,7 +25,7 @@ import lombok.Getter;
  * Custom implementation that replaces the old digester-rules.xml file.
  * Where previously you had to specify a 'create', 'set-properties' and a 'set-next-rule'
  * In this implementation you only have to call 'createRule(rulesBinder, PATTERN, NEXT-RULE')
- * 
+ *
  * Since the removal of the Apache Digester this class now only compiles a list of available 'rules'.
  *
  * @author Niels Meijer

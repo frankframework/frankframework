@@ -879,7 +879,7 @@ public class Json2Xml extends XmlAligner {
 	/**
 	 *
 	 * @param baseElementDeclaration XSD Type Declaration of the base element
-	 * @param baseNode Node from which to search for path   
+	 * @param baseNode Node from which to search for path
 	 * @param particle XSD Particle for which to search for path
 	 * @param failureReasons returns the reasons why no match was found
 	 * @param path in this list the longest list of child elements, that matches the available, is maintained. Null if no matching.
