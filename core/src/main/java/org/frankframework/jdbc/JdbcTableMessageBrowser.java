@@ -231,4 +231,3 @@ public class JdbcTableMessageBrowser<M> extends AbstractJdbcMessageBrowser<M> {
 		).filter(field -> field.fieldName() != null).toList();
 	}
 }
-

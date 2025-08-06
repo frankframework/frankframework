@@ -69,4 +69,3 @@ public class KafkaIntegrationTest {
 		assertEquals(messageContent, new String(messageWrapper.getRawMessage().value()));
 	}
 }
-

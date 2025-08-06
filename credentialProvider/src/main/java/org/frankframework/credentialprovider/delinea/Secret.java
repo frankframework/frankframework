@@ -109,4 +109,3 @@ public record Secret(
 		String slug) {
 	}
 }
-

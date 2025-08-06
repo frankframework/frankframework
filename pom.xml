@@ -857,6 +857,8 @@
 					<configuration>
 						<java>
 							<removeUnusedImports />
+							<endWithNewline />
+							<trimTrailingWhitespace />
 						</java>
 						<pom>
 							<sortPom>
