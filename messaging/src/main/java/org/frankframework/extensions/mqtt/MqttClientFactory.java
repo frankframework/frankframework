@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2025 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -105,5 +105,10 @@ public class MqttClientFactory implements DisposableBean {
 	@Override
 	public void destroy() throws Exception {
 		// TODO
+	}
+
+	@Override
+	public String toString() {
+		return "MqttClientFactory [resourceName=" + resourceName + ", resource=" + resource + "]";
 	}
 }

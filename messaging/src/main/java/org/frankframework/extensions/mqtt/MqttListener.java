@@ -22,6 +22,7 @@ import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import lombok.extern.log4j.Log4j2;
@@ -127,18 +128,25 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 
 	@Override
 	public void connectionLost(Throwable throwable) {
-		Adapter adapter = getReceiver().getAdapter();
-		adapter.publishEvent(new AdapterMessageEvent(adapter, this, "connection lost"));
+		log.warn("Connection to MQTT server lost; trying to reconnect", throwable);
+		try {
+			client.reconnect();
+		} catch (MqttException e) {
+			throwable.addSuppressed(e);
 
-		// Call receiver which will set status to error after which recover job
-		// will try to recover. Note that at configure time
-		// receiver.setOnError(Receiver.ONERROR_RECOVER) was called. Also
-		// note that mqtt lib will also try to recover (when automaticReconnect
-		// is true) (see connectComplete also) which will probably recover
-		// earlier because of it's smaller interval. When no connection was
-		// available at startup the mqtt lib reconnect isn't started. So in this
-		// case recovery will always be done by the recover job.
-		ibisExceptionListener.exceptionThrown(this, throwable);
+			Adapter adapter = getReceiver().getAdapter();
+			adapter.publishEvent(new AdapterMessageEvent(adapter, this, "connection lost; failed to reconnect"));
+
+			// Call receiver which will set status to error after which recover job
+			// will try to recover. Note that at configure time
+			// receiver.setOnError(Receiver.ONERROR_RECOVER) was called. Also
+			// note that mqtt lib will also try to recover (when automaticReconnect
+			// is true) (see connectComplete also) which will probably recover
+			// earlier because of it's smaller interval. When no connection was
+			// available at startup the mqtt lib reconnect isn't started. So in this
+			// case recovery will always be done by the recover job.
+			ibisExceptionListener.exceptionThrown(this, throwable);
+		}
 	}
 
 	@Override
