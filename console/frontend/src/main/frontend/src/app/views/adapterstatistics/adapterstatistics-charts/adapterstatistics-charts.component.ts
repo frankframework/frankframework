@@ -1,9 +1,10 @@
 import { Component, input, InputSignal, OnInit } from '@angular/core';
 import { BaseChartDirective } from 'ng2-charts';
 import type { ChartData, ChartOptions } from 'chart.js';
-import { Statistics } from '../adapterstatistics.service';
 
-export type HourlyStatistics = ChartData<'line', Statistics['hourly'][0]['count'][], Statistics['hourly'][0]['time']>;
+export type HourlyStatistics = ChartData<'line', number[], string>;
+export type SLOStatistics = ChartData<'line', number[], string>;
+export type CountPerReceiverStatistics = ChartData<'doughnut', number[], string>;
 
 @Component({
   selector: 'app-adapterstatistics-charts',
@@ -16,27 +17,21 @@ export class AdapterstatisticsChartsComponent implements OnInit {
     labels: [],
     datasets: [],
   });
-  public readonly test: InputSignal<ChartData<'doughnut'>> = input<ChartData<'doughnut'>>({
+  public readonly sloStatistics: InputSignal<ChartData<'line'>> = input<ChartData<'line'>>({
+    labels: [],
+    datasets: [],
+  });
+  public readonly countPerReceiverStatistics: InputSignal<ChartData<'doughnut'>> = input<ChartData<'doughnut'>>({
     labels: [],
     datasets: [],
   });
 
-  protected hourlyStatisticsOptions: ChartOptions<'line'> = {
+  protected defaultLineOptions: ChartOptions<'line'> = {
+    responsive: true,
+    maintainAspectRatio: false,
     elements: {
       line: {
         tension: 0.5,
-      },
-    },
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      y: {
-        title: {
-          display: true,
-          text: 'Messages Per Hour',
-        },
-        beginAtZero: true,
-        suggestedMax: 10,
       },
     },
     hover: {
@@ -51,6 +46,33 @@ export class AdapterstatisticsChartsComponent implements OnInit {
         mode: 'index',
         intersect: false,
         displayColors: false,
+      },
+    },
+  };
+
+  protected hourlyStatisticsOptions: ChartOptions<'line'> = {
+    ...this.defaultLineOptions,
+    scales: {
+      y: {
+        title: {
+          display: true,
+          text: 'Messages Per Hour',
+        },
+        beginAtZero: true,
+        suggestedMax: 10,
+      },
+    },
+  };
+
+  protected sloStatisticsOptions: ChartOptions<'line'> = {
+    ...this.defaultLineOptions,
+    scales: {
+      y: {
+        title: {
+          display: true,
+          text: '% of Messages',
+        },
+        suggestedMax: 10,
       },
     },
   };

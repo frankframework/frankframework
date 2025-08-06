@@ -1,6 +1,6 @@
 import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import type { ChartData, ChartDataset, ChartOptions } from 'chart.js';
+import type { ChartDataset } from 'chart.js';
 import { BaseChartDirective } from 'ng2-charts';
 import { Subscription } from 'rxjs';
 import { AppConstants, AppService } from 'src/app/app.service';
@@ -15,7 +15,9 @@ import { ServerTimeService } from '../../services/server-time.service';
 import { toObservable } from '@angular/core/rxjs-interop';
 import {
   AdapterstatisticsChartsComponent,
+  CountPerReceiverStatistics,
   HourlyStatistics,
+  SLOStatistics,
 } from './adapterstatistics-charts/adapterstatistics-charts.component';
 
 @Component({
@@ -31,6 +33,14 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
   protected configuration: string | null = null;
   protected refreshing = false;
   protected hourlyStatistics: HourlyStatistics = {
+    labels: [],
+    datasets: [],
+  };
+  protected sloStatistics: SLOStatistics = {
+    labels: [],
+    datasets: [],
+  };
+  protected countPerReceiverStatistics: CountPerReceiverStatistics = {
     labels: [],
     datasets: [],
   };
@@ -52,6 +62,7 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
     first: 'First',
     last: 'Last',
   };
+  protected statisticsTimeSLOLabels: Record<string, string> = { ...this.defaults };
   protected statisticsTimeBoundaries: Record<string, string> = { ...this.defaults };
   protected statisticsSizeBoundaries: Record<string, string> = { ...this.defaults };
 
@@ -63,15 +74,28 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
   private readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
   private appConstants$ = toObservable(this.appService.appConstants);
   private appConstantsSubscription: Subscription | null = null;
-  private dataset: Partial<ChartDataset<'line', number[]>> = {
-    fill: false,
-    backgroundColor: '#2f4050',
+  private datasetDefaults: Partial<ChartDataset<'line', number[]>> = {
+    backgroundColor: 'rgba(47, 64, 80, 0.2)',
     pointBackgroundColor: '#2f4050',
     borderColor: '#2f4050',
     pointBorderColor: '#2f4050',
     // hoverBackgroundColor: "#2f4050",
     hoverBorderColor: '#2f4050',
   };
+  private hourlyStatisticsDataset: Partial<ChartDataset<'line', number[]>> = {
+    ...this.datasetDefaults,
+    fill: {
+      target: 'origin',
+    },
+  };
+  private sloStatisticsDataset: Partial<ChartDataset<'line', number[]>> = {
+    ...this.datasetDefaults,
+    fill: {
+      target: { value: 100 },
+      below: 'rgba(237, 85, 101, 0.2)',
+    },
+  };
+  private countPerReceiverStatisticsDataset: Partial<ChartDataset<'doughnut', number>> = {};
 
   ngOnInit(): void {
     const routeParameters = this.route.snapshot.paramMap;
@@ -100,23 +124,9 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
     this.refreshing = true;
     this.statisticsService.getStatistics(this.configuration!, this.adapterName!).subscribe((data) => {
       this.stats = data;
-      const labels: string[] = [];
-      const chartData: number[] = [];
-      const currentServerHour = this.serverTimeService.getDateWithOffset().getHours();
-      const rotatedData = this.rotateHourlyData(data['hourly'], currentServerHour + 1);
-      for (const hour of rotatedData) {
-        labels.push(hour.time);
-        chartData.push(hour.count);
-      }
-      this.hourlyStatistics = {
-        labels,
-        datasets: [
-          {
-            data: chartData,
-            ...this.dataset,
-          },
-        ],
-      };
+      this.setHourlyStatisticsData(data);
+      this.setSLOStatisticsData(data);
+      this.setCountPerReceiverStatisticsData(data);
 
       this.chart?.update();
 
@@ -134,6 +144,58 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
     return receiver.processing.sort((a: StatisticsKeeper, b: StatisticsKeeper) => a.name.localeCompare(b.name));
   }
 
+  private setHourlyStatisticsData(data: Statistics): void {
+    const labels: string[] = [];
+    const chartData: number[] = [];
+    const currentServerHour = this.serverTimeService.getDateWithOffset().getHours();
+    const rotatedData = this.rotateHourlyData(data['hourly'], currentServerHour + 1);
+    for (const hour of rotatedData) {
+      labels.push(hour.time);
+      chartData.push(hour.count);
+    }
+    this.hourlyStatistics = {
+      labels,
+      datasets: [
+        {
+          data: chartData,
+          ...this.hourlyStatisticsDataset,
+        },
+      ],
+    };
+  }
+
+  private setSLOStatisticsData(data: Statistics): void {
+    const chartData: number[] = [];
+    for (const key of Object.keys(this.statisticsTimeSLOLabels)) {
+      chartData.push(
+        ((data.totalMessageProccessingTime[key as keyof Statistics['totalMessageProccessingTime']] as number) /
+          data.totalMessageProccessingTime.count) *
+          100,
+      );
+    }
+    this.sloStatistics = {
+      labels: Object.values(this.statisticsTimeSLOLabels),
+      datasets: [
+        {
+          label: 'Duration',
+          data: chartData,
+          ...this.sloStatisticsDataset,
+        },
+      ],
+    };
+  }
+
+  private setCountPerReceiverStatisticsData(data: Statistics): void {
+    this.countPerReceiverStatistics = {
+      labels: data.receivers.map((receiver) => receiver.name),
+      datasets: [
+        {
+          data: data.receivers.map((receiver) => receiver.messagesReceived),
+        },
+      ],
+    };
+  }
+
   private populateBoundaries(appConstants: AppConstants): void {
     if (!appConstants['Statistics.boundaries']) return;
 
@@ -147,12 +209,15 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
 
     this.Debug.info('appending Statistic.boundaries', timeBoundaries, sizeBoundaries, percBoundaries);
 
+    const statisticsTimeSLOLabels: Record<string, string> = {};
     const statisticsTimeBoundariesAdditive: Record<string, string> = {};
     const statisticsSizeBoundariesAdditive: Record<string, string> = {};
 
     for (const index in timeBoundaries) {
-      const index_ = timeBoundaries[index];
-      statisticsTimeBoundariesAdditive[`${index_}ms`] = `# < ${index_}ms`;
+      const index_ = `${timeBoundaries[index]}ms`;
+      const label = `# < ${index_}`;
+      statisticsTimeBoundariesAdditive[index_] = label;
+      statisticsTimeSLOLabels[index_] = label;
     }
     for (const index in sizeBoundaries) {
       const index_ = sizeBoundaries[index];
@@ -165,6 +230,8 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
         statisticsSizeBoundariesAdditive[index_] = index_;
       }
     }
+
+    this.statisticsTimeSLOLabels = statisticsTimeSLOLabels;
     this.statisticsTimeBoundaries = {
       ...this.defaults,
       ...statisticsTimeBoundariesAdditive,
