@@ -1,17 +1,15 @@
-<?xml version="1.0"?>
-<project
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>frankframework-docker-tomcat-webapp</artifactId>
-	<name>Frank!Framework - Docker > Tomcat > WebApp</name>
-	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>org.frankframework</groupId>
 		<artifactId>frankframework-docker-tomcat</artifactId>
 		<version>${revision}</version>
 	</parent>
+	<artifactId>frankframework-docker-tomcat-webapp</artifactId>
+	<packaging>pom</packaging>
+	<name>Frank!Framework - Docker &gt; Tomcat &gt; WebApp</name>
 
 	<properties>
 		<config.image.repository>nexus.frankframework.org</config.image.repository>
@@ -83,18 +81,6 @@
 			<version>${activemq.driver.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>com.rabbitmq</groupId>
-			<artifactId>amqp-client</artifactId>
-			<version>${rabbitmq.driver.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.rabbitmq.jms</groupId>
-			<artifactId>rabbitmq-jms</artifactId>
-			<version>${rabbitmq.jms.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-slf4j2-impl</artifactId>
 		</dependency>
@@ -116,6 +102,18 @@
 			<artifactId>frankframework-webapp</artifactId>
 			<type>war</type>
 		</dependency>
+		<dependency>
+			<groupId>com.rabbitmq</groupId>
+			<artifactId>amqp-client</artifactId>
+			<version>${rabbitmq.driver.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.rabbitmq.jms</groupId>
+			<artifactId>rabbitmq-jms</artifactId>
+			<version>${rabbitmq.jms.version}</version>
+			<scope>runtime</scope>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -127,10 +125,10 @@
 				<executions>
 					<execution>
 						<id>copy-dependencies</id>
-						<phase>package</phase>
 						<goals>
 							<goal>copy-dependencies</goal>
 						</goals>
+						<phase>package</phase>
 						<configuration>
 							<outputDirectory>${project.build.directory}/dependencies</outputDirectory>
 							<overWriteReleases>false</overWriteReleases>
@@ -141,10 +139,10 @@
 					</execution>
 					<execution>
 						<id>unpack</id>
-						<phase>package</phase>
 						<goals>
 							<goal>unpack</goal>
 						</goals>
+						<phase>package</phase>
 						<configuration>
 							<artifactItems>
 								<artifactItem>
