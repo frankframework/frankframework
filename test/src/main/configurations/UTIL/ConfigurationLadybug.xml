@@ -1,15 +1,15 @@
 <module>
-	<adapter name="Ladybug" description="Runs reports saved in Ladybug's Test tab periodically through a CRON-job"
+	<adapter name="Ladybug" description="Run reports saved in Ladybug's Test tab"
 	active="${ladybug.adapter.active}">
 		<receiver>
-			<listener name="Ladybug" className="org.frankframework.receivers.JavaListener" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-Ladybug" />
 		</receiver>
 
 		<pipeline firstPipe="RunTestReports">
 			<exits>
 				<exit name="EXIT" state="success" />
 			</exits>
-			<pipe name="RunTestReports" className="org.frankframework.ibistesttool.LadybugPipe"
+			<pipe name="RunTestReports" className="org.frankframework.ladybug.LadybugPipe"
 				writeToLog="true" enableReportGenerator="true" exclude="${ladybug.adapter.excludeRegex}">
 				<forward name="success" path="EXIT" />
 			</pipe>
