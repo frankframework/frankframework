@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit, Signal } from '@angular/core';
 import { AppService, Pipe } from 'src/app/app.service';
 import {
   AuthEntry,
@@ -33,6 +33,10 @@ export class SecurityItemsComponent implements OnInit {
     cyphers: [],
   };
   protected links: Link[] = [];
+
+  protected transactionManager: Signal<string> = computed(
+    () => (this.appService.appConstants()['application.server.type.custom'] as string) || 'NONE',
+  );
 
   private readonly appService: AppService = inject(AppService);
   private readonly securityItemsService: SecurityItemsService = inject(SecurityItemsService);

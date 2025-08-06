@@ -211,7 +211,6 @@ export type ClusterMember = {
 };
 
 export type AppConstants = Record<string, string | number | boolean | object>;
-
 export type ServerErrorResponse = {
   status: string;
   error: string;
@@ -271,6 +270,7 @@ export class AppService {
     warn: 0,
     error: 0,
   });
+
   private _appConstants: WritableSignal<AppConstants> = signal({
     //How often the interactive frontend should poll the FF API for new data
     'console.pollerInterval': 10_000,
