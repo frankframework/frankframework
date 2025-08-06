@@ -57,10 +57,10 @@ public abstract class MqttFacade implements HasPhysicalDestination, IConfigurabl
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
-	private @Setter @Getter MqttClientFactory mqttClientFactory = null; // Spring should wire this!
+	protected @Setter @Getter MqttClientFactoryFactory mqttClientFactory = null; // Spring should wire this!
 
 	private @Getter String name;
-	private @Getter String resourceName;
+	protected @Getter String resourceName;
 	private @Getter String topic;
 	private @Getter int qos = 2;
 	private @Getter String charset = "UTF-8";
@@ -72,8 +72,6 @@ public abstract class MqttFacade implements HasPhysicalDestination, IConfigurabl
 		if (resourceName == null) {
 			throw new ConfigurationException("resourceName is required");
 		}
-
-		client = mqttClientFactory.getClient(resourceName);
 	}
 
 	@Override

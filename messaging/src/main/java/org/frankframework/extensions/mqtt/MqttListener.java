@@ -39,6 +39,7 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ReceiverAware;
 import org.frankframework.stream.Message;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.RunState;
 
 /**
@@ -91,13 +92,13 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 		if (StringUtils.isEmpty(getTopic())) {
 			throw new ConfigurationException("topic must be specified");
 		}
-
-		client.setCallback(this);
 	}
 
 	@Override
 	public void start() {
 		try {
+			client = mqttClientFactory.getClientFactory(resourceName).createMqttClient();
+			client.setCallback(this);
 			client.subscribe(getTopic(), getQos());
 		} catch (Exception e) {
 			throw new LifecycleException("Could not subscribe to topic", e);
@@ -106,7 +107,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 
 	@Override
 	public void stop() {
-		// Connection is handled a shared object.
+		CloseUtils.closeSilently(client);
 	}
 
 	@Override
