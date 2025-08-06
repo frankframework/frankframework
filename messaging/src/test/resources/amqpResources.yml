@@ -2,8 +2,23 @@ amqp:
   - name: "RabbitMQ"
     url: "amqp://${amqp.host}:${amqp.port}/"
 
+  - name: "RabbitMQTest"
+    url: "amqp://${amqp.host}:${amqp.port}/"
+    properties:
+      clientId: "test"
+
   - name: "ActiveMQ"
     url: "amqp://${amqp.host}:${amqp.port}/"
 
+  - name: "ActiveMQTest"
+    url: "amqp://${amqp.host}:${amqp.port}/"
+    properties:
+      clientId: "test"
+
   - name: "Artemis"
     url: "amqp://${amqp.host}:${amqp.port}/"
+
+  - name: "ArtemisTest"
+    url: "amqp://${amqp.host}:${amqp.port}/"
+    properties:
+      clientId: "test"

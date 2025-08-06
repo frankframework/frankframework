@@ -45,6 +45,8 @@ public class AmqpConnectionFactory implements DisposableBean {
 	}
 
 	public Connection connect(){
+		// TODO: TODO TODO TODO TODO ActiveMQ does not allow multiple connections to same server from same client-id
+
 		// TODO: All client options and host/port can be pre-created and cached.
 		ConnectionOptions connectionOptions = new ConnectionOptions();
 		CredentialFactory cf = resource.getCredentials();

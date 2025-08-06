@@ -69,7 +69,8 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	public static final long DEFAULT_TIMEOUT_SECONDS = 30L;
 
 	private String connectionName;
-	private String queueName;
+	private AddressType addressType = AddressType.QUEUE;
+	private String address;
 	/** Reply queue name is used internally when dynamic reply queues are not supported by the broker but until there is filtering of messages, cannot be configured */
 	private String replyQueueName;
 	private long timeout = DEFAULT_TIMEOUT_SECONDS;
@@ -84,6 +85,10 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	private Sender sender;
 	private StreamSender streamSender;
 	private boolean serverIsRabbitMQ;
+
+	public enum AddressType {
+		TOPIC, QUEUE
+	}
 
 	public enum MessageType {
 		/**
@@ -110,7 +115,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 			throw new ConfigurationException("ConnectionFactory is null");
 		}
 
-		if (StringUtils.isEmpty(queueName)) {
+		if (StringUtils.isEmpty(address)) {
 			throw new ConfigurationException("Queue name is empty");
 		}
 
@@ -139,8 +144,8 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 			if (serverIsRabbitMQ) {
 				// The "/" should be legal in RabbitMQ queue names, but there are errors when I use it. Perhaps because queues are not pre-created? Dunno.
 				// For now, giving a warning on it.
-				if (Strings.CS.contains(queueName, "/") || Strings.CS.contains(replyQueueName, "/")) {
-					ConfigurationWarnings.add(this, log, "RabbitMQ might not allow slashes in queue names (queue: [" + queueName + "]; reply queue: [" + replyQueueName + "])");
+				if (Strings.CS.contains(address, "/") || Strings.CS.contains(replyQueueName, "/")) {
+					ConfigurationWarnings.add(this, log, "RabbitMQ might not allow slashes in queue names (queue: [" + address + "]; reply queue: [" + replyQueueName + "])");
 				}
 
 				if (messageProtocol == MessageProtocol.RR && StringUtils.isEmpty(replyQueueName)) {
@@ -162,17 +167,20 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 			if (streamingMessages) {
 				StreamSenderOptions streamSenderOptions = new StreamSenderOptions();
 				streamSenderOptions.deliveryMode(deliveryMode);
+				streamSenderOptions.targetOptions().capabilities(addressType.name().toLowerCase());
 				if (messageProtocol == MessageProtocol.RR) {
 					streamSenderOptions.targetOptions().capabilities("queue");
 				}
-				streamSender = connection.openStreamSender(queueName, streamSenderOptions);
+				streamSender = connection.openStreamSender(address, streamSenderOptions);
 			} else {
 				SenderOptions senderOptions = new SenderOptions();
 				senderOptions.deliveryMode(deliveryMode);
 				if (messageProtocol == MessageProtocol.RR) {
 					senderOptions.targetOptions().capabilities("queue");
+				} else {
+					senderOptions.targetOptions().capabilities(addressType.name().toLowerCase());
 				}
-				sender = connection.openSender(queueName, senderOptions);
+				sender = connection.openSender(address, senderOptions);
 			}
 		} catch (ClientException e) {
 			throw new LifecycleException("Cannot create connection to AMQP broker", e);
@@ -265,7 +273,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		}
 		try {
 			Tracker tracker = sender.send(amqpMessage);
-			Tracker tracker1 = tracker.awaitAccepted(timeout, TimeUnit.SECONDS);
+			Tracker tracker1 = tracker.awaitSettlement(timeout, TimeUnit.SECONDS);
 			if (tracker1 != null && tracker1.state() != null && !tracker1.state().isAccepted()) {
 				throw new TimeoutException("Timed out waiting for AMQP message to send");
 			}
@@ -321,6 +329,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 				streamSenderMessage.abort();
 				throw e;
 			}
+			streamSenderMessage.complete();
 			streamSenderMessage.tracker().awaitAccepted(timeout, TimeUnit.SECONDS);
 //			streamSenderMessage.tracker().awaitSettlement(timeout, TimeUnit.SECONDS);
 		} catch (ClientException | IOException e) {
@@ -342,10 +351,18 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	}
 
 	/**
-	 * Set the queue on which to send messages
+	 * Set the type of address to which messages are being sent, TOPIC or QUEUE.
+	 * For {@literal MessageProtocol#RR} the type will always be QUEUE.
 	 */
-	public void setQueueName(String queueName) {
-		this.queueName = queueName;
+	public void setAddressType(AddressType addressType) {
+		this.addressType = addressType;
+	}
+
+	/**
+	 * Set the address (name of the queue or topic) on which to send messages
+	 */
+	public void setAddress(String address) {
+		this.address = address;
 	}
 
 	/**

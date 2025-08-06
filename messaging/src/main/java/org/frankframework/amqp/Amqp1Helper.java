@@ -25,6 +25,7 @@ import jakarta.annotation.Nullable;
 import org.apache.qpid.protonj2.client.Connection;
 import org.apache.qpid.protonj2.client.Delivery;
 import org.apache.qpid.protonj2.client.Receiver;
+import org.apache.qpid.protonj2.client.ReceiverOptions;
 import org.apache.qpid.protonj2.client.StreamDelivery;
 import org.apache.qpid.protonj2.client.StreamReceiver;
 import org.apache.qpid.protonj2.client.StreamReceiverMessage;
@@ -49,7 +50,7 @@ public class Amqp1Helper {
 	@Nullable
 	public static Message getStreamingMessage(@Nonnull Connection connection, @Nonnull String queueName) throws ClientException, IOException {
 		try (StreamReceiver receiver = connection.openStreamReceiver(queueName)) {
-			StreamDelivery delivery = receiver.receive(5, TimeUnit.SECONDS);
+			StreamDelivery delivery = receiver.receive(15, TimeUnit.SECONDS);
 			if (delivery != null) {
 				StreamReceiverMessage amqpMessage = delivery.message();
 				Message ffMessage = convertAmqpMessageToFFMessage(amqpMessage);
@@ -90,8 +91,10 @@ public class Amqp1Helper {
 	}
 
 	public static @Nullable Message getMessage(@Nonnull Connection connection, @Nonnull String queueName) throws ClientException, IOException {
-		try (Receiver receiver = connection.openReceiver(queueName)) {
-			Delivery delivery = receiver.receive(5, TimeUnit.SECONDS);
+		ReceiverOptions receiverOptions = new ReceiverOptions();
+		receiverOptions.sourceOptions().capabilities("queue");
+		try (Receiver receiver = connection.openReceiver(queueName, receiverOptions)) {
+			Delivery delivery = receiver.receive(15, TimeUnit.SECONDS);
 			if (delivery != null) {
 				org.apache.qpid.protonj2.client.Message<Object> amqpMessage = delivery.message();
 				Message ffMessage = convertAmqpMessageToFFMessage(amqpMessage);

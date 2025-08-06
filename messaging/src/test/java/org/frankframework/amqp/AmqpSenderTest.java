@@ -47,7 +47,7 @@ public abstract class AmqpSenderTest {
 	void setUp() throws Exception {
 		factory = createAmqpConnectionFactory();
 		sender = new AmqpSender();
-		sender.setQueueName(AmqpSenderTest.EXCHANGE_NAME);
+		sender.setAddress(AmqpSenderTest.EXCHANGE_NAME);
 		sender.setConnectionName(getResourceName());
 		sender.setConnectionFactory(factory);
 
@@ -189,7 +189,7 @@ public abstract class AmqpSenderTest {
 		return future.completeAsync(() -> {
 			ReceiverOptions receiverOptions = new ReceiverOptions();
 			receiverOptions.sourceOptions().capabilities("queue");
-			try (Connection connection = factory.getConnectionFactory(getResourceName()).connect();
+			try (Connection connection = factory.getConnectionFactory(getResourceName() + "Test").connect();
 				 Receiver receiver = connection.openReceiver(rrQueue, receiverOptions)) {
 				Delivery request = receiver.receive(60, TimeUnit.SECONDS);
 				if (request != null) {
@@ -217,10 +217,10 @@ public abstract class AmqpSenderTest {
 	}
 
 	protected @Nullable Message getMessage(String queueName) throws ClientException, IOException {
-		return Amqp1Helper.getMessage(factory, getResourceName(), queueName);
+		return Amqp1Helper.getMessage(factory, getResourceName() + "Test", queueName);
 	}
 
 	protected @Nullable Message getStreamingMessage(String queueName) throws ClientException, IOException {
-		return Amqp1Helper.getStreamingMessage(factory, getResourceName(),  queueName);
+		return Amqp1Helper.getStreamingMessage(factory, getResourceName() + "Test",  queueName);
 	}
 }
