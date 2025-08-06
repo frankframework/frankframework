@@ -236,6 +236,7 @@ export class AppService {
   public dtapStage: WritableSignal<string> = signal('');
   public iframePopoutUrl: WritableSignal<string | null> = signal(null);
   public selectedConfigurationTab: WritableSignal<string | null> = signal(null);
+  public consoleState: WritableSignal<AppInitState> = signal(appInitState.UN_INIT);
 
   private reloadSubject: Subject<void> = new Subject();
   public reload$ = this.reloadSubject.asObservable();

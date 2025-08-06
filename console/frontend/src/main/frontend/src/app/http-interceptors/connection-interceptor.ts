@@ -1,7 +1,7 @@
 import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, WritableSignal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
-import { AppService } from '../app.service';
+import { appInitState, AppInitState, AppService } from '../app.service';
 import { Router } from '@angular/router';
 import { ToastService } from '../services/toast.service';
 
@@ -47,27 +47,27 @@ export class ConnectionInterceptor implements HttpInterceptor {
     );
   }
 
-  private lostConnection(error: HttpErrorResponse): void {
-    const appConstants = this.appService.appConstants();
+  private async lostConnection(error: HttpErrorResponse): Promise<void> {
+    const consoleState: WritableSignal<AppInitState> = this.appService.consoleState;
     if (error.url) {
-      fetch(error.url, { redirect: 'manual' }).then((response) => {
+      try {
+        const response = await fetch(error.url, { redirect: 'manual' });
         if (response.type === 'opaqueredirect') {
           // if the request ended in a redirect that failed, then login
           const login_url = `${this.appService.getServerPath()}iaf/`;
           this.router.navigate([login_url]);
         }
-      });
-      return;
+        return;
+      } catch {}
     }
 
-    // TODO this should be the appInitState..
-    if (appConstants['init'] == '1') {
+    if (consoleState() == appInitState.INIT) {
       if (error.headers.get('Authorization') == undefined) {
         this.toastsService.error('Failed to connect to backend!');
       } else {
         console.warn('Authorization error');
       }
-    } else if (appConstants['init'] == '2') {
+    } else if (consoleState() == appInitState.POST_INIT) {
       console.warn('Connection to the server was lost!');
       this.errorCount++;
       if (this.errorCount > 2) {
