@@ -1,4 +1,5 @@
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -13,7 +14,9 @@
 	<properties>
 		<j2v8.version>4.6.0</j2v8.version>
 		<graalvm.version>24.2.2</graalvm.version>
-		<saxon.version>10.9</saxon.version><!--From version 11, duplicate imported resources cause an exception. -->
+
+		<!-- From version 11, duplicate imported resources cause an exception. -->
+		<saxon.version>10.9</saxon.version>
 	</properties>
 
 	<dependencies>
@@ -62,15 +65,18 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
-		<dependency><!-- LOG4J SLF4J Binding -->
+		<dependency>
+			<!-- LOG4J SLF4J Binding -->
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-slf4j2-impl</artifactId>
 		</dependency>
-		<dependency><!-- Apache Commons Logging Binding -->
+		<dependency>
+			<!-- Apache Commons Logging Binding -->
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-jcl</artifactId>
 		</dependency>
-		<dependency><!-- Java Util Logging Binding -->
+		<dependency>
+			<!-- Java Util Logging Binding -->
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-jul</artifactId>
 		</dependency>
@@ -245,12 +251,14 @@
 			<artifactId>mongodb-driver-sync</artifactId>
 			<version>${mongodb.driver.version}</version>
 		</dependency>
-		<dependency><!-- Needed for WsdlUtils, for cosmetically better wsdls. Woodstox messes up attribute order, and namespace definitions -->
+		<dependency>
+			<!-- Needed for WsdlUtils, for cosmetically better wsdls. Woodstox messes up attribute order, and namespace definitions -->
 			<groupId>com.sun.xml.stream</groupId>
 			<artifactId>sjsxp</artifactId>
 			<version>1.0.2</version>
 			<exclusions>
-				<exclusion><!-- excluded because we want the stax2 api -->
+				<exclusion>
+					<!-- excluded because we want the stax2 api -->
 					<groupId>javax.xml.stream</groupId>
 					<artifactId>stax-api</artifactId>
 				</exclusion>
@@ -380,7 +388,8 @@
 			<artifactId>httpmime</artifactId>
 		</dependency>
 
-		<dependency> <!-- Only used in XmlUtils.toXhtml -->
+		<dependency>
+			<!-- Only used in XmlUtils.toXhtml -->
 			<groupId>net.sourceforge.htmlcleaner</groupId>
 			<artifactId>htmlcleaner</artifactId>
 			<version>2.29</version>
@@ -469,7 +478,7 @@
 			<artifactId>js-scriptengine</artifactId>
 			<version>${graalvm.version}</version>
 		</dependency>
-		<!-- runtime -->
+		<!-- This is only required at runtime -->
 		<dependency>
 			<groupId>org.graalvm.polyglot</groupId>
 			<artifactId>js-community</artifactId>
