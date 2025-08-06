@@ -109,7 +109,7 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 	private @Getter DocumentFormat outputFormat=DocumentFormat.JSON;
 	private @Getter boolean prettyPrint=false;
 
-	private @Setter @Getter JndiMongoClientFactory mongoClientFactory = null; // Spring should wire this!
+	private @Setter @Getter MongoClientFactoryFactory mongoClientFactory = null; // Spring should wire this!
 
 	private MongoClient mongoClient;
 	private final ConcurrentHashMap<String, MongoDatabase> mongoDatabases = new ConcurrentHashMap<>();
@@ -134,7 +134,7 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getDatasourceName())) {
-			setDatasourceName(AppConstants.getInstance(getConfigurationClassLoader()).getString(JndiMongoClientFactory.DEFAULT_DATASOURCE_NAME_PROPERTY, JndiMongoClientFactory.GLOBAL_DEFAULT_DATASOURCE_NAME_DEFAULT));
+			setDatasourceName(AppConstants.getInstance(getConfigurationClassLoader()).getString(MongoClientFactoryFactory.DEFAULT_DATASOURCE_NAME_PROPERTY, MongoClientFactoryFactory.GLOBAL_DEFAULT_DATASOURCE_NAME_DEFAULT));
 		}
 		if (mongoClientFactory==null) {
 			throw new ConfigurationException("no mongoClientFactory available");
@@ -151,7 +151,7 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 
 	@Override
 	public void start() {
-		mongoClient = mongoClientFactory.getMongoClient(getDatasourceName());
+		mongoClient = mongoClientFactory.getMongoClientFactory(getDatasourceName()).createMongoClient();
 
 		super.start();
 	}
@@ -375,7 +375,7 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 
 	/**
 	 * The MongoDB datasource
-	 * @ff.default {@value JndiMongoClientFactory#DEFAULT_DATASOURCE_NAME_PROPERTY}
+	 * @ff.default {@value MongoClientFactoryFactory#DEFAULT_DATASOURCE_NAME_PROPERTY}
 	 */
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;

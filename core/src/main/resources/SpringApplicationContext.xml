@@ -37,7 +37,7 @@
 	<bean id="JndiObjectLocator" class="org.frankframework.jndi.JndiObjectLocator" />
 
 	<bean id="dataSourceFactory" class="org.frankframework.jdbc.datasource.DataSourceFactory" autowire="byType"/>
-	<bean id="mongoClientFactory" class="org.frankframework.mongodb.JndiMongoClientFactory" autowire="byType" />
+	<bean id="mongoClientFactory" class="org.frankframework.mongodb.MongoClientFactoryFactory" autowire="byType" />
 
 	<bean id="jdbcPropertySourceFactory" class="org.frankframework.jdbc.JdbcPropertySourceFactory" />
 

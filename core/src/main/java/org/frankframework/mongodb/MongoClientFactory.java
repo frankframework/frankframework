@@ -26,37 +26,20 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 
 import org.frankframework.jdbc.datasource.FrankResource;
-import org.frankframework.jdbc.datasource.ObjectFactory;
-import org.frankframework.util.AppConstants;
 import org.frankframework.util.CredentialFactory;
 
-/**
- * MongoClientFactory that retrieves its configuration from either JNDI or `resources.yml`.
- *
- * @author Gerrit van Brakel
- */
-public class JndiMongoClientFactory extends ObjectFactory<MongoClient, Object> {
+public class MongoClientFactory {
 
-	public static final String DEFAULT_DATASOURCE_NAME_PROPERTY = "mongodb.datasource.default";
-	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME_DEFAULT = "mongodb/MongoClient";
-	public static final String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty(DEFAULT_DATASOURCE_NAME_PROPERTY, GLOBAL_DEFAULT_DATASOURCE_NAME_DEFAULT);
 
-	public JndiMongoClientFactory() {
-		super(null, "mongodb", "MongoDB");
+	private final String resourceName;
+	private final FrankResource resource;
+
+	public MongoClientFactory(String resourceName, FrankResource resource) {
+		this.resourceName = resourceName;
+		this.resource = resource;
 	}
 
-	@Override
-	protected MongoClient augment(Object object, String objectName) {
-		if (object instanceof MongoClient client) {
-			return client;
-		}
-		if (object instanceof FrankResource resource) {
-			return map(resource);
-		}
-		throw new IllegalArgumentException("resource ["+objectName+"] not of required type");
-	}
-
-	private MongoClient map(FrankResource resource) {
+	public MongoClient createMongoClient() {
 		String url = resource.getUrl();
 		MongoClientSettings.Builder settings = MongoClientSettings.builder()
 				.applyToClusterSettings(builder -> builder.serverSelectionTimeout(2, TimeUnit.SECONDS))
@@ -72,7 +55,8 @@ public class JndiMongoClientFactory extends ObjectFactory<MongoClient, Object> {
 		return MongoClients.create(settings.build());
 	}
 
-	public MongoClient getMongoClient(String name) {
-		return get(name, null);
+	@Override
+	public String toString() {
+		return "MongoClientFactory [resourceName=" + resourceName + ", resource=" + resource + "]";
 	}
 }
