@@ -7,10 +7,6 @@ import { BaseIframeComponent } from '../iframe.base';
   styleUrls: ['../iframe.component.scss'],
 })
 export class IframeLarvaComponent extends BaseIframeComponent implements OnInit {
-  constructor() {
-    super();
-  }
-
   override ngOnInit(): void {
     super.ngOnInit();
     this.setIframeSource('larva');

@@ -7,10 +7,6 @@ import { BaseIframeComponent } from '../iframe.base';
   styleUrls: ['../iframe.component.scss'],
 })
 export class IframeLadybugComponent extends BaseIframeComponent implements OnInit, OnDestroy {
-  constructor() {
-    super();
-  }
-
   override ngOnInit(): void {
     super.ngOnInit();
     this.setIframeSource('ladybug');
