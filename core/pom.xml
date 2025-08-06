@@ -46,12 +46,6 @@
 			<version>3.30.2-GA</version>
 		</dependency>
 
-		<dependency>
-			<groupId>jakarta.servlet</groupId>
-			<artifactId>jakarta.servlet-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-
 		<!-- Logging -->
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
@@ -421,13 +415,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<!-- jboss-logging is required for Narayana -->
-		<dependency>
-			<groupId>org.jboss.logging</groupId>
-			<artifactId>jboss-logging</artifactId>
-			<version>${jboss-logging.version}</version>
-			<scope>test</scope>
-		</dependency>
 
 		<dependency>
 			<groupId>net.spy</groupId>
@@ -449,24 +436,6 @@
 			<artifactId>j2v8_macosx_x86_64</artifactId>
 			<version>${j2v8.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.eclipsesource.j2v8</groupId>
-			<artifactId>j2v8_linux_x86_64</artifactId>
-			<version>${j2v8.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.eclipsesource.j2v8</groupId>
-			<artifactId>j2v8_win32_x86_64</artifactId>
-			<version>${j2v8.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.eclipsesource.j2v8</groupId>
-			<artifactId>j2v8_win32_x86</artifactId>
-			<version>${j2v8.version}</version>
-			<scope>runtime</scope>
-		</dependency>
 
 		<dependency>
 			<groupId>org.graalvm.polyglot</groupId>
@@ -477,14 +446,6 @@
 			<groupId>org.graalvm.js</groupId>
 			<artifactId>js-scriptengine</artifactId>
 			<version>${graalvm.version}</version>
-		</dependency>
-		<!-- This is only required at runtime -->
-		<dependency>
-			<groupId>org.graalvm.polyglot</groupId>
-			<artifactId>js-community</artifactId>
-			<version>${graalvm.version}</version>
-			<type>pom</type>
-			<scope>runtime</scope>
 		</dependency>
 
 		<!-- CXF -->
@@ -662,7 +623,57 @@
 			<version>74.2</version>
 		</dependency>
 
+		<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<!-- to be able to extract Oracle error messages in IbisException.getExceptionSpecificDetails() -->
+			<groupId>com.oracle.database.jdbc</groupId>
+			<artifactId>ojdbc${oracle.driver.jdkversion}</artifactId>
+			<version>${oracle.driver.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.eclipsesource.j2v8</groupId>
+			<artifactId>j2v8_linux_x86_64</artifactId>
+			<version>${j2v8.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.eclipsesource.j2v8</groupId>
+			<artifactId>j2v8_win32_x86_64</artifactId>
+			<version>${j2v8.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.eclipsesource.j2v8</groupId>
+			<artifactId>j2v8_win32_x86</artifactId>
+			<version>${j2v8.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+
+		<!-- This is only required at runtime -->
+		<dependency>
+			<groupId>org.graalvm.polyglot</groupId>
+			<artifactId>js-community</artifactId>
+			<version>${graalvm.version}</version>
+			<type>pom</type>
+			<scope>runtime</scope>
+		</dependency>
+
 		<!-- Test scoped dependencies -->
+
+		<!-- jboss-logging is required for Narayana -->
+		<dependency>
+			<groupId>org.jboss.logging</groupId>
+			<artifactId>jboss-logging</artifactId>
+			<version>${jboss-logging.version}</version>
+			<scope>test</scope>
+		</dependency>
+
 		<dependency>
 			<groupId>org.hamcrest</groupId>
 			<artifactId>hamcrest</artifactId>
@@ -732,13 +743,6 @@
 
 		<!-- DATABASE DRIVERS  -->
 		<dependency>
-			<!-- to be able to extract Oracle error messages in IbisException.getExceptionSpecificDetails() -->
-			<groupId>com.oracle.database.jdbc</groupId>
-			<artifactId>ojdbc${oracle.driver.jdkversion}</artifactId>
-			<version>${oracle.driver.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 			<version>${h2.driver.version}</version>
@@ -774,6 +778,7 @@
 			<version>${postgresql.driver.version}</version>
 			<scope>test</scope>
 		</dependency>
+
 		<!-- LdapSenderTest -->
 		<dependency>
 			<groupId>com.unboundid</groupId>
