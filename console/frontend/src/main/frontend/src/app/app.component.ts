@@ -1,4 +1,4 @@
-import { Component, inject, OnDestroy, OnInit, Renderer2, Signal } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, Renderer2, Signal, WritableSignal } from '@angular/core';
 import { Idle } from '@ng-idle/core';
 import { filter, first, Subscription } from 'rxjs';
 import {
@@ -46,7 +46,6 @@ import { PagesTopinfobarComponent } from './components/pages/pages-topinfobar/pa
 import { PagesFooterComponent } from './components/pages/pages-footer/pages-footer.component';
 // @ts-expect-error pace-js does not have types
 import Pace from 'pace-js';
-import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-root',
@@ -94,9 +93,9 @@ export class AppComponent implements OnInit, OnDestroy {
   protected startupError: Signal<string | null> = this.appService.startupError;
 
   private serverInfo: ServerInfo | null = null;
-  private consoleState: AppInitState = appInitState.UN_INIT;
   private _subscriptions = new Subscription();
   private _subscriptionsReloadable = new Subscription();
+  private readonly consoleState: WritableSignal<AppInitState> = this.appService.consoleState;
   private readonly MODAL_OPTIONS_CLASSES: NgbModalOptions = {
     modalDialogClass: 'animated fadeInDown',
     windowClass: 'animated fadeIn',
@@ -208,7 +207,7 @@ export class AppComponent implements OnInit, OnDestroy {
   onAppReload(): void {
     this.websocketService.deactivate();
     this._subscriptionsReloadable.unsubscribe();
-    this.consoleState = appInitState.UN_INIT;
+    this.consoleState.set(appInitState.UN_INIT);
 
     this.appService.alerts.set([]);
     this.appService.resetMessageLog();
@@ -229,15 +228,14 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   initializeFrankConsole(): void {
-    if (this.consoleState !== appInitState.UN_INIT) {
+    if (this.consoleState() !== appInitState.UN_INIT) {
       this.debugService.log('Cancelling 2nd initialization attempt');
       Pace.stop();
       return;
     }
-    this.consoleState = appInitState.PRE_INIT;
+    this.consoleState.set(appInitState.INIT);
     this.debugService.log('Initializing Frank!Console');
 
-    this.consoleState = appInitState.INIT;
     this.serverInfoService.refresh().subscribe({
       next: (data) => {
         if (data === null) return;
@@ -251,7 +249,6 @@ export class AppComponent implements OnInit, OnDestroy {
         this.authService.setLoggedIn(this.userName);
         this.appService.updateTitle(this.title.getTitle().split(' | ')[1]);
 
-        this.consoleState = appInitState.POST_INIT;
         if (!this.router.url.includes('login')) {
           this.idle.watch();
           this.renderer.removeClass(document.body, 'gray-bg');
@@ -271,6 +268,8 @@ export class AppComponent implements OnInit, OnDestroy {
         if (!this.authService.isLoggedIn()) {
           this.idle.setTimeout(0);
         }
+
+        this.consoleState.set(appInitState.POST_INIT);
 
         this.appService.getConfigurations().subscribe((data) => {
           this.appService.updateConfigurations(data);
