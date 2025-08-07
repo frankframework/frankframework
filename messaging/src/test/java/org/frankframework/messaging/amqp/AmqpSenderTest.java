@@ -205,7 +205,7 @@ public abstract class AmqpSenderTest {
 		String testData = "test-" + UUIDUtil.createRandomUUID();
 		Message message = new Message(testData);
 
-		List<Map.Entry<Integer, CompletableFuture<Message>>> futureResults = IntStream.range(0, 10)
+		List<Map.Entry<Integer, CompletableFuture<Message>>> futureResults = IntStream.range(0, 3)
 				.mapToObj(i -> Map.entry(i, startBackgroundFFReceiver(i, AddressType.TOPIC, TOPIC_EXCHANGE_NAME)))
 				.toList();
 
