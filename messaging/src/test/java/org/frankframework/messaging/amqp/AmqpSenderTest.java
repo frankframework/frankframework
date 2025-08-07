@@ -1,4 +1,4 @@
-package org.frankframework.amqp;
+package org.frankframework.messaging.amqp;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;

@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.amqp;
+package org.frankframework.messaging.amqp;
 
 import java.util.Map;
 import java.util.Properties;
@@ -49,7 +49,7 @@ public class AmqpConnectionFactoryFactory extends ObjectFactory<AmqpConnectionFa
 		if (object instanceof FrankResource resource) {
 			return map(resource, objectName);
 		}
-		throw new IllegalArgumentException("resource ["+objectName+"] not of required type");
+		throw new IllegalArgumentException("resource [" + objectName + "] not of required type");
 	}
 
 	private AmqpConnectionFactory map(FrankResource resource, String objectName) {

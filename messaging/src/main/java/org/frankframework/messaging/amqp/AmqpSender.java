@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.amqp;
+package org.frankframework.messaging.amqp;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -187,7 +187,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		} catch (ClientException | RuntimeException e) {
 			throw new LifecycleException("Cannot create connection to AMQP broker", e);
 		}
-	}j
+	}
 
 	@Override
 	public void stop() {
@@ -371,10 +371,10 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	 * {@link MessageType#BINARY} for binary data to be sent as AMQP {@code Data} section, or {@link MessageType#AUTO} to
 	 * decide automatically based on the wether the input {@link Message} is binary or not.
 	 * <p>
-	 *     When a message is to be received as a streaming message by the recipient, it has to be sent as a {@link MessageType#BINARY}
-	 *     message.
-	 *     <br/>
-	 *     When {@link #setStreamingMessages(boolean)} is configured {@literal true}, the {@code messageType} is ignored.
+	 * When a message is to be received as a streaming message by the recipient, it has to be sent as a {@link MessageType#BINARY}
+	 * message.
+	 * <br/>
+	 * When {@link #setStreamingMessages(boolean)} is configured {@literal true}, the {@code messageType} is ignored.
 	 * </p>
 	 *
 	 * @ff.default {@literal AUTO}
@@ -406,8 +406,8 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 
 	/**
 	 * Send message as Fire-and-Forget, or as Request-Reply
-	 * @param messageProtocol {@literal FF} for Fire-and-Forget, or {@literal RR} for Request-Reply.
 	 *
+	 * @param messageProtocol {@literal FF} for Fire-and-Forget, or {@literal RR} for Request-Reply.
 	 * @ff.default {@literal FF}
 	 */
 	public void setMessageProtocol(MessageProtocol messageProtocol) {

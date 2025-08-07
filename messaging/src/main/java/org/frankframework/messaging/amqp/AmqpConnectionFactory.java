@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.amqp;
+package org.frankframework.messaging.amqp;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
@@ -49,9 +49,9 @@ public class AmqpConnectionFactory implements DisposableBean {
 	private final Client client;
 
 	private Connection connection;
-	private final AtomicInteger borrowCount  = new AtomicInteger(0);
+	private final AtomicInteger borrowCount = new AtomicInteger(0);
 
-	public AmqpConnectionFactory(String resourceName, FrankResource resource, Client client){
+	public AmqpConnectionFactory(String resourceName, FrankResource resource, Client client) {
 		this.resourceName = resourceName;
 		this.resource = resource;
 		this.client = client;

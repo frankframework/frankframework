@@ -1,4 +1,4 @@
-package org.frankframework.amqp;
+package org.frankframework.messaging.amqp;
 
 import jakarta.annotation.Nonnull;
 

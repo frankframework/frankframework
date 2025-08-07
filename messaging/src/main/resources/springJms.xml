@@ -23,6 +23,6 @@
 
 	<bean id="connectionFactoryFactory" class="org.frankframework.jndi.JmsConnectionFactoryFactory" />
 	<bean id="mqttClientFactory" class="org.frankframework.extensions.mqtt.MqttClientFactoryFactory" />
-	<bean id="amqpConnectionFactory" class="org.frankframework.amqp.AmqpConnectionFactoryFactory" />
+	<bean id="amqpConnectionFactory" class="org.frankframework.messaging.amqp.AmqpConnectionFactoryFactory" />
 
 </beans>
