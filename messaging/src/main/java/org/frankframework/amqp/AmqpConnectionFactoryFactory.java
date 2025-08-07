@@ -25,7 +25,7 @@ import org.apache.qpid.protonj2.client.ClientOptions;
 
 import org.frankframework.jdbc.datasource.FrankResource;
 import org.frankframework.jdbc.datasource.ObjectFactory;
-import org.frankframework.util.CleanerProvider;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.Misc;
 import org.frankframework.util.UUIDUtil;
 
@@ -42,11 +42,6 @@ public class AmqpConnectionFactoryFactory extends ObjectFactory<AmqpConnectionFa
 		clientOptions.id(Misc.getHostname() + UUIDUtil.createRandomUUID());
 
 		defaultClient = Client.create(clientOptions);
-
-		// Since we cannot override DisposableBean#destroy from parent class, close the client this way
-		// Not optimal but for now, no better solution?
-		CleanerProvider.register(this, defaultClient::close);
-		CleanerProvider.register(this, () -> namedClients.values().forEach(Client::close));
 	}
 
 	@Override
@@ -75,5 +70,13 @@ public class AmqpConnectionFactoryFactory extends ObjectFactory<AmqpConnectionFa
 
 	public AmqpConnectionFactory getConnectionFactory(String name) {
 		return get(name, null);
+	}
+
+	@Override
+	protected void postDestroy() throws Exception {
+		CloseUtils.closeSilently(defaultClient);
+		CloseUtils.closeSilently(namedClients.values());
+		namedClients.clear();
+		super.postDestroy();
 	}
 }
