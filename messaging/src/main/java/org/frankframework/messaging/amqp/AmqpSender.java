@@ -169,18 +169,20 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 			if (streamingMessages) {
 				StreamSenderOptions streamSenderOptions = new StreamSenderOptions();
 				streamSenderOptions.deliveryMode(deliveryMode);
-				streamSenderOptions.targetOptions().capabilities(addressType.name().toLowerCase());
 				if (messageProtocol == MessageProtocol.RR) {
-					streamSenderOptions.targetOptions().capabilities("queue");
+					streamSenderOptions.targetOptions().capabilities(AddressType.QUEUE.getCapabilityName());
+				} else {
+					streamSenderOptions.targetOptions().capabilities(addressType.getCapabilityName());
 				}
 				streamSender = session.connection().openStreamSender(address, streamSenderOptions);
 			} else {
 				SenderOptions senderOptions = new SenderOptions();
 				senderOptions.deliveryMode(deliveryMode);
 				if (messageProtocol == MessageProtocol.RR) {
-					senderOptions.targetOptions().capabilities("queue");
+					senderOptions.targetOptions().capabilities(AddressType.QUEUE.getCapabilityName());
 				} else {
-					senderOptions.targetOptions().capabilities(addressType.name().toLowerCase());
+					senderOptions.targetOptions().capabilities(addressType.getCapabilityName());
+					senderOptions.sourceOptions().capabilities(addressType.getCapabilityName());
 				}
 				sender = session.openSender(address, senderOptions);
 			}

@@ -51,7 +51,7 @@ public class Amqp1Helper {
 	@Nullable
 	public static Message getStreamingMessage(@Nonnull Connection connection, @Nonnull String address, @Nonnull AddressType addressType) throws ClientException, IOException {
 		StreamReceiverOptions streamOptions = new StreamReceiverOptions();
-		streamOptions.targetOptions().capabilities(addressType.name().toLowerCase());
+		streamOptions.sourceOptions().capabilities(addressType.getCapabilityName());
 		try (StreamReceiver receiver = connection.openStreamReceiver(address)) {
 			StreamDelivery delivery = receiver.receive(15, TimeUnit.SECONDS);
 			if (delivery != null) {
@@ -95,7 +95,7 @@ public class Amqp1Helper {
 
 	public static @Nullable Message getMessage(@Nonnull Connection connection, @Nonnull String address, @Nonnull AddressType addressType) throws ClientException, IOException {
 		ReceiverOptions receiverOptions = new ReceiverOptions();
-		receiverOptions.sourceOptions().capabilities(addressType.name().toLowerCase());
+		receiverOptions.sourceOptions().capabilities(addressType.getCapabilityName());
 		try (Receiver receiver = connection.openReceiver(address, receiverOptions)) {
 			Delivery delivery = receiver.receive(15, TimeUnit.SECONDS);
 			if (delivery != null) {

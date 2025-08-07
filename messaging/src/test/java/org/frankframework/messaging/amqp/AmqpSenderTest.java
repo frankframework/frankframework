@@ -1,5 +1,6 @@
 package org.frankframework.messaging.amqp;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -7,8 +8,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.IntStream;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -23,22 +26,27 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.extensions.messaging.MessageProtocol;
 import org.frankframework.jdbc.datasource.ResourceObjectLocator;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CloseUtils;
+import org.frankframework.util.UUIDUtil;
 
 @Log4j2
 public abstract class AmqpSenderTest {
-	private static final String EXCHANGE_NAME = "test:testExchange";
+	private static final String QUEUE_EXCHANGE_NAME = "test:testQueueExchange";
+	private static final String TOPIC_EXCHANGE_NAME = "test:testTopicExchange";
 	private AmqpConnectionFactoryFactory factory;
 	private AmqpSender sender;
 	private PipeLineSession session;
@@ -47,7 +55,7 @@ public abstract class AmqpSenderTest {
 	void setUp() throws Exception {
 		factory = createAmqpConnectionFactory();
 		sender = new AmqpSender();
-		sender.setAddress(AmqpSenderTest.EXCHANGE_NAME);
+		sender.setAddress(AmqpSenderTest.QUEUE_EXCHANGE_NAME);
 		sender.setConnectionName(getResourceName());
 		sender.setConnectionFactoryFactory(factory);
 
@@ -96,7 +104,7 @@ public abstract class AmqpSenderTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	void sendMessageNoReply(boolean sendStreaming) throws Exception {
+	void sendMessageToQueueNoReply(boolean sendStreaming) throws Exception {
 		// Arrange
 		sender.setStreamingMessages(sendStreaming);
 		sender.setMessageProtocol(MessageProtocol.FF);
@@ -113,7 +121,7 @@ public abstract class AmqpSenderTest {
 		assertTrue(senderResult.isSuccess());
 
 		// Check message on queue
-		Message result = getMessage(AmqpSenderTest.EXCHANGE_NAME, AddressType.QUEUE);
+		Message result = getMessage(AmqpSenderTest.QUEUE_EXCHANGE_NAME, AddressType.QUEUE);
 
 		assertNotNull(result);
 		log.info(result);
@@ -123,7 +131,7 @@ public abstract class AmqpSenderTest {
 
 	@ParameterizedTest
 	@ValueSource(booleans = {true, false})
-	void sendMessageNoReplyReceiveStreaming(boolean sendStreaming) throws Exception {
+	void sendMessageToQueueNoReplyReceiveStreaming(boolean sendStreaming) throws Exception {
 		// Arrange
 		sender.setStreamingMessages(sendStreaming);
 		sender.setMessageProtocol(MessageProtocol.FF);
@@ -143,7 +151,7 @@ public abstract class AmqpSenderTest {
 		assertTrue(senderResult.isSuccess());
 
 		// Check for a message on queue
-		Message result = getStreamingMessage(AmqpSenderTest.EXCHANGE_NAME, AddressType.QUEUE);
+		Message result = getStreamingMessage(AmqpSenderTest.QUEUE_EXCHANGE_NAME, AddressType.QUEUE);
 
 		assertNotNull(result);
 		log.info(result);
@@ -159,9 +167,10 @@ public abstract class AmqpSenderTest {
 		sender.configure();
 		sender.start();
 
-		Message message = new Message("test");
+		String testData = "test-" + UUIDUtil.createRandomUUID();
+		Message message = new Message(testData);
 
-		CompletableFuture<Message> receivedRequest = startBackgroundRRReceiver(EXCHANGE_NAME, "my reply");
+		CompletableFuture<Message> receivedRequest = startBackgroundRRReceiver(QUEUE_EXCHANGE_NAME, "my reply");
 
 		// Act
 		SenderResult senderResult = assertDoesNotThrow(() -> sender.sendMessage(message, session));
@@ -178,7 +187,62 @@ public abstract class AmqpSenderTest {
 		assertNotNull(request);
 		log.info(request);
 		String rr = request.asString();
-		assertEquals("test", rr);
+		assertEquals(testData, rr);
+	}
+
+	@Test
+	void sendMessageFFTopic() throws ConfigurationException, SenderException, TimeoutException {
+		// Arrange
+		sender.setMessageProtocol(MessageProtocol.FF);
+		sender.setAddressType(AddressType.TOPIC);
+		sender.setAddress(TOPIC_EXCHANGE_NAME);
+
+		sender.configure();
+		sender.start();
+
+		String testData = "test-" + UUIDUtil.createRandomUUID();
+		Message message = new Message(testData);
+
+		List<Map.Entry<Integer, CompletableFuture<Message>>> futureResults = IntStream.range(0, 10)
+				.mapToObj(i -> Map.entry(i, startBackgroundFFReceiver(i, AddressType.TOPIC, TOPIC_EXCHANGE_NAME)))
+				.toList();
+
+		// Act
+		sender.sendMessage(message, session);
+
+		// Assert
+		List<Executable> resultAssertions = futureResults.stream()
+				.map(entry -> Map.entry(entry.getKey(), entry.getValue().join()))
+				.map(f -> (Executable) () -> assertEquals(testData, f.getValue().asString(), "Topic Receiver %d did not receive expected message; got '%s' instead of '%s".formatted(f.getKey(), f.getValue().asString(), testData)))
+				.toList();
+
+		assertAll(resultAssertions);
+	}
+
+	protected @Nonnull CompletableFuture<Message> startBackgroundFFReceiver(int receiverNr, AddressType addressType, String receiverAddress) {
+		CompletableFuture<Message> future = new CompletableFuture<>();
+
+		return future.completeAsync(() -> {
+			ReceiverOptions receiverOptions = new ReceiverOptions();
+			receiverOptions.sourceOptions().capabilities(addressType.getCapabilityName());
+			try (Connection connection = factory.getConnectionFactory(getResourceName()).getConnection();
+				 Receiver receiver = connection.openReceiver(receiverAddress, receiverOptions)) {
+				Delivery request = receiver.receive(15, TimeUnit.SECONDS);
+				if (request != null) {
+					org.apache.qpid.protonj2.client.Message<Object> received = request.message();
+					log.info("Receiver {}: Received message with body: {}", receiverNr, received.body());
+					Message ffRequest = Amqp1Helper.convertAmqpMessageToFFMessage(received);
+					log.info("Receiver {}: Delivery converted to Frank!Framework message: {}", receiverNr, ffRequest);
+					return ffRequest;
+				} else {
+					log.warn("Receiver {} Failed to read a message within 15 seconds.", receiverNr);
+					return Message.asMessage("Receiver %d failed to receive a message within 15 seconds".formatted(receiverNr));
+				}
+			} catch (RuntimeException | ClientException | IOException e) {
+				log.warn(() -> "Receiver %d: Exception receiving message".formatted(receiverNr), e);
+				return Message.asMessage("Receiver %d: Exception receiving message: %s".formatted(receiverNr, e.getMessage()));
+			}
+		});
 	}
 
 	protected @Nonnull CompletableFuture<Message> startBackgroundRRReceiver(String rrQueue, String replyToSend) {
@@ -188,15 +252,15 @@ public abstract class AmqpSenderTest {
 
 		return future.completeAsync(() -> {
 			ReceiverOptions receiverOptions = new ReceiverOptions();
-			receiverOptions.sourceOptions().capabilities("queue");
+			receiverOptions.sourceOptions().capabilities(AddressType.QUEUE.getCapabilityName());
 			try (Connection connection = factory.getConnectionFactory(getResourceName()).getConnection();
 				 Receiver receiver = connection.openReceiver(rrQueue, receiverOptions)) {
-				Delivery request = receiver.receive(60, TimeUnit.SECONDS);
+				Delivery request = receiver.receive(15, TimeUnit.SECONDS);
 				if (request != null) {
 					org.apache.qpid.protonj2.client.Message<Object> received = request.message();
-					log.info("Received message with body: " + received.body());
+					log.info("Received message with body: {}", received.body());
 					Message ffRequest = Amqp1Helper.convertAmqpMessageToFFMessage(received);
-					log.info("Received message with body: " + ffRequest);
+					log.info("Delivery converted to Frank!Framework message:: {}", ffRequest);
 					String replyAddress = received.replyTo();
 					log.info("Sending reply to: " + replyAddress);
 					if (replyAddress != null) {
@@ -206,7 +270,7 @@ public abstract class AmqpSenderTest {
 					return ffRequest;
 				} else {
 					log.warn("Failed to read a message during the defined wait interval.");
-					future.completeExceptionally(new TimeoutException("Did not receive request-message within 60 seconds."));
+					future.completeExceptionally(new TimeoutException("Did not receive request-message within 15 seconds."));
 				}
 			} catch (RuntimeException | ClientException | IOException e) {
 				log.warn("Exception receiving message or sending reply", e);

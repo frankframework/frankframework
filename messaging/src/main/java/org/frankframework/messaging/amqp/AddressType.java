@@ -16,5 +16,9 @@
 package org.frankframework.messaging.amqp;
 
 public enum AddressType {
-	TOPIC, QUEUE
+	TOPIC, QUEUE;
+
+	public String getCapabilityName() {
+		return name().toLowerCase();
+	}
 }
