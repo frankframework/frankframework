@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.qpid.protonj2.client.Client;
 import org.apache.qpid.protonj2.client.ClientOptions;
@@ -59,12 +61,17 @@ public class AmqpConnectionFactoryFactory extends ObjectFactory<AmqpConnectionFa
 			return new AmqpConnectionFactory(objectName, resource, defaultClient);
 		}
 
-		if (!namedClients.containsKey(clientId)) {
-			ClientOptions clientOptions = new ClientOptions();
-			clientOptions.id(clientId);
-			namedClients.put(clientId, Client.create(clientOptions));
-		}
-		return new AmqpConnectionFactory(objectName, resource, namedClients.get(clientId));
+		Client client = namedClients.computeIfAbsent(
+				clientId, AmqpConnectionFactoryFactory::createClient
+		);
+		return new AmqpConnectionFactory(objectName, resource, client);
+	}
+
+	@Nonnull
+	private static Client createClient(String clientId) {
+		ClientOptions clientOptions = new ClientOptions();
+		clientOptions.id(clientId);
+		return Client.create(clientOptions);
 	}
 
 
