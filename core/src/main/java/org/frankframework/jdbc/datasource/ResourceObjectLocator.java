@@ -19,6 +19,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
 import java.util.List;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentSkipListMap;
 
@@ -46,11 +47,14 @@ public class ResourceObjectLocator implements IObjectLocator, InitializingBean {
 
 	private final ObjectCreator objectCreator = new ObjectCreator();
 	private final ConcurrentSkipListMap<String, FrankResources> parsedFrankResources = new ConcurrentSkipListMap<>();
+
 	private @Setter String resourceFile = "resources.yml";
 	private URL resourceUrl;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
+		Objects.requireNonNull(resourceFile, "no resources file provided");
+
 		resourceUrl = ClassUtils.getResourceURL(resourceFile);
 		if(resourceUrl == null) {
 			log.info("did not find [{}] skipping resource based object lookups", resourceFile);
