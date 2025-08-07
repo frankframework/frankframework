@@ -28,6 +28,8 @@ import org.apache.qpid.protonj2.client.Client;
 import org.apache.qpid.protonj2.client.Connection;
 import org.apache.qpid.protonj2.client.ConnectionOptions;
 import org.apache.qpid.protonj2.client.SaslOptions;
+import org.apache.qpid.protonj2.client.Session;
+import org.apache.qpid.protonj2.client.SessionOptions;
 import org.apache.qpid.protonj2.client.exceptions.ClientException;
 import org.springframework.beans.factory.DisposableBean;
 
@@ -66,6 +68,12 @@ public class AmqpConnectionFactory implements DisposableBean {
 			}
 		}
 		return wrap(connection);
+	}
+
+	public Session getSession(SessionOptions sessionOptions) throws ClientException {
+		try (Connection conn = getConnection()) {
+			return conn.openSession(sessionOptions);
+		}
 	}
 
 	private Connection connect() throws ClientException {

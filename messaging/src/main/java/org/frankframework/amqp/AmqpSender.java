@@ -34,6 +34,8 @@ import org.apache.qpid.protonj2.client.OutputStreamOptions;
 import org.apache.qpid.protonj2.client.Receiver;
 import org.apache.qpid.protonj2.client.Sender;
 import org.apache.qpid.protonj2.client.SenderOptions;
+import org.apache.qpid.protonj2.client.Session;
+import org.apache.qpid.protonj2.client.SessionOptions;
 import org.apache.qpid.protonj2.client.StreamSender;
 import org.apache.qpid.protonj2.client.StreamSenderMessage;
 import org.apache.qpid.protonj2.client.StreamSenderOptions;
@@ -80,8 +82,9 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	private DeliveryMode deliveryMode = DeliveryMode.AT_LEAST_ONCE;
 	private MessageProtocol messageProtocol = MessageProtocol.FF;
 
-	private @Setter AmqpConnectionFactoryFactory connectionFactory;
-	private Connection connection;
+	private @Setter AmqpConnectionFactoryFactory connectionFactoryFactory;
+	private AmqpConnectionFactory connectionFactory;
+	private Session session;
 	private Sender sender;
 	private StreamSender streamSender;
 	private boolean serverIsRabbitMQ;
@@ -107,12 +110,14 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		if (connectionFactory == null) {
+		if (connectionFactoryFactory == null) {
 			throw new ConfigurationException("ConnectionFactory is null");
 		}
-
+		if (StringUtils.isEmpty(connectionName)) {
+			throw new ConfigurationException("connectionName is empty");
+		}
 		if (StringUtils.isEmpty(address)) {
-			throw new ConfigurationException("Queue name is empty");
+			throw new ConfigurationException("Destination Address is empty");
 		}
 
 		if (messageProtocol == MessageProtocol.FF && StringUtils.isNotEmpty(replyQueueName)) {
@@ -122,8 +127,9 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		if (streamingMessages && messageType != MessageType.BINARY) {
 			ConfigurationWarnings.add(this, log, "[messageType] is ignored, because [streamingMessages] is set to [true]");
 		}
+		connectionFactory = connectionFactoryFactory.getConnectionFactory(connectionName);
 
-		try (Connection connection = connectionFactory.getConnectionFactory(connectionName).getConnection()) {
+		try (Connection connection = connectionFactory.getConnection()) {
 			List<String> offeredCapabilities;
 			if (connection.offeredCapabilities() != null) {
 				offeredCapabilities = List.of(connection.offeredCapabilities());
@@ -158,7 +164,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	public void start() {
 		super.start();
 		try {
-			connection = connectionFactory.getConnectionFactory(connectionName).getConnection();
+			session = connectionFactory.getSession(new SessionOptions());
 
 			if (streamingMessages) {
 				StreamSenderOptions streamSenderOptions = new StreamSenderOptions();
@@ -167,7 +173,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 				if (messageProtocol == MessageProtocol.RR) {
 					streamSenderOptions.targetOptions().capabilities("queue");
 				}
-				streamSender = connection.openStreamSender(address, streamSenderOptions);
+				streamSender = session.connection().openStreamSender(address, streamSenderOptions);
 			} else {
 				SenderOptions senderOptions = new SenderOptions();
 				senderOptions.deliveryMode(deliveryMode);
@@ -176,16 +182,16 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 				} else {
 					senderOptions.targetOptions().capabilities(addressType.name().toLowerCase());
 				}
-				sender = connection.openSender(address, senderOptions);
+				sender = session.openSender(address, senderOptions);
 			}
 		} catch (ClientException | RuntimeException e) {
 			throw new LifecycleException("Cannot create connection to AMQP broker", e);
 		}
-	}
+	}j
 
 	@Override
 	public void stop() {
-		CloseUtils.closeSilently(sender, streamSender, connection);
+		CloseUtils.closeSilently(sender, streamSender, session);
 		super.stop();
 	}
 
@@ -216,7 +222,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	private SenderResult sendRequestResponse(@Nonnull Message message) throws SenderException {
 		Message responseMessage;
 		// It seems that dynamic receivers cannot be streaming?
-		try (Receiver responseReceiver = StringUtils.isEmpty(replyQueueName) ? connection.openDynamicReceiver() : connection.openReceiver(replyQueueName)) {
+		try (Receiver responseReceiver = StringUtils.isEmpty(replyQueueName) ? session.openDynamicReceiver() : session.openReceiver(replyQueueName)) {
 			String responseQueueAddress = responseReceiver.address();
 			doSend(message, responseQueueAddress);
 			Delivery response = responseReceiver.receive(timeout, TimeUnit.SECONDS);
@@ -327,7 +333,6 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 			}
 			streamSenderMessage.complete();
 			streamSenderMessage.tracker().awaitAccepted(timeout, TimeUnit.SECONDS);
-//			streamSenderMessage.tracker().awaitSettlement(timeout, TimeUnit.SECONDS);
 		} catch (ClientException | IOException e) {
 			throw new SenderException("Cannot send streaming AMQP message to AMQP server", e);
 		}

@@ -49,7 +49,7 @@ public abstract class AmqpSenderTest {
 		sender = new AmqpSender();
 		sender.setAddress(AmqpSenderTest.EXCHANGE_NAME);
 		sender.setConnectionName(getResourceName());
-		sender.setConnectionFactory(factory);
+		sender.setConnectionFactoryFactory(factory);
 
 		session = new PipeLineSession();
 	}
