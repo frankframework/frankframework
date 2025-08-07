@@ -17,16 +17,17 @@ package org.frankframework.extensions.mqtt;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.springframework.context.ApplicationContext;
+
+import lombok.Getter;
+import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.FrankElement;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.NameAware;
 import org.frankframework.doc.Mandatory;
-import org.springframework.context.ApplicationContext;
-
-import lombok.Getter;
-import lombok.Setter;
 
 /**
  * Requires a resource to be configured. Example {@literal resources.yml}:
@@ -53,23 +54,22 @@ public abstract class MqttFacade implements HasPhysicalDestination, IConfigurabl
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
-	private @Setter @Getter MqttClientFactory mqttClientFactory = null; // Spring should wire this!
+	protected @Setter @Getter MqttClientFactoryFactory mqttClientFactoryFactory = null; // Spring should wire this!
 
 	private @Getter String name;
-	private @Getter String resourceName;
+	protected @Getter String resourceName;
 	private @Getter String topic;
 	private @Getter int qos = 2;
 	private @Getter String charset = "UTF-8";
 
 	protected MqttClient client;
+	private MqttClientFactory clientFactory;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		if (resourceName == null) {
 			throw new ConfigurationException("resourceName is required");
 		}
-
-		client = mqttClientFactory.getClient(resourceName);
 	}
 
 	@Override
@@ -122,4 +122,10 @@ public abstract class MqttFacade implements HasPhysicalDestination, IConfigurabl
 		this.resourceName = resourceName;
 	}
 
+	protected MqttClientFactory getClientFactory() {
+		if (clientFactory == null) {
+			clientFactory = mqttClientFactoryFactory.getClientFactory(resourceName);
+		}
+		return clientFactory;
+	}
 }

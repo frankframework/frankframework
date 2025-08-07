@@ -22,6 +22,7 @@ import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
+import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 
 import lombok.extern.log4j.Log4j2;
@@ -37,6 +38,7 @@ import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.receivers.ReceiverAware;
 import org.frankframework.stream.Message;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.RunState;
 
 /**
@@ -89,13 +91,13 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 		if (StringUtils.isEmpty(getTopic())) {
 			throw new ConfigurationException("topic must be specified");
 		}
-
-		client.setCallback(this);
 	}
 
 	@Override
 	public void start() {
 		try {
+			client = getClientFactory().createMqttClient();
+			client.setCallback(this);
 			client.subscribe(getTopic(), getQos());
 		} catch (Exception e) {
 			throw new LifecycleException("Could not subscribe to topic", e);
@@ -104,7 +106,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 
 	@Override
 	public void stop() {
-		// Connection is handled a shared object.
+		CloseUtils.closeSilently(client);
 	}
 
 	@Override
@@ -123,18 +125,27 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 
 	@Override
 	public void connectionLost(Throwable throwable) {
-		String message = getLogPrefix() + "connection lost";
-		receiver.getAdapter().getMessageKeeper().add(message);
-		log.debug(message);
-		// Call receiver which will set status to error after which recover job
-		// will try to recover. Note that at configure time
-		// receiver.setOnError(Receiver.ONERROR_RECOVER) was called. Also
-		// note that mqtt lib will also try to recover (when automaticReconnect
-		// is true) (see connectComplete also) which will probably recover
-		// earlier because of it's smaller interval. When no connection was
-		// available at startup the mqtt lib reconnect isn't started. So in this
-		// case recovery will always be done by the recover job.
-		ibisExceptionListener.exceptionThrown(this, throwable);
+		log.warn("Connection to MQTT server lost; trying to reconnect", throwable);
+		try {
+			client.reconnect();
+		} catch (MqttException e) {
+			log.warn("Failed to reconnect to MQTT server", e);
+			throwable.addSuppressed(e);
+
+			String message = getLogPrefix() + "connection lost";
+			receiver.getAdapter().getMessageKeeper().add(message);
+			log.debug(message);
+
+			// Call receiver which will set status to error after which recover job
+			// will try to recover. Note that at configure time
+			// receiver.setOnError(Receiver.ONERROR_RECOVER) was called. Also
+			// note that mqtt lib will also try to recover (when automaticReconnect
+			// is true) (see connectComplete also) which will probably recover
+			// earlier because of it's smaller interval. When no connection was
+			// available at startup the mqtt lib reconnect isn't started. So in this
+			// case recovery will always be done by the recover job.
+			ibisExceptionListener.exceptionThrown(this, throwable);
+		}
 	}
 
 	@Override
