@@ -42,17 +42,17 @@ public class Amqp1Helper {
 		// Private constructor for utility class
 	}
 
-	public static @Nullable Message getStreamingMessage(@Nonnull AmqpConnectionFactoryFactory connectionFactory, @Nonnull String connectionName, @Nonnull String queueName, @Nonnull AddressType addressType) throws ClientException, IOException {
+	public static @Nullable Message getStreamingMessage(@Nonnull AmqpConnectionFactoryFactory connectionFactory, @Nonnull String connectionName, @Nonnull String address, @Nonnull AddressType addressType) throws ClientException, IOException {
 		try (Connection connection = connectionFactory.getConnectionFactory(connectionName).getConnection()) {
-			return getStreamingMessage(connection, queueName, addressType);
+			return getStreamingMessage(connection, address, addressType);
 		}
 	}
 
 	@Nullable
-	public static Message getStreamingMessage(@Nonnull Connection connection, @Nonnull String queueName, @Nonnull AddressType addressType) throws ClientException, IOException {
+	public static Message getStreamingMessage(@Nonnull Connection connection, @Nonnull String address, @Nonnull AddressType addressType) throws ClientException, IOException {
 		StreamReceiverOptions streamOptions = new StreamReceiverOptions();
 		streamOptions.targetOptions().capabilities(addressType.name().toLowerCase());
-		try (StreamReceiver receiver = connection.openStreamReceiver(queueName)) {
+		try (StreamReceiver receiver = connection.openStreamReceiver(address)) {
 			StreamDelivery delivery = receiver.receive(15, TimeUnit.SECONDS);
 			if (delivery != null) {
 				StreamReceiverMessage amqpMessage = delivery.message();
@@ -60,7 +60,7 @@ public class Amqp1Helper {
 				delivery.accept();
 				return ffMessage;
 			}
-			log.error("Could not get streaming message from queue [{}]", queueName);
+			log.error("Could not get streaming message from {} [{}]", addressType, address);
 			return null;
 		}
 	}
@@ -105,7 +105,7 @@ public class Amqp1Helper {
 				return ffMessage;
 			}
 		}
-		log.error("Could not get message from queue [{}]", address);
+		log.error("Could not get message from {} [{}]", addressType, address);
 		return null;
 	}
 }
