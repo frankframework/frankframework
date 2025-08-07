@@ -8,7 +8,6 @@ import { DebugService } from 'src/app/services/debug.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { AdapterstatisticsService, Statistics, StatisticsKeeper } from './adapterstatistics.service';
 import { LaddaModule } from 'angular2-ladda';
-
 import { FormatStatKeysPipe } from './format-stat-keys.pipe';
 import { FormatStatisticsPipe } from './format-statistics.pipe';
 import { ServerTimeService } from '../../services/server-time.service';
