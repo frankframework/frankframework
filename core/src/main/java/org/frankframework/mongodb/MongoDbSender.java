@@ -23,6 +23,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import jakarta.annotation.Nonnull;
+import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
+
 import org.apache.commons.lang3.StringUtils;
 import org.bson.BsonValue;
 import org.bson.Document;
@@ -31,6 +37,22 @@ import org.bson.codecs.Encoder;
 import org.bson.codecs.EncoderContext;
 import org.bson.json.JsonMode;
 import org.bson.json.JsonWriterSettings;
+import org.xml.sax.SAXException;
+
+import com.mongodb.client.FindIterable;
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.result.DeleteResult;
+import com.mongodb.client.result.InsertManyResult;
+import com.mongodb.client.result.InsertOneResult;
+import com.mongodb.client.result.UpdateResult;
+import com.mongodb.connection.ServerDescription;
+
+import lombok.Getter;
+import lombok.Lombok;
+import lombok.Setter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.PipeLineSession;
@@ -51,26 +73,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringResolver;
-import org.xml.sax.SAXException;
-
-import com.mongodb.client.FindIterable;
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoCollection;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.result.DeleteResult;
-import com.mongodb.client.result.InsertManyResult;
-import com.mongodb.client.result.InsertOneResult;
-import com.mongodb.client.result.UpdateResult;
-import com.mongodb.connection.ServerDescription;
-
-import jakarta.annotation.Nonnull;
-import jakarta.json.Json;
-import jakarta.json.JsonArray;
-import jakarta.json.JsonObject;
-import jakarta.json.JsonReader;
-import lombok.Getter;
-import lombok.Lombok;
-import lombok.Setter;
 
 /**
  * Sender to perform action on a MongoDB database.
@@ -105,10 +107,11 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 	private @Getter DocumentFormat outputFormat=DocumentFormat.JSON;
 	private @Getter boolean prettyPrint=false;
 
-	private @Setter @Getter JndiMongoClientFactory mongoClientFactory = null; // Spring should wire this!
+	private @Setter @Getter MongoClientFactoryFactory mongoClientFactoryFactory = null; // Spring should wire this!
 
 	private MongoClient mongoClient;
 	private final ConcurrentHashMap<String, MongoDatabase> mongoDatabases = new ConcurrentHashMap<>();
+	private MongoClientFactory clientFactory;
 
 	public enum MongoAction {
 		INSERTONE,
@@ -130,9 +133,9 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getDatasourceName())) {
-			setDatasourceName(AppConstants.getInstance(getConfigurationClassLoader()).getString(JndiMongoClientFactory.DEFAULT_DATASOURCE_NAME_PROPERTY, JndiMongoClientFactory.GLOBAL_DEFAULT_DATASOURCE_NAME_DEFAULT));
+			setDatasourceName(AppConstants.getInstance(getConfigurationClassLoader()).getString(MongoClientFactoryFactory.DEFAULT_DATASOURCE_NAME_PROPERTY, MongoClientFactoryFactory.GLOBAL_DEFAULT_DATASOURCE_NAME_DEFAULT));
 		}
-		if (mongoClientFactory==null) {
+		if (mongoClientFactoryFactory ==null) {
 			throw new ConfigurationException("no mongoClientFactory available");
 		}
 		checkStringAttributeOrParameter("database", getDatabase(), PARAM_DATABASE);
@@ -147,9 +150,16 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 
 	@Override
 	public void start() {
-		mongoClient = mongoClientFactory.getMongoClient(getDatasourceName());
+		mongoClient = getClientFactory().createMongoClient();
 
 		super.start();
+	}
+
+	private MongoClientFactory getClientFactory() {
+		if (clientFactory == null) {
+			clientFactory = mongoClientFactoryFactory.getMongoClientFactory(getDatasourceName());
+		}
+		return clientFactory;
 	}
 
 	@Override
@@ -372,7 +382,7 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 
 	/**
 	 * The MongoDB datasource
-	 * @ff.default {@value JndiMongoClientFactory#DEFAULT_DATASOURCE_NAME_PROPERTY}
+	 * @ff.default {@value MongoClientFactoryFactory#DEFAULT_DATASOURCE_NAME_PROPERTY}
 	 */
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;

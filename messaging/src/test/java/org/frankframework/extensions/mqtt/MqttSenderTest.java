@@ -1,7 +1,6 @@
 package org.frankframework.extensions.mqtt;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -24,6 +23,7 @@ import org.frankframework.jdbc.datasource.ResourceObjectLocator;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
+import org.frankframework.util.CloseUtils;
 
 @Testcontainers(disabledWithoutDocker = true)
 @Tag("integration") // Requires Docker; exclude with '-DexcludedGroups=integration'
@@ -43,11 +43,11 @@ public class MqttSenderTest extends SenderTestBase<MqttSender> {
 		locator.setResourceFile("mqttResources.yml");
 		locator.afterPropertiesSet();
 
-		MqttClientFactory factory = new MqttClientFactory();
+		MqttClientFactoryFactory factory = new MqttClientFactoryFactory();
 		factory.setObjectLocators(List.of(locator));
 		factory.afterPropertiesSet();
 
-		sender.setMqttClientFactory(factory);
+		sender.setMqttClientFactoryFactory(factory);
 		sender.setResourceName(RESOURCE_NAME);
 
 		return sender;
@@ -69,17 +69,37 @@ public class MqttSenderTest extends SenderTestBase<MqttSender> {
 		locator.setResourceFile("mqttResources.yml");
 		locator.afterPropertiesSet();
 
-		MqttClientFactory factory = new MqttClientFactory();
+		MqttClientFactoryFactory factory = new MqttClientFactoryFactory();
 		factory.setObjectLocators(List.of(locator));
 		factory.afterPropertiesSet();
 
-		MqttClient client = factory.getClient(RESOURCE_NAME);
+		MqttClient client = factory.getClientFactory(RESOURCE_NAME).createMqttClient();
 		assertTrue(client.isConnected());
 
 		factory.destroy();
 
-		assertFalse(client.isConnected());
+		assertTrue(client.isConnected()); // Closing factory does not close all connected clients anymore, for now
 		assertTrue(factory.getObjectInfo().isEmpty());
+	}
+
+	@Test
+	public void senderCanBeClosedAndReOpened() {
+		sender.setTopic("dummyTopic");
+
+		assertDoesNotThrow(() -> sender.configure());
+		sender.start();
+
+		// Test that sending succeeds first time
+		SenderResult result = assertDoesNotThrow(() -> sender.sendMessage(new Message("dummy"), session));
+		CloseUtils.closeSilently(result.getResult());
+
+		// Stop and Restart the sender
+		sender.stop();
+		sender.start();
+
+		// Test that sending succeeds first time
+		result = assertDoesNotThrow(() -> sender.sendMessage(new Message("dummy"), session));
+		CloseUtils.closeSilently(result.getResult());
 	}
 
 	@Test

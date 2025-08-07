@@ -93,11 +93,11 @@ public class ResourceObjectLocator implements IObjectLocator, InitializingBean {
 			throw new IllegalStateException("invalid resource defined");
 		}
 		int slashPos = name.indexOf('/');
-		String prefix = name.substring(0, slashPos);
-		String resourceName = name.substring(slashPos + 1);
 		if (slashPos == -1) {
 			throw new IllegalStateException("no resource prefix found");
 		}
+		String prefix = name.substring(0, slashPos);
+		String resourceName = name.substring(slashPos + 1);
 
 		return getResources(prefix).findResource(resourceName);
 	}
