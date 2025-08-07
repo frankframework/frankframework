@@ -33,9 +33,9 @@ import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 /**
  * XAResourceRecoveryHelper implementation which gets XIDs, which needs to be recovered, from the database.
  * See org.springframework.boot.jta.narayana.DataSourceXAResourceRecoveryHelper.
- * 
+ *
  * Required as we wrap the connection in a pooling-capable factory, and do not use the native Narayana connection factory.
- * 
+ *
  * Additionally this also implements `XAResourceWrapper`, which (AFAIK) only adds debug info.
  * See XAResourceRecord#getJndiName()
  *

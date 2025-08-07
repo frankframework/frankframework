@@ -18,9 +18,6 @@ package org.frankframework.console.configuration;
 import java.util.List;
 import java.util.Optional;
 
-import org.frankframework.management.bus.LocalGateway;
-import org.frankframework.management.bus.OutboundGatewayFactory;
-import org.frankframework.management.gateway.InputStreamHttpMessageConverter;
 import org.springframework.boot.convert.ApplicationConversionService;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
@@ -33,6 +30,10 @@ import org.springframework.http.converter.json.AbstractJackson2HttpMessageConver
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import org.frankframework.management.bus.LocalGateway;
+import org.frankframework.management.bus.OutboundGatewayFactory;
+import org.frankframework.management.gateway.InputStreamHttpMessageConverter;
 
 /**
  * This class is found by the `FrankFrameworkApiContext.xml` file, is loaded after the xml has been loaded/wired.

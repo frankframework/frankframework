@@ -181,7 +181,7 @@ import org.frankframework.util.XmlUtils;
  * <li>the setRollBackOnly() method has been called on the userTransaction (not accessible by Pipes)</li>
  * </ul>
  * </p>
- * 
+ *
  * @ff.tip Although not mandatory, it is recommended to give your Receiver a clear name. This helps with ConfigurationWarnings and log statements.
  *
  * @author Gerrit van Brakel

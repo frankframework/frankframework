@@ -45,4 +45,3 @@ public class NamespaceRemovingFilter extends FullXmlFilter {
 		// No-op
 	}
 }
-

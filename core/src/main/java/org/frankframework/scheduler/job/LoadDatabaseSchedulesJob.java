@@ -49,10 +49,10 @@ import org.frankframework.util.SpringUtils;
  *    If it is not present it add the job to the scheduler.
  * 4. Once it's looped through all the database jobs, loop through the remaining jobs in the Map.
  *    Since they have been removed from the database, remove them from the Quartz Scheduler
- * 
- * 
+ *
+ *
  * Frank!Framework job which periodically looks in the {@literal IBISSCHEDULES} table to see if a new {@link DatabaseJob} should be loaded.
- * 
+ *
  * @ff.info This is a default job that can be controlled with the property {@literal loadDatabaseSchedules.active} and {@literal loadDatabaseSchedules.interval}.
  *
  * @author Niels Meijer

@@ -1,9 +1,8 @@
 package org.frankframework.filesystem.mail;
 
-import org.frankframework.filesystem.BasicFileSystemListenerTest;
-import org.frankframework.filesystem.IFileSystemTestHelper;
-import org.frankframework.filesystem.ImapFileSystem;
-import org.frankframework.receivers.ImapListener;
+import jakarta.mail.Message;
+import jakarta.mail.NoSuchProviderException;
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -12,8 +11,10 @@ import com.icegreen.greenmail.junit5.GreenMailExtension;
 import com.icegreen.greenmail.util.ServerSetup;
 import com.icegreen.greenmail.util.ServerSetupTest;
 
-import jakarta.mail.Message;
-import jakarta.mail.NoSuchProviderException;
+import org.frankframework.filesystem.BasicFileSystemListenerTest;
+import org.frankframework.filesystem.IFileSystemTestHelper;
+import org.frankframework.filesystem.ImapFileSystem;
+import org.frankframework.receivers.ImapListener;
 
 @Disabled("these don't work")
 public class ImapMailListenerTest extends BasicFileSystemListenerTest<Message, ImapFileSystem> {

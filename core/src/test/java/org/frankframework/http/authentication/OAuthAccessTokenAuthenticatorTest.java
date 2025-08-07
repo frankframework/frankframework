@@ -117,7 +117,7 @@ public class OAuthAccessTokenAuthenticatorTest {
 		httpSender.setScope(null);
 		httpSender.setClientId(clientId);
 		httpSender.setClientSecret(clientSecret);
-		
+
 		httpSender.configure();
 		httpSender.start();
 

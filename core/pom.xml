@@ -1,4 +1,5 @@
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -13,7 +14,9 @@
 	<properties>
 		<j2v8.version>4.6.0</j2v8.version>
 		<graalvm.version>24.2.2</graalvm.version>
-		<saxon.version>10.9</saxon.version><!--From version 11, duplicate imported resources cause an exception. -->
+
+		<!-- From version 11, duplicate imported resources cause an exception. -->
+		<saxon.version>10.9</saxon.version>
 	</properties>
 
 	<dependencies>
@@ -43,12 +46,6 @@
 			<version>3.30.2-GA</version>
 		</dependency>
 
-		<dependency>
-			<groupId>jakarta.servlet</groupId>
-			<artifactId>jakarta.servlet-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-
 		<!-- Logging -->
 		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
@@ -62,15 +59,18 @@
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
-		<dependency><!-- LOG4J SLF4J Binding -->
+		<dependency>
+			<!-- LOG4J SLF4J Binding -->
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-slf4j2-impl</artifactId>
 		</dependency>
-		<dependency><!-- Apache Commons Logging Binding -->
+		<dependency>
+			<!-- Apache Commons Logging Binding -->
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-jcl</artifactId>
 		</dependency>
-		<dependency><!-- Java Util Logging Binding -->
+		<dependency>
+			<!-- Java Util Logging Binding -->
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-jul</artifactId>
 		</dependency>
@@ -245,12 +245,14 @@
 			<artifactId>mongodb-driver-sync</artifactId>
 			<version>${mongodb.driver.version}</version>
 		</dependency>
-		<dependency><!-- Needed for WsdlUtils, for cosmetically better wsdls. Woodstox messes up attribute order, and namespace definitions -->
+		<dependency>
+			<!-- Needed for WsdlUtils, for cosmetically better wsdls. Woodstox messes up attribute order, and namespace definitions -->
 			<groupId>com.sun.xml.stream</groupId>
 			<artifactId>sjsxp</artifactId>
 			<version>1.0.2</version>
 			<exclusions>
-				<exclusion><!-- excluded because we want the stax2 api -->
+				<exclusion>
+					<!-- excluded because we want the stax2 api -->
 					<groupId>javax.xml.stream</groupId>
 					<artifactId>stax-api</artifactId>
 				</exclusion>
@@ -261,6 +263,11 @@
 			<artifactId>wss4j-ws-security-dom</artifactId>
 			<version>3.0.4</version>
 			<exclusions>
+				<!-- we don't use the caching functionality, prevents a duplicate jar (different groupId) -->
+				<exclusion>
+					<groupId>org.ehcache</groupId>
+					<artifactId>ehcache</artifactId>
+				</exclusion>
 				<exclusion>
 					<groupId>org.opensaml</groupId>
 					<artifactId>opensaml-saml-impl</artifactId>
@@ -272,11 +279,6 @@
 				<exclusion>
 					<groupId>org.opensaml</groupId>
 					<artifactId>opensaml-xacml-saml-impl</artifactId>
-				</exclusion>
-				<!-- we don't use the caching functionality, prevents a duplicate jar (different groupId) -->
-				<exclusion>
-					<groupId>org.ehcache</groupId>
-					<artifactId>ehcache</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -380,7 +382,8 @@
 			<artifactId>httpmime</artifactId>
 		</dependency>
 
-		<dependency> <!-- Only used in XmlUtils.toXhtml -->
+		<dependency>
+			<!-- Only used in XmlUtils.toXhtml -->
 			<groupId>net.sourceforge.htmlcleaner</groupId>
 			<artifactId>htmlcleaner</artifactId>
 			<version>2.29</version>
@@ -412,13 +415,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<!-- jboss-logging is required for Narayana -->
-		<dependency>
-			<groupId>org.jboss.logging</groupId>
-			<artifactId>jboss-logging</artifactId>
-			<version>${jboss-logging.version}</version>
-			<scope>test</scope>
-		</dependency>
 
 		<dependency>
 			<groupId>net.spy</groupId>
@@ -440,24 +436,6 @@
 			<artifactId>j2v8_macosx_x86_64</artifactId>
 			<version>${j2v8.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>com.eclipsesource.j2v8</groupId>
-			<artifactId>j2v8_linux_x86_64</artifactId>
-			<version>${j2v8.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.eclipsesource.j2v8</groupId>
-			<artifactId>j2v8_win32_x86_64</artifactId>
-			<version>${j2v8.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.eclipsesource.j2v8</groupId>
-			<artifactId>j2v8_win32_x86</artifactId>
-			<version>${j2v8.version}</version>
-			<scope>runtime</scope>
-		</dependency>
 
 		<dependency>
 			<groupId>org.graalvm.polyglot</groupId>
@@ -468,14 +446,6 @@
 			<groupId>org.graalvm.js</groupId>
 			<artifactId>js-scriptengine</artifactId>
 			<version>${graalvm.version}</version>
-		</dependency>
-		<!-- runtime -->
-		<dependency>
-			<groupId>org.graalvm.polyglot</groupId>
-			<artifactId>js-community</artifactId>
-			<version>${graalvm.version}</version>
-			<type>pom</type>
-			<scope>runtime</scope>
 		</dependency>
 
 		<!-- CXF -->
@@ -584,11 +554,11 @@
 				</exclusion>
 				<exclusion>
 					<groupId>com.sun.xml.bind</groupId>
-					<artifactId>jaxb-impl</artifactId>
+					<artifactId>jaxb-core</artifactId>
 				</exclusion>
 				<exclusion>
 					<groupId>com.sun.xml.bind</groupId>
-					<artifactId>jaxb-core</artifactId>
+					<artifactId>jaxb-impl</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -604,16 +574,16 @@
 					<artifactId>logback-classic</artifactId>
 				</exclusion>
 				<exclusion>
-					<groupId>org.bouncycastle</groupId>
-					<artifactId>bcprov-jdk15on</artifactId>
+					<groupId>com.google.code.findbugs</groupId>
+					<artifactId>jsr305</artifactId>
 				</exclusion>
 				<exclusion>
 					<groupId>org.bouncycastle</groupId>
 					<artifactId>bcpg-jdk15on</artifactId>
 				</exclusion>
 				<exclusion>
-					<groupId>com.google.code.findbugs</groupId>
-					<artifactId>jsr305</artifactId>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bcprov-jdk15on</artifactId>
 				</exclusion>
 			</exclusions>
 		</dependency>
@@ -653,7 +623,57 @@
 			<version>74.2</version>
 		</dependency>
 
+		<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<!-- to be able to extract Oracle error messages in IbisException.getExceptionSpecificDetails() -->
+			<groupId>com.oracle.database.jdbc</groupId>
+			<artifactId>ojdbc${oracle.driver.jdkversion}</artifactId>
+			<version>${oracle.driver.version}</version>
+			<scope>provided</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.eclipsesource.j2v8</groupId>
+			<artifactId>j2v8_linux_x86_64</artifactId>
+			<version>${j2v8.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.eclipsesource.j2v8</groupId>
+			<artifactId>j2v8_win32_x86_64</artifactId>
+			<version>${j2v8.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.eclipsesource.j2v8</groupId>
+			<artifactId>j2v8_win32_x86</artifactId>
+			<version>${j2v8.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+
+		<!-- This is only required at runtime -->
+		<dependency>
+			<groupId>org.graalvm.polyglot</groupId>
+			<artifactId>js-community</artifactId>
+			<version>${graalvm.version}</version>
+			<type>pom</type>
+			<scope>runtime</scope>
+		</dependency>
+
 		<!-- Test scoped dependencies -->
+
+		<!-- jboss-logging is required for Narayana -->
+		<dependency>
+			<groupId>org.jboss.logging</groupId>
+			<artifactId>jboss-logging</artifactId>
+			<version>${jboss-logging.version}</version>
+			<scope>test</scope>
+		</dependency>
+
 		<dependency>
 			<groupId>org.hamcrest</groupId>
 			<artifactId>hamcrest</artifactId>
@@ -723,13 +743,6 @@
 
 		<!-- DATABASE DRIVERS  -->
 		<dependency>
-			<!-- to be able to extract Oracle error messages in IbisException.getExceptionSpecificDetails() -->
-			<groupId>com.oracle.database.jdbc</groupId>
-			<artifactId>ojdbc${oracle.driver.jdkversion}</artifactId>
-			<version>${oracle.driver.version}</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
 			<groupId>com.h2database</groupId>
 			<artifactId>h2</artifactId>
 			<version>${h2.driver.version}</version>
@@ -765,6 +778,7 @@
 			<version>${postgresql.driver.version}</version>
 			<scope>test</scope>
 		</dependency>
+
 		<!-- LdapSenderTest -->
 		<dependency>
 			<groupId>com.unboundid</groupId>

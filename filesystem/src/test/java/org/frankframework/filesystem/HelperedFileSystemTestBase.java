@@ -3,9 +3,10 @@ package org.frankframework.filesystem;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.frankframework.util.CloseUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+
+import org.frankframework.util.CloseUtils;
 
 public abstract class HelperedFileSystemTestBase extends FileSystemTestBase {
 

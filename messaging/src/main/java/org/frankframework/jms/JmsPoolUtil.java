@@ -66,7 +66,7 @@ public class JmsPoolUtil {
 		}
 	}
 
-	/** Return pooling info if present 
+	/** Return pooling info if present
 	 * @param info */
 	private static void getJmsPoolInfo(JmsPoolConnectionFactory poolcf, StringBuilder info) {
 		info.append(ClassUtils.classNameOf(poolcf)).append(" Pool Info: ");

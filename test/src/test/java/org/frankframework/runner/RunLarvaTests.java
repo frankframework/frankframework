@@ -124,6 +124,9 @@ public class RunLarvaTests {
 	static void setupBeforeAll() throws Exception {
 		jmsServer = configureEmbeddedJmsServer();
 
+		// Ladybug is called from a Larva scenario (using LadybugPipe) and needs to find and execute the *.report.xml files
+		System.setProperty("ibistesttool.directory", "src/test/testtool");
+
 		SpringApplication springApplication = IafTestInitializer.configureApplication("NARAYANA", null, "inmem");
 		// This ApplicationContext doesn't have the database, so we cannot use it for the Larva Tests...
 		parentContext = springApplication.run();

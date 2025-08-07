@@ -176,7 +176,12 @@
           @for (resourceFactory of resourceFactories; track resourceFactory.name) {
             <div class="col-md-12 m-t-md table-responsive">
               <div class="ibox-title">
-                <h4>Used {{ resourceFactory.name }}</h4>
+                <h4>
+                  Used {{ resourceFactory.name }}
+                  @if (resourceFactory.name === 'DataSources' || resourceFactory.name === 'Connection Factories') {
+                    <small> - TransactionManager: {{ transactionManager() }} </small>
+                  }
+                </h4>
               </div>
               <div class="ibox-content">
                 <table class="table table-striped resources">

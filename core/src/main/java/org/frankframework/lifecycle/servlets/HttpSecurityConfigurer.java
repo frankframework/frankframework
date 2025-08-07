@@ -43,12 +43,12 @@ import org.frankframework.lifecycle.ServletManager;
  * The default SecurityFilterChain will be added by {@link SecurityFilterChainConfigurer}.
  * All {@link SecurityFilterChain} are added to the root {@link WebApplicationContext} which is stored under
  * {@link WebApplicationContext#ROOT_WEB_APPLICATION_CONTEXT_ATTRIBUTE}.
- * 
+ *
  * In newer versions of Spring Boot the boot context overwrites this key, using the 'old' context as a parent.
  * By not unregistering the {@link SecurityFilterChain} they can be picked up by the new context (which may
- * add their own filters). This indirectly means that the default 'FilterChainProxy' (which collects all 
+ * add their own filters). This indirectly means that the default 'FilterChainProxy' (which collects all
  * SecurityFilters) will not NOT be used. Instead a new one, created in the sub-context, will be used.
- * 
+ *
  * @author Niels Meijer
  */
 @Log4j2

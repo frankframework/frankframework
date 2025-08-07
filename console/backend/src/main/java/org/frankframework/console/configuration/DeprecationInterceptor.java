@@ -15,8 +15,11 @@
 */
 package org.frankframework.console.configuration;
 
+import java.lang.reflect.Method;
+
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.EnvironmentAware;
@@ -26,8 +29,6 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.method.HandlerMethod;
 import org.springframework.web.servlet.HandlerInterceptor;
-
-import java.lang.reflect.Method;
 
 /**
  * Should only intercept Spring WEB MVC requests.

@@ -30,6 +30,7 @@ import com.sap.conn.jco.JCoException;
 import com.sap.conn.jco.JCoRepository;
 
 import lombok.Getter;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.extensions.sap.ISapSystem;

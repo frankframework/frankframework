@@ -71,7 +71,7 @@ public class JarFileClassLoader extends AbstractJarBytesClassLoader {
 				return input.filter(JarFileClassLoader::isJarFile)
 						.filter(e -> getConfigurationName().equals(findConfigurationName(e)))
 						.findFirst()
-						.orElseThrow(()-> new FileNotFoundException("no MessageKeeper found"));
+						.orElseThrow(()-> new FileNotFoundException(getConfigurationName() + " not found"));
 			}
 
 		} catch (IOException e) {

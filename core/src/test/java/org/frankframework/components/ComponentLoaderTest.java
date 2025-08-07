@@ -24,7 +24,7 @@ public class ComponentLoaderTest {
 	/*
 	 * This test assumes the project is build as a Maven reactor mode.
 	 * Building the required Maven Modules and attaching them to this Module build.
-	 * 
+	 *
 	 * Some tools build each Module separately, attaching the dependent module's sources to the classpath.
 	 * This will cause the test to fail.
 	 */

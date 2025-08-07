@@ -383,7 +383,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 						Resource xslt = Resource.getResource(ConfigurationUtils.STUB4TESTTOOL_XSLT_DEFAULT);
 						TransformerPool tp = TransformerPool.getInstance(xslt);
 						stubbedPipe = tp.transformToString(checkpoint.getMessage());
-						// Extract sender testtool names from the pipe configuration 
+						// Extract sender testtool names from the pipe configuration
 						String regex = TESTTOOL_PREFIX + "([^\"]+)";
 
 						Pattern pattern = Pattern.compile(regex);
@@ -643,7 +643,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 				try {
 					Files.delete(path);
 				} catch (NoSuchFileException ignored) {
-					// No need to delete the file if it does not exist somehow 
+					// No need to delete the file if it does not exist somehow
 				} catch (IOException e) {
 					errors.add("Newly created file [" + path.toAbsolutePath().normalize() + "] could not be deleted.");
 				}

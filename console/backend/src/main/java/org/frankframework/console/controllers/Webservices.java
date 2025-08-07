@@ -15,10 +15,6 @@
 */
 package org.frankframework.console.controllers;
 
-import lombok.Getter;
-
-import lombok.Setter;
-
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -26,6 +22,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.console.AllowAllIbisUserRoles;
 import org.frankframework.console.ApiException;

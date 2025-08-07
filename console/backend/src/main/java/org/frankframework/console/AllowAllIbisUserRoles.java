@@ -22,9 +22,9 @@ import java.lang.annotation.Documented;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-import org.frankframework.lifecycle.DynamicRegistration;
-
 import jakarta.annotation.security.RolesAllowed;
+
+import org.frankframework.lifecycle.DynamicRegistration;
 
 /**
  * To avoid repeating this list of roles over and over again, use a default annotation

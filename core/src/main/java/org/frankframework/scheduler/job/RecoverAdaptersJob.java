@@ -29,7 +29,7 @@ import org.frankframework.util.RunState;
 /**
  * Frank!Framework Adapter recovery-job, which monitors all adapter states, attempts to recover them if required,
  * and logs this information to the {@code HEARTBEAT} log appender.
- * 
+ *
  * @ff.info This is a default job that can be controlled with the property {@literal recover.adapters.interval}.
  */
 public class RecoverAdaptersJob extends AbstractJobDef {

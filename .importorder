@@ -1,0 +1,10 @@
+#Organize Import Order
+#Wed Aug 06 16:41:15 CEST 2025
+0=java.
+1=javax
+2=jakarta
+3=org
+4=com
+5=
+6=nl.nn.adapterframework
+7=org.frankframework

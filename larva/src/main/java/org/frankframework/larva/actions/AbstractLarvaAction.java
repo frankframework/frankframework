@@ -36,9 +36,9 @@ import org.frankframework.util.EnumUtils;
 
 /**
  * This class is used to create and manage the lifecycle of Larva actions.
- * 
+ *
  * This class is a wrapper around the IConfigurable interface and handles the read and write operations.
- * 
+ *
  * @author Niels Meijer
  */
 @Log4j2

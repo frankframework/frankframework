@@ -15,7 +15,9 @@
 */
 package org.frankframework.console.configuration;
 
-import org.frankframework.console.ApiException;
+import jakarta.annotation.Nullable;
+import jakarta.servlet.ServletException;
+
 import org.springframework.beans.ConversionNotSupportedException;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.core.Ordered;
@@ -48,9 +50,9 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
 
-import jakarta.annotation.Nullable;
-import jakarta.servlet.ServletException;
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.console.ApiException;
 
 @RestControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE+1)

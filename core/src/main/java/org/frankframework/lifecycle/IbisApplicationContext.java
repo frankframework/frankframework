@@ -212,7 +212,7 @@ public class IbisApplicationContext implements Closeable {
 	/**
 	 * Returns the Spring XML Bean Factory If non exists yet it will create one.
 	 * If initializing the context fails, it will return null.
-	 * 
+	 *
 	 * Ideally this method should not be exposed....
 	 *
 	 * @return Spring XML Bean Factory or NULL

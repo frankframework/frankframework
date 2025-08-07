@@ -9,8 +9,6 @@ import java.io.IOException;
 
 import jakarta.annotation.Nonnull;
 
-import org.frankframework.testutil.TestAssertions;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -25,6 +23,7 @@ import org.frankframework.core.TimeoutException;
 import org.frankframework.senders.JavascriptSender.JavaScriptEngines;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.NumberParameterBuilder;
+import org.frankframework.testutil.TestAssertions;
 
 class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
 

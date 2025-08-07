@@ -27,7 +27,7 @@ class ScenarioTest {
 		// The "L" in readLine / writeLine can now be capitalized optionally.
 		String scenarioSteps = """
 				action.className=org.frankframework.test.TestAction
-				
+
 				step1.action.read=in.txt
 				step2.action.write=out.txt
 				step3.action.writeline=outline
@@ -35,7 +35,7 @@ class ScenarioTest {
 				step5.action.read=in.txt
 				step6.action.writeLine=outline
 				step7.action.readLine=inline
-				
+
 				ignore.action.read=ignore.txt
 				""";
 		Scenario scenario = createScenario(scenarioSteps);
@@ -108,12 +108,12 @@ class ScenarioTest {
 		// Steps not in order should be returned sorted
 		String scenarioSteps = """
 				action.className=org.frankframework.test.TestAction
-				
+
 				step5.action.read=in.txt
 				step2.action.write=out.txt
 				step3.action.writeline=outline
 				step1.action.read=in.txt
-				
+
 				ignore.action.read=ignore.txt
 				step4.action.read=in.txt
 				""";
@@ -137,12 +137,12 @@ class ScenarioTest {
 		// Step numbers can now be skipped, so step5 is now picked up as a valid step
 		String scenarioSteps = """
 				action.className=org.frankframework.test.TestAction
-				
+
 				step1.action.read=in.txt
 				step2.action.write=out.txt
 				step3.action.writeline=outline
 				step5.action.read=in.txt
-				
+
 				ignore.action.read=ignore.txt
 				""";
 		Scenario scenario = createScenario(scenarioSteps);

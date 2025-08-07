@@ -1,11 +1,6 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<packaging>pom</packaging>
-
-	<artifactId>frankframework-docker</artifactId>
-	<name>Frank!Framework - Docker</name>
-	<version>${revision}</version>
 
 	<parent>
 		<groupId>org.frankframework</groupId>
@@ -13,70 +8,18 @@
 		<version>${revision}</version>
 	</parent>
 
+	<artifactId>frankframework-docker</artifactId>
+	<version>${revision}</version>
+	<packaging>pom</packaging>
+	<name>Frank!Framework - Docker</name>
+
 	<properties>
 		<config.image.repository>private.docker.nexus.frankframework.org</config.image.repository>
 		<config.image.name>ff-test</config.image.name>
 		<config.image.tag>${config.image.name}:${revision}-${config.image.variation}</config.image.tag>
-		<oracle.driver.groupid>com.oracle.database.jdbc</oracle.driver.groupid><!-- explicitly defined because of the legacy profile -->
+		<oracle.driver.groupid>com.oracle.database.jdbc</oracle.driver.groupid>
+		<!-- explicitly defined because of the legacy profile -->
 	</properties>
-
-	<build>
-		<pluginManagement>
-			<plugins>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-dependency-plugin</artifactId>
-					<version>3.8.1</version>
-				</plugin>
-				<plugin>
-					<artifactId>maven-resources-plugin</artifactId>
-					<version>3.3.1</version>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-antrun-plugin</artifactId>
-					<version>1.8</version>
-					<executions>
-						<execution>
-							<id>prepare-package</id>
-							<phase>package</phase>
-							<inherited>true</inherited>
-							<configuration>
-								<target>
-									<exec executable="docker" failonerror="true">
-										<arg value="build"/>
-										<arg value="--no-cache"/>
-										<arg value="-t"/>
-										<arg value="${config.image.tag}"/>
-										<arg value="-t"/>
-										<arg value="${config.image.repository}/${config.image.tag}"/>
-										<arg value="--build-arg"/>
-										<arg value="FF_VERSION=${revision}"/>
-										<arg value="."/>
-									</exec>
-								</target>
-							</configuration>
-							<goals>
-								<goal>run</goal>
-							</goals>
-						</execution>
-					</executions>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-enforcer-plugin</artifactId>
-					<executions>
-						<execution>
-							<id>enforce-classpath-lib-ban</id>
-							<configuration>
-								<skip>true</skip>
-							</configuration>
-						</execution>
-					</executions>
-				</plugin>
-			</plugins>
-		</pluginManagement>
-	</build>
 
 	<dependencyManagement>
 		<dependencies>
@@ -100,6 +43,64 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<version>3.8.1</version>
+				</plugin>
+				<plugin>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>3.3.1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-antrun-plugin</artifactId>
+					<version>1.8</version>
+					<executions>
+						<execution>
+							<id>prepare-package</id>
+							<goals>
+								<goal>run</goal>
+							</goals>
+							<phase>package</phase>
+							<inherited>true</inherited>
+							<configuration>
+								<target>
+									<exec executable="docker" failonerror="true">
+										<arg value="build" />
+										<arg value="--no-cache" />
+										<arg value="-t" />
+										<arg value="${config.image.tag}" />
+										<arg value="-t" />
+										<arg value="${config.image.repository}/${config.image.tag}" />
+										<arg value="--build-arg" />
+										<arg value="FF_VERSION=${revision}" />
+										<arg value="." />
+									</exec>
+								</target>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-enforcer-plugin</artifactId>
+					<executions>
+						<execution>
+							<id>enforce-classpath-lib-ban</id>
+							<configuration>
+								<skip>true</skip>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
 
 	<profiles>
 		<profile>

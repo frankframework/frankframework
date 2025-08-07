@@ -335,7 +335,7 @@ public abstract class AbstractSOAPProvider implements Provider<SOAPMessage> {
 		return new Message(part, context);
 	}
 
-	// Cannot close message here, as the provided source 
+	// Cannot close message here, as the provided source
 	private SOAPMessage convertResponseToSoapMessage(Message response, String soapProtocol) {
 		try {
 			SOAPMessage soapMessage = getMessageFactory(soapProtocol).createMessage();

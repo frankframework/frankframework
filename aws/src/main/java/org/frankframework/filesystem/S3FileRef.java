@@ -43,7 +43,7 @@ import org.frankframework.util.StringUtil;
  * <li>The content-lenght as well as modification-time are stored.</li>
  * <li>Everything can be updated with a simple method to simplify code in implementations.</li>
  * </ul>
- * 
+ *
  * @author Niels Meijer
  */
 public class S3FileRef {

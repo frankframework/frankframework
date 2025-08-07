@@ -23,9 +23,9 @@ import org.frankframework.statistics.MetricsInitializer;
 /**
  * Digested FrankElements such as an {@link IPipe}/{@link ISender} or {@link IListener}.
  * These elements contain a bunch of getters, but not necessarily setters.
- * 
+ *
  * Mainly used for {@link MetricsInitializer statistics} and {@link ConfigurationWarnings}.
- * 
+ *
  * NOTE: The {@link ApplicationContextAware} interface is here for ease of use. Ideally implementers should declare it them selves,
  * but since it's almost always required. For now, this keeps things backwards compatible.
  */

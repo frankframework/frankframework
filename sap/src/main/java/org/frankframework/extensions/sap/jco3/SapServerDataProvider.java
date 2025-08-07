@@ -27,6 +27,7 @@ import com.sap.conn.jco.ext.ServerDataEventListener;
 import com.sap.conn.jco.ext.ServerDataProvider;
 
 import lombok.Getter;
+
 import org.frankframework.extensions.sap.SapException;
 import org.frankframework.util.LogUtil;
 

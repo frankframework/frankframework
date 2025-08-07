@@ -41,14 +41,14 @@ public abstract class MessageEvent<T extends ApplicationContext> extends Applica
 
 	/**
 	 * Mandatory message prefix, should contain information about the context {@code <T>}.
-	 * 
+	 *
 	 * @return Type, name and or version.
 	 */
 	protected abstract String getMessagePrefix();
 
 	/**
 	 * Optional formatted error message. This is not logged, as it's part of the stacktrace.
-	 * 
+	 *
 	 * @param e The exception that was thrown (if any)
 	 * @return The formatted exception message.
 	 */

@@ -20,8 +20,8 @@ import jakarta.mail.internet.MimeBodyPart;
 
 import org.frankframework.doc.Category;
 import org.frankframework.doc.ReferTo;
-import org.frankframework.filesystem.ImapFileSystem;
 import org.frankframework.filesystem.AbstractMailListener;
+import org.frankframework.filesystem.ImapFileSystem;
 
 @Category(Category.Type.ADVANCED)
 public class ImapListener extends AbstractMailListener<Message, MimeBodyPart, ImapFileSystem> {

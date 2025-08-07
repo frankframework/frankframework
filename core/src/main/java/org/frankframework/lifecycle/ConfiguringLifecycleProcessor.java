@@ -41,7 +41,7 @@ import org.frankframework.util.StringUtil;
 /**
  * This class is a custom implementation of the Spring {@link DefaultLifecycleProcessor} that adds support for
  * {@link ConfigurableLifecycle} beans. It allows for the configuration of lifecycle beans before they are started.
- * 
+ *
  * Additionally it adds logging capabilities to track the context that's being lifecycled.
  * <p>
  * See {@link ConfigurableApplicationContext} for more information.
