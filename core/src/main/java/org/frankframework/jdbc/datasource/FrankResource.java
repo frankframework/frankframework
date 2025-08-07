@@ -20,7 +20,6 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 
-import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.util.AppConstants;
@@ -31,7 +30,7 @@ public class FrankResource {
 
 	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 
-	@Getter @Setter String name;
+	@Setter String name;
 	@Setter String type;
 	@Setter String url;
 
@@ -43,13 +42,20 @@ public class FrankResource {
 	// Additional connection or client settings
 	@Setter Properties properties;
 
+	public String getName() {
+		if(StringUtils.isEmpty(name)) {
+			throw new IllegalStateException("field [name] is required");
+		}
+		return StringResolver.substVars(name, APP_CONSTANTS);
+	}
+
 	public String getType() {
 		return StringResolver.substVars(type, APP_CONSTANTS);
 	}
 
 	public String getUrl() {
 		if(StringUtils.isEmpty(url)) {
-			throw new IllegalStateException("field url is required");
+			throw new IllegalStateException("field [url] is required");
 		}
 		return StringResolver.substVars(url, APP_CONSTANTS);
 	}

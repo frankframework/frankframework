@@ -22,6 +22,17 @@ public class ResourceObjectLocatorTest {
 	}
 
 	@Test
+	public void testInstanceNameLc() throws Exception {
+		ResourceObjectLocator locator = new ResourceObjectLocator();
+
+		locator.setResourceFile("ResourceLocator/validResources.yml");
+		locator.afterPropertiesSet();
+
+		Object obj = locator.lookup("jdbc/testconfiguration", null, Object.class);
+		assertNotNull(obj);
+	}
+
+	@Test
 	public void testInvalidFile() throws Exception {
 		ResourceObjectLocator locator = new ResourceObjectLocator();
 		locator.setResourceFile("ResourceLocator/invalidResources.yml");
