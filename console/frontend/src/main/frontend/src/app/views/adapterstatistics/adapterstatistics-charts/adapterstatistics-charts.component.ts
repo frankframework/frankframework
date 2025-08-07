@@ -1,4 +1,4 @@
-import { Component, input, InputSignal, OnInit } from '@angular/core';
+import { Component, input, OnInit } from '@angular/core';
 import { BaseChartDirective } from 'ng2-charts';
 import type { ChartData, ChartOptions } from 'chart.js';
 
@@ -13,15 +13,15 @@ export type CountPerReceiverStatistics = ChartData<'doughnut', number[], string>
   styleUrl: './adapterstatistics-charts.component.scss',
 })
 export class AdapterstatisticsChartsComponent implements OnInit {
-  public readonly hourlyStatistics: InputSignal<HourlyStatistics> = input<HourlyStatistics>({
+  public readonly hourlyStatistics = input<HourlyStatistics>({
     labels: [],
     datasets: [],
   });
-  public readonly sloStatistics: InputSignal<ChartData<'line'>> = input<ChartData<'line'>>({
+  public readonly sloStatistics = input<SLOStatistics>({
     labels: [],
     datasets: [],
   });
-  public readonly countPerReceiverStatistics: InputSignal<ChartData<'doughnut'>> = input<ChartData<'doughnut'>>({
+  public readonly countPerReceiverStatistics = input<CountPerReceiverStatistics>({
     labels: [],
     datasets: [],
   });
@@ -59,6 +59,7 @@ export class AdapterstatisticsChartsComponent implements OnInit {
           text: 'Messages Per Hour',
         },
         beginAtZero: true,
+        suggestedMin: 0,
         suggestedMax: 10,
       },
     },
@@ -72,7 +73,23 @@ export class AdapterstatisticsChartsComponent implements OnInit {
           display: true,
           text: '% of Messages',
         },
-        suggestedMax: 10,
+        suggestedMin: 0,
+        suggestedMax: 100,
+      },
+    },
+  };
+
+  protected countPerReceiverStatisticsOptions: ChartOptions<'doughnut'> = {
+    responsive: true,
+    maintainAspectRatio: false,
+    plugins: {
+      legend: {
+        position: 'right',
+      },
+      tooltip: {
+        intersect: false,
+        displayColors: false,
+        filter: (tooltipItem) => tooltipItem.datasetIndex === 0,
       },
     },
   };

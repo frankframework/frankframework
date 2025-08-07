@@ -96,6 +96,16 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
     },
   };
   private countPerReceiverStatisticsDataset: Partial<ChartDataset<'doughnut', number>> = {};
+  private defaultDoughnutColors = [
+    // from https://github.com/chartjs/Chart.js/blob/master/src/plugins/plugin.colors.ts
+    'rgb(54, 162, 235)', // blue
+    'rgb(255, 99, 132)', // red
+    'rgb(255, 159, 64)', // orange
+    'rgb(255, 205, 86)', // yellow
+    'rgb(75, 192, 192)', // green
+    'rgb(153, 102, 255)', // purple
+    'rgb(201, 203, 207)', // grey
+  ];
 
   ngOnInit(): void {
     const routeParameters = this.route.snapshot.paramMap;
@@ -186,11 +196,22 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
   }
 
   private setCountPerReceiverStatisticsData(data: Statistics): void {
+    const names = data.receivers.map((receiver) => receiver.name);
+    const counts = data.receivers.map((receiver) => receiver.messagesReceived);
+    const retries = data.receivers.flatMap((receiver) => [
+      receiver.messagesReceived - receiver.messagesRetried,
+      receiver.messagesRetried,
+    ]);
     this.countPerReceiverStatistics = {
-      labels: data.receivers.map((receiver) => receiver.name),
+      labels: names,
       datasets: [
         {
-          data: data.receivers.map((receiver) => receiver.messagesReceived),
+          data: counts,
+          backgroundColor: this.defaultDoughnutColors,
+        },
+        {
+          data: retries,
+          backgroundColor: ['rgba(26, 179, 148, 0.65)', 'rgba(237, 85, 101, 0.65)'],
         },
       ],
     };
