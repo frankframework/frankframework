@@ -23,6 +23,7 @@ import org.frankframework.jdbc.datasource.ResourceObjectLocator;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
+import org.frankframework.util.CloseUtils;
 
 @Testcontainers(disabledWithoutDocker = true)
 @Tag("integration") // Requires Docker; exclude with '-DexcludedGroups=integration'
