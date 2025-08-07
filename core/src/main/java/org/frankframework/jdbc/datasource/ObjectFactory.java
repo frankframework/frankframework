@@ -173,6 +173,8 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	protected void destroyObject(O object) throws Exception {
 		if (object instanceof AutoCloseable closable) {
 			closable.close();
+		} else if (object instanceof DisposableBean bean) {
+			bean.destroy();
 		}
 	}
 }

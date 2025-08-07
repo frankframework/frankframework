@@ -109,10 +109,11 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 	private @Getter DocumentFormat outputFormat=DocumentFormat.JSON;
 	private @Getter boolean prettyPrint=false;
 
-	private @Setter @Getter JndiMongoClientFactory mongoClientFactory = null; // Spring should wire this!
+	private @Setter @Getter MongoClientFactoryFactory mongoClientFactoryFactory = null; // Spring should wire this!
 
 	private MongoClient mongoClient;
 	private final ConcurrentHashMap<String, MongoDatabase> mongoDatabases = new ConcurrentHashMap<>();
+	private MongoClientFactory clientFactory;
 
 	public enum MongoAction {
 		INSERTONE,
@@ -134,9 +135,9 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 	public void configure() throws ConfigurationException {
 		super.configure();
 		if (StringUtils.isEmpty(getDatasourceName())) {
-			setDatasourceName(AppConstants.getInstance(getConfigurationClassLoader()).getString(JndiMongoClientFactory.DEFAULT_DATASOURCE_NAME_PROPERTY, JndiMongoClientFactory.GLOBAL_DEFAULT_DATASOURCE_NAME_DEFAULT));
+			setDatasourceName(AppConstants.getInstance(getConfigurationClassLoader()).getString(MongoClientFactoryFactory.DEFAULT_DATASOURCE_NAME_PROPERTY, MongoClientFactoryFactory.GLOBAL_DEFAULT_DATASOURCE_NAME_DEFAULT));
 		}
-		if (mongoClientFactory==null) {
+		if (mongoClientFactoryFactory ==null) {
 			throw new ConfigurationException("no mongoClientFactory available");
 		}
 		checkStringAttributeOrParameter("database", getDatabase(), PARAM_DATABASE);
@@ -151,9 +152,16 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 
 	@Override
 	public void start() {
-		mongoClient = mongoClientFactory.getMongoClient(getDatasourceName());
+		mongoClient = getClientFactory().createMongoClient();
 
 		super.start();
+	}
+
+	private MongoClientFactory getClientFactory() {
+		if (clientFactory == null) {
+			clientFactory = mongoClientFactoryFactory.getMongoClientFactory(getDatasourceName());
+		}
+		return clientFactory;
 	}
 
 	@Override
@@ -375,7 +383,7 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 
 	/**
 	 * The MongoDB datasource
-	 * @ff.default {@value JndiMongoClientFactory#DEFAULT_DATASOURCE_NAME_PROPERTY}
+	 * @ff.default {@value MongoClientFactoryFactory#DEFAULT_DATASOURCE_NAME_PROPERTY}
 	 */
 	public void setDatasourceName(String datasourceName) {
 		this.datasourceName = datasourceName;

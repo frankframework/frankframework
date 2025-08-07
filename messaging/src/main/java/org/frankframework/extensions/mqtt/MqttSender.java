@@ -29,9 +29,11 @@ import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.doc.Optional;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
+import org.frankframework.util.CloseUtils;
 
 /**
  * MQTT listener which will connect to a broker and subscribe to a topic.
@@ -63,12 +65,16 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 
 	@Override
 	public void start() {
-		// Connection is handled a shared object.
+		try {
+			client = getClientFactory().createMqttClient();
+		} catch (Exception e) {
+			throw new LifecycleException("Could not subscribe to topic", e);
+		}
 	}
 
 	@Override
 	public void stop() {
-		// Connection is handled a shared object.
+		CloseUtils.closeSilently(client);
 	}
 
 	@Override
