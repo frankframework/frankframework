@@ -63,11 +63,11 @@ public abstract class AmqpSenderTest {
 		locator.setResourceFile("amqpResources.yml");
 		locator.afterPropertiesSet();
 
-		AmqpConnectionFactoryFactory factory = new AmqpConnectionFactoryFactory();
-		factory.setObjectLocators(List.of(locator));
-		factory.afterPropertiesSet();
+		AmqpConnectionFactoryFactory connectionFactory = new AmqpConnectionFactoryFactory();
+		connectionFactory.setObjectLocators(List.of(locator));
+		connectionFactory.afterPropertiesSet();
 
-		return factory;
+		return connectionFactory;
 	}
 
 	protected abstract @Nonnull String getResourceName();
@@ -113,7 +113,7 @@ public abstract class AmqpSenderTest {
 		assertTrue(senderResult.isSuccess());
 
 		// Check message on queue
-		Message result = getMessage(AmqpSenderTest.EXCHANGE_NAME);
+		Message result = getMessage(AmqpSenderTest.EXCHANGE_NAME, AddressType.QUEUE);
 
 		assertNotNull(result);
 		log.info(result);
@@ -143,7 +143,7 @@ public abstract class AmqpSenderTest {
 		assertTrue(senderResult.isSuccess());
 
 		// Check for a message on queue
-		Message result = getStreamingMessage(AmqpSenderTest.EXCHANGE_NAME);
+		Message result = getStreamingMessage(AmqpSenderTest.EXCHANGE_NAME, AddressType.QUEUE);
 
 		assertNotNull(result);
 		log.info(result);
@@ -189,7 +189,7 @@ public abstract class AmqpSenderTest {
 		return future.completeAsync(() -> {
 			ReceiverOptions receiverOptions = new ReceiverOptions();
 			receiverOptions.sourceOptions().capabilities("queue");
-			try (Connection connection = factory.getConnectionFactory(getResourceName() + "Test").connect();
+			try (Connection connection = factory.getConnectionFactory(getResourceName()).getConnection();
 				 Receiver receiver = connection.openReceiver(rrQueue, receiverOptions)) {
 				Delivery request = receiver.receive(60, TimeUnit.SECONDS);
 				if (request != null) {
@@ -216,11 +216,11 @@ public abstract class AmqpSenderTest {
 		});
 	}
 
-	protected @Nullable Message getMessage(String queueName) throws ClientException, IOException {
-		return Amqp1Helper.getMessage(factory, getResourceName() + "Test", queueName);
+	protected @Nullable Message getMessage(@Nonnull String address, @Nonnull AddressType addressType) throws ClientException, IOException {
+		return Amqp1Helper.getMessage(factory, getResourceName() , address, addressType);
 	}
 
-	protected @Nullable Message getStreamingMessage(String queueName) throws ClientException, IOException {
-		return Amqp1Helper.getStreamingMessage(factory, getResourceName() + "Test",  queueName);
+	protected @Nullable Message getStreamingMessage(String address, @Nonnull AddressType addressType) throws ClientException, IOException {
+		return Amqp1Helper.getStreamingMessage(factory, getResourceName(), address, addressType);
 	}
 }

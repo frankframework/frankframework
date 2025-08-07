@@ -29,6 +29,7 @@ import org.apache.qpid.protonj2.client.ReceiverOptions;
 import org.apache.qpid.protonj2.client.StreamDelivery;
 import org.apache.qpid.protonj2.client.StreamReceiver;
 import org.apache.qpid.protonj2.client.StreamReceiverMessage;
+import org.apache.qpid.protonj2.client.StreamReceiverOptions;
 import org.apache.qpid.protonj2.client.exceptions.ClientException;
 
 import lombok.extern.log4j.Log4j2;
@@ -41,14 +42,16 @@ public class Amqp1Helper {
 		// Private constructor for utility class
 	}
 
-	public static @Nullable Message getStreamingMessage(@Nonnull AmqpConnectionFactoryFactory connectionFactory, @Nonnull String connectionName, @Nonnull String queueName) throws ClientException, IOException {
-		try (Connection connection = connectionFactory.getConnectionFactory(connectionName).connect()) {
-			return getStreamingMessage(connection, queueName);
+	public static @Nullable Message getStreamingMessage(@Nonnull AmqpConnectionFactoryFactory connectionFactory, @Nonnull String connectionName, @Nonnull String queueName, @Nonnull AddressType addressType) throws ClientException, IOException {
+		try (Connection connection = connectionFactory.getConnectionFactory(connectionName).getConnection()) {
+			return getStreamingMessage(connection, queueName, addressType);
 		}
 	}
 
 	@Nullable
-	public static Message getStreamingMessage(@Nonnull Connection connection, @Nonnull String queueName) throws ClientException, IOException {
+	public static Message getStreamingMessage(@Nonnull Connection connection, @Nonnull String queueName, @Nonnull AddressType addressType) throws ClientException, IOException {
+		StreamReceiverOptions streamOptions = new StreamReceiverOptions();
+		streamOptions.targetOptions().capabilities(addressType.name().toLowerCase());
 		try (StreamReceiver receiver = connection.openStreamReceiver(queueName)) {
 			StreamDelivery delivery = receiver.receive(15, TimeUnit.SECONDS);
 			if (delivery != null) {
@@ -84,16 +87,16 @@ public class Amqp1Helper {
 		}
 	}
 
-	public static @Nullable Message getMessage(@Nonnull AmqpConnectionFactoryFactory connectionFactory, @Nonnull String connectionName, @Nonnull String queueName) throws ClientException, IOException {
-		try (Connection connection = connectionFactory.getConnectionFactory(connectionName).connect()) {
-			return getMessage(connection, queueName);
+	public static @Nullable Message getMessage(@Nonnull AmqpConnectionFactoryFactory connectionFactory, @Nonnull String connectionName, @Nonnull String address, @Nonnull AddressType addressType) throws ClientException, IOException {
+		try (Connection connection = connectionFactory.getConnectionFactory(connectionName).getConnection()) {
+			return getMessage(connection, address, addressType);
 		}
 	}
 
-	public static @Nullable Message getMessage(@Nonnull Connection connection, @Nonnull String queueName) throws ClientException, IOException {
+	public static @Nullable Message getMessage(@Nonnull Connection connection, @Nonnull String address, @Nonnull AddressType addressType) throws ClientException, IOException {
 		ReceiverOptions receiverOptions = new ReceiverOptions();
-		receiverOptions.sourceOptions().capabilities("queue");
-		try (Receiver receiver = connection.openReceiver(queueName, receiverOptions)) {
+		receiverOptions.sourceOptions().capabilities(addressType.name().toLowerCase());
+		try (Receiver receiver = connection.openReceiver(address, receiverOptions)) {
 			Delivery delivery = receiver.receive(15, TimeUnit.SECONDS);
 			if (delivery != null) {
 				org.apache.qpid.protonj2.client.Message<Object> amqpMessage = delivery.message();
@@ -102,7 +105,7 @@ public class Amqp1Helper {
 				return ffMessage;
 			}
 		}
-		log.error("Could not get message from queue [{}]", queueName);
+		log.error("Could not get message from queue [{}]", address);
 		return null;
 	}
 }

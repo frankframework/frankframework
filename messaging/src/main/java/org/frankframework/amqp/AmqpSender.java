@@ -86,10 +86,6 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	private StreamSender streamSender;
 	private boolean serverIsRabbitMQ;
 
-	public enum AddressType {
-		TOPIC, QUEUE
-	}
-
 	public enum MessageType {
 		/**
 		 * Automatically determine the type of the outgoing {@link org.apache.qpid.protonj2.client.Message} based
@@ -127,7 +123,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 			ConfigurationWarnings.add(this, log, "[messageType] is ignored, because [streamingMessages] is set to [true]");
 		}
 
-		try (Connection connection = connectionFactory.getConnectionFactory(connectionName).connect()) {
+		try (Connection connection = connectionFactory.getConnectionFactory(connectionName).getConnection()) {
 			List<String> offeredCapabilities;
 			if (connection.offeredCapabilities() != null) {
 				offeredCapabilities = List.of(connection.offeredCapabilities());
@@ -162,7 +158,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	public void start() {
 		super.start();
 		try {
-			connection = connectionFactory.getConnectionFactory(connectionName).connect();
+			connection = connectionFactory.getConnectionFactory(connectionName).getConnection();
 
 			if (streamingMessages) {
 				StreamSenderOptions streamSenderOptions = new StreamSenderOptions();
@@ -182,7 +178,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 				}
 				sender = connection.openSender(address, senderOptions);
 			}
-		} catch (ClientException e) {
+		} catch (ClientException | RuntimeException e) {
 			throw new LifecycleException("Cannot create connection to AMQP broker", e);
 		}
 	}
