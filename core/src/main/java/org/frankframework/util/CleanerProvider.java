@@ -69,7 +69,7 @@ public class CleanerProvider {
 					.reduce(0, Integer::sum);
 			LEAK_LOG.warn("Total of {} leaks from {} locations", totalLeaks, LEAK_MAP.size());
 		} catch (Throwable e) {
-			// Ignore log exceptions which may cause the application to not terminate properly. 
+			// Ignore log exceptions which may cause the application to not terminate properly.
 			// Such as `Exception in thread "Thread-462" java.lang.NoClassDefFoundError: org/apache/logging/log4j/message/ParameterizedNoReferenceMessageFactory$StatusMessage`
 
 		}

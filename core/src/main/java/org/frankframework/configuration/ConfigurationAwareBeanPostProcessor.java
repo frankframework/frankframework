@@ -19,7 +19,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 
 /**
- * Similar to {@link org.springframework.context.support.ApplicationContextAwareProcessor} sets 
+ * Similar to {@link org.springframework.context.support.ApplicationContextAwareProcessor} sets
  * the {@link Configuration} class on the {@link ConfigurationAware} beans.
  */
 public class ConfigurationAwareBeanPostProcessor implements BeanPostProcessor {

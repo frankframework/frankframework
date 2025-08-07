@@ -164,4 +164,3 @@ public class ApiWsdlXmlValidatorMixedModeTest {
 		testPipeLineProcessorProcessOutputValidation(inputValidator,outputValidator,RESPONSE,"Illegal element");
 	}
 }
-

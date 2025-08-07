@@ -17,8 +17,8 @@ package org.frankframework.console.configuration;
 
 import java.util.function.Function;
 
-import org.frankframework.console.ApiException;
-import org.frankframework.management.bus.BusException;
+import jakarta.annotation.Nullable;
+
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -32,8 +32,10 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.ResourceAccessException;
 
-import jakarta.annotation.Nullable;
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.console.ApiException;
+import org.frankframework.management.bus.BusException;
 
 @RestControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)

@@ -11,8 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.testutil.PropertyUtil;
-import org.frankframework.util.StringUtil;
 
 import lombok.Getter;
 import software.amazon.awssdk.auth.credentials.AwsBasicCredentials;
@@ -41,6 +39,9 @@ import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.ObjectIdentifier;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Object;
+
+import org.frankframework.testutil.PropertyUtil;
+import org.frankframework.util.StringUtil;
 
 public class AmazonS3FileSystemTestHelper implements IFileSystemTestHelper {
 

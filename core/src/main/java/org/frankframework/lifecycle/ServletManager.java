@@ -104,7 +104,7 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 	}
 
 	/*
-	 * Maybe a bit overkill to use ServletContextAware and Autowired but this ensures that the 
+	 * Maybe a bit overkill to use ServletContextAware and Autowired but this ensures that the
 	 * ServletContext is always set, when running traditional WAR as well as via Spring Boot.
 	 */
 	@Override

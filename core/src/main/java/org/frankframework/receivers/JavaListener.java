@@ -267,7 +267,7 @@ public class JavaListener<M> implements RequestReplyListener, IPushingListener<M
 	/**
 	 * Should the JavaListener throw a ListenerException when it occurs or return an error message.
 	 * Please consider using an {@link ErrorMessageFormatter} instead of disabling Exception from being thrown.
-	 * 
+	 *
 	 * @ff.default true
 	 */
 	@Deprecated(since = "9.2")

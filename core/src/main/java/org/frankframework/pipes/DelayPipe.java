@@ -22,7 +22,7 @@ import org.frankframework.doc.Category;
 import org.frankframework.stream.Message;
 
 /**
- * Pipe that sleeps for a specified time, which defaults to 5000 msecs. 
+ * Pipe that sleeps for a specified time, which defaults to 5000 msecs.
  * It is useful for testing purposes.
  *
  * @author L180564 - Johan Verrips
@@ -46,7 +46,7 @@ public class DelayPipe extends FixedForwardPipe {
 
 
 	/**
-	 * The time <i>in milliseconds</i> that the thread will be put to sleep. 
+	 * The time <i>in milliseconds</i> that the thread will be put to sleep.
 	 * @ff.default 5000
 	 */
 	public void setDelayTime(long l) {

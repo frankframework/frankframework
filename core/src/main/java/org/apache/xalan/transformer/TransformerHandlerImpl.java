@@ -57,19 +57,19 @@ public class TransformerHandlerImpl
 {
     /**
      * The flag for the setting of the optimize feature;
-     */    
+     */
     private final boolean m_optimizer;
 
     /**
      * The flag for the setting of the incremental feature;
-     */    
+     */
     private final boolean m_incremental;
 
     /**
      * The flag for the setting of the source_location feature;
-     */  
+     */
     private final boolean m_source_location;
-  
+
   private boolean m_insideParse = false;
 
   ////////////////////////////////////////////////////////////////////
@@ -94,7 +94,7 @@ public class TransformerHandlerImpl
 
     XPathContext xctxt = transformer.getXPathContext();
     DTM dtm = xctxt.getDTM(null, true, transformer, true, true);
-    
+
     m_dtm = dtm;
     dtm.setDocumentBaseURI(baseSystemID);
 
@@ -107,36 +107,36 @@ public class TransformerHandlerImpl
     m_optimizer = transformer.getOptimize();
     m_source_location = transformer.getSource_location();
   }
-  
-  /** 
+
+  /**
    * Do what needs to be done to shut down the CoRoutine management.
    */
   protected void clearCoRoutine()
   {
     clearCoRoutine(null);
   }
-  
-  /** 
+
+  /**
    * Do what needs to be done to shut down the CoRoutine management.
    */
   protected void clearCoRoutine(SAXException ex)
   {
     if(null != ex)
       m_transformer.setExceptionThrown(ex);
-    
+
     if(m_dtm instanceof SAX2DTM sax2dtm)
     {
       if(DEBUG)
         System.err.println("In clearCoRoutine...");
       try
-      {          
-        if(null != m_contentHandler 
+      {
+        if(null != m_contentHandler
            && m_contentHandler instanceof IncrementalSAXSource_Filter sp)
         {
           // This should now be all that's needed.
           sp.deliverMoreNodes(false);
         }
-        
+
         sax2dtm.clearCoRoutine(true);
         m_contentHandler = null;
         m_dtdHandler = null;
@@ -148,12 +148,12 @@ public class TransformerHandlerImpl
       {
         throwable.printStackTrace();
       }
-      
+
       if(DEBUG)
         System.err.println("...exiting clearCoRoutine");
     }
   }
-  
+
   ////////////////////////////////////////////////////////////////////
   // Implementation of javax.xml.transform.sax.TransformerHandler.
   ////////////////////////////////////////////////////////////////////
@@ -177,7 +177,7 @@ public class TransformerHandlerImpl
 //      ContentHandler handler =
 //        m_transformer.createResultContentHandler(result);
 //      m_transformer.setContentHandler(handler);
-        SerializationHandler xoh = 
+        SerializationHandler xoh =
             m_transformer.createSerializationHandler(result);
         m_transformer.setSerializationHandler(xoh);
     }
@@ -321,7 +321,7 @@ public class TransformerHandlerImpl
                          + locator.getSystemId());
 
     this.m_locator = locator;
-    
+
     if(null == m_baseSystemID)
     {
       setSystemId(locator.getSystemId());
@@ -346,7 +346,7 @@ public class TransformerHandlerImpl
 
     if (DEBUG)
       System.out.println("TransformerHandlerImpl#startDocument");
-      
+
     m_insideParse = true;
 
    // Thread listener = new Thread(m_transformer);
@@ -358,9 +358,9 @@ public class TransformerHandlerImpl
       if(m_incremental)
       {
         m_transformer.setSourceTreeDocForThread(m_dtm.getDocument());
-            
+
         int cpriority = Thread.currentThread().getPriority();
-    
+
         // runTransformThread is equivalent with the 2.0.1 code,
         // except that the Thread may come from a pool.
         m_transformer.runTransformThread( cpriority );
@@ -372,7 +372,7 @@ public class TransformerHandlerImpl
       // %REVIEW%
       l_contentHandler.startDocument();
    }
-        
+
    //listener.setDaemon(false);
    //listener.start();
 
@@ -392,13 +392,13 @@ public class TransformerHandlerImpl
       System.out.println("TransformerHandlerImpl#endDocument");
 
     m_insideParse = false;
-    
+
     ContentHandler l_contentHandler = m_contentHandler;
     if (l_contentHandler != null)
     {
     	l_contentHandler.endDocument();
     }
-    
+
     if(m_incremental)
     {
       m_transformer.waitTransformThread();
@@ -638,9 +638,9 @@ public class TransformerHandlerImpl
    */
   public void warning(SAXParseException e) throws SAXException
   {
-    // This is not great, but we really would rather have the error 
-    // handler be the error listener if it is a error handler.  Coroutine's fatalError 
-    // can't really be configured, so I think this is the best thing right now 
+    // This is not great, but we really would rather have the error
+    // handler be the error listener if it is a error handler.  Coroutine's fatalError
+    // can't really be configured, so I think this is the best thing right now
     // for error reporting.  Possibly another JAXP 1.1 hole.  -sb
     javax.xml.transform.ErrorListener errorListener = m_transformer.getErrorListener();
     if(errorListener instanceof ErrorHandler handler)
@@ -673,9 +673,9 @@ public class TransformerHandlerImpl
     // %REVIEW% I don't think this should be called.  -sb
     // clearCoRoutine(e);
 
-    // This is not great, but we really would rather have the error 
-    // handler be the error listener if it is a error handler.  Coroutine's fatalError 
-    // can't really be configured, so I think this is the best thing right now 
+    // This is not great, but we really would rather have the error
+    // handler be the error listener if it is a error handler.  Coroutine's fatalError
+    // can't really be configured, so I think this is the best thing right now
     // for error reporting.  Possibly another JAXP 1.1 hole.  -sb
     javax.xml.transform.ErrorListener errorListener = m_transformer.getErrorListener();
     if(errorListener instanceof ErrorHandler handler)
@@ -725,12 +725,12 @@ public class TransformerHandlerImpl
       // clearCoRoutine(e);
     }
 
-    // This is not great, but we really would rather have the error 
-    // handler be the error listener if it is a error handler.  Coroutine's fatalError 
-    // can't really be configured, so I think this is the best thing right now 
+    // This is not great, but we really would rather have the error
+    // handler be the error listener if it is a error handler.  Coroutine's fatalError
+    // can't really be configured, so I think this is the best thing right now
     // for error reporting.  Possibly another JAXP 1.1 hole.  -sb
     javax.xml.transform.ErrorListener errorListener = m_transformer.getErrorListener();
-    
+
     if(errorListener instanceof ErrorHandler handler)
     {
       handler.fatalError(e);
@@ -1093,7 +1093,7 @@ public class TransformerHandlerImpl
 
 	/** The decl handler to aggregate to. */
 	private final DeclHandler m_declHandler = null;
-  
+
   /** The Document Table Instance we are transforming. */
   DTM m_dtm;
 }

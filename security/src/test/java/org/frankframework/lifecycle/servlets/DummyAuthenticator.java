@@ -6,7 +6,7 @@ import org.springframework.security.web.SecurityFilterChain;
 /**
  * Test the basic Authenticator actions without any direct modifications
  * to the {@link HttpSecurity} / {@link SecurityFilterChain}.
- * 
+ *
  * @see {@link DummyAuthenticatorTest}.
  */
 public class DummyAuthenticator extends AbstractServletAuthenticator {

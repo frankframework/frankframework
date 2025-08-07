@@ -26,11 +26,6 @@ import jakarta.json.Json;
 import jakarta.json.JsonMergePatch;
 import jakarta.json.JsonValue;
 
-import org.frankframework.console.util.RequestMessageBuilder;
-import org.frankframework.console.util.ResponseUtils;
-import org.frankframework.management.bus.OutboundGateway;
-import org.frankframework.management.bus.OutboundGateway.ClusterMember;
-import org.frankframework.management.gateway.events.ClusterMemberEvent;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -47,6 +42,12 @@ import org.springframework.security.core.context.SecurityContextHolderStrategy;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.console.util.RequestMessageBuilder;
+import org.frankframework.console.util.ResponseUtils;
+import org.frankframework.management.bus.OutboundGateway;
+import org.frankframework.management.bus.OutboundGateway.ClusterMember;
+import org.frankframework.management.gateway.events.ClusterMemberEvent;
 
 @Log4j2
 public class FrankApiWebSocketBase implements InitializingBean, ApplicationListener<ClusterMemberEvent> {

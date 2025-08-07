@@ -41,9 +41,6 @@ import javax.imageio.ImageIO;
 import jakarta.annotation.Nonnull;
 
 import org.apache.commons.io.FileUtils;
-
-import org.frankframework.testutil.TestAssertions;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
@@ -67,6 +64,7 @@ import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.MessageTestUtils.MessageType;
+import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.MessageUtils;
 

@@ -773,7 +773,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 	}
 
 	/**
-	 * Tomcat matches /api to /api/*. Not every application server does this. In order to both fix 
+	 * Tomcat matches /api to /api/*. Not every application server does this. In order to both fix
 	 * {@link URLRequestMatcher Authentication request matching} and the different Application Servers
 	 * matching on different methods, explicitly add `/api`.
 	 */

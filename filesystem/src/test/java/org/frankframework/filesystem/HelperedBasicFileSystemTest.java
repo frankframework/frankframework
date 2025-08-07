@@ -2,9 +2,10 @@ package org.frankframework.filesystem;
 
 import java.io.InputStream;
 
-import org.frankframework.util.CloseUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+
+import org.frankframework.util.CloseUtils;
 
 public abstract class HelperedBasicFileSystemTest<F, FS extends IBasicFileSystem<F>> extends BasicFileSystemTest<F,FS> {
 

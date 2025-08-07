@@ -55,11 +55,11 @@ public class CypherAES256 implements CypherInterface
         try
         {
             int maxKeyLen = Cipher.getMaxAllowedKeyLength(CYPHER_ALGO);
-            
+
             if( logger.isDebugEnabled() ) {
                 logger.debug("Available keylen: %d".formatted(maxKeyLen));
             }
-            
+
             if (maxKeyLen >= AES_KEYLEN)
             {
                 canCrypt = true;
@@ -135,7 +135,7 @@ public class CypherAES256 implements CypherInterface
             if( logger.isDebugEnabled() ) {
             	logger.debug("Padding to block size: %d".formatted(blockSize));
             }
-            
+
             int padding_length = blockSize - (cleartext.length % blockSize);
             if (padding_length == 0)
             {
@@ -216,15 +216,15 @@ public class CypherAES256 implements CypherInterface
         if( logger.isDebugEnabled() ) {
         	logger.debug("Key 1: %d - %s".formatted(cypherKey.length, Util.hexit(cypherKey, 100)));
         }
-        
+
         byte[] hmacKey = keys.getHmacKey();
 
         if( logger.isDebugEnabled() ) {
         	logger.debug("Key 2: %d - %s".formatted(hmacKey.length, Util.hexit(hmacKey, 100)));
         }
-        
+
         byte[] iv = keys.getIv();
-        
+
         if( logger.isDebugEnabled() ) {
         	logger.debug("IV: %d - %s".formatted(iv.length, Util.hexit(iv, 100)));
         }
@@ -272,13 +272,13 @@ public class CypherAES256 implements CypherInterface
         if( logger.isDebugEnabled() ) {
         	logger.debug("Key 1: %d - %s".formatted(cypherKey.length, Util.hexit(cypherKey, 100)));
         }
-        
+
         byte[] hmacKey = keys.getHmacKey();
-        
+
         if( logger.isDebugEnabled() ) {
         	logger.debug("Key 2: %d - %s".formatted(hmacKey.length, Util.hexit(hmacKey, 100)));
         }
-        
+
         byte[] iv = keys.getIv();
 
         if( logger.isDebugEnabled() ) {
@@ -286,7 +286,7 @@ public class CypherAES256 implements CypherInterface
 	        logger.debug("Original data length: %d".formatted(data.length));
         }
 	    data = pad(data);
-        
+
         if( logger.isDebugEnabled() ) {
         	logger.debug("Padded data length: %d".formatted(data.length));
         }

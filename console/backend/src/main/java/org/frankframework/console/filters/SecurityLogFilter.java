@@ -17,15 +17,16 @@ package org.frankframework.console.filters;
 
 import java.io.IOException;
 
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.frankframework.management.bus.BusMessageUtils;
-import org.springframework.web.filter.OncePerRequestFilter;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.springframework.web.filter.OncePerRequestFilter;
+
+import org.frankframework.management.bus.BusMessageUtils;
 
 public class SecurityLogFilter extends OncePerRequestFilter {
 

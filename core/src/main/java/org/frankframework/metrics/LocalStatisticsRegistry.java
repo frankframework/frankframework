@@ -150,7 +150,7 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 	}
 
 	/**
-	 * Finds all HttpSenders in the given adapter, and collects 
+	 * Finds all HttpSenders in the given adapter, and collects
 	 */
 	private JsonObjectBuilder getAllHttpStatistics(PipeLine pipeline, Collection<Meter> adapterScopedMeters) {
 		List<String> httpSenderNames = getPotentialHttpMeters(pipeline);

@@ -184,7 +184,7 @@ public abstract class CmisHttpSender extends AbstractHttpSender {
 			pls.put("url", url);
 			pls.put("method", method);
 			pls.put("headers", headers);
-	
+
 			try {
 				// Message is unused, we use 'Output writer' instead
 				SenderResult ignored = sendMessage(Message.nullMessage(), pls);

@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- 
+
 package net.wedjaa.ansible.vault.crypto.data;
 
 import org.apache.juli.logging.Log;
@@ -25,7 +25,7 @@ import net.wedjaa.ansible.vault.crypto.decoders.inter.CypherInterface;
 public class VaultInfo
 {
 	private static final Log logger = LogFactory.getLog(VaultInfo.class);
-	
+
     public final static String INFO_SEPARATOR = ";";
     public final static int INFO_ELEMENTS = 3;
     public final static int MAGIC_PART = 0;

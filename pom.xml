@@ -857,6 +857,11 @@
 					<configuration>
 						<java>
 							<removeUnusedImports />
+							<endWithNewline />
+							<trimTrailingWhitespace />
+							<importOrder>
+								<file>.importorder</file>
+							</importOrder>
 						</java>
 						<pom>
 							<sortPom>

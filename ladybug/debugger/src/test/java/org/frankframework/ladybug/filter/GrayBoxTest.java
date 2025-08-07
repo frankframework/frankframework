@@ -1,18 +1,19 @@
 package org.frankframework.ladybug.filter;
 
-import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.Report;
-import nl.nn.testtool.storage.StorageException;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import org.junit.jupiter.api.Test;
-
-import org.frankframework.ladybug.util.XmlTestStorage;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+
+import org.junit.jupiter.api.Test;
+
+import nl.nn.testtool.Checkpoint;
+import nl.nn.testtool.Report;
+import nl.nn.testtool.storage.StorageException;
+
+import org.frankframework.ladybug.util.XmlTestStorage;
 
 public class GrayBoxTest {
 	private static final XmlTestStorage xmlStorage = new XmlTestStorage();

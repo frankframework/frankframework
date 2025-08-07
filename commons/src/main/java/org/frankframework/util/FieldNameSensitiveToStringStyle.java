@@ -42,7 +42,7 @@ class FieldNameSensitiveToStringStyle extends ToStringStyle {
 
 	/**
 	 * Ensure <code>Singleton</code> after serialization.
-	 * 
+	 *
 	 * @return the singleton
 	 */
 	@Serial

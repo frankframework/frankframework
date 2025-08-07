@@ -17,8 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.util.MimeType;
 
-import org.frankframework.collection.Collection;
 import org.frankframework.collection.AbstractCollectorPipe.Action;
+import org.frankframework.collection.Collection;
 import org.frankframework.collection.TestCollector;
 import org.frankframework.collection.TestCollectorPart;
 import org.frankframework.configuration.ConfigurationException;

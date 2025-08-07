@@ -45,9 +45,9 @@ import org.frankframework.util.ClassUtils;
 /**
  * Enables WebSecurity, still depends on the existence of the {@link AbstractSecurityWebApplicationInitializer#DEFAULT_FILTER_NAME}.
  * Spring Boot's auto creation of the Filter has been disabled (see springIbisTestTool.xml) because the {@link Filter} may not exist twice.
- * 
+ *
  * When running standalone this Filter will need to be added manually, by either a bean definition or by using the {@link AbstractSecurityWebApplicationInitializer}.
- * 
+ *
  * <pre>{@code
  * public FilterRegistrationBean<DelegatingFilterProxy> securityFilterChainRegistration() {
  * 	   DelegatingFilterProxy delegatingFilterProxy = new DelegatingFilterProxy();

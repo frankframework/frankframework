@@ -26,9 +26,6 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
-
-import org.frankframework.core.MessageBrowserField;
-
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -44,6 +41,7 @@ import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.ISender;
 import org.frankframework.core.ListenerException;
+import org.frankframework.core.MessageBrowserField;
 import org.frankframework.core.ProcessState;
 import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.management.bus.ActionSelector;

@@ -56,7 +56,7 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 	 * The number of bytes in the buffer. This value is always in the range
 	 * {@code 0} through {@code buf.length}; elements {@code buf[0]} through
 	 * {@code buf[count-1]} contain valid byte data.
-	 * 
+	 *
 	 * When count equals {@link #maxBufferSize} the buffer will be flushed to the {@link OutputStream OutputStream out}.
 	 */
 	private int currentBufferSize = 0;
@@ -230,7 +230,7 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 		}
 	}
 
-	/** 
+	/**
 	 * Doesn't do anything if the message is kept in memory
 	 */
 	@Override

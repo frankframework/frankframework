@@ -46,7 +46,7 @@ public class XmlWellFormedCheckerPipe extends FixedForwardPipe implements IValid
 		registerEvent(ValidationResult.PARSER_ERROR.getEvent());
 		registerEvent(ValidationResult.VALID.getEvent());
 	}
-	
+
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		return validate(message, session, getRoot());

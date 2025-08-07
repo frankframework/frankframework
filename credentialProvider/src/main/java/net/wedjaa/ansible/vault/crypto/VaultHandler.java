@@ -54,7 +54,7 @@ public class VaultHandler
 
     public static void encrypt(InputStream clearText, OutputStream cipherText, String password, String cypher) throws IOException
     {
-        
+
         cipherText.write(encrypt(toByteArray(clearText), password, cypher));
     }
 
@@ -85,7 +85,7 @@ public class VaultHandler
 
         return vaultInfo.getCypher().decrypt(encryptedData, password);
     }
-    
+
     /**
      * Gets the contents of an <code>InputStream</code> as a <code>byte[]</code>.
      * <p>
@@ -105,18 +105,18 @@ public class VaultHandler
             while (EOF != (n = input.read(buffer))) {
                 output.write(buffer, 0, n);
             }
-            
+
         	return output.toByteArray();
         }
-    }    
-    
+    }
+
     /**
      * Represents the end-of-file (or stream).
      */
-    public static final int EOF = -1;    
+    public static final int EOF = -1;
 
     /**
      * The default buffer size ({@value}) to use in copy methods.
      */
-    public static final int DEFAULT_BUFFER_SIZE = 8192;    
+    public static final int DEFAULT_BUFFER_SIZE = 8192;
 }

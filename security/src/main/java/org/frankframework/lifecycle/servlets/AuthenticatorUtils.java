@@ -32,9 +32,9 @@ import org.frankframework.util.StringUtil;
 public class AuthenticatorUtils {
 
 
-	/** 
+	/**
 	 * Disable login on endpoints when using local setup.
-	 * 
+	 *
 	 * @param environment set of properties used to determine the dtap stage.
 	 * @return the default `AuthenticationType` name.
 	 */

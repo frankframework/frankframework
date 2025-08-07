@@ -36,13 +36,13 @@ import org.w3c.dom.Node;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
-import org.frankframework.core.DestinationType;
-import org.frankframework.core.DestinationType.Type;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
