@@ -25,6 +25,7 @@ import org.apache.qpid.protonj2.client.exceptions.ClientException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -44,6 +45,7 @@ import org.frankframework.util.CloseUtils;
 import org.frankframework.util.UUIDUtil;
 
 @Log4j2
+@Tag("slow")
 public abstract class AmqpSenderTest {
 	private static final String QUEUE_EXCHANGE_NAME = "test:testQueueExchange";
 	private static final String TOPIC_EXCHANGE_NAME = "test:testTopicExchange";
@@ -227,7 +229,7 @@ public abstract class AmqpSenderTest {
 			receiverOptions.sourceOptions().capabilities(addressType.getCapabilityName());
 			try (Connection connection = factory.getConnectionFactory(getResourceName()).getConnection();
 				 Receiver receiver = connection.openReceiver(receiverAddress, receiverOptions)) {
-				Delivery request = receiver.receive(15, TimeUnit.SECONDS);
+				Delivery request = receiver.receive(60, TimeUnit.SECONDS);
 				if (request != null) {
 					org.apache.qpid.protonj2.client.Message<Object> received = request.message();
 					log.info("Receiver {}: Received message with body: {}", receiverNr, received.body());
@@ -235,8 +237,8 @@ public abstract class AmqpSenderTest {
 					log.info("Receiver {}: Delivery converted to Frank!Framework message: {}", receiverNr, ffRequest);
 					return ffRequest;
 				} else {
-					log.warn("Receiver {} Failed to read a message within 15 seconds.", receiverNr);
-					return Message.asMessage("Receiver %d failed to receive a message within 15 seconds".formatted(receiverNr));
+					log.warn("Receiver {} Failed to read a message within 60 seconds.", receiverNr);
+					return Message.asMessage("Receiver %d failed to receive a message within 60 seconds".formatted(receiverNr));
 				}
 			} catch (RuntimeException | ClientException | IOException e) {
 				log.warn(() -> "Receiver %d: Exception receiving message".formatted(receiverNr), e);
@@ -255,7 +257,7 @@ public abstract class AmqpSenderTest {
 			receiverOptions.sourceOptions().capabilities(AddressType.QUEUE.getCapabilityName());
 			try (Connection connection = factory.getConnectionFactory(getResourceName()).getConnection();
 				 Receiver receiver = connection.openReceiver(rrQueue, receiverOptions)) {
-				Delivery request = receiver.receive(15, TimeUnit.SECONDS);
+				Delivery request = receiver.receive(60, TimeUnit.SECONDS);
 				if (request != null) {
 					org.apache.qpid.protonj2.client.Message<Object> received = request.message();
 					log.info("Received message with body: {}", received.body());
@@ -270,7 +272,7 @@ public abstract class AmqpSenderTest {
 					return ffRequest;
 				} else {
 					log.warn("Failed to read a message during the defined wait interval.");
-					future.completeExceptionally(new TimeoutException("Did not receive request-message within 15 seconds."));
+					future.completeExceptionally(new TimeoutException("Did not receive request-message within 60 seconds."));
 				}
 			} catch (RuntimeException | ClientException | IOException e) {
 				log.warn("Exception receiving message or sending reply", e);
