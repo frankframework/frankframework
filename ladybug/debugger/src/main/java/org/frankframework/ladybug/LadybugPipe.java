@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 Nationale-Nederlanden, 2024 WeAreFrank
+   Copyright 2019, 2020 Nationale-Nederlanden, 2024-2025 WeAreFrank
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package org.frankframework.ladybug;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.security.Principal;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -25,6 +24,21 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+
+import nl.nn.testtool.Report;
+import nl.nn.testtool.TestTool;
+import nl.nn.testtool.run.ReportRunner;
+import nl.nn.testtool.run.RunResult;
+import nl.nn.testtool.storage.CrudStorage;
+import nl.nn.testtool.storage.Storage;
+import nl.nn.testtool.storage.StorageException;
+import nl.nn.testtool.transform.ReportXmlTransformer;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
@@ -34,16 +48,6 @@ import org.frankframework.doc.Forward;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.XmlBuilder;
-
-import nl.nn.testtool.Report;
-import nl.nn.testtool.SecurityContext;
-import nl.nn.testtool.TestTool;
-import nl.nn.testtool.run.ReportRunner;
-import nl.nn.testtool.run.RunResult;
-import nl.nn.testtool.storage.CrudStorage;
-import nl.nn.testtool.storage.Storage;
-import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.transform.ReportXmlTransformer;
 
 /**
  * Call Ladybug Test Tool to rerun the reports present in test storage (see Test tab in Ladybug)
@@ -100,10 +104,10 @@ public class LadybugPipe extends FixedForwardPipe {
 		} catch (StorageException e) {
 			addExceptionElement(results, e);
 		}
+
 		ReportRunner reportRunner = new ReportRunner();
 		reportRunner.setTestTool(testTool);
 		reportRunner.setDebugStorage(debugStorage);
-		reportRunner.setSecurityContext(new IbisSecurityContext(session, checkRoles));
 
 		Collections.sort(reports, reportNameComparator);
 		long startTime = System.currentTimeMillis();
@@ -112,7 +116,9 @@ public class LadybugPipe extends FixedForwardPipe {
 			testTool.setReportGeneratorEnabled(true);
 			testTool.sendReportGeneratorStatusUpdate();
 		}
-		reportRunner.run(reports, false, true);
+
+		runReports(reportRunner, reports);
+
 		if(enableReportGenerator) {
 			testTool.setReportGeneratorEnabled(reportGeneratorEnabledOldValue);
 			testTool.sendReportGeneratorStatusUpdate();
@@ -121,7 +127,8 @@ public class LadybugPipe extends FixedForwardPipe {
 
 		for (Report report : reports) {
 			RunResult runResult = reportRunner.getResults().get(report.getStorageId());
-			long originalDuration = report.getEndTime() - report.getStartTime();
+			boolean isOriginalExecuted = report.getEndTime() != Report.TIME_NOT_SET_VALUE;
+			String originalDuration = isOriginalExecuted ? "" + (report.getEndTime() - report.getStartTime()) :  "n/a";
 			long duration = -1;
 			boolean equal = false;
 			String error = "";
@@ -180,6 +187,22 @@ public class LadybugPipe extends FixedForwardPipe {
 		return new PipeRunResult(forward, results.asMessage());
 	}
 
+	private void runReports(ReportRunner reportRunner, List<Report> reports) {
+		if (checkRoles) {
+			reportRunner.run(reports, false, true);
+		} else {
+			SecurityContext context = SecurityContextHolder.getContext();
+			Authentication originalAuthentication = context.getAuthentication();
+			try {
+				Authentication allowAllAuthentication = new AnonymousAuthenticationToken("LadybugPipe", "allow-all", Collections.singletonList(new SimpleGrantedAuthority("ROLE_IbisTester")));
+				context.setAuthentication(allowAllAuthentication);
+				reportRunner.run(reports, false, true);
+			} finally {
+				context.setAuthentication(originalAuthentication);
+			}
+		}
+	}
+
 	private void writeToLogOrSysOut(String message) {
 		if (writeToLog) {
 			log.info(message);
@@ -216,9 +239,9 @@ public class LadybugPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * Set to <code>true</code> when the pipeline is triggered by a user (e.g. using an http based listener
-	 * that will add a securityHandler session key) and you don't want the listener to check whether the user
-	 * is autorised and/or you want the enforce the roles as configured for the Ladybug
+	 * Set this to {@code true} if you wish to enforce the
+	 * user roles (e.g. when using an HTTP based listener).
+	 * When set to false the Ladybug is run anonymously.
 	 * @ff.default false
 	 */
 	public void setCheckRoles(boolean checkRoles) {
@@ -255,26 +278,6 @@ public class LadybugPipe extends FixedForwardPipe {
 		this.reportXmlTransformer = reportXmlTransformer;
 	}
 
-}
-
-class IbisSecurityContext implements SecurityContext {
-	private final PipeLineSession session;
-	private final boolean checkRoles;
-
-	IbisSecurityContext(PipeLineSession session, boolean checkRoles) {
-		this.session = session;
-		this.checkRoles = checkRoles;
-	}
-
-	@Override
-	public Principal getUserPrincipal() {
-		return checkRoles ? session.getSecurityHandler().getPrincipal() : null;
-	}
-
-	@Override
-	public boolean isUserInRoles(List<String> roles) {
-		return !checkRoles || roles.stream().anyMatch(role -> session.getSecurityHandler().isUserInRole(role));
-	}
 }
 
 class ReportNameComparator implements Comparator<Report> {

@@ -18,6 +18,9 @@ package org.frankframework.larva.actions;
 import java.util.Map;
 import java.util.Properties;
 
+import org.springframework.security.core.context.SecurityContext;
+import org.springframework.security.core.context.SecurityContextHolder;
+
 import lombok.Getter;
 
 import org.frankframework.core.ISender;
@@ -54,7 +57,9 @@ public class SenderAction extends AbstractLarvaAction<ISender> {
 			return;
 		}
 
+		SecurityContext securityContext = SecurityContextHolder.getContextHolderStrategy().getContext();
 		SenderThread thread = new SenderThread(peek(), fileContent, getSession(), isConvertExceptionToMessage(), correlationId);
+		thread.setSecurityContext(securityContext);
 		thread.start();
 		this.senderThread = thread;
 	}
