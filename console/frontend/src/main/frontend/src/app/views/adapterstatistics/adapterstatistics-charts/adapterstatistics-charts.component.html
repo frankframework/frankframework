@@ -29,7 +29,13 @@
   <div class="col-md-6 table-responsive">
     <h4>Counts per receiver</h4>
     <div style="height: 300px">
-      <canvas class="chart chart-doughnut" baseChart type="doughnut" [data]="countPerReceiverStatistics()"></canvas>
+      <canvas
+        class="chart chart-doughnut"
+        baseChart
+        type="doughnut"
+        [options]="countPerReceiverStatisticsOptions"
+        [data]="countPerReceiverStatistics()"
+      ></canvas>
     </div>
   </div>
 </div>

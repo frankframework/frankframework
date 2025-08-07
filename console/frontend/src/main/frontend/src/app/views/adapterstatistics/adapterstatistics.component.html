@@ -112,7 +112,7 @@
                     </thead>
                     @for (receiver of stats.receivers; track receiver.name) {
                       <tbody>
-                        @for (threadsProcessing of getSortedProcessingThreads(receiver); track threadsProcessing.name) {
+                        @for (threadsProcessing of getSortedProcessingThreads(receiver); track $index) {
                           <tr>
                             <td>{{ receiver.name }}</td>
                             @for (
