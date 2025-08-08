@@ -48,6 +48,11 @@
 			<version>3.9.1</version>
 			<optional>true</optional>
 		</dependency>
+		<dependency>
+			<groupId>org.apache.qpid</groupId>
+			<artifactId>protonj2-client</artifactId>
+			<version>1.0.0-M23</version>
+		</dependency>
 
 		<dependency>
 			<groupId>com.ibm.mq</groupId>
@@ -124,6 +129,16 @@
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>hivemq</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>rabbitmq</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testcontainers</groupId>
+			<artifactId>activemq</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

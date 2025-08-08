@@ -65,7 +65,7 @@ public class CloseUtils {
 	 *
 	 * @param closeables AutoCloseables to close. It is safe to pass {@code null}, or for the collection to contain {@code null} values.
 	 */
-	public static void closeSilently(@Nullable Collection<AutoCloseable> closeables) {
+	public static void closeSilently(@Nullable Collection<? extends AutoCloseable> closeables) {
 		if (closeables != null) {
 			closeables.forEach(CloseUtils::closeSilently);
 		}

@@ -24,6 +24,8 @@ import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
@@ -134,9 +136,9 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 		return new ObjectInfo(name, StringUtil.reflectionToString(obj), null);
 	}
 
-	public static record ObjectInfo (String name, String info, String connectionPoolProperties) {
+	public record ObjectInfo (String name, String info, String connectionPoolProperties) {
 		@Override
-		public final String toString() {
+		public String toString() {
 			return "Resource [%s] %s, POOL: %s".formatted(name, info, connectionPoolProperties);
 		}
 	}
@@ -152,18 +154,38 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 				log.debug("closing [{}] object [{}]", () -> ClassUtils.nameOf(objectToDestroy), () -> name);
 				destroyObject(entry.getValue());
 			} catch (Exception e) {
-				if (masterException == null) {
-					masterException = new Exception("Exception caught closing [" + ClassUtils.nameOf(objectToDestroy) + "] object [" + name + "] held by (" + getClass().getSimpleName() + ")", e);
-				} else {
-					masterException.addSuppressed(e);
-				}
+				masterException = wrapException(masterException, "Exception caught closing [" + ClassUtils.nameOf(objectToDestroy) + "] object [" + name + "] held by (" + getClass().getSimpleName() + ")", e);
 			}
 		}
 
 		objects.clear();
+		try {
+			postDestroy();
+		} catch (Exception e) {
+			masterException = wrapException(masterException, "Exception in post-destroy of ObjectFactory", e);
+		}
 		if (masterException != null) {
 			throw masterException;
 		}
+	}
+
+	@Nonnull
+	private static Exception wrapException(Exception masterException, String message, Exception cause) {
+		if (masterException == null) {
+			return new Exception(message, cause);
+		}
+		masterException.addSuppressed(cause);
+		return masterException;
+	}
+
+	/**
+	 * Subclasses which need to do their own work on destruction of this bean should
+	 * override this method, which will be called after all factory objects have been
+	 * closed.
+	 */
+	@SuppressWarnings("RedundantThrows")
+	protected void postDestroy() throws Exception {
+		// No implementation in this class
 	}
 
 	/**

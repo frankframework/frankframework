@@ -13,26 +13,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.core;
+package org.frankframework.messaging.amqp;
 
-import static java.lang.annotation.ElementType.TYPE;
+public enum AddressType {
+	TOPIC, QUEUE;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
-
-import org.frankframework.doc.Label;
-
-@Target(TYPE)
-@Label(name = "TYPE")
-@Documented
-@Retention(RetentionPolicy.RUNTIME)
-public @interface DestinationType {
-
-	Type value();
-
-	enum Type {
-		HTTP, AMQP, MQTT, JVM, ADAPTER, CMIS, KAFKA, IDIN, JDBC, JMS, MONGODB, MAIL, SAP, FILE_SYSTEM;
+	public String getCapabilityName() {
+		return name().toLowerCase();
 	}
 }

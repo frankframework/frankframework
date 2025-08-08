@@ -208,7 +208,7 @@ public class ClassUtils {
 
 	public static void invokeSetters(Object clazz, Properties properties) {
 		for (Method method : clazz.getClass().getMethods()) {
-			if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
+			if(!(method.getName().startsWith("set") || properties.containsKey(method.getName())) || method.getParameterTypes().length != 1)
 				continue;
 
 			String setter = StringUtil.lcFirst(method.getName().substring(3));
