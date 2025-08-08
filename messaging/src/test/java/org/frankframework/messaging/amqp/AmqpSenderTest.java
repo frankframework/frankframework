@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Phaser;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
@@ -205,9 +206,14 @@ public abstract class AmqpSenderTest {
 		String testData = "test-" + UUIDUtil.createRandomUUID();
 		Message message = new Message(testData);
 
-		List<Map.Entry<Integer, CompletableFuture<Message>>> futureResults = IntStream.range(0, 3)
-				.mapToObj(i -> Map.entry(i, startBackgroundFFReceiver(i, AddressType.TOPIC, TOPIC_EXCHANGE_NAME)))
+		int nrOfReceivers = 5;
+		Phaser syncPoint  = new Phaser(nrOfReceivers + 1);
+		List<Map.Entry<Integer, CompletableFuture<Message>>> futureResults = IntStream.range(0, nrOfReceivers)
+				.mapToObj(i -> Map.entry(i, startBackgroundFFReceiver(syncPoint, i, AddressType.TOPIC, TOPIC_EXCHANGE_NAME)))
 				.toList();
+
+		// Wait until all receivers are open before sending the message
+		syncPoint.arriveAndAwaitAdvance();
 
 		// Act
 		sender.sendMessage(message, session);
@@ -221,7 +227,7 @@ public abstract class AmqpSenderTest {
 		assertAll(resultAssertions);
 	}
 
-	protected @Nonnull CompletableFuture<Message> startBackgroundFFReceiver(int receiverNr, AddressType addressType, String receiverAddress) {
+	protected @Nonnull CompletableFuture<Message> startBackgroundFFReceiver(Phaser syncPoint, int receiverNr, AddressType addressType, String receiverAddress) {
 		CompletableFuture<Message> future = new CompletableFuture<>();
 
 		return future.completeAsync(() -> {
@@ -229,6 +235,7 @@ public abstract class AmqpSenderTest {
 			receiverOptions.sourceOptions().capabilities(addressType.getCapabilityName());
 			try (Connection connection = factory.getConnectionFactory(getResourceName()).getConnection();
 				 Receiver receiver = connection.openReceiver(receiverAddress, receiverOptions)) {
+				syncPoint.arrive();
 				Delivery request = receiver.receive(60, TimeUnit.SECONDS);
 				if (request != null) {
 					org.apache.qpid.protonj2.client.Message<Object> received = request.message();
