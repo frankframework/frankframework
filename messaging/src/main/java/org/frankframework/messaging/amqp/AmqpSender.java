@@ -39,6 +39,7 @@ import org.apache.qpid.protonj2.client.SessionOptions;
 import org.apache.qpid.protonj2.client.StreamSender;
 import org.apache.qpid.protonj2.client.StreamSenderMessage;
 import org.apache.qpid.protonj2.client.StreamSenderOptions;
+import org.apache.qpid.protonj2.client.StreamTracker;
 import org.apache.qpid.protonj2.client.Tracker;
 import org.apache.qpid.protonj2.client.exceptions.ClientException;
 import org.apache.qpid.protonj2.types.messaging.Header;
@@ -217,8 +218,8 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	}
 
 	private @Nonnull SenderResult sendFireForget(@Nonnull Message message) throws SenderException, TimeoutException {
-		doSend(message, null);
-		return new SenderResult("");
+		Object messageId = doSend(message, null);
+		return new SenderResult(Message.asMessage(messageId));
 	}
 
 	private @Nonnull SenderResult sendRequestResponse(@Nonnull Message message) throws SenderException {
@@ -249,15 +250,31 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		}
 	}
 
-	private void doSend(@Nonnull Message message, @Nullable String dynamicReplyAddress) throws SenderException, TimeoutException {
+	/**
+	 * Send a message and return its messageId object.
+	 * @param message {@link Message} to be sent
+	 * @param replyAddress Option reply-address
+	 * @return The AMQP messageId object
+	 * @throws SenderException If there was an exception sending the message
+	 * @throws TimeoutException If there was a timeout waiting for the message to be accepted by the broker.
+	 */
+	private Object doSend(@Nonnull Message message, @Nullable String replyAddress) throws SenderException, TimeoutException {
 		if (streamingMessages) {
-			sendStreamingMessage(message, dynamicReplyAddress);
+			return sendStreamingMessage(message, replyAddress);
 		} else {
-			sendObjectMessage(message, dynamicReplyAddress);
+			return sendObjectMessage(message, replyAddress);
 		}
 	}
 
-	private void sendObjectMessage(@Nonnull Message message, @Nullable String replyAddress) throws SenderException, TimeoutException {
+	/**
+	 * Send an object-message. Can be binary (Data Section) or character (AmqpValue Section).
+	 * @param message {@link Message} to send
+	 * @param replyAddress Optional reply-address. If given, will be set on the AMQP message
+	 * @return Message ID, as {@link Object}.
+	 * @throws SenderException If there was an exception sending the message
+	 * @throws TimeoutException If there was a timeout waiting for the message to be accepted by the broker.
+	 */
+	private Object sendObjectMessage(@Nonnull Message message, @Nullable String replyAddress) throws SenderException, TimeoutException {
 		org.apache.qpid.protonj2.client.Message<?> amqpMessage;
 		try {
 			if (isCreateBinaryMessage(message)) {
@@ -274,10 +291,11 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		}
 		try {
 			Tracker tracker = sender.send(amqpMessage);
-			Tracker tracker1 = tracker.awaitSettlement(timeout, TimeUnit.SECONDS);
+			Tracker tracker1 = tracker.awaitAccepted(timeout, TimeUnit.SECONDS);
 			if (tracker1 != null && tracker1.state() != null && !tracker1.state().isAccepted()) {
 				throw new TimeoutException("Timed out waiting for AMQP message to send");
 			}
+			return amqpMessage.messageId();
 		} catch (ClientException e) {
 			throw new SenderException("Cannot send AMQP message to AMQP server", e);
 		}
@@ -312,7 +330,15 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		}
 	}
 
-	private void sendStreamingMessage(@Nonnull Message message, @Nullable String replyAddress) throws SenderException {
+	/**
+	 * Send a streaming message. This will always be sent as a binary Data message.
+	 * @param message {@link Message} to send
+	 * @param replyAddress Optional reply-address. If given, will be set on the AMQP message
+	 * @return Message ID, as {@link Object}.
+	 * @throws SenderException If there was an exception sending the message
+	 * @throws TimeoutException If there was a timeout waiting for the message to be accepted by the broker.
+	 */
+	private Object sendStreamingMessage(@Nonnull Message message, @Nullable String replyAddress) throws SenderException, TimeoutException {
 		try {
 			StreamSenderMessage streamSenderMessage = streamSender.beginMessage();
 			applyMessageMetaData(message, streamSenderMessage);
@@ -332,7 +358,11 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 				throw e;
 			}
 			streamSenderMessage.complete();
-			streamSenderMessage.tracker().awaitAccepted(timeout, TimeUnit.SECONDS);
+			StreamTracker tracker = streamSenderMessage.tracker().awaitAccepted(timeout, TimeUnit.SECONDS);
+			if (tracker != null && tracker.state() != null && !tracker.state().isAccepted()) {
+				throw new TimeoutException("Timed out waiting for AMQP message to send");
+			}
+			return streamSenderMessage.messageId();
 		} catch (ClientException | IOException e) {
 			throw new SenderException("Cannot send streaming AMQP message to AMQP server", e);
 		}
@@ -398,7 +428,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	/**
 	 * Set the message time-to-live, in milliseconds.
 	 *
-	 * @ff.default {@literal 0xFFFFFFFF} ms, meaning no expiry.
+	 * @ff.default {@literal -1}ms, meaning no expiry.
 	 */
 	public void setTimeToLive(long timeToLive) {
 		this.timeToLive = timeToLive;
