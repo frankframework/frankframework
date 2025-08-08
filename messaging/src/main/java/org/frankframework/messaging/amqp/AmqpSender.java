@@ -185,7 +185,6 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 					senderOptions.targetOptions().capabilities(AddressType.QUEUE.getCapabilityName());
 				} else {
 					senderOptions.targetOptions().capabilities(addressType.getCapabilityName());
-					senderOptions.sourceOptions().capabilities(addressType.getCapabilityName());
 				}
 				sender = session.openSender(address, senderOptions);
 			}
@@ -217,45 +216,40 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		return senderResult;
 	}
 
-	@Nonnull
-	private SenderResult sendFireForget(@Nonnull Message message) throws SenderException, TimeoutException {
+	private @Nonnull SenderResult sendFireForget(@Nonnull Message message) throws SenderException, TimeoutException {
 		doSend(message, null);
 		return new SenderResult("");
 	}
 
-	@Nonnull
-	private SenderResult sendRequestResponse(@Nonnull Message message) throws SenderException {
-		Message responseMessage;
+	private @Nonnull SenderResult sendRequestResponse(@Nonnull Message message) throws SenderException {
+
 		// It seems that dynamic receivers cannot be streaming?
 		try (Receiver responseReceiver = StringUtils.isEmpty(replyQueueName) ? session.openDynamicReceiver() : session.openReceiver(replyQueueName)) {
 			String responseQueueAddress = responseReceiver.address();
 			doSend(message, responseQueueAddress);
 			Delivery response = responseReceiver.receive(timeout, TimeUnit.SECONDS);
 			if (response == null) {
-				responseMessage = Message.nullMessage();
+				return new SenderResult(Message.nullMessage());
 			} else {
-				responseMessage = convertAndAcceptDelivery(response);
+				return new SenderResult(convertAndAcceptDelivery(response));
 			}
 		} catch (RuntimeException | ClientException | TimeoutException | IOException e) {
 			throw new SenderException("Error sending request/response message", e);
 		}
-		return new SenderResult(responseMessage);
 	}
 
-	@Nonnull
-	private static Message convertAndAcceptDelivery(Delivery delivery) throws ClientException, IOException {
-		Message responseMessage;
+	private static @Nonnull Message convertAndAcceptDelivery(@Nonnull Delivery delivery) throws ClientException, IOException {
 		try {
-			responseMessage = Amqp1Helper.convertAmqpMessageToFFMessage(delivery.message());
+			Message responseMessage = Amqp1Helper.convertAmqpMessageToFFMessage(delivery.message());
 			delivery.accept();
+			return responseMessage;
 		} catch (RuntimeException | ClientException | IOException e) {
 			delivery.reject(e.getClass().getName(), e.getMessage());
 			throw e;
 		}
-		return responseMessage;
 	}
 
-	private void doSend(Message message, String dynamicReplyAddress) throws SenderException, TimeoutException {
+	private void doSend(@Nonnull Message message, @Nullable String dynamicReplyAddress) throws SenderException, TimeoutException {
 		if (streamingMessages) {
 			sendStreamingMessage(message, dynamicReplyAddress);
 		} else {
