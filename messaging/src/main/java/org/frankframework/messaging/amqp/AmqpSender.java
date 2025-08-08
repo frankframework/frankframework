@@ -41,6 +41,7 @@ import org.apache.qpid.protonj2.client.StreamSenderMessage;
 import org.apache.qpid.protonj2.client.StreamSenderOptions;
 import org.apache.qpid.protonj2.client.Tracker;
 import org.apache.qpid.protonj2.client.exceptions.ClientException;
+import org.apache.qpid.protonj2.types.messaging.Header;
 import org.springframework.util.MimeType;
 
 import lombok.Setter;
@@ -69,6 +70,7 @@ import org.frankframework.util.UUIDUtil;
 @DestinationType(DestinationType.Type.AMQP)
 public class AmqpSender extends AbstractSenderWithParameters implements ISenderWithParameters, HasPhysicalDestination {
 	public static final long DEFAULT_TIMEOUT_SECONDS = 30L;
+	public static final long DEFAULT_TIME_TO_LIVE = Header.DEFAULT_TIME_TO_LIVE;
 
 	private String connectionName;
 	private AddressType addressType = AddressType.QUEUE;
@@ -79,6 +81,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	private MessageType messageType = MessageType.AUTO;
 	private boolean streamingMessages = false;
 	private boolean durable = true;
+	private long timeToLive = DEFAULT_TIME_TO_LIVE;
 	private DeliveryMode deliveryMode = DeliveryMode.AT_LEAST_ONCE;
 	private MessageProtocol messageProtocol = MessageProtocol.FF;
 
@@ -296,6 +299,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 
 	private void applyMessageOptions(@Nonnull org.apache.qpid.protonj2.client.Message<?> amqpMessage, @Nullable String replyAddress) throws ClientException {
 		amqpMessage.durable(durable);
+		amqpMessage.timeToLive(timeToLive);
 		if (replyAddress != null) {
 			amqpMessage.replyTo(replyAddress);
 		}
@@ -395,6 +399,15 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 
 	public void setDurable(boolean durable) {
 		this.durable = durable;
+	}
+
+	/**
+	 * Set the message time-to-live, in milliseconds.
+	 *
+	 * @ff.default {@literal 0xFFFFFFFF} ms, meaning no expiry.
+	 */
+	public void setTimeToLive(long timeToLive) {
+		this.timeToLive = timeToLive;
 	}
 
 	/**
