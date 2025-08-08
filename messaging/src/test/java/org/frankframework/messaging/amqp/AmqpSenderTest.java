@@ -199,6 +199,7 @@ public abstract class AmqpSenderTest {
 		sender.setMessageProtocol(MessageProtocol.FF);
 		sender.setAddressType(AddressType.TOPIC);
 		sender.setAddress(TOPIC_EXCHANGE_NAME);
+		sender.setDurable(true);
 
 		sender.configure();
 		sender.start();
@@ -219,11 +220,13 @@ public abstract class AmqpSenderTest {
 		sender.sendMessage(message, session);
 
 		// Assert
+		// Join all futures to get result messages, and for each message create an Executable lambda to assert the result is as expected
 		List<Executable> resultAssertions = futureResults.stream()
 				.map(entry -> Map.entry(entry.getKey(), entry.getValue().join()))
 				.map(f -> (Executable) () -> assertEquals(testData, f.getValue().asString(), "Topic Receiver %d did not receive expected message; got '%s' instead of '%s".formatted(f.getKey(), f.getValue().asString(), testData)))
 				.toList();
 
+		// Do all assertions on all results
 		assertAll(resultAssertions);
 	}
 
