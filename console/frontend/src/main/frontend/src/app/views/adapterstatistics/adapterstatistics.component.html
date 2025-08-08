@@ -26,19 +26,11 @@
           <h4>{{ adapterName }} Statistics</h4>
         </div>
         <div class="ibox-content">
-          <div class="col-md-12 table-responsive">
-            <h4>Adapter statistics by the hour</h4>
-            <div style="height: 300px">
-              <canvas
-                id="line"
-                class="chart chart-line"
-                baseChart
-                type="line"
-                [options]="options"
-                [data]="hourlyStatistics"
-              ></canvas>
-            </div>
-          </div>
+          <app-adapterstatistics-charts
+            [hourlyStatistics]="hourlyStatistics"
+            [sloStatistics]="sloStatistics"
+            [countPerReceiverStatistics]="countPerReceiverStatistics"
+          ></app-adapterstatistics-charts>
           <div class="col-md-4 m-t-md table-responsive">
             <h4>Total message processing duration (in ms)</h4>
             <table class="table">
@@ -54,14 +46,20 @@
                       <td>
                         {{ statisticsTimeBoundaries[totalMsgProcTime.key] }}
                       </td>
-                      <td>{{ totalMsgProcTime.value }}</td>
+                      <td>
+                        @if (totalMsgProcTime.originalValue !== undefined) {
+                          <span [title]="totalMsgProcTime.originalValue">{{ totalMsgProcTime.value }}</span>
+                        } @else {
+                          {{ totalMsgProcTime.value }}
+                        }
+                      </td>
                     </tr>
                   }
                 }
               </tbody>
             </table>
           </div>
-          <div class="col-md-4 m-t-md table-responsive">
+          <div class="col-md-8 m-t-md table-responsive">
             <h4>Counts for receivers</h4>
             <table class="table">
               <thead>
@@ -114,7 +112,7 @@
                     </thead>
                     @for (receiver of stats.receivers; track receiver.name) {
                       <tbody>
-                        @for (threadsProcessing of getSortedProcessingThreads(receiver); track threadsProcessing.name) {
+                        @for (threadsProcessing of getSortedProcessingThreads(receiver); track $index) {
                           <tr>
                             <td>{{ receiver.name }}</td>
                             @for (
@@ -122,7 +120,11 @@
                               track thread.key
                             ) {
                               <td>
-                                {{ thread.value }}
+                                @if (thread.originalValue !== undefined) {
+                                  <span [title]="thread.originalValue">{{ thread.value }}</span>
+                                } @else {
+                                  {{ thread.value }}
+                                }
                               </td>
                             }
                           </tr>
@@ -166,7 +168,11 @@
                       <tr>
                         @for (pipeKV of pipe | formatStatistics: statisticsTimeBoundaries; track pipeKV.key) {
                           <td>
-                            {{ pipeKV.value }}
+                            @if (pipeKV.originalValue !== undefined) {
+                              <span [title]="pipeKV.originalValue">{{ pipeKV.value }}</span>
+                            } @else {
+                              {{ pipeKV.value }}
+                            }
                           </td>
                         }
                       </tr>
@@ -204,7 +210,11 @@
                       <tr>
                         @for (pipeKV of pipe | formatStatistics: statisticsSizeBoundaries; track pipeKV.key) {
                           <td>
-                            {{ pipeKV.value }}
+                            @if (pipeKV.originalValue !== undefined) {
+                              <span [title]="pipeKV.originalValue">{{ pipeKV.value }}</span>
+                            } @else {
+                              {{ pipeKV.value }}
+                            }
                           </td>
                         }
                       </tr>

@@ -1,6 +1,5 @@
 import { ApplicationConfig, importProvidersFrom } from '@angular/core';
 import { provideRouter, TitleStrategy, withHashLocation, withRouterConfig } from '@angular/router';
-
 import { routes } from './app.routes';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { PagesTitleStrategy } from './pages-title-strategy';
