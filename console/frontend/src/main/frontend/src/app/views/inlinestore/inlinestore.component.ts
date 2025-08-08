@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Component, inject, OnInit } from '@angular/core';
 import { AppService } from 'src/app/app.service';
-import { getProcessStateIcon, getProcessStateIconColor } from 'src/app/utils';
+import { getProcessStateIcon, getProcessStateIconColor } from 'src/app/utilities';
 import { KeyValuePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 
@@ -23,10 +23,10 @@ type InlineStore = Record<string, { items: stateItemItem[]; totalMessageCount: n
 export class InlinestoreComponent implements OnInit {
   protected readonly getProcessStateIconColorFn = getProcessStateIconColor;
   protected readonly getProcessStateIconFn = getProcessStateIcon;
+  protected result: InlineStore = {};
 
   private readonly http: HttpClient = inject(HttpClient);
   private readonly appService: AppService = inject(AppService);
-  protected result: InlineStore = {};
 
   ngOnInit(): void {
     this.http.get<InlineStore>(`${this.appService.absoluteApiPath}inlinestores/overview`).subscribe((data) => {

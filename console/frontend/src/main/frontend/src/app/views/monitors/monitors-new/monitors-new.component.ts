@@ -15,9 +15,9 @@ import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.
   styleUrl: './monitors-new.component.scss',
 })
 export class MonitorsNewComponent implements OnInit, OnDestroy {
-  protected selectedConfiguration: string = '';
-  protected monitorName: string = '';
-  protected ladda: boolean = false;
+  protected selectedConfiguration = '';
+  protected monitorName = '';
+  protected ladda = false;
   protected configurations: Signal<Option[]> = computed(() =>
     this.appService.configurations().map((config) => ({ label: config.name })),
   );

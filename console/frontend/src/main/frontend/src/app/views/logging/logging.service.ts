@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 
@@ -43,13 +43,10 @@ type Logging = {
   providedIn: 'root',
 })
 export class LoggingService {
-  private logSettingsBaseURL: string = `${this.appService.absoluteApiPath}server/logging`;
-  private logSettingsURL: string = `${this.logSettingsBaseURL}/settings`;
-
-  constructor(
-    private http: HttpClient,
-    private appService: AppService,
-  ) {}
+  private http = inject(HttpClient);
+  private appService = inject(AppService);
+  private logSettingsBaseURL = `${this.appService.absoluteApiPath}server/logging`;
+  private logSettingsURL = `${this.logSettingsBaseURL}/settings`;
 
   getLogging(directory: string): Observable<Logging> {
     const url = directory.length > 0 ? `logging?directory=${directory}` : 'logging';

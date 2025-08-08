@@ -10,7 +10,7 @@ export function whenElementExists<T extends HTMLElement>(selector: string, callb
 }
 
 export function computeServerPath(): string {
-  let path = window.location.pathname;
+  let path = globalThis.location.pathname;
 
   if (path.includes('/iaf/gui')) path = path.slice(0, Math.max(0, path.indexOf('/iaf/gui') + 1));
   else if (path.includes('/', 1)) path = path.slice(0, Math.max(0, path.indexOf('/', 1) + 1));
@@ -75,5 +75,5 @@ export function fixedPointFloat(value: number): number {
 
 export const compare = (v1: string | number, v2: string | number): 1 | -1 | 0 => (v1 < v2 ? -1 : v1 > v2 ? 1 : 0);
 
-/** This is pretty bad, non primitive types won't be covered correctly (null, undefined, object, etc) */
+/** This is pretty bad, non-primitive types won't be covered correctly (null, undefined, object, etc) */
 export const anyCompare = <T>(v1: T, v2: T): 1 | -1 | 0 => (v1 < v2 ? -1 : v1 > v2 ? 1 : 0);

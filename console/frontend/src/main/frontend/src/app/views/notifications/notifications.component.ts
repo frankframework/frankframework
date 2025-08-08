@@ -1,6 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
-import { NotificationService, Notification } from 'src/app/services/notification.service';
+import { Notification, NotificationService } from 'src/app/services/notification.service';
 
 @Component({
   selector: 'app-notifications',
@@ -16,12 +16,10 @@ export class NotificationsComponent implements OnInit {
     fn: false,
     time: 0,
   };
-  protected text: string = '';
+  protected text = '';
 
-  constructor(
-    private route: ActivatedRoute,
-    private notificationService: NotificationService,
-  ) {}
+  private route = inject(ActivatedRoute);
+  private notificationService = inject(NotificationService);
 
   ngOnInit(): void {
     this.route.queryParamMap.subscribe((parameters) => {

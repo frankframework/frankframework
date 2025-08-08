@@ -31,10 +31,6 @@ import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-
 export class SchedulerAddComponent extends SchedulerAddEditParent {
   private readonly schedulerService: SchedulerService = inject(SchedulerService);
 
-  constructor() {
-    super();
-  }
-
   submit(): void {
     const fd = new FormData();
     this.state = [];

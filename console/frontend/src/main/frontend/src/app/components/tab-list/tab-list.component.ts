@@ -8,13 +8,16 @@ import { NgClass } from '@angular/common';
   styleUrl: './tab-list.component.scss',
 })
 export class TabListComponent {
-  protected _allTabName: string = 'All';
+  @Input() selectedTab: string;
+  @Input() showAllTab = true;
+  @Output() selectedTabChange = new EventEmitter<string>();
 
-  @Input() selectedTab: string = this._allTabName;
-  @Input() showAllTab: boolean = true;
-  @Output() selectedTabChange: EventEmitter<string> = new EventEmitter();
-
+  protected _allTabName = 'All';
   protected tabsList: string[] = [`${this._allTabName}`];
+
+  constructor() {
+    this.selectedTab = this._allTabName;
+  }
 
   @Input()
   set tabs(tabs: string[]) {

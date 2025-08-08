@@ -13,12 +13,19 @@ export class ConfigurationSummaryComponent {
   @Input({ required: true }) isConfigStubbed: Record<string, boolean> = {};
   @Input({ required: true }) isConfigReloading: Record<string, boolean> = {};
   @Input({ required: true }) isConfigAutoReloadable: Record<string, boolean> = {};
-  @Input({ required: true }) selectedConfiguration: string = '';
+  @Input({ required: true }) selectedConfiguration = '';
   @Input({ required: true }) configurationFlowDiagram: string | null = null;
-  @Input({ required: true }) reloading: boolean = false;
+  @Input({ required: true }) reloading = false;
+
+  protected adapterSummarySignal: Signal<Summary>;
+  protected receiverSummarySignal: Signal<Summary>;
+  protected messageSummarySignal: Signal<MessageSummary>;
 
   private appService: AppService = inject(AppService);
-  protected adapterSummarySignal: Signal<Summary> = this.appService.adapterSummary;
-  protected receiverSummarySignal: Signal<Summary> = this.appService.receiverSummary;
-  protected messageSummarySignal: Signal<MessageSummary> = this.appService.messageSummary;
+
+  constructor() {
+    this.adapterSummarySignal = this.appService.adapterSummary;
+    this.receiverSummarySignal = this.appService.receiverSummary;
+    this.messageSummarySignal = this.appService.messageSummary;
+  }
 }

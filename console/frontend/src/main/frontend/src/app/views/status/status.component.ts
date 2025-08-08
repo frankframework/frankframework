@@ -75,6 +75,10 @@ export class StatusComponent implements OnInit, OnDestroy {
     return null;
   });
 
+  protected serverInfo: Signal<ServerInfo | null>;
+  protected readonly alerts: Signal<Alert[]>;
+  protected readonly messageLog: Signal<Record<string, MessageLog>>;
+
   private adapterName = '';
   private _subscriptions = new Subscription();
   private hasExpendedAdaptersLoaded = false;
@@ -84,9 +88,12 @@ export class StatusComponent implements OnInit, OnDestroy {
   private readonly statusService: StatusService = inject(StatusService);
   private readonly serverInfoService: ServerInfoService = inject(ServerInfoService);
   private readonly appService: AppService = inject(AppService);
-  protected serverInfo: Signal<ServerInfo | null> = this.serverInfoService.serverInfo;
-  protected readonly alerts: Signal<Alert[]> = this.appService.alerts;
-  protected readonly messageLog: Signal<Record<string, MessageLog>> = this.appService.messageLog;
+
+  constructor() {
+    this.serverInfo = this.serverInfoService.serverInfo;
+    this.alerts = this.appService.alerts;
+    this.messageLog = this.appService.messageLog;
+  }
 
   ngOnInit(): void {
     const fragmentSubscription = this.route.fragment.subscribe((fragment) => {
@@ -263,7 +270,7 @@ export class StatusComponent implements OnInit, OnDestroy {
 
   private updateAdapterShownContent(adapters: Record<string, Adapter>): void {
     for (const adapter in adapters) {
-      if (!this.adapterShowContent.hasOwnProperty(adapter)) {
+      if (!Object.hasOwnProperty.call(this.adapterShowContent, adapter)) {
         this.adapterShowContent[adapter] = this.determineShowContent(adapters[adapter]);
 
         if (this.adapterName === adapters[adapter].name) {

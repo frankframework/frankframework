@@ -4,7 +4,7 @@
       [allTabName]="GLOBAL_TAB_NAME"
       [tabs]="configurationNames()"
       (selectedTabChange)="changeConfiguration($event)"
-    ></app-tab-list>
+    />
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
         <div class="ibox-title summary">
@@ -14,14 +14,14 @@
           <div class="col-md-12 m-b-lg">
             <div class="input-group" id="searchbar">
               <input
-                [(ngModel)]="searchFilter"
                 class="form-control"
                 name="search"
                 placeholder="Search ... (Ctrl + Shift + F)"
                 type="text"
+                [(ngModel)]="searchFilter"
               />
               @if (searchFilter.length) {
-                <i (click)="searchFilter = ''" aria-hidden="true" class="fa fa-times input-group-closeSearch"></i>
+                <i aria-hidden="true" class="fa fa-times input-group-closeSearch" (click)="searchFilter = ''"></i>
               }
               <span class="input-group-addon">
                 <i aria-hidden="true" class="fa fa-search"></i>

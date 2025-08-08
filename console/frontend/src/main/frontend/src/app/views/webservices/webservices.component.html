@@ -26,12 +26,9 @@
                       <td>{{ service.methods }}</td>
                       <td>{{ service.view }}</td>
                       <td>
-                        <a
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          href="{{ rootURL }}rest/{{ service.uriPattern }}"
-                          >{{ service.uriPattern }}</a
-                        >
+                        <a target="_blank" rel="noopener noreferrer" [href]="`${rootURL}rest/${service.uriPattern}`">{{
+                          service.uriPattern
+                        }}</a>
                       </td>
                     </tr>
                   }
@@ -52,9 +49,9 @@
               appHasAccessToLink="getOpenApiSpec"
               target="_blank"
               rel="noopener noreferrer"
-              href="{{ rootURL }}iaf/api/webservices/openapi.json"
               class="btn btn-info btn-xs pull-right"
               type="button"
+              [href]="`${rootURL}iaf/api/webservices/openapi.json`"
               ><i aria-hidden="true" class="fa fa-external-link"></i><span> Full OpenAPI 3.0</span></a
             >
             <h4>Available ApiListeners</h4>
@@ -84,9 +81,9 @@
                           appHasAccessToLink="getOpenApiSpec"
                           target="_blank"
                           rel="noopener noreferrer"
-                          href="{{ compileURL(apiListener) }}"
                           class="btn btn-xs pull-right default"
                           type="button"
+                          [href]="compileURL(apiListener)"
                           ><i class="fa fa-arrow-circle-o-down" aria-hidden="true"></i> <span> OpenAPI 3.0</span></a
                         >
                       </td>
@@ -124,18 +121,18 @@
                             appHasAccessToLink="getWsdl"
                             target="_blank"
                             rel="noopener noreferrer"
-                            href="{{ rootURL }}iaf/api/webservices/{{ wsdl.configuration }}/{{ wsdl.adapter }}.zip"
                             class="btn btn-xs pull-right default"
                             type="button"
+                            [href]="`${rootURL}iaf/api/webservices/${wsdl.configuration}/${wsdl.adapter}.zip`"
                             ><i aria-hidden="true" class="fa fa-arrow-circle-o-down"></i> <span> Download</span></a
                           >
                           <a
                             appHasAccessToLink="getWsdl"
                             target="_blank"
                             rel="noopener noreferrer"
-                            href="{{ rootURL }}iaf/api/webservices/{{ wsdl.configuration }}/{{ wsdl.adapter }}.wsdl"
                             class="btn btn-xs pull-right default"
                             type="button"
+                            [href]="`${rootURL}iaf/api/webservices/${wsdl.configuration}/${wsdl.adapter}.wsdl`"
                             ><i aria-hidden="true" class="fa fa-file-archive-o"></i>
                             <span> WSDL including dependencies</span></a
                           >
@@ -143,11 +140,11 @@
                             appHasAccessToLink="getWsdl"
                             target="_blank"
                             rel="noopener noreferrer"
-                            href="{{ rootURL }}iaf/api/webservices/{{ wsdl.configuration }}/{{
-                              wsdl.adapter
-                            }}.wsdl?useIncludes=true"
                             class="btn btn-xs pull-right default"
                             type="button"
+                            [href]="
+                              `${rootURL}iaf/api/webservices/${wsdl.configuration}/${wsdl.adapter}.wsdl?useIncludes=true`
+                            "
                             ><i aria-hidden="true" class="fa fa-file-code-o"></i> <span> WSDL</span></a
                           >
                         </td>

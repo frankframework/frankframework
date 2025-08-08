@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { StorageService } from './storage.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { ActivatedRoute, ActivationEnd, Router, RouterOutlet } from '@angular/router';
@@ -11,12 +11,10 @@ import { filter } from 'rxjs';
   imports: [RouterOutlet],
 })
 export class StorageComponent implements OnInit {
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private SweetAlert: SweetalertService,
-    private storageService: StorageService,
-  ) {}
+  private route = inject(ActivatedRoute);
+  private router = inject(Router);
+  private SweetAlert = inject(SweetalertService);
+  private storageService = inject(StorageService);
 
   ngOnInit(): void {
     this.route.firstChild?.paramMap.subscribe((parameters) => {
@@ -33,19 +31,19 @@ export class StorageComponent implements OnInit {
       }
 
       if (!adapterName) {
-        this.SweetAlert.Warning('Invalid URL', 'No adapter name provided!');
+        this.SweetAlert.warning('Invalid URL', 'No adapter name provided!');
         return;
       }
       if (!storageSourceName) {
-        this.SweetAlert.Warning('Invalid URL', 'No receiver or pipe name provided!');
+        this.SweetAlert.warning('Invalid URL', 'No receiver or pipe name provided!');
         return;
       }
       if (!storageSource) {
-        this.SweetAlert.Warning('Invalid URL', 'Component type [receivers] or [pipes] is not provided in url!');
+        this.SweetAlert.warning('Invalid URL', 'Component type [receivers] or [pipes] is not provided in url!');
         return;
       }
       if (!processState) {
-        this.SweetAlert.Warning('Invalid URL', 'No storage type provided!');
+        this.SweetAlert.warning('Invalid URL', 'No storage type provided!');
         return;
       }
 

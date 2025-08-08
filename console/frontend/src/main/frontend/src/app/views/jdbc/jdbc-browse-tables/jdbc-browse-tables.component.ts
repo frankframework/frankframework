@@ -11,11 +11,11 @@ import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.
 import { WebStorageService } from '../../../services/web-storage.service';
 import { toObservable } from '@angular/core/rxjs-interop';
 
-interface ColumnName {
+type ColumnName = {
   id: number;
   name: string;
   desc: string;
-}
+};
 
 @Component({
   selector: 'app-jdbc-browse-tables',
@@ -26,7 +26,7 @@ interface ColumnName {
 export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
   protected datasources: string[] = [];
   protected error: string | null = null;
-  protected processingMessage: boolean = false;
+  protected processingMessage = false;
   protected form: JdbcBrowseForm = {
     datasource: '',
     resultType: '',
@@ -39,7 +39,7 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
   };
   protected columnNames: ColumnName[] = [];
   protected result: string[][] = [];
-  protected query: string = '';
+  protected query = '';
 
   private readonly jdbcService: JdbcService = inject(JdbcService);
   private readonly webStorageService: WebStorageService = inject(WebStorageService);

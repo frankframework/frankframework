@@ -1,9 +1,9 @@
-<app-toasts-container></app-toasts-container>
+<app-toasts-container />
 <!-- Wrapper-->
 @if (!isLoginView) {
   <div id="wrapper">
     <!-- Navigation -->
-    <app-pages-navigation (shouldOpenInfo)="openInfoModel()" [queryParams]="routeQueryParams"></app-pages-navigation>
+    <app-pages-navigation [queryParams]="routeQueryParams" (shouldOpenInfo)="openInfoModel()" />
     <!-- Page wraper -->
     <div id="page-wrapper" class="gray-bg">
       <!-- Page wrapper -->
@@ -14,8 +14,8 @@
         [clusterMembers]="clusterMembers"
         [selectedClusterMember]="selectedClusterMember"
         [userName]="userName"
-      ></app-pages-topnavbar>
-      <app-pages-topinfobar class="topinfobar"></app-pages-topinfobar>
+      />
+      <app-pages-topinfobar class="topinfobar" />
       @if (startupError()) {
         <div class="m-sm alert alert-danger pointer" role="alert" type="danger" routerLink="/error">
           <h4>Startup error:</h4>
@@ -23,15 +23,15 @@
         </div>
       }
       <!-- Main view  -->
-      <router-outlet></router-outlet>
+      <router-outlet />
       <!-- Footer -->
       @if (!routeData['iframe']) {
-        <app-pages-footer></app-pages-footer>
+        <app-pages-footer />
       }
     </div>
     <!-- End page wrapper-->
   </div>
 } @else {
-  <router-outlet></router-outlet>
+  <router-outlet />
 }
 <!-- End wrapper-->

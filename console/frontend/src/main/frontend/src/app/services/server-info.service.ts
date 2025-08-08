@@ -85,7 +85,7 @@ Java Version: **${serverInfo?.javaVersion}**
 Heap size: **${humanFileSize.transform(serverInfo?.processMetrics.heapSize ?? 0)}**, total JVM memory: **${humanFileSize.transform(serverInfo?.processMetrics?.totalMemory ?? 0)}**
 Free memory: **${humanFileSize.transform(serverInfo?.processMetrics.freeMemory ?? 0)}**, max memory: **${humanFileSize.transform(serverInfo?.processMetrics.maxMemory ?? 0)}**
 Free disk space: **${humanFileSize.transform(serverInfo?.fileSystem.freeSpace ?? 0)}**, total disk space: **${humanFileSize.transform(serverInfo?.fileSystem.totalSpace ?? 0)}**
-Up since: **${this.serverTimeService.getIntialTime()}**, timezone: **${serverInfo?.serverTimezone}**
+Up since: **${this.serverTimeService.getInitialTime()}**, timezone: **${serverInfo?.serverTimezone}**
 ${consoleVersion === serverInfo?.framework.version ? '' : `Console version: **${consoleVersion}**`}`;
   }
 }

@@ -74,7 +74,7 @@ export class ConnectionInterceptor implements HttpInterceptor {
         this.toastsService.error('Server Error', 'Connection to the server was lost! Click to refresh the page.', {
           timeout: 0,
           clickHandler: () => {
-            window.location.reload();
+            globalThis.location.reload();
             return true;
           },
         });

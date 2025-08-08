@@ -9,7 +9,7 @@ import {
   Output,
   QueryList,
 } from '@angular/core';
-import { anyCompare, compare } from '../utils';
+import { anyCompare, compare } from '../utilities';
 
 export type SortDirection = 'ASC' | 'DESC' | 'NONE';
 export type SortEvent = {
@@ -57,12 +57,30 @@ export function basicAnyValueTableSort<T>(
 }
 
 @Directive({
+  // eslint-disable-next-line @angular-eslint/directive-selector
   selector: 'th[sortable]',
 })
 export class ThSortableDirective implements OnInit {
-  @Input() sortable: string = '';
+  @Input() sortable = '';
   @Input() direction: SortDirection = 'NONE';
   @Output() sorted = new EventEmitter<SortEvent>();
+
+  private elementRef: ElementRef<HTMLTableCellElement> = inject(ElementRef);
+  private headerText = '';
+
+  @HostListener('click') nextSort(): void {
+    this.updateDirection(this.nextSortOption(this.direction));
+    this.sorted.emit({ column: this.sortable, direction: this.direction });
+  }
+
+  ngOnInit(): void {
+    this.headerText = this.elementRef.nativeElement.innerHTML;
+  }
+
+  updateDirection(newDirection: SortDirection): void {
+    this.direction = newDirection;
+    this.updateIcon(this.direction);
+  }
 
   private nextSortOption(sortOption: SortDirection): SortDirection {
     switch (sortOption) {
@@ -77,14 +95,8 @@ export class ThSortableDirective implements OnInit {
       }
     }
   }
-  private headerText = '';
-  private elementRef: ElementRef<HTMLTableCellElement> = inject(ElementRef);
 
-  ngOnInit(): void {
-    this.headerText = this.elementRef.nativeElement.innerHTML;
-  }
-
-  updateIcon(direction: SortDirection): void {
+  private updateIcon(direction: SortDirection): void {
     let updateColumnName = '';
     updateColumnName =
       direction == 'NONE'
@@ -92,15 +104,5 @@ export class ThSortableDirective implements OnInit {
         : this.headerText +
           (direction == 'ASC' ? ' <i class="fa fa-arrow-up"></i>' : ' <i class="fa fa-arrow-down"></i>');
     this.elementRef.nativeElement.innerHTML = updateColumnName;
-  }
-
-  updateDirection(newDirection: SortDirection): void {
-    this.direction = newDirection;
-    this.updateIcon(this.direction);
-  }
-
-  @HostListener('click') nextSort(): void {
-    this.updateDirection(this.nextSortOption(this.direction));
-    this.sorted.emit({ column: this.sortable, direction: this.direction });
   }
 }

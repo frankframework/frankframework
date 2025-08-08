@@ -2,7 +2,7 @@ import { Component, inject, OnDestroy, OnInit, Signal, ViewChild } from '@angula
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppService, Configuration } from 'src/app/app.service';
 import { ConfigurationsService } from '../configurations.service';
-import { copyToClipboard } from 'src/app/utils';
+import { copyToClipboard } from 'src/app/utilities';
 import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-editor.component';
 import { Subscription } from 'rxjs';
 import { ConfigurationTabListComponent } from '../../../components/tab-list/configuration-tab-list.component';
@@ -17,21 +17,25 @@ import { NgClass } from '@angular/common';
 export class ConfigurationsShowComponent implements OnInit, OnDestroy {
   @ViewChild('editor') editor!: MonacoEditorComponent;
 
-  protected selectedConfiguration: string = 'All';
-  protected loadedConfiguration: boolean = false;
+  protected selectedConfiguration = 'All';
+  protected loadedConfiguration = false;
+  protected configurations: Signal<Configuration[]>;
 
   private readonly appService: AppService = inject(AppService);
-  protected configurations: Signal<Configuration[]> = this.appService.configurations;
 
   private readonly router: Router = inject(Router);
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
   private readonly configurationsService: ConfigurationsService = inject(ConfigurationsService);
-  private configuration: string = '';
+  private configuration = '';
   private fragment?: string;
   private selectedAdapter?: string;
-  private skipParamsUpdate: boolean = false;
-  private initialized: boolean = false;
+  private skipParamsUpdate = false;
+  private initialized = false;
   private configsSubscription: Subscription | null = null;
+
+  constructor() {
+    this.configurations = this.appService.configurations;
+  }
 
   ngOnInit(): void {
     this.route.fragment.subscribe((fragment) => {

@@ -6,6 +6,7 @@ import { WebsocketService } from './websocket.service';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
   interface Window {
     SockJS: typeof SockJS;
   }

@@ -12,9 +12,14 @@ import { HasAccessToLinkDirective } from '../../../components/has-access-to-link
   styleUrls: ['./configurations-manage.component.scss'],
 })
 export class ConfigurationsManageComponent implements OnInit {
+  protected configurations: Signal<Configuration[]>;
+
   private readonly configurationsService: ConfigurationsService = inject(ConfigurationsService);
   private readonly appService: AppService = inject(AppService);
-  protected configurations: Signal<Configuration[]> = this.appService.configurations;
+
+  constructor() {
+    this.configurations = this.appService.configurations;
+  }
 
   ngOnInit(): void {
     this.configurationsService.getConfigurations().subscribe((data) => this.appService.updateConfigurations(data));

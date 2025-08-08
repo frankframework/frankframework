@@ -4,9 +4,10 @@ import { bootstrapApplication } from '@angular/platform-browser';
 import type SockJS from 'sockjs-client';
 import { AppComponent } from './app/app.component';
 import { appConfig } from './app/app.config';
-import { whenElementExists } from './app/utils';
+import { whenElementExists } from './app/utilities';
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
   interface Window {
     server: string;
     SockJS: typeof SockJS; // use premade bundle because sockjs developers don't understand using global might be a bad idea in non-node environments
@@ -18,7 +19,7 @@ function main(): void {
 }
 
 if (location.hostname != 'localhost') {
-  window.console.log(
+  globalThis.console.log(
     '%cThis is a browser feature intended for developers. Do not paste any code here given to you by someone else. It may compromise your account or have other negative side effects.',
     'font-weight: bold; font-size: 14px;',
   );
@@ -36,7 +37,7 @@ function onReady(): void {
 
   const bodyElement = document.querySelector<HTMLElement>('body')!;
 
-  window.addEventListener('keydown', function (event) {
+  globalThis.addEventListener('keydown', function (event) {
     if (event.key == 'F' && (event.ctrlKey || event.metaKey) && event.shiftKey) {
       const searchbar = document.querySelector('#searchbar');
       if (searchbar) {
@@ -48,7 +49,7 @@ function onReady(): void {
 
   // Automatically minimalize menu when screen is less than 768px
   for (const event of ['resize', 'load']) {
-    window.addEventListener(event, function () {
+    globalThis.addEventListener(event, function () {
       if (bodyElement.clientWidth < 769) {
         bodyElement.classList.add('body-small');
       } else {

@@ -11,11 +11,11 @@
           <h4>Execute JDBC Query</h4>
         </div>
         <div class="ibox-content">
-          <form role="form" (submit)="submit(form)" appQuickSubmitForm>
+          <form role="form" appQuickSubmitForm (submit)="submit(form)">
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30">Datasource</label>
+              <label class="col-sm-3 control-label label-height-30" for="datasource">Datasource</label>
               <div class="col-sm-9">
-                <select class="form-control" name="datasource" [(ngModel)]="form.datasource">
+                <select class="form-control" name="datasource" id="datasource" [(ngModel)]="form.datasource">
                   @for (datasource of datasources; track datasource) {
                     <option>
                       {{ datasource }}
@@ -25,9 +25,9 @@
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30">Query Type</label>
+              <label class="col-sm-3 control-label label-height-30" for="queryType">Query Type</label>
               <div class="col-sm-9">
-                <select class="form-control" name="queryType" [(ngModel)]="form.queryType">
+                <select class="form-control" name="queryType" id="queryType" [(ngModel)]="form.queryType">
                   @for (queryType of queryTypes; track queryType) {
                     <option>
                       {{ queryType }}
@@ -37,9 +37,9 @@
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30">Result format</label>
+              <label class="col-sm-3 control-label label-height-30" for="resultType">Result format</label>
               <div class="col-sm-9">
-                <select class="form-control" name="resultType" [(ngModel)]="form.resultType">
+                <select class="form-control" name="resultType" id="resultType" [(ngModel)]="form.resultType">
                   @for (resultType of resultTypes; track resultType; let first = $first) {
                     <option [selected]="first">
                       {{ resultType }}
@@ -49,31 +49,32 @@
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30">Avoid Locking</label>
+              <label class="col-sm-3 control-label label-height-30" for="avoidLocking">Avoid Locking</label>
               <div class="col-sm-9">
                 <span class="form-control" style="border: none"
-                  ><input type="checkbox" name="avoidLocking" [(ngModel)]="form.avoidLocking"
+                  ><input type="checkbox" name="avoidLocking" id="avoidLocking" [(ngModel)]="form.avoidLocking"
                 /></span>
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30">Trim Spaces</label>
+              <label class="col-sm-3 control-label label-height-30" for="trimSpaces">Trim Spaces</label>
               <div class="col-sm-9">
                 <span class="form-control" style="border: none"
-                  ><input type="checkbox" name="trimSpaces" [(ngModel)]="form.trimSpaces"
+                  ><input type="checkbox" name="trimSpaces" id="trimSpaces" [(ngModel)]="form.trimSpaces"
                 /></span>
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30">Query</label>
+              <label class="col-sm-3 control-label label-height-30" for="query">Query</label>
               <div class="col-sm-9">
                 <app-monaco-editor
+                  id="query"
                   class="form-control"
-                  [(value)]="form.query"
+                  style="height: 200px"
                   [options]="{ language: 'sql' }"
                   [actions]="editorActions"
-                  style="height: 200px"
-                ></app-monaco-editor>
+                  [(value)]="form.query"
+                />
               </div>
             </div>
             <div class="row form-group">
@@ -81,7 +82,7 @@
                 <button class="btn btn-info btn-w-m font-bold" type="button" (click)="reset()">Reset</button>
               </div>
               <div class="col-sm-3 m-t-md">
-                <button [ladda]="processingMessage" class="btn btn-primary btn-w-m font-bold" type="submit">
+                <button class="btn btn-primary btn-w-m font-bold" type="submit" [ladda]="processingMessage">
                   Send
                 </button>
               </div>

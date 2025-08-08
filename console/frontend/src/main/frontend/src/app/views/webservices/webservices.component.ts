@@ -14,10 +14,14 @@ export class WebservicesComponent implements OnInit {
   protected services: Service[] = [];
   protected apiListeners: ApiListener[] = [];
   protected wsdls: Wsdl[] = [];
+  protected rootURL: string;
 
   private readonly wsService: WebservicesService = inject(WebservicesService);
   private readonly appService: AppService = inject(AppService);
-  protected rootURL: string = this.appService.getServerPath();
+
+  constructor() {
+    this.rootURL = this.appService.getServerPath();
+  }
 
   ngOnInit(): void {
     this.wsService.getWebservices().subscribe((data) => {

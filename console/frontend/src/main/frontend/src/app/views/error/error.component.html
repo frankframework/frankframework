@@ -12,7 +12,7 @@
         <i class="fa fa-life-ring" aria-hidden="true"></i> View Logs
       </button>
       @if (stackTrace) {
-        <button (click)="viewStackTrace = !viewStackTrace" class="btn btn-info m-r">
+        <button class="btn btn-info m-r" (click)="viewStackTrace = !viewStackTrace">
           <i class="fa fa-bug" aria-hidden="true"></i>
           {{ viewStackTrace ? 'Hide' : 'View' }} Stack Trace
         </button>

@@ -45,7 +45,7 @@ export type ExpiringCertificate = {
   certificates: string[];
 };
 
-export interface SecurityItems {
+export type SecurityItems = {
   securityRoles: SecurityRole[];
   resourceFactories: ResourceFactories[];
   authEntries: AuthEntry[];
@@ -54,7 +54,7 @@ export interface SecurityItems {
   xmlComponents: Record<string, string>;
   supportedConnectionOptions: supportedConnectionOptions;
   expiringCertificates: ExpiringCertificate[];
-}
+};
 
 export type HttpRequestMethodType =
   | 'GET'

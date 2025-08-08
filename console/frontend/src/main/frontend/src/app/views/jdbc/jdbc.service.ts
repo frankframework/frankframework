@@ -3,12 +3,12 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 
-interface Date {
+type Date = {
   id: string;
   count: number;
-}
+};
 
-interface Slot {
+type Slot = {
   id: string;
   configuration: string;
   adapter: string;
@@ -16,17 +16,17 @@ interface Slot {
   pipe: string;
   msgcount: number;
   dates: Date[];
-}
+};
 
-interface JdbcBrowseReturnData {
+type JdbcBrowseReturnData = {
   query: string;
   fielddefinition: Record<string, string>;
   result: Record<string, Record<string, string>>;
-}
+};
 
-interface JdbcSummaryReturnData {
+type JdbcSummaryReturnData = {
   result: JdbcSummary[];
-}
+};
 
 export type JDBC = {
   queryTypes: string[];
@@ -34,7 +34,7 @@ export type JDBC = {
   resultTypes: string[];
 };
 
-export interface JdbcBrowseForm {
+export type JdbcBrowseForm = {
   datasource: string;
   resultType: string;
   table: string;
@@ -43,28 +43,28 @@ export interface JdbcBrowseForm {
   numberOfRowsOnly: boolean;
   minRow: number;
   maxRow: number;
-}
+};
 
-export interface JdbcQueryForm {
+export type JdbcQueryForm = {
   query: string;
   queryType: string;
   datasource: string;
   resultType: string;
   avoidLocking: boolean;
   trimSpaces: boolean;
-}
+};
 
-export interface JdbcSummaryForm {
+export type JdbcSummaryForm = {
   datasource: string;
-}
+};
 
-export interface JdbcSummary {
+export type JdbcSummary = {
   name: string;
   slotcount: number;
   slots?: Slot[];
   msgcount: number;
   type: string;
-}
+};
 
 @Injectable({
   providedIn: 'root',

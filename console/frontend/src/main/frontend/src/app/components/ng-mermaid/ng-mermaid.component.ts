@@ -12,7 +12,7 @@ import {
 import { Dimensions, getFactoryDimensions, initMermaid2Svg, mermaid2svg } from '@frankframework/frank-config-layout';
 
 @Component({
-  selector: 'ng-mermaid',
+  selector: 'app-ng-mermaid',
   template: '',
   styles: [
     `
@@ -28,10 +28,10 @@ import { Dimensions, getFactoryDimensions, initMermaid2Svg, mermaid2svg } from '
 })
 export class NgMermaidComponent implements OnInit, OnChanges {
   @Input() dimensions: Dimensions = getFactoryDimensions();
-  @Input() flowName: string = '';
-  @Input() nmModel: string = '';
+  @Input() flowName = '';
+  @Input() nmModel = '';
   @Input() nmRefreshInterval?: number;
-  @Output() nmInitCallback: EventEmitter<SVGSVGElement> = new EventEmitter();
+  @Output() nmInitCallback = new EventEmitter<SVGSVGElement>();
 
   protected interval = 2000;
   protected initialized = false;
@@ -65,10 +65,10 @@ export class NgMermaidComponent implements OnInit, OnChanges {
     }
 
     if (this.timeout) {
-      window.clearTimeout(this.timeout);
+      globalThis.clearTimeout(this.timeout);
     }
 
-    this.timeout = window.setTimeout(
+    this.timeout = globalThis.setTimeout(
       async () => {
         try {
           this.rootElement.innerHTML = await mermaid2svg(this.nmModel!);

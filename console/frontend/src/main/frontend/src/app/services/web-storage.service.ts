@@ -7,9 +7,9 @@ export class WebStorageService {
   // cache: Record<string, any> | null = null;
   // options: { expires: Date, path: string };
 
-  private sessionStorage = this.window.sessionStorage;
+  private sessionStorage = globalThis.sessionStorage;
 
-  constructor(private window: Window) {
+  constructor() {
     /* const date = new Date();
     date.setDate(date.getDate() + 7);
     this.options = {

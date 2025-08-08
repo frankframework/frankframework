@@ -30,11 +30,11 @@
                       <span><i class="fa fa-play m-r-xs"></i> Started</span>
                       <button
                         appHasAccessToLink="updateScheduler"
-                        [ladda]="refreshing"
                         title="Pause Scheduler"
-                        (click)="pauseScheduler()"
                         class="btn btn-xs btn-warning btn-change-state"
                         type="button"
+                        [ladda]="refreshing"
+                        (click)="pauseScheduler()"
                       >
                         <i class="fa fa-pause m-r-xs"></i> Pause
                       </button>
@@ -45,11 +45,11 @@
                       <span><i class="fa fa-pause m-r-xs"></i> Paused</span>
                       <button
                         appHasAccessToLink="updateScheduler"
-                        [ladda]="refreshing"
                         title="Start Scheduler"
-                        (click)="start()"
                         class="btn btn-xs btn-primary btn-change-state"
                         type="button"
+                        [ladda]="refreshing"
+                        (click)="start()"
                       >
                         <i class="fa fa-play m-r-xs"></i> Start
                       </button>
@@ -60,11 +60,11 @@
                       <span><i class="fa fa-stop m-r-xs"></i> Stopped</span>
                       <button
                         appHasAccessToLink="updateScheduler"
-                        [ladda]="refreshing"
                         title="Start Scheduler"
-                        (click)="start()"
                         class="btn btn-xs btn-primary btn-change-state"
                         type="button"
+                        [ladda]="refreshing"
+                        (click)="start()"
                       >
                         <i class="fa fa-play m-r-xs"></i> Start
                       </button>
@@ -82,7 +82,7 @@
       </div>
     </div>
 
-    <app-tab-list [tabs]="jobGroupNames" (selectedTabChange)="selectedJobGroup = $event"></app-tab-list>
+    <app-tab-list [tabs]="jobGroupNames" (selectedTabChange)="selectedJobGroup = $event" />
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
         <div class="ibox-title summary">
@@ -95,14 +95,14 @@
                 type="text"
                 class="form-control"
                 placeholder="Search ... (Ctrl + Shift + F)"
-                [(ngModel)]="searchFilter"
                 name="search"
+                [(ngModel)]="searchFilter"
               />
               <i
-                [ngClass]="searchFilter.length === 0 ? ['hidden'] : []"
-                (click)="searchFilter = ''"
                 class="fa fa-times input-group-closeSearch"
                 aria-hidden="true"
+                [ngClass]="searchFilter.length === 0 ? ['hidden'] : []"
+                (click)="searchFilter = ''"
               ></i>
               <span class="input-group-addon">
                 <i class="fa fa-search" aria-hidden="true"></i>
@@ -117,9 +117,14 @@
       <div class="col-lg-12" [ngClass]="{ hidden: jobGroupKV.key !== selectedJobGroup && selectedJobGroup !== 'All' }">
         @if (count > 0) {
           <div class="ibox float-e-margins">
-            <div (click)="jobShowContent[jobGroupKV.key] = !showContent(jobGroupKV.key)" class="ibox-title pointer">
+            <div
+              tabindex="0"
+              role="button"
+              class="ibox-title pointer"
+              (click)="jobShowContent[jobGroupKV.key] = !showContent(jobGroupKV.key)"
+            >
               <div class="ibox-tools pull-right">
-                <a> <i class="fa fa-chevron-{{ showContent(jobGroupKV.key) ? 'up' : 'down' }}"></i></a>
+                <a> <i [class]="`fa fa-chevron-${showContent(jobGroupKV.key) ? 'up' : 'down'}`"></i></a>
               </div>
               <h4>Jobgroup: {{ jobGroupKV.key }}</h4>
             </div>
@@ -131,9 +136,9 @@
                       @if (job.type === 'DATABASE') {
                         <button
                           appHasAccessToLink="updateTrigger"
-                          title="Edit Job {{ job.name }}"
                           class="btn btn-info btn-xs"
                           type="button"
+                          [title]="`Edit Job ${job.name}`"
                           (click)="edit(jobGroupKV.key, job.name)"
                         >
                           <i class="fa fa-pencil"></i> Edit
@@ -142,9 +147,9 @@
                       @if (job.type === 'DATABASE') {
                         <button
                           appHasAccessToLink="deleteTrigger"
-                          title="Delete Job {{ job.name }}"
                           class="btn btn-danger btn-xs"
                           type="button"
+                          [title]="`Delete Job ${job.name}`"
                           (click)="remove(jobGroupKV.key, job.name)"
                         >
                           <i class="fa fa-times"></i> Delete
@@ -153,9 +158,9 @@
                       @if (job.state === 'PAUSED') {
                         <button
                           appHasAccessToLink="updateTrigger"
-                          title="Resume Job {{ job.name }}"
                           class="btn btn-warning btn-xs"
                           type="button"
+                          [title]="`Resume Job ${job.name}`"
                           (click)="resume(jobGroupKV.key, job.name)"
                         >
                           <i class="fa fa-play"></i> Resume
@@ -164,9 +169,9 @@
                       @if (job.state !== 'PAUSED') {
                         <button
                           appHasAccessToLink="updateTrigger"
-                          title="Pause Job {{ job.name }}"
                           class="btn btn-gray btn-xs"
                           type="button"
+                          [title]="`Pause Job ${job.name}`"
                           (click)="pause(jobGroupKV.key, job.name)"
                         >
                           <i class="fa fa-pause"></i> Pause
@@ -174,9 +179,9 @@
                       }
                       <button
                         appHasAccessToLink="trigger"
-                        title="Trigger Job {{ job.name }}"
                         class="btn btn-info btn-xs"
                         type="button"
+                        [title]="`Trigger Job ${job.name}`"
                         (click)="trigger(jobGroupKV.key, job.name)"
                       >
                         <i class="fa fa-arrow-circle-o-right"></i> Trigger

@@ -1,5 +1,5 @@
 import { Component, computed, inject, Input, OnChanges, Signal } from '@angular/core';
-import { NotificationService, Notification } from 'src/app/services/notification.service';
+import { Notification, NotificationService } from 'src/app/services/notification.service';
 import { HamburgerComponent } from './hamburger.component';
 import { TimeSinceDirective } from '../../time-since.directive';
 import { NgbDropdownModule } from '@ng-bootstrap/ng-bootstrap';
@@ -16,20 +16,24 @@ import { ServerTimeService } from '../../../services/server-time.service';
   imports: [FormsModule, HamburgerComponent, RouterModule, TimeSinceDirective, NgbDropdownModule],
 })
 export class PagesTopnavbarComponent implements OnChanges {
-  @Input() dtapSide: string = '';
-  @Input() dtapStage: string = '';
+  @Input() dtapSide = '';
+  @Input() dtapStage = '';
   @Input() clusterMembers: ClusterMember[] = [];
   @Input() selectedClusterMember: ClusterMember | null = null;
   @Input() userName?: string;
 
   protected readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
   protected notificationList: Signal<Notification[]> = computed(() => this.Notification.getLatest(5));
-  protected loggedIn: boolean = false;
+  protected notificationCount: Signal<number>;
+  protected loggedIn = false;
 
   private readonly appService: AppService = inject(AppService);
   private readonly authService: AuthService = inject(AuthService);
   private readonly Notification: NotificationService = inject(NotificationService);
-  protected notificationCount: Signal<number> = this.Notification.count;
+
+  constructor() {
+    this.notificationCount = this.Notification.count;
+  }
 
   ngOnChanges(): void {
     this.loggedIn = this.authService.isLoggedIn();

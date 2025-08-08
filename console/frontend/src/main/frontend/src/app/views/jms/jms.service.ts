@@ -3,21 +3,21 @@ import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 
-export interface JmsBrowseForm {
+export type JmsBrowseForm = {
   destination: string;
   connectionFactory: string;
   type: string;
   rowNumbersOnly: boolean;
   payload: boolean;
   lookupDestination: boolean;
-}
+};
 
-interface JmsBrowseResponse {
+type JmsBrowseResponse = {
   numberOfMessages: number;
   messages: Message[];
-}
+};
 
-export interface Message {
+export type Message = {
   id: string;
   correlationId: string;
   text: string;
@@ -25,7 +25,7 @@ export interface Message {
   host: string;
   comment: string;
   expiryDate?: number;
-}
+};
 
 @Injectable({
   providedIn: 'root',

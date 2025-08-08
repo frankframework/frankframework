@@ -19,13 +19,13 @@
                 type="text"
                 class="form-control"
                 placeholder="Search ... (Ctrl + Shift + F)"
-                [(ngModel)]="search"
                 name="search"
+                [(ngModel)]="search"
               />
               <i
-                (click)="search = ''"
-                class="fa fa-times input-group-closeSearch{{ search.length < 1 ? ' hidden' : '' }}"
                 aria-hidden="true"
+                [class]="`fa fa-times input-group-closeSearch${search.length < 1 ? ' hidden' : ''}`"
+                (click)="search = ''"
               ></i>
               <span class="input-group-addon">
                 <i class="fa fa-search" aria-hidden="true"></i>
@@ -55,17 +55,17 @@
                   <td>
                     <input
                       type="checkbox"
-                      (ngModelChange)="activate(config)"
                       name="activated"
                       [(ngModel)]="config.actived"
+                      (ngModelChange)="activate(config)"
                     />
                   </td>
                   <td>
                     <input
                       type="checkbox"
-                      (ngModelChange)="scheduleReload(config)"
                       name="autoreload"
                       [(ngModel)]="config.autoreload"
+                      (ngModelChange)="scheduleReload(config)"
                     />
                   </td>
                   <td>
@@ -76,18 +76,18 @@
                   <td class="hideBtn1170 minw180px">
                     <button
                       title="Delete"
-                      (click)="deleteConfig(config)"
                       class="btn btn-xs btn-danger pull-right"
                       type="button"
+                      (click)="deleteConfig(config)"
                     >
                       <i class="fa fa-times aria-hidden='true'"></i>
                       <span> Delete</span>
                     </button>
                     <button
                       title="Download"
-                      (click)="download(config)"
                       class="btn btn-xs btn-info pull-right"
                       type="button"
+                      (click)="download(config)"
                     >
                       <i class="fa fa-cloud-download aria-hidden='true'"></i>
                       <span> Download</span>

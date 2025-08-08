@@ -86,43 +86,27 @@ export class TestPipelineComponent implements OnInit {
     },
   };
 
+  protected configurations: Signal<Configuration[]>;
+
   private file: File | null = null;
 
   private http: HttpClient = inject(HttpClient);
   private webStorageService: WebStorageService = inject(WebStorageService);
   private appService: AppService = inject(AppService);
-  protected configurations: Signal<Configuration[]> = this.appService.configurations;
+
+  constructor() {
+    this.configurations = this.appService.configurations;
+  }
 
   ngOnInit(): void {
     this.setTestPipelineSession();
   }
 
-  private setTestPipelineSession(): void {
-    const testPipelineSession = this.webStorageService.get<TestPipelineSession>('testPipeline');
-    if (testPipelineSession) {
-      this.selectedConfiguration = testPipelineSession.configuration;
-      this.form = testPipelineSession.form;
-      this.formSessionKeys = testPipelineSession.sessionKeys;
-    }
-  }
-
-  private setAdapterOptions(selectedConfiguration: string, adapters: Record<string, Adapter>): void {
-    const filteredAdapters = ConfigurationFilter(adapters, selectedConfiguration);
-    this.adapterOptions = Object.entries(filteredAdapters).map(([, adapter]) => ({
-      label: adapter.name,
-      description: adapter.description ?? '',
-    }));
-  }
-
-  addNote(type: string, message: string): void {
-    this.state.push({ type: type, message: message });
-  }
-
-  updateSessionKeys(sessionKey: FormSessionKey): void {
+  protected updateSessionKeys(sessionKey: FormSessionKey): void {
     if (sessionKey?.key != '' && sessionKey?.value != '') {
       const keyIndex = this.formSessionKeys.slice(0, -1).findIndex((f) => f.key === sessionKey.key);
-      if (keyIndex > -1) {
-        if (this.state.findIndex((f) => f.message === 'Session keys cannot have the same name!') < 0)
+      if (keyIndex !== -1) {
+        if (!this.state.some((f) => f.message === 'Session keys cannot have the same name!'))
           //avoid adding it more than once
           this.addNote('warning', 'Session keys cannot have the same name!');
         return;
@@ -136,11 +120,11 @@ export class TestPipelineComponent implements OnInit {
     }
   }
 
-  updateFile(file: File | null): void {
+  protected updateFile(file: File | null): void {
     this.file = file;
   }
 
-  submit(event?: SubmitEvent): void {
+  protected submit(event?: SubmitEvent): void {
     event?.preventDefault();
     this.result = '';
     this.state = [];
@@ -169,7 +153,7 @@ export class TestPipelineComponent implements OnInit {
       this.formSessionKeys.pop();
       const incompleteKeyIndex = this.formSessionKeys.findIndex((f) => f.key === '' || f.value === '');
 
-      if (incompleteKeyIndex < 0) {
+      if (incompleteKeyIndex === -1) {
         fd.append('sessionKeys', JSON.stringify(this.formSessionKeys));
       } else {
         this.addNote('warning', 'Please make sure all sessionkeys have name and value!');
@@ -210,7 +194,7 @@ export class TestPipelineComponent implements OnInit {
     });
   }
 
-  reset(): void {
+  protected reset(): void {
     this.webStorageService.remove('testPipeline');
     this.selectedConfiguration = '';
     this.form = {
@@ -226,5 +210,26 @@ export class TestPipelineComponent implements OnInit {
   protected setSelectedConfiguration(): void {
     this.form.adapter = '';
     this.setAdapterOptions(this.selectedConfiguration, this.adapters());
+  }
+
+  private setTestPipelineSession(): void {
+    const testPipelineSession = this.webStorageService.get<TestPipelineSession>('testPipeline');
+    if (testPipelineSession) {
+      this.selectedConfiguration = testPipelineSession.configuration;
+      this.form = testPipelineSession.form;
+      this.formSessionKeys = testPipelineSession.sessionKeys;
+    }
+  }
+
+  private setAdapterOptions(selectedConfiguration: string, adapters: Record<string, Adapter>): void {
+    const filteredAdapters = ConfigurationFilter(adapters, selectedConfiguration);
+    this.adapterOptions = Object.entries(filteredAdapters).map(([, adapter]) => ({
+      label: adapter.name,
+      description: adapter.description ?? '',
+    }));
+  }
+
+  private addNote(type: string, message: string): void {
+    this.state.push({ type: type, message: message });
   }
 }

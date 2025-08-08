@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { ErrorLevels, errorLevelsConst, LoggingService, LoggingSettings, LogInformation } from '../logging.service';
 import { ToastService } from 'src/app/services/toast.service';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -26,7 +26,7 @@ import { LaddaModule } from 'angular2-ladda';
   styleUrls: ['./logging-manage.component.scss'],
 })
 export class LoggingManageComponent implements OnInit {
-  protected updateDynamicParams: boolean = false;
+  protected updateDynamicParams = false;
   protected loggers: Record<string, ErrorLevels[number]> = {};
   protected errorLevels: ErrorLevels = errorLevelsConst;
   protected form: LoggingSettings = {
@@ -36,16 +36,14 @@ export class LoggingManageComponent implements OnInit {
     errorLevels: errorLevelsConst,
     enableDebugger: true,
   };
-  protected loggersLength: number = 0;
+  protected loggersLength = 0;
   protected definitions: LogInformation['definitions'] = [];
   protected alert: string | null = null;
 
-  constructor(
-    private loggingService: LoggingService,
-    private toastService: ToastService,
-    private router: Router,
-    private route: ActivatedRoute,
-  ) {}
+  private loggingService = inject(LoggingService);
+  private toastService = inject(ToastService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   ngOnInit(): void {
     this.updateLogInformation();

@@ -4,7 +4,7 @@ import { AppService, Configuration } from 'src/app/app.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { ConfigurationsService } from '../../configurations.service';
 import { ToastService } from 'src/app/services/toast.service';
-import { SortEvent, ThSortableDirective, basicAnyValueTableSort } from 'src/app/components/th-sortable.directive';
+import { basicAnyValueTableSort, SortEvent, ThSortableDirective } from 'src/app/components/th-sortable.directive';
 import { SearchFilterPipe } from '../../../../pipes/search-filter.pipe';
 
 import { FormsModule } from '@angular/forms';
@@ -19,7 +19,7 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
   @ViewChildren(ThSortableDirective) headers!: QueryList<ThSortableDirective>;
 
   protected versionsSorted: Configuration[] = [];
-  protected search: string = '';
+  protected search = '';
   protected configuration: Configuration = {
     name: '',
     stubbed: false,
@@ -35,7 +35,7 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
   private readonly configurationsService: ConfigurationsService = inject(ConfigurationsService);
   private readonly sweetalertService: SweetalertService = inject(SweetalertService);
   private readonly toastService: ToastService = inject(ToastService);
-  private promise: number = -1;
+  private promise = -1;
   private versions: Configuration[] = [];
   private lastSortEvent: SortEvent = { direction: 'NONE', column: '' };
 
@@ -54,7 +54,7 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
         this.appService.customBreadcrumbs(`Configurations > Manage > ${nameParameter}`);
       else this.router.navigate(['..'], { relativeTo: this.route });
 
-      this.promise = window.setInterval(() => {
+      this.promise = globalThis.setInterval(() => {
         this.update();
       }, 30_000);
 
@@ -90,7 +90,7 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
   deleteConfig(config: Configuration): void {
     const message = config.version ? `Are you sure you want to remove version '${config.version}'?` : 'Are you sure?';
 
-    this.sweetalertService.Confirm({ title: message }).then((result) => {
+    this.sweetalertService.confirm({ title: message }).then((result) => {
       if (result.isConfirmed) {
         this.configurationsService
           .deleteConfigurationVersion(config.name, encodeURIComponent(config.version!))

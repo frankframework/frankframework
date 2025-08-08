@@ -3,7 +3,7 @@ import { inject, Injectable, signal, Signal, WritableSignal } from '@angular/cor
 import { catchError, Observable, of, Subject } from 'rxjs';
 import { DebugService } from './services/debug.service';
 import { Title } from '@angular/platform-browser';
-import { computeServerPath, deepMerge } from './utils';
+import { computeServerPath, deepMerge } from './utilities';
 
 export type RunState =
   | 'ERROR'
@@ -44,14 +44,14 @@ export type Message = {
   level: MessageLevel;
 };
 
-export interface AdapterMessage extends Message {
+export type AdapterMessage = {
   message: string;
   capacity: number;
-}
+} & Message;
 
-export interface ConfigurationMessage extends Message {
+export type ConfigurationMessage = {
   message: string;
-}
+} & Message;
 
 export type Pipe = {
   forwards: Record<'success' | 'exception', string>;
@@ -236,13 +236,13 @@ export class AppService {
   public dtapStage: WritableSignal<string> = signal('');
   public iframePopoutUrl: WritableSignal<string | null> = signal(null);
   public selectedConfigurationTab: WritableSignal<string | null> = signal(null);
+  public reload$: Observable<void>;
+  public toggleSidebar$: Observable<void>;
+  public customBreadcrumbs$: Observable<string>;
 
-  private reloadSubject: Subject<void> = new Subject();
-  public reload$ = this.reloadSubject.asObservable();
-  private toggleSidebarSubject: Subject<void> = new Subject();
-  public toggleSidebar$ = this.toggleSidebarSubject.asObservable();
-  private customBreadcrumbsSubject: Subject<string> = new Subject();
-  public customBreadcrumbs$ = this.customBreadcrumbsSubject.asObservable();
+  private reloadSubject = new Subject<void>();
+  private toggleSidebarSubject = new Subject<void>();
+  private customBreadcrumbsSubject = new Subject<string>();
 
   private _adapters: WritableSignal<Record<string, Adapter>> = signal({});
   private _configurations: WritableSignal<Configuration[]> = signal([]);
@@ -291,6 +291,12 @@ export class AppService {
   private title: Title = inject(Title);
   private http: HttpClient = inject(HttpClient);
   private debugService: DebugService = inject(DebugService);
+
+  constructor() {
+    this.reload$ = this.reloadSubject.asObservable();
+    this.toggleSidebar$ = this.toggleSidebarSubject.asObservable();
+    this.customBreadcrumbs$ = this.customBreadcrumbsSubject.asObservable();
+  }
 
   get adapters(): Signal<Record<string, Adapter>> {
     return this._adapters.asReadonly();
@@ -356,7 +362,7 @@ export class AppService {
     if (updated - 3000 < this.lastUpdated && !changedConfiguration) {
       //3 seconds
       clearTimeout(this.timeout);
-      this.timeout = window.setTimeout(() => {
+      this.timeout = globalThis.setTimeout(() => {
         this.updateAdapterSummary(configurationName, false);
       }, 1000);
       return;

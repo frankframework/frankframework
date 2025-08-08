@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Idle } from '@ng-idle/core';
 import { AuthService } from 'src/app/services/auth.service';
@@ -10,12 +10,10 @@ import { PollerService } from 'src/app/services/poller.service';
   imports: [],
 })
 export class LogoutComponent implements OnInit {
-  constructor(
-    private Poller: PollerService,
-    private authService: AuthService,
-    private idle: Idle,
-    private router: Router,
-  ) {}
+  private Poller = inject(PollerService);
+  private authService = inject(AuthService);
+  private idle = inject(Idle);
+  private router = inject(Router);
 
   ngOnInit(): void {
     this.Poller.getAll().remove();
@@ -25,7 +23,7 @@ export class LogoutComponent implements OnInit {
         this.router.navigate(['/login']);
       },
       error: () => {
-        window.setTimeout(() => {
+        globalThis.setTimeout(() => {
           this.router.navigate(['/']);
         }, 2000);
       },
