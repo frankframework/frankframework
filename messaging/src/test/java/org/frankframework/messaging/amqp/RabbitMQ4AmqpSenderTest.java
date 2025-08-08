@@ -9,10 +9,6 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.SenderException;
-import org.frankframework.core.TimeoutException;
-
 @Testcontainers(disabledWithoutDocker = true)
 @Log4j2
 class RabbitMQ4AmqpSenderTest extends AmqpSenderTest {
@@ -45,7 +41,7 @@ class RabbitMQ4AmqpSenderTest extends AmqpSenderTest {
 
 	@Override
 	@Disabled("Might be possible to get this to work on RabbitMQ but needs more tweaking of sender/receiver addresses")
-	void sendMessageFFTopic() throws ConfigurationException, SenderException, TimeoutException {
+	void sendMessageFFTopic() throws Exception {
 		super.sendMessageFFTopic();
 	}
 }

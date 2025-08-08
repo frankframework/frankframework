@@ -7,10 +7,6 @@ import org.testcontainers.activemq.ActiveMQContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.SenderException;
-import org.frankframework.core.TimeoutException;
-
 @Testcontainers(disabledWithoutDocker = true)
 public class ActiveMQAmqpSenderTest extends AmqpSenderTest {
 	private static final String ACTIVEMQ_TAG = "apache/activemq-classic";
@@ -38,7 +34,7 @@ public class ActiveMQAmqpSenderTest extends AmqpSenderTest {
 
 	@Override
 	@Disabled("Not yet working with ActiveMQ Classic; unsure why")
-	void sendMessageFFTopic() throws ConfigurationException, SenderException, TimeoutException {
+	void sendMessageFFTopic() throws Exception {
 		super.sendMessageFFTopic();
 	}
 }
