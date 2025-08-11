@@ -56,20 +56,20 @@ export type DataTableServerResponseInfo<T> = {
 export class DatatableComponent<T> implements AfterViewInit, OnDestroy {
   @Input({ required: true }) public datasource!: DataTableDataSource<T>;
   @Input({ required: true }) public displayColumns: DataTableColumn<T>[] = [];
-  @Input() public truncate: boolean = false;
-  @Input() public truncateLength: number = 30;
+  @Input() public truncate = false;
+  @Input() public truncateLength = 30;
 
   @ContentChild(DtContentDirective) protected content!: DtContentDirective<T>;
-  protected totalFilteredEntries: number = 0;
-  protected totalEntries: number = 0;
-  protected minPageEntry: number = 0;
-  protected maxPageEntry: number = 0;
+  protected totalFilteredEntries = 0;
+  protected totalEntries = 0;
+  protected minPageEntry = 0;
+  protected maxPageEntry = 0;
+
+  private datasourceSubscription: Subscription = new Subscription();
 
   protected get displayedColumns(): string[] {
     return this.displayColumns.map((column) => column.name);
   }
-
-  private datasourceSubscription: Subscription = new Subscription();
 
   ngAfterViewInit(): void {
     if (this.datasource) {
@@ -123,10 +123,9 @@ export class DataTableDataSource<T> extends DataSource<T> {
     totalEntries: 0,
   });
   private _entriesInfo$ = this._entriesInfo.asObservable();
-
   private filteredData: T[] = [];
-  private _currentPage: number = 1;
-  private _totalPages: number = 0;
+  private _currentPage = 1;
+  private _totalPages = 0;
   private serverRequestFn?: (value: DataTableServerRequestInfo) => PromiseLike<DataTableServerResponseInfo<T>>;
 
   get data(): T[] {
@@ -137,15 +136,6 @@ export class DataTableDataSource<T> extends DataSource<T> {
     this._data.next(value);
 
     if (!this.options.serverSide) this.updateRenderedData(value);
-  }
-
-  get options(): TableOptions {
-    return this._options.value;
-  }
-
-  set options(value: Partial<TableOptions>) {
-    this._options.next({ ...this._options.value, ...value });
-    this.updatePage(1);
   }
 
   get filter(): string {
@@ -161,12 +151,21 @@ export class DataTableDataSource<T> extends DataSource<T> {
     this.updateRenderedData(this.data);
   }
 
-  get totalPages(): number {
-    return this._totalPages;
+  get options(): TableOptions {
+    return this._options.value;
+  }
+
+  set options(value: Partial<TableOptions>) {
+    this._options.next({ ...this._options.value, ...value });
+    this.updatePage(1);
   }
 
   get currentPage(): number {
     return this._currentPage;
+  }
+
+  get totalPages(): number {
+    return this._totalPages;
   }
 
   connect(): Observable<T[]> {
@@ -176,6 +175,7 @@ export class DataTableDataSource<T> extends DataSource<T> {
     return this._renderData;
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
   disconnect(): void {}
 
   getEntriesInfo(): Observable<DataTableEntryInfo> {

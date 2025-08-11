@@ -27,7 +27,7 @@ type ConnectionsData = Connections['data'][number];
 })
 export class ConnectionsComponent implements OnInit {
   protected minimalTruncateLength = 100;
-  protected datasource: DataTableDataSource<ConnectionsData> = new DataTableDataSource();
+  protected datasource = new DataTableDataSource<ConnectionsData>();
   protected displayedColumns: DataTableColumn<ConnectionsData>[] = [
     { name: 'adapterName', displayName: 'Adapter Name', property: 'adapterName' },
     { name: 'componentName', displayName: 'Listener/Sender Name', property: 'componentName' },

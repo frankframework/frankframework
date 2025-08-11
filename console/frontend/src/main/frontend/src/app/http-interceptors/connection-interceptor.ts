@@ -58,7 +58,9 @@ export class ConnectionInterceptor implements HttpInterceptor {
           this.router.navigate([login_url]);
         }
         return;
-      } catch {}
+      } catch {
+        /* noop */
+      }
     }
 
     if (consoleState() == appInitState.INIT) {
@@ -74,7 +76,7 @@ export class ConnectionInterceptor implements HttpInterceptor {
         this.toastsService.error('Server Error', 'Connection to the server was lost! Click to refresh the page.', {
           timeout: 0,
           clickHandler: () => {
-            window.location.reload();
+            globalThis.location.reload();
             return true;
           },
         });

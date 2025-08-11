@@ -2,7 +2,7 @@
   <ul class="nav nav-tabs" role="menu" data-cy="tab-list__nav-tabs">
     @for (tab of tabsList; track tab) {
       <li [ngClass]="{ active: selectedTab === tab }">
-        <a (click)="changeTab(tab)">{{ tab }}</a>
+        <a tabindex="0" role="button" (click)="changeTab(tab)">{{ tab }}</a>
       </li>
     }
   </ul>

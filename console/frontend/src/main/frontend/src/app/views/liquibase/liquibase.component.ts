@@ -8,9 +8,9 @@ import { LaddaModule } from 'angular2-ladda';
 
 import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
 
-interface Form {
+type Form = {
   configuration: string;
-}
+};
 
 @Component({
   selector: 'app-liquibase',
@@ -23,7 +23,7 @@ export class LiquibaseComponent {
     configuration: '',
   };
   protected file: File | null = null;
-  protected generateSql: boolean = false;
+  protected generateSql = false;
   protected error: string | null = null;
   protected result: string | null = null;
   protected filteredConfigurations: Signal<Configuration[]> = computed(() =>

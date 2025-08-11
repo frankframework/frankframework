@@ -2,9 +2,9 @@
   @for (alert of state; track alert) {
     <ngb-alert
       data-cy-test-pipeline="runResult"
+      data-cy="test-pipeline__alert"
       [dismissible]="false"
       [type]="alert.type"
-      data-cy="test-pipeline__alert"
       >{{ alert.message }}</ngb-alert
     >
   }
@@ -15,36 +15,38 @@
           <h4>Test a PipeLine</h4>
         </div>
         <div class="ibox-content">
-          <form role="form" (submit)="submit($event)" appQuickSubmitForm>
+          <form role="form" appQuickSubmitForm (submit)="submit($event)">
             <div class="row form-group">
-              <label class="col-sm-3 control-label">Configuration</label>
+              <label for="configuration" class="col-sm-3 control-label">Configuration</label>
               <div class="col-sm-9">
                 <app-combobox
                   name="configuration"
+                  id="configuration"
+                  data-cy-test-pipeline="selectConfig"
+                  data-cy="test-pipeline__config__input"
                   [options]="configurationOptions()"
                   [(selectedOption)]="selectedConfiguration"
-                  data-cy-test-pipeline="selectConfig"
                   (selectedOptionChange)="setSelectedConfiguration()"
-                  data-cy="test-pipeline__config__input"
-                ></app-combobox>
+                />
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30">Select an adapter</label>
+              <label for="adapters" class="col-sm-3 control-label label-height-30">Select an adapter</label>
               <div class="col-sm-9">
                 <app-combobox
                   name="adapters"
-                  [options]="adapterOptions"
-                  [(selectedOption)]="form.adapter"
+                  id="adapters"
                   data-cy-test-pipeline="selectAdapter"
-                  [disabled]="selectedConfiguration === ''"
                   data-cy="test-pipeline__adapter__input"
-                ></app-combobox>
+                  [options]="adapterOptions"
+                  [disabled]="selectedConfiguration === ''"
+                  [(selectedOption)]="form.adapter"
+                />
               </div>
             </div>
             @for (sessionKey of formSessionKeys; track sessionKey.key; let index = $index) {
               <div class="row form-group test-pipeline-session-keys">
-                <label class="col-sm-3 control-label label-height-30">
+                <label class="col-sm-3 control-label label-height-30" [for]="`sessionKey${index}`">
                   @if (index === 0) {
                     <span>Session Key</span>
                   }
@@ -52,59 +54,61 @@
                 <div class="col-sm-4">
                   <input
                     data-cy-test-pipeline="sessionKeyName"
-                    (blur)="updateSessionKeys(sessionKey)"
-                    [(ngModel)]="sessionKey.key"
                     class="form-control"
-                    name="sessionKey{{ index }}"
                     placeholder="Name"
                     type="text"
+                    [name]="`sessionKey${index}`"
+                    [id]="`sessionKey${index}`"
+                    [(ngModel)]="sessionKey.key"
+                    (blur)="updateSessionKeys(sessionKey)"
                   />
                 </div>
                 <div class="col-sm-5">
                   <input
                     data-cy-test-pipeline="sessionKeyValue"
-                    (blur)="updateSessionKeys(sessionKey)"
-                    [(ngModel)]="sessionKey.value"
                     class="form-control"
-                    name="sessionKeyValue{{ index }}"
                     placeholder="Value"
                     type="text"
+                    [name]="`sessionKeyValue${index}`"
+                    [(ngModel)]="sessionKey.value"
+                    (blur)="updateSessionKeys(sessionKey)"
                   />
                 </div>
               </div>
             }
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30">Upload File</label>
+              <label class="col-sm-3 control-label label-height-30" for="upload">Upload File</label>
               <div class="col-sm-9 col-md-4">
-                <app-input-file-upload (fileUpdated)="updateFile($event)" />
+                <app-input-file-upload id="upload" (fileUpdated)="updateFile($event)" />
               </div>
               <div class="hidden-xs hidden-sm col-md-1">
-                <label class="control-label label-height-30 pull-right">Encoding</label>
+                <label class="control-label label-height-30 pull-right" for="encoding1">Encoding</label>
               </div>
               <div class="hidden-xs hidden-sm col-md-4">
-                <input [(ngModel)]="form.encoding" class="form-control" name="encoding" type="text" />
+                <input class="form-control" name="encoding" id="encoding1" type="text" [(ngModel)]="form.encoding" />
               </div>
             </div>
             <div class="row form-group hidden-md hidden-lg">
               <div class="col-sm-3">
-                <label class="control-label label-height-30">Encoding</label>
+                <label class="control-label label-height-30" for="encoding2">Encoding</label>
               </div>
               <div class="col-sm-9">
-                <input [(ngModel)]="form.encoding" class="form-control" name="encoding" type="text" />
+                <input class="form-control" name="encoding" id="encoding2" type="text" [(ngModel)]="form.encoding" />
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30">Message</label>
+              <label class="col-sm-3 control-label label-height-30" for="message">Message</label>
               <div class="col-sm-9">
                 <app-monaco-editor
                   data-cy-test-pipeline="message"
+                  id="message"
                   class="form-control"
-                  [(value)]="form.message"
-                  [options]="{ language: 'text' }"
-                  [actions]="editorActions"
                   data-cy="test-pipeline__message__input"
                   style="height: 200px"
-                ></app-monaco-editor>
+                  [options]="{ language: 'text' }"
+                  [actions]="editorActions"
+                  [(value)]="form.message"
+                />
               </div>
             </div>
             <div class="row form-group">
@@ -114,9 +118,9 @@
               <div class="col-sm-3 m-t-md">
                 <button
                   data-cy-test-pipeline="send"
-                  [ladda]="processingMessage"
                   class="btn btn-primary btn-w-m font-bold"
                   type="submit"
+                  [ladda]="processingMessage"
                 >
                   Send
                 </button>

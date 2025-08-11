@@ -1,4 +1,4 @@
-import { Component, computed, OnDestroy, OnInit, Signal } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, Signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AppService, Message } from 'src/app/app.service';
 import { PollerService } from 'src/app/services/poller.service';
@@ -30,9 +30,9 @@ type Scheduler = {
 
 export type JobState = 'NONE' | 'NORMAL' | 'PAUSED' | 'COMPLETE' | 'ERROR' | 'BLOCKED';
 
-export interface JobMessage extends Message {
+export type JobMessage = {
   text: string;
-}
+} & Message;
 
 export type Job = {
   name: string;
@@ -80,23 +80,21 @@ export class SchedulerComponent implements OnInit, OnDestroy {
     schedulerClass: '',
     jobStoreClass: '',
   };
-  protected searchFilter: string = '';
-  protected refreshing: boolean = false;
+  protected searchFilter = '';
+  protected refreshing = false;
   protected databaseSchedulesEnabled: Signal<boolean> = computed(
     () => this.appService.appConstants()['loadDatabaseSchedules.active'] === 'true',
   );
   protected jobShowContent: Record<keyof typeof this.jobGroups, boolean> = {};
-  protected selectedJobGroup: string = 'All';
+  protected selectedJobGroup = 'All';
 
   private initialized = false;
 
-  constructor(
-    private router: Router,
-    private pollerService: PollerService,
-    private sweetAlertService: SweetalertService,
-    private appService: AppService,
-    private schedulerService: SchedulerService,
-  ) {}
+  private router = inject(Router);
+  private pollerService = inject(PollerService);
+  private sweetAlertService = inject(SweetalertService);
+  private appService = inject(AppService);
+  private schedulerService = inject(SchedulerService);
 
   ngOnInit(): void {
     this.pollerService.add(
@@ -150,7 +148,7 @@ export class SchedulerComponent implements OnInit, OnDestroy {
   }
 
   remove(jobGroup: string, jobName: string): void {
-    this.sweetAlertService.Confirm({ title: `Please confirm the deletion of '${jobName}'` }).then((result) => {
+    this.sweetAlertService.confirm({ title: `Please confirm the deletion of '${jobName}'` }).then((result) => {
       if (result.isConfirmed) {
         this.schedulerService.deleteScheduleJob(jobGroup, jobName).subscribe();
       }

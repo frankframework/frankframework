@@ -19,9 +19,9 @@ import { MiscService } from 'src/app/services/misc.service';
 })
 export class FileViewerComponent implements OnInit {
   @Input()
-  fileName: string = '';
+  fileName = '';
   @Input()
-  contentType: string = 'text/plain';
+  contentType = 'text/plain';
 
   protected fileContents = '';
   protected loading = true;

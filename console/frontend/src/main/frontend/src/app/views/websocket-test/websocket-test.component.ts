@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { IMessage } from '@stomp/stompjs';
@@ -16,11 +16,10 @@ export class WebsocketTestComponent implements OnInit, OnDestroy, AfterViewInit 
   @ViewChild('wsLog')
   private wsLog!: ElementRef<HTMLPreElement>;
 
-  protected message: string = '';
+  protected message = '';
 
+  private websocketService = inject(WebsocketService);
   private _subscriptions = new Subscription();
-
-  constructor(private websocketService: WebsocketService) {}
 
   ngOnInit(): void {
     this._subscriptions.add(this.websocketService.onConnected$.subscribe(() => this.onConnected()));

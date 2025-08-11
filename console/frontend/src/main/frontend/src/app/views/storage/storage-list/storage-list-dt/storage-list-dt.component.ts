@@ -21,7 +21,7 @@ export class StorageListDtComponent {
 
   moveMessage(): void {
     this.sweetAlert
-      .Warning({
+      .warning({
         title: 'Move Message State',
         text: 'The message might still be processing in the background. Are you sure you want to move it to Error?',
         confirmButtonText: 'Move to Error',

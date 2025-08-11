@@ -21,7 +21,7 @@ export const appConfig: ApplicationConfig = {
     httpInterceptorProviders,
     provideCharts(withDefaultRegisterables()),
     { provide: TitleStrategy, useClass: PagesTitleStrategy },
-    { provide: Window, useValue: window },
+    { provide: Window, useValue: globalThis },
     importProvidersFrom(NgIdleModule.forRoot()),
   ],
 };

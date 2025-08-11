@@ -2,27 +2,27 @@
   <input type="checkbox" [(ngModel)]="storageService.selectedMessages[message.id]" />
   @if (!storageService.selectedMessages[message.id]) {
     <div>
-      <a [routerLink]="['messages', message.id]" class="btn btn-info btn-xs" type="button"
+      <a class="btn btn-info btn-xs" type="button" [routerLink]="['messages', message.id]"
         ><i class="fa fa-file-text-o"></i> View</a
       >
       <button
         appHasAccessToLink="downloadMessage"
         title="Download Message"
-        (click)="storageService.downloadMessage(message.id)"
         class="btn btn-info btn-xs"
         type="button"
+        (click)="storageService.downloadMessage(message.id)"
       >
         <i class="fa fa-arrow-circle-o-down"></i> Download
       </button>
       @if (storageService.storageParams.processState === 'InProcess') {
         <button
           appHasAccessToLink="changeMessagesProcessState"
-          [ladda]="message.processing"
           data-style="slide-down"
           title="Move Message to Error"
-          (click)="moveMessage()"
           class="btn btn-danger btn-xs"
           type="button"
+          [ladda]="message.processing"
+          (click)="moveMessage()"
         >
           <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
           Move to Error
@@ -31,23 +31,23 @@
       @if (storageService.storageParams.processState === 'Error') {
         <button
           appHasAccessToLink="resendReceiverMessage"
-          [ladda]="message.processing"
           data-style="slide-down"
           title="Resend Message"
-          (click)="storageService.resendMessage(message)"
           class="btn btn-warning btn-xs"
           type="button"
+          [ladda]="message.processing"
+          (click)="storageService.resendMessage(message)"
         >
           <i class="fa fa-repeat"></i> Resend
         </button>
         <button
           appHasAccessToLink="deleteReceiverMessage"
-          [ladda]="message.processing"
           data-style="slide-down"
           title="Delete Message"
-          (click)="storageService.deleteMessage(message)"
           class="btn btn-danger btn-xs"
           type="button"
+          [ladda]="message.processing"
+          (click)="storageService.deleteMessage(message)"
         >
           <i class="fa fa-times"></i> Delete
         </button>

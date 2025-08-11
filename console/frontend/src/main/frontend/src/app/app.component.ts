@@ -36,7 +36,7 @@ import { InformationModalComponent } from './components/pages/information-modal/
 import { ToastService } from './services/toast.service';
 import { ServerInfo, ServerInfoService } from './services/server-info.service';
 import { ClusterMemberEvent, ClusterMemberEventType, WebsocketService } from './services/websocket.service';
-import { deepMerge } from './utils';
+import { deepMerge } from './utilities';
 import { ServerTimeService } from './services/server-time.service';
 
 import { ToastsContainerComponent } from './components/toasts-container/toasts-container.component';
@@ -68,9 +68,10 @@ export class AppComponent implements OnInit, OnDestroy {
   protected userName?: string;
   protected routeData: Data = {};
   protected routeQueryParams: ParamMap = convertToParamMap({});
-  protected isLoginView: boolean = false;
+  protected isLoginView = false;
   protected clusterMembers: ClusterMember[] = [];
   protected selectedClusterMember: ClusterMember | null = null;
+  protected startupError: Signal<string | null>;
 
   private readonly http: HttpClient = inject(HttpClient);
   private readonly router: Router = inject(Router);
@@ -90,7 +91,6 @@ export class AppComponent implements OnInit, OnDestroy {
   private readonly websocketService: WebsocketService = inject(WebsocketService);
   private readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
   private readonly appService: AppService = inject(AppService);
-  protected startupError: Signal<string | null> = this.appService.startupError;
 
   private serverInfo: ServerInfo | null = null;
   private _subscriptions = new Subscription();
@@ -104,6 +104,8 @@ export class AppComponent implements OnInit, OnDestroy {
   private messageKeeperSize = 10; // see Adapter.java#messageKeeperSize
 
   constructor() {
+    this.startupError = this.appService.startupError;
+
     Pace.start({
       eventLag: {
         minSamples: 10,
@@ -157,7 +159,7 @@ export class AppComponent implements OnInit, OnDestroy {
       const idleTimeout = Number.parseInt(idleTimeoutConstant as string);
       if (Number.isNaN(idleTimeout)) return;
 
-      this.sweetAlertService.Warning({
+      this.sweetAlertService.warning({
         title: 'Idle timer...',
         text: "Your session will be terminated in <span class='idleTimer'>60:00</span> minutes.",
         showConfirmButton: false,
@@ -177,7 +179,7 @@ export class AppComponent implements OnInit, OnDestroy {
     this._subscriptions.add(idleWarnSubscription);
 
     const idleTimeoutSubscription = this.idle.onTimeout.subscribe(() => {
-      this.sweetAlertService.Info({
+      this.sweetAlertService.info({
         title: 'Idle timer...',
         text: 'You have been logged out due to inactivity.',
         showCloseButton: true,
@@ -296,7 +298,7 @@ export class AppComponent implements OnInit, OnDestroy {
             },
             error: () => {
               this.sweetAlertService
-                .Error("Couldn't initialize Frank!Console", 'Please make sure the Frank!Framework is setup correctly!')
+                .error("Couldn't initialize Frank!Console", 'Please make sure the Frank!Framework is setup correctly!')
                 .then(() => this.appService.triggerReload());
             },
           });
@@ -308,15 +310,9 @@ export class AppComponent implements OnInit, OnDestroy {
       if (data['Application Constants']) {
         const appConstants = { ...this.appService.appConstants(), ...data['Application Constants']['Global'] }; //make FF!Application Constants default
 
-        const idleTime =
-          Number.parseInt(appConstants['console.idle.time'] as string) > 0
-            ? Number.parseInt(appConstants['console.idle.time'] as string)
-            : 0;
+        const idleTime = Math.max(Number.parseInt(appConstants['console.idle.time'] as string), 0);
         if (idleTime > 0) {
-          const idleTimeout =
-            Number.parseInt(appConstants['console.idle.timeout'] as string) > 0
-              ? Number.parseInt(appConstants['console.idle.timeout'] as string)
-              : 0;
+          const idleTimeout = Math.max(Number.parseInt(appConstants['console.idle.timeout'] as string), 0);
           this.idle.setIdle(idleTime);
           this.idle.setTimeout(idleTimeout);
         } else {
@@ -616,7 +612,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
       if (this.selectedClusterMember?.id === member.id) {
         this.sweetAlertService
-          .Warning({
+          .warning({
             title: 'Current cluster member has been removed',
             text: 'Reload to a different member or stay in current unstable instance?',
             showCancelButton: true,

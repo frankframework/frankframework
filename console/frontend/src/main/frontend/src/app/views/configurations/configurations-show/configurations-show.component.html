@@ -4,7 +4,7 @@
       [configurations]="configurations()"
       [showAll]="true"
       (selectedTabChange)="changeConfiguration($event)"
-    ></app-configuration-tab-list>
+    />
     <div class="col-lg-12">
       <div class="ibox float-e-margins">
         <div class="ibox-title summary">
@@ -12,16 +12,16 @@
             Show:
             <div class="btn-group">
               <button
-                (click)="update(true)"
-                [ngClass]="{ active: this.loadedConfiguration }"
                 class="btn btn-sm btn-default"
+                [ngClass]="{ active: this.loadedConfiguration }"
+                (click)="update(true)"
               >
                 Loaded Configuration
               </button>
               <button
-                (click)="update(false)"
-                [ngClass]="{ active: !this.loadedConfiguration }"
                 class="btn btn-sm btn-default"
+                [ngClass]="{ active: !this.loadedConfiguration }"
+                (click)="update(false)"
               >
                 Original Configuration
               </button>
@@ -29,14 +29,14 @@
           </div>
           <br />
           <div class="pull-right">
-            <button (click)="clipboard()" class="btn btn-default btn-xs" title="Copy Configuration" type="button">
+            <button class="btn btn-default btn-xs" title="Copy Configuration" type="button" (click)="clipboard()">
               Copy <i class="fa fa-clipboard"></i>
             </button>
           </div>
           <div class="clearfix"></div>
         </div>
         <div class="summary editor">
-          <app-monaco-editor #editor [options]="{ readOnly: true }"></app-monaco-editor>
+          <app-monaco-editor #editor [options]="{ readOnly: true }" />
         </div>
       </div>
     </div>

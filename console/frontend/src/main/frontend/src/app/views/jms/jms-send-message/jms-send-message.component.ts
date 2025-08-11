@@ -9,7 +9,7 @@ import { LaddaModule } from 'angular2-ladda';
 import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
 import { WebStorageService } from '../../../services/web-storage.service';
 
-interface Form {
+type Form = {
   destination: string;
   replyTo: string;
   message: string;
@@ -21,7 +21,7 @@ interface Form {
   synchronous: boolean;
   lookupDestination: boolean;
   encoding: string;
-}
+};
 
 @Component({
   selector: 'app-jms-send-message',
@@ -31,11 +31,11 @@ interface Form {
 })
 export class JmsSendMessageComponent implements OnInit {
   protected destinationTypes: string[] = ['QUEUE', 'TOPIC'];
-  protected processing: boolean = false;
+  protected processing = false;
   protected file: File | null = null;
   protected connectionFactories: string[] = [];
   protected error: string | null = null;
-  protected successMessage: string = '';
+  protected successMessage = '';
   protected form: Form = {
     destination: '',
     replyTo: '',

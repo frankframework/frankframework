@@ -28,10 +28,10 @@ export class DebugService {
 
   log(...arguments_: unknown[]): void {
     if (this.level < 3) return;
-    const function_ = window.console.log;
+    const function_ = globalThis.console.log;
     if (!this.inGroup) Array.prototype.unshift.call(arguments_, this.head(3));
     try {
-      function_.apply(window.console, arguments_ || []);
+      function_.apply(globalThis.console, arguments_ || []);
     } catch {
       for (const a in arguments_) console.log(arguments_[a]);
     }
@@ -40,7 +40,7 @@ export class DebugService {
   group(...arguments_: unknown[]): void {
     const title = Array.prototype.shift.call(arguments_);
     this.inGroup = true;
-    window.console.group(`${this.head()} ${title}`);
+    globalThis.console.group(`${this.head()} ${title}`);
 
     if (arguments_.length > 0) {
       //Loop through args and close group after...
@@ -51,15 +51,15 @@ export class DebugService {
 
   groupEnd(): void {
     this.inGroup = false;
-    window.console.groupEnd();
+    globalThis.console.groupEnd();
   }
 
   info(...arguments_: unknown[]): void {
     if (this.level < 2) return;
-    const function_ = window.console.info;
+    const function_ = globalThis.console.info;
     if (!this.inGroup) Array.prototype.unshift.call(arguments_, this.head(2));
     try {
-      function_.apply(window.console, arguments_);
+      function_.apply(globalThis.console, arguments_);
     } catch {
       for (const a in arguments_) console.info(arguments_[a]);
     }
@@ -67,20 +67,20 @@ export class DebugService {
 
   warn(...arguments_: unknown[]): void {
     if (this.level < 1) return;
-    const function_ = window.console.warn;
+    const function_ = globalThis.console.warn;
     if (!this.inGroup) Array.prototype.unshift.call(arguments_, this.head(1));
     try {
-      function_.apply(window.console, arguments_);
+      function_.apply(globalThis.console, arguments_);
     } catch {
       for (const a in arguments_) console.warn(arguments_[a]);
     }
   }
 
   error(...arguments_: unknown[]): void {
-    const function_ = window.console.error;
+    const function_ = globalThis.console.error;
     if (!this.inGroup) Array.prototype.unshift.call(arguments_, this.head(0));
     try {
-      function_.apply(window.console, arguments_);
+      function_.apply(globalThis.console, arguments_);
     } catch {
       for (const a in arguments_) console.error(arguments_[a]);
     }

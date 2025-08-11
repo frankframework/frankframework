@@ -1,4 +1,4 @@
-import { KeyValueDiffer, KeyValueDiffers, Pipe, PipeTransform } from '@angular/core';
+import { inject, KeyValueDiffer, KeyValueDiffers, Pipe, PipeTransform } from '@angular/core';
 
 @Pipe({
   name: 'formatStatKeys',
@@ -6,8 +6,7 @@ import { KeyValueDiffer, KeyValueDiffers, Pipe, PipeTransform } from '@angular/c
 export class FormatStatKeysPipe implements PipeTransform {
   private keyValues: string[] = [];
   private differ?: KeyValueDiffer<string, string>;
-
-  constructor(private differs: KeyValueDiffers) {}
+  private differs = inject(KeyValueDiffers);
 
   transform(input: Record<string, string>): string[] {
     if (!input || (!(input instanceof Map) && typeof input !== 'object')) {

@@ -1,4 +1,4 @@
-import { computeServerPath, getProcessStateIcon, getProcessStateIconColor } from './utils';
+import { computeServerPath, getProcessStateIcon, getProcessStateIconColor } from './utilities';
 
 function testProcessState(state: string, expectedIcon: string, expectedIconColor: string): () => void {
   return (): void => {

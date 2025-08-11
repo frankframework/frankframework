@@ -13,7 +13,7 @@ describe('WebStorageService', () => {
       providers: [
         {
           provide: Window,
-          useValue: window,
+          useValue: globalThis,
         },
         provideHttpClient(withInterceptorsFromDi()),
         provideHttpClientTesting(),

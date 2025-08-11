@@ -11,11 +11,18 @@
           <h4>Browse JMS Queue</h4>
         </div>
         <div class="ibox-content">
-          <form role="form" (submit)="submit(form)" appQuickSubmitForm>
+          <form role="form" appQuickSubmitForm (submit)="submit(form)">
             <div class="row form-group">
-              <label class="col-sm-5 col-md-3 control-label label-height-30">Select a Connection Factory</label>
+              <label class="col-sm-5 col-md-3 control-label label-height-30" for="connectionFactory"
+                >Select a Connection Factory</label
+              >
               <div class="col-sm-7 col-md-9">
-                <select class="form-control" name="connectionFactory" [(ngModel)]="form.connectionFactory">
+                <select
+                  class="form-control"
+                  name="connectionFactory"
+                  id="connectionFactory"
+                  [(ngModel)]="form.connectionFactory"
+                >
                   @for (connectionFactory of connectionFactories; track connectionFactory) {
                     <option>
                       {{ connectionFactory }}
@@ -25,15 +32,21 @@
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-5 col-md-3 control-label label-height-30">Destination Name</label>
+              <label class="col-sm-5 col-md-3 control-label label-height-30" for="destination">Destination Name</label>
               <div class="col-sm-7 col-md-9">
-                <input class="form-control" name="destination" type="text" [(ngModel)]="form.destination" />
+                <input
+                  class="form-control"
+                  name="destination"
+                  id="destination"
+                  type="text"
+                  [(ngModel)]="form.destination"
+                />
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-5 col-md-3 control-label label-height-30">Destination Type</label>
+              <label class="col-sm-5 col-md-3 control-label label-height-30" for="type">Destination Type</label>
               <div class="col-sm-7 col-md-9">
-                <select class="form-control" name="type" [(ngModel)]="form.type">
+                <select class="form-control" name="type" id="type" [(ngModel)]="form.type">
                   @for (type of destinationTypes; track type) {
                     <option>
                       {{ type }}
@@ -43,26 +56,34 @@
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-5 col-md-3 control-label label-height-30">Number of messages only</label>
+              <label class="col-sm-5 col-md-3 control-label label-height-30" for="rowNumbersOnly"
+                >Number of messages only</label
+              >
               <div class="col-sm-7 col-md-9">
                 <span class="form-control" style="border: none"
-                  ><input type="checkbox" name="rowNumbersOnly" [(ngModel)]="form.rowNumbersOnly"
+                  ><input type="checkbox" name="rowNumbersOnly" id="rowNumbersOnly" [(ngModel)]="form.rowNumbersOnly"
                 /></span>
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-5 col-md-3 control-label label-height-30">Show message payload</label>
+              <label class="col-sm-5 col-md-3 control-label label-height-30" for="payload">Show message payload</label>
               <div class="col-sm-7 col-md-9">
                 <span class="form-control" style="border: none"
-                  ><input type="checkbox" name="payload" [(ngModel)]="form.payload"
+                  ><input type="checkbox" name="payload" id="payload" [(ngModel)]="form.payload"
                 /></span>
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-5 col-md-3 control-label label-height-30">Lookup Destination</label>
+              <label class="col-sm-5 col-md-3 control-label label-height-30" for="lookupDestination"
+                >Lookup Destination</label
+              >
               <div class="col-sm-7 col-md-9">
                 <span class="form-control" style="border: none"
-                  ><input type="checkbox" name="lookupDestination" [(ngModel)]="form.lookupDestination"
+                  ><input
+                    type="checkbox"
+                    name="lookupDestination"
+                    id="lookupDestination"
+                    [(ngModel)]="form.lookupDestination"
                 /></span>
               </div>
             </div>
@@ -71,7 +92,7 @@
                 <button class="btn btn-info btn-w-m font-bold" type="button" (click)="reset()">Reset</button>
               </div>
               <div class="col-xs-5 col-md-3 m-t-md">
-                <button [ladda]="processing" class="btn btn-primary btn-w-m font-bold" type="submit">Send</button>
+                <button class="btn btn-primary btn-w-m font-bold" type="submit" [ladda]="processing">Send</button>
               </div>
             </div>
           </form>

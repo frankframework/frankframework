@@ -3,7 +3,7 @@ import { MessageField, MessageStore, Note, StorageService } from '../storage.ser
 import { StorageListDtComponent } from './storage-list-dt/storage-list-dt.component';
 import { SessionService } from 'src/app/services/session.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
-import { getProcessStateIcon } from 'src/app/utils';
+import { getProcessStateIcon } from 'src/app/utilities';
 import { AppService } from '../../../app.service';
 import {
   DataTableColumn,
@@ -67,12 +67,6 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
   // service bindings
   protected storageService: StorageService = inject(StorageService);
   protected storageParams = this.storageService.storageParams;
-  closeNote = (index: number): void => {
-    this.storageService.closeNote(index);
-  };
-  getProcessStateIconFn = (processState: string): string => {
-    return getProcessStateIcon(processState);
-  };
 
   protected datasource: DataTableDataSource<MessageData> = new DataTableDataSource<MessageData>();
   protected displayedColumns: DataTableColumn<MessageData>[] = [];
@@ -127,6 +121,14 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
   }
+
+  // Service bindings
+  protected closeNote = (index: number): void => {
+    this.storageService.closeNote(index);
+  };
+  protected getProcessStateIconFn = (processState: string): string => {
+    return getProcessStateIcon(processState);
+  };
 
   protected getDisplayedColumns(): void {
     const searchSession = this.Session.get<FieldSearchInfo[]>('storageFiltering');
@@ -190,55 +192,26 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
-  getNotes(): Note[] {
+  protected getNotes(): Note[] {
     return this.storageService.notes;
   }
 
-  getFormData(): FormData {
-    const messageIds: string[] = [];
-    for (const index in this.storageService.selectedMessages) {
-      if (this.storageService.selectedMessages[index]) {
-        messageIds.push(index);
-        this.storageService.selectedMessages[index] = false; //unset the messageId
-      }
-    }
-
-    const fd = new FormData();
-    fd.append('messageIds', messageIds as unknown as string);
-    return fd;
-  }
-
-  setInitialSearchFilters(searchSession: FieldSearchInfo[]): void {
-    this.filterBoxExpanded = searchSession.length > 0;
-    for (const column of searchSession) {
-      const searchColumn = this.messageFields.find((searchColumn) => searchColumn.fieldName === column.fieldName);
-      const displayedColumn = this.displayedColumns.find(
-        (displayedColumn) => displayedColumn.name === column.fieldName,
-      );
-      if (searchColumn && displayedColumn) {
-        searchColumn.filter = column.filter;
-        searchColumn.display = column.display;
-        displayedColumn.hidden = !column.display;
-      }
-    }
-  }
-
-  updateSort(): void {
+  protected updateSort(): void {
     this.datasource.options.serverSort = this.sortDirection;
   }
 
-  searchUpdated(): void {
+  protected searchUpdated(): void {
     this.searching = true;
     this.storageService.updateTable();
   }
 
-  truncate(): void {
+  protected truncate(): void {
     this.truncated = !this.truncated;
     this.truncateButtonText = this.truncated ? 'Show original' : 'Truncate displayed data';
     this.storageService.updateTable();
   }
 
-  clearSearch(): void {
+  protected clearSearch(): void {
     this.clearSearchLadda = true;
     this.Session.remove('storageFiltering');
 
@@ -248,7 +221,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.storageService.updateTable();
   }
 
-  updateColumnDisplay(column: string): void {
+  protected updateColumnDisplay(column: string): void {
     const displayedColumn = this.displayedColumns.find((displayedColumn) => displayedColumn.name === column);
     const searchColumn = this.messageFields.find((messageField) => messageField.fieldName === column);
     if (displayedColumn && searchColumn) {
@@ -257,34 +230,19 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  updateSessionStorage(onColumnUpdate?: (column: SearchColumn) => void): void {
-    const searchSession: FieldSearchInfo[] = [];
-    for (const column of this.messageFields) {
-      if (column.filter !== '' || !column.display) {
-        if (onColumnUpdate) onColumnUpdate(column);
-        searchSession.push({
-          fieldName: column.fieldName,
-          filter: column.filter,
-          display: column.display,
-        });
-      }
-    }
-    this.Session.set('storageFiltering', searchSession);
-  }
-
-  selectAll(): void {
+  protected selectAll(): void {
     for (const index in this.storageService.selectedMessages) {
       this.storageService.selectedMessages[index] = true;
     }
   }
 
-  unselectAll(): void {
+  protected unselectAll(): void {
     for (const index in this.storageService.selectedMessages) {
       this.storageService.selectedMessages[index] = false;
     }
   }
 
-  resendMessages(): void {
+  protected resendMessages(): void {
     const fd = this.getFormData();
     if (this.isSelectedMessages(fd)) {
       this.messagesProcessing = true;
@@ -303,7 +261,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  deleteMessages(): void {
+  protected deleteMessages(): void {
     const fd = this.getFormData();
     if (this.isSelectedMessages(fd)) {
       this.messagesProcessing = true;
@@ -322,11 +280,11 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  moveMessages(): void {
+  protected moveMessages(): void {
     const fd = this.getFormData();
     if (!this.isSelectedMessages(fd)) return;
 
-    this.SweetAlert.Warning({
+    this.SweetAlert.warning({
       title: 'Move state of messages',
       text: 'The messages might still be processing in the background. Are you sure you want to move them to Error?',
       confirmButtonText: 'Move to Error',
@@ -351,7 +309,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  downloadMessages(): void {
+  protected downloadMessages(): void {
     const fd = this.getFormData();
     if (this.isSelectedMessages(fd)) {
       this.messagesDownloading = true;
@@ -361,7 +319,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
             type: 'application/octet-stream',
           });
           const downloadLink = document.createElement('a');
-          downloadLink.href = window.URL.createObjectURL(blob);
+          downloadLink.href = globalThis.URL.createObjectURL(blob);
           downloadLink.setAttribute('download', 'messages.zip');
           document.body.append(downloadLink);
           downloadLink.click();
@@ -377,7 +335,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  changeProcessState(targetState: string): void {
+  protected changeProcessState(targetState: string): void {
     const fd = this.getFormData();
     if (this.isSelectedMessages(fd)) {
       this.changingProcessState = true;
@@ -396,10 +354,54 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  isSelectedMessages(data: FormData): boolean {
+  private getFormData(): FormData {
+    const messageIds: string[] = [];
+    for (const index in this.storageService.selectedMessages) {
+      if (this.storageService.selectedMessages[index]) {
+        messageIds.push(index);
+        this.storageService.selectedMessages[index] = false; //unset the messageId
+      }
+    }
+
+    const fd = new FormData();
+    fd.append('messageIds', messageIds as unknown as string);
+    return fd;
+  }
+
+  private setInitialSearchFilters(searchSession: FieldSearchInfo[]): void {
+    this.filterBoxExpanded = searchSession.length > 0;
+    for (const column of searchSession) {
+      const searchColumn = this.messageFields.find((searchColumn) => searchColumn.fieldName === column.fieldName);
+      const displayedColumn = this.displayedColumns.find(
+        (displayedColumn) => displayedColumn.name === column.fieldName,
+      );
+      if (searchColumn && displayedColumn) {
+        searchColumn.filter = column.filter;
+        searchColumn.display = column.display;
+        displayedColumn.hidden = !column.display;
+      }
+    }
+  }
+
+  private updateSessionStorage(onColumnUpdate?: (column: SearchColumn) => void): void {
+    const searchSession: FieldSearchInfo[] = [];
+    for (const column of this.messageFields) {
+      if (column.filter !== '' || !column.display) {
+        if (onColumnUpdate) onColumnUpdate(column);
+        searchSession.push({
+          fieldName: column.fieldName,
+          filter: column.filter,
+          display: column.display,
+        });
+      }
+    }
+    this.Session.set('storageFiltering', searchSession);
+  }
+
+  private isSelectedMessages(data: FormData): boolean {
     const selectedMessages = data.get('messageIds') as unknown as string[];
     if (!selectedMessages || selectedMessages.length === 0) {
-      this.SweetAlert.Warning('No message selected!');
+      this.SweetAlert.warning('No message selected!');
       return false;
     } else {
       return true;

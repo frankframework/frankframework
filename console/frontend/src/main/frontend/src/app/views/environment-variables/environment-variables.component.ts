@@ -16,16 +16,16 @@ type keyValueProperty = KeyValue<string, string>;
 })
 export class EnvironmentVariablesComponent implements OnInit {
   protected readonly GLOBAL_TAB_NAME = 'Global';
-  protected searchFilter: string = '';
-  protected selectedConfiguration: string = '';
+  protected searchFilter = '';
+  protected selectedConfiguration = '';
   protected configProperties: keyValueProperty[] = [];
   protected environmentProperties: keyValueProperty[] = [];
   protected systemProperties: keyValueProperty[] = [];
-
-  private readonly appService: AppService = inject(AppService);
   protected configurationNames: Signal<string[]> = computed(() =>
     this.appService.configurations().map((configuration) => configuration.name),
   );
+
+  private readonly appService: AppService = inject(AppService);
 
   ngOnInit(): void {
     this.appService.getEnvironmentVariables().subscribe((data) => {

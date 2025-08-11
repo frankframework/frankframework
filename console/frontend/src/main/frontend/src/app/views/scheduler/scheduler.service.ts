@@ -24,15 +24,15 @@ type Job = {
   lockkey: string;
 };
 
-export interface JobForm extends Job {
+export type JobForm = {
   adapter: Adapter | null;
-}
+} & Job;
 
-interface JobResponse extends Job {
+type JobResponse = {
   adapter: string;
   configuration: string;
   triggers: Trigger[];
-}
+} & Job;
 
 @Injectable({
   providedIn: 'root',

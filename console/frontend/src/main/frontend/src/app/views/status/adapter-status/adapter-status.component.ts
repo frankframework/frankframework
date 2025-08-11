@@ -1,5 +1,5 @@
-import { Component, Input } from '@angular/core';
-import { getProcessStateIcon, getProcessStateIconColor } from '../../../utils';
+import { Component, inject, Input } from '@angular/core';
+import { getProcessStateIcon, getProcessStateIconColor } from '../../../utilities';
 import { Adapter, Receiver } from '../../../app.service';
 import { StatusService } from '../status.service';
 import { NgClass } from '@angular/common';
@@ -32,7 +32,7 @@ export class AdapterStatusComponent {
   protected readonly getProcessStateIconColorFn = getProcessStateIconColor;
   protected readonly getProcessStateIconFn = getProcessStateIcon;
 
-  constructor(private statusService: StatusService) {}
+  private statusService = inject(StatusService);
 
   protected showContent(adapter: Adapter): boolean {
     return this.adapterShowContent[`${adapter.configuration}/${adapter.name}`];

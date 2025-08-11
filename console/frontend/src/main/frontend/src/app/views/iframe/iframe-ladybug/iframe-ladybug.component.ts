@@ -1,6 +1,4 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
-import { AppService } from 'src/app/app.service';
 import { BaseIframeComponent } from '../iframe.base';
 
 @Component({
@@ -9,13 +7,6 @@ import { BaseIframeComponent } from '../iframe.base';
   styleUrls: ['../iframe.component.scss'],
 })
 export class IframeLadybugComponent extends BaseIframeComponent implements OnInit, OnDestroy {
-  constructor(
-    protected override readonly sanitizer: DomSanitizer,
-    protected override readonly appService: AppService,
-  ) {
-    super(sanitizer, appService);
-  }
-
   override ngOnInit(): void {
     super.ngOnInit();
     this.setIframeSource('ladybug');
