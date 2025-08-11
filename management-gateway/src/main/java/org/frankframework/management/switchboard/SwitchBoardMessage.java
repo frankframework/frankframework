@@ -27,7 +27,7 @@ import lombok.NonNull;
 
 public class SwitchBoardMessage<T> implements Message<T> {
 	private final T payload;
-	private final Map<String, Object> headersMap;
+	private final MessageHeaders headersMap;
 
 	@JsonCreator
 	public SwitchBoardMessage(
@@ -35,7 +35,7 @@ public class SwitchBoardMessage<T> implements Message<T> {
 			@JsonProperty("headers") Map<String, Object> headersMap
 	) {
 		this.payload = payload;
-		this.headersMap = headersMap != null ? headersMap : Map.of();
+		this.headersMap = new MessageHeaders(headersMap != null ? headersMap : Map.of());
 	}
 
 	@Override
@@ -46,6 +46,6 @@ public class SwitchBoardMessage<T> implements Message<T> {
 	@Override
 	public @NonNull MessageHeaders getHeaders() {
 		// Lazily wrap the raw map into Spring’s MessageHeaders
-		return new MessageHeaders(headersMap);
+		return headersMap;
 	}
 }
