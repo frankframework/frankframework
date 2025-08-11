@@ -1,5 +1,6 @@
 /* To learn more about this file see: https://angular.io/config/tsconfig. */
 {
+  "exclude": ["./cypress/**/*", "cypress.config.ts"],
   "compileOnSave": false,
   "compilerOptions": {
     "baseUrl": "./",

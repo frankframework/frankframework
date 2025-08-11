@@ -1,4 +1,5 @@
 import { defineConfig } from 'cypress';
+// @ts-expect-error node:fs is a Node module
 import * as fs from 'node:fs';
 
 export default defineConfig({
