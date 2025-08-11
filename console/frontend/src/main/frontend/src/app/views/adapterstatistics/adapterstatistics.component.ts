@@ -50,10 +50,7 @@ export class AdapterstatisticsComponent implements OnInit, OnDestroy {
   };
   protected stats?: Statistics;
 
-  protected statisticsTimeBoundaries: Record<string, string>;
-  protected statisticsSizeBoundaries: Record<string, string>;
-
-  private defaults = {
+  protected defaults = {
     name: 'Name',
     count: 'Count',
     min: 'Min',

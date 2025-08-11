@@ -58,7 +58,9 @@ export class ConnectionInterceptor implements HttpInterceptor {
           this.router.navigate([login_url]);
         }
         return;
-      } catch {}
+      } catch {
+        /* noop */
+      }
     }
 
     if (consoleState() == appInitState.INIT) {
