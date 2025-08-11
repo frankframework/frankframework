@@ -83,7 +83,7 @@ public class CloudAgentOutboundGateway implements InitializingBean, OutboundGate
 
 	@Override
 	public void afterPropertiesSet() {
-		getMembers();
+		// Do nothing
 	}
 
 	@Override
@@ -102,6 +102,8 @@ public class CloudAgentOutboundGateway implements InitializingBean, OutboundGate
 				List<ClusterMember> members = mapMembers(response.body());
 				sendPublicKeyToInboundGateways(members);
 				return members;
+			} else if (response.statusCode() == 401) {
+				log.warn("No connected clients found");
 			} else {
 				log.warn("Failed to retrieve members: HTTP {}", response.statusCode());
 			}
@@ -139,7 +141,7 @@ public class CloudAgentOutboundGateway implements InitializingBean, OutboundGate
 			byte[] envelopeBytes = objectMapper.writeValueAsBytes(envelope);
 
 			HttpRequest request = HttpRequest.newBuilder()
-					.uri(URI.create(member.getAddress()))
+					.uri(createMemberURI(member.getId().toString(), "sync"))
 					.header("Content-Type", "application/octet-stream")
 					.POST(HttpRequest.BodyPublishers.ofByteArray(envelopeBytes))
 					.build();
@@ -187,6 +189,10 @@ public class CloudAgentOutboundGateway implements InitializingBean, OutboundGate
 				.toString() + "/send/" + type + "/" + clientId;
 	}
 
+	private URI createMemberURI(String clientId, String type) {
+		return URI.create(this.createMemberAddress(clientId, type));
+	}
+
 	@Nonnull
 	@Override
 	public <I, O> Message<O> sendSyncMessage(Message<I> in) {
@@ -194,8 +200,8 @@ public class CloudAgentOutboundGateway implements InitializingBean, OutboundGate
 		try {
 			byte[] encryptedData = createByteEnvelope(in);
 			String targetId = extractTargetId(in);
-			String url = createMemberAddress(targetId, "sync");
-			HttpRequest request = buildHttpRequest(url, encryptedData);
+			URI uri = createMemberURI(targetId, "sync");
+			HttpRequest request = buildHttpRequest(uri, encryptedData);
 
 			HttpResponse<byte[]> response = httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
 			RelayEnvelope envelope = parseRelayEnvelope(response.body());
@@ -212,9 +218,9 @@ public class CloudAgentOutboundGateway implements InitializingBean, OutboundGate
 		return Objects.requireNonNull(targetHeader, "'target' header is missing").toString();
 	}
 
-	private HttpRequest buildHttpRequest(String url, byte[] payload) {
+	private HttpRequest buildHttpRequest(URI uri, byte[] payload) {
 		return HttpRequest.newBuilder()
-				.uri(URI.create(url))
+				.uri(uri)
 				.header("Content-Type", "application/octet-stream")
 				.POST(HttpRequest.BodyPublishers.ofByteArray(payload))
 				.build();
@@ -256,8 +262,8 @@ public class CloudAgentOutboundGateway implements InitializingBean, OutboundGate
 
 			String targetId = extractTargetId(in);
 
-			String url = createMemberAddress(targetId, "async");
-			HttpRequest request = buildHttpRequest(url, encryptedData);
+			URI uri = createMemberURI(targetId, "async");
+			HttpRequest request = buildHttpRequest(uri, encryptedData);
 
 			var response = httpClient.send(request, HttpResponse.BodyHandlers.discarding());
 			if (response.statusCode() != 200) {

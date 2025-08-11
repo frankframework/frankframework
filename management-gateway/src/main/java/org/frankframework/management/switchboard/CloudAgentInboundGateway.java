@@ -36,6 +36,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.CompletionStage;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.integration.gateway.MessagingGatewaySupport;
@@ -79,6 +80,7 @@ public class CloudAgentInboundGateway extends MessagingGatewaySupport {
 		this.httpClient = mtlsHelper.getHttpClient();
 	}
 
+	@Autowired
 	public CloudAgentInboundGateway() {
 		this.mtlsHelper = new MtlsHelper();
 		this.httpClient = mtlsHelper.getHttpClient();
@@ -98,7 +100,7 @@ public class CloudAgentInboundGateway extends MessagingGatewaySupport {
 			handleInitException(ce);
 		}
 
-		log.info("InboundGateway Init Complete");
+		log.info("InboundGateway Init Complete, connected to {}", sslProperties.getWebsocketUri());
 		super.onInit();
 	}
 
@@ -201,8 +203,12 @@ public class CloudAgentInboundGateway extends MessagingGatewaySupport {
 
 	private CompletionStage<?> sendSynchronousMessage(WebSocket ws, RelayEnvelope envelope, SwitchBoardMessage<?> inboundMsg, long startTime) {
 		try {
-
 			Message<?> response = super.sendAndReceiveMessage(inboundMsg);
+			if (response == null) {
+				log.error("Synchronous message did not have a response");
+				return CompletableFuture.completedFuture(null);
+			}
+
 			Object payload = unwrapPayloadIfStream(response);
 			Message<?> responseWithPayload = rebuildResponseIfNeeded(response, payload);
 
