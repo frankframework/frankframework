@@ -152,8 +152,14 @@ public class DateFormatUtils {
 		return GENERIC_DATETIME_FORMATTER.format(TimeProvider.now());
 	}
 
-	public static Instant parseToInstant(String s, @Nonnull DateTimeFormatter parser) throws DateTimeParseException {
-		return parser.parse(s, Instant::from);
+	public static Instant parseToInstant(String dateString, @Nonnull DateTimeFormatter parser) throws DateTimeParseException {
+		TemporalAccessor temporalAccessor = parser.parse(dateString);
+		if (temporalAccessor.isSupported(ChronoField.INSTANT_SECONDS)) {
+			return Instant.from(temporalAccessor);
+		} else {
+			LocalDate localDate = temporalAccessor.query(TemporalQueries.localDate());
+			return Instant.ofEpochSecond(localDate.toEpochSecond(LocalTime.MIN, ZoneOffset.UTC));
+		}
 	}
 
 	public static LocalDate parseToLocalDate(String dateString) throws DateTimeParseException {
@@ -186,13 +192,7 @@ public class DateFormatUtils {
 		if (parser == null) {
 			throw new IllegalArgumentException("Cannot determine date-format for input [" + dateString + "]");
 		}
-		TemporalAccessor temporalAccessor = parser.parse(dateString);
-		if (temporalAccessor.isSupported(ChronoField.INSTANT_SECONDS)) {
-			return Instant.from(temporalAccessor);
-		} else {
-			LocalDate localDate = temporalAccessor.query(TemporalQueries.localDate());
-			return Instant.ofEpochSecond(localDate.toEpochSecond(LocalTime.MIN, ZoneOffset.UTC));
-		}
+		return parseToInstant(dateString, parser);
 	}
 
 	/**

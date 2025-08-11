@@ -9,19 +9,27 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.jar.JarInputStream;
 
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
 
 public class BuildInfoValidatorTest {
 
+	@BeforeEach
+	@AfterEach
+	public void restFileSuffix() {
+		BuildInfoValidator.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "";
+	}
+
 	@Test
 	public void retrieveBuildInfo() throws Exception {
-		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
+		URL zip = BuildInfoValidatorTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
 		assertNotNull(zip, "BuildInfoZip not found");
 
-		BuildInfoValidator.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "";
 		AtomicBoolean wasClosed = new AtomicBoolean(false);
 		FilterInputStream fis = new FilterInputStream(zip.openStream()) {
 			@Override
@@ -36,14 +44,14 @@ public class BuildInfoValidatorTest {
 		assertEquals("ConfigurationName", details.getName(), "buildInfo name does not match");
 		assertEquals("001_20191002-1300", details.getVersion(), "buildInfo version does not match");
 
-		assertTrue(wasClosed.get());  //Ensure the original stream is closed properly
+		assertTrue(wasClosed.get());  // Ensure the original stream is closed properly
 		assertTrue(details.getJar().read() > -1);
-		assertTrue(details.getJar().read() > -1); //Allow multiple reads
+		assertTrue(details.getJar().read() > -1); // Allow multiple reads
 	}
 
 	@Test
 	public void retrieveBuildInfoSC() throws Exception {
-		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
+		URL zip = BuildInfoValidatorTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
 		assertNotNull(zip, "BuildInfoZip not found");
 
 		BuildInfoValidator.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "_SC";
@@ -55,7 +63,7 @@ public class BuildInfoValidatorTest {
 
 	@Test
 	public void retrieveBuildInfoCUSTOM() throws Exception {
-		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
+		URL zip = BuildInfoValidatorTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
 		assertNotNull(zip, "BuildInfoZip not found");
 
 		BuildInfoValidator.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "_SPECIAL";
@@ -67,10 +75,10 @@ public class BuildInfoValidatorTest {
 
 	@Test
 	public void configurationValidator() throws Exception {
-		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
+		// This JAR has a METAINF file that's practically empty. It should be skipped.
+		URL zip = BuildInfoValidatorTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
 		assertNotNull(zip, "BuildInfoZip not found");
 
-		BuildInfoValidator.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "";
 		BuildInfoValidator details = new BuildInfoValidator(zip.openStream());
 
 		assertEquals("ConfigurationName", details.getName(), "buildInfo name does not match");
@@ -79,11 +87,24 @@ public class BuildInfoValidatorTest {
 
 	@Test
 	public void configurationValidatorNoBuildInfoZip() throws Exception {
-		URL zip = ConfigurationUtilsTest.class.getResource("/ConfigurationUtils/noBuildInfoZip.jar");
+		URL zip = BuildInfoValidatorTest.class.getResource("/ConfigurationUtils/noBuildInfoZip.jar");
 		assertNotNull(zip, "BuildInfoZip not found");
 
-		BuildInfoValidator.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "";
-
 		assertThrows(ConfigurationException.class, () -> new BuildInfoValidator(zip.openStream()));
+	}
+
+	@Test
+	public void configurationWithEmptyMetaInf() throws Exception {
+		URL zip = BuildInfoValidatorTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
+		assertNotNull(zip, "Config JAR not found");
+
+		try (JarInputStream jarInputStream = new JarInputStream(zip.openStream())) {
+			assertNotNull(jarInputStream.getManifest(), "config has no valid manifest file"); // Ensure the jar has a metainf.md file
+		}
+
+		BuildInfoValidator details = new BuildInfoValidator(zip.openStream());
+
+		assertEquals("ConfigurationName", details.getName(), "buildInfo name does not match");
+		assertEquals("001_20191002-1300", details.getVersion(), "buildInfo version does not match");
 	}
 }

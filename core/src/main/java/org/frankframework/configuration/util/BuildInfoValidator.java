@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2021 WeAreFrank!
+   Copyright 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,16 +20,19 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.util.Properties;
+import java.util.jar.JarFile;
 import java.util.jar.JarInputStream;
 import java.util.zip.ZipEntry;
 
+import jakarta.annotation.Nullable;
+
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 
 /**
@@ -37,13 +40,12 @@ import org.frankframework.util.StreamUtil;
  *
  * @author Niels Meijer
  */
+@Log4j2
 public class BuildInfoValidator {
-	private String name = null;
-	private String version = null;
+	private ConfigurationInfo configInfo = null;
 	private byte[] jar = null;
 	private String buildInfoFilename = null;
 	protected static String ADDITIONAL_PROPERTIES_FILE_SUFFIX = AppConstants.getInstance().getString(AppConstants.ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY, null);
-	private static final Logger LOG = LogUtil.getLogger(BuildInfoValidator.class);
 
 	public BuildInfoValidator(InputStream stream) throws ConfigurationException {
 		String buildInfo = "BuildInfo";
@@ -55,46 +57,57 @@ public class BuildInfoValidator {
 		try {
 			jar = StreamUtil.streamToBytes(stream); // Persist Stream so it can be read multiple times.
 
-			read();
+			getConfigurationInfo();
+
 			validate();
 		} catch(IOException e) {
 			throw new ConfigurationException("unable to read jarfile", e);
 		}
 	}
 
-	private void read() throws IOException, ConfigurationException {
-		boolean isBuildInfoPresent = false;
-		try (JarInputStream zipInputStream = new JarInputStream(getJar())) {
-			ZipEntry zipEntry;
-			while ((zipEntry = zipInputStream.getNextJarEntry()) != null) {
-				if (!zipEntry.isDirectory()) {
-					String entryName = zipEntry.getName();
-					String fileName = FilenameUtils.getName(entryName);
-
-					if(buildInfoFilename.equals(fileName)) {
-						name = FilenameUtils.getPathNoEndSeparator(entryName);
-						Properties props = new Properties();
-						try(Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(zipInputStream)) {
-							props.load(reader);
-							LOG.info("properties loaded from archive, filename [{}]", name);
-						}
-						version = ConfigurationUtils.getConfigurationVersion(props);
-
-						isBuildInfoPresent = true;
-						break;
-					}
-				}
+	private void getConfigurationInfo() throws IOException, ConfigurationException {
+		try (JarInputStream jarInputStream = new JarInputStream(getJar())) {
+			configInfo = ConfigurationInfo.fromManifest(jarInputStream.getManifest());
+			if (configInfo == null) {
+				configInfo = searchForBuildInfo(jarInputStream);
 			}
 		}
-		if(!isBuildInfoPresent) {
-			throw new ConfigurationException("no ["+buildInfoFilename+"] present in configuration");
+
+		if (configInfo == null) {
+			throw new ConfigurationException("no [%s] or [%s] present in configuration".formatted(JarFile.MANIFEST_NAME, buildInfoFilename));
 		}
 	}
 
+	@Nullable
+	private ConfigurationInfo searchForBuildInfo(JarInputStream zipInputStream) throws IOException {
+		ZipEntry zipEntry;
+		while ((zipEntry = zipInputStream.getNextJarEntry()) != null) {
+			if (!zipEntry.isDirectory()) {
+				String entryName = zipEntry.getName();
+				String fileName = FilenameUtils.getName(entryName);
+
+				if(buildInfoFilename.equals(fileName)) {
+					String configName = FilenameUtils.getPathNoEndSeparator(entryName);
+					Properties props = new Properties();
+					try(Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(zipInputStream)) {
+						props.load(reader);
+						log.info("properties loaded from archive, filename [{}]", fileName);
+					}
+					String configVersion = props.getProperty("configuration.version");
+					String configTimestamp = props.getProperty("configuration.timestamp");
+
+					return new ConfigurationInfo(configName, configVersion, configTimestamp);
+				}
+			}
+		}
+
+		return null;
+	}
+
 	private void validate() throws ConfigurationException {
-		if(StringUtils.isEmpty(name))
+		if(StringUtils.isEmpty(getName()))
 			throw new ConfigurationException("unknown configuration name");
-		if(StringUtils.isEmpty(version))
+		if(StringUtils.isEmpty(getVersion()))
 			throw new ConfigurationException("unknown configuration version");
 	}
 
@@ -102,10 +115,9 @@ public class BuildInfoValidator {
 		return new ByteArrayInputStream(jar);
 	}
 	public String getName() {
-		return name;
+		return configInfo.getName();
 	}
 	public String getVersion() {
-		return version;
+		return configInfo.getLegacyVersion();
 	}
-
 }
