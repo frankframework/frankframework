@@ -99,12 +99,43 @@ public class BuildInfoValidatorTest {
 		assertNotNull(zip, "Config JAR not found");
 
 		try (JarInputStream jarInputStream = new JarInputStream(zip.openStream())) {
-			assertNotNull(jarInputStream.getManifest(), "config has no valid manifest file"); // Ensure the jar has a metainf.md file
+			assertNotNull(jarInputStream.getManifest(), "config has no valid manifest file"); // Ensure the jar has a manifest.md file
 		}
 
 		BuildInfoValidator details = new BuildInfoValidator(zip.openStream());
 
 		assertEquals("ConfigurationName", details.getName(), "buildInfo name does not match");
 		assertEquals("001_20191002-1300", details.getVersion(), "buildInfo version does not match");
+	}
+
+	@Test
+	public void configurationWithMetaInf() throws Exception {
+		// This jar also has a buildinfo.properties file, but it should be ignored.
+		URL jar = BuildInfoValidatorTest.class.getResource("/ConfigurationUtils/configjar-template-0.0.1.jar");
+		assertNotNull(jar, "Config JAR not found");
+
+		try (JarInputStream jarInputStream = new JarInputStream(jar.openStream())) {
+			assertNotNull(jarInputStream.getManifest(), "config has no valid manifest file"); // Ensure the jar has a manifest.md file
+		}
+
+		BuildInfoValidator details = new BuildInfoValidator(jar.openStream());
+
+		assertEquals("Configuration_Template", details.getName(), "buildInfo name does not match");
+		assertEquals("0.0.1-SNAPSHOT_20250811-0709", details.getVersion(), "buildInfo version does not match");
+	}
+
+	@Test
+	public void configurationWithMetaInfButNoConfigFolder() throws Exception {
+		// This jar also has a buildinfo.properties file, but it should be ignored.
+		URL jar = BuildInfoValidatorTest.class.getResource("/ConfigurationUtils/faulty-configjar-0.0.1.jar");
+		assertNotNull(jar, "Config JAR not found");
+
+		try (JarInputStream jarInputStream = new JarInputStream(jar.openStream())) {
+			assertNotNull(jarInputStream.getManifest(), "config has no valid manifest file"); // Ensure the jar has a manifest.md file
+		}
+
+		// LOG
+		ConfigurationException ex = assertThrows(ConfigurationException.class, () -> new BuildInfoValidator(jar.openStream()));
+		assertEquals("", ex.getMessage());
 	}
 }

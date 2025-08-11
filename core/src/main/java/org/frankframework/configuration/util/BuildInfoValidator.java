@@ -31,6 +31,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.components.ConfigurationInfo;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StreamUtil;
@@ -67,7 +68,7 @@ public class BuildInfoValidator {
 
 	private void getConfigurationInfo() throws IOException, ConfigurationException {
 		try (JarInputStream jarInputStream = new JarInputStream(getJar())) {
-			configInfo = ConfigurationInfo.fromManifest(jarInputStream.getManifest());
+			configInfo = parseManifest(jarInputStream);
 			if (configInfo == null) {
 				configInfo = searchForBuildInfo(jarInputStream);
 			}
@@ -79,9 +80,9 @@ public class BuildInfoValidator {
 	}
 
 	@Nullable
-	private ConfigurationInfo searchForBuildInfo(JarInputStream zipInputStream) throws IOException {
+	private ConfigurationInfo searchForBuildInfo(JarInputStream jarInputStream) throws IOException {
 		ZipEntry zipEntry;
-		while ((zipEntry = zipInputStream.getNextJarEntry()) != null) {
+		while ((zipEntry = jarInputStream.getNextJarEntry()) != null) {
 			if (!zipEntry.isDirectory()) {
 				String entryName = zipEntry.getName();
 				String fileName = FilenameUtils.getName(entryName);
@@ -89,7 +90,7 @@ public class BuildInfoValidator {
 				if(buildInfoFilename.equals(fileName)) {
 					String configName = FilenameUtils.getPathNoEndSeparator(entryName);
 					Properties props = new Properties();
-					try(Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(zipInputStream)) {
+					try(Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(jarInputStream)) {
 						props.load(reader);
 						log.info("properties loaded from archive, filename [{}]", fileName);
 					}
@@ -101,6 +102,30 @@ public class BuildInfoValidator {
 			}
 		}
 
+		return null;
+	}
+
+	@Nullable
+	private ConfigurationInfo parseManifest(JarInputStream jarInputStream) throws IOException {
+		ConfigurationInfo info = ConfigurationInfo.fromManifest(jarInputStream.getManifest());
+		if (info == null) {
+			log.info("was not able to find a (valid) MANIFEST file");
+			return null;
+		}
+
+		// We've found a valid MANIFEST file. Let's see if there's a configuration in there.
+		ZipEntry zipEntry;
+		while ((zipEntry = jarInputStream.getNextJarEntry()) != null) {
+			if (zipEntry.isDirectory()) {
+				String entryName = zipEntry.getName();
+				String configName = FilenameUtils.getPathNoEndSeparator(entryName);
+				if (info.getName().equals(configName)) {
+					return info;
+				}
+			}
+		}
+
+		log.info("did find a MANIFEST file but not a valid configuration folder in [{}]", info::getName);
 		return null;
 	}
 

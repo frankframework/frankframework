@@ -1,4 +1,4 @@
-package org.frankframework.configuration.util;
+package org.frankframework.components;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -48,7 +48,7 @@ public class ConfigurationInfoTest {
 
 	@Test
 	public void testEmptyManifestFile() throws IOException {
-		URL zip = BuildInfoValidatorTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
+		URL zip = ConfigurationInfoTest.class.getResource("/ConfigurationUtils/buildInfoZip.jar");
 		assertNotNull(zip, "Config JAR not found");
 
 		try (JarInputStream jarInputStream = new JarInputStream(zip.openStream())) {
