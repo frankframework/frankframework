@@ -11,8 +11,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-@DisplayName("MtlsHelper mTLS keystore loading tests")
 class MtlsHelperTest {
+
 	@BeforeEach
 	void setUpKeystoreProperties() {
 		System.setProperty("client.ssl.key-store", "classpath:keystores/client.jks");
