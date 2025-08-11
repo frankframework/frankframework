@@ -1,4 +1,4 @@
-import { Component, input, OnInit } from '@angular/core';
+import { Component, input } from '@angular/core';
 import { BaseChartDirective } from 'ng2-charts';
 import type { ChartData, ChartOptions } from 'chart.js';
 
@@ -12,7 +12,7 @@ export type CountPerReceiverStatistics = ChartData<'doughnut', number[], string>
   templateUrl: './adapterstatistics-charts.component.html',
   styleUrl: './adapterstatistics-charts.component.scss',
 })
-export class AdapterstatisticsChartsComponent implements OnInit {
+export class AdapterstatisticsChartsComponent {
   public readonly hourlyStatistics = input<HourlyStatistics>({
     labels: [],
     datasets: [],
@@ -93,8 +93,4 @@ export class AdapterstatisticsChartsComponent implements OnInit {
       },
     },
   };
-
-  ngOnInit(): void {
-    console.log(this.hourlyStatistics());
-  }
 }
