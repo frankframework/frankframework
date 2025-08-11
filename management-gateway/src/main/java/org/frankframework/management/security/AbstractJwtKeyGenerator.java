@@ -16,7 +16,6 @@
 
 package org.frankframework.management.security;
 
-import java.time.Instant;
 import java.util.Date;
 import java.util.List;
 
@@ -35,6 +34,7 @@ import com.nimbusds.jwt.SignedJWT;
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.util.TimeProvider;
 import org.frankframework.util.UUIDUtil;
 
 
@@ -61,8 +61,8 @@ public abstract class AbstractJwtKeyGenerator {
 		try {
 			JWTClaimsSet.Builder builder = new JWTClaimsSet.Builder()
 					.subject(getPrincipalName(authentication))
-					.expirationTime(Date.from(Instant.now().plusSeconds(120)))
-					.issueTime(Date.from(Instant.now()))
+					.expirationTime(Date.from(TimeProvider.now().plusSeconds(120)))
+					.issueTime(Date.from(TimeProvider.now()))
 					.jwtID(UUIDUtil.createRandomUUID())
 					.claim("scope", mapAuthorities(authentication));
 
