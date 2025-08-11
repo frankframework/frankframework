@@ -98,8 +98,9 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
             let value = row[columnName];
 
             if (index === -1 && columnName.includes('LENGTH ')) {
-              value += ' (length)';
-              value = row[columnName.replace('LENGTH ', '')];
+              const replaceIndex = columnNameArray.indexOf(columnName.replace('LENGTH ', ''));
+              orderedRow[replaceIndex] = `${value} (length)`;
+              continue;
             }
             orderedRow[index] = value;
           }
