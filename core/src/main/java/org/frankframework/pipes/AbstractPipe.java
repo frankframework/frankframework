@@ -378,7 +378,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	}
 
 	/**
-	 * If set, the pipe result is copied to a session key that has the name defined by this attribute. 
+	 * If set, the pipe result is copied to a session key that has the name defined by this attribute.
 	 * The pipe result is still written as the output message as usual.
 	 */
 	@Override
@@ -389,7 +389,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	/**
 	 * The maximum number of threads that may {@link #doPipe process messages} simultaneously.
 	 * A value of 0 indicates an unlimited number of threads.
-	 * 
+	 *
 	 * @ff.default 0
 	 */
 	public void setMaxThreads(int newMaxThreads) {

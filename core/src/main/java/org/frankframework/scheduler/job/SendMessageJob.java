@@ -37,7 +37,7 @@ import org.frankframework.util.SpringUtils;
 /**
  * Scheduled job to send messages to a {@link FrankListener}.
  * Message may be {@literal null} (or empty).
- * 
+ *
  * {@inheritClassDoc}
  */
 public class SendMessageJob extends AbstractJobDef {
@@ -109,7 +109,7 @@ public class SendMessageJob extends AbstractJobDef {
 	 * The sole purpose of this call is to prevent AOP wrapping around the sendMessage / sendMessageOrThrow methods.
 	 * This pollutes the Ladybug with 'unwanted' reports about jobs being fired, without any useful information in the report.
 	 * See org.frankframework.ibistesttool.IbisDebuggerAdvice for the exclusion
-	 * 
+	 *
 	 * @author Niels Meijer
 	 */
 	public static class SendMessageJobSender extends IbisLocalSender {

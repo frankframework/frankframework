@@ -37,6 +37,8 @@ import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.Default;
@@ -65,7 +67,7 @@ import org.frankframework.util.StringUtil;
  * The generated OpenAPI specifications have <code>servers</code> and <code>paths</code> objects and
  * therefore they document the full URLs of the provided services.
  * <p>
- * It is possible to automatically generate eTags over the listener result. This can be controlled by globally 
+ * It is possible to automatically generate eTags over the listener result. This can be controlled by globally
  * setting the property <code>api.etag.enabled</code> or by setting the attribute <code>updateEtag="true"</code>.
  * When enabled the listener will respond to the <code>If-Match</code>, <code>If-None-Match</code> headers and may return status code 304.
  * <p>
@@ -81,13 +83,14 @@ import org.frankframework.util.StringUtil;
  * <li><code>etag.cache.password</code></li>
  * <li><code>etag.cache.authalias</code></li>
  * </ul>
- * 
+ *
  * @see <a href="https://swagger.io/specification/">OpenAPI Reference Specification</a>
- * 
+ *
  * @ff.tip The OPTIONS verb will automatically be handled by the framework.
  *
  * @author Niels Meijer
  */
+@DestinationType(Type.HTTP)
 public class ApiListener extends PushingListenerAdapter implements HasPhysicalDestination, ReceiverAware<Message> {
 
 	private static final Pattern VALID_URI_PATTERN_RE = Pattern.compile("([^/]\\*|\\*[^/\\n])");
@@ -98,7 +101,6 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 */
 	public static final Set<String> RESERVED_NAMES = Set.of(PipeLineSession.ORIGINAL_MESSAGE_KEY, PipeLineSession.API_PRINCIPAL_KEY, PipeLineSession.HTTP_METHOD_KEY, PipeLineSession.HTTP_REQUEST_KEY, PipeLineSession.HTTP_RESPONSE_KEY, PipeLineSession.SECURITY_HANDLER_KEY, "ClaimsSet", "allowedMethods", "headers", ApiListenerServlet.UPDATE_ETAG_CONTEXT_KEY, "uri", "remoteAddr", ApiListenerServlet.AUTHENTICATION_COOKIE_NAME, MultipartUtils.MULTIPART_ATTACHMENTS_SESSION_KEY);
 
-	private final @Getter String domain = "Http";
 	private @Getter String uriPattern;
 	private @Getter boolean updateEtag = AppConstants.getInstance().getBoolean("api.etag.enabled", false);
 	private @Getter String operationId;

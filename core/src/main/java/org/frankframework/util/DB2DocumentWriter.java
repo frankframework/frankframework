@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2024 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,8 +21,9 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.SenderException;
 import org.frankframework.dbms.IDbmsSupport;
@@ -33,8 +34,8 @@ import org.frankframework.documentbuilder.INodeBuilder;
 import org.frankframework.documentbuilder.ObjectBuilder;
 import org.frankframework.stream.MessageBuilder;
 
+@Log4j2
 public class DB2DocumentWriter {
-	protected static Logger log = LogUtil.getLogger(DB2DocumentWriter.class);
 
 	private String docname = "result";
 	private String recordname = "rowset";
@@ -43,7 +44,7 @@ public class DB2DocumentWriter {
 	private boolean decompressBlobs=false;
 	private boolean getBlobSmart=false;
 	private String blobCharset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-	private static final boolean convertFieldnamesToUppercase = AppConstants.getInstance().getBoolean("jdbc.convertFieldnamesToUppercase", false);
+	private static final boolean CONVERT_FIELDNAMES_TO_UPPERCASE = AppConstants.getInstance().getBoolean("jdbc.convertFieldnamesToUppercase", false);
 
 	public static String getFieldType (int type) {
 		return JDBCType.valueOf(type).getName();
@@ -79,10 +80,7 @@ public class DB2DocumentWriter {
 				addFieldDefinitions(documentBuilder, rsmeta);
 			}
 
-			//----------------------------------------
 			// Process result rows
-			//----------------------------------------
-
 			try (ArrayBuilder rows = documentBuilder.addArrayField(recordname,"row")) {
 				while (rs.next() && rowCounter < maxlength) {
 					writeRow(rows, dbmsSupport, rs,rsmeta,getBlobCharset(),decompressBlobs,nullValue,trimSpaces,getBlobSmart);
@@ -108,12 +106,12 @@ public class DB2DocumentWriter {
 				try (ObjectBuilder field=nodeBuilder.startObject()) {
 
 					String columnName = rsmeta.getColumnName(j);
-					if(convertFieldnamesToUppercase) {
+					if(CONVERT_FIELDNAMES_TO_UPPERCASE) {
 						columnName = columnName.toUpperCase();
 					}
 					field.addAttribute("name", columnName);
 
-					//Not every JDBC implementation implements these attributes!
+					// Not every JDBC implementation implements these attributes!
 					try {
 						field.addAttribute("type", getFieldType(rsmeta.getColumnType(j)));
 					} catch (SQLException e) {
@@ -143,7 +141,7 @@ public class DB2DocumentWriter {
 					}
 					try {
 						String columnTypeName = rsmeta.getColumnTypeName(j);
-						if(convertFieldnamesToUppercase)
+						if(CONVERT_FIELDNAMES_TO_UPPERCASE)
 							columnTypeName = columnTypeName.toUpperCase();
 						field.addAttribute("columnTypeName", columnTypeName);
 					} catch (SQLException e) {
@@ -164,7 +162,7 @@ public class DB2DocumentWriter {
 			try (ObjectBuilder row=nodeBuilder.startObject()) {
 				for (int i = 1; i <= rsmeta.getColumnCount(); i++) {
 					String columnName = rsmeta.getColumnName(i);
-					if(convertFieldnamesToUppercase) {
+					if(CONVERT_FIELDNAMES_TO_UPPERCASE) {
 						columnName = columnName.toUpperCase();
 					}
 					try {

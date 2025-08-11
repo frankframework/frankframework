@@ -27,8 +27,6 @@ import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -36,6 +34,9 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.Environment;
 import org.springframework.util.ResourceUtils;
+
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.util.ClassUtils;
 
@@ -54,7 +55,10 @@ public class ConsoleFrontend extends HttpServlet implements EnvironmentAware, In
 	private static final String WELCOME_FILE = "index.html";
 	private static final String DEFAULT_CONSOLE_PATH = "console"; //WebSphere doesn't like the classpath: protocol and resources should not start with a slash?
 
+	@SuppressWarnings("java:S2226") // Initialized through Spring (which is a Sonar Exception)
 	private String frontendPath = null;
+
+	@SuppressWarnings("java:S2226") // Initialized through Spring (which is a Sonar Exception)
 	@Setter private transient Environment environment;
 
 	@Override

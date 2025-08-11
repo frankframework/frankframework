@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.nio.file.DirectoryStream;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.Map;
@@ -28,6 +29,7 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
@@ -45,6 +47,7 @@ import org.frankframework.stream.MessageContext;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.Misc;
+import org.frankframework.util.TimeProvider;
 import org.frankframework.util.UUIDUtil;
 import org.frankframework.util.WildCardFilter;
 
@@ -210,6 +213,7 @@ public class FileSystemUtils {
 		}
 	}
 
+	@Nonnull
 	public static <F> DirectoryStream<F> getDirectoryStream(Iterable<F> iterable){
 
 		return new DirectoryStream<>() {
@@ -235,20 +239,13 @@ public class FileSystemUtils {
 		};
 	}
 
-	public static <F> DirectoryStream<F> getDirectoryStream(Iterator<F> iterator){
+	@Nonnull
+	public static <F> DirectoryStream<F> getDirectoryStream(@Nullable Iterator<F> iterator){
 		return getDirectoryStream(iterator, (Supplier<IOException>)null);
 	}
 
-	public static <F> DirectoryStream<F> getDirectoryStream(Iterator<F> iterator, Runnable onClose) {
-		return getDirectoryStream(iterator, () -> {
-			if (onClose!=null) {
-				onClose.run();
-			}
-			return null;
-		});
-	}
-
-	public static <F> DirectoryStream<F> getDirectoryStream(Iterator<F> iterator, Supplier<IOException> onClose){
+	@Nonnull
+	public static <F> DirectoryStream<F> getDirectoryStream(@Nullable Iterator<F> iterator, @Nullable Supplier<IOException> onClose){
 
 		return new DirectoryStream<>() {
 
@@ -264,7 +261,7 @@ public class FileSystemUtils {
 
 			@Override
 			public Iterator<F> iterator() {
-				return iterator;
+				return iterator == null ? Collections.emptyIterator() : iterator;
 			}
 
 		};
@@ -272,7 +269,7 @@ public class FileSystemUtils {
 
 	public static <F> void rolloverByDay(IWritableFileSystem<F> fileSystem, F file, String folder, int rotateDays) throws FileSystemException {
 		Date lastModified = fileSystem.getModificationTime(file);
-		Date sysTime = new Date();
+		Date sysTime = TimeProvider.nowAsDate();
 		if (DateUtils.isSameDay(lastModified, sysTime) || lastModified.after(sysTime)) {
 			return;
 		}

@@ -1,5 +1,6 @@
 package org.frankframework.configuration.digester;
 
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -11,21 +12,32 @@ import java.beans.MethodDescriptor;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
+
+import jakarta.servlet.Servlet;
 
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.function.Executable;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
 import org.springframework.beans.factory.support.SimpleBeanDefinitionRegistry;
 import org.springframework.context.annotation.AnnotationBeanNameGenerator;
 import org.springframework.context.annotation.ClassPathBeanDefinitionScanner;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.AnnotationUtils;
+import org.springframework.core.type.filter.AnnotationTypeFilter;
 import org.springframework.core.type.filter.AssignableTypeFilter;
 import org.springframework.util.Assert;
 
 import org.frankframework.configuration.ConfigurationWarning;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IConfigurable;
+import org.frankframework.lifecycle.IbisInitializer;
 import org.frankframework.util.LogUtil;
 
 public class MapPropertyDescriptorsTest {
@@ -40,6 +52,13 @@ public class MapPropertyDescriptorsTest {
 		ClassPathBeanDefinitionScanner scanner = new ClassPathBeanDefinitionScanner(beanDefinitionRegistry);
 		scanner.setIncludeAnnotationConfig(false);
 		scanner.addIncludeFilter(new AssignableTypeFilter(type));
+
+		// Disable servlets from being found
+		scanner.addExcludeFilter(new AssignableTypeFilter(Servlet.class));
+
+		// Disable Spring annotations
+		scanner.addExcludeFilter(new AnnotationTypeFilter(IbisInitializer.class));
+		scanner.addExcludeFilter(new AnnotationTypeFilter(Configuration.class));
 
 		BeanNameGenerator beanNameGenerator = new AnnotationBeanNameGenerator() {
 			@Override
@@ -114,5 +133,15 @@ public class MapPropertyDescriptorsTest {
 			}
 
 		}
+	}
+
+	@Test
+	public void verifyThatPhysicalDestinationHaveDestinationTypeAnnotation() throws ClassNotFoundException {
+		List<Executable> executables = new ArrayList<>();
+		for (String beanName : getClassesThatImplement(HasPhysicalDestination.class)) {
+			Class<?> beanClass = Class.forName(beanName);
+			executables.add(() -> assertNotNull(AnnotationUtils.findAnnotation(beanClass, DestinationType.class), "Class [%s] is missing the DestinationType annotation!".formatted(beanName)));
+		}
+		assertAll(executables);
 	}
 }

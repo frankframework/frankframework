@@ -7,8 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.util.Date;
-
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -32,6 +30,7 @@ import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.parameters.Parameter;
+import org.frankframework.util.TimeProvider;
 
 public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 	private static final String DUMMY_SECRET = "PotatoSecretMustBeAtLeast265Bits";
@@ -49,6 +48,9 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 
 		JWSKeySelector<SecurityContext> keySelector = new JWSVerificationKeySelector<>(JWSAlgorithm.HS256, immutableSecret);
 		JWT_PROCESSOR.setJWSKeySelector(keySelector);
+
+		// If timeprovider has a clock set to time in the past, JWTs might always be invalid.
+		TimeProvider.resetClock();
 	}
 
 	@Override
@@ -241,7 +243,7 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 		assertEquals("CleanBreath", claimSet.getIssuer());
 		assertEquals("Free", claimSet.getStringClaim("Sugar"));
 		assertEquals(50, claimSet.getIntegerClaim("amt"));
-		assertTrue(claimSet.getExpirationTime().after(new Date()));
+		assertTrue(claimSet.getExpirationTime().after(TimeProvider.nowAsDate()));
 	}
 
 	@Test

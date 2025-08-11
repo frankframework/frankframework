@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2021 WeAreFrank!
+   Copyright 2020, 2021, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package org.frankframework.encryption;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.invoke.MethodHandles;
 import java.net.URL;
 import java.security.KeyFactory;
 import java.security.KeyStore;
@@ -36,7 +35,6 @@ import java.time.Instant;
 import java.time.temporal.TemporalAmount;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Date;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -52,15 +50,16 @@ import jakarta.annotation.Nonnull;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.util.TimeProvider;
 
+@Log4j2
 public class PkiUtil {
-	private static final Logger log = LogUtil.getLogger(MethodHandles.lookup().lookupClass());
 
 	public static HasTruststore keyStoreAsTrustStore(HasKeystore keystoreOwner) {
 		return new HasTruststore() {
@@ -290,7 +289,7 @@ public class PkiUtil {
 
 	/**
 	 * Returns a list of certificate aliases which are due to expire.
-	 * 
+	 *
 	 * @param keystore A {@link KeyStore}.
 	 * @param duration Date after which Certificates should be classified as 'due to expire'.
 	 * @return A list with aliases of {@link Certificate Certificates}.
@@ -298,7 +297,7 @@ public class PkiUtil {
 	@Nonnull
 	public static List<String> getExpiringCertificates(KeyStore keystore, TemporalAmount duration) throws EncryptionException {
 		List<String> certificates = new ArrayList<>();
-		Instant dateAfterWhichCertsAreExpired = Instant.now().minus(duration);
+		Instant dateAfterWhichCertsAreExpired = TimeProvider.now().plus(duration);
 		try {
 			for (String certAlias : Collections.list(keystore.aliases())) {
 				Certificate cert = keystore.getCertificate(certAlias);
@@ -314,8 +313,8 @@ public class PkiUtil {
 
 	private static boolean isDueToExpire(Certificate cert, Instant dateAfterWhichCertsAreExpired) {
 		if (cert instanceof X509Certificate x509Cert) {
-			Date notAfter = x509Cert.getNotAfter();
-			return dateAfterWhichCertsAreExpired.isBefore(notAfter.toInstant());
+			Instant notAfter = x509Cert.getNotAfter().toInstant();
+			return dateAfterWhichCertsAreExpired.isAfter(notAfter);
 		}
 
 		return false;

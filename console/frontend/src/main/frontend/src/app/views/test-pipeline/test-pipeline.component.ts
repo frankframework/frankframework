@@ -1,8 +1,7 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, computed, inject, OnInit, Signal, ViewChild } from '@angular/core';
 import { Adapter, AppService, Configuration } from 'src/app/app.service';
 import { InputFileUploadComponent } from 'src/app/components/input-file-upload/input-file-upload.component';
-import { Subscription } from 'rxjs';
 import { ComboboxComponent, Option } from '../../components/combobox/combobox.component';
 import { ConfigurationFilter } from '../../pipes/configuration-filter.pipe';
 import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
@@ -55,11 +54,16 @@ type TestPipelineSession = {
     LaddaModule,
   ],
 })
-export class TestPipelineComponent implements OnInit, OnDestroy {
+export class TestPipelineComponent implements OnInit {
   @ViewChild(InputFileUploadComponent) formFile!: InputFileUploadComponent;
-  protected configurations: Configuration[] = [];
-  protected configurationOptions: Option[] = [];
-  protected adapters: Record<string, Adapter> = {};
+  protected configurationOptions: Signal<Option[]> = computed(() =>
+    this.configurations().map((configuration) => ({ label: configuration.name })),
+  );
+  protected adapters: Signal<Record<string, Adapter>> = computed(() => {
+    const adapters = this.appService.adapters();
+    if (this.selectedConfiguration) this.setAdapterOptions(this.selectedConfiguration, adapters);
+    return adapters;
+  });
   protected adapterOptions: Option[] = [];
   protected state: AlertState[] = [];
   protected selectedConfiguration = '';
@@ -82,72 +86,27 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
     },
   };
 
+  protected configurations: Signal<Configuration[]>;
+
   private file: File | null = null;
-  private subscriptions: Subscription = new Subscription();
 
   private http: HttpClient = inject(HttpClient);
-  private appService: AppService = inject(AppService);
   private webStorageService: WebStorageService = inject(WebStorageService);
+  private appService: AppService = inject(AppService);
+
+  constructor() {
+    this.configurations = this.appService.configurations;
+  }
 
   ngOnInit(): void {
     this.setTestPipelineSession();
-    this.setConfigurations();
-    const configurationsSubscription = this.appService.configurations$.subscribe(() => {
-      this.setConfigurations();
-    });
-    this.subscriptions.add(configurationsSubscription);
-
-    this.setAdapters();
-    const adaptersSubscription = this.appService.adapters$.subscribe(() => {
-      this.setAdapters();
-    });
-    this.subscriptions.add(adaptersSubscription);
   }
 
-  ngOnDestroy(): void {
-    this.subscriptions.unsubscribe();
-  }
-
-  private setConfigurations(): void {
-    this.configurations = this.appService.configurations;
-    this.configurationOptions = this.configurations.map((configuration) => ({
-      label: configuration.name,
-    }));
-  }
-
-  private setAdapters(): void {
-    this.adapters = this.appService.adapters;
-    if (this.selectedConfiguration) {
-      this.setAdapterOptions(this.selectedConfiguration);
-    }
-  }
-
-  private setTestPipelineSession(): void {
-    const testPipelineSession = this.webStorageService.get<TestPipelineSession>('testPipeline');
-    if (testPipelineSession) {
-      this.selectedConfiguration = testPipelineSession.configuration;
-      this.form = testPipelineSession.form;
-      this.formSessionKeys = testPipelineSession.sessionKeys;
-    }
-  }
-
-  private setAdapterOptions(selectedConfiguration: string): void {
-    const filteredAdapters = ConfigurationFilter(this.adapters, selectedConfiguration);
-    this.adapterOptions = Object.entries(filteredAdapters).map(([, adapter]) => ({
-      label: adapter.name,
-      description: adapter.description ?? '',
-    }));
-  }
-
-  addNote(type: string, message: string): void {
-    this.state.push({ type: type, message: message });
-  }
-
-  updateSessionKeys(sessionKey: FormSessionKey): void {
+  protected updateSessionKeys(sessionKey: FormSessionKey): void {
     if (sessionKey?.key != '' && sessionKey?.value != '') {
       const keyIndex = this.formSessionKeys.slice(0, -1).findIndex((f) => f.key === sessionKey.key);
-      if (keyIndex > -1) {
-        if (this.state.findIndex((f) => f.message === 'Session keys cannot have the same name!') < 0)
+      if (keyIndex !== -1) {
+        if (!this.state.some((f) => f.message === 'Session keys cannot have the same name!'))
           //avoid adding it more than once
           this.addNote('warning', 'Session keys cannot have the same name!');
         return;
@@ -161,11 +120,11 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
     }
   }
 
-  updateFile(file: File | null): void {
+  protected updateFile(file: File | null): void {
     this.file = file;
   }
 
-  submit(event?: SubmitEvent): void {
+  protected submit(event?: SubmitEvent): void {
     event?.preventDefault();
     this.result = '';
     this.state = [];
@@ -194,7 +153,7 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
       this.formSessionKeys.pop();
       const incompleteKeyIndex = this.formSessionKeys.findIndex((f) => f.key === '' || f.value === '');
 
-      if (incompleteKeyIndex < 0) {
+      if (incompleteKeyIndex === -1) {
         fd.append('sessionKeys', JSON.stringify(this.formSessionKeys));
       } else {
         this.addNote('warning', 'Please make sure all sessionkeys have name and value!');
@@ -235,7 +194,7 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
     });
   }
 
-  reset(): void {
+  protected reset(): void {
     this.webStorageService.remove('testPipeline');
     this.selectedConfiguration = '';
     this.form = {
@@ -250,6 +209,27 @@ export class TestPipelineComponent implements OnInit, OnDestroy {
 
   protected setSelectedConfiguration(): void {
     this.form.adapter = '';
-    this.setAdapterOptions(this.selectedConfiguration);
+    this.setAdapterOptions(this.selectedConfiguration, this.adapters());
+  }
+
+  private setTestPipelineSession(): void {
+    const testPipelineSession = this.webStorageService.get<TestPipelineSession>('testPipeline');
+    if (testPipelineSession) {
+      this.selectedConfiguration = testPipelineSession.configuration;
+      this.form = testPipelineSession.form;
+      this.formSessionKeys = testPipelineSession.sessionKeys;
+    }
+  }
+
+  private setAdapterOptions(selectedConfiguration: string, adapters: Record<string, Adapter>): void {
+    const filteredAdapters = ConfigurationFilter(adapters, selectedConfiguration);
+    this.adapterOptions = Object.entries(filteredAdapters).map(([, adapter]) => ({
+      label: adapter.name,
+      description: adapter.description ?? '',
+    }));
+  }
+
+  private addNote(type: string, message: string): void {
+    this.state.push({ type: type, message: message });
   }
 }

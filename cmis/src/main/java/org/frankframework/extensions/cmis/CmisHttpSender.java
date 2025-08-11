@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2018-2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import java.util.zip.GZIPOutputStream;
 
 import jakarta.annotation.Nonnull;
 
-import org.apache.chemistry.opencmis.client.bindings.spi.BindingSession;
 import org.apache.chemistry.opencmis.client.bindings.spi.http.Output;
 import org.apache.chemistry.opencmis.client.bindings.spi.http.Response;
 import org.apache.chemistry.opencmis.commons.SessionParameter;
@@ -144,6 +143,7 @@ public abstract class CmisHttpSender extends AbstractHttpSender {
 		return method;
 	}
 
+	@Override
 	protected boolean validateResponseCode(int statusCode) {
 		return true; //Always success
 	}
@@ -175,7 +175,7 @@ public abstract class CmisHttpSender extends AbstractHttpSender {
 		return Message.nullMessage();
 	}
 
-	public Response invoke(HttpMethod method, String url, Map<String, String> headers, Output writer, BindingSession session) {
+	public Response invoke(HttpMethod method, String url, Map<String, String> headers, Output writer) {
 		//Prepare the message. We will overwrite things later...
 		int responseCode = -1;
 
@@ -184,7 +184,7 @@ public abstract class CmisHttpSender extends AbstractHttpSender {
 			pls.put("url", url);
 			pls.put("method", method);
 			pls.put("headers", headers);
-	
+
 			try {
 				// Message is unused, we use 'Output writer' instead
 				SenderResult ignored = sendMessage(Message.nullMessage(), pls);

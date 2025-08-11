@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2016, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013-2016, 2020 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -111,26 +111,17 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 
 	@Override
 	public PipeRunResult doPipeWithTimeoutGuarded(Message input, PipeLineSession session) throws PipeRunException {
-		Connection connection = null;
-		Session jSession = null;
-		MessageProducer msgProducer = null;
-		Destination destination = null;
 
-		String url_work;
-		String authAlias_work;
-		String userName_work;
-		String password_work;
-		String queueName_work;
+		String urlWork;
+		String authAliasWork;
+		String userNameWork;
+		String passwordWork;
+		String queueNameWork;
 		MessageProtocol protocol = getMessageProtocol();
-		int replyTimeout_work;
-		String soapAction_work;
+		int replyTimeoutWork;
+		String soapActionWork;
 
-		String result = null;
-		try {
-			input.preserve();
-		} catch (IOException e) {
-			throw new PipeRunException(this,"cannot preserve input",e);
-		}
+		String result;
 		ParameterValueList pvl;
 		try {
 			pvl = getParameterList().getValues(input, session);
@@ -138,59 +129,59 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 			throw new PipeRunException(this, "exception on extracting parameters", e);
 		}
 
-		url_work = getParameterValue(pvl, "url");
-		if (url_work == null) {
-			url_work = getUrl();
+		urlWork = getParameterValue(pvl, "url");
+		if (urlWork == null) {
+			urlWork = getUrl();
 		}
-		authAlias_work = getParameterValue(pvl, "authAlias");
-		if (authAlias_work == null) {
-			authAlias_work = getAuthAlias();
+		authAliasWork = getParameterValue(pvl, "authAlias");
+		if (authAliasWork == null) {
+			authAliasWork = getAuthAlias();
 		}
-		userName_work = pvl.contains("username") ? getParameterValue(pvl, "username") : getParameterValue(pvl, "userName");
-		if (userName_work == null) {
-			userName_work = getUsername();
+		userNameWork = pvl.contains("username") ? getParameterValue(pvl, "username") : getParameterValue(pvl, "userName");
+		if (userNameWork == null) {
+			userNameWork = getUsername();
 		}
-		password_work = getParameterValue(pvl, "password");
-		if (password_work == null) {
-			password_work = getPassword();
+		passwordWork = getParameterValue(pvl, "password");
+		if (passwordWork == null) {
+			passwordWork = getPassword();
 		}
-		queueName_work = getParameterValue(pvl, "queueName");
-		if (queueName_work == null) {
-			queueName_work = getQueueName();
+		queueNameWork = getParameterValue(pvl, "queueName");
+		if (queueNameWork == null) {
+			queueNameWork = getQueueName();
 		}
 		String protocolParam = getParameterValue(pvl, "messageProtocol");
 		if (protocolParam != null) {
 			protocol = EnumUtils.parse(MessageProtocol.class, protocolParam);
 		}
-		String replyTimeout_work_str = getParameterValue(pvl, "replyTimeout");
-		if (replyTimeout_work_str == null) {
-			replyTimeout_work = getReplyTimeout();
+		String replyTimeoutStr = getParameterValue(pvl, "replyTimeout");
+		if (replyTimeoutStr == null) {
+			replyTimeoutWork = getReplyTimeout();
 		} else {
-			replyTimeout_work = Integer.parseInt(replyTimeout_work_str);
+			replyTimeoutWork = Integer.parseInt(replyTimeoutStr);
 		}
-		soapAction_work = getParameterValue(pvl, "soapAction");
-		if (soapAction_work == null)
-			soapAction_work = getSoapAction();
+		soapActionWork = getParameterValue(pvl, "soapAction");
+		if (soapActionWork == null)
+			soapActionWork = getSoapAction();
 
-		if (StringUtils.isEmpty(soapAction_work) && !StringUtils.isEmpty(queueName_work)) {
-			String[] q = queueName_work.split("\\.");
+		if (StringUtils.isEmpty(soapActionWork) && !StringUtils.isEmpty(queueNameWork)) {
+			String[] q = queueNameWork.split("\\.");
 			if (q.length>0) {
 				if ("P2P".equalsIgnoreCase(q[0]) && q.length>=4) {
-					soapAction_work = q[3];
+					soapActionWork = q[3];
 				} else if ("ESB".equalsIgnoreCase(q[0]) && q.length==8) {
-					soapAction_work = q[5] + "_" + q[6];
+					soapActionWork = q[5] + "_" + q[6];
 				} else if ("ESB".equalsIgnoreCase(q[0]) && q.length>8) {
-					soapAction_work = q[6] + "_" + q[7];
+					soapActionWork = q[6] + "_" + q[7];
 				}
 			}
 		}
 
-		if (StringUtils.isEmpty(soapAction_work)) {
+		if (StringUtils.isEmpty(soapActionWork)) {
 			log.debug("deriving default soapAction");
 			try {
 				Resource resource = Resource.getResource(this, "/xml/xsl/esb/soapAction.xsl");
 				TransformerPool tp = TransformerPool.getInstance(resource, 2);
-				soapAction_work = tp.transformToString(input.asString(), null);
+				soapActionWork = tp.transformToString(input.asString(), null);
 			} catch (Exception e) {
 				log.error("failed to execute soapAction.xsl");
 			}
@@ -200,39 +191,14 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 			throw new PipeRunException(this, "messageProtocol must be set");
 		}
 
-		CredentialFactory cf = new CredentialFactory(authAlias_work, userName_work, password_work);
-		try {
-			TibjmsAdmin admin;
-			try {
-				admin = TibcoUtils.getActiveServerAdmin(url_work, cf, emsProperties);
-			} catch (TibjmsAdminException e) {
-				log.debug("caught exception", e);
-				admin = null;
-			}
-			if (admin != null) {
-				QueueInfo queueInfo;
-				try {
-					queueInfo = admin.getQueue(queueName_work);
-				} catch (Exception e) {
-					throw new PipeRunException(this, "exception on getting queue info", e);
-				}
-				if (queueInfo == null) {
-					throw new PipeRunException(this, "queue [" + queueName_work + "] does not exist");
-				}
+		CredentialFactory cf = new CredentialFactory(authAliasWork, userNameWork, passwordWork);
+		validateQueueName(urlWork, cf, queueNameWork);
 
-				try {
-					admin.close();
-				} catch (TibjmsAdminException e) {
-					log.warn("exception on closing Tibjms Admin", e);
-				}
-			}
+		ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(urlWork, null, emsProperties); //url, clientid, properties
+		try (Connection connection = factory.createConnection(cf.getUsername(), cf.getPassword());
+			 Session jSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+			 MessageProducer msgProducer = jSession.createProducer(jSession.createQueue(queueNameWork))) {
 
-			ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(url_work, null, emsProperties); //url, clientid, properties
-			connection = factory.createConnection(cf.getUsername(), cf.getPassword());
-			jSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-			destination = jSession.createQueue(queueName_work);
-
-			msgProducer = jSession.createProducer(destination);
 			TextMessage msg = jSession.createTextMessage();
 			msg.setText(input.asString());
 			Destination replyQueue = null;
@@ -241,14 +207,14 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 				msg.setJMSReplyTo(replyQueue);
 				msg.setJMSDeliveryMode(DeliveryMode.NON_PERSISTENT);
 				msgProducer.setDeliveryMode(DeliveryMode.NON_PERSISTENT);
-				msgProducer.setTimeToLive(replyTimeout_work);
+				msgProducer.setTimeToLive(replyTimeoutWork);
 			} else {
 				msg.setJMSDeliveryMode(DeliveryMode.PERSISTENT);
 				msgProducer.setDeliveryMode(DeliveryMode.PERSISTENT);
 			}
-			if (StringUtils.isNotEmpty(soapAction_work)) {
-				log.debug("setting [SoapAction] property to value [{}]", soapAction_work);
-				msg.setStringProperty("SoapAction", soapAction_work);
+			if (StringUtils.isNotEmpty(soapActionWork)) {
+				log.debug("setting [SoapAction] property to value [{}]", soapActionWork);
+				msg.setStringProperty("SoapAction", soapActionWork);
 			}
 			msgProducer.send(msg);
 			if (log.isDebugEnabled()) {
@@ -261,12 +227,12 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 			if (protocol == MessageProtocol.REQUEST_REPLY) {
 				String replyCorrelationId = msg.getJMSMessageID();
 				MessageConsumer msgConsumer = jSession.createConsumer(replyQueue, "JMSCorrelationID='" + replyCorrelationId+ "'");
-				log.debug("start waiting for reply on [{}] selector [{}] for [{}] ms", replyQueue, replyCorrelationId, replyTimeout_work);
+				log.debug("start waiting for reply on [{}] selector [{}] for [{}] ms", replyQueue, replyCorrelationId, replyTimeoutWork);
 
 				connection.start();
-				jakarta.jms.Message rawReplyMsg = msgConsumer.receive(replyTimeout_work);
+				jakarta.jms.Message rawReplyMsg = msgConsumer.receive(replyTimeoutWork);
 				if (rawReplyMsg == null) {
-					throw new PipeRunException(this, "did not receive reply on [" + replyQueue+ "] replyCorrelationId [" + replyCorrelationId+ "] within [" + replyTimeout_work + "] ms");
+					throw new PipeRunException(this, "did not receive reply on [" + replyQueue+ "] replyCorrelationId [" + replyCorrelationId+ "] within [" + replyTimeoutWork + "] ms");
 				}
 				if (rawReplyMsg instanceof TextMessage replyMsg) {
 					result = replyMsg.getText();
@@ -282,16 +248,32 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 			}
 		} catch (IOException|JMSException e) {
 			throw new PipeRunException(this, "exception on sending message to Tibco queue", e);
-		} finally {
-			if (connection != null) {
-				try {
-					connection.close();
-				} catch (JMSException e) {
-					log.warn("exception on closing connection", e);
-				}
-			}
 		}
 		return new PipeRunResult(getSuccessForward(), result);
+	}
+
+	private void validateQueueName(String urlWork, CredentialFactory cf, String queueNameWork) throws PipeRunException {
+		TibjmsAdmin admin;
+		try {
+			admin = TibcoUtils.getActiveServerAdmin(urlWork, cf, emsProperties);
+		} catch (TibjmsAdminException e) {
+			log.debug("caught exception, cannot validate Tibco queue name", e);
+			return;
+		}
+		if (admin == null) {
+			return;
+		}
+		QueueInfo queueInfo;
+		try {
+			queueInfo = admin.getQueue(queueNameWork);
+		} catch (Exception e) {
+			throw new PipeRunException(this, "exception on getting queue info", e);
+		} finally {
+			TibcoUtils.closeAdminClient(admin);
+		}
+		if (queueInfo == null) {
+			throw new PipeRunException(this, "queue [" + queueNameWork + "] does not exist");
+		}
 	}
 
 	public String getUrl() {

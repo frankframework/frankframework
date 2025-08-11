@@ -21,7 +21,6 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -40,6 +39,7 @@ import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.util.TimeProvider;
 
 @Log4j2
 @WithLiquibase(file = "Migrator/ChangelogBlobTests.xml", tableName = DbmsSupportTest.TEST_TABLE)
@@ -258,7 +258,7 @@ public class DbmsSupportTest {
 	@DatabaseTest
 	public void testGetDateTimeLiteral() throws Exception {
 		try (Connection connection = env.getConnection()) {
-			JdbcTestUtil.executeStatement(connection, "INSERT INTO " + TEST_TABLE + "(TKEY, TVARCHAR, TINT, TDATE, TDATETIME) VALUES (1,2,3," + dbmsSupport.getDateAndOffset(dbmsSupport.getDatetimeLiteral(new Date()), 4) + "," + dbmsSupport.getDatetimeLiteral(new Date()) + ")");
+			JdbcTestUtil.executeStatement(connection, "INSERT INTO " + TEST_TABLE + "(TKEY, TVARCHAR, TINT, TDATE, TDATETIME) VALUES (1,2,3," + dbmsSupport.getDateAndOffset(dbmsSupport.getDatetimeLiteral(TimeProvider.nowAsDate()), 4) + "," + dbmsSupport.getDatetimeLiteral(TimeProvider.nowAsDate()) + ")");
 			Object result = JdbcTestUtil.executeQuery(dbmsSupport, connection, "SELECT " + dbmsSupport.getTimestampAsDate("TDATETIME") + " FROM " + TEST_TABLE + " WHERE TKEY=1", null, new PipeLineSession());
 		}
 	}

@@ -43,9 +43,10 @@ import org.frankframework.dbms.GenericDbmsSupport;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jms.JmsRealm;
 import org.frankframework.jms.JmsRealmFactory;
-import org.frankframework.lifecycle.ApplicationMessageEvent;
+import org.frankframework.lifecycle.events.ApplicationMessageEvent;
+import org.frankframework.lifecycle.events.MessageEvent;
+import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.testutil.TestAppender;
-import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.StreamUtil;
 
 public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<DatabaseClassLoader> {
@@ -103,32 +104,34 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 		doReturn(beanFactory).when(applicationContext).getAutowireCapableBeanFactory();
 		doReturn(fq).when(beanFactory).createBean(FixedQuerySender.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false);
 
-		@SuppressWarnings("rawtypes") //IbisContext.log is a void method
+		@SuppressWarnings("rawtypes") // IbisContext.log is a void method
 		Answer answer = new Answer() {
 			@Override
 			public Object answer(InvocationOnMock invocation) throws Throwable {
 				String message = invocation.getArgument(0);
-				MessageKeeperLevel level = invocation.getArgument(1);
+				MessageEventLevel level = invocation.getArgument(1);
 				Exception exception = invocation.getArgument(2);
 				new ApplicationMessageEvent(spy(ApplicationContext.class), message, level, exception);
 				return null;
 			}
 		};
-		//Mock the IbisContext's log method which uses getApplicationContext which in turn creates a
-		//new ApplicationContext if non exists. This functionality should be removed sometime in the future.
-		//During testing, the IbisContext never initialises and thus there is no ApplicationContext. The
-		//creation of the ApplicationContext during the test phase causes IllegalStateExceptions
-		//In turn this causes the actual thing we want to test to never be 'hit', aka the log message.
-		doAnswer(answer).when(ibisContext).log(anyString(), any(MessageKeeperLevel.class), any(Exception.class));
+		// Mock the IbisContext's log method which uses getApplicationContext which in turn creates a
+		// new ApplicationContext if non exists. This functionality should be removed sometime in the future.
+		// During testing, the IbisContext never initialises and thus there is no ApplicationContext. The
+		// creation of the ApplicationContext during the test phase causes IllegalStateExceptions
+		// In turn this causes the actual thing we want to test to never be 'hit', aka the log message.
+		doAnswer(answer).when(ibisContext).log(anyString(), any(MessageEventLevel.class), any(Exception.class));
 	}
 
 	/* test files that are only present in the JAR_FILE zip */
 	@Test
+	@SuppressWarnings("java:S2699") // Method contains indirect assertion
 	public void classloaderOnlyFile() {
 		resourceExists("fileOnlyOnZipClassPath.xml");
 	}
 
 	@Test
+	@SuppressWarnings("java:S2699") // Method contains indirect assertion
 	public void classloaderOnlyFolder() {
 		resourceExists("ClassLoader/fileOnlyOnZipClassPath.xml");
 	}
@@ -172,7 +175,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 			appConstants.put("configurations."+getConfigurationName()+".reportLevel", "DEBUG");
 			ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
-			ClassLoader config = manager.get(getConfigurationName()); //Does not throw an exception
+			ClassLoader config = manager.get(getConfigurationName()); // Does not throw an exception
 
 			makeSureNoExceptionIsThrown = true;
 			assertNull(config);
@@ -201,7 +204,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 			appConstants.put("configurations."+getConfigurationName()+".reportLevel", "INFO");
 			ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
-			ClassLoader config = manager.get(getConfigurationName()); //Does not throw an exception
+			ClassLoader config = manager.get(getConfigurationName()); // Does not throw an exception
 
 			makeSureNoExceptionIsThrown = true;
 			assertNull(config);
@@ -210,11 +213,11 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 			List<LogEvent> log = appender.getLogEvents();
 			LogEvent firstLogEntry = log.get(log.size()-1);
-			assertEquals(ApplicationMessageEvent.class.getCanonicalName(), firstLogEntry.getLoggerName());
+			assertEquals(MessageEvent.class.getCanonicalName(), firstLogEntry.getLoggerName());
 			assertEquals(Level.INFO, firstLogEntry.getLevel());
 
 			String msg = firstLogEntry.getMessage().getFormattedMessage();
-			assertThat(msg, StringContains.containsString(ERROR_PREFIX));//Ignore the log4j prefix
+			assertThat(msg, StringContains.containsString(ERROR_PREFIX));// Ignore the log4j prefix
 			assertThat(msg, Matchers.endsWith(ERROR_SUFFIX));
 		}
 	}
@@ -231,7 +234,7 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 
 			appConstants.put("configurations."+getConfigurationName()+".reportLevel", "WARN");
 			ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
-			ClassLoader config = manager.get(getConfigurationName()); //Does not throw an exception
+			ClassLoader config = manager.get(getConfigurationName()); // Does not throw an exception
 
 			makeSureNoExceptionIsThrown = true;
 			assertNull(config);

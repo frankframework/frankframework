@@ -5,11 +5,12 @@ import java.io.InputStream;
 import java.util.Date;
 
 import org.apache.commons.lang3.StringUtils;
-import org.frankframework.filesystem.IFileSystemTestHelperFullControl;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.filesystem.IFileSystemTestHelperFullControl;
 
 @Log4j2
 public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystemTestHelperFullControl {

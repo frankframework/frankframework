@@ -9,13 +9,10 @@ import {
   OnInit,
   Output,
 } from '@angular/core';
-// import { Dimensions, getFactoryDimensions, initMermaid2Svg, mermaid2svg } from '@frankframework/frank-config-layout';
-import { v4 as uuidv4 } from 'uuid';
-// @ts-expect-error mermaid does not have types
-import mermaid, { RenderResult } from 'mermaid/dist/mermaid.esm.mjs';
+import { Dimensions, getFactoryDimensions, initMermaid2Svg, mermaid2svg } from '@frankframework/frank-config-layout';
 
 @Component({
-  selector: 'ng-mermaid',
+  selector: 'app-ng-mermaid',
   template: '',
   styles: [
     `
@@ -30,11 +27,11 @@ import mermaid, { RenderResult } from 'mermaid/dist/mermaid.esm.mjs';
   imports: [],
 })
 export class NgMermaidComponent implements OnInit, OnChanges {
-  // @Input() dimensions: Dimensions = getFactoryDimensions();
-  @Input() flowName: string = '';
-  @Input() nmModel: string = '';
+  @Input() dimensions: Dimensions = getFactoryDimensions();
+  @Input() flowName = '';
+  @Input() nmModel = '';
   @Input() nmRefreshInterval?: number;
-  @Output() nmInitCallback: EventEmitter<SVGSVGElement> = new EventEmitter();
+  @Output() nmInitCallback = new EventEmitter<SVGSVGElement>();
 
   protected interval = 2000;
   protected initialized = false;
@@ -45,12 +42,7 @@ export class NgMermaidComponent implements OnInit, OnChanges {
   private readonly rootElement = this.rootElementReference.nativeElement;
 
   ngOnInit(): void {
-    // initMermaid2Svg(this.dimensions);
-    mermaid.initialize({
-      startOnLoad: false,
-      maxTextSize: 70 * 1000,
-      maxEdges: 600,
-    });
+    initMermaid2Svg(this.dimensions);
     this.rootElement.textContent = 'Waiting for mermaid model...';
     this.render();
     this.initialized = true;
@@ -73,28 +65,22 @@ export class NgMermaidComponent implements OnInit, OnChanges {
     }
 
     if (this.timeout) {
-      window.clearTimeout(this.timeout);
+      globalThis.clearTimeout(this.timeout);
     }
 
-    this.timeout = window.setTimeout(
+    this.timeout = globalThis.setTimeout(
       async () => {
         try {
-          // this.rootElement.innerHTML = await mermaid2svg(this.nmModel!);
-          const uid = `m${uuidv4()}`;
-          const { svg, bindFunctions } = await mermaid.render(uid, this.nmModel);
-          this.rootElement.innerHTML = svg;
+          this.rootElement.innerHTML = await mermaid2svg(this.nmModel!);
 
           const mermaidSvg = this.rootElement.firstChild as SVGSVGElement;
-          // const viewBoxWidth = mermaidSvg.getAttribute('width');
-          // const viewBoxHeight = mermaidSvg.getAttribute('height');
+          const viewBoxWidth = mermaidSvg.getAttribute('width');
+          const viewBoxHeight = mermaidSvg.getAttribute('height');
           mermaidSvg.setAttribute('width', '100%');
           mermaidSvg.setAttribute('height', '100%');
-          // mermaidSvg.setAttribute('viewBox', `0 0 ${viewBoxWidth} ${viewBoxHeight}`);
-          // mermaidSvg.dataset['contentWidth'] = viewBoxWidth ?? '0';
-          // mermaidSvg.dataset['contentHeight'] = viewBoxHeight ?? '0';
-
-          mermaidSvg.setAttribute('style', 'max-width: 100%;');
-          if (bindFunctions) bindFunctions(mermaidSvg);
+          mermaidSvg.setAttribute('viewBox', `0 0 ${viewBoxWidth} ${viewBoxHeight}`);
+          mermaidSvg.dataset['contentWidth'] = viewBoxWidth ?? '0';
+          mermaidSvg.dataset['contentHeight'] = viewBoxHeight ?? '0';
 
           this.firstRender = false;
           this.nmInitCallback.emit(mermaidSvg);

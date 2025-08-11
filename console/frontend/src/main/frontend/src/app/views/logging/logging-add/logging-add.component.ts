@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { ErrorLevels, errorLevelsConst, LoggingService } from '../logging.service';
 import { ServerErrorResponse } from '../../../app.service';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -25,13 +25,11 @@ export class LoggingAddComponent {
     level: 'INFO',
   };
   protected levels: ErrorLevels = errorLevelsConst;
-  protected processing: boolean = false;
+  protected processing = false;
 
-  constructor(
-    private loggingService: LoggingService,
-    private router: Router,
-    private route: ActivatedRoute,
-  ) {}
+  private loggingService = inject(LoggingService);
+  private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   submit(): void {
     const fd = new FormData();

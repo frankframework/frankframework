@@ -1,7 +1,7 @@
-import { Injectable, isDevMode } from '@angular/core';
+import { inject, Injectable, isDevMode } from '@angular/core';
 import { Client, IFrame, IMessage, IStompSocket, StompSubscription } from '@stomp/stompjs';
 import { AppService, ClusterMember } from '../app.service';
-import { Subject } from 'rxjs';
+import { Observable, Subject } from 'rxjs';
 import { SweetalertService } from './sweetalert.service';
 import { ToastService } from './toast.service';
 
@@ -21,6 +21,13 @@ export type ClusterMemberEvent = {
   providedIn: 'root',
 })
 export class WebsocketService {
+  onConnected$: Observable<void>;
+  onDisconnected$: Observable<void>;
+  onStompError$: Observable<IFrame>;
+  onWebSocketClose$: Observable<void>;
+  onWebSocketError$: Observable<Error>;
+  onMessage$: Observable<ChannelMessage>;
+
   private onConnectedSubject = new Subject<void>();
   private onDisconnectedSubject = new Subject<void>();
   private onStompErrorSubject = new Subject<IFrame>();
@@ -28,16 +35,12 @@ export class WebsocketService {
   private onWebSocketErrorSubject = new Subject<Error>();
   private onMessageSubject = new Subject<ChannelMessage>();
 
-  onConnected$ = this.onConnectedSubject.asObservable();
-  onDisconnected$ = this.onDisconnectedSubject.asObservable();
-  onStompError$ = this.onStompErrorSubject.asObservable();
-  onWebSocketClose$ = this.onWebSocketCloseSubject.asObservable();
-  onWebSocketError$ = this.onWebSocketErrorSubject.asObservable();
-  onMessage$ = this.onMessageSubject.asObservable();
-
-  private baseUrl: string = `${window.location.host}${this.appService.absoluteApiPath}`;
-  private errorCount: number = 0;
-  private httpProtocol: string = window.location.protocol == 'https:' ? 'https:' : 'http:';
+  private readonly appService: AppService = inject(AppService);
+  private readonly sweetalertService: SweetalertService = inject(SweetalertService);
+  private readonly toastsService: ToastService = inject(ToastService);
+  private baseUrl = `${globalThis.location.host}${this.appService.absoluteApiPath}`;
+  private errorCount = 0;
+  private httpProtocol: string = globalThis.location.protocol == 'https:' ? 'https:' : 'http:';
   private webSocketProtocol: string = this.httpProtocol == 'https:' ? 'wss:' : 'ws:';
   private client: Client = new Client({
     brokerURL: `${this.webSocketProtocol}//${this.baseUrl}ws`,
@@ -67,11 +70,14 @@ export class WebsocketService {
   });
   private stompSubscriptions: Map<string, StompSubscription> = new Map<string, StompSubscription>();
 
-  constructor(
-    private appService: AppService,
-    private sweetalertService: SweetalertService,
-    private toastsService: ToastService,
-  ) {}
+  constructor() {
+    this.onConnected$ = this.onConnectedSubject.asObservable();
+    this.onDisconnected$ = this.onDisconnectedSubject.asObservable();
+    this.onStompError$ = this.onStompErrorSubject.asObservable();
+    this.onWebSocketClose$ = this.onWebSocketCloseSubject.asObservable();
+    this.onWebSocketError$ = this.onWebSocketErrorSubject.asObservable();
+    this.onMessage$ = this.onMessageSubject.asObservable();
+  }
 
   activate(): void {
     if (!this.client.connected) {
@@ -115,7 +121,7 @@ export class WebsocketService {
   private enableSockJs(): void {
     setTimeout(() => {
       if (!this.client.connected) {
-        this.sweetalertService.Warning(
+        this.sweetalertService.warning(
           "Can't connect to Frank!Framework websocket endpoint",
           'Please make sure the Frank!Framework is running and set up correctly! The FF! Console will be unable to retrieve updates of configuration & adapter information.',
         );
@@ -125,7 +131,7 @@ export class WebsocketService {
 
     this.toastsService.warning('Websocket Error', 'Switching to fallback');
     this.client.webSocketFactory = (): IStompSocket => {
-      return new window.SockJS(`${this.httpProtocol}//${this.baseUrl}stomp`, undefined, {
+      return new globalThis.SockJS(`${this.httpProtocol}//${this.baseUrl}stomp`, undefined, {
         transports: [
           'xhr-streaming',
           'xhr-polling',

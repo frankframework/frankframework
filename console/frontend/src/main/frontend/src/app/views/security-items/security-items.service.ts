@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, WritableSignal, signal, Signal } from '@angular/core';
 import { Observable, of, tap } from 'rxjs';
 import { AppService, Certificate } from 'src/app/app.service';
 
@@ -45,7 +45,7 @@ export type ExpiringCertificate = {
   certificates: string[];
 };
 
-export interface SecurityItems {
+export type SecurityItems = {
   securityRoles: SecurityRole[];
   resourceFactories: ResourceFactories[];
   authEntries: AuthEntry[];
@@ -54,7 +54,7 @@ export interface SecurityItems {
   xmlComponents: Record<string, string>;
   supportedConnectionOptions: supportedConnectionOptions;
   expiringCertificates: ExpiringCertificate[];
-}
+};
 
 export type HttpRequestMethodType =
   | 'GET'
@@ -166,8 +166,14 @@ export type Links = { links: Link[] };
 export class SecurityItemsService {
   private securityItemsCache: SecurityItems | null = null;
   private endpointsWithRolesCache: Links | null = null;
+  private readonly _hasExpiringCertificates: WritableSignal<boolean> = signal(false);
+
   private readonly http: HttpClient = inject(HttpClient);
   private readonly appService: AppService = inject(AppService);
+
+  get hasExpiringCertificates(): Signal<boolean> {
+    return this._hasExpiringCertificates.asReadonly();
+  }
 
   clearCache(): void {
     this.securityItemsCache = null;
@@ -179,9 +185,12 @@ export class SecurityItemsService {
       return of(this.securityItemsCache);
     }
 
-    return this.http
-      .get<SecurityItems>(`${this.appService.absoluteApiPath}securityitems`)
-      .pipe(tap((data) => (this.securityItemsCache = data)));
+    return this.http.get<SecurityItems>(`${this.appService.absoluteApiPath}securityitems`).pipe(
+      tap((data) => {
+        this.securityItemsCache = data;
+        this._hasExpiringCertificates.set(data.expiringCertificates.length > 0);
+      }),
+    );
   }
 
   getEndpointsWithRoles(): Observable<Links> {

@@ -139,7 +139,7 @@ public class HttpSender extends AbstractHttpSender {
 			switch (getHttpMethod()) {
 			case GET:
 				if (parameters.size() > 0) {
-					queryParametersAppended = appendParameters(queryParametersAppended,relativePath,parameters);
+					appendParameters(queryParametersAppended, relativePath, parameters);
 					log.debug("path after appending of parameters [{}]", relativePath);
 				}
 
@@ -201,7 +201,6 @@ public class HttpSender extends AbstractHttpSender {
 			Message responseBody = responseHandler.getResponseMessage();
 			String body = "";
 			if(responseBody != null) {
-				responseBody.preserve();
 				try {
 					body = responseBody.asString();
 				} catch(IOException e) {
@@ -210,11 +209,6 @@ public class HttpSender extends AbstractHttpSender {
 			}
 			log.warn("httpstatus [{}] reason [{}]", statusCode, responseHandler.getStatusLine().getReasonPhrase());
 			return new Message(body);
-		}
-
-		Message responseMessage = responseHandler.getResponseMessage();
-		if (!Message.isEmpty(responseMessage)) {
-			responseMessage.closeOnCloseOf(session);
 		}
 
 		if (responseHandler.isMultipart()) {

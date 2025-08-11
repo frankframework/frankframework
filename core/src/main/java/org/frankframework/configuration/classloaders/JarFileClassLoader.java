@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2018-2020 Nationale-Nederlanden
+   Copyright 2016, 2018-2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,12 +15,27 @@
 */
 package org.frankframework.configuration.classloaders;
 
-import java.io.FileInputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
+import java.util.stream.Stream;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
+import org.apache.commons.io.FilenameUtils;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ClassLoaderException;
+import org.frankframework.configuration.util.BuildInfoValidator;
+import org.frankframework.configuration.util.ConfigurationUtils;
 
+@Log4j2
 public class JarFileClassLoader extends AbstractJarBytesClassLoader {
 	private String jarFileName;
 
@@ -30,18 +45,56 @@ public class JarFileClassLoader extends AbstractJarBytesClassLoader {
 
 	@Override
 	protected Map<String, byte[]> loadResources() throws ClassLoaderException {
-		if(jarFileName == null)
-			throw new ClassLoaderException("jar file not set");
+		Path jarLocation = locateJarFile();
+		if (!isJarFile(jarLocation)) {
+			throw new ClassLoaderException("invalid jar file location [%s]".formatted(jarLocation));
+		}
 
 		try {
-			FileInputStream jarFile = new FileInputStream(jarFileName);
-			return readResources(jarFile);
-		} catch (FileNotFoundException fnfe) {
-			throw new ClassLoaderException("jar file not found");
+			return readResources(Files.newInputStream(jarLocation));
+		} catch (IOException e) {
+			throw new ClassLoaderException("unable to open JarFile", e);
 		}
+	}
+
+	@Nonnull
+	private Path locateJarFile() throws ClassLoaderException {
+		// Name has been, set is it an absolute path?
+		if(jarFileName != null) {
+			return new File(jarFileName).toPath();
+		}
+
+		// Attempt to load 'configuration-name'.jar as sub-path of 'configurations.directory'.
+		try {
+			Path configDir = ConfigurationUtils.getConfigurationDirectory();
+			try (Stream<Path> input = Files.list(configDir)) {
+				return input.filter(JarFileClassLoader::isJarFile)
+						.filter(e -> getConfigurationName().equals(findConfigurationName(e)))
+						.findFirst()
+						.orElseThrow(()-> new FileNotFoundException(getConfigurationName() + " not found"));
+			}
+
+		} catch (IOException e) {
+			throw new ClassLoaderException("unable to automatically locate configuration archive", e);
+		}
+	}
+
+	public static boolean isJarFile(Path path) {
+		return Files.isRegularFile(path) && FilenameUtils.isExtension(path.getFileName().toString(), "zip", "jar");
 	}
 
 	public void setJar(String jar) {
 		this.jarFileName = jar;
+	}
+
+	@Nullable
+	public static String findConfigurationName(Path path) {
+		try (InputStream potentialJarFile = Files.newInputStream(path)) {
+			BuildInfoValidator configDetails = new BuildInfoValidator(potentialJarFile);
+			return configDetails.getName();
+		} catch (Exception e) {
+			log.debug("unable to open file [{}] assume it's not a (valid) configuration", path, e);
+		}
+		return null;
 	}
 }

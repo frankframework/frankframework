@@ -15,7 +15,6 @@
 */
 package org.frankframework.core;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -50,6 +49,8 @@ import org.frankframework.doc.Category;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Mandatory;
+import org.frankframework.lifecycle.ConfigurableLifecycle;
+import org.frankframework.lifecycle.events.AdapterMessageEvent;
 import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.processors.PipeLineProcessor;
@@ -101,22 +102,17 @@ import org.frankframework.util.StringUtil;
  */
 @Category(Category.Type.BASIC)
 @FrankDocGroup(FrankDocGroupValue.OTHER)
-public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, FrankElement, ConfigurationAware {
+public class PipeLine extends TransactionAttributes implements ICacheEnabled<String,String>, FrankElement, ConfigurationAware, ConfigurableLifecycle {
 	private @Getter ApplicationContext applicationContext;
-	private @Getter @Setter Configuration configuration;
+	private @Getter @Setter Configuration configuration; // Required for the Ladybug
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
-	public static final String PIPELINE_NAME = "pipeline";
 	public static final String INPUT_VALIDATOR_NAME  = "- pipeline inputValidator";
 	public static final String OUTPUT_VALIDATOR_NAME = "- pipeline outputValidator";
 	public static final String INPUT_WRAPPER_NAME    = "- pipeline inputWrapper";
 	public static final String OUTPUT_WRAPPER_NAME   = "- pipeline outputWrapper";
 
 	private @Setter MetricsInitializer configurationMetrics;
-
-	public static final String PIPELINE_DURATION_STATS  = "duration";
-	public static final String PIPELINE_WAIT_STATS  = "wait";
-	public static final String PIPELINE_SIZE_STATS  = "msgsize";
 
 	public static final String DEFAULT_SUCCESS_EXIT_NAME = "READY";
 
@@ -148,11 +144,11 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	private final Map<String, DistributionSummary> pipeWaitStatistics = new ConcurrentHashMap<>();
 	private final Map<String, DistributionSummary> pipeSizeStats = new ConcurrentHashMap<>();
 
-	private boolean configurationSucceeded = false;
-	private boolean inputMessageConsumedMultipleTimes=false;
-
 	private @Getter String expectsSessionKeys;
 	private Set<String> expectsSessionKeysSet;
+
+	private boolean started = false;
+	private @Getter boolean configured = false;
 
 	public enum ExitState {
 		SUCCESS,
@@ -176,6 +172,9 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	/**
 	 * Used by {@link MetricsInitializer} and {@link ConfigurationWarnings}.
 	 * When null either the ClassName or nothing is used.
+	 *
+	 * See PipeLineTest#testDuplicateExits, which right now does not add a name to the ConfigurationWarnings.
+	 * Ideally it copies over the adapter name.
 	 */
 	@Override
 	public String getName() {
@@ -289,9 +288,6 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		requestSizeStats = configurationMetrics.createDistributionSummary(this, FrankMeterType.PIPELINE_SIZE);
 		pipelineWaitStatistics = configurationMetrics.createDistributionSummary(this, FrankMeterType.PIPELINE_WAIT_TIME);
 
-		inputMessageConsumedMultipleTimes |= pipes.stream()
-				.anyMatch(p -> p.consumesSessionVariable(PipeLineSession.ORIGINAL_MESSAGE_KEY));
-
 		if (StringUtils.isNotBlank(expectsSessionKeys)) {
 			expectsSessionKeysSet = StringUtil.splitToStream(expectsSessionKeys).collect(Collectors.toUnmodifiableSet());
 		} else {
@@ -300,7 +296,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 		super.configure();
 		log.debug("successfully configured");
-		configurationSucceeded = true;
+		configured = true;
 		if (configurationException != null) {
 			throw configurationException;
 		}
@@ -357,14 +353,10 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 		} catch (Throwable t) {
 			ConfigurationException e = new ConfigurationException("Exception configuring "+ ClassUtils.nameOf(pipe),t);
-			getAdapter().getMessageKeeper().error("Error initializing adapter ["+ getAdapter().getName()+"]: " +e.getMessage());
+			adapter.publishEvent(new AdapterMessageEvent(adapter, pipe, "unable to initialize", e));
 			throw e;
 		}
 		log.debug("Pipe successfully configured");
-	}
-
-	public boolean configurationSucceeded() {
-		return configurationSucceeded;
 	}
 
 	public Optional<PipeLineExit> findExitByState(ExitState state) {
@@ -409,17 +401,9 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 * @return the result of the processing.
 	 * @throws PipeRunException when something went wrong in the pipes.
 	 */
-	public PipeLineResult process(String messageId, Message message, PipeLineSession pipeLineSession) throws PipeRunException {
+	public PipeLineResult process(@Nonnull String messageId, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException {
 		if (transformNullMessage != null && message.isEmpty()) {
 			message = transformNullMessage;
-		} else {
-			if (inputMessageConsumedMultipleTimes) {
-				try {
-					message.preserve();
-				} catch (IOException e) {
-					throw new PipeRunException(null, "Cannot preserve inputMessage", e);
-				}
-			}
 		}
 		if (!expectsSessionKeysSet.isEmpty()) {
 			verifyExpectedSessionKeysPresent(pipeLineSession);
@@ -458,6 +442,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		return nextPipe;
 	}
 
+	@Override
 	public void start() {
 		log.info("starting pipeline");
 
@@ -476,6 +461,17 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		}
 
 		log.info("successfully started pipeline");
+		started = true;
+	}
+
+	@Override
+	public boolean isRunning() {
+		return started;
+	}
+
+	@Override
+	public int getPhase() {
+		return Integer.MIN_VALUE; // Starts first, stops last
 	}
 
 	protected void startPipe(String type, IPipe pipe) {
@@ -493,6 +489,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 * of all registered <code>Pipes</code>
 	 * @see IPipe#stop
 	 */
+	@Override
 	public void stop() {
 		log.info("is closing pipeline");
 
@@ -510,7 +507,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 			cache.close();
 		}
 		log.debug("successfully closed pipeline");
-
+		started = false;
 	}
 
 	// Method may not be called getGlobalForwards, because of the FrankDoc...
@@ -664,7 +661,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	}
 
 	/**
-	 * Name of the first pipe to execute when a message is to be processed
+	 * Name of the first pipe to execute when a message is to be processed.
 	 * @ff.default first pipe of the pipeline
 	 */
 	public void setFirstPipe(String pipeName) {

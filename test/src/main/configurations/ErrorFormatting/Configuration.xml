@@ -8,7 +8,7 @@
 
 	<Adapter name="XslErrorMessageFormatter" description="Test the functioning of the ErrorMessageFormatter">
 		<Receiver>
-			<JavaListener name="ibis4test-XslErrorMessageFormatter" serviceName="ibis4test-XslErrorMessageFormatter" throwException="false" />
+			<JavaListener name="ibis4test-XslErrorMessageFormatter" serviceName="ibis4test-XslErrorMessageFormatter" onException="FORMAT_AND_RETURN" />
 		</Receiver>
 		<XslErrorMessageFormatter styleSheetName="stylesheets/buildGenericError.xsl">
 			<Param name="foutCode" value="1001" />
@@ -24,7 +24,7 @@
 	</Adapter>
 	<Adapter name="JsonErrorMessageFormatter" description="Test the functioning of the ErrorMessageFormatter">
 		<Receiver>
-			<JavaListener name="ibis4test-JsonErrorMessageFormatter" serviceName="ibis4test-JsonErrorMessageFormatter" throwException="false" />
+			<JavaListener name="ibis4test-JsonErrorMessageFormatter" serviceName="ibis4test-JsonErrorMessageFormatter" onException="FORMAT_AND_RETURN" />
 		</Receiver>
 		<ErrorMessageFormatter messageFormat="JSON"/>
 		<Pipeline firstPipe="GenerateException">
@@ -38,7 +38,7 @@
 	</Adapter>
 	<Adapter name="DataSonnetErrorMessageFormatter" description="Test the functioning of the ErrorMessageFormatter">
 		<Receiver>
-			<JavaListener name="ibis4test-DataSonnetErrorMessageFormatter" serviceName="ibis4test-DataSonnetErrorMessageFormatter" throwException="false" />
+			<JavaListener name="ibis4test-DataSonnetErrorMessageFormatter" serviceName="ibis4test-DataSonnetErrorMessageFormatter" onException="FORMAT_AND_RETURN" />
 		</Receiver>
 		<DataSonnetErrorMessageFormatter styleSheetName="stylesheets/buildJsonError.jsonnet">
 			<Param name="exitCode" value="500"/>
@@ -54,7 +54,7 @@
 	</Adapter>
 	<Adapter name="ConfigurationDefaultErrorMessageFormatter" description="Test the functioning of the ErrorMessageFormatter">
 		<Receiver>
-			<JavaListener name="ibis4test-ConfigurationDefaultErrorMessageFormatter" serviceName="ibis4test-ConfigurationDefaultErrorMessageFormatter" throwException="false" />
+			<JavaListener name="ibis4test-ConfigurationDefaultErrorMessageFormatter" serviceName="ibis4test-ConfigurationDefaultErrorMessageFormatter" onException="FORMAT_AND_RETURN" />
 		</Receiver>
 		<Pipeline firstPipe="GenerateException">
 			<Exits>
@@ -66,20 +66,111 @@
 		</Pipeline>
 	</Adapter>
 
-	<Adapter name="ParameterizedErrorMessage-Trigger">
+	<Adapter name="ParameterizedErrorMessage-CallDirect-Trigger">
 		<Receiver>
-			<FrankListener name="ParameterizedErrorMessage-Trigger"/>
+			<FrankListener name="ParameterizedErrorMessage-CallDirect-Trigger"/>
 		</Receiver>
 		<Pipeline>
+			<Exits>
+				<Exit name="done" state="SUCCESS"/>
+				<Exit name="error" state="ERROR"/>
+			</Exits>
 			<SenderPipe name="Call Subadapter To Test">
 				<FrankSender scope="ADAPTER">
 					<Param name="target" jsonPathExpression="$.target"/>
 				</FrankSender>
+				<!-- SubAdapter "PassViaException" returns exitCode 42 -->
+				<Forward name="42" path="error"/>
+				<!-- SubAdapter "PassViaSession" returns default error-exitCode 500 -->
+				<Forward name="500" path="error"/>
 			</SenderPipe>
+			<DataSonnetPipe name="Extract Name" styleSheetName="stylesheets/buildResponse.jsonnet"/>
 		</Pipeline>
 	</Adapter>
 
-	<Adapter name="ParameterizedErrorMessage-PassViaException">
+	<!-- Use FrankSender with direct calls to sub-adapters -->
+	<Adapter name="ParameterizedErrorMessage-CallDirect-PassViaException">
+		<DataSonnetErrorMessageFormatter styleSheetName="stylesheets/ErrorParameterized1.jsonnet"/>
+		<Pipeline>
+			<Exits>
+				<Exit name="done" state="SUCCESS"/>
+				<Exit name="error" state="ERROR"/>
+			</Exits>
+
+			<SwitchPipe name="Check Success" jsonPathExpression='concat("result-count=", $.results.length())' notFoundForwardName="result-count-too-many"/>
+
+			<EchoPipe name="result-count=1" getInputFromSessionKey="originalMessage">
+				<Forward name="success" path="done"/>
+			</EchoPipe>
+
+			<ExceptionPipe name="result-count=0">
+				<NumberParam name="exitCode" value="42"/>
+				<NumberParam name="errorCode" value="-1"/>
+				<Param name="errorMessage" value="No results found"/>
+			</ExceptionPipe>
+
+			<ExceptionPipe name="result-count-too-many">
+				<NumberParam name="exitCode" value="42"/>
+				<NumberParam name="errorCode" value="2"/>
+				<Param name="errorMessage" value="Too many results found, expected only single result"/>
+			</ExceptionPipe>
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="ParameterizedErrorMessage-CallDirect-PassViaSession">
+		<DataSonnetErrorMessageFormatter styleSheetName="stylesheets/ErrorParameterized2.jsonnet">
+			<NumberParam name="errorCode" sessionKey="errorCode"/>
+			<Param name="errorMessage" sessionKey="errorMessage"/>
+		</DataSonnetErrorMessageFormatter>
+		<Pipeline>
+			<Exits>
+				<Exit name="done" state="SUCCESS"/>
+				<Exit name="error" state="ERROR"/>
+			</Exits>
+
+			<SwitchPipe name="Check Success" jsonPathExpression='concat("result-count=", $.results.length())' notFoundForwardName="result-count-too-many"/>
+
+			<EchoPipe name="result-count=1" getInputFromSessionKey="originalMessage">
+				<Forward name="success" path="done"/>
+			</EchoPipe>
+
+			<ExceptionPipe name="result-count=0">
+				<NumberParam name="errorCode" value="-1"/>
+				<Param name="errorMessage" value="No results found"/>
+			</ExceptionPipe>
+
+			<ExceptionPipe name="result-count-too-many">
+				<NumberParam name="errorCode" value="2"/>
+				<Param name="errorMessage" value="Too many results found, expected only single result"/>
+			</ExceptionPipe>
+		</Pipeline>
+	</Adapter>
+
+	<!-- Use FrankSender with calls to FrankListener in sub-adapters -->
+	<Adapter name="ParameterizedErrorMessage-CallListener-Trigger">
+		<Receiver>
+			<FrankListener name="ParameterizedErrorMessage-CallListener-Trigger"/>
+		</Receiver>
+		<Pipeline>
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" />
+				<Exit name="ERROR" state="ERROR"/>
+			</Exits>
+			<SenderPipe name="Call Subadapter To Test">
+				<FrankSender scope="LISTENER">
+					<Param name="target" jsonPathExpression="$.target"/>
+				</FrankSender>
+				<Forward name="exception" path="ERROR"/>
+				<Forward name="success" path="Extract Name"/>
+			</SenderPipe>
+			<DataSonnetPipe name="Extract Name" styleSheetName="stylesheets/buildResponse.jsonnet"/>
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="ParameterizedErrorMessage-CallListener-PassViaException">
+		<Receiver>
+			<FrankListener name="ParameterizedErrorMessage-CallListener-PassViaException" onException="format_and_return"/>
+		</Receiver>
 		<DataSonnetErrorMessageFormatter styleSheetName="stylesheets/ErrorParameterized1.jsonnet"/>
 		<Pipeline>
 			<Exits>
@@ -106,7 +197,92 @@
 		</Pipeline>
 	</Adapter>
 
-	<Adapter name="ParameterizedErrorMessage-PassViaSession">
+	<Adapter name="ParameterizedErrorMessage-CallListener-PassViaSession">
+		<Receiver>
+			<FrankListener name="ParameterizedErrorMessage-CallListener-PassViaSession" onException="format_and_return"/>
+		</Receiver>
+		<DataSonnetErrorMessageFormatter styleSheetName="stylesheets/ErrorParameterized2.jsonnet">
+			<NumberParam name="errorCode" sessionKey="errorCode"/>
+			<Param name="errorMessage" sessionKey="errorMessage"/>
+		</DataSonnetErrorMessageFormatter>
+		<Pipeline>
+			<Exits>
+				<Exit name="done" state="SUCCESS"/>
+				<Exit name="error" state="ERROR"/>
+			</Exits>
+
+			<SwitchPipe name="Check Success" jsonPathExpression='concat("result-count=", $.results.length())' notFoundForwardName="result-count-too-many"/>
+
+			<EchoPipe name="result-count=1" getInputFromSessionKey="originalMessage">
+				<Forward name="success" path="done"/>
+			</EchoPipe>
+
+			<ExceptionPipe name="result-count=0">
+				<NumberParam name="errorCode" value="-1"/>
+				<Param name="errorMessage" value="No results found"/>
+			</ExceptionPipe>
+
+			<ExceptionPipe name="result-count-too-many">
+				<NumberParam name="errorCode" value="2"/>
+				<Param name="errorMessage" value="Too many results found, expected only single result"/>
+			</ExceptionPipe>
+		</Pipeline>
+	</Adapter>
+
+	<!-- Use IbisLocalSender with calls to JavaListener in sub-adapters -->
+	<Adapter name="ParameterizedErrorMessage-CallJavaListener-Trigger">
+		<Receiver>
+			<FrankListener name="ParameterizedErrorMessage-CallJavaListener-Trigger"/>
+		</Receiver>
+		<Pipeline>
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" />
+				<Exit name="ERROR" state="ERROR"/>
+			</Exits>
+			<JsonPathPipe name="Get Target SubAdapter" storeResultInSessionKey="target" jsonPathExpression="$.target"/>
+			<SenderPipe name="Call Subadapter To Test" getInputFromSessionKey="originalMessage">
+				<IbisLocalSender javaListenerSessionKey="target"/>
+				<Forward name="exception" path="ERROR"/>
+				<Forward name="success" path="Extract Name"/>
+			</SenderPipe>
+			<DataSonnetPipe name="Extract Name" styleSheetName="stylesheets/buildResponse.jsonnet"/>
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="ParameterizedErrorMessage-CallJavaListener-PassViaException">
+		<Receiver>
+			<JavaListener name="ParameterizedErrorMessage-CallListener-PassViaException" onException="format_and_return"/>
+		</Receiver>
+		<DataSonnetErrorMessageFormatter styleSheetName="stylesheets/ErrorParameterized1.jsonnet"/>
+		<Pipeline>
+			<Exits>
+				<Exit name="done" state="SUCCESS"/>
+				<Exit name="error" state="ERROR"/>
+			</Exits>
+
+			<JsonPathPipe name="Count nr of results" storeResultInSessionKey="ResultCount" jsonPathExpression='concat("result-count=", $.results.length())'/>
+			<XmlSwitchPipe name="Check Success" forwardNameSessionKey="ResultCount" notFoundForwardName="result-count-too-many"/>
+
+			<EchoPipe name="result-count=1" getInputFromSessionKey="originalMessage">
+				<Forward name="success" path="done"/>
+			</EchoPipe>
+
+			<ExceptionPipe name="result-count=0">
+				<NumberParam name="errorCode" value="-1"/>
+				<Param name="errorMessage" value="No results found"/>
+			</ExceptionPipe>
+
+			<ExceptionPipe name="result-count-too-many">
+				<NumberParam name="errorCode" value="2"/>
+				<Param name="errorMessage" value="Too many results found, expected only single result"/>
+			</ExceptionPipe>
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="ParameterizedErrorMessage-CallJavaListener-PassViaSession">
+		<Receiver>
+			<JavaListener name="ParameterizedErrorMessage-CallListener-PassViaSession" onException="format_and_return"/>
+		</Receiver>
 		<DataSonnetErrorMessageFormatter styleSheetName="stylesheets/ErrorParameterized2.jsonnet">
 			<NumberParam name="errorCode" sessionKey="errorCode"/>
 			<Param name="errorMessage" sessionKey="errorMessage"/>

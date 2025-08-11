@@ -11,7 +11,7 @@ import org.frankframework.core.HasName;
 /**
  * This Class tests whether the spring-core dependency is present on the classpath.
  * This dependency is present but marked as optional in the frankframework-commons module.
- * 
+ *
  * In the commons module this optional compile module is present during tests. And thus spring-core will always be present.
  */
 public class ClassUtilsTest {

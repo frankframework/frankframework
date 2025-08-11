@@ -1,17 +1,15 @@
-<?xml version="1.0"?>
-<project
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
-	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<artifactId>frankframework-docker-wildfly</artifactId>
-	<name>Frank!Framework - Docker > WildFly</name>
-	<packaging>pom</packaging>
 
 	<parent>
 		<groupId>org.frankframework</groupId>
 		<artifactId>frankframework-docker</artifactId>
 		<version>${revision}</version>
 	</parent>
+	<artifactId>frankframework-docker-wildfly</artifactId>
+	<packaging>pom</packaging>
+	<name>Frank!Framework - Docker &gt; WildFly</name>
 
 	<properties>
 		<config.image.variation>wildfly</config.image.variation>
@@ -102,10 +100,10 @@
 				<executions>
 					<execution>
 						<id>copy-dependencies</id>
-						<phase>package</phase>
 						<goals>
 							<goal>copy-dependencies</goal>
 						</goals>
+						<phase>package</phase>
 						<configuration>
 							<outputDirectory>${project.build.directory}/dependencies</outputDirectory>
 							<overWriteReleases>false</overWriteReleases>
@@ -117,10 +115,10 @@
 					</execution>
 					<execution>
 						<id>unpack-tests</id>
-						<phase>package</phase>
 						<goals>
 							<goal>unpack</goal>
 						</goals>
+						<phase>package</phase>
 						<configuration>
 							<artifactItems>
 								<artifactItem>
@@ -135,10 +133,10 @@
 					</execution>
 					<execution>
 						<id>unpack-secrets</id>
-						<phase>package</phase>
 						<goals>
 							<goal>unpack</goal>
 						</goals>
+						<phase>package</phase>
 						<configuration>
 							<artifactItems>
 								<artifactItem>
@@ -159,10 +157,10 @@
 				<executions>
 					<execution>
 						<id>prepare-as-dependencies</id>
-						<phase>package</phase>
 						<goals>
 							<goal>resources</goal>
 						</goals>
+						<phase>package</phase>
 						<configuration>
 							<resources>
 								<resource>

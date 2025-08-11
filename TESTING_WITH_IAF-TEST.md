@@ -11,6 +11,7 @@ If you use IntelliJ, open "Settings | Build, Execution, Deployment | Application
 * [jakarta.management.j2ee-api-1.1.4](https://mvnrepository.com/artifact/jakarta.management.j2ee/jakarta.management.j2ee-api/1.1.4)
 * [jakarta.jms-api-3.1.0](https://mvnrepository.com/artifact/jakarta.jms/jakarta.jms-api/3.1.0)
 * [jakarta.transaction-api-2.0.1](https://mvnrepository.com/artifact/jakarta.transaction/jakarta.transaction-api/2.0.1)
+* [jakarta.activation-api-2.1.3](https://mvnrepository.com/artifact/jakarta.activation/jakarta.activation-api/2.1.3)
 
 If you want to use Queuing or a DBMS other than H2, you need to ensure the corresponding JDBC drivers are in place:
 * For MariaDB or MySQL: [mysql-connector-java-8.0.20.jar](https://dev.mysql.com/downloads/connector/j/) (N.B. for proper XA support, the MySQL driver is used for MariaDB DBMS too)

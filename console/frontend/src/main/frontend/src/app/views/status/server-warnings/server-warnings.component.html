@@ -6,6 +6,14 @@
       total disk size ({{ serverInfo.fileSystem.totalSpace | humanFileSize }})
     </li>
   }
+  @if (securityItemsService.hasExpiringCertificates()) {
+    <li class="list-group-item alert-danger">
+      <div tabindex="0" role="button" class="pointer" (click)="navigateTo('security-items')">
+        <i class="m-r-md fa fa-info-circle"></i>
+        <span>One or more certificates are due to expire</span>
+      </div>
+    </li>
+  }
   @if (messageLog[selectedConfiguration]) {
     @if (messageLog[selectedConfiguration].errorStoreCount === 1) {
       <li class="list-group-item alert-danger">
@@ -36,9 +44,9 @@
     @if (
       alert.configuration === '' || selectedConfiguration === alert.configuration || selectedConfiguration === 'All'
     ) {
-      <li class="alert-{{ alert.type }} list-group-item">
-        <div (click)="navigateByAlert(alert)" [ngClass]="{ pointer: !!alert.link }">
-          <i class="m-r-md fa fa-{{ alert.type === 'warning' ? 'warning' : 'times' }}"></i>
+      <li [class]="`alert-${alert.type} list-group-item`">
+        <div tabindex="0" role="button" [ngClass]="{ pointer: !!alert.link }" (click)="navigateByAlert(alert)">
+          <i [class]="`m-r-md fa fa-${alert.type === 'warning' ? 'warning' : 'times'}`"></i>
           @if (selectedConfiguration === 'All' && alert.configuration !== '') {
             <span>Configuration [{{ alert.configuration }}] - </span>
           }

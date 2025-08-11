@@ -25,11 +25,11 @@ import org.frankframework.stream.Message;
 
 /**
  * Parameter that resolves it's value to either {@code true} or {@code false}.
- *
+ * <p/>
  * {@inheritClassDoc}
- * 
+ *
  * @ff.tip {@code !false} also resolves to {@code true}, and {@code !true} is seen as {@code false}.
- * 
+ *
  */
 @Log4j2
 public class BooleanParameter extends AbstractParameter {

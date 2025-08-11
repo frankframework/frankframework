@@ -195,6 +195,7 @@ public class ClassUtils {
 		return StringUtils.isNotEmpty(simpleName) ? simpleName : clazz.getTypeName();
 	}
 
+	@SuppressWarnings("java:S1181") // Use Throwable to catch all when unable to load the class in any way or form.
 	public static boolean isClassPresent(String className) {
 		try {
 			Class.forName(className);
@@ -207,7 +208,7 @@ public class ClassUtils {
 
 	public static void invokeSetters(Object clazz, Properties properties) {
 		for (Method method : clazz.getClass().getMethods()) {
-			if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
+			if(!(method.getName().startsWith("set") || properties.containsKey(method.getName())) || method.getParameterTypes().length != 1)
 				continue;
 
 			String setter = StringUtil.lcFirst(method.getName().substring(3));

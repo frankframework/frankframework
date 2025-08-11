@@ -13,7 +13,7 @@ describe('Status page', () => {
   it('Adapter status should have message', () => {
     cy.get('[data-cy="adapter-status__box"]').first().click();
     cy.get('[data-cy="adapter-status__table__message"]')
-      .first()
-      .should('contain.text', 'pipeline successfully configured');
+      .last()
+      .should('contain.text', 'PipeLine successfully configured');
   });
 });

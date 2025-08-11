@@ -17,6 +17,9 @@ package org.frankframework.util;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.Reader;
+import java.io.Writer;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -39,6 +42,7 @@ import jakarta.xml.soap.AttachmentPart;
 import jakarta.xml.soap.MimeHeader;
 import jakarta.xml.soap.SOAPException;
 
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
@@ -50,7 +54,6 @@ import org.apache.tika.Tika;
 import org.springframework.http.MediaType;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.MimeType;
-import org.springframework.util.StreamUtils;
 import org.xml.sax.SAXException;
 
 import com.ibm.icu.text.CharsetDetector;
@@ -59,6 +62,7 @@ import com.ibm.icu.text.CharsetMatch;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.stream.MessageContext;
 
 public class MessageUtils {
@@ -74,6 +78,30 @@ public class MessageUtils {
 
 	private MessageUtils() {
 		throw new IllegalStateException("Don't construct utility class");
+	}
+
+	/**
+	 * Fully read {@link InputStream} and create a message from it, so that the InputStream can be closed
+	 * without losing the message contents.
+	 */
+	public static Message fromInputStream(InputStream inputStream) throws IOException {
+		MessageBuilder messageBuilder = new MessageBuilder();
+		try (inputStream; OutputStream outputStream = messageBuilder.asOutputStream()) {
+			inputStream.transferTo(outputStream);
+		}
+		return messageBuilder.build();
+	}
+
+	/**
+	 * Fully read {@link Reader} and create a Message from it, so that the Reader can be closed
+	 * without losing the message contents.
+	 */
+	public static Message fromReader(Reader reader) throws IOException {
+		MessageBuilder messageBuilder = new MessageBuilder();
+		try (reader; Writer writer = messageBuilder.asWriter()) {
+			reader.transferTo(writer);
+		}
+		return messageBuilder.build();
 	}
 
 	/**
@@ -183,7 +211,9 @@ public class MessageUtils {
 		}
 
 		CharsetDetector detector = new CharsetDetector();
-		detector.setText(message.asInputStream());
+		try (InputStream inputStream = message.asInputStream()) {
+			detector.setText(inputStream);
+		}
 		CharsetMatch match = detector.detect();
 		String charset = match.getName();
 
@@ -192,9 +222,9 @@ public class MessageUtils {
 			return updateMessageCharset(message, charset);
 		}
 
-		//Guesstimate, encoding is not UTF-8 but either CP1252/Latin1/ISO-8859-1.
+		// Guesstimate, encoding is not UTF-8 but either CP1252/Latin1/ISO-8859-1.
 		if(charset.startsWith("windows-125")) {
-			charset = "windows-1252";//1250/1/3 have a combined adoption rate of 1.6% assume 1252 instead!
+			charset = "windows-1252"; // 1250/1/3 have a combined adoption rate of 1.6% assume 1252 instead!
 		}
 		if(match.getConfidence() >= confidence) {
 			LOG.debug("update charset for message [{}], potential match [{}] with confidence level [{}/{}]", message, charset, match.getConfidence(), confidence);
@@ -202,14 +232,14 @@ public class MessageUtils {
 		}
 
 		LOG.info("unable to detect charset for message [{}] closest match [{}] did not meet confidence level [{}/{}]", message, charset, match.getConfidence(), confidence);
-		return updateMessageCharset(message, null); //return NULL so calling method can fall back to the default charset.
+		return updateMessageCharset(message, null); // Return NULL so calling method can fall back to the default charset.
 	}
 
-	//Update the MessageContext charset field, it may not remain StreamUtil.AUTO_DETECT_CHARSET
+	// Update the MessageContext charset field, it may not remain StreamUtil.AUTO_DETECT_CHARSET
 	private static Charset updateMessageCharset(Message message, String charsetName) {
 		try {
 			if(charsetName != null) {
-				return Charset.forName(charsetName); //parse it first to validate the charset
+				return Charset.forName(charsetName); // Parse it first to validate the charset
 			}
 			return null;
 		} finally {
@@ -232,7 +262,7 @@ public class MessageUtils {
 			return null;
 		}
 
-		if(message.getCharset() != null) { //and is character data?
+		if(message.getCharset() != null) { // And is character data?
 			LOG.trace("found mimetype [{}] in MessageContext with charset [{}]", ()->mimeType, message::getCharset);
 			return new MimeType(mimeType, Charset.forName(message.getCharset()));
 		}
@@ -263,7 +293,7 @@ public class MessageUtils {
 	 *    applied. If the message starts with {@literal '<'} the mime type {@literal application/xml} is returned.
 	 *    If the message starts with {@literal '['} or {@literal '{'} the mime type {@literal application/json} is returned.
 	 *    Otherwise it will be {@literal text/plain} as Apache TIKA returned.
- *     </p>
+	 * </p>
 	 * @ff.note This might be a resource intensive operation, the first kilobytes of the message are potentially being read and stored in memory.
 	 */
 	public static MimeType computeMimeType(Message message, String filename) {
@@ -284,10 +314,10 @@ public class MessageUtils {
 			name = filename;
 		}
 
-		try {
-			String mediaType = TIKA.detect(message.asInputStream(), name);
+		try (InputStream inputStream = message.asInputStream()) {
+			String mediaType = TIKA.detect(inputStream, name);
 			MimeType mimeType = MimeType.valueOf(mediaType);
-			if (MediaType.TEXT_PLAIN.equalsTypeAndSubtype(mimeType) && name == null) {
+			if (MediaType.TEXT_PLAIN.equalsTypeAndSubtype(mimeType) && StringUtils.isBlank(FilenameUtils.getExtension(name))) {
 				// TIKA detects XML or JSON as text/plain when there is no filename, so manually do a check for JSON.
 				// See also: https://stackoverflow.com/questions/48618629/apache-tika-detect-json-pdf-specific-mime-type#48619266
 				mimeType = guessMimeType(message);
@@ -333,14 +363,10 @@ public class MessageUtils {
 		if (!"{".equals(firstChar) && !"[".equals(firstChar)) {
 			return MediaType.TEXT_PLAIN;
 		}
-		try {
-			InputStream inputStream = message.asInputStream();
-			inputStream.mark(20_000);
-			try (JsonParser parser = Json.createParser(StreamUtils.nonClosing(inputStream))) {
+		try (InputStream inputStream = message.asInputStream()) {
+			try (JsonParser parser = Json.createParser(inputStream)) {
 				parser.next();
 				return MediaType.APPLICATION_JSON;
-			} finally {
-				inputStream.reset();
 			}
 		} catch (JsonParsingException | IOException e) {
 			return MediaType.TEXT_PLAIN;
@@ -353,10 +379,6 @@ public class MessageUtils {
 	@SuppressWarnings("java:S4790") // MD5 usage is allowed for checksums
 	public static String generateMD5Hash(Message message) {
 		try {
-			if(!message.isRepeatable()) {
-				message.preserve();
-			}
-
 			try (InputStream inputStream = message.asInputStream()) {
 				return DigestUtils.md5DigestAsHex(inputStream);
 			}
@@ -371,10 +393,6 @@ public class MessageUtils {
 	 */
 	public static Long generateCRC32(Message message) {
 		try {
-			if(!message.isRepeatable()) {
-				message.preserve();
-			}
-
 			CRC32 checksum = new CRC32();
 			try (InputStream inputStream = new CheckedInputStream(message.asInputStream(), checksum)) {
 				long size = IOUtils.consume(inputStream);
@@ -393,16 +411,6 @@ public class MessageUtils {
 	public static long computeSize(Message message) {
 		try {
 			long size = message.size();
-			if(size > Message.MESSAGE_SIZE_UNKNOWN) {
-				return size;
-			}
-
-			if(!message.isRepeatable()) {
-				message.preserve();
-			}
-
-			// Preserving the message might make reading the size known. If so, there is no need to compute it.
-			size = message.size();
 			if(size > Message.MESSAGE_SIZE_UNKNOWN) {
 				return size;
 			}
@@ -459,7 +467,6 @@ public class MessageUtils {
 	 */
 	public static @Nonnull Message convertToJsonMessage(@Nonnull Object value, @Nonnull String valueName) throws IOException, XmlException {
 		Message message = Message.asMessage(value);
-		message.preserve();
 		MimeType mimeType = MessageUtils.computeMimeType(message);
 		if (MediaType.APPLICATION_JSON.isCompatibleWith(mimeType)) {
 			return message;

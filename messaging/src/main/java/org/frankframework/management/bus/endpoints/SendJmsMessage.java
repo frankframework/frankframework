@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,7 @@ import org.springframework.messaging.Message;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.jms.JMSFacade;
-import org.frankframework.jms.JMSFacade.DestinationType;
+import org.frankframework.jms.JMSFacade.JmsDestinationType;
 import org.frankframework.jms.JmsSender;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
@@ -58,7 +58,7 @@ public class SendJmsMessage extends BusEndpointBase {
 		JMSFacade.MessageClass messageClass = BusMessageUtils.getEnumHeader(message, "messageClass", JMSFacade.MessageClass.class, JMSFacade.MessageClass.AUTO);
 		String replyTo = BusMessageUtils.getHeader(message, "replyTo", null);
 		String messageProperty = BusMessageUtils.getHeader(message, "messageProperty", null);
-		DestinationType type = BusMessageUtils.getEnumHeader(message, "type", DestinationType.class);
+		JmsDestinationType type = BusMessageUtils.getEnumHeader(message, "type", JmsDestinationType.class);
 		if(type == null) {
 			throw new BusException("a DestinationType must be provided");
 		}
@@ -83,10 +83,10 @@ public class SendJmsMessage extends BusEndpointBase {
 		return p;
 	}
 
-	private JmsSender createJmsSender(String connectionFactory, String destination, boolean persistent, DestinationType type, String replyTo, boolean synchronous, boolean lookupDestination, JMSFacade.MessageClass messageClass) {
+	private JmsSender createJmsSender(String connectionFactory, String destination, boolean persistent, JmsDestinationType type, String replyTo, boolean synchronous, boolean lookupDestination, JMSFacade.MessageClass messageClass) {
 		JmsSender qms = createBean(JmsSender.class);
 		qms.setName("SendJmsMessageAction");
-		if(type == DestinationType.QUEUE) {
+		if(type == JmsDestinationType.QUEUE) {
 			qms.setQueueConnectionFactoryName(connectionFactory);
 		} else {
 			qms.setTopicConnectionFactoryName(connectionFactory);

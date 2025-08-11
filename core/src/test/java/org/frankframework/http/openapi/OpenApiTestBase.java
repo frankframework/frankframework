@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.net.URL;
-import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -23,6 +22,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.mockito.Mockito;
+import org.springframework.context.ApplicationListener;
 import org.springframework.core.task.SyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -31,7 +31,6 @@ import org.springframework.mock.web.MockHttpServletResponse;
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
-import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineExit;
@@ -39,16 +38,18 @@ import org.frankframework.http.rest.ApiListener;
 import org.frankframework.http.rest.ApiListenerServlet;
 import org.frankframework.http.rest.ApiServiceDispatcher;
 import org.frankframework.http.rest.MediaTypes;
+import org.frankframework.lifecycle.events.AdapterMessageEvent;
+import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.pipes.Json2XmlValidator;
 import org.frankframework.receivers.Receiver;
+import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.HttpUtils;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.RunState;
 import org.frankframework.util.SpringUtils;
 
@@ -167,10 +168,10 @@ public class OpenApiTestBase extends Mockito {
 
 		public AdapterBuilder(String name, String description) {
 			adapter = spy(SpringUtils.createBean(configuration, Adapter.class));
-			when(adapter.getMessageKeeper()).thenReturn(new SysOutMessageKeeper());
+			adapter.addApplicationListener(new SysOutMessageKeeper());
 			adapter.setName(name);
 			adapter.setDescription(description);
-			adapter.setConfiguration(configuration);
+			configuration.addAdapter(adapter);
 			adapter.setTaskExecutor(getTaskExecutor());
 		}
 
@@ -179,7 +180,7 @@ public class OpenApiTestBase extends Mockito {
 		}
 
 		public AdapterBuilder setListener(String uriPattern, List<ApiListener.HttpMethod> method, String produces, String operationId) {
-			listener = new ApiListener();
+			listener = SpringUtils.createBean(adapter);
 
 			if (method != null) {
 				listener.setMethods(method.toArray(new ApiListener.HttpMethod[0]));
@@ -209,7 +210,7 @@ public class OpenApiTestBase extends Mockito {
 
 		public AdapterBuilder setInputValidator(String xsdSchema, String requestRoot, String responseRoot, Parameter param) {
 			String ref = xsdSchema.substring(0, xsdSchema.indexOf(".")) + "-" + responseRoot;
-			inputValidator = new Json2XmlValidator();
+			inputValidator = SpringUtils.createBean(adapter);
 			inputValidator.setName(ref);
 			String xsd = "/OpenApi/" + xsdSchema;
 			URL url = this.getClass().getResource(xsd);
@@ -229,7 +230,7 @@ public class OpenApiTestBase extends Mockito {
 
 		protected AdapterBuilder setOutputValidator(String xsdSchema, String root) {
 			String ref = xsdSchema.substring(0, xsdSchema.indexOf(".")) + "-" + root;
-			outputValidator = new Json2XmlValidator();
+			outputValidator = SpringUtils.createBean(adapter);
 			outputValidator.setName(ref);
 
 			String xsd = "/OpenApi/" + xsdSchema;
@@ -279,11 +280,12 @@ public class OpenApiTestBase extends Mockito {
 		 * @param start automatically start the adapter upon creation
 		 */
 		public Adapter build(boolean start) throws ConfigurationException {
-			PipeLine pipeline = spy(SpringUtils.createBean(adapter, PipeLine.class));
+			PipeLine pipeline = SpringUtils.createBean(adapter);
 
-			Receiver receiver = SpringUtils.createBean(configuration);
+			Receiver<Message> receiver = SpringUtils.createBean(adapter);
 			receiver.setName("receiver");
 			receiver.setListener(listener);
+			receiver.setApplicationContext(adapter); // Required because we have to spy the Adapter
 
 			pipeline.setInputValidator(inputValidator);
 			pipeline.setOutputValidator(outputValidator);
@@ -293,7 +295,7 @@ public class OpenApiTestBase extends Mockito {
 
 				pipeline.addPipeLineExit(exit);
 			}
-			IPipe pipe = new EchoPipe();
+			EchoPipe pipe = SpringUtils.createBean(adapter);
 			pipe.setName("echo");
 			pipeline.addPipe(pipe);
 
@@ -324,16 +326,10 @@ public class OpenApiTestBase extends Mockito {
 			}
 		}
 
-		private class SysOutMessageKeeper extends MessageKeeper {
+		private class SysOutMessageKeeper implements ApplicationListener<AdapterMessageEvent> {
 			@Override
-			public synchronized void add(String message, MessageKeeperLevel level) {
-				add(message, null, level);
-			}
-
-			@Override
-			public synchronized void add(String message, Instant date, MessageKeeperLevel level) {
-				log.debug("SysOutMessageKeeper {} - {}", level, message);
-				if (MessageKeeperLevel.ERROR == level) fail(message);
+			public void onApplicationEvent(AdapterMessageEvent event) {
+				if (MessageEventLevel.ERROR == event.getLevel()) fail(event.getMessage());
 			}
 		}
 	}

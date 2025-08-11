@@ -16,6 +16,7 @@
 package org.frankframework.core;
 
 import java.io.IOException;
+import java.lang.ref.Cleaner;
 import java.time.Instant;
 import java.time.temporal.Temporal;
 import java.util.Collections;
@@ -44,6 +45,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.CleanerProvider;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.TimeProvider;
 
 /**
  * Basic implementation of <code>PipeLineSession</code>.
@@ -75,13 +77,12 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	public static final String EXIT_STATE_CONTEXT_KEY="exitState";
 	public static final String EXIT_CODE_CONTEXT_KEY="exitCode";
 
-	private ISecurityHandler securityHandler = null;
-
-	private transient PipeLineSessionCloseAction closeAction;
+	private transient ISecurityHandler securityHandler = null;
+	private transient Cleaner.Cleanable cleanable;
 
 	// closeables.keySet is a List of wrapped resources. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
 	// Values are labels to help debugging
-	private final @Getter Set<AutoCloseable> closeables = Collections.synchronizedSet(new HashSet<>()); // needs to be concurrent, closes may happen from other threads
+	private final transient @Getter Set<AutoCloseable> closeables = Collections.synchronizedSet(new HashSet<>()); // needs to be concurrent, closes may happen from other threads
 
 	public PipeLineSession() {
 		super();
@@ -99,8 +100,9 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	}
 
 	private void createCloseAction() {
+  PipeLineSessionCloseAction closeAction;
 		closeAction = new PipeLineSessionCloseAction(this.closeables);
-		CleanerProvider.register(this, closeAction);
+		cleanable = CleanerProvider.CLEANER.register(this, closeAction);
 	}
 
 	public void setExitState(PipeLine.ExitState state, Integer code) {
@@ -141,10 +143,16 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			StringTokenizer st = new StringTokenizer(keysToCopy,",;");
 			while (st.hasMoreTokens()) {
 				String key = st.nextToken();
-				parentSession.put(key, get(key));
+				if (StringUtils.isNotBlank(key) && !MESSAGE_ID_KEY.equals(key)) {
+					parentSession.put(key, get(key));
+				}
 			}
-		} else if (keysToCopy == null || "*".equals(keysToCopy)) { // if keys are not set explicitly ...
-			parentSession.putAll(this);                                      // ... all keys will be copied
+		} else if (keysToCopy == null || "*".equals(keysToCopy)) { // if keys are not set explicitly, all keys will be copied
+			forEach((key, value) -> {
+				if (!key.equals(MESSAGE_ID_KEY)) {
+					parentSession.put(key, value);
+				}
+			});
 		}
 		Set<AutoCloseable> closeablesInDestination = parentSession.values().stream()
 				.filter(AutoCloseable.class::isInstance)
@@ -183,15 +191,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * @return {@code true} if {@code value} is not a {@link Message}, or if it is a Message with a request that is not a scalar or array type. Returns {@code false} otherwise.
 	 */
 	private static boolean isValueToBeClosed(AutoCloseable value) {
-		if (!(value instanceof Message message)) return true; // Should be closed, value is not a message.
-		if (message.isNull()) return false; // NULL message doesn't have to be closed.
-
-		return !(message.isRequestOfType(String.class) ||
-				message.isRequestOfType(Number.class) ||
-				message.isRequestOfType(Date.class) ||
-				message.isRequestOfType(Temporal.class) ||
-				message.isRequestOfType(Boolean.class) ||
-				message.asObject().getClass().isArray()); // Arrays we have are mostly byte[] but I think all arrays should count, for simplicity.
+		return (!(value instanceof Message)); // Don't close-on-close messages anymore
 	}
 
 	/**
@@ -243,9 +243,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			return message;
 		}
 		if(obj != null) {
-			Message message = Message.asMessage(obj);
-			message.closeOnCloseOf(this);
-			return message;
+			return Message.asMessage(obj);
 		}
 		return Message.nullMessage();
 	}
@@ -283,7 +281,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * Sets the current date-time as TS-Received.
 	 */
 	public static void updateListenerParameters(@Nonnull Map<String, Object> map, @Nullable String messageId, @Nullable String correlationId) {
-		updateListenerParameters(map, messageId, correlationId, Instant.now(), null);
+		updateListenerParameters(map, messageId, correlationId, TimeProvider.now(), null);
 	}
 
 	/**
@@ -298,7 +296,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			map.put(CORRELATION_ID_KEY, correlationId);
 		}
 		if (tsReceived == null) {
-			tsReceived = Instant.now();
+			tsReceived = TimeProvider.now();
 		}
 		map.put(TS_RECEIVED_KEY, DateFormatUtils.format(tsReceived, DateFormatUtils.FULL_GENERIC_FORMATTER));
 		if (tsSent != null) {
@@ -474,18 +472,14 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		}
 	}
 
-	public boolean isScheduledForCloseOnExit(AutoCloseable message) {
-		return closeables.contains(message);
-	}
-
-	public void unscheduleCloseOnSessionExit(AutoCloseable message) {
-		closeables.remove(message);
+	public void unscheduleCloseOnSessionExit(AutoCloseable resource) {
+		closeables.remove(resource);
 	}
 
 	@Override
 	public void close() {
 		LOG.debug("Closing PipeLineSession");
-		CleanerProvider.clean(closeAction);
+		cleanable.clean();
 	}
 
 	private static class PipeLineSessionCloseAction implements Runnable {

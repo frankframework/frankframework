@@ -51,6 +51,7 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.LocalGateway;
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.SpringUtils;
 
@@ -73,6 +74,12 @@ public class RunCypressE2eTest {
 
 	@BeforeAll
 	public static void setUp() throws IOException {
+		// Pollers for WebSockets have a enormous delay for larger applications.
+		System.setProperty("console.socket.poller.startDelay", "15");
+		System.setProperty("console.socket.poller.warnings", "5");
+		System.setProperty("console.socket.poller.adapters", "5");
+		System.setProperty("console.socket.poller.messages", "5");
+
 		startIafTestInitializer();
 		startTestContainer();
 	}
@@ -87,6 +94,11 @@ public class RunCypressE2eTest {
 		await().pollInterval(5, TimeUnit.SECONDS)
 				.atMost(Duration.ofMinutes(5))
 				.until(() -> verifyAppIsHealthy(gateway));
+	}
+
+	private static boolean verifyAppIsHealthy() {
+		OutboundGateway gateway = SpringUtils.createBean(run, LocalGateway.class);
+		return verifyAppIsHealthy(gateway);
 	}
 
 	private static boolean verifyAppIsHealthy(OutboundGateway gateway) {
@@ -104,7 +116,6 @@ public class RunCypressE2eTest {
 
 		container = new CypressContainer();
 		container.withBaseUrl("http://host.testcontainers.internal:8080/iaf-test/iaf/gui");
-		container.withLogConsumer(frame -> CYPRESS_LOG.info(frame.getUtf8StringWithoutLineEnding()));
 
 		container.start();
 
@@ -113,6 +124,8 @@ public class RunCypressE2eTest {
 
 	@AfterAll
 	public static void tearDown() {
+		if (run == null) return;
+
 		run.stop();
 		container.stop();
 
@@ -120,6 +133,9 @@ public class RunCypressE2eTest {
 		assertFalse(container.isRunning());
 
 		run.close();
+
+		// Make sure to clear the app constants as well
+		AppConstants.removeInstance();
 	}
 
 	@TestFactory
@@ -137,6 +153,7 @@ public class RunCypressE2eTest {
 						test.getDescription(), () -> {
 							if (!test.isSuccess()) {
 								log.error("{}:\n{}", test.getErrorMessage(), test.getStackTrace());
+								assertTrue(verifyAppIsHealthy(), "!! application not reachable !!");
 							}
 							assertTrue(test.isSuccess(), test::getErrorMessage);
 						}

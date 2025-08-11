@@ -41,7 +41,6 @@ import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.ThreadContext;
@@ -94,6 +93,7 @@ import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
+import org.frankframework.core.RequestReplyListener;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.core.TransactionAttribute;
@@ -104,6 +104,8 @@ import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Protected;
 import org.frankframework.jdbc.MessageStoreListener;
 import org.frankframework.jta.SpringTxManagerProxy;
+import org.frankframework.lifecycle.events.AdapterMessageEvent;
+import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.monitoring.EventPublisher;
 import org.frankframework.monitoring.EventThrowing;
@@ -117,12 +119,12 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CompactSaxHandler;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.RunState;
 import org.frankframework.util.RunStateEnquiring;
 import org.frankframework.util.RunStateManager;
 import org.frankframework.util.StringUtil;
+import org.frankframework.util.TimeProvider;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlEncodingUtils;
@@ -179,7 +181,7 @@ import org.frankframework.util.XmlUtils;
  * <li>the setRollBackOnly() method has been called on the userTransaction (not accessible by Pipes)</li>
  * </ul>
  * </p>
- * 
+ *
  * @ff.tip Although not mandatory, it is recommended to give your Receiver a clear name. This helps with ConfigurationWarnings and log statements.
  *
  * @author Gerrit van Brakel
@@ -210,7 +212,7 @@ import org.frankframework.util.XmlUtils;
 @FrankDocGroup(FrankDocGroupValue.OTHER)
 public class Receiver<M> extends TransactionAttributes implements ManagableLifecycle, IMessageHandler<M>, IProvidesMessageBrowsers<M>, EventThrowing, IbisExceptionListener, HasSender, FrankElement, IThreadCountControllable, NameAware {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-	private @Getter @Setter ApplicationContext applicationContext;
+	private @Getter ApplicationContext applicationContext;
 
 	public static final TransactionDefinition TXSUPPORTED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_SUPPORTS);
 	public static final TransactionDefinition TXREQUIRED = new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED);
@@ -323,8 +325,8 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 
 	private final List<DistributionSummary> processStatistics = new ArrayList<>();
 
-	// the adapter that handles the messages and initiates this listener
-	private @Getter @Setter Adapter adapter;
+	// The adapter that handles the messages and initiates this listener
+	private @Getter Adapter adapter;
 
 	private @Getter IListener<M> listener;
 
@@ -396,9 +398,10 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * sends an informational message to the log and to the messagekeeper of the adapter
 	 */
 	protected void info(String msg) {
-		log.info("{}{}", getLogPrefix(), msg);
 		if (adapter != null) {
-			adapter.getMessageKeeper().add(getLogPrefix() + msg);
+			adapter.publishEvent(new AdapterMessageEvent(adapter, this, msg));
+		} else {
+			log.info("{}{}", getLogPrefix(), msg);
 		}
 	}
 
@@ -406,9 +409,10 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * sends a warning to the log and to the messagekeeper of the adapter
 	 */
 	protected void warn(String msg) {
-		log.warn("{}{}", getLogPrefix(), msg);
 		if (adapter != null) {
-			adapter.getMessageKeeper().add("WARNING: " + getLogPrefix() + msg, MessageKeeperLevel.WARN);
+			adapter.publishEvent(new AdapterMessageEvent(adapter, this, msg, MessageEventLevel.WARN));
+		} else {
+			log.warn("{}{}", getLogPrefix(), msg);
 		}
 	}
 
@@ -416,10 +420,21 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * sends a error message to the log and to the messagekeeper of the adapter
 	 */
 	protected void error(@Nonnull String msg, @Nullable Throwable t) {
-		log.error(() -> "%s%s".formatted(getLogPrefix(), msg), t);
 		if (adapter != null) {
-			adapter.getMessageKeeper().add("ERROR: " + getLogPrefix() + msg+(t!=null?": "+t.getMessage():""), MessageKeeperLevel.ERROR);
+			adapter.publishEvent(new AdapterMessageEvent(adapter, this, msg, MessageEventLevel.ERROR));
+		} else {
+			log.error(() -> "%s%s".formatted(getLogPrefix(), msg), t);
 		}
+	}
+
+	@Override
+	public final void setApplicationContext(@Nonnull ApplicationContext context) {
+		if (!(context instanceof Adapter adapter)) {
+			throw new IllegalArgumentException("ApplicationContext must always be of type Adapter");
+		}
+
+		this.adapter = adapter;
+		this.applicationContext = context;
 	}
 
 	protected void openAllResources() throws ListenerException, TimeoutException {
@@ -720,9 +735,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			throw e;
 		}
 
-		if (adapter != null) {
-			adapter.getMessageKeeper().add(getLogPrefix()+"initialization complete");
-		}
 		throwEvent(RCV_CONFIGURED_MONITOR_EVENT);
 		isConfigured = true;
 
@@ -744,16 +756,12 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	@Override
 	public void start() {
 		try {
-			// if this receiver is on an adapter, the StartListening method
-			// may only be executed when the adapter is started.
-			if (adapter != null) {
-				RunState adapterRunState = adapter.getRunState();
-				if (adapterRunState!=RunState.STARTED) {
-					log.warn("{}on adapter [{}] was tried to start, but the adapter is in state [{}]. Ignoring command.", getLogPrefix(), adapter.getName(), adapterRunState);
-					adapter.getMessageKeeper().add("ignored start command on [" + getName()  + "]; adapter is in state ["+adapterRunState+"]");
-					return;
-				}
+			RunState adapterRunState = adapter.getRunState();
+			if (adapterRunState != RunState.STARTED) {
+				adapter.publishEvent(new AdapterMessageEvent(adapter, this, "ignored start command; adapter is in state ["+adapterRunState+"]", MessageEventLevel.WARN));
+				return;
 			}
+
 			// See also Adapter.startRunning()
 			if (!isConfigured) {
 				log.error("configuration of receiver [{}] did not succeed, therefore starting the receiver is not possible", getName());
@@ -775,8 +783,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 						&& currentRunState!=RunState.ERROR
 						&& isConfigured) { // Only start the receiver if it is properly configured, and is not already starting or still stopping
 					if (currentRunState==RunState.STARTING || currentRunState==RunState.STARTED) {
-						log.info("already in state [{}]", currentRunState);
-						adapter.getMessageKeeper().info(this, "already in state [" + currentRunState + "]");
+						adapter.publishEvent(new AdapterMessageEvent(adapter, this, "already in state [" + currentRunState + "]"));
 					} else {
 						log.warn("currently in state [{}], ignoring start() command", currentRunState);
 					}
@@ -813,8 +820,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				case STOPPED:
 				case STOPPING:
 				case EXCEPTION_STOPPING:
-					log.info("receiver already in state [{}]", currentRunState);
-					adapter.getMessageKeeper().info(this, "already in state [" + currentRunState + "]");
+					adapter.publishEvent(new AdapterMessageEvent(adapter, this, "already in state [" + currentRunState + "]"));
 					return;
 				case EXCEPTION_STARTING:
 					if (getListener() instanceof IPullingListener) {
@@ -901,7 +907,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				rcvDate=prci.receiveDate;
 				prci.exitState = ExitState.REJECTED;
 			} else {
-				rcvDate=Instant.now();
+				rcvDate = TimeProvider.now();
 			}
 			if (isTransacted() || getListener() instanceof IHasProcessState ||
 					(getErrorStorage() != null &&
@@ -1052,10 +1058,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				throw e;
 			} finally {
 				itx.complete();
-			}
-
-			if(!Message.isNull(result)) {
-				result.unscheduleFromCloseOnExitOf(session);
 			}
 			return result;
 		}
@@ -1264,7 +1266,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				try {
 					if (getMessageLog() != null) {
 						final String label = extractLabel(compactedMessage);
-						getMessageLog().storeMessage(messageId, businessCorrelationId, new Date(), RCV_MESSAGE_LOG_COMMENTS, label, messageWrapper);
+						getMessageLog().storeMessage(messageId, businessCorrelationId, TimeProvider.nowAsDate(), RCV_MESSAGE_LOG_COMMENTS, label, messageWrapper);
 					}
 					log.debug("{} preparing TimeoutGuard", logPrefix);
 					TimeoutGuard tg = new TimeoutGuard("Receiver "+getName());
@@ -1280,7 +1282,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 						result = pipeLineResult.getResult();
 
 						statusMessage = "exitState ["+pipeLineResult.getState()+"], result [";
-						if(!Message.isEmpty(result) && result.isRepeatable() && result.size() > ITransactionalStorage.MAXCOMMENTLEN - statusMessage.length()) { //Since we can determine the size, assume the message is preserved
+						if(!Message.isEmpty(result) && result.size() > ITransactionalStorage.MAXCOMMENTLEN - statusMessage.length()) { //Since we can determine the size, assume the message is preserved
 							String resultString = result.asString();
 							statusMessage += resultString.substring(0, Math.min(ITransactionalStorage.MAXCOMMENTLEN - statusMessage.length(), resultString.length()));
 						} else {
@@ -1316,7 +1318,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 					statusMessage = t.getMessage();
 					if (pipeLineResult==null) {
 						pipeLineResult=new PipeLineResult();
-						pipeLineResult.setExitCode(500); // If there was an exception that was not handled by the pipeline, consider it an internal server error.
+						pipeLineResult.setExitCode(session.get(PipeLineSession.EXIT_CODE_CONTEXT_KEY, 500)); // If there was an exception that was not handled by the pipeline, consider it an internal server error.
 					}
 					messageInError = true;
 					// If processing before this step set ExitState to REJECTED, do not overwrite. Do make sure that when message is in error, ExitState = ERROR before calling Listener.afterMessageProcessed().
@@ -1324,7 +1326,11 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 						pipeLineResult.setState(ExitState.ERROR);
 					}
 					if (Message.isEmpty(pipeLineResult.getResult())) {
-						pipeLineResult.setResult(adapter.formatErrorMessage("exception caught",t,compactedMessage, session, this));
+						pipeLineResult.setResult(adapter.formatErrorMessage(null, t, compactedMessage, session, null));
+					}
+					session.setExitState(pipeLineResult);
+					if (getListener() instanceof RequestReplyListener requestReplyListener && requestReplyListener.getOnException() == RequestReplyListener.ExceptionHandlingMethod.FORMAT_AND_RETURN) {
+						return pipeLineResult.getResult();
 					}
 					throw wrapExceptionAsListenerException(t);
 				}
@@ -1443,7 +1449,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		if (getChompCharSize() != null || getElementToMove() != null || getElementToMoveChain() != null) {
 			log.debug("{} compact received message", getLogPrefix());
 			try {
-				message.preserve();
 				message = compactMessage(message, session);
 			} catch (IOException | SAXException e) {
 				String msg = "error during compacting received message to more compact format";
@@ -1507,7 +1512,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	private String extractLabel(Message message) {
 		if (labelTp != null) {
 			try {
-				message.preserve();
 				return labelTp.transformToString(message);
 			} catch (Exception e) {
 				log.warn("{} could not extract label: ({}) {}", this::getLogPrefix, ()-> ClassUtils.nameOf(e), e::getMessage);
@@ -1521,7 +1525,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		String businessCorrelationId = session.get(PipeLineSession.CORRELATION_ID_KEY, messageWrapper.getCorrelationId());
 		if (correlationIDTp != null) {
 			try {
-				messageWrapper.getMessage().preserve();
 				businessCorrelationId = correlationIDTp.transformToString(messageWrapper.getMessage());
 			} catch (Exception e) {
 				log.warn("{} could not extract businessCorrelationId", logPrefix);
@@ -1574,7 +1577,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			log.debug("{} caching first status for messageId [{}]", this::getLogPrefix, ()->messageId);
 			ProcessStatusCacheItem item = new ProcessStatusCacheItem();
 			item.receiveCount = 0;
-			item.receiveDate = Instant.now();
+			item.receiveDate = TimeProvider.now();
 			return item;
 		});
 		if (getListener() instanceof IKnowsDeliveryCount<M> knowsDeliveryCount) {
@@ -1606,7 +1609,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		return processStatusCache.computeIfAbsent(rawMessageWrapper.getId(), k -> {
 					log.debug("{} recreating cached process status for messageId [{}]", this::getLogPrefix, rawMessageWrapper::getId);
 					ProcessStatusCacheItem item = new ProcessStatusCacheItem();
-					item.receiveDate = Instant.now();
+					item.receiveDate = TimeProvider.now();
 					if (getListener() instanceof IKnowsDeliveryCount<M> knowsDeliveryCount) {
 						item.receiveCount = knowsDeliveryCount.getDeliveryCount(rawMessageWrapper);
 					} else {
@@ -1729,7 +1732,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			case RECOVER:
 				// Make JobDef.recoverAdapters() try to recover
 				error(errorMessage+", will try to recover",t);
-				setRunState(RunState.ERROR); //Setting the state to ERROR automatically stops the receiver
+				setRunState(RunState.ERROR); // Setting the state to ERROR automatically stops the receiver
 				break;
 			case CLOSE:
 				error(errorMessage+", stopping receiver", t);
@@ -1908,6 +1911,11 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		return runState.getRunState();
 	}
 
+	@Override
+	public int getPhase() {
+		return Integer.MAX_VALUE; // Starts at the very last moment, is stopped first
+	}
+
 	public boolean isInRunState(RunState someRunState) {
 		RunState currentRunState = runState.getRunState();
 		log.trace("Receiver [{}] check if runState=[{}] - current runState=[{}]", name, someRunState, currentRunState);
@@ -2011,12 +2019,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 */
 	@Override
 	public String toString() {
-		String result = super.toString();
-		ToStringBuilder ts=new ToStringBuilder(this, ToStringStyle.MULTI_LINE_STYLE);
-		ts.append("name", getName() );
-		result += ts.toString();
-		result+=" listener ["+(listener==null ? "-none-" : listener.toString())+"]";
-		return result;
+		return ToStringBuilder.reflectionToString(this);
 	}
 
 

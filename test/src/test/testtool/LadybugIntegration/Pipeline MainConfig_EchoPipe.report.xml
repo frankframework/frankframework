@@ -1,0 +1,400 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<java version="21.0.7" class="java.beans.XMLDecoder">
+ <object class="nl.nn.testtool.Report" id="Report0">
+  <void property="checkpoints">
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="message">
+      <string>{
+	&quot;element&quot;: &quot;één euro: € 1,-&quot;
+}</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[416acaed:String]</string>
+     </void>
+     <void property="messageContext">
+      <object class="java.util.HashMap">
+       <void method="put">
+        <string>Metadata.Size</string>
+        <long>37</long>
+       </void>
+       <void method="put">
+        <string>Pipeline.Caller</string>
+        <string>listener of [JavaListener]</string>
+       </void>
+      </object>
+     </void>
+     <void property="name">
+      <string>Pipeline MainConfig/EchoPipe</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.core.PipeLine</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-262</string>
+     </void>
+     <void property="type">
+      <int>1</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="encoding">
+      <string>XMLEncoder</string>
+     </void>
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;java version=&quot;21.0.7&quot; class=&quot;java.beans.XMLDecoder&quot;&gt;
+ &lt;boolean&gt;false&lt;/boolean&gt;
+&lt;/java&gt;
+</string>
+     </void>
+     <void property="messageClassName">
+      <string>java.lang.Boolean</string>
+     </void>
+     <void property="messageContext">
+      <object class="java.util.Collections" id="Collections$EmptyMap0" method="emptyMap"/>
+     </void>
+     <void property="name">
+      <string>SystemKey __isManualRetry</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-262</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>Test Tool correlation id(8)</string>
+     </void>
+     <void property="messageContext">
+      <object idref="Collections$EmptyMap0"/>
+     </void>
+     <void property="name">
+      <string>SessionKey cid</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-262</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>fallback-message-id-LAPTOP-L8FMGDU-c0a801ad--540a5714_1982c586596_-7ff3</string>
+     </void>
+     <void property="messageContext">
+      <object idref="Collections$EmptyMap0"/>
+     </void>
+     <void property="name">
+      <string>SessionKey mid</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-262</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>{
+	&quot;element&quot;: &quot;één euro: € 1,-&quot;
+}</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[416acaed:String]</string>
+     </void>
+     <void property="messageContext">
+      <object class="java.util.HashMap">
+       <void method="put">
+        <string>Metadata.Size</string>
+        <long>37</long>
+       </void>
+       <void method="put">
+        <string>Pipeline.Caller</string>
+        <string>listener of [JavaListener]</string>
+       </void>
+      </object>
+     </void>
+     <void property="name">
+      <string>SessionKey originalMessage</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-262</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>2025-07-21 11:43:22.794</string>
+     </void>
+     <void property="messageContext">
+      <object idref="Collections$EmptyMap0"/>
+     </void>
+     <void property="name">
+      <string>SessionKey tsReceived</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-262</string>
+     </void>
+     <void property="type">
+      <int>4</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>{
+	&quot;element&quot;: &quot;één euro: € 1,-&quot;
+}</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[416acaed:String]</string>
+     </void>
+     <void property="messageContext">
+      <object class="java.util.HashMap">
+       <void method="put">
+        <string>Metadata.Size</string>
+        <long>37</long>
+       </void>
+       <void method="put">
+        <string>Pipeline.Caller</string>
+        <string>listener of [JavaListener]</string>
+       </void>
+      </object>
+     </void>
+     <void property="name">
+      <string>Pipe Echo</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.pipes.EchoPipe</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-262</string>
+     </void>
+     <void property="type">
+      <int>1</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>2</int>
+     </void>
+     <void property="message">
+      <string>&lt;pipe className=&quot;org.frankframework.pipes.EchoPipe&quot; name=&quot;Echo&quot;/&gt;</string>
+     </void>
+     <void property="name">
+      <string>Pipe Echo</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.pipes.EchoPipe</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-262</string>
+     </void>
+     <void property="type">
+      <int>6</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>2</int>
+     </void>
+     <void property="message">
+      <string>{
+	&quot;element&quot;: &quot;één euro: € 1,-&quot;
+}</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[416acaed:String]</string>
+     </void>
+     <void property="messageContext">
+      <object class="java.util.HashMap">
+       <void method="put">
+        <string>Metadata.Size</string>
+        <long>37</long>
+       </void>
+       <void method="put">
+        <string>Pipeline.PreviousPipe</string>
+        <string>Echo</string>
+       </void>
+       <void method="put">
+        <string>Pipeline.Caller</string>
+        <string>listener of [JavaListener]</string>
+       </void>
+      </object>
+     </void>
+     <void property="name">
+      <string>Pipe Echo</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.pipes.EchoPipe</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-262</string>
+     </void>
+     <void property="type">
+      <int>2</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>SUCCESS</string>
+     </void>
+     <void property="messageContext">
+      <object idref="Collections$EmptyMap0"/>
+     </void>
+     <void property="name">
+      <string>exitState</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="threadName">
+      <string>Thread-262</string>
+     </void>
+     <void property="type">
+      <int>5</int>
+     </void>
+    </object>
+   </void>
+   <void method="add">
+    <object class="nl.nn.testtool.Checkpoint">
+     <void property="level">
+      <int>1</int>
+     </void>
+     <void property="message">
+      <string>{
+	&quot;element&quot;: &quot;één euro: € 1,-&quot;
+}</string>
+     </void>
+     <void property="messageClassName">
+      <string>Message[416acaed:String]</string>
+     </void>
+     <void property="messageContext">
+      <object class="java.util.HashMap">
+       <void method="put">
+        <string>Metadata.Size</string>
+        <long>37</long>
+       </void>
+       <void method="put">
+        <string>Pipeline.PreviousPipe</string>
+        <string>Echo</string>
+       </void>
+       <void method="put">
+        <string>Pipeline.Caller</string>
+        <string>listener of [JavaListener]</string>
+       </void>
+      </object>
+     </void>
+     <void property="name">
+      <string>Pipeline MainConfig/EchoPipe</string>
+     </void>
+     <void property="report">
+      <object idref="Report0"/>
+     </void>
+     <void property="sourceClassName">
+      <string>org.frankframework.core.PipeLine</string>
+     </void>
+     <void property="threadName">
+      <string>Thread-262</string>
+     </void>
+     <void property="type">
+      <int>2</int>
+     </void>
+    </object>
+   </void>
+  </void>
+  <void property="correlationId">
+   <string>Test Tool correlation id(8)</string>
+  </void>
+  <void property="endTime">
+   <long>1753091002798</long>
+  </void>
+  <void property="linkMethod">
+   <string>Path and type</string>
+  </void>
+  <void property="name">
+   <string>Pipeline MainConfig_EchoPipe</string>
+  </void>
+  <void property="startTime">
+   <long>1753091002796</long>
+  </void>
+  <void property="storageId">
+   <int>2</int>
+  </void>
+  <void property="stubStrategy">
+   <string>Stub all senders</string>
+  </void>
+ </object>
+</java>

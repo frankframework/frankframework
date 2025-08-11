@@ -1,20 +1,20 @@
 <div class="wrapper wrapper-content animated fadeInRight">
   <app-server-warnings
-    [alerts]="alerts"
-    [messageLog]="messageLog"
+    [alerts]="alerts()"
+    [messageLog]="messageLog()"
     [selectedConfiguration]="selectedConfiguration"
-    [freeDiskSpacePercentage]="freeDiskSpacePercentage"
-    [serverInfo]="serverInfo"
-  ></app-server-warnings>
+    [freeDiskSpacePercentage]="freeDiskSpacePercentage()"
+    [serverInfo]="serverInfo()"
+  />
 
   <div class="row">
     <app-configuration-tab-list
       queryParamName="configuration"
-      [configurations]="configurations"
+      data-cy="status__configuration-tab-list"
+      [configurations]="configurations()"
       [filterIAF_Util]="true"
       (selectedTabChange)="changeConfiguration($event)"
-      data-cy="status__configuration-tab-list"
-    ></app-configuration-tab-list>
+    />
     <div class="col-lg-12">
       <app-configuration-summary
         [isConfigStubbed]="isConfigStubbed"
@@ -23,7 +23,7 @@
         [selectedConfiguration]="selectedConfiguration"
         [configurationFlowDiagram]="configurationFlowDiagram"
         [reloading]="reloading"
-      ></app-configuration-summary>
+      />
     </div>
   </div>
 
@@ -36,41 +36,41 @@
               <div class="pull-left">
                 <button
                   appHasAccessToLink="updateAdapters"
-                  (click)="stopAll()"
                   class="btn btn-danger btn-xs space-it-out"
                   id="stop-all-adapters"
                   title="Stop All Adapters"
                   type="button"
+                  (click)="stopAll()"
                 >
                   <i class="fa fa-stop"></i>
                 </button>
                 <button
                   appHasAccessToLink="updateAdapters"
-                  (click)="startAll()"
                   class="btn btn-primary btn-xs"
                   id="start-all-adapters"
                   title="Start All Adapters"
                   type="button"
+                  (click)="startAll()"
                 >
                   <i class="fa fa-play"></i>
                 </button>
               </div>
               <div class="text-right pull-right">
                 <button
-                  (click)="expandAll()"
                   class="btn btn-default btn-xs space-it-out"
                   id="expand-all"
                   title="Open All Adapters"
                   type="button"
+                  (click)="expandAll()"
                 >
                   <i class="fa fa-angle-double-down fa-size-up"></i>
                 </button>
                 <button
-                  (click)="collapseAll()"
                   class="btn btn-default btn-xs"
                   id="collapse-all"
                   title="Collapse All Adapters"
                   type="button"
+                  (click)="collapseAll()"
                 >
                   <i class="fa fa-angle-double-up fa-size-up"></i>
                 </button>
@@ -79,11 +79,11 @@
                 @if (selectedConfiguration !== 'All' && !reloading && !isConfigReloading[selectedConfiguration]) {
                   <button
                     appHasAccessToLink="updateConfiguration"
-                    (click)="reloadConfiguration()"
                     class="btn btn-info btn-xs space-it-out"
                     id="reload-configuration"
                     title="Reload Configuration"
                     type="button"
+                    (click)="reloadConfiguration()"
                   >
                     <i class="fa fa-undo"></i>
                   </button>
@@ -101,11 +101,11 @@
                 @if (selectedConfiguration === 'All' && !reloading) {
                   <button
                     appHasAccessToLink="fullAction"
-                    (click)="fullReload()"
                     class="btn btn-ff btn-xs space-it-out"
                     id="full-reload"
                     title="Full Reload"
                     type="button"
+                    (click)="fullReload()"
                   >
                     <i class="fa fa-undo"></i>
                   </button>
@@ -123,11 +123,11 @@
                 @if (configurationFlowDiagram) {
                   <button
                     appHasAccessToLink="getConfigurationFlow"
-                    (click)="showReferences()"
                     class="btn btn-info btn-xs"
                     id="adapter-references"
                     title="Show Adapter References"
                     type="button"
+                    (click)="showReferences()"
                   >
                     <i class="fa fa-file-picture-o"></i>
                   </button>
@@ -138,43 +138,46 @@
               <span style="font-weight: 700; margin-right: 4px">Filter:</span>
               <div class="btn-group state">
                 <!-- [(ngModel)]="filter.started" -->
-                <label
-                  (click)="applyFilter('started')"
-                  [ngClass]="{ active: this.filter.started }"
+                <button
                   class="btn btn-primary btn-outline btn-xs started"
-                  >Started</label
+                  [ngClass]="{ active: this.filter.started }"
+                  (click)="applyFilter('started')"
                 >
+                  Started
+                </button>
                 <!-- [(ngModel)]="filter.stopped" -->
-                <label
-                  (click)="applyFilter('stopped')"
-                  [ngClass]="{ active: this.filter.stopped }"
+                <button
                   class="btn btn-danger btn-outline btn-xs stopped"
-                  >Stopped</label
+                  [ngClass]="{ active: this.filter.stopped }"
+                  (click)="applyFilter('stopped')"
                 >
+                  Stopped
+                </button>
                 <!-- [(ngModel)]="filter.warning" -->
-                <label
-                  (click)="applyFilter('warning')"
-                  [ngClass]="{ active: this.filter.warning }"
+                <button
                   class="btn btn-warning btn-outline btn-xs warning"
-                  >Warning</label
+                  [ngClass]="{ active: this.filter.warning }"
+                  (click)="applyFilter('warning')"
                 >
+                  Warning
+                </button>
               </div>
             </div>
             <div class="ibox-stretch">
               <div class="input-group" id="searchbar">
                 <input
-                  (change)="updateQueryParams()"
-                  [(ngModel)]="searchText"
                   class="form-control"
                   name="search"
                   placeholder="Search ... (Ctrl + Shift + F)"
                   type="text"
+                  [(ngModel)]="searchText"
+                  (change)="updateQueryParams()"
                 />
                 <i
-                  (click)="searchText = ''; updateQueryParams()"
-                  [ngClass]="searchText.length === 0 ? ['hidden'] : []"
                   aria-hidden="true"
                   class="fa fa-times input-group-closeSearch"
+                  [ngClass]="searchText.length === 0 ? ['hidden'] : []"
+                  (click)="searchText = ''; updateQueryParams()"
                 ></i>
                 <span class="input-group-addon">
                   <i aria-hidden="true" class="fa fa-search"></i>
@@ -189,16 +192,16 @@
 
   <div class="row">
     <div class="col-lg-12">
-      <app-configuration-messages
-        [messageLog]="messageLog"
-        [selectedConfiguration]="selectedConfiguration"
-      ></app-configuration-messages>
+      <app-configuration-messages [messageLog]="messageLog()" [selectedConfiguration]="selectedConfiguration" />
     </div>
   </div>
 
   <div class="row">
     @for (
-      adapterKV of adapters | configurationFilter: selectedConfiguration : filter | searchFilter: searchText | keyvalue;
+      adapterKV of adapters()
+        | configurationFilter: selectedConfiguration : filter
+        | searchFilter: searchText
+        | keyvalue;
       track trackAdaptersByFn($index, adapterKV)
     ) {
       <div class="col-lg-12 adapters">
@@ -206,7 +209,7 @@
           [adapter]="adapterKV.value"
           [adapterShowContent]="adapterShowContent"
           [loadFlowInline]="loadFlowInline"
-        ></app-adapter-status>
+        />
       </div>
     }
   </div>

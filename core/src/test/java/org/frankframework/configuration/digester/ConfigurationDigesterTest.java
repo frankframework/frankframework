@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -25,14 +27,15 @@ import org.xml.sax.SAXParseException;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.Configuration;
-import org.frankframework.configuration.ConfigurationDigester;
-import org.frankframework.configuration.ConfigurationUtils;
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.core.Resource;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.util.AppConstants;
 import org.frankframework.util.PropertyLoader;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.XmlUtils;
@@ -199,6 +202,31 @@ public class ConfigurationDigesterTest {
 	}
 
 	@Test
+	public void testDigestConfigWithOldNamespace() throws Exception {
+		Configuration configuration = new TestConfiguration();
+		ConfigurationDigester digester = SpringUtils.createBean(configuration);
+
+		XmlWriter writer = new XmlWriter();
+		Resource resource = Resource.getResource("/Digester/OldNamespacesAndRewitePipeNames/Configuration.xml");
+		String expectedConfig = TestFileUtils.getTestFile("/Digester/OldNamespacesAndRewitePipeNames/Configuration-result.xml");
+		PropertyLoader properties = new PropertyLoader("Digester/ConfigurationDigesterTest.properties");
+
+		// Act
+		digester.parseAndResolveEntitiesAndProperties(writer, configuration, resource, properties);
+
+		// Assert
+		String result = writer.toString();
+		MatchUtils.assertXmlEquals(expectedConfig, result);
+
+		List<String> warnings = configuration.getConfigurationWarnings().getWarnings();
+		assertFalse(warnings.isEmpty());
+		String expected = "[org.frankframework.pipes.PutInSession] has been renamed to [org.frankframework.pipes.PutInSessionPipe]."
+				+ " Please use the new syntax or change the className attribute.";
+		assertEquals(expected, warnings.get(0));
+
+	}
+
+	@Test
 	public void stub4testtoolTest() throws Exception {
 		String baseDirectory = "/ConfigurationUtils/stub4testtool/FullAdapter";
 
@@ -321,6 +349,67 @@ public class ConfigurationDigesterTest {
 
 		String expectedConfiguration = TestFileUtils.getTestFile(baseDirectory + "/expected.xml");
 		MatchUtils.assertXmlEquals(null, expectedConfiguration, actual, false, true);
+	}
+
+	@Test
+	public void testNoConfigurationFile() throws Exception {
+		Configuration configuration = new TestConfiguration();
+		String configurationFile = "DoesNotExistConfiguration.xml";
+		AppConstants.getInstance(configuration.getClassLoader()).setProperty("configurations.TestConfiguration.configurationFile", configurationFile);
+		ConfigurationDigester digester = SpringUtils.createBean(configuration);
+		ConfigurationException e = assertThrows(ConfigurationException.class, digester::digest);
+		log.debug("testNoConfigurationFile trace", e);
+		assertTrue(e.getMessage().startsWith("configuration file [DoesNotExistConfiguration.xml] not found in ClassLoader [JunitTestClassLoaderWrapper@"));
+	}
+
+	@Test
+	public void testDigestConfigWithFaultyXml() throws Exception {
+		Configuration configuration = new TestConfiguration();
+		String configurationFile = "FaultyConfiguration.xml";
+		AppConstants.getInstance(configuration.getClassLoader()).setProperty("configurations.TestConfiguration.configurationFile", configurationFile);
+		ConfigurationDigester digester = SpringUtils.createBean(configuration);
+		ConfigurationException e = assertThrows(ConfigurationException.class, digester::digest);
+		String errorMessage = e.getMessage();
+		log.debug("testDigestConfigWithFaultyXml trace", e);
+
+		/*
+		 * org.frankframework.configuration.ConfigurationException: error loading configuration from file
+		 * [URLResource url [file:/C:/Data/Git/IAF2/core/target/test-classes/FaultyConfiguration.xml]
+		 * systemId [classpath:FaultyConfiguration.xml]
+		 * scope [ConfigurationContext [TestConfiguration], started on Sat Jun 28 16:45:45 CEST 2025]]
+		 * line [11] column [117]: (SAXException) found element [typo-pipe] with no matching pattern
+		 */
+		assertTrue(errorMessage.contains("error loading configuration from file"));
+		assertTrue(errorMessage.contains("systemId [classpath:FaultyConfiguration.xml]"));
+		assertTrue(errorMessage.contains("scope [ConfigurationContext [TestConfiguration]"));
+		assertTrue(errorMessage.contains("found element [typo-pipe] with no matching pattern"));
+		// I would expect "The element type \"typo-pipe\" must be terminated by the matching end-tag"...
+	}
+
+	@Test
+	public void testDigestConfigThatHasExceptions() throws Exception {
+		Configuration configuration = new TestConfiguration();
+		String configurationFile = "UnableToDigestConfiguration.xml";
+		AppConstants.getInstance(configuration.getClassLoader()).setProperty("configurations.TestConfiguration.configurationFile", configurationFile);
+		ConfigurationDigester digester = SpringUtils.createBean(configuration);
+		ConfigurationException e = assertThrows(ConfigurationException.class, digester::digest);
+		String errorMessage = e.getMessage();
+		log.debug("testDigestConfigThatHasExceptions trace", e);
+
+		/*
+		 * org.frankframework.configuration.ConfigurationException: error loading configuration from file
+		 * [URLResource url [file:/C:/Data/Git/IAF2/core/target/test-classes/UnableToDigestConfiguration.xml]
+		 * systemId [classpath:UnableToDigestConfiguration.xml]
+		 * scope [ConfigurationContext [TestConfiguration], started on Sun Jun 29 11:00:59 CEST 2025]]
+		 * line [11] column [115]: (SAXException) unable to create bean for element [pipe]
+		 * using DigesterRule [DigesterRule[beanClass=org.frankframework.pipes.SenderPipe,
+		 * factory=<null>,pattern=/pipe,registerMethod=addPipe,registerTextMethod=<null>]]:
+		 * (ClassNotFoundException) org.frankframework.pipes.DoesNotExit
+		*/
+		assertTrue(errorMessage.contains("error loading configuration from file"));
+		assertTrue(errorMessage.contains("systemId [classpath:UnableToDigestConfiguration.xml]"));
+		assertTrue(errorMessage.contains("scope [ConfigurationContext [TestConfiguration]"));
+		assertTrue(errorMessage.contains("(ClassNotFoundException) org.frankframework.pipes.DoesNotExit"));
 	}
 
 	private static class XmlErrorHandler implements ErrorHandler {

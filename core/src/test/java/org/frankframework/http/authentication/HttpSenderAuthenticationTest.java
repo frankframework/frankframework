@@ -4,9 +4,12 @@ import static com.github.tomakehurst.wiremock.core.WireMockConfiguration.wireMoc
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.FilterInputStream;
@@ -26,6 +29,7 @@ import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
+import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.http.AbstractHttpSender.HttpMethod;
 import org.frankframework.http.AbstractHttpSession;
@@ -205,6 +209,64 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		result = sendMessage();
 		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
 		assertNotNull(result.asString());
+	}
+
+	@Test
+	public void testOAuthAuthenticationWrongEndpoint() throws Exception {
+		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.oauthPathResourceNotFound);
+		sender.setResultStatusCodeSessionKey(null);
+		sender.setTokenEndpoint(getTokenEndpoint() + MockTokenServer.PATH);
+		sender.setClientId(MockTokenServer.CLIENT_ID);
+		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);
+
+		sender.configure();
+		sender.start();
+
+		SenderResult senderResult = sender.sendMessage(new Message(""), session);
+
+		assertFalse(session.containsKey(RESULT_STATUS_CODE_SESSIONKEY));
+		assertNotNull(senderResult);
+		assertFalse(senderResult.isSuccess());
+		assertNotNull(senderResult.getResult());
+		assertNotNull(senderResult.getResult().asString());
+		assertEquals("404", senderResult.getForwardName());
+	}
+
+	@Test
+	public void testOAuthAuthenticationWrongEndpointStatusInSessionKey() throws Exception {
+		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.oauthPathResourceNotFound);
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setTokenEndpoint(getTokenEndpoint() + MockTokenServer.PATH);
+		sender.setClientId(MockTokenServer.CLIENT_ID);
+		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);
+
+		sender.configure();
+		sender.start();
+
+		SenderResult senderResult = sender.sendMessage(new Message(""), session);
+
+		assertEquals("404", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
+		assertNotNull(senderResult);
+		assertTrue(senderResult.isSuccess());
+		assertNotNull(senderResult.getResult());
+		assertNotNull(senderResult.getResult().asString());
+		assertEquals("404", senderResult.getForwardName());
+	}
+
+	@Test
+	public void testOAuthAuthenticationWrongTokenEndpoint() throws Exception {
+		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.oauthPath);
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setTokenEndpoint(getTokenEndpoint() + MockTokenServer.PATH + "/xxxxx");
+		sender.setClientId(MockTokenServer.CLIENT_ID);
+		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);
+		sender.setTimeout(10);
+
+		sender.configure();
+		sender.start();
+
+		assertThrows(TimeoutException.class, () -> sender.sendMessage(new Message(""), session));
+		assertNull(session.getString(RESULT_STATUS_CODE_SESSIONKEY));
 	}
 
 	@Test
@@ -460,6 +522,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 
 
 	@Test //Mocking a Non-Repeatable Message (avoids a NonRepeatableRequestException)
+	@Disabled("Messages are now always repeatable")
 	void testRetryNonRepeatablePayloadOnResetOAuth() throws Exception {
 		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.oauthPath);
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
@@ -517,6 +580,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 
 
 	@Test //Mocking a Non-Repeatable Multipart Message (avoids a NonRepeatableRequestException)
+	@Disabled("Messages are now always repeatable")
 	void testRetryNonRepeatableMultipartPayloadOnResetOAuth() throws Exception {
 		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.oauthPath);
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
@@ -573,6 +637,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 	}
 
 	@Test
+	@Disabled("Messages are now always repeatable")
 	void testRetryNonRepeatableMultipartPayloadOnOAuthAuthenticationTokenExpired() throws Exception {
 		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.oauthPath);
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);

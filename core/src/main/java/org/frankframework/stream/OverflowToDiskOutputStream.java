@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import java.io.Flushable;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ref.Cleaner;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -40,8 +41,8 @@ import org.frankframework.util.StreamUtil;
  */
 @Log4j2
 public class OverflowToDiskOutputStream extends OutputStream implements AutoCloseable, Flushable {
-	private List<BufferBlock> buffers; // temporary buffer, once full, write to disk
-	private BufferBlock lastBlock;
+	private List<ByteBufferBlock> buffers; // temporary buffer, once full, write to disk
+	private ByteBufferBlock lastBlock;
 	private OutputStream outputStream;
 
 	private final Path tempDirectory;
@@ -49,12 +50,13 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 	private boolean closed = false;
 
 	private CleanupFileAction cleanupFileAction;
+	private Cleaner.Cleanable cleanable;
 
 	/**
 	 * The number of bytes in the buffer. This value is always in the range
 	 * {@code 0} through {@code buf.length}; elements {@code buf[0]} through
 	 * {@code buf[count-1]} contain valid byte data.
-	 * 
+	 *
 	 * When count equals {@link #maxBufferSize} the buffer will be flushed to the {@link OutputStream OutputStream out}.
 	 */
 	private int currentBufferSize = 0;
@@ -66,7 +68,7 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 		// either the buffer or outputStream exists, but not both at the same time.
 		if (maxSize > 0) {
 			buffers = new ArrayList<>();
-			lastBlock = new BufferBlock();
+			lastBlock = new ByteBufferBlock();
 			buffers.add(lastBlock);
 			this.maxBufferSize = maxSize;
 		} else {
@@ -88,7 +90,7 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 	 */
 	private void createCleanerAction(final Path path, final Closeable closable) {
 		cleanupFileAction = new CleanupFileAction(path, closable);
-		CleanerProvider.register(this, cleanupFileAction);
+		cleanable = CleanerProvider.register(this, cleanupFileAction);
 	}
 
 	private static class CleanupFileAction implements Runnable {
@@ -124,7 +126,7 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 
 		// create the OutputStream and write the buffer to it.
 		OutputStream overflow = createFileOnDisk();
-		for (BufferBlock b : buffers) {
+		for (ByteBufferBlock b : buffers) {
 			overflow.write(b.buffer, 0, b.count);
 		}
 
@@ -162,9 +164,9 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 		// Write to the buffer
 		currentBufferSize += len;
 		while (len > 0) {
-			BufferBlock s = lastBlock;
+			ByteBufferBlock s = lastBlock;
 			if (s.isFull()) {
-				s = new BufferBlock();
+				s = new ByteBufferBlock();
 				buffers.add(s);
 				lastBlock = s;
 			}
@@ -176,15 +178,15 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 		}
 	}
 
-	static class BufferBlock {
-
-		final byte[] buffer = new byte[StreamUtil.BUFFER_SIZE];
-
-		int count;
-
-		boolean isFull() {
-			return count == buffer.length;
-		}
+	/**
+	 * If the contents was small enough to be kept in memory a ByteArray-message will be returned.
+	 * If the contents was written to disk a {@link PathMessage TemporaryMessage} will be returned.
+	 * Once read the buffer will be removed.
+	 *
+	 * @return A new {@link Message} object representing the contents written to this {@link OutputStream}.
+	 */
+	public Message toMessage() {
+		return toMessage(true);
 	}
 
 	/**
@@ -193,38 +195,42 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 	 * Once read the buffer will be removed.
 	 * @return A new {@link Message} object representing the contents written to this {@link OutputStream}.
 	 */
-	public Message toMessage() {
+	public Message toMessage(boolean binary) {
 		if(!closed) throw new IllegalStateException("stream has not yet been closed");
 		if(fileLocation == null && buffers == null) throw new IllegalStateException("stream has already been read");
 
 		if(fileLocation != null) {
 			log.trace("creating message from reference on disk");
-			try {
-				return PathMessage.asTemporaryMessage(fileLocation);
-			} finally {
-				//Since we were successfully able to create a PathMessage (which will cleanup the file on close) remove the reference here.
-				cleanupFileAction.shouldClean = false;
-				CleanerProvider.clean(cleanupFileAction);
-			}
+			PathMessage result = PathMessage.asTemporaryMessage(fileLocation);
+			//Since we were successfully able to create a PathMessage (which will cleanup the file on close) remove the reference here.
+			fileLocation = null;
+			cleanupFileAction.shouldClean = false;
+			CleanerProvider.clean(cleanable);
+
+			return result;
 		} else {
 			log.trace("creating message from in-memory buffer");
 			final byte[] out = new byte[currentBufferSize];
 
 			int outPtr = 0;
-			Iterator<BufferBlock> i = buffers.iterator();
+			Iterator<ByteBufferBlock> i = buffers.iterator();
 			while (i.hasNext()) {
-				BufferBlock b = i.next();
+				ByteBufferBlock b = i.next();
 				System.arraycopy(b.buffer, 0, out, outPtr, b.count);
 				outPtr += b.count;
 				i.remove();
 			}
 
 			buffers = null; // clear everything that's kept in memory
-			return new Message(out);
+			if (binary) {
+				return new Message(out);
+			} else {
+				return new Message(new String(out, StandardCharsets.UTF_8));
+			}
 		}
 	}
 
-	/** 
+	/**
 	 * Doesn't do anything if the message is kept in memory
 	 */
 	@Override

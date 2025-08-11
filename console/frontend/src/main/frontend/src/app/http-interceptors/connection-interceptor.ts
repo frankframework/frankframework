@@ -1,17 +1,16 @@
 import { HttpErrorResponse, HttpEvent, HttpHandler, HttpInterceptor, HttpRequest } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
+import { inject, Injectable, WritableSignal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
-import { AppService } from '../app.service';
+import { appInitState, AppInitState, AppService } from '../app.service';
 import { Router } from '@angular/router';
 import { ToastService } from '../services/toast.service';
 
 @Injectable()
 export class ConnectionInterceptor implements HttpInterceptor {
+  private readonly router: Router = inject(Router);
+  private readonly appService: AppService = inject(AppService);
+  private readonly toastsService: ToastService = inject(ToastService);
   private errorCount = 0;
-
-  private router: Router = inject(Router);
-  private appService: AppService = inject(AppService);
-  private toastsService: ToastService = inject(ToastService);
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     return next.handle(request).pipe(
@@ -20,39 +19,7 @@ export class ConnectionInterceptor implements HttpInterceptor {
           if (error.url && !error.url.includes(this.appService.absoluteApiPath)) return;
           switch (error.status) {
             case 0: {
-              if (error.url) {
-                fetch(error.url, { redirect: 'manual' }).then((res) => {
-                  if (res.type === 'opaqueredirect') {
-                    // if the request ended in a redirect that failed, then login
-                    const login_url = `${this.appService.getServerPath()}iaf/`;
-                    this.router.navigate([login_url]);
-                  }
-                });
-              }
-
-              if (this.appService.APP_CONSTANTS['init'] == 1) {
-                if (error.headers.get('Authorization') == undefined) {
-                  this.toastsService.error('Failed to connect to backend!');
-                } else {
-                  console.warn('Authorization error');
-                }
-              } else if (this.appService.APP_CONSTANTS['init'] == 2 /*  && rejection.config.poller */) {
-                console.warn('Connection to the server was lost!');
-                this.errorCount++;
-                if (this.errorCount > 2) {
-                  this.toastsService.error(
-                    'Server Error',
-                    'Connection to the server was lost! Click to refresh the page.',
-                    {
-                      timeout: 0,
-                      clickHandler: () => {
-                        window.location.reload();
-                        return true;
-                      },
-                    },
-                  );
-                }
-              }
+              this.lostConnection(error);
               break;
             }
             case 400: {
@@ -78,5 +45,42 @@ export class ConnectionInterceptor implements HttpInterceptor {
         },
       }),
     );
+  }
+
+  private async lostConnection(error: HttpErrorResponse): Promise<void> {
+    const consoleState: WritableSignal<AppInitState> = this.appService.consoleState;
+    if (error.url) {
+      try {
+        const response = await fetch(error.url, { redirect: 'manual' });
+        if (response.type === 'opaqueredirect') {
+          // if the request ended in a redirect that failed, then login
+          const login_url = `${this.appService.getServerPath()}iaf/`;
+          this.router.navigate([login_url]);
+        }
+        return;
+      } catch {
+        /* noop */
+      }
+    }
+
+    if (consoleState() == appInitState.INIT) {
+      if (error.headers.get('Authorization') == undefined) {
+        this.toastsService.error('Failed to connect to backend!');
+      } else {
+        console.warn('Authorization error');
+      }
+    } else if (consoleState() == appInitState.POST_INIT) {
+      console.warn('Connection to the server was lost!');
+      this.errorCount++;
+      if (this.errorCount > 2) {
+        this.toastsService.error('Server Error', 'Connection to the server was lost! Click to refresh the page.', {
+          timeout: 0,
+          clickHandler: () => {
+            globalThis.location.reload();
+            return true;
+          },
+        });
+      }
+    }
   }
 }

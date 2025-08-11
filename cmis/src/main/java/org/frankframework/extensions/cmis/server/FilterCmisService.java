@@ -15,6 +15,7 @@
 */
 package org.frankframework.extensions.cmis.server;
 
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -66,9 +67,10 @@ import org.apache.chemistry.opencmis.server.support.wrapper.CallContextAwareCmis
 public abstract class FilterCmisService extends AbstractCmisService implements CallContextAwareCmisService,
 		Serializable {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
-	private CallContext context;
+	private transient CallContext context;
 
 	/**
 	 * Called after the object has been created.

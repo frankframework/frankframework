@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2024 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 
 
 /**
- * Pipe that validates the input message against a JSON Schema. 
+ * Pipe that validates the input message against a JSON Schema.
  * @author Gerrit van Brakel
  */
 @Category(Category.Type.BASIC)
@@ -82,8 +82,6 @@ public class JsonValidator extends AbstractValidator {
 		try {
 			if (messageToValidate.isEmpty()) {
 				messageToValidate = new Message("{}");
-			} else {
-				messageToValidate.preserve();
 			}
 
 			JsonSchema curSchema = jsonSchema;
@@ -156,7 +154,7 @@ public class JsonValidator extends AbstractValidator {
 	}
 
 	/**
-	 * The subSchemaPrefix is an optional attribute used when referencing a subschema located in a nested structure, such as $defs or definitions. 
+	 * The subSchemaPrefix is an optional attribute used when referencing a subschema located in a nested structure, such as $defs or definitions.
 	 * Adding only the subSchema attribute is not enough if your schema organizes definitions in nested objects. Add root attribute to complete the process.
 	 * @ff.default /definitions/
 	 */

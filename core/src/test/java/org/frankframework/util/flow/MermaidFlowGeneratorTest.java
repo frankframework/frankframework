@@ -26,8 +26,10 @@ class MermaidFlowGeneratorTest {
 			"Exit1Validators0Wrappers0", "Exit1Validators0Wrappers1",
 			"Exit1Validators1Wrappers0", "Exit1Validators1Wrappers1",
 			"NoExplicitExitThenImplicitSuccessExit", "OnlyExplicitErrorExitThenImplicitSuccessExit",
-			"OnlyExplicitSuccessThenNoImplicitError", "ExplicitSuccessAndErrorThenNothingImplicit"
+			"OnlyExplicitSuccessThenNoImplicitError", "ExplicitSuccessAndErrorThenNothingImplicit",
+			"CombineForwardsBetweenSameNodes"
 	})
+
 	void test(String directory) throws Exception {
 		String testFileDir = BASE_DIR + directory;
 

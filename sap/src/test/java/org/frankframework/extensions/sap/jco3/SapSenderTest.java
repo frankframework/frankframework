@@ -33,7 +33,7 @@ import org.frankframework.util.SapSystemListItem;
 public class SapSenderTest {
 
 	private final String sapSystemName = "sap-system";
-	
+
 	private SapSender sender;
 	private SapSystem sapSystem;
 

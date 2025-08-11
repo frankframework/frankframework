@@ -207,7 +207,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * The name of the column labels are stored in. 
+	 * The name of the column labels are stored in.
 	 * @ff.default label
 	 */
 	public void setLabelField(String labelField) {

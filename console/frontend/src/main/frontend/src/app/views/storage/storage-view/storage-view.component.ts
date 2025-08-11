@@ -27,17 +27,9 @@ export class StorageViewComponent implements OnInit {
     id: 'Loading...',
   };
   protected extraProperties: string[] = [];
+  protected storageParams;
 
   private readonly storageService: StorageService = inject(StorageService);
-
-  // service bindings
-  protected storageParams = this.storageService.storageParams;
-  closeNote = (index: number): void => {
-    this.storageService.closeNote(index);
-  };
-  downloadMessage = (messageId: string): void => {
-    this.storageService.downloadMessage(messageId);
-  };
 
   private readonly base64Service: Base64Service = inject(Base64Service);
   private readonly router: Router = inject(Router);
@@ -47,12 +39,24 @@ export class StorageViewComponent implements OnInit {
 
   private skipProperties: string[] = ['id', 'insertDate', 'correlationId', 'comment', 'message'];
 
+  constructor() {
+    this.storageParams = this.storageService.storageParams;
+  }
+
+  // service bindings
+  closeNote = (index: number): void => {
+    this.storageService.closeNote(index);
+  };
+  downloadMessage = (messageId: string): void => {
+    this.storageService.downloadMessage(messageId);
+  };
+
   ngOnInit(): void {
     this.storageService.closeNotes();
     this.setBreadcrumbs();
 
     if (!this.storageParams.messageId) {
-      this.SweetAlert.Warning('Invalid URL', 'No message id provided!');
+      this.SweetAlert.warning('Invalid URL', 'No message id provided!');
       return;
     }
 
@@ -66,12 +70,12 @@ export class StorageViewComponent implements OnInit {
       error: (errorData: HttpErrorResponse) => {
         const error = errorData.error ? errorData.error.error : errorData.message;
         if (errorData.status == 500) {
-          this.SweetAlert.Warning(
+          this.SweetAlert.warning(
             'An error occured while opening the message',
             `message id [${this.message.id}] error [${error}]`,
           );
         } else {
-          this.SweetAlert.Warning('Message not found', `message id [${this.message.id}] error [${error}]`);
+          this.SweetAlert.warning('Message not found', `message id [${this.message.id}] error [${error}]`);
         }
         this.goBack();
       },

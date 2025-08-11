@@ -1,0 +1,15 @@
+<zgwRol>
+	<betrokkeneIdentificatie>
+		<ann.identificatie>${extraElementen:kvkNummer}</ann.identificatie>
+		<authentiek>N</authentiek>
+		<geslachtsnaam>fromValueOverride</geslachtsnaam>
+		<innNnpId>823288444</innNnpId>
+		<innRechtsvorm>overig_privaatrechtelijke_rechtspersoon</innRechtsvorm>
+		<statutaireNaam>Gemeente Súdwest-Fryslân</statutaireNaam>
+	</betrokkeneIdentificatie>
+	<betrokkeneType>niet_natuurlijk_persoon</betrokkeneType>
+	<omschrijving>Initiator</omschrijving>
+	<omschrijvingGeneriek>initiator</omschrijvingGeneriek>
+	<roltoelichting>Initiator:Gemeente Súdwest-Fryslân</roltoelichting>
+	<roltype>http://open-zaak.nginx:9001/catalogi/api/v1/roltypen/a892d249-d866-417b-bc88-8d1287da7de8</roltype>
+</zgwRol>

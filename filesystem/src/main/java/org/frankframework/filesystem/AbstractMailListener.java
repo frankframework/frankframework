@@ -146,4 +146,9 @@ public abstract class AbstractMailListener<M, A, S extends IMailFileSystem<M,A>>
 	public void setMessageType(MessageType messageType) {
 		super.setMessageType(messageType);
 	}
+
+	@Override
+	public MessageType getMessageType() {
+		return (MessageType) super.getMessageType();
+	}
 }

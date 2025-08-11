@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
-import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.doc.Category;
 import org.frankframework.stream.Message;
 
 /**
@@ -45,12 +45,12 @@ import org.frankframework.stream.Message;
  * The Kafka integration is still under development so do not
  * currently use unless you wish to participate in this development.
  */
-@Deprecated(forRemoval = false)
+@Category(Category.Type.EXPERIMENTAL)
 @ConfigurationWarning("Experimental and under development. Do not use unless you wish to participate in this development.")
 @Log4j2
 public class KafkaSender extends AbstractKafkaFacade implements ISender {
 
-	//setter is for testing purposes only.
+	// setter is for testing purposes only.
 	private @Setter(AccessLevel.PACKAGE) Producer<String, byte[]> producer;
 
 	/** The topic to send messages to. Only one topic per sender. Wildcards are not supported. */
@@ -70,17 +70,6 @@ public class KafkaSender extends AbstractKafkaFacade implements ISender {
 	@Override
 	public void start() {
 		producer = new KafkaProducer<>(properties, new StringSerializer(), new ByteArraySerializer());
-
-		// TODO find a better alternative, perhaps attempting to create (and close) a transaction? Definitely don't use Thread.sleep!
-		try {
-			Thread.sleep(100);
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-			throw new LifecycleException(e);
-		}
-
-		Double metric = (Double) producer.metrics().values().stream().filter(item -> "response-total".equals(item.metricName().name())).findFirst().orElseThrow(() -> new LifecycleException("Failed to get response-total metric.")).metricValue();
-		if (metric.intValue() == 0) throw new LifecycleException("Didn't get a response from Kafka while connecting for Sending.");
 	}
 
 	@Override
@@ -92,7 +81,6 @@ public class KafkaSender extends AbstractKafkaFacade implements ISender {
 	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 		byte[] messageData;
 		try {
-			message.preserve();
 			messageData = message.asByteArray();
 		} catch (Exception e) {
 			throw new SenderException("Failed to convert message to message type:", e);

@@ -51,8 +51,9 @@ public class CsvParserPipe extends FixedForwardPipe {
 	private @Getter String fieldNames;
 	private @Getter String fieldSeparator;
 	private @Getter HeaderCase headerCase=null;
-	private @Getter boolean prettyPrint=false;
+	private @Getter boolean prettyPrint;
 	private boolean useControlCodes;
+	private @Getter boolean trimWhitespace;
 
 	private CSVFormat format;
 
@@ -79,16 +80,16 @@ public class CsvParserPipe extends FixedForwardPipe {
 			}
 		}
 
-		if(StringUtils.isNotEmpty(getFieldSeparator()) && useControlCodes) {
+		if (StringUtils.isNotEmpty(getFieldSeparator()) && useControlCodes) {
 			throw new ConfigurationException("cannot use fieldSeparator in combination with useControlCodes");
 		}
 
-		if(useControlCodes) {
+		if (useControlCodes) {
 			builder.setRecordSeparator((char) 30);
 			builder.setDelimiter((char) 31);
 		} else if (StringUtils.isNotEmpty(getFieldSeparator())) {
 			String separator = getFieldSeparator();
-			if (separator.length()>1) {
+			if (separator.length() > 1) {
 				throw new ConfigurationException("Illegal value for fieldSeparator ["+separator+"], can only be a single character");
 			}
 			builder.setDelimiter(getFieldSeparator().charAt(0));
@@ -118,15 +119,43 @@ public class CsvParserPipe extends FixedForwardPipe {
 	private void processCsvRecord(final CSVRecord csvRecord, final SaxDocumentBuilder document) throws PipeRunException {
 		try (SaxElementBuilder element = document.startElement("record")) {
 			for (Entry<String,String> entry: csvRecord.toMap().entrySet()) {
-				String key = entry.getKey();
-				if (getHeaderCase() != null) {
-					key = getHeaderCase() == HeaderCase.LOWERCASE ? key.toLowerCase() : key.toUpperCase();
-				}
-				element.addElement(key, entry.getValue());
+				String key = getKey(entry.getKey());
+
+				element.addElement(key, getValue(entry.getValue()));
 			}
 		} catch (SAXException e) {
 			throw new PipeRunException(this, "Exception caught at line ["+ csvRecord.getRecordNumber()+"] pos ["+ csvRecord.getCharacterPosition()+"]", e);
 		}
+	}
+
+	/**
+	 * Returns the value for the field, trimmed if configured to do so.
+	 * @param value the original field value
+	 * @return the processed field value
+	 */
+	private String getValue(String value) {
+		if (isTrimWhitespace()) {
+			return StringUtils.trim(value);
+		}
+		return value;
+	}
+
+	/**
+	 * Returns the key for the header, possibly trimmed and in the specified case.
+	 * @param key the original header key
+	 * @return the processed header key
+	 */
+	private String getKey(String key) {
+		String processedKey = key;
+		if (isTrimWhitespace()) {
+			processedKey = StringUtils.trim(processedKey);
+		}
+
+		if (getHeaderCase() != null) {
+			return getHeaderCase() == HeaderCase.LOWERCASE ? processedKey.toLowerCase() : processedKey.toUpperCase();
+		}
+
+		return processedKey;
 	}
 
 	/**
@@ -169,4 +198,11 @@ public class CsvParserPipe extends FixedForwardPipe {
 		this.useControlCodes = useControlCodes;
 	}
 
+	/**
+	 * When set to true, whitespace is trimmed from the beginning and end of each header and field value.
+	 * @ff.default false
+	 */
+	public void setTrimWhitespace(boolean trimWhitespace) {
+		this.trimWhitespace = trimWhitespace;
+	}
 }

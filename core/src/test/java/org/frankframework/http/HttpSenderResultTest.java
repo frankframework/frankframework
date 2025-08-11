@@ -16,7 +16,14 @@
 package org.frankframework.http;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
@@ -38,26 +45,29 @@ import org.apache.http.impl.io.EmptyInputStream;
 import org.apache.http.protocol.HttpContext;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeRunResult;
+import org.frankframework.core.SenderResult;
 import org.frankframework.http.AbstractHttpSender.HttpMethod;
+import org.frankframework.pipes.SenderPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
 
 @Log4j2
-class HttpSenderResultTest extends Mockito {
+public class HttpSenderResultTest {
 
-	private HttpSender sender = null;
+	private HttpSender dontForgetToCloseMe = null;
 
-	public HttpSender createHttpSender() throws IOException {
+	public HttpSender createHttpSender(int returnStatusCode) throws IOException {
 		InputStream dummyXmlString = new ByteArrayInputStream("<dummy result/>".getBytes());
-		return createHttpSender(dummyXmlString, null);
+		return createHttpSender(dummyXmlString, null, returnStatusCode);
 	}
 
-	public HttpSender createHttpSender(InputStream responseStream, String contentType) throws IOException {
+	public HttpSender createHttpSender(InputStream responseStream, String contentType, int returnStatusCode) throws IOException {
 		CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
 		CloseableHttpResponse httpResponse = mock(CloseableHttpResponse.class);
 		StatusLine statusLine = mock(StatusLine.class);
@@ -65,7 +75,7 @@ class HttpSenderResultTest extends Mockito {
 		ContentType cType = (contentType != null) ? ContentType.parse(contentType) : null;
 		HttpEntity httpEntity = new InputStreamEntity(responseStream, responseStream.available(), cType);
 
-		when(statusLine.getStatusCode()).thenReturn(200);
+		when(statusLine.getStatusCode()).thenReturn(returnStatusCode);
 		when(httpResponse.getStatusLine()).thenReturn(statusLine);
 		when(httpResponse.getEntity()).thenReturn(httpEntity);
 
@@ -81,11 +91,15 @@ class HttpSenderResultTest extends Mockito {
 		httpSender.setVerifyHostname(false);
 		httpSender.setAllowSelfSignedCertificates(true);
 
-		this.sender = httpSender;
+		this.dontForgetToCloseMe = httpSender;
 		return httpSender;
 	}
 
 	public HttpSender createHttpSenderFromFile(String testFile) throws IOException {
+		return createHttpSenderFromFile(testFile, 200);
+	}
+
+	public HttpSender createHttpSenderFromFile(String testFile, int returnStatusCode) throws IOException {
 		InputStream file = getFile(testFile);
 		byte[] fileArray = StreamUtil.streamToBytes(file);
 		String contentType = null;
@@ -104,14 +118,14 @@ class HttpSenderResultTest extends Mockito {
 		}
 
 		InputStream dummyXmlString = new ByteArrayInputStream(fileArray);
-		return createHttpSender(dummyXmlString, contentType);
+		return createHttpSender(dummyXmlString, contentType, returnStatusCode);
 	}
 
 	@AfterEach
 	public void setDown() {
-		if (sender != null) {
-			sender.stop();
-			sender = null;
+		if (dontForgetToCloseMe != null) {
+			dontForgetToCloseMe.stop();
+			dontForgetToCloseMe = null;
 		}
 	}
 
@@ -126,7 +140,7 @@ class HttpSenderResultTest extends Mockito {
 
 	@Test
 	void simpleMockedHttpGet() throws Exception {
-		HttpSender httpSender = createHttpSender();
+		HttpSender httpSender = createHttpSender(200);
 
 		PipeLineSession session = new PipeLineSession();
 
@@ -143,7 +157,7 @@ class HttpSenderResultTest extends Mockito {
 	@Test
 	void simpleMockedHttpPost() throws Exception {
 		InputStream inputStream = spy(EmptyInputStream.INSTANCE);
-		HttpSender httpSender = createHttpSender(inputStream, null);
+		HttpSender httpSender = createHttpSender(inputStream, null, 200);
 
 		try (PipeLineSession session = new PipeLineSession()) {
 			httpSender.setContentType("application/json");
@@ -154,11 +168,107 @@ class HttpSenderResultTest extends Mockito {
 
 			// Use InputStream 'content' as result.
 			Message result = httpSender.sendMessageOrThrow(new Message("{\"temperature\": 0}"), session);
-			result.closeOnCloseOf(session);
 			assertTrue(result.isNull());
 		}
 
 		verify(inputStream, times(1)).close();
+	}
+
+	@Test
+	public void simpleMockedHttpGetResponse404() throws Exception {
+		HttpSender sender = createHttpSender(404);
+
+		PipeLineSession session = new PipeLineSession();
+
+		sender.setMethodType(HttpMethod.GET);
+
+		sender.configure();
+		sender.start();
+
+		//Use InputStream 'content' as result.
+		SenderResult result = sender.sendMessage(new Message(""), session);
+
+		// Assert
+		assertFalse(result.isSuccess());
+		assertEquals("<dummy result/>", result.getResult().asString());
+	}
+
+	@Test
+	public void simpleMockedHttpGetResponse404SetStatusInSession() throws Exception {
+		HttpSender sender = createHttpSender(404);
+
+		PipeLineSession session = new PipeLineSession();
+
+		sender.setMethodType(HttpMethod.GET);
+		sender.setResultStatusCodeSessionKey("StatusCode");
+
+		sender.configure();
+		sender.start();
+
+		//Use InputStream 'content' as result.
+		SenderResult result = sender.sendMessage(new Message(""), session);
+
+		// Assert
+		assertTrue(result.isSuccess());
+		assertEquals("<dummy result/>", result.getResult().asString());
+		assertEquals("404", session.get("StatusCode"));
+	}
+
+	@Test
+	public void simpleMockedHttpGetResponse404SetStatusInSessionWithSenderPipe() throws Exception {
+
+		SenderPipe senderPipe = new SenderPipe();
+		senderPipe.addForward(new PipeForward("success", "GoodJob!"));
+		senderPipe.addForward(new PipeForward("exception", "Panic!"));
+
+
+		HttpSender sender = createHttpSender(404);
+
+		PipeLineSession session = new PipeLineSession();
+
+		sender.setMethodType(HttpMethod.GET);
+		sender.setResultStatusCodeSessionKey("StatusCode");
+
+		senderPipe.setSender(sender);
+		senderPipe.configure();
+		senderPipe.start();
+
+		//Use InputStream 'content' as result.
+		PipeRunResult pipeRunResult = senderPipe.doPipe(new Message(""), session);
+
+		// Assert
+		assertTrue(pipeRunResult.isSuccessful());
+		assertEquals("success", pipeRunResult.getPipeForward().getName());
+		assertEquals("GoodJob!", pipeRunResult.getPipeForward().getPath());
+		assertEquals("<dummy result/>", pipeRunResult.getResult().asString());
+		assertEquals("404", session.get("StatusCode"));
+	}
+
+	@Test
+	public void simpleMockedHttpGetResponse404WithSenderPipe() throws Exception {
+
+		SenderPipe senderPipe = new SenderPipe();
+		senderPipe.addForward(new PipeForward("success", "GoodJob!"));
+		senderPipe.addForward(new PipeForward("exception", "Panic!"));
+
+		HttpSender sender = createHttpSender(404);
+
+		PipeLineSession session = new PipeLineSession();
+
+		sender.setMethodType(HttpMethod.GET);
+
+		senderPipe.setSender(sender);
+		senderPipe.configure();
+		senderPipe.start();
+
+		//Use InputStream 'content' as result.
+		PipeRunResult pipeRunResult = senderPipe.doPipe(new Message(""), session);
+
+		// Assert
+		assertFalse(pipeRunResult.isSuccessful());
+		assertEquals("exception", pipeRunResult.getPipeForward().getName());
+		assertEquals("Panic!", pipeRunResult.getPipeForward().getPath());
+		assertEquals("<dummy result/>", pipeRunResult.getResult().asString());
 	}
 
 	@Test

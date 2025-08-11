@@ -2,9 +2,9 @@
   @for (alert of state; track alert.message) {
     <ngb-alert
       data-cy-test-pipeline="runResult"
+      data-cy="monitors-add-edit__alert"
       [dismissible]="false"
       [type]="alert.type"
-      data-cy="monitors-add-edit__alert"
       >{{ alert.message }}</ngb-alert
     >
   }
@@ -14,10 +14,10 @@
         <div class="ibox-title">
           <div class="pull-right">
             <button
-              [routerLink]="['/monitors']"
-              [queryParams]="{ configuration: selectedConfiguration }"
               class="btn btn-xs pull-right btn-info"
               type="button"
+              [routerLink]="['/monitors']"
+              [queryParams]="{ configuration: selectedConfiguration }"
             >
               <i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i>
               <span> Back</span>
@@ -27,7 +27,7 @@
         </div>
         <div class="ibox-content">
           @if (!componentLoading) {
-            <form role="form" (submit)="submit(trigger)" appQuickSubmitForm>
+            <form role="form" appQuickSubmitForm (submit)="submit(trigger)">
               <div class="row form-group">
                 <label class="col-sm-3 control-label" for="name">Monitor</label>
                 <div class="col-sm-9">
@@ -36,8 +36,8 @@
                     name="name"
                     id="name"
                     type="text"
-                    [(ngModel)]="monitor"
                     [disabled]="disabled"
+                    [(ngModel)]="monitor"
                   />
                 </div>
               </div>
@@ -65,10 +65,11 @@
                 </div>
               </div>
               <div class="row form-group">
-                <label class="col-sm-3 control-label">Filtering</label>
+                <label class="col-sm-3 control-label" for="filter">Filtering</label>
                 <div class="col-sm-9 filtering">
                   <span class="form-control m-b"
-                    ><input type="radio" name="filter" value="NONE" [(ngModel)]="trigger.filter" /> None</span
+                    ><input type="radio" name="filter" id="filter" value="NONE" [(ngModel)]="trigger.filter" />
+                    None</span
                   >
                   <span class="form-control m-b"
                     ><input type="radio" name="filter" value="ADAPTER" [(ngModel)]="trigger.filter" /> By Adapter</span
@@ -141,8 +142,8 @@
                     id="threshold"
                     type="number"
                     min="0"
-                    [(ngModel)]="trigger.threshold"
                     data-cy="monitors-add-edit__threshold__input"
+                    [(ngModel)]="trigger.threshold"
                   />
                 </div>
               </div>

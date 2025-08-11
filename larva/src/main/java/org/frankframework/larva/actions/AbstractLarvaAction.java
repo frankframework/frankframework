@@ -36,9 +36,9 @@ import org.frankframework.util.EnumUtils;
 
 /**
  * This class is used to create and manage the lifecycle of Larva actions.
- * 
+ *
  * This class is a wrapper around the IConfigurable interface and handles the read and write operations.
- * 
+ *
  * @author Niels Meijer
  */
 @Log4j2
@@ -99,6 +99,14 @@ public abstract class AbstractLarvaAction<T extends IConfigurable> implements Co
 		}
 
 		return false; // Since it's not a lifecycle, always assume false so start is called. Stop is called in close()
+	}
+
+	@Override
+	public boolean isConfigured() {
+		if (configurable instanceof ConfigurableLifecycle lifecycle) {
+			return lifecycle.isConfigured();
+		}
+		return false; // Assume false so configure it always called.
 	}
 
 	public void invokeSetters(Properties properties) {

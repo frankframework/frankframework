@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013-2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,7 +38,6 @@ import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -65,6 +64,7 @@ import org.frankframework.pipes.Base64Pipe.Direction;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.DB2DocumentWriter;
 import org.frankframework.util.DB2XMLWriter;
 import org.frankframework.util.DateFormatUtils;
@@ -243,10 +243,17 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 
 	protected CallableStatement getCallWithRowIdReturned(Connection con, String query) throws SQLException {
 		String callQuery = "BEGIN " + query + " RETURNING ROWID INTO ?; END;";
-		log.debug("preparing statement for query [{}]", () -> callQuery);
+		log.debug("preparing statement for query [{}]", callQuery);
 		CallableStatement callableStatement = con.prepareCall(callQuery);
-		callableStatement.setQueryTimeout(getTimeout());
-		return callableStatement;
+
+		try {
+			callableStatement.setQueryTimeout(getTimeout());
+			return callableStatement;
+		} catch (SQLException e) {
+			// Since we are modifying the statement which may throw an Exception, handle it here and close the statement.
+			CloseUtils.closeSilently(callableStatement);
+			throw e;
+		}
 	}
 
 	protected ResultSet getReturnedColumns(PreparedStatement st) throws SQLException {
@@ -419,10 +426,6 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	}
 
 	protected Message getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar) throws JdbcException, SQLException, IOException {
-		return getResult(resultset, blobSessionVar, clobSessionVar, null, null, null);
-	}
-
-	protected Message getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws JdbcException, SQLException, IOException {
 		if (isScalar()) {
 			String result=null;
 			if (resultset.next()) {
@@ -432,16 +435,6 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 					log.warn("has set scalar=true but the resultset contains [{}] columns. Consider optimizing the query.", numberOfColumns);
 				}
 				if (getDbmsSupport().isBlobType(rsmeta, 1)) {
-					if (response!=null) {
-						if (StringUtils.isNotEmpty(contentType)) {
-							response.setHeader("Content-Type", contentType);
-						}
-						if (StringUtils.isNotEmpty(contentDisposition)) {
-							response.setHeader("Content-Disposition", contentDisposition);
-						}
-						JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), response.getOutputStream(), isCloseOutputstreamOnExit());
-						return Message.nullMessage();
-					}
 					if (blobSessionVar!=null) {
 						JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), blobSessionVar, isCloseOutputstreamOnExit());
 						return Message.nullMessage();
@@ -583,10 +576,6 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	}
 
 	protected SenderResult executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar) throws SenderException{
-		return executeSelectQuery(statement, blobSessionVar, clobSessionVar, null, null, null);
-	}
-
-	private SenderResult executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar, HttpServletResponse response, String contentType, String contentDisposition) throws SenderException{
 		try {
 			if (getMaxRows()>0) {
 				statement.setMaxRows(getMaxRows()+ ( getStartRow()>1 ? getStartRow()-1 : 0));
@@ -598,7 +587,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 					resultset.absolute(getStartRow()-1);
 					log.debug("Index set at position: {}", resultset.getRow());
 				}
-				return new SenderResult(getResult(resultset, blobSessionVar, clobSessionVar, response, contentType, contentDisposition));
+				return new SenderResult(getResult(resultset, blobSessionVar, clobSessionVar));
 			}
 		} catch (SQLException|JdbcException|IOException e) {
 			throw new SenderException("got exception executing a SELECT SQL command", e );

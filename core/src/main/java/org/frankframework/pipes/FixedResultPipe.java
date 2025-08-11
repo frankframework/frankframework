@@ -279,8 +279,6 @@ public class FixedResultPipe extends FixedForwardPipe {
 			filename = getFilename();
 		}
 
-		message.closeOnCloseOf(session); // avoid connection leaking when the message itself is not consumed.
-
 		if (StringUtils.isNotEmpty(filename)) {
 			URL resource;
 			try {
@@ -305,7 +303,6 @@ public class FixedResultPipe extends FixedForwardPipe {
 				}
 			} else {
 				resultMessage = new UrlMessage(resource);
-				resultMessage.closeOnCloseOf(session);
 			}
 		}
 

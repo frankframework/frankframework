@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AppService } from 'src/app/app.service';
 import { MiscService } from 'src/app/services/misc.service';
@@ -7,32 +7,32 @@ import { MiscService } from 'src/app/services/misc.service';
 export type StatisticsKeeper = {
   name: string;
   count: number;
-  min: number | null;
-  max: number | null;
-  avg: number | null;
-  stdDev: number | null;
-  sum: number | null;
-  first: number | null;
-  last: number | null;
+  min: number;
+  max: number;
+  avg: number;
+  stdDev: number;
+  sum: number;
+  first: number;
+  last: number;
 };
 
-type StatisticDetails = StatisticsKeeper & {
-  p50: number | null;
-  p90: number | null;
-  p95: number | null;
-  p98: number | null;
+export type StatisticDetails = StatisticsKeeper & {
+  p50: number;
+  p90: number;
+  p95: number;
+  p98: number;
 };
 
-type StatisticDetailsTime = StatisticDetails & {
-  '100ms': null;
-  '1000ms': null;
-  '2000ms': null;
-  '10000ms': null;
+export type StatisticDetailsTime = StatisticDetails & {
+  '100ms': number;
+  '1000ms': number;
+  '2000ms': number;
+  '10000ms': number;
 };
 
-type StatisticDetailsSize = StatisticDetails & {
-  '100000B': null;
-  '1000000B': null;
+export type StatisticDetailsSize = StatisticDetails & {
+  '100000B': number;
+  '1000000B': number;
 };
 
 export type Statistics = {
@@ -59,11 +59,9 @@ export type Statistics = {
   providedIn: 'root',
 })
 export class AdapterstatisticsService {
-  constructor(
-    private http: HttpClient,
-    private appService: AppService,
-    private Misc: MiscService,
-  ) {}
+  private readonly http: HttpClient = inject(HttpClient);
+  private readonly appService: AppService = inject(AppService);
+  private readonly Misc: MiscService = inject(MiscService);
 
   getStatistics(configurationName: string, adapterName: string): Observable<Statistics> {
     return this.http.get<Statistics>(

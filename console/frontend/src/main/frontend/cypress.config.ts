@@ -1,10 +1,12 @@
 import { defineConfig } from 'cypress';
+// @ts-expect-error node:fs is a Node module
 import * as fs from 'node:fs';
 
 export default defineConfig({
   video: true,
   e2e: {
     experimentalStudio: true,
+    defaultCommandTimeout: 10000,
     baseUrl: 'http://localhost:4200',
     reporter: 'cypress-multi-reporters',
     reporterOptions: {

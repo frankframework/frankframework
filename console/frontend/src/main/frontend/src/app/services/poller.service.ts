@@ -1,8 +1,8 @@
 import { HttpClient } from '@angular/common/http';
-import { AppConstants, AppService } from '../app.service';
+import { AppService } from '../app.service';
 import { DebugService } from './debug.service';
 import { Subscription } from 'rxjs';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 
 type PollerState = 'RUNNING' | 'WAITING' | 'STOPPED';
 
@@ -10,20 +10,11 @@ type PollerState = 'RUNNING' | 'WAITING' | 'STOPPED';
   providedIn: 'root',
 })
 export class PollerService {
+  private readonly http: HttpClient = inject(HttpClient);
+  private readonly Debug: DebugService = inject(DebugService);
+  private readonly appService: AppService = inject(AppService);
   // impossible to keep track of T in Poller<T>, even with a wrapper function
   private pollers: Record<string, Poller<unknown>> = {};
-  private appConstants: AppConstants;
-
-  constructor(
-    private http: HttpClient,
-    private appService: AppService,
-    private Debug: DebugService,
-  ) {
-    this.appConstants = this.appService.APP_CONSTANTS;
-    this.appService.appConstants$.subscribe(() => {
-      this.appConstants = this.appService.APP_CONSTANTS;
-    });
-  }
 
   changeInterval(url: string, intervalTime: number): void {
     this.pollers[url].setInterval(intervalTime, true);
@@ -36,7 +27,7 @@ export class PollerService {
 
     this.Debug.log(`Adding new poller [${url}] runOnce [${runOnce}] interval [${intervalTime}]`);
 
-    const interval = intervalTime ?? (this.appConstants['console.pollerInterval'] as number);
+    const interval = intervalTime ?? (this.appService.appConstants()['console.pollerInterval'] as number);
 
     const poller = new Poller<T>(`${this.appService.absoluteApiPath}${url}`, interval, callback, this.http, this.Debug);
 
@@ -95,10 +86,10 @@ export class PollerService {
 }
 
 export class Poller<T> {
-  private timesFired: number = 0;
+  private timesFired = 0;
   private state: PollerState = 'STOPPED';
-  private errorCount: number = 0;
-  private maxErrorCount: number = 3;
+  private errorCount = 0;
+  private maxErrorCount = 3;
 
   private windowIntervalId: number | null = null;
   private runningSubscription: Subscription | null = null;
@@ -125,7 +116,7 @@ export class Poller<T> {
     if (this.state !== 'STOPPED') return;
 
     this.runningSubscription = null;
-    this.windowIntervalId = window.setInterval(() => this.run(), this.intervalTime);
+    this.windowIntervalId = globalThis.setInterval(() => this.run(), this.intervalTime);
     this.state = 'WAITING';
 
     this.run();
@@ -135,7 +126,7 @@ export class Poller<T> {
     if (this.state === 'STOPPED') return;
 
     if (this.state === 'RUNNING') this.runningSubscription?.unsubscribe();
-    window.clearInterval(this.windowIntervalId!);
+    globalThis.clearInterval(this.windowIntervalId!);
     this.windowIntervalId = null;
     this.state = 'STOPPED';
   }

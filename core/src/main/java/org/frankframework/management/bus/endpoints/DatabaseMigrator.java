@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -61,10 +61,10 @@ public class DatabaseMigrator extends BusEndpointBase {
 					Resource resource = getMigrationResource(configuration);
 					if(resource != null) {
 						try(InputStream file = resource.openStream()) {
-							String filename = configuration.getName() +"-"+ normalizeName(resource.getName()); //Names have to be unique in a zip archive!
+							String filename = configuration.getName() +"-"+ normalizeName(resource.getName()); // Names have to be unique in a zip archive!
 							ZipEntry entry = new ZipEntry(filename);
 							zos.putNextEntry(entry);
-							zos.write(StreamUtil.streamToByteArray(file, false));
+							zos.write(file.readAllBytes());
 							zos.closeEntry();
 						}
 					}
@@ -127,11 +127,11 @@ public class DatabaseMigrator extends BusEndpointBase {
 			throw new BusException("no filename provided");
 		}
 
-		if(filename.startsWith(configurationName)) { //Remove ConfigurationName if present
+		if(filename.startsWith(configurationName)) { // Remove ConfigurationName if present
 			filename = filename.substring(configurationName.length()+1);
 		}
 		String migrationFilename = normalizeName(databaseMigrator.getChangeLog().getName());
-		if(!filename.equals(migrationFilename)) { //Compare if the name matches, else liquibase will see this as a new different changelog!
+		if(!filename.equals(migrationFilename)) { // Compare if the name matches, else Liquibase will see this as a new different changelog!
 			throw new BusException("provided changelog filename mismatch");
 		}
 

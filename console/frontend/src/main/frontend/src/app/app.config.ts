@@ -1,6 +1,5 @@
 import { ApplicationConfig, importProvidersFrom } from '@angular/core';
 import { provideRouter, TitleStrategy, withHashLocation, withRouterConfig } from '@angular/router';
-
 import { routes } from './app.routes';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
 import { PagesTitleStrategy } from './pages-title-strategy';
@@ -16,12 +15,13 @@ export const appConfig: ApplicationConfig = {
       withRouterConfig({
         paramsInheritanceStrategy: 'always',
       }),
+      // withDebugTracing(),
     ),
     provideHttpClient(withInterceptorsFromDi()),
     httpInterceptorProviders,
     provideCharts(withDefaultRegisterables()),
     { provide: TitleStrategy, useClass: PagesTitleStrategy },
-    { provide: Window, useValue: window },
+    { provide: Window, useValue: globalThis },
     importProvidersFrom(NgIdleModule.forRoot()),
   ],
 };

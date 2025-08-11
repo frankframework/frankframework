@@ -28,7 +28,6 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.core.annotation.AnnotationUtils;
 
 import org.frankframework.configuration.ConfigurationWarning;
-import org.frankframework.configuration.HasSpecialDefaultValues;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.doc.Protected;
 import org.frankframework.doc.Unsafe;
@@ -121,12 +120,8 @@ public class ValidateAttributeRule extends AbstractDigesterRule {
 	private Object getDefaultValue(Method readMethod, String name, String value, Map<String, String> attrs) {
 		try {
 			Object bean = getBean();
-			Object defaultValue = readMethod.invoke(bean);
-			if (bean instanceof HasSpecialDefaultValues values) {
-				defaultValue = values.getSpecialDefaultValue(name, defaultValue, attrs);
-			}
-			return defaultValue;
-			// if the default value is null, then it can mean that the real default value is determined in configure(),
+			return readMethod.invoke(bean);
+			// If the default value is null, then it can mean that the real default value is determined in configure(),
 			// so we cannot assume setting it to "" has no effect
 		} catch (Exception e) {
 			addLocalWarning("is unable to parse attribute ["+name+"] value ["+value+"] to method ["+readMethod.getName()+"] with type ["+readMethod.getReturnType()+"]");

@@ -33,7 +33,7 @@ import org.frankframework.util.DB2XMLWriter;
 
 /**
  * QuerySender that assumes a fixed query, possibly with attributes.
- * 
+ *
  * Example of a {@code XML} result:
  * <pre>{@code
  * <result>
@@ -58,7 +58,7 @@ import org.frankframework.util.DB2XMLWriter;
  *     </rowset>
  * </result>
  * }</pre>
- * 
+ *
  * See {@link DB2XMLWriter} for more information about the ResultSet!
  *
  * @ff.info The result {@code fieldname} and {@code columntype} are always capital case.

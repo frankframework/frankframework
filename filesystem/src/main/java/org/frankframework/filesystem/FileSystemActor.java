@@ -31,10 +31,10 @@ import jakarta.annotation.Nonnull;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -54,7 +54,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.EnumUtils;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 
 /**
@@ -69,8 +68,8 @@ import org.frankframework.util.StreamUtil;
  *
  * @author Gerrit van Brakel
  */
+@Log4j2
 public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
-	protected Logger log = LogUtil.getLogger(this);
 	private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
 	public static final String ACTION_CREATE="create";
@@ -365,8 +364,6 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	public Message doAction(@Nonnull Message input, ParameterValueList pvl, @Nonnull PipeLineSession session) throws FileSystemException {
 		FileSystemAction action = null;
 		try {
-			input.closeOnCloseOf(session); // don't know if the input will be used
-
 			action = getAction(pvl);
 
 			switch(action) {
@@ -390,9 +387,9 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 					Message result = fileSystem.readFile(file, getCharset());
 					// Make a copy of a local file, otherwise the file is deleted after this method returns.
 					if (fileSystem instanceof LocalFileSystem) {
-						result = result.copyMessage();
-					} else {
-						result.preserve();
+						try (Message originalResult = result) { // This ensures the original result will be closed and its file reference cleaned up
+							result = originalResult.copyMessage();
+						}
 					}
 					fileSystem.deleteFile(file);
 					deleteEmptyFolder(file);
@@ -482,7 +479,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		return messageBuilder.build();
 	}
 
-	@SuppressWarnings("unchecked") //Casts to the required FileSystem type
+	@SuppressWarnings("unchecked") // Casts to the required FileSystem type
 	private Message createFile(@Nonnull Message input, ParameterValueList pvl, InputStream contents) throws FileSystemException, IOException {
 		F file = getFileAndCreateFolder(input, pvl);
 		if (fileSystem.exists(file)) {

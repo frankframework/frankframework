@@ -1,4 +1,5 @@
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
@@ -8,8 +9,8 @@
 	</parent>
 
 	<artifactId>frankframework-test</artifactId>
-	<name>Frank!Framework Test</name>
 	<packaging>war</packaging>
+	<name>Frank!Framework Test</name>
 
 	<properties>
 		<m2eclipse.wtp.contextRoot>iaf-test</m2eclipse.wtp.contextRoot>
@@ -35,6 +36,44 @@
 			<groupId>org.frankframework</groupId>
 			<artifactId>frankframework-webapp</artifactId>
 			<type>war</type>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-console-backend</artifactId>
+		</dependency>
+
+		<!-- provided scoped dependencies -->
+		<dependency>
+			<!-- This dependency is here because of the CustomHighDeliveryCountEsbJmsListener -->
+			<groupId>jakarta.jms</groupId>
+			<artifactId>jakarta.jms-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>jakarta.servlet</groupId>
+			<artifactId>jakarta.servlet-api</artifactId>
+		</dependency>
+
+		<!-- these provided dependencies will be added to the executable (Spring) WAR -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-tomcat</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-loader</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-ladybug-debugger</artifactId>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -63,17 +102,8 @@
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-ladybug-debugger</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.frankframework</groupId>
 			<artifactId>frankframework-console-frontend</artifactId>
 			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-console-backend</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
@@ -96,34 +126,7 @@
 			<scope>runtime</scope>
 		</dependency>
 
-		<!-- provided scoped dependencies -->
-		<dependency><!-- This dependency is here because of the CustomHighDeliveryCountEsbJmsListener -->
-			<groupId>jakarta.jms</groupId>
-			<artifactId>jakarta.jms-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.projectlombok</groupId>
-			<artifactId>lombok</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>jakarta.servlet</groupId>
-			<artifactId>jakarta.servlet-api</artifactId>
-		</dependency>
-
-		<!-- these provided dependencies will be added to the executable (Spring) WAR -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-tomcat</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-loader</artifactId>
-		</dependency>
-
+		<!-- Test Scoped Dependencies -->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter-engine</artifactId>
@@ -132,13 +135,6 @@
 		<dependency>
 			<groupId>org.testcontainers</groupId>
 			<artifactId>junit-jupiter</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-core</artifactId>
-			<version>${project.version}</version>
-			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -184,7 +180,7 @@
 		<dependency>
 			<groupId>com.github.dasniko</groupId>
 			<artifactId>testcontainers-keycloak</artifactId>
-			<version>3.7.0</version>
+			<version>3.8.0</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -197,10 +193,10 @@
 				<executions>
 					<execution>
 						<id>copy-frontend-to-TestClasses</id>
-						<phase>process-test-resources</phase>
 						<goals>
 							<goal>copy-resources</goal>
 						</goals>
+						<phase>process-test-resources</phase>
 						<configuration>
 							<outputDirectory>${project.build.testOutputDirectory}</outputDirectory>
 							<resources>
@@ -221,15 +217,16 @@
 									<targetPath>${project.build.directory}/configurations</targetPath>
 								</resource>
 							</resources>
-							<skip>${maven.test.skip}</skip> <!-- A bit hacky way to prevent this execution from running when tests are skipped. -->
+							<!-- A bit hacky way to prevent this execution from running when tests are skipped. -->
+							<skip>${maven.test.skip}</skip>
 						</configuration>
 					</execution>
 					<execution>
 						<id>copy-resources-and-configurations</id>
-						<phase>prepare-package</phase>
 						<goals>
 							<goal>copy-resources</goal>
 						</goals>
+						<phase>prepare-package</phase>
 						<configuration>
 							<outputDirectory>${project.build.directory}/full-configuration</outputDirectory>
 							<resources>
@@ -258,10 +255,10 @@
 				<executions>
 					<execution>
 						<id>zip-context</id>
-						<phase>package</phase>
 						<goals>
 							<goal>jar</goal>
 						</goals>
+						<phase>package</phase>
 						<configuration>
 							<classifier>context</classifier>
 							<classesDirectory>src/main/webapp/META-INF</classesDirectory>
@@ -270,10 +267,10 @@
 					</execution>
 					<execution>
 						<id>zip-configurations</id>
-						<phase>package</phase>
 						<goals>
 							<goal>jar</goal>
 						</goals>
+						<phase>package</phase>
 						<configuration>
 							<classifier>configurations</classifier>
 							<classesDirectory>src/main</classesDirectory>
@@ -282,10 +279,10 @@
 					</execution>
 					<execution>
 						<id>zip-resources</id>
-						<phase>package</phase>
 						<goals>
 							<goal>jar</goal>
 						</goals>
+						<phase>package</phase>
 						<configuration>
 							<classifier>resources</classifier>
 							<classesDirectory>src/main/resources</classesDirectory>
@@ -293,10 +290,10 @@
 					</execution>
 					<execution>
 						<id>zip-scenarios</id>
-						<phase>package</phase>
 						<goals>
 							<goal>jar</goal>
 						</goals>
+						<phase>package</phase>
 						<configuration>
 							<classifier>scenarios</classifier>
 							<classesDirectory>src/test/testtool</classesDirectory>
@@ -304,10 +301,10 @@
 					</execution>
 					<execution>
 						<id>zip-secrets</id>
-						<phase>package</phase>
 						<goals>
 							<goal>jar</goal>
 						</goals>
+						<phase>package</phase>
 						<configuration>
 							<classifier>secrets</classifier>
 							<classesDirectory>src/main/secrets</classesDirectory>
@@ -315,10 +312,10 @@
 					</execution>
 					<execution>
 						<id>full-configuration</id>
-						<phase>package</phase>
 						<goals>
 							<goal>jar</goal>
 						</goals>
+						<phase>package</phase>
 						<configuration>
 							<classifier>full-configuration</classifier>
 							<addDefaultExcludes>true</addDefaultExcludes>
@@ -545,10 +542,10 @@
 						<artifactId>jacoco-maven-plugin</artifactId>
 						<executions>
 							<execution>
-								<phase>verify</phase>
 								<goals>
 									<goal>report-aggregate</goal>
 								</goals>
+								<phase>verify</phase>
 								<configuration>
 									<dataFileIncludes>
 										<dataFileInclude>**/jacoco.exec</dataFileInclude>

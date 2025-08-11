@@ -1,5 +1,5 @@
 /*
-   Copyright 2016 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2016 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarInputStream;
 
 import org.frankframework.configuration.ClassLoaderException;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.StreamUtil;
 
 public abstract class AbstractJarBytesClassLoader extends AbstractBytesClassLoader {
@@ -44,21 +45,21 @@ public abstract class AbstractJarBytesClassLoader extends AbstractBytesClassLoad
 				String fileName = jarEntry.getName();
 				if(getBasePath() != null) {
 					boolean isFolder = fileName.endsWith("/"); // if the name ends with a slash, assume it's a folder
-					if(isFolder || fileName.startsWith("META-INF/")) { //Ignore all folders and files in META-INF
+					if(isFolder || fileName.startsWith("META-INF/")) { // Ignore all folders and files in META-INF
 						log.debug("ignoring {} [{}]", (isFolder?"folder":"file"), fileName);
 						continue;
 					}
 
-					if(fileName.startsWith(getBasePath())) { //Remove BasePath from the filename
+					if(fileName.startsWith(getBasePath())) { // Remove BasePath from the filename
 						fileName = fileName.substring(getBasePath().length());
-					} else { //Found a file that's not in the BasePath folder
-						if(!fileName.endsWith(".class")) { //Allow classes to be in the root path, but not resources
+					} else { // Found a file that's not in the BasePath folder
+						if(!fileName.endsWith(".class")) { // Allow classes to be in the root path, but not resources
 							log.warn("invalid file [{}] not in folder [{}]", fileName, getBasePath());
-							continue; //Don't add the file to the resources lists
+							continue; // Don't add the file to the resources lists
 						}
 					}
 				}
-				resources.put(fileName, StreamUtil.streamToBytes(StreamUtil.dontClose(jarInputStream)));
+				resources.put(fileName, StreamUtil.streamToBytes(CloseUtils.dontClose(jarInputStream)));
 			}
 			return resources;
 		} catch (IOException e) {

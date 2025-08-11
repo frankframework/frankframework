@@ -5,9 +5,9 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayOutputStream;
-import java.io.FilterInputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.entity.ContentType;
@@ -16,6 +16,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
 import org.frankframework.stream.Message;
+import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.MessageTestUtils.MessageType;
 import org.frankframework.testutil.TestAssertions;
@@ -154,18 +155,18 @@ public class MultipartEntityTest {
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.setBoundary("test-boundary");
 
-		Message repeatable = new Message(new Message("dummy-content-here").asByteArray());
-		Message nonRepeatable = new Message(new FilterInputStream(repeatable.asInputStream()) {});
+		Message repeatable = Message.asMessage("dummy-content-here".getBytes(StandardCharsets.UTF_8));
+		Message nonRepeatable = Message.asMessage(SerializableFileReference.of(repeatable.asInputStream()));
 
 		builder.addPart("part1", repeatable);
 		builder.addPart("part2", nonRepeatable);
 		MultipartEntity entity = builder.build();
 
-		assertFalse(entity.isRepeatable());
-		assertTrue(entity.isChunked());
-		assertFalse(entity.isStreaming());
+		assertTrue(entity.isRepeatable());
+		assertFalse(entity.isChunked());
+		assertTrue(entity.isStreaming());
 		assertEquals(FORMDATA_BOUNDARY, entity.getContentType().getValue());
-		assertEquals(-1, entity.getContentLength());
+		assertEquals(339L, entity.getContentLength());
 		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/multipart-message.txt"), toString(entity));
 	}
 
@@ -174,7 +175,6 @@ public class MultipartEntityTest {
 	public void testWriteToCharacterData(MessageType type) throws Exception {
 		Message charMessage = MessageTestUtils.getMessage(type);
 
-		charMessage.preserve();
 		MessageContentBody contentBody = new MessageContentBody(charMessage);
 
 		// Act

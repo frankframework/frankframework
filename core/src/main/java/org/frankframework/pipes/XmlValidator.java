@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015-2017 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2015-2017 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,7 +37,6 @@ import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
-import org.frankframework.configuration.HasSpecialDefaultValues;
 import org.frankframework.core.AbstractResponseValidatorWrapper;
 import org.frankframework.core.IValidator;
 import org.frankframework.core.IXmlValidator;
@@ -80,7 +79,7 @@ import org.frankframework.xml.RootElementToSessionKeyFilter;
  * @author Jaco de Groot
  */
 @Category(Category.Type.BASIC)
-public class XmlValidator extends AbstractValidator implements SchemasProvider, HasSpecialDefaultValues, IXmlValidator, InitializingBean {
+public class XmlValidator extends AbstractValidator implements SchemasProvider, IXmlValidator, InitializingBean {
 
 	private @Getter String schemaLocation;
 	private @Getter String noNamespaceSchemaLocation;
@@ -161,7 +160,7 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 			}
 			validator.setSchemasProvider(this);
 
-			//do initial schema check
+			// Do initial schema check
 			if (getSchemasId()!=null) {
 				getSchemas(true);
 			}
@@ -211,7 +210,6 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 	public PipeRunResult doPipe(Message input, PipeLineSession session, boolean responseMode, String messageRoot) throws PipeRunException {
 		try {
 			Message messageToValidate;
-			input.preserve();
 			if (StringUtils.isNotEmpty(getSoapNamespace())) {
 				messageToValidate = getMessageToValidate(input);
 			} else {
@@ -497,21 +495,6 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 			return xsds;
 		}
 		return null;
-	}
-
-	@Override
-	public Object getSpecialDefaultValue(String attributeName,
-			Object defaultValue, Map<String, String> attributes) {
-		// Different default value for ignoreUnknownNamespaces when using
-		// noNamespaceSchemaLocation.
-		if ("ignoreUnknownNamespaces".equals(attributeName)) {
-			if (StringUtils.isNotEmpty(attributes.get("schema"))
-					|| StringUtils.isNotEmpty(attributes.get("noNamespaceSchemaLocation"))) {
-				return true;
-			}
-			return false;
-		}
-		return defaultValue;
 	}
 
 	protected void addRequestRootValidation(RootValidation path) {

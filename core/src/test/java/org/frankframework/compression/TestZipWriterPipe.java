@@ -17,8 +17,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.util.MimeType;
 
-import org.frankframework.collection.Collection;
 import org.frankframework.collection.AbstractCollectorPipe.Action;
+import org.frankframework.collection.Collection;
 import org.frankframework.collection.TestCollector;
 import org.frankframework.collection.TestCollectorPart;
 import org.frankframework.configuration.ConfigurationException;
@@ -29,6 +29,7 @@ import org.frankframework.pipes.PipeTestBase;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.testutil.ParameterBuilder;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.StreamUtil;
 
 public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
@@ -187,11 +188,11 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 		try (ZipInputStream zipin = new ZipInputStream(result.asInputStream())) {
 			ZipEntry entry = zipin.getNextEntry();
 			assertEquals(filename1, entry.getName());
-			assertEquals(fileContents1, StreamUtil.readerToString(StreamUtil.dontClose(new InputStreamReader(zipin)), null));
+			assertEquals(fileContents1, StreamUtil.readerToString(CloseUtils.dontClose(new InputStreamReader(zipin)), null));
 
 			entry = zipin.getNextEntry();
 			assertEquals(filename2, entry.getName());
-			assertEquals(fileContents2, StreamUtil.readerToString(StreamUtil.dontClose(new InputStreamReader(zipin)), null));
+			assertEquals(fileContents2, StreamUtil.readerToString(CloseUtils.dontClose(new InputStreamReader(zipin)), null));
 		}
 	}
 
@@ -225,7 +226,7 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 		try (ZipInputStream zipin = new ZipInputStream(result.asInputStream())) {
 			ZipEntry entry = zipin.getNextEntry();
 			assertEquals(filename1, entry.getName());
-			String result222 = StreamUtil.readerToString(StreamUtil.dontClose(new InputStreamReader(zipin)), null);
+			String result222 = StreamUtil.readerToString(CloseUtils.dontClose(new InputStreamReader(zipin)), null);
 			assertEquals(fileContents1, result222);
 			assertEquals(checksum.getValue(), entry.getCrc());
 			assertEquals(fileContents1.getBytes().length, entry.getSize());
@@ -233,7 +234,7 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 
 			entry = zipin.getNextEntry();
 			assertEquals(filename2, entry.getName());
-			assertEquals(fileContents2, StreamUtil.readerToString(StreamUtil.dontClose(new InputStreamReader(zipin)), null));
+			assertEquals(fileContents2, StreamUtil.readerToString(CloseUtils.dontClose(new InputStreamReader(zipin)), null));
 		}
 	}
 
@@ -295,11 +296,11 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 		try (ZipInputStream zipin = new ZipInputStream(result.asInputStream())) {
 			ZipEntry entry = zipin.getNextEntry();
 			assertEquals(filename1, entry.getName());
-			assertEquals(fileContents1, StreamUtil.readerToString(StreamUtil.dontClose(new InputStreamReader(zipin)), null));
+			assertEquals(fileContents1, StreamUtil.readerToString(CloseUtils.dontClose(new InputStreamReader(zipin)), null));
 
 			entry = zipin.getNextEntry();
 			assertEquals(filename2, entry.getName());
-			assertEquals(fileContents2, StreamUtil.readerToString(StreamUtil.dontClose(new InputStreamReader(zipin)), null));
+			assertEquals(fileContents2, StreamUtil.readerToString(CloseUtils.dontClose(new InputStreamReader(zipin)), null));
 		}
 
 		// Assert file

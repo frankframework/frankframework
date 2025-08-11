@@ -21,12 +21,13 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.transaction.support.ResourceHolderSupport;
+import org.springframework.util.Assert;
+
 import com.sap.conn.jco.JCoDestination;
 
 import org.frankframework.extensions.sap.SapException;
 import org.frankframework.extensions.sap.jco3.SapSystemImpl;
-import org.springframework.transaction.support.ResourceHolderSupport;
-import org.springframework.util.Assert;
 
 /**
  * Connection holder, wrapping a Jco destination.

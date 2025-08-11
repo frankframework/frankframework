@@ -20,7 +20,7 @@ import java.util.Map;
 import org.springframework.context.ApplicationContext;
 
 import org.frankframework.configuration.ClassLoaderException;
-import org.frankframework.configuration.ConfigurationUtils;
+import org.frankframework.configuration.util.ConfigurationUtils;
 
 public class DatabaseClassLoader extends AbstractJarBytesClassLoader {
 

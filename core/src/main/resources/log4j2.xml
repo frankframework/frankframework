@@ -1,16 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration name="INVALID CONFIGURATION" status="WARN">
-  <Appenders>
-    <Console name="Console" target="SYSTEM_OUT">
-      <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
-    </Console>
-  </Appenders>
-  <Loggers>
-    <Logger name="org.frankframework" level="error" additivity="false">
-      <AppenderRef ref="Console"/>
-    </Logger>
-    <Root level="error">
-      <AppenderRef ref="Console"/>
-    </Root>
-  </Loggers>
+<!--
+If this file is found/used it means that the `log4j.configurationFile` property was not configured properly.
+The property must be set as either a system property or in the `log4j2.component.properties` file.
+-->
+
+	<Appenders>
+		<Console name="Console" target="SYSTEM_OUT">
+			<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n" />
+		</Console>
+	</Appenders>
+
+	<Loggers>
+		<Logger name="org.frankframework" level="error" additivity="false">
+			<AppenderRef ref="Console" />
+		</Logger>
+
+		<Root level="error">
+			<AppenderRef ref="Console" />
+		</Root>
+	</Loggers>
 </Configuration>

@@ -35,7 +35,6 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 import lombok.Setter;
 
-import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.classloaders.DirectoryClassLoader;
 import org.frankframework.core.Adapter;
@@ -51,6 +50,7 @@ import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.soap.WsdlGenerator;
 import org.frankframework.stream.Message;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.Dir2Xml;
 import org.frankframework.util.FileUtils;
 import org.frankframework.util.StreamUtil;
@@ -82,7 +82,9 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 				unzipStream(inputStream, tempDirectoryBase);
 			} else {
 				File file = new File(tempDirectoryBase, fileName);
-				StreamUtil.streamToFile(inputStream, file);
+				try (OutputStream fileOut = Files.newOutputStream(file.toPath())) {
+					StreamUtil.streamToStream(inputStream, fileOut);
+				}
 				Files.delete(file.toPath());
 			}
 		} catch (IOException e) {
@@ -118,11 +120,9 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		}
 
 		Object result;
-		try {
-			Adapter adapter = new Adapter();
-			Configuration configuration = new Configuration();
-			configuration.setClassLoader(getConfigurationClassLoader());
-			adapter.setConfiguration(configuration);
+		try (Adapter adapter = new Adapter()) {
+			adapter.setClassLoader(getConfigurationClassLoader());
+			adapter.refresh();
 			String fileBaseName = FileUtils.getBaseName(fileName).replace(" ", "_");
 			adapter.setName(fileBaseName);
 			Receiver receiver = new Receiver();
@@ -131,7 +131,6 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 			esbJmsListener.setDestinationName("jms/dest_" + fileBaseName);
 			receiver.setListener(esbJmsListener);
 			adapter.addReceiver(receiver);
-			pipeLine.setConfiguration(configuration);
 			pipeLine.setApplicationContext(adapter);
 			adapter.setPipeLine(pipeLine);
 
@@ -329,7 +328,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 
 						try (FileOutputStream fos = new FileOutputStream(zipFile)) {
 							log.debug("writing ZipEntry [{}] to file [{}]", ze.getName(), zipFile.getPath());
-							StreamUtil.streamToStream(StreamUtil.dontClose(zis), fos);
+							StreamUtil.streamToStream(CloseUtils.dontClose(zis), fos);
 						}
 					}
 				}

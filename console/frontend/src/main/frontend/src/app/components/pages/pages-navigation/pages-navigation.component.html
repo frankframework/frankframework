@@ -4,14 +4,14 @@
       <ul class="nav metismenu" id="side-menu" appSidebar>
         <li class="nav-header">
           <div class="profile-element">
-            <img [src]="frankframeworkLogoPath" alt="Logo" />
+            <img alt="Logo" [src]="frankframeworkLogoPath" />
           </div>
           <div class="logo-element">
-            <img [src]="frankExclamationPath" alt="Logo" />
+            <img alt="Logo" [src]="frankExclamationPath" />
           </div>
         </li>
 
-        <app-custom-views></app-custom-views>
+        <app-custom-views />
 
         <li appHasAccessToLink="getAdapters" routerLinkActive="active" data-cy="pages-navigation__status">
           <a data-cy-nav="adapterStatus" routerLink="/status" (click)="closeExpandedItem()"
@@ -20,9 +20,9 @@
         </li>
 
         <li
-          cdkAccordionItem
           #configuration
           #accordionItemConfiguration="cdkAccordionItem"
+          cdkAccordionItem
           class="nav-group"
           tabindex="0"
           [appHasAccessToLink]="['getConfigurationXML', 'manageConfiguration']"
@@ -32,7 +32,7 @@
           "
           [ngClass]="getClassByRoute('active', 'configuration', accordionItemConfiguration.expanded)"
         >
-          <a (click)="expandCollapse(accordionItemConfiguration, $event)"
+          <a tabindex="0" role="button" (click)="expandCollapse(accordionItemConfiguration, $event)"
             ><i class="fa fa-cogs"></i>
             <span class="nav-label">Configurations</span>
             <span class="fa arrow"></span
@@ -51,9 +51,9 @@
           </ul>
         </li>
         <li
-          cdkAccordionItem
           #logging
           #accordionItemLogging="cdkAccordionItem"
+          cdkAccordionItem
           class="nav-group"
           tabindex="0"
           [appHasAccessToLink]="['getLogDirectory', 'getLogConfiguration', 'getLogDefinitions']"
@@ -61,7 +61,7 @@
           [expanded]="getExpandedByRoute('logging', { element: logging, accordionItem: accordionItemLogging })"
           [ngClass]="getClassByRoute('active', 'logging', accordionItemLogging.expanded)"
         >
-          <a (click)="expandCollapse(accordionItemLogging, $event)"
+          <a tabindex="0" role="button" (click)="expandCollapse(accordionItemLogging, $event)"
             ><i class="fa fa-life-ring"></i> <span class="nav-label">Logging</span> <span class="fa arrow"></span
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemLogging.expanded }">
@@ -77,15 +77,15 @@
             >
               <a routerLink="/logging">Log Files</a>
             </li>
-            <li [appHasAccessToLink]="['getLogConfiguration', 'getLogDefinitions']" routerLinkActive="active">
+            <li routerLinkActive="active" [appHasAccessToLink]="['getLogConfiguration', 'getLogDefinitions']">
               <a routerLink="/logging/settings">Log Settings</a>
             </li>
           </ul>
         </li>
         <li
-          cdkAccordionItem
           #testing
           #accordionItemTesting="cdkAccordionItem"
+          cdkAccordionItem
           class="nav-group"
           tabindex="0"
           [attr.aria-expanded]="accordionItemTesting.expanded"
@@ -94,14 +94,14 @@
           "
           [ngClass]="getClassByRoute('active', ['testing', 'test-'], accordionItemTesting.expanded)"
         >
-          <a data-cy-nav="testing" (click)="expandCollapse(accordionItemTesting, $event)"
+          <a tabindex="0" role="button" data-cy-nav="testing" (click)="expandCollapse(accordionItemTesting, $event)"
             ><i class="fa fa-bug"></i> <span class="nav-label">Testing</span> <span class="fa arrow"></span
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemTesting.expanded }">
-            <li data-cy-nav="testingLarva" routerLinkActive="active">
+            <li data-cy-nav="testingLarva" routerLinkActive="active" appConditionalOnProperty="larva.enabled">
               <a routerLink="/testing/larva">Larva</a>
             </li>
-            @if (showOldLadybug) {
+            @if (showOldLadybug()) {
               <li data-cy-nav="testingLadybugLegacy" routerLinkActive="active">
                 <a routerLink="/testing/ladybug-legacy">Ladybug (legacy)</a>
               </li>
@@ -122,9 +122,9 @@
           </ul>
         </li>
         <li
-          cdkAccordionItem
           #jdbc
           #accordionItemJdbc="cdkAccordionItem"
+          cdkAccordionItem
           class="nav-group"
           tabindex="0"
           [appHasAccessToLink]="['executeJdbcQuery', 'browseJdbcTable', 'generateSQL']"
@@ -132,7 +132,7 @@
           [expanded]="getExpandedByRoute(['jdbc', 'liquibase'], { element: jdbc, accordionItem: accordionItemJdbc })"
           [ngClass]="getClassByRoute('active', ['jdbc', 'liquibase'], accordionItemJdbc.expanded)"
         >
-          <a (click)="expandCollapse(accordionItemJdbc, $event)"
+          <a tabindex="0" role="button" (click)="expandCollapse(accordionItemJdbc, $event)"
             ><i class="fa fa-cubes"></i> <span class="nav-label">JDBC</span> <span class="fa arrow"></span
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemJdbc.expanded }">
@@ -148,9 +148,9 @@
           </ul>
         </li>
         <li
-          cdkAccordionItem
           #jms
           #accordionItemJms="cdkAccordionItem"
+          cdkAccordionItem
           class="nav-group"
           tabindex="0"
           [appHasAccessToLink]="['browseQueue', 'putJmsMessage']"
@@ -158,7 +158,7 @@
           [expanded]="getExpandedByRoute('jms', { element: jms, accordionItem: accordionItemJms })"
           [ngClass]="getClassByRoute('active', 'jms', accordionItemJms.expanded)"
         >
-          <a (click)="expandCollapse(accordionItemJms, $event)"
+          <a tabindex="0" role="button" (click)="expandCollapse(accordionItemJms, $event)"
             ><i class="fa fa-th-large"></i> <span class="nav-label">JMS</span> <span class="fa arrow"></span
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemJms.expanded }">
@@ -191,9 +191,9 @@
           >
         </li>
         <li
-          cdkAccordionItem
           #overview
           #accordionItemOverview="cdkAccordionItem"
+          cdkAccordionItem
           class="nav-group"
           tabindex="0"
           [appHasAccessToLink]="['getConnections', 'getIbisStoreSummary', 'getMessageBrowsers']"
@@ -208,7 +208,7 @@
             getClassByRoute('active', ['connections', 'ibisstore-', 'inlinestores'], accordionItemOverview.expanded)
           "
         >
-          <a (click)="expandCollapse(accordionItemOverview, $event)"
+          <a tabindex="0" role="button" (click)="expandCollapse(accordionItemOverview, $event)"
             ><i class="fa fa-sitemap"></i> <span class="nav-label">Overview</span> <span class="fa arrow"></span
           ></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemOverview.expanded }">
@@ -229,7 +229,7 @@
           >
         </li>
         <li appHasAccessToLink="getServerInformation">
-          <a (click)="openInfo()" class="pointer"
+          <a tabindex="0" role="button" class="pointer" (click)="openInfo()"
             ><i class="fa fa-info-circle"></i> <span class="nav-label">Information</span></a
           >
         </li>
@@ -259,9 +259,9 @@
             class="pointer"
             target="_blank"
             title="Report a Bug"
-            href="https://github.com/frankframework/frankframework/issues/new?template=1-bug.yml&environment={{
-              encodedServerInfo
-            }}"
+            [href]="
+              `https://github.com/frankframework/frankframework/issues/new?template=1-bug.yml&environment=${encodedServerInfo()}`
+            "
           >
             <i class="fa fa-flag"></i>
             <span class="nav-label">Report a Bug</span>

@@ -30,6 +30,7 @@ import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.IWithParameters;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.doc.Mandatory;
 import org.frankframework.doc.Protected;
 import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.json.DataSonnetOutputType;
@@ -47,6 +48,8 @@ import org.frankframework.stream.Message;
  * </p>
  *
  * @ff.parameters All parameters are added to the {@code .jsonnet} stylesheet. Parameter names must be unique.
+ *
+ * @since 9.2
  *
  * @see IErrorMessageFormatter for general information on error message formatters.
  * @see <a href="https://jsonnet.org/">https://jsonnet.org/</a> for live examples of `.jsonnet` files.
@@ -87,6 +90,7 @@ public class DataSonnetErrorMessageFormatter extends ErrorMessageFormatter imple
 	/**
 	 * Set a DataSonnet stylesheet to transform the default JSON error message to a custom format.
 	 */
+	@Mandatory
 	public void setStyleSheetName(String styleSheetName) {
 		this.styleSheetName = styleSheetName;
 	}

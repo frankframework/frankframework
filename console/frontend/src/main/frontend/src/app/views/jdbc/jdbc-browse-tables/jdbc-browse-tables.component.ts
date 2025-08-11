@@ -1,6 +1,6 @@
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
-import { AppConstants, AppService, ServerErrorResponse } from 'src/app/app.service';
+import { AppService, ServerErrorResponse } from 'src/app/app.service';
 import { JdbcBrowseForm, JdbcService } from '../jdbc.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
@@ -9,12 +9,13 @@ import { LaddaModule } from 'angular2-ladda';
 import { OrderByPipe } from '../../../pipes/orderby.pipe';
 import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
 import { WebStorageService } from '../../../services/web-storage.service';
+import { toObservable } from '@angular/core/rxjs-interop';
 
-interface ColumnName {
+type ColumnName = {
   id: number;
   name: string;
   desc: string;
-}
+};
 
 @Component({
   selector: 'app-jdbc-browse-tables',
@@ -25,7 +26,7 @@ interface ColumnName {
 export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
   protected datasources: string[] = [];
   protected error: string | null = null;
-  protected processingMessage: boolean = false;
+  protected processingMessage = false;
   protected form: JdbcBrowseForm = {
     datasource: '',
     resultType: '',
@@ -38,33 +39,32 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
   };
   protected columnNames: ColumnName[] = [];
   protected result: string[][] = [];
-  protected query: string = '';
+  protected query = '';
 
-  private _subscriptions = new Subscription();
-  private appService: AppService = inject(AppService);
-  private jdbcService: JdbcService = inject(JdbcService);
-  private webStorageService: WebStorageService = inject(WebStorageService);
-  private appConstants: AppConstants = this.appService.APP_CONSTANTS;
+  private readonly jdbcService: JdbcService = inject(JdbcService);
+  private readonly webStorageService: WebStorageService = inject(WebStorageService);
+  private readonly appService: AppService = inject(AppService);
+  private appConstants$ = toObservable(this.appService.appConstants);
+  private appConstantsSubscription: Subscription | null = null;
 
   ngOnInit(): void {
-    const appConstantsSubscription = this.appService.appConstants$.subscribe(() => {
-      this.appConstants = this.appService.APP_CONSTANTS;
-      this.form.datasource = this.appConstants['jdbc.datasource.default'] as string;
+    this.appConstantsSubscription = this.appConstants$.subscribe((appConstants) => {
+      this.form.datasource = appConstants['jdbc.datasource.default'] as string;
     });
-    this._subscriptions.add(appConstantsSubscription);
 
     const browseTablesSession = this.webStorageService.get<JdbcBrowseForm>('browseTables');
 
     this.jdbcService.getJdbc().subscribe((data) => {
+      const appConstants = this.appService.appConstants();
       this.datasources = data.datasources;
 
       if (browseTablesSession) {
         this.form = browseTablesSession;
       } else {
         this.form.datasource =
-          this.appConstants['jdbc.datasource.default'] == undefined
+          appConstants['jdbc.datasource.default'] == undefined
             ? data.datasources[0]
-            : (this.appConstants['jdbc.datasource.default'] as string);
+            : (appConstants['jdbc.datasource.default'] as string);
         this.form.datasource = data.datasources[0] ?? '';
         this.form.resultType = data.resultTypes[0] ?? '';
       }
@@ -72,7 +72,7 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
+    this.appConstantsSubscription?.unsubscribe();
   }
 
   submit(formData: JdbcBrowseForm): void {

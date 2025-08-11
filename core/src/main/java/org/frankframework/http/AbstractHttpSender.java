@@ -44,6 +44,8 @@ import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.CanUseSharedResource;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ISenderWithParameters;
 import org.frankframework.core.ParameterException;
@@ -91,6 +93,7 @@ import org.frankframework.util.XmlUtils;
  * @since	7.0
  *
  */
+@DestinationType(Type.HTTP)
 @Forward(name = "*", description = "statuscode of the HTTP response")
 public abstract class AbstractHttpSender extends AbstractHttpSession implements HasPhysicalDestination, ISenderWithParameters, CanUseSharedResource<HttpSession> {
 
@@ -98,8 +101,6 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 	private static final String CONTEXT_KEY_REASON_PHRASE = "Http.ReasonPhrase";
 	public static final String MESSAGE_ID_HEADER = "Message-Id";
 	public static final String CORRELATION_ID_HEADER = "Correlation-Id";
-
-	private final @Getter String domain = "Http";
 
 	private @Setter String sharedResourceRef;
 
@@ -534,8 +535,8 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 	}
 
 	/** If set, the status code of the HTTP response is put in the specified sessionKey and the (error or okay) response message is returned.
-	 * Setting this property has a side effect. If a 4xx or 5xx result code is returned and if the configuration does not implement
-	 * the specific forward for the returned HTTP result code, then the success forward is followed instead of the exception forward.
+	 * Setting this property has a side effect. If a 4xx or 5xx result code is returned and if the pipeline does not implement
+	 * the specific forward, pipeline-global forward or pipeline-exit for the returned HTTP result code, then the success forward is followed instead of the exception forward.
 	 */
 	public void setResultStatusCodeSessionKey(String resultStatusCodeSessionKey) {
 		this.resultStatusCodeSessionKey = resultStatusCodeSessionKey;

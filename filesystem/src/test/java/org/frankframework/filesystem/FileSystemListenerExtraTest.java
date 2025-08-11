@@ -29,6 +29,7 @@ import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.ProcessState;
 import org.frankframework.receivers.RawMessageWrapper;
+import org.frankframework.util.TimeProvider;
 
 public abstract class FileSystemListenerExtraTest<F,S extends IWritableFileSystem<F>> extends WritableFileSystemListenerTest<F, S> {
 
@@ -56,7 +57,7 @@ public abstract class FileSystemListenerExtraTest<F,S extends IWritableFileSyste
 		assertNull(rawMessage, "raw message must be null when not yet stable for "+(2*stabilityTimeUnit)+"ms");
 
 		// simulate that the file is older
-		setFileDate(null, filename, new Date(new Date().getTime()-3*stabilityTimeUnit));
+		setFileDate(null, filename, new Date(TimeProvider.nowAsMillis()-3*stabilityTimeUnit));
 		rawMessage=fileSystemListener.getRawMessage(threadContext);
 		assertNotNull(rawMessage, "raw message must be not null when stable for "+(3*stabilityTimeUnit)+"ms");
 	}

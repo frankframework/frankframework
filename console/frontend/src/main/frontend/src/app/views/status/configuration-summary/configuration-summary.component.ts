@@ -1,6 +1,5 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, Input, Signal } from '@angular/core';
 import { AppService, MessageSummary, Summary } from '../../../app.service';
-import { Subscription } from 'rxjs';
 import { NgClass } from '@angular/common';
 import { FlowComponent } from '../flow/flow.component';
 
@@ -10,56 +9,23 @@ import { FlowComponent } from '../flow/flow.component';
   styleUrl: './configuration-summary.component.scss',
   imports: [NgClass, FlowComponent],
 })
-export class ConfigurationSummaryComponent implements OnInit, OnDestroy {
+export class ConfigurationSummaryComponent {
   @Input({ required: true }) isConfigStubbed: Record<string, boolean> = {};
   @Input({ required: true }) isConfigReloading: Record<string, boolean> = {};
   @Input({ required: true }) isConfigAutoReloadable: Record<string, boolean> = {};
-  @Input({ required: true }) selectedConfiguration: string = '';
+  @Input({ required: true }) selectedConfiguration = '';
   @Input({ required: true }) configurationFlowDiagram: string | null = null;
-  @Input({ required: true }) reloading: boolean = false;
+  @Input({ required: true }) reloading = false;
 
-  protected adapterSummary: Summary = {
-    started: 0,
-    stopped: 0,
-    starting: 0,
-    stopping: 0,
-    exception_starting: 0,
-    exception_stopping: 0,
-    error: 0,
-  };
-  protected receiverSummary: Summary = {
-    started: 0,
-    stopped: 0,
-    starting: 0,
-    stopping: 0,
-    exception_starting: 0,
-    exception_stopping: 0,
-    error: 0,
-  };
-  protected messageSummary: MessageSummary = {
-    info: 0,
-    warn: 0,
-    error: 0,
-  };
+  protected adapterSummarySignal: Signal<Summary>;
+  protected receiverSummarySignal: Signal<Summary>;
+  protected messageSummarySignal: Signal<MessageSummary>;
 
-  private _subscriptions = new Subscription();
+  private appService: AppService = inject(AppService);
 
-  constructor(private appService: AppService) {}
-
-  ngOnInit(): void {
-    this.adapterSummary = this.appService.adapterSummary;
-    this.receiverSummary = this.appService.receiverSummary;
-    this.messageSummary = this.appService.messageSummary;
-
-    const summariesSubscription = this.appService.summaries$.subscribe(() => {
-      this.adapterSummary = this.appService.adapterSummary;
-      this.receiverSummary = this.appService.receiverSummary;
-      this.messageSummary = this.appService.messageSummary;
-    });
-    this._subscriptions.add(summariesSubscription);
-  }
-
-  ngOnDestroy(): void {
-    this._subscriptions.unsubscribe();
+  constructor() {
+    this.adapterSummarySignal = this.appService.adapterSummary;
+    this.receiverSummarySignal = this.appService.receiverSummary;
+    this.messageSummarySignal = this.appService.messageSummary;
   }
 }

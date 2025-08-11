@@ -27,6 +27,8 @@ LICENSE
 .classpath
 .settings/
 .settings\
+.externalToolBuilders/
+.externalToolBuilders\
 .gitignore
 .cvsignore
 .gif

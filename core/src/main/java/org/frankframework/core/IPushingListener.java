@@ -26,7 +26,6 @@ import org.frankframework.receivers.RawMessageWrapper;
  */
 public interface IPushingListener<M> extends IListener<M> {
 
-
 	/**
 	 * Set the handler that will do the processing of the message.
 	 * Each of the received messages must be pushed through handler.processMessage()

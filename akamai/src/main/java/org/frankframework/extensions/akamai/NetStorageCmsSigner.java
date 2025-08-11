@@ -24,6 +24,7 @@ import org.apache.commons.codec.binary.Base64;
 
 import org.frankframework.extensions.akamai.NetStorageUtils.KeyedHashAlgorithm;
 import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.TimeProvider;
 import org.frankframework.util.UUIDUtil;
 
 
@@ -122,7 +123,7 @@ public class NetStorageCmsSigner {
 	 * @return the data field in a comma separated list
 	 */
 	protected String getAuthDataHeaderValue() {
-		Date currentTime = new Date();
+		Date currentTime = TimeProvider.nowAsDate();
 		int rand = UUIDUtil.RANDOM.nextInt(Integer.MAX_VALUE);
 
 		return
@@ -142,6 +143,8 @@ public class NetStorageCmsSigner {
 	 * @param authData data header values {@link #getAuthDataHeaderValue()}
 	 * @return a base64 encoded return string
 	 */
+
+	@SuppressWarnings("java:S3457") // Changing \n to %n so the 'platform separator' is used will break the hash!
 	protected String getAuthSignHeaderValue(String action, String authData) {
 		String signData =
 				"%s%s\n%s:%s\n".formatted(

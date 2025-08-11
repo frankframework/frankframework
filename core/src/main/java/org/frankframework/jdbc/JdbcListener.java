@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018-2020 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2016, 2018-2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.frankframework.jdbc;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Reader;
 import java.sql.Connection;
 import java.sql.ParameterMetaData;
 import java.sql.PreparedStatement;
@@ -24,6 +25,7 @@ import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -57,6 +59,7 @@ import org.frankframework.receivers.ReceiverAware;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.JdbcUtil;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StringUtil;
 
 /**
@@ -93,8 +96,8 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	private @Setter @Getter boolean trace=false;
 	private @Getter boolean peekUntransacted=true;
 
-	private Map<ProcessState, String> updateStatusQueries = new HashMap<>();
-	private Map<ProcessState,Set<ProcessState>> targetProcessStates = new HashMap<>();
+	private Map<ProcessState, String> updateStatusQueries = new EnumMap<>(ProcessState.class);
+	private Map<ProcessState, Set<ProcessState>> targetProcessStates = new EnumMap<>(ProcessState.class);
 
 	protected Connection connection=null;
 
@@ -149,7 +152,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		} else {
 			//noinspection EmptyTryBlock
 			try (Connection ignored = getConnection()) {
-				//do nothing, eat a connection from the pool to validate connectivity
+				// do nothing, eat a connection from the pool to validate connectivity
 			} catch (JdbcException | SQLException e) {
 				throw new LifecycleException(e);
 			}
@@ -288,16 +291,18 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 			if (StringUtils.isNotEmpty(getMessageField())) {
 				switch (getMessageFieldType()) {
 					case CLOB:
-						message = new Message(getDbmsSupport().getClobReader(rs, getMessageField()));
-						message.preserve(); // Prevent problems with stream closed after ResultSet is closed. Needed for MS SQL, Oracle
+						try (Reader clobReader = getDbmsSupport().getClobReader(rs, getMessageField())) {
+							// Since the blobReader is closed before the message is returned, make sure the entire stream is read while creating the message
+							message = MessageUtils.fromReader(clobReader);
+						}
 						break;
 					case BLOB:
 						if (isBlobSmartGet() || StringUtils.isNotEmpty(getBlobCharset())) { // in this case blob contains a String
 							message = new Message(JdbcUtil.getBlobAsString(getDbmsSupport(), rs,getMessageField(), getBlobCharset(), isBlobsCompressed(), isBlobSmartGet(),false));
 						} else {
 							try (InputStream blobStream = JdbcUtil.getBlobInputStream(getDbmsSupport(), rs, getMessageField(), isBlobsCompressed())) {
-								message = new Message(blobStream);
-								message.preserve();
+								// Since the blobStream is closed before the message is returned, make sure the entire stream is read while creating the message
+								message = MessageUtils.fromInputStream(blobStream);
 							}
 						}
 						break;
@@ -361,9 +366,9 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		return Message.asMessage(rawMessage.getRawMessage());
 	}
 
+	@SuppressWarnings("unchecked")
 	protected void addAdditionalQueryFieldsToSession(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String, Object> context) {
 		if (rawMessage.getContext().containsKey(ADDITIONAL_QUERY_FIELDS_KEY)) {
-			//noinspection unchecked
 			context.putAll((Map<String, String>) rawMessage.getContext().get(ADDITIONAL_QUERY_FIELDS_KEY));
 		}
 	}

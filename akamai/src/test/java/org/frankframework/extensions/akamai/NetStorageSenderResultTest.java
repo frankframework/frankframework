@@ -1,7 +1,9 @@
 package org.frankframework.extensions.akamai;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
@@ -13,8 +15,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.time.Instant;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
 import java.util.Map;
@@ -31,6 +33,7 @@ import org.apache.http.impl.io.EmptyInputStream;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.message.BasicHttpResponse;
 import org.apache.http.protocol.HttpContext;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import lombok.extern.log4j.Log4j2;
@@ -40,10 +43,16 @@ import org.frankframework.core.SenderException;
 import org.frankframework.extensions.akamai.NetStorageSender.Action;
 import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.util.TimeProvider;
 
 @Log4j2
 public class NetStorageSenderResultTest {
 	private static final String BASEDIR = "/http/responses/";
+
+	@AfterEach
+	void tearDown() {
+		TimeProvider.resetClock();
+	}
 
 	private NetStorageSender createHttpSender(CloseableHttpResponse httpResponse) throws IOException {
 		CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
@@ -172,7 +181,7 @@ public class NetStorageSenderResultTest {
 		DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss z", Locale.ENGLISH).withZone(ZoneId.of("GMT"));
 		InputStream content = new ByteArrayInputStream("<error />".getBytes());
 
-		CloseableHttpResponse httpResponse = createHttpResponse(content, 400, "text/xml", Map.of("Date", dateFormatter.format(Instant.now())));
+		CloseableHttpResponse httpResponse = createHttpResponse(content, 400, "text/xml", Map.of("Date", dateFormatter.format(TimeProvider.now())));
 		NetStorageSender sender = createHttpSender(httpResponse);
 		sender.setResultStatusCodeSessionKey("dummy");
 		sender.setAction(Action.DIR);
@@ -187,5 +196,18 @@ public class NetStorageSenderResultTest {
 					<statuscode>400</statuscode>
 					<error>&lt;error /&gt;</error>
 				</result>""", result);
+	}
+
+	@Test
+	public void detectDrift() {
+		NetStorageSender sender = new NetStorageSender();
+		assertFalse(sender.detectedTimeDrift("", 10));
+		assertTrue(sender.detectedTimeDrift("Wed, 01 Jan 2020 00:00:00 GMT", 10));
+
+		TimeProvider.setTime(ZonedDateTime.of(2025, 7, 25, 0, 0, 10, 0, ZoneId.of("GMT")));
+		assertFalse(sender.detectedTimeDrift("Fri, 25 Jul 2025 00:00:10 GMT", 1)); // Drift is 0 ms
+		assertTrue(sender.detectedTimeDrift("Fri, 25 Jul 2025 00:00:00 GMT", 9999)); // Drift is 10_000 ms
+		assertFalse(sender.detectedTimeDrift("Fri, 25 Jul 2025 00:00:00 GMT", 30_000)); // Drift is 10_000 ms
+		assertFalse(sender.detectedTimeDrift("geen-date", 30_000)); // Tja, unable to parse...
 	}
 }

@@ -49,7 +49,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationUtils;
+import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.core.IConfigurable;
 import org.frankframework.core.IWithParameters;
 import org.frankframework.core.ParameterException;
@@ -66,6 +66,7 @@ import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.Misc;
 import org.frankframework.util.StringUtil;
+import org.frankframework.util.TimeProvider;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.UUIDUtil;
@@ -75,13 +76,14 @@ import org.frankframework.util.XmlUtils;
 /**
  * Generic parameter definition.
  *
+ * <p>
  * A parameter resembles an attribute. However, while attributes get their value at configuration-time,
  * parameters get their value at the time of processing the message. Value can be retrieved from the message itself,
  * a fixed value, or from the pipelineSession. If this does not result in a value (or if neither of these is specified), a default value
  * can be specified. If an XPathExpression, XSLT stylesheet or JSONPathExpression is specified, it will be applied to the message, the value retrieved
  * from the pipelineSession or the fixed value specified. If the transformation produces no output, the default value
  * of the parameter is taken if provided.
- * <br/><br/>
+ * </p>
  * Examples:
  * <pre><code>
  * stored under SessionKey 'TransportInfo':
@@ -102,7 +104,7 @@ import org.frankframework.util.XmlUtils;
  * </code></pre>
  *
  * N.B. to obtain a fixed value: a non-existing 'dummy' <code>sessionKey</code> in combination with the fixed value in <code>defaultValue</code> is used traditionally.
- * The current version of parameter supports the 'value' attribute, that is sufficient to set a fixed value.
+ * The current version of parameter supports the {@code value} attribute, that is sufficient to set a fixed value.
  * @author Gerrit van Brakel
  * @ff.parameters Parameters themselves can have parameters too, for instance if a XSLT transformation is used, that transformation can have parameters.
  */
@@ -450,7 +452,6 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 						break;
 					case INPUT:
 						try {
-							message.preserve();
 							valueByDefault=message.asString();
 						} catch (IOException e) {
 							throw new ParameterException(getName(), e);
@@ -488,17 +489,12 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		return result;
 	}
 
-	private Object getParameterValueFromInputMessage(Message message) throws ParameterException {
+	private Object getParameterValueFromInputMessage(Message message) {
 		Object input;
-		try {
-			if (StringUtils.isNotEmpty(getContextKey())) {
-				input = message.getContext().get(getContextKey());
-			} else {
-				message.preserve();
-				input = message;
-			}
-		} catch (IOException e) {
-			throw new ParameterException(getName(), e);
+		if (StringUtils.isNotEmpty(getContextKey())) {
+			input = message.getContext().get(getContextKey());
+		} else {
+			input = message;
 		}
 		return input;
 	}
@@ -535,22 +531,21 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	}
 
 	private String applyMinAndMaxLengths(String stringResult) {
-		if (getMinLength()>=0 && !(this instanceof NumberParameter)) { // Numbers are formatted left-pad with leading 0's opposed to right-pad spaces.
-			if (stringResult.length() < getMinLength()) {
-				LOG.debug("Padding parameter [{}] because length [{}] falls short of minLength [{}]", this::getName, stringResult::length, this::getMinLength);
-				return StringUtils.rightPad(stringResult, getMinLength());
-			}
+		if (getMinLength() >= 0 && !(this instanceof NumberParameter) && stringResult.length() < getMinLength()) {
+			LOG.debug("Padding parameter [{}] because length [{}] falls short of minLength [{}]", this::getName, stringResult::length, this::getMinLength);
+			return StringUtils.rightPad(stringResult, getMinLength());
 		}
-		if (getMaxLength()>=0) {
-			if (stringResult.length() > getMaxLength()) { // Still trims length regardless of type
-				LOG.debug("Trimming parameter [{}] because length [{}] exceeds maxLength [{}]", this::getName, stringResult::length, this::getMaxLength);
-				return stringResult.substring(0, getMaxLength());
-			}
+
+		if (getMaxLength() >= 0 && stringResult.length() > getMaxLength()) { // Still trims length regardless of type
+			LOG.debug("Trimming parameter [{}] because length [{}] exceeds maxLength [{}]", this::getName, stringResult::length, this::getMaxLength);
+			return stringResult.substring(0, getMaxLength());
 		}
+
 		return stringResult;
 	}
 
 	/** Converts raw data to configured parameter type */
+	@SuppressWarnings({ "deprecation", "java:S1172", "java:S1130" }) // Ignore unused parameter, unthrown parameters because overrides do throw or use it
 	protected Object getValueAsType(@Nonnull Message request, boolean namespaceAware) throws ParameterException, IOException {
 		Object result = request.asObject();
 
@@ -560,32 +555,30 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	}
 
 	private String formatPattern(ParameterValueList alreadyResolvedParameters, PipeLineSession session) throws ParameterException {
+		int findNextFrom = 0;
 		int startNdx;
-		int endNdx = 0;
+		int endNdx;
 
 		// replace the named parameter with numbered parameters
 		StringBuilder formatPattern = new StringBuilder();
 		List<Object> params = new ArrayList<>();
-		int paramPosition = 0;
-		while(true) {
+		while(findNextFrom < pattern.length()) {
 			// get name of parameter in pattern to be substituted
-			startNdx = pattern.indexOf("{", endNdx);
+			startNdx = pattern.indexOf("{", findNextFrom);
 			if (startNdx == -1) {
-				formatPattern.append(pattern.substring(endNdx));
+				// Append remainder of pattern to the output
+				formatPattern.append(pattern, findNextFrom, pattern.length());
 				break;
+			} else {
+				// Append skipped parts of pattern to the output
+				formatPattern.append(pattern, findNextFrom, startNdx);
 			}
-			else {
-				formatPattern.append(pattern, endNdx, startNdx);
-			}
-			int tmpEndNdx = pattern.indexOf("}", startNdx);
-			endNdx = pattern.indexOf(",", startNdx);
-			if (endNdx == -1 || endNdx > tmpEndNdx) {
-				endNdx = tmpEndNdx;
-			}
+			endNdx = pattern.indexOf("}", startNdx);
 			if (endNdx == -1) {
 				throw new ParameterException(getName(), new ParseException("Bracket is not closed", startNdx));
 			}
-			String substitutionPattern = pattern.substring(startNdx + 1, tmpEndNdx);
+			findNextFrom = endNdx + 1;
+			ParameterPatternSubstitution substitutionPattern = ParameterPatternSubstitution.of(pattern.substring(startNdx + 1, endNdx));
 
 			// get value
 			Object substitutionValue = getValueForFormatting(alreadyResolvedParameters, session, substitutionPattern);
@@ -598,126 +591,168 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			} else {
 				params.add(substitutionValue);
 			}
-			formatPattern.append('{').append(paramPosition++);
+			formatPattern.append('{').append(params.size()-1).append(getMessageFormat(substitutionPattern)).append('}');
 		}
 		try {
 			return MessageFormat.format(formatPattern.toString(), params.toArray());
 		} catch (Exception e) {
-			throw new ParameterException(getName(), "Cannot parse ["+ formatPattern +"]", e);
+			throw new ParameterException(getName(), "Cannot format ["+ formatPattern +"] with arguments [" + paramsToString(params) + "]", e);
 		}
 	}
 
-	private Object preFormatDateType(String rawValue, String formatType, String patternFormatString) throws ParameterException {
-		if ("date".equalsIgnoreCase(formatType) || "time".equalsIgnoreCase(formatType)) {
-			DateFormat df = new SimpleDateFormat(StringUtils.isNotEmpty(patternFormatString) ? patternFormatString : DateFormatUtils.FORMAT_DATETIME_GENERIC);
-			try {
-				return df.parse(rawValue);
-			} catch (ParseException e) {
-				throw new ParameterException(getName(), "Cannot parse [" + rawValue + "] as date", e);
+	private static String paramsToString(List<Object> params) {
+		return params
+				.stream()
+				.map(o -> o == null ? "<null>" : o.getClass().getSimpleName() + ":" + o)
+				.collect(Collectors.joining());
+	}
+
+	private Object preParseDateType(String rawValue, String formatType, String formatString) throws ParameterException {
+
+		if (!(this instanceof DateParameter) && StringUtils.isEmpty(formatString)) {
+			return rawValue;
+		}
+
+		String dfString;
+		if (StringUtils.isNotEmpty(formatString)) {
+			dfString = formatString;
+		} else if ("time".equalsIgnoreCase(formatType) || (StringUtils.isEmpty(formatType) && ParameterType.TIME == type)) {
+			dfString = "HH:mm:ss";
+		} else if ("date".equalsIgnoreCase(formatType) || (StringUtils.isEmpty(formatType) && ParameterType.DATE == type)) {
+			dfString = "yyyy-MM-dd";
+		} else {
+			dfString = DateFormatUtils.FORMAT_DATETIME_GENERIC;
+		}
+		DateFormat df = new SimpleDateFormat(dfString);
+		try {
+			return df.parse(rawValue);
+		} catch (ParseException e) {
+			throw new ParameterException(getName(), "Cannot parse [" + rawValue + "] as date", e);
+		}
+	}
+
+	protected String getMessageFormat(ParameterPatternSubstitution substitution) {
+		if ("millis".equalsIgnoreCase(substitution.formatType) || type == ParameterType.UNIX) {
+			return ",number,#";
+		}
+		if (type == ParameterType.TIME && StringUtils.isEmpty(substitution.formatType)) {
+			return ",time,HH:mm:ss";
+		}
+		if (type == ParameterType.DATE && StringUtils.isEmpty(substitution.formatType)) {
+			return ",date,yyyy-MM-dd";
+		}
+		if (StringUtils.isEmpty(substitution.formatType)) {
+			if (substitution.name.equalsIgnoreCase("now")) {
+				return ",date," + DateFormatUtils.FORMAT_DATETIME_GENERIC;
+			}
+			return "";
+		}
+		if (StringUtils.isEmpty(substitution.formatString)) {
+			return "," + substitution.formatType;
+		}
+		return "," + substitution.formatType + "," + substitution.formatString;
+	}
+
+	private @Nonnull Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, PipeLineSession session, ParameterPatternSubstitution substitutionPattern) throws ParameterException {
+
+		ParameterValue paramValue = alreadyResolvedParameters.get(substitutionPattern.name);
+		if (paramValue != null && paramValue.getValue() != null) {
+			return paramValue.getValue();
+		}
+
+		if (session.containsKey(substitutionPattern.name)) {
+			Object substitutionValue = getSubstitutionValueFromSession(session, substitutionPattern);
+			if (substitutionValue != null) {
+				return substitutionValue;
 			}
 		}
 
-		return rawValue;
-	}
-
-	private Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, PipeLineSession session, String targetPattern) throws ParameterException {
-		String[] patternElements = targetPattern.split(",");
-		String name = patternElements[0].trim();
-		String formatType = patternElements.length>1 ? patternElements[1].trim() : null;
-		String formatString = patternElements.length>2 ? patternElements[2].trim() : null;
-
-		ParameterValue paramValue = alreadyResolvedParameters.get(name);
-		Object substitutionValue = paramValue == null ? null : paramValue.getValue();
-
-		if (substitutionValue == null) {
-			Object substitutionValueMessage = session.get(name);
-			if (substitutionValueMessage != null) {
-				if (substitutionValueMessage instanceof Date substitutionValueDate) {
-					substitutionValue = getSubstitutionValueForDate(substitutionValueDate, formatType);
-				} else if (substitutionValueMessage instanceof String stringValue) {
-					substitutionValue = preFormatDateType(stringValue, formatType, formatString);
+		String nameLc = substitutionPattern.name.toLowerCase();
+		Object substitutionValue = switch (nameLc) {
+			case "now":
+				if ("millis".equalsIgnoreCase(substitutionPattern.formatType) || ParameterType.UNIX == type) {
+					yield TimeProvider.nowAsMillis();
 				} else {
-					substitutionValue = session.getString(name);
-					if (substitutionValue == null) throw new ParameterException(getName(), "Cannot get substitution value from session key: " + name);
+					yield TimeProvider.nowAsDate();
 				}
-			}
-		}
-		if (substitutionValue == null) {
-			String namelc=name.toLowerCase();
-			switch (namelc) {
-				case "now":
-					if ("date".equalsIgnoreCase(formatType) || "time".equalsIgnoreCase(formatType)) {
-						substitutionValue = new Date();
-					} else{
-						substitutionValue = formatDateToString(new Date(), formatString);
-					}
+			case "uid":
+				yield UUIDUtil.createSimpleUUID();
+			case "uuid":
+				yield UUIDUtil.createRandomUUID();
+			case "hostname":
+				yield Misc.getHostname();
+			case "fixeddate":
+				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
+					throw new ParameterException(getName(), "Parameter pattern [" + substitutionPattern.name + "] only allowed in stub mode");
+				}
 
-					break;
-				case "uid":
-					substitutionValue = UUIDUtil.createSimpleUUID();
-					break;
-				case "uuid":
-					substitutionValue = UUIDUtil.createRandomUUID();
-					break;
-				case "hostname":
-					substitutionValue = Misc.getHostname();
-					break;
-				case "fixeddate":
-					if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
-						throw new ParameterException(getName(), "Parameter pattern [" + name + "] only allowed in stub mode");
-					}
+				// Parameter can be provided as a Date or a String. If using session.getString on a Date parameter, it will be formatted incorrectly
+				Object fixedDateTime = session.get(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY);
 
-					// Parameter can be provided as a Date or a String. If using session.getString on a Date parameter, it will be formatted incorrectly
-					Object fixedDateTime = session.get(PutSystemDateInSession.FIXEDDATE_STUB4TESTTOOL_KEY);
-
-					if (fixedDateTime != null) {
-						if (fixedDateTime instanceof Date date) {
-							substitutionValue = getSubstitutionValueForDate(date, formatType);
-						} else if (fixedDateTime instanceof String string) {
-							substitutionValue = preFormatDateType(string, formatType, formatString);
-						}
+				if (fixedDateTime != null) {
+					if (fixedDateTime instanceof Date date) {
+						yield date;
+					} else if (fixedDateTime instanceof String string) {
+						yield preParseDateType(string, substitutionPattern.formatType, substitutionPattern.formatString);
 					} else {
-						// Get the default value
-						substitutionValue = preFormatDateType(PutSystemDateInSession.FIXEDDATETIME, formatType, DateFormatUtils.FORMAT_DATETIME_GENERIC);
+						yield null;
 					}
+				} else {
+					// Get the default value
+					yield preParseDateType(PutSystemDateInSession.FIXEDDATETIME, substitutionPattern.formatType, DateFormatUtils.FORMAT_DATETIME_GENERIC);
+				}
+			case "fixeduid":
+				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
+					throw new ParameterException(getName(), "Parameter pattern [" + substitutionPattern.name + "] only allowed in stub mode");
+				}
+				yield FIXEDUID;
+			case "fixedhostname":
+				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
+					throw new ParameterException(getName(), "Parameter pattern [" + substitutionPattern.name + "] only allowed in stub mode");
+				}
+				yield FIXEDHOSTNAME;
+			case "username":
+				yield cf != null ? cf.getUsername() : "";
+			case "password":
+				yield cf != null ? cf.getPassword() : "";
+			default:
+				yield null;
+		};
+		if (substitutionValue != null) {
+			return substitutionValue;
+		}
+		if (isIgnoreUnresolvablePatternElements()) {
+			return "";
+		} else {
+			throw new ParameterException(getName(), "Parameter or session variable with name [" + substitutionPattern.name + "] in pattern [" + getPattern() + "] cannot be resolved");
+		}
+	}
 
-					break;
-				case "fixeduid":
-					if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
-						throw new ParameterException(getName(), "Parameter pattern [" + name + "] only allowed in stub mode");
-					}
-					substitutionValue = FIXEDUID;
-					break;
-				case "fixedhostname":
-					if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
-						throw new ParameterException(getName(), "Parameter pattern [" + name + "] only allowed in stub mode");
-					}
-					substitutionValue = FIXEDHOSTNAME;
-					break;
-				case "username":
-					substitutionValue = cf != null ? cf.getUsername() : "";
-					break;
-				case "password":
-					substitutionValue = cf != null ? cf.getPassword() : "";
-					break;
-			}
-		}
+	private Object getSubstitutionValueFromSession(PipeLineSession session, ParameterPatternSubstitution substitutionPattern) throws ParameterException {
+		Object substitutionValue = session.get(substitutionPattern.name);
 		if (substitutionValue == null) {
-			if (isIgnoreUnresolvablePatternElements()) {
-				substitutionValue="";
-			} else {
-				throw new ParameterException(getName(), "Parameter or session variable with name [" + name + "] in pattern [" + getPattern() + "] cannot be resolved");
-			}
+			return null;
 		}
-		return substitutionValue;
+		if (substitutionValue instanceof Date substitutionValueDate) {
+			return getSubstitutionValueForDate(substitutionValueDate, substitutionPattern);
+		} else if (substitutionValue instanceof String stringValue) {
+			return preParseDateType(stringValue, substitutionPattern.formatType, substitutionPattern.formatString);
+		} else {
+			String substitutionString = session.getString(substitutionPattern.name);
+			if (substitutionString == null) {
+				// The session had a non-null value for this key but could only get a NULL String from it? Throw exception.
+				throw new ParameterException(getName(), "Cannot get substitution value as String from session key: " + substitutionPattern.name);
+			}
+			return substitutionString;
+		}
 	}
 
 	/**
 	 * @return the date when the format type is set, so the formatter knows how to format the Date object or return the date formatted
 	 * as a String with the default format.
 	 */
-	private Object getSubstitutionValueForDate(Date date, String formatType) {
-		return (formatType != null) ? date : formatDateToString(date, null);
+	private Object getSubstitutionValueForDate(Date date, ParameterPatternSubstitution substitutionPattern) {
+		return (substitutionPattern.formatType != null || this instanceof DateParameter) ? date : formatDateToString(date, substitutionPattern.formatString);
 	}
 
 	/**
@@ -933,5 +968,17 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	 */
 	public void setMode(ParameterMode mode) {
 		this.mode = mode;
+	}
+
+	protected record ParameterPatternSubstitution(String name, String formatType, String formatString) {
+
+		static ParameterPatternSubstitution of(String substitutionValue) {
+			String[] patternElements = substitutionValue.split(",");
+			String formatName = patternElements[0].trim();
+			String formatType = patternElements.length > 1 ? patternElements[1].trim() : null;
+			String formatString = patternElements.length > 2 ? patternElements[2].trim() : null;
+
+			return new ParameterPatternSubstitution(formatName, formatType, formatString);
+		}
 	}
 }

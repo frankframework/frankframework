@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import jakarta.annotation.Nonnull;
 import jakarta.jms.Destination;
 import jakarta.jms.Message;
 import jakarta.jms.TextMessage;
@@ -36,7 +35,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
+import org.springframework.context.ApplicationListener;
 
+import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.Adapter;
@@ -46,12 +47,15 @@ import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.lifecycle.events.AdapterMessageEvent;
+import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.management.Action;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TransactionManagerType;
+import org.frankframework.util.MessageKeeperMessage;
 import org.frankframework.util.RunState;
 import org.frankframework.util.SpringUtils;
 
@@ -93,23 +97,25 @@ public class PushingJmsListenerTest {
 		return listener;
 	}
 
-	public <M> Receiver<M> setupReceiver(IListener<M> listener) {
+	public <M> Receiver<M> setupReceiver(Adapter adapter, IListener<M> listener) {
 		@SuppressWarnings("unchecked")
-		Receiver<M> receiver = spy(configuration.createBean(Receiver.class));
+		Receiver<M> receiver = spy(SpringUtils.createBean(adapter, Receiver.class));
+		receiver.setApplicationContext(adapter);
 		receiver.setListener(listener);
 		receiver.setName("receiver");
 		receiver.setStartTimeout(2);
 		receiver.setStopTimeout(2);
 		// To speed up test, we don't actually sleep
 		doNothing().when(receiver).suspendReceiverThread(anyInt());
+		adapter.addReceiver(receiver);
 		return receiver;
 	}
 
-	public <M> Adapter setupAdapter(Receiver<M> receiver) throws Exception {
-		return setupAdapter(receiver, PipeLine.ExitState.SUCCESS);
+	public <M> Adapter setupAdapter() throws Exception {
+		return setupAdapter(PipeLine.ExitState.SUCCESS);
 	}
 
-	public <M> Adapter setupAdapter(Receiver<M> receiver, PipeLine.ExitState exitState) throws Exception {
+	public <M> Adapter setupAdapter(PipeLine.ExitState exitState) throws Exception {
 		Adapter adapter = spy(configuration.createBean(Adapter.class));
 		adapter.setName(adapterName);
 
@@ -132,7 +138,6 @@ public class PushingJmsListenerTest {
 		pl.addPipeLineExit(ple);
 		adapter.setPipeLine(pl);
 
-		adapter.addReceiver(receiver);
 		configuration.addAdapter(adapter);
 		return adapter;
 	}
@@ -150,13 +155,13 @@ public class PushingJmsListenerTest {
 
 		createMessagingSource(listener);
 
+		Adapter adapter = setupAdapter(PipeLine.ExitState.ERROR);
 		@SuppressWarnings("unchecked")
 		IListenerConnector<Message> jmsConnectorMock = mock(IListenerConnector.class);
 		listener.setJmsConnector(jmsConnectorMock);
-		Receiver<Message> receiver = setupReceiver(listener);
+		Receiver<Message> receiver = setupReceiver(adapter, listener);
 		receiver.setMaxRetries(1);
 
-		Adapter adapter = setupAdapter(receiver, PipeLine.ExitState.ERROR);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());
 		assertEquals(RunState.STOPPED, receiver.getRunState());
@@ -209,8 +214,10 @@ public class PushingJmsListenerTest {
 		listener.setPollGuardInterval(1_000);
 		listener.setMockLastPollDelayMs(10_000); // Last Poll always before PollGuard triggered
 
-		Receiver<jakarta.jms.Message> receiver = setupReceiver(listener);
-		Adapter adapter = setupAdapter(receiver);
+		Adapter adapter = setupAdapter();
+		LogEventMessages messageKeeper = new LogEventMessages(MessageEventLevel.ERROR);
+		adapter.addApplicationListener(messageKeeper);
+		Receiver<jakarta.jms.Message> receiver = setupReceiver(adapter, listener);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());
 		assertEquals(RunState.STOPPED, receiver.getRunState());
@@ -240,7 +247,7 @@ public class PushingJmsListenerTest {
 		assertEquals(RunState.EXCEPTION_STARTING, receiver.getRunState());
 
 		await().atMost(5, TimeUnit.SECONDS)
-				.until(()-> getAdapterMessages(adapter, "ERROR"), hasItem(containsString("Failed to restart receiver")));
+				.until(()-> messageKeeper.getMessages(), hasItem(containsString("Receiver [receiver] PollGuard: Failed to restart, no exception")));
 
 		// After
 		configuration.getIbisManager().handleAction(Action.STOPRECEIVER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
@@ -252,15 +259,6 @@ public class PushingJmsListenerTest {
 		assertEquals(RunState.STOPPED, receiver.getRunState());
 	}
 
-	private @Nonnull List<String> getAdapterMessages(@Nonnull Adapter adapter, @Nonnull String messageLogLevel) {
-		log.info("Collecting {} messages from Adapter MessageKeeper", messageLogLevel);
-		return new ArrayList<>(adapter.getMessageKeeper())
-				.stream()
-				.filter(msg -> msg != null && messageLogLevel.equals(msg.getMessageLevel()))
-				.map(Object::toString)
-				.toList();
-	}
-
 	@Test
 	public void testPollGuardStopTimeout() throws Exception {
 		// TODO: This test should test the actual PullingJmsListener with SpringJmsConnector
@@ -270,8 +268,10 @@ public class PushingJmsListenerTest {
 		listener.setPollGuardInterval(1_000);
 		listener.setMockLastPollDelayMs(10_000); // Last Poll always before PollGuard triggered
 
-		Receiver<jakarta.jms.Message> receiver = setupReceiver(listener);
-		Adapter adapter = setupAdapter(receiver);
+		Adapter adapter = setupAdapter();
+		LogEventMessages messageKeeper = new LogEventMessages(MessageEventLevel.WARN);
+		adapter.addApplicationListener(messageKeeper);
+		Receiver<jakarta.jms.Message> receiver = setupReceiver(adapter, listener);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());
 		assertEquals(RunState.STOPPED, receiver.getRunState());
@@ -308,13 +308,24 @@ public class PushingJmsListenerTest {
 		assertEquals(RunState.EXCEPTION_STOPPING, receiver.getRunState());
 
 		await().atMost(5, TimeUnit.SECONDS)
-				.until(()-> getAdapterMessages(adapter, "WARN"), everyItem(containsString("JMS poll timeout")));
-		
-		List<String> warnings = new ArrayList<>(adapter.getMessageKeeper())
-				.stream()
-				.filter(msg -> msg != null && "WARN".equals(msg.getMessageLevel()))
-				.map(Object::toString)
-				.toList();
-		assertThat(warnings, everyItem(containsString("JMS poll timeout")));
+				.until(()-> messageKeeper.getMessages(), everyItem(containsString("JMS poll timeout")));
+
+		assertThat(messageKeeper.getMessages(), everyItem(containsString("JMS poll timeout")));
+	}
+
+	private static class LogEventMessages implements ApplicationListener<AdapterMessageEvent> {
+		private final @Getter List<String> messages = new ArrayList<>();
+		private final MessageEventLevel minLevel;
+
+		public LogEventMessages(MessageEventLevel minLevel) {
+			this.minLevel = minLevel;
+		}
+
+		@Override
+		public void onApplicationEvent(AdapterMessageEvent event) {
+			if (event.getLevel() == minLevel) {
+				messages.add(MessageKeeperMessage.fromEvent(event).toString());
+			}
+		}
 	}
 }

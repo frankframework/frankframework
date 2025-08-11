@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2024 WeAreFrank!
+   Copyright 2017-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package org.frankframework.http.rest;
 
 import java.io.IOException;
 import java.io.Serial;
-import java.time.Instant;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
@@ -70,6 +69,7 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
+import org.frankframework.util.TimeProvider;
 import org.frankframework.util.XmlBuilder;
 
 /**
@@ -87,8 +87,8 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 
 	private static final List<String> IGNORE_HEADERS = List.of("connection", "transfer-encoding", "content-type", "authorization");
 
-	private final int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); //Defaults to 7 days
-	private final String corsAllowOrigin = AppConstants.getInstance().getString("api.auth.cors.allowOrigin", "*"); //Defaults to everything
+	private final int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); // Defaults to 7 days
+	private final String corsAllowOrigin = AppConstants.getInstance().getString("api.auth.cors.allowOrigin", "*"); // Defaults to everything
 	private final String corsExposeHeaders = AppConstants.getInstance().getString("api.auth.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
 
 	private ApiServiceDispatcher dispatcher = null;
@@ -560,7 +560,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				/*
 				 * If a Last Modified value is present, set the 'Last-Modified' header.
 				 */
-				long lastModDate = Instant.now().toEpochMilli();
+				long lastModDate = TimeProvider.now().toEpochMilli();
 				if(!Message.isEmpty(result)) {
 					String lastModified = (String) result.getContext().get(MessageContext.METADATA_MODIFICATIONTIME);
 					if(StringUtils.isNotEmpty(lastModified)) {
@@ -773,7 +773,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 	}
 
 	/**
-	 * Tomcat matches /api to /api/*. Not every application server does this. In order to both fix 
+	 * Tomcat matches /api to /api/*. Not every application server does this. In order to both fix
 	 * {@link URLRequestMatcher Authentication request matching} and the different Application Servers
 	 * matching on different methods, explicitly add `/api`.
 	 */

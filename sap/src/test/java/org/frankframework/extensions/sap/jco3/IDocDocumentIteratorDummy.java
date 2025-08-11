@@ -1,9 +1,9 @@
 package org.frankframework.extensions.sap.jco3;
 
+import static org.mockito.Mockito.mock;
+
 import com.sap.conn.idoc.IDocDocument;
 import com.sap.conn.idoc.IDocDocumentIterator;
-
-import static org.mockito.Mockito.mock;
 
 public class IDocDocumentIteratorDummy implements IDocDocumentIterator {
 

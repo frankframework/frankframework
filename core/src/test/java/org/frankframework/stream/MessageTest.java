@@ -17,6 +17,7 @@ package org.frankframework.stream;
 
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -24,11 +25,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FilterReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStreamWriter;
@@ -41,7 +40,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
@@ -54,12 +52,12 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
-import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.SerializationTester;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestFileUtils;
+import org.frankframework.util.CloseUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
@@ -71,11 +69,11 @@ public class MessageTest {
 	private static final String CDATA_END = TEST_CDATA ? "]]>" : "";
 	public static String testString = "<root><sub>abc&amp;&lt;&gt;</sub><sub>" + CDATA_START + "<a>a&amp;b</a>" + CDATA_END + "</sub><data attr=\"één €\">één €</data></root>";
 	public static String testStringFile = "/Message/testString.txt";
-	private final String characterWire76 = "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300034c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000e777261707065645265717565737471007e00027870707400743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7078";
-	private final String binaryWire76 = "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300034c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000e777261707065645265717565737471007e000278707400055554462d38757200025b42acf317f8060854e00200007870000000743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7078";
-	private final String characterWire77 = "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300044c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c6173737400114c6a6176612f6c616e672f436c6173733b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b7870707400743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e767200106a6176612e6c616e672e537472696e67a0f0a4387a3bb34202000078707078";
-	private final String binaryWire77 = "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300044c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c6173737400114c6a6176612f6c616e672f436c6173733b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b78707400055554462d38757200025b42acf317f8060854e00200007870000000743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7671007e00077078";
-	private final String[][] characterWires = {
+	private static final String characterWire76 = "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300034c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000e777261707065645265717565737471007e00027870707400743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7078";
+	private static final String binaryWire76 = "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300034c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000e777261707065645265717565737471007e000278707400055554462d38757200025b42acf317f8060854e00200007870000000743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7078";
+	private static final String characterWire77 = "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300044c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c6173737400114c6a6176612f6c616e672f436c6173733b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b7870707400743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e767200106a6176612e6c616e672e537472696e67a0f0a4387a3bb34202000078707078";
+	private static final String binaryWire77 = "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300044c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c6173737400114c6a6176612f6c616e672f436c6173733b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b78707400055554462d38757200025b42acf317f8060854e00200007870000000743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7671007e00077078";
+	private static final String[][] characterWires = {
 			{"7.6", "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300034c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000e777261707065645265717565737471007e00027870707400743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7078"},
 			{"7.7", "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300044c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c6173737400114c6a6176612f6c616e672f436c6173733b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b7870707400743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e767200106a6176612e6c616e672e537472696e67a0f0a4387a3bb34202000078707078"},
 			// between 2021-12-07 and 2022-04-06 the serialVersionUID of Message was removed, causing unsolvable deserialization problems.
@@ -88,7 +86,7 @@ public class MessageTest {
 			{"8.0 2023-12-21", "aced0005737200216f72672e6672616e6b6672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300055a00186661696c6564546f44657465726d696e65436861727365744c0007636f6e7465787474002a4c6f72672f6672616e6b6672616d65776f726b2f73747265616d2f4d657373616765436f6e746578743b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c6173737400124c6a6176612f6c616e672f537472696e673b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b7870707400743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e740006537472696e6778"},
 			{"8.0.1 2024-02-26", "aced0005737200216f72672e6672616e6b6672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300055a00186661696c6564546f44657465726d696e65436861727365744c0007636f6e7465787474002a4c6f72672f6672616e6b6672616d65776f726b2f73747265616d2f4d657373616765436f6e746578743b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c6173737400124c6a6176612f6c616e672f537472696e673b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b7870707400743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e740006537472696e67737200286f72672e6672616e6b6672616d65776f726b2e73747265616d2e4d657373616765436f6e7465787400000000000000010300014c00046461746174000f4c6a6176612f7574696c2f4d61703b787077080000000000000001737200116a6176612e7574696c2e486173684d61700507dac1c31660d103000246000a6c6f6164466163746f724900097468726573686f6c6478703f4000000000000c7708000000100000000374000c544553542d4b45592d494e54737200116a6176612e6c616e672e496e746567657212e2a0a4f781873802000149000576616c7565787200106a6176612e6c616e672e4e756d62657286ac951d0b94e08b02000078700000000174000f544553542d4b45592d535452494e4774000a544553542d56414c554574000d4d657461646174612e53697a657372000e6a6176612e6c616e672e4c6f6e673b8be490cc8f23df0200014a000576616c75657871007e000f0000000000000074787878"},
 	};
-	private final String[][] binaryWires = {
+	private static final String[][] binaryWires = {
 			{"7.6", "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300034c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000e777261707065645265717565737471007e000278707400055554462d38757200025b42acf317f8060854e00200007870000000743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7078"},
 			{"7.7", "aced0005737200256e6c2e6e6e2e616461707465726672616d65776f726b2e73747265616d2e4d65737361676506139a66311e9c450300044c0007636861727365747400124c6a6176612f6c616e672f537472696e673b4c0007726571756573747400124c6a6176612f6c616e672f4f626a6563743b4c000c72657175657374436c6173737400114c6a6176612f6c616e672f436c6173733b4c00107265736f7572636573546f436c6f736574000f4c6a6176612f7574696c2f5365743b78707400055554462d38757200025b42acf317f8060854e00200007870000000743c726f6f743e3c7375623e61626326616d703b266c743b2667743b3c2f7375623e3c7375623e3c215b43444154415b3c613e6126616d703b623c2f613e5d5d3e3c2f7375623e3c6461746120617474723d22c3a9c3a96e20e282ac223ec3a9c3a96e20e282ac3c2f646174613e3c2f726f6f743e7671007e00077078"},
 			// between 2021-12-07 and 2022-04-06 the serialVersionUID of Message was removed, causing unsolvable deserialization problems.
@@ -112,10 +110,8 @@ public class MessageTest {
 	}
 
 	@AfterEach
-	public void tearDown() throws IOException {
-		if (adapter != null) {
-			adapter.close();
-		}
+	public void tearDown() {
+		CloseUtils.closeSilently(adapter);
 	}
 
 	protected void testAsInputStream(Message message) throws IOException {
@@ -228,106 +224,10 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testInputStreamToString() {
+	public void testInputStreamToString() throws IOException {
 		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
 		adapter = new Message(source);
 		testToString(adapter, ByteArrayInputStream.class);
-	}
-
-	@Test
-	public void testInputStreamAsInputStreamCaptured() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
-		adapter = new Message(source);
-		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
-		assertNotNull(outputStream);
-		testAsInputStream(adapter);
-
-		String captured = outputStream.toString(StandardCharsets.UTF_8);
-		assertEquals(testString, captured);
-		testToString(adapter, ByteArrayInputStream.class);
-	}
-
-	@Test
-	public void testInputStreamAsReaderCaptured() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
-		adapter = new Message(source);
-		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
-		assertNotNull(outputStream);
-		testAsReader(adapter);
-		String captured = outputStream.toString(StandardCharsets.UTF_8);
-		assertEquals(testString, captured);
-	}
-
-	@Test
-	public void testInputStreamWithCharsetAsReaderCaptured() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
-		adapter = new Message(source, StandardCharsets.UTF_8.name());
-		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
-		assertNotNull(outputStream);
-		testAsReader(adapter);
-
-		String captured = outputStream.toString(StandardCharsets.UTF_8);
-		assertEquals(testString, captured);
-	}
-
-	@Test
-	public void testInputStreamAsInputSourceCaptured() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
-		adapter = new Message(source);
-		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
-		assertNotNull(outputStream);
-		testAsInputSource(adapter);
-
-		String captured = outputStream.toString(StandardCharsets.UTF_8);
-		assertEquals(testString, captured);
-	}
-
-	@Test
-	public void testInputStreamAsByteArrayCaptured() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
-		adapter = new Message(source);
-		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
-		assertNotNull(outputStream);
-		testAsByteArray(adapter);
-
-		String captured = outputStream.toString(StandardCharsets.UTF_8);
-		assertEquals(testString, captured);
-	}
-
-	@Test
-	public void testInputStreamAsStringCaptured() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
-		adapter = new Message(source);
-		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
-		assertNotNull(outputStream);
-		testAsString(adapter);
-
-		String captured = outputStream.toString(StandardCharsets.UTF_8);
-		assertEquals(testString, captured);
-	}
-
-	@Test
-	public void testInputStreamClosedButCaptured() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
-		adapter = new Message(source);
-		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
-		assertNotNull(outputStream);
-		adapter.asInputStream().close();
-
-		String captured = outputStream.toString(StandardCharsets.UTF_8);
-		assertEquals(testString, captured);
-	}
-
-	@Test
-	public void testInputStreamPreservedAndCaptured() throws Exception {
-		ByteArrayInputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
-		adapter = new Message(source);
-		ByteArrayOutputStream outputStream = adapter.captureBinaryStream();
-		assertNotNull(outputStream);
-		adapter.preserve();
-
-		String captured = outputStream.toString(StandardCharsets.UTF_8);
-		assertEquals(testString, captured);
 	}
 
 	@Test
@@ -408,106 +308,10 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testReaderToString() {
+	public void testReaderToString() throws IOException {
 		StringReader source = new StringReader(testString);
 		adapter = new Message(source);
 		testToString(adapter, StringReader.class);
-	}
-
-	@Test
-	public void testReaderAsInputStreamCaptured() throws Exception {
-		StringReader source = new StringReader(testString);
-		adapter = new Message(source);
-		StringWriter writer = adapter.captureCharacterStream();
-		assertNotNull(writer);
-		testAsInputStream(adapter);
-
-		String captured = writer.toString();
-		assertEquals(testString, captured);
-	}
-
-	@Test
-	public void testReaderAsReaderCaptured() throws Exception {
-		StringReader source = new StringReader(testString);
-		adapter = new Message(source);
-		StringWriter writer = adapter.captureCharacterStream();
-		assertNotNull(writer);
-		testAsReader(adapter);
-
-		String captured = writer.toString();
-		assertEquals(testString, captured);
-		testToString(adapter, StringReader.class);
-	}
-
-	@Test
-	public void testReaderAsInputSourceCaptured() throws Exception {
-		StringReader source = new StringReader(testString);
-		adapter = new Message(source);
-		StringWriter writer = adapter.captureCharacterStream();
-		assertNotNull(writer);
-		testAsInputSource(adapter);
-
-		String captured = writer.toString();
-		assertEquals(testString, captured);
-	}
-
-	@Test
-	public void testReaderAsByteArrayCaptured() throws Exception {
-		StringReader source = new StringReader(testString);
-		adapter = new Message(source);
-		StringWriter writer = adapter.captureCharacterStream();
-		assertNotNull(writer);
-		testAsByteArray(adapter);
-
-		String captured = writer.toString();
-		assertEquals(testString, captured);
-	}
-
-	@Test
-	public void testReaderAsStringCaptured() throws Exception {
-		StringReader source = new StringReader(testString);
-		adapter = new Message(source);
-		StringWriter writer = adapter.captureCharacterStream();
-		assertNotNull(writer);
-		testAsString(adapter);
-
-		String captured = writer.toString();
-		assertEquals(testString, captured);
-	}
-
-	@Test
-	public void testReaderClosedButCaptured() throws Exception {
-		StringReader source = new StringReader(testString);
-		adapter = new Message(source);
-		StringWriter writer = adapter.captureCharacterStream();
-		assertNotNull(writer);
-		adapter.asReader().close();
-
-		String captured = writer.toString();
-		assertEquals(testString, captured);
-	}
-
-	@Test
-	public void testReaderPreservedAndCaptured() throws Exception {
-		StringReader source = new StringReader(testString);
-		adapter = new Message(source);
-		StringWriter writer = adapter.captureCharacterStream();
-		assertNotNull(writer);
-		adapter.preserve();
-
-		String captured = writer.toString();
-		assertEquals(testString, captured);
-	}
-
-	@Test
-	public void testReaderOnlyCaptured() throws Exception {
-		StringReader source = new StringReader(testString);
-		adapter = new Message(source);
-		StringWriter writer = adapter.captureCharacterStream();
-		assertNotNull(writer);
-
-		String captured = writer.toString();
-		assertEquals("", captured); // input stream is not read, so nothing is captured. Writer could detect that it was not closed, though.
 	}
 
 	@Test
@@ -879,6 +683,52 @@ public class MessageTest {
 	}
 
 	@Test
+	public void testSerializeWithNumber() throws Exception {
+		// NB: This test logs a serialization-wire that can be added to the array `characterWires` when there are change to the class structure, to protect a version against breakage by future changes.
+		Long source = 12345L;
+		try (Message in = Message.asMessage(source)) {
+			in.getContext().put("TEST-KEY-STRING", "TEST-VALUE");
+			in.getContext().put("TEST-KEY-INT", 1);
+			byte[] wire = serializationTester.serialize(in);
+			log.debug("Current characterWire: [{}]", () -> Hex.encodeHexString(wire));
+
+			assertNotNull(wire);
+			try (Message out = serializationTester.deserialize(wire)) {
+				assertTrue(out.isBinary());
+				assertEquals("12345", out.asString());
+				assertEquals(5L, out.size()); // For Number, derived from length of "asString"
+				assertTrue(out.getContext().containsKey("TEST-KEY-STRING"));
+				assertEquals("TEST-VALUE", out.getContext().get("TEST-KEY-STRING"));
+				assertTrue(out.getContext().containsKey("TEST-KEY-INT"));
+				assertEquals(1, out.getContext().get("TEST-KEY-INT"));
+			}
+		}
+	}
+
+	@Test
+	public void testSerializeWithBoolean() throws Exception {
+		// NB: This test logs a serialization-wire that can be added to the array `characterWires` when there are change to the class structure, to protect a version against breakage by future changes.
+		Boolean source = Boolean.FALSE;
+		try (Message in = Message.asMessage(source)) {
+			in.getContext().put("TEST-KEY-STRING", "TEST-VALUE");
+			in.getContext().put("TEST-KEY-INT", 1);
+			byte[] wire = serializationTester.serialize(in);
+			log.debug("Current characterWire: [{}]", () -> Hex.encodeHexString(wire));
+
+			assertNotNull(wire);
+			try (Message out = serializationTester.deserialize(wire)) {
+				assertTrue(out.isBinary());
+				assertEquals("false", out.asString());
+				assertEquals(5L, out.size()); // For Boolean, derived from the length of "asString"
+				assertTrue(out.getContext().containsKey("TEST-KEY-STRING"));
+				assertEquals("TEST-VALUE", out.getContext().get("TEST-KEY-STRING"));
+				assertTrue(out.getContext().containsKey("TEST-KEY-INT"));
+				assertEquals(1, out.getContext().get("TEST-KEY-INT"));
+			}
+		}
+	}
+
+	@Test
 	public void testSerializeWithByteArray() throws Exception {
 		// NB: This test logs a serialization-wire that can be added to the array `binaryWires` when there are change to the class structure, to protect a version against breakage by future changes.
 		byte[] source = testString.getBytes(StandardCharsets.UTF_8);
@@ -1033,10 +883,10 @@ public class MessageTest {
 	@Test
 	public void testDeserializationCompatibilityWithString() throws Exception {
 
-		for (int i = 0; i < characterWires.length; i++) {
-			String label = characterWires[i][0];
-			log.debug("testDeserializationCompatibilityWithString() " + label);
-			byte[] wire = Hex.decodeHex(characterWires[i][1]);
+		for (String[] characterWire : characterWires) {
+			String label = characterWire[0];
+			log.debug("testDeserializationCompatibilityWithString() {}", label);
+			byte[] wire = Hex.decodeHex(characterWire[1]);
 			Message out = serializationTester.deserialize(wire);
 
 			assertFalse(out.isBinary(), label);
@@ -1050,7 +900,7 @@ public class MessageTest {
 
 		for (String[] binaryWire : binaryWires) {
 			String label = binaryWire[0];
-			log.debug("testDeserializationCompatibilityWithByteArray() " + label);
+			log.debug("testDeserializationCompatibilityWithByteArray() {}", label);
 			byte[] wire = Hex.decodeHex(binaryWire[1]);
 			Message out = serializationTester.deserialize(wire);
 
@@ -1063,14 +913,14 @@ public class MessageTest {
 
 
 	@Test
-	public void testMessageSizeString() throws IOException {
+	public void testMessageSizeString() {
 		Message message = new Message("string");
 		assertEquals(6, message.size(), "size differs or could not be determined");
 		message.close();
 	}
 
 	@Test
-	public void testMessageSizeByteArray() throws IOException {
+	public void testMessageSizeByteArray() {
 		Message message = new Message("string".getBytes());
 		assertEquals(6, message.size(), "size differs or could not be determined");
 		message.close();
@@ -1100,7 +950,7 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testMessageSizeURL() throws IOException {
+	public void testMessageSizeURL() {
 		URL url = this.getClass().getResource("/file.xml");
 		assertNotNull(url, "cannot find testfile");
 
@@ -1110,7 +960,7 @@ public class MessageTest {
 	}
 
 	@Test
-	public void testNullMessageSize() throws IOException {
+	public void testNullMessageSize() {
 		try (Message message = Message.nullMessage()) {
 			assertEquals(0, message.size());
 		}
@@ -1122,19 +972,21 @@ public class MessageTest {
 		assertNotNull(url, "cannot find testfile");
 
 		try (Message message = new UrlMessage(url)) {
-			assertEquals(-1, message.size());
+			assertEquals(-1L, message.size());
 		}
 	}
 
 	@Test
 	public void testMessageSizeReader() throws IOException {
 		try (Message message = new Message(new StringReader("string"))) {
-			assertEquals(-1, message.size(), "size differs or could not be determined");
+			assertEquals(6L, message.size(), "size differs or could not be determined");
+			assertDoesNotThrow(() -> message.asString());
+			assertEquals(6L, message.size(), "size differs or could not be determined");
 		}
 	}
 
 	@Test
-	public void testMessageIsEmpty() throws IOException {
+	public void testMessageIsEmpty() {
 		try (Message message = Message.nullMessage()) {
 			assertTrue(message.isEmpty());
 			assertTrue(Message.isEmpty(message));
@@ -1233,39 +1085,14 @@ public class MessageTest {
 			message.asString(); //calls asReader();
 			message.close();
 			int i = 0;
-			for (String log : appender.getLogLines()) {
-				if (log.contains("unable to detect charset for message")) {
+			for (String logLine : appender.getLogLines()) {
+				if (logLine.contains("unable to detect charset for message")) {
 					i++;
 				}
 			}
 			assertEquals(1, i, "charset should be determined only once");
 		}
 		message.close();
-	}
-
-	@Test
-	public void testMagicCharactersCounted() throws Exception {
-		Reader reader = new StringReader(testString);
-		AtomicInteger charsRead = new AtomicInteger();
-		FilterReader filterReader = new FilterReader(reader) {
-			private int readCounted(ThrowingSupplier<Integer, IOException> reader) throws IOException {
-				int len = reader.get();
-				if (len > 0) {
-					charsRead.addAndGet(len);
-				}
-				return len;
-			}
-
-			@Override
-			public int read(char[] chr, int st, int end) throws IOException {
-				return readCounted(() -> super.read(chr, st, end));
-			}
-		};
-		Message message = new Message(filterReader);
-		int charsToRead = 6;
-		message.peek(charsToRead);
-		message.close();
-		assertEquals(charsToRead, charsRead.get());
 	}
 
 	@Test

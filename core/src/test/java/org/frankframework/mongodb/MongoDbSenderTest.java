@@ -36,7 +36,6 @@ import org.frankframework.mongodb.MongoDbSender.MongoAction;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
-import org.frankframework.util.AppConstants;
 import org.frankframework.util.CloseUtils;
 
 @Log4j2
@@ -65,20 +64,20 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 		// Required for testcontainers, since the default port is randomized
 		String url = String.format("mongodb://%s:%s", mongoDBContainer.getHost(), mongoDBContainer.getMappedPort(27017));
 		log.info("using connection string: {}", url);
-		AppConstants.getInstance().setProperty("mongo.connectionString", url);
+		System.setProperty("mongo.connectionString", url);
 	}
 
 	@AfterAll
 	static void afterAll() {
-		AppConstants.getInstance().remove("mongo.connectionString");
+		System.clearProperty("mongo.connectionString");
 	}
 
-	private JndiMongoClientFactory createFactory() throws Exception {
+	private MongoClientFactoryFactory createFactory() throws Exception {
 		ResourceObjectLocator locator = new ResourceObjectLocator();
 		locator.setResourceFile("mongodbResources.yml");
 		locator.afterPropertiesSet();
 
-		JndiMongoClientFactory factory = new JndiMongoClientFactory();
+		MongoClientFactoryFactory factory = new MongoClientFactoryFactory();
 		factory.setObjectLocators(List.of(locator));
 		factory.afterPropertiesSet();
 		return factory;
@@ -87,7 +86,7 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 	@Override
 	public MongoDbSender createSender() throws Exception {
 		MongoDbSender mongoDbSender = new MongoDbSender();
-		mongoDbSender.setMongoClientFactory(createFactory());
+		mongoDbSender.setMongoClientFactoryFactory(createFactory());
 		mongoDbSender.setDatabase(database);
 		mongoDbSender.setCollection(collection);
 		return mongoDbSender;
@@ -153,9 +152,37 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 	}
 
 	@Test
+	void testStopRestartSender() throws Exception {
+		insertStudentRecord();
+
+		sender.setAction(MongoAction.FINDONE);
+		sender.setCollection("Students");
+		sender.setOutputFormat(DocumentFormat.XML);
+		sender.configure();
+		sender.start();
+
+		// Check result after first start
+		result = sendMessage("{ \"student_id\": \"Evert\" }");
+		System.out.println("FindOne: [" + result.asString() + "]");
+		assertThat(result.asString(), StringContains.containsString("<student_id>Evert</student_id><class_id>1c</class_id><classes><item>4</item>" +
+				"<item>4</item><item>3</item></classes><scores><item><grade>4</grade></item><item><grade>4</grade></item><item><grade>3</grade></item></scores>"));
+
+		// Stop and restart
+		sender.stop();
+		sender.start();
+
+		// Should still return the same results
+		result = sendMessage("{ \"student_id\": \"Evert\" }");
+		System.out.println("FindOne: [" + result.asString() + "]");
+		assertThat(result.asString(), StringContains.containsString("<student_id>Evert</student_id><class_id>1c</class_id><classes><item>4</item>" +
+				"<item>4</item><item>3</item></classes><scores><item><grade>4</grade></item><item><grade>4</grade></item><item><grade>3</grade></item></scores>"));
+	}
+
+
+	@Test
 	void testFindOneXml() throws Exception {
 		insertStudentRecord();
-		
+
 		sender.setAction(MongoAction.FINDONE);
 		sender.setCollection("Students");
 		sender.setOutputFormat(DocumentFormat.XML);

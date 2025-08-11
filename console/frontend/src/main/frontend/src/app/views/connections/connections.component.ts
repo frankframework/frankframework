@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Component, OnInit } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { AppService } from 'src/app/app.service';
 import {
   DataTableColumn,
@@ -26,7 +26,8 @@ type ConnectionsData = Connections['data'][number];
   styleUrls: ['./connections.component.scss'],
 })
 export class ConnectionsComponent implements OnInit {
-  protected datasource: DataTableDataSource<ConnectionsData> = new DataTableDataSource();
+  protected minimalTruncateLength = 100;
+  protected datasource = new DataTableDataSource<ConnectionsData>();
   protected displayedColumns: DataTableColumn<ConnectionsData>[] = [
     { name: 'adapterName', displayName: 'Adapter Name', property: 'adapterName' },
     { name: 'componentName', displayName: 'Listener/Sender Name', property: 'componentName' },
@@ -35,12 +36,8 @@ export class ConnectionsComponent implements OnInit {
     { name: 'direction', displayName: 'Direction', property: 'direction' },
   ];
 
-  protected minimalTruncateLength = 100;
-
-  constructor(
-    private http: HttpClient,
-    private appService: AppService,
-  ) {}
+  private readonly http: HttpClient = inject(HttpClient);
+  private readonly appService: AppService = inject(AppService);
 
   ngOnInit(): void {
     this.http.get<Connections>(`${this.appService.absoluteApiPath}connections`).subscribe((response) => {

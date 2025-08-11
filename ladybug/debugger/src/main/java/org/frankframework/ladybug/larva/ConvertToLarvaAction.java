@@ -54,9 +54,10 @@ import nl.nn.testtool.Report;
 import nl.nn.testtool.extensions.CustomReportAction;
 import nl.nn.testtool.extensions.CustomReportActionResult;
 
-import org.frankframework.configuration.ConfigurationUtils;
+import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.core.Resource;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.TimeProvider;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
 
@@ -90,7 +91,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 		);
 
 		//get minutes since 2020
-		int minutesSince2020 = (int) TimeUnit.MILLISECONDS.toMinutes(Instant.now().toEpochMilli()) - MINUTES_2020;
+		int minutesSince2020 = (int) TimeUnit.MILLISECONDS.toMinutes(TimeProvider.now().toEpochMilli()) - MINUTES_2020;
 
 		List<Scenario> scenarios = reports.stream()
 				.collect(Collectors.groupingBy(report -> report.getInputCheckpoint().getName().substring(9))).entrySet()
@@ -382,7 +383,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 						Resource xslt = Resource.getResource(ConfigurationUtils.STUB4TESTTOOL_XSLT_DEFAULT);
 						TransformerPool tp = TransformerPool.getInstance(xslt);
 						stubbedPipe = tp.transformToString(checkpoint.getMessage());
-						// Extract sender testtool names from the pipe configuration 
+						// Extract sender testtool names from the pipe configuration
 						String regex = TESTTOOL_PREFIX + "([^\"]+)";
 
 						Pattern pattern = Pattern.compile(regex);
@@ -642,7 +643,7 @@ public class ConvertToLarvaAction implements CustomReportAction {
 				try {
 					Files.delete(path);
 				} catch (NoSuchFileException ignored) {
-					// No need to delete the file if it does not exist somehow 
+					// No need to delete the file if it does not exist somehow
 				} catch (IOException e) {
 					errors.add("Newly created file [" + path.toAbsolutePath().normalize() + "] could not be deleted.");
 				}

@@ -31,7 +31,7 @@ import org.frankframework.util.ClassUtils;
 public class ConfigurationWarnings extends AbstractApplicationWarnings {
 
 	/**
-	 * Add a ConfigurationWarning. 
+	 * Add a ConfigurationWarning.
 	 */
 	public static void add(HasApplicationContext source, Logger log, String message) {
 		add(source, log, message, (Throwable) null);

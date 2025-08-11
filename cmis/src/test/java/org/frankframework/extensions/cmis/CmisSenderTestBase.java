@@ -113,8 +113,9 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 	}
 
 	@Override
-	@Disabled
+	@Disabled("the CmisSender is tested in other classes")
 	@Test
+	@SuppressWarnings("java:S2699") // Disabled test, does not require an assertion!
 	public void testIfToStringWorks() {
 		// Disable this test, the CmisSender is tested in other classes.
 	}

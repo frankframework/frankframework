@@ -1,8 +1,8 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, Signal, ViewChild } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AppService, Configuration } from 'src/app/app.service';
 import { ConfigurationsService } from '../configurations.service';
-import { copyToClipboard } from 'src/app/utils';
+import { copyToClipboard } from 'src/app/utilities';
 import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-editor.component';
 import { Subscription } from 'rxjs';
 import { ConfigurationTabListComponent } from '../../../components/tab-list/configuration-tab-list.component';
@@ -17,30 +17,27 @@ import { NgClass } from '@angular/common';
 export class ConfigurationsShowComponent implements OnInit, OnDestroy {
   @ViewChild('editor') editor!: MonacoEditorComponent;
 
-  protected configurations: Configuration[] = [];
-  protected selectedConfiguration: string = 'All';
-  protected loadedConfiguration: boolean = false;
+  protected selectedConfiguration = 'All';
+  protected loadedConfiguration = false;
+  protected configurations: Signal<Configuration[]>;
 
-  private configuration: string = '';
+  private readonly appService: AppService = inject(AppService);
+
+  private readonly router: Router = inject(Router);
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
+  private readonly configurationsService: ConfigurationsService = inject(ConfigurationsService);
+  private configuration = '';
   private fragment?: string;
   private selectedAdapter?: string;
-  private skipParamsUpdate: boolean = false;
-  private initialized: boolean = false;
+  private skipParamsUpdate = false;
+  private initialized = false;
   private configsSubscription: Subscription | null = null;
 
-  constructor(
-    private router: Router,
-    private route: ActivatedRoute,
-    private configurationsService: ConfigurationsService,
-    private appService: AppService,
-  ) {}
+  constructor() {
+    this.configurations = this.appService.configurations;
+  }
 
   ngOnInit(): void {
-    this.configurations = this.appService.configurations;
-    this.configsSubscription = this.appService.configurations$.subscribe(() => {
-      this.configurations = this.appService.configurations;
-    });
-
     this.route.fragment.subscribe((fragment) => {
       this.fragment = fragment ?? undefined;
       this.removeAdapterAfterLineSelection(fragment);

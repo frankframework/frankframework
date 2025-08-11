@@ -19,10 +19,8 @@ import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 
 import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletResponse;
@@ -48,6 +46,8 @@ import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.TimeProvider;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlUtils;
 
@@ -72,8 +72,6 @@ public class NetStorageSender extends AbstractHttpSender {
 	public static final String FILE_PARAM_KEY = "file";
 	public static final String MTIME_PARAM_KEY = "mtime";
 	public static final String HASHVALUE_PARAM_KEY = "hashValue";
-
-	private static final DateFormat DATE_HEADER_FORMAT = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
 
 	private static final String PATH_SEPARATOR = "/";
 
@@ -231,12 +229,10 @@ public class NetStorageSender extends AbstractHttpSender {
 			else {
 				// Validate Server-Time drift
 				String dateString = responseHandler.getHeader("Date");
-				if(!StringUtils.isEmpty(dateString)) {
-					Date currentDate = new Date();
-					long responseDate = parseDateHeader(dateString);
-					if (responseDate != 0 && currentDate.getTime() - responseDate > 30*1000)
-						throw new SenderException("Local server Date is more than 30s out of sync with Remote server");
+				if(detectedTimeDrift(dateString, 30_000)) {
+					throw new SenderException("Local server Date is more than 30s out of sync with Remote server");
 				}
+
 				XmlBuilder message = new XmlBuilder("error");
 				message.setValue(responseString);
 				result.addSubElement(message);
@@ -248,14 +244,23 @@ public class NetStorageSender extends AbstractHttpSender {
 		return result.asMessage();
 	}
 
-	private long parseDateHeader(String dateString) {
+	/**
+	 * Validate Server-Time drift
+	 * @param dateString HTTP date header, if empty assume no drift
+	 * @param allowedDrift Allowed time offset in milliseconds
+	 */
+	protected boolean detectedTimeDrift(String dateString, int allowedDrift) {
+		if (StringUtils.isEmpty(dateString)) {
+			return false;
+		}
+
 		try {
-			Date date = DATE_HEADER_FORMAT.parse(dateString);
-			return date.getTime();
+			Instant serverTime = DateFormatUtils.parseToInstant(dateString, DateFormatUtils.HTTP_DATE_HEADER_FORMAT);
+			return ChronoUnit.MILLIS.between(serverTime, TimeProvider.now()) > allowedDrift;
 		}
 		catch (Exception e) {
 			log.warn("Unable to parse Date header [{}] from response: {}", dateString, e.getMessage());
-			return 0L;
+			return false;
 		}
 	}
 

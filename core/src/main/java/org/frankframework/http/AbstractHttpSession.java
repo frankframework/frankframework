@@ -308,6 +308,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	private boolean disableCookies = false;
 
 	private @Getter CredentialFactory credentials;
+	private @Getter boolean configured = false;
 
 	/**
 	 * Makes sure only http(s) requests can be performed.
@@ -404,6 +405,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		configureRedirectStrategy();
 
 		httpClientContext = defaultHttpClientContext; // Ensure a local instance is used when no SharedResource is present.
+		configured = true;
 	}
 
 	private void validateProtocolsAndCiphers() throws ConfigurationException {

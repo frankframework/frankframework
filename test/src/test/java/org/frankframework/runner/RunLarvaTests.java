@@ -55,6 +55,7 @@ import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.LocalGateway;
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.util.AppConstants;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.SpringUtils;
 
@@ -73,8 +74,6 @@ public class RunLarvaTests {
 
 	public static final LarvaLogLevel LARVA_LOG_LEVEL = LarvaLogLevel.WRONG_PIPELINE_MESSAGES_PREPARED_FOR_DIFF;
 	public static final Set<String> IGNORED_SCENARIOS = Set.of(
-			"Authentication/scenario03",
-			"Authentication/scenario04",
 			"Base64Pipe/scenario01",
 			"Base64Pipe/scenario02",
 			"FileSender/scenario01",
@@ -87,7 +86,6 @@ public class RunLarvaTests {
 			"WsdlGeneratorPipe/scenario01",
 			"WsdlGeneratorPipe/scenario02",
 			"WsdlGeneratorPipe/scenario03",
-			"XsltProviderListener/scenario04",
 
 			// These scenarios likely fail when Narayana is used
 			"JdbcListener/scenario02",
@@ -125,6 +123,9 @@ public class RunLarvaTests {
 	@BeforeAll
 	static void setupBeforeAll() throws Exception {
 		jmsServer = configureEmbeddedJmsServer();
+
+		// Ladybug is called from a Larva scenario (using LadybugPipe) and needs to find and execute the *.report.xml files
+		System.setProperty("ibistesttool.directory", "src/test/testtool");
 
 		SpringApplication springApplication = IafTestInitializer.configureApplication("NARAYANA", null, "inmem");
 		// This ApplicationContext doesn't have the database, so we cannot use it for the Larva Tests...
@@ -191,12 +192,29 @@ public class RunLarvaTests {
 
 	@AfterAll
 	static void tearDown() {
-		CloseUtils.closeSilently(ibisContext, parentContext);
+		parentContext.stop();
+		CloseUtils.closeSilently(parentContext);
+		parentContext = null;
+		applicationContext = null;
+		ibisContext = null;
 		try {
 			jmsServer.stop();
 		} catch (Exception e) {
 			log.error("error while stopping embedded JMS server", e);
 		}
+		jmsServer = null;
+
+		// Make sure to clear the app constants as well
+		AppConstants.removeInstance();
+
+		// Clear system properties we've set, or caused to be set by IafTestInitializer
+		System.clearProperty("wsdl.soapAction");
+		System.clearProperty("active.storedProcedureTests");
+		System.clearProperty("jdbc.dbms.default");
+		System.clearProperty("active.jms");
+		System.clearProperty("jms.provider.default");
+		System.clearProperty("jms.connectionfactory.qcf.inmem");
+		System.clearProperty("jms.destination.suffix");
 	}
 
 	/**

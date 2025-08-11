@@ -1,10 +1,10 @@
-import { Component, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit, QueryList, ViewChildren } from '@angular/core';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AppService, Configuration } from 'src/app/app.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
 import { ConfigurationsService } from '../../configurations.service';
 import { ToastService } from 'src/app/services/toast.service';
-import { SortEvent, ThSortableDirective, basicAnyValueTableSort } from 'src/app/components/th-sortable.directive';
+import { basicAnyValueTableSort, SortEvent, ThSortableDirective } from 'src/app/components/th-sortable.directive';
 import { SearchFilterPipe } from '../../../../pipes/search-filter.pipe';
 
 import { FormsModule } from '@angular/forms';
@@ -16,6 +16,10 @@ import { FormsModule } from '@angular/forms';
   styleUrls: ['./configurations-manage-details.component.scss'],
 })
 export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
+  @ViewChildren(ThSortableDirective) headers!: QueryList<ThSortableDirective>;
+
+  protected versionsSorted: Configuration[] = [];
+  protected search = '';
   protected configuration: Configuration = {
     name: '',
     stubbed: false,
@@ -24,23 +28,18 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
     jdbcMigrator: false,
     version: '',
   };
-  protected versionsSorted: Configuration[] = [];
-  protected search: string = '';
 
-  private promise: number = -1;
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
+  private readonly router: Router = inject(Router);
+  private readonly appService: AppService = inject(AppService);
+  private readonly configurationsService: ConfigurationsService = inject(ConfigurationsService);
+  private readonly sweetalertService: SweetalertService = inject(SweetalertService);
+  private readonly toastService: ToastService = inject(ToastService);
+  private promise = -1;
   private versions: Configuration[] = [];
   private lastSortEvent: SortEvent = { direction: 'NONE', column: '' };
 
-  @ViewChildren(ThSortableDirective) headers!: QueryList<ThSortableDirective>;
-
-  constructor(
-    private route: ActivatedRoute,
-    private router: Router,
-    private appService: AppService,
-    private configurationsService: ConfigurationsService,
-    private sweetalertService: SweetalertService,
-    private toastService: ToastService,
-  ) {
+  constructor() {
     const routeState = this.router.getCurrentNavigation()?.extras.state ?? {};
     if (!routeState['configuration']) {
       this.router.navigate(['..'], { relativeTo: this.route });
@@ -55,7 +54,7 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
         this.appService.customBreadcrumbs(`Configurations > Manage > ${nameParameter}`);
       else this.router.navigate(['..'], { relativeTo: this.route });
 
-      this.promise = window.setInterval(() => {
+      this.promise = globalThis.setInterval(() => {
         this.update();
       }, 30_000);
 
@@ -91,7 +90,7 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
   deleteConfig(config: Configuration): void {
     const message = config.version ? `Are you sure you want to remove version '${config.version}'?` : 'Are you sure?';
 
-    this.sweetalertService.Confirm({ title: message }).then((result) => {
+    this.sweetalertService.confirm({ title: message }).then((result) => {
       if (result.isConfirmed) {
         this.configurationsService
           .deleteConfigurationVersion(config.name, encodeURIComponent(config.version!))

@@ -25,11 +25,11 @@ class JsonParameterTest {
 						  }
 						}
 						"""),
-				arguments(new Message(new StringReader("""
+				arguments(new Message("""
 						<root>
 						  <child>value</child>
 						</root>
-						""")), """
+						"""), """
 						{
 						  "root": {
 						    "child": "value"

@@ -34,18 +34,19 @@ import org.springframework.context.ApplicationContext;
 import lombok.Getter;
 
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
+import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.http.RestServiceDispatcher;
 import org.frankframework.jdbc.JdbcPropertySourceFactory;
-import org.frankframework.lifecycle.ApplicationMessageEvent;
 import org.frankframework.lifecycle.IbisApplicationContext;
+import org.frankframework.lifecycle.events.ApplicationMessageEvent;
+import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.receivers.JavaListener;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.LogUtil;
-import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.flow.FlowDiagramManager;
 
 /**
@@ -127,7 +128,7 @@ public class IbisContext extends IbisApplicationContext {
 			try {
 				flowDiagramManager = getBean("flowDiagramManager"); //The FlowDiagramManager should always initialize.
 			} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
-				log("failed to initalize FlowDiagramManager", MessageKeeperLevel.ERROR, e);
+				log("failed to initalize FlowDiagramManager", MessageEventLevel.ERROR, e);
 			}
 
 			load();
@@ -190,7 +191,7 @@ public class IbisContext extends IbisApplicationContext {
 			unload(configurationName);
 			load(configurationName);
 		} catch (ClassLoaderException e) {
-			log("failed to reload", MessageKeeperLevel.ERROR, e);
+			log("failed to reload", MessageEventLevel.ERROR, e);
 		}
 	}
 
@@ -205,11 +206,11 @@ public class IbisContext extends IbisApplicationContext {
 		if (configuration != null) {
 			ibisManager.unload(configurationName);
 			if (!configuration.getRegisteredAdapters().isEmpty()) {
-				log("Not all adapters are unregistered: " + configuration.getRegisteredAdapters(), MessageKeeperLevel.ERROR);
+				log("Not all adapters are unregistered: " + configuration.getRegisteredAdapters(), MessageEventLevel.ERROR);
 			}
 			getApplicationContext().getAutowireCapableBeanFactory().destroyBean(configuration);
 		} else {
-			log("Configuration [" + configurationName + "] to unload not found", MessageKeeperLevel.WARN);
+			log("Configuration [" + configurationName + "] to unload not found", MessageEventLevel.WARN);
 		}
 	}
 
@@ -221,7 +222,7 @@ public class IbisContext extends IbisApplicationContext {
 	 */
 	public synchronized void fullReload() {
 		if (isLoadingConfigs()) {
-			log("Skipping fullReload because one or more configurations are currently loading", MessageKeeperLevel.WARN);
+			log("Skipping fullReload because one or more configurations are currently loading", MessageEventLevel.WARN);
 			return;
 		}
 
@@ -305,7 +306,7 @@ public class IbisContext extends IbisApplicationContext {
 					loadingConfigs.add(currentConfigurationName);
 					createAndConfigureConfigurationWithClassLoader(classLoader, currentConfigurationName, classLoaderException);
 				} catch (Exception e) {
-					log("an exception occurred while loading configuration ["+currentConfigurationName+"]", MessageKeeperLevel.ERROR, e);
+					log("an exception occurred while loading configuration ["+currentConfigurationName+"]", MessageEventLevel.ERROR, e);
 				} finally {
 					loadingConfigs.remove(currentConfigurationName);
 				}
@@ -317,7 +318,7 @@ public class IbisContext extends IbisApplicationContext {
 		generateFlow();
 		// Check if the configuration we try to reload actually exists
 		if (!configFound && configurationName != null) {
-			log(configurationName + " not found in ["+allConfigNamesItems.keySet().toString()+"]", MessageKeeperLevel.ERROR);
+			log(configurationName + " not found in ["+allConfigNamesItems.keySet().toString()+"]", MessageEventLevel.ERROR);
 		}
 	}
 
@@ -378,7 +379,7 @@ public class IbisContext extends IbisApplicationContext {
 			LOG.info("configured configuration [{}] successfully", currentConfigurationName);
 		} catch (ConfigurationException e) {
 			configuration.setConfigurationException(e);
-			log("exception loading configuration ["+currentConfigurationName+"]", MessageKeeperLevel.ERROR, e);
+			log("exception loading configuration ["+currentConfigurationName+"]", MessageEventLevel.ERROR, e);
 		} finally {
 			Thread.currentThread().setContextClassLoader(originalClassLoader);
 		}
@@ -390,20 +391,20 @@ public class IbisContext extends IbisApplicationContext {
 			try {
 				flowDiagramManager.generate(configurations);
 			} catch (IOException e) {
-				log("error generating flow diagram", MessageKeeperLevel.WARN, e);
+				log("error generating flow diagram", MessageEventLevel.WARN, e);
 			}
 		}
 	}
 
 	private void log(String message) {
-		log(message, MessageKeeperLevel.INFO);
+		log(message, MessageEventLevel.INFO);
 	}
 
-	private void log(String message, MessageKeeperLevel level) {
+	private void log(String message, MessageEventLevel level) {
 		log(message, level, null);
 	}
 
-	public void log(String message, MessageKeeperLevel level, Exception e) {
+	public void log(String message, MessageEventLevel level, Exception e) {
 		getApplicationContext().publishEvent(new ApplicationMessageEvent(getApplicationContext(), message, level, e));
 	}
 

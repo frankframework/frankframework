@@ -293,7 +293,6 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			} else {
 				log.debug("iteration [{}] item [{}]", totalItems, message);
 			}
-			message.closeOnCloseOf(childSession);
 
 			if (childLimiter != null) {
 				try {
@@ -319,15 +318,20 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 							startBlock();
 						}
 						long senderStartTime= System.currentTimeMillis();
+						Message resultMessage;
 						if (sender instanceof IBlockEnabledSender<?>) {
-							SenderResult senderResult=((IBlockEnabledSender)sender).sendMessage(blockHandle, message, childSession);
-							if (senderResult.isSuccess()) {
-								itemResult = senderResult.getResult().asString();
-							} else {
+							//noinspection unchecked
+							SenderResult senderResult=((IBlockEnabledSender<Object>)sender).sendMessage(blockHandle, message, childSession);
+							resultMessage = senderResult.getResult();
+							if (!senderResult.isSuccess()) {
 								throw new SenderException(senderResult.getErrorMessage());
 							}
 						} else {
-							itemResult = sender.sendMessageOrThrow(message, childSession).asString();
+							resultMessage = sender.sendMessageOrThrow(message, childSession);
+						}
+						itemResult = resultMessage.asString();
+						if (resultMessage != message) {
+							resultMessage.close();
 						}
 						senderStatistics.record((double) System.currentTimeMillis() - senderStartTime);
 						if (getBlockSize()>0 && ++itemsInBlock >= getBlockSize()) {

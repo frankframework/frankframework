@@ -1,28 +1,29 @@
 # Frank!Framework with Docker
 
-Docker images are provided, suitable both for local and server use. Images are provided from the registry located
-at https://nexus.frankframework.org, where images will be stored for as long as possible.
-Specific nightly builds are made available
-on [DockerHub frankframework/frankframework](https://hub.docker.com/r/frankframework/frankframework), but may only be
-available
-for [6 months](https://www.docker.com/blog/scaling-dockers-business-to-serve-millions-more-developers-storage/).
+Docker images are provided, suitable both for local and server use. Images are provided from the registry located on [DockerHub frankframework/frankframework](https://hub.docker.com/r/frankframework/frankframework), but may only be
+available for [6 months](https://www.docker.com/blog/scaling-dockers-business-to-serve-millions-more-developers-storage/), at https://nexus.frankframework.org stable and latest nightly images will be stored for as long as possible.
 The source is available from the [docker-folder](docker/Tomcat) in this repository.
 
 ## Contents
 
-- [General use](#General-use)
-	- [Local use](#Local-use)
-	- [Server use](#Server-use)
-- [Filesystem](#Filesystem)
-	- [Directories](#Directories)
-	- [Files](#Files)
-- [Logging](#Logging)
-- [Environment variables](#Environment-variables)
-- [Health and readiness](#Health-and-readiness)
-- [Considerations](#Considerations)
-	- [HTTPS and authentication](#HTTPS-and-authentication)
-	- [Secrets](#Secrets)
-	- [Non-root](#Non-root)
+<!-- TOC -->
+* [Frank!Framework with Docker](#frankframework-with-docker)
+  * [Contents](#contents)
+  * [General use](#general-use)
+    * [Local use](#local-use)
+    * [Server use](#server-use)
+  * [Filesystem](#filesystem)
+    * [Directories](#directories)
+    * [Files](#files)
+  * [Logging](#logging)
+  * [Environment variables](#environment-variables)
+  * [Health and readiness](#health-and-readiness)
+  * [Considerations](#considerations)
+    * [HTTPS and authentication](#https-and-authentication)
+    * [Secrets](#secrets)
+    * [Drivers](#drivers)
+    * [Non-root](#non-root)
+<!-- TOC -->
 
 ## General use
 
@@ -31,18 +32,17 @@ The image contains an empty framework-instance that needs to be configured befor
 Whether using the container locally or building your own image for use on servers, refer to [Filesystem](#Filesystem)
 information on which directories and files to mount or copy.
 
-For a list of available tags, see https://nexus.frankframework.org/#browse/search/docker
-and https://hub.docker.com/r/frankframework/frankframework/tags.
+For a list of available tags, see https://hub.docker.com/r/frankframework/frankframework/tags and https://nexus.frankframework.org/#browse/search/docker.
 
 ### Local use
 
 To run the image, run the following command, adding environment variables and mounts as needed:
 
 ```shell
-docker run -p <hostport>:8080 [-e <name>=<value>] [-v <source>:<target>[:<options>]] --name <name> nexus.frankframework.org/frankframework[:<tag>]
+docker run -p <hostport>:8080 [-e <name>=<value>] [-v <source>:<target>[:<options>]] --name <name> frankframework/frankframework[:<tag>]
 ```
 
-For example, to run Frank2Example on http://localhost with the latest image using Powershell on Windows or Bash on
+For example, to run [Frank2Example](https://github.com/frankframework/frankframework/tree/master/example) on http://localhost with the latest image using Powershell on Windows or Bash on
 Linux:
 
 ```shell
@@ -50,7 +50,21 @@ docker run -p 80:8080 \
 	-e dtap.stage=LOC \
 	-v ./example/src/main/resources:/opt/frank/resources \
 	--name Frank2Example \
-	nexus.frankframework.org/frankframework:latest
+	frankframework/frankframework:latest
+```
+
+Or as Docker Compose service:
+
+```yaml
+services:
+	frank2example:
+		image: frankframework/frankframework:latest
+		ports:
+			- "80:8080"
+		environment:
+			- dtap.stage=LOC
+		volumes:
+			- ./example/src/main/resources:/opt/frank/resources
 ```
 
 ### Server use
@@ -61,7 +75,7 @@ secure enough for your use.
 For use on servers, you need to build your own image that includes the required configuration files. To start building
 your own image, start your Dockerfile with:
 
-`FROM nexus.frankframework.org/frankframework[:<tag>]`
+`FROM frankframework/frankframework[:<tag>]`
 
 Use `COPY --chown=tomcat` when copying files to ensure that tomcat can use the files.
 
@@ -71,15 +85,15 @@ Use `COPY --chown=tomcat` when copying files to ensure that tomcat can use the f
 
 The image contains the following directories:
 
-| directory                 | description                                                                                                                 | notes                                                                                                                                                                                                                          |
-|---------------------------|-----------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| /opt/frank/resources      | For application-wide properties, may contain files or a .jar with all files                                                 | Minimum required properties to set are `instance.name` and `configurations.names`, can also be set using environment variables                                                                                                 |
-| /opt/frank/configurations | For configurations, may contain a directory with files per configuration or a .jar containing a directory per configuration | When Configuration.xml is not located at `<configurationName>/Configuration.xml`, your resources should include a property `configurations.<configurationName>.configurationFile` containing the path to the Configuration.xml |
-| /opt/frank/testtool       | For Larva tests that are included in the image                                                                              |                                                                                                                                                                                                                                |
-| /opt/frank/testtool-ext   | For Larva tests that are mounted from the environment                                                                       |                                                                                                                                                                                                                                |
-| /usr/local/tomcat/lib     | Contains drivers and other dependencies                                                                                     | Contains all Framework required dependencies and drivers for supported JMS and JDBC systems                                                                                                                                    |
-| /usr/local/tomcat/logs    | Log directory                                                                                                               |                                                                                                                                                                                                                                |
-| /opt/frank/secrets        | Credential storage                                                                                                          | See [Secrets](#Secrets)                                                                                                                                                                                                        |
+| directory                 | description                                                                                                                | notes                                                                                                                                                                                                                          |
+|---------------------------|----------------------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| /opt/frank/configurations | For configurations, may contain a directory with files per configuration or a JAR containing a directory per configuration | When Configuration.xml is not located at `<configurationName>/Configuration.xml`, your resources should include a property `configurations.<configurationName>.configurationFile` containing the path to the Configuration.xml |
+| /opt/frank/resources      | For application-wide properties, may contain files or a JAR with all files                                                 | Minimum required properties to set are `instance.name` and `configurations.names`, can also be set using environment variables                                                                                                 |
+| /opt/frank/testtool       | For Larva tests that are included in the image                                                                             |                                                                                                                                                                                                                                |
+| /opt/frank/testtool-ext   | For Larva tests that are mounted from the environment                                                                      |                                                                                                                                                                                                                                |
+| /opt/frank/secrets        | Credential storage (credentials.properties will be read by default)                                                        | See [Secrets](#Secrets)                                                                                                                                                                                                        |
+| /opt/frank/drivers        | Contains driver JARs                                                                                                       | See [Drivers](#Drivers)                                                                                                                                                                                                        |
+| /usr/local/tomcat/logs    | Log directory                                                                                                              |                                                                                                                                                                                                                                |
 
 ### Files
 
@@ -142,6 +156,11 @@ To use secrets in your Frank!Framework Application configuration, you can take t
 See the [credentials.properties](credentialProvider/src/test/resources/credentials.properties) of the test-project for an example.
 
 More information on credentials can be found in the [Frank!Framework Manual](https://frank-manual.readthedocs.io/en/latest/deploying/credentials.html#credentials).
+
+### Drivers
+
+Some drivers are included in the image, such as the JDBC and JMS drivers for H2, PostgreSQL and ActiveMQ. If you need to use a different driver or specific version, you can mount the driver JARs to the `/opt/frank/drivers` directory in the container.
+This allows you to use your own drivers without having to rebuild the image.
 
 ### Non-root
 

@@ -12,8 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.ByteArrayInputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.nio.file.DirectoryStream;
 import java.util.Iterator;
 
@@ -135,11 +133,8 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		waitForActionToFinish();
 
 		F file = fileSystem.toFile(filename);
-		OutputStream out = fileSystem.appendFile(file);
-		PrintWriter pw = new PrintWriter(out);
-		pw.println(regel2);
-		pw.close();
-		out.close();
+		fileSystem.appendFile(file, new ByteArrayInputStream(regel2.getBytes()));
+
 		waitForActionToFinish();
 		// test
 		existsCheck(filename);
@@ -161,11 +156,8 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		waitForActionToFinish();
 
 		F file = fileSystem.toFile(filename);
-		OutputStream out = fileSystem.appendFile(file);
-		PrintWriter pw = new PrintWriter(out);
-		pw.println(contents);
-		pw.close();
-		out.close();
+		fileSystem.appendFile(file, new ByteArrayInputStream(contents.getBytes()));
+
 		waitForActionToFinish();
 		// test
 		existsCheck(filename);
@@ -498,10 +490,7 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		F file = fileSystem.toFile(filename);
 		assertTrue(_fileExists(filename), "Expected the file ["+filename+"] to be present");
 
-		OutputStream out = fileSystem.appendFile(file);
-		out.write(content.getBytes());
-		out.close();
-
+		fileSystem.appendFile(file, new ByteArrayInputStream(content.getBytes()));
 
 		fileSystem.deleteFile(file);
 		waitForActionToFinish();

@@ -80,6 +80,8 @@ import org.frankframework.stream.Message;
  *     </table>
  *     If the input message does not have a match with the expression, then the Exception Forward path will be taken.
  * </p>
+ *
+ * @since 9.2
  */
 @EnterpriseIntegrationPattern(Type.TRANSLATOR)
 public class JsonPathPipe extends FixedForwardPipe {
@@ -100,7 +102,6 @@ public class JsonPathPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String result;
 		try {
-			message.preserve();
 			result = JsonUtil.evaluateJsonPath(jsonPath, message);
 		} catch (Exception e) {
 			throw new PipeRunException(this, "Failed to evaluate json path expression [" + jsonPathExpression + "] on input [" + message + "]", e);

@@ -114,10 +114,6 @@ public class InputOutputPipeProcessorTest {
 		String testOutputFile = TestFileUtils.getTestFile("/Util/CompactSaxHandler/output-chaintest.xml");
 		assertEquals(testOutputFile, prr.getResult().asString());
 		assertFalse(input.isNull(), "Input Message should not be closed, because it can be used in the session");
-
-		// Act & Assert that closing the session closes the input message
-		session.close();
-		assertTrue(input.isNull(), "Input Message should be closed");
 	}
 
 	@Test
@@ -158,11 +154,6 @@ public class InputOutputPipeProcessorTest {
 		assertEquals(testOutputFile, prr2.getResult().asString());
 		assertFalse(input.isNull(), "Input Message should not be closed, because it can be used in the session");
 		assertFalse(prr1.getResult().isNull(), "Input Message of pipe2 should not be closed, because it can be used in the session");
-
-		// Act & Assert that closing the session closes the input message
-		session.close();
-		assertTrue(input.isNull(), "Input Message should be closed");
-		assertFalse(prr1.getResult().isNull(), "Input Message of pipe2 should not be closed, because it is a byte[]");
 	}
 
 	private void testRestoreMovedElement(Object sessionVarContents) throws Exception {

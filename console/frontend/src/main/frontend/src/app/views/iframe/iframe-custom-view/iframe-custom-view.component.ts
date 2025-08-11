@@ -1,30 +1,20 @@
 import { LocationStrategy } from '@angular/common';
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { DomSanitizer } from '@angular/platform-browser';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AppService } from 'src/app/app.service';
-import { BaseIframeComponent, baseImports } from '../iframe.base';
+import { BaseIframeComponent } from '../iframe.base';
 import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-iframe-custom-view',
-  imports: baseImports,
   templateUrl: '../iframe.component.html',
   styleUrls: ['../iframe.component.scss'],
 })
 export class IframeCustomViewComponent extends BaseIframeComponent implements OnInit, OnDestroy {
-  private routeSubscription?: Subscription;
-
-  constructor(
-    protected override sanitizer: DomSanitizer,
-    protected override appService: AppService,
-    private router: Router,
-    private route: ActivatedRoute,
-    private location: LocationStrategy,
-    private window: Window,
-  ) {
-    super(sanitizer, appService);
-  }
+  private readonly router: Router = inject(Router);
+  private readonly route: ActivatedRoute = inject(ActivatedRoute);
+  private readonly location: LocationStrategy = inject(LocationStrategy);
+  private readonly window: Window = inject(Window);
+  private routeSubscription: Subscription | null = null;
 
   override ngOnInit(): void {
     super.ngOnInit();
@@ -33,6 +23,11 @@ export class IframeCustomViewComponent extends BaseIframeComponent implements On
         this.loadPage();
       }
     });
+  }
+
+  override ngOnDestroy(): void {
+    super.ngOnDestroy();
+    this.routeSubscription?.unsubscribe();
   }
 
   loadPage(): void {
@@ -55,12 +50,7 @@ export class IframeCustomViewComponent extends BaseIframeComponent implements On
     this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(this.url);
     setTimeout(() => {
       // run after router events have passed
-      this.appService.setIframePopoutUrl(this.url);
+      this.appService.iframePopoutUrl.set(this.url);
     }, 50);
-  }
-
-  override ngOnDestroy(): void {
-    super.ngOnDestroy();
-    this.routeSubscription?.unsubscribe();
   }
 }

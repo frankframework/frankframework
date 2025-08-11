@@ -40,4 +40,8 @@ public class Samba2Listener extends AbstractFileSystemListener<SmbFileRef, Samba
 		super.setMessageType(messageType);
 	}
 
+	@Override
+	public MessageType getMessageType() {
+		return (MessageType) super.getMessageType();
+	}
 }

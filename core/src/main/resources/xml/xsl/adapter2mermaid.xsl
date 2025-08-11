@@ -385,16 +385,20 @@
 
 		<xsl:variable name="processedPipes">
 			<xsl:variable name="forwards">
-				<xsl:for-each select="forward">
+				<!--Group forwards by their target, this will ensure that no 2 forwards have the same source and destination-->
+				<xsl:for-each-group select="forward" group-by="@targetID">
 					<pair>
-						<xsl:variable name="target" select="$newOriginalPipes/*[@elementID=current()/@targetID]"/>
+						<xsl:variable name="target" select="$newOriginalPipes/*[@elementID=current-grouping-key()]"/>
 						<xsl:copy>
-							<xsl:attribute name="errorHandling" select="$errorHandling or @name = $errorForwards or $target/type = 'errorhandling'"/>
-							<xsl:copy-of select="@*|*"/>
+							<xsl:attribute name="errorHandling" select="$errorHandling or count(current-group()[@name = $errorForwards]) = count(current-group())or $target/type = 'errorhandling'"/>
+							<xsl:attribute name="name">
+								<xsl:value-of select="current-group()/@name" separator="&lt;br/>"/>
+							</xsl:attribute>
+							<xsl:copy-of select="current-group()[1]/@*[not(name() = 'name')]"/>
 						</xsl:copy>
 						<xsl:copy-of select="$target"/>
 					</pair>
-				</xsl:for-each>
+				</xsl:for-each-group>
 			</xsl:variable>
 
 			<xsl:copy>

@@ -5,21 +5,22 @@ import { formatDate } from '@angular/common';
   providedIn: 'root',
 })
 export class ServerTimeService {
+  @Inject(LOCALE_ID) private locale: string = inject(LOCALE_ID);
+
   public timezone?: string;
 
-  @Inject(LOCALE_ID) private locale: string = inject(LOCALE_ID);
   private baseTime: Date = new Date();
   private currentTime: Date = new Date();
   private timeUpdateIntervalId = -1;
   private previousLocalTime: number = Date.now();
-  private dateFormat: string = 'yyyy-MM-dd HH:mm:ss';
-  private serverTimezoneOffset: number = 0;
+  private dateFormat = 'yyyy-MM-dd HH:mm:ss';
+  private serverTimezoneOffset = 0;
 
-  getIntialTime(): string {
+  getInitialTime(): string {
     return formatDate(this.baseTime, this.dateFormat, this.locale, this.timezone);
   }
 
-  // doesnt contain timezone data so will return everything in locale time
+  // doesn't contain timezone data so will return everything in locale time
   getCurrentTime(): number {
     return this.currentTime.getTime();
   }
@@ -48,9 +49,11 @@ export class ServerTimeService {
     this.serverTimezoneOffset = timezoneOffset ?? 0;
     this.previousLocalTime = Date.now();
 
-    if (this.timeUpdateIntervalId > -1) window.clearInterval(this.timeUpdateIntervalId);
-    this.timeUpdateIntervalId = window.setInterval(() => this.updateTime(), 200);
+    if (this.timeUpdateIntervalId > -1) globalThis.clearInterval(this.timeUpdateIntervalId);
+    this.timeUpdateIntervalId = globalThis.setInterval(() => this.updateTime(), 200);
     this.updateTime();
+
+    this.checkValidTimezone();
   }
 
   private updateTime(): void {
@@ -63,5 +66,14 @@ export class ServerTimeService {
 
   private getTimezoneOffsetToUTCInSeconds(): number {
     return this.currentTime.getTimezoneOffset() * 60;
+  }
+
+  private checkValidTimezone(): void {
+    try {
+      this.currentTime.toLocaleString(this.locale, { timeZone: this.timezone });
+    } catch (error) {
+      console.error("Couldn't format current time with a valid timezone, using UTC as fallback", error);
+      this.timezone = 'Etc/UTC';
+    }
   }
 }

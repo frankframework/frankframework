@@ -21,6 +21,10 @@ import org.springframework.context.ApplicationContext;
 
 public class SpringUtils {
 
+	private SpringUtils() {
+		// Private constructor so that the utility-class cannot be instantiated.
+	}
+
 	/**
 	 * Create bean without passing the bean-class. Can be used when the compiler can statically determine the class from the variable to which the bean is assigned.
 	 * Do not pass actual argument to reified, Java will auto-detect the class of the bean type.

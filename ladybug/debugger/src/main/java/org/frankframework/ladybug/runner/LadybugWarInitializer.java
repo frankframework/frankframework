@@ -43,7 +43,7 @@ import org.frankframework.util.LogUtil;
  * Spring Boot entrypoint when running as a normal WAR application.
  *
  * Has an order of 500 because it should start after the EnvironmentContext and before the ApplicationContext.
- * 
+ *
  * @author Niels Meijer
  */
 @Order(500)

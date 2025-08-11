@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package org.frankframework.senders;
 
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Properties;
 
@@ -49,6 +48,7 @@ import org.frankframework.core.ISender;
 import org.frankframework.core.SenderException;
 import org.frankframework.doc.Category;
 import org.frankframework.lifecycle.LifecycleException;
+import org.frankframework.util.TimeProvider;
 import org.frankframework.util.XmlUtils;
 
 /**
@@ -101,7 +101,6 @@ import org.frankframework.util.XmlUtils;
  * @author Johan Verrips
  * @author Gerrit van Brakel
  */
-
 @Category(Category.Type.ADVANCED)
 public class MailSender extends AbstractMailSender implements HasPhysicalDestination {
 
@@ -134,7 +133,7 @@ public class MailSender extends AbstractMailSender implements HasPhysicalDestina
 			properties.put("mail.smtp.user", userId);
 			properties.put("mail.smtp.password", getCredentialFactory().getPassword());
 		}
-		//Even though this is called mail.smtp.from, it actually adds the Return-Path header and does not overwrite the MAIL FROM header
+		// Even though this is called mail.smtp.from, it actually adds the Return-Path header and does not overwrite the MAIL FROM header
 		if(StringUtils.isNotEmpty(getBounceAddress())) {
 			properties.put("mail.smtp.from", getBounceAddress());
 		}
@@ -149,7 +148,7 @@ public class MailSender extends AbstractMailSender implements HasPhysicalDestina
 	 */
 	@Override
 	public void start() {
-		createSession(); //Test connection to SMTP host
+		createSession(); // Test connection to SMTP host
 	}
 
 	/**
@@ -278,7 +277,7 @@ public class MailSender extends AbstractMailSender implements HasPhysicalDestina
 			}
 		}
 
-		//Even though this is called EnvelopeFrom/mail.smtp.from, it actually adds the Return-Path header and does not overwrite the MAIL FROM header
+		// Even though this is called EnvelopeFrom/mail.smtp.from, it actually adds the Return-Path header and does not overwrite the MAIL FROM header
 		if (StringUtils.isNotEmpty(mailSession.getBounceAddress())) {
 			//TODO: use session.setProperty("mail.smtp.from", mailSession.getBounceAddress()); here, or do not globally share the session...
 			msg.setEnvelopeFrom(mailSession.getBounceAddress());
@@ -319,7 +318,7 @@ public class MailSender extends AbstractMailSender implements HasPhysicalDestina
 			log.debug(logBuffer.toString());
 		}
 		try {
-			msg.setSentDate(new Date());
+			msg.setSentDate(TimeProvider.nowAsDate());
 		} catch (MessagingException e) {
 			throw new SenderException("Error occurred while setting the date", e);
 		}
@@ -398,11 +397,6 @@ public class MailSender extends AbstractMailSender implements HasPhysicalDestina
 	@Override
 	public String getPhysicalDestinationName() {
 		return getSmtpHost() + ":" + getSmtpPort() + "; TLS=" + useSsl;
-	}
-
-	@Override
-	public String getDomain() {
-		return "SMTP";
 	}
 
 	public class MailSession extends MailSessionBase {

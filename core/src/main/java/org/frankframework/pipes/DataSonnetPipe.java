@@ -26,6 +26,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
+import org.frankframework.doc.Mandatory;
 import org.frankframework.json.DataSonnetOutputType;
 import org.frankframework.json.JsonMapper;
 import org.frankframework.json.JsonUtil;
@@ -51,7 +52,7 @@ import org.frankframework.stream.Message;
  *   "name" : "DataSonnet"
  * }
  * }</pre>
- * 
+ *
  * Jsonnet stylesheet:
  * <pre>{@code
  * {
@@ -67,9 +68,9 @@ import org.frankframework.stream.Message;
  * }
  * }</pre>
  * </p>
- * 
+ *
  * @ff.parameters All parameters are added to the {@code .jsonnet} stylesheet. Parameter names must be unique.
- * 
+ *
  * @see <a href="https://jsonnet.org/">https://jsonnet.org/</a> for live examples.
  * @see <a href="https://datasonnet.github.io/datasonnet-mapper/datasonnet/latest/cookbook.html">DataSonnet cookbook</a>.
  */
@@ -114,6 +115,7 @@ public class DataSonnetPipe extends FixedForwardPipe {
 	}
 
 	/** Location of the stylesheet to apply to the input message. */
+	@Mandatory
 	public void setStyleSheetName(String stylesheetName) {
 		this.styleSheetName = stylesheetName;
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2023-2024 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,8 +26,12 @@ public class UUIDUtil {
 	public static final SecureRandom RANDOM = new SecureRandom();
 	private static final char[] HEX_CHARS = "0123456789abcdef".toCharArray();
 
+	private UUIDUtil() {
+		// Private constructor so that the utility-class cannot be instantiated.
+	}
+
 	/**
-	 * Creates a Universally Unique Identifier, via the java.rmi.server.UID class.
+	 * Creates a Universally Unique Identifier, using the host IP address and the java.rmi.server.UID class.
 	 */
 	public static String createSimpleUUID() {
 		UID uid = new UID();
@@ -38,6 +42,10 @@ public class UUIDUtil {
 		return uidString;
 	}
 
+	/**
+	 * Creates a Universally Unique Identifier, using the host IP address and the java.rmi.server.UID class.
+	 * This method is currently an alias for {@link #createSimpleUUID()}
+	 */
 	public static String createUUID() {
 		return createSimpleUUID();
 	}
@@ -53,6 +61,9 @@ public class UUIDUtil {
 		return uuidString;
 	}
 
+	/**
+	 * Creates a Universally Unique Identifier, via the java.util.UUID class (always 36 characters in length).
+	 */
 	public static String createRandomUUID() {
 		return createRandomUUID(false);
 	}
@@ -70,7 +81,7 @@ public class UUIDUtil {
 	}
 
 	/**
-	 * @return the ip address of the machine that the program runs on.
+	 * @return the ip address of the machine that the program runs on, as {@code byte[]}.
 	 */
 	private static byte[] getIPAddress() {
 		InetAddress inetAddress = null;
@@ -84,7 +95,7 @@ public class UUIDUtil {
 	}
 
 	/**
-	 * @return a unique UUID string with length 31 (ipaddress with length 4*3, currentTime with length 13, hashcode with length 6)
+	 * @return a unique UUID string with length 31 (ipaddress with length 4*3, currentTime with length 13, hashcode with length 6) containing only digits 0-9.
 	 */
 	public static String createNumericUUID() {
 		byte[] ipAddress = getIPAddress();
@@ -99,7 +110,7 @@ public class UUIDUtil {
 		df = new DecimalFormat("000000");
 		String hash = df.format(hashL);
 
-		//Unique string is <ipaddress with length 4*3><currentTime with length 13><hashcode with length 6>
+		// Unique string is <ipaddress with length 4*3><currentTime with length 13><hashcode with length 6>
 
 		return ia + System.currentTimeMillis() + hash;
 	}

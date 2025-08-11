@@ -29,9 +29,9 @@
         Up since:
         <strong><span appToDate [time]="uptime"></span></strong> (<span appTimeSince [time]="uptime"></span>), timezone:
         <strong>{{ serverTimeService.timezone }}</strong>
-        @if (consoleVersion !== framework.version) {
+        @if (consoleVersion() !== framework.version) {
           <br />
-          Console version: <strong>{{ consoleVersion }}</strong>
+          Console version: <strong>{{ consoleVersion() }}</strong>
         }
       </p>
     } @else {

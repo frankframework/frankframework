@@ -154,7 +154,7 @@ public class GraalJS implements JavascriptEngine<ScriptEngine> {
 					return message.asString();
 				}
 			} catch (Exception e) {
-				throw new RuntimeException(e);
+				throw new IllegalStateException(e);
 			}
 		});
 	}

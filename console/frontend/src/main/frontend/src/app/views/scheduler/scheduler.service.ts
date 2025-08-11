@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { Adapter, AppService } from 'src/app/app.service';
 
@@ -24,24 +24,22 @@ type Job = {
   lockkey: string;
 };
 
-export interface JobForm extends Job {
+export type JobForm = {
   adapter: Adapter | null;
-}
+} & Job;
 
-interface JobResponse extends Job {
+type JobResponse = {
   adapter: string;
   configuration: string;
   triggers: Trigger[];
-}
+} & Job;
 
 @Injectable({
   providedIn: 'root',
 })
 export class SchedulerService {
-  constructor(
-    private http: HttpClient,
-    private appService: AppService,
-  ) {}
+  private readonly http: HttpClient = inject(HttpClient);
+  private readonly appService: AppService = inject(AppService);
 
   getJob(group: string, jobName: string): Observable<JobResponse> {
     return this.http.get<JobResponse>(`${this.appService.absoluteApiPath}schedules/${group}/jobs/${jobName}`);

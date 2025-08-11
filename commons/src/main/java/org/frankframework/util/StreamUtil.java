@@ -17,10 +17,6 @@ package org.frankframework.util;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FilterInputStream;
-import java.io.FilterOutputStream;
-import java.io.FilterReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -29,11 +25,8 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.Writer;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -41,8 +34,6 @@ import jakarta.annotation.Nullable;
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 /**
  * Functions to read and write from one stream to another.
@@ -51,70 +42,13 @@ import org.apache.logging.log4j.Logger;
  * @author Gerrit van Brakel
  */
 public class StreamUtil {
-
 	public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING = DEFAULT_CHARSET.displayName();
 	public static final String AUTO_DETECT_CHARSET = "auto";
 	public static final int BUFFER_SIZE = 64 * 1024;
 
-	// DEFAULT_CHARSET and DEFAULT_INPUT_STREAM_ENCODING must be defined before LogUtil.getLogger() is called, otherwise DEFAULT_CHARSET returns null.
-	protected static Logger log = LogManager.getLogger(StreamUtil.class);
-
-	public static InputStream dontClose(InputStream stream) {
-		class NonClosingInputStreamFilter extends FilterInputStream {
-			public NonClosingInputStreamFilter(InputStream in) {
-				super(in);
-			}
-
-			@Override
-			public void close() throws IOException {
-				// do not close
-			}
-		}
-
-		return new NonClosingInputStreamFilter(stream);
-	}
-
-	public static Reader dontClose(Reader reader) {
-		class NonClosingReaderFilter extends FilterReader {
-			public NonClosingReaderFilter(Reader in) {
-				super(in);
-			}
-
-			@Override
-			public void close() throws IOException {
-				// do not close
-			}
-		}
-
-		return new NonClosingReaderFilter(reader);
-	}
-
-	public static OutputStream dontClose(OutputStream stream) {
-		class NonClosingOutputStreamFilter extends FilterOutputStream {
-			public NonClosingOutputStreamFilter(OutputStream out) {
-				super(out);
-			}
-
-			@Override
-			public void close() throws IOException {
-				// do not close
-			}
-		}
-
-		return new NonClosingOutputStreamFilter(stream);
-	}
-
-	public static InputStream urlToStream(URL url, int timeoutMs) throws IOException {
-		URLConnection conn = url.openConnection();
-		if (timeoutMs == 0) {
-			timeoutMs = 10000;
-		}
-		if (timeoutMs > 0) {
-			conn.setConnectTimeout(timeoutMs);
-			conn.setReadTimeout(timeoutMs);
-		}
-		return conn.getInputStream(); //SCRV_269S#072 //SCRV_286S#077
+	private StreamUtil() {
+		// Private constructor so that the utility-class cannot be instantiated.
 	}
 
 	public static String readerToString(Reader reader, String endOfLineString) throws IOException {
@@ -123,10 +57,6 @@ public class StreamUtil {
 
 	public static String streamToString(InputStream stream, String endOfLineString, String streamEncoding) throws IOException {
 		return readerToString(StreamUtil.getCharsetDetectingInputStreamReader(stream, streamEncoding), endOfLineString);
-	}
-
-	public static byte[] streamToByteArray(InputStream inputStream, boolean skipBOM) throws IOException {
-		return skipBOM ? streamToBytes(new BOMInputStream(inputStream, !skipBOM, ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE)) : streamToBytes(inputStream);
 	}
 
 	/**
@@ -140,15 +70,18 @@ public class StreamUtil {
 	 * Return a Reader that reads the InputStream in the character set specified by the BOM. If no BOM is found, a default character set is used.
 	 */
 	public static BufferedReader getCharsetDetectingInputStreamReader(InputStream inputStream, String defaultCharset) throws IOException {
-		BOMInputStream bOMInputStream = new BOMInputStream(inputStream, ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE);
-		ByteOrderMark bom = bOMInputStream.getBOM();
-		String charsetName = bom == null ? defaultCharset : bom.getCharsetName();
+		BOMInputStream bomInputStream = BOMInputStream.builder()
+				.setInputStream(inputStream)
+				.setByteOrderMarks(ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE)
+				.get();
+
+		String charsetName = !bomInputStream.hasBOM() ? defaultCharset : bomInputStream.getBOM().getCharsetName();
 
 		if (StringUtils.isEmpty(charsetName)) {
 			charsetName = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		}
 
-		return new BufferedReader(new InputStreamReader(bOMInputStream, charsetName));
+		return new BufferedReader(new InputStreamReader(bomInputStream, charsetName));
 	}
 
 	/**
@@ -209,7 +142,7 @@ public class StreamUtil {
 		long bytesLeft = maxBytesToCopy;
 		int bytesRead;
 		long totalBytesCopied = 0L;
-		while (bytesLeft != 0L) {
+		while (bytesLeft > 0L) {
 			int toRead = (int) Math.min(chunkSize, bytesLeft);
 			bytesRead = in.read(buffer, 0, toRead);
 			if (bytesRead <= 0) {
@@ -246,22 +179,30 @@ public class StreamUtil {
 		}
 	}
 
-	/**
-	 * Copies the content of the specified file to an output stream.
-	 * <p>
-	 * Example:
-	 * <pre>
-	 *         OutputStream os = new ByteArrayOutputStream
-	 *         Misc.fileToStream(someFileName, os);
-	 *         System.out.println(os.toString) // prints the content of the output stream
-	 *         				   // that's copied from the file.
-	 *     </pre>
-	 * </p>
-	 *
-	 * @throws IOException exception to be thrown if an I/O exception occurs
-	 */
-	public static void fileToStream(String filename, OutputStream output) throws IOException {
-		streamToStream(Files.newInputStream(Paths.get(filename)), output);
+	public static long copyPartialReader(Reader in, Writer out, long maxCharsToCopy, int chunkSize) throws IOException {
+		if (in == null || maxCharsToCopy == 0L) {
+			return 0L;
+		}
+
+		if (maxCharsToCopy < 0L) {
+			return in.transferTo(out);
+		}
+
+		char[] buffer = new char[chunkSize];
+		long charsLeft = maxCharsToCopy;
+		int charsRead;
+		long totalCharsCopied = 0L;
+		while (charsLeft > 0L) {
+			int toRead = (int) Math.min(chunkSize, charsLeft);
+			charsRead = in.read(buffer, 0, toRead);
+			if (charsRead <= 0) {
+				break;
+			}
+			out.write(buffer, 0, charsRead);
+			totalCharsCopied += charsRead;
+			charsLeft -= charsRead;
+		}
+		return totalCharsCopied;
 	}
 
 	public static void streamToStream(@Nullable InputStream input, @Nonnull OutputStream output) throws IOException {
@@ -294,25 +235,6 @@ public class StreamUtil {
 			if(eof != null) {
 				output.write(eof);
 			}
-		}
-	}
-
-	/**
-	 * Writes the content of an input stream to a specified file.
-	 * <p>
-	 * Example:
-	 * <pre>
-	 *         String test = "test";
-	 *         ByteArrayInputStream bais = new ByteArrayInputStream(test.getBytes());
-	 *         Misc.streamToFile(bais, file); // "test" copied inside the file.
-	 *     </pre>
-	 * </p>
-	 *
-	 * @throws IOException exception to be thrown if an I/O exception occurs
-	 */
-	public static void streamToFile(InputStream inputStream, File file) throws IOException {
-		try (OutputStream fileOut = Files.newOutputStream(file.toPath())) {
-			streamToStream(inputStream, fileOut);
 		}
 	}
 
@@ -404,7 +326,7 @@ public class StreamUtil {
 	 * @see #streamToString(InputStream, String, boolean)
 	 */
 	public static String streamToString(InputStream stream) throws IOException {
-		return streamToString(stream, null, false);
+		return streamToString(stream, DEFAULT_INPUT_STREAM_ENCODING);
 	}
 
 	/**
@@ -431,16 +353,8 @@ public class StreamUtil {
 	/**
 	 * @see StreamUtil#streamToString(InputStream, String, boolean)
 	 */
-	public static String resourceToString(URL resource, String endOfLineString, boolean xmlEncode) throws IOException {
-		InputStream stream = resource.openStream();
-		return streamToString(stream, endOfLineString, xmlEncode);
-	}
-
-	/**
-	 * @see StreamUtil#streamToString(InputStream, String, boolean)
-	 */
 	public static String resourceToString(URL resource) throws IOException {
-		return resourceToString(resource, null, false);
+		return resourceToString(resource, null);
 	}
 
 	/**
@@ -451,11 +365,10 @@ public class StreamUtil {
 	}
 
 	/**
-	 * Writes the string to a file.
+	 * @see StreamUtil#streamToString(InputStream, String, boolean)
 	 */
-	public static void stringToFile(String string, String fileName) throws IOException {
-		try (Writer fw = Files.newBufferedWriter(Paths.get(fileName), Charset.defaultCharset())) {
-			fw.write(string);
-		}
+	public static String resourceToString(URL resource, String endOfLineString, boolean xmlEncode) throws IOException {
+		InputStream stream = resource.openStream();
+		return streamToString(stream, endOfLineString, xmlEncode);
 	}
 }

@@ -8,7 +8,7 @@ import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
 
 import com.mockrunner.mock.jms.MockMessage;
 
-import org.frankframework.jms.JMSFacade.DestinationType;
+import org.frankframework.jms.JMSFacade.JmsDestinationType;
 import org.frankframework.jms.JmsRealm;
 import org.frankframework.jms.JmsRealmFactory;
 import org.frankframework.jms.JmsTransactionalStorage;
@@ -50,7 +50,7 @@ public class TestBrowseQueue extends BusTestBase {
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.QUEUE, BusAction.FIND);
 		request.setHeader("connectionFactory", MockRunnerConnectionFactoryFactory.MOCK_CONNECTION_FACTORY_NAME);
 		request.setHeader("destination", "testTable");
-		request.setHeader("type", DestinationType.QUEUE.name());
+		request.setHeader("type", JmsDestinationType.QUEUE.name());
 
 		MockMessage mockMessage = new MockMessage();
 		mockMessage.setJMSMessageID("dummyMessageId");

@@ -19,7 +19,7 @@
 	</beans>
 
 	<beans>
-		<bean name="configurationDigester" class="org.frankframework.configuration.ConfigurationDigester" />
+		<bean name="configurationDigester" class="org.frankframework.configuration.digester.ConfigurationDigester" />
 
 		<bean name="lifecycleProcessor" class="org.frankframework.lifecycle.ConfiguringLifecycleProcessor" />
 

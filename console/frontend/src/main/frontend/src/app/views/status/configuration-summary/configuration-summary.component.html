@@ -17,43 +17,46 @@
   <div class="ibox-content">
     <div class="row">
       <div class="col-md-5">
+        @let adapterSummary = adapterSummarySignal();
+        @let receiverSummary = receiverSummarySignal();
         <table class="table">
           <thead>
             <tr>
               <th><strong>State</strong></th>
               <th
+                title="Started"
                 [ngClass]="{
                   'text-primary': adapterSummary.started > 0 || receiverSummary.started > 0,
                 }"
-                title="Started"
               >
                 <i class="fa fa-check-square"></i>
               </th>
               <th
+                title="Starting"
                 [ngClass]="{
                   'text-primary': adapterSummary.starting > 0 || receiverSummary.starting > 0,
                 }"
-                title="Starting"
               >
                 <i class="fa fa-check-square-o"></i>
               </th>
               <th
+                title="Stopped"
                 [ngClass]="{
                   'text-danger': adapterSummary.stopped > 0 || receiverSummary.stopped > 0,
                 }"
-                title="Stopped"
               >
                 <i class="fa fa-stop-circle"></i>
               </th>
               <th
+                title="Stopping"
                 [ngClass]="{
                   'text-danger': adapterSummary.stopping > 0 || receiverSummary.stopping > 0,
                 }"
-                title="Stopping"
               >
                 <i class="fa fa-stop-circle-o"></i>
               </th>
               <th
+                title="Error"
                 [ngClass]="{
                   'text-warning':
                     adapterSummary.error > 0 ||
@@ -63,7 +66,6 @@
                     adapterSummary.exception_stopping > 0 ||
                     receiverSummary.exception_stopping > 0,
                 }"
-                title="Error"
               >
                 <i class="fa fa-warning"></i>
               </th>
@@ -94,6 +96,7 @@
         </table>
       </div>
       <div class="col-md-4">
+        @let messageSummary = messageSummarySignal();
         <table class="table">
           <thead>
             <tr>

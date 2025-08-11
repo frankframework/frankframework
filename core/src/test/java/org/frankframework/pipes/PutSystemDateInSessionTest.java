@@ -8,7 +8,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Date;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -16,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.TimeProvider;
 
 public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSession>{
 
@@ -125,7 +125,7 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 		pipe.setGetCurrentTimeStampInMillis(true);
 		configureAndStartPipe();
 		doPipe(pipe, "dummy", session);
-		long timeStampInMillis = new Date().getTime();
+		long timeStampInMillis = TimeProvider.nowAsMillis();
 		String timeStampInMillisFromSessionKey = (String) session.get("dummy");
 		//Compare timestamp put in session key with the actual timestamp fail if it is bigger than 1 sec.
 		assertFalse(timeStampInMillis - Long.parseLong(timeStampInMillisFromSessionKey) > 1000, "Time stamp difference cannot be bigger than 1 s");
@@ -142,6 +142,9 @@ public class PutSystemDateInSessionTest extends PipeTestBase<PutSystemDateInSess
 
 	@Test
 	public void testSleepWhenEqualsToPrevious() throws Exception {
+		// If timeprovider has a fixed clock, this test will hang
+		TimeProvider.resetClock();
+
 		long sleep = 100;
 		pipe.setSleepWhenEqualToPrevious(sleep);
 		configureAndStartPipe();

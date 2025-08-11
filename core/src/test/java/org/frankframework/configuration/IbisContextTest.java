@@ -15,7 +15,7 @@ import org.springframework.context.support.AbstractApplicationContext;
 
 import org.frankframework.configuration.classloaders.DummyClassLoader;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
-import org.frankframework.lifecycle.MessageEventListener;
+import org.frankframework.lifecycle.events.MessageEventListener;
 import org.frankframework.testutil.NullClassLoader;
 import org.frankframework.util.MessageKeeperMessage;
 

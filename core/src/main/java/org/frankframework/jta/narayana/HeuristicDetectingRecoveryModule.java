@@ -41,6 +41,7 @@ import com.arjuna.ats.internal.jta.transaction.arjunacore.subordinate.jca.Subord
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.TimeProvider;
 
 @Log4j2
 public class HeuristicDetectingRecoveryModule implements RecoveryModule {
@@ -66,7 +67,7 @@ public class HeuristicDetectingRecoveryModule implements RecoveryModule {
 
 	private static class UidCacheItem {
 		private int count = 1;
-		private final Instant age = Instant.now();
+		private final Instant age = TimeProvider.now();
 
 		public UidCacheItem(Uid ignored) {
 			// Required for computeIfAbsent
@@ -77,7 +78,7 @@ public class HeuristicDetectingRecoveryModule implements RecoveryModule {
 		 */
 		public void hit() {
 			Instant agePlusTenMinutes = age.plus(HEURISTIC_FAILURE_BACKOFF_DURATION);
-			if (Instant.now().isBefore(agePlusTenMinutes)) {
+			if (TimeProvider.now().isBefore(agePlusTenMinutes)) {
 				count++;
 
 				if (isStuck()) {

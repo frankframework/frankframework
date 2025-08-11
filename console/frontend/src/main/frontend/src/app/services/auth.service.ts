@@ -5,10 +5,10 @@ import { combineLatest, Observable } from 'rxjs';
 import {
   Link,
   LinkName,
-  SecurityItemsService,
-  SecurityItems,
-  SecurityRole,
   Links,
+  SecurityItems,
+  SecurityItemsService,
+  SecurityRole,
 } from '../views/security-items/security-items.service';
 
 type AllowedLinks = Pick<Link, 'name'> & Partial<Link>;
@@ -59,10 +59,6 @@ export class AuthService {
     }
   }
 
-  private isNotAnonymous(username?: string): boolean {
-    return !!username && username !== 'anonymous';
-  }
-
   loadPermissions(): Promise<void> {
     if (this.loadingPermissionsPromise) {
       return this.loadingPermissionsPromise;
@@ -86,21 +82,6 @@ export class AuthService {
     return this.loadingPermissionsPromise;
   }
 
-  private updatePermissions(securityItems: SecurityItems, links: Links): void {
-    this.allowedRoles = this.filterAllowedRoles(securityItems.securityRoles);
-    this.allowedLinks = this.filterAllowedLinks(links);
-  }
-
-  private filterAllowedRoles(securityRoles: SecurityRole[]): string[] {
-    return securityRoles.filter(({ allowed }) => allowed).map(({ name }) => name);
-  }
-
-  private filterAllowedLinks(links: Links): Link[] {
-    return links.links.filter(
-      (link) => !link.hasOwnProperty('roles') || link.roles.some((role) => this.allowedRoles.includes(role)),
-    );
-  }
-
   isLoggedIn(): boolean {
     return this.loggedIn;
   }
@@ -114,5 +95,25 @@ export class AuthService {
     this.securityItemsService.clearCache();
     this.loggedIn = false;
     return this.http.get(`${this.appService.getServerPath()}iaf/api/logout`);
+  }
+
+  private isNotAnonymous(username?: string): boolean {
+    return !!username && username !== 'anonymous';
+  }
+
+  private updatePermissions(securityItems: SecurityItems, links: Links): void {
+    this.allowedRoles = this.filterAllowedRoles(securityItems.securityRoles);
+    this.allowedLinks = this.filterAllowedLinks(links);
+  }
+
+  private filterAllowedRoles(securityRoles: SecurityRole[]): string[] {
+    return securityRoles.filter(({ allowed }) => allowed).map(({ name }) => name);
+  }
+
+  private filterAllowedLinks(links: Links): Link[] {
+    return links.links.filter(
+      (link) =>
+        !Object.hasOwnProperty.call(link, 'roles') || link.roles.some((role) => this.allowedRoles.includes(role)),
+    );
   }
 }

@@ -7,8 +7,6 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.util.stream.Stream;
 
-import org.frankframework.testutil.TestAssertions;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
@@ -25,6 +23,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.BooleanParameterBuilder;
 import org.frankframework.testutil.NumberParameterBuilder;
 import org.frankframework.testutil.ParameterBuilder;
+import org.frankframework.testutil.TestAssertions;
 
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {

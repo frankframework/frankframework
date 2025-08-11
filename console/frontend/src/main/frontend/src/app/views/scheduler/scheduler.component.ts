@@ -1,6 +1,6 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit, Signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { AppService, JobMessage } from 'src/app/app.service';
+import { AppService, Message } from 'src/app/app.service';
 import { PollerService } from 'src/app/services/poller.service';
 import { SchedulerService, Trigger } from './scheduler.service';
 import { SweetalertService } from 'src/app/services/sweetalert.service';
@@ -29,6 +29,10 @@ type Scheduler = {
 };
 
 export type JobState = 'NONE' | 'NORMAL' | 'PAUSED' | 'COMPLETE' | 'ERROR' | 'BLOCKED';
+
+export type JobMessage = {
+  text: string;
+} & Message;
 
 export type Job = {
   name: string;
@@ -76,21 +80,21 @@ export class SchedulerComponent implements OnInit, OnDestroy {
     schedulerClass: '',
     jobStoreClass: '',
   };
-  protected searchFilter: string = '';
-  protected refreshing: boolean = false;
-  protected databaseSchedulesEnabled: boolean = this.appService.databaseSchedulesEnabled;
+  protected searchFilter = '';
+  protected refreshing = false;
+  protected databaseSchedulesEnabled: Signal<boolean> = computed(
+    () => this.appService.appConstants()['loadDatabaseSchedules.active'] === 'true',
+  );
   protected jobShowContent: Record<keyof typeof this.jobGroups, boolean> = {};
-  protected selectedJobGroup: string = 'All';
+  protected selectedJobGroup = 'All';
 
   private initialized = false;
 
-  constructor(
-    private router: Router,
-    private pollerService: PollerService,
-    private sweetAlertService: SweetalertService,
-    private appService: AppService,
-    private schedulerService: SchedulerService,
-  ) {}
+  private router = inject(Router);
+  private pollerService = inject(PollerService);
+  private sweetAlertService = inject(SweetalertService);
+  private appService = inject(AppService);
+  private schedulerService = inject(SchedulerService);
 
   ngOnInit(): void {
     this.pollerService.add(
@@ -103,6 +107,7 @@ export class SchedulerComponent implements OnInit, OnDestroy {
         this.scheduler = result.scheduler;
         this.jobGroups = result.jobs;
         this.jobGroupNames = Object.keys(this.jobGroups);
+        this.sortJobMessages();
 
         this.refreshing = false;
         if (!this.initialized) {
@@ -114,10 +119,6 @@ export class SchedulerComponent implements OnInit, OnDestroy {
       },
       5000,
     );
-
-    this.appService.databaseSchedulesEnabled$.subscribe(() => {
-      this.databaseSchedulesEnabled = this.appService.databaseSchedulesEnabled;
-    });
   }
 
   ngOnDestroy(): void {
@@ -147,7 +148,7 @@ export class SchedulerComponent implements OnInit, OnDestroy {
   }
 
   remove(jobGroup: string, jobName: string): void {
-    this.sweetAlertService.Confirm({ title: `Please confirm the deletion of '${jobName}'` }).then((result) => {
+    this.sweetAlertService.confirm({ title: `Please confirm the deletion of '${jobName}'` }).then((result) => {
       if (result.isConfirmed) {
         this.schedulerService.deleteScheduleJob(jobGroup, jobName).subscribe();
       }
@@ -160,5 +161,13 @@ export class SchedulerComponent implements OnInit, OnDestroy {
 
   edit(jobGroup: string, jobName: string): void {
     this.router.navigate(['scheduler', 'edit', jobGroup, jobName]);
+  }
+
+  private sortJobMessages(): void {
+    for (const jobs of Object.values(this.jobGroups)) {
+      for (const job of jobs) {
+        job.messages.sort((a, b) => b.date - a.date);
+      }
+    }
   }
 }

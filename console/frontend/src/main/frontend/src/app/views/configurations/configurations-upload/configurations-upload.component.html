@@ -22,11 +22,11 @@
           <h4>Upload Configuration</h4>
         </div>
         <div class="ibox-content">
-          <form role="form" (submit)="submit()" appQuickSubmitForm>
+          <form role="form" appQuickSubmitForm (submit)="submit()">
             <div class="row form-group">
-              <label class="col-sm-3 control-label">Datasource</label>
+              <label class="col-sm-3 control-label" for="datasource">Datasource</label>
               <div class="col-sm-9">
-                <select class="form-control" name="datasource" [(ngModel)]="form.datasource">
+                <select class="form-control" name="datasource" id="datasource" [(ngModel)]="form.datasource">
                   @for (datasource of datasources; track datasource) {
                     <option>
                       {{ datasource }}
@@ -36,28 +36,40 @@
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30">Upload File</label>
+              <label class="col-sm-3 control-label label-height-30" for="upload">Upload File</label>
               <div class="col-sm-5">
-                <app-input-file-upload (fileUpdated)="updateFile($event)" accept=".zip,.jar" />
+                <app-input-file-upload accept=".zip,.jar" id="upload" (fileUpdated)="updateFile($event)" />
               </div>
               <div class="col-sm-1">
-                <label class="control-label label-height-30 pull-right">Encoding</label>
+                <label class="control-label label-height-30 pull-right" for="encoding">Encoding</label>
               </div>
               <div class="col-sm-3">
-                <input class="form-control" name="encoding" type="text" [(ngModel)]="form.encoding" />
+                <input class="form-control" name="encoding" id="encoding" type="text" [(ngModel)]="form.encoding" />
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label">Multiple Configurations</label>
+              <label class="col-sm-3 control-label" for="multiple_configs">Multiple Configurations</label>
               <div class="col-sm-9">
-                <input icheck type="checkbox" name="multiple_configs" [(ngModel)]="form.multiple_configs" />
+                <input
+                  icheck
+                  type="checkbox"
+                  name="multiple_configs"
+                  id="multiple_configs"
+                  [(ngModel)]="form.multiple_configs"
+                />
                 <small class="m-l-sm">To upload multiple configurations compressed in 1 zip-archive.</small>
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label">Startup Configuration</label>
+              <label class="col-sm-3 control-label" for="activate_config">Startup Configuration</label>
               <div class="col-sm-9">
-                <input icheck type="checkbox" name="activate_config" [(ngModel)]="form.activate_config" />
+                <input
+                  icheck
+                  type="checkbox"
+                  name="activate_config"
+                  id="activate_config"
+                  [(ngModel)]="form.activate_config"
+                />
                 <small class="m-l-sm"
                   >Load this version of the configuration on application startup or by manually reloading the
                   configuration. Resets this flag for other versions of this configuration.</small
@@ -65,9 +77,15 @@
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label">Reload Automatically</label>
+              <label class="col-sm-3 control-label" for="automatic_reload">Reload Automatically</label>
               <div class="col-sm-9">
-                <input icheck type="checkbox" name="automatic_reload" [(ngModel)]="form.automatic_reload" />
+                <input
+                  icheck
+                  type="checkbox"
+                  name="automatic_reload"
+                  id="automatic_reload"
+                  [(ngModel)]="form.automatic_reload"
+                />
                 <small class="m-l-sm"
                   >Load this version of the configuration at the next reload event if it has also been selected as
                   'Startup Configuration'.</small

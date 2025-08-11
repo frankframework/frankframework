@@ -18,6 +18,7 @@ package org.frankframework.extensions.tibco;
 import java.util.Enumeration;
 import java.util.Map;
 
+import jakarta.annotation.Nullable;
 import jakarta.jms.Connection;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.JMSException;
@@ -46,6 +47,10 @@ import org.frankframework.util.LogUtil;
 public class TibcoUtils {
 	static Logger log = LogUtil.getLogger(TibcoUtils.class);
 
+	private TibcoUtils() {
+		// Private constructor to prevent creating instance of utility class
+	}
+
 	public static long getQueueFirstMessageAge(String provUrl,
 			String authAlias, String userName, String password, String queueName)
 			throws JMSException {
@@ -60,21 +65,10 @@ public class TibcoUtils {
 	public static long getQueueFirstMessageAge(String provUrl,
 			String authAlias, String userName, String password,
 			String queueName, String messageSelector) throws JMSException {
-		Connection connection = null;
-		Session jSession = null;
-		try {
-			connection = getConnection(provUrl, authAlias, userName, password);
-			jSession = connection.createSession(false,
-					jakarta.jms.Session.AUTO_ACKNOWLEDGE);
+		try (Connection connection = getConnection(provUrl, authAlias, userName, password);
+			 Session jSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+		) {
 			return getQueueFirstMessageAge(jSession, queueName, messageSelector);
-		} finally {
-			if (connection != null) {
-				try {
-					connection.close();
-				} catch (JMSException e) {
-					log.warn("Exception on closing connection", e);
-				}
-			}
 		}
 	}
 
@@ -211,13 +205,13 @@ public class TibcoUtils {
 		}
 	}
 
-	protected static TibjmsAdmin getActiveServerAdmin(String url, CredentialFactory cf, Map<String, Object> connectionProperties) throws TibjmsAdminException {
+	protected static @Nullable TibjmsAdmin getActiveServerAdmin(String url, CredentialFactory cf, Map<String, Object> connectionProperties) throws TibjmsAdminException {
 		TibjmsAdminException lastException = null;
 		TibjmsAdmin admin = null;
 		String[] uws = url.split(",");
 		String uw = null;
-		boolean uws_ok = false;
-		for (int i = 0; !uws_ok && i < uws.length; i++) {
+		boolean uwsOk = false;
+		for (int i = 0; !uwsOk && i < uws.length; i++) {
 			uw = uws[i].trim();
 			int state = ServerInfo.SERVER_ACTIVE * -1;
 			try {
@@ -240,7 +234,7 @@ public class TibcoUtils {
 			}
 			if (admin != null) {
 				if (state == ServerInfo.SERVER_ACTIVE) {
-					uws_ok = true;
+					uwsOk = true;
 				} else {
 					log.debug("Server [{}] is not active", uw);
 					try {
@@ -251,12 +245,25 @@ public class TibcoUtils {
 				}
 			}
 		}
-		if (!uws_ok) {
+		if (!uwsOk) {
 			log.warn("Could not find an active server", lastException);
 			return null;
 		} else {
 			log.debug("Found active server [{}]", uw);
 			return admin;
+		}
+	}
+
+	protected static void closeAdminClient(@Nullable TibjmsAdmin admin) {
+		if (admin == null) {
+			return;
+		}
+
+		// The Tibco JMS Admin client doesn't implement AutoCloseable unfortunately
+		try {
+			admin.close();
+		} catch (TibjmsAdminException e) {
+			log.warn("exception on closing Tibjms Admin", e);
 		}
 	}
 }

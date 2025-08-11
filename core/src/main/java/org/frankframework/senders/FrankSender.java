@@ -37,6 +37,8 @@ import org.frankframework.configuration.ConfigurationAware;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisManager;
 import org.frankframework.core.Adapter;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
@@ -125,7 +127,7 @@ import org.frankframework.util.MessageUtils;
  * See also the repository of the IbisServiceDispatcher:
  *  <a href="https://github.com/frankframework/servicedispatcher">https://github.com/frankframework/servicedispatcher</a>
  * </p>
- * 
+ *
  * <h4>Using FrankSender to call an adapter from Larva tests</h4>
  * <p>
  * You can configure a FrankSender in Larva property files to use the FrankSender to invoke an adapter to test. When doing this, keep the following in mind:
@@ -272,6 +274,7 @@ import org.frankframework.util.MessageUtils;
  * @ff.parameter target Determine target dynamically at runtime. If the parameter value is empty, fall back to the target configured via the attribute.
  * @ff.parameters All parameters except {@code scope} and {@code target} are copied to the {@link PipeLineSession} of the adapter called.
  */
+@DestinationType(Type.ADAPTER)
 @Forward(name = "*", description = "Exit code")
 @Category(Category.Type.BASIC)
 public class FrankSender extends AbstractSenderWithParameters implements HasPhysicalDestination, IThreadCreator, ConfigurationAware {
@@ -344,16 +347,6 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	}
 
 	@Override
-	public String getDomain() {
-		ParameterList pl = getParameterList();
-		if (pl.hasParameter(SCOPE_PARAM_NAME)) {
-			return "Dynamic";
-		} else {
-			return getScope().name();
-		}
-	}
-
-	@Override
 	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		ParameterValueList pvl = getParameterValueList(message, session);
 		Scope actualScope = determineActualScope(pvl);
@@ -372,11 +365,6 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 			setupChildSession(parentSession, pvl, childSession);
 
 			Message resultMessage = doCallService(serviceClient, scope, target, message, parentSession, childSession);
-
-			// Detach the result message from the child session, and attach to the parent session
-			resultMessage.unscheduleFromCloseOnExitOf(childSession);
-			resultMessage.closeOnCloseOf(parentSession);
-
 			return createSenderResult(resultMessage, childSession);
 		}
 	}
@@ -413,9 +401,6 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 				log.debug("returning values of session keys [{}]", getReturnedSessionKeys());
 			}
 
-			// The session-key originalMessage will be set by the InputOutputPipeLineProcessor, which adds it to the auto-closeable session resources list.
-			// The input message should not be managed by this sub-PipelineSession but rather the original pipeline and so it should be removed again.
-			childSession.unscheduleCloseOnSessionExit(message);
 			childSession.mergeToParentSession(getReturnedSessionKeys(), parentSession);
 		}
 	}
@@ -426,13 +411,13 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 		if (correlationId != null) {
 			childSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 		}
-		childSession.put(PipeLineSession.MESSAGE_ID_KEY, MessageUtils.generateMessageId());
 		if (pvl != null) {
 			Map<String, Object> valueMap = pvl.getValueMap();
 			valueMap.remove(TARGET_PARAM_NAME);
 			valueMap.remove(SCOPE_PARAM_NAME);
 			childSession.putAll(valueMap);
 		}
+		childSession.put(PipeLineSession.MESSAGE_ID_KEY, MessageUtils.generateMessageId());
 	}
 
 	private ServiceClient getJvmDispatcherServiceClient(Scope scope, String target) throws SenderException {
@@ -476,6 +461,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 		return (message, session) -> {
 			PipeLineResult plr = adapter.processMessageDirect(session.getMessageId(), message, session);
 			session.setExitState(plr);
+			// TODO: The code here seems rather dubious actually. Check if we really want to keep this special behaviour on having the text "ListenerException" in our error message.
 			if (plr.getState() == PipeLine.ExitState.ERROR) {
 				// Adapter.processMessageDirect() catches ListenerException and makes an error message from it, but
 				// we want to actually throw it.

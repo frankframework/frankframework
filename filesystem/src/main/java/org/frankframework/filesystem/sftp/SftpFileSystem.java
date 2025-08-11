@@ -1,5 +1,5 @@
 /*
-   Copyright 2023-2024 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package org.frankframework.filesystem.sftp;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
 import java.util.ArrayList;
 import java.util.Date;
@@ -37,8 +36,8 @@ import com.jcraft.jsch.ChannelSftp.LsEntry;
 import com.jcraft.jsch.SftpATTRS;
 import com.jcraft.jsch.SftpException;
 
-import lombok.Getter;
-
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.filesystem.FileAlreadyExistsException;
 import org.frankframework.filesystem.FileNotFoundException;
 import org.frankframework.filesystem.FileSystemException;
@@ -56,10 +55,10 @@ import org.frankframework.util.LogUtil;
  *
  * @author Niels Meijer
  */
+@DestinationType(Type.FILE_SYSTEM)
 public class SftpFileSystem extends SftpSession implements IWritableFileSystem<SftpFileRef> {
 	private final Logger log = LogUtil.getLogger(this);
 
-	private final @Getter String domain = "FTP";
 	private String remoteDirectory = "";
 
 	private ChannelSftp ftpClient;
@@ -152,19 +151,19 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	}
 
 	@Override
-	public OutputStream createFile(SftpFileRef f) throws FileSystemException, IOException {
-		try {
-			return ftpClient.put(f.getName());
-		} catch (SftpException e) {
+	public void createFile(SftpFileRef file, InputStream content) throws FileSystemException {
+		try (InputStream isToUse = content != null ? content : InputStream.nullInputStream()) {
+			ftpClient.put(isToUse, file.getName());
+		} catch (IOException | SftpException e) {
 			throw new FileSystemException(e);
 		}
 	}
 
 	@Override
-	public OutputStream appendFile(SftpFileRef f) throws FileSystemException {
-		try {
-			return ftpClient.put(f.getName(), ChannelSftp.APPEND);
-		} catch (SftpException e) {
+	public void appendFile(SftpFileRef file, InputStream content) throws FileSystemException {
+		try (InputStream isToUse = content != null ? content : InputStream.nullInputStream()) {
+			ftpClient.put(isToUse, file.getName(), ChannelSftp.APPEND);
+		} catch (IOException | SftpException e) {
 			throw new FileSystemException(e);
 		}
 	}
@@ -175,7 +174,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 			getFileAttributes(f);
 			InputStream inputStream = ftpClient.get(f.getName());
 			return new Message(inputStream, FileSystemUtils.getContext(this, f, charset));
-		} catch (SftpException e) {
+		} catch (SftpException | IOException e) {
 			throw new FileSystemException(e);
 		}
 	}
@@ -202,7 +201,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 				if (folder.startsWith("/")) {
 					ftpClient.cd(folder);
 				} else {
-					ftpClient.cd(pwd + "/" + folder); //Faster and more fail-safe method to ensure the target is a folder and not secretly a file
+					ftpClient.cd(pwd + "/" + folder); // Faster and more fail-safe method to ensure the target is a folder and not secretly a file
 				}
 				return true;
 			} finally {
@@ -392,7 +391,7 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 
 	@Override
 	public String getCanonicalName(SftpFileRef f) {
-		return f.getName(); //Should include folder structure if known
+		return f.getName(); // Should include folder structure if known
 	}
 
 	@Override

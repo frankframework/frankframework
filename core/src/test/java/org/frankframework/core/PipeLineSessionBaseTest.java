@@ -2,8 +2,8 @@ package org.frankframework.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.InputStream;
@@ -158,7 +158,7 @@ public class PipeLineSessionBaseTest {
 
 		@Override
 		public int read() {
-			return 0;
+			return -1;
 		}
 	}
 
@@ -174,28 +174,21 @@ public class PipeLineSessionBaseTest {
 		Message mc = new Message(c);
 		Message md = new Message(d);
 
-		ma.closeOnCloseOf(session);
 		InputStream p = ma.asInputStream();
-		ma.closeOnCloseOf(session);
 		InputStream q = ma.asInputStream();
 
-		assertSame(p, q, "scheduling a resource twice must yield the same object");
-
-		mb.closeOnCloseOf(session);
-		mc.closeOnCloseOf(session);
-		md.closeOnCloseOf(session);
+		assertNotSame(p, q, "Getting the input-stream of a message twice must not yield the same instance anymore");
 
 		log.debug("test calling close on wrapped(b)");
 		mb.close();
 
 		log.debug("test unschedule wrapped(c)");
-		mc.unscheduleFromCloseOnExitOf(session);
 
 		session.close();
 
 		assertEquals(1, a.closes);
 		assertEquals(1, b.closes);
-		assertEquals(0, c.closes);
+		assertEquals(1, c.closes);
 		assertEquals(1, d.closes);
 		ma.close();
 		mb.close();

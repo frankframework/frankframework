@@ -20,13 +20,13 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.Configuration;
-import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationUtils;
 import org.frankframework.configuration.IbisManager;
+import org.frankframework.configuration.util.ConfigurationAutoDiscovery;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.scheduler.AbstractJobDef;
@@ -36,7 +36,7 @@ import org.frankframework.util.SpringUtils;
 
 /**
  * Frank!Framework job which periodically looks in the {@code IBISCONFIG} table to see if a new {@link Configuration} should be loaded.
- * 
+ *
  * @ff.info This is a default job that can be controlled with the property {@literal checkReload.active} and {@literal checkReload.interval}.
  */
 public class CheckReloadJob extends AbstractJobDef {
@@ -97,7 +97,7 @@ public class CheckReloadJob extends AbstractJobDef {
 								if(StringUtils.isEmpty(configVersion) && configuration.getClassLoader() != null) { // If config hasn't loaded yet, don't skip it!
 									log.warn("skipping autoreload for configuration [{}] unable to determine [configuration.version]", configName);
 								}
-								else if (!StringUtils.equalsIgnoreCase(ibisConfigVersion, configVersion)) {
+								else if (configVersion != null && !configVersion.equalsIgnoreCase(ibisConfigVersion)) {
 									log.info("configuration [{}] with version [{}] will be reloaded with new version [{}]", configName, configVersion, ibisConfigVersion);
 									configsToReload.add(configName);
 								}
@@ -121,13 +121,11 @@ public class CheckReloadJob extends AbstractJobDef {
 
 		if (CONFIG_AUTO_DB_CLASSLOADER) {
 			// load new (activated) configs
-			List<String> dbConfigNames = null;
-			try {
-				dbConfigNames = ConfigurationUtils.retrieveConfigNamesFromDatabase(getApplicationContext());
-			} catch (ConfigurationException e) {
-				getMessageKeeper().add("error while retrieving configuration names from database", e);
-			}
-			if (dbConfigNames != null && !dbConfigNames.isEmpty()) {
+			ConfigurationAutoDiscovery discovery = SpringUtils.createBean(getApplicationContext());
+			discovery.withDatabaseScanner(getDataSource());
+			Set<String> dbConfigNames = discovery.scan(false).keySet();
+
+			if (!dbConfigNames.isEmpty()) {
 				for (String currentDbConfigurationName : dbConfigNames) {
 					if (!configNames.contains(currentDbConfigurationName)) {
 						ibisManager.getIbisContext().load(currentDbConfigurationName);

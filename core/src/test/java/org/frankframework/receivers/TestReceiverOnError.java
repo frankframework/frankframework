@@ -82,20 +82,23 @@ public class TestReceiverOnError {
 		return configuration.createBean(listenerClass);
 	}
 
-	private Receiver<String> setupReceiver(MockListenerBase listener) {
+	private Receiver<String> setupReceiver(Adapter adapter, MockListenerBase listener) {
 		@SuppressWarnings("unchecked")
-		Receiver<String> receiver = spy(configuration.createBean(Receiver.class));
+		Receiver<String> receiver = spy(SpringUtils.createBean(adapter, Receiver.class));
+		receiver.setApplicationContext(adapter); // Required because we have to spy the Adapter
 		doNothing().when(receiver).suspendReceiverThread(anyInt());
 		receiver.setListener(listener);
 		receiver.setName("receiver");
 		receiver.setStartTimeout(2);
 		receiver.setStopTimeout(2);
-		DummySender sender = configuration.createBean();
+		DummySender sender = SpringUtils.createBean(adapter);
 		receiver.setSender(sender);
+
+		adapter.addReceiver(receiver);
 		return receiver;
 	}
 
-	private <M> Adapter setupAdapter(Receiver<M> receiver) throws Exception {
+	private <M> Adapter setupAdapter() throws Exception {
 		Adapter adapter = spy(configuration.createBean(Adapter.class));
 		adapter.setName(adapterName);
 
@@ -126,14 +129,13 @@ public class TestReceiverOnError {
 		pl.addPipeLineExit(ple);
 		adapter.setPipeLine(pl);
 
-		adapter.addReceiver(receiver);
 		configuration.addAdapter(adapter);
 		return adapter;
 	}
 
 	private Receiver<String> startReceiver(MockListenerBase listener) throws Exception {
-		Receiver<String> receiver = setupReceiver(listener);
-		Adapter adapter = setupAdapter(receiver);
+		Adapter adapter = setupAdapter();
+		Receiver<String> receiver = setupReceiver(adapter, listener);
 
 		assertEquals(RunState.STOPPED, adapter.getRunState());
 		assertEquals(RunState.STOPPED, receiver.getRunState());

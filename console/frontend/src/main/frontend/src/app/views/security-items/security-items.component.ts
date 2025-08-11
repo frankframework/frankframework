@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, computed, inject, OnInit, Signal } from '@angular/core';
 import { AppService, Pipe } from 'src/app/app.service';
 import {
   AuthEntry,
@@ -20,6 +20,8 @@ import { KeyValuePipe, NgClass } from '@angular/common';
   styleUrls: ['./security-items.component.scss'],
 })
 export class SecurityItemsComponent implements OnInit {
+  protected readonly Object = Object;
+
   protected sapSystems: SapSystem[] = [];
   protected authEntries: AuthEntry[] = [];
   protected jmsRealms: Record<string, string> = {};
@@ -34,11 +36,15 @@ export class SecurityItemsComponent implements OnInit {
   };
   protected links: Link[] = [];
 
+  protected transactionManager: Signal<string> = computed(
+    () => (this.appService.appConstants()['application.server.type.custom'] as string) || 'NONE',
+  );
+
   private readonly appService: AppService = inject(AppService);
   private readonly securityItemsService: SecurityItemsService = inject(SecurityItemsService);
 
   ngOnInit(): void {
-    for (const adapter of Object.values(this.appService.adapters)) {
+    for (const adapter of Object.values(this.appService.adapters())) {
       if (adapter.pipes) {
         for (const p in adapter.pipes) {
           const pipe: Pipe = adapter.pipes[p];
@@ -69,6 +75,4 @@ export class SecurityItemsComponent implements OnInit {
       this.links = links;
     });
   }
-
-  protected readonly Object = Object;
 }

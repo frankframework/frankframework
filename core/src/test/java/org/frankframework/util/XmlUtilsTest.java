@@ -56,7 +56,7 @@ public class XmlUtilsTest extends FunctionalTransformerPoolTestBase {
 	private static final TimeZone TEST_TZ = TimeZone.getTimeZone("UTC");
 
 	@Test
-	void testIdentityTransformWithDefaultEntityResolver() throws Exception { // External EntityResolving is still possible with the XMLEntityResolver
+	void testIdentityTransformWithDefaultEntityResolver() { // External EntityResolving is still possible with the XMLEntityResolver
 		Resource resource = Resource.getResource(new TestScopeProvider(), "XmlUtils/EntityResolution/in-file-entity-c-temp.xml");
 		SAXException thrown = assertThrows(SAXException.class, () -> {
 			XmlUtils.parseXml(resource, new XmlWriter());

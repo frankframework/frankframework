@@ -20,6 +20,8 @@ import java.util.List;
 import jakarta.annotation.Nonnull;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
@@ -50,6 +52,7 @@ import org.frankframework.util.SpringUtils;
  *
  * @author Gerrit van Brakel
  */
+@DestinationType(Type.FILE_SYSTEM)
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.ENDPOINT)
 @Forward(name = "fileNotFound", description = "if the input file was expected to exist, but was not found")
 @Forward(name = "folderNotFound", description = "if the folder does not exist")
@@ -118,11 +121,6 @@ public abstract class AbstractFileSystemSender<F, S extends IBasicFileSystem<F>>
 	@Override
 	public String getPhysicalDestinationName() {
 		return getFileSystem().getPhysicalDestinationName();
-	}
-
-	@Override
-	public String getDomain() {
-		return getFileSystem().getDomain();
 	}
 
 	public void setFileSystem(S fileSystem) {

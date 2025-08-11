@@ -7,32 +7,44 @@
       <div class="ibox float-e-margins">
         <div class="ibox-title">
           <div class="pull-right">
-            <button [routerLink]="['/scheduler']" class="btn btn-xs pull-right btn-info" type="button">
+            <button class="btn btn-xs pull-right btn-info" type="button" [routerLink]="['/scheduler']">
               <i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i>
               <span> Back</span>
             </button>
           </div>
         </div>
         <div class="ibox-content">
-          <form role="form" (submit)="submit()" appQuickSubmitForm>
+          <form role="form" appQuickSubmitForm (submit)="submit()">
             <div class="row form-group">
-              <label class="col-sm-3 control-label">Schedule Name</label>
+              <label for="name" class="col-sm-3 control-label">Schedule Name</label>
               <div class="col-sm-9">
-                <input class="form-control" name="name" type="text" [(ngModel)]="form.name" [disabled]="editMode" />
+                <input
+                  class="form-control"
+                  name="name"
+                  id="name"
+                  type="text"
+                  [disabled]="editMode"
+                  [(ngModel)]="form.name"
+                />
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label">Job Group</label>
+              <label class="col-sm-3 control-label" for="group">Job Group</label>
               <div class="col-sm-9">
-                <input class="form-control" name="group" type="text" [(ngModel)]="form.group" />
+                <input class="form-control" name="group" id="group" type="text" [(ngModel)]="form.group" />
                 <!-- [disabled]="jobGroup" -->
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label">Configuration</label>
+              <label for="configuration" class="col-sm-3 control-label">Configuration</label>
               <div class="col-sm-9">
-                <select class="form-control" name="configuration" [(ngModel)]="selectedConfiguration">
-                  @for (config of configurations; track config.name) {
+                <select
+                  class="form-control"
+                  name="configuration"
+                  id="configuration"
+                  [(ngModel)]="selectedConfiguration"
+                >
+                  @for (config of configurations(); track config.name) {
                     <option [ngValue]="config.name">
                       {{ config.name }}
                     </option>
@@ -41,16 +53,17 @@
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label">Select an adapter</label>
+              <label for="adapter" class="col-sm-3 control-label">Select an adapter</label>
               <div class="col-sm-9">
                 <select
                   class="form-control"
                   name="adapter"
-                  [(ngModel)]="form.adapter"
+                  id="adapter"
                   [disabled]="selectedConfiguration === ''"
+                  [(ngModel)]="form.adapter"
                 >
                   @for (
-                    adapter of adapters | configurationFilter: selectedConfiguration | withJavaListener;
+                    adapter of adapters() | configurationFilter: selectedConfiguration | withJavaListener;
                     track adapter.name
                   ) {
                     <option [ngValue]="adapter">
@@ -63,10 +76,10 @@
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label">Select a listener</label>
+              <label class="col-sm-3 control-label" for="listener">Select a listener</label>
               @if (!form.adapter) {
                 <div class="col-sm-9">
-                  <input class="form-control" value="Select an adapter first.." disabled />
+                  <input class="form-control" id="listener" value="Select an adapter first.." disabled />
                 </div>
               }
               @if (form.adapter) {
@@ -84,11 +97,12 @@
               }
             </div>
             <div class="row form-group" title="Quartz CRON Expression to specify execution times. Overrides Interval">
-              <label class="col-sm-3 control-label">CRON Expression</label>
+              <label for="cron" class="col-sm-3 control-label">CRON Expression</label>
               <div class="col-sm-9">
                 <input
                   class="form-control"
                   name="cron"
+                  id="cron"
                   type="text"
                   [disabled]="form.interval !== ''"
                   [(ngModel)]="form.cron"
@@ -99,11 +113,12 @@
               class="row form-group"
               title="Interval between executions. Only used when NO cron expression specified"
             >
-              <label class="col-sm-3 control-label">Interval</label>
+              <label for="interval" class="col-sm-3 control-label">Interval</label>
               <div class="col-sm-9">
                 <input
                   class="form-control"
                   name="interval"
+                  id="interval"
                   type="text"
                   [disabled]="form.cron !== ''"
                   [(ngModel)]="form.interval"
@@ -111,27 +126,34 @@
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label label-height-30">Message</label>
+              <label for="message" class="col-sm-3 control-label label-height-30">Message</label>
               <div class="col-sm-9">
                 <app-monaco-editor
+                  id="message"
                   class="form-control"
-                  [(value)]="form.message"
-                  [options]="{ language: 'text' }"
                   style="height: 200px"
-                ></app-monaco-editor>
+                  [options]="{ language: 'text' }"
+                  [(value)]="form.message"
+                />
               </div>
             </div>
             <div class="row form-group" title="At most 255 chars (optional)">
-              <label class="col-sm-3 control-label">Description</label>
+              <label for="description" class="col-sm-3 control-label">Description</label>
               <div class="col-sm-9">
-                <input class="form-control" name="description" type="text" [(ngModel)]="form.description" />
+                <input
+                  class="form-control"
+                  name="description"
+                  id="description"
+                  type="text"
+                  [(ngModel)]="form.description"
+                />
               </div>
             </div>
             <div class="row form-group">
-              <label class="col-sm-3 control-label">Contains Locker</label>
+              <label for="locker" class="col-sm-3 control-label">Contains Locker</label>
               <div class="col-sm-1">
                 <span class="form-control" style="border: none"
-                  ><input type="checkbox" [(ngModel)]="form.locker" name="locker"
+                  ><input type="checkbox" name="locker" id="locker" [(ngModel)]="form.locker"
                 /></span>
               </div>
               <div class="col-sm-8">
@@ -139,8 +161,8 @@
                   class="form-control"
                   name="lockkey"
                   type="text"
-                  [(ngModel)]="form.lockkey"
                   placeholder="leave blank for default key"
+                  [(ngModel)]="form.lockkey"
                 />
               </div>
             </div>

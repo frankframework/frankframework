@@ -254,14 +254,14 @@ import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
  *
  * <p>Pay attention to the effects of '?' and '*' in the day-of-week and
  * day-of-month fields!</p>
- * 
+ *
  * @ff.warning Support for the features described for the 'C' character is not complete.
  * @ff.info Support for specifying both a day-of-week and a day-of-month
  *          value is not complete (you'll need to use the '?' character in on of these fields).
  * @ff.info Be careful when setting fire times between mid-night and 1:00 AM -
  *          "daylight savings" can cause a skip or a repeat depending on whether
  *          the time moves back or jumps forward.
- * @ff.info Specified in the Configuration.xml inside a {@code <scheduler>} element. 
+ * @ff.info Specified in the Configuration.xml inside a {@code <scheduler>} element.
  *          The scheduler element must be a direct child of configuration, not of adapter.
  * @ff.tip  All registered jobs are displayed in the Frank!Console under 'Scheduler'.
  *

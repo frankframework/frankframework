@@ -63,7 +63,7 @@ public class TestInlineStorage extends BusTestBase {
 
 		DummyListenerWithMessageBrowsers listener = new DummyListenerWithMessageBrowsers();
 		listener.setName("ListenerName");
-		Receiver<String> receiver = SpringUtils.createBean(configuration);
+		Receiver<String> receiver = SpringUtils.createBean(adapter);
 		receiver.setName("ReceiverName");
 		receiver.setListener(listener);
 		adapter.addReceiver(receiver);

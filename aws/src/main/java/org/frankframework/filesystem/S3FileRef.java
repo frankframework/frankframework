@@ -43,7 +43,7 @@ import org.frankframework.util.StringUtil;
  * <li>The content-lenght as well as modification-time are stored.</li>
  * <li>Everything can be updated with a simple method to simplify code in implementations.</li>
  * </ul>
- * 
+ *
  * @author Niels Meijer
  */
 public class S3FileRef {
@@ -51,7 +51,7 @@ public class S3FileRef {
 	private static final String FILE_DELIMITER = "/";
 	public static final String BUCKET_OBJECT_SEPARATOR = "|";
 
-	@Nonnull //may be empty
+	@Nonnull // may be empty but not null
 	private final String name;
 	@Nullable
 	private final String folder;
@@ -78,10 +78,10 @@ public class S3FileRef {
 		}
 
 		String normalized = FilenameUtils.normalize(rawKey, true);
-		this.name = FilenameUtils.getName(normalized); //may be an empty string
+		this.name = FilenameUtils.getName(normalized); // may be an empty string
 
 		String folderWithoutEndSeparator = FilenameUtils.getFullPathNoEndSeparator(normalized);
-		//crazy hack to always ensure there is a slash at the end
+		// crazy hack to always ensure there is a slash at the end
 		this.folder = StringUtils.isNotEmpty(folderWithoutEndSeparator) ? folderWithoutEndSeparator + FILE_DELIMITER : null;
 	}
 

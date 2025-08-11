@@ -1,5 +1,5 @@
 <pre #wsLog></pre>
-<form role="form" (submit)="push()" appQuickSubmitForm>
-  <input type="text" name="message" autofocus autocomplete="off" [(ngModel)]="message" />
+<form role="form" appQuickSubmitForm (submit)="push()">
+  <input type="text" name="message" autocomplete="off" [(ngModel)]="message" />
   <button type="submit">Push</button>
 </form>

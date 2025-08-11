@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2024 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.io.File;
 import java.time.Instant;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -26,10 +27,11 @@ import java.util.Map;
 import jakarta.annotation.security.PermitAll;
 import jakarta.servlet.ServletContext;
 
-import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.springframework.messaging.Message;
 import org.springframework.web.context.WebApplicationContext;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.Configuration;
@@ -37,7 +39,7 @@ import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.ProcessState;
-import org.frankframework.lifecycle.MessageEventListener;
+import org.frankframework.lifecycle.events.MessageEventListener;
 import org.frankframework.management.bus.ActionSelector;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusAware;
@@ -47,16 +49,16 @@ import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.JsonMessage;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.Misc;
 import org.frankframework.util.ProcessMetrics;
+import org.frankframework.util.TimeProvider;
 
+@Log4j2
 @BusAware("frank-management-bus")
 @TopicSelector(BusTopic.APPLICATION)
 public class ServerStatistics extends BusEndpointBase {
-	private static final Logger log = LogUtil.getLogger(Misc.class);
 
 	private static final int MAX_MESSAGE_SIZE = AppConstants.getInstance().getInt("adapter.message.max.size", 0);
 	private static final boolean showCountErrorStore = AppConstants.getInstance().getBoolean("errorStore.count.show", true);
@@ -96,9 +98,14 @@ public class ServerStatistics extends BusEndpointBase {
 		returnMap.put("processMetrics", ProcessMetrics.toMap());
 		returnMap.put("machineName" , Misc.getHostname());
 
-		ZonedDateTime zonedDateTime = ZonedDateTime.now();
+		ZonedDateTime zonedDateTime = TimeProvider.nowAsZonedDateTime();
 		returnMap.put("serverTime", zonedDateTime.toInstant().toEpochMilli());
-		returnMap.put("serverTimezone", zonedDateTime.getZone().getId());
+		if ("Z".equals(zonedDateTime.getZone().getId())) {
+			// The front-end timezone parser does not understand "Z", which is what Java sends for System UTC time
+			returnMap.put("serverTimezone", "ETC/UTC");
+		} else {
+			returnMap.put("serverTimezone", zonedDateTime.getZone().getId());
+		}
 		returnMap.put("serverTimezoneOffset", zonedDateTime.getOffset().getTotalSeconds());
 
 		try {
@@ -148,14 +155,14 @@ public class ServerStatistics extends BusEndpointBase {
 		for (Configuration configuration : getIbisManager().getConfigurations()) {
 			Map<String, Object> configurationsMap = new HashMap<>();
 
-			//Configuration specific exceptions
+			// Configuration specific exceptions
 			if (configuration.getConfigurationException()!=null) {
 				String message = configuration.getConfigurationException().getMessage();
 				configurationsMap.put("exception", message);
 			}
 
 			if (configuration.isActive()) {
-				//ErrorStore count
+				// ErrorStore count
 				if (showCountErrorStore) {
 					long esr = 0;
 					for (Adapter adapter : configuration.getRegisteredAdapters()) {
@@ -175,13 +182,13 @@ public class ServerStatistics extends BusEndpointBase {
 					configurationsMap.put("errorStoreCount", esr);
 				}
 
-				//Configuration specific warnings
+				// Configuration specific warnings
 				ConfigurationWarnings configWarns = configuration.getConfigurationWarnings();
 				if(configWarns != null && !configWarns.isEmpty()) {
 					configurationsMap.put("warnings", configWarns.getWarnings());
 				}
 
-				//Configuration specific messages
+				// Configuration specific messages
 				MessageKeeper messageKeeper = eventListener.getMessageKeeper(configuration.getName());
 				if(messageKeeper != null) {
 					List<Object> messages = mapMessageKeeperMessages(messageKeeper);
@@ -194,10 +201,10 @@ public class ServerStatistics extends BusEndpointBase {
 			returnMap.put(configuration.getName(), configurationsMap);
 		}
 
-		//Total ErrorStore Count
+		// Total ErrorStore Count
 		returnMap.put("totalErrorStoreCount", totalErrorStoreCount);
 
-		//Global warnings
+		// Global warnings
 		ApplicationWarnings globalConfigWarnings = getBean("applicationWarnings", ApplicationWarnings.class);
 		if (!globalConfigWarnings.isEmpty()) {
 			List<Object> warnings = new ArrayList<>();
@@ -207,7 +214,7 @@ public class ServerStatistics extends BusEndpointBase {
 			returnMap.put("warnings", warnings);
 		}
 
-		//Global messages
+		// Global messages
 		MessageKeeper messageKeeper = eventListener.getMessageKeeper();
 		List<Object> messages = mapMessageKeeperMessages(messageKeeper);
 		if(!messages.isEmpty()) {
@@ -227,7 +234,7 @@ public class ServerStatistics extends BusEndpointBase {
 			}
 			configurationMessage.put("message", msg);
 			Instant date = messageKeeper.getMessage(t).getMessageDate();
-			configurationMessage.put("date", DateFormatUtils.format(date, DateFormatUtils.FULL_GENERIC_FORMATTER));
+			configurationMessage.put("date", Date.from(date));
 			String level = messageKeeper.getMessage(t).getMessageLevel();
 			configurationMessage.put("level", level);
 			messages.add(configurationMessage);

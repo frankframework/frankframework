@@ -52,6 +52,7 @@ public class MessageContext implements Serializable {
 	public static final String METADATA_NAME = "Metadata.Name";
 	public static final String METADATA_LOCATION = "Metadata.Location";
 	public static final String METADATA_MIMETYPE = "Metadata.MimeType";
+	public static final String IS_ERROR_MESSAGE = "IsErrorMessage";
 
 	private static final Logger LOG = LogManager.getLogger(MessageContext.class);
 

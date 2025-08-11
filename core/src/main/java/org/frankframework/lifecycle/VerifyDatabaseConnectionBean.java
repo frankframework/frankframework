@@ -44,9 +44,9 @@ import org.frankframework.util.LogUtil;
  * Verifies if a (valid) connection can be made.
  * This class uses JDBC4 isValid which may not always work properly.
  * As an additional step it not only verifies the socket is open but also usable.
- * 
+ *
  * In addition it verifies if the TransactionManager can see/use the database and if the connections are using a TX isolation level
- * 
+ *
  * @author Niels Meijer
  */
 public class VerifyDatabaseConnectionBean implements ApplicationContextAware, InitializingBean {

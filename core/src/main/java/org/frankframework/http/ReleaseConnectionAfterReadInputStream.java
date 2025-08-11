@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,11 +19,13 @@ import java.io.FilterInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import jakarta.annotation.Nullable;
+
 public class ReleaseConnectionAfterReadInputStream extends FilterInputStream {
 	HttpResponseHandler responseHandler;
 
-	public ReleaseConnectionAfterReadInputStream(HttpResponseHandler responseHandler, InputStream inputStream) {
-		super(inputStream);
+	public ReleaseConnectionAfterReadInputStream(@Nullable HttpResponseHandler responseHandler, @Nullable InputStream inputStream) {
+		super(inputStream != null ? inputStream : InputStream.nullInputStream());
 		this.responseHandler = responseHandler;
 	}
 

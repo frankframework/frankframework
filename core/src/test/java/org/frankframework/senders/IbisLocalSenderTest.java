@@ -104,7 +104,7 @@ class IbisLocalSenderTest {
 		ServiceDispatcher.getInstance().registerServiceClient(listener.getServiceName(), listener);
 	}
 
-	private static Message createVirtualInputStream(long streamSize) {
+	private static Message createVirtualInputStream(long streamSize) throws IOException {
 		InputStream virtualInputStream = new VirtualInputStream(streamSize);
 		return new Message(new ThrowingAfterCloseInputStream(virtualInputStream));
 	}
@@ -142,7 +142,6 @@ class IbisLocalSenderTest {
 
 		log.info("**>>> Calling Local Sender");
 		Message message = createVirtualInputStream(EXPECTED_BYTE_COUNT);
-		message.closeOnCloseOf(session);
 		SenderResult result = ibisLocalSender.sendMessage(message, session);
 
 		long localCounterResult = countStreamSize(result.getResult());
@@ -186,7 +185,6 @@ class IbisLocalSenderTest {
 
 		log.info("**>>> Calling Local Sender");
 		Message message = createVirtualInputStream(EXPECTED_BYTE_COUNT);
-		message.closeOnCloseOf(session);
 		ibisLocalSender.sendMessage(message, session);
 
 		session.close();
@@ -254,6 +252,42 @@ class IbisLocalSenderTest {
 			// Assert
 			assertAll(
 				() -> assertEquals("parameter1-value", result.getResult().asString()),
+				() -> assertTrue(session.containsKey("my-parameter1"), "After request the pipeline-session should contain key [my-parameter1]"),
+				() -> assertEquals("parameter1-value", session.get("my-parameter1")),
+				() -> assertFalse(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should not contain key [this-doesnt-exist]"),
+				() -> assertTrue(session.containsKey("key-not-configured-for-copy"), "Session should contain key 'key-not-configured-for-copy' b/c all keys should be copied")
+			);
+		}
+	}
+
+	@Test
+	public void testSendMessageWithParamsAndReturnSessionKeys() throws Exception {
+		// Arrange
+		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient(false);
+		sender.setReturnedSessionKeys("*");
+
+		Parameter parameter = new Parameter();
+		parameter.setName("*");
+		parameter.setSessionKey("*");
+		parameter.configure();
+		sender.addParameter(parameter);
+		sender.configure();
+
+		try (PipeLineSession session = new PipeLineSession();
+			 Message message = new Message("mid")) {
+
+			String originalMid = "original-main-adapter-mid";
+			session.put(PipeLineSession.MESSAGE_ID_KEY, originalMid);
+			session.put("my-parameter1", "parameter1-value");
+
+			// Act
+			// NB: The dummy service client will return the session-key from the sub-adapter-session that is in the incoming message. Here we retrieve session-key "mid"
+			SenderResult result = sender.sendMessage(message, session);
+
+			// Assert
+			assertAll(
+				() -> assertNotEquals(originalMid, result.getResult().asString()),
+				() -> assertEquals(originalMid, session.get(PipeLineSession.MESSAGE_ID_KEY)),
 				() -> assertTrue(session.containsKey("my-parameter1"), "After request the pipeline-session should contain key [my-parameter1]"),
 				() -> assertEquals("parameter1-value", session.get("my-parameter1")),
 				() -> assertFalse(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should not contain key [this-doesnt-exist]"),
@@ -499,7 +533,6 @@ class IbisLocalSenderTest {
 
 		adapter.addReceiver(receiver);
 		receiver.setListener(listener);
-		receiver.setAdapter(adapter);
 		receiver.setTxManager(configuration.createBean(NarayanaJtaTransactionManager.class));
 
 		listener.setHandler(receiver);
@@ -551,8 +584,6 @@ class IbisLocalSenderTest {
 			session.put("key-not-configured-for-copy", "dummy-value");
 			session.put("key-to-copy", "dummy-value");
 			session.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, message);
-			session.scheduleCloseOnSessionExit(Message.asMessage(session.get("my-parameter1")));
-			session.scheduleCloseOnSessionExit(Message.asMessage(session.get("my-parameter2")));
 			try {
 				return session.getMessage(message.asString());
 			} catch (IOException e) {
@@ -599,7 +630,7 @@ class IbisLocalSenderTest {
 		}
 
 		@Override
-		public PipeRunResult doPipe(Message message, PipeLineSession session) {
+		public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 			try {
 				log.info("{}: start reading virtual stream", Thread.currentThread().getName());
 				// Often this assert is done in PipeLineProcessor but they're not part of the test-spring-configuration, and it is important to make this assertion
@@ -610,6 +641,8 @@ class IbisLocalSenderTest {
 				asyncCounterResult.set(counter);
 				// Return a stream from message which will be read by caller, testing that stream is not closed.
 				return new PipeRunResult(getSuccessForward(), createVirtualInputStream(counter));
+			} catch (IOException e) {
+				throw new PipeRunException(this, "Cannot read stream", e);
 			} finally {
 				asyncCompletionSemaphore.release();
 				log.info("{}: pipe done and semaphore released", Thread.currentThread().getName());

@@ -25,10 +25,6 @@ import java.util.zip.ZipOutputStream;
 
 import jakarta.annotation.security.RolesAllowed;
 
-import lombok.Getter;
-
-import lombok.Setter;
-
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -41,6 +37,9 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
+
+import lombok.Getter;
+import lombok.Setter;
 
 import org.frankframework.console.ApiException;
 import org.frankframework.console.Relation;

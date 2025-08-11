@@ -47,7 +47,7 @@ public class PrometheusRegistryConfigurator extends AbstractMetricsRegistryConfi
 	/**
 	 * Since whoever made the Prometheus registry doesn't want anyone to use ServiceLevelObjects, we have to always disable publishing them.
 	 * It's strange that Prometheus disables SLO but does NOT default percentilesHistogram to false.
-	 * 
+	 *
 	 * See https://github.com/micrometer-metrics/micrometer/issues/4854
 	 */
 	private DistributionStatisticConfig overrideDefaults(DistributionStatisticConfig config) {

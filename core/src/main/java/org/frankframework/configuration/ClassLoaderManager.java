@@ -27,9 +27,9 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
 import org.frankframework.configuration.classloaders.WebAppClassLoader;
+import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
-import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 import org.frankframework.util.StringUtil;
 
 /**
@@ -48,7 +48,7 @@ public class ClassLoaderManager {
 	private final Map<String, ClassLoader> classLoaders = new TreeMap<>();
 	private final ClassLoader classPathClassLoader = Thread.currentThread().getContextClassLoader();
 
-	static final String CLASSLOADER_PACKAGE_LOCATION = "org.frankframework.configuration.classloaders.%s";
+	public static final String CLASSLOADER_PACKAGE_LOCATION = "org.frankframework.configuration.classloaders.%s";
 
 	private IbisContext ibisContext;
 
@@ -115,7 +115,7 @@ public class ClassLoaderManager {
 						log.debug(msg, ce);
 						break;
 					case INFO:
-						ibisContext.log(msg, MessageKeeperLevel.INFO, ce);
+						ibisContext.log(msg, MessageEventLevel.INFO, ce);
 						break;
 					case WARN:
 						ApplicationWarnings.add(log, msg, ce);

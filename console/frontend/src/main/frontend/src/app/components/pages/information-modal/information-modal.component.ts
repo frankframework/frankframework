@@ -1,6 +1,6 @@
-import { Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, computed, inject, OnDestroy, OnInit } from '@angular/core';
 import { NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
-import { copyToClipboard } from '../../../utils';
+import { copyToClipboard } from '../../../utilities';
 import { ToastService } from '../../../services/toast.service';
 
 import { TimeSinceDirective } from '../../time-since.directive';
@@ -9,6 +9,7 @@ import { HumanFileSizePipe } from '../../../pipes/human-file-size.pipe';
 import { ServerInfoService } from '../../../services/server-info.service';
 import { Subscription } from 'rxjs';
 import { ServerTimeService } from '../../../services/server-time.service';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
   selector: 'app-information-modal',
@@ -18,7 +19,7 @@ import { ServerTimeService } from '../../../services/server-time.service';
 })
 export class InformationModalComponent implements OnInit, OnDestroy {
   protected readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
-  protected initialized: boolean = false;
+  protected initialized = false;
   protected framework: {
     name: string;
     version: string;
@@ -27,9 +28,9 @@ export class InformationModalComponent implements OnInit, OnDestroy {
     name: string;
     version: string;
   } = { name: '', version: '' };
-  protected machineName: string = '';
-  protected applicationServer: string = '';
-  protected javaVersion: string = '';
+  protected machineName = '';
+  protected applicationServer = '';
+  protected javaVersion = '';
   protected processMetrics: {
     maxMemory: number;
     freeMemory: number;
@@ -48,12 +49,13 @@ export class InformationModalComponent implements OnInit, OnDestroy {
     freeSpace: -1,
     totalSpace: -1,
   };
-  protected uptime: number = 0;
-  protected consoleVersion = 'null';
+  protected uptime = 0;
+  protected consoleVersion = computed(() => this.serverInfoService.consoleInfo().version ?? 'null');
 
   private activeModal: NgbActiveModal = inject(NgbActiveModal);
   private toastService: ToastService = inject(ToastService);
   private serverInfoService: ServerInfoService = inject(ServerInfoService);
+  private serverInfo$ = toObservable(this.serverInfoService.serverInfo);
   private subscriptions?: Subscription;
 
   ngOnInit(): void {
@@ -66,8 +68,10 @@ export class InformationModalComponent implements OnInit, OnDestroy {
   }
 
   subscribeToServerInfo(): void {
-    this.subscriptions = this.serverInfoService.serverInfo$.subscribe({
+    this.subscriptions = this.serverInfo$.subscribe({
       next: (data) => {
+        if (data === null) return;
+
         this.applicationServer = data.applicationServer;
         this.fileSystem = data.fileSystem;
         this.framework = data.framework;
@@ -79,13 +83,6 @@ export class InformationModalComponent implements OnInit, OnDestroy {
         this.initialized = true;
       },
     });
-    this.subscriptions.add(
-      this.serverInfoService.consoleVersion$.subscribe({
-        next: (data) => {
-          this.consoleVersion = data.version ?? 'null';
-        },
-      }),
-    );
   }
 
   close(): void {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2020 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2018, 2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -42,11 +42,32 @@ import org.frankframework.util.StreamUtil;
 
 /**
  *
- * This pipe can be used to generate a hash for the given message using an algorithm. With this, you can prove the integrity of the message. 
- * If you use one of the Mac-based algorithms (starting with 'Hmac'), you need a secret as well. A Mac algorithm uses a secret, combined with the algorithm 
- * to create a 'hash' of a message. Only sources that have this secret are able to generate the same hash for the given message. 
- * With this, you can prove the integrity and authenticity of a message.
+ * This pipe can be used to generate a hash for the given message using an algorithm. With this, you can prove the integrity of the message.
+ * If you need to prove the authenticity of the message as well, use one of the Mac-based algorithms (starting with 'Hmac'). These algorithms
+ * require a secret to prove both integrity and authenticity. The HMac combined with the algorithm is used
+ * to create a 'hash' of a message. Only sources that have this secret are able to generate the same hash for the given message.
  * <p>
+ * The hash is generated based on the bytes of the given input message.
+ * <p>
+ * The supported integrity algorithms are:
+ * <ul>
+ *     <li>MD5</li>
+ *     <li>SHA</li>
+ *     <li>SHA256</li>
+ *     <li>SHA384</li>
+ *     <li>SHA512</li>
+ *     <li>CRC32</li>
+ *     <li>Adler32</li>
+ * </ul>
+ * <p>
+ * The supported integrity <i>and</i> authenticity algorithms are:
+ * <ul>
+ *     <li>HmacMD5</li>
+ *     <li>HmacSHA1</li>
+ *     <li>HmacSHA256</li>
+ *     <li>HmacSHA384</li>
+ *     <li>HmacSHA512</li>
+ * </ul>
  *
  * @see Algorithm
  * @author Niels Meijer

@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+Copyright 2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -2390,7 +2390,7 @@ public class ApiListenerServletTest {
 			assertNotNull(message, "input message may not be null");
 
 			handlerInvoked = true;
-			context.mergeToParentSession("*", session);
+			session.putAll(context);
 			requestMessage = message;
 			if (shouldThrow) {
 				throw new ListenerException("Hard Throw");
@@ -2399,7 +2399,6 @@ public class ApiListenerServletTest {
 			if (exitCode > 0) {
 				context.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, exitCode);
 			}
-			context.unscheduleCloseOnSessionExit(message);
 			if (responseContent != null) {
 				return Message.asMessage(responseContent);
 			}

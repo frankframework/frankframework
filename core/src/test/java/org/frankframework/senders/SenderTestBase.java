@@ -98,6 +98,6 @@ public abstract class SenderTestBase<S extends ISender> extends ConfiguredTestBa
 
 	@Test
 	public void testIfToStringWorks() {
-		assertNotNull(sender.toString()); //And no NPE
+		assertNotNull(sender.toString()); // And no NPE
 	}
 }

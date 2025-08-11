@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.frankframework.filesystem.smb;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.DirectoryStream;
 import java.util.Date;
@@ -35,11 +36,12 @@ import jcifs.smb.SmbFileFilter;
 import jcifs.smb.SmbFileInputStream;
 import jcifs.smb.SmbFileOutputStream;
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.filesystem.AbstractFileSystem;
 import org.frankframework.filesystem.FileAlreadyExistsException;
 import org.frankframework.filesystem.FileNotFoundException;
-import org.frankframework.filesystem.AbstractFileSystem;
 import org.frankframework.filesystem.FileSystemException;
 import org.frankframework.filesystem.FileSystemUtils;
 import org.frankframework.filesystem.FolderAlreadyExistsException;
@@ -54,8 +56,8 @@ import org.frankframework.util.CredentialFactory;
  * <br/>
  * Only supports NTLM authentication.
  */
+@Log4j2
 public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWritableFileSystem<SmbFile> {
-	private final @Getter String domain = "SMB";
 
 	private @Getter String share = null;
 	private @Getter String username = null;
@@ -77,8 +79,8 @@ public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWr
 		if(!getShare().endsWith("/"))
 			setShare(getShare()+"/");
 
-		//Setup credentials if applied, may be null.
-		//NOTE: When using NtmlPasswordAuthentication without username it returns GUEST
+		// Setup credentials if applied, may be null.
+		// NOTE: When using NtmlPasswordAuthentication without username it returns GUEST
 		CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 		if (StringUtils.isNotEmpty(cf.getUsername())) {
 			auth = new NtlmPasswordAuthentication(getAuthenticationDomain(), cf.getUsername(), cf.getPassword());
@@ -130,20 +132,20 @@ public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWr
 	}
 
 	@Override
-	public OutputStream createFile(SmbFile f) throws FileSystemException {
-		try {
-			return new SmbFileOutputStream(f);
-		} catch (Exception e) {
-			throw new FileSystemException(e);
+	public void createFile(SmbFile file, InputStream content) throws IOException {
+		try (OutputStream out = new SmbFileOutputStream(file)) {
+			if (content != null) {
+				content.transferTo(out);
+			}
 		}
 	}
 
 	@Override
-	public OutputStream appendFile(SmbFile f) throws FileSystemException {
-		try {
-			return new SmbFileOutputStream(f, true);
-		} catch (Exception e) {
-			throw new FileSystemException(e);
+	public void appendFile(SmbFile file, InputStream content) throws IOException {
+		try (OutputStream out = new SmbFileOutputStream(file, true)) {
+			if (content != null) {
+				content.transferTo(out);
+			}
 		}
 	}
 

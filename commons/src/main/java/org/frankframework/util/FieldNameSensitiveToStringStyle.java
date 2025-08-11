@@ -15,6 +15,7 @@
 */
 package org.frankframework.util;
 
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -31,6 +32,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
 class FieldNameSensitiveToStringStyle extends ToStringStyle {
 	private static final List<String> PROTECTED_FIELDS = Arrays.asList("password", "secret", "token");
 
+	@Serial
 	private static final long serialVersionUID = 1L;
 
 	public FieldNameSensitiveToStringStyle() {
@@ -40,9 +42,10 @@ class FieldNameSensitiveToStringStyle extends ToStringStyle {
 
 	/**
 	 * Ensure <code>Singleton</code> after serialization.
-	 * 
+	 *
 	 * @return the singleton
 	 */
+	@Serial
 	private Object readResolve() {
 		return StringUtil.OMIT_PASSWORD_FIELDS_STYLE;
 	}

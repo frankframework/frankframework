@@ -32,6 +32,8 @@ public @interface Category {
 		@EnumLabel("Advanced")
 		ADVANCED,
 		@EnumLabel("NN-Special")
-		NN_SPECIAL
+		NN_SPECIAL,
+		@EnumLabel("Experimental")
+		EXPERIMENTAL
 	}
 }

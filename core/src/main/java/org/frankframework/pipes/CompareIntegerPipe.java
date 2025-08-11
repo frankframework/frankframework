@@ -109,9 +109,4 @@ public class CompareIntegerPipe extends AbstractPipe {
 		return operand;
 	}
 
-	@Override
-	public boolean consumesSessionVariable(String sessionKey) {
-		return super.consumesSessionVariable(sessionKey);
-	}
-
 }

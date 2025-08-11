@@ -122,7 +122,7 @@ public class J2V8 implements JavascriptEngine<V8> {
 						return message.asString();
 					}
 				} catch (Exception e) {
-					throw new RuntimeException(e);
+					throw new IllegalStateException(e);
 				}
 			}
 		}, sender.getName());

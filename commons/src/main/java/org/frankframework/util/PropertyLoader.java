@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,14 +32,14 @@ import jakarta.annotation.Nullable;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 public class PropertyLoader extends Properties {
 
 	@Serial
 	private static final long serialVersionUID = 1L;
-	private static final Logger LOG = LogManager.getLogger(PropertyLoader.class);
 	private final String rootPropertyFile;
 
 	public PropertyLoader(File propertiesFile, Properties defaults) throws IOException {
@@ -61,9 +61,9 @@ public class PropertyLoader extends Properties {
 
 		// Make sure to not call ClassUtils when using the root instance, as it has a static field referencing to AppConstants
 		if (classLoader != null) {
-			LOG.info("created new PropertyLoader for classloader [{}]", () -> ClassUtils.classNameOf(classLoader));
+			log.info("created new PropertyLoader for classloader [{}]", () -> ClassUtils.classNameOf(classLoader));
 		} else {
-			LOG.info("created new PropertyLoader for root classloader");
+			log.info("created new PropertyLoader for root classloader");
 		}
 	}
 
@@ -78,20 +78,20 @@ public class PropertyLoader extends Properties {
 		try {
 			String result = System.getenv().get(key);
 			if (result != null) {
-				LOG.trace("Get key [{}] from System Environment, value: [{}]", key, result);
+				log.trace("Get key [{}] from System Environment, value: [{}]", key, result);
 				return result;
 			}
 		} catch (Throwable e) {
-			LOG.warn("unable to read environment variable [{}]: {}", () -> key, e::getMessage);
+			log.warn("unable to read environment variable [{}]: {}", () -> key, e::getMessage);
 		}
 		try {
 			String result = System.getProperty(key);
 			if (result != null) {
-				LOG.trace("Get key [{}] from System Properties, value: [{}]", key, result);
+				log.trace("Get key [{}] from System Properties, value: [{}]", key, result);
 			}
 			return result;
 		} catch (Throwable e) { // MS-Java throws com.ms.security.SecurityExceptionEx
-			LOG.warn("unable to read system property [{}]: {}", () -> key, e::getMessage);
+			log.warn("unable to read system property [{}]: {}", () -> key, e::getMessage);
 			return null;
 		}
 	}
@@ -110,6 +110,16 @@ public class PropertyLoader extends Properties {
 		return super.getProperty(key);
 	}
 
+	@Override
+	public final boolean containsKey(Object objKey) {
+		if (!(objKey instanceof String key)) {
+			return false;
+		}
+
+		String value = getSystemProperty(key); // First try system properties and environment variables.
+		return value != null || super.containsKey(key); // Property could be unresolved but that's ok, it will exist and that's what we verify.
+	}
+
 	/**
 	 * the method is like the <code>Properties.getProperty</code>, but provides functionality to resolve <code>${variable}</code>
 	 * Syntaxes. It uses the property values and system values to resolve the variables, and does so recursively.
@@ -124,27 +134,28 @@ public class PropertyLoader extends Properties {
 		if (value != null) {
 			try {
 				if (value.contains(StringResolver.DELIM_START + key + StringResolver.DELIM_STOP)) {
-					LOG.warn("cyclic property definition key [{}] value [{}]", key, value);
+					log.warn("cyclic property definition key [{}] value [{}]", key, value);
 					return value;
 				}
 				String result = StringResolver.substVars(value, this);
 				if (!value.equals(result)) {
-					LOG.trace("substituted key [{}] with value from [{}] to [{}]", key, value, result);
+					log.trace("substituted key [{}] with value from [{}] to [{}]", key, value, result);
 				}
 
-				LOG.trace("getResolvedProperty: key [{}] resolved to value [{}]", key, value);
+				log.trace("getResolvedProperty: key [{}] resolved to value [{}]", key, value);
 				return result;
 			} catch (IllegalArgumentException e) {
-				LOG.error("bad option value [{}] for key [{}]", value, key, e);
+				log.error("bad option value [{}] for key [{}]", value, key, e);
 				return value;
 			}
 		} else {
-			LOG.trace("getResolvedProperty: key [{}] was not found", key);
+			log.trace("getResolvedProperty: key [{}] was not found", key);
 			return null;
 		}
 	}
 
 	@Nonnull
+	@SuppressWarnings("unchecked")
 	public <T extends Enum<T>> T getOrDefault(@Nonnull String key, @Nonnull T dfault) {
 		String value = getProperty(key);
 		if (value == null) {
@@ -221,12 +232,12 @@ public class PropertyLoader extends Properties {
 			if (resources.isEmpty()) {
 				if (rootPropertyFile.equals(filename)) { // The file cannot be found, abort!
 					String msg = rootPropertyFile + " file not found, unable to initialize PropertyLoader";
-					LOG.error(msg);
+					log.error(msg);
 					throw new MissingResourceException(msg, this.getClass().getSimpleName(), rootPropertyFile);
 				}
 
 				// An additional file to load properties from cannot be found
-				LOG.debug("cannot find resource [{}] in classloader [{}] to load additional properties from, ignoring", filename, classLoader);
+				log.debug("cannot find resource [{}] in classloader [{}] to load additional properties from, ignoring", filename, classLoader);
 			}
 
 			// We need to reverse the loading order to make sure the parent files are loaded first
@@ -234,10 +245,10 @@ public class PropertyLoader extends Properties {
 
 			for (URL url : resources) {
 				loadResource(url);
-				LOG.info("Properties loaded from url [{}]", url::toString);
+				log.info("Properties loaded from url [{}]", url::toString);
 			}
 		} catch (IOException e) {
-			LOG.error("error reading properties from [{}]", rootPropertyFile, e);
+			log.error("error reading properties from [{}]", rootPropertyFile, e);
 		}
 	}
 

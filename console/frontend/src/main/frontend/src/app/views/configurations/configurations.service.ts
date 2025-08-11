@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
 import { AppService, Configuration } from 'src/app/app.service';
 
@@ -7,10 +7,8 @@ import { AppService, Configuration } from 'src/app/app.service';
   providedIn: 'root',
 })
 export class ConfigurationsService {
-  constructor(
-    private http: HttpClient,
-    private appService: AppService,
-  ) {}
+  private http = inject(HttpClient);
+  private appService = inject(AppService);
 
   getConfiguration(selectedConfiguration: string, loadedConfiguration: boolean): Observable<string> {
     let uri = 'configurations';

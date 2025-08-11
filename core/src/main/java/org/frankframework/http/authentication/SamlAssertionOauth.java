@@ -49,6 +49,7 @@ import org.frankframework.encryption.EncryptionException;
 import org.frankframework.encryption.PkiUtil;
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.util.DomBuilderException;
+import org.frankframework.util.TimeProvider;
 import org.frankframework.util.XmlUtils;
 
 public class SamlAssertionOauth extends AbstractOauthAuthenticator {
@@ -106,7 +107,7 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 	}
 
 	private Document generateSAMLAssertion() throws ParserConfigurationException {
-		Instant nowInstant = Instant.now();
+		Instant nowInstant = TimeProvider.now();
 
 		String notBefore = nowInstant.minusSeconds(60).toString();
 		String notOnOrAfter = nowInstant.plusSeconds(session.getSamlAssertionExpiry()).toString();
@@ -121,7 +122,7 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 		Element assertion = doc.createElementNS(SAML2_NAMESPACE_URI, "saml2:Assertion");
 		assertion.setAttribute("ID", "_" + UUID.randomUUID());
 		assertion.setAttribute("Version", "2.0");
-		assertion.setAttribute("IssueInstant", Instant.now().toString());
+		assertion.setAttribute("IssueInstant", TimeProvider.now().toString());
 		assertion.setAttribute("xmlns:xs", "http://www.w3.org/2001/XMLSchema");
 		assertion.setAttribute("xmlns:xsi", "http://www.w3.org/2001/XMLSchema-instance");
 

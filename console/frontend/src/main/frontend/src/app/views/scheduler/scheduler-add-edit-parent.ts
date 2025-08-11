@@ -1,14 +1,15 @@
-import { Adapter, Configuration } from 'src/app/app.service';
+import { Adapter, AppService, Configuration } from 'src/app/app.service';
 import { JobForm } from './scheduler.service';
+import { inject, Signal } from '@angular/core';
 
-interface StateItem {
+type StateItem = {
   type: string;
   message: string;
-}
+};
 
 export class SchedulerAddEditParent {
   protected state: StateItem[] = [];
-  protected selectedConfiguration: string = '';
+  protected selectedConfiguration = '';
   protected editMode = false;
   protected form: JobForm = {
     name: '',
@@ -22,8 +23,16 @@ export class SchedulerAddEditParent {
     locker: false,
     lockkey: '',
   };
-  protected configurations: Configuration[] = [];
-  protected adapters: Record<string, Adapter> = {};
+
+  protected configurations: Signal<Configuration[]>;
+  protected adapters: Signal<Record<string, Adapter>>;
+
+  private readonly appService: AppService = inject(AppService);
+
+  constructor() {
+    this.configurations = this.appService.configurations;
+    this.adapters = this.appService.adapters;
+  }
 
   reset(): void {
     this.form = {

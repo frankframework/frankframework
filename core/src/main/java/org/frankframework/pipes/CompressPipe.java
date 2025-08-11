@@ -248,7 +248,7 @@ public class CompressPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * A flag that indicates whether the result must be written to the message or to a file (filename = message). 
+	 * A flag that indicates whether the result must be written to the message or to a file (filename = message).
 	 * @ff.default true when outputDirectory is not set.
 	 */
 	public void setResultIsContent(boolean b) {

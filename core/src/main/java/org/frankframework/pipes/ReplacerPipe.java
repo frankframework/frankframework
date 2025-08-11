@@ -43,14 +43,14 @@ import org.frankframework.util.XmlEncodingUtils;
  * <ol>
  * <li>If the attribute <code>find</code> is provided, the pipe will attempt to replace the provided value with the content of the attribute <code>replace</code>.</li>
  * <li>The resulting string is substituted based on the parameters of this pipe. It will replace values in the input enclosed
- * with <code>?{...}</code>, for instance text like: <code>?{parameterOne}</code> in combination with a parameter <code>parameterOne</code> will use the value of this {@link Parameter}. 
+ * with <code>?{...}</code>, for instance text like: <code>?{parameterOne}</code> in combination with a parameter <code>parameterOne</code> will use the value of this {@link Parameter}.
  * If a parameter for the given value is not found, it will not be replaced and the <code>?{parameterOne}</code> value will remain in the output.</li>
  * <p>
  * <p>
  * <li>If attribute <code>substituteVars</code> is {@code true}, then expressions <code>${...}</code> are substituted using
  * system properties, session variables and application properties. Please note that no <code>${...}</code> patterns are left in the input. </li>
  * </ol>
- * 
+ *
  * @ff.tip See {@link Parameter} to see how parameter values are determined.
  *
  * @author Gerrit van Brakel
@@ -98,9 +98,6 @@ public class ReplacerPipe extends FixedForwardPipe {
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
-			// Make sure to close the incoming message
-			message.unscheduleFromCloseOnExitOf(session);
-
 			// Create a ReplacingInputStream for find/replace
 			ReplacingInputStream replacingInputStream = new ReplacingInputStream(message.asInputStream(), find, replace, isReplaceNonXmlChars(),
 					getNonXmlReplacementCharacter(), isAllowUnicodeSupplementaryCharacters()
@@ -115,8 +112,6 @@ public class ReplacerPipe extends FixedForwardPipe {
 			ReplacingVariablesInputStream inputStream = wrapWithSubstituteVarsInputStreamIfNeeded(replaceParametersStream);
 
 			Message result = new Message(inputStream);
-			result.closeOnCloseOf(session);
-
 			return new PipeRunResult(getSuccessForward(), result);
 		} catch (IOException e) {
 			throw new PipeRunException(this, "cannot open stream", e);

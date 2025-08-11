@@ -1,0 +1,11 @@
+amqp:
+  - name: "RabbitMQ"
+    url: "amqp://${amqp.host}:${amqp.port}/"
+    properties:
+      clientId: "Rabbits"
+
+  - name: "ActiveMQ"
+    url: "amqp://${amqp.host}:${amqp.port}/"
+
+  - name: "Artemis"
+    url: "amqp://${amqp.host}:${amqp.port}/"

@@ -26,8 +26,8 @@ export class JmsBrowseQueueComponent implements OnInit {
     lookupDestination: false,
   };
   protected messages: Message[] = [];
-  protected numberOfMessages: number = -1;
-  protected processing: boolean = false;
+  protected numberOfMessages = -1;
+  protected processing = false;
   protected error: string | null = null;
   protected connectionFactories: string[] = [];
 

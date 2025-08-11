@@ -132,4 +132,3 @@ public class XmlValidatorErrorHandler implements ErrorHandler {
 		return xmlReasons.asXmlString();
 	}
 }
-

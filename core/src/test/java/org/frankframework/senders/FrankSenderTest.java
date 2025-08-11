@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.containsStringIgnoringCase;
 import static org.hamcrest.Matchers.hasKey;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -44,11 +45,12 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.jta.narayana.NarayanaJtaTransactionManager;
+import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.pipes.EchoPipe;
 import org.frankframework.pipes.ExceptionPipe;
-import org.frankframework.pipes.GetFromSession;
+import org.frankframework.pipes.GetFromSessionPipe;
 import org.frankframework.processors.CorePipeLineProcessor;
 import org.frankframework.processors.CorePipeProcessor;
 import org.frankframework.receivers.FrankListener;
@@ -78,8 +80,10 @@ class FrankSenderTest {
 	void tearDown() {
 		log.debug("FrankSenderTest: Teardown start, has configuration? [{}]", configuration != null);
 		log.debug("FrankSenderTest: Closing Configuration and other resources");
-		CloseUtils.closeSilently(input, result, session, configuration);
-
+		CloseUtils.closeSilently(input, session, configuration);
+		if (result != null) {
+			CloseUtils.closeSilently(result.getResult());
+		}
 		// In case JavaListener didn't close after end of test, deregister the service.
 		log.debug("FrankSenderTest: Unregistering services");
 		ServiceDispatcher.getInstance().unregisterServiceClient(TARGET_SERVICE_NAME);
@@ -185,30 +189,6 @@ class FrankSenderTest {
 
 		// Act
 		String actual = sender.getPhysicalDestinationName();
-
-		// Assert
-		assertEquals(expected, actual);
-	}
-
-	@ParameterizedTest
-	@CsvSource({
-			"ADAPTER, false, ADAPTER",
-			"DLL, false, DLL",
-			"JVM, false, JVM",
-			"JVM, true, Dynamic",
-			"DLL, true, Dynamic",
-			"ADAPTER, true, Dynamic",
-	})
-	void getDomain(FrankSender.Scope scope, boolean scopeParam, String expected) {
-		// Arrange
-		FrankSender sender = new FrankSender();
-		sender.setScope(scope);
-		if (scopeParam) {
-			sender.addParameter(ParameterBuilder.create("scope", ""));
-		}
-
-		// Act
-		String actual = sender.getDomain();
 
 		// Assert
 		assertEquals(expected, actual);
@@ -399,7 +379,7 @@ class FrankSenderTest {
 		// Arrange
 		log.debug("Creating Configuration");
 		configuration = new TestConfiguration(false);
-		GetFromSession pipe = new GetFromSession();
+		GetFromSessionPipe pipe = new GetFromSessionPipe();
 		pipe.setSessionKey("session-key");
 		pipe.setName("test-pipe");
 
@@ -428,6 +408,50 @@ class FrankSenderTest {
 			assertThat(session, hasKey(PipeLineSession.CORRELATION_ID_KEY));
 			assertEquals(correlationId, session.getCorrelationId());
 		}
+	}
+
+	@ParameterizedTest
+	@CsvSource({ // Cannot test with DLL Scope
+			"ADAPTER",
+			"LISTENER",
+			"JVM"
+	})
+	void sendMessageWithWildcardParam(FrankSender.Scope scope) throws Exception {
+		// Arrange
+		log.debug("Creating Configuration");
+		configuration = new TestConfiguration(false);
+		GetFromSessionPipe pipe = new GetFromSessionPipe();
+		pipe.setSessionKey(PipeLineSession.MESSAGE_ID_KEY);
+		pipe.setName("test-pipe");
+
+		FrankSender sender = createFrankSender(scope, true, pipe);
+		Parameter param = new Parameter();
+		param.setName("*");
+		param.setSessionKey("*");
+		param.configure();
+		sender.addParameter(param);
+		sender.configure();
+
+		session = new PipeLineSession();
+		session.put("session-key", "reply");
+		session.put(PipeLineSession.MESSAGE_ID_KEY, "mid");
+		session.put(PipeLineSession.CORRELATION_ID_KEY, "cid");
+
+		input = new Message("request");
+
+		// Act
+		log.debug("starting actual test");
+		result = sender.sendMessage(input, session);
+
+		// Assert
+		assertNotNull(result);
+		assertTrue(result.isSuccess(), "Expected sender to succeed calling target adapter");
+		assertNotNull(result.getResult());
+
+		Message resultMessage = result.getResult();
+		assertNotNull(resultMessage.asString());
+		String resultString = resultMessage.asString();
+		assertNotEquals("mid", resultString);
 	}
 
 	@ParameterizedTest
@@ -532,8 +556,8 @@ class FrankSenderTest {
 		return sender;
 	}
 
-	private void createFrankListener(TestConfiguration configuration, Adapter targetAdapter) {
-		Receiver<Message> receiver = configuration.createBean();
+	private void createFrankListener(TestConfiguration configuration, Adapter adapter) {
+		Receiver<Message> receiver = SpringUtils.createBean(adapter);
 		receiver.setName("TargetAdapter-receiver");
 
 		FrankListener listener = configuration.createBean();
@@ -542,15 +566,14 @@ class FrankSenderTest {
 		receiver.setListener(listener);
 		receiver.setTxManager(configuration.createBean(NarayanaJtaTransactionManager.class));
 
-		targetAdapter.addReceiver(receiver);
-		receiver.setAdapter(targetAdapter);
+		adapter.addReceiver(receiver);
 
 		listener.configure();
 		listener.start();
 	}
 
-	private void createJavaListener(TestConfiguration configuration, Adapter targetAdapter) {
-		Receiver<String> receiver = configuration.createBean();
+	private void createJavaListener(TestConfiguration configuration, Adapter adapter) {
+		Receiver<String> receiver = SpringUtils.createBean(adapter);
 		receiver.setName("TargetAdapter-receiver");
 
 		JavaListener<String> listener = configuration.createBean();
@@ -561,8 +584,7 @@ class FrankSenderTest {
 		receiver.setListener(listener);
 		receiver.setTxManager(configuration.createBean(NarayanaJtaTransactionManager.class));
 
-		targetAdapter.addReceiver(receiver);
-		receiver.setAdapter(targetAdapter);
+		adapter.addReceiver(receiver);
 
 		listener.start();
 	}

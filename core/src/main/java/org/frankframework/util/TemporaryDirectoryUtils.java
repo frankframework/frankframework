@@ -79,7 +79,7 @@ public class TemporaryDirectoryUtils {
 	/**
 	 * @return the ${ibis.tmpdir}/folder or IOException if it cannot be resolved.
 	 * If the ${ibis.tmpdir} is relative it will turn it into an absolute path
-	 * @throws IOException 
+	 * @throws IOException
 	 */
 	public static Path getTempDirectory(String folder) throws IOException {
 		Path tempDir = getTempDirectory();

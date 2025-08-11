@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { inject, Injectable } from '@angular/core';
 import { SessionService } from './session.service';
 
 export type Alert = {
@@ -12,10 +12,10 @@ export type Alert = {
   providedIn: 'root',
 })
 export class AlertService {
-  constructor(private Session: SessionService) {}
+  private readonly Session: SessionService = inject(SessionService);
 
   add(level: string | number, message: string, non_repeditive: boolean): void {
-    if (non_repeditive === true && this.checkIfExists(message)) return;
+    if (non_repeditive && this.checkIfExists(message)) return;
 
     let type;
     switch (level) {
@@ -54,7 +54,7 @@ export class AlertService {
   get(preserveList?: boolean): Alert[] {
     //var list = JSON.parse(sessionStorage.getItem("Alert"));
     const list = this.Session.get('Alert');
-    if (preserveList == undefined) this.Session.set('Alert', []); //sessionStorage.setItem("Alert", JSON.stringify([])); //Clear after retreival
+    if (!preserveList) this.Session.set('Alert', []); //sessionStorage.setItem("Alert", JSON.stringify([])); //Clear after retreival
     return list == null ? [] : (list as Alert[]);
   }
 

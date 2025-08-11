@@ -1,33 +1,48 @@
 package org.frankframework.management.bus.endpoints;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-import org.hamcrest.CoreMatchers;
+import java.time.Clock;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.parallel.Isolated;
 import org.springframework.messaging.Message;
 
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusTestBase;
 import org.frankframework.management.bus.BusTopic;
+import org.frankframework.util.TimeProvider;
 
+@Isolated("Tests manipulate current time, so should not be run concurrently with other tests")
 public class TestServerStatistics extends BusTestBase {
+
+	@AfterEach
+	void afterEach() {
+		TimeProvider.resetClock();
+	}
 
 	@Test
 	public void getServerInformation() {
+		TimeProvider.setClock(Clock.systemUTC());
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.APPLICATION, BusAction.GET);
 		Message<?> response = callSyncGateway(request);
 
 		String result = response.getPayload().toString();
-		assertThat(result, CoreMatchers.containsString("\"fileSystem\":{")); //Object
-		assertThat(result, CoreMatchers.containsString("\"framework\":{")); //Object
-		assertThat(result, CoreMatchers.containsString("\"instance\":{")); //Object
-		assertThat(result, CoreMatchers.containsString("\"applicationServer\":\"")); //String
-		assertThat(result, CoreMatchers.containsString("\"javaVersion\":\"")); //String
-		assertThat(result, CoreMatchers.containsString("\"dtap.stage\":\"")); //String
-		assertThat(result, CoreMatchers.containsString("\"dtap.side\":\"")); //String
-		assertThat(result, CoreMatchers.containsString("\"processMetrics\":{")); //Object
-		assertThat(result, CoreMatchers.containsString("\"machineName\":\"")); //String
+		assertThat(result, containsString("\"fileSystem\":{")); //Object
+		assertThat(result, containsString("\"framework\":{")); //Object
+		assertThat(result, containsString("\"instance\":{")); //Object
+		assertThat(result, containsString("\"applicationServer\":\"")); //String
+		assertThat(result, containsString("\"javaVersion\":\"")); //String
+		assertThat(result, containsString("\"dtap.stage\":\"")); //String
+		assertThat(result, containsString("\"dtap.side\":\"")); //String
+		assertThat(result, containsString("\"processMetrics\":{")); //Object
+		assertThat(result, containsString("\"machineName\":\"")); //String
+		assertThat(result, containsString("\"serverTimezone\":\"ETC/UTC\"")); //String
+		assertThat(result, not(containsString("\"Z\""))); //String
 	}
 
 	@Test
@@ -36,9 +51,9 @@ public class TestServerStatistics extends BusTestBase {
 		Message<?> response = callSyncGateway(request);
 
 		String result = response.getPayload().toString();
-		assertThat(result, CoreMatchers.containsString("{\"errorStoreCount\":0")); //No errors in the IbisStore
-		assertThat(result, CoreMatchers.containsString("\"totalErrorStoreCount\":0"));
-		assertThat(result, CoreMatchers.containsString("\"messages\":[{\"date\":")); //Messages object with an Array with Objects
+		assertThat(result, containsString("{\"errorStoreCount\":0")); //No errors in the IbisStore
+		assertThat(result, containsString("\"totalErrorStoreCount\":0"));
+		assertThat(result, containsString("\"messages\":[{\"date\":")); //Messages object with an Array with Objects
 	}
 
 	/**
