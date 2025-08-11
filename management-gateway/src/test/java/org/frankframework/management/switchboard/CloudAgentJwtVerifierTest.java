@@ -26,14 +26,9 @@ class CloudAgentJwtVerifierTest {
 
 	private MtlsHelper mtlsHelper;
 
-	private KeyStore emptyKs;
-
 	@BeforeEach
-	void setUp() throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException {
+	void setUp() {
 		mtlsHelper = mock(MtlsHelper.class);
-		emptyKs = KeyStore.getInstance(KeyStore.getDefaultType());
-		emptyKs.load(null, null);
-		when(mtlsHelper.getKeyStore()).thenReturn(emptyKs);
 	}
 
 	@Test
@@ -57,7 +52,10 @@ class CloudAgentJwtVerifierTest {
 
 	@Test
 	@DisplayName("When an empty KeyStore is provided, Then IOException is thrown")
-	void verifyThrowsIOExceptionOnEmptyKeyStore() {
+	void verifyThrowsIOExceptionOnEmptyKeyStore() throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException {
+		KeyStore emptyKs = KeyStore.getInstance(KeyStore.getDefaultType());
+		emptyKs.load(null, null);
+		when(mtlsHelper.getKeyStore()).thenReturn(emptyKs);
 		CloudAgentJwtVerifier verifier = new CloudAgentJwtVerifier(mtlsHelper);
 
 		IOException ex = assertThrows(IOException.class, () -> verifier.verify("eyJhbGciOiJSUzUxMiJ9.e30.signature"));
