@@ -1,4 +1,4 @@
-import { Component, Inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { AppConstants, AppService } from 'src/app/app.service';
 import { JdbcBrowseForm, JdbcService } from '../jdbc.service';
@@ -99,16 +99,17 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
 
         for (const columnName in row) {
           const index = columnNameArray.indexOf(columnName);
-          let value = row[columnName];
+          const value = row[columnName];
 
-          if (index === -1 && columnName.indexOf("LENGTH ") > -1) {
-            value += " (length)";
-            value = row[columnName.replace("LENGTH ", "")];
+            if (index === -1 && columnName.includes('LENGTH ')) {
+              const replaceIndex = columnNameArray.indexOf(columnName.replace('LENGTH ', ''));
+              orderedRow[replaceIndex] = `${value} (length)`;
+              continue;
+            }
+            orderedRow[index] = value;
           }
-          orderedRow[index] = value;
+          this.result.push(orderedRow);
         }
-        this.result.push(orderedRow);
-      }
 
       this.processingMessage = false;
     }, error: (errorData: HttpErrorResponse) => {
