@@ -9,7 +9,10 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
 
@@ -26,13 +29,8 @@ class CloudAgentJwtVerifierTest {
 	private KeyStore emptyKs;
 
 	@BeforeEach
-	void setUp() throws Exception {
+	void setUp() {
 		mtlsHelper = mock(MtlsHelper.class);
-
-		// prepare empty keystore
-		emptyKs = KeyStore.getInstance(KeyStore.getDefaultType());
-		emptyKs.load(null, null);
-
 		when(mtlsHelper.getKeyStore()).thenReturn(emptyKs);
 	}
 
@@ -57,7 +55,10 @@ class CloudAgentJwtVerifierTest {
 
 	@Test
 	@DisplayName("When an empty KeyStore is provided, Then IOException is thrown")
-	void verifyThrowsIOExceptionOnEmptyKeyStore() {
+	void verifyThrowsIOExceptionOnEmptyKeyStore() throws KeyStoreException, CertificateException, IOException, NoSuchAlgorithmException {
+		emptyKs = KeyStore.getInstance(KeyStore.getDefaultType());
+		emptyKs.load(null, null);
+
 		CloudAgentJwtVerifier verifier = new CloudAgentJwtVerifier(mtlsHelper);
 
 		IOException ex = assertThrows(IOException.class, () -> verifier.verify("eyJhbGciOiJSUzUxMiJ9.e30.signature"));
