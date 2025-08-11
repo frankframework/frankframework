@@ -75,7 +75,7 @@
     "cypress-multi-reporters": "^2.0.5",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^9.1.2",
-    "eslint-plugin-prettier": "^5.5.3",
+    "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-unicorn": "^51.0.1",
     "jasmine-core": "~4.6.1",
     "karma": "~6.4.0",
