@@ -91,8 +91,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private readonly appService: AppService = inject(AppService);
 
   private serverInfo: ServerInfo | null = null;
-  private _subscriptions = new Subscription();
-  private _subscriptionsReloadable = new Subscription();
+  private reloadSubscription = new Subscription();
   private readonly consoleState: WritableSignal<AppInitState> = this.appService.consoleState;
   private readonly MODAL_OPTIONS_CLASSES: NgbModalOptions = {
     modalDialogClass: 'animated fadeInDown',
@@ -152,21 +151,18 @@ export class AppComponent implements OnInit, OnDestroy {
       }
     });
 
-    const reloadSubscription = this.appService.reload$.subscribe(() => this.onAppReload());
-    this._subscriptions.add(reloadSubscription);
+    this.reloadSubscription = this.appService.reload$.subscribe(() => this.onAppReload());
 
     this.initializeFrankConsole();
   }
 
   ngOnDestroy(): void {
     this.websocketService.deactivate();
-    this._subscriptions.unsubscribe();
-    this._subscriptionsReloadable.unsubscribe();
+    this.reloadSubscription.unsubscribe();
   }
 
   onAppReload(): void {
     this.websocketService.deactivate();
-    this._subscriptionsReloadable.unsubscribe();
     this.consoleState.set(appInitState.UN_INIT);
 
     this.appService.alerts.set([]);
