@@ -255,8 +255,8 @@
                           @if (trigger.filter !== 'none') {
                             <td>
                               <ul class="unstyled no-margins">
-                                @for (sources of trigger.sources | keyvalue; track sources.key) {
-                                  @if (sources) {
+                                @if (trigger.sources) {
+                                  @for (sources of trigger.sources | keyvalue; track sources.key) {
                                     <li>
                                       {{ sources.key }}
                                       <ul>

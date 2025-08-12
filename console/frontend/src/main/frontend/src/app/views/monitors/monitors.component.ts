@@ -34,7 +34,7 @@ export class MonitorsComponent implements OnInit, OnDestroy {
   protected configurations: Configuration[] = [];
 
   private routeQueryParams: ParamMap = convertToParamMap({});
-  private subscriptions: Subscription = new Subscription();
+  private configurationsSubscription: Subscription | null = null;
 
   private route: ActivatedRoute = inject(ActivatedRoute);
   private monitorsService: MonitorsService = inject(MonitorsService);
@@ -48,17 +48,16 @@ export class MonitorsComponent implements OnInit, OnDestroy {
         this.updateConfigurations();
       }
     });
-    const configurationsSubscription = this.configurations$.subscribe((configurations) => {
+    this.configurationsSubscription = this.configurations$.subscribe((configurations) => {
       this.configurations = configurations;
       if (this.configurations.length > 0) {
         this.updateConfigurations();
       }
     });
-    this.subscriptions.add(configurationsSubscription);
   }
 
   ngOnDestroy(): void {
-    this.subscriptions.unsubscribe();
+    this.configurationsSubscription?.unsubscribe();
   }
 
   updateConfigurations(): void {
