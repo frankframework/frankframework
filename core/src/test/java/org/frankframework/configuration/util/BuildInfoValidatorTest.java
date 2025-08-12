@@ -16,6 +16,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.testutil.TestAppender;
 
 public class BuildInfoValidatorTest {
 
@@ -134,8 +135,10 @@ public class BuildInfoValidatorTest {
 			assertNotNull(jarInputStream.getManifest(), "config has no valid manifest file"); // Ensure the jar has a manifest.md file
 		}
 
-		// LOG
-		ConfigurationException ex = assertThrows(ConfigurationException.class, () -> new BuildInfoValidator(jar.openStream()));
-		assertEquals("", ex.getMessage());
+		try (TestAppender appender = TestAppender.newBuilder().build()) {
+			ConfigurationException ex = assertThrows(ConfigurationException.class, () -> new BuildInfoValidator(jar.openStream()));
+			assertEquals("no [META-INF/MANIFEST.MF] or [BuildInfo.properties] present in configuration", ex.getMessage());
+			assertTrue(appender.contains("did find a MANIFEST file but not a valid configuration folder in [Configuration_Template]"));
+		}
 	}
 }
