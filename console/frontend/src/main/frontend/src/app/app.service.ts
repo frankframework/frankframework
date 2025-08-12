@@ -275,15 +275,6 @@ export class AppService {
   private _appConstants: WritableSignal<AppConstants> = signal({
     //How often the interactive frontend should poll the FF API for new data
     'console.pollerInterval': 10_000,
-
-    //How often the interactive frontend should poll during IDLE state
-    'console.idle.pollerInterval': 60_000,
-
-    //After x minutes the app goes into 'idle' state (use 0 to disable)
-    'console.idle.time': 300,
-
-    //After x minutes the user will be forcefully logged out
-    'console.idle.timeout': 0,
   });
 
   private lastUpdated = 0;
