@@ -27,7 +27,8 @@ export class PollerService {
 
     this.Debug.log(`Adding new poller [${url}] runOnce [${runOnce}] interval [${intervalTime}]`);
 
-    const interval = intervalTime ?? (this.appService.appConstants()['console.pollerInterval'] as number);
+    const defaultInterval = Number.parseInt(this.appService.appConstants()['console.pollerInterval']);
+    const interval = intervalTime ?? defaultInterval;
 
     const poller = new Poller<T>(`${this.appService.absoluteApiPath}${url}`, interval, callback, this.http, this.Debug);
 

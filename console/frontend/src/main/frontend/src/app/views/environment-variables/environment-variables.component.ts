@@ -5,12 +5,13 @@ import { TabListComponent } from '../../components/tab-list/tab-list.component';
 import { FormsModule } from '@angular/forms';
 import { VariablesFilterPipe } from '../../pipes/variables-filter.pipe';
 import { OrderByPipe } from '../../pipes/orderby.pipe';
+import { EnvironmentVariablesTableComponent } from './environment-variables-table/environment-variables-table.component';
 
-type keyValueProperty = KeyValue<string, string>;
+export type KeyValueProperty = KeyValue<string, string>;
 
 @Component({
   selector: 'app-environment-variables',
-  imports: [TabListComponent, FormsModule, VariablesFilterPipe, OrderByPipe],
+  imports: [TabListComponent, FormsModule, VariablesFilterPipe, OrderByPipe, EnvironmentVariablesTableComponent],
   templateUrl: './environment-variables.component.html',
   styleUrls: ['./environment-variables.component.scss'],
 })
@@ -18,9 +19,10 @@ export class EnvironmentVariablesComponent implements OnInit {
   protected readonly GLOBAL_TAB_NAME = 'Global';
   protected searchFilter = '';
   protected selectedConfiguration = '';
-  protected configProperties: keyValueProperty[] = [];
-  protected environmentProperties: keyValueProperty[] = [];
-  protected systemProperties: keyValueProperty[] = [];
+  protected configProperties: KeyValueProperty[] = [];
+  protected environmentProperties: KeyValueProperty[] = [];
+  protected systemProperties: KeyValueProperty[] = [];
+  protected appConstants: Record<string, KeyValueProperty[]> = {};
   protected configurationNames: Signal<string[]> = computed(() =>
     this.appService.configurations().map((configuration) => configuration.name),
   );
@@ -29,13 +31,12 @@ export class EnvironmentVariablesComponent implements OnInit {
 
   ngOnInit(): void {
     this.appService.getEnvironmentVariables().subscribe((data) => {
+      const appConstants = data['Application Constants'];
       let instanceName = null;
-      for (const configName in data['Application Constants']) {
-        this.appService.appConstants()[configName] = this.convertPropertiesToArray(
-          data['Application Constants'][configName],
-        );
+      for (const configName in appConstants) {
+        this.appConstants[configName] = this.convertPropertiesToArray(appConstants[configName]);
         if (instanceName == null) {
-          instanceName = data['Application Constants'][configName]['instance.name'];
+          instanceName = appConstants[configName]['instance.name'];
         }
       }
       this.changeConfiguration(this.GLOBAL_TAB_NAME);
@@ -46,17 +47,10 @@ export class EnvironmentVariablesComponent implements OnInit {
 
   changeConfiguration(name: string): void {
     this.selectedConfiguration = name;
-    this.configProperties = this.appService.appConstants()[name] as keyValueProperty[];
+    this.configProperties = this.appConstants[name];
   }
 
-  private convertPropertiesToArray(propertyList: Record<string, string>): keyValueProperty[] {
-    const propertiesArray: keyValueProperty[] = [];
-    for (const variableName in propertyList) {
-      propertiesArray.push({
-        key: variableName,
-        value: propertyList[variableName],
-      });
-    }
-    return propertiesArray;
+  private convertPropertiesToArray(propertyList: Record<string, string>): KeyValueProperty[] {
+    return Object.entries(propertyList).map(([key, value]): KeyValueProperty => ({ key, value }));
   }
 }

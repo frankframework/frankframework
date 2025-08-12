@@ -28,92 +28,21 @@
               </span>
             </div>
           </div>
-          <div>
-            <h2>
-              Application Constants
-              <small class="m-l-sm">&nbsp;({{ (configProperties | variablesFilter: this.searchFilter).length }})</small>
-            </h2>
-            <table class="table">
-              <thead>
-                <tr>
-                  <td><strong>Property</strong></td>
-                  <td><strong>Value</strong></td>
-                </tr>
-              </thead>
-              <tbody>
-                @for (vari of configProperties | variablesFilter: this.searchFilter | orderby: 'key'; track vari.key) {
-                  <tr>
-                    <td class="col-lg-3">{{ vari.key }}</td>
-                    <td class="col-lg-9">{{ vari.value }}</td>
-                  </tr>
-                }
-                @if ((configProperties | variablesFilter: this.searchFilter).length === 0) {
-                  <tr>
-                    <td colspan="2">No variables found matching '{{ searchFilter }}'</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-          <div>
-            <h2>
-              Environment Variables
-              <small class="m-l-sm"
-                >&nbsp;({{ (environmentProperties | variablesFilter: this.searchFilter).length }})</small
-              >
-            </h2>
-            <table class="table">
-              <thead>
-                <tr>
-                  <td><strong>Property</strong></td>
-                  <td><strong>Value</strong></td>
-                </tr>
-              </thead>
-              <tbody>
-                @for (
-                  vari of environmentProperties | variablesFilter: this.searchFilter | orderby: 'key';
-                  track vari.key
-                ) {
-                  <tr>
-                    <td class="col-lg-3">{{ vari.key }}</td>
-                    <td class="col-lg-9">{{ vari.value }}</td>
-                  </tr>
-                }
-                @if ((environmentProperties | variablesFilter: this.searchFilter).length === 0) {
-                  <tr>
-                    <td colspan="2">No variables found matching '{{ searchFilter }}'</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
-          <div>
-            <h2>
-              System Properties
-              <small class="m-l-sm">&nbsp;({{ (systemProperties | variablesFilter: this.searchFilter).length }})</small>
-            </h2>
-            <table class="table">
-              <thead>
-                <tr>
-                  <td><strong>Property</strong></td>
-                  <td><strong>Value</strong></td>
-                </tr>
-              </thead>
-              <tbody>
-                @for (vari of systemProperties | variablesFilter: this.searchFilter | orderby: 'key'; track vari.key) {
-                  <tr>
-                    <td class="col-lg-3">{{ vari.key }}</td>
-                    <td class="col-lg-9">{{ vari.value }}</td>
-                  </tr>
-                }
-                @if ((systemProperties | variablesFilter: this.searchFilter).length === 0) {
-                  <tr>
-                    <td colspan="2">No variables found matching '{{ searchFilter }}'</td>
-                  </tr>
-                }
-              </tbody>
-            </table>
-          </div>
+          <app-environment-variables-table
+            name="Application Constants"
+            [properties]="configProperties | variablesFilter: this.searchFilter"
+            [searchFilter]="searchFilter"
+          />
+          <app-environment-variables-table
+            name="Environment Variables"
+            [properties]="environmentProperties | variablesFilter: this.searchFilter"
+            [searchFilter]="searchFilter"
+          />
+          <app-environment-variables-table
+            name="System Properties"
+            [properties]="systemProperties | variablesFilter: this.searchFilter"
+            [searchFilter]="searchFilter"
+          />
         </div>
       </div>
     </div>
