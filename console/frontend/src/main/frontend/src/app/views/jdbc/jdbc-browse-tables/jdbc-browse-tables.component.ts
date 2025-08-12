@@ -109,11 +109,12 @@ export class JdbcBrowseTablesComponent implements OnInit, OnDestroy {
 
           for (const columnName in row) {
             const index = columnNameArray.indexOf(columnName);
-            let value = row[columnName];
+            const value = row[columnName];
 
             if (index === -1 && columnName.includes('LENGTH ')) {
-              value += ' (length)';
-              value = row[columnName.replace('LENGTH ', '')];
+              const replaceIndex = columnNameArray.indexOf(columnName.replace('LENGTH ', ''));
+              orderedRow[replaceIndex] = `${value} (length)`;
+              continue;
             }
             orderedRow[index] = value;
           }

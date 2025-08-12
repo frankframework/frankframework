@@ -232,8 +232,8 @@ export class AppService {
   public loading: WritableSignal<boolean> = signal(true);
   public alerts: WritableSignal<Alert[]> = signal([]);
   public startupError: WritableSignal<string | null> = signal(null);
-  public instanceName: WritableSignal<string> = signal('');
-  public dtapStage: WritableSignal<string> = signal('');
+  public instanceName: WritableSignal<string> = signal('-');
+  public dtapStage: WritableSignal<string> = signal('-');
   public iframePopoutUrl: WritableSignal<string | null> = signal(null);
   public selectedConfigurationTab: WritableSignal<string | null> = signal(null);
   public reload$: Observable<void>;
@@ -452,7 +452,7 @@ export class AppService {
   }
 
   updateTitle(title: string): void {
-    this.title.setTitle(`${this.dtapStage}-${this.instanceName} | ${title}`);
+    this.title.setTitle(`${this.dtapStage()}-${this.instanceName()} | ${title}`);
   }
 
   getServerPath(): string {
