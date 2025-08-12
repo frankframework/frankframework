@@ -1,5 +1,4 @@
 import { Component, inject, OnDestroy, OnInit, Renderer2, Signal, WritableSignal } from '@angular/core';
-import { Idle } from '@ng-idle/core';
 import { filter, first, Subscription } from 'rxjs';
 import {
   Adapter,
@@ -85,7 +84,6 @@ export class AppComponent implements OnInit, OnDestroy {
   private readonly debugService: DebugService = inject(DebugService);
   private readonly sweetAlertService: SweetalertService = inject(SweetalertService);
   private readonly toastService: ToastService = inject(ToastService);
-  private readonly idle: Idle = inject(Idle);
   private readonly modalService: NgbModal = inject(NgbModal);
   private readonly serverInfoService: ServerInfoService = inject(ServerInfoService);
   private readonly websocketService: WebsocketService = inject(WebsocketService);
@@ -93,8 +91,7 @@ export class AppComponent implements OnInit, OnDestroy {
   private readonly appService: AppService = inject(AppService);
 
   private serverInfo: ServerInfo | null = null;
-  private _subscriptions = new Subscription();
-  private _subscriptionsReloadable = new Subscription();
+  private reloadSubscription = new Subscription();
   private readonly consoleState: WritableSignal<AppInitState> = this.appService.consoleState;
   private readonly MODAL_OPTIONS_CLASSES: NgbModalOptions = {
     modalDialogClass: 'animated fadeInDown',
@@ -154,61 +151,18 @@ export class AppComponent implements OnInit, OnDestroy {
       }
     });
 
-    const idleStartSubscription = this.idle.onIdleStart.subscribe(() => {
-      const idleTimeoutConstant = this.appService.appConstants()['console.idle.timeout'];
-      const idleTimeout = Number.parseInt(idleTimeoutConstant as string);
-      if (Number.isNaN(idleTimeout)) return;
-
-      this.sweetAlertService.warning({
-        title: 'Idle timer...',
-        text: "Your session will be terminated in <span class='idleTimer'>60:00</span> minutes.",
-        showConfirmButton: false,
-        showCloseButton: true,
-      });
-    });
-    this._subscriptions.add(idleStartSubscription);
-
-    const idleWarnSubscription = this.idle.onTimeoutWarning.subscribe((timeRemaining) => {
-      let minutes = Math.floor(timeRemaining / 60);
-      let seconds = Math.round(timeRemaining % 60);
-      if (minutes < 10) minutes = +'0' + minutes;
-      if (seconds < 10) seconds = +'0' + seconds;
-      const elm = document.querySelector('.swal2-container .idleTimer');
-      if (elm) elm.textContent = `${minutes}:${seconds}`;
-    });
-    this._subscriptions.add(idleWarnSubscription);
-
-    const idleTimeoutSubscription = this.idle.onTimeout.subscribe(() => {
-      this.sweetAlertService.info({
-        title: 'Idle timer...',
-        text: 'You have been logged out due to inactivity.',
-        showCloseButton: true,
-      });
-      this.router.navigate(['logout']);
-    });
-    this._subscriptions.add(idleTimeoutSubscription);
-
-    const idleEndSubscription = this.idle.onIdleEnd.subscribe(() => {
-      const element = document.querySelector<HTMLElement>('.swal2-container .swal2-close');
-      if (element) element.click();
-    });
-    this._subscriptions.add(idleEndSubscription);
-
-    const reloadSubscription = this.appService.reload$.subscribe(() => this.onAppReload());
-    this._subscriptions.add(reloadSubscription);
+    this.reloadSubscription = this.appService.reload$.subscribe(() => this.onAppReload());
 
     this.initializeFrankConsole();
   }
 
   ngOnDestroy(): void {
     this.websocketService.deactivate();
-    this._subscriptions.unsubscribe();
-    this._subscriptionsReloadable.unsubscribe();
+    this.reloadSubscription.unsubscribe();
   }
 
   onAppReload(): void {
     this.websocketService.deactivate();
-    this._subscriptionsReloadable.unsubscribe();
     this.consoleState.set(appInitState.UN_INIT);
 
     this.appService.alerts.set([]);
@@ -252,7 +206,6 @@ export class AppComponent implements OnInit, OnDestroy {
         this.appService.updateTitle(this.title.getTitle().split(' | ')[1]);
 
         if (!this.router.url.includes('login')) {
-          this.idle.watch();
           this.renderer.removeClass(document.body, 'gray-bg');
         }
 
@@ -264,11 +217,6 @@ export class AppComponent implements OnInit, OnDestroy {
 
         if (this.appService.dtapStage() == 'LOC') {
           this.debugService.setLevel(3);
-        }
-
-        //Was it able to retrieve the serverinfo without logging in?
-        if (!this.authService.isLoggedIn()) {
-          this.idle.setTimeout(0);
         }
 
         this.consoleState.set(appInitState.POST_INIT);
@@ -308,16 +256,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
     this.appService.getEnvironmentVariables().subscribe((data) => {
       if (data['Application Constants']) {
-        const appConstants = { ...this.appService.appConstants(), ...data['Application Constants']['Global'] }; //make FF!Application Constants default
-
-        const idleTime = Math.max(Number.parseInt(appConstants['console.idle.time'] as string), 0);
-        if (idleTime > 0) {
-          const idleTimeout = Math.max(Number.parseInt(appConstants['console.idle.timeout'] as string), 0);
-          this.idle.setIdle(idleTime);
-          this.idle.setTimeout(idleTimeout);
-        } else {
-          this.idle.stop();
-        }
+        const appConstants = { ...this.appService.appConstants(), ...data['Application Constants']['Global'] };
         this.appService.updateAppConstants(appConstants);
       }
     });
