@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,12 +15,15 @@
 */
 package org.frankframework.console.controllers;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.support.GenericMessage;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -44,7 +47,7 @@ public class FileViewer {
 		this.frankApiService = frankApiService;
 	}
 
-	@GetMapping(value = "/file-viewer", produces = {"text/html", "text/plain", "application/xml", "application/zip", "application/octet-stream"})
+	@GetMapping(value = "/file-viewer", produces = { "text/html", "text/plain", "application/xml", "application/zip", "application/octet-stream" })
 	@AllowAllIbisUserRoles
 	@Relation("logging")
 	@Description("view or download a (log)file")
@@ -57,8 +60,20 @@ public class FileViewer {
 		builder.addHeader("fileName", file);
 		builder.addHeader("resultType", wantedType);
 
-		Message<InputStream> inputStreamMessage = (Message<InputStream>) frankApiService.sendSyncMessage(builder);
+		var response = frankApiService.sendSyncMessage(builder);
+		Message<InputStream> inputStreamMessage = getInputStreamMessage(response);
 		return ResponseUtils.convertToSpringStreamingResponse(inputStreamMessage);
+	}
+
+	static Message<InputStream> getInputStreamMessage(Message<?> response) {
+		Message<InputStream> inputStreamMessage;
+		if (response.getPayload() instanceof String payload) {
+			InputStream inputStream = new ByteArrayInputStream(payload.getBytes(StandardCharsets.UTF_8));
+			inputStreamMessage = new GenericMessage<>(inputStream, response.getHeaders());
+		} else {
+			inputStreamMessage = (Message<InputStream>) response;
+		}
+		return inputStreamMessage;
 	}
 
 }

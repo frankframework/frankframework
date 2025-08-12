@@ -46,7 +46,6 @@ public class JwtSecurityFilterTest {
 	@BeforeEach
 	public void setUp() throws Exception {
 		keyGenerator = new JwtKeyGenerator();
-		keyGenerator.afterPropertiesSet();
 		File jwksFile = new File(tempDirectory, "jwks.txt");
 		try (OutputStream fileOut = Files.newOutputStream(jwksFile.toPath())) {
 			StreamUtil.streamToStream(new ByteArrayInputStream(keyGenerator.getPublicJwkSet().getBytes(StandardCharsets.UTF_8)), fileOut);
@@ -81,7 +80,7 @@ public class JwtSecurityFilterTest {
 		assertNotNull(jwt);
 
 		MockHttpServletRequest request = new MockHttpServletRequest("GET", "/dummy");
-		request.addHeader("Authentication", "Bearer "+ jwt);
+		request.addHeader("Authentication", "Bearer " + jwt);
 		MockHttpServletResponse response = new MockHttpServletResponse();
 		MockFilterChain chain = spy(MockFilterChain.class);
 

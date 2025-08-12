@@ -25,7 +25,7 @@
 		<context:exclude-filter type="regex" expression="org\.springdoc\.webmvc\.api\.Multiple.*"/>
 	</context:component-scan>
 
-	<bean id="JwtKeyGenerator" class="org.frankframework.management.security.JwtKeyGenerator"/>
+	<bean id="JwtGeneratorFactoryBean" class="org.frankframework.management.security.JwtGeneratorFactoryBean"/>
 	<bean id="messageBuilderFactory" class="org.springframework.integration.support.DefaultMessageBuilderFactory" />
 
 	<mvc:interceptors>

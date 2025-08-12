@@ -27,9 +27,13 @@ import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+
+import org.frankframework.management.security.AbstractJwtKeyGenerator;
+
+import org.frankframework.management.security.JwtGeneratorFactoryBean;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.integration.support.MessageBuilder;
@@ -51,7 +55,6 @@ import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.gateway.HazelcastConfig.InstanceType;
 import org.frankframework.management.gateway.events.ClusterMemberEvent;
 import org.frankframework.management.gateway.events.ClusterMemberEvent.EventType;
-import org.frankframework.management.security.JwtKeyGenerator;
 import org.frankframework.util.SpringUtils;
 
 @Log4j2
@@ -63,8 +66,11 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 	private final String requestTopicName = HazelcastConfig.REQUEST_TOPIC_NAME;
 	private ITopic<Message<?>> requestTopic;
 
-	@Autowired
-	private JwtKeyGenerator jwtGenerator;
+	private AbstractJwtKeyGenerator jwtGenerator;
+
+	public HazelcastOutboundGateway(JwtGeneratorFactoryBean keyGeneratorFactory) {
+		this.jwtGenerator = keyGeneratorFactory.getObject();
+	}
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
