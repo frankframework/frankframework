@@ -25,6 +25,7 @@
       "dom",
       "DOM.Iterable",
     ],
+    "types": ["jasmine"], // explicitly including types avoids NodeJS pollution of globalThis
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
