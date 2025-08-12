@@ -16,10 +16,9 @@
 package org.frankframework.extensions.aspose.services.conv.impl.convertors;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.OutputStream;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -40,6 +39,7 @@ import com.aspose.pdf.SaveFormat;
 import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
 import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.LogUtil;
 
 /**
@@ -84,10 +84,9 @@ public class PdfImageConvertor extends AbstractConvertor {
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
 
-		File tmpImageFile = null;
-		com.aspose.imaging.Image image = null;
 		try (Document doc = new Document()) {
-			Page page = doc.getPages().add();
+			Page page = doc.getPages().add(); // Don't close this!?
+
 			// Set borders on 0.5cm.
 			float marginInCm = 0.0f;
 			page.getPageInfo().getMargin().setTop(PageConvertUtil.convertCmToPoints(marginInCm));
@@ -95,48 +94,19 @@ public class PdfImageConvertor extends AbstractConvertor {
 			page.getPageInfo().getMargin().setLeft(PageConvertUtil.convertCmToPoints(marginInCm));
 			page.getPageInfo().getMargin().setRight(PageConvertUtil.convertCmToPoints(marginInCm));
 
-			// Temporary file (because first we need to get image information (the size) and than load it into
-			// the pdf. The image itself can not be loaded into the pdf because it will be blurred with orange.
-			tmpImageFile = UniqueFileGenerator.getUniqueFile(configuration.getPdfOutputLocation(), this.getClass().getSimpleName(), mediaType.getSubtype());
+			com.aspose.imaging.Image image = null;
 			try(InputStream is = message.asInputStream()) {
 				image = com.aspose.imaging.Image.load(is);
-			}
-			if(mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
-				TiffFrame[] frames = ((TiffImage)image).getFrames();
-				try(PngOptions pngOptions = new PngOptions()) {
-					for(int i=0; i<frames.length;i++) {
-						Image pdfImage = new Image();
-						frames[i].save(tmpImageFile.getAbsolutePath()+i, pngOptions);
-						pdfImage.setFile(tmpImageFile.getAbsolutePath()+i);
-						page.getParagraphs().add(pdfImage);
-					}
+				if(mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
+					handleTiff((TiffImage) image, page);
+				} else {
+					handleImage(message, image, page, marginInCm);
 				}
-			} else {
-				try(InputStream is = message.asInputStream()) {
-					Files.copy(is, tmpImageFile.toPath());
+			} finally {
+				if (image != null) {
+					image.close();
+					image = null;
 				}
-				BufferedImage bufferedImage = ImageExtensions.toJava(image);
-				LOGGER.debug("Image info height:{} width:{}", bufferedImage::getHeight, bufferedImage::getWidth);
-
-				float maxImageWidthInPoints = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_WIDHT_IN_CM - NUMBER_OF_MARGINS * marginInCm);
-				float maxImageHeightInPoints = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_HEIGTH_IN_CM - NUMBER_OF_MARGINS * marginInCm);
-
-				float scaleWidth = maxImageWidthInPoints / bufferedImage.getWidth();
-				float scaleHeight = maxImageHeightInPoints / bufferedImage.getHeight();
-
-				// Get the smallest scale factor so it will fit on the paper.
-				float scaleFactor = Math.min(scaleWidth, scaleHeight);
-				if (scaleFactor > NO_SCALE_FACTOR) {
-					scaleFactor = NO_SCALE_FACTOR;
-				}
-				Image pdfImage = new Image();
-				pdfImage.setFile(tmpImageFile.getAbsolutePath());
-
-				// do not set scale if the image type is tiff
-				if (!mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
-					pdfImage.setImageScale(scaleFactor);
-				}
-				page.getParagraphs().add(pdfImage);
 			}
 
 			long startTime = System.currentTimeMillis();
@@ -144,22 +114,48 @@ public class PdfImageConvertor extends AbstractConvertor {
 			long endTime = System.currentTimeMillis();
 			LOGGER.info("Conversion(save operation in convert method) takes  ::: {} ms", () -> (endTime - startTime));
 			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
+		}
+	}
 
-		} finally {
-			// Delete always the temporary file.
-			if(mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
-				int length = ((TiffImage)image).getFrames().length;
-				for(int i=0; i<length; i++) {
-					Files.delete(Paths.get(tmpImageFile.getAbsolutePath()+i));
+	private void handleImage(Message message, com.aspose.imaging.Image image, Page page, float marginInCm) throws IOException {
+		BufferedImage bufferedImage = ImageExtensions.toJava(image);
+		LOGGER.debug("Image info height:{} width:{}", bufferedImage::getHeight, bufferedImage::getWidth);
+
+		float maxImageWidthInPoints = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_WIDHT_IN_CM - NUMBER_OF_MARGINS * marginInCm);
+		float maxImageHeightInPoints = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_HEIGTH_IN_CM - NUMBER_OF_MARGINS * marginInCm);
+
+		float scaleWidth = maxImageWidthInPoints / bufferedImage.getWidth();
+		float scaleHeight = maxImageHeightInPoints / bufferedImage.getHeight();
+
+		// Get the smallest scale factor so it will fit on the paper.
+		float scaleFactor = Math.min(scaleWidth, scaleHeight);
+		if (scaleFactor > NO_SCALE_FACTOR) {
+			scaleFactor = NO_SCALE_FACTOR;
+		}
+
+		Image pdfImage = new Image();
+		try (InputStream is = message.asInputStream()) {
+			pdfImage.setImageStream(is);
+		}
+
+		pdfImage.setImageScale(scaleFactor);
+		page.getParagraphs().add(pdfImage);
+	}
+
+	private void handleTiff(TiffImage tiffImage, Page page) throws IOException {
+		TiffFrame[] frames = tiffImage.getFrames();
+		try(PngOptions pngOptions = new PngOptions()) {
+			for (TiffFrame tiffFrame : frames) {
+				MessageBuilder messageBuilder = new MessageBuilder();
+				try (OutputStream out = messageBuilder.asOutputStream()) {
+					tiffFrame.save(out, pngOptions);
 				}
-			}
 
-			if (image != null) {
-				image.close();
-			}
-
-			if (tmpImageFile != null) {
-				Files.deleteIfExists(tmpImageFile.toPath());
+				Image pdfImage = new Image();
+				try (Message imgMessage = messageBuilder.build(); InputStream is = imgMessage.asInputStream()) {
+					pdfImage.setImageStream(is);
+					page.getParagraphs().add(pdfImage);
+				}
 			}
 		}
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2024 WeAreFrank!
+   Copyright 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	private static final String REGEX_TIMESTAMP_IGNORE = "(?<=Timestamp:).*(?=\" n)";
 	private static final String[] REGEX_IGNORES = {REGEX_PATH_IGNORE, REGEX_TIMESTAMP_IGNORE};
 
-        //note: this test does not work on ARM64 MacOS. No clue why, but we do not really need it
+	// Note: this test does not work on ARM64 MacOS. No clue why, but we do not really need it
 	@BeforeAll
 	public static void setup() {
 		assumeFalse(TestAssertions.isTestRunningOnARM());
@@ -116,11 +116,11 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 		MatchUtils.assertXmlEquals("Conversion XML does not match", applyIgnores(expected), applyIgnores(documentMetadata), true);
 
-		//Get document for path
+		// Get document for path
 		Pattern convertedDocumentPattern = Pattern.compile(REGEX_PATH_IGNORE);
 		Matcher convertedDocumentMatcher = convertedDocumentPattern.matcher(documentMetadata);
 
-		if(convertedDocumentMatcher.find()) { //Find converted document location
+		if(convertedDocumentMatcher.find()) { // Find converted document location
 			String convertedFilePath = convertedDocumentMatcher.group();
 			log.debug("found converted file [{}]", convertedFilePath);
 
@@ -160,7 +160,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	@Nonnull
 	private static PDFUtil createPdfUtil(CompareMode compareMode) throws IOException {
 		PDFUtil pdfUtil = new PDFUtil();
-		//remove Aspose evaluation copy information
+		// Remove Aspose evaluation copy information
 		pdfUtil.excludeText(
 				"(Created with an evaluation copy of Aspose.([a-zA-Z]+). To discover the full versions of our APIs please visit: https:\\/\\/products.aspose.com\\/([a-zA-Z]+)\\/)",
 				"Evaluation Only. Created with Aspose\\.\\w+\\. Copyright \\d{4}-\\d{4} Aspose Pty Ltd."
@@ -168,7 +168,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		pdfUtil.enableLog();
 		pdfUtil.setCompareMode(compareMode);
 		if (compareMode == CompareMode.VISUAL_MODE) {
-			pdfUtil.setAllowedRGBDeviation(2d); //In percents, diff is between RGB values
+			pdfUtil.setAllowedRGBDeviation(2d); // In percents, diff is between RGB values
 			pdfUtil.highlightPdfDifference(true);
 			pdfUtil.setImageDestinationPath(getTargetTestDirectory());
 		}
@@ -375,6 +375,15 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	@Test
 	public void tiff2Pdf() throws Exception {
 		expectSuccessfulConversion("Tiff2Pdf", "/PdfPipe/tiff.tiff", "/PdfPipe/xml-results/tiff.xml", "/PdfPipe/results/tiff.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
+	}
+
+	@Test
+	public void multipageTiff2Pdf() throws Exception {
+		expectSuccessfulConversion("Tiff2Pdf", "/PdfPipe/multipage_tiff.tif", "/PdfPipe/xml-results/multipage_tif.xml", "/PdfPipe/results/multipage_tif.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
