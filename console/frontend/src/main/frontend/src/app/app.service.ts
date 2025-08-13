@@ -210,7 +210,7 @@ export type ClusterMember = {
   };
 };
 
-export type AppConstants = Record<string, string | number | boolean | object>;
+export type AppConstants = Record<string, string>;
 export type ServerErrorResponse = {
   status: string;
   error: string;
@@ -273,8 +273,7 @@ export class AppService {
   });
 
   private _appConstants: WritableSignal<AppConstants> = signal({
-    //How often the interactive frontend should poll the FF API for new data
-    'console.pollerInterval': 10_000,
+    'console.pollerInterval': '10000',
   });
 
   private lastUpdated = 0;

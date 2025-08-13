@@ -1,0 +1,32 @@
+<div>
+  <h2>
+    {{ name() }}
+    <small class="m-l-sm">&nbsp;({{ properties().length }})</small>
+  </h2>
+  <table class="table">
+    <thead>
+      <tr>
+        <td><strong>Property</strong></td>
+        <td><strong>Value</strong></td>
+      </tr>
+    </thead>
+    <tbody>
+      @for (prop of properties() | orderby: 'key'; track prop.key) {
+        <tr>
+          <td class="col-lg-3">{{ prop.key }}</td>
+          <td class="col-lg-9">{{ prop.value }}</td>
+        </tr>
+      } @empty {
+        @if (this.searchFilter() === '') {
+          <tr>
+            <td colspan="2">No properties found</td>
+          </tr>
+        } @else {
+          <tr>
+            <td colspan="2">No variables found matching '{{ searchFilter() }}'</td>
+          </tr>
+        }
+      }
+    </tbody>
+  </table>
+</div>
