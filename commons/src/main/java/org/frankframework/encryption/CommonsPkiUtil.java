@@ -86,8 +86,8 @@ public class CommonsPkiUtil {
 			while (aliases.hasMoreElements()) {
 				String alias = aliases.nextElement();
 				log.info("found alias [{}]", alias);
-				Certificate trustedcert = keystore.getCertificate(alias);
-				if (trustedcert instanceof X509Certificate cert) {
+				Certificate trustedCert = keystore.getCertificate(alias);
+				if (trustedCert instanceof X509Certificate cert) {
 					log.info("  Subject DN: {}", cert.getSubjectX500Principal().getName());
 					log.info("  Signature Algorithm: {}", cert.getSigAlgName());
 					log.info("  Valid from: {}", cert.getNotBefore());
