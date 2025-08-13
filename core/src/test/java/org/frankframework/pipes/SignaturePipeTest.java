@@ -16,13 +16,12 @@ import java.util.Arrays;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.X509KeyManager;
 
-import org.frankframework.encryption.CommonsPkiUtil;
-
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.encryption.CommonsPkiUtil;
 import org.frankframework.encryption.EncryptionException;
 import org.frankframework.encryption.KeystoreType;
 import org.frankframework.lifecycle.LifecycleException;

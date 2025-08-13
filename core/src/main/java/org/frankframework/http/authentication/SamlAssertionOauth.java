@@ -45,8 +45,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.encryption.EncryptionException;
 import org.frankframework.encryption.CorePkiUtil;
+import org.frankframework.encryption.EncryptionException;
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.TimeProvider;
