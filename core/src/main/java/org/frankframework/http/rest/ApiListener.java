@@ -84,9 +84,17 @@ import org.frankframework.util.StringUtil;
  * <li><code>etag.cache.authalias</code></li>
  * </ul>
  *
+ * Custom pages can be added to the console (using a comma separated list, no spaces) with the following property
+ * {@code customViews.names=MyApplication}.
+ *
+ * Specify details for each view, the url is either a relative path from the web-content folder or an external url, eq. {@code http://google.com/}.
+ * {@code customViews.MyApplication.name=Custom View}
+ * {@code customViews.MyApplication.url=myWebapp}
+ *
  * @see <a href="https://swagger.io/specification/">OpenAPI Reference Specification</a>
  *
  * @ff.tip The OPTIONS verb will automatically be handled by the framework.
+ * @ff.tip Its possible to change the URL mapping from /api to /rest (or use both) for easy transitions from the RestListener.
  *
  * @author Niels Meijer
  */
