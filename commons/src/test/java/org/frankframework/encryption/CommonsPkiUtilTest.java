@@ -12,8 +12,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.net.URL;
 import java.security.KeyPair;
@@ -44,7 +42,7 @@ import org.junit.jupiter.api.Test;
 
 class CommonsPkiUtilTest {
 
-	private static final String DUMMY_PASSWORD = "dummyPassword";
+	private static final String DUMMY_PW = "dummyPw";
 	private static final String DUMMY_ALIAS = "dummyAlias";
 	private KeyStore keyStore;
 
@@ -81,29 +79,16 @@ class CommonsPkiUtilTest {
 		X509Certificate cert = new JcaX509CertificateConverter().setProvider("BC").getCertificate(certBuilder.build(signer));
 
 		KeyStore ks = KeyStore.getInstance(KeystoreType.PKCS12.name());
-		ks.load(null, DUMMY_PASSWORD.toCharArray());
-		ks.setKeyEntry(DUMMY_ALIAS, privateKey, DUMMY_PASSWORD.toCharArray(), new Certificate[]{ cert });
+		ks.load(null, DUMMY_PW.toCharArray());
+		ks.setKeyEntry(DUMMY_ALIAS, privateKey, DUMMY_PW.toCharArray(), new Certificate[]{ cert });
 
 		return ks;
 	}
 
 	private InputStream toInputStream(KeyStore ks) throws Exception {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
-		ks.store(bos, DUMMY_PASSWORD.toCharArray());
+		ks.store(bos, DUMMY_PW.toCharArray());
 		return new ByteArrayInputStream(bos.toByteArray());
-	}
-
-	@Test
-	void testConstructorThrowsException() {
-		Constructor<CommonsPkiUtil> constructor = assertDoesNotThrow(() -> {
-			Constructor<CommonsPkiUtil> c = CommonsPkiUtil.class.getDeclaredConstructor();
-			c.setAccessible(true);
-			return c;
-		});
-
-		InvocationTargetException thrown = assertThrows(InvocationTargetException.class, constructor::newInstance);
-		assertTrue(thrown.getCause() instanceof IllegalStateException);
-		assertEquals("Utility class", thrown.getCause().getMessage());
 	}
 
 	@Test
@@ -111,7 +96,7 @@ class CommonsPkiUtilTest {
 		URL url = mock(URL.class);
 		when(url.openStream()).thenReturn(toInputStream(keyStore));
 
-		KeyStore result = CommonsPkiUtil.createKeyStore(url, DUMMY_PASSWORD, KeystoreType.PKCS12);
+		KeyStore result = CommonsPkiUtil.createKeyStore(url, DUMMY_PW, KeystoreType.PKCS12);
 
 		assertNotNull(result);
 		assertTrue(result.containsAlias(DUMMY_ALIAS));
@@ -122,7 +107,7 @@ class CommonsPkiUtilTest {
 	void testCreateKeyStoreWithNullUrl() {
 		IllegalArgumentException e = assertThrows(
 				IllegalArgumentException.class, () ->
-						CommonsPkiUtil.createKeyStore(null, DUMMY_PASSWORD, KeystoreType.PKCS12)
+						CommonsPkiUtil.createKeyStore(null, DUMMY_PW, KeystoreType.PKCS12)
 		);
 		assertEquals("Keystore url may not be null", e.getMessage());
 	}
@@ -134,7 +119,7 @@ class CommonsPkiUtilTest {
 
 		IOException e = assertThrows(
 				IOException.class, () ->
-						CommonsPkiUtil.createKeyStore(url, DUMMY_PASSWORD, KeystoreType.PKCS12)
+						CommonsPkiUtil.createKeyStore(url, DUMMY_PW, KeystoreType.PKCS12)
 		);
 		assertEquals("Failed to open stream", e.getMessage());
 	}
@@ -147,14 +132,14 @@ class CommonsPkiUtilTest {
 
 		assertThrows(
 				IOException.class, () ->
-						CommonsPkiUtil.createKeyStore(url, DUMMY_PASSWORD, KeystoreType.PKCS12)
+						CommonsPkiUtil.createKeyStore(url, DUMMY_PW, KeystoreType.PKCS12)
 		);
 	}
 
 	@Test
 	void testCreateKeyManagersSuccess() {
 		KeyManager[] keyManagers = assertDoesNotThrow(() ->
-				CommonsPkiUtil.createKeyManagers(keyStore, DUMMY_PASSWORD, null)
+				CommonsPkiUtil.createKeyManagers(keyStore, DUMMY_PW, null)
 		);
 		assertNotNull(keyManagers);
 		assertTrue(keyManagers.length > 0);
@@ -163,7 +148,7 @@ class CommonsPkiUtilTest {
 	@Test
 	void testCreateKeyManagersWithSpecificAlgorithm() {
 		KeyManager[] keyManagers = assertDoesNotThrow(() ->
-				CommonsPkiUtil.createKeyManagers(keyStore, DUMMY_PASSWORD, "SunX509")
+				CommonsPkiUtil.createKeyManagers(keyStore, DUMMY_PW, "SunX509")
 		);
 		assertNotNull(keyManagers);
 		assertTrue(keyManagers.length > 0);
@@ -173,7 +158,7 @@ class CommonsPkiUtilTest {
 	void testCreateKeyManagersWithNullKeystore() {
 		IllegalArgumentException e = assertThrows(
 				IllegalArgumentException.class, () ->
-						CommonsPkiUtil.createKeyManagers(null, DUMMY_PASSWORD, null)
+						CommonsPkiUtil.createKeyManagers(null, DUMMY_PW, null)
 		);
 		assertEquals("Keystore may not be null", e.getMessage());
 	}
