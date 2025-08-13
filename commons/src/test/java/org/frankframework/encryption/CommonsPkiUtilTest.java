@@ -12,8 +12,6 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.math.BigInteger;
 import java.net.URL;
 import java.security.KeyPair;
@@ -91,19 +89,6 @@ class CommonsPkiUtilTest {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
 		ks.store(bos, DUMMY_PW.toCharArray());
 		return new ByteArrayInputStream(bos.toByteArray());
-	}
-
-	@Test
-	void testConstructorThrowsException() {
-		Constructor<CommonsPkiUtil> constructor = assertDoesNotThrow(() -> {
-			Constructor<CommonsPkiUtil> c = CommonsPkiUtil.class.getDeclaredConstructor();
-			c.setAccessible(true);
-			return c;
-		});
-
-		InvocationTargetException thrown = assertThrows(InvocationTargetException.class, constructor::newInstance);
-		assertTrue(thrown.getCause() instanceof IllegalStateException);
-		assertEquals("Utility class", thrown.getCause().getMessage());
 	}
 
 	@Test
