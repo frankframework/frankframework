@@ -63,14 +63,13 @@ public class CommonsPkiUtil {
 		}
 		log.debug("Initializing trust manager");
 		if (StringUtils.isEmpty(algorithm)) {
-			algorithm = TrustManagerFactory.getDefaultAlgorithm();
 			log.debug("using default TrustManager algorithm [{}]", algorithm);
 		} else {
 			log.debug("using configured TrustManager algorithm [{}]", algorithm);
 		}
-		TrustManagerFactory tmfactory = TrustManagerFactory.getInstance(algorithm);
-		tmfactory.init(keystore);
-		return tmfactory.getTrustManagers();
+		TrustManagerFactory tmFactory = TrustManagerFactory.getInstance(StringUtils.isEmpty(algorithm) ? TrustManagerFactory.getDefaultAlgorithm() : algorithm);
+		tmFactory.init(keystore);
+		return tmFactory.getTrustManagers();
 	}
 
 	public static KeyStore createKeyStore(final URL url, final String password, KeystoreType keystoreType) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
