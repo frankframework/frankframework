@@ -18,6 +18,7 @@ package org.frankframework.encryption;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -34,8 +35,10 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Instant;
 import java.time.temporal.TemporalAmount;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.net.ssl.TrustManager;
@@ -43,7 +46,6 @@ import javax.net.ssl.X509TrustManager;
 
 import jakarta.annotation.Nonnull;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
@@ -51,11 +53,16 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.StreamUtil;
 import org.frankframework.util.TimeProvider;
 
 @Log4j2
 public class CorePkiUtil {
+
+	private static final Pattern PEM_PATTERN = Pattern.compile(
+			"(?m)^-----BEGIN ([A-Z0-9 ]+)-----\\s*$" +
+					"([A-Za-z0-9+/=\\r\\n]++)" +
+					"^-----END \\1-----\\s*$"
+	);
 
 	private CorePkiUtil() {
 		throw new IllegalStateException("Utility class");
@@ -263,11 +270,12 @@ public class CorePkiUtil {
 	}
 
 	private static byte[] loadPEM(URL resource) throws IOException {
-		InputStream in = resource.openStream();
-		String pem = StreamUtil.streamToString(in, null, "ISO_8859_1");
-		Pattern parse = Pattern.compile("(?m)(?s)^---*BEGIN.*---*$(.*)^---*END.*---*$.*");
-		String encoded = parse.matcher(pem).replaceFirst("$1");
-		return Base64.decodeBase64(encoded);
+		try (InputStream in = resource.openStream()) {
+			String pem = new String(in.readAllBytes(), StandardCharsets.ISO_8859_1);
+			Matcher m = PEM_PATTERN.matcher(pem);
+			if (!m.find()) throw new IOException("Invalid PEM format");
+			return Base64.getMimeDecoder().decode(m.group(2));
+		}
 	}
 
 	private static PrivateKey getPrivateKeyFromPem(URL resource) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {
