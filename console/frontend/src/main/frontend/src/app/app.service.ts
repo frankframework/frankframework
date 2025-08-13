@@ -139,6 +139,7 @@ export type MessageLog = {
   messageLevel: MessageLevel;
   exception?: string;
   warnings?: string[];
+  monitorsRaised?: string[];
   serverTime?: number;
   uptime?: number;
 };

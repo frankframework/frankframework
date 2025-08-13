@@ -502,6 +502,11 @@
 					<scope>runtime</scope>
 				</dependency>
 				<dependency>
+					<groupId>jakarta.activation</groupId>
+					<artifactId>jakarta.activation-api</artifactId>
+					<scope>runtime</scope>
+				</dependency>
+				<dependency>
 					<groupId>jakarta.management.j2ee</groupId>
 					<artifactId>jakarta.management.j2ee-api</artifactId>
 					<version>1.1.4</version>

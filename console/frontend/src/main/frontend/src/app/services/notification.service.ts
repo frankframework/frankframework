@@ -2,12 +2,12 @@ import { Injectable, signal, Signal, WritableSignal } from '@angular/core';
 import Tinycon from 'tinycon';
 
 export type Notification = {
+  id: number;
   icon: string;
   title: string;
   message: string | boolean;
   fn: (() => void) | boolean;
   time: number;
-  id?: number;
 };
 
 @Injectable({
@@ -33,6 +33,7 @@ export class NotificationService {
 
   add(icon: string, title: string, message?: string | boolean, function_?: () => void): void {
     const newNotification: Notification = {
+      id: -1,
       icon: icon,
       title: title,
       message: message ?? false,

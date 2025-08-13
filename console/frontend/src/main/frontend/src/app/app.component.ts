@@ -373,6 +373,10 @@ export class AppComponent implements OnInit, OnDestroy {
       } else if (configuration.warnings === null) {
         this.appService.removeAlerts(index);
       }
+      if (configuration.monitorsRaised) {
+        const monitorsList = configuration.monitorsRaised.join(', ');
+        this.appService.addWarning(index, `Monitors raised: ${monitorsList}`);
+      }
 
       if (existingConfiguration && configuration.messages) {
         configuration.messages = [...existingConfiguration.messages, ...configuration.messages].slice(
