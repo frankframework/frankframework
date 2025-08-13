@@ -66,6 +66,16 @@ public class BuildInfoValidator {
 		}
 	}
 
+	/**
+	 * Anti ZIP SLIP
+	 * Validate that the ZipEntry name does not contain directory traversal or absolute path elements.
+	 * Name may not contain {@literal ..}, {@literal /} or {@literal \}. Since the slashes are taken care of
+	 * by the {@link FilenameUtils#getName(String)} method, we only check for double-dots.
+	 */
+	private static boolean isValidZipEntryName(String entryName) {
+		return StringUtils.isNotBlank(entryName) && !entryName.contains("..");
+	}
+
 	private void getConfigurationInfo() throws IOException, ConfigurationException {
 		try (JarInputStream jarInputStream = new JarInputStream(getJar())) {
 			configInfo = parseManifest(jarInputStream);
@@ -85,6 +95,11 @@ public class BuildInfoValidator {
 		while ((zipEntry = jarInputStream.getNextJarEntry()) != null) {
 			if (!zipEntry.isDirectory()) {
 				String entryName = zipEntry.getName();
+				if (!isValidZipEntryName(entryName)) {
+					log.warn("skipping invalid zip entry [{}]", entryName);
+					continue;
+				}
+
 				String fileName = FilenameUtils.getName(entryName);
 
 				if(buildInfoFilename.equals(fileName)) {

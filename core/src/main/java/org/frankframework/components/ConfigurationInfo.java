@@ -85,7 +85,6 @@ public class ConfigurationInfo {
 		try {
 			return DateFormatUtils.parseToInstant(timestamp, BUILDINFO_PROPERTIES_FORMATTER);
 		} catch (DateTimeParseException dpe1) {
-			dpe1.printStackTrace();
 			try {
 				return DateFormatUtils.parseGenericDate(timestamp);
 			} catch (DateTimeParseException dpe2) {
@@ -125,6 +124,11 @@ public class ConfigurationInfo {
 	}
 
 	public String getLegacyVersion() {
+		if (timestamp == null) {
+			return version.toString();
+		}
+
+		// Need to think of a new format to use, either way we cannot use [BUILDINFO_PROPERTIES_FORMATTER] because that contains seconds
 		DateTimeFormatter format = DateTimeFormatter
 				.ofPattern("yyyyMMdd-HHmm")
 				.withZone(ZoneOffset.UTC)
