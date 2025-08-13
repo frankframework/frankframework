@@ -60,8 +60,9 @@ class CellsConvertor extends AbstractConvertor {
 			message.preserve(); // required for attaching the original Excel to produced PDF
 		}
 		// Convert Excel to pdf and store in result
+		Workbook workbook = null;
 		try (InputStream inputStream = message.asInputStream(charset)) {
-			Workbook workbook = new Workbook(inputStream, defaultLoadOptions);
+			workbook = new Workbook(inputStream, defaultLoadOptions);
 
 			Style style = workbook.getDefaultStyle();
 			log.debug("default font: [{}]", style.getFont());
@@ -72,6 +73,10 @@ class CellsConvertor extends AbstractConvertor {
 			// Add original file as attachment to resulting pdf file.
 			PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(result.getPdfResultFile());
 			pdfAttachmentUtil.addAttachmentToPdf(message, result.getDocumentName(), FILE_TYPE_MAP.get(mediaType));
+		} finally {
+			if (workbook != null) {
+				workbook.dispose();
+			}
 		}
 	}
 
