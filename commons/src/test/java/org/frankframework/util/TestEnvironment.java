@@ -24,14 +24,14 @@ public class TestEnvironment {
 	}
 
 	@Test
-	public void getNonExistingSystemProperty() throws IOException {
+	public void getNonExistingSystemProperty() {
 		Optional<String> optional = Environment.getSystemProperty("this does not exist");
 		assertNotNull(optional);
 		assertTrue(optional.isEmpty());
 	}
 
 	@Test
-	public void getJavaHomeSystemProperty() throws IOException {
+	public void getJavaHomeSystemProperty() {
 		Optional<String> optional = Environment.getSystemProperty("JAVA_HOME");
 		assertNotNull(optional);
 		assertTrue(optional.isPresent());
