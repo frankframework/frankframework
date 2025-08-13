@@ -28,6 +28,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -269,7 +270,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		}
 	}
 
-
+	@Nullable // Perhaps this is not preferred?
 	private String determineFilename(Message input, ParameterValueList pvl) throws FileSystemException {
 		if (StringUtils.isNotEmpty(getFilename())) {
 			return getFilename();
