@@ -22,6 +22,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.frankframework.util.AdditionalStringResolver;
+import org.frankframework.util.Environment;
 import org.frankframework.util.StringResolver;
 import org.frankframework.util.StringUtil;
 
@@ -68,11 +69,14 @@ public class CredentialResolver implements AdditionalStringResolver {
 
 	private static boolean mayExpandAuthAlias(String aliasName, Map<?, ?> props1) {
 		if (authAliasesAllowedToExpand==null) {
-			String property = System.getProperty(CREDENTIAL_EXPANSION_ALLOWING_PROPERTY,"").trim();
-			if(StringResolver.needsResolution(property)) {
-				property = StringResolver.substVars(property, props1);
+			Optional<String> optional = Environment.getSystemProperty(CREDENTIAL_EXPANSION_ALLOWING_PROPERTY);
+			if (optional.isPresent()) {
+				String property = optional.get().trim();
+				if(StringResolver.needsResolution(property)) {
+					property = StringResolver.substVars(property, props1);
+				}
+				authAliasesAllowedToExpand = new HashSet<>(Arrays.asList(property.split(",")));
 			}
-			authAliasesAllowedToExpand = new HashSet<>(Arrays.asList(property.split(",")));
 		}
 		return authAliasesAllowedToExpand.contains(aliasName);
 	}
