@@ -42,7 +42,7 @@ import org.frankframework.encryption.AuthSSLContextFactory;
 import org.frankframework.encryption.EncryptionException;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.KeystoreType;
-import org.frankframework.encryption.PkiUtil;
+import org.frankframework.encryption.CorePkiUtil;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
@@ -113,14 +113,14 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 		switch (getAction()) {
 			case SIGN:
 				try {
-					privateKey = PkiUtil.getPrivateKey(this);
+					privateKey = CorePkiUtil.getPrivateKey(this);
 				} catch (EncryptionException e) {
 					throw new LifecycleException("unable to get private key for action [" + getAction() + "]", e);
 				}
 				break;
 			case VERIFY:
 				try {
-					publicKey = PkiUtil.getPublicKey(PkiUtil.keyStoreAsTrustStore(this));
+					publicKey = CorePkiUtil.getPublicKey(CorePkiUtil.keyStoreAsTrustStore(this));
 				} catch (EncryptionException e) {
 					throw new LifecycleException("unable to get public key for action [" + getAction() + "]", e);
 				}
