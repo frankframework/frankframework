@@ -54,6 +54,7 @@ public class TestServerStatistics extends BusTestBase {
 		assertThat(result, containsString("{\"errorStoreCount\":0")); //No errors in the IbisStore
 		assertThat(result, containsString("\"totalErrorStoreCount\":0"));
 		assertThat(result, containsString("\"messages\":[{\"date\":")); //Messages object with an Array with Objects
+		assertThat(result, not(containsString("\"monitorsRaised\":\"")));
 	}
 
 	/**
