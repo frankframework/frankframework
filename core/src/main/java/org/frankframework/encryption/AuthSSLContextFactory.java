@@ -119,7 +119,7 @@ public class AuthSSLContextFactory {
 				CredentialFactory keystoreCf = new CredentialFactory(keystoreOwner.getKeystoreAuthAlias(), null, keystoreOwner.getKeystorePassword());
 				KeyStore keystore;
 				try {
-					keystore = PkiUtil.createKeyStore(keystoreUrl, keystoreCf.getPassword(), keystoreOwner.getKeystoreType());
+					keystore = CommonsPkiUtil.createKeyStore(keystoreUrl, keystoreCf.getPassword(), keystoreOwner.getKeystoreType());
 				} catch (GeneralSecurityException e) {
 					throw new GeneralSecurityException("unable to create keystore for certificate chain", e);
 				}
@@ -131,7 +131,7 @@ public class AuthSSLContextFactory {
 				if (StringUtils.isNotEmpty(keystoreOwner.getKeystoreAlias())) {
 					keymanagers = new KeyManager[] {KeyManagerUtils.createClientKeyManager(keystore, keystoreOwner.getKeystoreAlias(), keystoreAliasCf.getPassword())};
 				} else {
-					keymanagers = PkiUtil.createKeyManagers(keystore, keystoreAliasCf.getPassword(), keystoreOwner.getKeyManagerAlgorithm());
+					keymanagers = CommonsPkiUtil.createKeyManagers(keystore, keystoreAliasCf.getPassword(), keystoreOwner.getKeyManagerAlgorithm());
 				}
 			}
 
@@ -140,13 +140,13 @@ public class AuthSSLContextFactory {
 			if (truststoreUrl != null) {
 				CredentialFactory truststoreCf  = new CredentialFactory(truststoreOwner.getTruststoreAuthAlias(),  null, truststoreOwner.getTruststorePassword());
 				try {
-					truststore = PkiUtil.createKeyStore(truststoreUrl, truststoreCf.getPassword(), truststoreOwner.getTruststoreType());
+					truststore = CommonsPkiUtil.createKeyStore(truststoreUrl, truststoreCf.getPassword(), truststoreOwner.getTruststoreType());
 				} catch (GeneralSecurityException e) {
 					throw new GeneralSecurityException("unable to create truststore", e);
 				}
 
-				String algorithm = truststoreOwner != null ? truststoreOwner.getTrustManagerAlgorithm() : null;
-				trustmanagers = PkiUtil.createTrustManagers(truststore, algorithm);
+				String algorithm = truststoreOwner.getTrustManagerAlgorithm();
+				trustmanagers = CommonsPkiUtil.createTrustManagers(truststore, algorithm);
 			}
 
 			if (allowSelfSignedCertificates) {

@@ -16,6 +16,8 @@ import java.util.Arrays;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.X509KeyManager;
 
+import org.frankframework.encryption.CommonsPkiUtil;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
@@ -23,7 +25,6 @@ import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.encryption.EncryptionException;
 import org.frankframework.encryption.KeystoreType;
-import org.frankframework.encryption.PkiUtil;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.pipes.SignaturePipe.Action;
@@ -50,8 +51,8 @@ public class SignaturePipeTest extends PipeTestBase<SignaturePipe> {
 
 		URL pfxURL = ClassLoaderUtils.getResourceURL(pfxCertificate);
 		assertNotNull(pfxURL, "PFX file not found");
-		KeyStore keystore = PkiUtil.createKeyStore(pfxURL, pfxPassword, KeystoreType.PKCS12);
-		KeyManager[] keymanagers = PkiUtil.createKeyManagers(keystore, pfxPassword, null);
+		KeyStore keystore = CommonsPkiUtil.createKeyStore(pfxURL, pfxPassword, KeystoreType.PKCS12);
+		KeyManager[] keymanagers = CommonsPkiUtil.createKeyManagers(keystore, pfxPassword, null);
 		if (keymanagers==null || keymanagers.length==0) {
 			fail("No keymanager found in PFX file ["+pfxCertificate+"]");
 		}
