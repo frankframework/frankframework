@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Build-Jdk-Spec: 21
+Class-Path: commons-lang3-3.17.0.jar
+Implementation-Title: Configuration_Template
+Implementation-Version: 0.0.1-SNAPSHOT
+Implementation-Vendor: FrankFramework!
+Artifact-Id: jar-configuration
+Build-Timestamp: 2025-08-09 12:03
+Created-By: Maven Integration for Eclipse
+Description: FrankFramework! ConfigurationJar
+FrankFramework-Version: 9.2.0
+Group-Id: org.frankframework
+Project-URL: 
+
