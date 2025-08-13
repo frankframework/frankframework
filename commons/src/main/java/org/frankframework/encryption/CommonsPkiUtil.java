@@ -48,12 +48,11 @@ public class CommonsPkiUtil {
 		}
 		log.debug("Initializing key manager");
 		if (StringUtils.isEmpty(algorithm)) {
-			algorithm = KeyManagerFactory.getDefaultAlgorithm();
 			log.debug("using default KeyManager algorithm [{}]", algorithm);
 		} else {
 			log.debug("using configured KeyManager algorithm [{}]", algorithm);
 		}
-		KeyManagerFactory kmfactory = KeyManagerFactory.getInstance(algorithm);
+		KeyManagerFactory kmfactory = KeyManagerFactory.getInstance(StringUtils.isEmpty(algorithm) ? KeyManagerFactory.getDefaultAlgorithm() : algorithm);
 		kmfactory.init(keystore, password != null ? password.toCharArray() : null);
 		return kmfactory.getKeyManagers();
 	}
