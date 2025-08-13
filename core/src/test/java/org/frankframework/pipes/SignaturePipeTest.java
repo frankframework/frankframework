@@ -16,6 +16,8 @@ import java.util.Arrays;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.X509KeyManager;
 
+import org.frankframework.encryption.CommonsPkiUtil;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 
