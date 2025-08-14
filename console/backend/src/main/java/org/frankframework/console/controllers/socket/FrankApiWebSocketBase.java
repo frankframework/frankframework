@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -97,6 +97,10 @@ public class FrankApiWebSocketBase implements InitializingBean, ApplicationListe
 		}
 
 		String stringResponse = ResponseUtils.parseAsString(response);
+		if (stringResponse == null) {
+			throw new IllegalStateException("no response found");
+		}
+
 		String cacheTopic = customTopic != null ? customTopic : builder.getTopic().name();
 		return convertMessageToDiff(target, cacheTopic, stringResponse);
 	}

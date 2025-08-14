@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ import java.util.zip.ZipInputStream;
 
 import jakarta.annotation.security.RolesAllowed;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
@@ -71,13 +71,13 @@ public class TestPipeline {
 
 		String fileEncoding = Optional.ofNullable(model.encoding).orElse(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 
-		String message;
+		String inputMessage;
 
 		if (model.file != null) {
 			String fileNameOrPath = model.file.getOriginalFilename();
 			String fileName = Paths.get(fileNameOrPath).getFileName().toString();
 
-			if (StringUtils.endsWithIgnoreCase(fileName, ".zip")) {
+			if (Strings.CI.endsWith(fileName, ".zip")) {
 				try {
 					InputStream file = model.file.getInputStream();
 					String zipResults = processZipFile(file, builder);
@@ -88,7 +88,7 @@ public class TestPipeline {
 			} else {
 				try {
 					InputStream file = model.file.getInputStream();
-					message = XmlEncodingUtils.readXml(file, fileEncoding);
+					inputMessage = XmlEncodingUtils.readXml(file, fileEncoding);
 				} catch (UnsupportedEncodingException e) {
 					throw new ApiException("unsupported file encoding [" + fileEncoding + "]");
 				} catch (IOException e) {
@@ -96,13 +96,13 @@ public class TestPipeline {
 				}
 			}
 		} else {
-			message = RequestUtils.resolveStringWithEncoding("message", model.message, fileEncoding, false);
+			inputMessage = RequestUtils.resolveStringWithEncoding("message", model.message, fileEncoding, false);
 		}
 
-		builder.setPayload(message);
+		builder.setPayload(inputMessage);
 		Message<?> response = frankApiService.sendSyncMessage(builder);
 		String state = BusMessageUtils.getHeader(response, MessageBase.STATE_KEY);
-		return testPipelineResponse(ResponseUtils.convertPayload(response.getPayload()), state, message);
+		return testPipelineResponse(ResponseUtils.parseAsString(response), state, inputMessage);
 	}
 
 	private ResponseEntity<TestPipeLineResponse> testPipelineResponse(String payload) {
