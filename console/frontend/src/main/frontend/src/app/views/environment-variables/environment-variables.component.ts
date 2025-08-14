@@ -4,14 +4,13 @@ import { KeyValue } from '@angular/common';
 import { TabListComponent } from '../../components/tab-list/tab-list.component';
 import { FormsModule } from '@angular/forms';
 import { VariablesFilterPipe } from '../../pipes/variables-filter.pipe';
-import { OrderByPipe } from '../../pipes/orderby.pipe';
 import { EnvironmentVariablesTableComponent } from './environment-variables-table/environment-variables-table.component';
 
 export type KeyValueProperty = KeyValue<string, string>;
 
 @Component({
   selector: 'app-environment-variables',
-  imports: [TabListComponent, FormsModule, VariablesFilterPipe, OrderByPipe, EnvironmentVariablesTableComponent],
+  imports: [TabListComponent, FormsModule, VariablesFilterPipe, EnvironmentVariablesTableComponent],
   templateUrl: './environment-variables.component.html',
   styleUrls: ['./environment-variables.component.scss'],
 })

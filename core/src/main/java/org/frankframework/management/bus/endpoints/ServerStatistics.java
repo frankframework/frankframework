@@ -47,6 +47,8 @@ import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.JsonMessage;
+import org.frankframework.monitoring.Monitor;
+import org.frankframework.monitoring.MonitorManager;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
@@ -85,7 +87,7 @@ public class ServerStatistics extends BusEndpointBase {
 		returnMap.put("dtap.side", dtapSide);
 
 		String upn = BusMessageUtils.getUserPrincipalName();
-		if(upn != null && !"anonymousUser".equals(upn)) {
+		if (upn != null && !"anonymousUser".equals(upn)) {
 			returnMap.put("userName", upn);
 		}
 
@@ -96,7 +98,7 @@ public class ServerStatistics extends BusEndpointBase {
 		fileSystem.put("freeSpace", getFileSystemFreeSpace());
 		returnMap.put("fileSystem", fileSystem);
 		returnMap.put("processMetrics", ProcessMetrics.toMap());
-		returnMap.put("machineName" , Misc.getHostname());
+		returnMap.put("machineName", Misc.getHostname());
 
 		ZonedDateTime zonedDateTime = TimeProvider.nowAsZonedDateTime();
 		returnMap.put("serverTime", zonedDateTime.toInstant().toEpochMilli());
@@ -121,8 +123,8 @@ public class ServerStatistics extends BusEndpointBase {
 		try {
 			File systemDir = getSystemDir();
 			return systemDir.getTotalSpace();
-		} catch ( SecurityException e ) {
-			log.debug("Caught Exception",e);
+		} catch (SecurityException e) {
+			log.debug("Caught Exception", e);
 			return null;
 		}
 	}
@@ -131,8 +133,8 @@ public class ServerStatistics extends BusEndpointBase {
 		try {
 			File systemDir = getSystemDir();
 			return systemDir.getFreeSpace();
-		} catch ( SecurityException e ) {
-			log.debug("Caught Exception",e);
+		} catch (SecurityException e) {
+			log.debug("Caught Exception", e);
 			return null;
 		}
 	}
@@ -149,14 +151,14 @@ public class ServerStatistics extends BusEndpointBase {
 		MessageEventListener eventListener = getBean("MessageEventListener", MessageEventListener.class);
 
 		long totalErrorStoreCount = 0;
-		if(!showCountErrorStore)
+		if (!showCountErrorStore)
 			totalErrorStoreCount = -1;
 
 		for (Configuration configuration : getIbisManager().getConfigurations()) {
 			Map<String, Object> configurationsMap = new HashMap<>();
 
 			// Configuration specific exceptions
-			if (configuration.getConfigurationException()!=null) {
+			if (configuration.getConfigurationException() != null) {
 				String message = configuration.getConfigurationException().getMessage();
 				configurationsMap.put("exception", message);
 			}
@@ -166,7 +168,7 @@ public class ServerStatistics extends BusEndpointBase {
 				if (showCountErrorStore) {
 					long esr = 0;
 					for (Adapter adapter : configuration.getRegisteredAdapters()) {
-						for (Receiver<?> receiver: adapter.getReceivers()) {
+						for (Receiver<?> receiver : adapter.getReceivers()) {
 							IMessageBrowser<?> errorStorage = receiver.getMessageBrowser(ProcessState.ERROR);
 							if (errorStorage != null) {
 								try {
@@ -184,17 +186,30 @@ public class ServerStatistics extends BusEndpointBase {
 
 				// Configuration specific warnings
 				ConfigurationWarnings configWarns = configuration.getConfigurationWarnings();
-				if(configWarns != null && !configWarns.isEmpty()) {
+				if (configWarns != null && !configWarns.isEmpty()) {
 					configurationsMap.put("warnings", configWarns.getWarnings());
 				}
 
 				// Configuration specific messages
 				MessageKeeper messageKeeper = eventListener.getMessageKeeper(configuration.getName());
-				if(messageKeeper != null) {
+				if (messageKeeper != null) {
 					List<Object> messages = mapMessageKeeperMessages(messageKeeper);
-					if(!messages.isEmpty()) {
+					if (!messages.isEmpty()) {
 						configurationsMap.put("messages", messages);
 					}
+				}
+
+				// Configuration specific raised monitors
+				ApplicationContext applicationContext = getConfigurationByName(configuration.getName());
+				MonitorManager monitorManager = applicationContext.getBean("monitorManager", MonitorManager.class);
+				List<String> raisedMonitors = new ArrayList<>();
+				for (Monitor monitor : monitorManager.getMonitors().values()) {
+					if (monitor.isRaised()) {
+						raisedMonitors.add(monitor.getName());
+					}
+				}
+				if (!raisedMonitors.isEmpty()) {
+					configurationsMap.put("monitorsRaised", raisedMonitors);
 				}
 			}
 
@@ -208,7 +223,7 @@ public class ServerStatistics extends BusEndpointBase {
 		ApplicationWarnings globalConfigWarnings = getBean("applicationWarnings", ApplicationWarnings.class);
 		if (!globalConfigWarnings.isEmpty()) {
 			List<Object> warnings = new ArrayList<>();
-			for (int j=0; j<globalConfigWarnings.size(); j++) {
+			for (int j = 0; j < globalConfigWarnings.size(); j++) {
 				warnings.add(globalConfigWarnings.get(j));
 			}
 			returnMap.put("warnings", warnings);
@@ -217,7 +232,7 @@ public class ServerStatistics extends BusEndpointBase {
 		// Global messages
 		MessageKeeper messageKeeper = eventListener.getMessageKeeper();
 		List<Object> messages = mapMessageKeeperMessages(messageKeeper);
-		if(!messages.isEmpty()) {
+		if (!messages.isEmpty()) {
 			returnMap.put("messages", messages);
 		}
 
@@ -247,13 +262,13 @@ public class ServerStatistics extends BusEndpointBase {
 	}
 
 	private String getApplicationServer(ApplicationContext ac) {
-		if(ac instanceof WebApplicationContext context) {
+		if (ac instanceof WebApplicationContext context) {
 			ServletContext sc = context.getServletContext();
-			if(sc != null) {
+			if (sc != null) {
 				return sc.getServerInfo();
 			}
 		}
-		if(ac.getParent() != null) {
+		if (ac.getParent() != null) {
 			return getApplicationServer(ac.getParent());
 		}
 		return "unknown";

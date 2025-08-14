@@ -92,3 +92,4 @@ NOTICE
 site.webmanifest
 .patch
 .http
+.importorder
