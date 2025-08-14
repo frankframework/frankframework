@@ -133,7 +133,7 @@ public class TestPipeline extends BusEndpointBase {
 
 			try {
 				org.frankframework.stream.Message message = org.frankframework.stream.Message.nullMessage();
-				if (StringUtils.isNotEmpty(payload)) {
+				if (!StringUtils.isEmpty(payload)){
 					message = new org.frankframework.stream.Message(payload);
 				}
 
