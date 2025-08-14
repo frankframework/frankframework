@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
 */
 package org.frankframework.http;
 
-import java.util.Map;
-
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
@@ -24,7 +22,9 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.HasSpecialDefaultValues;
+import org.frankframework.configuration.ConfigurationWarning;
+import org.frankframework.core.DestinationType;
+import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
@@ -41,7 +41,15 @@ import org.frankframework.stream.Message;
  * Prepends the configured URI pattern with <code>rest/</code>. When you are writing a new Frank config, you are recommended
  * to use an {@link ApiListener} instead. You can find all serviced URI patterns
  * in the Frank!Console: main menu item Webservice, heading Available REST Services.
+ * <p>
+ * It's possible to use the ApiListener instead with the same path (/rest).
+ * Custom pages can be added to the console (using a comma separated list, no spaces) with the following property
+ * {@code customViews.names=MyApplication}.
  *
+ * Specify details for each view, the url is either a relative path from the web-content folder or an external url, eq. http://google.com/
+ * {@code customViews.MyApplication.name=Custom View}
+ * {@code customViews.MyApplication.url=myWebapp}
+ * </p>
  * <p>
  * Note:
  * Servlets' multipart configuration expects a Content-Type of <code>multipart/form-data</code> (see http://docs.oracle.com/javaee/6/api/javax/servlet/annotation/MultipartConfig.html).
@@ -50,7 +58,9 @@ import org.frankframework.stream.Message;
  * @author  Niels Meijer
  * @author  Gerrit van Brakel
  */
-public class RestListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues {
+@Deprecated(forRemoval = true, since = "9.0")
+@ConfigurationWarning("Please use the ApiListener instead")
+public class RestListener extends PushingListenerAdapter implements HasPhysicalDestination {
 
 	private final @Getter String domain = "Http";
 	private @Getter String uriPattern;
@@ -126,7 +136,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 			}
 
 			response = super.processRequest(message, session);
-			if(response != null && !response.isEmpty())
+			if(!Message.isEmpty(response))
 				eTag = response.hashCode();
 
 			if(automaticallyTransformToAndFromJson && getProduces()== MediaTypes.JSON) {
@@ -139,7 +149,7 @@ public class RestListener extends PushingListenerAdapter implements HasPhysicalD
 		}
 		else {
 			response = super.processRequest(message, session);
-			if(response != null && !response.isEmpty())
+			if(!Message.isEmpty(response))
 				eTag = response.hashCode();
 		}
 
