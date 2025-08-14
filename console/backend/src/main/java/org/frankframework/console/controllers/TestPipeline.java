@@ -72,7 +72,7 @@ public class TestPipeline {
 
 		String fileEncoding = Optional.ofNullable(model.encoding).orElse(StreamUtil.DEFAULT_INPUT_STREAM_ENCODING);
 
-		String message;
+		String inputMessage;
 
 		if (model.file != null) {
 			String fileNameOrPath = model.file.getOriginalFilename();
@@ -89,7 +89,7 @@ public class TestPipeline {
 			} else {
 				try {
 					InputStream file = model.file.getInputStream();
-					message = XmlEncodingUtils.readXml(file, fileEncoding);
+					inputMessage = XmlEncodingUtils.readXml(file, fileEncoding);
 				} catch (UnsupportedEncodingException e) {
 					throw new ApiException("unsupported file encoding [" + fileEncoding + "]");
 				} catch (IOException e) {
@@ -97,13 +97,13 @@ public class TestPipeline {
 				}
 			}
 		} else {
-			message = RequestUtils.resolveStringWithEncoding("message", model.message, fileEncoding, false);
+			inputMessage = RequestUtils.resolveStringWithEncoding("message", model.message, fileEncoding, false);
 		}
 
-		builder.setPayload(message);
+		builder.setPayload(inputMessage);
 		Message<?> response = frankApiService.sendSyncMessage(builder);
 		String state = BusMessageUtils.getHeader(response, MessageBase.STATE_KEY);
-		return testPipelineResponse(ResponseUtils.convertPayload(response.getPayload()), state, message);
+		return testPipelineResponse(ResponseUtils.parseAsString(response), state, inputMessage);
 	}
 
 	private ResponseEntity<TestPipeLineResponse> testPipelineResponse(String payload) {

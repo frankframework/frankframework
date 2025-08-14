@@ -98,6 +98,10 @@ public class FrankApiWebSocketBase implements InitializingBean, ApplicationListe
 		}
 
 		String stringResponse = ResponseUtils.parseAsString(response);
+		if (stringResponse == null) {
+			throw new IllegalStateException("no response found");
+		}
+
 		String cacheTopic = customTopic != null ? customTopic : builder.getTopic().name();
 		return convertMessageToDiff(target, cacheTopic, stringResponse);
 	}

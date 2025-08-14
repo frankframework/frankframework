@@ -15,6 +15,7 @@
 */
 package org.frankframework.management.bus.endpoints;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -47,6 +48,7 @@ import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
 import org.frankframework.management.bus.TopicSelector;
 import org.frankframework.management.bus.message.BinaryMessage;
+import org.frankframework.management.bus.message.EmptyMessage;
 import org.frankframework.management.bus.message.MessageBase;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
@@ -87,7 +89,7 @@ public class TestPipeline extends BusEndpointBase {
 
 	@ActionSelector(BusAction.UPLOAD)
 	@RolesAllowed("IbisTester")
-	public BinaryMessage runTestPipeline(Message<?> message) {
+	public MessageBase<?> runTestPipeline(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, "configuration");
 		String adapterName = BusMessageUtils.getHeader(message, "adapter");
 		Adapter adapter = getAdapterByName(configurationName, adapterName);
@@ -112,7 +114,7 @@ public class TestPipeline extends BusEndpointBase {
 	}
 
 	// Does not support async requests because receiver requests are synchronous
-	private BinaryMessage processMessage(Adapter adapter, String payload, Map<String, String> threadContext, boolean expectsReply) {
+	private MessageBase<?> processMessage(Adapter adapter, String payload, Map<String, String> threadContext, boolean expectsReply) {
 		String messageId = MessageUtils.generateMessageId("testmessage");
 		try (PipeLineSession pls = new PipeLineSession()) {
 			// Make sure the pipeline session has a security handler
@@ -139,17 +141,24 @@ public class TestPipeline extends BusEndpointBase {
 
 				PipeLineResult plr = adapter.processMessageDirect(messageId, message, pls);
 
-				if(!expectsReply) {
-					return null; // Abort here, we do not need a reply.
-				}
-
-				BinaryMessage response = new BinaryMessage(plr.getResult().asInputStream());
-				response.setHeader(MessageBase.STATE_KEY, plr.getState().name());
-				return response;
+				// Only send a reply if we expect one, else it's wasted traffic...
+				return expectsReply ? convertPipelineResult(plr) : null;
 			} catch (Exception e) {
 				throw new BusException("an exception occurred while processing the message", e);
 			}
 		}
+	}
+
+	private MessageBase<?> convertPipelineResult(PipeLineResult plr) throws IOException {
+		final MessageBase<?> response;
+		if (org.frankframework.stream.Message.isEmpty(plr.getResult())) {
+			response = EmptyMessage.noContent();
+		} else {
+			response = new BinaryMessage(plr.getResult().asInputStream());
+		}
+
+		response.setHeader(MessageBase.STATE_KEY, plr.getState().name());
+		return response;
 	}
 
 	/**
