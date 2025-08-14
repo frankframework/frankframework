@@ -204,6 +204,9 @@
 								<testResource>
 									<directory>${iaf.rootdir}/console/frontend/src/main/frontend</directory>
 									<filtering>false</filtering>
+									<excludes>
+										<exclude>**/node_modules/**</exclude>
+									</excludes>
 									<targetPath>e2e</targetPath>
 								</testResource>
 								<!-- Copy scenarios -->
@@ -217,7 +220,7 @@
 									<targetPath>${project.build.directory}/configurations</targetPath>
 								</testResource>
 							</resources>
-							<!-- A bit hacky way to prevent this execution from running when tests are skipped. -->
+							<!-- A bit hacky way to prevent this execution from running when tests execution is skipped. -->
 							<skip>${maven.test.skip}</skip>
 						</configuration>
 					</execution>
