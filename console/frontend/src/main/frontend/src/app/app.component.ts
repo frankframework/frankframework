@@ -375,7 +375,7 @@ export class AppComponent implements OnInit, OnDestroy {
       }
       if (configuration.monitorsRaised) {
         const monitorsList = configuration.monitorsRaised.join(', ');
-        this.appService.addWarning(index, `Monitors raised: ${monitorsList}`);
+        this.appService.addException(index, `Monitors raised: ${monitorsList}`);
       }
 
       if (existingConfiguration && configuration.messages) {
