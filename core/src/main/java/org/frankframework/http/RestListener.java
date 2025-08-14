@@ -15,6 +15,8 @@
 */
 package org.frankframework.http;
 
+import java.util.Map;
+
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
@@ -23,8 +25,7 @@ import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
-import org.frankframework.core.DestinationType;
-import org.frankframework.core.DestinationType.Type;
+import org.frankframework.configuration.HasSpecialDefaultValues;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
@@ -60,7 +61,7 @@ import org.frankframework.stream.Message;
  */
 @Deprecated(forRemoval = true, since = "9.0")
 @ConfigurationWarning("Please use the ApiListener instead")
-public class RestListener extends PushingListenerAdapter implements HasPhysicalDestination {
+public class RestListener extends PushingListenerAdapter implements HasPhysicalDestination, HasSpecialDefaultValues {
 
 	private final @Getter String domain = "Http";
 	private @Getter String uriPattern;

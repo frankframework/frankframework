@@ -25,7 +25,7 @@ import java.util.zip.ZipInputStream;
 
 import jakarta.annotation.security.RolesAllowed;
 
-import org.apache.commons.lang3.Strings;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
@@ -77,7 +77,7 @@ public class TestPipeline {
 			String fileNameOrPath = model.file.getOriginalFilename();
 			String fileName = Paths.get(fileNameOrPath).getFileName().toString();
 
-			if (Strings.CI.endsWith(fileName, ".zip")) {
+			if (StringUtils.endsWith(fileName, ".zip")) {
 				try {
 					InputStream file = model.file.getInputStream();
 					String zipResults = processZipFile(file, builder);
