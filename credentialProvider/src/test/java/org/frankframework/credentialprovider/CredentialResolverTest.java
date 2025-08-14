@@ -29,6 +29,7 @@ class CredentialResolverTest {
 		properties.load(propsStream);
 		assertFalse(properties.isEmpty(), "did not find any properties!");
 
+		CredentialResolver.resetAllowedExpansions();
 		System.setProperty("authAliases.expansion.allowed", "${allowedAliases}");
 	}
 
@@ -38,6 +39,20 @@ class CredentialResolverTest {
 	@AfterAll
 	public static void tearDown() {
 		System.clearProperty("authAliases.expansion.allowed");
+	}
+
+	@Test
+	public void sillyTestToImproveAliasExpansionCoverage() {
+		System.setProperty("authAliases.expansion.allowed", "alias1");
+		String result = StringResolver.substVars("${credential:password:alias1}", properties);
+		assertEquals("password1", result);
+	}
+
+	@Test
+	public void sillyTestToWhenNoAliasExpansion() {
+		System.clearProperty("authAliases.expansion.allowed");
+		String result = StringResolver.substVars("${credential:password:alias1}", properties);
+		assertEquals("!!not allowed to expand credential of authAlias [alias1]!!", result);
 	}
 
 	@Test

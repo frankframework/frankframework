@@ -250,7 +250,7 @@ public class StringResolver {
 	}
 
 	private static Optional<String> resolveReplacement(String key, Map<?, ?> props1, Map<?, ?> props2, SubstitutionContext ctx) {
-		return Environment.getSystemProperty(key, null)
+		return Environment.getSystemProperty(key)
 				.or(() -> findInAdditionalResolvers(key, props1, props2, ctx))
 				.or(() -> getReplacementFromProps(key, props1))
 				.or(() -> getReplacementFromProps(key, props2));

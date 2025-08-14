@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,12 +16,14 @@
 package org.frankframework.credentialprovider;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
 import org.frankframework.util.AdditionalStringResolver;
+import org.frankframework.util.Environment;
 import org.frankframework.util.StringResolver;
 import org.frankframework.util.StringUtil;
 
@@ -68,13 +70,24 @@ public class CredentialResolver implements AdditionalStringResolver {
 
 	private static boolean mayExpandAuthAlias(String aliasName, Map<?, ?> props1) {
 		if (authAliasesAllowedToExpand==null) {
-			String property = System.getProperty(CREDENTIAL_EXPANSION_ALLOWING_PROPERTY,"").trim();
+			Optional<String> optional = Environment.getSystemProperty(CREDENTIAL_EXPANSION_ALLOWING_PROPERTY);
+			if (optional.isEmpty()) {
+				authAliasesAllowedToExpand = Collections.emptySet();
+				return false;
+			}
+
+			String property = optional.get().trim();
 			if(StringResolver.needsResolution(property)) {
 				property = StringResolver.substVars(property, props1);
 			}
 			authAliasesAllowedToExpand = new HashSet<>(Arrays.asList(property.split(",")));
 		}
+
 		return authAliasesAllowedToExpand.contains(aliasName);
 	}
 
+	// Only used for testing
+	protected static void resetAllowedExpansions() {
+		authAliasesAllowedToExpand = null;
+	}
 }

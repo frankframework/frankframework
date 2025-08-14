@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,6 +26,7 @@ import java.util.List;
 
 import jakarta.annotation.Nullable;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.Credentials;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -64,6 +65,11 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 
 	AbstractOauthAuthenticator(final AbstractHttpSession session) throws HttpAuthenticationException {
 		this.session = session;
+
+		if (StringUtils.isBlank(session.getTokenEndpoint())) {
+			throw new HttpAuthenticationException("no tokenEndpoint provided");
+		}
+
 		try {
 			this.authorizationEndpoint = new URI(session.getTokenEndpoint());
 		} catch (URISyntaxException e) {
