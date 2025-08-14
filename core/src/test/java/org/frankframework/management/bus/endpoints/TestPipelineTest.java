@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 import org.hamcrest.collection.IsIterableContainingInOrder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,10 +55,12 @@ public class TestPipelineTest extends BusTestBase {
 		public PipeLineResult processMessageDirect(String messageId, org.frankframework.stream.Message message, PipeLineSession session) {
 			try {
 				String action = message.asString();
-				if(action.startsWith("sessionKey")) {
+				if (StringUtils.isEmpty(action)) {
+					// Should not only be empty, but also NULL
+					assertTrue(org.frankframework.stream.Message.isNull(message));
+				} else if (action.startsWith("sessionKey")) {
 					assertEquals("sessionKeyValue", session.get("sessionKeyName"));
-				}
-				else if(action.startsWith("<?ibiscontext")) {
+				} else if (action.startsWith("<?ibiscontext")) {
 					assertEquals("piValue", session.get("piName"));
 				}
 			} catch (IOException e) {
@@ -98,7 +101,7 @@ public class TestPipelineTest extends BusTestBase {
 	@Test
 	public void testCreateContextLargeMessage() throws Exception {
 		TestPipeline tp = new TestPipeline();
-		String message = TestFileUtils.getTestFile("/test1.xml"); //File without xml declaration
+		String message = TestFileUtils.getTestFile("/test1.xml"); // File without xml declaration
 		String input = "<?ibiscontext key1=whitespace is allowed ?>"+message;
 		Map<String, String> context = tp.getSessionKeysFromPayload(input);
 		assertThat(context.keySet(), IsIterableContainingInOrder.contains("key1"));
@@ -128,6 +131,16 @@ public class TestPipelineTest extends BusTestBase {
 		assertThat(context.keySet(), IsIterableContainingInOrder.contains("key1", "key2"));
 		assertEquals("whitespace is allowed", context.get("key1"));
 		assertEquals("whitespace is allowed", context.get("key2"));
+	}
+
+	@Test
+	@WithMockUser(roles = { "IbisTester" })
+	public void testWithEmptyPayload() throws Exception {
+		MessageBuilder<String> request = createRequestMessage("", BusTopic.TEST_PIPELINE, BusAction.UPLOAD);
+		request.setHeader("configuration", getConfiguration().getName());
+		request.setHeader("adapter", TEST_PIPELINE_ADAPER_NAME);
+		Message<?> response = callSyncGateway(request);
+		assertEquals("no-content", responseToString(response.getPayload()));
 	}
 
 	@Test

@@ -860,7 +860,7 @@
 							<endWithNewline />
 							<trimTrailingWhitespace />
 							<importOrder>
-								<file>.importorder</file>
+								<file>${iaf.rootdir}/.importorder</file>
 							</importOrder>
 						</java>
 						<pom>
