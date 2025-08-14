@@ -1,6 +1,8 @@
 package org.frankframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -8,10 +10,32 @@ import java.io.InputStream;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLStreamHandler;
+import java.util.Optional;
+import java.util.Properties;
 
 import org.junit.jupiter.api.Test;
 
 public class TestEnvironment {
+
+	@Test
+	public void getEnvVars() throws IOException {
+		Properties properties = Environment.getEnvironmentVariables();
+		assertNotNull(properties.getProperty("JAVA_HOME"));
+	}
+
+	@Test
+	public void getNonExistingSystemProperty() {
+		Optional<String> optional = Environment.getSystemProperty("this does not exist");
+		assertNotNull(optional);
+		assertTrue(optional.isEmpty());
+	}
+
+	@Test
+	public void getJavaHomeSystemProperty() {
+		Optional<String> optional = Environment.getSystemProperty("JAVA_HOME");
+		assertNotNull(optional);
+		assertTrue(optional.isPresent());
+	}
 
 	@Test
 	public void normalFilesystemPath() throws Exception {

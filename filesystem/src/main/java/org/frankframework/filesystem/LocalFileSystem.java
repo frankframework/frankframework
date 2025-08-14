@@ -81,12 +81,12 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	}
 
 	@Override
-	public Path toFile(@Nullable String filename) {
+	public Path toFile(@Nullable String filename) throws FileSystemException {
 		return toFile(null, filename);
 	}
 
 	@Override
-	public Path toFile(@Nullable String folder, @Nullable String filename) {
+	public Path toFile(@Nullable String folder, @Nullable String filename) throws FileSystemException {
 		if (filename==null) {
 			filename="";
 		}
@@ -99,6 +99,9 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 				return result;
 			}
 			filename = getRoot()+ "/" + filename;
+		}
+		if (StringUtils.isEmpty(filename)) {
+			throw new FileSystemException("no filesystem-root, file or folder specified");
 		}
 		return Paths.get(filename);
 	}
