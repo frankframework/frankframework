@@ -15,7 +15,7 @@ import org.frankframework.configuration.ConfigurationException;
 
 public class AuthenticationContextFactoryTest {
 
-	private final String MULTI_KEY_KEYSTORE = "Encryption/MultiKeyKeystore.jks";
+	private static final String MULTI_KEY_KEYSTORE = "Encryption/MultiKeyKeystore.jks";
 
 	@Test
 	public void testValidateConfiguration() throws ConfigurationException {
@@ -30,7 +30,7 @@ public class AuthenticationContextFactoryTest {
 		keystoreOwner.setKeystorePassword("KeystorePW");
 		keystoreOwner.setKeystoreAlias("alias1");
 		keystoreOwner.setKeystoreAliasPassword("AliasPW1");
-		PrivateKey privateKey = PkiUtil.getPrivateKey(keystoreOwner);
+		PrivateKey privateKey = CorePkiUtil.getPrivateKey(keystoreOwner);
 		assertNotNull(privateKey);
 	}
 
@@ -57,7 +57,7 @@ public class AuthenticationContextFactoryTest {
 	}
 
 	@Test
-	public void testGetContextMultiKeyKeyStoreWrongKeystorePassword() throws Exception {
+	public void testGetContextMultiKeyKeyStoreWrongKeystorePassword()  {
 		KeystoreOwner keystoreOwner = new KeystoreOwner(MULTI_KEY_KEYSTORE);
 		keystoreOwner.setKeystoreType(KeystoreType.JKS);
 		keystoreOwner.setKeystorePassword("wrong");
@@ -67,7 +67,7 @@ public class AuthenticationContextFactoryTest {
 	}
 
 	@Test
-	public void testGetContextMultiKeyKeyStoreWrongAliasPassword() throws Exception {
+	public void testGetContextMultiKeyKeyStoreWrongAliasPassword()  {
 		KeystoreOwner keystoreOwner = new KeystoreOwner(MULTI_KEY_KEYSTORE);
 		keystoreOwner.setKeystoreType(KeystoreType.JKS);
 		keystoreOwner.setKeystorePassword("KeystorePW");

@@ -18,6 +18,7 @@ package org.frankframework.encryption;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyFactory;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
@@ -34,20 +35,17 @@ import java.security.spec.PKCS8EncodedKeySpec;
 import java.time.Instant;
 import java.time.temporal.TemporalAmount;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import javax.net.ssl.KeyManager;
-import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.TrustManager;
-import javax.net.ssl.TrustManagerFactory;
 import javax.net.ssl.X509TrustManager;
 
 import jakarta.annotation.Nonnull;
 
-import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
@@ -55,11 +53,20 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.CredentialFactory;
-import org.frankframework.util.StreamUtil;
 import org.frankframework.util.TimeProvider;
 
 @Log4j2
-public class PkiUtil {
+public class CorePkiUtil {
+
+	private static final Pattern PEM_PATTERN = Pattern.compile(
+			"(?m)^-----BEGIN ([A-Z0-9 ]+)-----\\s*$" +
+					"([A-Za-z0-9+/=\\r\\n]++)" +
+					"^-----END \\1-----\\s*$"
+	);
+
+	private CorePkiUtil() {
+		throw new IllegalStateException("Utility class");
+	}
 
 	public static HasTruststore keyStoreAsTrustStore(HasKeystore keystoreOwner) {
 		return new HasTruststore() {
@@ -151,71 +158,13 @@ public class PkiUtil {
 		};
 	}
 
-	public static KeyManager[] createKeyManagers(final KeyStore keystore, final String password, String algorithm) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException {
-		if (keystore == null) {
-			throw new IllegalArgumentException("Keystore may not be null");
-		}
-		log.debug("Initializing key manager");
-		if (StringUtils.isEmpty(algorithm)) {
-			algorithm=KeyManagerFactory.getDefaultAlgorithm();
-			log.debug("using default KeyManager algorithm [{}]", algorithm);
-		} else {
-			log.debug("using configured KeyManager algorithm [{}]", algorithm);
-		}
-		KeyManagerFactory kmfactory = KeyManagerFactory.getInstance(algorithm);
-		kmfactory.init(keystore, password != null ? password.toCharArray(): null);
-		return kmfactory.getKeyManagers();
-	}
-
-	public static TrustManager[] createTrustManagers(final KeyStore keystore, String algorithm) throws KeyStoreException, NoSuchAlgorithmException {
-		if (keystore == null) {
-			throw new IllegalArgumentException("Keystore may not be null");
-		}
-		log.debug("Initializing trust manager");
-		if (StringUtils.isEmpty(algorithm)) {
-			algorithm=TrustManagerFactory.getDefaultAlgorithm();
-			log.debug("using default TrustManager algorithm [{}]", algorithm);
-		} else {
-			log.debug("using configured TrustManager algorithm [{}]", algorithm);
-		}
-		TrustManagerFactory tmfactory = TrustManagerFactory.getInstance(algorithm);
-		tmfactory.init(keystore);
-		TrustManager[] trustmanagers = tmfactory.getTrustManagers();
-		return trustmanagers;
-	}
-
-	public static KeyStore createKeyStore(final URL url, final String password, KeystoreType keystoreType) throws KeyStoreException, NoSuchAlgorithmException, CertificateException, IOException {
-		if (url == null) {
-			throw new IllegalArgumentException("Keystore url may not be null");
-		}
-		log.info("Initializing keystore from url [{}]", url);
-		KeyStore keystore  = KeyStore.getInstance(keystoreType.name());
-		keystore.load(url.openStream(), password != null ? password.toCharArray(): null);
-		if (log.isInfoEnabled()) {
-			Enumeration<String> aliases = keystore.aliases();
-			while (aliases.hasMoreElements()) {
-				String alias = aliases.nextElement();
-				log.info("found alias [{}]", alias);
-				Certificate trustedcert = keystore.getCertificate(alias);
-				if (trustedcert != null && trustedcert instanceof X509Certificate cert) {
-					log.info("  Subject DN: {}", cert.getSubjectX500Principal().getName());
-					log.info("  Signature Algorithm: {}", cert.getSigAlgName());
-					log.info("  Valid from: {}", cert.getNotBefore());
-					log.info("  Valid until: {}", cert.getNotAfter());
-					log.info("  Issuer: {}", cert.getIssuerX500Principal().getName());
-				}
-			}
-		}
-		return keystore;
-	}
-
 	public static KeyStore createKeyStore(HasKeystore keystoreOwner) throws EncryptionException {
 		URL truststoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
 		CredentialFactory truststoreCredentialFactory = new CredentialFactory(keystoreOwner.getKeystoreAuthAlias(), null, keystoreOwner.getKeystorePassword());
 		try {
-			return PkiUtil.createKeyStore(truststoreUrl, truststoreCredentialFactory.getPassword(), keystoreOwner.getKeystoreType());
+			return CommonsPkiUtil.createKeyStore(truststoreUrl, truststoreCredentialFactory.getPassword(), keystoreOwner.getKeystoreType());
 		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
-			throw new EncryptionException("unable to open keystore ["+truststoreUrl+"]", e);
+			throw new EncryptionException("unable to open keystore [" + truststoreUrl + "]", e);
 		}
 	}
 
@@ -223,9 +172,9 @@ public class PkiUtil {
 		URL truststoreUrl = ClassLoaderUtils.getResourceURL(truststoreOwner, truststoreOwner.getTruststore());
 		CredentialFactory truststoreCredentialFactory = new CredentialFactory(truststoreOwner.getTruststoreAuthAlias(), null, truststoreOwner.getTruststorePassword());
 		try {
-			return PkiUtil.createKeyStore(truststoreUrl, truststoreCredentialFactory.getPassword(), truststoreOwner.getTruststoreType());
+			return CommonsPkiUtil.createKeyStore(truststoreUrl, truststoreCredentialFactory.getPassword(), truststoreOwner.getTruststoreType());
 		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
-			throw new EncryptionException("unable to open keystore ["+truststoreUrl+"]", e);
+			throw new EncryptionException("unable to open keystore [" + truststoreUrl + "]", e);
 		}
 	}
 
@@ -233,26 +182,26 @@ public class PkiUtil {
 		PrivateKey privateKey;
 		URL keystoreUrl = ClassLoaderUtils.getResourceURL(keystoreOwner, keystoreOwner.getKeystore());
 		try {
-			if (keystoreOwner.getKeystoreType()==KeystoreType.PEM) {
-				privateKey = PkiUtil.getPrivateKeyFromPem(keystoreUrl);
+			if (keystoreOwner.getKeystoreType() == KeystoreType.PEM) {
+				privateKey = CorePkiUtil.getPrivateKeyFromPem(keystoreUrl);
 			} else {
 				CredentialFactory keystoreCredentialFactory;
 				CredentialFactory keystoreAliasCredentialFactory;
 				keystoreCredentialFactory = new CredentialFactory(keystoreOwner.getKeystoreAuthAlias(), null, keystoreOwner.getKeystorePassword());
 				if (StringUtils.isNotEmpty(keystoreOwner.getKeystoreAliasAuthAlias()) || StringUtils.isNotEmpty(keystoreOwner.getKeystoreAliasPassword())) {
-					keystoreAliasCredentialFactory =  new CredentialFactory(keystoreOwner.getKeystoreAliasAuthAlias(), null, keystoreOwner.getKeystoreAliasPassword());
+					keystoreAliasCredentialFactory = new CredentialFactory(keystoreOwner.getKeystoreAliasAuthAlias(), null, keystoreOwner.getKeystoreAliasPassword());
 				} else {
 					keystoreAliasCredentialFactory = keystoreCredentialFactory;
 				}
-				KeyStore keystore = createKeyStore(keystoreUrl, keystoreCredentialFactory.getPassword(), keystoreOwner.getKeystoreType());
+				KeyStore keystore = CommonsPkiUtil.createKeyStore(keystoreUrl, keystoreCredentialFactory.getPassword(), keystoreOwner.getKeystoreType());
 				String password = keystoreAliasCredentialFactory.getPassword() != null ? keystoreAliasCredentialFactory.getPassword() : "";
 				privateKey = (PrivateKey) keystore.getKey(keystoreOwner.getKeystoreAlias(), password.toCharArray());
 			}
 		} catch (InvalidKeySpecException | NoSuchAlgorithmException | IOException | KeyStoreException | CertificateException | UnrecoverableKeyException e) {
-			throw new EncryptionException("cannot obtain Private Key in alias ["+keystoreOwner.getKeystoreAlias()+"] of keystore ["+keystoreOwner.getKeystore()+"]", e);
+			throw new EncryptionException("cannot obtain Private Key in alias [" + keystoreOwner.getKeystoreAlias() + "] of keystore [" + keystoreOwner.getKeystore() + "]", e);
 		}
-		if (privateKey==null) {
-			throw new EncryptionException("no Signing Key found in alias ["+keystoreOwner.getKeystoreAlias()+"] of keystore ["+keystoreOwner.getKeystore()+"]");
+		if (privateKey == null) {
+			throw new EncryptionException("no Signing Key found in alias [" + keystoreOwner.getKeystoreAlias() + "] of keystore [" + keystoreOwner.getKeystore() + "]");
 		}
 		return privateKey;
 	}
@@ -265,24 +214,24 @@ public class PkiUtil {
 		Certificate certificate;
 		URL truststoreUrl = ClassLoaderUtils.getResourceURL(truststoreOwner, truststoreOwner.getTruststore());
 		try {
-			if (truststoreOwner.getTruststoreType()==KeystoreType.PEM) {
-				certificate = PkiUtil.getCertificateFromPem(truststoreUrl);
+			if (truststoreOwner.getTruststoreType() == KeystoreType.PEM) {
+				certificate = CorePkiUtil.getCertificateFromPem(truststoreUrl);
 			} else {
 				CredentialFactory truststoreCredentialFactory = new CredentialFactory(truststoreOwner.getTruststoreAuthAlias(), null, truststoreOwner.getTruststorePassword());
-				KeyStore keystore = PkiUtil.createKeyStore(truststoreUrl, truststoreCredentialFactory.getPassword(), truststoreOwner.getTruststoreType());
-				TrustManager[] trustmanagers = PkiUtil.createTrustManagers(keystore, truststoreOwner.getTrustManagerAlgorithm());
-				if (trustmanagers==null || trustmanagers.length==0) {
-					throw new EncryptionException("no trustmanager for keystore ["+truststoreUrl+"]");
+				KeyStore keystore = CommonsPkiUtil.createKeyStore(truststoreUrl, truststoreCredentialFactory.getPassword(), truststoreOwner.getTruststoreType());
+				TrustManager[] trustmanagers = CommonsPkiUtil.createTrustManagers(keystore, truststoreOwner.getTrustManagerAlgorithm());
+				if (trustmanagers == null || trustmanagers.length == 0) {
+					throw new EncryptionException("no trustmanager for keystore [" + truststoreUrl + "]");
 				}
-				X509TrustManager trustManager = (X509TrustManager)trustmanagers[0];
+				X509TrustManager trustManager = (X509TrustManager) trustmanagers[0];
 				X509Certificate[] certificates = trustManager.getAcceptedIssuers();
-				if (certificates==null || certificates.length==0) {
-					throw new EncryptionException("no Verfication Key found in keystore ["+truststoreUrl+"]");
+				if (certificates == null || certificates.length == 0) {
+					throw new EncryptionException("no Verfication Key found in keystore [" + truststoreUrl + "]");
 				}
 				certificate = certificates[0];
 			}
 		} catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
-			throw new EncryptionException("cannot get Public Key for verification in keystore ["+truststoreUrl+"]", e);
+			throw new EncryptionException("cannot get Public Key for verification in keystore [" + truststoreUrl + "]", e);
 		}
 		return certificate;
 	}
@@ -321,11 +270,12 @@ public class PkiUtil {
 	}
 
 	private static byte[] loadPEM(URL resource) throws IOException {
-		InputStream in = resource.openStream();
-		String pem = StreamUtil.streamToString(in, null, "ISO_8859_1");
-		Pattern parse = Pattern.compile("(?m)(?s)^---*BEGIN.*---*$(.*)^---*END.*---*$.*");
-		String encoded = parse.matcher(pem).replaceFirst("$1");
-		return Base64.decodeBase64(encoded);
+		try (InputStream in = resource.openStream()) {
+			String pem = new String(in.readAllBytes(), StandardCharsets.ISO_8859_1);
+			Matcher m = PEM_PATTERN.matcher(pem);
+			if (!m.find()) throw new IOException("Invalid PEM format");
+			return Base64.getMimeDecoder().decode(m.group(2));
+		}
 	}
 
 	private static PrivateKey getPrivateKeyFromPem(URL resource) throws IOException, InvalidKeySpecException, NoSuchAlgorithmException {

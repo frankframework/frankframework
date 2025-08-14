@@ -46,10 +46,10 @@ import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.FrankElement;
 import org.frankframework.core.HasSender;
+import org.frankframework.encryption.CorePkiUtil;
 import org.frankframework.encryption.EncryptionException;
 import org.frankframework.encryption.HasKeystore;
 import org.frankframework.encryption.HasTruststore;
-import org.frankframework.encryption.PkiUtil;
 import org.frankframework.jdbc.datasource.ObjectFactory;
 import org.frankframework.jdbc.datasource.ObjectFactory.ObjectInfo;
 import org.frankframework.jms.JmsRealm;
@@ -310,10 +310,10 @@ public class SecurityItems extends BusEndpointBase {
 	private KeyStore extractKeyStore(FrankElement bean) {
 		try {
 			if (bean instanceof HasKeystore keystoreOwner) {
-				return PkiUtil.createKeyStore(keystoreOwner);
+				return CorePkiUtil.createKeyStore(keystoreOwner);
 			}
 			if (bean instanceof HasTruststore truststoreOwner) {
-				return PkiUtil.createKeyStore(truststoreOwner);
+				return CorePkiUtil.createKeyStore(truststoreOwner);
 			}
 		} catch (EncryptionException e) {
 			log.info("unable to open keystore of FrankElement [{}]", bean, e);
@@ -323,7 +323,7 @@ public class SecurityItems extends BusEndpointBase {
 
 	private List<String> getExpiringCertificates(KeyStore keystore) {
 		try {
-			return PkiUtil.getExpiringCertificates(keystore, expiringCertificatesDuration);
+			return CorePkiUtil.getExpiringCertificates(keystore, expiringCertificatesDuration);
 		} catch (EncryptionException e) {
 			log.debug("unable to find out of any certificates are due to expire", e);
 			return List.of("");

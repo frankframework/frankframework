@@ -20,8 +20,8 @@ import org.junit.jupiter.api.parallel.Isolated;
 import org.frankframework.util.TimeProvider;
 
 @Isolated("Tests manipulate current time, so should not be run concurrently with other tests")
-public class PkiUtilTest {
-	private final String MULTI_KEY_KEYSTORE = "Encryption/MultiKeyKeystore.jks";
+public class CorePkiUtilTest {
+	private static final String MULTI_KEY_KEYSTORE = "Encryption/MultiKeyKeystore.jks";
 
 	@AfterEach
 	public void tearDown() {
@@ -53,7 +53,7 @@ public class PkiUtilTest {
 		keystoreOwner.setKeystorePassword("KeystorePW");
 		keystoreOwner.setKeystoreAlias("alias1");
 		keystoreOwner.setKeystoreAliasPassword("AliasPW1");
-		PrivateKey privateKey = PkiUtil.getPrivateKey(keystoreOwner);
+		PrivateKey privateKey = CorePkiUtil.getPrivateKey(keystoreOwner);
 		assertNotNull(privateKey);
 	}
 
@@ -64,7 +64,7 @@ public class PkiUtilTest {
 		keystoreOwner.setKeystorePassword("KeystorePW");
 		keystoreOwner.setKeystoreAlias("alias1");
 		keystoreOwner.setKeystoreAliasPassword("AliasPW1");
-		PublicKey publicKey = PkiUtil.getPublicKey(PkiUtil.keyStoreAsTrustStore(keystoreOwner));
+		PublicKey publicKey = CorePkiUtil.getPublicKey(CorePkiUtil.keyStoreAsTrustStore(keystoreOwner));
 		assertNotNull(publicKey);
 	}
 
@@ -78,12 +78,12 @@ public class PkiUtilTest {
 		keystoreOwner.setKeystoreAlias("common-name");
 		keystoreOwner.setKeystoreAliasPassword("changeme");
 
-		KeyStore keystore = PkiUtil.createKeyStore(keystoreOwner);
-		List<String> keystoreAliasses = PkiUtil.getExpiringCertificates(keystore, Duration.ofDays(31L));
+		KeyStore keystore = CorePkiUtil.createKeyStore(keystoreOwner);
+		List<String> keystoreAliasses = CorePkiUtil.getExpiringCertificates(keystore, Duration.ofDays(31L));
 		assertEquals(1, keystoreAliasses.size());
 
-		KeyStore truststore = PkiUtil.createKeyStore(PkiUtil.keyStoreAsTrustStore(keystoreOwner));
-		List<String> truststoreAliasses = PkiUtil.getExpiringCertificates(truststore, Duration.ofDays(31L));
+		KeyStore truststore = CorePkiUtil.createKeyStore(CorePkiUtil.keyStoreAsTrustStore(keystoreOwner));
+		List<String> truststoreAliasses = CorePkiUtil.getExpiringCertificates(truststore, Duration.ofDays(31L));
 		assertEquals(1, truststoreAliasses.size());
 	}
 
@@ -95,12 +95,12 @@ public class PkiUtilTest {
 		keystoreOwner.setKeystoreType(KeystoreType.PKCS12);
 		keystoreOwner.setKeystorePassword("changeit");
 
-		KeyStore keystore = PkiUtil.createKeyStore(keystoreOwner);
-		List<String> keystoreAliasses = PkiUtil.getExpiringCertificates(keystore, Duration.ofDays(31L));
+		KeyStore keystore = CorePkiUtil.createKeyStore(keystoreOwner);
+		List<String> keystoreAliasses = CorePkiUtil.getExpiringCertificates(keystore, Duration.ofDays(31L));
 		assertEquals(1, keystoreAliasses.size());
 
-		KeyStore truststore = PkiUtil.createKeyStore(PkiUtil.keyStoreAsTrustStore(keystoreOwner));
-		List<String> truststoreAliasses = PkiUtil.getExpiringCertificates(truststore, Duration.ofDays(31L));
+		KeyStore truststore = CorePkiUtil.createKeyStore(CorePkiUtil.keyStoreAsTrustStore(keystoreOwner));
+		List<String> truststoreAliasses = CorePkiUtil.getExpiringCertificates(truststore, Duration.ofDays(31L));
 		assertEquals(1, truststoreAliasses.size());
 	}
 
@@ -114,12 +114,12 @@ public class PkiUtilTest {
 		keystoreOwner.setKeystoreAlias("common-name");
 		keystoreOwner.setKeystoreAliasPassword("changeme");
 
-		KeyStore keystore = PkiUtil.createKeyStore(keystoreOwner);
-		List<String> keystoreAliasses = PkiUtil.getExpiringCertificates(keystore, Duration.ofDays(31L));
+		KeyStore keystore = CorePkiUtil.createKeyStore(keystoreOwner);
+		List<String> keystoreAliasses = CorePkiUtil.getExpiringCertificates(keystore, Duration.ofDays(31L));
 		assertEquals(1, keystoreAliasses.size());
 
-		KeyStore truststore = PkiUtil.createKeyStore(PkiUtil.keyStoreAsTrustStore(keystoreOwner));
-		List<String> truststoreAliasses = PkiUtil.getExpiringCertificates(truststore, Duration.ofDays(31L));
+		KeyStore truststore = CorePkiUtil.createKeyStore(CorePkiUtil.keyStoreAsTrustStore(keystoreOwner));
+		List<String> truststoreAliasses = CorePkiUtil.getExpiringCertificates(truststore, Duration.ofDays(31L));
 		assertEquals(1, truststoreAliasses.size());
 	}
 
@@ -131,12 +131,12 @@ public class PkiUtilTest {
 		keystoreOwner.setKeystoreType(KeystoreType.PKCS12);
 		keystoreOwner.setKeystorePassword("changeit");
 
-		KeyStore keystore = PkiUtil.createKeyStore(keystoreOwner);
-		List<String> keystoreAliasses = PkiUtil.getExpiringCertificates(keystore, Duration.ofDays(31L));
+		KeyStore keystore = CorePkiUtil.createKeyStore(keystoreOwner);
+		List<String> keystoreAliasses = CorePkiUtil.getExpiringCertificates(keystore, Duration.ofDays(31L));
 		assertEquals(1, keystoreAliasses.size());
 
-		KeyStore truststore = PkiUtil.createKeyStore(PkiUtil.keyStoreAsTrustStore(keystoreOwner));
-		List<String> truststoreAliasses = PkiUtil.getExpiringCertificates(truststore, Duration.ofDays(31L));
+		KeyStore truststore = CorePkiUtil.createKeyStore(CorePkiUtil.keyStoreAsTrustStore(keystoreOwner));
+		List<String> truststoreAliasses = CorePkiUtil.getExpiringCertificates(truststore, Duration.ofDays(31L));
 		assertEquals(1, truststoreAliasses.size());
 	}
 
@@ -150,12 +150,12 @@ public class PkiUtilTest {
 		keystoreOwner.setKeystoreAlias("common-name");
 		keystoreOwner.setKeystoreAliasPassword("changeme");
 
-		KeyStore keystore = PkiUtil.createKeyStore(keystoreOwner);
-		List<String> keystoreAliasses = PkiUtil.getExpiringCertificates(keystore, Duration.ofDays(31L));
+		KeyStore keystore = CorePkiUtil.createKeyStore(keystoreOwner);
+		List<String> keystoreAliasses = CorePkiUtil.getExpiringCertificates(keystore, Duration.ofDays(31L));
 		assertEquals(0, keystoreAliasses.size());
 
-		KeyStore truststore = PkiUtil.createKeyStore(PkiUtil.keyStoreAsTrustStore(keystoreOwner));
-		List<String> truststoreAliasses = PkiUtil.getExpiringCertificates(truststore, Duration.ofDays(31L));
+		KeyStore truststore = CorePkiUtil.createKeyStore(CorePkiUtil.keyStoreAsTrustStore(keystoreOwner));
+		List<String> truststoreAliasses = CorePkiUtil.getExpiringCertificates(truststore, Duration.ofDays(31L));
 		assertEquals(0, truststoreAliasses.size());
 	}
 
@@ -167,12 +167,12 @@ public class PkiUtilTest {
 		keystoreOwner.setKeystoreType(KeystoreType.PKCS12);
 		keystoreOwner.setKeystorePassword("changeit");
 
-		KeyStore keystore = PkiUtil.createKeyStore(keystoreOwner);
-		List<String> keystoreAliasses = PkiUtil.getExpiringCertificates(keystore, Duration.ofDays(31L));
+		KeyStore keystore = CorePkiUtil.createKeyStore(keystoreOwner);
+		List<String> keystoreAliasses = CorePkiUtil.getExpiringCertificates(keystore, Duration.ofDays(31L));
 		assertEquals(0, keystoreAliasses.size());
 
-		KeyStore truststore = PkiUtil.createKeyStore(PkiUtil.keyStoreAsTrustStore(keystoreOwner));
-		List<String> truststoreAliasses = PkiUtil.getExpiringCertificates(truststore, Duration.ofDays(31L));
+		KeyStore truststore = CorePkiUtil.createKeyStore(CorePkiUtil.keyStoreAsTrustStore(keystoreOwner));
+		List<String> truststoreAliasses = CorePkiUtil.getExpiringCertificates(truststore, Duration.ofDays(31L));
 		assertEquals(0, truststoreAliasses.size());
 	}
 }

@@ -45,8 +45,8 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.encryption.CorePkiUtil;
 import org.frankframework.encryption.EncryptionException;
-import org.frankframework.encryption.PkiUtil;
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.TimeProvider;
@@ -79,9 +79,9 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 		}
 
 		try {
-			privateKey = PkiUtil.getPrivateKey(session);
+			privateKey = CorePkiUtil.getPrivateKey(session);
 
-			Certificate loadedCertificate = PkiUtil.getCertificate(session);
+			Certificate loadedCertificate = CorePkiUtil.getCertificate(session);
 
 			if (loadedCertificate instanceof X509Certificate x509certificate) {
 				this.certificate = x509certificate;

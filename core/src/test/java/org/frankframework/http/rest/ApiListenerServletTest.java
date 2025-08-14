@@ -102,8 +102,8 @@ import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.encryption.CommonsPkiUtil;
 import org.frankframework.encryption.KeystoreType;
-import org.frankframework.encryption.PkiUtil;
 import org.frankframework.http.HttpEntityType;
 import org.frankframework.http.HttpMessageEntity;
 import org.frankframework.http.mime.MultipartEntityBuilder;
@@ -834,7 +834,7 @@ public class ApiListenerServletTest {
 	}
 
 	@Test
-	public void listenerMultipartContentNoBodyPart() throws ServletException, IOException, ListenerException, ConfigurationException {
+	public void listenerMultipartContentNoBodyPart() throws IOException, ConfigurationException {
 
 		// Arrange
 		String uri="/listenerMultipartContentNoBodyPart";
@@ -2020,8 +2020,8 @@ public class ApiListenerServletTest {
 
 		SignedJWT signedJWT = new SignedJWT(jwsHeader, builder.build());
 
-		KeyStore keystore = PkiUtil.createKeyStore(TestFileUtils.getTestFileURL("/JWT/jwt_keystore.p12"), "geheim", KeystoreType.PKCS12);
-		KeyManager[] keymanagers = PkiUtil.createKeyManagers(keystore, "geheim", null);
+		KeyStore keystore = CommonsPkiUtil.createKeyStore(TestFileUtils.getTestFileURL("/JWT/jwt_keystore.p12"), "geheim", KeystoreType.PKCS12);
+		KeyManager[] keymanagers = CommonsPkiUtil.createKeyManagers(keystore, "geheim", null);
 		X509KeyManager keyManager = (X509KeyManager)keymanagers[0];
 		PrivateKey privateKey = keyManager.getPrivateKey("1");
 		PublicKey publicKey = keystore.getCertificate("1").getPublicKey();
