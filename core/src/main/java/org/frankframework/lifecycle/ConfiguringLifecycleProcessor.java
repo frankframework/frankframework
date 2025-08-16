@@ -96,7 +96,7 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 	/**
 	 * Auto-start triggered by {@link Configuration} after {@link #configure()} has been called,
 	 * which starts all newly (non-started) registered beans.
-	 * 
+	 *
 	 * Only (Smart-)LifeCycle beans or beans with {@link ManagableLifecycle#isAutoStartup()}
 	 * will be started.
 	 */
