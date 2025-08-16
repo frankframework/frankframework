@@ -67,7 +67,13 @@ public class S3FileRef {
 	private final Map<String, String> userMetadata = new HashMap<>();
 
 	/** Strip folder prefix of filename if present. May not be changed after creation */
-	private S3FileRef(@Nonnull String key) {
+	private S3FileRef(@Nullable String key) {
+		if (key == null) {
+			this.name = "";
+			this.folder = null;
+			return;
+		}
+
 		int separatorPos = key.indexOf(BUCKET_OBJECT_SEPARATOR);
 		final String rawKey;
 		if (separatorPos < 0) {
@@ -91,7 +97,7 @@ public class S3FileRef {
 		setLastModified(s3Object.lastModified());
 	}
 
-	public S3FileRef(String key, String defaultBucketName) {
+	public S3FileRef(@Nullable String key, String defaultBucketName) {
 		this(key);
 
 		if(StringUtils.isEmpty(bucketName) && StringUtils.isNotEmpty(defaultBucketName)) {

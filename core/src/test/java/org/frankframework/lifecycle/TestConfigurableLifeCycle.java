@@ -45,6 +45,7 @@ import org.frankframework.util.RunState;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.XmlBuilder;
 
+// Test the ConfigurableLifeCycle phases, startup order and restart capability
 public class TestConfigurableLifeCycle {
 	private static final String TEST_MONITOR_NAME = "TestMonitor";
 	private static final String TEST_TRIGGER_EVENT_NAME = "testEvent1";
@@ -66,7 +67,7 @@ public class TestConfigurableLifeCycle {
 		DefaultListableBeanFactory cbf = (DefaultListableBeanFactory) configuration.getAutowireCapableBeanFactory();
 		cbf.destroySingleton("scheduleManager"); // Remove the default scheduleManager so we can use Mockito.spy()
 
-		monitorManager = (configuration.getBean("monitorManager", MonitorManager.class));
+		monitorManager = configuration.getBean("monitorManager", MonitorManager.class);
 		scheduleManager = spy(SpringUtils.createBean(configuration, ScheduleManager.class));
 		SpringUtils.registerSingleton(configuration, "scheduleManager", scheduleManager);
 

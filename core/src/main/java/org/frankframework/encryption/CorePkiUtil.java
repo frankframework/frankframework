@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2021, 2025 WeAreFrank!
+   Copyright 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -49,13 +49,10 @@ import jakarta.annotation.Nonnull;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
-import lombok.extern.log4j.Log4j2;
-
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.TimeProvider;
 
-@Log4j2
 public class CorePkiUtil {
 
 	private static final Pattern PEM_PATTERN = Pattern.compile(
