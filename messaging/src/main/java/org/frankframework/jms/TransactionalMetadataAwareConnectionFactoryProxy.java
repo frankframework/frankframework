@@ -29,8 +29,6 @@ import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.util.StringUtil;
-
 @Log4j2
 public class TransactionalMetadataAwareConnectionFactoryProxy extends TransactionAwareConnectionFactoryProxy {
 	private static final String CLOSE = "], ";
@@ -86,9 +84,11 @@ public class TransactionalMetadataAwareConnectionFactoryProxy extends Transactio
 		return reflectionToString();
 	}
 
+	/**
+	 * Attempt to find the most outer factory and return the reflectionToString result.
+	 */
 	private String reflectionToString() {
-		Object originalFactory = JmsPoolUtil.getManagedConnectionFactory(getTargetConnectionFactory());
-		return StringUtil.reflectionToString(originalFactory);
+		return JmsPoolUtil.reflectionToString(getTargetConnectionFactory());
 	}
 
 	public String getInfo() {
