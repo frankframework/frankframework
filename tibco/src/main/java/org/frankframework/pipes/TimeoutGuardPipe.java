@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,6 +31,7 @@ import org.frankframework.task.TimeoutGuard;
  *
  * @author Peter Leeuwenburgh
  */
+@Deprecated
 public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 
 	private boolean throwException = true;
@@ -44,19 +45,14 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 		} catch (ParameterException e) {
 			throw new PipeRunException(this, "exception on extracting parameters", e);
 		}
-		int timeout_work;
-		String timeout_work_str = getParameterValue(pvl, "timeout");
-		if (timeout_work_str == null) {
-			timeout_work = getTimeout();
-		} else {
-			timeout_work = Integer.valueOf(timeout_work_str);
-		}
+		String paramValue = getParameterValue(pvl, "timeout");
+		int guardTimeout = paramValue == null ? getTimeout() : Integer.valueOf(paramValue);
+		log.debug("setting timeout of [{}] s", guardTimeout);
 
-		log.debug("setting timeout of [{}] s", timeout_work);
-		TimeoutGuard tg = new TimeoutGuard(timeout_work, getName()) {
+		TimeoutGuard tg = new TimeoutGuard(guardTimeout, getName()) {
 			@Override
 			protected void abort() {
-				//The guard automatically kills the current thread, additional threads maybe 'killed' by implementing killPipe.
+				// The guard automatically kills the current thread, additional threads maybe 'killed' by implementing killPipe.
 				killPipe();
 			}
 		};
@@ -77,13 +73,13 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 			}
 		} finally {
 			if(tg.cancel()) {
-				//Throw a TimeOutException
+				// Throw a TimeOutException
 				String msgString = "TimeOutException";
-				Exception e = new TimeoutException("exceeds timeout of [" + timeout_work + "] s, interupting");
+				Exception e = new TimeoutException("exceeds timeout of [" + guardTimeout + "] s, interupting");
 				if (isThrowException()) {
 					throw new PipeRunException(this, msgString, e);
 				} else {
-					//This is used for the old console, where a message is displayed
+					// This is used for the old console, where a message is displayed
 					log.error(msgString, e);
 					String msgCdataString = "<![CDATA[" + msgString + ": "+ e.getMessage() + "]]>";
 					Message errorMessage = new Message("<error>" + msgCdataString + "</error>");

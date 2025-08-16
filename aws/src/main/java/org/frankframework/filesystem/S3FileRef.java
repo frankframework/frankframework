@@ -74,21 +74,22 @@ public class S3FileRef {
 			return;
 		}
 
-		int separatorPos = key.indexOf(BUCKET_OBJECT_SEPARATOR);
-		final String rawKey;
-		if (separatorPos < 0) {
-			rawKey = key;
-		} else {
-			setBucketName(key.substring(0,separatorPos));
-			rawKey = key.substring(separatorPos+1);
-		}
-
-		String normalized = FilenameUtils.normalize(rawKey, true);
+		String normalized = FilenameUtils.normalize(extractBuckerIfAny(key), true);
 		this.name = FilenameUtils.getName(normalized); // may be an empty string
 
 		String folderWithoutEndSeparator = FilenameUtils.getFullPathNoEndSeparator(normalized);
 		// crazy hack to always ensure there is a slash at the end
 		this.folder = StringUtils.isNotEmpty(folderWithoutEndSeparator) ? folderWithoutEndSeparator + FILE_DELIMITER : null;
+	}
+
+	private String extractBuckerIfAny(@Nonnull String key) {
+		int separatorPos = key.indexOf(BUCKET_OBJECT_SEPARATOR);
+		if (separatorPos < 0) {
+			return key;
+		} else {
+			setBucketName(key.substring(0,separatorPos));
+			return key.substring(separatorPos+1);
+		}
 	}
 
 	public S3FileRef(S3Object s3Object, String bucketName) {
