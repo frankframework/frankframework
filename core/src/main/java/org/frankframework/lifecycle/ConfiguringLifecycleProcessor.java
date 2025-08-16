@@ -18,7 +18,10 @@ package org.frankframework.lifecycle;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -30,9 +33,11 @@ import org.springframework.context.support.DefaultLifecycleProcessor;
 
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.digester.ConfigurationDigester;
 import org.frankframework.core.Adapter;
+import org.frankframework.core.ManagableLifecycle;
 import org.frankframework.lifecycle.events.AdapterMessageEvent;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.Misc;
@@ -50,7 +55,8 @@ import org.frankframework.util.StringUtil;
 public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor implements ConfigurableLifecycle {
 
 	private final String className;
-	private ApplicationContext applicationContext;
+	private final ApplicationContext applicationContext;
+	private final AtomicBoolean onlySmartAutostartAndNormalLifeLycleBeans = new AtomicBoolean();
 
 	public ConfiguringLifecycleProcessor(ApplicationContext context) {
 		applicationContext = context;
@@ -87,6 +93,13 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 		}
 	}
 
+	/**
+	 * Auto-start triggered by {@link Configuration} after {@link #configure()} has been called,
+	 * which starts all newly (non-started) registered beans.
+	 * 
+	 * Only (Smart-)LifeCycle beans or beans with {@link ManagableLifecycle#isAutoStartup()}
+	 * will be started.
+	 */
 	@Override
 	public void start() {
 		long startTime = System.currentTimeMillis();
@@ -94,7 +107,12 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 			if (log.isDebugEnabled()) log.debug("starting all LifeCycle beans: {}", this::getConfigurableLifecycleBeanNames);
 			else log.info("starting {}", () -> StringUtil.ucFirst(className));
 
-			super.start();
+			try {
+				onlySmartAutostartAndNormalLifeLycleBeans.set(true);
+				super.start();
+			} finally {
+				onlySmartAutostartAndNormalLifeLycleBeans.setRelease(false);
+			}
 			log.info("started {} in {}", () -> StringUtil.ucFirst(className), () -> Misc.getDurationInMs(startTime));
 		}
 	}
@@ -121,6 +139,30 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 				.filter(ConfigurableLifecycle.class::isInstance)
 				.map(ClassUtils::nameOf)
 				.toList();
+	}
+
+	/**
+	 * Override so we can filter on {@link ManagableLifecycle} beans.
+	 */
+	@Override
+	protected Map<String, Lifecycle> getLifecycleBeans() {
+		if (onlySmartAutostartAndNormalLifeLycleBeans.get()) {
+			return super.getLifecycleBeans()
+					.entrySet()
+					.stream()
+					.filter(this::filterSmartLifecycles)
+					.collect(Collectors.toMap(Entry::getKey, Entry::getValue));
+		}
+
+		return super.getLifecycleBeans();
+	}
+
+	/**
+	 * If it's not a ManagableLifecycle we can simply start the bean.
+	 * Only start ManagableLifecycle bean when autoStart is enabled.
+	 */
+	private boolean filterSmartLifecycles(Map.Entry<String, Lifecycle> entry) {
+		return (!(entry.getValue() instanceof ManagableLifecycle managable) || managable.isAutoStartup());
 	}
 
 	private void doConfigure() throws ConfigurationException {
