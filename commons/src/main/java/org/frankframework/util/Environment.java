@@ -111,7 +111,7 @@ public class Environment {
 	 * 		May return {@code null} if the default value was {@code null}.
 	 * @since 1.1
 	 */
-	public static Optional<String> getSystemProperty(String property, String def) {
+	public static Optional<String> getSystemProperty(String property) {
 		try {
 			String result = System.getenv().get(property);
 			if (result != null) {
@@ -121,10 +121,10 @@ public class Environment {
 			getLogger().warn("Was not allowed to read environment variable [{}]: {}", property, e.getMessage());
 		}
 		try {
-			return Optional.ofNullable(System.getProperty(property, def));
+			return Optional.ofNullable(System.getProperty(property));
 		} catch (Throwable e) { // MS-Java throws com.ms.security.SecurityExceptionEx
 			getLogger().warn("Was not allowed to read system property [{}]: {}", property, e.getMessage());
-			return Optional.ofNullable(def);
+			return Optional.empty();
 		}
 	}
 

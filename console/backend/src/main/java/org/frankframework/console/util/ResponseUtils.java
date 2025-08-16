@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 - 2024 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,10 +18,8 @@ package org.frankframework.console.util;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.frankframework.console.ApiException;
-import org.frankframework.management.bus.BusMessageUtils;
-import org.frankframework.management.bus.message.MessageBase;
-import org.frankframework.util.StreamUtil;
+import jakarta.annotation.Nullable;
+
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -30,6 +28,12 @@ import org.springframework.messaging.Message;
 import org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody;
 
 import lombok.NoArgsConstructor;
+
+import org.frankframework.console.ApiException;
+import org.frankframework.management.bus.BusMessageUtils;
+import org.frankframework.management.bus.message.EmptyMessage;
+import org.frankframework.management.bus.message.MessageBase;
+import org.frankframework.util.StreamUtil;
 
 
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
@@ -70,7 +74,7 @@ public class ResponseUtils {
 
 		responseEntity.headers(httpHeaders);
 
-		if (status == 200 || status > 204) {
+		if (hasPayload(status)) {
 			if (response != null) {
 				return responseEntity.body(response);
 			}
@@ -80,7 +84,21 @@ public class ResponseUtils {
 		return responseEntity.build();
 	}
 
+	/**
+	 * Extracted method so it's in one place.
+	 * See {@link EmptyMessage} for more info.
+	 */
+	private static boolean hasPayload(int status) {
+		return (status == 200 || status > 204);
+	}
+
+	@Nullable
 	public static String parseAsString(Message<?> message) {
+		int status = BusMessageUtils.getIntHeader(message, MessageBase.STATUS_KEY, 200);
+		if (!hasPayload(status)) {
+			return null;
+		}
+
 		String mimeType = BusMessageUtils.getHeader(message, MessageBase.MIMETYPE_KEY, null);
 		if (mimeType != null) {
 			MediaType mime = MediaType.valueOf(mimeType);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021-2023 WeAreFrank!
+   Copyright 2019, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.time.format.DateTimeFormatter;
 import java.util.Collections;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -97,75 +96,73 @@ class MailConvertor extends AbstractConvertor {
 
 	@Override
 	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
-		MailMessage eml;
+		try (InputStream inputStream = message.asInputStream(charset);
+			MailMessage eml = MailMessage.load(inputStream, ClassUtils.newInstance(MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType)))) {
 
-		try (InputStream inputStream = message.asInputStream(charset)) {
-			eml = MailMessage.load(inputStream, ClassUtils.newInstance(MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType)));
-		}
+			AttachmentCollection attachments = eml.getAttachments();
 
-		AttachmentCollection attachments = eml.getAttachments();
-
-		if (log.isDebugEnabled()) {
-			log.debug("cc : [{}]", toString(eml.getCC()));
-			log.debug("bcc : [{}]", toString(eml.getBcc()));
-			log.debug("sender : [{}]", toString(eml.getSender()));
-			log.debug("from : [{}]", toString(eml.getFrom()));
-			log.debug("to : [{}]", toString(eml.getTo()));
-			log.debug("subject : [{}]", eml.getSubject());
-		}
-
-		// Overrules the default documentname.
-		result.setDocumentName(ConvertorUtil.createTidyNameWithoutExtension(eml.getSubject()));
-
-		File tempMHtmlFile = UniqueFileGenerator.getUniqueFile(configuration.getPdfOutputLocation(), this.getClass().getSimpleName(), null);
-		String date = DATE_TIME_FORMATTER.format(eml.getDate().toInstant());
-		eml.getHeaders().set_Item("Date", date);
-		eml.save(tempMHtmlFile.getAbsolutePath(), options);
-
-		// Load the stream in Word document
-		HtmlLoadOptions loadOptions = new HtmlLoadOptions();
-		loadOptions.setLoadFormat(LoadFormat.MHTML);
-		loadOptions.setWebRequestTimeout(0);
-		if(!configuration.isLoadExternalResources()){
-			loadOptions.setResourceLoadingCallback(new OfflineResourceLoader());
-		}
-
-		Long startTime = new Date().getTime();
-		try(FileInputStream fis = new FileInputStream(tempMHtmlFile)){
-			Document doc = new Document(fis, loadOptions);
-			new FontManager(configuration.getFontsDirectory()).setFontSettings(doc);
-			resizeInlineImages(doc);
-
-			doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.PDF);
-
-			result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
-			Long endTime = new Date().getTime();
-			log.debug("document converted in [{}ms]", (endTime - startTime));
-		} finally {
-			Files.delete(tempMHtmlFile.toPath());
-		}
-
-		// Convert and (optional add) any attachment of the mail.
-		for (int index = 0; index < attachments.size(); index++) {
-			// Initialize Attachment object and Get the indexed Attachment reference
-			Attachment attachment = attachments.get_Item(index);
-
-			// Convert the attachment.
-			CisConversionResult cisConversionResultAttachment = convertAttachmentInPdf(attachment, result.getConversionOption());
-			// If it is a singlepdf add the file to the current pdf.
-			if (ConversionOption.SINGLEPDF.equals(result.getConversionOption()) && cisConversionResultAttachment.isConversionSuccessful()) {
-				try {
-					PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(cisConversionResultAttachment, result.getPdfResultFile());
-					pdfAttachmentUtil.addAttachmentInSinglePdf();
-				} finally {
-					deleteFile(cisConversionResultAttachment.getPdfResultFile());
-					// Clear the file because it is now incorporated in the file itself.
-					cisConversionResultAttachment.setPdfResultFile(null);
-					cisConversionResultAttachment.setResultFilePath(null);
-				}
-
+			if (log.isDebugEnabled()) {
+				log.debug("cc : [{}]", toString(eml.getCC()));
+				log.debug("bcc : [{}]", toString(eml.getBcc()));
+				log.debug("sender : [{}]", toString(eml.getSender()));
+				log.debug("from : [{}]", toString(eml.getFrom()));
+				log.debug("to : [{}]", toString(eml.getTo()));
+				log.debug("subject : [{}]", eml.getSubject());
 			}
-			result.addAttachment(cisConversionResultAttachment);
+
+			// Overrules the default documentname.
+			result.setDocumentName(ConvertorUtil.createTidyNameWithoutExtension(eml.getSubject()));
+
+			File tempMHtmlFile = UniqueFileGenerator.getUniqueFile(configuration.getPdfOutputLocation(), this.getClass().getSimpleName(), null);
+			String date = DATE_TIME_FORMATTER.format(eml.getDate().toInstant());
+			eml.getHeaders().set_Item("Date", date);
+			eml.save(tempMHtmlFile.getAbsolutePath(), options);
+
+			// Load the stream in Word document
+			HtmlLoadOptions loadOptions = new HtmlLoadOptions();
+			loadOptions.setLoadFormat(LoadFormat.MHTML);
+			loadOptions.setWebRequestTimeout(0);
+			if(!configuration.isLoadExternalResources()){
+				loadOptions.setResourceLoadingCallback(new OfflineResourceLoader());
+			}
+
+			Long startTime = System.currentTimeMillis();
+			try(FileInputStream fis = new FileInputStream(tempMHtmlFile)){
+				Document doc = new Document(fis, loadOptions);
+				new FontManager(configuration.getFontsDirectory()).setFontSettings(doc);
+				resizeInlineImages(doc);
+
+				doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.PDF);
+
+				result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
+				Long endTime = System.currentTimeMillis();
+				log.debug("document converted in [{}ms]", (endTime - startTime));
+			} finally {
+				Files.delete(tempMHtmlFile.toPath());
+			}
+
+			// Convert and (optional add) any attachment of the mail.
+			for (int index = 0; index < attachments.size(); index++) {
+				// Initialize Attachment object and Get the indexed Attachment reference
+				Attachment attachment = attachments.get_Item(index);
+
+				// Convert the attachment.
+				CisConversionResult cisConversionResultAttachment = convertAttachmentInPdf(attachment, result.getConversionOption());
+				// If it is a singlepdf add the file to the current pdf.
+				if (ConversionOption.SINGLEPDF.equals(result.getConversionOption()) && cisConversionResultAttachment.isConversionSuccessful()) {
+					try {
+						PdfAttachmentUtil pdfAttachmentUtil = new PdfAttachmentUtil(cisConversionResultAttachment, result.getPdfResultFile());
+						pdfAttachmentUtil.addAttachmentInSinglePdf();
+					} finally {
+						deleteFile(cisConversionResultAttachment.getPdfResultFile());
+						// Clear the file because it is now incorporated in the file itself.
+						cisConversionResultAttachment.setPdfResultFile(null);
+						cisConversionResultAttachment.setResultFilePath(null);
+					}
+
+				}
+				result.addAttachment(cisConversionResultAttachment);
+			}
 		}
 	}
 
