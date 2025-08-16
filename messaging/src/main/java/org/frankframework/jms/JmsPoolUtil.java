@@ -15,6 +15,7 @@
 */
 package org.frankframework.jms;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.jms.ConnectionFactory;
 
@@ -25,6 +26,7 @@ import org.springframework.jms.connection.DelegatingConnectionFactory;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.StringUtil;
 
 @Log4j2
 public class JmsPoolUtil {
@@ -46,9 +48,15 @@ public class JmsPoolUtil {
 		return info.toString();
 	}
 
+	@Nonnull
+	public static String reflectionToString(ConnectionFactory qcf) {
+		Object factory = getManagedConnectionFactory(qcf);
+		return StringUtil.reflectionToString(factory);
+	}
+
 	/** Retrieve the 'original' ConnectionFactory, used by the console (to get the Tibco QCF) in order to display queue message count. */
 	@Nullable
-	public static Object getManagedConnectionFactory(ConnectionFactory qcf) {
+	private static Object getManagedConnectionFactory(ConnectionFactory qcf) {
 		if (qcf instanceof DelegatingConnectionFactory source) { // Perhaps it's wrapped?
 			return getManagedConnectionFactory(source.getTargetConnectionFactory());
 		}
@@ -59,8 +67,14 @@ public class JmsPoolUtil {
 			if (qcf instanceof ConnectionFactoryProxy) { // Narayana without pooling
 				return ClassUtils.getDeclaredFieldValue(qcf, ConnectionFactoryProxy.class, "xaConnectionFactory");
 			}
+
+			// JCA ManagedConnectionFactory, but unsure who would be the owner
 			return ClassUtils.invokeGetter(qcf, "getManagedConnectionFactory", true);
-		} catch (Throwable e) {
+		} catch (NoSuchMethodException | NoSuchFieldException e) {
+			// Either the field or method does not exist. Unsure if this is the most outer factory, but lets use it!
+			return qcf;
+		} catch (Exception e) {
+			// Unsure what went wrong here, return null.
 			log.warn("could not determine managed connection factory", e);
 			return null;
 		}
