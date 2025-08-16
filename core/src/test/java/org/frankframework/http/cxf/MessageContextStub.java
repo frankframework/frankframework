@@ -9,7 +9,7 @@ import jakarta.xml.ws.handler.MessageContext;
 
 public class MessageContextStub implements MessageContext{
 
-	private final Map map = new HashMap();
+	private final Map<String, Object> map = new HashMap<>();
 
 	@Override
 	public int size() {
@@ -76,13 +76,12 @@ public class MessageContextStub implements MessageContext{
 
 	@Override
 	public void setScope(String s, Scope scope) {
-		// TODO Auto-generated method stub
-
+		// NO-OP
 	}
 
 	@Override
 	public Scope getScope(String s) {
-		// TODO Auto-generated method stub
+		// NO-OP
 		return null;
 	}
 

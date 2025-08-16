@@ -15,15 +15,16 @@
 */
 package org.frankframework.util;
 
-import java.io.FilterInputStream;
-import java.io.FilterOutputStream;
-import java.io.FilterReader;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.util.Collection;
 
 import jakarta.annotation.Nullable;
+
+import org.apache.commons.io.input.CloseShieldInputStream;
+import org.apache.commons.io.input.CloseShieldReader;
+import org.apache.commons.io.output.CloseShieldOutputStream;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -72,47 +73,14 @@ public class CloseUtils {
 	}
 
 	public static InputStream dontClose(InputStream stream) {
-		class NonClosingInputStreamFilter extends FilterInputStream {
-			public NonClosingInputStreamFilter(InputStream in) {
-				super(in);
-			}
-
-			@Override
-			public void close() {
-				// do not close
-			}
-		}
-
-		return new NonClosingInputStreamFilter(stream);
+		return CloseShieldInputStream.wrap(stream);
 	}
 
 	public static Reader dontClose(Reader reader) {
-		class NonClosingReaderFilter extends FilterReader {
-			public NonClosingReaderFilter(Reader in) {
-				super(in);
-			}
-
-			@Override
-			public void close() {
-				// do not close
-			}
-		}
-
-		return new NonClosingReaderFilter(reader);
+		return CloseShieldReader.wrap(reader);
 	}
 
 	public static OutputStream dontClose(OutputStream stream) {
-		class NonClosingOutputStreamFilter extends FilterOutputStream {
-			public NonClosingOutputStreamFilter(OutputStream out) {
-				super(out);
-			}
-
-			@Override
-			public void close() {
-				// do not close
-			}
-		}
-
-		return new NonClosingOutputStreamFilter(stream);
+		return CloseShieldOutputStream.wrap(stream);
 	}
 }

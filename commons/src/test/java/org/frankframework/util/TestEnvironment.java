@@ -100,6 +100,7 @@ public class TestEnvironment {
 
 		@Override
 		public void connect() throws IOException {
+			// NO OP
 		}
 
 		@Override

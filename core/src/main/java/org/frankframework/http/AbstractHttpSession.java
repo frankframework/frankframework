@@ -336,9 +336,8 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 
 	@Override
 	public void configure() throws ConfigurationException {
-		// TODO find out if this really breaks proxy authentication or not.
-		defaultHttpClientContext = HttpClientContext.create(); //Only create a new HttpContext when configure is called (which doesn't happen when using a SharedResource)
-//		httpClientBuilder.disableAuthCaching();
+		// Only create a new HttpContext when configure is called (which doesn't happen when using a SharedResource)
+		defaultHttpClientContext = HttpClientContext.create();
 
 		if (getMaxConnections() <= 0) {
 			throw new ConfigurationException("maxConnections is set to ["+getMaxConnections()+"], which is not enough for adequate operation");

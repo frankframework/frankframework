@@ -194,10 +194,10 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 		CredentialFactory cf = new CredentialFactory(authAliasWork, userNameWork, passwordWork);
 		validateQueueName(urlWork, cf, queueNameWork);
 
-		ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(urlWork, null, emsProperties); //url, clientid, properties
+		ConnectionFactory factory = new com.tibco.tibjms.TibjmsConnectionFactory(urlWork, null, emsProperties); // url, clientid, properties
 		try (Connection connection = factory.createConnection(cf.getUsername(), cf.getPassword());
-			 Session jSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
-			 MessageProducer msgProducer = jSession.createProducer(jSession.createQueue(queueNameWork))) {
+			Session jSession = connection.createSession(false, Session.AUTO_ACKNOWLEDGE);
+			MessageProducer msgProducer = jSession.createProducer(jSession.createQueue(queueNameWork))) {
 
 			TextMessage msg = jSession.createTextMessage();
 			msg.setText(input.asString());
@@ -226,21 +226,22 @@ public class SendTibcoMessage extends TimeoutGuardPipe {
 			}
 			if (protocol == MessageProtocol.REQUEST_REPLY) {
 				String replyCorrelationId = msg.getJMSMessageID();
-				MessageConsumer msgConsumer = jSession.createConsumer(replyQueue, "JMSCorrelationID='" + replyCorrelationId+ "'");
-				log.debug("start waiting for reply on [{}] selector [{}] for [{}] ms", replyQueue, replyCorrelationId, replyTimeoutWork);
+				try (MessageConsumer msgConsumer = jSession.createConsumer(replyQueue, "JMSCorrelationID='" + replyCorrelationId+ "'")) {
+					log.debug("start waiting for reply on [{}] selector [{}] for [{}] ms", replyQueue, replyCorrelationId, replyTimeoutWork);
 
-				connection.start();
-				jakarta.jms.Message rawReplyMsg = msgConsumer.receive(replyTimeoutWork);
-				if (rawReplyMsg == null) {
-					throw new PipeRunException(this, "did not receive reply on [" + replyQueue+ "] replyCorrelationId [" + replyCorrelationId+ "] within [" + replyTimeoutWork + "] ms");
-				}
-				if (rawReplyMsg instanceof TextMessage replyMsg) {
-					result = replyMsg.getText();
-				} else if (rawReplyMsg instanceof BytesMessage bytesMessage) {
-					InputStream inputStream = new BytesMessageInputStream(bytesMessage);
-					result = StreamUtil.streamToString(inputStream);
-				} else {
-					throw new PipeRunException(this, "Unsupported message type received: " + ClassUtils.classNameOf(rawReplyMsg));
+					connection.start();
+					jakarta.jms.Message rawReplyMsg = msgConsumer.receive(replyTimeoutWork);
+					if (rawReplyMsg == null) {
+						throw new PipeRunException(this, "did not receive reply on [" + replyQueue+ "] replyCorrelationId [" + replyCorrelationId+ "] within [" + replyTimeoutWork + "] ms");
+					}
+					if (rawReplyMsg instanceof TextMessage replyMsg) {
+						result = replyMsg.getText();
+					} else if (rawReplyMsg instanceof BytesMessage bytesMessage) {
+						InputStream inputStream = new BytesMessageInputStream(bytesMessage);
+						result = StreamUtil.streamToString(inputStream);
+					} else {
+						throw new PipeRunException(this, "Unsupported message type received: " + ClassUtils.classNameOf(rawReplyMsg));
+					}
 				}
 
 			} else {

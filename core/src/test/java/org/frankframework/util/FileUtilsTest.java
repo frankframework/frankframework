@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -14,8 +15,6 @@ import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-
-import org.frankframework.filesystem.FileNotFoundException;
 
 public class FileUtilsTest {
 
@@ -46,14 +45,14 @@ public class FileUtilsTest {
 	}
 
 	@Test
-	void testGetFreeFile() throws Exception { //normal file exists but _001 file doesn't
+	void testGetFreeFile() throws Exception { // Normal file exists but _001 file doesn't
 		File res = FileUtils.getFreeFile(getFile("file.txt"));
 		assertEquals("file_001.txt", res.getName());
 	}
 
 	@Test
 	void testGetFreeFile001() throws Exception {
-		File res = FileUtils.getFreeFile(new File(getFile(null), "freeFile.txt")); //_001 file exists but normal file doesn't
+		File res = FileUtils.getFreeFile(new File(getFile(null), "freeFile.txt")); // _001 file exists but normal file doesn't
 		assertEquals("freeFile.txt", res.getName());
 	}
 
@@ -61,7 +60,7 @@ public class FileUtilsTest {
 	void testMoveFile() throws Exception {
 		File root = getFile(null);
 		File toBeMoved = new File(root, "movingFile.txt");
-		toBeMoved.createNewFile(); //Make sure it exists
+		toBeMoved.createNewFile(); // Make sure it exists
 		assertTrue(toBeMoved.exists());
 
 		File dstFile = new File(testFolderPath, toBeMoved.getName());
@@ -76,7 +75,7 @@ public class FileUtilsTest {
 	void testCopyFile() throws Exception {
 		File sourceFile = getFile("fileToAppend.txt");
 		File destFile = getFile("copyFile.txt");
-    	assertTrue(FileUtils.copyFile(sourceFile, destFile, true));
+		assertTrue(FileUtils.copyFile(sourceFile, destFile, true));
 	}
 
 	@Test
@@ -114,9 +113,9 @@ public class FileUtilsTest {
 	void testGetFilesWithWildcard() throws Exception {
 		String directory = getFile(null).getPath();
 		File[] files = FileUtils.getFiles(directory, "file*", null, 5);
-		assertEquals(2, files.length); // check if there are 2 files persent
+		assertEquals(2, files.length); // Check if there are 2 files persent
 
-		int containsBothFiles = 0; //Stupid way to check file names ... sigh
+		int containsBothFiles = 0; // Stupid way to check file names ... sigh
 		for(File file : files) {
 			if("file.txt".equals(file.getName()) || "fileToAppend.txt".equals(file.getName())) {
 				containsBothFiles++;

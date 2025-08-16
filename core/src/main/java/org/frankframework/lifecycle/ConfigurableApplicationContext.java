@@ -116,6 +116,14 @@ public class ConfigurableApplicationContext extends GenericApplicationContext im
 		return inState(RunState.STARTED) && super.isRunning();
 	}
 
+	/**
+	 * Only auto-start after this instance has been configured.
+	 */
+	@Override
+	public boolean isAutoStartup() {
+		return isConfigured();
+	}
+
 	@Override
 	public void close() {
 		log.info("closing {} [{}]", () -> className, this::getId);

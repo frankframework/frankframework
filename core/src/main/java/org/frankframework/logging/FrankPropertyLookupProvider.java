@@ -245,7 +245,7 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 		if (originalLogDir == null) {
 			logDir = findLogDir();
 			if (logDir != null) {
-				LOGGER.info(LOOKUP, "did not find system property [log.dir] found suitable path ["+logDir.getPath()+"]");
+				LOGGER.info(LOOKUP, "did not find system property [log.dir] found suitable path [{}]", logDir.getPath());
 			} else {
 				LOGGER.fatal(LOOKUP, "did not find system property [log.dir] and unable to locate it automatically");
 			}

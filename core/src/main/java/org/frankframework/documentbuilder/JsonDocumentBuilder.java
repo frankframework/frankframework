@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -58,12 +58,12 @@ public class JsonDocumentBuilder extends JsonNodeBuilder implements IDocumentBui
 
 	@Override
 	public ObjectBuilder asObjectBuilder() throws SAXException {
-		return ObjectBuilder.asObjectBuilder(this);
+		return StructureBuilder.asObjectBuilder(this);
 	}
 
 	@Override
 	public ArrayBuilder asArrayBuilder(String elementName) throws SAXException {
-		return ArrayBuilder.asArrayBuilder(this, elementName);
+		return StructureBuilder.asArrayBuilder(this, elementName);
 	}
 
 }

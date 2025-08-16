@@ -1,5 +1,5 @@
 /*
-   Copyright 2015, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2015, 2020 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterValueList;
-import org.frankframework.pipes.TimeoutGuardPipe;
+import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.util.SpringUtils;
 
@@ -34,13 +34,13 @@ import org.frankframework.util.SpringUtils;
  * @author Peter Leeuwenburgh
  */
 @Category(Category.Type.NN_SPECIAL)
-public class DirectWrapperPipe extends TimeoutGuardPipe {
+public class DirectWrapperPipe extends FixedForwardPipe {
 	protected static final String DESTINATION = "destination";
 	protected static final String CMHVERSION = "cmhVersion";
 	protected static final String ADDOUTPUTNAMESPACE = "addOutputNamespace";
 
 	@Override
-	public PipeRunResult doPipeWithTimeoutGuarded(Message message, PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		ParameterValueList pvl;
 		try {
 			pvl = getParameterList().getValues(message, session);
@@ -53,10 +53,8 @@ public class DirectWrapperPipe extends TimeoutGuardPipe {
 		String addOutputNamespace = getParameterValue(pvl, ADDOUTPUTNAMESPACE);
 
 		EsbSoapWrapperPipe eswPipe = SpringUtils.createBean(getApplicationContext());
-		if (addOutputNamespace != null) {
-			if ("on".equalsIgnoreCase(addOutputNamespace)) {
-				eswPipe.setAddOutputNamespace(true);
-			}
+		if (addOutputNamespace != null && "on".equalsIgnoreCase(addOutputNamespace)) {
+			eswPipe.setAddOutputNamespace(true);
 		}
 		if (destination != null) {
 			Parameter destinationParameter = SpringUtils.createBean(getApplicationContext());
@@ -64,10 +62,8 @@ public class DirectWrapperPipe extends TimeoutGuardPipe {
 			destinationParameter.setValue(destination);
 			eswPipe.addParameter(destinationParameter);
 		}
-		if (cmhVersion != null) {
-			if (StringUtils.isNumeric(cmhVersion)) {
-				eswPipe.setCmhVersion(Integer.parseInt(cmhVersion));
-			}
+		if (cmhVersion != null && StringUtils.isNumeric(cmhVersion)) {
+			eswPipe.setCmhVersion(Integer.parseInt(cmhVersion));
 		}
 		try {
 			eswPipe.addForward(getSuccessForward());

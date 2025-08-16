@@ -126,7 +126,7 @@ public class IbisContext extends IbisApplicationContext {
 			classLoaderManager = new ClassLoaderManager(this);
 
 			try {
-				flowDiagramManager = getBean("flowDiagramManager"); //The FlowDiagramManager should always initialize.
+				flowDiagramManager = getBean("flowDiagramManager"); // The FlowDiagramManager should always initialize.
 			} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
 				log("failed to initalize FlowDiagramManager", MessageEventLevel.ERROR, e);
 			}
