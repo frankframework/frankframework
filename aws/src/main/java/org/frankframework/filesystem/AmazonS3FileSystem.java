@@ -339,6 +339,11 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 			String contentType = metadata.contentType();
 			if (StringUtils.isNotEmpty(contentType)) {
 				messageContext.withMimeType(metadata.contentType());
+				// Revert charset change made by withMimeType.
+				// Even though we know the withMimeType sets the correct charset,
+				// The end user may be super stubborn and mess it up, with his own charset.
+				// As we've (unfortunately) always allowed this, keep it backwards compatible.
+				messageContext.withCharset(charset);
 			}
 
 			// Workaround for https://github.com/aws/aws-sdk-java-v2/issues/3538
