@@ -37,6 +37,7 @@ import jakarta.annotation.Nullable;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.util.MimeType;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -74,7 +75,9 @@ import org.frankframework.doc.Mandatory;
 import org.frankframework.filesystem.utils.AmazonEncodingUtils;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
+import org.frankframework.stream.MessageContext;
 import org.frankframework.util.CredentialFactory;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StringUtil;
 
 @Log4j2
@@ -279,6 +282,12 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 					.contentEncoding("UTF-8")
 					.storageClass(storageClass);
 
+			String fileName = f.hasName() ? f.getName() : null;
+			MimeType mimeType = MessageUtils.computeMimeType(message, fileName);
+			if (mimeType != null) {
+				por.contentType("%s/%s".formatted(mimeType.getType(), mimeType.getSubtype()));
+			}
+
 			addMetadata(por, customFileAttributes);
 
 			RequestBody requestBody = (Message.isEmpty(message)) ? RequestBody.empty() : RequestBody.fromInputStream(message.asInputStream(), message.size());
@@ -322,15 +331,28 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 					.key(file.getKey())
 					.build();
 			ResponseInputStream<GetObjectResponse> s3ClientObject = s3Client.getObject(objectRequest);// Fetch a new copy
-			file.updateObject(s3ClientObject.response());
 
-			// Workaround for https://github.com/aws/aws-sdk-java-v2/issues/3538
-			if (s3ClientObject.response().contentLength() == 0) {
-				// Expects an empty message
-				return Message.nullMessage(FileSystemUtils.getContext(this, file, charset));
+			GetObjectResponse metadata = s3ClientObject.response();
+			file.updateObject(metadata);
+
+			MessageContext messageContext = FileSystemUtils.getContext(this, file, charset);
+			String contentType = metadata.contentType();
+			if (StringUtils.isNotEmpty(contentType)) {
+				messageContext.withMimeType(metadata.contentType());
+				// Revert charset change made by withMimeType.
+				// Even though we know the withMimeType sets the correct charset,
+				// The end user may be super stubborn and mess it up, with his own charset.
+				// As we've (unfortunately) always allowed this, keep it backwards compatible.
+				messageContext.withCharset(charset);
 			}
 
-			return new Message(s3ClientObject, FileSystemUtils.getContext(this, file, charset));
+			// Workaround for https://github.com/aws/aws-sdk-java-v2/issues/3538
+			if (metadata.contentLength() == 0) {
+				// Expects an empty message
+				return Message.nullMessage(messageContext);
+			}
+
+			return new Message(s3ClientObject, messageContext);
 		} catch (AwsServiceException | IOException e) {
 			throw new FileSystemException(e);
 		}
