@@ -46,7 +46,7 @@ class FieldNameSensitiveToStringStyle extends ToStringStyle {
 	 * @return the singleton
 	 */
 	@Serial
-	private Object readResolve() {
+	protected Object readResolve() {
 		return StringUtil.OMIT_PASSWORD_FIELDS_STYLE;
 	}
 

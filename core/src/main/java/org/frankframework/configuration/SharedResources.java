@@ -24,10 +24,10 @@ import org.frankframework.http.HttpSession;
 public class SharedResources {
 
 	public void addSharedResource(SharedResource<?> resource) {
-		//This method only exists for the FrankDoc
+		// This method only exists for the FrankDoc
 	}
 
 	public void addHttpSession(HttpSession resource) {
-		//Hack to directly use the HttpSession element in configurations
+		// Hack to directly use the HttpSession element in configurations
 	}
 }

@@ -14,15 +14,17 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.stream.Message;
 
+@SuppressWarnings("deprecation") // We test our own deprecated class
 public class TimeoutGuardPipeTest extends PipeTestBase<TimeoutGuardPipe> {
 	private static final String SUCCESS_MESSAGE = "did not timeout!";
 
 	public class GuardTestPipe extends TimeoutGuardPipe {
 		public GuardTestPipe() {
-			setTimeout(1); //set default on 1 second
+			setTimeout(1); // Set default on 1 second
 		}
 
 		@Override
+		@SuppressWarnings("java:S2925") // Thread.sleep() in test
 		public PipeRunResult doPipeWithTimeoutGuarded(Message input, PipeLineSession session) throws PipeRunException {
 			try {
 				long timeout = Long.parseLong(input.asString());
@@ -31,8 +33,7 @@ public class TimeoutGuardPipeTest extends PipeTestBase<TimeoutGuardPipe> {
 			} catch (NumberFormatException | IOException e) {
 				throw new PipeRunException(this, "error parsing input", e);
 			} catch (InterruptedException e) {
-				//Verify that pipe run thread has been aborted.
-//				throw new PipeRunException(this, "timed out");
+				// Verify that pipe run thread has been aborted.
 			}
 			fail("this should not happen");
 			throw new PipeRunException(this, "not aborted");
