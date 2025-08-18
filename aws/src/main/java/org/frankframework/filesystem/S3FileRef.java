@@ -74,7 +74,7 @@ public class S3FileRef {
 			return;
 		}
 
-		String normalized = FilenameUtils.normalize(extractBuckerIfAny(key), true);
+		String normalized = FilenameUtils.normalize(extractBucketIfAny(key), true);
 		this.name = FilenameUtils.getName(normalized); // may be an empty string
 
 		String folderWithoutEndSeparator = FilenameUtils.getFullPathNoEndSeparator(normalized);
@@ -82,7 +82,7 @@ public class S3FileRef {
 		this.folder = StringUtils.isNotEmpty(folderWithoutEndSeparator) ? folderWithoutEndSeparator + FILE_DELIMITER : null;
 	}
 
-	private String extractBuckerIfAny(@Nonnull String key) {
+	private String extractBucketIfAny(@Nonnull String key) {
 		int separatorPos = key.indexOf(BUCKET_OBJECT_SEPARATOR);
 		if (separatorPos < 0) {
 			return key;
