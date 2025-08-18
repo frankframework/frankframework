@@ -67,7 +67,7 @@
     "@types/sockjs-client": "^1.5.4",
     "@types/tinycon": "^0.6.6",
     "@typescript-eslint/eslint-plugin": "^8.38.0",
-    "@typescript-eslint/parser": "^8.38.0",
+    "@typescript-eslint/parser": "^8.39.1",
     "angular-eslint": "^19.2.1",
     "cypress": "^14.5.4",
     "cypress-multi-reporters": "^2.0.5",
