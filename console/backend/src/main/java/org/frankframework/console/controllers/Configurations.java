@@ -79,7 +79,7 @@ public class Configurations {
 
 	@RolesAllowed({"IbisAdmin", "IbisTester"})
 	@Relation("application")
-	@Description("update the entire application using an action")
+	@Description("update the application such as stopping/starting (all) adapters, reloading a configuration or the entire application")
 	@PutMapping(value = "/configurations", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> fullAction(@RequestBody ActionModel model) throws ApiException {
 		List<String> configurations = new ArrayList<>();
@@ -148,7 +148,7 @@ public class Configurations {
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("configuration")
-	@Description("update a specific configuration using an action")
+	@Description("update a specific configuration such as stopping/starting (all) adapters or reloading it")
 	@PutMapping(value = "/configurations/{configuration}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> updateConfiguration(ConfigurationPathVariables path, @RequestBody UpdateConfigurationModel model) throws ApiException {
 		Action action = getActionOrThrow(model.action, false);

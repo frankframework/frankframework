@@ -67,22 +67,29 @@ public class S3FileRef {
 	private final Map<String, String> userMetadata = new HashMap<>();
 
 	/** Strip folder prefix of filename if present. May not be changed after creation */
-	private S3FileRef(@Nonnull String key) {
-		int separatorPos = key.indexOf(BUCKET_OBJECT_SEPARATOR);
-		final String rawKey;
-		if (separatorPos < 0) {
-			rawKey = key;
-		} else {
-			setBucketName(key.substring(0,separatorPos));
-			rawKey = key.substring(separatorPos+1);
+	private S3FileRef(@Nullable String key) {
+		if (key == null) {
+			this.name = "";
+			this.folder = null;
+			return;
 		}
 
-		String normalized = FilenameUtils.normalize(rawKey, true);
+		String normalized = FilenameUtils.normalize(extractBucketIfAny(key), true);
 		this.name = FilenameUtils.getName(normalized); // may be an empty string
 
 		String folderWithoutEndSeparator = FilenameUtils.getFullPathNoEndSeparator(normalized);
 		// crazy hack to always ensure there is a slash at the end
 		this.folder = StringUtils.isNotEmpty(folderWithoutEndSeparator) ? folderWithoutEndSeparator + FILE_DELIMITER : null;
+	}
+
+	private String extractBucketIfAny(@Nonnull String key) {
+		int separatorPos = key.indexOf(BUCKET_OBJECT_SEPARATOR);
+		if (separatorPos < 0) {
+			return key;
+		} else {
+			setBucketName(key.substring(0,separatorPos));
+			return key.substring(separatorPos+1);
+		}
 	}
 
 	public S3FileRef(S3Object s3Object, String bucketName) {
@@ -91,7 +98,7 @@ public class S3FileRef {
 		setLastModified(s3Object.lastModified());
 	}
 
-	public S3FileRef(String key, String defaultBucketName) {
+	public S3FileRef(@Nullable String key, String defaultBucketName) {
 		this(key);
 
 		if(StringUtils.isEmpty(bucketName) && StringUtils.isNotEmpty(defaultBucketName)) {

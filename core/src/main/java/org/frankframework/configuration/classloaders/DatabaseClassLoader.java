@@ -38,12 +38,13 @@ public class DatabaseClassLoader extends AbstractJarBytesClassLoader {
 	@Override
 	protected Map<String, byte[]> loadResources() throws ClassLoaderException {
 		Map<String, Object> loadedConfiguration;
-		try { //Make sure there's a database present
+		try {
+			// Make sure there's a database present
 			ApplicationContext ac = getIbisContext().getIbisManager().getApplicationContext();
 			loadedConfiguration = ConfigurationUtils.getActiveConfigFromDatabase(ac, getConfigurationName(), datasourceName);
 		}
 		catch (Throwable t) {
-			//Make the error a little bit more IBIS-developer intuitive
+			// Make the error a little bit more IBIS-developer intuitive
 			throw new ClassLoaderException(getErrorMessage(), t);
 		}
 

@@ -50,12 +50,12 @@ public class XmlDocumentBuilder extends XmlNodeBuilder implements IDocumentBuild
 
 	@Override
 	public ObjectBuilder asObjectBuilder() throws SAXException {
-		return ObjectBuilder.asObjectBuilder(this);
+		return StructureBuilder.asObjectBuilder(this);
 	}
 
 	@Override
 	public ArrayBuilder asArrayBuilder(String elementName) throws SAXException {
-		return ArrayBuilder.asArrayBuilder(this, elementName);
+		return StructureBuilder.asArrayBuilder(this, elementName);
 	}
 
 	@Override
