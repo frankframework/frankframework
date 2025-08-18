@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -25,6 +26,7 @@ import software.amazon.awssdk.services.s3.model.CreateBucketRequest;
 import software.amazon.awssdk.services.s3.model.DeleteBucketRequest;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.stream.Message;
 import org.frankframework.testutil.PropertyUtil;
 import org.frankframework.testutil.ThrowingAfterCloseInputStream;
 
@@ -154,6 +156,19 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3FileRef, AmazonS3Fi
 
 		ConfigurationException e = assertThrows(ConfigurationException.class, fileSystem::configure);
 		assertEquals("invalid or empty bucketName [tr/89/**-alala] please visit AWS documentation to see correct bucket naming", e.getMessage());
+	}
+
+	@Test
+	@Override
+	public void writableFileSystemTestCreateNewFile() throws Exception {
+		super.writableFileSystemTestCreateNewFile();
+
+		// After the 'normal' test, also verify the content-type
+		String filename = "create" + FILE1;
+		S3FileRef file = fileSystem.toFile(filename);
+		Message result = fileSystem.readFile(file, null);
+		assertNotNull(result.getContext().getMimeType(), "no mimetype present");
+		assertEquals("text/plain", result.getContext().getMimeType().toString());
 	}
 
 	@Disabled
