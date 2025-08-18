@@ -55,8 +55,6 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.StringUtil;
 
-// TODO: Link to https://swagger.io/specification/ when anchors are supported by the Frank!Doc.
-
 /**
  * Listener that allows a {@link Receiver} to receive messages as a REST webservice.
  * Prepends the configured URI pattern with <code>api/</code>. The structure of REST messages is described
@@ -67,7 +65,7 @@ import org.frankframework.util.StringUtil;
  * The generated OpenAPI specifications have <code>servers</code> and <code>paths</code> objects and
  * therefore they document the full URLs of the provided services.
  * <p>
- * It is possible to automatically generate eTags over the listener result. This can be controlled by globally 
+ * It is possible to automatically generate eTags over the listener result. This can be controlled by globally
  * setting the property <code>api.etag.enabled</code> or by setting the attribute <code>updateEtag="true"</code>.
  * When enabled the listener will respond to the <code>If-Match</code>, <code>If-None-Match</code> headers and may return status code 304.
  * <p>
@@ -83,8 +81,18 @@ import org.frankframework.util.StringUtil;
  * <li><code>etag.cache.password</code></li>
  * <li><code>etag.cache.authalias</code></li>
  * </ul>
- * 
+ *
+ * Custom pages can be added to the console (using a comma separated list, no spaces) with the following property
+ * {@code customViews.names=MyApplication}.
+ *
+ * Specify details for each view, the url is either a relative path from the web-content folder or an external url, eq. {@code http://google.com/}.
+ * {@code customViews.MyApplication.name=Custom View}
+ * {@code customViews.MyApplication.url=myWebapp}
+ *
+ * @see <a href="https://swagger.io/specification/">OpenAPI Reference Specification</a>
+ *
  * @ff.tip The OPTIONS verb will automatically be handled by the framework.
+ * @ff.tip Its possible to change the URL mapping from /api to /rest (or use both) for easy transitions from the RestListener.
  *
  * @author Niels Meijer
  */
