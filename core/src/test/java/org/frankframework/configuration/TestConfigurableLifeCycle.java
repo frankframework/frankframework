@@ -19,6 +19,7 @@ import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.RunState;
 import org.frankframework.util.SpringUtils;
 
+// Test the Adapter LifeCycle
 @Log4j2
 public class TestConfigurableLifeCycle {
 
@@ -116,5 +117,32 @@ public class TestConfigurableLifeCycle {
 		// Assert
 		assertFalse(adapter.isRunning());
 		assertFalse(configuration.isRunning());
+	}
+
+	@Test
+	public void testAutoStartFalse() throws Exception {
+		adapter.setAutoStart(false);
+		configuration.configure();
+
+		assertTrue(configuration.isConfigured());
+		assertTrue(adapter.isConfigured());
+		assertFalse(adapter.isRunning());
+
+		configuration.start();
+		await()
+			.atMost(20, TimeUnit.SECONDS)
+			.until(configuration::isRunning);
+
+		assertTrue(adapter.isConfigured());
+		assertFalse(adapter.isRunning());
+
+		configuration.stop();
+		configuration.start();
+		await()
+			.atMost(20, TimeUnit.SECONDS)
+			.until(configuration::isRunning);
+
+		assertTrue(adapter.isConfigured());
+		assertFalse(adapter.isRunning());
 	}
 }

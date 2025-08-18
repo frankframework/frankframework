@@ -337,7 +337,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 
 	@Override
 	protected void initLifecycleProcessor() {
-		ConfiguringLifecycleProcessor defaultProcessor = new ConfiguringLifecycleProcessor();
+		ConfiguringLifecycleProcessor defaultProcessor = new ConfiguringLifecycleProcessor(this);
 		defaultProcessor.setBeanFactory(getBeanFactory());
 		getBeanFactory().registerSingleton(LIFECYCLE_PROCESSOR_BEAN_NAME, defaultProcessor);
 		super.initLifecycleProcessor();

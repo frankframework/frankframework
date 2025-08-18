@@ -42,7 +42,7 @@ public class ConfigurableApplicationContext extends GenericApplicationContext im
 
 	@Override
 	protected final void initLifecycleProcessor() {
-		ConfiguringLifecycleProcessor defaultProcessor = new ConfiguringLifecycleProcessor();
+		ConfiguringLifecycleProcessor defaultProcessor = new ConfiguringLifecycleProcessor(this);
 		defaultProcessor.setBeanFactory(getBeanFactory());
 		getBeanFactory().registerSingleton(LIFECYCLE_PROCESSOR_BEAN_NAME, defaultProcessor);
 		super.initLifecycleProcessor();
@@ -75,8 +75,6 @@ public class ConfigurableApplicationContext extends GenericApplicationContext im
 		if (!(lifecycle instanceof ConfigurableLifecycle configurableLifecycle)) {
 			throw new ConfigurationException("wrong lifecycle processor found, unable to configure beans");
 		}
-
-		log.debug("configuring {} [{}]", () -> className, this::getId);
 
 		// Trigger a configure on all (Configurable) Lifecycle beans
 		configurableLifecycle.configure();
