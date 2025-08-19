@@ -53,6 +53,7 @@ import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.TimeProvider;
 
+@Log4j2
 public class CorePkiUtil {
 
 	private static final Pattern PEM_PATTERN = Pattern.compile(
