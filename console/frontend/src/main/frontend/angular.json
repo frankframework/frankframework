@@ -54,7 +54,8 @@
             "allowedCommonJsDependencies": [
               "sweetalert2",
               "pace-js",
-              "lodash.merge"
+              "lodash.merge",
+              "tinycon"
             ],
             "browser": "src/main.ts"
           },
@@ -63,8 +64,8 @@
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "3mb",
-                  "maximumError": "4mb"
+                  "maximumWarning": "2mb",
+                  "maximumError": "3mb"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -84,6 +85,27 @@
               "extractLicenses": false,
               "sourceMap": true,
               "namedChunks": true
+            },
+            "analysis": {
+              "statsJson": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "3mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "2kb",
+                  "maximumError": "4kb"
+                }
+              ],
+              "outputHashing": "all",
+              "optimization": {
+                "styles": {
+                  "inlineCritical": false
+                }
+              }
             }
           },
           "defaultConfiguration": "production"
