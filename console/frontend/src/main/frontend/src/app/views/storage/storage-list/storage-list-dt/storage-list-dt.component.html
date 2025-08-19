@@ -1,8 +1,9 @@
-@if (message) {
-  <input type="checkbox" [(ngModel)]="storageService.selectedMessages[message.id]" />
-  @if (!storageService.selectedMessages[message.id]) {
+@if (message()) {
+  @let msg = message()!;
+  <input type="checkbox" [(ngModel)]="storageService.selectedMessages[msg.id]" />
+  @if (!storageService.selectedMessages[msg.id]) {
     <div>
-      <a class="btn btn-info btn-xs" type="button" [routerLink]="['messages', message.id]"
+      <a class="btn btn-info btn-xs" type="button" [routerLink]="['messages', msg.id]"
         ><i class="fa fa-file-text-o"></i> View</a
       >
       <button
@@ -10,7 +11,7 @@
         title="Download Message"
         class="btn btn-info btn-xs"
         type="button"
-        (click)="storageService.downloadMessage(message.id)"
+        (click)="storageService.downloadMessage(msg.id)"
       >
         <i class="fa fa-arrow-circle-o-down"></i> Download
       </button>
@@ -21,8 +22,8 @@
           title="Move Message to Error"
           class="btn btn-danger btn-xs"
           type="button"
-          [ladda]="message.processing"
-          (click)="moveMessage()"
+          [ladda]="msg.processing"
+          (click)="moveMessage(msg)"
         >
           <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
           Move to Error
@@ -35,8 +36,9 @@
           title="Resend Message"
           class="btn btn-warning btn-xs"
           type="button"
-          [ladda]="message.processing"
-          (click)="storageService.resendMessage(message)"
+          [ladda]="msg.processing && resendAction"
+          [disabled]="msg.processing && !resendAction"
+          (click)="resendMessage(msg)"
         >
           <i class="fa fa-repeat"></i> Resend
         </button>
@@ -46,8 +48,9 @@
           title="Delete Message"
           class="btn btn-danger btn-xs"
           type="button"
-          [ladda]="message.processing"
-          (click)="storageService.deleteMessage(message)"
+          [ladda]="msg.processing && !resendAction"
+          [disabled]="msg.processing && resendAction"
+          (click)="deleteMessage(msg)"
         >
           <i class="fa fa-times"></i> Delete
         </button>
