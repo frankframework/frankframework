@@ -35,7 +35,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 
 import org.frankframework.util.StreamUtil;
 
-public class JwtSecurityFilterTest {
+class JwtSecurityFilterTest {
 
 	@TempDir
 	private File tempDirectory;
@@ -44,9 +44,8 @@ public class JwtSecurityFilterTest {
 	private String jwksUrl;
 
 	@BeforeEach
-	public void setUp() throws Exception {
+	void setUp() throws Exception {
 		keyGenerator = new JwtKeyGenerator();
-		keyGenerator.afterPropertiesSet();
 		File jwksFile = new File(tempDirectory, "jwks.txt");
 		try (OutputStream fileOut = Files.newOutputStream(jwksFile.toPath())) {
 			StreamUtil.streamToStream(new ByteArrayInputStream(keyGenerator.getPublicJwkSet().getBytes(StandardCharsets.UTF_8)), fileOut);
@@ -58,7 +57,7 @@ public class JwtSecurityFilterTest {
 	}
 
 	@Test
-	public void testNoJwtProvided() throws Exception {
+	void testNoJwtProvided() throws Exception {
 		JwtSecurityFilter filter = new JwtSecurityFilter();
 		filter.setJwksEndpoint(jwksUrl);
 		filter.afterPropertiesSet();
@@ -72,7 +71,7 @@ public class JwtSecurityFilterTest {
 	}
 
 	@Test
-	public void createJwtAndReadAsAuthenticationToken() throws Exception {
+	void createJwtAndReadAsAuthenticationToken() throws Exception {
 		// Arrange
 		JwtSecurityFilter filter = new JwtSecurityFilter();
 		filter.setJwksEndpoint(jwksUrl);
