@@ -46,6 +46,8 @@ import javax.net.ssl.X509TrustManager;
 
 import jakarta.annotation.Nonnull;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
