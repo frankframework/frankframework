@@ -1,4 +1,4 @@
-import { Component, inject, Input } from '@angular/core';
+import { Component, inject, input } from '@angular/core';
 import { PartialMessage, StorageService } from '../../storage.service';
 
 import { FormsModule } from '@angular/forms';
@@ -14,12 +14,14 @@ import { SweetalertService } from '../../../../services/sweetalert.service';
   imports: [FormsModule, RouterLink, HasAccessToLinkDirective, LaddaModule],
 })
 export class StorageListDtComponent {
-  @Input({ required: true }) message!: PartialMessage;
+  public readonly message = input<PartialMessage>();
 
-  protected storageService: StorageService = inject(StorageService);
-  private sweetAlert: SweetalertService = inject(SweetalertService);
+  protected readonly storageService: StorageService = inject(StorageService);
+  protected resendAction = false;
 
-  moveMessage(): void {
+  private readonly sweetAlert: SweetalertService = inject(SweetalertService);
+
+  moveMessage(message: PartialMessage): void {
     this.sweetAlert
       .warning({
         title: 'Move Message State',
@@ -30,8 +32,18 @@ export class StorageListDtComponent {
       })
       .then((value) => {
         if (value.isConfirmed) {
-          this.storageService.moveMessage(this.message);
+          this.storageService.moveMessage(message);
         }
       });
+  }
+
+  resendMessage(message: PartialMessage): void {
+    this.resendAction = true;
+    this.storageService.resendMessage(message);
+  }
+
+  deleteMessage(message: PartialMessage): void {
+    this.resendAction = false;
+    this.storageService.deleteMessage(message);
   }
 }
