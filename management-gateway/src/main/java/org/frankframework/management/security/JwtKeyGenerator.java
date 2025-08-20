@@ -16,6 +16,8 @@
 
 package org.frankframework.management.security;
 
+import java.security.GeneralSecurityException;
+
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
@@ -30,8 +32,6 @@ import com.nimbusds.jose.jwk.gen.ECKeyGenerator;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.util.Environment;
-
-import java.security.GeneralSecurityException;
 
 @Log4j2
 public class JwtKeyGenerator extends AbstractJwtKeyGenerator {
