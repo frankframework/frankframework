@@ -16,22 +16,30 @@
 
 package org.frankframework.management.security;
 
+import static org.frankframework.management.security.JwtKeyGenerator.JWT_DEFAULT_CURVE;
+
+import java.security.GeneralSecurityException;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.security.interfaces.RSAPrivateKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Enumeration;
 
+import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
-import com.nimbusds.jose.crypto.RSASSASigner;
+import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.RSAKey;
 
 import org.frankframework.encryption.CommonsPkiUtil;
 
 public class KeystoreJwtKeyGenerator extends AbstractJwtKeyGenerator {
+
+	private JWSSigner jwtSigner;
+	private final RSAPrivateKey privateKey;
 
 	protected KeystoreJwtKeyGenerator(KeyStore keyStore) {
 		try {
@@ -46,7 +54,7 @@ public class KeystoreJwtKeyGenerator extends AbstractJwtKeyGenerator {
 				throw new IllegalStateException("Certificate is not RSA");
 			}
 
-			RSAPrivateKey privateKey = CommonsPkiUtil.getRsaPrivateKey(keyStore, null, null);
+			privateKey = CommonsPkiUtil.getRsaPrivateKey(keyStore);
 
 			RSAKey rsaKey = new RSAKey.Builder(publicKey)
 					.privateKey(privateKey)
@@ -58,11 +66,21 @@ public class KeystoreJwtKeyGenerator extends AbstractJwtKeyGenerator {
 					.keyID(rsaKey.getKeyID())
 					.build();
 
-			signer = new RSASSASigner(privateKey);
 			publicJwkSet = new JWKSet(rsaKey.toPublicJWK()).toString();
 		} catch (Exception e) {
 			throw new IllegalStateException("Failed to init KeystoreJwtKeyGenerator from RSA keystore", e);
 		}
 	}
 
+	@Override
+	JWSSigner getSigner() throws GeneralSecurityException {
+		try {
+			if (jwtSigner == null) {
+				jwtSigner = new ECDSASigner(privateKey, JWT_DEFAULT_CURVE);
+			}
+			return jwtSigner;
+		} catch (JOSEException e) {
+			throw new GeneralSecurityException("Could not create ECDSASigner", e);
+		}
+	}
 }

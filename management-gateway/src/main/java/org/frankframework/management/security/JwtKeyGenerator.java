@@ -16,9 +16,11 @@
 
 package org.frankframework.management.security;
 
+import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JOSEObjectType;
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.crypto.ECDSASigner;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.ECKey;
@@ -29,15 +31,20 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.util.Environment;
 
+import java.security.GeneralSecurityException;
+
 @Log4j2
 public class JwtKeyGenerator extends AbstractJwtKeyGenerator {
+
+	private JWSSigner jwtSigner;
+	private final ECKey key;
 
 	public static final Curve JWT_DEFAULT_CURVE = Curve.P_384;
 	public static final JWSAlgorithm JWT_DEFAULT_SIGNING_ALGORITHM = JWSAlgorithm.ES384;
 
 	public JwtKeyGenerator() {
 		try {
-			ECKey key = new ECKeyGenerator(JWT_DEFAULT_CURVE).keyIDFromThumbprint(true).generate();
+			key = new ECKeyGenerator(JWT_DEFAULT_CURVE).keyIDFromThumbprint(true).generate();
 
 			String version = Environment.getModuleVersion("iaf-management-gateway");
 			log.info("Initializing GeneratedJwtKeyGenerator version [{}]", version);
@@ -47,10 +54,21 @@ public class JwtKeyGenerator extends AbstractJwtKeyGenerator {
 					.customParam("version", version)
 					.keyID(key.getKeyID()).build();
 
-			signer = new ECDSASigner(key.toECPrivateKey(), JWT_DEFAULT_CURVE);
 			publicJwkSet = new JWKSet(key.toPublicJWK()).toString();
 		} catch (Exception e) {
 			throw new IllegalStateException("Unable to generate JWT key", e);
+		}
+	}
+
+	@Override
+	JWSSigner getSigner() throws GeneralSecurityException {
+		try {
+			if (jwtSigner == null) {
+				jwtSigner = new ECDSASigner(key.toECPrivateKey(), JWT_DEFAULT_CURVE);
+			}
+			return jwtSigner;
+		} catch (JOSEException e) {
+			throw new GeneralSecurityException("Could not create ECDSASigner", e);
 		}
 	}
 }

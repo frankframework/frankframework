@@ -46,8 +46,6 @@ import javax.net.ssl.X509TrustManager;
 
 import jakarta.annotation.Nonnull;
 
-import lombok.extern.log4j.Log4j2;
-
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
@@ -55,7 +53,6 @@ import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.TimeProvider;
 
-@Log4j2
 public class CorePkiUtil {
 
 	private static final Pattern PEM_PATTERN = Pattern.compile(

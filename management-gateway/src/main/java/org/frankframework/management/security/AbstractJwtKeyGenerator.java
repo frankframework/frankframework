@@ -16,6 +16,7 @@
 
 package org.frankframework.management.security;
 
+import java.security.GeneralSecurityException;
 import java.util.Date;
 import java.util.List;
 
@@ -41,7 +42,8 @@ import org.frankframework.util.UUIDUtil;
 @Log4j2
 public abstract class AbstractJwtKeyGenerator {
 
-	protected JWSSigner signer;
+	abstract JWSSigner getSigner() throws GeneralSecurityException;
+
 	protected JWSHeader jwtHeader;
 
 	@Getter
@@ -57,7 +59,7 @@ public abstract class AbstractJwtKeyGenerator {
 		return createJwtToken(claims);
 	}
 
-	protected @Nonnull JWTClaimsSet createClaimsSet(Authentication authentication) {
+	private @Nonnull JWTClaimsSet createClaimsSet(Authentication authentication) {
 		try {
 			JWTClaimsSet.Builder builder = new JWTClaimsSet.Builder()
 					.subject(getPrincipalName(authentication))
@@ -77,25 +79,25 @@ public abstract class AbstractJwtKeyGenerator {
 		return authentication.getName();
 	}
 
-	protected List<String> mapAuthorities(Authentication authentication) {
+	private List<String> mapAuthorities(Authentication authentication) {
 		return authentication.getAuthorities().stream()
 				.map(GrantedAuthority::getAuthority)
 				.toList();
 	}
 
-	protected void addCustomClaims(JWTClaimsSet.Builder builder, Authentication authentication) {
+	private void addCustomClaims(JWTClaimsSet.Builder builder, Authentication authentication) {
 		// Optional: overridden in subclasses
 	}
 
 	protected @Nonnull String createJwtToken(@Nonnull JWTClaimsSet claims) {
 		SignedJWT signedJWT = new SignedJWT(jwtHeader, claims);
 		try {
-			signedJWT.sign(signer);
+			signedJWT.sign(getSigner());
+			String jwt = signedJWT.serialize();
+			log.trace("Generated JWT token [{}]", jwt);
+			return jwt;
 		} catch (Exception e) {
 			throw new AuthenticationServiceException("Unable to sign JWT", e);
 		}
-		String jwt = signedJWT.serialize();
-		log.trace("Generated JWT token [{}]", jwt);
-		return jwt;
 	}
 }

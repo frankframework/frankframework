@@ -17,6 +17,7 @@ package org.frankframework.encryption;
 
 import java.io.IOException;
 import java.net.URL;
+import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -101,7 +102,7 @@ public class CommonsPkiUtil {
 		return keystore;
 	}
 
-	private static String detectSingleKeyAlias(KeyStore ks) throws KeyStoreException {
+	private static String resolveAlias(KeyStore ks) throws KeyStoreException {
 		List<String> keyAliases = new ArrayList<>();
 		for (String a : Collections.list(ks.aliases())) {
 			if (ks.isKeyEntry(a)) {
@@ -114,20 +115,17 @@ public class CommonsPkiUtil {
 		return keyAliases.get(0);
 	}
 
-	public static RSAPrivateKey getRsaPrivateKey(final KeyStore keystore, final String alias, final String entryPassword) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException {
+	public static RSAPrivateKey getRsaPrivateKey(final KeyStore keystore) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException {
 		if (keystore == null) {
 			throw new IllegalArgumentException("Keystore may not be null");
 		}
-		String effectiveAlias = StringUtils.trimToNull(alias);
-		if (effectiveAlias == null) {
-			effectiveAlias = detectSingleKeyAlias(keystore);
-		}
-		String pw = entryPassword != null ? entryPassword : "";
+		String effectiveAlias = resolveAlias(keystore);
 		log.debug("Reading RSA private key from alias [{}]", effectiveAlias);
-		var key = keystore.getKey(effectiveAlias, pw.toCharArray());
-		if (!(key instanceof RSAPrivateKey rsa)) {
+		Key key = keystore.getKey(effectiveAlias, null);
+		if (key instanceof RSAPrivateKey rsa) {
+			return rsa;
+		} else {
 			throw new UnrecoverableKeyException("Alias [" + effectiveAlias + "] is not an RSAPrivateKey entry");
 		}
-		return rsa;
 	}
 }
