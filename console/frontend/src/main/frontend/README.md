@@ -2,6 +2,10 @@
 
 This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 15.2.9.
 
+## Analysis
+
+Run `pnpm run build:analysis` and upload `target/frontend/stats.json` to [esbuild analyze (also for vite)](https://esbuild.github.io/analyze/).
+
 ## Development server
 
 Run `ng serve` for a dev server. Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files.
