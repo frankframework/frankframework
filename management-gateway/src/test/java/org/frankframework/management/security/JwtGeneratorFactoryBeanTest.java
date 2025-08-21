@@ -38,15 +38,12 @@ class JwtGeneratorFactoryBeanTest {
 		return ks;
 	}
 
-	private static File writeKs(KeyStore ks, char[] pw) throws IOException {
+	private static File writeKs(KeyStore ks, char[] pw) throws IOException, CertificateException, KeyStoreException, NoSuchAlgorithmException {
 		File f = File.createTempFile("keystore", ".jks");
 		try (FileOutputStream fos = new FileOutputStream(f)) {
 			ks.store(fos, pw);
 			return f;
-		} catch (CertificateException | KeyStoreException | NoSuchAlgorithmException e) {
-			throw new RuntimeException(e);
 		}
-
 	}
 
 	@Test

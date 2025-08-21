@@ -272,7 +272,7 @@ class CommonsPkiUtilTest {
 	@Test
 	void testGetRsaPrivateKeyWhenMultipleKeyEntries() throws Exception {
 		KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
-		keyGen.initialize(1024);
+		keyGen.initialize(2048);
 		KeyPair keyPair = keyGen.generateKeyPair();
 		PrivateKey privateKey2 = keyPair.getPrivate();
 
