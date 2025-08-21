@@ -10,6 +10,7 @@
 	<name>Frank!Framework parent</name>
 	<description>The Frank!Framework is an easy-to-use, stateless integration framework which allows (transactional) messages to be modified and exchanged between different systems.</description>
 	<url>https://frankframework.org</url>
+	<inceptionYear>2002</inceptionYear>
 
 	<organization>
 		<name>Frank!Framework</name>

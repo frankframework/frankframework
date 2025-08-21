@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ public class YamlParser {
 
 		// Due to how the parser works, ArrayList may encapsulate a map.
 		// Key doesn't need to be updated
-		else if (value instanceof ArrayList list) {
+		else if (value instanceof List list) {
 			handleListValue(key, list);
 		}
 
@@ -107,7 +107,7 @@ public class YamlParser {
 	 * Delegate the map to {@link #handleMapValue(String, Map)}.
 	 */
 	@SuppressWarnings("unchecked")
-	private void handleListValue(String key, ArrayList<Object> list) {
+	private void handleListValue(String key, List<Object> list) {
 		List<String> listProperty = new ArrayList<>();
 		for (Object object : list) {
 			if (object instanceof Map) {
