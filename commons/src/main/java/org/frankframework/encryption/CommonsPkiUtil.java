@@ -17,6 +17,7 @@ package org.frankframework.encryption;
 
 import java.io.IOException;
 import java.net.URL;
+import java.security.Key;
 import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -24,7 +25,11 @@ import java.security.UnrecoverableKeyException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.RSAPrivateKey;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Enumeration;
+import java.util.List;
 
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
@@ -95,5 +100,32 @@ public class CommonsPkiUtil {
 			}
 		}
 		return keystore;
+	}
+
+	private static String resolveAlias(KeyStore ks) throws KeyStoreException {
+		List<String> keyAliases = new ArrayList<>();
+		for (String a : Collections.list(ks.aliases())) {
+			if (ks.isKeyEntry(a)) {
+				keyAliases.add(a);
+			}
+		}
+		if (keyAliases.size() != 1) {
+			throw new KeyStoreException("Expected exactly one key entry, found " + keyAliases.size());
+		}
+		return keyAliases.get(0);
+	}
+
+	public static RSAPrivateKey getRsaPrivateKey(final KeyStore keystore) throws KeyStoreException, NoSuchAlgorithmException, UnrecoverableKeyException {
+		if (keystore == null) {
+			throw new IllegalArgumentException("Keystore may not be null");
+		}
+		String effectiveAlias = resolveAlias(keystore);
+		log.debug("Reading RSA private key from alias [{}]", effectiveAlias);
+		Key key = keystore.getKey(effectiveAlias, new char[]{});
+		if (key instanceof RSAPrivateKey rsa) {
+			return rsa;
+		} else {
+			throw new UnrecoverableKeyException("Alias [" + effectiveAlias + "] is not an RSAPrivateKey entry");
+		}
 	}
 }
