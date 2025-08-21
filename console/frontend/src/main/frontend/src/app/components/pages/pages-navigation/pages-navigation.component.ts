@@ -20,6 +20,22 @@ import { HasAccessToLinkDirective } from '../../has-access-to-link.directive';
 import { NgClass } from '@angular/common';
 import { AppService } from '../../../app.service';
 import { ConditionalOnPropertyDirective } from '../../conditional-on-property.directive';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import {
+  faAngleDown,
+  faBook,
+  faBug,
+  faCogs,
+  faCubes,
+  faDashboard,
+  faInfoCircle,
+  faLanguage,
+  faLock,
+  faSitemap,
+  faThLarge,
+} from '@fortawesome/free-solid-svg-icons';
+import { faLifeRing } from '@fortawesome/free-solid-svg-icons/faLifeRing';
+import { faCalendar, faClone, faCommenting, faFlag, faPaperPlane } from '@fortawesome/free-regular-svg-icons';
 
 type ExpandedItem = {
   element: HTMLElement;
@@ -40,12 +56,29 @@ type ExpandedItem = {
     HasAccessToLinkDirective,
     NgClass,
     ConditionalOnPropertyDirective,
+    FaIconComponent,
   ],
 })
 export class PagesNavigationComponent implements OnChanges, AfterViewInit {
   @Input() queryParams = convertToParamMap({});
   @Output() shouldOpenInfo = new EventEmitter<void>();
 
+  protected readonly faDashboard = faDashboard;
+  protected readonly faCogs = faCogs;
+  protected readonly faLifeRing = faLifeRing;
+  protected readonly faBug = faBug;
+  protected readonly faCubes = faCubes;
+  protected readonly faThLarge = faThLarge;
+  protected readonly faPaperPlane = faPaperPlane;
+  protected readonly faCalendar = faCalendar;
+  protected readonly faClone = faClone;
+  protected readonly faLanguage = faLanguage;
+  protected readonly faSitemap = faSitemap;
+  protected readonly faLock = faLock;
+  protected readonly faInfoCircle = faInfoCircle;
+  protected readonly faBook = faBook;
+  protected readonly faCommenting = faCommenting;
+  protected readonly faFlag = faFlag;
   protected frankframeworkLogoPath = 'assets/images/ff-kawaii.svg';
   protected frankExclamationPath = 'assets/images/frank-exclemation.svg';
   protected showOldLadybug: Signal<boolean> = computed(
@@ -136,4 +169,6 @@ export class PagesNavigationComponent implements OnChanges, AfterViewInit {
       this.expandedItem = null;
     }
   }
+
+  protected readonly faAngleDown = faAngleDown;
 }

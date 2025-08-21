@@ -10,15 +10,24 @@ import { ServerInfoService } from '../../../services/server-info.service';
 import { Subscription } from 'rxjs';
 import { ServerTimeService } from '../../../services/server-time.service';
 import { toObservable } from '@angular/core/rxjs-interop';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faGlobe, faInfoCircle, faRefresh } from '@fortawesome/free-solid-svg-icons';
+import { faClipboard } from '@fortawesome/free-regular-svg-icons';
+import { faGithub } from '@fortawesome/free-brands-svg-icons';
 
 @Component({
   selector: 'app-information-modal',
   templateUrl: './information-modal.component.html',
   styleUrls: ['./information-modal.component.scss'],
-  imports: [TimeSinceDirective, ToDateDirective, HumanFileSizePipe],
+  imports: [TimeSinceDirective, ToDateDirective, HumanFileSizePipe, FaIconComponent],
 })
 export class InformationModalComponent implements OnInit, OnDestroy {
   protected readonly serverTimeService: ServerTimeService = inject(ServerTimeService);
+  protected readonly faInfoCircle = faInfoCircle;
+  protected readonly faGlobe = faGlobe;
+  protected readonly faGithub = faGithub;
+  protected readonly faClipboard = faClipboard;
+  protected readonly faRefresh = faRefresh;
   protected initialized = false;
   protected framework: {
     name: string;
