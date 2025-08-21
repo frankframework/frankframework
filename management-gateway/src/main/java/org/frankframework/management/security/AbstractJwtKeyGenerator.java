@@ -42,12 +42,12 @@ import org.frankframework.util.UUIDUtil;
 @Log4j2
 public abstract class AbstractJwtKeyGenerator {
 
-	abstract JWSSigner getSigner() throws GeneralSecurityException;
-
 	protected JWSHeader jwtHeader;
 
 	@Getter
 	protected String publicJwkSet;
+
+	abstract JWSSigner getSigner() throws GeneralSecurityException;
 
 	public @Nonnull String create() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
