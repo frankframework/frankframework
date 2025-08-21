@@ -7,24 +7,26 @@
     <button
       appHasAccessToLink="resendReceiverMessage"
       *ngIf="storageService.storageParams.processState === 'Error'"
-      [ladda]="message.resending"
+      [ladda]="message.resending && !message.deleting"
       data-style="slide-down"
       title="Resend Message"
       (click)="storageService.resendMessage(message)"
       class="btn btn-warning btn-xs"
       type="button"
+      [disabled]="message.deleting"
     >
       <i class="fa fa-repeat"></i> Resend
     </button>
     <button
       appHasAccessToLink="deleteReceiverMessage"
       *ngIf="storageService.storageParams.processState === 'Error'"
-      [ladda]="message.deleting"
+      [ladda]="message.deleting && !message.resending"
       data-style="slide-down"
       title="Delete Message"
       (click)="storageService.deleteMessage(message)"
       class="btn btn-danger btn-xs"
       type="button"
+      [disabled]="message.resending"
     >
       <i class="fa fa-times"></i> Delete
     </button>
