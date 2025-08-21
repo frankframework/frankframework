@@ -17,6 +17,7 @@ import java.net.URL;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.PrivateKey;
 import java.security.Security;
@@ -84,6 +85,34 @@ class CommonsPkiUtilTest {
 
 		return ks;
 	}
+
+	private KeyStore createDummyKeyStoreWithNullKeyPassword() throws Exception {
+		KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+		keyGen.initialize(2048);
+		KeyPair keyPair = keyGen.generateKeyPair();
+
+		X500Name owner = new X500Name("CN=Test, OU=Test, O=Test, L=Test, C=US");
+		BigInteger serial = BigInteger.valueOf(System.currentTimeMillis());
+		Instant validFrom = Instant.now();
+		Instant validTo = validFrom.plus(365, ChronoUnit.DAYS);
+
+		JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
+				owner,
+				serial,
+				Date.from(validFrom),
+				Date.from(validTo),
+				owner,
+				keyPair.getPublic()
+		);
+		ContentSigner signer = new JcaContentSignerBuilder("SHA256WithRSA").build(keyPair.getPrivate());
+		X509Certificate cert = new JcaX509CertificateConverter().setProvider("BC").getCertificate(certBuilder.build(signer));
+
+		KeyStore ks = KeyStore.getInstance(KeystoreType.PKCS12.name());
+		ks.load(null, DUMMY_PW.toCharArray());
+		ks.setKeyEntry(DUMMY_ALIAS, keyPair.getPrivate(), null, new Certificate[]{ cert });
+		return ks;
+	}
+
 
 	private InputStream toInputStream(KeyStore ks) throws Exception {
 		ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -207,4 +236,84 @@ class CommonsPkiUtilTest {
 						CommonsPkiUtil.createTrustManagers(keyStore, "InvalidAlgorithm")
 		);
 	}
+
+	@Test
+	void testGetRsaPrivateKeySuccess() throws Exception {
+		KeyStore ks = createDummyKeyStoreWithNullKeyPassword();
+		var rsaKey = assertDoesNotThrow(() -> CommonsPkiUtil.getRsaPrivateKey(ks));
+		assertNotNull(rsaKey);
+		assertEquals("RSA", rsaKey.getAlgorithm());
+	}
+
+	@Test
+	void testGetRsaPrivateKeyWithNullKeystore() {
+		IllegalArgumentException e = assertThrows(
+				IllegalArgumentException.class,
+				() -> CommonsPkiUtil.getRsaPrivateKey(null)
+		);
+		assertEquals("Keystore may not be null", e.getMessage());
+	}
+
+	@Test
+	void testGetRsaPrivateKeyWhenNoKeyEntries() throws Exception {
+		KeyStore ks = KeyStore.getInstance(KeystoreType.PKCS12.name());
+		ks.load(null, DUMMY_PW.toCharArray());
+
+		Certificate cert = keyStore.getCertificate(DUMMY_ALIAS);
+		ks.setCertificateEntry("trustedCert", cert);
+
+		KeyStoreException e = assertThrows(
+				KeyStoreException.class,
+				() -> CommonsPkiUtil.getRsaPrivateKey(ks)
+		);
+		assertEquals("Expected exactly one key entry, found 0", e.getMessage());
+	}
+
+	@Test
+	void testGetRsaPrivateKeyWhenMultipleKeyEntries() throws Exception {
+		KeyPairGenerator keyGen = KeyPairGenerator.getInstance("RSA");
+		keyGen.initialize(1024);
+		KeyPair keyPair = keyGen.generateKeyPair();
+		PrivateKey privateKey2 = keyPair.getPrivate();
+
+		X500Name owner = new X500Name("CN=Test2");
+		BigInteger serial = BigInteger.valueOf(System.currentTimeMillis());
+		Instant now = Instant.now();
+		JcaX509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
+				owner, serial,
+				Date.from(now),
+				Date.from(now.plus(365, ChronoUnit.DAYS)),
+				owner,
+				keyPair.getPublic()
+		);
+		ContentSigner signer = new JcaContentSignerBuilder("SHA256WithRSA").build(privateKey2);
+		X509Certificate cert2 = new JcaX509CertificateConverter()
+				.setProvider("BC")
+				.getCertificate(certBuilder.build(signer));
+
+		keyStore.setKeyEntry("secondAlias", privateKey2, DUMMY_PW.toCharArray(), new Certificate[]{ cert2 });
+
+		KeyStoreException e = assertThrows(
+				KeyStoreException.class,
+				() -> CommonsPkiUtil.getRsaPrivateKey(keyStore)
+		);
+		assertTrue(e.getMessage().contains("Expected exactly one key entry, found 2"));
+	}
+
+	@Test
+	void testGetRsaPrivateKeyWithWrongKeyType() throws Exception {
+		KeyStore ks = KeyStore.getInstance(KeystoreType.PKCS12.name());
+		ks.load(null, DUMMY_PW.toCharArray());
+
+		javax.crypto.SecretKey secretKey =
+				new javax.crypto.spec.SecretKeySpec("1234567890123456".getBytes(), "AES");
+		ks.setKeyEntry("secretAlias", secretKey, null, null);
+
+		UnrecoverableKeyException e = assertThrows(
+				UnrecoverableKeyException.class,
+				() -> CommonsPkiUtil.getRsaPrivateKey(ks)
+		);
+		assertTrue(e.getMessage().contains("is not an RSAPrivateKey entry"));
+	}
+
 }

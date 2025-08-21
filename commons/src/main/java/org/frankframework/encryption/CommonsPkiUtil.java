@@ -121,7 +121,7 @@ public class CommonsPkiUtil {
 		}
 		String effectiveAlias = resolveAlias(keystore);
 		log.debug("Reading RSA private key from alias [{}]", effectiveAlias);
-		Key key = keystore.getKey(effectiveAlias, null);
+		Key key = keystore.getKey(effectiveAlias, new char[]{});
 		if (key instanceof RSAPrivateKey rsa) {
 			return rsa;
 		} else {
