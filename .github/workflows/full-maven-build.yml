@@ -110,6 +110,24 @@ jobs:
       run: |
         echo "MAVEN_GOALS=${{ env.MAVEN_GOALS }} org.sonarsource.scanner.maven:sonar-maven-plugin:sonar" >> $GITHUB_ENV
 
+      # Use Maven Wrapper, so we can build with an older version of Maven, see PR #4579.
+    - name: Build with Maven
+      env:
+        mailAddress: ${{ secrets.EXCHANGE_MAIL_ADDRESS }}
+        clientId: ${{ secrets.EXCHANGE_MAIL_CLIENTID }}
+        clientSecret: ${{ secrets.EXCHANGE_MAIL_CLIENTSECRET }}
+        tenantId: ${{ secrets.EXCHANGE_MAIL_TENANTID }}
+        baseFolder: "Inbox/${{env.PR_NUMBER}}-${{ env.JDK_VERSION }}"
+        CI_SERVICE: GITHUB
+        TZ: Europe/Amsterdam
+        JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # SonarCloud
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # SonarCloud
+      run: |
+        ./mvnw -B -V -T1 ${{ env.MAVEN_GOALS }} -P${{ env.PROFILES }}
+        -Dsonar.projectKey=ibissource_iaf
+        -Dsonar.coverage.jacoco.xmlReportPaths="${{ env.SONAR_JACOCO_PATHS }}"
+
     - name: Collect JaCoCo XML paths
       id: jacoco_paths
       shell: bash
@@ -129,25 +147,6 @@ jobs:
         echo "Found coverage reports:"
         printf ' - %s\n' "${FILES[@]}"
         echo "SONAR_JACOCO_PATHS=$PATHS" >> "$GITHUB_ENV"
-
-
-      # Use Maven Wrapper, so we can build with an older version of Maven, see PR #4579.
-    - name: Build with Maven
-      env:
-        mailAddress: ${{ secrets.EXCHANGE_MAIL_ADDRESS }}
-        clientId: ${{ secrets.EXCHANGE_MAIL_CLIENTID }}
-        clientSecret: ${{ secrets.EXCHANGE_MAIL_CLIENTSECRET }}
-        tenantId: ${{ secrets.EXCHANGE_MAIL_TENANTID }}
-        baseFolder: "Inbox/${{env.PR_NUMBER}}-${{ env.JDK_VERSION }}"
-        CI_SERVICE: GITHUB
-        TZ: Europe/Amsterdam
-        JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # SonarCloud
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # SonarCloud
-      run: |
-        ./mvnw -B -V -T1 ${{ env.MAVEN_GOALS }} -P${{ env.PROFILES }}
-        -Dsonar.projectKey=ibissource_iaf
-        -Dsonar.coverage.jacoco.xmlReportPaths="${{ env.SONAR_JACOCO_PATHS }}"
 
     - name: SonarCloud full branch analysis (entire codebase)
       if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
