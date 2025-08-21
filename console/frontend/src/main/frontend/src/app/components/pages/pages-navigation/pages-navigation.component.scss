@@ -14,3 +14,27 @@
 li > a {
   cursor: pointer;
 }
+
+fa-icon + span {
+  margin-left: 6px;
+}
+
+.fa-green {
+  color: #8bc34a;
+}
+
+.fa-magenta {
+  color: #fe41ff;
+}
+
+.fa-blue {
+  color: #00abff;
+}
+
+.fa-white {
+  color: #fff;
+}
+
+.fa-arrow {
+  float: right;
+}

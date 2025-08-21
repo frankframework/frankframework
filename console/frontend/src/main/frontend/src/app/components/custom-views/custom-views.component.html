@@ -1,8 +1,8 @@
 <ul class="nav">
   @for (view of customViews; track view.view) {
-    <li uiSrefActive="active">
+    <li>
       <a [routerLink]="['/customView', view.name]" [state]="{ view }"
-        ><i class="fa fa-desktop"></i> <span class="nav-label">{{ view.name }}</span></a
+        ><fa-icon [icon]="faDesktop" /> <span class="nav-label">{{ view.name }}</span></a
       >
     </li>
   }
