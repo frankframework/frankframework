@@ -110,6 +110,27 @@ jobs:
       run: |
         echo "MAVEN_GOALS=${{ env.MAVEN_GOALS }} org.sonarsource.scanner.maven:sonar-maven-plugin:sonar" >> $GITHUB_ENV
 
+    - name: Collect JaCoCo XML paths
+      id: jacoco_paths
+      shell: bash
+      run: |
+        set -euo pipefail
+        # Find per-module jacoco.xml and the test module’s aggregate
+        mapfile -d '' FILES < <(
+          find . -type f \( -path "*/target/site/jacoco/jacoco.xml" -o -path "./test/target/site/jacoco-aggregate/jacoco.xml" \) -print0
+        )
+        if [ ${#FILES[@]} -eq 0 ]; then
+          echo "No JaCoCo XML reports found!" >&2
+          exit 1
+        fi
+        # Join with commas, strip leading './' for neatness
+        PATHS=$(printf "%s," "${FILES[@]#./}")
+        PATHS=${PATHS%,}
+        echo "Found coverage reports:"
+        printf ' - %s\n' "${FILES[@]}"
+        echo "SONAR_JACOCO_PATHS=$PATHS" >> "$GITHUB_ENV"
+
+
       # Use Maven Wrapper, so we can build with an older version of Maven, see PR #4579.
     - name: Build with Maven
       env:
@@ -123,7 +144,22 @@ jobs:
         JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # SonarCloud
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # SonarCloud
-      run: ./mvnw -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}} -Dsonar.projectKey=ibissource_iaf
+      run: |
+        ./mvnw -B -V -T1 ${{ env.MAVEN_GOALS }} -P${{ env.PROFILES }}
+        -Dsonar.projectKey=ibissource_iaf
+        -Dsonar.coverage.jacoco.xmlReportPaths="${{ env.SONAR_JACOCO_PATHS }}"
+
+    - name: SonarCloud full branch analysis (entire codebase)
+      if: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      run: >
+        ./mvnw -B -V -T1 verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+        -P${{ env.PROFILES }}
+        -Dsonar.projectKey=ibissource_iaf
+        -Dsonar.branch.name='${{ env.BRANCH_NAME }}'
+        -Dsonar.coverage.jacoco.xmlReportPaths="${{ env.SONAR_JACOCO_PATHS }}"
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@v4
