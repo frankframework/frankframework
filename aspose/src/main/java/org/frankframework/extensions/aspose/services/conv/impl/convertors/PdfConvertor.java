@@ -63,11 +63,10 @@ public class PdfConvertor extends AbstractConvertor {
 			throw new IllegalArgumentException("Unsupported mediaType " + mediaType + " should never happen here!");
 		}
 
-		try (InputStream inputStream = message.asInputStream(charset)) {
-			Document doc = new Document(inputStream, getLoadOptions(mediaType));
+		try (InputStream inputStream = message.asInputStream(charset);
+			 Document doc = new Document(inputStream, getLoadOptions(mediaType))) {
 			doc.save(result.getPdfResultFile().getAbsolutePath(), SaveFormat.Pdf);
 			doc.freeMemory();
-			doc.close();
 		}
 		result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 	}
