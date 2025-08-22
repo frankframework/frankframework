@@ -10,6 +10,8 @@ import { FormsModule } from '@angular/forms';
 import { RouterLink } from '@angular/router';
 import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
 import { toObservable } from '@angular/core/rxjs-interop';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faArrowAltCircleLeft } from '@fortawesome/free-regular-svg-icons';
 
 type Form = {
   name: string;
@@ -23,7 +25,7 @@ type Form = {
 
 @Component({
   selector: 'app-configurations-upload',
-  imports: [FormsModule, InputFileUploadComponent, RouterLink, QuickSubmitFormDirective],
+  imports: [FormsModule, InputFileUploadComponent, RouterLink, QuickSubmitFormDirective, FaIconComponent],
   templateUrl: './configurations-upload.component.html',
   styleUrls: ['./configurations-upload.component.scss'],
 })
@@ -42,6 +44,7 @@ export class ConfigurationsUploadComponent implements OnInit, OnDestroy {
     activate_config: true,
     automatic_reload: false,
   };
+  protected readonly faArrowAltCircleLeft = faArrowAltCircleLeft;
 
   private readonly configurationsService: ConfigurationsService = inject(ConfigurationsService);
   private readonly jdbcService: JdbcService = inject(JdbcService);

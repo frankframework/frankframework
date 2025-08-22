@@ -5,7 +5,7 @@
         <div class="ibox-title">
           <div class="pull-right">
             <button routerLink=".." class="btn btn-xs pull-right btn-info" type="button">
-              <i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i>
+              <fa-icon aria-hidden="true" [icon]="faArrowAltCircleLeft" />
               <span> Back</span>
             </button>
           </div>
@@ -22,13 +22,14 @@
                 name="search"
                 [(ngModel)]="search"
               />
-              <i
+              <fa-icon
                 aria-hidden="true"
-                [class]="`fa fa-times input-group-closeSearch${search.length < 1 ? ' hidden' : ''}`"
+                [icon]="faTimes"
+                [class]="`input-group-closeSearch${search.length < 1 ? ' hidden' : ''}`"
                 (click)="search = ''"
-              ></i>
+              />
               <span class="input-group-addon">
-                <i class="fa fa-search" aria-hidden="true"></i>
+                <fa-icon aria-hidden="true" [icon]="faSearch" />
               </span>
             </div>
           </div>
@@ -70,7 +71,7 @@
                   </td>
                   <td>
                     @if (config.loaded) {
-                      <i class="fa fa-check btn-xs" aria-hidden="true"></i>
+                      <fa-icon class="btn-xs" aria-hidden="true" [icon]="faCheck" />
                     }
                   </td>
                   <td class="hideBtn1170 minw180px">
@@ -80,7 +81,7 @@
                       type="button"
                       (click)="deleteConfig(config)"
                     >
-                      <i class="fa fa-times aria-hidden='true'"></i>
+                      <fa-icon aria-hidden="true" [icon]="faTimes" />
                       <span> Delete</span>
                     </button>
                     <button
@@ -89,7 +90,7 @@
                       type="button"
                       (click)="download(config)"
                     >
-                      <i class="fa fa-cloud-download aria-hidden='true'"></i>
+                      <fa-icon aria-hidden="true" [icon]="faCloudDownload" />
                       <span> Download</span>
                     </button>
                   </td>

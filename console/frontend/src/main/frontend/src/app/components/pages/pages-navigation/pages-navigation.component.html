@@ -135,9 +135,8 @@
           [ngClass]="getClassByRoute('active', ['jdbc', 'liquibase'], accordionItemJdbc.expanded)"
         >
           <a tabindex="0" role="button" (click)="expandCollapse(accordionItemJdbc, $event)"
-            ><fa-icon [icon]="faCubes" /> <span class="nav-label">JDBC</span> <<fa-icon
-              class="fa-arrow"
-              [icon]="faAngleDown"
+            ><fa-icon [icon]="faCubes" /> <span class="nav-label">JDBC</span
+            ><fa-icon class="fa-arrow" [icon]="faAngleDown"
           /></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemJdbc.expanded }">
             <li appHasAccessToLink="executeJdbcQuery" routerLinkActive="active">
@@ -187,7 +186,7 @@
         </li>
         <li appHasAccessToLink="getMonitors" routerLinkActive="active" data-cy="pages-navigation__monitors">
           <a routerLink="/monitors" (click)="closeExpandedItem()"
-            ><fa-icon class="fa fa-clone" [icon]="faClone" /> <span class="nav-label">Monitors</span></a
+            ><fa-icon [icon]="faClone" /> <span class="nav-label">Monitors</span></a
           >
         </li>
         <li appHasAccessToLink="getEnvironmentVariables" routerLinkActive="active">

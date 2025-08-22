@@ -10,7 +10,7 @@
     <div class="toast-header">
       <strong class="title">{{ toast.title }}</strong>
       <button class="toast-close" (click)="remove(toast, $event)">
-        <i class="fa fa-times" aria-hidden="true"></i>
+        <fa-icon aria-hidden="true" [icon]="faTimes" />
       </button>
     </div>
     @if (toast.body) {

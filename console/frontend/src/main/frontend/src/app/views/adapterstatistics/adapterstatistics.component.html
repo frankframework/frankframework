@@ -10,7 +10,7 @@
               type="button"
               [queryParams]="{ configuration, adapter: adapterName }"
             >
-              <i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i>
+              <fa-icon aria-hidden="true" [icon]="faArrowAltCircleLeft" />
               <span> Back</span>
             </button>
             <button
@@ -19,7 +19,7 @@
               [ladda]="refreshing"
               (click)="refresh()"
             >
-              <i class="fa fa-refresh" aria-hidden="true"></i>
+              <fa-icon aria-hidden="true" [icon]="faRefresh" />
               <span> Refresh</span>
             </button>
           </div>
@@ -87,7 +87,7 @@
           <div class="ibox float-e-margins">
             <div tabindex="0" role="button" class="ibox-title" (click)="collapseExpand('processReceivers')">
               <div class="ibox-tools pull-right">
-                <a> <i [class]="`fa fa-chevron-${iboxExpanded['processReceivers'] ? 'up' : 'down'}`"></i></a>
+                <a> <fa-icon [icon]="iboxExpanded['processReceivers'] ? faChevronUp : faChevronDown" /></a>
               </div>
               <h4>Process statistics for receivers (in ms)</h4>
             </div>
@@ -146,7 +146,7 @@
         <div class="ibox float-e-margins">
           <div tabindex="0" role="button" class="ibox-title" (click)="collapseExpand('durationPerPipe')">
             <div class="ibox-tools pull-right">
-              <a> <i [class]="`fa fa-chevron-${iboxExpanded['durationPerPipe'] ? 'up' : 'down'}`"></i></a>
+              <a> <fa-icon [icon]="iboxExpanded['durationPerPipe'] ? faChevronUp : faChevronDown" /></a>
             </div>
             <h4>Duration statistics per pipe (in ms)</h4>
           </div>
@@ -188,7 +188,7 @@
         <div class="ibox float-e-margins">
           <div tabindex="0" role="button" class="ibox-title" (click)="collapseExpand('sizePerPipe')">
             <div class="ibox-tools pull-right">
-              <a> <i [class]="`fa fa-chevron-${iboxExpanded['sizePerPipe'] ? 'up' : 'down'}`"></i></a>
+              <a> <fa-icon [icon]="iboxExpanded['sizePerPipe'] ? faChevronUp : faChevronDown" /></a>
             </div>
             <h4>Size statistics per pipe (in bytes)</h4>
           </div>

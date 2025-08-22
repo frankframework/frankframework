@@ -4,10 +4,12 @@ import { IAFRelease } from 'src/app/app.service';
 import { SessionService } from 'src/app/services/session.service';
 import { MarkDownPipe } from '../../pipes/mark-down.pipe';
 import { ToDateDirective } from '../../components/to-date.directive';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faGithub } from '@fortawesome/free-brands-svg-icons';
 
 @Component({
   selector: 'app-iaf-update',
-  imports: [MarkDownPipe, ToDateDirective],
+  imports: [MarkDownPipe, ToDateDirective, FaIconComponent],
   templateUrl: './iaf-update.component.html',
   styleUrls: ['./iaf-update.component.scss'],
 })
@@ -24,4 +26,6 @@ export class IafUpdateComponent implements OnInit {
       this.router.navigate(['/status']);
     }
   }
+
+  protected readonly faGithub = faGithub;
 }

@@ -2,12 +2,14 @@ import { Component, inject, OnDestroy, OnInit, Signal } from '@angular/core';
 import { ActivatedRoute, ActivationEnd, NavigationEnd, Router } from '@angular/router';
 import { filter, Subscription } from 'rxjs';
 import { AppService } from 'src/app/app.service';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faArrowCircleRight } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-pages-topinfobar',
   templateUrl: './pages-topinfobar.component.html',
   styleUrls: ['./pages-topinfobar.component.scss'],
-  imports: [],
+  imports: [FaIconComponent],
 })
 export class PagesTopinfobarComponent implements OnInit, OnDestroy {
   protected breadcrumbs = 'Loading';
@@ -55,4 +57,6 @@ export class PagesTopinfobarComponent implements OnInit, OnDestroy {
     const popoutUrl = this.popoutUrl();
     if (popoutUrl) window.open(popoutUrl, '_blank');
   }
+
+  protected readonly faArrowCircleRight = faArrowCircleRight;
 }

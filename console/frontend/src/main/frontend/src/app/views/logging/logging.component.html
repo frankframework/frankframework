@@ -9,11 +9,11 @@
           @if (viewFile) {
             <div class="pull-right action-buttons">
               <button class="btn btn-xs" type="button" (click)="popout(path)">
-                <i class="fa fa-arrow-circle-right" aria-hidden="true"></i>
+                <fa-icon aria-hidden="true" [icon]="faArrowAltCircleRight" />
                 <span> Pop Out</span>
               </button>
               <button class="btn btn-xs pull-right" type="button" data-cy="logging__back-button" (click)="closeFile()">
-                <i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i>
+                <fa-icon aria-hidden="true" [icon]="faArrowAltCircleLeft" />
                 <span> Back</span>
               </button>
             </div>
@@ -22,13 +22,13 @@
             Logging
             <span class="m-l-md clipboard"
               >{{ path
-              }}<i
+              }}<fa-icon
                 title="copy to clipboard"
-                class="fa fa-clipboard"
                 aria-hidden="true"
+                [icon]="faClipboard"
                 (click)="copyAndTrimToClipboard(path)"
-              ></i
-            ></span>
+              />
+            </span>
           </h4>
         </div>
         @if (!viewFile) {
@@ -44,13 +44,14 @@
                     data-cy="logging__search__input"
                     [(ngModel)]="fileName"
                   />
-                  <i
+                  <fa-icon
                     aria-hidden="true"
-                    [class]="`fa fa-times input-group-closeSearch${fileName.length < 1 ? ' hidden' : ''}`"
+                    [icon]="faTimes"
+                    [class]="`input-group-closeSearch${fileName.length < 1 ? ' hidden' : ''}`"
                     (click)="fileName = ''"
-                  ></i>
+                  />
                   <span class="input-group-addon">
-                    <i class="fa fa-search" aria-hidden="true"></i>
+                    <fa-icon aria-hidden="true" [icon]="faSearch" />
                   </span>
                 </div>
               </div>
@@ -83,11 +84,11 @@
                       @if (file.type === 'file') {
                         <td class="hideBtn1170">
                           <button class="btn btn-xs pull-right" type="button" (click)="download(file)">
-                            <i class="fa fa-arrow-circle-o-down" aria-hidden="true"></i>
+                            <fa-icon aria-hidden="true" [icon]="faArrowAltCircleDown" />
                             <span> Download</span>
                           </button>
                           <button class="btn btn-xs pull-right" type="button" (click)="popout(file)">
-                            <i class="fa fa-arrow-circle-right" aria-hidden="true"></i>
+                            <fa-icon aria-hidden="true" [icon]="faArrowCircleRight" />
                             <span> Pop Out</span>
                           </button>
                         </td>
@@ -95,7 +96,7 @@
                       @if (file.type === 'directory') {
                         <td class="loggingBtn">
                           <button class="btn btn-xs pull-right" type="button" (click)="open(file)">
-                            <i class="fa fa-folder-open-o" aria-hidden="true"></i>
+                            <fa-icon aria-hidden="true" [icon]="faFolderOpen" />
                             <span> Open</span>
                           </button>
                         </td>

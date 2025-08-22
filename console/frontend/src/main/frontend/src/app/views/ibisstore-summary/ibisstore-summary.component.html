@@ -97,7 +97,7 @@
                                     'Done',
                                   ]"
                                 >
-                                  <i class="fa fa-sign-in"></i>
+                                  <fa-icon [icon]="faSignIn" />
                                 </button>
                               }
                             </span>
@@ -118,7 +118,7 @@
                                     'Error',
                                   ]"
                                 >
-                                  <i class="fa fa-times-circle"></i>
+                                  <fa-icon [icon]="faTimesCircle" />
                                 </button>
                               }
                             </span>
@@ -145,7 +145,7 @@
                                   'Done',
                                 ]"
                               >
-                                <i [ngClass]="t.type === 'M' ? 'fa fa-sign-out' : 'fa fa-database'"></i>
+                                <fa-icon [icon]="t.type === 'M' ? faSignOut : faDatabase" />
                               </button>
                             </span>
                             {{ s.pipe }}

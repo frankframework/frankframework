@@ -7,10 +7,12 @@ import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-
 import { Subscription } from 'rxjs';
 import { ConfigurationTabListComponent } from '../../../components/tab-list/configuration-tab-list.component';
 import { NgClass } from '@angular/common';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faClipboard } from '@fortawesome/free-regular-svg-icons';
 
 @Component({
   selector: 'app-configurations-show',
-  imports: [ConfigurationTabListComponent, NgClass, MonacoEditorComponent],
+  imports: [ConfigurationTabListComponent, NgClass, MonacoEditorComponent, FaIconComponent],
   templateUrl: './configurations-show.component.html',
   styleUrls: ['./configurations-show.component.scss'],
 })
@@ -20,9 +22,9 @@ export class ConfigurationsShowComponent implements OnInit, OnDestroy {
   protected selectedConfiguration = 'All';
   protected loadedConfiguration = false;
   protected configurations: Signal<Configuration[]>;
+  protected readonly faClipboard = faClipboard;
 
   private readonly appService: AppService = inject(AppService);
-
   private readonly router: Router = inject(Router);
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
   private readonly configurationsService: ConfigurationsService = inject(ConfigurationsService);

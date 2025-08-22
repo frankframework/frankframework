@@ -12,6 +12,12 @@ import { FormsModule } from '@angular/forms';
 import { SearchFilterPipe } from '../../pipes/search-filter.pipe';
 import { FileViewerComponent } from '../../components/file-viewer/file-viewer.component';
 import { ToDateDirective } from '../../components/to-date.directive';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faArrowAltCircleRight } from '@fortawesome/free-solid-svg-icons/faArrowAltCircleRight';
+import { faArrowAltCircleLeft, faClipboard } from '@fortawesome/free-regular-svg-icons';
+import { faArrowCircleRight, faSearch, faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faArrowAltCircleDown } from '@fortawesome/free-solid-svg-icons/faArrowAltCircleDown';
+import { faFolderOpen } from '@fortawesome/free-solid-svg-icons/faFolderOpen';
 
 @Component({
   selector: 'app-logging',
@@ -23,6 +29,7 @@ import { ToDateDirective } from '../../components/to-date.directive';
     SearchFilterPipe,
     FileViewerComponent,
     ToDateDirective,
+    FaIconComponent,
   ],
   templateUrl: './logging.component.html',
   styleUrls: ['./logging.component.scss'],
@@ -35,6 +42,14 @@ export class LoggingComponent implements OnInit {
   protected path = '';
   protected fileName = '';
   protected sortedlist: LoggingFile[] = [];
+  protected readonly faArrowAltCircleRight = faArrowAltCircleRight;
+  protected readonly faArrowAltCircleLeft = faArrowAltCircleLeft;
+  protected readonly faClipboard = faClipboard;
+  protected readonly faTimes = faTimes;
+  protected readonly faSearch = faSearch;
+  protected readonly faArrowAltCircleDown = faArrowAltCircleDown;
+  protected readonly faArrowCircleRight = faArrowCircleRight;
+  protected readonly faFolderOpen = faFolderOpen;
 
   private directory = '';
   private file = '';

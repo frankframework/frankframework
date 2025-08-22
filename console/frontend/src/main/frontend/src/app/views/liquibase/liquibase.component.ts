@@ -7,6 +7,8 @@ import { InputFileUploadComponent } from '../../components/input-file-upload/inp
 import { LaddaModule } from 'angular2-ladda';
 
 import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faArrowAltCircleLeft } from '@fortawesome/free-regular-svg-icons';
 
 type Form = {
   configuration: string;
@@ -14,7 +16,7 @@ type Form = {
 
 @Component({
   selector: 'app-liquibase',
-  imports: [FormsModule, InputFileUploadComponent, LaddaModule, QuickSubmitFormDirective],
+  imports: [FormsModule, InputFileUploadComponent, LaddaModule, QuickSubmitFormDirective, FaIconComponent],
   templateUrl: './liquibase.component.html',
   styleUrls: ['./liquibase.component.scss'],
 })
@@ -29,6 +31,7 @@ export class LiquibaseComponent {
   protected filteredConfigurations: Signal<Configuration[]> = computed(() =>
     this.findFirstAvailabeConfiguration(this.appService.configurations()),
   );
+  protected readonly faArrowAltCircleLeft = faArrowAltCircleLeft;
 
   private readonly appService: AppService = inject(AppService);
   private readonly jdbcService: JdbcService = inject(JdbcService);
