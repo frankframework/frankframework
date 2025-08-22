@@ -16,7 +16,6 @@
 package org.frankframework.metrics;
 
 import java.io.IOException;
-import java.io.OutputStream;
 
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
@@ -45,6 +44,9 @@ public class PrometheusMeterServlet extends AbstractHttpServlet {
 	private transient @Setter @Autowired MeterRegistry registry;
 	private static final Logger LOG = LogUtil.getLogger(PrometheusMeterServlet.class);
 
+	private static final String PRIMARY_CONTENT_TYPE = "application/openmetrics-text; version=1.0.0; charset=utf-8";
+	private static final String FALLBACK_CONTENT_TYPE = "text/plain; version=0.0.4; charset=utf-8";
+
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
@@ -69,12 +71,23 @@ public class PrometheusMeterServlet extends AbstractHttpServlet {
 				resp.sendError(501, "Prometheus registry not found");
 				return;
 			}
-			resp.setHeader("Content-Type", "text/plain; version=0.0.4; charset=utf-8");
-			try (OutputStream stream = resp.getOutputStream()) {
-				prometheusRegistry.scrape(stream);
-			}
+
+			String contentType = determineContentType(req);
+			resp.setHeader("Content-Type", contentType);
+			prometheusRegistry.scrape(resp.getOutputStream(), contentType);
 		} catch (IOException e) {
 			LOG.warn("unable to scrape PrometheusRegistry", e);
+		}
+	}
+
+	private String determineContentType(HttpServletRequest req) {
+		String accept = req.getHeader("Accept");
+		boolean wantsOM = accept != null &&
+				accept.toLowerCase().contains("application/openmetrics-text");
+		if (wantsOM) {
+			return PRIMARY_CONTENT_TYPE;
+		} else {
+			return FALLBACK_CONTENT_TYPE;
 		}
 	}
 
