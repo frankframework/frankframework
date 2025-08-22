@@ -86,7 +86,6 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 
 	private static final String FILE_DELIMITER = "/";
 
-	// l
 	private @Getter String accessKey;
 	private @Getter String secretKey;
 	private @Getter String authAlias;
