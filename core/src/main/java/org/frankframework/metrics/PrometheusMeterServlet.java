@@ -49,11 +49,11 @@ public class PrometheusMeterServlet extends AbstractHttpServlet {
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 
-		if(ACTIVE) {
+		if (ACTIVE) {
 			Assert.notNull(registry, "metrics registry not found");
 
 			if (registry instanceof CompositeMeterRegistry compositeMeterRegistry) {
-				for(MeterRegistry meterRegistry:compositeMeterRegistry.getRegistries()) {
+				for (MeterRegistry meterRegistry : compositeMeterRegistry.getRegistries()) {
 					if (meterRegistry instanceof PrometheusMeterRegistry prometheusMeterRegistry) {
 						prometheusRegistry = prometheusMeterRegistry;
 					}
@@ -63,14 +63,15 @@ public class PrometheusMeterServlet extends AbstractHttpServlet {
 	}
 
 	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
 		try {
-			if (prometheusRegistry==null) {
+			if (prometheusRegistry == null) {
 				resp.sendError(501, "Prometheus registry not found");
-			} else {
-				try (OutputStream stream = resp.getOutputStream()) {
-					prometheusRegistry.scrape(stream);
-				}
+				return;
+			}
+			resp.setHeader("Content-Type", "text/plain; version=0.0.4; charset=utf-8");
+			try (OutputStream stream = resp.getOutputStream()) {
+				prometheusRegistry.scrape(stream);
 			}
 		} catch (IOException e) {
 			LOG.warn("unable to scrape PrometheusRegistry", e);
