@@ -8,12 +8,15 @@ import { AuthService } from 'src/app/services/auth.service';
 import { AppService, ClusterMember } from 'src/app/app.service';
 import { FormsModule } from '@angular/forms';
 import { ServerTimeService } from '../../../services/server-time.service';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faGithub } from '@fortawesome/free-brands-svg-icons';
+import { faBell } from '@fortawesome/free-regular-svg-icons';
 
 @Component({
   selector: 'app-pages-topnavbar',
   templateUrl: './pages-topnavbar.component.html',
   styleUrls: ['./pages-topnavbar.component.scss'],
-  imports: [FormsModule, HamburgerComponent, RouterModule, TimeSinceDirective, NgbDropdownModule],
+  imports: [FormsModule, HamburgerComponent, RouterModule, TimeSinceDirective, NgbDropdownModule, FaIconComponent],
 })
 export class PagesTopnavbarComponent implements OnChanges {
   @Input() dtapSide = '';
@@ -26,6 +29,8 @@ export class PagesTopnavbarComponent implements OnChanges {
   protected notificationList: Signal<Notification[]> = computed(() => this.Notification.getLatest(5));
   protected notificationCount: Signal<number>;
   protected loggedIn = false;
+  protected readonly faGithub = faGithub;
+  protected readonly faBell = faBell;
 
   private readonly appService: AppService = inject(AppService);
   private readonly authService: AuthService = inject(AuthService);

@@ -26,6 +26,18 @@
   user-select: none;
 }
 
+.minimalize .right,body.mini-navbar .minimalize fa-icon.left {
+  display: none;
+}
+
+body.mini-navbar .minimalize fa-icon.right {
+  display: inline-block;
+}
+
+body.mini-navbar .navbar-default .nav li a fa-icon.fa-arrow {
+  display: none;
+}
+
 @media screen and (max-width: 960px) {
   .mini-navbar {
     .page-heading {

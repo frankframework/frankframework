@@ -15,7 +15,7 @@
         <div class="ibox-title">
           <div class="pull-right">
             <button routerLink="/configurations/manage" class="btn btn-xs pull-right btn-info" type="button">
-              <i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i>
+              <fa-icon aria-hidden="true" [icon]="faArrowAltCircleLeft" />
               <span> Back</span>
             </button>
           </div>
@@ -62,12 +62,7 @@
             <div class="row form-group">
               <label class="col-sm-3 control-label" for="activate_config">Startup Configuration</label>
               <div class="col-sm-9">
-                <input
-                  type="checkbox"
-                  name="activate_config"
-                  id="activate_config"
-                  [(ngModel)]="form.activate_config"
-                />
+                <input type="checkbox" name="activate_config" id="activate_config" [(ngModel)]="form.activate_config" />
                 <small class="m-l-sm"
                   >Load this version of the configuration on application startup or by manually reloading the
                   configuration. Resets this flag for other versions of this configuration.</small
