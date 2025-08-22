@@ -217,7 +217,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 		session.put("prefix.value.suffix", "ignore me");
 		System.setProperty("prefix.value.suffix", "replacedPropertyValue");
 
-		try {
+		try (Message message = new Message("dummy")) {
 			// Correctly chain the pipe processors
 			CorePipeLineProcessor pipeLineProcessor = new CorePipeLineProcessor();
 			InputOutputPipeProcessor inputOutputPipeProcessor = new InputOutputPipeProcessor();
@@ -235,7 +235,7 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 			pipe.addParameter(ParameterBuilder.create("variable", "value"));
 			configureAndStartPipe();
 
-			Message result = pipeline.process("123-456", new Message("dummy"), session).getResult();
+			Message result = pipeline.process("123-456", message, session).getResult();
 			assertEquals("replacedPropertyValue", result.asString());
 		} finally {
 			session.remove("prefix.value.suffix");

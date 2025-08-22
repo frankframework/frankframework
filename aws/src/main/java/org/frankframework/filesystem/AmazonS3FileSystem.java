@@ -214,7 +214,7 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 
 				request.continuationToken(listing.nextContinuationToken());
 				iterations++;
-			} while (listing.isTruncated());
+			} while (Boolean.TRUE.equals(listing.isTruncated()));
 		} catch (AwsServiceException e) {
 			throw new FileSystemException("Cannot process requested action", e);
 		}
@@ -429,7 +429,7 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 
 				request.continuationToken(listing.continuationToken());
 				iterations++;
-			} while (listing.isTruncated());
+			} while (Boolean.TRUE.equals(listing.isTruncated()));
 		} catch (AwsServiceException e) {
 			throw new FileSystemException("Cannot process requested action", e);
 		}
@@ -467,7 +467,7 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 			}
 		}
 
-		final String absFolder = folder.endsWith(FILE_DELIMITER) ? folder : folder + FILE_DELIMITER; //Ensure it's a folder that's being removed
+		final String absFolder = folder.endsWith(FILE_DELIMITER) ? folder : folder + FILE_DELIMITER; // Ensure it's a folder that's being removed
 		s3Client.deleteObject(DeleteObjectRequest.builder()
 				.bucket(bucketName)
 				.key(absFolder)

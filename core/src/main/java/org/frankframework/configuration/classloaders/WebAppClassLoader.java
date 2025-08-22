@@ -51,6 +51,9 @@ public class WebAppClassLoader extends AbstractClassLoader {
 		return getParent().getResource(getBasePath()==null?name:getBasePath()+name);
 	}
 
+	/**
+	 * Always allow all classes from the deployed webapp.
+	 */
 	@Override
 	protected boolean getAllowCustomClasses() {
 		return true;

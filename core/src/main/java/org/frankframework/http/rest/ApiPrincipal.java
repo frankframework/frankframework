@@ -1,5 +1,5 @@
 /*
-Copyright 2017 Integration Partners B.V.
+Copyright 2017-2025 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@ limitations under the License.
 */
 package org.frankframework.http.rest;
 
+import java.io.Serial;
 import java.io.Serializable;
 
 import org.frankframework.util.AppConstants;
@@ -22,10 +23,11 @@ import org.frankframework.util.TimeProvider;
 
 public class ApiPrincipal implements Serializable {
 
+	@Serial
 	private static final long serialVersionUID = 1L;
-	public long init = TimeProvider.nowAsMillis();
-	public long ttl = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7) * 1000L;
-	public long expires = 0;
+
+	private long ttl = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7) * 1000L;
+	private long expires = 0;
 
 	public String data = null;
 	public String authorizationToken = null;

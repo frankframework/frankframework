@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2018-2019 Nationale-Nederlanden
+   Copyright 2016-2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -53,6 +53,15 @@ public class DirectoryClassLoader extends AbstractClassLoader {
 		if (!this.directory.isDirectory()) {
 			throw new ClassLoaderException("Could not find directory to load configuration from: " + this.directory);
 		}
+	}
+
+	/**
+	 * Never allow custom code when using this classloader.
+	 * Classes should be placed on the classpath (eg. src/main/resources).
+	 */
+	@Override
+	protected boolean getAllowCustomClasses() {
+		return false;
 	}
 
 	/**
