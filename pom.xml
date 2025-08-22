@@ -944,7 +944,7 @@
 							<goals>
 								<goal>report</goal>
 							</goals>
-							<phase>test</phase>
+							<phase>verify</phase>
 						</execution>
 					</executions>
 				</plugin>
