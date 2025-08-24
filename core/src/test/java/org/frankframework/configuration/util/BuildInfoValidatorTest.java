@@ -175,7 +175,7 @@ public class BuildInfoValidatorTest {
 
 		try (TestAppender appender = TestAppender.newBuilder().build()) {
 			ConfigurationException ex = assertThrows(ConfigurationException.class, () -> new BuildInfoValidator(jar.openStream()));
-			assertEquals("unable to read jarfile: (IOException) no (valid) [META-INF/MANIFEST.MF] or [BuildInfo.properties] present in configuration", ex.getMessage());
+			assertEquals("no (valid) [META-INF/MANIFEST.MF] or [BuildInfo.properties] present in configuration", ex.getMessage());
 			assertTrue(appender.contains("did find a MANIFEST file but not a valid configuration folder in [Configuration_Template]"));
 		}
 	}

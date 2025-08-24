@@ -3,7 +3,7 @@ package org.frankframework.components;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.net.URL;
@@ -58,8 +58,7 @@ public class ConfigurationInfoTest {
 
 		try (JarInputStream jarInputStream = new JarInputStream(zip.openStream())) {
 			assertNotNull(jarInputStream.getManifest(), "config has no valid manifest file"); // Ensure the jar has a metainf.md file
-			ConfigurationInfo info = new ConfigurationInfo(jarInputStream.getManifest());
-			assertNull(info.getName());
+			assertThrows(IllegalArgumentException.class, () -> new ConfigurationInfo(jarInputStream.getManifest()));
 		}
 	}
 }

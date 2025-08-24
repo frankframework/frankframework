@@ -76,7 +76,7 @@ public class BuildInfoValidator {
 		return StringUtils.isNotBlank(entryName) && !entryName.contains("..");
 	}
 
-	private ConfigurationInfo getConfigurationInfo() throws IOException {
+	private ConfigurationInfo getConfigurationInfo() throws ConfigurationException, IOException {
 		ConfigurationInfo info;
 		try (JarInputStream jarInputStream = new JarInputStream(getJar())) {
 			info = parseManifest(jarInputStream);
@@ -86,7 +86,7 @@ public class BuildInfoValidator {
 		}
 
 		if (info == null) {
-			throw new IOException("no (valid) [%s] or [%s] present in configuration".formatted(JarFile.MANIFEST_NAME, buildInfoFilename));
+			throw new ConfigurationException("no (valid) [%s] or [%s] present in configuration".formatted(JarFile.MANIFEST_NAME, buildInfoFilename));
 		}
 		return info;
 	}
