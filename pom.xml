@@ -886,18 +886,18 @@
 					<groupId>org.cyclonedx</groupId>
 					<artifactId>cyclonedx-maven-plugin</artifactId>
 					<version>2.9.1</version>
-					<executions>
-						<execution>
-							<id>build-sbom-cyclonedx</id>
-							<phase>package</phase>
-							<goals>
-								<goal>makeAggregateBom</goal>
-							</goals>
-						</execution>
-					</executions>
 					<configuration>
 						<outputName>${project.artifactId}-${project.version}-bom</outputName>
 					</configuration>
+					<executions>
+						<execution>
+							<id>build-sbom-cyclonedx</id>
+							<goals>
+								<goal>makeAggregateBom</goal>
+							</goals>
+							<phase>package</phase>
+						</execution>
+					</executions>
 				</plugin>
 				<plugin>
 					<groupId>org.spdx</groupId>
@@ -906,10 +906,10 @@
 					<executions>
 						<execution>
 							<id>build-sbom-spdx</id>
-							<phase>package</phase>
 							<goals>
 								<goal>createSPDX</goal>
 							</goals>
+							<phase>package</phase>
 						</execution>
 					</executions>
 				</plugin>
