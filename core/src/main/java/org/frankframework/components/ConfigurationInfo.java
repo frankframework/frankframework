@@ -24,9 +24,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.jar.Manifest;
 
+import jakarta.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
+import org.apache.maven.artifact.Artifact;
+import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.versioning.ArtifactVersion;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
+import org.apache.maven.artifact.versioning.VersionRange;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -51,10 +57,9 @@ public class ConfigurationInfo {
 
 	private final String javaVersion;
 	private final List<String> classpath;
-	private final ArtifactVersion frameworkVersion;
+	private final VersionRange frameworkVersion;
 
-	private final String artifactId;
-	private final String groupId;
+	private final Artifact artifact;
 
 	/**
 	 * @param name Configuration Name, derived from the folder the configuration is in.
@@ -62,6 +67,11 @@ public class ConfigurationInfo {
 	 * @param timestamp Derived from BuildInfo.properties -> ${configuration.timestamp} using format 'YYYYMMdd-HHmmss'
 	 */
 	public ConfigurationInfo(String name, String version, String timestamp) {
+		if(StringUtils.isEmpty(name))
+			throw new IllegalArgumentException("unknown configuration name");
+		if(StringUtils.isEmpty(version))
+			throw new IllegalArgumentException("unknown configuration version");
+
 		this.name = name;
 		this.version = new DefaultArtifactVersion(version);
 		this.timestamp = parseDate(timestamp);
@@ -72,8 +82,8 @@ public class ConfigurationInfo {
 		this.javaVersion = null;
 		this.classpath = Collections.emptyList();
 		this.frameworkVersion = null;
-		this.artifactId = null;
-		this.groupId = null;
+
+		this.artifact = null;
 	}
 
 	private static Instant parseDate(String timestamp) {
@@ -100,32 +110,60 @@ public class ConfigurationInfo {
 		String classpathStr = manifest.getMainAttributes().getValue("Class-Path");
 		this.classpath = StringUtil.split(classpathStr, " ");
 		this.name = manifest.getMainAttributes().getValue("Implementation-Title");
+
+		if(StringUtils.isEmpty(this.name))
+			throw new IllegalArgumentException("no (valid) name");
+
 		String versionStr = manifest.getMainAttributes().getValue("Implementation-Version");
-		this.version = StringUtils.isNotBlank(versionStr) ? new DefaultArtifactVersion(versionStr) : null;
+		if(StringUtils.isEmpty(versionStr))
+			throw new IllegalArgumentException("no (valid) version");
+
+		this.version = new DefaultArtifactVersion(versionStr);
 		this.organisation = manifest.getMainAttributes().getValue("Implementation-Vendor");
-		this.artifactId = manifest.getMainAttributes().getValue("Artifact-Id");
 		String timestampStr = manifest.getMainAttributes().getValue("Build-Timestamp"); // yyyy-MM-dd HH:mm:ss
 		this.timestamp = StringUtils.isNotBlank(timestampStr) ? DateFormatUtils.parseGenericDate(timestampStr) : null;
 		this.description = manifest.getMainAttributes().getValue("Description");
+
 		String ffVersionStr = manifest.getMainAttributes().getValue("FrankFramework-Version");
-		this.frameworkVersion = StringUtils.isNotBlank(ffVersionStr) ? new DefaultArtifactVersion(ffVersionStr) : null;
-		this.groupId = manifest.getMainAttributes().getValue("Group-Id");
+		this.frameworkVersion = parseVersionRange(ffVersionStr);
+
+		String artifactId = manifest.getMainAttributes().getValue("Artifact-Id");
+		String groupId = manifest.getMainAttributes().getValue("Group-Id");
+		if (StringUtils.isNoneBlank(artifactId, groupId, versionStr)) {
+			this.artifact = new DefaultArtifact(groupId, artifactId, versionStr, null, getTimestamp(timestamp), "", null);
+		} else {
+			this.artifact = null;
+		}
 	}
 
+	@Nullable
 	public static ConfigurationInfo fromManifest(Manifest manifest) {
 		if (manifest != null) {
-			ConfigurationInfo info = new ConfigurationInfo(manifest);
-			if (info.getName() != null && info.getVersion() != null) {
-				return info;
+			try {
+				return new ConfigurationInfo(manifest);
+			} catch (IllegalArgumentException e) {
+				log.debug("was not able to parse METAINF file: {}", e::getMessage);
 			}
 		}
 
 		return null;
 	}
 
-	public String getLegacyVersion() {
-		if (timestamp == null) {
-			return version.toString();
+	private static VersionRange parseVersionRange(String ffVersion) {
+		if (StringUtils.isNotBlank(ffVersion)) {
+			try {
+				return VersionRange.createFromVersionSpec(ffVersion);
+			} catch (InvalidVersionSpecificationException e) {
+				log.error("unable to parse FrankFramework version [{}]", ffVersion);
+			}
+		}
+
+		return null;
+	}
+
+	private static String getTimestamp(Instant time) {
+		if (time == null) {
+			return null;
 		}
 
 		// Need to think of a new format to use, either way we cannot use [BUILDINFO_PROPERTIES_FORMATTER] because that contains seconds
@@ -133,6 +171,14 @@ public class ConfigurationInfo {
 				.ofPattern("yyyyMMdd-HHmm")
 				.withZone(ZoneOffset.UTC)
 				.withResolverStyle(ResolverStyle.LENIENT);
-		return "%s_%s".formatted(version.toString(), format.format(timestamp));
+		return format.format(time);
+	}
+
+	public String getLegacyVersion() {
+		if (timestamp == null) {
+			return version.toString();
+		}
+
+		return "%s_%s".formatted(version.toString(), getTimestamp(timestamp));
 	}
 }

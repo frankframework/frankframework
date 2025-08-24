@@ -719,7 +719,7 @@
 	</repositories>
 
 	<build>
-		<defaultGoal>install</defaultGoal>
+		<defaultGoal>clean verify spotbugs:check checkstyle:check</defaultGoal>
 
 		<pluginManagement>
 			<plugins>
@@ -878,6 +878,37 @@
 						<execution>
 							<goals>
 								<goal>check</goal>
+							</goals>
+						</execution>
+					</executions>
+				</plugin>
+				<plugin>
+					<groupId>org.cyclonedx</groupId>
+					<artifactId>cyclonedx-maven-plugin</artifactId>
+					<version>2.9.1</version>
+					<executions>
+						<execution>
+							<id>build-sbom-cyclonedx</id>
+							<phase>package</phase>
+							<goals>
+								<goal>makeAggregateBom</goal>
+							</goals>
+						</execution>
+					</executions>
+					<configuration>
+						<outputName>${project.artifactId}-${project.version}-bom</outputName>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.spdx</groupId>
+					<artifactId>spdx-maven-plugin</artifactId>
+					<version>1.0.3</version>
+					<executions>
+						<execution>
+							<id>build-sbom-spdx</id>
+							<phase>package</phase>
+							<goals>
+								<goal>createSPDX</goal>
 							</goals>
 						</execution>
 					</executions>
@@ -1357,6 +1388,14 @@
 			<plugin>
 				<groupId>com.diffplug.spotless</groupId>
 				<artifactId>spotless-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.cyclonedx</groupId>
+				<artifactId>cyclonedx-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.spdx</groupId>
+				<artifactId>spdx-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>

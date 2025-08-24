@@ -28,6 +28,8 @@ import jakarta.annotation.Nullable;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
+import org.apache.maven.artifact.versioning.VersionRange;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -43,9 +45,10 @@ import org.frankframework.util.StreamUtil;
  */
 @Log4j2
 public class BuildInfoValidator {
-	private ConfigurationInfo configInfo = null;
-	private byte[] jar = null;
-	private String buildInfoFilename = null;
+	private final byte[] jar;
+	private final ConfigurationInfo configInfo;
+	private final String buildInfoFilename;
+
 	protected static String ADDITIONAL_PROPERTIES_FILE_SUFFIX = AppConstants.getInstance().getString(AppConstants.ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY, null);
 
 	public BuildInfoValidator(InputStream stream) throws ConfigurationException {
@@ -57,10 +60,7 @@ public class BuildInfoValidator {
 
 		try {
 			jar = StreamUtil.streamToBytes(stream); // Persist Stream so it can be read multiple times.
-
-			getConfigurationInfo();
-
-			validate();
+			configInfo = getConfigurationInfo();
 		} catch(IOException e) {
 			throw new ConfigurationException("unable to read jarfile", e);
 		}
@@ -76,17 +76,19 @@ public class BuildInfoValidator {
 		return StringUtils.isNotBlank(entryName) && !entryName.contains("..");
 	}
 
-	private void getConfigurationInfo() throws IOException, ConfigurationException {
+	private ConfigurationInfo getConfigurationInfo() throws IOException {
+		ConfigurationInfo info;
 		try (JarInputStream jarInputStream = new JarInputStream(getJar())) {
-			configInfo = parseManifest(jarInputStream);
-			if (configInfo == null) {
-				configInfo = searchForBuildInfo(jarInputStream);
+			info = parseManifest(jarInputStream);
+			if (info == null) {
+				info = searchForBuildInfo(jarInputStream);
 			}
 		}
 
-		if (configInfo == null) {
-			throw new ConfigurationException("no [%s] or [%s] present in configuration".formatted(JarFile.MANIFEST_NAME, buildInfoFilename));
+		if (info == null) {
+			throw new IOException("no (valid) [%s] or [%s] present in configuration".formatted(JarFile.MANIFEST_NAME, buildInfoFilename));
 		}
+		return info;
 	}
 
 	@Nullable
@@ -144,16 +146,18 @@ public class BuildInfoValidator {
 		return null;
 	}
 
-	private void validate() throws ConfigurationException {
-		if(StringUtils.isEmpty(getName()))
-			throw new ConfigurationException("unknown configuration name");
-		if(StringUtils.isEmpty(getVersion()))
-			throw new ConfigurationException("unknown configuration version");
+	// protected because it's used in tests
+	protected final void validate(String againstVersion) throws ConfigurationException {
+		VersionRange range = configInfo.getFrameworkVersion();
+		if (range != null && !range.containsVersion(new DefaultArtifactVersion(againstVersion))) {
+			throw new ConfigurationException("unsupported version");
+		}
 	}
 
 	public InputStream getJar() {
 		return new ByteArrayInputStream(jar);
 	}
+
 	public String getName() {
 		return configInfo.getName();
 	}
