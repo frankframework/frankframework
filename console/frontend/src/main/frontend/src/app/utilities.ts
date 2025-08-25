@@ -1,6 +1,8 @@
 // @ts-expect-error _.merge does not have correct types
 import _merge from 'lodash.merge';
 import type { merge } from 'lodash';
+import { IconDefinition } from '@fortawesome/angular-fontawesome';
+import { faGears, faPauseCircle, faServer, faSignIn, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 
 export const deepMerge: typeof merge = _merge;
 
@@ -17,25 +19,23 @@ export function computeServerPath(): string {
   return path;
 }
 
-export function getProcessStateIcon(
-  processState: string,
-): 'fa-server' | 'fa-gears' | 'fa-sign-in' | 'fa-pause-circle' | 'fa-times-circle' {
+export function getProcessStateIcon(processState: string): IconDefinition {
   switch (processState) {
     case 'Available': {
-      return 'fa-server';
+      return faServer;
     }
     case 'InProcess': {
-      return 'fa-gears';
+      return faGears;
     }
     case 'Done': {
-      return 'fa-sign-in';
+      return faSignIn;
     }
     case 'Hold': {
-      return 'fa-pause-circle';
+      return faPauseCircle;
     }
     // case 'Error':
     default: {
-      return 'fa-times-circle';
+      return faTimesCircle;
     }
   }
 }

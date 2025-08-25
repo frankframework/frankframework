@@ -9,7 +9,7 @@
     (click)="adapterShowContent[adapter.configuration + '/' + adapter.name] = !showContent(adapter)"
   >
     <div class="ibox-tools pull-right">
-      <a> <i [class]="`fa fa-chevron-${showContent(adapter) ? 'up' : 'down'}`"></i></a>
+      <a> <fa-icon [icon]="showContent(adapter) ? faChevronUp : faChevronDown" /></a>
     </div>
     <div class="row almost-full-width">
       <div class="col-lg-6 col-md-12 clear">
@@ -40,32 +40,34 @@
           <div class="col-sm-2" title="Messages Processed (Messages in Process) | Messages in Error">
             {{ adapter.messagesProcessed }}
             @if ((adapter.messagesInProcess ?? 0) > 0) {
-              <span>({{ adapter.messagesInProcess }} <i aria-hidden="true" class="fa fa-cog fa-spin"></i>)</span>
+              <span
+                >({{ adapter.messagesInProcess }} <fa-icon aria-hidden="true" animation="spin" [icon]="faCog" />)</span
+              >
             }
             @if ((adapter.messagesInError ?? 0) > 0) {
-              <span>| {{ adapter.messagesInError }} <i aria-hidden="true" class="fa fa-exclamation-triangle"></i></span>
+              <span>| {{ adapter.messagesInError }} <fa-icon aria-hidden="true" [icon]="faExclamationTriangle" /></span>
             }
           </div>
           @if (!showContent(adapter)) {
             <div class="col-sm-2" title="Adapter Store">
               @if ((adapter.messageLogMessageCount ?? 0) > 0) {
                 <span class="text-success" title="Total # of processed messages by the adapter">
-                  <i class="fa fa-sign-in"></i> ({{ adapter.messageLogMessageCount }})
+                  <fa-icon [icon]="faSignIn" /> ({{ adapter.messageLogMessageCount }})
                 </span>
               }
               @if ((adapter.errorStoreMessageCount ?? 0) > 0) {
                 <span class="text-danger" title="Total # of messages in Error"
-                  >&nbsp;<i class="fa fa-times-circle"></i> ({{ adapter.errorStoreMessageCount }})
+                  >&nbsp;<fa-icon [icon]="faTimesCircle" /> ({{ adapter.errorStoreMessageCount }})
                 </span>
               }
               @if ((adapter.sendersMessageLogCount ?? 0) > 0) {
                 <span class="text-success" title="Total # of messages processed by senders that have a messagelog">
-                  &nbsp;<i class="fa fa-database"></i> ({{ adapter.sendersMessageLogCount }})
+                  &nbsp;<fa-icon [icon]="faDatabase" /> ({{ adapter.sendersMessageLogCount }})
                 </span>
               }
               @if (adapter.senderTransactionalStorageMessageCount! > 0) {
                 <span class="text-primary" title="Total # of messages in messageStoreSenders">
-                  &nbsp;<i class="fa fa-sign-out"></i> ({{ adapter.senderTransactionalStorageMessageCount }})
+                  &nbsp;<fa-icon [icon]="faSignOut" /> ({{ adapter.senderTransactionalStorageMessageCount }})
                 </span>
               }
             </div>
@@ -85,7 +87,7 @@
               class="btn btn-xs btn-info pull-right m-r-xs"
               type="button"
               [routerLink]="['', adapter.configuration, 'adapter', adapter.name, 'statistics']"
-              ><i aria-hidden="true" class="fa fa-bar-chart m-r-xs"></i>More statistics</a
+              ><fa-icon aria-hidden="true" class="m-r-xs" [icon]="faBarChart" />More statistics</a
             >
           </span>
           <h4>Adapter information</h4>
@@ -95,15 +97,15 @@
                 <td class="col-md-6">State</td>
                 @if (adapter.state === 'starting') {
                   <td class="col-md-6">
-                    <span><i class="fa fa-check-square-o lh22 m-r-xs"></i> Starting</span>
+                    <span><fa-icon class="lh22 m-r-xs" [icon]="faCheckSquare" /> Starting</span>
                     <button class="btn btn-xs btn-warning" style="float: right" title="Starting adapter" type="button">
-                      <i class="fa fa-cog fa-spin"></i>
+                      <fa-icon animation="spin" [icon]="faCog" />
                     </button>
                   </td>
                 }
                 @if (adapter.state === 'started') {
                   <td class="col-md-6">
-                    <span><i class="fa fa-check-square lh22 m-r-xs"></i> Started</span>
+                    <span><fa-icon class="lh22 m-r-xs" [icon]="faCheckSquare" /> Started</span>
                     <button
                       appHasAccessToLink="updateAdapter"
                       class="btn btn-xs danger-hover"
@@ -112,21 +114,21 @@
                       type="button"
                       (click)="stopAdapter(adapter)"
                     >
-                      <i class="fa fa-stop"></i>
+                      <fa-icon [icon]="faStop" />
                     </button>
                   </td>
                 }
                 @if (adapter.state === 'stopping') {
                   <td class="col-md-6">
-                    <span><i class="fa fa-stop-circle-o lh22 m-r-xs"></i> Stopping</span>
+                    <span><fa-icon class="lh22 m-r-xs" [icon]="faStopCircle" /> Stopping</span>
                     <button class="btn btn-xs btn-warning" style="float: right" title="Stopping adapter" type="button">
-                      <i class="fa fa-cog fa-spin"></i>
+                      <fa-icon animation="spin" [icon]="faCog" />
                     </button>
                   </td>
                 }
                 @if (adapter.state === 'stopped') {
                   <td class="col-md-6">
-                    <span><i class="fa fa-stop-circle lh22 m-r-xs"></i> Stopped</span>
+                    <span><fa-icon class="lh22 m-r-xs" [icon]="faStopCircle" /> Stopped</span>
                     <button
                       appHasAccessToLink="updateAdapter"
                       class="btn btn-xs primary-hover"
@@ -135,20 +137,20 @@
                       type="button"
                       (click)="startAdapter(adapter)"
                     >
-                      <i class="fa fa-play"></i>
+                      <fa-icon [icon]="faPlay" />
                     </button>
                   </td>
                 }
                 @if (adapter.state === 'error') {
                   <td class="col-md-6">
-                    <span><i class="fa fa-warning lh22 m-r-xs"></i> ERROR</span>
+                    <span><fa-icon class="lh22 m-r-xs" [icon]="faWarning" /> ERROR</span>
                   </td>
                 }
               </tr>
               <tr>
                 <td>Configured</td>
                 <td>
-                  <i [class]="`fa ${adapter.configured ? 'fa-check-square' : 'fa-times-circle'}`"></i>
+                  <fa-icon [icon]="adapter.configured ? faCheckSquare : faTimesCircle" />
                 </td>
               </tr>
               <tr>
@@ -269,7 +271,7 @@
                               [disabled]="receiver.state === 'loading'"
                               (click)="addThread(adapter, receiver)"
                             >
-                              <i class="fa fa-plus"></i> Inc
+                              <fa-icon [icon]="faPlus" /> Inc
                             </button>
                             <button
                               appHasAccessToLink="updateReceiver"
@@ -279,7 +281,7 @@
                               [disabled]="receiver.state === 'loading' || (receiver.maxThreadCount ?? 0) < 2"
                               (click)="removeThread(adapter, receiver)"
                             >
-                              <i class="fa fa-minus"></i> Dec
+                              <fa-icon [icon]="faMinus" /> Dec
                             </button>
                           </span>
                         }
@@ -325,7 +327,7 @@
                             type="button"
                             (click)="stopReceiver(adapter!, receiver)"
                           >
-                            <i class="fa fa-stop"></i>
+                            <fa-icon [icon]="faStop" />
                           </button>
                         }
                         @if (receiver.state === 'stopped' || receiver.state === 'exception_stopping') {
@@ -335,19 +337,19 @@
                             type="button"
                             (click)="startReceiver(adapter!, receiver)"
                           >
-                            <i class="fa fa-play"></i>
+                            <fa-icon [icon]="faPlay" />
                           </button>
                         }
                         @if (
                           receiver.state === 'loading' || receiver.state === 'starting' || receiver.state === 'stopping'
                         ) {
                           <button class="btn btn-warning btn-xs" title="Loading..." type="button">
-                            <i class="fa fa-cog fa-spin"></i>
+                            <fa-icon animation="spin" [icon]="faCog" />
                           </button>
                         }
                         @if (receiver.state === 'error') {
                           <button class="btn btn-warning btn-xs" disabled title="RECEIVER IN ERROR STATE" type="button">
-                            <i class="fa fa-warning"></i>
+                            <fa-icon [icon]="faWarning" />
                           </button>
                         }
                       </span>
@@ -406,9 +408,7 @@
                                     'Done',
                                   ]"
                                 >
-                                  <i
-                                    [ngClass]="pipes.isSenderTransactionalStorage ? 'fa fa-sign-out' : 'fa fa-database'"
-                                  ></i>
+                                  <fa-icon [icon]="pipes.isSenderTransactionalStorage ? faSignOut : faDatabase" />
                                   ({{ pipes.messageLogCount }})
                                 </a>
                               }
@@ -432,7 +432,7 @@
               @for (message of adapter.messages; track message) {
                 <tr>
                   @if (message.level === 'INFO') {
-                    <td class="text-center" style="width: 40px">&nbsp;<i class="fa fa-info"></i></td>
+                    <td class="text-center" style="width: 40px">&nbsp;<fa-icon [icon]="faInfo" /></td>
                     <td class="text-left" style="width: 200px">
                       <span appToDate [time]="message.date"></span>
                     </td>
@@ -441,7 +441,7 @@
                     </td>
                   }
                   @if (message.level === 'WARN') {
-                    <td class="text-center" style="width: 40px">&nbsp;<i class="fa fa-warning"></i></td>
+                    <td class="text-center" style="width: 40px">&nbsp;<fa-icon [icon]="faWarning" /></td>
                     <td class="text-left" style="width: 200px">
                       <span appToDate [time]="message.date"></span>
                     </td>
@@ -450,7 +450,7 @@
                     </td>
                   }
                   @if (message.level === 'ERROR') {
-                    <td class="text-center" style="width: 40px">&nbsp;<i class="fa fa-times"></i></td>
+                    <td class="text-center" style="width: 40px">&nbsp;<fa-icon [icon]="faTimes" /></td>
                     <td class="text-left" style="width: 200px">
                       <span appToDate [time]="message.date"></span>
                     </td>

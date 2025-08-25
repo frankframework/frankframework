@@ -11,6 +11,8 @@ import { ConfigurationFilterPipe } from '../../../pipes/configuration-filter.pip
 import { WithJavaListenerPipe } from '../../../pipes/with-java-listener.pipe';
 import { TruncatePipe } from '../../../pipes/truncate.pipe';
 import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-editor.component';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faArrowAltCircleLeft } from '@fortawesome/free-regular-svg-icons';
 
 @Component({
   selector: 'app-scheduler-edit',
@@ -23,12 +25,15 @@ import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-
     WithJavaListenerPipe,
     TruncatePipe,
     MonacoEditorComponent,
+    FaIconComponent,
   ],
   templateUrl: '../scheduler-add-edit-parent.component.html',
   styleUrls: ['./scheduler-edit.component.scss'],
 })
 export class SchedulerEditComponent extends SchedulerAddEditParent implements OnInit, OnDestroy {
   override editMode = true;
+
+  protected readonly faArrowAltCircleLeft = faArrowAltCircleLeft;
 
   private groupName = '';
   private jobName = '';

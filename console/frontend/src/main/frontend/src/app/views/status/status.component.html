@@ -42,7 +42,7 @@
                   type="button"
                   (click)="stopAll()"
                 >
-                  <i class="fa fa-stop"></i>
+                  <fa-icon [icon]="faStop" />
                 </button>
                 <button
                   appHasAccessToLink="updateAdapters"
@@ -52,7 +52,7 @@
                   type="button"
                   (click)="startAll()"
                 >
-                  <i class="fa fa-play"></i>
+                  <fa-icon [icon]="faPlay" />
                 </button>
               </div>
               <div class="text-right pull-right">
@@ -63,7 +63,7 @@
                   type="button"
                   (click)="expandAll()"
                 >
-                  <i class="fa fa-angle-double-down fa-size-up"></i>
+                  <fa-icon class="fa-size-up" [icon]="faAngleDoubleDown" />
                 </button>
                 <button
                   class="btn btn-default btn-xs"
@@ -72,7 +72,7 @@
                   type="button"
                   (click)="collapseAll()"
                 >
-                  <i class="fa fa-angle-double-up fa-size-up"></i>
+                  <fa-icon class="fa-size-up" [icon]="faAngleDoubleUp" />
                 </button>
               </div>
               <div class="text-center">
@@ -85,7 +85,7 @@
                     type="button"
                     (click)="reloadConfiguration()"
                   >
-                    <i class="fa fa-undo"></i>
+                    <fa-icon [icon]="faUndo" />
                   </button>
                 }
                 @if (selectedConfiguration !== 'All' && !reloading && isConfigReloading[selectedConfiguration]) {
@@ -95,7 +95,7 @@
                     title="Reload Configuration"
                     type="button"
                   >
-                    <i class="fa fa-spin fa-refresh"></i>
+                    <fa-icon animation="spin" [icon]="faRefresh" />
                   </button>
                 }
                 @if (selectedConfiguration === 'All' && !reloading) {
@@ -107,7 +107,7 @@
                     type="button"
                     (click)="fullReload()"
                   >
-                    <i class="fa fa-undo"></i>
+                    <fa-icon [icon]="faUndo" />
                   </button>
                 }
                 @if (reloading) {
@@ -117,7 +117,7 @@
                     title="Full Reload in process"
                     type="button"
                   >
-                    <i class="fa fa-spin fa-refresh"></i>
+                    <fa-icon animation="spin" [icon]="faRefresh" />
                   </button>
                 }
                 @if (configurationFlowDiagram) {
@@ -129,7 +129,7 @@
                     type="button"
                     (click)="showReferences()"
                   >
-                    <i class="fa fa-file-picture-o"></i>
+                    <fa-icon [icon]="faFileImage" />
                   </button>
                 }
               </div>
@@ -173,14 +173,15 @@
                   [(ngModel)]="searchText"
                   (change)="updateQueryParams()"
                 />
-                <i
+                <fa-icon
                   aria-hidden="true"
-                  class="fa fa-times input-group-closeSearch"
+                  class="input-group-closeSearch"
+                  [icon]="faTimes"
                   [ngClass]="searchText.length === 0 ? ['hidden'] : []"
                   (click)="searchText = ''; updateQueryParams()"
-                ></i>
+                />
                 <span class="input-group-addon">
-                  <i aria-hidden="true" class="fa fa-search"></i>
+                  <fa-icon aria-hidden="true" [icon]="faSearch" />
                 </span>
               </div>
             </div>

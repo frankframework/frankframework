@@ -7,10 +7,12 @@ import { combineLatestWith, Subscription } from 'rxjs';
 import { LaddaModule } from 'angular2-ladda';
 import { ComboboxComponent, Option } from '../../../components/combobox/combobox.component';
 import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faArrowAltCircleLeft } from '@fortawesome/free-regular-svg-icons';
 
 @Component({
   selector: 'app-monitors-new',
-  imports: [RouterLink, FormsModule, LaddaModule, ComboboxComponent, QuickSubmitFormDirective],
+  imports: [RouterLink, FormsModule, LaddaModule, ComboboxComponent, QuickSubmitFormDirective, FaIconComponent],
   templateUrl: './monitors-new.component.html',
   styleUrl: './monitors-new.component.scss',
 })
@@ -21,6 +23,7 @@ export class MonitorsNewComponent implements OnInit, OnDestroy {
   protected configurations: Signal<Option[]> = computed(() =>
     this.appService.configurations().map((config) => ({ label: config.name })),
   );
+  protected readonly faArrowAltCircleLeft = faArrowAltCircleLeft;
 
   private readonly appService: AppService = inject(AppService);
   private readonly monitorsService: MonitorsService = inject(MonitorsService);

@@ -8,7 +8,7 @@
       <div class="ibox float-e-margins">
         <div tabindex="0" role="button" class="ibox-title pointer" (click)="filterBoxExpanded = !filterBoxExpanded">
           <div class="ibox-tools pull-right">
-            <a> <i [class]="`fa fa-chevron-${filterBoxExpanded ? 'up' : 'down'}`"></i></a>
+            <a> <fa-icon [icon]="filterBoxExpanded ? faChevronUp : faChevronDown" /></a>
           </div>
           <div class="row full-width">
             <div class="col-lg-6 col-md-12 clear">
@@ -54,7 +54,7 @@
                     </td>
                     <td>
                       <button class="btn btn-info btn-sm" type="button" [ladda]="searching" (click)="searchUpdated()">
-                        <i class="fa fa-search" aria-hidden="true"></i> Search
+                        <fa-icon aria-hidden="true" [icon]="faSearch" /> Search
                       </button>
                       <button
                         class="btn btn-warning btn-sm"
@@ -62,7 +62,7 @@
                         [ladda]="clearSearchLadda"
                         (click)="clearSearch()"
                       >
-                        <i class="fa fa-times" aria-hidden="true"></i> Clear
+                        <fa-icon aria-hidden="true" [icon]="faTimes" /> Clear
                       </button>
                     </td>
                   </tr>
@@ -89,7 +89,7 @@
                 adapter: storageParams.adapterName,
               }"
             >
-              <i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i>
+              <fa-icon aria-hidden="true" [icon]="faArrowAltCircleLeft" />
               <span> Back</span>
             </button>
           </div>
@@ -140,7 +140,7 @@
                   [ladda]="messagesProcessing"
                   (click)="moveMessages()"
                 >
-                  <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+                  <fa-icon aria-hidden="true" [icon]="faExclamationTriangle" />
                   Move to Error
                 </button>
               } @else {
@@ -152,7 +152,7 @@
                   [ladda]="changingProcessState"
                   (click)="changeProcessState(targetState.value.name)"
                 >
-                  <i [class]="`fa ${getProcessStateIconFn(targetState.value.name)}`"></i>
+                  <fa-icon [icon]="getProcessStateIconFn(targetState.value.name)" />
                   Move to {{ targetState.value.name }}
                 </button>
               }
@@ -166,7 +166,7 @@
               [ladda]="messagesDownloading"
               (click)="downloadMessages()"
             >
-              <i class="fa fa-arrow-circle-o-down"></i> Download Selected
+              <fa-icon [icon]="faArrowAltCircleDown" /> Download Selected
             </button>
             @if (storageParams.processState === 'Error') {
               <button
@@ -178,7 +178,7 @@
                 [ladda]="messagesProcessing"
                 (click)="resendMessages()"
               >
-                <i class="fa fa-repeat"></i> Resend Selected
+                <fa-icon [icon]="faRepeat" /> Resend Selected
               </button>
               <button
                 appHasAccessToLink="deleteReceiverMessages"
@@ -189,7 +189,7 @@
                 [ladda]="messagesProcessing"
                 (click)="deleteMessages()"
               >
-                <i class="fa fa-times"></i> Delete Selected
+                <fa-icon [icon]="faTimes" /> Delete Selected
               </button>
             }
           </div>

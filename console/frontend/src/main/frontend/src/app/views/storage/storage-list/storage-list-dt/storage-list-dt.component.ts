@@ -6,18 +6,26 @@ import { RouterLink } from '@angular/router';
 import { HasAccessToLinkDirective } from '../../../../components/has-access-to-link.directive';
 import { LaddaModule } from 'angular2-ladda';
 import { SweetalertService } from '../../../../services/sweetalert.service';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faArrowAltCircleDown } from '@fortawesome/free-regular-svg-icons';
+import { faExclamationTriangle, faRepeat, faTimes, faFileText } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-storage-list-dt',
   templateUrl: './storage-list-dt.component.html',
   styleUrls: ['./storage-list-dt.component.scss'],
-  imports: [FormsModule, RouterLink, HasAccessToLinkDirective, LaddaModule],
+  imports: [FormsModule, RouterLink, HasAccessToLinkDirective, LaddaModule, FaIconComponent],
 })
 export class StorageListDtComponent {
   public readonly message = input<PartialMessage>();
 
-  protected readonly storageService: StorageService = inject(StorageService);
   protected resendAction = false;
+  protected readonly storageService: StorageService = inject(StorageService);
+  protected readonly faFileText = faFileText;
+  protected readonly faArrowAltCircleDown = faArrowAltCircleDown;
+  protected readonly faExclamationTriangle = faExclamationTriangle;
+  protected readonly faRepeat = faRepeat;
+  protected readonly faTimes = faTimes;
 
   private readonly sweetAlert: SweetalertService = inject(SweetalertService);
 

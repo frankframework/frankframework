@@ -19,7 +19,7 @@
                 [routerLink]="['/monitors', 'new']"
                 [queryParams]="{ configuration: selectedConfiguration }"
               >
-                <i class="fa fa-plus"></i> Add Monitor</button
+                <fa-icon [icon]="faPlus" /> Add Monitor</button
               >&nbsp;
               <button
                 title="Download Monitor Configuration"
@@ -27,7 +27,7 @@
                 type="button"
                 (click)="downloadXML()"
               >
-                <i class="fa fa-file-code-o"></i> XML
+                <fa-icon [icon]="faFileCode" /> XML
               </button>
             </div>
             <h4>
@@ -44,7 +44,7 @@
                 [routerLink]="['/monitors', 'new']"
                 [queryParams]="{ configuration: selectedConfiguration }"
               >
-                <i class="fa fa-plus"></i> Add Monitor
+                <fa-icon [icon]="faPlus" /> Add Monitor
               </button>
             </div>
             <h4>No monitors found in this configuration</h4>
@@ -69,7 +69,7 @@
                     [title]="`Raise alarm ${monitor.name}`"
                     (click)="raise(monitor)"
                   >
-                    <i class="fa fa-arrow-circle-o-right"></i> Raise
+                    <fa-icon [icon]="faArrowAltCircleRight" /> Raise
                   </button>
                 }
                 @if (monitor.raised) {
@@ -81,7 +81,7 @@
                     [title]="`Clear alarm ${monitor.name}`"
                     (click)="clear(monitor)"
                   >
-                    <i class="fa fa-arrow-circle-o-right"></i> Clear
+                    <fa-icon [icon]="faArrowAltCircleRight" /> Clear
                   </button>
                 }
                 @if (!monitor.raised && monitor.edit) {
@@ -93,7 +93,7 @@
                     [title]="`Delete Monitor ${monitor.name}`"
                     (click)="deleteMonitor(monitor)"
                   >
-                    <i class="fa fa-close"></i> Delete
+                    <fa-icon [icon]="faClose" /> Delete
                   </button>
                 }
                 @if (!monitor.raised && !monitor.edit) {
@@ -105,7 +105,7 @@
                     [title]="`Edit Monitor ${monitor.name}`"
                     (click)="monitor.edit = true"
                   >
-                    <i class="fa fa-pencil"></i> Edit
+                    <fa-icon [icon]="faPencil" /> Edit
                   </button>
                 }
                 @if (!monitor.raised && monitor.edit) {
@@ -117,7 +117,7 @@
                     [title]="`Save Monitor ${monitor.name}`"
                     (click)="edit(monitor)"
                   >
-                    <i class="fa fa-save"></i> Save
+                    <fa-icon [icon]="faSave" /> Save
                   </button>
                 }
                 <button
@@ -126,7 +126,7 @@
                   type="button"
                   (click)="downloadXML(monitor.name)"
                 >
-                  <i class="fa fa-file-code-o"></i> XML
+                  <fa-icon [icon]="faFileCode" /> XML
                 </button>
               </div>
               <div class="m-l-n m-r-n almost-full-width">
@@ -238,10 +238,10 @@
                       @for (trigger of monitor.triggers; track trigger.id) {
                         <tr data-cy="monitors__monitor__trigger__row">
                           @if (trigger.type === 'ALARM') {
-                            <td><i class="fa fa-warning m-r-xs"></i> Alarm</td>
+                            <td><fa-icon class="m-r-xs" [icon]="faWarning" /> Alarm</td>
                           }
                           @if (trigger.type === 'CLEARING') {
-                            <td><i class="fa fa-eraser m-r-xs"></i> Clearing</td>
+                            <td><fa-icon class="m-r-xs" [icon]="faEraser" /> Clearing</td>
                           }
                           <td>
                             <ul class="unstyled no-margins">
@@ -314,7 +314,7 @@
                               [routerLink]="['/monitors', monitor.name, 'triggers', 'new']"
                               [queryParams]="{ configuration: selectedConfiguration }"
                             >
-                              <i class="fa fa-plus"></i> <i>Add Trigger</i>
+                              <fa-icon [icon]="faPlus" /> <i>Add Trigger</i>
                             </button>
                           </td>
                         </tr>
