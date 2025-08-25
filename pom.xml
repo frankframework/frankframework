@@ -20,13 +20,13 @@
 		<junit.excludedTags></junit.excludedTags>
 		<junit.includedTags></junit.includedTags>
 
-		<jackson.version>2.19.1</jackson.version>
-		<cxf.version>4.1.2</cxf.version>
-		<spring.version>6.2.8</spring.version>
+		<jackson.version>2.19.2</jackson.version>
+		<cxf.version>4.1.3</cxf.version>
+		<spring.version>6.2.10</spring.version>
 		<spring-security.version>6.4.6</spring-security.version>
-		<spring-integration.version>6.5.0</spring-integration.version>
-		<spring.boot.version>3.5.3</spring.boot.version>
-		<tomcat.version>10.1.43</tomcat.version>
+		<spring-integration.version>6.5.1</spring-integration.version>
+		<spring.boot.version>3.5.5</spring.boot.version>
+		<tomcat.version>10.1.44</tomcat.version>
 		<bouncycastle.version>1.81</bouncycastle.version>
 
 		<narayana.version>7.2.2.Final</narayana.version>
@@ -43,7 +43,7 @@
 		<oracle.driver.version>23.8.0.25.04</oracle.driver.version>
 		<oracle.driver.jdkversion>11</oracle.driver.jdkversion>
 		<mssql.driver.version>12.10.1.jre11</mssql.driver.version>
-		<mysql.driver.version>9.3.0</mysql.driver.version>
+		<mysql.driver.version>9.4.0</mysql.driver.version>
 		<mariadb.driver.version>3.5.4</mariadb.driver.version>
 		<postgresql.driver.version>42.7.7</postgresql.driver.version>
 		<mongodb.driver.version>5.5.1</mongodb.driver.version>
@@ -55,7 +55,7 @@
 		<rabbitmq.driver.version>5.25.0</rabbitmq.driver.version>
 		<rabbitmq.jms.version>3.4.0</rabbitmq.jms.version>
 
-		<aws.java.sdk.version>2.31.0</aws.java.sdk.version>
+		<aws.java.sdk.version>2.32.7</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
 		<mockito.version>5.18.0</mockito.version>
@@ -174,7 +174,7 @@
 			<dependency>
 				<groupId>com.nimbusds</groupId>
 				<artifactId>nimbus-jose-jwt</artifactId>
-				<version>9.48</version>
+				<version>10.4.2</version>
 			</dependency>
 			<!-- End Lock transient deps -->
 
@@ -493,7 +493,7 @@
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-lang3</artifactId>
-				<version>3.17.0</version>
+				<version>3.18.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
