@@ -16,7 +16,6 @@
 package org.frankframework.metrics;
 
 import java.io.IOException;
-import java.io.OutputStream;
 
 import jakarta.servlet.ServletConfig;
 import jakarta.servlet.ServletException;
@@ -45,15 +44,18 @@ public class PrometheusMeterServlet extends AbstractHttpServlet {
 	private transient @Setter @Autowired MeterRegistry registry;
 	private static final Logger LOG = LogUtil.getLogger(PrometheusMeterServlet.class);
 
+	protected static final String PRIMARY_CONTENT_TYPE = "application/openmetrics-text; version=1.0.0; charset=utf-8";
+	protected static final String FALLBACK_CONTENT_TYPE = "text/plain; version=0.0.4; charset=utf-8";
+
 	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 
-		if(ACTIVE) {
+		if (ACTIVE) {
 			Assert.notNull(registry, "metrics registry not found");
 
 			if (registry instanceof CompositeMeterRegistry compositeMeterRegistry) {
-				for(MeterRegistry meterRegistry:compositeMeterRegistry.getRegistries()) {
+				for (MeterRegistry meterRegistry : compositeMeterRegistry.getRegistries()) {
 					if (meterRegistry instanceof PrometheusMeterRegistry prometheusMeterRegistry) {
 						prometheusRegistry = prometheusMeterRegistry;
 					}
@@ -63,17 +65,29 @@ public class PrometheusMeterServlet extends AbstractHttpServlet {
 	}
 
 	@Override
-	protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+	protected void doGet(HttpServletRequest req, HttpServletResponse resp) {
 		try {
-			if (prometheusRegistry==null) {
+			if (prometheusRegistry == null) {
 				resp.sendError(501, "Prometheus registry not found");
-			} else {
-				try (OutputStream stream = resp.getOutputStream()) {
-					prometheusRegistry.scrape(stream);
-				}
+				return;
 			}
+
+			String contentType = determineContentType(req);
+			resp.setHeader("Content-Type", contentType);
+			prometheusRegistry.scrape(resp.getOutputStream(), contentType);
 		} catch (IOException e) {
 			LOG.warn("unable to scrape PrometheusRegistry", e);
+		}
+	}
+
+	protected String determineContentType(HttpServletRequest req) {
+		String accept = req.getHeader("Accept");
+		boolean wantsOM = accept != null &&
+				accept.toLowerCase().contains("application/openmetrics-text");
+		if (wantsOM) {
+			return PRIMARY_CONTENT_TYPE;
+		} else {
+			return FALLBACK_CONTENT_TYPE;
 		}
 	}
 
