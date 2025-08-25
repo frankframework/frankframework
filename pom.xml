@@ -17,7 +17,7 @@
 		<sonar.host.url>https://sonarcloud.io</sonar.host.url>
 
 		<jackson.version>2.16.0</jackson.version>
-		<cxf.version>3.5.10</cxf.version>
+		<cxf.version>3.5.11</cxf.version>
 		<spring.version>5.3.39</spring.version>
 		<spring-security.version>5.8.16</spring-security.version>
 		<spring-integration.version>5.5.20</spring-integration.version>
@@ -493,7 +493,7 @@
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-lang3</artifactId>
-				<version>3.14.0</version>
+				<version>3.18.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
@@ -518,7 +518,7 @@
 			<dependency>
 				<groupId>com.sun.mail</groupId>
 				<artifactId>jakarta.mail</artifactId>
-				<version>2.0.1</version>
+				<version>2.0.2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.projectlombok</groupId>
