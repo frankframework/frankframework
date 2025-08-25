@@ -160,7 +160,7 @@ public class ConfigurationUtilsTest extends Mockito {
 		BuildInfoValidator.ADDITIONAL_PROPERTIES_FILE_SUFFIX = "";
 		Map<String, String> result = ConfigurationUtils.processMultiConfigZipFile(applicationContext, "fakeDataSource", false, false, zip.openStream(), "user");
 		assertNotEquals(0, result.size(), "file uploaded to mock database");
-		assertEquals("{ConfigurationName: 001_20191002-1300=loaded, ConfigurationName: 002_20191002-1400=loaded, noBuildInfoZip.jar=no [META-INF/MANIFEST.MF] or [BuildInfo.properties] present in configuration}",result.toString());
+		assertEquals("{ConfigurationName: 001_20191002-1300=loaded, ConfigurationName: 002_20191002-1400=loaded, noBuildInfoZip.jar=no (valid) [META-INF/MANIFEST.MF] or [BuildInfo.properties] present in configuration}",result.toString());
 
 		Map<String, Object> parameters = stmt.getNamedParameters(); // Test the 2nd file, because the 3rd result fails
 		assertEquals("ConfigurationName", parameters.get("NAME"), "buildInfo name does not match");
