@@ -521,7 +521,7 @@
 		<dependency>
 			<groupId>com.nimbusds</groupId>
 			<artifactId>oauth2-oidc-sdk</artifactId>
-			<version>9.43.3</version>
+			<version>9.43.6</version>
 		</dependency>
 
 		<!-- TransactionManagers: BTM + NARAYANA -->
@@ -782,17 +782,17 @@
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk18on</artifactId>
-			<version>1.78.1</version>
+			<version>1.81</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcutil-jdk18on</artifactId>
-			<version>1.78.1</version>
+			<version>1.81</version>
 		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcpg-jdk18on</artifactId>
-			<version>1.78.1</version>
+			<version>1.81</version>
 		</dependency>
 
 		<dependency>
