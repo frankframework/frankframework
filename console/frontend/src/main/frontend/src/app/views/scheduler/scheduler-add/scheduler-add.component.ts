@@ -12,6 +12,7 @@ import { ConfigurationFilterPipe } from '../../../pipes/configuration-filter.pip
 import { WithJavaListenerPipe } from '../../../pipes/with-java-listener.pipe';
 import { TruncatePipe } from '../../../pipes/truncate.pipe';
 import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-editor.component';
+import { faArrowAltCircleLeft } from '@fortawesome/free-regular-svg-icons';
 
 @Component({
   selector: 'app-scheduler-add',
@@ -29,6 +30,7 @@ import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-
   styleUrls: ['./scheduler-add.component.scss'],
 })
 export class SchedulerAddComponent extends SchedulerAddEditParent {
+  protected readonly faArrowAltCircleLeft = faArrowAltCircleLeft;
   private readonly schedulerService: SchedulerService = inject(SchedulerService);
 
   submit(): void {

@@ -21,6 +21,15 @@ import { DtContentDirective } from '../../../components/datatable/dt-content.dir
 import { DropLastCharPipe } from '../../../pipes/drop-last-char.pipe';
 import { Subscription } from 'rxjs';
 import { SortDirection } from '../../../components/th-sortable.directive';
+import {
+  faChevronDown,
+  faChevronUp,
+  faExclamationTriangle,
+  faRepeat,
+  faSearch,
+  faTimes,
+} from '@fortawesome/free-solid-svg-icons';
+import { faArrowAltCircleLeft, faArrowAltCircleDown } from '@fortawesome/free-regular-svg-icons';
 
 type FieldSearchInfo = {
   fieldName: string;
@@ -53,21 +62,14 @@ type MessageData = MessageStore['messages'][number];
 })
 export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
   protected targetStates: Record<string, { name: string }> = {};
-
   protected truncated = false;
   protected truncateButtonText = 'Truncate displayed data';
   protected filterBoxExpanded = false;
-
   protected messagesProcessing = false;
   protected changingProcessState = false;
   protected searching = false;
   protected clearSearchLadda = false;
   protected messagesDownloading = false;
-
-  // service bindings
-  protected storageService: StorageService = inject(StorageService);
-  protected storageParams = this.storageService.storageParams;
-
   protected datasource: DataTableDataSource<MessageData> = new DataTableDataSource<MessageData>();
   protected displayedColumns: DataTableColumn<MessageData>[] = [];
   protected messageFields: SearchColumn[] = [];
@@ -76,6 +78,17 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     { name: 'Descending', value: 'DESC' },
   ];
   protected sortDirection: SortDirection = 'DESC';
+  protected readonly storageService: StorageService = inject(StorageService);
+  protected readonly getProcessStateIconFn = getProcessStateIcon;
+  protected readonly storageParams = this.storageService.storageParams;
+  protected readonly faChevronUp = faChevronUp;
+  protected readonly faChevronDown = faChevronDown;
+  protected readonly faSearch = faSearch;
+  protected readonly faTimes = faTimes;
+  protected readonly faArrowAltCircleLeft = faArrowAltCircleLeft;
+  protected readonly faExclamationTriangle = faExclamationTriangle;
+  protected readonly faArrowAltCircleDown = faArrowAltCircleDown;
+  protected readonly faRepeat = faRepeat;
 
   private Session: SessionService = inject(SessionService);
   private SweetAlert: SweetalertService = inject(SweetalertService);
@@ -122,12 +135,8 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     this.subscriptions.unsubscribe();
   }
 
-  // Service bindings
   protected closeNote = (index: number): void => {
     this.storageService.closeNote(index);
-  };
-  protected getProcessStateIconFn = (processState: string): string => {
-    return getProcessStateIcon(processState);
   };
 
   protected getDisplayedColumns(): void {

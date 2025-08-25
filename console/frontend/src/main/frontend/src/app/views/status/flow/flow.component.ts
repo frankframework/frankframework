@@ -8,6 +8,7 @@ import { FlowModalComponent } from './flow-modal/flow-modal.component';
 import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
 import { NgMermaidComponent } from '../../../components/ng-mermaid/ng-mermaid.component';
 import { HttpResponse } from '@angular/common/http';
+import { faShareAltSquare } from '@fortawesome/free-solid-svg-icons';
 
 type FlowModel = {
   isImage: boolean;
@@ -31,6 +32,7 @@ export class FlowComponent implements OnChanges {
   protected flowModalLadda = false;
   protected loadInline = true;
   protected flowName = '';
+  protected readonly faShareAltSquare = faShareAltSquare;
 
   private readonly appService: AppService = inject(AppService);
   private readonly Misc: MiscService = inject(MiscService);

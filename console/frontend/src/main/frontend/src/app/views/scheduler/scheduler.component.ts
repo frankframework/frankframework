@@ -12,6 +12,21 @@ import { TabListComponent } from '../../components/tab-list/tab-list.component';
 import { FormsModule } from '@angular/forms';
 import { SearchFilterPipe } from '../../pipes/search-filter.pipe';
 import { OrderByPipe } from '../../pipes/orderby.pipe';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import {
+  faChevronDown,
+  faChevronUp,
+  faInfo,
+  faPause,
+  faPencil,
+  faPlay,
+  faPlusCircle,
+  faSearch,
+  faStop,
+  faTimes,
+  faWarning,
+} from '@fortawesome/free-solid-svg-icons';
+import { faArrowAltCircleRight } from '@fortawesome/free-regular-svg-icons';
 
 type Scheduler = {
   name: string;
@@ -59,6 +74,7 @@ export type Job = {
     OrderByPipe,
     RouterLink,
     NgClass,
+    FaIconComponent,
   ],
   templateUrl: './scheduler.component.html',
   styleUrls: ['./scheduler.component.scss'],
@@ -87,6 +103,18 @@ export class SchedulerComponent implements OnInit, OnDestroy {
   );
   protected jobShowContent: Record<keyof typeof this.jobGroups, boolean> = {};
   protected selectedJobGroup = 'All';
+  protected readonly faPlusCircle = faPlusCircle;
+  protected readonly faPlay = faPlay;
+  protected readonly faPause = faPause;
+  protected readonly faStop = faStop;
+  protected readonly faTimes = faTimes;
+  protected readonly faSearch = faSearch;
+  protected readonly faChevronUp = faChevronUp;
+  protected readonly faChevronDown = faChevronDown;
+  protected readonly faPencil = faPencil;
+  protected readonly faArrowAltCircleRight = faArrowAltCircleRight;
+  protected readonly faInfo = faInfo;
+  protected readonly faWarning = faWarning;
 
   private initialized = false;
 

@@ -19,7 +19,7 @@
                   <tr>
                     <td>{{ roles.name }}</td>
                     <td>
-                      <i [ngClass]="roles.allowed ? 'fa fa-check-square' : 'fa fa-times-circle'"></i>
+                      <fa-icon [icon]="roles.allowed ? faCheckSquare : faTimesCircle" />
                     </td>
                   </tr>
                 } @empty {
@@ -232,7 +232,7 @@
                     @for (roles of securityRoles; track roles.name) {
                       <td>
                         @if (!link.roles || link.roles.includes(roles.name)) {
-                          <i class="fa fa-check"></i>
+                          <fa-icon [icon]="faCheck" />
                         }
                       </td>
                     }

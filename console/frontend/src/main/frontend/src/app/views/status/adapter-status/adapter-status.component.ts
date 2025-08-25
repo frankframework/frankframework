@@ -9,6 +9,26 @@ import { HasAccessToLinkDirective } from '../../../components/has-access-to-link
 import { RouterLink } from '@angular/router';
 import { TruncatePipe } from '../../../pipes/truncate.pipe';
 import { FlowComponent } from '../flow/flow.component';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import {
+  faBarChart,
+  faChevronDown,
+  faChevronUp,
+  faCog,
+  faDatabase,
+  faExclamationTriangle,
+  faInfo,
+  faMinus,
+  faPlay,
+  faPlus,
+  faSignIn,
+  faSignOut,
+  faStop,
+  faTimes,
+  faTimesCircle,
+  faWarning,
+} from '@fortawesome/free-solid-svg-icons';
+import { faCheckSquare, faStopCircle } from '@fortawesome/free-regular-svg-icons';
 
 @Component({
   selector: 'app-adapter-status',
@@ -20,6 +40,7 @@ import { FlowComponent } from '../flow/flow.component';
     RouterLink,
     TruncatePipe,
     FlowComponent,
+    FaIconComponent,
   ],
   templateUrl: './adapter-status.component.html',
   styleUrl: './adapter-status.component.scss',
@@ -31,6 +52,24 @@ export class AdapterStatusComponent {
 
   protected readonly getProcessStateIconColorFn = getProcessStateIconColor;
   protected readonly getProcessStateIconFn = getProcessStateIcon;
+  protected readonly faChevronUp = faChevronUp;
+  protected readonly faChevronDown = faChevronDown;
+  protected readonly faCog = faCog;
+  protected readonly faExclamationTriangle = faExclamationTriangle;
+  protected readonly faSignIn = faSignIn;
+  protected readonly faTimesCircle = faTimesCircle;
+  protected readonly faDatabase = faDatabase;
+  protected readonly faSignOut = faSignOut;
+  protected readonly faBarChart = faBarChart;
+  protected readonly faCheckSquare = faCheckSquare;
+  protected readonly faStop = faStop;
+  protected readonly faStopCircle = faStopCircle;
+  protected readonly faPlay = faPlay;
+  protected readonly faWarning = faWarning;
+  protected readonly faPlus = faPlus;
+  protected readonly faMinus = faMinus;
+  protected readonly faInfo = faInfo;
+  protected readonly faTimes = faTimes;
 
   private statusService = inject(StatusService);
 
