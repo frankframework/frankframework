@@ -44,8 +44,8 @@ public class PrometheusMeterServlet extends AbstractHttpServlet {
 	private transient @Setter @Autowired MeterRegistry registry;
 	private static final Logger LOG = LogUtil.getLogger(PrometheusMeterServlet.class);
 
-	private static final String PRIMARY_CONTENT_TYPE = "application/openmetrics-text; version=1.0.0; charset=utf-8";
-	private static final String FALLBACK_CONTENT_TYPE = "text/plain; version=0.0.4; charset=utf-8";
+	protected static final String PRIMARY_CONTENT_TYPE = "application/openmetrics-text; version=1.0.0; charset=utf-8";
+	protected static final String FALLBACK_CONTENT_TYPE = "text/plain; version=0.0.4; charset=utf-8";
 
 	@Override
 	public void init(ServletConfig config) throws ServletException {
@@ -80,7 +80,7 @@ public class PrometheusMeterServlet extends AbstractHttpServlet {
 		}
 	}
 
-	private String determineContentType(HttpServletRequest req) {
+	protected String determineContentType(HttpServletRequest req) {
 		String accept = req.getHeader("Accept");
 		boolean wantsOM = accept != null &&
 				accept.toLowerCase().contains("application/openmetrics-text");
