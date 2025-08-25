@@ -109,7 +109,6 @@ abstract class AbstractConvertor implements Convertor {
 			log.debug("Convert to file [{}]", filename);
 			convert(mediaType, message, result, charset);
 			log.debug("Convert to file finished. [{}]", filename);
-
 		} catch (Exception e) {
 			if (isPasswordException(e)) {
 				result = CisConversionResult.createPasswordFailureResult(filename, conversionOption, mediaType);
@@ -151,7 +150,6 @@ abstract class AbstractConvertor implements Convertor {
 				throw new IOException("Deleting file [" + file + "] failed!", e);
 			}
 		}
-
 	}
 
 	protected abstract boolean isPasswordException(Exception e);

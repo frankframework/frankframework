@@ -15,9 +15,12 @@
 */
 package org.frankframework.extensions.aspose.services.conv.impl.convertors;
 
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
+import org.apache.commons.io.ByteOrderMark;
+import org.apache.commons.io.input.BOMInputStream;
 import org.springframework.http.MediaType;
 
 import com.aspose.pdf.exceptions.InvalidPasswordException;
@@ -38,13 +41,18 @@ public class PdfStandaardConvertor extends AbstractConvertor {
 
 	@Override
 	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
-		Files.copy(message.asInputStream(charset), Paths.get(result.getPdfResultFile().getCanonicalPath()));
-		result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
+		try (InputStream is = BOMInputStream.builder()
+				.setInputStream(message.asInputStream(charset))
+				.setByteOrderMarks(ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE)
+				.get()){
+			Files.copy(is, Paths.get(result.getPdfResultFile().getCanonicalPath()));
+		}
+
+ 		result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 	}
 
 	@Override
 	protected boolean isPasswordException(Exception e) {
 		return e instanceof InvalidPasswordException;
 	}
-
 }
