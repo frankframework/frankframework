@@ -2,7 +2,7 @@ package org.frankframework.metrics;
 
 import static org.frankframework.metrics.PrometheusMeterServlet.FALLBACK_CONTENT_TYPE;
 import static org.frankframework.metrics.PrometheusMeterServlet.PRIMARY_CONTENT_TYPE;
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.stream.Stream;
 
@@ -19,8 +19,10 @@ class PrometheusMeterServletTest {
 
 
 	private static Stream<Arguments> contentTypeArguments() {
-		return Stream.of(Arguments.of(PRIMARY_CONTENT_TYPE, "application/openmetrics-text; version=1.0.0; charset=utf-8"),
-				Arguments.of(FALLBACK_CONTENT_TYPE, "text/plain"));
+		return Stream.of(
+				Arguments.of(PRIMARY_CONTENT_TYPE, "application/openmetrics-text; version=1.0.0; charset=utf-8"),
+				Arguments.of(FALLBACK_CONTENT_TYPE, "text/plain")
+		);
 	}
 
 	@MethodSource("contentTypeArguments")
