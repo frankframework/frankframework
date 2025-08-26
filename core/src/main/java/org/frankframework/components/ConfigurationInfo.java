@@ -74,7 +74,7 @@ public class ConfigurationInfo {
 
 		this.name = name;
 		this.version = new DefaultArtifactVersion(version);
-		this.timestamp = parseDate(timestamp);
+		this.timestamp = parseBuildInfoDate(timestamp);
 
 		this.description = null;
 		this.organisation = null;
@@ -84,25 +84,6 @@ public class ConfigurationInfo {
 		this.frameworkVersion = null;
 
 		this.artifact = null;
-	}
-
-	private static Instant parseDate(String timestamp) {
-		if (StringUtils.isBlank(timestamp)) {
-			log.info("configuration has no timestamp");
-			return null;
-		}
-
-		try {
-			return DateFormatUtils.parseToInstant(timestamp, BUILDINFO_PROPERTIES_FORMATTER);
-		} catch (DateTimeParseException dpe1) {
-			try {
-				return DateFormatUtils.parseGenericDate(timestamp);
-			} catch (DateTimeParseException dpe2) {
-				dpe1.addSuppressed(dpe2);
-				log.warn("unable to parse timestamp [{}]", timestamp, dpe1);
-			}
-		}
-		return null;
 	}
 
 	public ConfigurationInfo(Manifest manifest) {
@@ -134,6 +115,25 @@ public class ConfigurationInfo {
 		} else {
 			this.artifact = null;
 		}
+	}
+
+	private static Instant parseBuildInfoDate(String timestamp) {
+		if (StringUtils.isBlank(timestamp)) {
+			log.info("configuration has no timestamp");
+			return null;
+		}
+
+		try {
+			return DateFormatUtils.parseToInstant(timestamp, BUILDINFO_PROPERTIES_FORMATTER);
+		} catch (DateTimeParseException dpe1) {
+			try {
+				return DateFormatUtils.parseGenericDate(timestamp);
+			} catch (DateTimeParseException dpe2) {
+				dpe1.addSuppressed(dpe2);
+				log.warn("unable to parse timestamp [{}]", timestamp, dpe1);
+			}
+		}
+		return null;
 	}
 
 	@Nullable
