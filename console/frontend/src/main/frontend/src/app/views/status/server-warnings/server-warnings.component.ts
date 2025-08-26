@@ -5,12 +5,14 @@ import { Router } from '@angular/router';
 import { NgClass } from '@angular/common';
 import { HumanFileSizePipe } from '../../../pipes/human-file-size.pipe';
 import { SecurityItemsService } from '../../security-items/security-items.service';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faInfoCircle, faTimes, faWarning } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-server-warnings',
   templateUrl: './server-warnings.component.html',
   styleUrl: './server-warnings.component.scss',
-  imports: [NgClass, HumanFileSizePipe],
+  imports: [NgClass, HumanFileSizePipe, FaIconComponent],
 })
 export class ServerWarningsComponent {
   @Input({ required: true }) alerts: Alert[] = [];
@@ -35,4 +37,8 @@ export class ServerWarningsComponent {
   protected navigateTo(path: string): void {
     this.router.navigate([path]);
   }
+
+  protected readonly faInfoCircle = faInfoCircle;
+  protected readonly faWarning = faWarning;
+  protected readonly faTimes = faTimes;
 }

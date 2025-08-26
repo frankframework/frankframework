@@ -4,6 +4,7 @@ import { AppService } from 'src/app/app.service';
 import { getProcessStateIcon, getProcessStateIconColor } from 'src/app/utilities';
 import { KeyValuePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 
 type stateItemItem = {
   configurationName: string;
@@ -16,7 +17,7 @@ type InlineStore = Record<string, { items: stateItemItem[]; totalMessageCount: n
 
 @Component({
   selector: 'app-inlinestore',
-  imports: [RouterLink, KeyValuePipe],
+  imports: [RouterLink, KeyValuePipe, FaIconComponent],
   templateUrl: './inlinestore.component.html',
   styleUrls: ['./inlinestore.component.scss'],
 })

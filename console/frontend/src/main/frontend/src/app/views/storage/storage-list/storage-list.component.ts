@@ -30,6 +30,7 @@ import {
   faTimes,
 } from '@fortawesome/free-solid-svg-icons';
 import { faArrowAltCircleLeft, faArrowAltCircleDown } from '@fortawesome/free-regular-svg-icons';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 
 type FieldSearchInfo = {
   fieldName: string;
@@ -58,6 +59,7 @@ type MessageData = MessageStore['messages'][number];
     DtContentDirective,
     DropLastCharPipe,
     KeyValuePipe,
+    FaIconComponent,
   ],
 })
 export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {

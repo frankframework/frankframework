@@ -17,7 +17,7 @@ import { faCheck, faCheckSquare, faTimesCircle } from '@fortawesome/free-solid-s
 
 @Component({
   selector: 'app-security-items',
-  imports: [NgClass, KeyValuePipe, FaIconComponent],
+  imports: [KeyValuePipe, FaIconComponent],
   templateUrl: './security-items.component.html',
   styleUrls: ['./security-items.component.scss'],
 })

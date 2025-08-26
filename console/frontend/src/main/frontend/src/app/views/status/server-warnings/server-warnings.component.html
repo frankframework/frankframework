@@ -9,7 +9,7 @@
   @if (securityItemsService.hasExpiringCertificates()) {
     <li class="list-group-item alert-danger">
       <div tabindex="0" role="button" class="pointer" (click)="navigateTo('security-items')">
-        <i class="m-r-md fa fa-info-circle"></i>
+        <fa-icon class="m-r-md" [icon]="faInfoCircle" />
         <span>One or more certificates are due to expire</span>
       </div>
     </li>
@@ -17,7 +17,7 @@
   @if (messageLog[selectedConfiguration]) {
     @if (messageLog[selectedConfiguration].errorStoreCount === 1) {
       <li class="list-group-item alert-danger">
-        <i class="m-r-md fa fa-info-circle"></i>
+        <fa-icon class="m-r-md" [icon]="faInfoCircle" />
         <span
           >Errorlog contains 1 record. Service management should check whether this record has to be resent or
           deleted</span
@@ -26,7 +26,7 @@
     }
     @if (messageLog[selectedConfiguration].errorStoreCount > 1) {
       <li class="list-group-item alert-danger">
-        <i class="m-r-md fa fa-info-circle"></i>
+        <fa-icon class="m-r-md" [icon]="faInfoCircle" />
         <span
           >Errorlog contains {{ messageLog[selectedConfiguration].errorStoreCount }} records. Service management should
           check whether this record has to be resent or deleted</span
@@ -35,7 +35,7 @@
     }
     @if (messageLog[selectedConfiguration].errorStoreCount === -1) {
       <li class="list-group-item alert-warning">
-        <i class="m-r-md fa fa-info-circle"></i>
+        <fa-icon class="m-r-md" [icon]="faInfoCircle" />
         <span>Errorlog might contain records. This is unknown because errorStore.count.show is not set to true</span>
       </li>
     }
@@ -46,7 +46,7 @@
     ) {
       <li [class]="`alert-${alert.type} list-group-item`">
         <div tabindex="0" role="button" [ngClass]="{ pointer: !!alert.link }" (click)="navigateByAlert(alert)">
-          <i [class]="`m-r-md fa fa-${alert.type === 'warning' ? 'warning' : 'times'}`"></i>
+          <fa-icon class="m-r-md" [icon]="alert.type === 'warning' ? faWarning : faTimes" />
           @if (selectedConfiguration === 'All' && alert.configuration !== '') {
             <span>Configuration [{{ alert.configuration }}] - </span>
           }

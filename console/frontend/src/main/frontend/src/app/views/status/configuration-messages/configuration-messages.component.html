@@ -12,7 +12,7 @@
       (click)="msgBoxExpanded = !msgBoxExpanded"
     >
       <div class="ibox-tools pull-right">
-        <a> <i [class]="`fa fa-chevron-${msgBoxExpanded ? 'up' : 'down'}`"></i></a>
+        <a> <fa-icon [icon]="msgBoxExpanded ? faChevronUp : faChevronDown" /></a>
       </div>
       <div class="row full-width">
         <div class="col-lg-6 col-md-12 clear">

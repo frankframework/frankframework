@@ -313,7 +313,7 @@
                                   store.name,
                                 ]"
                               >
-                                <i [class]="`fa ${getProcessStateIconFn(store.name)}`"></i>
+                                <fa-icon [icon]="getProcessStateIconFn(store.name)" />
                                 ({{ store.numberOfMessages }})
                               </a>
                             </span>

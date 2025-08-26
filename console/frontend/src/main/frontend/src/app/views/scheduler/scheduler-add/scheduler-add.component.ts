@@ -13,6 +13,7 @@ import { WithJavaListenerPipe } from '../../../pipes/with-java-listener.pipe';
 import { TruncatePipe } from '../../../pipes/truncate.pipe';
 import { MonacoEditorComponent } from '../../../components/monaco-editor/monaco-editor.component';
 import { faArrowAltCircleLeft } from '@fortawesome/free-regular-svg-icons';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 
 @Component({
   selector: 'app-scheduler-add',
@@ -25,6 +26,7 @@ import { faArrowAltCircleLeft } from '@fortawesome/free-regular-svg-icons';
     WithJavaListenerPipe,
     TruncatePipe,
     MonacoEditorComponent,
+    FaIconComponent,
   ],
   templateUrl: '../scheduler-add-edit-parent.component.html',
   styleUrls: ['./scheduler-add.component.scss'],
