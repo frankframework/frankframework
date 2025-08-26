@@ -74,7 +74,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
-	private final @Getter String name = "ExchangeFileSystem";
+	private static final @Getter String name = "ExchangeFileSystem";
 
 	private @Getter String mailAddress;
 	private @Getter String url;
@@ -253,10 +253,10 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	}
 
 	@Override
-	public DirectoryStream<MailItemId> list(String folderName, TypeFilter filter) throws FileSystemException {
+	public DirectoryStream<MailItemId> list(MailItemId folderName, TypeFilter filter) throws FileSystemException {
 		List<MailItemId> items = new ArrayList<>();
 		try {
-			MailFolder folder = StringUtils.isBlank(folderName) ? mailFolder : findSubFolder(mailFolder, folderName);
+			MailFolder folder = StringUtils.isBlank(getCanonicalName(folderName)) ? mailFolder : findSubFolder(mailFolder, getCanonicalName(folderName));
 			if (filter.includeFolders()) {
 				List<MailFolder> folders = client.getMailFolders(folder);
 				items.addAll(folders);

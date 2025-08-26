@@ -218,8 +218,9 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 	}
 
 	@Override
-	public DirectoryStream<SmbFileRef> list(String folder, TypeFilter filter) throws FileSystemException {
-		return FileSystemUtils.getDirectoryStream(new FilesIterator(folder, filter, diskShare.list(folder)));
+	public DirectoryStream<SmbFileRef> list(SmbFileRef folder, TypeFilter filter) throws FileSystemException {
+		String folderName = getCanonicalName(folder);
+		return FileSystemUtils.getDirectoryStream(new FilesIterator(folderName, filter, diskShare.list(folderName)));
 	}
 
 	@Override
