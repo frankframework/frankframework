@@ -55,7 +55,7 @@
 		<rabbitmq.driver.version>5.25.0</rabbitmq.driver.version>
 		<rabbitmq.jms.version>3.4.0</rabbitmq.jms.version>
 
-		<aws.java.sdk.version>2.32.7</aws.java.sdk.version>
+		<aws.java.sdk.version>2.32.27</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
 		<mockito.version>5.18.0</mockito.version>
@@ -403,7 +403,7 @@
 			<dependency>
 				<groupId>io.netty</groupId>
 				<artifactId>netty-bom</artifactId>
-				<version>4.2.2.Final</version>
+				<version>4.2.4.Final</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
