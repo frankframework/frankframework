@@ -4,7 +4,7 @@ describe('Status page', () => {
   });
 
   // temporarily disabled until we figure out why this often fails in CI
-  it.skip('Configuration messages should have startup massage', () => {
+  it.skip('Configuration messages should have startup message', () => {
     cy.get('[data-cy="configuration-messages__box"]').click();
     cy.get('[data-cy="configuration-messages__table__message"]')
       .invoke('text')
