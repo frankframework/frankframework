@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.sql.DataSource;
-import javax.sql.XADataSource;
 
 import jakarta.annotation.Nullable;
 
