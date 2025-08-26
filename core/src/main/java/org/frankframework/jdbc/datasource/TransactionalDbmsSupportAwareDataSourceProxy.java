@@ -71,7 +71,7 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 		databaseMetadata.put("product-version", md.getDatabaseProductVersion());
 		databaseMetadata.put("driver", md.getDriverName());
 		databaseMetadata.put("driver-version", md.getDriverVersion());
-		databaseMetadata.put("XA", String.valueOf(getTargetDataSource() instanceof XADataSource));
+		databaseMetadata.put("XA", String.valueOf(JdbcPoolUtil.isXaCapable(this)));
 
 		metadata = databaseMetadata;
 	}

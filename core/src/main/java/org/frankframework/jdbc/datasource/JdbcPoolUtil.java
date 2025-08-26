@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,10 +16,12 @@
 package org.frankframework.jdbc.datasource;
 
 import javax.sql.DataSource;
+import javax.sql.XADataSource;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
+import org.apache.tomcat.dbcp.dbcp2.managed.ManagedDataSource;
 import org.apache.tomcat.dbcp.pool2.impl.GenericObjectPool;
 import org.springframework.jdbc.datasource.DelegatingDataSource;
 
@@ -34,7 +36,7 @@ public class JdbcPoolUtil {
 		if (datasource instanceof OpenManagedDataSource targetDataSource) {
 			addPoolMetadata(targetDataSource.getPool(), info);
 		} else if (datasource instanceof org.apache.tomcat.dbcp.dbcp2.PoolingDataSource) {
-			OpenPoolingDataSource dataSource = (OpenPoolingDataSource) datasource;
+			OpenPoolingDataSource<?> dataSource = (OpenPoolingDataSource<?>) datasource;
 			addPoolMetadata(dataSource.getPool(), info);
 		} else if (datasource instanceof DelegatingDataSource source) { // Perhaps it's wrapped?
 			return getConnectionPoolInfo(source.getTargetDataSource());
@@ -59,5 +61,19 @@ public class JdbcPoolUtil {
 		info.append("removeAbandonedOnBorrow [").append(pool.getRemoveAbandonedOnBorrow()).append(CLOSE);
 		info.append("removeAbandonedOnMaintenance [").append(pool.getRemoveAbandonedOnMaintenance()).append(CLOSE);
 		info.append("removeAbandonedTimeoutDuration [").append(pool.getRemoveAbandonedTimeoutDuration()).append("]"); //TODO decide if we should make this human readable
+	}
+
+	// Try and find the inner DataSource if it's wrapped
+	private static DataSource getInnerDataSource(DataSource datasource) {
+		if (datasource instanceof DelegatingDataSource source) {
+			return getInnerDataSource(source.getTargetDataSource());
+		}
+
+		return datasource;
+	}
+
+	public static boolean isXaCapable(DataSource dataSource) {
+		DataSource innerDs = getInnerDataSource(dataSource);
+		return innerDs instanceof XADataSource || innerDs instanceof ManagedDataSource || innerDs instanceof OpenManagedDataSource;
 	}
 }
