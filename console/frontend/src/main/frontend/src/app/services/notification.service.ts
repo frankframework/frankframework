@@ -42,7 +42,7 @@ export class NotificationService {
       time: Date.now(),
     };
     this._list.set([newNotification, ...this.list()]);
-    newNotification.id = this.list.length;
+    newNotification.id = this.list().length;
     this._count.set(this.count() + 1);
 
     Tinycon.setBubble(this.count());

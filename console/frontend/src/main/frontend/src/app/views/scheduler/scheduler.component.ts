@@ -20,7 +20,7 @@ import {
   faPause,
   faPencil,
   faPlay,
-  faPlusCircle,
+  faPlus,
   faSearch,
   faStop,
   faTimes,
@@ -103,7 +103,7 @@ export class SchedulerComponent implements OnInit, OnDestroy {
   );
   protected jobShowContent: Record<keyof typeof this.jobGroups, boolean> = {};
   protected selectedJobGroup = 'All';
-  protected readonly faPlusCircle = faPlusCircle;
+  protected readonly faPlus = faPlus;
   protected readonly faPlay = faPlay;
   protected readonly faPause = faPause;
   protected readonly faStop = faStop;

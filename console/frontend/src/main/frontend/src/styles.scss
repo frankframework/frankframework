@@ -26,6 +26,17 @@
   user-select: none;
 }
 
+fa-icon + span {
+  margin-left: 3px;
+}
+
+.nav > li > a fa-icon,
+.scroll-to-top a fa-icon {
+  margin-right: 6px;
+  width: 16px;
+  text-align: center;
+}
+
 .minimalize .right,body.mini-navbar .minimalize fa-icon.left {
   display: none;
 }

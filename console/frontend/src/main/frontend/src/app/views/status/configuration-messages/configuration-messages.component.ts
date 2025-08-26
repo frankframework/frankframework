@@ -2,8 +2,8 @@ import { Component, Input } from '@angular/core';
 import { ConfigurationMessage, MessageLog } from '../../../app.service';
 import { NgClass } from '@angular/common';
 import { ToDateDirective } from '../../../components/to-date.directive';
-import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
+import { FaIconComponent, IconDefinition } from '@fortawesome/angular-fontawesome';
+import { faChevronDown, faChevronUp, faInfo, faTimes, faWarning } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-configuration-messages',
@@ -20,5 +20,19 @@ export class ConfigurationMessagesComponent {
 
   protected getMessageLog(selectedConfiguration: string): ConfigurationMessage[] {
     return this.messageLog[selectedConfiguration]?.messages ?? [];
+  }
+
+  protected getMessageIcon(messageLevel: string): IconDefinition {
+    switch (messageLevel) {
+      case 'WARN': {
+        return faWarning;
+      }
+      case 'ERROR': {
+        return faTimes;
+      }
+      default: {
+        return faInfo;
+      }
+    }
   }
 }

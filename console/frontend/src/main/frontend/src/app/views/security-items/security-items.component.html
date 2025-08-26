@@ -217,7 +217,7 @@
                 <tr>
                   <th>Action</th>
                   <th>Description</th>
-                  @for (roles of securityRoles; track roles.name) {
+                  @for (roles of securityRoles; track $index) {
                     <th>
                       {{ roles.name }}
                     </th>

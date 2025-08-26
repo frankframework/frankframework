@@ -28,7 +28,7 @@
           <table class="table table-striped table-nohead m-b-none">
             <tbody>
               @if (messageLog[selectedConfiguration] !== null) {
-                @for (message of getMessageLog(selectedConfiguration); track message.date) {
+                @for (message of getMessageLog(selectedConfiguration); track message.date + message.message) {
                   <tr
                     [ngClass]="{
                       'text-warning': message.level === 'WARN',
@@ -36,14 +36,7 @@
                     }"
                   >
                     <td class="text-center" style="width: 40px">
-                      <i
-                        class="m-l-md fa"
-                        [ngClass]="{
-                          'fa-info': message.level === 'INFO',
-                          'fa-warning': message.level === 'WARN',
-                          'fa-times': message.level === 'ERROR',
-                        }"
-                      ></i>
+                      <fa-icon class="m-l-md" [icon]="getMessageIcon(message.level)" />
                     </td>
                     <td class="text-center" style="width: 200px">
                       <span appToDate [time]="message.date"></span>

@@ -97,7 +97,7 @@
                 <td class="col-md-6">State</td>
                 @if (adapter.state === 'starting') {
                   <td class="col-md-6">
-                    <span><fa-icon class="lh22 m-r-xs" [icon]="faCheckSquare" /> Starting</span>
+                    <span><fa-icon class="lh22 m-r-xs" [icon]="faCheckSquareO" /> Starting</span>
                     <button class="btn btn-xs btn-warning" style="float: right" title="Starting adapter" type="button">
                       <fa-icon animation="spin" [icon]="faCog" />
                     </button>
@@ -120,7 +120,7 @@
                 }
                 @if (adapter.state === 'stopping') {
                   <td class="col-md-6">
-                    <span><fa-icon class="lh22 m-r-xs" [icon]="faStopCircle" /> Stopping</span>
+                    <span><fa-icon class="lh22 m-r-xs" [icon]="faStopCircleO" /> Stopping</span>
                     <button class="btn btn-xs btn-warning" style="float: right" title="Stopping adapter" type="button">
                       <fa-icon animation="spin" [icon]="faCog" />
                     </button>

@@ -27,8 +27,10 @@ import {
   faTimes,
   faTimesCircle,
   faWarning,
+  faCheckSquare,
+  faStopCircle,
 } from '@fortawesome/free-solid-svg-icons';
-import { faCheckSquare, faStopCircle } from '@fortawesome/free-regular-svg-icons';
+import { faCheckSquare as faCheckSquareO, faStopCircle as faStopCircleO } from '@fortawesome/free-regular-svg-icons';
 
 @Component({
   selector: 'app-adapter-status',
@@ -62,8 +64,10 @@ export class AdapterStatusComponent {
   protected readonly faSignOut = faSignOut;
   protected readonly faBarChart = faBarChart;
   protected readonly faCheckSquare = faCheckSquare;
+  protected readonly faCheckSquareO = faCheckSquareO;
   protected readonly faStop = faStop;
   protected readonly faStopCircle = faStopCircle;
+  protected readonly faStopCircleO = faStopCircleO;
   protected readonly faPlay = faPlay;
   protected readonly faWarning = faWarning;
   protected readonly faPlus = faPlus;
