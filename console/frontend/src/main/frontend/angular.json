@@ -43,7 +43,7 @@
               }
             ],
             "styles": [
-              "node_modules/bootstrap/dist/css/bootstrap.css",
+              "src/external/bootstrap.css",
               "node_modules/ladda/dist/ladda-themeless.min.css",
               "src/styles.scss"
             ],
@@ -73,7 +73,7 @@
                 }
               ],
               "styles": [
-                "node_modules/bootstrap/dist/css/bootstrap.min.css",
+                "src/external/bootstrap.min.css",
                 "node_modules/ladda/dist/ladda-themeless.min.css",
                 "src/styles.scss"
               ],
@@ -88,7 +88,7 @@
             },
             "analysis": {
               "styles": [
-                "node_modules/bootstrap/dist/css/bootstrap.min.css",
+                "src/external/bootstrap.min.css",
                 "node_modules/ladda/dist/ladda-themeless.min.css",
                 "src/styles.scss"
               ],
