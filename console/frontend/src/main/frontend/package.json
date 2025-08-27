@@ -18,6 +18,9 @@
     "lint": "ng lint"
   },
   "private": true,
+  "engines": {
+    "node": " ^20.19.0 || ^22.12.0 || ^24.0.05"
+  },
   "dependencies": {
     "@angular/animations": "^19.2.14",
     "@angular/cdk": "^19.2.19",
