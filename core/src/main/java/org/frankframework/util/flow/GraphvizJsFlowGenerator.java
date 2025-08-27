@@ -26,7 +26,7 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.util.flow.graphviz.GraphvizEngine;
 
 /**
- * Initialized through Spring. Uses @{link GraphvizEngine} to get an available
+ * Initialized through Spring. Uses {@link GraphvizEngine} to get an available
  * JavaScriptEngine to generate the Flow images with.
  */
 @Log4j2
