@@ -74,6 +74,6 @@ public class JdbcPoolUtil {
 
 	public static boolean isXaCapable(DataSource dataSource) {
 		DataSource innerDs = getInnerDataSource(dataSource);
-		return innerDs instanceof XADataSource || innerDs instanceof ManagedDataSource || innerDs instanceof OpenManagedDataSource;
+		return innerDs instanceof XADataSource || innerDs instanceof ManagedDataSource;
 	}
 }
