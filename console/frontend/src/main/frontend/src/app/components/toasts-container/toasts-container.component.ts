@@ -7,6 +7,15 @@ import { faTimes } from '@fortawesome/free-solid-svg-icons';
 @Component({
   selector: 'app-toasts-container',
   templateUrl: './toasts-container.component.html',
+  styles: `
+    :host {
+      padding: 1rem !important;
+      right: 0 !important;
+      top: 0 !important;
+      position: fixed !important;
+      z-index: 1200;
+    }
+  `,
   imports: [NgbToast, FaIconComponent],
 })
 export class ToastsContainerComponent {

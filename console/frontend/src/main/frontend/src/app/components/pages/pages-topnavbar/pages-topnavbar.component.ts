@@ -10,7 +10,7 @@ import { FormsModule } from '@angular/forms';
 import { ServerTimeService } from '../../../services/server-time.service';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faGithub } from '@fortawesome/free-brands-svg-icons';
-import { faBell } from '@fortawesome/free-regular-svg-icons';
+import { faBell } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-pages-topnavbar',

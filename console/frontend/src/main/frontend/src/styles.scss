@@ -1,10 +1,12 @@
 /* You can add global styles to this file, and also import other style files */
-// @import 'bootstrap/scss/bootstrap'; only for v5 or newer
 @use './toast';
 
 @use './assets/css/animate';
 @use './assets/css/style';
-@use './assets/css/bootstrap-fix';
+
+html {
+  overflow: auto;
+}
 
 [sortable] {
   cursor: pointer;
@@ -42,11 +44,169 @@ fa-icon + span {
 }
 
 body.mini-navbar .minimalize fa-icon.right {
-  display: inline-block;
+  display: inline-block !important;
 }
 
 body.mini-navbar .navbar-default .nav li a fa-icon.fa-arrow {
   display: none;
+}
+
+body.mini-navbar .navbar-static-side {
+  position: relative !important;
+  top: 0;
+  width: 70px;
+  max-height: initial;
+  overflow: initial;
+}
+body.fixed-nav #wrapper .navbar-static-side,
+body.fixed-nav #wrapper #page-wrapper {
+  margin-top: 60px;
+}
+body.fixed-nav.fixed-nav-basic #wrapper .navbar-static-side {
+  margin-top: 0;
+}
+body.fixed-sidebar .navbar-static-side,
+body.canvas-menu .navbar-static-side {
+  position: fixed;
+  width: 220px;
+  z-index: 2001;
+  height: 100%;
+}
+body.fixed-sidebar.mini-navbar .navbar-static-side {
+  width: 0;
+}
+body.body-small.fixed-sidebar.mini-navbar .navbar-static-side {
+  width: 220px;
+}
+body.canvas-menu nav.navbar-static-side {
+  z-index: 2001;
+  background: #2f4050;
+  height: 100%;
+  position: fixed;
+  display: none;
+}
+body.canvas-menu.mini-navbar nav.navbar-static-side {
+  display: block;
+  width: 220px;
+}
+.body-small .navbar-static-side {
+  display: none;
+  z-index: 2001;
+  position: absolute;
+  width: 70px;
+}
+.body-small.mini-navbar .navbar-static-side {
+  display: block;
+}
+
+.fixed-sidebar.body-small .navbar-static-side {
+  display: none;
+  z-index: 2001;
+  position: fixed;
+  width: 220px;
+}
+.fixed-sidebar.body-small.mini-navbar .navbar-static-side {
+  display: block;
+}
+
+/* DISABLED ELEMENTS (used for has access to link directive) */
+a.disabled {
+  color: #ccc;
+}
+
+body.mini-navbar .scroll-to-top {
+  font-size: 22px;
+  bottom: 56px;
+}
+
+body.no-scroll {
+  overflow-y: hidden;
+}
+
+body.mini-navbar .minimalize {
+  left: 0;
+}
+body.mini-navbar .minimalize i.left {
+  display: none;
+}
+body.mini-navbar .minimalize i.right {
+  display: inline-block;
+}
+.fixed-nav .minimalize {
+  margin: 14px 5px 5px 15px;
+}
+
+.navbar-default .nav > li > a:hover,
+.navbar-default .nav > li > a:focus,
+.minimalize a {
+  background-color: #293846;
+  color: white;
+}
+
+body.top-navigation.fixed-nav #wrapper #page-wrapper {
+  margin-top: 0;
+}
+body.mini-navbar #page-wrapper {
+  margin: 0 0 0 70px;
+}
+body.fixed-sidebar.mini-navbar #page-wrapper {
+  margin: 0 0 0 0;
+}
+body.body-small.fixed-sidebar.mini-navbar #page-wrapper {
+  margin: 0 0 0 220px;
+}
+.top-navigation #page-wrapper {
+  margin-left: 0;
+}
+.top-navigation.mini-navbar #page-wrapper,
+.top-navigation.body-small.fixed-sidebar.mini-navbar #page-wrapper,
+.mini-navbar .top-navigation #page-wrapper,
+.body-small.fixed-sidebar.mini-navbar .top-navigation #page-wrapper,
+.canvas-menu #page-wrapper {
+  margin: 0;
+}
+
+.fade {
+  opacity: 1;
+}
+
+.modal-backdrop.fade {
+  opacity: 0.5;
+}
+
+.modal.fade .modal-dialog {
+  transform: none;
+}
+
+.sk-spinner-wave.sk-spinner > div + div {
+  margin-left: 3px;
+}
+
+.monaco-editor .line-numbers {
+  cursor: pointer!important;
+}
+
+.monaco-editor__line--highlighted {
+  background: #fdc30055;
+}
+
+.btn-ff {
+  background-color: #FDC300;
+  border-color: #FDC300;
+  color: #ffffff;
+}
+
+@media (min-width: 768px) {
+  .navbar-static-side {
+    z-index: 2001;
+    position: absolute;
+    width: 220px;
+  }
+  .navbar-top-links .dropdown-messages,
+  .navbar-top-links .dropdown-tasks,
+  .navbar-top-links .dropdown-alerts {
+    margin-left: auto;
+  }
 }
 
 @media screen and (max-width: 960px) {

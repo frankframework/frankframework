@@ -11,9 +11,16 @@ import { QuickSubmitFormDirective } from '../../components/quick-submit-form.dir
 import { ToDateDirective } from '../../components/to-date.directive';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { faClose, faEraser, faPencil, faPlus, faSave, faWarning } from '@fortawesome/free-solid-svg-icons';
+import {
+  faClose,
+  faEraser,
+  faPencil,
+  faPlus,
+  faSave,
+  faWarning,
+  faArrowAltCircleRight,
+} from '@fortawesome/free-solid-svg-icons';
 import { faFileCode } from '@fortawesome/free-regular-svg-icons';
-import { faArrowAltCircleRight } from '@fortawesome/free-solid-svg-icons/faArrowAltCircleRight';
 
 @Component({
   selector: 'app-monitors',

@@ -13,11 +13,15 @@ import { SearchFilterPipe } from '../../pipes/search-filter.pipe';
 import { FileViewerComponent } from '../../components/file-viewer/file-viewer.component';
 import { ToDateDirective } from '../../components/to-date.directive';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { faArrowAltCircleRight } from '@fortawesome/free-solid-svg-icons/faArrowAltCircleRight';
 import { faArrowAltCircleLeft, faClipboard } from '@fortawesome/free-regular-svg-icons';
-import { faArrowCircleRight, faSearch, faTimes } from '@fortawesome/free-solid-svg-icons';
-import { faArrowAltCircleDown } from '@fortawesome/free-solid-svg-icons/faArrowAltCircleDown';
-import { faFolderOpen } from '@fortawesome/free-solid-svg-icons/faFolderOpen';
+import {
+  faArrowCircleRight,
+  faSearch,
+  faTimes,
+  faArrowAltCircleRight,
+  faArrowAltCircleDown,
+  faFolderOpen,
+} from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-logging',

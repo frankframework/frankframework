@@ -3,8 +3,7 @@ import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AppService } from 'src/app/app.service';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { faLifeRing } from '@fortawesome/free-solid-svg-icons/faLifeRing';
-import { faBug } from '@fortawesome/free-solid-svg-icons';
+import { faBug, faLifeRing } from '@fortawesome/free-solid-svg-icons';
 
 type stackTrace = {
   className: string;

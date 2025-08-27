@@ -1,3 +1,7 @@
+:host {
+  flex: 0 0 auto;
+}
+
 .collapse {
   display: block;
   height: 0;
@@ -38,3 +42,30 @@ fa-icon + span {
 .fa-arrow {
   float: right;
 }
+
+.navbar-static-side {
+  position: sticky !important;
+  top: 0;
+  max-height: 100vh;
+  overflow: auto;
+  /* -ms-overflow-style: thin; */
+  scrollbar-width: thin;
+
+  &::-webkit-scrollbar {
+    /* display: none; */
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background-color: #293846;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background-color: #a7b1c2;
+  }
+}
+
+.navbar-spacer {
+  height: 60px;
+}
+

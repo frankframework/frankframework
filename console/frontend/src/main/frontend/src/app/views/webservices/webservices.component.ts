@@ -4,10 +4,7 @@ import { ApiListener, Service, WebservicesService, Wsdl } from './webservices.se
 
 import { HasAccessToLinkDirective } from '../../components/has-access-to-link.directive';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { faExternalLink } from '@fortawesome/free-solid-svg-icons';
-import { faArrowAltCircleDown } from '@fortawesome/free-solid-svg-icons/faArrowAltCircleDown';
-import { faFileArchive } from '@fortawesome/free-solid-svg-icons/faFileArchive';
-import { faFileCode } from '@fortawesome/free-solid-svg-icons/faFileCode';
+import { faExternalLink, faArrowAltCircleDown, faFileArchive, faFileCode } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-webservices',

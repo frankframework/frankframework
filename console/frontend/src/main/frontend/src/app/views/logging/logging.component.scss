@@ -8,3 +8,17 @@ app-file-viewer {
 .action-buttons > button + button {
   margin-left: 6px;
 }
+
+.clipboard {
+  user-select: text;
+
+  fa-icon {
+    display: none;
+    margin-left: 5px;
+  }
+
+  &:hover fa-icon {
+    display: inline;
+    cursor: pointer;
+  }
+}

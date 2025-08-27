@@ -6,6 +6,7 @@ import { faAngleDoubleLeft, faAngleDoubleRight } from '@fortawesome/free-solid-s
 @Component({
   selector: 'app-minimaliza-sidebar',
   imports: [FaIconComponent],
+  styleUrls: ['./minimaliza-sidebar.component.scss'],
   template: `
     <a class="navbar-minimalize minimalize" (click)="toggle()"
       ><fa-icon class="left" [icon]="faAngleDoubleLeft" size="sm" /><fa-icon

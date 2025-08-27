@@ -5,6 +5,7 @@ import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 @Component({
   selector: 'app-scroll-to-top',
   imports: [FaIconComponent],
+  styleUrls: ['./scroll-to-top.component.scss'],
   template:
     '<div class="scroll-to-top hidden-scroll"><a title="Scroll to top" (click)="scrollTop()"><fa-icon [icon]="faArrowUp"></fa-icon> <span class="nav-label">Scroll To Top</span></a></div>',
 })

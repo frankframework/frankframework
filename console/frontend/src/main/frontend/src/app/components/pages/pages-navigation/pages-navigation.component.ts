@@ -33,8 +33,8 @@ import {
   faLock,
   faSitemap,
   faThLarge,
+  faLifeRing,
 } from '@fortawesome/free-solid-svg-icons';
-import { faLifeRing } from '@fortawesome/free-solid-svg-icons/faLifeRing';
 import { faCalendar, faClone, faCommenting, faFlag, faPaperPlane } from '@fortawesome/free-regular-svg-icons';
 
 type ExpandedItem = {

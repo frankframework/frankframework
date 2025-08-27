@@ -10,8 +10,7 @@ import { QuickSubmitFormDirective } from '../../components/quick-submit-form.dir
 import { FormsModule } from '@angular/forms';
 import { toObservable } from '@angular/core/rxjs-interop';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
-import { faDatabase, faSignIn, faSignOut } from '@fortawesome/free-solid-svg-icons';
-import { faTimesCircle } from '@fortawesome/free-solid-svg-icons/faTimesCircle';
+import { faDatabase, faSignIn, faSignOut, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-ibisstore-summary',

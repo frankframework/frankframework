@@ -108,3 +108,61 @@ $toast-header-border-color: $toast-border-color !default;
   padding: var(--#{$prefix}toast-padding-x);
   word-wrap: break-word;
 }
+
+/* CUSTOM */
+
+.toast {
+  background-color: #1ab394;
+  color: #fff;
+  font-size: 14px;
+  margin-bottom: 1rem;
+}
+
+.toast .toast-header {
+  padding: 0 0 5px;
+}
+
+.toast.clickable {
+  cursor: pointer;
+}
+
+.toast .toast-body .toast-close {
+  display: inline-block;
+  align-self: flex-start;
+  margin: -6px -6px 0 0;
+  color: #fff;
+  -webkit-appearance: none;
+  background: none;
+  border: none;
+}
+
+.toast .toast-body .title {
+  display: inline-block;
+  margin-right: auto;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.toast .toast-body p {
+  margin-bottom: 0;
+}
+
+.toast .toast-body small {
+  font-style: italic;
+}
+
+.toast-success {
+  background-color: #1ab394;
+}
+
+.toast-error {
+  background-color: #ed5565;
+}
+
+.toast-info {
+  background-color: #23c6c8;
+}
+
+.toast-warning {
+  background-color: #f8ac59;
+}

@@ -225,7 +225,7 @@
                 </tr>
               </thead>
               <tbody>
-                @for (link of links; track link.name) {
+                @for (link of links; track $index) {
                   <tr>
                     <td>{{ link.name }}</td>
                     <td>{{ link.description }}</td>
