@@ -155,18 +155,21 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	@Override
 	public M toFile(@Nullable String folderName, @Nullable String filename) throws FileSystemException {
 		checkOpen();
-		MockFolder destFolder = getMockFolder(folderName);
-		if (destFolder == null) {
+		MockFolder folder = getMockFolder(folderName);
+		if (folder == null) {
 			throw new FolderNotFoundException("folder [" + folderName + "] does not exist");
 		}
-		M result = (M) destFolder.getFiles().get(filename);
+		M result = (M) folder.getFiles().get(filename);
+		// If the result is not null, it means we found the file with the given parameters
 		if (result != null) {
 			return result;
 		}
+		// If filename is null, it means we just return the folder instead
 		if (filename == null) {
-			return (M) destFolder;
+			return (M) folder;
 		}
-		return (M) new MockFile(filename, destFolder);
+		// If none of the above succeed, we create a new MockFile with the given parameters
+		return (M) new MockFile(filename, folder);
 	}
 
 	@Override
