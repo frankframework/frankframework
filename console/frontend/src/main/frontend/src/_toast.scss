@@ -62,12 +62,21 @@ $toast-header-border-color: $toast-border-color !default;
   box-shadow: $toast-box-shadow;
   border-radius: $toast-border-radius;
 
+  background-color: #1ab394;
+  color: #fff;
+  font-size: 14px;
+  margin-bottom: 1rem;
+
   &.showing {
     opacity: 0;
   }
 
   &:not(.show) {
     display: none;
+  }
+
+  &.clickable {
+    cursor: pointer;
   }
 }
 
@@ -88,7 +97,8 @@ $toast-header-border-color: $toast-border-color !default;
 .toast-header {
   display: flex;
   align-items: center;
-  padding: var(--#{$prefix}toast-padding-y) var(--#{$prefix}toast-padding-x);
+  //padding: var(--#{$prefix}toast-padding-y) var(--#{$prefix}toast-padding-x);
+  padding: 0 0 5px;
   color: var(--#{$prefix}toast-header-color);
   background-color: var(--#{$prefix}toast-header-bg);
   background-clip: padding-box;
@@ -107,48 +117,31 @@ $toast-header-border-color: $toast-border-color !default;
 .toast-body {
   padding: var(--#{$prefix}toast-padding-x);
   word-wrap: break-word;
-}
 
-/* CUSTOM */
+  .toast-close {
+    display: inline-block;
+    align-self: flex-start;
+    margin: -6px -6px 0 0;
+    color: #fff;
+    -webkit-appearance: none;
+    background: none;
+    border: none;
+  }
 
-.toast {
-  background-color: #1ab394;
-  color: #fff;
-  font-size: 14px;
-  margin-bottom: 1rem;
-}
+  .title {
+    display: inline-block;
+    margin-right: auto;
+    font-size: 16px;
+    font-weight: bold;
+  }
 
-.toast .toast-header {
-  padding: 0 0 5px;
-}
+  p {
+    margin-bottom: 0;
+  }
 
-.toast.clickable {
-  cursor: pointer;
-}
-
-.toast .toast-body .toast-close {
-  display: inline-block;
-  align-self: flex-start;
-  margin: -6px -6px 0 0;
-  color: #fff;
-  -webkit-appearance: none;
-  background: none;
-  border: none;
-}
-
-.toast .toast-body .title {
-  display: inline-block;
-  margin-right: auto;
-  font-size: 16px;
-  font-weight: bold;
-}
-
-.toast .toast-body p {
-  margin-bottom: 0;
-}
-
-.toast .toast-body small {
-  font-style: italic;
+  small {
+    font-style: italic;
+  }
 }
 
 .toast-success {
