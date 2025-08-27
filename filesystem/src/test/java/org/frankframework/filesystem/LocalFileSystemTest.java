@@ -1,12 +1,16 @@
 package org.frankframework.filesystem;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.ByteArrayInputStream;
 import java.net.URL;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -18,7 +22,7 @@ import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.StreamUtil;
 
-public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem> {
+class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem> {
 
 	@TempDir
 	public Path folder;
@@ -36,7 +40,7 @@ public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem> {
 	}
 
 	@Test
-	public void localFileSystemTestCreateNewFileAbsolute() throws Exception {
+	void localFileSystemTestCreateNewFileAbsolute() throws Exception {
 		String filename = "createFileAbsolute" + FILE1;
 		String contents = "regeltje tekst";
 
@@ -60,7 +64,7 @@ public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem> {
 	}
 
 	@Test
-	public void localFileSystemTestToFileAbsoluteLongFilenameInRoot() throws Exception {
+	void localFileSystemTestToFileAbsoluteLongFilenameInRoot() throws Exception {
 		assumeTrue(TestAssertions.isTestRunningOnWindows(), "Test is for long and short filename compatibility, which is a Windows only thing");
 		String filename = "FileInLongRoot.txt";
 		String contents = "regeltje tekst";
@@ -101,7 +105,7 @@ public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem> {
 	}
 
 	@Test
-	public void fileSystemCharset() throws Exception {
+	void fileSystemCharset() throws Exception {
 		fileSystem.configure();
 		fileSystem.open();
 
@@ -113,4 +117,17 @@ public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem> {
 		}
 	}
 
+	@Test
+	void basicFileSystemTestListFromNonExistingFolder() throws Exception {
+		fileSystem.configure();
+		fileSystem.open();
+
+		String nonExistingFolder = "this_folder_should_not_exist";
+
+		Path nonExistingFolderObject = fileSystem.toFile(nonExistingFolder);
+
+		assertFalse(_folderExists(nonExistingFolder));
+		FileSystemException ex = assertThrows(FileSystemException.class, () -> fileSystem.list(nonExistingFolderObject, TypeFilter.FILES_ONLY), "Expected an exception to be thrown because we try to list files in a nonexisting folder.");
+		assertInstanceOf(NoSuchFileException.class, ex.getCause());
+	}
 }
