@@ -141,7 +141,7 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	 * <br/>
 	 * Rewriting the event ({@link MutableLogEvent#initFrom(LogEvent)}) includes invoking caller location information, {@link LogEvent#getSource()}
 	 * This is done by taking a snapshot of the stack and walking it, see {@link StackLocatorUtil#calcLocation(String)}).
-	 * Hence avoid this at all costs, fixed from version 2.6 (LOG4J2-1382) use a builder instance to update the @{link Message}.
+	 * Hence avoid this at all costs, fixed from version 2.6 (LOG4J2-1382) use a builder instance to update the {@link Message}.
 	 *
 	 * @see "https://issues.apache.org/jira/browse/LOG4J2-1179"
 	 * @see "https://issues.apache.org/jira/browse/LOG4J2-1382"

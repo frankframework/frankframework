@@ -50,7 +50,7 @@ import org.frankframework.stream.Message;
 
 /**
  * Abstract class to prevent Frank!Developers from including/using this Sender in their configurations.
- * It should solely be used by the @{link CmisHttpInvoker}.
+ * It should solely be used by the {@link CmisHttpInvoker}.
  */
 public abstract class CmisHttpSender extends AbstractHttpSender {
 
