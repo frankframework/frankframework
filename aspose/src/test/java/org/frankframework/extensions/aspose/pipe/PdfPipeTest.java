@@ -201,7 +201,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		return sftpTestFS.getAbsolutePath();
 	}
 
-	public void expectUnsuccessfullConversion(String name, String fileToConvert, String fileContaingExpectedXml) throws Exception {
+	public void expectUnSuccessfulConversion(String name, String fileToConvert, String fileContaingExpectedXml) throws Exception {
 		String actualXml = executeConversion(name, fileToConvert);
 		String expected = TestFileUtils.getTestFile(fileContaingExpectedXml);
 
@@ -401,7 +401,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void zip2Pdf() throws Exception {
-		expectUnsuccessfullConversion("Zip2Pdf", "/PdfPipe/PdfPipe.zip", "/PdfPipe/xml-results/zip.xml");
+		expectUnSuccessfulConversion("Zip2Pdf", "/PdfPipe/PdfPipe.zip", "/PdfPipe/xml-results/zip.xml");
 		assertTrue(session.containsKey("documents"));
 		assertFalse(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -624,5 +624,23 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		// comparison
 		PDFUtil pdfUtil = createPdfUtil(CompareMode.TEXT_MODE);
 		assertEquals(0d, pdfUtil.compare(expectedFilePath, resultingFile.toFile().getCanonicalPath()));
+	}
+
+	@Test
+	public void expectSuccessfulConversionWithUnsignedPdf() throws Exception {
+		expectSuccessfulConversion("unsignedPdf", "/PdfPipe/unsigned.pdf", "/PdfPipe/xml-results/pdf.xml", "/PdfPipe/results/unsigned.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
+	}
+
+	@Test
+	public void expectExceptionWhenProvidingSignedPdf() throws Exception {
+		expectUnSuccessfulConversion("SignedPdf", "/PdfPipe/signed.pdf", "/PdfPipe/xml-results/signed_pdf.xml");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 }
