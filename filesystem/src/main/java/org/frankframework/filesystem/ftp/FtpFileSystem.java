@@ -324,9 +324,6 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 
 	@Override
 	public String getCanonicalName(FTPFileRef f) {
-		if (f.getName().equals("null")) {
-			return null;
-		}
 		return f.getName();  // Should include folder structure if known
 	}
 

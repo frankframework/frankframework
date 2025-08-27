@@ -80,7 +80,11 @@ public class FTPFileRef extends FTPFile {
 	@Override
 	public String getName() {
 		String prefix = folder != null ? folder + "/" : "";
-		return prefix + super.getName();
+		String returnValue = prefix + super.getName();
+		if (org.springframework.util.StringUtils.hasLength(returnValue)) {
+			return returnValue;
+		}
+		return null;
 	}
 
 	@Override

@@ -395,9 +395,6 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 
 	@Override
 	public String getCanonicalName(SftpFileRef f) {
-		if (f.getName().equals("null")) {
-			return null;
-		}
 		return f.getName();  // Should include folder structure if known
 	}
 
