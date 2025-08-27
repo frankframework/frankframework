@@ -52,7 +52,8 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination, AutoCloseab
 
 	/**
 	 * Lists files, directories or both, from a 'folder' or in the 'root' of the filesystem (when folder is null).
-	 * Only lists the objects as defined by the type filter.
+	 * Only lists the objects as defined by the type filter. <br />
+	 * Temporary default method until all implementations use {@link #list(F, TypeFilter)} See <a href="https://github.com/frankframework/frankframework/issues/7193">Issue 7193</a>
 	 */
 	default DirectoryStream<F> list(String folder, TypeFilter filter) throws FileSystemException {
 		F actualFolder = toFile(folder);
