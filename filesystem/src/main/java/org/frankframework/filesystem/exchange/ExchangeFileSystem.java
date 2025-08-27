@@ -254,19 +254,19 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 
 	@Override
 	public DirectoryStream<MailItemId> list(MailItemId folderName, TypeFilter filter) throws FileSystemException {
-		MailFolder folder;
-		if (isFolder(folderName)) {
-			folder = (MailFolder) folderName;
-		} else {
-			folder = StringUtils.isBlank(getCanonicalName(folderName)) ? mailFolder : findSubFolder(mailFolder, getCanonicalName(folderName));
-		}
+		MailFolder folder = isFolder(folderName)
+				? (MailFolder) folderName
+				: resolveFolder(getCanonicalName(folderName));
 		return listItems(folder, filter);
 	}
 
 	@Override
 	public DirectoryStream<MailItemId> list(String folderName, TypeFilter filter) throws FileSystemException {
-		MailFolder folder = StringUtils.isBlank(folderName) ? mailFolder : findSubFolder(mailFolder, folderName);
-		return listItems(folder, filter);
+		return listItems(resolveFolder(folderName), filter);
+	}
+
+	private MailFolder resolveFolder(String folderName) throws FileSystemException {
+		return StringUtils.isBlank(folderName) ? mailFolder : findSubFolder(mailFolder, folderName);
 	}
 
 	private DirectoryStream<MailItemId> listItems(MailFolder folder, TypeFilter filter) throws FileSystemException {
