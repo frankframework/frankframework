@@ -15,7 +15,7 @@
     "sourceMap": true,
     "declaration": false,
     "experimentalDecorators": true,
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "importHelpers": true,
     "target": "ES2022",
     "module": "ES2022",
@@ -23,9 +23,11 @@
     "lib": [
       "ES2022",
       "dom",
-      "DOM.Iterable",
+      "DOM.Iterable"
     ],
-    "types": ["jasmine"], // explicitly including types avoids NodeJS pollution of globalThis
+    "types": [ // explicitly including types avoids NodeJS pollution of globalThis
+      "jasmine"
+    ]
   },
   "angularCompilerOptions": {
     "enableI18nLegacyMessageIdFormat": false,
