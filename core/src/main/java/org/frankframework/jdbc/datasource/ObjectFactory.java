@@ -26,7 +26,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import jakarta.annotation.Nonnull;
 
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -84,7 +84,7 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	 * When using a JNDI environment it allows initial properties to use for JNDI lookups.
 	 */
 	protected final O get(String name, Properties environment) {
-		String nameWithResourcePrefix = StringUtils.prependIfMissing(name, resourcePrefix+"/");
+		String nameWithResourcePrefix = Strings.CS.prependIfMissing(name, resourcePrefix + "/");
 		return objects.computeIfAbsent(nameWithResourcePrefix, k -> compute(k, environment));
 	}
 

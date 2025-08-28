@@ -1,0 +1,20 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="IafTestInitializer (NARAYANA + PSQL + ActiveMQ)" type="SpringBootApplicationConfigurationType" factoryName="Spring Boot">
+    <classpathModifications>
+      <entry path="$PROJECT_DIR$\test\src\test\resources" />
+    </classpathModifications>
+    <module name="frankframework-test" />
+    <option name="SHORTEN_COMMAND_LINE" value="ARGS_FILE" />
+    <option name="SPRING_BOOT_MAIN_CLASS" value="org.frankframework.runner.IafTestInitializer" />
+    <option name="VM_PARAMETERS" value="-Djdbc.hostname=localhost -Djdbc.dbms.default=postgres-xa -Dapplication.server.type.custom=NARAYANA -Djms.hostname=localhost -Djms.provider.default=activemq --add-opens java.base/java.io=ALL-UNNAMED" />
+    <extension name="coverage">
+      <pattern>
+        <option name="PATTERN" value="org.frankframework.*" />
+        <option name="ENABLED" value="true" />
+      </pattern>
+    </extension>
+    <method v="2">
+      <option name="Make" enabled="true" />
+    </method>
+  </configuration>
+</component>
