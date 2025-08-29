@@ -116,7 +116,7 @@ public class JmsTransactionalStorage<S extends Serializable> extends AbstractJms
 	}
 
 	@Override
-	public RawMessageWrapper<S> getMessage(String storageKey) throws ListenerException {
+	public RawMessageWrapper<S> consumeMessage(String storageKey) throws ListenerException {
 		try {
 			ObjectMessage msg=getJmsMessage(storageKey);
 			RawMessageWrapper<S> messageWrapper = new RawMessageWrapper<>((S)msg.getObject(), storageKey, null);

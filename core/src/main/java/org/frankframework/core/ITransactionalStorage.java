@@ -57,7 +57,7 @@ public interface ITransactionalStorage<S extends Serializable> extends IMessageB
 	/**
 	 * Retrieves and deletes the message.
 	 */
-	RawMessageWrapper<S> getMessage(String storageKey) throws ListenerException;
+	RawMessageWrapper<S> consumeMessage(String storageKey) throws ListenerException;
 
 	/** Optional identifier for this storage, to be able to share the physical storage between a number of receivers and pipes. */
 	void setSlotId(String string);
