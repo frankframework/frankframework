@@ -44,6 +44,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -67,7 +68,13 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 
 	private @Getter boolean createRootFolder = false;
 
-	private String root;
+	private static final String FILE_DELIMITER = "/";
+
+	/**
+	 * Path to the folder that serves as the root of this virtual filesystem. All specifications of folders or files are relative to this root.
+	 * When the root is left unspecified, absolute paths to files and folders can be used
+	 */
+	@Getter @Setter private String root;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -93,15 +100,15 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		if (filename==null) {
 			filename="";
 		}
-		if (StringUtils.isNotEmpty(folder) && !(filename.contains("/") || filename.contains("\\"))) {
-			filename = folder + "/" + filename;
+		if (StringUtils.isNotEmpty(folder) && !(filename.contains(FILE_DELIMITER) || filename.contains("\\"))) {
+			filename = folder + FILE_DELIMITER + filename;
 		}
 		if (StringUtils.isNotEmpty(getRoot())) {
 			Path result = Paths.get(filename);
 			if (result.isAbsolute()) {
 				return result;
 			}
-			filename = getRoot()+ "/" + filename;
+			filename = getRoot()+ FILE_DELIMITER + filename;
 		}
 		if (StringUtils.isEmpty(filename)) {
 			throw new FileSystemException("no filesystem-root, file or folder specified");
@@ -110,19 +117,14 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	}
 
 	@Override
-	public DirectoryStream<Path> list(String folder, TypeFilter filter) throws FileSystemException {
-		if (!folderExists(folder)) {
-			throw new FolderNotFoundException("Cannot list files in ["+folder+"], no such folder found");
-		}
-		final Path dir = toFile(folder);
-
+	public DirectoryStream<Path> list(Path folder, TypeFilter filter) throws FileSystemException {
 		DirectoryStream.Filter<Path> directoryStreamFilter = switch (filter) {
 			case FILES_ONLY -> file -> !Files.isDirectory(file);
 			case FOLDERS_ONLY -> Files::isDirectory;
 			case FILES_AND_FOLDERS -> file -> true;
 		};
 		try {
-			return Files.newDirectoryStream(dir, directoryStreamFilter);
+			return Files.newDirectoryStream(folder, directoryStreamFilter);
 		} catch (IOException e) {
 			throw new FileSystemException("Cannot list files in ["+folder+"]", e);
 		}
@@ -428,17 +430,6 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	@Override
 	public String getPhysicalDestinationName() {
 		return "root ["+(getRoot()==null?"":getRoot())+"]";
-	}
-
-	/**
-	 * Path to the folder that serves as the root of this virtual filesystem. All specifications of folders or files are relative to this root.
-	 * When the root is left unspecified, absolute paths to files and folders can be used
-	 */
-	public void setRoot(String root) {
-		this.root = root;
-	}
-	public String getRoot() {
-		return root;
 	}
 
 	/**

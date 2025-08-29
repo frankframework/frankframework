@@ -67,17 +67,17 @@ public class MockFileSystemTestHelper<F extends MockFile> implements IFileSystem
 
 	@Override
 	public String createFile(String folderName, String filename, String contents) throws Exception {
-		MockFolder folder = folderName==null?fileSystem:fileSystem.getFolders().get(folderName);
-		if (folder==null) {
-			folder=new MockFolder(folderName,fileSystem);
-			fileSystem.getFolders().put(folderName,folder);
+		MockFolder folder = folderName == null ? fileSystem : fileSystem.getFolders().get(folderName);
+		if (folder == null) {
+			folder = new MockFolder(folderName, fileSystem);
+			fileSystem.getFolders().put(folderName, folder);
 		}
-		final MockFile mf = createNewFile(folder,filename);
+		final MockFile mf = createNewFile(folder, filename);
 
-		log.debug("created file ["+filename+"] in folder ["+folderName+"]");
+		log.debug("created file [" + filename + "] in folder [" + folderName + "]");
 
 		folder.getFiles().put(filename, mf);
-		if(StringUtils.isNotEmpty(contents)) {
+		if (StringUtils.isNotEmpty(contents)) {
 			mf.setContents(contents.getBytes());
 		}
 		return filename;

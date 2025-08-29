@@ -56,6 +56,7 @@ import io.micrometer.core.instrument.Counter;
 import io.micrometer.core.instrument.DistributionSummary;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.IMessageBrowsingIterator;
 import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLine;
@@ -403,7 +404,8 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 		assertFalse(_fileExists(processedFolder, fileNameWithTimeStamp), "Destination must not exist in processed folder");
 
 		// Act 3 -- Retry
-		IMessageBrowsingIteratorItem item = fileSystemListener.getMessageBrowser(ProcessState.ERROR).getIterator().next();
+		IMessageBrowsingIterator iterator = fileSystemListener.getMessageBrowser(ProcessState.ERROR).getIterator();
+		IMessageBrowsingIteratorItem item = iterator.next();
 		String messageId = item.getId();
 		ListenerException listenerException = assertThrows(ListenerException.class, () -> receiver.retryMessage(messageId));
 

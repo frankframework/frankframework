@@ -538,7 +538,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		Set<F> files = new HashSet<>();
 		Set<String> filenames = new HashSet<>();
 
-		try(DirectoryStream<F> ds = fileSystem.list(null, TypeFilter.FILES_ONLY)) {
+		try(DirectoryStream<F> ds = fileSystem.list((String) null, TypeFilter.FILES_ONLY)) {
 			Iterator<F> it = ds.iterator();
 			// Count files
 			while (it.hasNext()) {
