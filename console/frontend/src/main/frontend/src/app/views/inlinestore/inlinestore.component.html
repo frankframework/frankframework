@@ -50,7 +50,7 @@
                                   item.key,
                                 ]"
                               >
-                                <i [class]="`fa ${getProcessStateIconFn(item.key)}`"></i>
+                                <fa-icon [icon]="getProcessStateIconFn(item.key)" />
                                 ({{ stateItem.messageCount }})
                               </button>
                             </span>

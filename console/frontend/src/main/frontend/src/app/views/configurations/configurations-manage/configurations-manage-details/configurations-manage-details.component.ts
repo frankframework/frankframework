@@ -8,10 +8,13 @@ import { basicAnyValueTableSort, SortEvent, ThSortableDirective } from 'src/app/
 import { SearchFilterPipe } from '../../../../pipes/search-filter.pipe';
 
 import { FormsModule } from '@angular/forms';
+import { faArrowAltCircleLeft } from '@fortawesome/free-regular-svg-icons';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faCheck, faCloudDownload, faSearch, faTimes } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-configurations-manage-details',
-  imports: [FormsModule, SearchFilterPipe, RouterLink, ThSortableDirective],
+  imports: [FormsModule, SearchFilterPipe, RouterLink, ThSortableDirective, FaIconComponent],
   templateUrl: './configurations-manage-details.component.html',
   styleUrls: ['./configurations-manage-details.component.scss'],
 })
@@ -28,6 +31,11 @@ export class ConfigurationsManageDetailsComponent implements OnInit, OnDestroy {
     jdbcMigrator: false,
     version: '',
   };
+  protected readonly faArrowAltCircleLeft = faArrowAltCircleLeft;
+  protected readonly faTimes = faTimes;
+  protected readonly faSearch = faSearch;
+  protected readonly faCheck = faCheck;
+  protected readonly faCloudDownload = faCloudDownload;
 
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
   private readonly router: Router = inject(Router);

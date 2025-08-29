@@ -7,6 +7,8 @@ import { HasAccessToLinkDirective } from '../../../components/has-access-to-link
 import { KeyValuePipe, NgClass } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { LaddaModule } from 'angular2-ladda';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faWarning } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-logging-manage',
@@ -21,6 +23,7 @@ import { LaddaModule } from 'angular2-ladda';
     LaddaModule,
     NgClass,
     KeyValuePipe,
+    FaIconComponent,
   ],
   templateUrl: './logging-manage.component.html',
   styleUrls: ['./logging-manage.component.scss'],
@@ -39,6 +42,7 @@ export class LoggingManageComponent implements OnInit {
   protected loggersLength = 0;
   protected definitions: LogInformation['definitions'] = [];
   protected alert: string | null = null;
+  protected readonly faWarning = faWarning;
 
   private loggingService = inject(LoggingService);
   private toastService = inject(ToastService);

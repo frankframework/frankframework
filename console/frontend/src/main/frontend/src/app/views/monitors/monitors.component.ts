@@ -10,6 +10,17 @@ import { FormsModule } from '@angular/forms';
 import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
 import { ToDateDirective } from '../../components/to-date.directive';
 import { toObservable } from '@angular/core/rxjs-interop';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import {
+  faClose,
+  faEraser,
+  faPencil,
+  faPlus,
+  faSave,
+  faWarning,
+  faArrowAltCircleRight,
+} from '@fortawesome/free-solid-svg-icons';
+import { faFileCode } from '@fortawesome/free-regular-svg-icons';
 
 @Component({
   selector: 'app-monitors',
@@ -21,6 +32,7 @@ import { toObservable } from '@angular/core/rxjs-interop';
     QuickSubmitFormDirective,
     KeyValuePipe,
     ToDateDirective,
+    FaIconComponent,
   ],
   templateUrl: './monitors.component.html',
   styleUrls: ['./monitors.component.scss'],
@@ -32,6 +44,14 @@ export class MonitorsComponent implements OnInit, OnDestroy {
   protected eventTypes: string[] = [];
   protected totalRaised = 0;
   protected configurations: Configuration[] = [];
+  protected readonly faPlus = faPlus;
+  protected readonly faFileCode = faFileCode;
+  protected readonly faArrowAltCircleRight = faArrowAltCircleRight;
+  protected readonly faClose = faClose;
+  protected readonly faPencil = faPencil;
+  protected readonly faSave = faSave;
+  protected readonly faWarning = faWarning;
+  protected readonly faEraser = faEraser;
 
   private routeQueryParams: ParamMap = convertToParamMap({});
   private configurationsSubscription: Subscription | null = null;

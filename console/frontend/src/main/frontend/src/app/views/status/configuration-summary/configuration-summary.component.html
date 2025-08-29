@@ -29,7 +29,7 @@
                   'text-primary': adapterSummary.started > 0 || receiverSummary.started > 0,
                 }"
               >
-                <i class="fa fa-check-square"></i>
+                <fa-icon [icon]="faCheckSquare" />
               </th>
               <th
                 title="Starting"
@@ -37,7 +37,7 @@
                   'text-primary': adapterSummary.starting > 0 || receiverSummary.starting > 0,
                 }"
               >
-                <i class="fa fa-check-square-o"></i>
+                <fa-icon [icon]="faCheckSquareO" />
               </th>
               <th
                 title="Stopped"
@@ -45,7 +45,7 @@
                   'text-danger': adapterSummary.stopped > 0 || receiverSummary.stopped > 0,
                 }"
               >
-                <i class="fa fa-stop-circle"></i>
+                <fa-icon [icon]="faStopCircle" />
               </th>
               <th
                 title="Stopping"
@@ -53,7 +53,7 @@
                   'text-danger': adapterSummary.stopping > 0 || receiverSummary.stopping > 0,
                 }"
               >
-                <i class="fa fa-stop-circle-o"></i>
+                <fa-icon [icon]="faStopCircleO" />
               </th>
               <th
                 title="Error"
@@ -67,7 +67,7 @@
                     receiverSummary.exception_stopping > 0,
                 }"
               >
-                <i class="fa fa-warning"></i>
+                <fa-icon [icon]="faWarning" />
               </th>
             </tr>
           </thead>

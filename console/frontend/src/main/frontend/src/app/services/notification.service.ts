@@ -1,9 +1,10 @@
 import { Injectable, signal, Signal, WritableSignal } from '@angular/core';
 import Tinycon from 'tinycon';
+import { IconDefinition } from '@fortawesome/angular-fontawesome';
 
 export type Notification = {
   id: number;
-  icon: string;
+  icon: IconDefinition;
   title: string;
   message: string | boolean;
   fn: (() => void) | boolean;
@@ -31,7 +32,7 @@ export class NotificationService {
     return this._count.asReadonly();
   }
 
-  add(icon: string, title: string, message?: string | boolean, function_?: () => void): void {
+  add(icon: IconDefinition, title: string, message?: string | boolean, function_?: () => void): void {
     const newNotification: Notification = {
       id: -1,
       icon: icon,
@@ -41,7 +42,7 @@ export class NotificationService {
       time: Date.now(),
     };
     this._list.set([newNotification, ...this.list()]);
-    newNotification.id = this.list.length;
+    newNotification.id = this.list().length;
     this._count.set(this.count() + 1);
 
     Tinycon.setBubble(this.count());

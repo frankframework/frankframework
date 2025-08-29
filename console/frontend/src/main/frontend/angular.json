@@ -38,13 +38,12 @@
               },
               {
                 "glob": "**/*",
-                "input": "./node_modules/monaco-editor/min/vs",
+                "input": "node_modules/monaco-editor/min/vs",
                 "output": "assets/monaco/vs"
               }
             ],
             "styles": [
-              "node_modules/bootstrap/dist/css/bootstrap.css",
-              "node_modules/font-awesome/css/font-awesome.css",
+              "src/external/bootstrap.css",
               "node_modules/ladda/dist/ladda-themeless.min.css",
               "src/styles.scss"
             ],
@@ -73,12 +72,13 @@
                   "maximumError": "4kb"
                 }
               ],
+              "styles": [
+                "src/external/bootstrap.min.css",
+                "node_modules/ladda/dist/ladda-themeless.min.css",
+                "src/styles.scss"
+              ],
               "outputHashing": "all",
-              "optimization": {
-                "styles": {
-                  "inlineCritical": false
-                }
-              }
+              "optimization": true
             },
             "development": {
               "optimization": false,
@@ -87,25 +87,14 @@
               "namedChunks": true
             },
             "analysis": {
-              "statsJson": true,
-              "budgets": [
-                {
-                  "type": "initial",
-                  "maximumWarning": "2mb",
-                  "maximumError": "3mb"
-                },
-                {
-                  "type": "anyComponentStyle",
-                  "maximumWarning": "2kb",
-                  "maximumError": "4kb"
-                }
+              "styles": [
+                "src/external/bootstrap.min.css",
+                "node_modules/ladda/dist/ladda-themeless.min.css",
+                "src/styles.scss"
               ],
+              "statsJson": true,
               "outputHashing": "all",
-              "optimization": {
-                "styles": {
-                  "inlineCritical": false
-                }
-              }
+              "optimization": true
             }
           },
           "defaultConfiguration": "production"
