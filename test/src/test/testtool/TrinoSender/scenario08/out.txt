@@ -1,0 +1,1 @@
+<result><fielddefinition><field name="NAME" type="VARCHAR" columnDisplaySize="2147483647" precision="2147483647" scale="0" isCurrency="false" columnTypeName="VARCHAR" columnClassName="java.lang.String"/></fielddefinition><rowset/></result>
