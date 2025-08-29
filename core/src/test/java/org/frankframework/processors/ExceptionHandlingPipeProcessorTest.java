@@ -69,7 +69,7 @@ public class ExceptionHandlingPipeProcessorTest extends PipeProcessorTestBase {
 		Message result = processPipeLine(new Message("PipeRun"));
 
 		assertEquals("""
-				<errorMessage timestamp="IGNORE" originator="IAF " message="ThrowExceptionPipe [Exception pipe] msgId [fake-mid]">
+				<errorMessage timestamp="IGNORE" originator="IAF LOCKED_FF_CORE_VERSION" message="ThrowExceptionPipe [Exception pipe] msgId [fake-mid]">
 					<location class="org.frankframework.processors.ExceptionHandlingPipeProcessorTest$ThrowExceptionPipe" name="Exception pipe"/>
 					<originalMessage messageId="fake-mid">PipeRun</originalMessage>
 				</errorMessage>""", result.asString().replaceAll("timestamp=\"[A-Za-z0-9: ]+\"", "timestamp=\"IGNORE\""));
@@ -88,7 +88,7 @@ public class ExceptionHandlingPipeProcessorTest extends PipeProcessorTestBase {
 		Message result = processPipeLine(new Message("PipeRun"));
 
 		assertEquals("""
-				<errorMessage timestamp="IGNORE" originator="IAF " message="ThrowExceptionPipe [Exception pipe] msgId [fake-mid]">
+				<errorMessage timestamp="IGNORE" originator="IAF LOCKED_FF_CORE_VERSION" message="ThrowExceptionPipe [Exception pipe] msgId [fake-mid]">
 					<location class="org.frankframework.processors.ExceptionHandlingPipeProcessorTest$ThrowExceptionPipe" name="Exception pipe"/>
 					<originalMessage messageId="fake-mid" receivedTime="Thu Jan 15 07:56:07 CET 1970">PipeRun</originalMessage>
 				</errorMessage>""", result.asString().replaceAll("timestamp=\"[A-Za-z0-9: ]+\"", "timestamp=\"IGNORE\""));
@@ -109,7 +109,7 @@ public class ExceptionHandlingPipeProcessorTest extends PipeProcessorTestBase {
 		String result = cleaned.replaceAll("timestamp=\"[A-Za-z0-9: ]+\"", "timestamp=\"IGNORE\"");
 
 		assertEquals("""
-				<errorMessage timestamp="IGNORE" originator="IAF " message="Adapter [Adapter Name] msgId [fake-mid]: Runtime">
+				<errorMessage timestamp="IGNORE" originator="IAF LOCKED_FF_CORE_VERSION" message="Adapter [Adapter Name] msgId [fake-mid]: Runtime">
 					<location class="org.frankframework.core.Adapter" name="Adapter Name"/>
 					<details>...</details>
 					<originalMessage messageId="fake-mid">Runtime</originalMessage>

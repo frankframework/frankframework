@@ -1,0 +1,24 @@
+.minimalize {
+  padding: 2px 10px;
+  background-color: #293846;
+  border: 1px solid #293846;
+  font-size: 13px;
+  float: left;
+  left: 150px;
+  bottom: 20px;
+  margin: 0px 20px;
+  position: fixed;
+  border-radius: 3px;
+  cursor: pointer;
+
+  &:active,
+  &:focus,
+  &:hover {
+    border: 1px solid #19aa8d;
+    color: white;
+  }
+
+  .right {
+    display: none;
+  }
+}

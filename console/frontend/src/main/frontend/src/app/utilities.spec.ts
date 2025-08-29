@@ -1,6 +1,8 @@
 import { computeServerPath, getProcessStateIcon, getProcessStateIconColor } from './utilities';
+import { IconDefinition } from '@fortawesome/angular-fontawesome';
+import { faGears, faPauseCircle, faServer, faSignIn, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 
-function testProcessState(state: string, expectedIcon: string, expectedIconColor: string): () => void {
+function testProcessState(state: string, expectedIcon: IconDefinition, expectedIconColor: string): () => void {
   return (): void => {
     expect(getProcessStateIcon(state)).toBe(expectedIcon);
     expect(getProcessStateIconColor(state)).toBe(expectedIconColor);
@@ -13,14 +15,14 @@ describe('Utils', () => {
   });
 
   describe('getProcessState Icon & Color', () => {
-    it('Available', testProcessState('Available', 'fa-server', 'success'));
+    it('Available', testProcessState('Available', faServer, 'success'));
 
-    it('InProcess', testProcessState('InProcess', 'fa-gears', 'success'));
+    it('InProcess', testProcessState('InProcess', faGears, 'success'));
 
-    it('Done', testProcessState('Done', 'fa-sign-in', 'success'));
+    it('Done', testProcessState('Done', faSignIn, 'success'));
 
-    it('Hold', testProcessState('Hold', 'fa-pause-circle', 'warning'));
+    it('Hold', testProcessState('Hold', faPauseCircle, 'warning'));
 
-    it('Error', testProcessState('Error', 'fa-times-circle', 'danger'));
+    it('Error', testProcessState('Error', faTimesCircle, 'danger'));
   });
 });

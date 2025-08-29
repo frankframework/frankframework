@@ -9,10 +9,12 @@ import { HasAccessToLinkDirective } from '../../components/has-access-to-link.di
 import { QuickSubmitFormDirective } from '../../components/quick-submit-form.directive';
 import { FormsModule } from '@angular/forms';
 import { toObservable } from '@angular/core/rxjs-interop';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faDatabase, faSignIn, faSignOut, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-ibisstore-summary',
-  imports: [RouterLink, NgClass, HasAccessToLinkDirective, QuickSubmitFormDirective, FormsModule],
+  imports: [RouterLink, NgClass, HasAccessToLinkDirective, QuickSubmitFormDirective, FormsModule, FaIconComponent],
   templateUrl: './ibisstore-summary.component.html',
   styleUrls: ['./ibisstore-summary.component.scss'],
 })
@@ -21,6 +23,10 @@ export class IbisstoreSummaryComponent implements OnInit, OnDestroy {
   protected form: JdbcSummaryForm = { datasource: '' };
   protected error: string | null = null;
   protected result: JdbcSummary[] = [];
+  protected readonly faSignIn = faSignIn;
+  protected readonly faTimesCircle = faTimesCircle;
+  protected readonly faSignOut = faSignOut;
+  protected readonly faDatabase = faDatabase;
 
   private readonly router: Router = inject(Router);
   private readonly route: ActivatedRoute = inject(ActivatedRoute);

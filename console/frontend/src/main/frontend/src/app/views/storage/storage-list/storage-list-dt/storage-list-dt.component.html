@@ -4,7 +4,7 @@
   @if (!storageService.selectedMessages[msg.id]) {
     <div>
       <a class="btn btn-info btn-xs" type="button" [routerLink]="['messages', msg.id]"
-        ><i class="fa fa-file-text-o"></i> View</a
+        ><fa-icon [icon]="faFileText" /> View</a
       >
       <button
         appHasAccessToLink="downloadMessage"
@@ -13,7 +13,7 @@
         type="button"
         (click)="storageService.downloadMessage(msg.id)"
       >
-        <i class="fa fa-arrow-circle-o-down"></i> Download
+        <fa-icon [icon]="faArrowAltCircleDown" /> Download
       </button>
       @if (storageService.storageParams.processState === 'InProcess') {
         <button
@@ -25,7 +25,7 @@
           [ladda]="msg.processing"
           (click)="moveMessage(msg)"
         >
-          <i class="fa fa-exclamation-triangle" aria-hidden="true"></i>
+          <fa-icon aria-hidden="true" [icon]="faExclamationTriangle" />
           Move to Error
         </button>
       }
@@ -40,7 +40,7 @@
           [disabled]="msg.processing && !resendAction"
           (click)="resendMessage(msg)"
         >
-          <i class="fa fa-repeat"></i> Resend
+          <fa-icon [icon]="faRepeat" /> Resend
         </button>
         <button
           appHasAccessToLink="deleteReceiverMessage"
@@ -52,7 +52,7 @@
           [disabled]="msg.processing && resendAction"
           (click)="deleteMessage(msg)"
         >
-          <i class="fa fa-times"></i> Delete
+          <fa-icon [icon]="faTimes" /> Delete
         </button>
       }
     </div>

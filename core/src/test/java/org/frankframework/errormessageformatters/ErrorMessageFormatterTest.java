@@ -55,7 +55,7 @@ class ErrorMessageFormatterTest {
 		assertNotNull(errorAsString);
 
 		String expected = """
-				<errorMessage timestamp="-timestamp-" originator="IAF " message="MyLocation [dummy-location] msgId [dummy-message-id]: dummy-error-message">
+				<errorMessage timestamp="-timestamp-" originator="IAF LOCKED_FF_CORE_VERSION" message="MyLocation [dummy-location] msgId [dummy-message-id]: dummy-error-message">
 					<location class="org.frankframework.errormessageformatters.MyLocation" name="dummy-location"/>
 					<originalMessage messageId="dummy-message-id" receivedTime="-timestamp-">dummy-message</originalMessage>
 				</errorMessage>
@@ -79,7 +79,7 @@ class ErrorMessageFormatterTest {
 				{
 					"errorMessage": {
 						"timestamp": "-timestamp-",
-						"originator": "IAF ",
+						"originator": "IAF LOCKED_FF_CORE_VERSION",
 						"message": "MyLocation [dummy-location] msgId [dummy-message-id]: dummy-error-message",
 						"location": {
 							"class": "org.frankframework.errormessageformatters.MyLocation",
@@ -94,7 +94,6 @@ class ErrorMessageFormatterTest {
 				}
 				""";
 
-		System.err.println(errorAsString);
 		assertJsonEquals(applyIgnores(expected), applyIgnores(errorAsString));
 	}
 
@@ -113,13 +112,13 @@ class ErrorMessageFormatterTest {
 		assertNotNull(errorAsString);
 
 		String expected = """
-				<errorMessage timestamp="-timestamp-" originator="IAF " message="MyLocation [dummy-location] msgId [dummy-message-id]: dummy-error-message: dummy-exception-message">
+				<errorMessage timestamp="-timestamp-" originator="IAF LOCKED_FF_CORE_VERSION" message="MyLocation [dummy-location] msgId [dummy-message-id]: dummy-error-message: dummy-exception-message">
 					<location class="org.frankframework.errormessageformatters.MyLocation" name="dummy-location"/>
 					<details>org.frankframework.core.PipeRunException: dummy-exception-message</details>
 					<params>
-				 		<param name="p1">v1</param>
-				 		<param name="p2">v2</param>
-				 	</params>
+						<param name="p1">v1</param>
+						<param name="p2">v2</param>
+					</params>
 					<originalMessage messageId="dummy-message-id" receivedTime="-timestamp-">dummy-message</originalMessage>
 				</errorMessage>
 				""";
@@ -144,7 +143,7 @@ class ErrorMessageFormatterTest {
 				{
 					"errorMessage": {
 						"timestamp": "-timestamp-",
-						"originator": "IAF ",
+						"originator": "IAF LOCKED_FF_CORE_VERSION",
 						"message": "MyLocation [dummy-location] msgId [dummy-message-id]: dummy-error-message: dummy-exception-message",
 						"location": {
 							"class": "org.frankframework.errormessageformatters.MyLocation",
@@ -164,7 +163,6 @@ class ErrorMessageFormatterTest {
 				}
 				""";
 
-		System.err.println(errorAsString);
 		assertJsonEquals(applyIgnores(expected), applyIgnores(errorAsString));
 	}
 

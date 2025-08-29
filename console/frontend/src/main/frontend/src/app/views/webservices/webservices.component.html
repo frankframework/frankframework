@@ -52,7 +52,7 @@
               class="btn btn-info btn-xs pull-right"
               type="button"
               [href]="`${rootURL}iaf/api/webservices/openapi.json`"
-              ><i aria-hidden="true" class="fa fa-external-link"></i><span> Full OpenAPI 3.0</span></a
+              ><fa-icon aria-hidden="true" [icon]="faExternalLink" /><span> Full OpenAPI 3.0</span></a
             >
             <h4>Available ApiListeners</h4>
           </div>
@@ -84,7 +84,7 @@
                           class="btn btn-xs pull-right default"
                           type="button"
                           [href]="compileURL(apiListener)"
-                          ><i class="fa fa-arrow-circle-o-down" aria-hidden="true"></i> <span> OpenAPI 3.0</span></a
+                          ><fa-icon aria-hidden="true" [icon]="faArrowAltCircleDown" /> <span> OpenAPI 3.0</span></a
                         >
                       </td>
                     </tr>
@@ -124,7 +124,7 @@
                             class="btn btn-xs pull-right default"
                             type="button"
                             [href]="`${rootURL}iaf/api/webservices/${wsdl.configuration}/${wsdl.adapter}.zip`"
-                            ><i aria-hidden="true" class="fa fa-arrow-circle-o-down"></i> <span> Download</span></a
+                            ><fa-icon aria-hidden="true" [icon]="faArrowAltCircleDown" /> <span> Download</span></a
                           >
                           <a
                             appHasAccessToLink="getWsdl"
@@ -133,7 +133,7 @@
                             class="btn btn-xs pull-right default"
                             type="button"
                             [href]="`${rootURL}iaf/api/webservices/${wsdl.configuration}/${wsdl.adapter}.wsdl`"
-                            ><i aria-hidden="true" class="fa fa-file-archive-o"></i>
+                            ><fa-icon aria-hidden="true" [icon]="faFileArchive" />
                             <span> WSDL including dependencies</span></a
                           >
                           <a
@@ -145,7 +145,7 @@
                             [href]="
                               `${rootURL}iaf/api/webservices/${wsdl.configuration}/${wsdl.adapter}.wsdl?useIncludes=true`
                             "
-                            ><i aria-hidden="true" class="fa fa-file-code-o"></i> <span> WSDL</span></a
+                            ><fa-icon aria-hidden="true" [icon]="faFileCode" /> <span> WSDL</span></a
                           >
                         </td>
                       }

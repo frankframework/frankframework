@@ -35,7 +35,7 @@ import org.frankframework.stream.Message;
  *
  * @author Peter Leeuwenburgh
  * @since 4.3
- * @deprecated please use the {@link IfPipe} for if (else/then) behaviour. If you need regular expressions, see the @{@link RegExPipe} as well.
+ * @deprecated please use the {@link IfPipe} for if (else/then) behaviour. If you need regular expressions, see the {@link RegExPipe} as well.
  */
 @Forward(name = "*", description = "when {@literal thenForwardName} or {@literal elseForwardName} are used")
 @Forward(name = "then", description = "the configured condition is met")

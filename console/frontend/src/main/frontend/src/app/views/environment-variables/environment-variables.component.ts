@@ -5,12 +5,14 @@ import { TabListComponent } from '../../components/tab-list/tab-list.component';
 import { FormsModule } from '@angular/forms';
 import { VariablesFilterPipe } from '../../pipes/variables-filter.pipe';
 import { EnvironmentVariablesTableComponent } from './environment-variables-table/environment-variables-table.component';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faSearch, faTimes } from '@fortawesome/free-solid-svg-icons';
 
 export type KeyValueProperty = KeyValue<string, string>;
 
 @Component({
   selector: 'app-environment-variables',
-  imports: [TabListComponent, FormsModule, VariablesFilterPipe, EnvironmentVariablesTableComponent],
+  imports: [TabListComponent, FormsModule, VariablesFilterPipe, EnvironmentVariablesTableComponent, FaIconComponent],
   templateUrl: './environment-variables.component.html',
   styleUrls: ['./environment-variables.component.scss'],
 })
@@ -25,6 +27,8 @@ export class EnvironmentVariablesComponent implements OnInit {
   protected configurationNames: Signal<string[]> = computed(() =>
     this.appService.configurations().map((configuration) => configuration.name),
   );
+  protected readonly faTimes = faTimes;
+  protected readonly faSearch = faSearch;
 
   private readonly appService: AppService = inject(AppService);
 

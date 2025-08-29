@@ -1,0 +1,15 @@
+#wrapper {
+  display: flex;
+  width: 100%;
+  min-height: 100%;
+  overflow-x: initial;
+}
+
+#page-wrapper {
+  margin: 0 !important;
+  flex: 1 1 auto;
+  min-height: 100vh;
+  padding: 0 15px;
+  position: relative !important;
+  overflow: hidden;
+}
