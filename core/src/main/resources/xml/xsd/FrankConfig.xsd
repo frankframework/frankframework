@@ -1565,7 +1565,7 @@
  The generated OpenAPI specifications have &lt;code&gt;servers&lt;/code&gt; and &lt;code&gt;paths&lt;/code&gt; objects and
  therefore they document the full URLs of the provided services.
  &lt;p&gt;
- It is possible to automatically generate eTags over the listener result. This can be controlled by globally 
+ It is possible to automatically generate eTags over the listener result. This can be controlled by globally
  setting the property &lt;code&gt;api.etag.enabled&lt;/code&gt; or by setting the attribute &lt;code&gt;updateEtag="true"&lt;/code&gt;.
  When enabled the listener will respond to the &lt;code&gt;If-Match&lt;/code&gt;, &lt;code&gt;If-None-Match&lt;/code&gt; headers and may return status code 304.
  &lt;p&gt;
@@ -1580,7 +1580,14 @@
  &lt;li&gt;&lt;code&gt;etag.cache.username&lt;/code&gt;&lt;/li&gt;
  &lt;li&gt;&lt;code&gt;etag.cache.password&lt;/code&gt;&lt;/li&gt;
  &lt;li&gt;&lt;code&gt;etag.cache.authalias&lt;/code&gt;&lt;/li&gt;
- &lt;/ul&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;The OPTIONS verb will automatically be handled by the framework.&lt;/p&gt;</xs:documentation>
+ &lt;/ul&gt;
+
+ Custom pages can be added to the console (using a comma separated list, no spaces) with the following property
+ &lt;code&gt;customViews.names=MyApplication&lt;/code&gt;.
+
+ Specify details for each view, the url is either a relative path from the web-content folder or an external url, eq. &lt;code&gt;http://google.com/&lt;/code&gt;.
+ &lt;code&gt;customViews.MyApplication.name=Custom View&lt;/code&gt;
+ &lt;code&gt;customViews.MyApplication.url=myWebapp&lt;/code&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;The OPTIONS verb will automatically be handled by the framework.&lt;/p&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;Its possible to change the URL mapping from /api to /rest (or use both) for easy transitions from the RestListener.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -2171,27 +2178,6 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="PushingListenerAdapterType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="listener" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="RestListener">
-        <xs:annotation>
-          <xs:documentation>Listener that allows a Receiver to receive messages as a REST webservice.
- Prepends the configured URI pattern with &lt;code&gt;rest/&lt;/code&gt;. When you are writing a new Frank config, you are recommended
- to use an ApiListener instead. You can find all serviced URI patterns
- in the Frank!Console: main menu item Webservice, heading Available REST Services.
-
- &lt;p&gt;
- Note:
- Servlets' multipart configuration expects a Content-Type of &lt;code&gt;multipart/form-data&lt;/code&gt; (see http://docs.oracle.com/javaee/6/api/javax/servlet/annotation/MultipartConfig.html).
- So do not use other multipart content types like &lt;code&gt;multipart/related&lt;/code&gt;
- &lt;/p&gt;</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="RestListenerType">
               <xs:attribute name="elementRole" type="xs:string" fixed="listener" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -3627,7 +3613,7 @@
     <xs:attribute ref="tableAlias" />
     <xs:attribute name="statusField" type="xs:string" use="required">
       <xs:annotation>
-        <xs:documentation>Field containing the status of the message. 
+        <xs:documentation>Field containing the status of the message.
  &lt;b&gt;NB: For optimal performance, an index should exist that starts with this field, followed by all fields that are used with a fixed value in the select condition, and end with the &lt;code&gt;orderField&lt;/code&gt;.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -3778,7 +3764,7 @@
     </xs:attribute>
     <xs:attribute name="statusField" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Field containing the status of the message. 
+        <xs:documentation>Field containing the status of the message.
  &lt;b&gt;NB: For optimal performance, an index should exist that starts with this field, followed by all fields that are used with a fixed value in the select condition, and end with the &lt;code&gt;orderField&lt;/code&gt;. Default: TYPE</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -3875,85 +3861,6 @@
     <xs:attributeGroup ref="AbstractJmsListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jms.PullingJmsListener" use="prohibited" />
   </xs:complexType>
-  <xs:complexType name="RestListenerType">
-    <xs:attributeGroup ref="RestListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.http.RestListener" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="RestListenerDeclaredAttributeGroup">
-    <xs:attribute name="uriPattern" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Uri pattern to match, the {uri} part in https://mydomain.com/ibis4something/rest/{uri}, where mydomain.com and ibis4something refer to 'your ibis'.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="method" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Method (e.g. GET or POST) to match</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="etagSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Key of session variable to store etag</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="contentTypeSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Key of Session variable that determines requested content type, overrides produces</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="restPath" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Can be either &lt;code&gt;/rest&lt;/code&gt; or &lt;code&gt;/rest-public&lt;/code&gt; and must correspond with the available RestListenerServlet path(s).</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="authRoles" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Comma separated list of authorization roles which are granted for this rest service Default: IbisWebService,IbisObserver,IbisDataAdmin,IbisAdmin,IbisTester</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="writeToSecLog" type="frankBoolean" />
-    <xs:attribute name="writeSecLogMessage" type="frankBoolean" />
-    <xs:attribute name="retrieveMultipart" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Indicates whether the parts of a multipart entity should be retrieved and put in session keys. This can only be done once! Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="consumes">
-      <xs:annotation>
-        <xs:documentation>Mediatype (e.g. XML, JSON, TEXT) the RestServiceDispatcher receives as input Default: XML</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="MediaTypesAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="produces">
-      <xs:annotation>
-        <xs:documentation>Mediatype (e.g. XML, JSON, TEXT) the RestServiceDispatcher sends as output, if set to json the ibis will automatically try to convert the xml message Default: XML</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="MediaTypesAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="validateEtag" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If set to true the ibis will automatically validate and process etags Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="generateEtag" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If set to true the ibis will automatically create an etag Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="automaticallyTransformToAndFromJson" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Uses an JsonPipe to convert the json-input to xml, and xml-output to json.
- Use with caution, a properly configured Input/Output-wrapper can do much more and is more robust! Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="RestListenerCumulativeAttributeGroup">
-    <xs:attributeGroup ref="RestListenerDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="PushingListenerAdapterDeclaredAttributeGroup" />
-  </xs:attributeGroup>
   <xs:complexType name="Samba2ListenerType">
     <xs:attributeGroup ref="Samba2ListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.Samba2Listener" use="prohibited" />
@@ -4297,7 +4204,13 @@
     <xs:choice>
       <xs:element name="EsbJmsSender">
         <xs:annotation>
-          <xs:documentation>ESB (Enterprise Service Bus) extension of @{codeJmsSender}.</xs:documentation>
+          <xs:documentation>ESB (Enterprise Service Bus) extension of &lt;code&gt;JmsSender&lt;/code&gt;.
+
+ Provides functions for jms connections, queues and topics and acts as a facade
+ to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
+ &lt;br/&gt;
+ The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
+ This class sends messages with JMS.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -4549,7 +4462,15 @@
  How does a message log or error store see duplicate messages? The message log or error store
  always appears in combination with a sender or listener. This sender or listener determines
  a key based on the sent or received message. Messages with the same key are considered to
- be the same.</xs:documentation>
+ be the same.
+
+ Basic browser of JMS Messages.
+
+ Provides functions for jms connections, queues and topics and acts as a facade
+ to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
+ &lt;br/&gt;
+ The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
+ This class sends messages with JMS.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -4619,7 +4540,15 @@
  How does a message log or error store see duplicate messages? The message log or error store
  always appears in combination with a sender or listener. This sender or listener determines
  a key based on the sent or received message. Messages with the same key are considered to
- be the same.</xs:documentation>
+ be the same.
+
+ Basic browser of JMS Messages.
+
+ Provides functions for jms connections, queues and topics and acts as a facade
+ to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
+ &lt;br/&gt;
+ The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
+ This class sends messages with JMS.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -4871,7 +4800,15 @@
  How does a message log or error store see duplicate messages? The message log or error store
  always appears in combination with a sender or listener. This sender or listener determines
  a key based on the sent or received message. Messages with the same key are considered to
- be the same.</xs:documentation>
+ be the same.
+
+ Basic browser of JMS Messages.
+
+ Provides functions for jms connections, queues and topics and acts as a facade
+ to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
+ &lt;br/&gt;
+ The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
+ This class sends messages with JMS.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -4941,7 +4878,15 @@
  How does a message log or error store see duplicate messages? The message log or error store
  always appears in combination with a sender or listener. This sender or listener determines
  a key based on the sent or received message. Messages with the same key are considered to
- be the same.</xs:documentation>
+ be the same.
+
+ Basic browser of JMS Messages.
+
+ Provides functions for jms connections, queues and topics and acts as a facade
+ to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
+ &lt;br/&gt;
+ The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
+ This class sends messages with JMS.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -5906,7 +5851,7 @@
     </xs:attribute>
     <xs:attribute name="subSchemaPrefix" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The subSchemaPrefix is an optional attribute used when referencing a subschema located in a nested structure, such as $defs or definitions. 
+        <xs:documentation>The subSchemaPrefix is an optional attribute used when referencing a subschema located in a nested structure, such as $defs or definitions.
  Adding only the subSchema attribute is not enough if your schema organizes definitions in nested objects. Add root attribute to complete the process. Default: /definitions/</xs:documentation>
       </xs:annotation>
     </xs:attribute>
@@ -7457,6 +7402,15 @@
           </xs:complexContent>
         </xs:complexType>
       </xs:element>
+      <xs:element name="AmqpSender">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="AmqpSenderType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="sender" use="prohibited" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="CmisSender">
         <xs:annotation>
           <xs:documentation>Sender to obtain information from and write to a CMIS application.
@@ -7612,7 +7566,13 @@
       </xs:element>
       <xs:element name="EsbJmsSender">
         <xs:annotation>
-          <xs:documentation>ESB (Enterprise Service Bus) extension of @{codeJmsSender}.</xs:documentation>
+          <xs:documentation>ESB (Enterprise Service Bus) extension of &lt;code&gt;JmsSender&lt;/code&gt;.
+
+ Provides functions for jms connections, queues and topics and acts as a facade
+ to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
+ &lt;br/&gt;
+ The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
+ This class sends messages with JMS.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -7637,7 +7597,7 @@
       <xs:element name="FixedQuerySender">
         <xs:annotation>
           <xs:documentation>QuerySender that assumes a fixed query, possibly with attributes.
- 
+
  Example of a &lt;code&gt;XML&lt;/code&gt; result:
  &lt;pre&gt;&lt;code&gt;&amp;lt;result&amp;gt;
      &amp;lt;fielddefinition&amp;gt;
@@ -7660,7 +7620,7 @@
          &amp;lt;/row&amp;gt;
      &amp;lt;/rowset&amp;gt;
  &amp;lt;/result&amp;gt;&lt;/code&gt;&lt;/pre&gt;
- 
+
  See DB2XMLWriter for more information about the ResultSet!&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;The result &lt;code&gt;fieldname&lt;/code&gt; and &lt;code&gt;columntype&lt;/code&gt; are always capital case.&lt;/p&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;The default value of &lt;code&gt;trimSpaces&lt;/code&gt; is &lt;pre&gt;true&lt;/pre&gt;.&lt;/p&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;The default value of &lt;code&gt;useNamedParams&lt;/code&gt; is determined by the presence of &lt;code&gt;?&amp;#123;...&amp;#125;&lt;/code&gt; in the query.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -7751,7 +7711,7 @@
  See also the repository of the IbisServiceDispatcher:
   &lt;a href="https://github.com/frankframework/servicedispatcher"&gt;https://github.com/frankframework/servicedispatcher&lt;/a&gt;
  &lt;/p&gt;
- 
+
  &lt;h4&gt;Using FrankSender to call an adapter from Larva tests&lt;/h4&gt;
  &lt;p&gt;
  You can configure a FrankSender in Larva property files to use the FrankSender to invoke an adapter to test. When doing this, keep the following in mind:
@@ -8957,6 +8917,15 @@
         <xs:documentation>The S3 service endpoint, either with or without the protocol. (e.g. https://sns.us-west-1.amazonaws.com or sns.us-west-1.amazonaws.com)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="storageClass">
+      <xs:annotation>
+        <xs:documentation>Set the desired storage class for the S3 object when action is move,copy or write.
+ More info on storage classes can be found on the &lt;a href="https://aws.amazon.com/s3/storage-classes/"&gt;AWS S3 docs&lt;/a&gt;. Default: STANDARD</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="S3StorageClassAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
     <xs:attribute name="maxConnections" type="frankInt">
       <xs:annotation>
         <xs:documentation>Maximum concurrent connections towards S3 Default: 50</xs:documentation>
@@ -9080,6 +9049,73 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="AbstractFileSystemSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="AbstractFileSystemSenderDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="AbstractSenderDeclaredAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:complexType name="AmqpSenderType">
+    <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+    <xs:attributeGroup ref="AmqpSenderCumulativeAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.messaging.amqp.AmqpSender" use="prohibited" />
+  </xs:complexType>
+  <xs:attributeGroup name="AmqpSenderDeclaredAttributeGroup">
+    <xs:attribute name="connectionName" type="xs:string" />
+    <xs:attribute name="timeout" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Timeout in seconds for sending messages and receiving replies. Default: &lt;code&gt;30&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="addressType">
+      <xs:annotation>
+        <xs:documentation>Set the type of address to which messages are being sent, TOPIC or QUEUE.
+ For &lt;pre&gt;MessageProtocol#RR&lt;/pre&gt; the type will always be QUEUE.</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="AddressTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="address" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Set the address (name of the queue or topic) on which to send messages</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="messageType">
+      <xs:annotation>
+        <xs:documentation>Set the message type: MessageType#TEXT to character data to be sent as &lt;code&gt;AmqpValue&lt;/code&gt; section,
+ MessageType#BINARY for binary data to be sent as AMQP &lt;code&gt;Data&lt;/code&gt; section, or MessageType#AUTO to
+ decide automatically based on the wether the input Message is binary or not.
+ &lt;p&gt;
+ When a message is to be received as a streaming message by the recipient, it has to be sent as a MessageType#BINARY
+ message.
+ &lt;br/&gt;
+ When #setStreamingMessages(boolean) is configured &lt;pre&gt;true&lt;/pre&gt;, the &lt;code&gt;messageType&lt;/code&gt; is ignored.
+ &lt;/p&gt; Default: &lt;pre&gt;AUTO&lt;/pre&gt;</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="MessageTypeAttributeValuesType_3 variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="streamingMessages" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>Set if messages should be created as streaming messages. Streaming messages are
+ always sent as binary messages, with an AMQP &lt;code&gt;Body&lt;/code&gt; section.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="durable" type="frankBoolean" />
+    <xs:attribute name="timeToLive" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Set the message time-to-live, in milliseconds. Default: &lt;pre&gt;-1&lt;/pre&gt;ms, meaning no expiry.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="messageProtocol">
+      <xs:annotation>
+        <xs:documentation>Send message as Fire-and-Forget, or as Request-Reply Default: &lt;pre&gt;FF&lt;/pre&gt;</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="MessageProtocolAttributeValuesType_2 variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="AmqpSenderCumulativeAttributeGroup">
+    <xs:attributeGroup ref="AmqpSenderDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractSenderDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="CmisSenderType">
@@ -13061,7 +13097,7 @@
    &amp;quot;userId&amp;quot; : &amp;quot;123&amp;quot;,
    &amp;quot;name&amp;quot; : &amp;quot;DataSonnet&amp;quot;
  }&lt;/code&gt;&lt;/pre&gt;
- 
+
  Jsonnet stylesheet:
  &lt;pre&gt;&lt;code&gt;{
    &amp;quot;uid&amp;quot;: payload.userId,
@@ -13084,7 +13120,7 @@
       </xs:element>
       <xs:element name="DelayPipe">
         <xs:annotation>
-          <xs:documentation>Pipe that sleeps for a specified time, which defaults to 5000 msecs. 
+          <xs:documentation>Pipe that sleeps for a specified time, which defaults to 5000 msecs.
  It is useful for testing purposes.</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -13667,11 +13703,32 @@
       </xs:element>
       <xs:element name="HashPipe">
         <xs:annotation>
-          <xs:documentation>This pipe can be used to generate a hash for the given message using an algorithm. With this, you can prove the integrity of the message. 
- If you use one of the Mac-based algorithms (starting with 'Hmac'), you need a secret as well. A Mac algorithm uses a secret, combined with the algorithm 
- to create a 'hash' of a message. Only sources that have this secret are able to generate the same hash for the given message. 
- With this, you can prove the integrity and authenticity of a message.
- &lt;p&gt;</xs:documentation>
+          <xs:documentation>This pipe can be used to generate a hash for the given message using an algorithm. With this, you can prove the integrity of the message.
+ If you need to prove the authenticity of the message as well, use one of the Mac-based algorithms (starting with 'Hmac'). These algorithms
+ require a secret to prove both integrity and authenticity. The HMac combined with the algorithm is used
+ to create a 'hash' of a message. Only sources that have this secret are able to generate the same hash for the given message.
+ &lt;p&gt;
+ The hash is generated based on the bytes of the given input message.
+ &lt;p&gt;
+ The supported integrity algorithms are:
+ &lt;ul&gt;
+     &lt;li&gt;MD5&lt;/li&gt;
+     &lt;li&gt;SHA&lt;/li&gt;
+     &lt;li&gt;SHA256&lt;/li&gt;
+     &lt;li&gt;SHA384&lt;/li&gt;
+     &lt;li&gt;SHA512&lt;/li&gt;
+     &lt;li&gt;CRC32&lt;/li&gt;
+     &lt;li&gt;Adler32&lt;/li&gt;
+ &lt;/ul&gt;
+ &lt;p&gt;
+ The supported integrity &lt;i&gt;and&lt;/i&gt; authenticity algorithms are:
+ &lt;ul&gt;
+     &lt;li&gt;HmacMD5&lt;/li&gt;
+     &lt;li&gt;HmacSHA1&lt;/li&gt;
+     &lt;li&gt;HmacSHA256&lt;/li&gt;
+     &lt;li&gt;HmacSHA384&lt;/li&gt;
+     &lt;li&gt;HmacSHA512&lt;/li&gt;
+ &lt;/ul&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -14308,7 +14365,7 @@
  &lt;ol&gt;
  &lt;li&gt;If the attribute &lt;code&gt;find&lt;/code&gt; is provided, the pipe will attempt to replace the provided value with the content of the attribute &lt;code&gt;replace&lt;/code&gt;.&lt;/li&gt;
  &lt;li&gt;The resulting string is substituted based on the parameters of this pipe. It will replace values in the input enclosed
- with &lt;code&gt;?{...}&lt;/code&gt;, for instance text like: &lt;code&gt;?{parameterOne}&lt;/code&gt; in combination with a parameter &lt;code&gt;parameterOne&lt;/code&gt; will use the value of this Parameter. 
+ with &lt;code&gt;?{...}&lt;/code&gt;, for instance text like: &lt;code&gt;?{parameterOne}&lt;/code&gt; in combination with a parameter &lt;code&gt;parameterOne&lt;/code&gt; will use the value of this Parameter.
  If a parameter for the given value is not found, it will not be replaced and the &lt;code&gt;?{parameterOne}&lt;/code&gt; value will remain in the output.&lt;/li&gt;
  &lt;p&gt;
  &lt;p&gt;
@@ -15556,25 +15613,9 @@
   </xs:attributeGroup>
   <xs:complexType name="DirectWrapperPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
-    <xs:attributeGroup ref="TimeoutGuardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.esb.DirectWrapperPipe" use="prohibited" />
   </xs:complexType>
-  <xs:attributeGroup name="TimeoutGuardPipeDeclaredAttributeGroup">
-    <xs:attribute name="throwException" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, a piperunexception is thrown. otherwise the output is only logged as an error (and returned in a xml string with 'error' tags) Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="timeout" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>timeout in seconds of obtaining a result Default: 30</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="TimeoutGuardPipeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="TimeoutGuardPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
-  </xs:attributeGroup>
   <xs:complexType name="DomainTransformerPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
     <xs:attributeGroup ref="DomainTransformerPipeCumulativeAttributeGroup" />
@@ -15835,6 +15876,22 @@
   <xs:attributeGroup name="GetTibcoQueuesCumulativeAttributeGroup">
     <xs:attributeGroup ref="GetTibcoQueuesDeclaredAttributeGroup" />
     <xs:attributeGroup ref="TimeoutGuardPipeCumulativeAttributeGroup" />
+  </xs:attributeGroup>
+  <xs:attributeGroup name="TimeoutGuardPipeDeclaredAttributeGroup">
+    <xs:attribute name="throwException" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, a piperunexception is thrown. otherwise the output is only logged as an error (and returned in a xml string with 'error' tags) Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="timeout" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>timeout in seconds of obtaining a result Default: 30</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:attributeGroup>
+  <xs:attributeGroup name="TimeoutGuardPipeCumulativeAttributeGroup">
+    <xs:attributeGroup ref="TimeoutGuardPipeDeclaredAttributeGroup" />
+    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="HashPipeType">
     <xs:group ref="AbstractPipeDeclaredChildGroup" />
@@ -17774,7 +17831,7 @@
       <xs:element name="ActionJob">
         <xs:annotation>
           <xs:documentation>Job which can stop/start adapters and receivers.
- 
+
  &lt;h3&gt;Possible cron expressions:&lt;/h3&gt;
  &lt;p&gt;
  A "Cron-Expression" is a string comprised of 6 or 7 fields separated by
@@ -17990,7 +18047,7 @@
  day-of-month fields!&lt;/p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Support for specifying both a day-of-week and a day-of-month
           value is not complete (you'll need to use the '?' character in on of these fields).&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Be careful when setting fire times between mid-night and 1:00 AM -
           "daylight savings" can cause a skip or a repeat depending on whether
-          the time moves back or jumps forward.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Specified in the Configuration.xml inside a &lt;code&gt;&amp;lt;scheduler&amp;gt;&lt;/code&gt; element. 
+          the time moves back or jumps forward.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Specified in the Configuration.xml inside a &lt;code&gt;&amp;lt;scheduler&amp;gt;&lt;/code&gt; element.
           The scheduler element must be a direct child of configuration, not of adapter.&lt;/p&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;All registered jobs are displayed in the Frank!Console under 'Scheduler'.&lt;/p&gt;&lt;br&gt;&lt;b&gt;WARNING&lt;/b&gt;&lt;p&gt;Support for the features described for the 'C' character is not complete.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -18017,8 +18074,8 @@
         <xs:annotation>
           <xs:documentation>Frank!Framework job to cleanup the &lt;code&gt;IBISSTORE&lt;/code&gt; and &lt;code&gt;IBISLOCK&lt;/code&gt; tables.
  Find all MessageLogs and Lockers in the current configuration and removes database
- entries which have surpassed their corresponding ExpiryDateField. 
- 
+ entries which have surpassed their corresponding ExpiryDateField.
+
  &lt;h3&gt;Possible cron expressions:&lt;/h3&gt;
  &lt;p&gt;
  A "Cron-Expression" is a string comprised of 6 or 7 fields separated by
@@ -18234,7 +18291,7 @@
  day-of-month fields!&lt;/p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;This is a default job that can be controlled with the property &lt;pre&gt;cleanup.database.active&lt;/pre&gt; and &lt;pre&gt;cleanup.database.cron&lt;/pre&gt;.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Support for specifying both a day-of-week and a day-of-month
           value is not complete (you'll need to use the '?' character in on of these fields).&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Be careful when setting fire times between mid-night and 1:00 AM -
           "daylight savings" can cause a skip or a repeat depending on whether
-          the time moves back or jumps forward.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Specified in the Configuration.xml inside a &lt;code&gt;&amp;lt;scheduler&amp;gt;&lt;/code&gt; element. 
+          the time moves back or jumps forward.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Specified in the Configuration.xml inside a &lt;code&gt;&amp;lt;scheduler&amp;gt;&lt;/code&gt; element.
           The scheduler element must be a direct child of configuration, not of adapter.&lt;/p&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;All registered jobs are displayed in the Frank!Console under 'Scheduler'.&lt;/p&gt;&lt;br&gt;&lt;b&gt;WARNING&lt;/b&gt;&lt;p&gt;Support for the features described for the 'C' character is not complete.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -18250,7 +18307,7 @@
           <xs:documentation>Frank!Framework job to empty files in a given directory that have been
  stale (untouched) for the given &lt;code&gt;retention&lt;/code&gt; duration.
  See DirectoryCleaner for more info.
- 
+
  &lt;h3&gt;Possible cron expressions:&lt;/h3&gt;
  &lt;p&gt;
  A "Cron-Expression" is a string comprised of 6 or 7 fields separated by
@@ -18466,7 +18523,7 @@
  day-of-month fields!&lt;/p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Support for specifying both a day-of-week and a day-of-month
           value is not complete (you'll need to use the '?' character in on of these fields).&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Be careful when setting fire times between mid-night and 1:00 AM -
           "daylight savings" can cause a skip or a repeat depending on whether
-          the time moves back or jumps forward.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Specified in the Configuration.xml inside a &lt;code&gt;&amp;lt;scheduler&amp;gt;&lt;/code&gt; element. 
+          the time moves back or jumps forward.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Specified in the Configuration.xml inside a &lt;code&gt;&amp;lt;scheduler&amp;gt;&lt;/code&gt; element.
           The scheduler element must be a direct child of configuration, not of adapter.&lt;/p&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;All registered jobs are displayed in the Frank!Console under 'Scheduler'.&lt;/p&gt;&lt;br&gt;&lt;b&gt;WARNING&lt;/b&gt;&lt;p&gt;Support for the features described for the 'C' character is not complete.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -18480,7 +18537,7 @@
       <xs:element name="ExecuteQueryJob">
         <xs:annotation>
           <xs:documentation>Scheduled job to execute JDBC Queries using a FixedQuerySender.
- 
+
  &lt;h3&gt;Possible cron expressions:&lt;/h3&gt;
  &lt;p&gt;
  A "Cron-Expression" is a string comprised of 6 or 7 fields separated by
@@ -18696,7 +18753,7 @@
  day-of-month fields!&lt;/p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Support for specifying both a day-of-week and a day-of-month
           value is not complete (you'll need to use the '?' character in on of these fields).&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Be careful when setting fire times between mid-night and 1:00 AM -
           "daylight savings" can cause a skip or a repeat depending on whether
-          the time moves back or jumps forward.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Specified in the Configuration.xml inside a &lt;code&gt;&amp;lt;scheduler&amp;gt;&lt;/code&gt; element. 
+          the time moves back or jumps forward.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Specified in the Configuration.xml inside a &lt;code&gt;&amp;lt;scheduler&amp;gt;&lt;/code&gt; element.
           The scheduler element must be a direct child of configuration, not of adapter.&lt;/p&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;All registered jobs are displayed in the Frank!Console under 'Scheduler'.&lt;/p&gt;&lt;br&gt;&lt;b&gt;WARNING&lt;/b&gt;&lt;p&gt;Support for the features described for the 'C' character is not complete.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -18716,8 +18773,8 @@
     If it is not present it add the job to the scheduler.
  4. Once it's looped through all the database jobs, loop through the remaining jobs in the Map.
     Since they have been removed from the database, remove them from the Quartz Scheduler
- 
- 
+
+
  Frank!Framework job which periodically looks in the &lt;pre&gt;IBISSCHEDULES&lt;/pre&gt; table to see if a new DatabaseJob should be loaded.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;This is a default job that can be controlled with the property &lt;pre&gt;loadDatabaseSchedules.active&lt;/pre&gt; and &lt;pre&gt;loadDatabaseSchedules.interval&lt;/pre&gt;.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -18745,7 +18802,7 @@
         <xs:annotation>
           <xs:documentation>Scheduled job to send messages to a FrankListener.
  Message may be &lt;pre&gt;null&lt;/pre&gt; (or empty).
- 
+
  &lt;h3&gt;Possible cron expressions:&lt;/h3&gt;
  &lt;p&gt;
  A "Cron-Expression" is a string comprised of 6 or 7 fields separated by
@@ -18961,7 +19018,7 @@
  day-of-month fields!&lt;/p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Support for specifying both a day-of-week and a day-of-month
           value is not complete (you'll need to use the '?' character in on of these fields).&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Be careful when setting fire times between mid-night and 1:00 AM -
           "daylight savings" can cause a skip or a repeat depending on whether
-          the time moves back or jumps forward.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Specified in the Configuration.xml inside a &lt;code&gt;&amp;lt;scheduler&amp;gt;&lt;/code&gt; element. 
+          the time moves back or jumps forward.&lt;/p&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;Specified in the Configuration.xml inside a &lt;code&gt;&amp;lt;scheduler&amp;gt;&lt;/code&gt; element.
           The scheduler element must be a direct child of configuration, not of adapter.&lt;/p&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;All registered jobs are displayed in the Frank!Console under 'Scheduler'.&lt;/p&gt;&lt;br&gt;&lt;b&gt;WARNING&lt;/b&gt;&lt;p&gt;Support for the features described for the 'C' character is not complete.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -19914,13 +19971,6 @@
       <xs:enumeration value="BLOB" />
     </xs:restriction>
   </xs:simpleType>
-  <xs:simpleType name="MediaTypesAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="XML" />
-      <xs:enumeration value="JSON" />
-      <xs:enumeration value="TEXT" />
-    </xs:restriction>
-  </xs:simpleType>
   <xs:simpleType name="Samba2AuthTypeAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="NTLM" />
@@ -20137,6 +20187,23 @@
       <xs:enumeration value="XML" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="S3StorageClassAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="STANDARD" />
+      <xs:enumeration value="REDUCED_REDUNDANCY" />
+      <xs:enumeration value="STANDARD_IA" />
+      <xs:enumeration value="ONEZONE_IA" />
+      <xs:enumeration value="INTELLIGENT_TIERING" />
+      <xs:enumeration value="GLACIER" />
+      <xs:enumeration value="DEEP_ARCHIVE" />
+      <xs:enumeration value="OUTPOSTS" />
+      <xs:enumeration value="GLACIER_IR" />
+      <xs:enumeration value="SNOW" />
+      <xs:enumeration value="EXPRESS_ONEZONE" />
+      <xs:enumeration value="FSX_OPENZFS" />
+      <xs:enumeration value="UNKNOWN_TO_SDK_VERSION" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="FileSystemActionAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="list">
@@ -20223,6 +20290,33 @@
       <xs:enumeration value="FILES_ONLY" />
       <xs:enumeration value="FOLDERS_ONLY" />
       <xs:enumeration value="FILES_AND_FOLDERS" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="AddressTypeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="TOPIC" />
+      <xs:enumeration value="QUEUE" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="MessageTypeAttributeValuesType_3">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="AUTO">
+        <xs:annotation>
+          <xs:documentation>Automatically determine the type of the outgoing org.apache.qpid.protonj2.client.Message based
+ on the value of Message#isBinary().</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="TEXT">
+        <xs:annotation>
+          <xs:documentation>Create the outgoing message with an &lt;code&gt;AmqpValue&lt;/code&gt; section containing character data.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
+      <xs:enumeration value="BINARY">
+        <xs:annotation>
+          <xs:documentation>Create the outgoing message with an AMQP &lt;code&gt;Body&lt;/code&gt; section containing the message as binary data.
+ Only binary messages can be read or created in a streaming manner when messages are large.</xs:documentation>
+        </xs:annotation>
+      </xs:enumeration>
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="CmisActionAttributeValuesType">
@@ -21244,7 +21338,7 @@
   </xs:attribute>
   <xs:attribute name="storeResultInSessionKey" type="xs:string">
     <xs:annotation>
-      <xs:documentation>If set, the pipe result is copied to a session key that has the name defined by this attribute. 
+      <xs:documentation>If set, the pipe result is copied to a session key that has the name defined by this attribute.
  The pipe result is still written as the output message as usual.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
