@@ -19,7 +19,7 @@
                   <tr>
                     <td>{{ roles.name }}</td>
                     <td>
-                      <i [ngClass]="roles.allowed ? 'fa fa-check-square' : 'fa fa-times-circle'"></i>
+                      <fa-icon [icon]="roles.allowed ? faCheckSquare : faTimesCircle" />
                     </td>
                   </tr>
                 } @empty {
@@ -217,7 +217,7 @@
                 <tr>
                   <th>Action</th>
                   <th>Description</th>
-                  @for (roles of securityRoles; track roles.name) {
+                  @for (roles of securityRoles; track $index) {
                     <th>
                       {{ roles.name }}
                     </th>
@@ -225,14 +225,14 @@
                 </tr>
               </thead>
               <tbody>
-                @for (link of links; track link.name) {
+                @for (link of links; track $index) {
                   <tr>
                     <td>{{ link.name }}</td>
                     <td>{{ link.description }}</td>
                     @for (roles of securityRoles; track roles.name) {
                       <td>
                         @if (!link.roles || link.roles.includes(roles.name)) {
-                          <i class="fa fa-check"></i>
+                          <fa-icon [icon]="faCheck" />
                         }
                       </td>
                     }

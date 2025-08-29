@@ -1,14 +1,26 @@
 import { Component, inject } from '@angular/core';
 import { NgbToast } from '@ng-bootstrap/ng-bootstrap';
 import { Toast, ToastService, ToastType } from 'src/app/services/toast.service';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-toasts-container',
   templateUrl: './toasts-container.component.html',
-  imports: [NgbToast],
+  styles: `
+    :host {
+      padding: 1rem !important;
+      right: 0 !important;
+      top: 0 !important;
+      position: fixed !important;
+      z-index: 1200;
+    }
+  `,
+  imports: [NgbToast, FaIconComponent],
 })
 export class ToastsContainerComponent {
   public toastService: ToastService = inject(ToastService);
+  protected readonly faTimes = faTimes;
 
   remove(toast: Toast, event: MouseEvent): void {
     this.toastService.remove(toast);

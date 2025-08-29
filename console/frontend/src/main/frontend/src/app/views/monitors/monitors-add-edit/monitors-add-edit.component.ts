@@ -6,6 +6,8 @@ import { AlertState } from '../../test-pipeline/test-pipeline.component';
 import { NgbAlert } from '@ng-bootstrap/ng-bootstrap';
 import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
 import { FormsModule } from '@angular/forms';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faArrowAltCircleLeft } from '@fortawesome/free-regular-svg-icons';
 
 type EventSource = {
   adapter: string;
@@ -14,7 +16,7 @@ type EventSource = {
 
 @Component({
   selector: 'app-monitors-add-edit',
-  imports: [NgbAlert, RouterLink, QuickSubmitFormDirective, FormsModule],
+  imports: [NgbAlert, RouterLink, QuickSubmitFormDirective, FormsModule, FaIconComponent],
   templateUrl: './monitors-add-edit.component.html',
   styleUrls: ['./monitors-add-edit.component.scss'],
 })
@@ -40,6 +42,7 @@ export class MonitorsAddEditComponent implements OnInit {
   protected disabled = false;
   protected pageTitle = '';
   protected state: AlertState[] = [];
+  protected readonly faArrowAltCircleLeft = faArrowAltCircleLeft;
 
   private triggerId = -1;
   private events: Record<string, Event> = {};

@@ -15,7 +15,7 @@
 
         <li appHasAccessToLink="getAdapters" routerLinkActive="active" data-cy="pages-navigation__status">
           <a data-cy-nav="adapterStatus" routerLink="/status" (click)="closeExpandedItem()"
-            ><i class="fa fa-dashboard"></i> <span class="nav-label">Adapter Status</span></a
+            ><fa-icon class="fa-green" [icon]="faDashboard" /> <span class="nav-label">Adapter Status</span></a
           >
         </li>
 
@@ -33,10 +33,10 @@
           [ngClass]="getClassByRoute('active', 'configuration', accordionItemConfiguration.expanded)"
         >
           <a tabindex="0" role="button" (click)="expandCollapse(accordionItemConfiguration, $event)"
-            ><i class="fa fa-cogs"></i>
+            ><fa-icon class="fa-blue" [icon]="faCogs" />
             <span class="nav-label">Configurations</span>
-            <span class="fa arrow"></span
-          ></a>
+            <fa-icon class="fa-arrow" [icon]="faAngleDown"
+          /></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemConfiguration.expanded }">
             <li
               appHasAccessToLink="getConfigurationXML"
@@ -62,8 +62,9 @@
           [ngClass]="getClassByRoute('active', 'logging', accordionItemLogging.expanded)"
         >
           <a tabindex="0" role="button" (click)="expandCollapse(accordionItemLogging, $event)"
-            ><i class="fa fa-life-ring"></i> <span class="nav-label">Logging</span> <span class="fa arrow"></span
-          ></a>
+            ><fa-icon [icon]="faLifeRing" /> <span class="nav-label">Logging</span>
+            <fa-icon class="fa-arrow" [icon]="faAngleDown"
+          /></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemLogging.expanded }">
             <li
               appHasAccessToLink="getLogDirectory"
@@ -95,8 +96,9 @@
           [ngClass]="getClassByRoute('active', ['testing', 'test-'], accordionItemTesting.expanded)"
         >
           <a tabindex="0" role="button" data-cy-nav="testing" (click)="expandCollapse(accordionItemTesting, $event)"
-            ><i class="fa fa-bug"></i> <span class="nav-label">Testing</span> <span class="fa arrow"></span
-          ></a>
+            ><fa-icon [icon]="faBug" /> <span class="nav-label">Testing</span>
+            <fa-icon class="fa-arrow" [icon]="faAngleDown"
+          /></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemTesting.expanded }">
             <li data-cy-nav="testingLarva" routerLinkActive="active" appConditionalOnProperty="larva.enabled">
               <a routerLink="/testing/larva">Larva</a>
@@ -133,8 +135,9 @@
           [ngClass]="getClassByRoute('active', ['jdbc', 'liquibase'], accordionItemJdbc.expanded)"
         >
           <a tabindex="0" role="button" (click)="expandCollapse(accordionItemJdbc, $event)"
-            ><i class="fa fa-cubes"></i> <span class="nav-label">JDBC</span> <span class="fa arrow"></span
-          ></a>
+            ><fa-icon [icon]="faCubes" /> <span class="nav-label">JDBC</span
+            ><fa-icon class="fa-arrow" [icon]="faAngleDown"
+          /></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemJdbc.expanded }">
             <li appHasAccessToLink="executeJdbcQuery" routerLinkActive="active">
               <a routerLink="/jdbc/execute-query">Execute Query</a>
@@ -159,8 +162,9 @@
           [ngClass]="getClassByRoute('active', 'jms', accordionItemJms.expanded)"
         >
           <a tabindex="0" role="button" (click)="expandCollapse(accordionItemJms, $event)"
-            ><i class="fa fa-th-large"></i> <span class="nav-label">JMS</span> <span class="fa arrow"></span
-          ></a>
+            ><fa-icon class="fa-green" [icon]="faThLarge" /> <span class="nav-label">JMS</span>
+            <fa-icon class="fa-arrow" [icon]="faAngleDown"
+          /></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemJms.expanded }">
             <li appHasAccessToLink="browseQueue" routerLinkActive="active">
               <a routerLink="/jms/browse-queue">Browse Queue</a>
@@ -172,22 +176,22 @@
         </li>
         <li appHasAccessToLink="getWebServices" routerLinkActive="active">
           <a routerLink="/webservices" (click)="closeExpandedItem()"
-            ><i class="fa fa-paper-plane-o"></i> <span class="nav-label">Webservices</span></a
+            ><fa-icon class="fa-magenta" [icon]="faPaperPlane" /> <span class="nav-label">Webservices</span></a
           >
         </li>
         <li appHasAccessToLink="getSchedule" routerLinkActive="active">
           <a routerLink="/scheduler" (click)="closeExpandedItem()"
-            ><i class="fa fa-calendar"></i> <span class="nav-label">Scheduler</span></a
+            ><fa-icon [icon]="faCalendar" /> <span class="nav-label">Scheduler</span></a
           >
         </li>
         <li appHasAccessToLink="getMonitors" routerLinkActive="active" data-cy="pages-navigation__monitors">
           <a routerLink="/monitors" (click)="closeExpandedItem()"
-            ><i class="fa fa-clone"></i> <span class="nav-label">Monitors</span></a
+            ><fa-icon [icon]="faClone" /> <span class="nav-label">Monitors</span></a
           >
         </li>
         <li appHasAccessToLink="getEnvironmentVariables" routerLinkActive="active">
           <a routerLink="/environment-variables" (click)="closeExpandedItem()"
-            ><i class="fa fa-language"></i> <span class="nav-label">Environment Variables</span></a
+            ><fa-icon [icon]="faLanguage" /> <span class="nav-label">Environment Variables</span></a
           >
         </li>
         <li
@@ -209,8 +213,9 @@
           "
         >
           <a tabindex="0" role="button" (click)="expandCollapse(accordionItemOverview, $event)"
-            ><i class="fa fa-sitemap"></i> <span class="nav-label">Overview</span> <span class="fa arrow"></span
-          ></a>
+            ><fa-icon [icon]="faSitemap" /> <span class="nav-label">Overview</span>
+            <fa-icon class="fa-arrow" [icon]="faAngleDown"
+          /></a>
           <ul class="nav nav-second-level collapse" [ngClass]="{ in: accordionItemOverview.expanded }">
             <li appHasAccessToLink="getConnections" routerLinkActive="active">
               <a routerLink="/connections">Connection Overview</a>
@@ -225,22 +230,22 @@
         </li>
         <li appHasAccessToLink="getSecurityItems" routerLinkActive="active">
           <a routerLink="/security-items" (click)="closeExpandedItem()"
-            ><i class="fa fa-lock"></i> <span class="nav-label">Security Items</span></a
+            ><fa-icon [icon]="faLock" /> <span class="nav-label">Security Items</span></a
           >
         </li>
         <li appHasAccessToLink="getServerInformation">
           <a tabindex="0" role="button" class="pointer" (click)="openInfo()"
-            ><i class="fa fa-info-circle"></i> <span class="nav-label">Information</span></a
+            ><fa-icon class="fa-white" [icon]="faInfoCircle" /> <span class="nav-label">Information</span></a
           >
         </li>
         <li style="border-top: 1px solid #19aa8d">
           <a target="_blank" href="http://frank-manual.readthedocs.io/" title="Frank!Manual" rel="noopener noreferrer"
-            ><i class="fa fa-book"></i> <span class="nav-label">Frank!Manual</span></a
+            ><fa-icon [icon]="faBook" /> <span class="nav-label">Frank!Manual</span></a
           >
         </li>
         <li>
           <a target="_blank" href="../frankdoc" title="Frank!Doc"
-            ><i class="fa fa-book"></i> <span class="nav-label">Frank!Doc</span></a
+            ><fa-icon [icon]="faBook" /> <span class="nav-label">Frank!Doc</span></a
           >
         </li>
         <li>
@@ -250,7 +255,7 @@
             title="Give Feedback"
             href="https://github.com/frankframework/frankframework/discussions"
           >
-            <i class="fa fa-commenting-o"></i>
+            <fa-icon class="fa-blue" [icon]="faCommenting" />
             <span class="nav-label">Give Feedback</span>
           </a>
         </li>
@@ -263,7 +268,7 @@
               `https://github.com/frankframework/frankframework/issues/new?template=1-bug.yml&environment=${encodedServerInfo()}`
             "
           >
-            <i class="fa fa-flag"></i>
+            <fa-icon [icon]="faFlag" />
             <span class="nav-label">Report a Bug</span>
           </a>
         </li>

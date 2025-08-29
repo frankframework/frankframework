@@ -6,7 +6,7 @@
           @if (databaseSchedulesEnabled()) {
             <div class="pull-right">
               <button routerLink="new" class="btn btn-xs btn-info pull-right" type="button">
-                <i class="fa fa-plus-circle" aria-hidden="true"></i>
+                <fa-icon aria-hidden="true" [icon]="faPlus" />
                 <span> Add new schedule</span>
               </button>
             </div>
@@ -27,7 +27,7 @@
                 <tr>
                   @if (scheduler.state === 'started') {
                     <td>
-                      <span><i class="fa fa-play m-r-xs"></i> Started</span>
+                      <span><fa-icon class="m-r-xs" [icon]="faPlay" /> Started</span>
                       <button
                         appHasAccessToLink="updateScheduler"
                         title="Pause Scheduler"
@@ -36,13 +36,13 @@
                         [ladda]="refreshing"
                         (click)="pauseScheduler()"
                       >
-                        <i class="fa fa-pause m-r-xs"></i> Pause
+                        <fa-icon class="m-r-xs" [icon]="faPause" /> Pause
                       </button>
                     </td>
                   }
                   @if (scheduler.state === 'paused') {
                     <td>
-                      <span><i class="fa fa-pause m-r-xs"></i> Paused</span>
+                      <span><fa-icon class="m-r-xs" [icon]="faPause" /> Paused</span>
                       <button
                         appHasAccessToLink="updateScheduler"
                         title="Start Scheduler"
@@ -51,13 +51,13 @@
                         [ladda]="refreshing"
                         (click)="start()"
                       >
-                        <i class="fa fa-play m-r-xs"></i> Start
+                        <fa-icon class="m-r-xs" [icon]="faPlay" /> Start
                       </button>
                     </td>
                   }
                   @if (scheduler.state === 'stopped') {
                     <td>
-                      <span><i class="fa fa-stop m-r-xs"></i> Stopped</span>
+                      <span><fa-icon class="m-r-xs" [icon]="faStop" /> Stopped</span>
                       <button
                         appHasAccessToLink="updateScheduler"
                         title="Start Scheduler"
@@ -66,7 +66,7 @@
                         [ladda]="refreshing"
                         (click)="start()"
                       >
-                        <i class="fa fa-play m-r-xs"></i> Start
+                        <fa-icon class="m-r-xs" [icon]="faPlay" /> Start
                       </button>
                     </td>
                   }
@@ -98,14 +98,15 @@
                 name="search"
                 [(ngModel)]="searchFilter"
               />
-              <i
-                class="fa fa-times input-group-closeSearch"
+              <fa-icon
+                class="input-group-closeSearch"
                 aria-hidden="true"
+                [icon]="faTimes"
                 [ngClass]="searchFilter.length === 0 ? ['hidden'] : []"
                 (click)="searchFilter = ''"
-              ></i>
+              />
               <span class="input-group-addon">
-                <i class="fa fa-search" aria-hidden="true"></i>
+                <fa-icon aria-hidden="true" [icon]="faSearch" />
               </span>
             </div>
           </div>
@@ -124,7 +125,7 @@
               (click)="jobShowContent[jobGroupKV.key] = !showContent(jobGroupKV.key)"
             >
               <div class="ibox-tools pull-right">
-                <a> <i [class]="`fa fa-chevron-${showContent(jobGroupKV.key) ? 'up' : 'down'}`"></i></a>
+                <a> <fa-icon [icon]="showContent(jobGroupKV.key) ? faChevronUp : faChevronDown" /></a>
               </div>
               <h4>Jobgroup: {{ jobGroupKV.key }}</h4>
             </div>
@@ -141,7 +142,7 @@
                           [title]="`Edit Job ${job.name}`"
                           (click)="edit(jobGroupKV.key, job.name)"
                         >
-                          <i class="fa fa-pencil"></i> Edit
+                          <fa-icon [icon]="faPencil" /> Edit
                         </button>
                       }
                       @if (job.type === 'DATABASE') {
@@ -152,7 +153,7 @@
                           [title]="`Delete Job ${job.name}`"
                           (click)="remove(jobGroupKV.key, job.name)"
                         >
-                          <i class="fa fa-times"></i> Delete
+                          <fa-icon [icon]="faTimes" /> Delete
                         </button>
                       }
                       @if (job.state === 'PAUSED') {
@@ -163,7 +164,7 @@
                           [title]="`Resume Job ${job.name}`"
                           (click)="resume(jobGroupKV.key, job.name)"
                         >
-                          <i class="fa fa-play"></i> Resume
+                          <fa-icon [icon]="faPlay" /> Resume
                         </button>
                       }
                       @if (job.state !== 'PAUSED') {
@@ -174,7 +175,7 @@
                           [title]="`Pause Job ${job.name}`"
                           (click)="pause(jobGroupKV.key, job.name)"
                         >
-                          <i class="fa fa-pause"></i> Pause
+                          <fa-icon [icon]="faPause" /> Pause
                         </button>
                       }
                       <button
@@ -184,7 +185,7 @@
                         [title]="`Trigger Job ${job.name}`"
                         (click)="trigger(jobGroupKV.key, job.name)"
                       >
-                        <i class="fa fa-arrow-circle-o-right"></i> Trigger
+                        <fa-icon [icon]="faArrowAltCircleRight" /> Trigger
                       </button>
                     </div>
                     <h4>
@@ -205,21 +206,21 @@
                         @for (message of job.messages; track $index) {
                           <tr>
                             @if (message.level === 'INFO') {
-                              <td class="text-center">&nbsp;<i class="fa fa-info"></i></td>
+                              <td class="text-center">&nbsp;<fa-icon [icon]="faInfo" /></td>
                               <td class="text-left">
                                 <span appToDate [time]="message.date"></span>
                               </td>
                               <td>{{ message.text }}</td>
                             }
                             @if (message.level === 'WARN') {
-                              <td class="text-center">&nbsp;<i class="fa fa-warning"></i></td>
+                              <td class="text-center">&nbsp;<fa-icon [icon]="faWarning" /></td>
                               <td class="text-left">
                                 <span appToDate [time]="message.date"></span>
                               </td>
                               <td style="color: #f7a54a">{{ message.text }}</td>
                             }
                             @if (message.level === 'ERROR') {
-                              <td class="text-center">&nbsp;<i class="fa fa-times"></i></td>
+                              <td class="text-center">&nbsp;<fa-icon [icon]="faTimes" /></td>
                               <td class="text-left">
                                 <span appToDate [time]="message.date"></span>
                               </td>

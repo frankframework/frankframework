@@ -2,6 +2,8 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { AppService } from 'src/app/app.service';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faBug, faLifeRing } from '@fortawesome/free-solid-svg-icons';
 
 type stackTrace = {
   className: string;
@@ -17,7 +19,7 @@ type ServerError = {
 
 @Component({
   selector: 'app-error',
-  imports: [RouterLink],
+  imports: [RouterLink, FaIconComponent],
   templateUrl: './error.component.html',
   styleUrls: ['./error.component.scss'],
 })
@@ -69,4 +71,7 @@ export class ErrorComponent implements OnInit, OnDestroy {
       },
     });
   }
+
+  protected readonly faLifeRing = faLifeRing;
+  protected readonly faBug = faBug;
 }

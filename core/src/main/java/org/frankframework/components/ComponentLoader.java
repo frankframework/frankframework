@@ -65,7 +65,7 @@ public class ComponentLoader {
 		try {
 			ModuleInformation moduleInfo = module.getModuleInformation();
 
-			APP_CONSTANTS.put(moduleInfo.getArtifactId() + ".version", moduleInfo.getVersion());
+			APP_CONSTANTS.put(moduleInfo.getArtifactId() + ".version", moduleInfo.getVersion()); // Should look like `frankframework-core.version`
 			APPLICATION_LOG.debug("Loading {}", moduleInfo);
 		} catch (NoSuchFileException e) {
 			log.info("unable to find module manifest file", e);
