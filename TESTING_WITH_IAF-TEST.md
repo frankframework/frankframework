@@ -77,12 +77,31 @@ NB: If you want to run on a different port, you also need to add to your VM opti
 ### Note about the log dir:
 See the Eclipse instructions for an important note about the `log.dir` setting.
 
-## 4. Select database
+## 4. Select database and JMS server
 
 The frankframework-test project supports multiple databases. By default, an H2 local database is used.
 Docker projects for a number of other DMBSes are provided in GitHub project https://github.com/frankframework/ci-images. To use one of the provided databases, run the `rebuild.bat` script in the corresponding directory. (requires Docker to be installed on your machine). To configure the frankframework-test application, set in the catalina.properties or the VM Options the property `jdbc.dbms.default` to `oracle`, `mssql`, `mysql`, `mariadb` or `postgres`.
+If the database runs on another host than your own test-machine, set `jdbc.hostname`.
 
-## 5. Running the test scenarios
+The `ci-images` project also provides Docker projects for the ActiveMQ and ActiveMQ Artemis message brokers, pre-configured to work with IAF-Test.
+To use either, build the Docker images and set the VM Option `jms.provider.default` to either `activemq` or `artemis`.
+If the JMS broker runs on another host than your own test-machine, set `jms.hostname`.
+
+When testing with JMS you should also enable the Narayana JTA transaction-manager to enable transactions that span both the JMS and database, by setting the VM option `application.server.type.custom` to `NARAYANA`. (Not needed when running in WildFly or JBoss application servers, as they include Narayana transaction manager by default). When running with the Narayana transaction manager, you have to use the XA-enabled datasources for some databases: `postgres-xa`, or `oracle-xa`.
+
+Testing with JMS enabled activates a number of extra Larva tests in IAF-Test which depend on JMS or the JTA transaction manager.
+
+
+## 5. Running as Spring Boot application
+
+It is possible to start the Frank!Framework as a Spring Boot application. Specifically for development-testing with IAF-Test, there is the class `IafTestInitializer` which can be started as a Spring Boot application that includes both the console and the core backend. You can create a run configuration to start `IafTestInitializer#run`, configuring it with most of the same VM options as when testing with Tomcat: `jdbc.dbms.default`, `jms.provider.default`, `application.server.type.custom`
+
+**NB 1:** Do not set `log.dir`, `dtap.stage`, `authAliases.expansion.allowed`, and `credentialFactory.*` properties as these are set by IafTestInitalizer. Setting some of these properties can lead to adverse side-effects as a result.
+
+**NB 2:** This does not start the Frank!Framework in the same way as when running in Tomcat. This is only suitable for limited development testing. Some IAF-Test Larva scenarios are known to fail as a result of these differences in environment. See the list of "Ignored Tests" at the top of the test-class `RunLarvaTests`.
+
+
+## 6. Running the test scenarios
 
 ### Eclipse
 Run your Tomcat server from Eclipse's Servers view. It may take up to a minute for Eclipse to launch it; once ready, you can find the Frank!Framework console by browsing to http://localhost/iaf-test/.
@@ -98,7 +117,7 @@ Press [ Start ], sit back, relax, do some stretches, and let's hope for the best
 
 ---
 
-### Troubleshooting
+## 7. Troubleshooting
 
 * Some parts of the iaf-test module rely on proprietary modules. To tell Maven that it should download these modules, go to Window > Preferences > Maven > User Settings. If you already have a _settings.xml_ file, press the "Open file" link. Otherwise, browse to _C:/Users/(your name)/.m2/_ and create a _settings.xml_ file. Edit the file by adding your own repository or the [frankframework nexus repository](https://nexus.frankframework.org/content/groups/private/) as [mirror](https://maven.apache.org/guides/mini/guide-mirror-settings.html).
 * When your IP-address is dynamically generated, you may have problems connecting to your database that runs in a docker image. The Larva tests reference the database host by a DNS name, `host.docker.internal`. Docker may not automatically update the IP address to which this name refers when your computer is assigned a new IP address. To see whether you have this issue, do `ping host.docker.internal` in a command prompt. If you cannot reach this address, refresh your docker network. You can do that using docker desktop. Press the settings icon (cogwheel) to the top. In the left-hand menu, choose Resources | Network. Update the docker subnet.
