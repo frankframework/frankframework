@@ -39,8 +39,8 @@ importers:
         specifier: ^20.2.2
         version: 20.2.2(@angular/common@20.2.2(@angular/core@20.2.2(@angular/compiler@20.2.2)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@20.2.2(@angular/compiler@20.2.2)(rxjs@7.8.2)(zone.js@0.15.1))(@angular/platform-browser@20.2.2(@angular/animations@20.2.2(@angular/common@20.2.2(@angular/core@20.2.2(@angular/compiler@20.2.2)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@20.2.2(@angular/compiler@20.2.2)(rxjs@7.8.2)(zone.js@0.15.1)))(@angular/common@20.2.2(@angular/core@20.2.2(@angular/compiler@20.2.2)(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@20.2.2(@angular/compiler@20.2.2)(rxjs@7.8.2)(zone.js@0.15.1)))(rxjs@7.8.2)
       '@fortawesome/angular-fontawesome':
-        specifier: ^1.0.0
-        version: 1.0.0(@angular/core@20.2.2(@angular/compiler@20.2.2)(rxjs@7.8.2)(zone.js@0.15.1))
+        specifier: ^3.0.0
+        version: 3.0.0(@angular/core@20.2.2(@angular/compiler@20.2.2)(rxjs@7.8.2)(zone.js@0.15.1))
       '@fortawesome/free-brands-svg-icons':
         specifier: ^7.0.0
         version: 7.0.0
@@ -51,8 +51,8 @@ importers:
         specifier: ^7.0.0
         version: 7.0.0
       '@frankframework/frank-config-layout':
-        specifier: ^1.1.4
-        version: 1.1.4(@angular/core@20.2.2(@angular/compiler@20.2.2)(rxjs@7.8.2)(zone.js@0.15.1))
+        specifier: ^1.2.0
+        version: 1.2.0(@angular/core@20.2.2(@angular/compiler@20.2.2)(rxjs@7.8.2)(zone.js@0.15.1))
       '@ng-bootstrap/ng-bootstrap':
         specifier: ^19.0.1
         version: 19.0.1(ebc3a58ce051c9f2c4cd2e608e2470c8)
@@ -778,21 +778,17 @@ packages:
     resolution: {integrity: sha512-Z5kJ+wU3oA7MMIqVR9tyZRtjYPr4OC004Q4Rw7pgOKUOKkJfZ3O24nz3WYfGRpMDNmcOi3TwQOmgm7B7Tpii0w==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
-  '@fortawesome/angular-fontawesome@1.0.0':
-    resolution: {integrity: sha512-EC2fYuXIuw2ld1kzJi+zysWus6OeGGfLQtbh0hW9zyyq5aBo8ZJkcJKBsVQ8E6Mg7nHyTWaXn+sdcXTPDWz+UQ==}
+  '@fortawesome/angular-fontawesome@3.0.0':
+    resolution: {integrity: sha512-+8Dd6DoJnqArfrZ5NvjHyRL64IIkTigXclbOOcFdYQ8/WFERQUDaEU6SAV8Q0JBpJhMS1McED7YCOCAE6SIVyA==}
     peerDependencies:
-      '@angular/core': ^19.0.0
-
-  '@fortawesome/fontawesome-common-types@6.7.2':
-    resolution: {integrity: sha512-Zs+YeHUC5fkt7Mg1l6XTniei3k4bwG/yo3iFUtZWd/pMx9g3fdvkSK9E0FOC+++phXOka78uJcYb8JaFkW52Xg==}
-    engines: {node: '>=6'}
+      '@angular/core': ^20.0.0
 
   '@fortawesome/fontawesome-common-types@7.0.0':
     resolution: {integrity: sha512-PGMrIYXLGA5K8RWy8zwBkd4vFi4z7ubxtet6Yn13Plf6krRTwPbdlCwlcfmoX0R7B4Z643QvrtHmdQ5fNtfFCg==}
     engines: {node: '>=6'}
 
-  '@fortawesome/fontawesome-svg-core@6.7.2':
-    resolution: {integrity: sha512-yxtOBWDrdi5DD5o1pmVdq3WMCvnobT0LU6R8RyyVXPvFRd2o79/0NCuQoCjNTeZz9EzA9xS3JxNWfv54RIHFEA==}
+  '@fortawesome/fontawesome-svg-core@7.0.0':
+    resolution: {integrity: sha512-obBEF+zd98r/KtKVW6A+8UGWeaOoyMpl6Q9P3FzHsOnsg742aXsl8v+H/zp09qSSu/a/Hxe9LNKzbBaQq1CEbA==}
     engines: {node: '>=6'}
 
   '@fortawesome/free-brands-svg-icons@7.0.0':
@@ -807,10 +803,10 @@ packages:
     resolution: {integrity: sha512-njSLAllkOddYDCXgTFboXn54Oe5FcvpkWq+FoetOHR64PbN0608kM02Lze0xtISGpXgP+i26VyXRQA0Irh3Obw==}
     engines: {node: '>=6'}
 
-  '@frankframework/frank-config-layout@1.1.4':
-    resolution: {integrity: sha512-ZeTLpwTdkA0uXe9TBDhFfp3UqxCqh3g3F0SJRUZBQhiTGPvkldE1qQ/9cEl+TmDyQv6NsdNfCpjqMX7trrizPQ==}
+  '@frankframework/frank-config-layout@1.2.0':
+    resolution: {integrity: sha512-ODqzdVCH+WbfPNAUtblbBSozXiqhcadmWFAsdnNd8QVzNEdfScu/Yfb/plhpZv/hoDk1SCOUUBEbFpeWwk6MDA==}
     peerDependencies:
-      '@angular/core': ^19.1.1
+      '@angular/core': ^20.2.2
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -5025,19 +5021,17 @@ snapshots:
       '@eslint/core': 0.15.2
       levn: 0.4.1
 
-  '@fortawesome/angular-fontawesome@1.0.0(@angular/core@20.2.2(@angular/compiler@20.2.2)(rxjs@7.8.2)(zone.js@0.15.1))':
+  '@fortawesome/angular-fontawesome@3.0.0(@angular/core@20.2.2(@angular/compiler@20.2.2)(rxjs@7.8.2)(zone.js@0.15.1))':
     dependencies:
       '@angular/core': 20.2.2(@angular/compiler@20.2.2)(rxjs@7.8.2)(zone.js@0.15.1)
-      '@fortawesome/fontawesome-svg-core': 6.7.2
+      '@fortawesome/fontawesome-svg-core': 7.0.0
       tslib: 2.8.1
-
-  '@fortawesome/fontawesome-common-types@6.7.2': {}
 
   '@fortawesome/fontawesome-common-types@7.0.0': {}
 
-  '@fortawesome/fontawesome-svg-core@6.7.2':
+  '@fortawesome/fontawesome-svg-core@7.0.0':
     dependencies:
-      '@fortawesome/fontawesome-common-types': 6.7.2
+      '@fortawesome/fontawesome-common-types': 7.0.0
 
   '@fortawesome/free-brands-svg-icons@7.0.0':
     dependencies:
@@ -5051,7 +5045,7 @@ snapshots:
     dependencies:
       '@fortawesome/fontawesome-common-types': 7.0.0
 
-  '@frankframework/frank-config-layout@1.1.4(@angular/core@20.2.2(@angular/compiler@20.2.2)(rxjs@7.8.2)(zone.js@0.15.1))':
+  '@frankframework/frank-config-layout@1.2.0(@angular/core@20.2.2(@angular/compiler@20.2.2)(rxjs@7.8.2)(zone.js@0.15.1))':
     dependencies:
       '@angular/core': 20.2.2(@angular/compiler@20.2.2)(rxjs@7.8.2)(zone.js@0.15.1)
       tslib: 2.8.1
