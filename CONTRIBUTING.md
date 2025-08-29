@@ -228,7 +228,7 @@ Please ensure that your Javadoc comments are correct. Eclipse can check this for
 
 * Download the latest [LTS version of Node.js](https://nodejs.org/en), or refer to the [Angular version compatibility guide](https://angular.dev/reference/versions) to choose the appropriate version.
 * To verify your installation, open a terminal or command prompt and run `node -v`. If installed correctly, this will display the Node.js version without errors.
-* We use [PNPM](https://pnpm.io/) as our package manager. Enable it by running `corepack enable pnpm`, or follow the [PNPM installation guide](https://pnpm.io/installation).
+* We use [PNPM](https://pnpm.io/) as our package manager. You will need to install corepack first with `npm install --global corepack@latest` to enable pnpm by running `corepack enable pnpm`, or follow the [PNPM installation guide](https://pnpm.io/installation).
 * Confirm PNPM is installed by running `pnpm -v`, similar to the Node.js check.
 
 ### Setup IntelliJ
