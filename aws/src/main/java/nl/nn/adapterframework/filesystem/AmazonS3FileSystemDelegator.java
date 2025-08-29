@@ -15,8 +15,6 @@
 */
 package nl.nn.adapterframework.filesystem;
 
-import com.amazonaws.services.s3.model.StorageClass;
-
 import nl.nn.adapterframework.doc.ReferTo;
 
 public interface AmazonS3FileSystemDelegator {
@@ -74,8 +72,8 @@ public interface AmazonS3FileSystemDelegator {
 	}
 
 	@ReferTo(AmazonS3FileSystem.class)
-	default void setStorageClass(StorageClass storageClass) {
-		getFileSystem().setStorageClass(storageClass);
+	default void setStorageClass(S3StorageClass s3StorageClass) {
+		getFileSystem().setStorageClass(s3StorageClass);
 	}
 
 	@ReferTo(AmazonS3FileSystem.class)

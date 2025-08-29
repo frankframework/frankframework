@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.9.6">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.9.7-SNAPSHOT">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -1804,6 +1804,15 @@
       <xs:annotation>
         <xs:documentation>The S3 service endpoint, either with or without the protocol. (e.g. https://sns.us-west-1.amazonaws.com or sns.us-west-1.amazonaws.com)</xs:documentation>
       </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="storageClass">
+      <xs:annotation>
+        <xs:documentation>Set the desired storage class for the S3 object when action is move,copy or write.
+ More info on storage classes can be found on the &lt;a href="https://aws.amazon.com/s3/storage-classes/"&gt;AWS S3 docs&lt;/a&gt;. Default: {@literal STANDARD}</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="S3StorageClassAttributeValuesType variableRef" />
+      </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="maxConnections" type="frankInt">
       <xs:annotation>
@@ -16913,6 +16922,20 @@
     <xs:restriction base="xs:string">
       <xs:pattern value="[tT][eE][xX][tT]" />
       <xs:pattern value="[xX][mM][lL]" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="S3StorageClassAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[sS][tT][aA][nN][dD][aA][rR][dD]" />
+      <xs:pattern value="[rR][eE][dD][uU][cC][eE][dD][__][rR][eE][dD][uU][nN][dD][aA][nN][cC][yY]" />
+      <xs:pattern value="[sS][tT][aA][nN][dD][aA][rR][dD][__][iI][aA]" />
+      <xs:pattern value="[oO][nN][eE][zZ][oO][nN][eE][__][iI][aA]" />
+      <xs:pattern value="[iI][nN][tT][eE][lL][lL][iI][gG][eE][nN][tT][__][tT][iI][eE][rR][iI][nN][gG]" />
+      <xs:pattern value="[gG][lL][aA][cC][iI][eE][rR]" />
+      <xs:pattern value="[dD][eE][eE][pP][__][aA][rR][cC][hH][iI][vV][eE]" />
+      <xs:pattern value="[oO][uU][tT][pP][oO][sS][tT][sS]" />
+      <xs:pattern value="[gG][lL][aA][cC][iI][eE][rR][__][iI][rR]" />
+      <xs:pattern value="[sS][nN][oO][wW]" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="FileSystemActionAttributeValuesType">
