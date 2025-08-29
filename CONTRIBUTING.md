@@ -160,9 +160,9 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 
 ### Set up a Tomcat server in Eclipse
 
-- Servers, No servers are available. Click this link to create a new server..., Apache, Tomcat v10.0 Server, Next, Browse..., select the root folder of a Tomcat installation (when not available download [Tomcat](http://tomcat.apache.org/) version 10.1.20 or a later version of Tomcat 10), OK, Finish.
-- Double click Tomcat v10.0 Server at localhost, Open launch configuration, Arguments, VM arguments, add -Ddtap.stage=LOC, OK, Modules, Add Web Module..., iaf-example, OK, File, Save
-- Right click Tomcat v10.0 Server at localhost, Start.
+- Servers, No servers are available. Click this link to create a new server..., Apache, Tomcat v10.1 Server, Next, Browse..., select the root folder of a Tomcat installation (when not available download [Tomcat](http://tomcat.apache.org/) version 10.1.20 or a later version of Tomcat 10), OK, Finish.
+- Double click Tomcat v10.1 Server at localhost, Open launch configuration, Arguments, VM arguments, add -Ddtap.stage=LOC, OK, Modules, Add Web Module..., iaf-example, OK, File, Save
+- Right click Tomcat v10.1 Server at localhost, Start.
 - Browse the IAF console at [http://localhost:8080/iaf-example/](http://localhost:8080/iaf-example/).
 
 ### Install latest LTS NodeJS
@@ -238,12 +238,12 @@ This guide assumes that you are using IntelliJ Ultimate, because application ser
 - Clone the source any way you like. E.g. "New | Project from Version Control", or at the commandline: `git clone git@github.com:frankframework/frankframework.git`
 - If you cloned from the command line, then: From File -> Open... Select iaf folder and import it as a Maven project.
 - When asked to open the Eclipse project or the Maven project, choose opening the Maven project.
-- Make sure to select Java 17 as a default JDK.
+- Make sure to select Java 17 or Java 21 as a default JDK.
 - In the Maven tool window, open the "Profiles" section and make sure to select the profile `database-drivers` amongst other profiles that are selected by default.
   After doing this, make sure to reload the Maven project to add the extra dependencies from this profile to your project classpath.
 - You may need to install / enable the Lombok plugin if it is not already installed / enabled, so that IntelliJ will properly understand the code with all the Lombok annotations in it. 
   If the plugin is installed you may get a notification from IntelliJ when the project is built that annotation processing needs to be enabled in the project for Lombok to work, enable this.
-- Download Tomcat 10 from https://tomcat.apache.org/download-10.cgi and unzip it anywhere you like. (On Windows, make sure to extract it on a folder which can be edited by non-admin users), 
+- Download the latest version of Tomcat 10.1 from https://tomcat.apache.org/download-10.cgi and unzip it anywhere you like. (On Windows, make sure to extract it on a folder which can be edited by non-admin users), 
   or install it via `brew` (on macOS) or `sdkman`.
   Make sure that all scripts are executable, for instance: `chmod a+x ~/.sdkman/candidates/tomcat/current/bin/*.sh`
 - Open Settings | Build, Execution, Deployment | Application Servers, add the Tomcat installation you just did.

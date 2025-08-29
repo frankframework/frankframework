@@ -10,12 +10,6 @@
 				<exit name="EXIT" state="success" />
 			</exits>
 
-<!--			<pipe name="Load ZIP File"-->
-<!--				  className="org.frankframework.pipes.LocalFileSystemPipe"-->
-<!--				  action="read"-->
-<!--				  filename="/configurations/JMS/BinaryData/test-data.zip">-->
-
-<!--			</pipe>-->
 			<!-- Read binary file as bytes -->
 			<pipe
 					name="read binary file as bytes"
