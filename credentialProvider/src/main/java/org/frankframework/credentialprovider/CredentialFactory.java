@@ -198,9 +198,13 @@ public class CredentialFactory {
 	public static Collection<String> getConfiguredAliases() throws Exception {
 		Collection<String> aliases = new LinkedHashSet<>();
 		for (ICredentialProvider factory : getInstance().delegates) {
-			Collection<String> configuredAliases = factory.getConfiguredAliases();
-			if (configuredAliases != null) {
-				aliases.addAll(configuredAliases);
+			try {
+				Collection<String> configuredAliases = factory.getConfiguredAliases();
+				if (configuredAliases != null) {
+					aliases.addAll(configuredAliases);
+				}
+			} catch (Exception e) {
+				log.warning("unable to find configured aliases in factory ["+factory+"]");
 			}
 		}
 		return aliases;

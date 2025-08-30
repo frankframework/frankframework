@@ -88,7 +88,7 @@ public abstract class AbstractMapCredentialFactory implements ICredentialProvide
 	}
 
 	@Override
-	public Set<String> getConfiguredAliases() throws Exception{
+	public Set<String> getConfiguredAliases() {
 		Set<String> aliasNames = new LinkedHashSet<>();
 		for (String name: aliases.keySet()) {
 			if (name.endsWith(usernameSuffix)) {

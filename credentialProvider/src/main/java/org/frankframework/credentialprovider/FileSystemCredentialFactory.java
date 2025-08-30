@@ -15,6 +15,7 @@
 */
 package org.frankframework.credentialprovider;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -69,8 +70,8 @@ public class FileSystemCredentialFactory implements ICredentialProvider {
 	}
 
 	@Override
-	public List<String> getConfiguredAliases() throws Exception{
-		try(Stream<Path> stream = Files.list(Paths.get(root.toString()))) {
+	public List<String> getConfiguredAliases() throws IOException {
+		try(Stream<Path> stream = Files.list(root)) {
 			return stream.map(Path::getFileName)
 					.map(Path::toString)
 					.toList();

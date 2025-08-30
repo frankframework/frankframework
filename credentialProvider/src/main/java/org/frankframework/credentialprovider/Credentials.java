@@ -30,7 +30,7 @@ public abstract class Credentials implements ICredentials {
 	@Setter private String password;
 	private boolean hasCredentials = false;
 
-	public Credentials(String alias) {
+	protected Credentials(String alias) {
 		// logic
 		if (StringUtils.isBlank(alias)) {
 			throw new IllegalArgumentException("no alias provided");

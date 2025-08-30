@@ -32,6 +32,7 @@ public interface ICredentialProvider {
 	/**
 	 * initialize() of an implementation can throw an exception when the credentialFactory cannot be properly configured and used.
 	 */
+	@SuppressWarnings("java:S112")
 	void initialize() throws Exception;
 
 	boolean hasCredentials(@Nonnull String alias);
@@ -42,5 +43,6 @@ public interface ICredentialProvider {
 	 * return a list of all configured aliases, or null if such a list cannot be provided.
 	 * @throws Exception
 	 */
+	@SuppressWarnings("java:S112")
 	Collection<String> getConfiguredAliases() throws Exception;
 }

@@ -25,8 +25,6 @@ import java.util.function.Consumer;
 public class FileSystemCredentials extends Credentials {
 
 	private final Path root;
-	private final String usernamefile = CredentialFactory.DEFAULT_USERNAME_FIELD;
-	private final String passwordfile = CredentialFactory.DEFAULT_PASSWORD_FIELD;
 
 	public FileSystemCredentials(String alias, Path root) {
 		super(alias);
@@ -56,8 +54,8 @@ public class FileSystemCredentials extends Credentials {
 			Path aliasPath = Paths.get(root.toString(), getAlias());
 			if (Files.exists(aliasPath)) {
 				if (Files.isDirectory(aliasPath)) {
-					populateFieldFromFile(getAlias(), usernamefile, this::setUsername);
-					populateFieldFromFile(getAlias(), passwordfile, this::setPassword);
+					populateFieldFromFile(getAlias(), CredentialFactory.DEFAULT_USERNAME_FIELD, this::setUsername);
+					populateFieldFromFile(getAlias(), CredentialFactory.DEFAULT_PASSWORD_FIELD, this::setPassword);
 				} else {
 					populateFieldFromFile(aliasPath, this::setPassword);
 				}
