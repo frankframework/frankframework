@@ -1,9 +1,8 @@
 package org.frankframework.credentialprovider.delinea;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -64,7 +63,7 @@ class DelineaCredentialFactoryTest {
 		assertEquals(0, configuredAliases.size());
 
 		credentialFactory.hasCredentials("1");
-		credentialFactory.getCredentials("2", () -> null, () -> null);
+		credentialFactory.getCredentials("2");
 
 		// Expect a list of 2 secrets after hasCredentials and getCredentials calls
 		configuredAliases = credentialFactory.getConfiguredAliases();
@@ -73,16 +72,13 @@ class DelineaCredentialFactoryTest {
 
 	@Test
 	void testGetSecret() {
-		ICredentials credentials = credentialFactory.getCredentials("1", () -> null, () -> null);
+		ICredentials credentials = credentialFactory.getCredentials("1");
 
 		assertNotNull(credentials);
 		assertEquals("user1", credentials.getUsername());
 
 		// Get a non-existing secret
-		ICredentials credentials2 = credentialFactory.getCredentials("16", () -> null, () -> null);
-
-		// Expect a null return value, because alias 16 does not exist
-		assertNull(credentials2);
+		assertThrows(IllegalArgumentException.class, () -> credentialFactory.hasCredentials("16"));
 	}
 
 	@Test
@@ -93,7 +89,7 @@ class DelineaCredentialFactoryTest {
 		assertTrue(credentialFactory.hasCredentials("4"));
 
 		// Should not be present
-		assertFalse(credentialFactory.hasCredentials("5"));
+		assertThrows(IllegalArgumentException.class, () -> credentialFactory.hasCredentials("5"));
 
 		assertEquals(5, credentialFactory.getConfiguredAliases().size());
 	}

@@ -52,7 +52,7 @@ public abstract class AbstractMetricsRegistryConfigurator<C extends MeterRegistr
 	protected CredentialFactory getCredentialFactory(String usernameKey, String passwordKey) {
 		if (credentialFactory==null) {
 			String prefix = config.prefix()+".";
-			credentialFactory = new CredentialFactory(getProperty(prefix+"authAlias"), ()->getProperty(prefix+usernameKey), ()->getProperty(prefix+passwordKey));
+			credentialFactory = new CredentialFactory(getProperty(prefix+"authAlias"), getProperty(prefix+usernameKey), getProperty(prefix+passwordKey));
 		}
 		return credentialFactory;
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2021 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package org.frankframework.credentialprovider;
 
 import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -28,12 +27,12 @@ public class MapCredentials extends Credentials {
 
 	private final Map<String,String> aliases;
 
-	public MapCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier, Map<String,String> aliases) {
-		this(alias, defaultUsernameSupplier, defaultPasswordSupplier, null, null, aliases);
+	protected MapCredentials(String alias, Map<String,String> aliases) {
+		this(alias, null, null, aliases);
 	}
 
-	public MapCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier, String usernameSuffix, String passwordSuffix, Map<String,String> aliases) {
-		super(alias, defaultUsernameSupplier, defaultPasswordSupplier);
+	public MapCredentials(String alias, String usernameSuffix, String passwordSuffix, Map<String,String> aliases) {
+		super(alias);
 		this.aliases = aliases;
 		this.usernameSuffix = StringUtils.isNotEmpty(usernameSuffix) ? usernameSuffix : AbstractMapCredentialFactory.USERNAME_SUFFIX_DEFAULT;
 		this.passwordSuffix = StringUtils.isNotEmpty(passwordSuffix) ? passwordSuffix : AbstractMapCredentialFactory.PASSWORD_SUFFIX_DEFAULT;
@@ -41,7 +40,7 @@ public class MapCredentials extends Credentials {
 
 	@Override
 	protected void getCredentialsFromAlias() {
-		if (aliases!=null) {
+		if (aliases != null) {
 			String usernameKey = getAlias()+usernameSuffix;
 			String passwordKey = getAlias()+passwordSuffix;
 			boolean foundOne = false;

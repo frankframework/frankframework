@@ -2,6 +2,7 @@ package org.frankframework.credentialprovider;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -17,6 +18,7 @@ import java.security.Provider;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import org.jboss.as.domain.management.plugin.Credential;
@@ -124,7 +126,7 @@ public class WildFlyCredentialFactoryTest {
 		String[] aliasesArray = {"a", "a/username", "b", "c/username"};
 		this.aliases = new HashSet<>(Arrays.asList(aliasesArray));
 
-		WildFlyCredentials wfc = (WildFlyCredentials)credentialFactory.getCredentials("a", () -> "defaultUsername", () -> "defaultPassword");
+		WildFlyCredentials wfc = (WildFlyCredentials)credentialFactory.getCredentials("a");
 		assertEquals("a", wfc.getAlias());
 		assertEquals("a/username-value", wfc.getUsername());
 		assertEquals("a-value", wfc.getPassword());
@@ -135,9 +137,9 @@ public class WildFlyCredentialFactoryTest {
 		String[] aliasesArray = {"a", "a/username", "b", "c/username"};
 		this.aliases = new HashSet<>(Arrays.asList(aliasesArray));
 
-		WildFlyCredentials wfc = (WildFlyCredentials)credentialFactory.getCredentials("b", () -> "defaultUsername", () -> "defaultPassword");
+		WildFlyCredentials wfc = (WildFlyCredentials) credentialFactory.getCredentials("b");
 		assertEquals("b", wfc.getAlias());
-		assertEquals("defaultUsername", wfc.getUsername());
+		assertEquals("", wfc.getUsername());
 		assertEquals("b-value", wfc.getPassword());
 	}
 
@@ -146,10 +148,10 @@ public class WildFlyCredentialFactoryTest {
 		String[] aliasesArray = {"a", "a/username", "b", "c/username"};
 		this.aliases = new HashSet<>(Arrays.asList(aliasesArray));
 
-		WildFlyCredentials wfc = (WildFlyCredentials)credentialFactory.getCredentials("c", () -> "defaultUsername", () -> "defaultPassword");
+		WildFlyCredentials wfc = (WildFlyCredentials)credentialFactory.getCredentials("c");
 		assertEquals("c", wfc.getAlias());
 		assertEquals("c/username-value", wfc.getUsername());
-		assertEquals("defaultPassword", wfc.getPassword());
+		assertEquals("", wfc.getPassword());
 	}
 
 	@Test
@@ -157,10 +159,10 @@ public class WildFlyCredentialFactoryTest {
 		String[] aliasesArray = {"a", "a/username", "b", "c/username"};
 		this.aliases = new HashSet<>(Arrays.asList(aliasesArray));
 
-		WildFlyCredentials wfc = (WildFlyCredentials)credentialFactory.getCredentials("d", () -> "defaultUsername", () -> "defaultPassword");
+		WildFlyCredentials wfc = (WildFlyCredentials)credentialFactory.getCredentials("d");
 		assertEquals("d", wfc.getAlias());
-		assertEquals("defaultUsername", wfc.getUsername());
-		assertEquals("defaultPassword", wfc.getPassword());
+		assertThrows(NoSuchElementException.class, wfc::getUsername);
+		assertThrows(NoSuchElementException.class, wfc::getPassword);
 	}
 
 }

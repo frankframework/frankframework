@@ -82,7 +82,7 @@ public class JwtPipe extends FixedForwardPipe {
 
 		if (StringUtils.isNotEmpty(sharedSecret) || StringUtils.isNotEmpty(authAlias)) {
 			try {
-				CredentialFactory credentialFactory = new CredentialFactory(authAlias, null, () -> sharedSecret);
+				CredentialFactory credentialFactory = new CredentialFactory(authAlias, null, sharedSecret);
 				String factoryPassword = credentialFactory.getPassword();
 				if (jwtAllowWeakSecrets && StringUtils.isNotEmpty(factoryPassword)) {
 					factoryPassword = StringUtils.rightPad(factoryPassword, 32, "\0");
