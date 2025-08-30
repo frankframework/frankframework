@@ -139,7 +139,7 @@ public class CredentialFactory {
 
 	/**
 	 * Entrypoint.
-	 * 
+	 *
 	 * Attempts to find the credential for the specified alias.
 	 * If non is found, returns NULL, else the credential.
 	 */
@@ -160,9 +160,9 @@ public class CredentialFactory {
 
 	/**
 	 * Entrypoint
-	 * 
+	 *
 	 * Attempts to find the credential for the specified alias.
-	 * 
+	 *
 	 * When non is found, uses the default (provided) fallback user/pass combination.
 	 */
 	@Nonnull
