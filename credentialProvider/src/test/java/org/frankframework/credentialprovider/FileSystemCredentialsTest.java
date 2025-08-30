@@ -1,6 +1,7 @@
 package org.frankframework.credentialprovider;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.Files;
@@ -23,54 +24,13 @@ public class FileSystemCredentialsTest {
 	}
 
 	@Test
-	public void testNoAlias() {
-
-		String alias = null;
-		String username = "fakeUsername";
-		String password = "fakePassword";
-
-		FileSystemCredentials fsc = new FileSystemCredentials(alias, ()->username, ()->password, null);
-
-		assertEquals(username, fsc.getUsername());
-		assertEquals(password, fsc.getPassword());
-	}
-
-	@Test
-	public void testAliasNoDefault() {
-
-		String alias = "dummy";
-		String username = null;
-		String password = null;
-
-		FileSystemCredentials fsc = new FileSystemCredentials(alias, ()->username, ()->password, null);
-
-		assertEquals(username, fsc.getUsername());
-		assertEquals(password, fsc.getPassword());
-	}
-
-	@Test
-	public void testNoFileSystem() {
-
-		String alias = "fakeAlias";
-		String username = "fakeUsername";
-		String password = "fakePassword";
-
-		FileSystemCredentials fsc = new FileSystemCredentials(alias, ()->username, ()->password, null);
-
-		assertEquals(username, fsc.getUsername());
-		assertEquals(password, fsc.getPassword());
-	}
-
-	@Test
 	public void testPlainAlias() {
-
 		String alias = "straight";
-		String username = "fakeUsername";
-		String password = "fakePassword";
+
 		String expectedUsername = "username from alias";
 		String expectedPassword = "password from alias";
 
-		FileSystemCredentials fsc = new FileSystemCredentials(alias, ()->username, ()->password, root);
+		FileSystemCredentials fsc = new FileSystemCredentials(alias, root);
 
 		assertEquals(expectedUsername, fsc.getUsername());
 		assertEquals(expectedPassword, fsc.getPassword());
@@ -78,16 +38,13 @@ public class FileSystemCredentialsTest {
 
 	@Test
 	public void testAliasWithoutUsername() {
-
 		String alias = "noUsername";
-		String username = "fakeUsername";
-		String password = "fakePassword";
-		String expectedUsername = username;
+
 		String expectedPassword = "password from alias";
 
-		FileSystemCredentials fsc = new FileSystemCredentials(alias, ()->username, ()->password, root);
+		FileSystemCredentials fsc = new FileSystemCredentials(alias, root);
 
-		assertEquals(expectedUsername, fsc.getUsername());
+		assertNull(fsc.getUsername());
 		assertEquals(expectedPassword, fsc.getPassword());
 	}
 
@@ -95,14 +52,10 @@ public class FileSystemCredentialsTest {
 	public void testPlainCredential() {
 
 		String alias = "singleValue";
-		String username = null;
-		String password = "fakePassword";
-		String expectedUsername = null;
-		String expectedPassword = "Plain Credential";
 
-		FileSystemCredentials fsc = new FileSystemCredentials(alias, ()->username, ()->password, root);
+		FileSystemCredentials fsc = new FileSystemCredentials(alias, root);
 
-		assertEquals(expectedUsername, fsc.getUsername());
-		assertEquals(expectedPassword, fsc.getPassword());
+		assertNull(fsc.getUsername());
+		assertEquals("Plain Credential", fsc.getPassword());
 	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,28 +15,28 @@
 */
 package org.frankframework.credentialprovider;
 
-import java.util.function.Supplier;
-import java.util.logging.Logger;
+import java.util.NoSuchElementException;
 
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Setter;
+import lombok.extern.java.Log;
 
-public class Credentials implements ICredentials {
-	protected Logger log = Logger.getLogger(this.getClass().getName());
+@Log
+public abstract class Credentials implements ICredentials {
 
 	private String alias;
 	@Setter private String username;
 	@Setter private String password;
-	private final Supplier<String> usernameSupplier;
-	private final Supplier<String> passwordSupplier;
 	private boolean hasCredentials = false;
 
-	public Credentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
-		super();
+	public Credentials(String alias) {
+		// logic
+		if (StringUtils.isBlank(alias)) {
+			throw new IllegalArgumentException("no alias provided");
+		}
+
 		this.alias = alias;
-		usernameSupplier = defaultUsernameSupplier;
-		passwordSupplier = defaultPasswordSupplier;
 	}
 
 	private void getCredentials() {
@@ -45,32 +45,18 @@ public class Credentials implements ICredentials {
 		if (StringUtils.isNotEmpty(getAlias())) {
 			try {
 				getCredentialsFromAlias();
+			} catch (NoSuchElementException e) {
+				log.fine("unable to find alias [%s]".formatted(alias));
+				throw e;
 			} catch (RuntimeException e) {
-				if (usernameSupplier != null) {
-					username = usernameSupplier.get();
-				}
-				if (passwordSupplier != null) {
-					password = passwordSupplier.get();
-				}
-				if (StringUtils.isEmpty(username) && StringUtils.isEmpty(password)) {
-					throw e;
-				}
+				log.warning("unable to find alias [%s]".formatted(alias));
+				throw e;
 			}
-		}
-		if ((username == null || username.isEmpty()) && usernameSupplier != null) {
-			username = usernameSupplier.get();
-		}
-		if ((password == null || password.isEmpty()) && passwordSupplier != null) {
-			password = passwordSupplier.get();
 		}
 		hasCredentials = true;
 	}
 
-	protected void getCredentialsFromAlias() {
-		if (StringUtils.isEmpty(username) && StringUtils.isEmpty(password)) {
-			log.warning("no credential factory for alias [%s], and no default credentials, username [%s]".formatted(alias, username));
-		}
-	}
+	abstract void getCredentialsFromAlias();
 
 	@Override
 	public String toString() {

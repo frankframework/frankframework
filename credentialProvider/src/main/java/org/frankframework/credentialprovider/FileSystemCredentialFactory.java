@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
@@ -32,7 +31,7 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  *
  * <p>It reads the username and password from files in a directory. The directory is set by the property {@value #FILESYSTEM_ROOT_PROPERTY}.</p>
  *
- * <p>It reads the username from a file with the name set by the property {@value #USERNAME_FILE_PROPERTY} and the password from a file with the name set by
+ * <p>It reads the username from a file with the name set by the property {@value CredentialFactory#DEFAULT_USERNAME_FIELD} and the password from a file with the name set by
  * the property {@value #PASSWORD_FILE_PROPERTY}. These values are relative to the {@value #FILESYSTEM_ROOT_PROPERTY}</p>
  *
  * <p>By default, the default values {@code username} and {@code password} are used for these files.</p>
@@ -40,17 +39,10 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  * @ff.info It's required to set the property {@value FileSystemCredentialFactory#FILESYSTEM_ROOT_PROPERTY} to the directory you wish to read credentials from.
  *
  */
-public class FileSystemCredentialFactory implements ICredentialFactory {
+public class FileSystemCredentialFactory implements ICredentialProvider {
 	private static final String FILESYSTEM_ROOT_PROPERTY = "credentialFactory.filesystem.root";
-	private static final String USERNAME_FILE_PROPERTY = "credentialFactory.filesystem.usernamefile";
-	private static final String PASSWORD_FILE_PROPERTY = "credentialFactory.filesystem.passwordfile";
-
-	static final String USERNAME_FILE_DEFAULT = "username";
-	static final String PASSWORD_FILE_DEFAULT = "password";
 
 	private Path root;
-	private String usernamefile;
-	private String passwordfile;
 
 	@Override
 	public void initialize() {
@@ -64,9 +56,6 @@ public class FileSystemCredentialFactory implements ICredentialFactory {
 		if (!Files.exists(root)) {
 			throw new IllegalArgumentException("Credential Filesystem ["+root+"] does not exist");
 		}
-
-		usernamefile = appConstants.getProperty(USERNAME_FILE_PROPERTY, USERNAME_FILE_DEFAULT);
-		passwordfile = appConstants.getProperty(PASSWORD_FILE_PROPERTY, PASSWORD_FILE_DEFAULT);
 	}
 
 	@Override
@@ -75,8 +64,8 @@ public class FileSystemCredentialFactory implements ICredentialFactory {
 	}
 
 	@Override
-	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) throws NoSuchElementException {
-		return new FileSystemCredentials(alias, defaultUsernameSupplier, defaultPasswordSupplier, usernamefile, passwordfile, root);
+	public ICredentials getCredentials(String alias) throws NoSuchElementException {
+		return new FileSystemCredentials(alias, root);
 	}
 
 	@Override

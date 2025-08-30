@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021, 2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,41 +16,22 @@
 package org.frankframework.util;
 
 import java.util.Collection;
-import java.util.function.Supplier;
 
-import org.frankframework.credentialprovider.Credentials;
 import org.frankframework.credentialprovider.ICredentials;
 
 /**
- * Provides user-id and password from the WebSphere authentication-alias repository.
- * A default username and password can be set, too.
- *
- * Note:
- * In WSAD the aliases are named just as you type them.
- * In WebSphere 5 and 6, and in RAD7/RSA7 aliases are prefixed with the name of the server.
- * It is therefore sensible to use a environment setting to find the name of the alias.
- *
- * @author  Gerrit van Brakel
- * @since   4.4.2
+ * Retries a username/password combination from the CredentialProvider.
  */
 public class CredentialFactory  {
 
 	private final ICredentials credentials;
 
 	public CredentialFactory(String alias) {
-		this(alias, null, (Supplier<String>)null);
+		this(alias, null, null);
 	}
 
 	public CredentialFactory(String alias, String defaultUsername, String defaultPassword) {
-		this(alias, ()->defaultUsername, ()->defaultPassword);
-	}
-
-	public CredentialFactory(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
-		if (alias == null) {
-			credentials = new Credentials(alias, defaultUsernameSupplier, defaultPasswordSupplier);
-		} else {
-			credentials = org.frankframework.credentialprovider.CredentialFactory.getCredentials(alias, defaultUsernameSupplier, defaultPasswordSupplier);
-		}
+		credentials = org.frankframework.credentialprovider.CredentialFactory.getCredentials(alias, defaultUsername, defaultPassword);
 	}
 
 	@Override

@@ -17,13 +17,12 @@ package org.frankframework.credentialprovider.delinea;
 
 import java.util.Collection;
 import java.util.NoSuchElementException;
-import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.credentialprovider.ICredentialFactory;
+import org.frankframework.credentialprovider.ICredentialProvider;
 import org.frankframework.credentialprovider.ICredentials;
 import org.frankframework.credentialprovider.util.Cache;
 import org.frankframework.credentialprovider.util.CredentialConstants;
@@ -79,7 +78,7 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  * @see <a href="https://updates.thycotic.net/secretserver/restapiguide/">Delinea API documentation</a>
  */
 @Log4j2
-public class DelineaCredentialFactory implements ICredentialFactory {
+public class DelineaCredentialFactory implements ICredentialProvider {
 
 	private static final String BASE_KEY = "credentialFactory.delinea.";
 	// Leave empty to not use autocomment
@@ -138,7 +137,7 @@ public class DelineaCredentialFactory implements ICredentialFactory {
 
 	@Override
 	public boolean hasCredentials(String alias) {
-		return getCredentials(alias, null, null) != null;
+		return getCredentials(alias) != null;
 	}
 
 	@Override
@@ -147,37 +146,18 @@ public class DelineaCredentialFactory implements ICredentialFactory {
 	}
 
 	@Override
-	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) throws NoSuchElementException {
-		if (StringUtils.isEmpty(alias)) {
-			return null;
+	public ICredentials getCredentials(String alias) throws NoSuchElementException {
+		if (StringUtils.isBlank(alias)) {
+			throw new IllegalArgumentException();
 		}
 
 		// Make sure to always get a live copy of the secret
 		Secret secret = configuredAliases.computeIfAbsentOrExpired(alias, aliasToRetrieve -> delineaClient.getSecret(aliasToRetrieve, delineaClientSettings.autoCommentValue()));
 
-		return translate(secret);
+		return new DelineaCredentials(secret);
 	}
 
 	void setDelineaClient(DelineaClient delineaClient) {
 		this.delineaClient = delineaClient;
-	}
-
-	private DelineaCredentials translate(Secret secret) {
-		if (secret == null) {
-			return null;
-		}
-
-		String username = getFieldValue(secret, "username");
-		String password = getFieldValue(secret, "password");
-
-		return new DelineaCredentials(String.valueOf(secret.id()), username, password);
-	}
-
-	private String getFieldValue(Secret secret, String slugName) {
-		return secret.fields().stream()
-				.filter(field -> field.slug().equals(slugName))
-				.map(Secret.Field::value)
-				.findFirst()
-				.orElse(null);
 	}
 }

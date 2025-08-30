@@ -13,33 +13,20 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.credentialprovider.delinea;
+package org.frankframework.credentialprovider;
 
-import org.frankframework.credentialprovider.CredentialFactory;
-import org.frankframework.credentialprovider.ICredentials;
-
-public class DelineaCredentials implements ICredentials {
-
+/**
+ * When no credential is found in any of the CredentialProviders, this may be used.
+ */
+public class FallbackCredential implements ICredentials {
+	private final String alias;
 	private final String username;
 	private final String password;
-	private final String alias;
 
-	public DelineaCredentials(Secret secret) {
-		if (secret == null) {
-			throw new IllegalArgumentException();
-		}
-
-		this.alias = String.valueOf(secret.id());
-		this.username = getFieldValue(secret, CredentialFactory.DEFAULT_USERNAME_FIELD);
-		this.password = getFieldValue(secret, CredentialFactory.DEFAULT_PASSWORD_FIELD);
-	}
-
-	private String getFieldValue(Secret secret, String slugName) {
-		return secret.fields().stream()
-				.filter(field -> field.slug().equals(slugName))
-				.map(Secret.Field::value)
-				.findFirst()
-				.orElse(null);
+	public FallbackCredential(String alias, String username, String password) {
+		this.alias = alias;
+		this.username = username;
+		this.password = password;
 	}
 
 	@Override

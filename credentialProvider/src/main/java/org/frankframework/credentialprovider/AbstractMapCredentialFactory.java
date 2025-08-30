@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 Nationale-Nederlanden, 2021-2024 WeAreFrank!
+   Copyright 2021 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,20 +25,19 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.credentialprovider.util.CredentialConstants;
 import org.frankframework.util.ClassUtils;
 
-public abstract class AbstractMapCredentialFactory implements ICredentialFactory {
+public abstract class AbstractMapCredentialFactory implements ICredentialProvider {
 
 	private final String usernameSuffixProperty = getPropertyBase() + ".usernameSuffix";
 	private final String passwordSuffixProperty = getPropertyBase() + ".passwordSuffix";
 
-	static final String USERNAME_SUFFIX_DEFAULT = "/username";
-	static final String PASSWORD_SUFFIX_DEFAULT = "/password";
+	static final String USERNAME_SUFFIX_DEFAULT = "/" + CredentialFactory.DEFAULT_USERNAME_FIELD;
+	static final String PASSWORD_SUFFIX_DEFAULT = "/" + CredentialFactory.DEFAULT_PASSWORD_FIELD;
 
 	private String usernameSuffix;
 	private String passwordSuffix;
@@ -84,14 +83,14 @@ public abstract class AbstractMapCredentialFactory implements ICredentialFactory
 	}
 
 	@Override
-	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) throws NoSuchElementException {
-		return new MapCredentials(alias, defaultUsernameSupplier, defaultPasswordSupplier, usernameSuffix, passwordSuffix, aliases);
+	public ICredentials getCredentials(String alias) throws NoSuchElementException {
+		return new MapCredentials(alias, usernameSuffix, passwordSuffix, aliases);
 	}
 
 	@Override
 	public Set<String> getConfiguredAliases() throws Exception{
 		Set<String> aliasNames = new LinkedHashSet<>();
-		for (String name:aliases.keySet()) {
+		for (String name: aliases.keySet()) {
 			if (name.endsWith(usernameSuffix)) {
 				name = name.substring(0, name.length()-usernameSuffix.length());
 			}
