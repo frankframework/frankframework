@@ -119,7 +119,7 @@ class KubernetesCredentialFactoryTest {
 	@ParameterizedTest
 	@NullAndEmptySource
 	void testNullOrEmptyAliasNoDefaults(String nullOrEmpty) {
-		assertThrows(NoSuchElementException.class, () -> credentialFactory.getCredentials(nullOrEmpty));
+		assertThrows(IllegalArgumentException.class, () -> credentialFactory.getCredentials(nullOrEmpty));
 	}
 
 	@Test
