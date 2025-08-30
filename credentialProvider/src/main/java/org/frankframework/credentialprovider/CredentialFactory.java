@@ -179,7 +179,7 @@ public class CredentialFactory {
 			try {
 				ICredentials result = factory.getCredentials(alias);
 
-				// check if the alias is the same as the one we are looking for - will throw if not
+				// Check if the alias is the same as the one we are looking for - will throw if not
 				result.getPassword(); // Validate if we can fetch the password.
 
 				return result;
@@ -189,7 +189,7 @@ public class CredentialFactory {
 			}
 		}
 
-		if (StringUtils.isNoneEmpty(defaultUsername, defaultPassword)) {
+		if (StringUtils.isNotEmpty(defaultUsername) || StringUtils.isNotEmpty(defaultPassword)) {
 			return new FallbackCredential(alias, defaultUsername, defaultPassword);
 		}
 		throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+ rawAlias +"]: alias not found");

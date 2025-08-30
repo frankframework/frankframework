@@ -43,6 +43,16 @@ class CredentialFactoryTest {
 	}
 
 	@Test
+	void testUnknownAliasWithNoUsernameAndDefaultPassword() {
+		// Act
+		ICredentials c = CredentialFactory.getCredentials("unknown", null, "fakePassword");
+
+		// Assert
+		assertNull(c.getUsername());
+		assertEquals("fakePassword", c.getPassword());
+	}
+
+	@Test
 	void testFindAliasWithPrefix() {
 		// test depends on setting credentialFactory.optionalPrefix=fakePrefix: in test/resources/credentialprovider.properties
 

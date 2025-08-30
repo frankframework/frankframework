@@ -17,14 +17,18 @@ package org.frankframework.util;
 
 import java.util.Collection;
 
+import org.apache.commons.lang3.StringUtils;
+
 import org.frankframework.credentialprovider.ICredentials;
 
 /**
  * Retries a username/password combination from the CredentialProvider.
  */
-public class CredentialFactory  {
+public class CredentialFactory {
 
 	private final ICredentials credentials;
+	private final String defaultUsername;
+	private final String defaultPassword;
 
 	public CredentialFactory(String alias) {
 		this(alias, null, null);
@@ -32,11 +36,8 @@ public class CredentialFactory  {
 
 	public CredentialFactory(String alias, String defaultUsername, String defaultPassword) {
 		credentials = org.frankframework.credentialprovider.CredentialFactory.getCredentials(alias, defaultUsername, defaultPassword);
-	}
-
-	@Override
-	public String toString() {
-		return credentials.toString();
+		this.defaultUsername = defaultUsername;
+		this.defaultPassword = defaultPassword;
 	}
 
 	public String getAlias() {
@@ -44,14 +45,19 @@ public class CredentialFactory  {
 	}
 
 	public String getUsername() {
-		return credentials.getUsername();
+		return StringUtils.defaultIfBlank(credentials.getUsername(), defaultUsername);
 	}
 
 	public String getPassword() {
-		return credentials.getPassword();
+		return StringUtils.defaultIfBlank(credentials.getPassword(), defaultPassword);
 	}
 
 	public static Collection<String> getConfiguredAliases() throws Exception {
 		return org.frankframework.credentialprovider.CredentialFactory.getConfiguredAliases();
+	}
+
+	@Override
+	public String toString() {
+		return credentials.toString();
 	}
 }
