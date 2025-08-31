@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.9.6">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="7.9.7-SNAPSHOT">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -5073,6 +5073,15 @@
       <xs:annotation>
         <xs:documentation>The S3 service endpoint, either with or without the protocol. (e.g. https://sns.us-west-1.amazonaws.com or sns.us-west-1.amazonaws.com)</xs:documentation>
       </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="storageClass">
+      <xs:annotation>
+        <xs:documentation>Set the desired storage class for the S3 object when action is move,copy or write.
+ More info on storage classes can be found on the &lt;a href="https://aws.amazon.com/s3/storage-classes/"&gt;AWS S3 docs&lt;/a&gt;. Default: {@literal STANDARD}</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="S3StorageClassAttributeValuesType variableRef" />
+      </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="maxConnections" type="frankInt">
       <xs:annotation>
@@ -17656,6 +17665,20 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="TEXT" />
       <xs:enumeration value="XML" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="S3StorageClassAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="STANDARD" />
+      <xs:enumeration value="REDUCED_REDUNDANCY" />
+      <xs:enumeration value="STANDARD_IA" />
+      <xs:enumeration value="ONEZONE_IA" />
+      <xs:enumeration value="INTELLIGENT_TIERING" />
+      <xs:enumeration value="GLACIER" />
+      <xs:enumeration value="DEEP_ARCHIVE" />
+      <xs:enumeration value="OUTPOSTS" />
+      <xs:enumeration value="GLACIER_IR" />
+      <xs:enumeration value="SNOW" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="FileSystemActionAttributeValuesType">
