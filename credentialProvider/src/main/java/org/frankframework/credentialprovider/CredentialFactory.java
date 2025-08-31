@@ -35,7 +35,7 @@ public class CredentialFactory {
 	protected static final Logger log = Logger.getLogger(CredentialFactory.class.getName());
 
 	private static final String CREDENTIAL_FACTORY_KEY = "credentialFactory.class";
-	private static final String CREDENTIAL_FACTORY_OPTIONAL_PREFIX_KEY = "credentialFactory.optionalPrefix";
+	public static final String CREDENTIAL_FACTORY_ALIAS_PREFIX_KEY = "credentialFactory.optionalPrefix";
 	private static final String DEFAULT_CREDENTIAL_FACTORY = FileSystemCredentialFactory.class.getName();
 
 	public static final String LEGACY_PACKAGE_NAME = "nl.nn.credentialprovider.";
@@ -44,19 +44,9 @@ public class CredentialFactory {
 	public static final String DEFAULT_USERNAME_FIELD = "username";
 	public static final String DEFAULT_PASSWORD_FIELD = "password";
 
-	private static String optionalPrefix;
-
 	private final List<ICredentialProvider> delegates = new ArrayList<>();
 
 	private static CredentialFactory self;
-
-	static {
-		optionalPrefix = CredentialConstants.getInstance().getProperty(CREDENTIAL_FACTORY_OPTIONAL_PREFIX_KEY);
-		if (optionalPrefix != null) {
-			log.severe("property [credentialFactory.optionalPrefix] should not be used!");
-			optionalPrefix = optionalPrefix.toLowerCase();
-		}
-	}
 
 	public static synchronized CredentialFactory getInstance() {
 		if (self == null) {
@@ -110,21 +100,8 @@ public class CredentialFactory {
 		}
 	}
 
-	/**
-	 * Extracting is deprecated, cleanse is not.
-	 * @return NULL when empty.
-	 */
-	@Deprecated
-	@Nullable
-	private static String extractAlias(@Nullable final String rawAlias) {
-		if (optionalPrefix != null && rawAlias != null && rawAlias.toLowerCase().startsWith(optionalPrefix)) {
-			return StringUtils.defaultIfBlank(rawAlias.substring(optionalPrefix.length()), null);
-		}
-		return StringUtils.defaultIfBlank(rawAlias, null);
-	}
-
 	public static boolean hasCredential(String rawAlias) {
-		final String alias = extractAlias(rawAlias);
+		final CredentialAlias alias = CredentialAlias.parse(rawAlias);
 
 		if (alias != null) {
 			for (ICredentialProvider factory : getInstance().delegates) {
@@ -167,12 +144,12 @@ public class CredentialFactory {
 	 */
 	@Nonnull
 	public static ICredentials getCredentials(@Nullable String rawAlias, @Nullable String defaultUsername, @Nullable String defaultPassword) {
-		final String alias = extractAlias(rawAlias);
+		final CredentialAlias alias = CredentialAlias.parse(rawAlias);
 		List<ICredentialProvider> credentialFactoryDelegates = getInstance().delegates;
 
 		// If there are no delegates, return a Credentials object with the default values
 		if (alias == null || credentialFactoryDelegates.isEmpty()) {
-			return new FallbackCredential(alias, defaultUsername, defaultPassword);
+			return new FallbackCredential(rawAlias, defaultUsername, defaultPassword);
 		}
 
 		for (ICredentialProvider factory : credentialFactoryDelegates) {
@@ -190,7 +167,7 @@ public class CredentialFactory {
 		}
 
 		if (StringUtils.isNotEmpty(defaultUsername) || StringUtils.isNotEmpty(defaultPassword)) {
-			return new FallbackCredential(alias, defaultUsername, defaultPassword);
+			return new FallbackCredential(rawAlias, defaultUsername, defaultPassword);
 		}
 		throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+ rawAlias +"]: alias not found");
 	}

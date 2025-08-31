@@ -28,37 +28,14 @@ public class MapCredentialsTest {
 	}
 
 	@Test
-	public void testNoAlias() {
-		String alias = null;
-
-		assertThrows(IllegalArgumentException.class, () -> new MapCredentials(alias, null));
-	}
-
-	@Test
 	public void testUnknownAliasNoDefaults() {
-		String alias = "fakeAlias";
-		String username = null;
-		String password = null;
-
-		assertThrows(NoSuchElementException.class, () -> {
-			MapCredentials mc = new MapCredentials(alias, null);
-			assertEquals(username, mc.getUsername());
-			assertEquals(password, mc.getPassword());
-		});
-	}
-
-	@Test
-	public void testUnknownAlias() {
-		String alias = "fakeAlias";
-
-		MapCredentials mc = new MapCredentials(alias, aliases);
-
+		MapCredentials mc = new MapCredentials(CredentialAlias.parse("fakeAlias"), null);
 		assertThrows(NoSuchElementException.class, mc::getUsername);
 	}
 
 	@Test
 	public void testPasswordWithSlashes() {
-		String alias = "slash";
+		CredentialAlias alias = CredentialAlias.parse("slash");
 
 		MapCredentials mc = new MapCredentials(alias, aliases);
 		assertEquals("username from alias", mc.getUsername());
@@ -67,7 +44,7 @@ public class MapCredentialsTest {
 
 	@Test
 	public void testPlainAlias() {
-		String alias = "straight";
+		CredentialAlias alias = CredentialAlias.parse("straight");
 		String expectedUsername = "username from alias";
 		String expectedPassword = "password from alias";
 
@@ -79,7 +56,7 @@ public class MapCredentialsTest {
 
 	@Test
 	public void testAliasWithoutUsername() {
-		String alias = "noUsername";
+		CredentialAlias alias = CredentialAlias.parse("noUsername");
 		String expectedPassword = "password from alias";
 
 		MapCredentials mc = new MapCredentials(alias, aliases);
@@ -90,7 +67,7 @@ public class MapCredentialsTest {
 
 	@Test
 	public void testPlainCredential() {
-		String alias = "singleValue";
+		CredentialAlias alias = CredentialAlias.parse("singleValue");
 		String expectedUsername = null;
 		String expectedPassword = "Plain Credential";
 

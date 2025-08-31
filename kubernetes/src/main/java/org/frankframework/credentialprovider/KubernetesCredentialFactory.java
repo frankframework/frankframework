@@ -111,12 +111,12 @@ public class KubernetesCredentialFactory implements ICredentialProvider {
 	}
 
 	@Override
-	public boolean hasCredentials(String alias) {
+	public boolean hasCredentials(CredentialAlias alias) {
 		return getConfiguredAliases().contains(alias);
 	}
 
 	@Override
-	public ICredentials getCredentials(String alias) throws NoSuchElementException {
+	public ICredentials getCredentials(CredentialAlias alias) throws NoSuchElementException {
 		if (StringUtils.isBlank(alias)) {
 			throw new IllegalArgumentException();
 		}

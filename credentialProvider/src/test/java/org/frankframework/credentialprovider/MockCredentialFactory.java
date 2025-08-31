@@ -7,6 +7,7 @@ import java.util.NoSuchElementException;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+@SuppressWarnings("serial")
 public class MockCredentialFactory extends HashMap<String, ICredentials> implements ICredentialProvider {
 
 	private static MockCredentialFactory instance;
@@ -24,13 +25,13 @@ public class MockCredentialFactory extends HashMap<String, ICredentials> impleme
 	}
 
 	@Override
-	public boolean hasCredentials(String alias) {
-		return getInstance().containsKey(alias);
+	public boolean hasCredentials(CredentialAlias alias) {
+		return getInstance().containsKey(alias.getName());
 	}
 
 	@Override
-	public ICredentials getCredentials(String alias) throws NoSuchElementException {
-		ICredentials credentials = getInstance().get(alias);
+	public ICredentials getCredentials(CredentialAlias alias) throws NoSuchElementException {
+		ICredentials credentials = getInstance().get(alias.getName());
 		if (credentials == null) {
 			throw new NoSuchElementException("credentials not found");
 		}

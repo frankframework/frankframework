@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,20 +36,13 @@ import org.frankframework.util.StreamUtil;
  */
 public class PropertyFileCredentialFactory extends AbstractMapCredentialFactory {
 
-	private static final String PROPERTY_BASE = "credentialFactory.map";
-
-	private static final String FILE_PROPERTY = PROPERTY_BASE + ".properties";
+	private static final String PROPERTY_BASE = "credentialFactory.map.properties";
 
 	private static final String DEFAULT_PROPERTIES_FILE = "credentials.properties";
 
 	@Override
-	public String getPropertyBase() {
-		return PROPERTY_BASE;
-	}
-
-	@Override
 	protected Map<String, String> getCredentialMap(CredentialConstants appConstants) throws IOException {
-		try (InputStream propertyStream = getInputStream(appConstants, FILE_PROPERTY, DEFAULT_PROPERTIES_FILE, "Credentials");
+		try (InputStream propertyStream = getInputStream(appConstants, PROPERTY_BASE, DEFAULT_PROPERTIES_FILE, "Credentials");
 			Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(propertyStream)) {
 			Properties properties = new Properties();
 			properties.load(reader);

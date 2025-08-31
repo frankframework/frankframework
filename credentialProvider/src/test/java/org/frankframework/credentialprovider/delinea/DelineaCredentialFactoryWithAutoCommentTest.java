@@ -13,6 +13,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
+import org.frankframework.credentialprovider.CredentialAlias;
 import org.frankframework.credentialprovider.ICredentials;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
@@ -59,13 +60,15 @@ public class DelineaCredentialFactoryWithAutoCommentTest {
 		ArgumentCaptor<String> autoCommentCaptor = forClass(String.class);
 		when(client.getSecret(eq("1"), autoCommentCaptor.capture())).thenReturn(secret1);
 
-		ICredentials credentials = credentialFactory.getCredentials("1");
+
+		CredentialAlias alias = CredentialAlias.parse("1");
+		ICredentials credentials = credentialFactory.getCredentials(alias);
 		assertEquals(AUTO_COMMENT_VALUE, autoCommentCaptor.getValue());
 
 		assertNotNull(credentials);
 		assertEquals("user1", credentials.getUsername());
 
-		// Get a non-existing secret
-		assertThrows(IllegalArgumentException.class, () -> credentialFactory.getCredentials("16"));
+		CredentialAlias nonExistingAlias = CredentialAlias.parse("16");
+		assertThrows(IllegalArgumentException.class, () -> credentialFactory.getCredentials(nonExistingAlias));
 	}
 }

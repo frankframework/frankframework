@@ -18,31 +18,20 @@ package org.frankframework.credentialprovider;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-import org.apache.commons.lang3.StringUtils;
-
 public class MapCredentials extends Credentials {
-
-	private final String usernameSuffix;
-	private final String passwordSuffix;
 
 	private final Map<String,String> aliases;
 
-	protected MapCredentials(String alias, Map<String,String> aliases) {
-		this(alias, null, null, aliases);
-	}
-
-	public MapCredentials(String alias, String usernameSuffix, String passwordSuffix, Map<String,String> aliases) {
+	public MapCredentials(CredentialAlias alias, Map<String,String> aliases) {
 		super(alias);
 		this.aliases = aliases;
-		this.usernameSuffix = StringUtils.isNotEmpty(usernameSuffix) ? usernameSuffix : AbstractMapCredentialFactory.USERNAME_SUFFIX_DEFAULT;
-		this.passwordSuffix = StringUtils.isNotEmpty(passwordSuffix) ? passwordSuffix : AbstractMapCredentialFactory.PASSWORD_SUFFIX_DEFAULT;
 	}
 
 	@Override
-	protected void getCredentialsFromAlias() {
+	protected void getCredentialsFromAlias(String usernameField, String passwordField) {
 		if (aliases != null) {
-			String usernameKey = getAlias()+usernameSuffix;
-			String passwordKey = getAlias()+passwordSuffix;
+			String usernameKey = "%s/%s".formatted(getAlias(), usernameField);
+			String passwordKey = "%s/%s".formatted(getAlias(), passwordField);
 			boolean foundOne = false;
 			if (aliases.containsKey(usernameKey)) {
 				foundOne = true;

@@ -25,7 +25,7 @@ public class FileSystemCredentialsTest {
 
 	@Test
 	public void testPlainAlias() {
-		String alias = "straight";
+		CredentialAlias alias = CredentialAlias.parse("straight");
 
 		String expectedUsername = "username from alias";
 		String expectedPassword = "password from alias";
@@ -38,7 +38,7 @@ public class FileSystemCredentialsTest {
 
 	@Test
 	public void testAliasWithoutUsername() {
-		String alias = "noUsername";
+		CredentialAlias alias = CredentialAlias.parse("noUsername");
 
 		String expectedPassword = "password from alias";
 
@@ -50,8 +50,7 @@ public class FileSystemCredentialsTest {
 
 	@Test
 	public void testPlainCredential() {
-
-		String alias = "singleValue";
+		CredentialAlias alias = CredentialAlias.parse("singleValue");
 
 		FileSystemCredentials fsc = new FileSystemCredentials(alias, root);
 
