@@ -18,11 +18,7 @@ package org.frankframework.credentialprovider;
 import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
 
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.Config;
@@ -30,6 +26,7 @@ import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import lombok.extern.java.Log;
 
+import org.frankframework.credentialprovider.util.Cache;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
 /**
@@ -74,13 +71,13 @@ public class KubernetesCredentialFactory implements ICredentialProvider {
 	static final String K8_MASTER_URL = "credentialFactory.kubernetes.masterUrl";
 	private static final String K8_NAMESPACE_PROPERTY = "credentialFactory.kubernetes.namespace";
 
-	private static final long CREDENTIALS_CACHE_DURATION_MILLIS = 60_000L;
+	private static final int CACHE_DURATION_MILLIS = 60_000;
 	public static final String DEFAULT_NAMESPACE = "default";
 
 	protected String namespace;
 	private KubernetesClient client;
-	private List<ICredentials> credentials; // Refreshed every SECRETS_CACHE_TIMEOUT_MILLIS
-	private long lastFetch = 0;
+
+	private final Cache<String, Secret, NoSuchElementException> configuredAliases = new Cache<>(CACHE_DURATION_MILLIS);
 
 	@Override
 	public void initialize() {
@@ -105,49 +102,46 @@ public class KubernetesCredentialFactory implements ICredentialProvider {
 		}
 
 		// Fetch secrets directly at startup, from Kubernetes cluster
-		log.info("Fetching secrets from Kubernetes namespace: " + namespace);
-		credentials = getCredentials();
-		log.info("Loaded Credential amount from Kubernetes: " + credentials.size());
+		log.info("fetching secrets from Kubernetes namespace [" + namespace + "]");
+		List<Secret> secrets = getSecretsFromKubernetes();
+		log.info("found [" + secrets.size() + "] secrets in namespace [" + namespace + "]");
 	}
 
 	@Override
 	public boolean hasCredentials(CredentialAlias alias) {
-		return getConfiguredAliases().contains(alias);
+		try {
+			return getCredentials(alias) != null;
+		} catch (NoSuchElementException e) {
+			return false;
+		}
 	}
 
 	@Override
 	public ICredentials getCredentials(CredentialAlias alias) throws NoSuchElementException {
-		if (StringUtils.isBlank(alias)) {
-			throw new IllegalArgumentException();
-		}
+		Secret secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), aliasToRetrieve -> getSecret(aliasToRetrieve));
 
-		return getCredentials().stream()
-				.filter(credential -> alias.equalsIgnoreCase(credential.getAlias()))
-				.findFirst()
-				.orElseThrow(() -> new NoSuchElementException("cannot obtain credentials from authentication alias [" + alias + "]: alias not found"));
+		return new KubernetesCredential(alias, secret);
 	}
 
 	@Override
 	public Collection<String> getConfiguredAliases() {
-		return getCredentials().stream()
-				.map(ICredentials::getAlias)
-				.filter(Objects::nonNull)
-				.toList();
+		return configuredAliases.keySet();
 	}
 
-	protected synchronized List<ICredentials> getCredentials() {
-		if (lastFetch + CREDENTIALS_CACHE_DURATION_MILLIS > System.currentTimeMillis()) {
-			return credentials;
-		}
+	private Secret getSecret(String aliasToRetrieve) {
+		return getSecretsFromKubernetes().stream()
+				.filter(e -> aliasToRetrieve.equals(e.getMetadata().getName()))
+				.findFirst()
+				.get();
+	}
+
+	protected synchronized List<Secret> getSecretsFromKubernetes() {
 		List<Secret> secrets = client.secrets().inNamespace(namespace).list().getItems();
-		lastFetch = System.currentTimeMillis();
 		if (secrets.isEmpty()) {
-			log.warning("No secrets found in namespace: " + namespace);
+			log.warning("no secrets found in namespace: " + namespace);
 		}
-		credentials = secrets.stream()
-				.map(KubernetesCredential::new)
-				.collect(Collectors.toList());
-		return credentials;
+
+		return secrets;
 	}
 
 	/** Close Kubernetes client */
@@ -160,10 +154,4 @@ public class KubernetesCredentialFactory implements ICredentialProvider {
 		log.info("Setting Kubernetes client to: " + client.getClass().getName());
 		this.client = client;
 	}
-
-	// For testing purposes
-	void clearTimer() {
-		lastFetch = 0;
-	}
-
 }

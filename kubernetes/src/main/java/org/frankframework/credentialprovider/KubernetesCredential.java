@@ -24,17 +24,20 @@ import lombok.extern.java.Log;
 
 @Log
 public class KubernetesCredential implements ICredentials {
-	protected static final String USERNAME_KEY = "username";
-	protected static final String PASSWORD_KEY = "password";
 
 	private final String alias;
 	private final String username;
 	private final String password;
 
-	public KubernetesCredential(Secret secret) {
-		alias = secret.getMetadata().getName();
-		username = decodeFromSecret(secret, USERNAME_KEY);
-		password = decodeFromSecret(secret, PASSWORD_KEY);
+	public KubernetesCredential(CredentialAlias alias, Secret secret) {
+		String secretAlias = secret.getMetadata().getName();
+		if (!alias.getName().equals(secretAlias)) {
+			throw new IllegalStateException("alias does not match secret");
+		}
+
+		this.alias = alias.getName();
+		username = decodeFromSecret(secret, alias.getUsernameField());
+		password = decodeFromSecret(secret, alias.getPasswordField());
 	}
 
 	@Override
