@@ -118,7 +118,7 @@ public class KubernetesCredentialFactory implements ICredentialProvider {
 
 	@Override
 	public ICredentials getCredentials(CredentialAlias alias) throws NoSuchElementException {
-		Secret secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), aliasToRetrieve -> getSecret(aliasToRetrieve));
+		Secret secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), this::getSecret);
 
 		return new KubernetesCredential(alias, secret);
 	}
@@ -128,11 +128,11 @@ public class KubernetesCredentialFactory implements ICredentialProvider {
 		return configuredAliases.keySet();
 	}
 
-	private Secret getSecret(String aliasToRetrieve) {
+	private Secret getSecret(String aliasToRetrieve) throws NoSuchElementException {
 		return getSecretsFromKubernetes().stream()
 				.filter(e -> aliasToRetrieve.equals(e.getMetadata().getName()))
 				.findFirst()
-				.get();
+				.orElseThrow(() -> new NoSuchElementException("alias ["+aliasToRetrieve+"] not found"));
 	}
 
 	protected synchronized List<Secret> getSecretsFromKubernetes() {

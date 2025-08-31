@@ -33,10 +33,9 @@ public class CredentialAlias {
 	private static final String USERNAME_SUFFIX = "usernameSuffix";
 	private static final String PASSWORD_SUFFIX = "passwordSuffix";
 
-	public static String ALIAS_PREFIX;
-
-	public static String DEFAULT_USERNAME_FIELD;
-	public static String DEFAULT_PASSWORD_FIELD;
+	public static final String ALIAS_PREFIX;
+	public static final String DEFAULT_USERNAME_FIELD;
+	public static final String DEFAULT_PASSWORD_FIELD;
 
 	@Getter
 	private final String name;
@@ -51,6 +50,8 @@ public class CredentialAlias {
 		if (StringUtils.isNotBlank(aliasPrefix)) {
 			log.severe("property [credentialFactory.optionalPrefix] should not be used!");
 			ALIAS_PREFIX = aliasPrefix.toLowerCase();
+		} else {
+			ALIAS_PREFIX = null;
 		}
 
 		String doesMapHaveNameSuffix = constants.getProperty(PROPERTY_BASE1.formatted(USERNAME_SUFFIX));
