@@ -973,6 +973,8 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	 * Charset that is used to read and write BLOBs. This assumes the blob contains character data.
 	 * If blobCharset and blobSmartGet are not set, BLOBs are returned as bytes. Before version 7.6, blobs were base64 encoded after being read to accommodate for the fact that senders need to return a String. This is no longer the case
 	 */
+	@Deprecated(since = "9.3.0", forRemoval = true)
+	@ConfigurationWarning("BlobCharset property will be removed in a future version. ")
 	public void setBlobCharset(String string) {
 		if (StringUtils.isEmpty(string)) {
 			ConfigurationWarnings.add(this, log, "setting blobCharset to empty string does not trigger base64 encoding anymore, BLOBs are returned as byte arrays. If base64 encoding is really necessary, use blobBase64Direction=encode.");

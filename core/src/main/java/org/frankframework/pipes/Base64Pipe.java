@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -108,6 +109,8 @@ public class Base64Pipe extends FixedForwardPipe {
 	}
 
 	/** Character encoding to be used when reading input from strings for direction = encode or writing data for direction = decode. */
+	@Deprecated(since = "9.3.0", forRemoval = true)
+	@ConfigurationWarning("Charset property will be removed in a future version. ")
 	public void setCharset(String string) {
 		charset = string;
 	}
