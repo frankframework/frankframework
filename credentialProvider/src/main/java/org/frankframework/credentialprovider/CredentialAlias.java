@@ -88,7 +88,7 @@ public class CredentialAlias {
 		}
 
 		String aliasName = rawAlias;
-		if (ALIAS_PREFIX != null && rawAlias != null && rawAlias.toLowerCase().startsWith(ALIAS_PREFIX)) {
+		if (ALIAS_PREFIX != null && rawAlias.toLowerCase().startsWith(ALIAS_PREFIX)) {
 			aliasName = rawAlias.substring(ALIAS_PREFIX.length());
 		}
 

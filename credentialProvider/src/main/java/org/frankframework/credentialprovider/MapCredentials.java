@@ -17,6 +17,7 @@ package org.frankframework.credentialprovider;
 
 import java.io.IOException;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 
@@ -34,9 +35,10 @@ public class MapCredentials extends Secret {
 		String aliasName = alias.getName();
 
 		secret = new Properties();
-		for(String key: aliases.keySet()) {
+		for(Entry<String, String> entry: aliases.entrySet()) {
+			String key = entry.getKey();
 			if(key.startsWith(aliasName)) {
-				secret.put(key, aliases.get(key));
+				secret.put(key, entry.getValue());
 			}
 		}
 

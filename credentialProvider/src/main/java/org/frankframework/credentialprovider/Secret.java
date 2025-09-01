@@ -22,10 +22,6 @@ public abstract class Secret implements ISecret {
 	private CredentialAlias alias;
 
 	protected Secret(@Nonnull CredentialAlias alias) {
-		if (alias == null) {
-			throw new IllegalArgumentException();
-		}
-
 		this.alias = alias;
 	}
 

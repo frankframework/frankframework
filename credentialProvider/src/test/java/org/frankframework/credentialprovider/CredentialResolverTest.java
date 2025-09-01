@@ -15,12 +15,15 @@ import org.junit.jupiter.api.Test;
 
 import org.frankframework.util.StringResolver;
 
-class CredentialResolverTest {
+public class CredentialResolverTest {
 
 	Properties properties;
 
 	@BeforeEach
 	void setUp() throws Exception {
+		CredentialFactory.clearInstance();
+		CredentialResolver.resetAllowedExpansions();
+
 		properties = new Properties();
 		URL propertiesURL = getClass().getResource("/StringResolver.properties");
 		assertNotNull(propertiesURL, "properties file [StringResolver.properties] not found!");
@@ -29,7 +32,6 @@ class CredentialResolverTest {
 		properties.load(propsStream);
 		assertFalse(properties.isEmpty(), "did not find any properties!");
 
-		CredentialResolver.resetAllowedExpansions();
 		System.setProperty("authAliases.expansion.allowed", "${allowedAliases}");
 	}
 

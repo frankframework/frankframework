@@ -185,7 +185,8 @@ public class WildFlyCredentialFactoryTest {
 		String[] aliasesArray = {"a", "a/username", "b", "c/username"};
 		this.aliases = new HashSet<>(Arrays.asList(aliasesArray));
 
-		assertThrows(NoSuchElementException.class, () -> credentialFactory.getSecret(CredentialAlias.parse("d")));
+		CredentialAlias alias = CredentialAlias.parse("d");
+		assertThrows(NoSuchElementException.class, () -> credentialFactory.getSecret(alias));
 		assertNull(CredentialFactory.getCredentials("d"));
 	}
 
