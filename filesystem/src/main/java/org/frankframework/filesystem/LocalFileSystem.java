@@ -118,6 +118,9 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 
 	@Override
 	public DirectoryStream<Path> list(Path folder, TypeFilter filter) throws FileSystemException {
+		if (!folderExists(folder)) {
+			throw new FileSystemException("no filesystem-root, folder does not exist");
+		}
 		DirectoryStream.Filter<Path> directoryStreamFilter = switch (filter) {
 			case FILES_ONLY -> file -> !Files.isDirectory(file);
 			case FOLDERS_ONLY -> Files::isDirectory;
@@ -235,6 +238,10 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	@Override
 	public boolean folderExists(String folder) throws FileSystemException {
 		return isFolder(toFile(folder));
+	}
+
+	public boolean folderExists(Path folder) {
+		return isFolder(folder);
 	}
 
 	@Override
