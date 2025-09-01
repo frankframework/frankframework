@@ -23,8 +23,8 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.credentialprovider.CredentialAlias;
-import org.frankframework.credentialprovider.ISecretProvider;
 import org.frankframework.credentialprovider.ISecret;
+import org.frankframework.credentialprovider.ISecretProvider;
 import org.frankframework.credentialprovider.util.Cache;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
