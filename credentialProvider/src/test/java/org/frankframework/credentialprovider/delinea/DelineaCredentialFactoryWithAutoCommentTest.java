@@ -2,7 +2,7 @@ package org.frankframework.credentialprovider.delinea;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -59,16 +59,13 @@ public class DelineaCredentialFactoryWithAutoCommentTest {
 		ArgumentCaptor<String> autoCommentCaptor = forClass(String.class);
 		when(client.getSecret(eq("1"), autoCommentCaptor.capture())).thenReturn(secret1);
 
-		ICredentials credentials = credentialFactory.getCredentials("1", () -> null, () -> null);
+		ICredentials credentials = credentialFactory.getCredentials("1");
 		assertEquals(AUTO_COMMENT_VALUE, autoCommentCaptor.getValue());
 
 		assertNotNull(credentials);
 		assertEquals("user1", credentials.getUsername());
 
 		// Get a non-existing secret
-		ICredentials credentials2 = credentialFactory.getCredentials("16", () -> null, () -> null);
-
-		// Expect a null return value, because alias 16 does not exist
-		assertNull(credentials2);
+		assertThrows(IllegalArgumentException.class, () -> credentialFactory.getCredentials("16"));
 	}
 }

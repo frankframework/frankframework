@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package org.frankframework.credentialprovider;
 
 import java.util.NoSuchElementException;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.credential.store.CredentialStore;
@@ -29,8 +28,8 @@ public class WildFlyCredentials extends Credentials {
 
 	private final CredentialStore cs;
 
-	public WildFlyCredentials(CredentialStore cs, String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
-		super(alias, defaultUsernameSupplier, defaultPasswordSupplier);
+	public WildFlyCredentials(CredentialStore cs, String alias) {
+		super(alias);
 		this.cs = cs;
 	}
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2022 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,8 @@ package org.frankframework.credentialprovider;
 
 import java.util.Collection;
 import java.util.NoSuchElementException;
-import java.util.function.Supplier;
+
+import jakarta.annotation.Nonnull;
 
 /**
  * <p>Interface for a CredentialFactory. A CredentialFactory is responsible for providing credentials to the framework.</p>
@@ -26,20 +27,22 @@ import java.util.function.Supplier;
  *
  * <p>Implementations of this interface should be thread-safe.</p>
  */
-public interface ICredentialFactory {
+public interface ICredentialProvider {
 
 	/**
 	 * initialize() of an implementation can throw an exception when the credentialFactory cannot be properly configured and used.
 	 */
+	@SuppressWarnings("java:S112")
 	void initialize() throws Exception;
 
-	boolean hasCredentials(String alias);
+	boolean hasCredentials(@Nonnull String alias);
 
-	ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) throws NoSuchElementException;
+	ICredentials getCredentials(@Nonnull String alias) throws NoSuchElementException;
 
 	/**
 	 * return a list of all configured aliases, or null if such a list cannot be provided.
 	 * @throws Exception
 	 */
+	@SuppressWarnings("java:S112")
 	Collection<String> getConfiguredAliases() throws Exception;
 }

@@ -55,12 +55,12 @@ public class PropertyFileCredentialFactory extends AbstractMapCredentialFactory 
 			properties.load(reader);
 
 			return properties.entrySet().stream()
-			    .collect(Collectors.toMap(
-			        entry -> (String) entry.getKey(),
-			        entry -> (String) entry.getValue(),
-			        (existing, replacement) -> existing, // Handle duplicate keys
-			        LinkedHashMap::new
-			    ));
+				.collect(Collectors.toMap(
+					entry -> (String) entry.getKey(),
+					entry -> (String) entry.getValue(),
+					(existing, replacement) -> existing, // Handle duplicate keys
+					LinkedHashMap::new
+				));
 		}
 	}
 }

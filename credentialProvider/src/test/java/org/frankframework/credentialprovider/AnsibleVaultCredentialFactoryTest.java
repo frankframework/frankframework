@@ -1,6 +1,7 @@
 package org.frankframework.credentialprovider;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -127,27 +128,19 @@ public class AnsibleVaultCredentialFactoryTest {
 
 	@Test
 	public void testNoAlias() {
-
 		String alias = null;
-		String username = "fakeUsername";
-		String password = "fakePassword";
 
-		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
-
-		assertEquals(username, mc.getUsername());
-		assertEquals(password, mc.getPassword());
+		assertThrows(IllegalArgumentException.class, () -> credentialFactory.getCredentials(alias));
 	}
 
 	@Test
 	public void testPlainAlias() {
 
 		String alias = "straight";
-		String username = "fakeUsername";
-		String password = "fakePassword";
 		String expectedUsername = "\\username from alias";
 		String expectedPassword = "passw\\urd from alias";
 
-		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
+		ICredentials mc = credentialFactory.getCredentials(alias);
 
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());
@@ -155,28 +148,23 @@ public class AnsibleVaultCredentialFactoryTest {
 
 	@Test
 	public void testAliasWithoutUsername() {
-
 		String alias = "noUsername";
-		String username = "fakeUsername";
-		String password = "fakePassword";
-		String expectedUsername = username;
 		String expectedPassword = "password from alias";
 
-		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
+		ICredentials mc = credentialFactory.getCredentials(alias);
 
-		assertEquals(expectedUsername, mc.getUsername());
+		assertNull(mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());
 	}
 
 	@Test
 	public void testUnknownAliasNoDefaults() {
-
 		String alias = "fakeAlias";
 		String username = null;
 		String password = null;
 
 		assertThrows(NoSuchElementException.class, () -> {
-			ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
+			ICredentials mc = credentialFactory.getCredentials(alias);
 			assertEquals(username, mc.getUsername());
 			assertEquals(password, mc.getPassword());
 		});
@@ -184,14 +172,11 @@ public class AnsibleVaultCredentialFactoryTest {
 
 	@Test
 	public void testUnknownAlias() {
-
 		String alias = "fakeAlias";
-		String username = "fakeUsername";
-		String password = "fakePassword";
 
-		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
-		assertEquals(username, mc.getUsername());
-		assertEquals(password, mc.getPassword());
+		ICredentials mc = credentialFactory.getCredentials(alias);
+		assertThrows(NoSuchElementException.class, mc::getUsername);
+		assertThrows(NoSuchElementException.class, mc::getPassword);
 	}
 
 
@@ -199,12 +184,10 @@ public class AnsibleVaultCredentialFactoryTest {
 	public void testPlainCredential() {
 
 		String alias = "singleValue";
-		String username = null;
-		String password = "fakePassword";
 		String expectedUsername = null;
 		String expectedPassword = "Plain Credential";
 
-		ICredentials mc = credentialFactory.getCredentials(alias, ()->username, ()->password);
+		ICredentials mc = credentialFactory.getCredentials(alias);
 
 		assertEquals(expectedUsername, mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());

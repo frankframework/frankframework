@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 Nationale-Nederlanden, 2022-2023 WeAreFrank!
+   Copyright 2021 Nationale-Nederlanden, 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,8 +21,10 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.function.Supplier;
 import java.util.logging.Logger;
+
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -39,15 +41,19 @@ public class CredentialFactory {
 	public static final String LEGACY_PACKAGE_NAME = "nl.nn.credentialprovider.";
 	public static final String ORG_FRANKFRAMEWORK_PACKAGE_NAME = "org.frankframework.credentialprovider.";
 
+	public static final String DEFAULT_USERNAME_FIELD = "username";
+	public static final String DEFAULT_PASSWORD_FIELD = "password";
+
 	private static String optionalPrefix;
 
-	private final List<ICredentialFactory> delegates = new ArrayList<>();
+	private final List<ICredentialProvider> delegates = new ArrayList<>();
 
 	private static CredentialFactory self;
 
 	static {
 		optionalPrefix = CredentialConstants.getInstance().getProperty(CREDENTIAL_FACTORY_OPTIONAL_PREFIX_KEY);
 		if (optionalPrefix != null) {
+			log.severe("property [credentialFactory.optionalPrefix] should not be used!");
 			optionalPrefix = optionalPrefix.toLowerCase();
 		}
 	}
@@ -65,6 +71,7 @@ public class CredentialFactory {
 
 		// Legacy support for old package names; to be removed in Frank!Framework 8.1 or later
 		if (StringUtils.isNotEmpty(factoryClassNames) && factoryClassNames.contains(LEGACY_PACKAGE_NAME)) {
+			log.severe("please update your CredentialFactory properties to use the new namespace!");
 			factoryClassNames = factoryClassNames.replace(LEGACY_PACKAGE_NAME, ORG_FRANKFRAMEWORK_PACKAGE_NAME);
 		}
 		if (tryFactories(factoryClassNames)) {
@@ -94,7 +101,7 @@ public class CredentialFactory {
 	private void tryFactory(String factoryClassName) {
 		try {
 			log.info("trying to configure CredentialFactory [" + factoryClassName + "]");
-			ICredentialFactory delegate = ClassUtils.newInstance(factoryClassName, ICredentialFactory.class);
+			ICredentialProvider delegate = ClassUtils.newInstance(factoryClassName, ICredentialProvider.class);
 			delegate.initialize();
 			log.info("installed CredentialFactory [" + factoryClassName + "]");
 			delegates.add(delegate);
@@ -103,54 +110,101 @@ public class CredentialFactory {
 		}
 	}
 
-	private static String extractAlias(final String rawAlias) {
+	/**
+	 * Extracting is deprecated, cleanse is not.
+	 * @return NULL when empty.
+	 */
+	@Deprecated
+	@Nullable
+	private static String extractAlias(@Nullable final String rawAlias) {
 		if (optionalPrefix != null && rawAlias != null && rawAlias.toLowerCase().startsWith(optionalPrefix)) {
-			return rawAlias.substring(optionalPrefix.length());
+			return StringUtils.defaultIfBlank(rawAlias.substring(optionalPrefix.length()), null);
 		}
-		return rawAlias;
+		return StringUtils.defaultIfBlank(rawAlias, null);
 	}
 
 	public static boolean hasCredential(String rawAlias) {
 		final String alias = extractAlias(rawAlias);
-		for (ICredentialFactory factory : getInstance().delegates) {
-			if (factory.hasCredentials(alias)) {
-				return true;
+
+		if (alias != null) {
+			for (ICredentialProvider factory : getInstance().delegates) {
+				if (factory.hasCredentials(alias)) {
+					return true;
+				}
 			}
 		}
+
 		return false;
 	}
 
-	public static ICredentials getCredentials(String rawAlias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) {
+	/**
+	 * Entrypoint.
+	 *
+	 * Attempts to find the credential for the specified alias.
+	 * If non is found, returns NULL, else the credential.
+	 */
+	@Nullable
+	public static ICredentials getCredentials(@Nullable String rawAlias) {
+		try {
+			ICredentials credential = getCredentials(rawAlias, null, null);
+			if (credential instanceof FallbackCredential) {
+				log.fine("no credential found, no default provided");
+				return null;
+			}
+			return credential;
+		} catch (Exception e) {
+			log.fine(e.getMessage());
+			return null;
+		}
+	}
+
+	/**
+	 * Entrypoint
+	 *
+	 * Attempts to find the credential for the specified alias.
+	 *
+	 * When non is found, uses the default (provided) fallback user/pass combination.
+	 */
+	@Nonnull
+	public static ICredentials getCredentials(@Nullable String rawAlias, @Nullable String defaultUsername, @Nullable String defaultPassword) {
 		final String alias = extractAlias(rawAlias);
-		List<ICredentialFactory> credentialFactoryDelegates = getInstance().delegates;
+		List<ICredentialProvider> credentialFactoryDelegates = getInstance().delegates;
 
 		// If there are no delegates, return a Credentials object with the default values
-		if (credentialFactoryDelegates.isEmpty()) {
-			return new Credentials(alias, defaultUsernameSupplier, defaultPasswordSupplier);
+		if (alias == null || credentialFactoryDelegates.isEmpty()) {
+			return new FallbackCredential(alias, defaultUsername, defaultPassword);
 		}
 
-		for (ICredentialFactory factory : credentialFactoryDelegates) {
+		for (ICredentialProvider factory : credentialFactoryDelegates) {
 			try {
-				ICredentials result = factory.getCredentials(alias, defaultUsernameSupplier, defaultPasswordSupplier);
+				ICredentials result = factory.getCredentials(alias);
 
-				// check if the alias is the same as the one we are looking for - will throw if not
-				result.getUsername();
+				// Check if the alias is the same as the one we are looking for - will throw if not
+				result.getPassword(); // Validate if we can fetch the password.
 
 				return result;
 			} catch (NoSuchElementException e) {
 				// The alias was not found in this factory, continue searching
-				log.info(alias + " not found in credential factory [" + factory.getClass().getName() + "]");
+				log.info(rawAlias + " not found in credential factory [" + factory.getClass().getName() + "]");
 			}
 		}
-		throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+ alias +"]: alias not found");
+
+		if (StringUtils.isNotEmpty(defaultUsername) || StringUtils.isNotEmpty(defaultPassword)) {
+			return new FallbackCredential(alias, defaultUsername, defaultPassword);
+		}
+		throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+ rawAlias +"]: alias not found");
 	}
 
 	public static Collection<String> getConfiguredAliases() throws Exception {
 		Collection<String> aliases = new LinkedHashSet<>();
-		for (ICredentialFactory factory : getInstance().delegates) {
-			Collection<String> configuredAliases = factory.getConfiguredAliases();
-			if (configuredAliases != null) {
-				aliases.addAll(configuredAliases);
+		for (ICredentialProvider factory : getInstance().delegates) {
+			try {
+				Collection<String> configuredAliases = factory.getConfiguredAliases();
+				if (configuredAliases != null) {
+					aliases.addAll(configuredAliases);
+				}
+			} catch (Exception e) {
+				log.warning("unable to find configured aliases in factory ["+factory+"]");
 			}
 		}
 		return aliases;
