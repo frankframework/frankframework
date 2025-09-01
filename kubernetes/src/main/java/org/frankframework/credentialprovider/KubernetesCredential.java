@@ -23,7 +23,7 @@ import io.fabric8.kubernetes.api.model.Secret;
 import lombok.extern.java.Log;
 
 @Log
-public class KubernetesCredential implements ICredentials {
+public class KubernetesCredential implements ISecret {
 
 	private final String alias;
 	private final String username;

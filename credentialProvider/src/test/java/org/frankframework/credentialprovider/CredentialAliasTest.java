@@ -61,10 +61,10 @@ public class CredentialAliasTest {
 
 	@Test
 	public void aliasWithMultipleFields() {
-		CredentialAlias alias = CredentialAlias.parse("aliasWith{name@domain,secret}");
+		CredentialAlias alias = CredentialAlias.parse("aliasWith{name+domain,secret}");
 		assertNotNull(alias);
 		assertEquals("aliasWith", alias.getName());
-		assertEquals("name@domain", alias.getUsernameField());
+		assertEquals("name+domain", alias.getUsernameField());
 		assertEquals("secret", alias.getPasswordField());
 	}
 }

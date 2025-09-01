@@ -1,5 +1,6 @@
 package org.frankframework.credentialprovider;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.NoSuchElementException;
@@ -8,7 +9,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @SuppressWarnings("serial")
-public class MockCredentialFactory extends HashMap<String, ICredentials> implements ICredentialProvider {
+public class MockCredentialFactory extends HashMap<String, ISecret> implements ISecretProvider {
 
 	private static MockCredentialFactory instance;
 
@@ -25,17 +26,16 @@ public class MockCredentialFactory extends HashMap<String, ICredentials> impleme
 	}
 
 	@Override
-	public boolean hasCredentials(CredentialAlias alias) {
+	public boolean hasSecret(CredentialAlias alias) {
 		return getInstance().containsKey(alias.getName());
 	}
 
 	@Override
-	public ICredentials getCredentials(CredentialAlias alias) throws NoSuchElementException {
-		ICredentials credentials = getInstance().get(alias.getName());
+	public ISecret getSecret(CredentialAlias alias) throws NoSuchElementException {
+		ISecret credentials = getInstance().get(alias.getName());
 		if (credentials == null) {
 			throw new NoSuchElementException("credentials not found");
 		}
-		credentials.getUsername(); // Validate validity, may throw NoSuchElementException
 		return credentials;
 	}
 
@@ -55,9 +55,17 @@ public class MockCredentialFactory extends HashMap<String, ICredentials> impleme
 
 	@Getter
 	@AllArgsConstructor
-	private static class MockCredential implements ICredentials {
+	private static class MockCredential implements ISecret {
 		private final String alias;
 		private final String username;
 		private final String password;
+
+		@Override
+		public String getField(String fieldname) throws IOException {
+			if ("username".equals(fieldname) && username != null) {
+				return username;
+			}
+			return password;
+		}
 	}
 }

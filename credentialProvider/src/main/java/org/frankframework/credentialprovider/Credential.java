@@ -16,12 +16,31 @@
 package org.frankframework.credentialprovider;
 
 /**
- * When no credential is found in any of the CredentialProviders, this may be used.
+ * Default credential object
  */
-public class FallbackCredential extends Credential {
+public class Credential implements ICredentials {
+	private final String alias;
+	private final String username;
+	private final String password;
 
-	public FallbackCredential(String alias, String username, String password) {
-		super(alias, username, password);
+	public Credential(String alias, String username, String password) {
+		this.alias = alias;
+		this.username = username;
+		this.password = password;
 	}
 
+	@Override
+	public String getAlias() {
+		return alias;
+	}
+
+	@Override
+	public String getUsername() {
+		return username;
+	}
+
+	@Override
+	public String getPassword() {
+		return password;
+	}
 }

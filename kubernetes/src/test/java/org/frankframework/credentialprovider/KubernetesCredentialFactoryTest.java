@@ -64,7 +64,7 @@ class KubernetesCredentialFactoryTest {
 	@Test
 	void testGetAliases() throws UnsupportedOperationException {
 		CredentialAlias alias1 = CredentialAlias.parse("alias1"); // need to fetch the alias first
-		assertTrue(credentialFactory.hasCredentials(alias1));
+		assertTrue(credentialFactory.hasSecret(alias1));
 
 		List<String> aliases = List.copyOf(credentialFactory.getConfiguredAliases());
 		assertFalse(aliases.isEmpty());
@@ -74,7 +74,7 @@ class KubernetesCredentialFactoryTest {
 	@Test
 	void testGetCredential1() throws UnsupportedOperationException {
 		CredentialAlias alias = CredentialAlias.parse("alias1");
-		ICredentials credential = credentialFactory.getCredentials(alias);
+		ISecret credential = credentialFactory.getSecret(alias);
 		assertEquals("alias1", credential.getAlias());
 		assertEquals("testUsername1", credential.getUsername());
 		assertEquals("testPassword1", credential.getPassword());
@@ -83,7 +83,7 @@ class KubernetesCredentialFactoryTest {
 	@Test
 	void testGetCredential2() throws UnsupportedOperationException {
 		CredentialAlias alias = CredentialAlias.parse("alias2");
-		ICredentials credential = credentialFactory.getCredentials(alias);
+		ISecret credential = credentialFactory.getSecret(alias);
 		assertEquals("alias2", credential.getAlias());
 		assertEquals("testUsername2", credential.getUsername());
 		assertEquals("testPassword2", credential.getPassword());
@@ -92,7 +92,7 @@ class KubernetesCredentialFactoryTest {
 	@Test
 	void testGetCredentialWithoutPassword() throws UnsupportedOperationException {
 		CredentialAlias alias = CredentialAlias.parse("alias4");
-		ICredentials credential = credentialFactory.getCredentials(alias);
+		ISecret credential = credentialFactory.getSecret(alias);
 		assertEquals("alias4", credential.getAlias());
 		assertEquals("noPassword", credential.getUsername());
 		assertNull(credential.getPassword());
@@ -101,7 +101,7 @@ class KubernetesCredentialFactoryTest {
 	@Test
 	void testGetCredentialWithoutUsername() throws UnsupportedOperationException {
 		CredentialAlias alias = CredentialAlias.parse("alias5");
-		ICredentials credential = credentialFactory.getCredentials(alias);
+		ISecret credential = credentialFactory.getSecret(alias);
 		assertEquals("alias5", credential.getAlias());
 		assertNull(credential.getUsername());
 		assertEquals("noUsername", credential.getPassword());
@@ -110,20 +110,20 @@ class KubernetesCredentialFactoryTest {
 	@Test
 	void testHasCredential() throws UnsupportedOperationException {
 		CredentialAlias alias1 = CredentialAlias.parse("alias1");
-		assertTrue(credentialFactory.hasCredentials(alias1));
+		assertTrue(credentialFactory.hasSecret(alias1));
 
 		CredentialAlias aliasX = CredentialAlias.parse("aliasX");
-		assertFalse(credentialFactory.hasCredentials(aliasX));
+		assertFalse(credentialFactory.hasSecret(aliasX));
 	}
 
 	@Test
 	void testGetCredentialsWithDetails() throws UnsupportedOperationException {
 		CredentialAlias alias = CredentialAlias.parse("alias1");
-		ICredentials credential1 = credentialFactory.getCredentials(alias);
+		ISecret credential1 = credentialFactory.getSecret(alias);
 		assertEquals("testUsername1", credential1.getUsername());
 		assertEquals("testPassword1", credential1.getPassword());
 
-		ICredentials credential2 = credentialFactory.getCredentials(alias);
+		ISecret credential2 = credentialFactory.getSecret(alias);
 		assertEquals("testUsername1", credential2.getUsername());
 		assertEquals("testPassword1", credential2.getPassword());
 	}
@@ -131,7 +131,7 @@ class KubernetesCredentialFactoryTest {
 	@Test
 	void testUnknownAliasNoDefaults() {
 		CredentialAlias alias = CredentialAlias.parse("fakeAlias");
-		assertThrows(NoSuchElementException.class, () -> credentialFactory.getCredentials(alias));
+		assertThrows(NoSuchElementException.class, () -> credentialFactory.getSecret(alias));
 	}
 
 	private static Secret createSecret(String alias, String userName, String password) {

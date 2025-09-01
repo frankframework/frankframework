@@ -23,8 +23,8 @@ import org.apache.commons.lang3.StringUtils;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.credentialprovider.CredentialAlias;
-import org.frankframework.credentialprovider.ICredentialProvider;
-import org.frankframework.credentialprovider.ICredentials;
+import org.frankframework.credentialprovider.ISecretProvider;
+import org.frankframework.credentialprovider.ISecret;
 import org.frankframework.credentialprovider.util.Cache;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
@@ -79,7 +79,7 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  * @see <a href="https://updates.thycotic.net/secretserver/restapiguide/">Delinea API documentation</a>
  */
 @Log4j2
-public class DelineaCredentialFactory implements ICredentialProvider {
+public class DelineaCredentialFactory implements ISecretProvider {
 
 	private static final String BASE_KEY = "credentialFactory.delinea.";
 	// Leave empty to not use autocomment
@@ -137,8 +137,8 @@ public class DelineaCredentialFactory implements ICredentialProvider {
 	}
 
 	@Override
-	public boolean hasCredentials(CredentialAlias alias) {
-		return getCredentials(alias) != null;
+	public boolean hasSecret(CredentialAlias alias) {
+		return getSecret(alias) != null;
 	}
 
 	@Override
@@ -147,9 +147,13 @@ public class DelineaCredentialFactory implements ICredentialProvider {
 	}
 
 	@Override
-	public ICredentials getCredentials(CredentialAlias alias) throws NoSuchElementException {
+	public ISecret getSecret(CredentialAlias alias) throws NoSuchElementException {
 		// Make sure to always get a live copy of the secret
 		Secret secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), aliasToRetrieve -> delineaClient.getSecret(aliasToRetrieve, delineaClientSettings.autoCommentValue()));
+
+		if (secret == null) {
+			throw new NoSuchElementException();
+		}
 
 		return new DelineaCredentials(alias, secret);
 	}

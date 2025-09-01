@@ -8,13 +8,16 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.util.NoSuchElementException;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import org.frankframework.credentialprovider.CredentialAlias;
-import org.frankframework.credentialprovider.ICredentials;
+import org.frankframework.credentialprovider.ISecret;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
 /**
@@ -54,7 +57,7 @@ public class DelineaCredentialFactoryWithAutoCommentTest {
 	}
 
 	@Test
-	void testGetSecret() {
+	void testGetSecret() throws IOException {
 		Secret secret1 = DelineaCredentialFactoryTest.createSecret(1, 11, "user1", "password1");
 
 		ArgumentCaptor<String> autoCommentCaptor = forClass(String.class);
@@ -62,13 +65,13 @@ public class DelineaCredentialFactoryWithAutoCommentTest {
 
 
 		CredentialAlias alias = CredentialAlias.parse("1");
-		ICredentials credentials = credentialFactory.getCredentials(alias);
+		ISecret credentials = credentialFactory.getSecret(alias);
 		assertEquals(AUTO_COMMENT_VALUE, autoCommentCaptor.getValue());
 
 		assertNotNull(credentials);
-		assertEquals("user1", credentials.getUsername());
+		assertEquals("user1", credentials.getField("username"));
 
 		CredentialAlias nonExistingAlias = CredentialAlias.parse("16");
-		assertThrows(IllegalArgumentException.class, () -> credentialFactory.getCredentials(nonExistingAlias));
+		assertThrows(NoSuchElementException.class, () -> credentialFactory.getSecret(nonExistingAlias));
 	}
 }

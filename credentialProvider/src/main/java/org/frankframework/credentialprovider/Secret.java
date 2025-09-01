@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,13 +15,28 @@
 */
 package org.frankframework.credentialprovider;
 
-/**
- * When no credential is found in any of the CredentialProviders, this may be used.
- */
-public class FallbackCredential extends Credential {
+import jakarta.annotation.Nonnull;
 
-	public FallbackCredential(String alias, String username, String password) {
-		super(alias, username, password);
+public abstract class Secret implements ISecret {
+
+	private CredentialAlias alias;
+
+	protected Secret(@Nonnull CredentialAlias alias) {
+		if (alias == null) {
+			throw new IllegalArgumentException();
+		}
+
+		this.alias = alias;
+	}
+
+	protected String getAlias() {
+		return alias.getName();
+	}
+
+	@Override
+	public String toString() {
+		return getClass().getSimpleName() + "@" + Integer.toHexString(hashCode()) +
+				" alias [" + getAlias() + "]";
 	}
 
 }

@@ -15,6 +15,7 @@
 */
 package org.frankframework.credentialprovider;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
@@ -41,7 +42,7 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  *
  * @see <a href="https://www.wildfly.org/guides/security-credential-store-for-passwords">WildFly Credential Store Guide</a>
  */
-public class WildFlyCredentialFactory implements ICredentialProvider {
+public class WildFlyCredentialFactory implements ISecretProvider {
 	private Logger log = Logger.getLogger(this.getClass().getName());
 
 	private static final ServiceName SERVICE_NAME_CRED_STORE = ServiceName.of("org", "wildfly", "security", "credential-store");
@@ -63,21 +64,21 @@ public class WildFlyCredentialFactory implements ICredentialProvider {
 	}
 
 	@Override
-	public ICredentials getCredentials(CredentialAlias alias) throws NoSuchElementException {
+	public ISecret getSecret(CredentialAlias alias) throws NoSuchElementException {
 		CredentialStore cs = getCredentialStore(credentialStore);
-		if (cs==null) {
+		if (cs == null) {
 			throw new NoSuchElementException("CredentialStore [" + credentialStore + "] not found");
 		}
-		return new WildFlyCredentials(cs, alias);
+		return new WildFlySecret(cs, alias);
 	}
 
 	@Override
-	public boolean hasCredentials(CredentialAlias alias) {
+	public boolean hasSecret(CredentialAlias alias) {
 		try {
-			ICredentials credentials = getCredentials(alias);
-			return !StringUtils.isAllBlank(credentials.getUsername(), credentials.getPassword());
+			ISecret credentials = getSecret(alias);
+			return !StringUtils.isAllBlank(credentials.getField(alias.getUsernameField()), credentials.getField(alias.getPasswordField()));
 
-		} catch (NoSuchElementException e) {
+		} catch (NoSuchElementException | IOException e) {
 			log.fine(()->"exception testing for alias ["+alias+"] ("+e.getClass().getName()+") :"+e.getMessage());
 			return false;
 		}

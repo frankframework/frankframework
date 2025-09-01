@@ -15,6 +15,7 @@
 */
 package org.frankframework.credentialprovider;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -44,7 +45,7 @@ public class CredentialFactory {
 	public static final String DEFAULT_USERNAME_FIELD = "username";
 	public static final String DEFAULT_PASSWORD_FIELD = "password";
 
-	private final List<ICredentialProvider> delegates = new ArrayList<>();
+	protected final List<ISecretProvider> delegates = new ArrayList<>();
 
 	private static CredentialFactory self;
 
@@ -91,7 +92,7 @@ public class CredentialFactory {
 	private void tryFactory(String factoryClassName) {
 		try {
 			log.info("trying to configure CredentialFactory [" + factoryClassName + "]");
-			ICredentialProvider delegate = ClassUtils.newInstance(factoryClassName, ICredentialProvider.class);
+			ISecretProvider delegate = ClassUtils.newInstance(factoryClassName, ISecretProvider.class);
 			delegate.initialize();
 			log.info("installed CredentialFactory [" + factoryClassName + "]");
 			delegates.add(delegate);
@@ -104,8 +105,8 @@ public class CredentialFactory {
 		final CredentialAlias alias = CredentialAlias.parse(rawAlias);
 
 		if (alias != null) {
-			for (ICredentialProvider factory : getInstance().delegates) {
-				if (factory.hasCredentials(alias)) {
+			for (ISecretProvider factory : getInstance().delegates) {
+				if (factory.hasSecret(alias)) {
 					return true;
 				}
 			}
@@ -145,24 +146,29 @@ public class CredentialFactory {
 	@Nonnull
 	public static ICredentials getCredentials(@Nullable String rawAlias, @Nullable String defaultUsername, @Nullable String defaultPassword) {
 		final CredentialAlias alias = CredentialAlias.parse(rawAlias);
-		List<ICredentialProvider> credentialFactoryDelegates = getInstance().delegates;
+		List<ISecretProvider> credentialFactoryDelegates = getInstance().delegates;
 
-		// If there are no delegates, return a Credentials object with the default values
+		// If there are no delegates, return a Secret object with the default values
 		if (alias == null || credentialFactoryDelegates.isEmpty()) {
 			return new FallbackCredential(rawAlias, defaultUsername, defaultPassword);
 		}
 
-		for (ICredentialProvider factory : credentialFactoryDelegates) {
+		for (ISecretProvider factory : credentialFactoryDelegates) {
 			try {
-				ICredentials result = factory.getCredentials(alias);
+				ISecret secret = factory.getSecret(alias);
 
-				// Check if the alias is the same as the one we are looking for - will throw if not
-				result.getPassword(); // Validate if we can fetch the password.
-
-				return result;
-			} catch (NoSuchElementException e) {
+				String username = null;
+				String password = null;
+				try {
+					username = secret.getField(alias.getUsernameField()); // Validate if we can fetch the username.
+					password = secret.getField(alias.getPasswordField()); // Validate if we can fetch the password.
+				} catch (NoSuchElementException | IOException ioe) {
+					password = secret.getField("");
+				}
+				return new Credential(alias.getName(), username, password);
+			} catch (NoSuchElementException | IOException e) {
 				// The alias was not found in this factory, continue searching
-				log.info(rawAlias + " not found in credential factory [" + factory.getClass().getName() + "]");
+				log.info(rawAlias + " not found in credential factory [" + factory.getClass().getName() + "]: " + e.getMessage());
 			}
 		}
 
@@ -174,7 +180,7 @@ public class CredentialFactory {
 
 	public static Collection<String> getConfiguredAliases() throws Exception {
 		Collection<String> aliases = new LinkedHashSet<>();
-		for (ICredentialProvider factory : getInstance().delegates) {
+		for (ISecretProvider factory : getInstance().delegates) {
 			try {
 				Collection<String> configuredAliases = factory.getConfiguredAliases();
 				if (configuredAliases != null) {

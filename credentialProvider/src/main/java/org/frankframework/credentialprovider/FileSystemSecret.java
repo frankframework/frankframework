@@ -22,45 +22,35 @@ import java.util.NoSuchElementException;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class FileSystemCredentials extends Credentials {
+public class FileSystemSecret extends Secret {
 
 	private final Path aliasPath;
 
-	public FileSystemCredentials(CredentialAlias alias, Path root) {
+	public FileSystemSecret(CredentialAlias alias, Path root) {
 		super(alias);
 
 		if (root == null) {
 			throw new IllegalStateException("no path provided");
 		}
 
-		this.aliasPath = root.resolve(alias.getName()); // May not exist!
+		this.aliasPath = root.resolve(alias.getName());
+		if (!Files.exists(aliasPath)) {
+			throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+alias.getName()+"]: alias not found");
+		}
 	}
 
-	public String getFieldValue(String fieldname) throws IOException {
+	@Override
+	public String getField(String fieldname) throws IOException {
+		if (StringUtils.isNotBlank(fieldname) && Files.isRegularFile(aliasPath)) {
+			throw new NoSuchElementException("cannot obtain field from secret [" + this + "]");
+		}
+
 		Path field = StringUtils.isBlank(fieldname) ? aliasPath : aliasPath.resolve(fieldname);
 		if (Files.exists(field)) {
 			return Files.readAllLines(field).get(0);
 		}
 
 		return null;
-	}
-
-	@Override
-	protected void getCredentialsFromAlias(CredentialAlias alias) {
-		if (!Files.exists(aliasPath)) {
-			throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]: alias not found");
-		}
-
-		try {
-			if (Files.isDirectory(aliasPath)) {
-				setUsername(getFieldValue(alias.getUsernameField()));
-				setPassword(getFieldValue(alias.getPasswordField()));
-			} else {
-				setPassword(getFieldValue(null));
-			}
-		} catch (IOException e) {
-			throw new NoSuchElementException("cannot obtain credentials from authentication alias [" + getAlias() + "]", e);
-		}
 	}
 
 }
