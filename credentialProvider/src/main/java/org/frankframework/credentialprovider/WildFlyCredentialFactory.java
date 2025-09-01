@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
@@ -43,7 +42,7 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  *
  * @see <a href="https://www.wildfly.org/guides/security-credential-store-for-passwords">WildFly Credential Store Guide</a>
  */
-public class WildFlyCredentialFactory implements ICredentialFactory {
+public class WildFlyCredentialFactory implements ICredentialProvider {
 	private Logger log = Logger.getLogger(this.getClass().getName());
 
 	private static final ServiceName SERVICE_NAME_CRED_STORE = ServiceName.of("org", "wildfly", "security", "credential-store");
@@ -65,12 +64,12 @@ public class WildFlyCredentialFactory implements ICredentialFactory {
 	}
 
 	@Override
-	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) throws NoSuchElementException {
+	public ICredentials getCredentials(String alias) throws NoSuchElementException {
 		CredentialStore cs = getCredentialStore(credentialStore);
 		if (cs==null) {
 			throw new NoSuchElementException("CredentialStore [" + credentialStore + "] not found");
 		}
-		return new WildFlyCredentials(cs, alias, defaultUsernameSupplier, defaultPasswordSupplier);
+		return new WildFlyCredentials(cs, alias);
 	}
 
 	@Override
@@ -119,7 +118,7 @@ public class WildFlyCredentialFactory implements ICredentialFactory {
 		return cs;
 	}
 
-	//Make method mockable
+	// Make method mockable
 	protected ServiceContainer getServiceContainer() {
 		return CurrentServiceContainer.getServiceContainer();
 	}

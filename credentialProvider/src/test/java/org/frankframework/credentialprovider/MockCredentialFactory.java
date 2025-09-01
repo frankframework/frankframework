@@ -3,9 +3,11 @@ package org.frankframework.credentialprovider;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.NoSuchElementException;
-import java.util.function.Supplier;
 
-public class MockCredentialFactory extends HashMap<String, Credentials> implements ICredentialFactory {
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+
+public class MockCredentialFactory extends HashMap<String, ICredentials> implements ICredentialProvider {
 
 	private static MockCredentialFactory instance;
 
@@ -18,31 +20,43 @@ public class MockCredentialFactory extends HashMap<String, Credentials> implemen
 
 	@Override
 	public void initialize() {
-		instance = this;
+		// NO OP
 	}
 
 	@Override
 	public boolean hasCredentials(String alias) {
-		return containsKey(alias);
+		return getInstance().containsKey(alias);
 	}
 
 	@Override
-	public Credentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) throws NoSuchElementException {
-		Credentials result = new Credentials(alias, defaultUsernameSupplier, defaultPasswordSupplier);
-		Credentials entry = get(alias);
-		if (entry != null) {
-			if (entry.getUsername() != null && !entry.getUsername().isEmpty()) result.setUsername(entry.getUsername());
-			if (entry.getPassword() != null && !entry.getPassword().isEmpty()) result.setPassword(entry.getPassword());
+	public ICredentials getCredentials(String alias) throws NoSuchElementException {
+		ICredentials credentials = getInstance().get(alias);
+		if (credentials == null) {
+			throw new NoSuchElementException("credentials not found");
 		}
-		return result;
+		credentials.getUsername(); // Validate validity, may throw NoSuchElementException
+		return credentials;
 	}
 
-	public void add(String alias, String username, String password) {
-		put(alias, new Credentials(alias, () -> username, () -> password));
+	public static void add(String alias, String username, String password) {
+		getInstance().put(alias, new MockCredential(alias, username, password));
 	}
 
 	@Override
 	public Collection<String> getConfiguredAliases() {
-		return keySet();
+		return getInstance().keySet();
+	}
+
+	@Override
+	public String toString() {
+		return "MockCredentialFactory@"+this.hashCode()+"#aliasses"+this.keySet();
+	}
+
+	@Getter
+	@AllArgsConstructor
+	private static class MockCredential implements ICredentials {
+		private final String alias;
+		private final String username;
+		private final String password;
 	}
 }

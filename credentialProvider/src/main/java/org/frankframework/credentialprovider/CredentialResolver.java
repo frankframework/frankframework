@@ -60,7 +60,7 @@ public class CredentialResolver implements AdditionalStringResolver {
 		String replacement;
 		if (username || mayExpandAuthAlias(key, props1)) {
 			String defaultValue = delimStart + key+ delimStop;
-			ICredentials credentials = CredentialFactory.getCredentials(key, ()-> defaultValue, ()-> defaultValue);
+			ICredentials credentials = CredentialFactory.getCredentials(key, defaultValue, defaultValue);
 			replacement = username ? credentials.getUsername() : credentials.getPassword();
 		} else {
 			replacement = "!!not allowed to expand credential of authAlias ["+key+"]!!";
