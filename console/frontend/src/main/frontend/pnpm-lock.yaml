@@ -51,8 +51,8 @@ importers:
         specifier: ^7.0.0
         version: 7.0.0
       '@frankframework/frank-config-layout':
-        specifier: ^1.2.1
-        version: 1.2.1(@angular/core@20.2.3(@angular/compiler@20.2.3)(rxjs@7.8.2)(zone.js@0.15.1))
+        specifier: ^1.2.2
+        version: 1.2.2(@angular/core@20.2.3(@angular/compiler@20.2.3)(rxjs@7.8.2)(zone.js@0.15.1))
       '@ng-bootstrap/ng-bootstrap':
         specifier: ^19.0.1
         version: 19.0.1(a99087a87e781c186cc68fef84d6912a)
@@ -803,8 +803,8 @@ packages:
     resolution: {integrity: sha512-njSLAllkOddYDCXgTFboXn54Oe5FcvpkWq+FoetOHR64PbN0608kM02Lze0xtISGpXgP+i26VyXRQA0Irh3Obw==}
     engines: {node: '>=6'}
 
-  '@frankframework/frank-config-layout@1.2.1':
-    resolution: {integrity: sha512-Omy+kaH41X+8JNZFH8BPJ47ZMnQrEGFaUEoolhlK8hQSq+yl4fIq5b8b8NtDeQehkWFI3zEIbLpT3qPM0hbnsg==}
+  '@frankframework/frank-config-layout@1.2.2':
+    resolution: {integrity: sha512-7EGlhDWGMTizVdklB7Pm5EvNlF3WRuA0VhEnAoVA5TE5o3wx0r9D3GMe6mBQ+aJvE8JuWsOBVlQLYfg/1zRc5w==}
     peerDependencies:
       '@angular/core': ^20.2.2
 
@@ -5050,7 +5050,7 @@ snapshots:
     dependencies:
       '@fortawesome/fontawesome-common-types': 7.0.0
 
-  '@frankframework/frank-config-layout@1.2.1(@angular/core@20.2.3(@angular/compiler@20.2.3)(rxjs@7.8.2)(zone.js@0.15.1))':
+  '@frankframework/frank-config-layout@1.2.2(@angular/core@20.2.3(@angular/compiler@20.2.3)(rxjs@7.8.2)(zone.js@0.15.1))':
     dependencies:
       '@angular/core': 20.2.3(@angular/compiler@20.2.3)(rxjs@7.8.2)(zone.js@0.15.1)
       tslib: 2.8.1
