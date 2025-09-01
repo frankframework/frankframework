@@ -35,7 +35,9 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import lombok.Setter;
 
+import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.jdbc.IDataSourceFactory;
+import org.frankframework.jdbc.datasource.JdbcPoolUtil;
 import org.frankframework.jta.SpringTxManagerProxy;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
@@ -57,7 +59,6 @@ public class VerifyDatabaseConnectionBean implements ApplicationContextAware, In
 	private @Setter ApplicationContext applicationContext;
 
 	@Override
-	@SuppressWarnings("java:S2589") // Status CAN be null, ignore Sonar's dumbfound suggestion it's never null
 	public void afterPropertiesSet() throws Exception {
 		if(requiresDatabase) {
 			DataSource dataSource = getDefaultDataSource(); //Defined before getTransactionManager to verify we at least have a 'working' DataSource.
@@ -65,6 +66,9 @@ public class VerifyDatabaseConnectionBean implements ApplicationContextAware, In
 			//Try to create a new transaction to check if there is a connection to the database
 			PlatformTransactionManager transactionManager = getTransactionManager();
 			TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
+
+			// Check if the default datasource supports XA transactions when we use a JTA Transaction Manager
+			checkTxManagerAndDataSource(transactionManager, dataSource);
 
 			//We have a DataSource and a TransactionManager, now lets see if we can use them :)
 			try (Connection connection = dataSource.getConnection()) {
@@ -80,8 +84,16 @@ public class VerifyDatabaseConnectionBean implements ApplicationContextAware, In
 				}
 			}
 
-			if(status != null) { //If there is a transaction close it!
-				transactionManager.commit(status);
+			transactionManager.commit(status);
+		}
+	}
+
+	private void checkTxManagerAndDataSource(PlatformTransactionManager transactionManager, DataSource dataSource) {
+		boolean isXaTxManager = JdbcPoolUtil.isXaCapable(transactionManager);
+		if (isXaTxManager) {
+			boolean xaCapableDS = JdbcPoolUtil.isXaCapable(dataSource);
+			if (!xaCapableDS) {
+				ApplicationWarnings.add(log, "The transaction manager is XA-Capable but the configured default datasource [" + defaultDatasource + "] is not");
 			}
 		}
 	}

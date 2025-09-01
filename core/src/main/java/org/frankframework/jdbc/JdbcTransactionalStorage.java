@@ -45,7 +45,6 @@ import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.jta.JtaTransactionManager;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -357,15 +356,15 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 	private void checkTxManagerAndDataSource() throws ConfigurationException {
 		try {
-			boolean isXaTxManager = txManager instanceof JtaTransactionManager;
+			boolean isXaTxManager = JdbcPoolUtil.isXaCapable(txManager);
 			if (isXaTxManager) {
 				boolean xaCapableDS = JdbcPoolUtil.isXaCapable(getDatasource());
 				if (!xaCapableDS) {
-					ConfigurationWarnings.add(this, log, "The transaction manager is XA-Capable but the configured datasource [" + getDatasourceName() + "] is not");
+					ConfigurationWarnings.add(this, log, "The transaction manager is XA-Capable but the configured datasource [" + getDatasourceName() + "] is not. This can cause issues and lost messages.");
 				}
 			}
 		} catch (JdbcException e) {
-			throw new ConfigurationException("Cannot get XA-Capable status of the configured datasource", e);
+			throw new ConfigurationException("Cannot get the configured datasource [" + getDatasourceName() + "]", e);
 		}
 	}
 
