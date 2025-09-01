@@ -120,6 +120,10 @@ public class KubernetesCredentialFactory implements ISecretProvider {
 	public ISecret getSecret(CredentialAlias alias) throws NoSuchElementException {
 		Secret secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), this::getSecret);
 
+		if (secret == null) {
+			throw new NoSuchElementException();
+		}
+
 		return new KubernetesCredential(alias, secret);
 	}
 
