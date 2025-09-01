@@ -43,6 +43,7 @@ import jakarta.annotation.Nonnull;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -627,7 +628,8 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	}
 
 	@Test
-	public void expectSuccessfulConversionWithUnsignedPdf() throws Exception {
+	@DisplayName("Expect successful conversion when providing signed PDF")
+	public void unsignedPdf() throws Exception {
 		expectSuccessfulConversion("unsignedPdf", "/PdfPipe/unsigned.pdf", "/PdfPipe/xml-results/pdf.xml", "/PdfPipe/results/unsigned.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
@@ -636,7 +638,8 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	}
 
 	@Test
-	public void expectExceptionWhenProvidingSignedPdf() throws Exception {
+	@DisplayName("Expect successful conversion when providing signed PDF")
+	public void signedPdf() throws Exception {
 		expectSuccessfulConversion("SignedPdf", "/PdfPipe/signed.pdf", "/PdfPipe/xml-results/signed_pdf.xml", "/PdfPipe/results/signed.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
