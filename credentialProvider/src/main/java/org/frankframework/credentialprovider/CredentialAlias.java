@@ -15,6 +15,7 @@
 */
 package org.frankframework.credentialprovider;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
@@ -55,22 +56,22 @@ public class CredentialAlias {
 			ALIAS_PREFIX = null;
 		}
 
-		String doesMapHaveNameSuffix = constants.getProperty(PROPERTY_BASE1.formatted(USERNAME_SUFFIX));
-		String doesVaultHaveNameSuffix = constants.getProperty(PROPERTY_BASE2.formatted(USERNAME_SUFFIX));
-		if (StringUtils.isNotBlank(doesMapHaveNameSuffix)) {
-			DEFAULT_USERNAME_FIELD = doesMapHaveNameSuffix;
-		} else if (StringUtils.isNotBlank(doesVaultHaveNameSuffix)) {
-			DEFAULT_USERNAME_FIELD = doesVaultHaveNameSuffix;
+		String mapNameSuffix = constants.getProperty(PROPERTY_BASE1.formatted(USERNAME_SUFFIX));
+		String vaultNameSuffix = constants.getProperty(PROPERTY_BASE2.formatted(USERNAME_SUFFIX));
+		if (StringUtils.isNotBlank(mapNameSuffix)) {
+			DEFAULT_USERNAME_FIELD = mapNameSuffix;
+		} else if (StringUtils.isNotBlank(vaultNameSuffix)) {
+			DEFAULT_USERNAME_FIELD = vaultNameSuffix;
 		} else {
 			DEFAULT_USERNAME_FIELD = CredentialFactory.DEFAULT_USERNAME_FIELD;
 		}
 
-		String doesMapHavePasswordSuffix = constants.getProperty(PROPERTY_BASE1.formatted(PASSWORD_SUFFIX));
-		String doesVaultHavePasswordSuffix = constants.getProperty(PROPERTY_BASE2.formatted(PASSWORD_SUFFIX));
-		if (StringUtils.isNotBlank(doesMapHavePasswordSuffix)) {
-			DEFAULT_PASSWORD_FIELD = doesMapHavePasswordSuffix;
-		} else if (StringUtils.isNotBlank(doesVaultHavePasswordSuffix)) {
-			DEFAULT_PASSWORD_FIELD = doesVaultHavePasswordSuffix;
+		String mapPasswordSuffix = constants.getProperty(PROPERTY_BASE1.formatted(PASSWORD_SUFFIX));
+		String vaultPasswordSuffix = constants.getProperty(PROPERTY_BASE2.formatted(PASSWORD_SUFFIX));
+		if (StringUtils.isNotBlank(mapPasswordSuffix)) {
+			DEFAULT_PASSWORD_FIELD = mapPasswordSuffix;
+		} else if (StringUtils.isNotBlank(vaultPasswordSuffix)) {
+			DEFAULT_PASSWORD_FIELD = vaultPasswordSuffix;
 		} else {
 			DEFAULT_PASSWORD_FIELD = CredentialFactory.DEFAULT_PASSWORD_FIELD;
 		}
@@ -80,7 +81,7 @@ public class CredentialAlias {
 	 * Extracting is deprecated, cleanse is not.
 	 * @return NULL when empty.
 	 */
-	@Nullable
+	@Nonnull
 	private static String extractAlias(@Nullable final String rawAlias) {
 		if (StringUtils.isBlank(rawAlias)) {
 			throw new IllegalArgumentException("alias may not be empty");
@@ -99,7 +100,7 @@ public class CredentialAlias {
 		return aliasName; // Return the name without the optional prefix.
 	}
 
-	private CredentialAlias(String rawAlias) {
+	private CredentialAlias(@Nullable String rawAlias) {
 		String cleanAlias = extractAlias(rawAlias);
 
 		int openParenthesis = cleanAlias.indexOf("{");
@@ -125,6 +126,7 @@ public class CredentialAlias {
 		}
 	}
 
+	@Nullable
 	public static CredentialAlias parse(String rawAlias) {
 		try {
 			return new CredentialAlias(rawAlias);
