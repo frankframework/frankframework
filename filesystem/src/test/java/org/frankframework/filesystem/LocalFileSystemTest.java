@@ -2,7 +2,6 @@ package org.frankframework.filesystem;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -10,7 +9,6 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.ByteArrayInputStream;
 import java.net.URL;
-import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -127,7 +125,6 @@ class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem> {
 		Path nonExistingFolderObject = fileSystem.toFile(nonExistingFolder);
 
 		assertFalse(_folderExists(nonExistingFolder));
-		FileSystemException ex = assertThrows(FileSystemException.class, () -> fileSystem.list(nonExistingFolderObject, TypeFilter.FILES_ONLY), "Expected an exception to be thrown because we try to list files in a nonexisting folder.");
-		assertInstanceOf(NoSuchFileException.class, ex.getCause());
+		assertThrows(FolderNotFoundException.class, () -> fileSystem.list(nonExistingFolderObject, TypeFilter.FILES_ONLY), "Expected an exception to be thrown because we try to list files in a nonexisting folder.");
 	}
 }
