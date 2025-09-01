@@ -67,7 +67,7 @@ class CredentialFactoryTest {
 	@Test
 	void testGetAliases() throws Exception {
 		Collection<String> aliases = CredentialFactory.getConfiguredAliases();
-		assertEquals("[alias1, account, alias2]", aliases.toString());
+		assertEquals("[aliasWith, alias1, account, alias2]", aliases.toString());
 	}
 
 	@Test
@@ -135,7 +135,7 @@ class CredentialFactoryTest {
 		assertEquals("alias1Password", alias1.getPassword());
 		assertEquals("alias2Password", alias2.getPassword());
 		assertFalse(CredentialFactory.hasCredential("notExists"));
-		assertEquals(3, CredentialFactory.getConfiguredAliases().size());
+		assertEquals(4, CredentialFactory.getConfiguredAliases().size());
 	}
 
 	@Test
@@ -158,7 +158,7 @@ class CredentialFactoryTest {
 		assertEquals("username1", alias1.getUsername());
 		assertEquals("password1", alias1.getPassword());
 		assertEquals("passwordOnly", alias2.getPassword());
-		assertEquals("[alias1, account, alias2, TheMaster, TheBachelor]", CredentialFactory.getConfiguredAliases().toString());
+		assertEquals("[aliasWith, alias1, account, alias2, TheMaster, TheBachelor]", CredentialFactory.getConfiguredAliases().toString());
 		assertTrue(CredentialFactory.hasCredential("TheMaster"));
 		assertTrue(CredentialFactory.hasCredential("fakePrefix:TheBachelor"));
 	}

@@ -35,9 +35,9 @@ public interface ICredentialProvider {
 	@SuppressWarnings("java:S112")
 	void initialize() throws Exception;
 
-	boolean hasCredentials(@Nonnull String alias);
+	boolean hasCredentials(@Nonnull CredentialAlias alias);
 
-	ICredentials getCredentials(@Nonnull String alias) throws NoSuchElementException;
+	ICredentials getCredentials(@Nonnull CredentialAlias alias) throws NoSuchElementException;
 
 	/**
 	 * return a list of all configured aliases, or null if such a list cannot be provided.

@@ -17,46 +17,37 @@ package org.frankframework.credentialprovider;
 
 import java.util.NoSuchElementException;
 
-import org.apache.commons.lang3.StringUtils;
-
 import lombok.Setter;
 import lombok.extern.java.Log;
 
 @Log
 public abstract class Credentials implements ICredentials {
 
-	private String alias;
+	private CredentialAlias alias;
 	@Setter private String username;
 	@Setter private String password;
 	private boolean hasCredentials = false;
 
-	protected Credentials(String alias) {
-		// logic
-		if (StringUtils.isBlank(alias)) {
-			throw new IllegalArgumentException("no alias provided");
-		}
-
+	protected Credentials(CredentialAlias alias) {
 		this.alias = alias;
 	}
 
 	private void getCredentials() {
 		if (hasCredentials) return;
 
-		if (StringUtils.isNotEmpty(getAlias())) {
-			try {
-				getCredentialsFromAlias();
-			} catch (NoSuchElementException e) {
-				log.fine("unable to find alias [%s]".formatted(alias));
-				throw e;
-			} catch (RuntimeException e) {
-				log.warning("unable to find alias [%s]".formatted(alias));
-				throw e;
-			}
+		try {
+			getCredentialsFromAlias(alias.getUsernameField(), alias.getPasswordField());
+		} catch (NoSuchElementException e) {
+			log.fine("unable to find alias [%s]".formatted(alias));
+			throw e;
+		} catch (RuntimeException e) {
+			log.warning("unable to find alias [%s]".formatted(alias));
+			throw e;
 		}
 		hasCredentials = true;
 	}
 
-	abstract void getCredentialsFromAlias();
+	abstract void getCredentialsFromAlias(String usernameField, String passwordField);
 
 	@Override
 	public String toString() {
@@ -65,14 +56,9 @@ public abstract class Credentials implements ICredentials {
 				" username [" + username + "]";
 	}
 
-	public void setAlias(String string) {
-		alias = string;
-		hasCredentials = false;
-	}
-
 	@Override
 	public String getAlias() {
-		return alias;
+		return alias.getName();
 	}
 
 	@Override

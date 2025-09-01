@@ -26,7 +26,6 @@ import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.credential.store.CredentialStore;
 import org.wildfly.security.credential.store.CredentialStoreException;
 
@@ -64,7 +63,7 @@ public class WildFlyCredentialFactory implements ICredentialProvider {
 	}
 
 	@Override
-	public ICredentials getCredentials(String alias) throws NoSuchElementException {
+	public ICredentials getCredentials(CredentialAlias alias) throws NoSuchElementException {
 		CredentialStore cs = getCredentialStore(credentialStore);
 		if (cs==null) {
 			throw new NoSuchElementException("CredentialStore [" + credentialStore + "] not found");
@@ -73,11 +72,12 @@ public class WildFlyCredentialFactory implements ICredentialProvider {
 	}
 
 	@Override
-	public boolean hasCredentials(String alias) {
-		CredentialStore cs = getCredentialStore(credentialStore);
+	public boolean hasCredentials(CredentialAlias alias) {
 		try {
-			return cs!=null && (cs.exists(alias, PasswordCredential.class) || cs.exists(alias+"/username", PasswordCredential.class));
-		} catch (CredentialStoreException e) {
+			ICredentials credentials = getCredentials(alias);
+			return !StringUtils.isAllBlank(credentials.getUsername(), credentials.getPassword());
+
+		} catch (NoSuchElementException e) {
 			log.fine(()->"exception testing for alias ["+alias+"] ("+e.getClass().getName()+") :"+e.getMessage());
 			return false;
 		}

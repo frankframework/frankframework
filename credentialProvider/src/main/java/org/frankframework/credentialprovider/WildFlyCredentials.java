@@ -28,16 +28,16 @@ public class WildFlyCredentials extends Credentials {
 
 	private final CredentialStore cs;
 
-	public WildFlyCredentials(CredentialStore cs, String alias) {
+	public WildFlyCredentials(CredentialStore cs, CredentialAlias alias) {
 		super(alias);
 		this.cs = cs;
 	}
 
 	@Override
-	protected void getCredentialsFromAlias() {
+	protected void getCredentialsFromAlias(String usernameField, String passwordField) {
 		try {
-			if (aliasExists("") || aliasExists("/username")) {
-				retrieveAndSet("/username", this::setUsername);
+			if (aliasExists("") || aliasExists("/"+usernameField)) {
+				retrieveAndSet("/"+usernameField, this::setUsername);
 				retrieveAndSet("", this::setPassword);
 			} else {
 				throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]: alias not found");
@@ -45,8 +45,7 @@ public class WildFlyCredentials extends Credentials {
 		} catch (NoSuchElementException e) {
 			throw e;
 		} catch (Exception e) {
-			NoSuchElementException nsee = new NoSuchElementException("cannot obtain credentials from authentication alias [" + getAlias() + "]", e);
-			throw nsee;
+			throw new NoSuchElementException("cannot obtain credentials from authentication alias [" + getAlias() + "]", e);
 		}
 	}
 
@@ -65,7 +64,7 @@ public class WildFlyCredentials extends Credentials {
 				setter.accept(value);
 			}
 		} else {
-			setter.accept("");
+			setter.accept(null);
 		}
 	}
 

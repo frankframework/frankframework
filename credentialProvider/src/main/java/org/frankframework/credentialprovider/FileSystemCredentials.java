@@ -26,7 +26,7 @@ public class FileSystemCredentials extends Credentials {
 
 	private final Path root;
 
-	public FileSystemCredentials(String alias, Path root) {
+	public FileSystemCredentials(CredentialAlias alias, Path root) {
 		super(alias);
 
 		if (root == null) {
@@ -49,13 +49,13 @@ public class FileSystemCredentials extends Credentials {
 	}
 
 	@Override
-	protected void getCredentialsFromAlias() {
+	protected void getCredentialsFromAlias(String usernameField, String passwordField) {
 		try {
 			Path aliasPath = Paths.get(root.toString(), getAlias());
 			if (Files.exists(aliasPath)) {
 				if (Files.isDirectory(aliasPath)) {
-					populateFieldFromFile(getAlias(), CredentialFactory.DEFAULT_USERNAME_FIELD, this::setUsername);
-					populateFieldFromFile(getAlias(), CredentialFactory.DEFAULT_PASSWORD_FIELD, this::setPassword);
+					populateFieldFromFile(getAlias(), usernameField, this::setUsername);
+					populateFieldFromFile(getAlias(), passwordField, this::setPassword);
 				} else {
 					populateFieldFromFile(aliasPath, this::setPassword);
 				}

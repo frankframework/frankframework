@@ -60,12 +60,12 @@ public class FileSystemCredentialFactory implements ICredentialProvider {
 	}
 
 	@Override
-	public boolean hasCredentials(String alias) {
-		return Files.exists(Paths.get(root.toString(), alias));
+	public boolean hasCredentials(CredentialAlias alias) {
+		return Files.exists(Paths.get(root.toString(), alias.getName()));
 	}
 
 	@Override
-	public ICredentials getCredentials(String alias) throws NoSuchElementException {
+	public ICredentials getCredentials(CredentialAlias alias) throws NoSuchElementException {
 		return new FileSystemCredentials(alias, root);
 	}
 

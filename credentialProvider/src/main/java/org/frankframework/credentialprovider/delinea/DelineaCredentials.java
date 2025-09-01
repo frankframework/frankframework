@@ -15,7 +15,7 @@
 */
 package org.frankframework.credentialprovider.delinea;
 
-import org.frankframework.credentialprovider.CredentialFactory;
+import org.frankframework.credentialprovider.CredentialAlias;
 import org.frankframework.credentialprovider.ICredentials;
 
 public class DelineaCredentials implements ICredentials {
@@ -24,14 +24,14 @@ public class DelineaCredentials implements ICredentials {
 	private final String password;
 	private final String alias;
 
-	public DelineaCredentials(Secret secret) {
+	public DelineaCredentials(CredentialAlias alias, Secret secret) {
 		if (secret == null) {
 			throw new IllegalArgumentException();
 		}
 
 		this.alias = String.valueOf(secret.id());
-		this.username = getFieldValue(secret, CredentialFactory.DEFAULT_USERNAME_FIELD);
-		this.password = getFieldValue(secret, CredentialFactory.DEFAULT_PASSWORD_FIELD);
+		this.username = getFieldValue(secret, alias.getUsernameField());
+		this.password = getFieldValue(secret, alias.getPasswordField());
 	}
 
 	private String getFieldValue(Secret secret, String slugName) {

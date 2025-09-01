@@ -44,15 +44,8 @@ public class PropertyFileCredentialFactoryTest {
 	}
 
 	@Test
-	public void testNoAlias() {
-		String alias = null;
-
-		assertThrows(IllegalArgumentException.class, () -> credentialFactory.getCredentials(alias));
-	}
-
-	@Test
 	public void testPlainAlias() {
-		String alias = "straight";
+		CredentialAlias alias = CredentialAlias.parse("straight");
 		String expectedUsername = "\\username from alias";
 		String expectedPassword = "passw\\urd from alias";
 
@@ -64,7 +57,7 @@ public class PropertyFileCredentialFactoryTest {
 
 	@Test
 	public void testUnknownAlias() {
-		String alias = "unknown";
+		CredentialAlias alias = CredentialAlias.parse("unknown");
 
 		ICredentials mc = credentialFactory.getCredentials(alias);
 
@@ -73,8 +66,8 @@ public class PropertyFileCredentialFactoryTest {
 
 	@Test
 	public void testAliasWithoutUsername() {
+		CredentialAlias alias = CredentialAlias.parse("noUsername");
 
-		String alias = "noUsername";
 		String expectedPassword = "password from alias";
 
 		ICredentials mc = credentialFactory.getCredentials(alias);
@@ -85,8 +78,8 @@ public class PropertyFileCredentialFactoryTest {
 
 	@Test
 	public void testPlainCredential() {
+		CredentialAlias alias = CredentialAlias.parse("singleValue");
 
-		String alias = "singleValue";
 		String expectedUsername = null;
 		String expectedPassword = "Plain Credential";
 
@@ -99,7 +92,8 @@ public class PropertyFileCredentialFactoryTest {
 	@Test
 	public void testPasswordWithSlashes() {
 		// Act
-		ICredentials mc = credentialFactory.getCredentials("slash");
+		CredentialAlias alias = CredentialAlias.parse("slash");
+		ICredentials mc = credentialFactory.getCredentials(alias);
 
 		// Assert
 		assertEquals("username from alias", mc.getUsername());
@@ -107,7 +101,7 @@ public class PropertyFileCredentialFactoryTest {
 	}
 
 	@Test
-	public void testGetAliases() throws Exception {
+	public void testGetAliases() {
 		// Act
 		Collection<String> aliases = credentialFactory.getConfiguredAliases();
 

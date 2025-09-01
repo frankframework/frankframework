@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.credentialprovider.CredentialAlias;
 import org.frankframework.credentialprovider.ICredentialProvider;
 import org.frankframework.credentialprovider.ICredentials;
 import org.frankframework.credentialprovider.util.Cache;
@@ -136,7 +137,7 @@ public class DelineaCredentialFactory implements ICredentialProvider {
 	}
 
 	@Override
-	public boolean hasCredentials(String alias) {
+	public boolean hasCredentials(CredentialAlias alias) {
 		return getCredentials(alias) != null;
 	}
 
@@ -146,15 +147,11 @@ public class DelineaCredentialFactory implements ICredentialProvider {
 	}
 
 	@Override
-	public ICredentials getCredentials(String alias) throws NoSuchElementException {
-		if (StringUtils.isBlank(alias)) {
-			throw new IllegalArgumentException();
-		}
-
+	public ICredentials getCredentials(CredentialAlias alias) throws NoSuchElementException {
 		// Make sure to always get a live copy of the secret
-		Secret secret = configuredAliases.computeIfAbsentOrExpired(alias, aliasToRetrieve -> delineaClient.getSecret(aliasToRetrieve, delineaClientSettings.autoCommentValue()));
+		Secret secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), aliasToRetrieve -> delineaClient.getSecret(aliasToRetrieve, delineaClientSettings.autoCommentValue()));
 
-		return new DelineaCredentials(secret);
+		return new DelineaCredentials(alias, secret);
 	}
 
 	void setDelineaClient(DelineaClient delineaClient) {

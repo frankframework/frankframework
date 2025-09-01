@@ -127,16 +127,9 @@ public class AnsibleVaultCredentialFactoryTest {
 	}
 
 	@Test
-	public void testNoAlias() {
-		String alias = null;
-
-		assertThrows(IllegalArgumentException.class, () -> credentialFactory.getCredentials(alias));
-	}
-
-	@Test
 	public void testPlainAlias() {
+		CredentialAlias alias = CredentialAlias.parse("straight");
 
-		String alias = "straight";
 		String expectedUsername = "\\username from alias";
 		String expectedPassword = "passw\\urd from alias";
 
@@ -148,7 +141,7 @@ public class AnsibleVaultCredentialFactoryTest {
 
 	@Test
 	public void testAliasWithoutUsername() {
-		String alias = "noUsername";
+		CredentialAlias alias = CredentialAlias.parse("noUsername");
 		String expectedPassword = "password from alias";
 
 		ICredentials mc = credentialFactory.getCredentials(alias);
@@ -158,21 +151,8 @@ public class AnsibleVaultCredentialFactoryTest {
 	}
 
 	@Test
-	public void testUnknownAliasNoDefaults() {
-		String alias = "fakeAlias";
-		String username = null;
-		String password = null;
-
-		assertThrows(NoSuchElementException.class, () -> {
-			ICredentials mc = credentialFactory.getCredentials(alias);
-			assertEquals(username, mc.getUsername());
-			assertEquals(password, mc.getPassword());
-		});
-	}
-
-	@Test
 	public void testUnknownAlias() {
-		String alias = "fakeAlias";
+		CredentialAlias alias = CredentialAlias.parse("fakeAlias");
 
 		ICredentials mc = credentialFactory.getCredentials(alias);
 		assertThrows(NoSuchElementException.class, mc::getUsername);
@@ -182,8 +162,8 @@ public class AnsibleVaultCredentialFactoryTest {
 
 	@Test
 	public void testPlainCredential() {
+		CredentialAlias alias = CredentialAlias.parse("singleValue");
 
-		String alias = "singleValue";
 		String expectedUsername = null;
 		String expectedPassword = "Plain Credential";
 
@@ -194,7 +174,7 @@ public class AnsibleVaultCredentialFactoryTest {
 	}
 
 	@Test
-	public void testGetAliases() throws Exception {
+	public void testGetAliases() {
 		Collection<String> aliases = credentialFactory.getConfiguredAliases();
 		assertEquals("[straight, singleValue, noUsername]", aliases.toString());
 	}
