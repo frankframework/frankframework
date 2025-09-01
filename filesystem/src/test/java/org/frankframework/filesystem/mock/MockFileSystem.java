@@ -197,6 +197,9 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	@Override
 	public DirectoryStream<M> list(MockFile folder, TypeFilter filter) throws FileSystemException {
 		checkOpen();
+		if (folder == null) {
+			folder = toFile(null);
+		}
 		if (folder instanceof MockFolder mockFolder) {
 			Map<String, MockFile> files = switch (filter) {
 				case FILES_ONLY, FILES_AND_FOLDERS -> mockFolder.getFiles();

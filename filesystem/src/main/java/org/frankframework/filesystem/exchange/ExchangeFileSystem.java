@@ -254,9 +254,14 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 
 	@Override
 	public DirectoryStream<MailItemId> list(MailItemId folderName, TypeFilter filter) throws FileSystemException {
-		MailFolder folder = isFolder(folderName)
-				? (MailFolder) folderName
-				: resolveFolder(getCanonicalName(folderName));
+		MailFolder folder;
+		if (folderName == null) {
+			folder = mailFolder;
+		} else if (isFolder(folderName)) {
+			folder = (MailFolder) folderName;
+		} else {
+			folder = resolveFolder(getCanonicalName(folderName));
+		}
 		return listItems(folder, filter);
 	}
 

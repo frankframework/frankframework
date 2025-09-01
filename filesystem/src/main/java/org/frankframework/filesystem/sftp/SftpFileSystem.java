@@ -111,7 +111,8 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 	@Override
 	public DirectoryStream<SftpFileRef> list(SftpFileRef folder, TypeFilter filter) throws FileSystemException {
 		try {
-			return FileSystemUtils.getDirectoryStream(new SftpFilePathIterator(getCanonicalName(folder), listFolder(folder), filter));
+			String folderName = folder != null ? getCanonicalName(folder) : null;
+			return FileSystemUtils.getDirectoryStream(new SftpFilePathIterator(folderName, listFolder(folderName), filter));
 		} catch (SftpException e) {
 			throw new FileSystemException(e);
 		}

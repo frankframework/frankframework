@@ -118,6 +118,9 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 
 	@Override
 	public DirectoryStream<Path> list(Path folder, TypeFilter filter) throws FileSystemException {
+		if (folder == null) {
+			folder = toFile(null);
+		}
 		if (!folderExists(folder)) {
 			throw new FileSystemException("no filesystem-root, folder does not exist");
 		}

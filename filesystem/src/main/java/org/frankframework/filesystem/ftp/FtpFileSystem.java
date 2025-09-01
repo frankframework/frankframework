@@ -99,7 +99,7 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	@Override
 	public DirectoryStream<FTPFileRef> list(FTPFileRef folder, TypeFilter filter) throws FileSystemException {
 		try {
-			String folderName = getCanonicalName(folder);
+			String folderName = folder != null ? getCanonicalName(folder) : null;
 			return FileSystemUtils.getDirectoryStream(new FTPFilePathIterator(folderName, ftpClient.listFiles(folderName), filter));
 		} catch (IOException e) {
 			throw new FileSystemException(e);

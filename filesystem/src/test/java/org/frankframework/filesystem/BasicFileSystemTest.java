@@ -521,7 +521,40 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 	}
 
 	@Test
-	public void basicFileSystemTestListFileShouldNotReadFolders() throws Exception {
+	public void basicFileSystemTestListFileWithGenericShouldNotReadFolders() throws Exception {
+		_deleteFolder(null);
+		String contents1 = "maakt niet uit";
+		String contents2 = "maakt ook niet uit";
+		String folderName = "subfolder";
+
+		fileSystem.configure();
+		fileSystem.open();
+
+
+		createFile(null, FILE1, contents1);
+		createFile(null, FILE2, contents2);
+		_createFolder(folderName);
+
+		Set<F> files = new HashSet<>();
+		Set<String> filenames = new HashSet<>();
+
+		try(DirectoryStream<F> ds = fileSystem.list((F) null, TypeFilter.FILES_ONLY)) {
+			Iterator<F> it = ds.iterator();
+			// Count files
+			while (it.hasNext()) {
+				F f=it.next();
+				files.add(f);
+				filenames.add(fileSystem.getName(f));
+			}
+		}
+
+		assertEquals(2, files.size(), "Size of set of files, should not contain folders");
+		assertEquals( 2, filenames.size(), "Size of set of filenames, should not contain folders");
+
+	}
+
+	@Test
+	public void basicFileSystemTestListFileWithStringShouldNotReadFolders() throws Exception {
 		_deleteFolder(null);
 		String contents1 = "maakt niet uit";
 		String contents2 = "maakt ook niet uit";
