@@ -15,7 +15,6 @@
 */
 package org.frankframework.extensions.aspose.services.conv.impl.convertors;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -25,7 +24,6 @@ import org.apache.commons.io.input.BOMInputStream;
 import org.springframework.http.MediaType;
 
 import com.aspose.pdf.exceptions.InvalidPasswordException;
-import com.aspose.pdf.facades.PdfFileSignature;
 
 import org.frankframework.extensions.aspose.services.conv.CisConfiguration;
 import org.frankframework.extensions.aspose.services.conv.CisConversionResult;
@@ -43,10 +41,6 @@ public class PdfStandaardConvertor extends AbstractConvertor {
 
 	@Override
 	public void convert(MediaType mediaType, Message message, CisConversionResult result, String charset) throws Exception {
-		if (hasSignature(message, charset)){
-			throw new InvalidPdfException("Cannot convert a signed pdf file");
-		}
-
 		try (InputStream is = BOMInputStream.builder()
 				.setInputStream(message.asInputStream(charset))
 				.setByteOrderMarks(ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE)
@@ -55,15 +49,6 @@ public class PdfStandaardConvertor extends AbstractConvertor {
 		}
 
  		result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
-	}
-
-	private boolean hasSignature(Message message, String charset) throws IOException {
-		try (InputStream is = message.asInputStream(charset)) {
-			try (PdfFileSignature pdfFileSignature = new PdfFileSignature()) {
-				pdfFileSignature.bindPdf(is);
-				return !pdfFileSignature.getSignNames().isEmpty();
-			}
-		}
 	}
 
 	@Override

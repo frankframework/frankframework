@@ -637,7 +637,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void expectExceptionWhenProvidingSignedPdf() throws Exception {
-		expectUnSuccessfulConversion("SignedPdf", "/PdfPipe/signed.pdf", "/PdfPipe/xml-results/signed_pdf.xml");
+		expectSuccessfulConversion("SignedPdf", "/PdfPipe/signed.pdf", "/PdfPipe/xml-results/signed_pdf.xml", "/PdfPipe/results/signed.pdf");
 		assertTrue(session.containsKey("documents"));
 		assertTrue(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));

@@ -112,8 +112,6 @@ abstract class AbstractConvertor implements Convertor {
 		} catch (Exception e) {
 			if (isPasswordException(e)) {
 				result = CisConversionResult.createPasswordFailureResult(filename, conversionOption, mediaType);
-			} else if (e instanceof InvalidPdfException) {
-				result.setFailureReason(e.getMessage());
 			} else {
 				result.setFailureReason(createErrorMsg(e));
 			}
