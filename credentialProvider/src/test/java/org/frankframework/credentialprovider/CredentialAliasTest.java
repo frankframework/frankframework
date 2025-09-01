@@ -16,7 +16,7 @@ public class CredentialAliasTest {
 
 	@Test
 	public void aliasWithValidCharacters() {
-		assertDoesNotThrow(() -> CredentialAlias.parse("alias"));
+		assertDoesNotThrow(() -> CredentialAlias.parse("alias.name"));
 	}
 
 	@Test
@@ -45,8 +45,8 @@ public class CredentialAliasTest {
 
 	@Test
 	public void verifyAliasNameWithDifferentPassword() {
-		CredentialAlias alias = CredentialAlias.parse("alias{,secret}");
-		assertEquals("alias", alias.getName());
+		CredentialAlias alias = CredentialAlias.parse("alias.name{,secret}");
+		assertEquals("alias.name", alias.getName());
 		assertEquals("username", alias.getUsernameField());
 		assertEquals("secret", alias.getPasswordField());
 	}

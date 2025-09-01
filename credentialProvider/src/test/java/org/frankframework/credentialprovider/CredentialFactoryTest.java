@@ -85,13 +85,13 @@ class CredentialFactoryTest {
 		assertEquals("account", credentials.getAlias());
 	}
 
-//TODO	@Test
+	@Test
 	void testAliasWithCustomFields() {
 		// Init setting on purpose with extra whitespaces, commas etc.
 		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory");
 
 		// Act
-		ICredentials c = CredentialFactory.getCredentials("aliasWith{username@domain,secret}");
+		ICredentials c = CredentialFactory.getCredentials("aliasWith{name@domain,secret}");
 
 		// Assert values are from the first factory that returns a value
 		assertEquals("name@domain.com", c.getUsername());

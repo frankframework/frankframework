@@ -93,7 +93,7 @@ public class CredentialAlias {
 		}
 
 		String cleanAliasName = StringUtil.split(aliasName, "{").get(0);
-		if (!cleanAliasName.matches("[a-zA-Z0-9]+")) {
+		if (!cleanAliasName.matches("[a-zA-Z0-9.]+")) {
 			throw new IllegalArgumentException("alias must only consist of letters and numbers");
 		}
 
