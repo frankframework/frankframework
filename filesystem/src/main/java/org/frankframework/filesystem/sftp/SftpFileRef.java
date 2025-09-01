@@ -78,7 +78,7 @@ public class SftpFileRef {
 	/** Returns the canonical name inclusive file path when present */
 	public String getName() {
 		String prefix = folder != null ? folder + "/" : "";
-		if (org.springframework.util.StringUtils.hasLength(prefix) || name != null) {
+		if (StringUtils.isNotEmpty(prefix) || name != null) {
 			return prefix + name;
 		}
 		return null;
