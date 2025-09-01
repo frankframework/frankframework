@@ -36,7 +36,7 @@ public abstract class Credentials implements ICredentials {
 		if (hasCredentials) return;
 
 		try {
-			getCredentialsFromAlias(alias.getUsernameField(), alias.getPasswordField());
+			getCredentialsFromAlias(alias);
 		} catch (NoSuchElementException e) {
 			log.fine("unable to find alias [%s]".formatted(alias));
 			throw e;
@@ -47,7 +47,7 @@ public abstract class Credentials implements ICredentials {
 		hasCredentials = true;
 	}
 
-	abstract void getCredentialsFromAlias(String usernameField, String passwordField);
+	abstract void getCredentialsFromAlias(CredentialAlias alias) throws NoSuchElementException;
 
 	@Override
 	public String toString() {

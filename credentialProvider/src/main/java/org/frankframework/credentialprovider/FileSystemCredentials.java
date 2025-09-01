@@ -18,13 +18,13 @@ package org.frankframework.credentialprovider;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.NoSuchElementException;
-import java.util.function.Consumer;
+
+import org.apache.commons.lang3.StringUtils;
 
 public class FileSystemCredentials extends Credentials {
 
-	private final Path root;
+	private final Path aliasPath;
 
 	public FileSystemCredentials(CredentialAlias alias, Path root) {
 		super(alias);
@@ -33,34 +33,30 @@ public class FileSystemCredentials extends Credentials {
 			throw new IllegalStateException("no path provided");
 		}
 
-		this.root = root;
+		this.aliasPath = root.resolve(alias.getName()); // May not exist!
 	}
 
-	private void populateFieldFromFile(String folder, String file, Consumer<String> setter) throws IOException {
-		Path p = Paths.get(root.toString(), folder, file);
-		populateFieldFromFile(p, setter);
-	}
-
-	private void populateFieldFromFile(Path p, Consumer<String> setter) throws IOException {
-		if (Files.exists(p)) {
-			String fileContents = Files.readAllLines(p).get(0);
-			setter.accept(fileContents);
+	public String getFieldValue(String fieldname) throws IOException {
+		Path field = StringUtils.isBlank(fieldname) ? aliasPath : aliasPath.resolve(fieldname);
+		if (Files.exists(field)) {
+			return Files.readAllLines(field).get(0);
 		}
+
+		return null;
 	}
 
 	@Override
-	protected void getCredentialsFromAlias(String usernameField, String passwordField) {
+	protected void getCredentialsFromAlias(CredentialAlias alias) {
+		if (!Files.exists(aliasPath)) {
+			throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]: alias not found");
+		}
+
 		try {
-			Path aliasPath = Paths.get(root.toString(), getAlias());
-			if (Files.exists(aliasPath)) {
-				if (Files.isDirectory(aliasPath)) {
-					populateFieldFromFile(getAlias(), usernameField, this::setUsername);
-					populateFieldFromFile(getAlias(), passwordField, this::setPassword);
-				} else {
-					populateFieldFromFile(aliasPath, this::setPassword);
-				}
+			if (Files.isDirectory(aliasPath)) {
+				setUsername(getFieldValue(alias.getUsernameField()));
+				setPassword(getFieldValue(alias.getPasswordField()));
 			} else {
-				throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]: alias not found");
+				setPassword(getFieldValue(null));
 			}
 		} catch (IOException e) {
 			throw new NoSuchElementException("cannot obtain credentials from authentication alias [" + getAlias() + "]", e);

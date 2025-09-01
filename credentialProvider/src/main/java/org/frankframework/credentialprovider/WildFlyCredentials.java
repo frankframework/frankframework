@@ -34,7 +34,8 @@ public class WildFlyCredentials extends Credentials {
 	}
 
 	@Override
-	protected void getCredentialsFromAlias(String usernameField, String passwordField) {
+	protected void getCredentialsFromAlias(CredentialAlias alias) {
+		String usernameField = alias.getUsernameField();
 		try {
 			if (aliasExists("") || aliasExists("/"+usernameField)) {
 				retrieveAndSet("/"+usernameField, this::setUsername);

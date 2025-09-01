@@ -91,12 +91,12 @@ public class CredentialAlias {
 			aliasName = rawAlias.substring(ALIAS_PREFIX.length());
 		}
 
-		aliasName = StringUtil.split(aliasName, "{").get(0);
-		if (!aliasName.matches("[a-zA-Z0-9]+")) {
+		String cleanAliasName = StringUtil.split(aliasName, "{").get(0);
+		if (!cleanAliasName.matches("[a-zA-Z0-9]+")) {
 			throw new IllegalArgumentException("alias must only consist of letters and numbers");
 		}
 
-		return aliasName;
+		return aliasName; // Return the name without the optional prefix.
 	}
 
 	private CredentialAlias(String rawAlias) {

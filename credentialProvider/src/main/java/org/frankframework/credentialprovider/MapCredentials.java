@@ -28,10 +28,11 @@ public class MapCredentials extends Credentials {
 	}
 
 	@Override
-	protected void getCredentialsFromAlias(String usernameField, String passwordField) {
+	protected void getCredentialsFromAlias(CredentialAlias alias) {
 		if (aliases != null) {
-			String usernameKey = "%s/%s".formatted(getAlias(), usernameField);
-			String passwordKey = "%s/%s".formatted(getAlias(), passwordField);
+			String usernameKey = "%s/%s".formatted(getAlias(), alias.getUsernameField());
+			String passwordKey = "%s/%s".formatted(getAlias(), alias.getPasswordField());
+
 			boolean foundOne = false;
 			if (aliases.containsKey(usernameKey)) {
 				foundOne = true;

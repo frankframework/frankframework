@@ -61,7 +61,7 @@ public class FileSystemCredentialFactory implements ICredentialProvider {
 
 	@Override
 	public boolean hasCredentials(CredentialAlias alias) {
-		return Files.exists(Paths.get(root.toString(), alias.getName()));
+		return Files.exists(root.resolve(alias.getName()));
 	}
 
 	@Override

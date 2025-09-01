@@ -40,18 +40,18 @@ public class FileSystemCredentialFactoryTest {
 
 	@Test
 	public void testAliasNoDefault() {
-		String alias = "dummy";
+		CredentialAlias alias = CredentialAlias.parse("dummy");
 
-		ICredentials mc = credentialFactory.getCredentials(CredentialAlias.parse(alias));
+		ICredentials mc = credentialFactory.getCredentials(alias);
 		NoSuchElementException e = assertThrows(NoSuchElementException.class, mc::getUsername);
 		assertEquals("cannot obtain credentials from authentication alias [dummy]: alias not found", e.getMessage());
 	}
 
 	@Test
 	public void testPlainAlias() {
-		String alias = "straight";
+		CredentialAlias alias = CredentialAlias.parse("straight");
 
-		ICredentials mc = credentialFactory.getCredentials(CredentialAlias.parse(alias));
+		ICredentials mc = credentialFactory.getCredentials(alias);
 
 		assertEquals("username from alias", mc.getUsername());
 		assertEquals("password from alias", mc.getPassword());
@@ -59,17 +59,19 @@ public class FileSystemCredentialFactoryTest {
 
 	@Test
 	public void testUnknownAlias() {
-		ICredentials mc = credentialFactory.getCredentials(CredentialAlias.parse("unknown"));
+		CredentialAlias alias = CredentialAlias.parse("unknown");
+
+		ICredentials mc = credentialFactory.getCredentials(alias);
 
 		assertThrows(NoSuchElementException.class, mc::getUsername);
 	}
 
 	@Test
 	public void testAliasWithoutUsername() {
-		String alias = "noUsername";
+		CredentialAlias alias = CredentialAlias.parse("noUsername");
 		String expectedPassword = "password from alias";
 
-		ICredentials mc = credentialFactory.getCredentials(CredentialAlias.parse(alias));
+		ICredentials mc = credentialFactory.getCredentials(alias);
 
 		assertNull(mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());
@@ -77,10 +79,10 @@ public class FileSystemCredentialFactoryTest {
 
 	@Test
 	public void testPlainCredential() {
-		String alias = "singleValue";
+		CredentialAlias alias = CredentialAlias.parse("singleValue");
 		String expectedPassword = "Plain Credential";
 
-		ICredentials mc = credentialFactory.getCredentials(CredentialAlias.parse(alias));
+		ICredentials mc = credentialFactory.getCredentials(alias);
 
 		assertNull(mc.getUsername());
 		assertEquals(expectedPassword, mc.getPassword());
