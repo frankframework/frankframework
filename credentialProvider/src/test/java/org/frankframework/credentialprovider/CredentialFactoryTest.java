@@ -14,7 +14,6 @@ import java.util.Collection;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.credentialprovider.util.CredentialConstants;
@@ -91,17 +90,29 @@ class CredentialFactoryTest {
 	}
 
 	@Test
-	@Disabled
 	void testAliasWithCustomFields() {
 		// Init setting on purpose with extra whitespaces, commas etc.
 		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory");
 
 		// Act
-		ICredentials c = CredentialFactory.getCredentials("aliasWith{username,secret}");
+		ICredentials c = CredentialFactory.getCredentials("aliasWith{username+domain,secret}");
 
 		// Assert values are from the first factory that returns a value
 		assertEquals("name+domain.com", c.getUsername());
 		assertEquals("fakePassword", c.getPassword());
+	}
+
+	@Test
+	void testAliasWithCustomFieldsAndUnknownField() {
+		// Init setting on purpose with extra whitespaces, commas etc.
+		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory");
+
+		// Act
+		ICredentials c = CredentialFactory.getCredentials("aliasWith{username:unknown,secret+domain}");
+
+		// Assert values are from the first factory that returns a value
+		assertEquals("name:", c.getUsername());
+		assertEquals("fakePassword+domain.com", c.getPassword());
 	}
 
 	@Test

@@ -56,13 +56,13 @@ public class DelineaClientTest {
 	@Test
 	void testGetSecret() throws IOException {
 		ObjectMapper objectMapper = new ObjectMapper();
-		Secret secret = objectMapper.readValue(getContents("delinea/secret_3.json"), Secret.class);
+		DelineaSecret secret = objectMapper.readValue(getContents("delinea/secret_3.json"), DelineaSecret.class);
 
 		doReturn(secret)
 				.when(delineaClient)
-				.getForObject(eq(SECRET_ID_URI), eq(Secret.class), anyString());
+				.getForObject(eq(SECRET_ID_URI), eq(DelineaSecret.class), anyString());
 
-		Secret secretFromClient = delineaClient.getSecret("3", null);
+		DelineaSecret secretFromClient = delineaClient.getSecret("3", null);
 
 		assertNotNull(secretFromClient);
 		assertEquals(3, secretFromClient.id());
@@ -71,7 +71,7 @@ public class DelineaClientTest {
 	@Test
 	void testGetSecretWithComment() throws IOException {
 		ObjectMapper objectMapper = new ObjectMapper();
-		Secret secret = objectMapper.readValue(getContents("delinea/secret_3.json"), Secret.class);
+		DelineaSecret secret = objectMapper.readValue(getContents("delinea/secret_3.json"), DelineaSecret.class);
 
 		// mock the comment request
 		doReturn(DelineaClient.EXPECTED_VIEW_COMMENT_RESPONSE)
@@ -81,9 +81,9 @@ public class DelineaClientTest {
 		// mock the secret request
 		doReturn(secret)
 				.when(delineaClient)
-				.getForObject(eq(SECRET_ID_URI), eq(Secret.class), anyString());
+				.getForObject(eq(SECRET_ID_URI), eq(DelineaSecret.class), anyString());
 
-		Secret secretFromClient = delineaClient.getSecret("3", "test with comment!");
+		DelineaSecret secretFromClient = delineaClient.getSecret("3", "test with comment!");
 
 		assertNotNull(secretFromClient);
 		assertEquals(3, secretFromClient.id());
@@ -96,7 +96,7 @@ public class DelineaClientTest {
 				.when(delineaClient)
 				.postForObject(eq(SECRETS_ACCESS_REQUESTS_URI), any(), any(), eq("3"));
 
-		Secret secretFromClient = delineaClient.getSecret("3", "test with comment!");
+		DelineaSecret secretFromClient = delineaClient.getSecret("3", "test with comment!");
 
 		// Expect null because the comment request failed
 		assertNull(secretFromClient);

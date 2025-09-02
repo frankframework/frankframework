@@ -157,15 +157,7 @@ public class CredentialFactory {
 			try {
 				ISecret secret = factory.getSecret(alias);
 
-				String username = null;
-				String password = null;
-				try {
-					username = secret.getField(alias.getUsernameField()); // Validate if we can fetch the username.
-					password = secret.getField(alias.getPasswordField()); // Validate if we can fetch the password.
-				} catch (NoSuchElementException | IOException ioe) {
-					password = secret.getField("");
-				}
-				return new Credential(alias.getName(), username, password);
+				return readSecretFields(secret, alias);
 			} catch (NoSuchElementException | IOException e) {
 				// The alias was not found in this factory, continue searching
 				log.info(rawAlias + " not found in credential factory [" + factory.getClass().getName() + "]: " + e.getMessage());
@@ -176,6 +168,64 @@ public class CredentialFactory {
 			return new FallbackCredential(rawAlias, defaultUsername, defaultPassword);
 		}
 		throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+ rawAlias +"]: alias not found");
+	}
+
+	private static ICredentials readSecretFields(ISecret secret, CredentialAlias alias) throws IOException {
+		String username = null;
+		String password = null;
+
+		try {
+			username = substitute(alias.getUsernameField(), secret);
+			password = substitute(alias.getPasswordField(), secret);
+		} catch (NoSuchElementException | IOException ioe) {
+			password = secret.getField("");
+		}
+
+		return new Credential(alias.getName(), username, password);
+	}
+
+	private static String substitute(String input, ISecret secret) throws IOException {
+		if (StringUtils.isBlank(input) || StringUtils.containsNone(input, CredentialAlias.SEPARATOR_CHARACTERS)) {
+			return secret.getField(input);
+		}
+
+		// Here we require some form of substitution
+		List<String> usernameParts = splitWithSeparators(input, CredentialAlias.SEPARATOR_CHARACTERS);
+		StringBuilder result = new StringBuilder();
+		for (String part : usernameParts) {
+			if (part.length() == 1 && CredentialAlias.SEPARATOR_CHARACTERS.contains(part)) {
+				result.append(part);
+			} else {
+				String fieldValue = secret.getField(part);
+				if (fieldValue != null) {
+					result.append(fieldValue);
+				}
+			}
+		}
+
+		return result.isEmpty() ? null : result.toString();
+	}
+
+	/**
+	 * String split method, includes the characters to split on.
+	 * When the input is abc@def, the output will be a list ['abc', '@', 'def'].
+	 */
+	private static List<String> splitWithSeparators(@Nonnull String str, @Nonnull String charsToSplitOn) {
+		final char[] c = str.toCharArray();
+		final List<String> list = new ArrayList<>();
+		int tokenStart = 0;
+		for (int pos = tokenStart + 1; pos < c.length; pos++) {
+			if (charsToSplitOn.indexOf(c[pos]) == -1) {
+				continue;
+			}
+			list.add(new String(c, tokenStart, pos - tokenStart));
+			list.add(Character.toString(c[pos]));
+			tokenStart = pos+1;
+		}
+		if (tokenStart < c.length) {
+			list.add(new String(c, tokenStart, c.length - tokenStart));
+		}
+		return list;
 	}
 
 	public static Collection<String> getConfiguredAliases() throws Exception {

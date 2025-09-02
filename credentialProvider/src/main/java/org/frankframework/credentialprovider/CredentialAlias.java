@@ -20,6 +20,7 @@ import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.java.Log;
 
@@ -39,11 +40,13 @@ public class CredentialAlias {
 	public static final String DEFAULT_USERNAME_FIELD;
 	public static final String DEFAULT_PASSWORD_FIELD;
 
+	public static final String SEPARATOR_CHARACTERS = "@#:+";
+
 	@Getter
 	private final String name;
-	@Getter
+	@Getter(AccessLevel.PACKAGE)
 	private final String usernameField;
-	@Getter
+	@Getter(AccessLevel.PACKAGE)
 	private final String passwordField;
 
 	static {

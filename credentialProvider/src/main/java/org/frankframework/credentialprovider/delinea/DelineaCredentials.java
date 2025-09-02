@@ -16,12 +16,13 @@
 package org.frankframework.credentialprovider.delinea;
 
 import org.frankframework.credentialprovider.CredentialAlias;
+import org.frankframework.credentialprovider.Secret;
 
-public class DelineaCredentials extends org.frankframework.credentialprovider.Secret {
+public class DelineaCredentials extends Secret {
 
-	private final Secret secret;
+	private final DelineaSecret secret;
 
-	public DelineaCredentials(CredentialAlias alias, Secret secret) {
+	public DelineaCredentials(CredentialAlias alias, DelineaSecret secret) {
 		super(alias);
 
 		if (!getAlias().equals(String.valueOf(secret.id()))) {
@@ -35,7 +36,7 @@ public class DelineaCredentials extends org.frankframework.credentialprovider.Se
 	public String getField(String slugName) {
 		return secret.fields().stream()
 				.filter(field -> field.slug().equals(slugName))
-				.map(Secret.Field::value)
+				.map(DelineaSecret.Field::value)
 				.findFirst()
 				.orElse(null);
 	}
