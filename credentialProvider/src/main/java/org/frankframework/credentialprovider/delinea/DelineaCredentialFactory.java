@@ -29,7 +29,7 @@ import org.frankframework.credentialprovider.util.Cache;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
 /**
- * <p>CredentialFactory that reads its credentials from Delinea (formerly Thycotic) DelineaSecret Server.</p>
+ * <p>CredentialFactory that reads its credentials from Delinea (formerly Thycotic) Secret Server.</p>
  *
  * <p>To set up Delinea in the Framework, you need to set the following properties in {@code credentialproperties.properties}:
  *
@@ -69,10 +69,10 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  * }</pre>
  * </p>
  *
- * <p>Delinea secrets are referenced by <b>ID</b> in an authAlias, because they are retrieved from the DelineaSecret Server by id. See the <a
- * href="https://updates.thycotic.net/secretserver/restapiguide/TokenAuth/#tag/Secrets/operation/SecretsService_GetSecretV2">Get DelineaSecret</a> API.</p>
+ * <p>Delinea secrets are referenced by <b>ID</b> in an authAlias, because they are retrieved from the Secret Server by id. See the <a
+ * href="https://updates.thycotic.net/secretserver/restapiguide/TokenAuth/#tag/Secrets/operation/SecretsService_GetSecretV2">Get Secret</a> API.</p>
  *
- * <p>To use this CredentialFactory, you will have to set up a Delinea DelineaSecret Server within the Delinea Platform. In the documentation above we assume this is
+ * <p>To use this CredentialFactory, you will have to set up a Delinea Secret Server within the Delinea Platform. In the documentation above we assume this is
  * already done and that username and password properties reference an active 'local user'</p>
  *
  * @see <a href="https://github.com/DelineaXPM/tss-sdk-java">tss-sdk-java</a> for the reference java implementation

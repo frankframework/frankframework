@@ -103,6 +103,19 @@ class CredentialFactoryTest {
 	}
 
 	@Test
+	void testAliasWithCustomFieldsAndUnknownField() {
+		// Init setting on purpose with extra whitespaces, commas etc.
+		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory");
+
+		// Act
+		ICredentials c = CredentialFactory.getCredentials("aliasWith{username:unknown,secret+domain}");
+
+		// Assert values are from the first factory that returns a value
+		assertEquals("name:", c.getUsername());
+		assertEquals("fakePassword+domain.com", c.getPassword());
+	}
+
+	@Test
 	void testMultipleFactories() {
 		// Init setting on purpose with extra whitespaces, commas etc.
 		CredentialConstants.getInstance().setProperty("credentialFactory.class", " java.util.doesNotExist , org.frankframework.credentialprovider.PropertyFileCredentialFactory,,  , org.frankframework.credentialprovider.MockCredentialFactory");

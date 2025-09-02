@@ -185,15 +185,15 @@ public class CredentialFactory {
 	}
 
 	private static String substitute(String input, ISecret secret) throws IOException {
-		if (StringUtils.isBlank(input) && !input.contains(CredentialAlias.SPECIAL_CHARACTERS)) {
+		if (StringUtils.isBlank(input) || StringUtils.containsNone(input, CredentialAlias.SEPARATOR_CHARACTERS)) {
 			return secret.getField(input);
 		}
 
 		// Here we require some form of substitution
-		List<String> usernameParts = splitWithSeparators(input, CredentialAlias.SPECIAL_CHARACTERS);
+		List<String> usernameParts = splitWithSeparators(input, CredentialAlias.SEPARATOR_CHARACTERS);
 		StringBuilder result = new StringBuilder();
 		for (String part : usernameParts) {
-			if (part.length() == 1 && CredentialAlias.SPECIAL_CHARACTERS.contains(part)) {
+			if (part.length() == 1 && CredentialAlias.SEPARATOR_CHARACTERS.contains(part)) {
 				result.append(part);
 			} else {
 				String fieldValue = secret.getField(part);
@@ -206,6 +206,10 @@ public class CredentialFactory {
 		return result.isEmpty() ? null : result.toString();
 	}
 
+	/**
+	 * String split method, includes the characters to split on.
+	 * When the input is abc@def, the output will be a list ['abc', '@', 'def'].
+	 */
 	private static List<String> splitWithSeparators(@Nonnull String str, @Nonnull String charsToSplitOn) {
 		final char[] c = str.toCharArray();
 		final List<String> list = new ArrayList<>();
@@ -218,7 +222,9 @@ public class CredentialFactory {
 			list.add(Character.toString(c[pos]));
 			tokenStart = pos+1;
 		}
-		list.add(new String(c, tokenStart, c.length - tokenStart));
+		if (tokenStart < c.length) {
+			list.add(new String(c, tokenStart, c.length - tokenStart));
+		}
 		return list;
 	}
 

@@ -40,7 +40,7 @@ public class CredentialAlias {
 	public static final String DEFAULT_USERNAME_FIELD;
 	public static final String DEFAULT_PASSWORD_FIELD;
 
-	public static final String SPECIAL_CHARACTERS = "@#:+";
+	public static final String SEPARATOR_CHARACTERS = "@#:+";
 
 	@Getter
 	private final String name;

@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Java representation of a <i>DelineaSecret</i> retrieved from Delinea DelineaSecret Server.
+ * Java representation of a <i>DelineaSecret</i> retrieved from Delinea Secret Server.
  * <br/>
  *
  * For example:
