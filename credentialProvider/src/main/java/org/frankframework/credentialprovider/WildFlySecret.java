@@ -33,7 +33,7 @@ public class WildFlySecret extends Secret {
 		super(alias);
 		this.cs = cs;
 
-		if (!aliasExists("") && !aliasExists("/"+alias.getUsernameField())) {
+		if (!aliasExists("") && !aliasExists("/"+CredentialAlias.DEFAULT_USERNAME_FIELD)) {
 			throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]: alias not found");
 		}
 	}
