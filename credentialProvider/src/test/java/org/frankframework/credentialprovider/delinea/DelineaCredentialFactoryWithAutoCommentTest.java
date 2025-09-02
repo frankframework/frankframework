@@ -58,7 +58,7 @@ public class DelineaCredentialFactoryWithAutoCommentTest {
 
 	@Test
 	void testGetSecret() throws IOException {
-		Secret secret1 = DelineaCredentialFactoryTest.createSecret(1, 11, "user1", "password1");
+		DelineaSecret secret1 = DelineaCredentialFactoryTest.createSecret(1, 11, "user1", "password1");
 
 		ArgumentCaptor<String> autoCommentCaptor = forClass(String.class);
 		when(client.getSecret(eq("1"), autoCommentCaptor.capture())).thenReturn(secret1);

@@ -22,7 +22,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 /**
- * Java representation of a <i>Secret</i> retrieved from Delinea Secret Server.
+ * Java representation of a <i>DelineaSecret</i> retrieved from Delinea Secret Server.
  * <br/>
  *
  * For example:
@@ -54,7 +54,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
  * @see <a href="https://docs.delinea.com/online-help/platform-api/secret-server-apis-from-platform.htm#UsingtheAccessTokentoCalltheSecretServerAPI">example response</a>
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record Secret(
+public record DelineaSecret(
 	int id,
 	int folderId,
 	String name,
@@ -71,12 +71,12 @@ public record Secret(
 
 		@Override
 		public String toString() {
-			return String.format("Secret { id: %d, folderId: %d, name: %s}",
+			return String.format("DelineaSecret { id: %d, folderId: %d, name: %s}",
 					this.id, this.folderId, this.name);
 		}
 
 	/**
-	 * Java representation of an <i>Item</i> of a <i>Secret</i>.
+	 * Java representation of an <i>Item</i> of a <i>DelineaSecret</i>.
 	 * <br/>
 	 * For example:
 	 *

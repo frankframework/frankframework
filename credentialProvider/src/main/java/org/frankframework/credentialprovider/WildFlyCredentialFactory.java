@@ -15,7 +15,6 @@
 */
 package org.frankframework.credentialprovider;
 
-import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
@@ -75,10 +74,9 @@ public class WildFlyCredentialFactory implements ISecretProvider {
 	@Override
 	public boolean hasSecret(CredentialAlias alias) {
 		try {
-			ISecret credentials = getSecret(alias);
-			return !StringUtils.isAllBlank(credentials.getField(alias.getUsernameField()), credentials.getField(alias.getPasswordField()));
+			return getSecret(alias) != null;
 
-		} catch (NoSuchElementException | IOException e) {
+		} catch (NoSuchElementException e) {
 			log.fine(()->"exception testing for alias ["+alias+"] ("+e.getClass().getName()+") :"+e.getMessage());
 			return false;
 		}
