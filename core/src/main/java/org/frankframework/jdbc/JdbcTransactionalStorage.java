@@ -100,13 +100,16 @@ import org.frankframework.util.TimeProvider;
  * Storage structure is defined in /IAF_util/IAF_DatabaseChangelog.xml. If these database objects do not exist,
  * the Frank!Framework will try to create them.
  * <br/><br/>
- * N.B. Note on using XA transactions:
+ * {@ff.warning When using an XA transaction manager like Narayana, make sure to configure an XA-capable datasource
+ * for the JdbcErrorStorage or JdbcMessageLog. Otherwise messages may get lost.}
+ * {@ff.info N.B. Note on using XA transactions:
  * If transactions are used on Oracle, make sure that the database user can access the table SYS.DBA_PENDING_TRANSACTIONS.
  * If not, transactions present when the server goes down cannot be properly recovered, resulting in exceptions like:
  * <pre>
    The error code was XAER_RMERR. The exception stack trace follows: javax.transaction.xa.XAException
 	at oracle.jdbc.xa.OracleXAResource.recover(OracleXAResource.java:508)
    </pre>
+ * }
  *
  * @author Gerrit van Brakel
  * @author Jaco de Groot
