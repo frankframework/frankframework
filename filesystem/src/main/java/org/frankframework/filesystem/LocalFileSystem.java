@@ -122,7 +122,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 			folder = toFile(null);
 		}
 		if (!folderExists(folder)) {
-			throw new FolderNotFoundException("no filesystem-root, folder does not exist");
+			throw new FolderNotFoundException("Cannot list files in ["+folder+"], no such folder found");
 		}
 		DirectoryStream.Filter<Path> directoryStreamFilter = switch (filter) {
 			case FILES_ONLY -> file -> !Files.isDirectory(file);
