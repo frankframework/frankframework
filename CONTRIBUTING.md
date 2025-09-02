@@ -118,6 +118,18 @@ If you are developing under Windows, you can do the following to set this up:
 - If you see a "Differences:" panel, you have a button "windiff" above it. Please press it to see the differences in WinMerge. NOTE: You only see a "Differences:" panel if you select a low log level. Mind the pull-down menu labeled "Log level".
 - If all your tests succeed, you do not have "Differences:" panels, and you have no "windiff" buttons. To test your WinMerge integration, you may have to temporarily edit a test scenario to make it fail. 
 
+## Setup Node.js and pnpm 
+Regardless of which IDE you use, you will need Node.js and pnpm.
+
+### Install the Latest LTS Version of Node.js
+* Download the latest [LTS version of Node.js](https://nodejs.org/en), or refer to the [Angular version compatibility guide](https://angular.dev/reference/versions) to choose the appropriate version.
+* To verify your installation, open a terminal or command prompt and run `node -v`. If installed correctly, this will display the Node.js version without errors.
+
+### Instal PNPM 
+* We use [PNPM](https://pnpm.io/) as our package manager. You will need to install corepack first with `npm install --global corepack@latest` to enable pnpm by running `corepack enable pnpm`, or follow the [PNPM installation guide](https://pnpm.io/installation).
+* Confirm PNPM is installed by running `pnpm -v`, similar to the Node.js check.
+
+
 ## Developing with Eclipse
 
 You can download Eclipse and load the Frank!Framework sources into it using the [Frank!Runner](https://github.com/wearefrank/frank-runner?tab=readme-ov-file#specials). It will also take care of project Lombok. If you want to understand what you are doing, you can do it manually using the instructions of this section. If you use the Frank!Runner, you still need to do the Eclipse configurations that are explained here.
@@ -164,11 +176,6 @@ You can download Eclipse and load the Frank!Framework sources into it using the 
 - Double click Tomcat v10.0 Server at localhost, Open launch configuration, Arguments, VM arguments, add -Ddtap.stage=LOC, OK, Modules, Add Web Module..., iaf-example, OK, File, Save
 - Right click Tomcat v10.0 Server at localhost, Start.
 - Browse the IAF console at [http://localhost:8080/iaf-example/](http://localhost:8080/iaf-example/).
-
-### Install latest LTS NodeJS
-
-- Download the latest [LTS version of NodeJS](https://nodejs.org/en) or check the [Angular Version compatability](https://angular.dev/reference/versions) to decide which version to install.
-- Test if NodeJS is correctly installed then you should be able to open a terminal/cmd and type in `node -v` and `npm -v` without any errors.
 
 ### In some cases you might want/need to:
 
@@ -223,13 +230,6 @@ Please ensure that your Javadoc comments are correct. Eclipse can check this for
 - In pull-down menu "Missing Javadoc tags", select "Ignore".
 
 ## Developing with IntelliJ
-
-### Install the Latest LTS Version of Node.js
-
-* Download the latest [LTS version of Node.js](https://nodejs.org/en), or refer to the [Angular version compatibility guide](https://angular.dev/reference/versions) to choose the appropriate version.
-* To verify your installation, open a terminal or command prompt and run `node -v`. If installed correctly, this will display the Node.js version without errors.
-* We use [PNPM](https://pnpm.io/) as our package manager. You will need to install corepack first with `npm install --global corepack@latest` to enable pnpm by running `corepack enable pnpm`, or follow the [PNPM installation guide](https://pnpm.io/installation).
-* Confirm PNPM is installed by running `pnpm -v`, similar to the Node.js check.
 
 ### Setup IntelliJ
 
