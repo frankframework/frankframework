@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,13 +15,16 @@
 */
 package org.frankframework.credentialprovider;
 
-/**
- * When no credential is found in any of the CredentialProviders, this may be used.
- */
-public class FallbackCredential extends Credential {
+import java.io.IOException;
 
-	public FallbackCredential(String alias, String username, String password) {
-		super(alias, username, password);
-	}
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
+public interface ISecret {
+
+	/**
+	 * Returns NULL when it cannot find the field
+	 */
+	@Nullable
+	String getField(@Nonnull String fieldname) throws IOException;
 }

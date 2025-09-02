@@ -50,18 +50,12 @@ import org.frankframework.util.StreamUtil;
  * @see <a href="https://docs.ansible.com/ansible/latest/vault_guide/index.html">Ansible Vault Documentation</a>
  */
 public class AnsibleVaultCredentialFactory extends AbstractMapCredentialFactory {
-	private static final String PROPERTY_BASE = "credentialFactory.ansibleVault";
 
-	private static final String VAULT_PROPERTY = PROPERTY_BASE + ".vaultFile";
-	private static final String VAULT_KEY_PROPERTY = PROPERTY_BASE + ".keyFile";
+	private static final String VAULT_PROPERTY = "credentialFactory.ansibleVault.vaultFile";
+	private static final String VAULT_KEY_PROPERTY = "credentialFactory.ansibleVault.keyFile";
 
 	private static final String DEFAULT_VAULT_FILE = "catalina-secure-store.vault";
 	private static final String DEFAULT_VAULT_KEY_FILE = ".secure-vault-keyfile";
-
-	@Override
-	public String getPropertyBase() {
-		return PROPERTY_BASE;
-	}
 
 	@Override
 	protected Map<String, String> getCredentialMap(CredentialConstants appConstants) throws IOException {

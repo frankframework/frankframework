@@ -1,7 +1,6 @@
 package org.frankframework.credentialprovider;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -44,70 +43,61 @@ public class PropertyFileCredentialFactoryTest {
 	}
 
 	@Test
-	public void testNoAlias() {
-		String alias = null;
-
-		assertThrows(IllegalArgumentException.class, () -> credentialFactory.getCredentials(alias));
-	}
-
-	@Test
-	public void testPlainAlias() {
-		String alias = "straight";
+	public void testPlainAlias() throws IOException {
+		CredentialAlias alias = CredentialAlias.parse("straight");
 		String expectedUsername = "\\username from alias";
 		String expectedPassword = "passw\\urd from alias";
 
-		ICredentials mc = credentialFactory.getCredentials(alias);
+		ISecret mc = credentialFactory.getSecret(alias);
 
-		assertEquals(expectedUsername, mc.getUsername());
-		assertEquals(expectedPassword, mc.getPassword());
+		assertEquals(expectedUsername, mc.getField("username"));
+		assertEquals(expectedPassword, mc.getField("password"));
 	}
 
 	@Test
 	public void testUnknownAlias() {
-		String alias = "unknown";
+		CredentialAlias alias = CredentialAlias.parse("unknown");
 
-		ICredentials mc = credentialFactory.getCredentials(alias);
-
-		assertThrows(NoSuchElementException.class, mc::getUsername);
+		assertThrows(NoSuchElementException.class, () -> credentialFactory.getSecret(alias));
 	}
 
 	@Test
-	public void testAliasWithoutUsername() {
+	public void testAliasWithoutUsername() throws IOException {
+		CredentialAlias alias = CredentialAlias.parse("noUsername");
 
-		String alias = "noUsername";
 		String expectedPassword = "password from alias";
 
-		ICredentials mc = credentialFactory.getCredentials(alias);
+		ISecret mc = credentialFactory.getSecret(alias);
 
-		assertNull(mc.getUsername());
-		assertEquals(expectedPassword, mc.getPassword());
+		assertThrows(NoSuchElementException.class, () -> mc.getField("username"));
+		assertEquals(expectedPassword, mc.getField("password"));
 	}
 
 	@Test
-	public void testPlainCredential() {
+	public void testPlainCredential() throws IOException {
+		CredentialAlias alias = CredentialAlias.parse("singleValue");
 
-		String alias = "singleValue";
-		String expectedUsername = null;
 		String expectedPassword = "Plain Credential";
 
-		ICredentials mc = credentialFactory.getCredentials(alias);
+		ISecret mc = credentialFactory.getSecret(alias);
 
-		assertEquals(expectedUsername, mc.getUsername());
-		assertEquals(expectedPassword, mc.getPassword());
+		assertEquals(expectedPassword, mc.getField(""));
+		assertThrows(NoSuchElementException.class, () -> mc.getField("password"));
 	}
 
 	@Test
-	public void testPasswordWithSlashes() {
+	public void testPasswordWithSlashes() throws IOException {
 		// Act
-		ICredentials mc = credentialFactory.getCredentials("slash");
+		CredentialAlias alias = CredentialAlias.parse("slash");
+		ISecret mc = credentialFactory.getSecret(alias);
 
 		// Assert
-		assertEquals("username from alias", mc.getUsername());
-		assertEquals("password/with/slash", mc.getPassword());
+		assertEquals("username from alias", mc.getField("username"));
+		assertEquals("password/with/slash", mc.getField("password"));
 	}
 
 	@Test
-	public void testGetAliases() throws Exception {
+	public void testGetAliases() {
 		// Act
 		Collection<String> aliases = credentialFactory.getConfiguredAliases();
 

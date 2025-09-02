@@ -2,11 +2,14 @@ package org.frankframework.credentialprovider;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.NoSuchElementException;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,38 +27,37 @@ public class FileSystemCredentialsTest {
 	}
 
 	@Test
-	public void testPlainAlias() {
-		String alias = "straight";
+	public void testPlainAlias() throws IOException {
+		CredentialAlias alias = CredentialAlias.parse("straight");
 
 		String expectedUsername = "username from alias";
 		String expectedPassword = "password from alias";
 
-		FileSystemCredentials fsc = new FileSystemCredentials(alias, root);
+		FileSystemSecret fsc = new FileSystemSecret(alias, root);
 
-		assertEquals(expectedUsername, fsc.getUsername());
-		assertEquals(expectedPassword, fsc.getPassword());
+		assertEquals(expectedUsername, fsc.getField("username"));
+		assertEquals(expectedPassword, fsc.getField("password"));
 	}
 
 	@Test
-	public void testAliasWithoutUsername() {
-		String alias = "noUsername";
+	public void testAliasWithoutUsername() throws IOException {
+		CredentialAlias alias = CredentialAlias.parse("noUsername");
 
 		String expectedPassword = "password from alias";
 
-		FileSystemCredentials fsc = new FileSystemCredentials(alias, root);
+		FileSystemSecret fsc = new FileSystemSecret(alias, root);
 
-		assertNull(fsc.getUsername());
-		assertEquals(expectedPassword, fsc.getPassword());
+		assertNull(fsc.getField("username"));
+		assertEquals(expectedPassword, fsc.getField("password"));
 	}
 
 	@Test
-	public void testPlainCredential() {
+	public void testPlainCredential() throws IOException {
+		CredentialAlias alias = CredentialAlias.parse("singleValue");
 
-		String alias = "singleValue";
+		FileSystemSecret fsc = new FileSystemSecret(alias, root);
 
-		FileSystemCredentials fsc = new FileSystemCredentials(alias, root);
-
-		assertNull(fsc.getUsername());
-		assertEquals("Plain Credential", fsc.getPassword());
+		assertThrows(NoSuchElementException.class, () -> fsc.getField("username"));
+		assertEquals("Plain Credential", fsc.getField(""));
 	}
 }

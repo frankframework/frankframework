@@ -26,7 +26,6 @@ import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.credential.store.CredentialStore;
 import org.wildfly.security.credential.store.CredentialStoreException;
 
@@ -42,7 +41,7 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  *
  * @see <a href="https://www.wildfly.org/guides/security-credential-store-for-passwords">WildFly Credential Store Guide</a>
  */
-public class WildFlyCredentialFactory implements ICredentialProvider {
+public class WildFlyCredentialFactory implements ISecretProvider {
 	private Logger log = Logger.getLogger(this.getClass().getName());
 
 	private static final ServiceName SERVICE_NAME_CRED_STORE = ServiceName.of("org", "wildfly", "security", "credential-store");
@@ -64,20 +63,20 @@ public class WildFlyCredentialFactory implements ICredentialProvider {
 	}
 
 	@Override
-	public ICredentials getCredentials(String alias) throws NoSuchElementException {
+	public ISecret getSecret(CredentialAlias alias) throws NoSuchElementException {
 		CredentialStore cs = getCredentialStore(credentialStore);
-		if (cs==null) {
+		if (cs == null) {
 			throw new NoSuchElementException("CredentialStore [" + credentialStore + "] not found");
 		}
-		return new WildFlyCredentials(cs, alias);
+		return new WildFlySecret(cs, alias);
 	}
 
 	@Override
-	public boolean hasCredentials(String alias) {
-		CredentialStore cs = getCredentialStore(credentialStore);
+	public boolean hasSecret(CredentialAlias alias) {
 		try {
-			return cs!=null && (cs.exists(alias, PasswordCredential.class) || cs.exists(alias+"/username", PasswordCredential.class));
-		} catch (CredentialStoreException e) {
+			return getSecret(alias) != null;
+
+		} catch (NoSuchElementException e) {
 			log.fine(()->"exception testing for alias ["+alias+"] ("+e.getClass().getName()+") :"+e.getMessage());
 			return false;
 		}

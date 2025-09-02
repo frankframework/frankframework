@@ -15,45 +15,30 @@
 */
 package org.frankframework.credentialprovider.delinea;
 
-import org.frankframework.credentialprovider.CredentialFactory;
-import org.frankframework.credentialprovider.ICredentials;
+import org.frankframework.credentialprovider.CredentialAlias;
+import org.frankframework.credentialprovider.Secret;
 
-public class DelineaCredentials implements ICredentials {
+public class DelineaCredentials extends Secret {
 
-	private final String username;
-	private final String password;
-	private final String alias;
+	private final DelineaSecret secret;
 
-	public DelineaCredentials(Secret secret) {
-		if (secret == null) {
-			throw new IllegalArgumentException();
+	public DelineaCredentials(CredentialAlias alias, DelineaSecret secret) {
+		super(alias);
+
+		if (!getAlias().equals(String.valueOf(secret.id()))) {
+			throw new IllegalArgumentException("secret slug does not match alias ["+getAlias()+"]");
 		}
 
-		this.alias = String.valueOf(secret.id());
-		this.username = getFieldValue(secret, CredentialFactory.DEFAULT_USERNAME_FIELD);
-		this.password = getFieldValue(secret, CredentialFactory.DEFAULT_PASSWORD_FIELD);
+		this.secret = secret;
 	}
 
-	private String getFieldValue(Secret secret, String slugName) {
+	@Override
+	public String getField(String slugName) {
 		return secret.fields().stream()
 				.filter(field -> field.slug().equals(slugName))
-				.map(Secret.Field::value)
+				.map(DelineaSecret.Field::value)
 				.findFirst()
 				.orElse(null);
 	}
 
-	@Override
-	public String getAlias() {
-		return alias;
-	}
-
-	@Override
-	public String getUsername() {
-		return username;
-	}
-
-	@Override
-	public String getPassword() {
-		return password;
-	}
 }

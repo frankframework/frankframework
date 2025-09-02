@@ -15,6 +15,7 @@
 */
 package org.frankframework.credentialprovider;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,7 +36,7 @@ public class CredentialFactory {
 	protected static final Logger log = Logger.getLogger(CredentialFactory.class.getName());
 
 	private static final String CREDENTIAL_FACTORY_KEY = "credentialFactory.class";
-	private static final String CREDENTIAL_FACTORY_OPTIONAL_PREFIX_KEY = "credentialFactory.optionalPrefix";
+	public static final String CREDENTIAL_FACTORY_ALIAS_PREFIX_KEY = "credentialFactory.optionalPrefix";
 	private static final String DEFAULT_CREDENTIAL_FACTORY = FileSystemCredentialFactory.class.getName();
 
 	public static final String LEGACY_PACKAGE_NAME = "nl.nn.credentialprovider.";
@@ -44,19 +45,9 @@ public class CredentialFactory {
 	public static final String DEFAULT_USERNAME_FIELD = "username";
 	public static final String DEFAULT_PASSWORD_FIELD = "password";
 
-	private static String optionalPrefix;
-
-	private final List<ICredentialProvider> delegates = new ArrayList<>();
+	protected final List<ISecretProvider> delegates = new ArrayList<>();
 
 	private static CredentialFactory self;
-
-	static {
-		optionalPrefix = CredentialConstants.getInstance().getProperty(CREDENTIAL_FACTORY_OPTIONAL_PREFIX_KEY);
-		if (optionalPrefix != null) {
-			log.severe("property [credentialFactory.optionalPrefix] should not be used!");
-			optionalPrefix = optionalPrefix.toLowerCase();
-		}
-	}
 
 	public static synchronized CredentialFactory getInstance() {
 		if (self == null) {
@@ -101,7 +92,7 @@ public class CredentialFactory {
 	private void tryFactory(String factoryClassName) {
 		try {
 			log.info("trying to configure CredentialFactory [" + factoryClassName + "]");
-			ICredentialProvider delegate = ClassUtils.newInstance(factoryClassName, ICredentialProvider.class);
+			ISecretProvider delegate = ClassUtils.newInstance(factoryClassName, ISecretProvider.class);
 			delegate.initialize();
 			log.info("installed CredentialFactory [" + factoryClassName + "]");
 			delegates.add(delegate);
@@ -110,25 +101,12 @@ public class CredentialFactory {
 		}
 	}
 
-	/**
-	 * Extracting is deprecated, cleanse is not.
-	 * @return NULL when empty.
-	 */
-	@Deprecated
-	@Nullable
-	private static String extractAlias(@Nullable final String rawAlias) {
-		if (optionalPrefix != null && rawAlias != null && rawAlias.toLowerCase().startsWith(optionalPrefix)) {
-			return StringUtils.defaultIfBlank(rawAlias.substring(optionalPrefix.length()), null);
-		}
-		return StringUtils.defaultIfBlank(rawAlias, null);
-	}
-
 	public static boolean hasCredential(String rawAlias) {
-		final String alias = extractAlias(rawAlias);
+		final CredentialAlias alias = CredentialAlias.parse(rawAlias);
 
 		if (alias != null) {
-			for (ICredentialProvider factory : getInstance().delegates) {
-				if (factory.hasCredentials(alias)) {
+			for (ISecretProvider factory : getInstance().delegates) {
+				if (factory.hasSecret(alias)) {
 					return true;
 				}
 			}
@@ -167,37 +145,92 @@ public class CredentialFactory {
 	 */
 	@Nonnull
 	public static ICredentials getCredentials(@Nullable String rawAlias, @Nullable String defaultUsername, @Nullable String defaultPassword) {
-		final String alias = extractAlias(rawAlias);
-		List<ICredentialProvider> credentialFactoryDelegates = getInstance().delegates;
+		final CredentialAlias alias = CredentialAlias.parse(rawAlias);
+		List<ISecretProvider> credentialFactoryDelegates = getInstance().delegates;
 
-		// If there are no delegates, return a Credentials object with the default values
+		// If there are no delegates, return a Secret object with the default values
 		if (alias == null || credentialFactoryDelegates.isEmpty()) {
-			return new FallbackCredential(alias, defaultUsername, defaultPassword);
+			return new FallbackCredential(rawAlias, defaultUsername, defaultPassword);
 		}
 
-		for (ICredentialProvider factory : credentialFactoryDelegates) {
+		for (ISecretProvider factory : credentialFactoryDelegates) {
 			try {
-				ICredentials result = factory.getCredentials(alias);
+				ISecret secret = factory.getSecret(alias);
 
-				// Check if the alias is the same as the one we are looking for - will throw if not
-				result.getPassword(); // Validate if we can fetch the password.
-
-				return result;
-			} catch (NoSuchElementException e) {
+				return readSecretFields(secret, alias);
+			} catch (NoSuchElementException | IOException e) {
 				// The alias was not found in this factory, continue searching
-				log.info(rawAlias + " not found in credential factory [" + factory.getClass().getName() + "]");
+				log.info(rawAlias + " not found in credential factory [" + factory.getClass().getName() + "]: " + e.getMessage());
 			}
 		}
 
 		if (StringUtils.isNotEmpty(defaultUsername) || StringUtils.isNotEmpty(defaultPassword)) {
-			return new FallbackCredential(alias, defaultUsername, defaultPassword);
+			return new FallbackCredential(rawAlias, defaultUsername, defaultPassword);
 		}
 		throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+ rawAlias +"]: alias not found");
 	}
 
+	private static ICredentials readSecretFields(ISecret secret, CredentialAlias alias) throws IOException {
+		String username = null;
+		String password = null;
+
+		try {
+			username = substitute(alias.getUsernameField(), secret);
+			password = substitute(alias.getPasswordField(), secret);
+		} catch (NoSuchElementException | IOException ioe) {
+			password = secret.getField("");
+		}
+
+		return new Credential(alias.getName(), username, password);
+	}
+
+	private static String substitute(String input, ISecret secret) throws IOException {
+		if (StringUtils.isBlank(input) || StringUtils.containsNone(input, CredentialAlias.SEPARATOR_CHARACTERS)) {
+			return secret.getField(input);
+		}
+
+		// Here we require some form of substitution
+		List<String> usernameParts = splitWithSeparators(input, CredentialAlias.SEPARATOR_CHARACTERS);
+		StringBuilder result = new StringBuilder();
+		for (String part : usernameParts) {
+			if (part.length() == 1 && CredentialAlias.SEPARATOR_CHARACTERS.contains(part)) {
+				result.append(part);
+			} else {
+				String fieldValue = secret.getField(part);
+				if (fieldValue != null) {
+					result.append(fieldValue);
+				}
+			}
+		}
+
+		return result.isEmpty() ? null : result.toString();
+	}
+
+	/**
+	 * String split method, includes the characters to split on.
+	 * When the input is abc@def, the output will be a list ['abc', '@', 'def'].
+	 */
+	private static List<String> splitWithSeparators(@Nonnull String str, @Nonnull String charsToSplitOn) {
+		final char[] c = str.toCharArray();
+		final List<String> list = new ArrayList<>();
+		int tokenStart = 0;
+		for (int pos = tokenStart + 1; pos < c.length; pos++) {
+			if (charsToSplitOn.indexOf(c[pos]) == -1) {
+				continue;
+			}
+			list.add(new String(c, tokenStart, pos - tokenStart));
+			list.add(Character.toString(c[pos]));
+			tokenStart = pos+1;
+		}
+		if (tokenStart < c.length) {
+			list.add(new String(c, tokenStart, c.length - tokenStart));
+		}
+		return list;
+	}
+
 	public static Collection<String> getConfiguredAliases() throws Exception {
 		Collection<String> aliases = new LinkedHashSet<>();
-		for (ICredentialProvider factory : getInstance().delegates) {
+		for (ISecretProvider factory : getInstance().delegates) {
 			try {
 				Collection<String> configuredAliases = factory.getConfiguredAliases();
 				if (configuredAliases != null) {

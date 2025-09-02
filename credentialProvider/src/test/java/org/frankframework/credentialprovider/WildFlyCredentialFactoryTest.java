@@ -2,6 +2,7 @@ package org.frankframework.credentialprovider;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -14,6 +15,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.security.Provider;
 import java.util.Arrays;
 import java.util.Collection;
@@ -25,6 +27,7 @@ import org.jboss.as.domain.management.plugin.Credential;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.wildfly.security.credential.PasswordCredential;
@@ -33,10 +36,19 @@ import org.wildfly.security.credential.store.CredentialStoreException;
 import org.wildfly.security.credential.store.CredentialStoreSpi;
 import org.wildfly.security.password.interfaces.ClearPassword;
 
+import org.frankframework.credentialprovider.util.CredentialConstants;
+
 public class WildFlyCredentialFactoryTest {
 
 	private WildFlyCredentialFactory credentialFactory;
 	private Set<String> aliases;
+
+	@BeforeAll
+	static void cleanupBeforeAll() {
+		CredentialFactory.clearInstance();
+
+		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.WildFlyCredentialFactory");
+	}
 
 	@SuppressWarnings("unchecked")
 	@BeforeEach
@@ -74,6 +86,10 @@ public class WildFlyCredentialFactoryTest {
 		}).when(spi).retrieve(anyString(), isA(Credential.class.getClass()), isNull(), isNull(), isNull());
 
 		credentialFactory.initialize();
+
+		// Yes this is ugly
+		CredentialFactory.getInstance().delegates.clear();
+		CredentialFactory.getInstance().delegates.add(credentialFactory);
 	}
 
 	@Test
@@ -111,58 +127,67 @@ public class WildFlyCredentialFactoryTest {
 	}
 
 	@Test
-	public void testHasCredentials() throws UnsupportedOperationException {
+	public void testHasCredentials() {
 		String[] aliasesArray = {"a", "a/username", "b", "c/username"};
 		this.aliases = new HashSet<>(Arrays.asList(aliasesArray));
 
-		assertTrue(credentialFactory.hasCredentials("a"));
-		assertTrue(credentialFactory.hasCredentials("b"));
-		assertTrue(credentialFactory.hasCredentials("c"));
-		assertFalse(credentialFactory.hasCredentials("d"));
+		assertTrue(credentialFactory.hasSecret(CredentialAlias.parse("a")));
+		assertTrue(credentialFactory.hasSecret(CredentialAlias.parse("b")));
+		assertTrue(credentialFactory.hasSecret(CredentialAlias.parse("c")));
+		assertFalse(credentialFactory.hasSecret(CredentialAlias.parse("d")));
 	}
 
 	@Test
-	public void testGetCredentialsExistingAlias() throws UnsupportedOperationException {
+	public void testGetCredentialsExistingAlias() throws IOException {
 		String[] aliasesArray = {"a", "a/username", "b", "c/username"};
 		this.aliases = new HashSet<>(Arrays.asList(aliasesArray));
 
-		WildFlyCredentials wfc = (WildFlyCredentials)credentialFactory.getCredentials("a");
-		assertEquals("a", wfc.getAlias());
-		assertEquals("a/username-value", wfc.getUsername());
-		assertEquals("a-value", wfc.getPassword());
+		ISecret wfc = credentialFactory.getSecret(CredentialAlias.parse("a"));
+		assertEquals("a/username-value", wfc.getField("username"));
+		assertEquals("a-value", wfc.getField(""));
+
+		ICredentials credentials = CredentialFactory.getCredentials("a");
+		assertEquals("a/username-value", credentials.getUsername());
+		assertEquals("a-value", credentials.getPassword());
 	}
 
 	@Test
-	public void testGetCredentialsExistingAliasNoUsername() throws UnsupportedOperationException {
+	public void testGetCredentialsExistingAliasNoUsername() throws IOException {
 		String[] aliasesArray = {"a", "a/username", "b", "c/username"};
 		this.aliases = new HashSet<>(Arrays.asList(aliasesArray));
 
-		WildFlyCredentials wfc = (WildFlyCredentials) credentialFactory.getCredentials("b");
-		assertEquals("b", wfc.getAlias());
-		assertEquals("", wfc.getUsername());
-		assertEquals("b-value", wfc.getPassword());
+		ISecret wfc = credentialFactory.getSecret(CredentialAlias.parse("b"));
+		assertNull(wfc.getField("username"));
+		assertEquals("b-value", wfc.getField("password"));
+		assertEquals("b-value", wfc.getField(""));
+
+		ICredentials credentials = CredentialFactory.getCredentials("b");
+		assertNull(credentials.getUsername());
+		assertEquals("b-value", credentials.getPassword());
 	}
 
 	@Test
-	public void testGetCredentialsExistingAliasNoPassword() throws UnsupportedOperationException {
+	public void testGetCredentialsExistingAliasNoPassword() throws IOException {
 		String[] aliasesArray = {"a", "a/username", "b", "c/username"};
 		this.aliases = new HashSet<>(Arrays.asList(aliasesArray));
 
-		WildFlyCredentials wfc = (WildFlyCredentials)credentialFactory.getCredentials("c");
-		assertEquals("c", wfc.getAlias());
-		assertEquals("c/username-value", wfc.getUsername());
-		assertEquals("", wfc.getPassword());
+		ISecret wfc = credentialFactory.getSecret(CredentialAlias.parse("c"));
+		assertEquals("c/username-value", wfc.getField("username"));
+		assertNull(wfc.getField("password"));
+
+		ICredentials credentials = CredentialFactory.getCredentials("c");
+		assertEquals("c/username-value", credentials.getUsername());
+		assertNull(credentials.getPassword());
 	}
 
 	@Test
-	public void testGetCredentialsNotExistingAlias() throws UnsupportedOperationException {
+	public void testGetCredentialsNotExistingAlias() {
 		String[] aliasesArray = {"a", "a/username", "b", "c/username"};
 		this.aliases = new HashSet<>(Arrays.asList(aliasesArray));
 
-		WildFlyCredentials wfc = (WildFlyCredentials)credentialFactory.getCredentials("d");
-		assertEquals("d", wfc.getAlias());
-		assertThrows(NoSuchElementException.class, wfc::getUsername);
-		assertThrows(NoSuchElementException.class, wfc::getPassword);
+		CredentialAlias alias = CredentialAlias.parse("d");
+		assertThrows(NoSuchElementException.class, () -> credentialFactory.getSecret(alias));
+		assertNull(CredentialFactory.getCredentials("d"));
 	}
 
 }

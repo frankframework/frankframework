@@ -22,8 +22,9 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.credentialprovider.ICredentialProvider;
-import org.frankframework.credentialprovider.ICredentials;
+import org.frankframework.credentialprovider.CredentialAlias;
+import org.frankframework.credentialprovider.ISecret;
+import org.frankframework.credentialprovider.ISecretProvider;
 import org.frankframework.credentialprovider.util.Cache;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
@@ -78,7 +79,7 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  * @see <a href="https://updates.thycotic.net/secretserver/restapiguide/">Delinea API documentation</a>
  */
 @Log4j2
-public class DelineaCredentialFactory implements ICredentialProvider {
+public class DelineaCredentialFactory implements ISecretProvider {
 
 	private static final String BASE_KEY = "credentialFactory.delinea.";
 	// Leave empty to not use autocomment
@@ -95,7 +96,7 @@ public class DelineaCredentialFactory implements ICredentialProvider {
 
 	private static final int CACHE_DURATION_MILLIS = 60_000;
 
-	private final Cache<String, Secret, NoSuchElementException> configuredAliases = new Cache<>(CACHE_DURATION_MILLIS);
+	private final Cache<String, DelineaSecret, NoSuchElementException> configuredAliases = new Cache<>(CACHE_DURATION_MILLIS);
 
 	private DelineaClientSettings delineaClientSettings;
 
@@ -136,8 +137,8 @@ public class DelineaCredentialFactory implements ICredentialProvider {
 	}
 
 	@Override
-	public boolean hasCredentials(String alias) {
-		return getCredentials(alias) != null;
+	public boolean hasSecret(CredentialAlias alias) {
+		return getSecret(alias) != null;
 	}
 
 	@Override
@@ -146,15 +147,15 @@ public class DelineaCredentialFactory implements ICredentialProvider {
 	}
 
 	@Override
-	public ICredentials getCredentials(String alias) throws NoSuchElementException {
-		if (StringUtils.isBlank(alias)) {
-			throw new IllegalArgumentException();
+	public ISecret getSecret(CredentialAlias alias) throws NoSuchElementException {
+		// Make sure to always get a live copy of the secret
+		DelineaSecret secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), aliasToRetrieve -> delineaClient.getSecret(aliasToRetrieve, delineaClientSettings.autoCommentValue()));
+
+		if (secret == null) {
+			throw new NoSuchElementException();
 		}
 
-		// Make sure to always get a live copy of the secret
-		Secret secret = configuredAliases.computeIfAbsentOrExpired(alias, aliasToRetrieve -> delineaClient.getSecret(aliasToRetrieve, delineaClientSettings.autoCommentValue()));
-
-		return new DelineaCredentials(secret);
+		return new DelineaCredentials(alias, secret);
 	}
 
 	void setDelineaClient(DelineaClient delineaClient) {

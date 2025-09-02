@@ -5,7 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Collection;
 
 import org.junit.jupiter.api.AfterEach;
@@ -67,7 +71,7 @@ class CredentialFactoryTest {
 	@Test
 	void testGetAliases() throws Exception {
 		Collection<String> aliases = CredentialFactory.getConfiguredAliases();
-		assertEquals("[alias1, account, alias2]", aliases.toString());
+		assertEquals("[aliasWith, alias1, account, noUsername, alias2]", aliases.toString());
 	}
 
 	@Test
@@ -83,6 +87,32 @@ class CredentialFactoryTest {
 		assertNull(credentials.getUsername());
 		assertNull(credentials.getPassword());
 		assertEquals("account", credentials.getAlias());
+	}
+
+	@Test
+	void testAliasWithCustomFields() {
+		// Init setting on purpose with extra whitespaces, commas etc.
+		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory");
+
+		// Act
+		ICredentials c = CredentialFactory.getCredentials("aliasWith{username+domain,secret}");
+
+		// Assert values are from the first factory that returns a value
+		assertEquals("name+domain.com", c.getUsername());
+		assertEquals("fakePassword", c.getPassword());
+	}
+
+	@Test
+	void testAliasWithCustomFieldsAndUnknownField() {
+		// Init setting on purpose with extra whitespaces, commas etc.
+		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory");
+
+		// Act
+		ICredentials c = CredentialFactory.getCredentials("aliasWith{username:unknown,secret+domain}");
+
+		// Assert values are from the first factory that returns a value
+		assertEquals("name:", c.getUsername());
+		assertEquals("fakePassword+domain.com", c.getPassword());
 	}
 
 	@Test
@@ -135,7 +165,7 @@ class CredentialFactoryTest {
 		assertEquals("alias1Password", alias1.getPassword());
 		assertEquals("alias2Password", alias2.getPassword());
 		assertFalse(CredentialFactory.hasCredential("notExists"));
-		assertEquals(3, CredentialFactory.getConfiguredAliases().size());
+		assertEquals(5, CredentialFactory.getConfiguredAliases().size());
 	}
 
 	@Test
@@ -143,7 +173,7 @@ class CredentialFactoryTest {
 		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory, org.frankframework.credentialprovider.MockCredentialFactory, ");
 		MockCredentialFactory.add("account", "mockUsername", "mockGoesSecond");
 		MockCredentialFactory.add("alias1", "alias1Username", "alias1Password");
-		MockCredentialFactory.add("alias2", null, "alias2Password");
+		MockCredentialFactory.add("alias2", null, "should-be-ignored");
 		MockCredentialFactory.add("TheMaster", "masterUsername", "masterPassword");
 		MockCredentialFactory.add("TheBachelor", "bachelorUsername", "bachelorPassword");
 
@@ -158,8 +188,23 @@ class CredentialFactoryTest {
 		assertEquals("username1", alias1.getUsername());
 		assertEquals("password1", alias1.getPassword());
 		assertEquals("passwordOnly", alias2.getPassword());
-		assertEquals("[alias1, account, alias2, TheMaster, TheBachelor]", CredentialFactory.getConfiguredAliases().toString());
+		assertEquals("[aliasWith, alias1, account, noUsername, alias2, TheMaster, TheBachelor]", CredentialFactory.getConfiguredAliases().toString());
 		assertTrue(CredentialFactory.hasCredential("TheMaster"));
 		assertTrue(CredentialFactory.hasCredential("fakePrefix:TheBachelor"));
+	}
+
+	@Test
+	void testFilesystem() throws Exception {
+		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.FileSystemCredentialFactory");
+
+		String url = this.getClass().getResource("/secrets").toExternalForm();
+		Path root =  Paths.get(url.substring(url.indexOf(":/")+2));
+		assumeTrue(Files.exists(root));
+
+		CredentialConstants.getInstance().setProperty("credentialFactory.filesystem.root", root.toString());
+
+		ICredentials credentials = CredentialFactory.getCredentials("singleValue");
+		assertNull(credentials.getUsername());
+		assertEquals("Plain Credential", credentials.getPassword());
 	}
 }
