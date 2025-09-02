@@ -8,15 +8,17 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.credentialprovider.CredentialAlias;
-import org.frankframework.credentialprovider.ICredentials;
+import org.frankframework.credentialprovider.ISecret;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
 class DelineaCredentialFactoryTest {
@@ -62,8 +64,8 @@ class DelineaCredentialFactoryTest {
 		Collection<String> configuredAliases = credentialFactory.getConfiguredAliases();
 		assertEquals(0, configuredAliases.size());
 
-		credentialFactory.hasCredentials(CredentialAlias.parse("1"));
-		credentialFactory.getCredentials(CredentialAlias.parse("2"));
+		credentialFactory.hasSecret(CredentialAlias.parse("1"));
+		credentialFactory.getSecret(CredentialAlias.parse("2"));
 
 		// Expect a list of 2 secrets after hasCredentials and getCredentials calls
 		configuredAliases = credentialFactory.getConfiguredAliases();
@@ -71,19 +73,19 @@ class DelineaCredentialFactoryTest {
 	}
 
 	@Test
-	void testGetSecret() {
+	void testGetSecret() throws IOException {
 		CredentialAlias alias = CredentialAlias.parse("1");
-		ICredentials credentials = credentialFactory.getCredentials(alias);
+		ISecret credentials = credentialFactory.getSecret(alias);
 
 		assertNotNull(credentials);
-		assertEquals("user1", credentials.getUsername());
+		assertEquals("user1", credentials.getField("username"));
 	}
 
 	@Test
 	void testGetNonExistingSecret() {
 		CredentialAlias alias = CredentialAlias.parse("16");
-		assertThrows(IllegalArgumentException.class, () -> credentialFactory.hasCredentials(alias));
-		assertThrows(IllegalArgumentException.class, () -> credentialFactory.getCredentials(alias));
+		assertThrows(NoSuchElementException.class, () -> credentialFactory.hasSecret(alias));
+		assertThrows(NoSuchElementException.class, () -> credentialFactory.getSecret(alias));
 	}
 
 	static Secret createSecret(int id, int folderId, String username, String password) {

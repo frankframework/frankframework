@@ -15,6 +15,7 @@
 */
 package org.frankframework.credentialprovider;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
@@ -23,6 +24,7 @@ import lombok.Getter;
 import lombok.extern.java.Log;
 
 import org.frankframework.credentialprovider.util.CredentialConstants;
+import org.frankframework.util.StringUtil;
 
 @Log
 public class CredentialAlias {
@@ -48,28 +50,28 @@ public class CredentialAlias {
 		CredentialConstants constants = CredentialConstants.getInstance();
 		String aliasPrefix = constants.getProperty(CredentialFactory.CREDENTIAL_FACTORY_ALIAS_PREFIX_KEY);
 		if (StringUtils.isNotBlank(aliasPrefix)) {
-			log.severe("property [credentialFactory.optionalPrefix] should not be used!");
+			log.info("setting optional prefix to [" + aliasPrefix + "]");
 			ALIAS_PREFIX = aliasPrefix.toLowerCase();
 		} else {
 			ALIAS_PREFIX = null;
 		}
 
-		String doesMapHaveNameSuffix = constants.getProperty(PROPERTY_BASE1.formatted(USERNAME_SUFFIX));
-		String doesVaultHaveNameSuffix = constants.getProperty(PROPERTY_BASE2.formatted(USERNAME_SUFFIX));
-		if (StringUtils.isNotBlank(doesMapHaveNameSuffix)) {
-			DEFAULT_USERNAME_FIELD = doesMapHaveNameSuffix;
-		} else if (StringUtils.isNotBlank(doesVaultHaveNameSuffix)) {
-			DEFAULT_USERNAME_FIELD = doesVaultHaveNameSuffix;
+		String mapNameSuffix = constants.getProperty(PROPERTY_BASE1.formatted(USERNAME_SUFFIX));
+		String vaultNameSuffix = constants.getProperty(PROPERTY_BASE2.formatted(USERNAME_SUFFIX));
+		if (StringUtils.isNotBlank(mapNameSuffix)) {
+			DEFAULT_USERNAME_FIELD = mapNameSuffix;
+		} else if (StringUtils.isNotBlank(vaultNameSuffix)) {
+			DEFAULT_USERNAME_FIELD = vaultNameSuffix;
 		} else {
 			DEFAULT_USERNAME_FIELD = CredentialFactory.DEFAULT_USERNAME_FIELD;
 		}
 
-		String doesMapHavePasswordSuffix = constants.getProperty(PROPERTY_BASE1.formatted(PASSWORD_SUFFIX));
-		String doesVaultHavePasswordSuffix = constants.getProperty(PROPERTY_BASE2.formatted(PASSWORD_SUFFIX));
-		if (StringUtils.isNotBlank(doesMapHavePasswordSuffix)) {
-			DEFAULT_PASSWORD_FIELD = doesMapHavePasswordSuffix;
-		} else if (StringUtils.isNotBlank(doesVaultHavePasswordSuffix)) {
-			DEFAULT_PASSWORD_FIELD = doesVaultHavePasswordSuffix;
+		String mapPasswordSuffix = constants.getProperty(PROPERTY_BASE1.formatted(PASSWORD_SUFFIX));
+		String vaultPasswordSuffix = constants.getProperty(PROPERTY_BASE2.formatted(PASSWORD_SUFFIX));
+		if (StringUtils.isNotBlank(mapPasswordSuffix)) {
+			DEFAULT_PASSWORD_FIELD = mapPasswordSuffix;
+		} else if (StringUtils.isNotBlank(vaultPasswordSuffix)) {
+			DEFAULT_PASSWORD_FIELD = vaultPasswordSuffix;
 		} else {
 			DEFAULT_PASSWORD_FIELD = CredentialFactory.DEFAULT_PASSWORD_FIELD;
 		}
@@ -79,31 +81,52 @@ public class CredentialAlias {
 	 * Extracting is deprecated, cleanse is not.
 	 * @return NULL when empty.
 	 */
-	@Nullable
+	@Nonnull
 	private static String extractAlias(@Nullable final String rawAlias) {
-		if (ALIAS_PREFIX != null && rawAlias != null && rawAlias.toLowerCase().startsWith(ALIAS_PREFIX)) {
-			return rawAlias.substring(ALIAS_PREFIX.length());
+		if (StringUtils.isBlank(rawAlias)) {
+			throw new IllegalArgumentException("alias may not be empty");
 		}
-		return rawAlias;
+
+		String aliasName = rawAlias;
+		if (ALIAS_PREFIX != null && rawAlias.toLowerCase().startsWith(ALIAS_PREFIX)) {
+			aliasName = rawAlias.substring(ALIAS_PREFIX.length());
+		}
+
+		String cleanAliasName = StringUtil.split(aliasName, "{").get(0);
+		if (!cleanAliasName.matches("[a-zA-Z0-9.]+")) {
+			throw new IllegalArgumentException("alias must only consist of letters and numbers");
+		}
+
+		return aliasName; // Return the name without the optional prefix.
 	}
 
-	private CredentialAlias(String rawAlias) {
+	private CredentialAlias(@Nullable String rawAlias) {
 		String cleanAlias = extractAlias(rawAlias);
-		if (StringUtils.isBlank(rawAlias)) {
-			throw new IllegalArgumentException();
-		}
 
-		if (rawAlias.contains("{") && rawAlias.contains("}")) {
-			throw new IllegalArgumentException("almost supported");
-		} else if (rawAlias.contains("{") || rawAlias.contains("}")) {
+		int openParenthesis = cleanAlias.indexOf("{");
+		boolean hasCloseParenthesis = cleanAlias.endsWith("}");
+		if (openParenthesis > 0 && hasCloseParenthesis) {
+			name = cleanAlias.substring(0, openParenthesis);
+
+			String remainder = cleanAlias.substring(openParenthesis+1, cleanAlias.length()-1);
+			String[] fieldnames = remainder.split(",");
+			usernameField = StringUtils.defaultIfBlank(fieldnames[0], DEFAULT_USERNAME_FIELD);
+
+			if (fieldnames.length == 2) {
+				passwordField = StringUtils.defaultIfBlank(fieldnames[1], DEFAULT_PASSWORD_FIELD);
+			} else {
+				passwordField = DEFAULT_PASSWORD_FIELD;
+			}
+		} else if (openParenthesis > 0 || hasCloseParenthesis) {
 			throw new IllegalArgumentException("'{' and '}' are special characters and must be used in tandem.");
 		} else {
+			name = cleanAlias;
 			usernameField = DEFAULT_USERNAME_FIELD;
 			passwordField = DEFAULT_PASSWORD_FIELD;
-			name = cleanAlias;
 		}
 	}
 
+	@Nullable
 	public static CredentialAlias parse(String rawAlias) {
 		try {
 			return new CredentialAlias(rawAlias);

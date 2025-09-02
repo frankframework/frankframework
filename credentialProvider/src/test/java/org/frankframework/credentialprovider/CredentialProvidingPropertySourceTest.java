@@ -2,9 +2,21 @@ package org.frankframework.credentialprovider;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import org.frankframework.credentialprovider.util.CredentialConstants;
+
 public class CredentialProvidingPropertySourceTest {
+
+	@BeforeEach
+	void setup() {
+		MockCredentialFactory.getInstance().clear();
+		CredentialFactory.clearInstance();
+
+		// Make sure the defaults are always the same
+		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory");
+	}
 
 	@Test
 	public void testGetExistingUsername() {

@@ -16,25 +16,23 @@
 package org.frankframework.credentialprovider.delinea;
 
 import org.frankframework.credentialprovider.CredentialAlias;
-import org.frankframework.credentialprovider.ICredentials;
 
-public class DelineaCredentials implements ICredentials {
+public class DelineaCredentials extends org.frankframework.credentialprovider.Secret {
 
-	private final String username;
-	private final String password;
-	private final String alias;
+	private final Secret secret;
 
 	public DelineaCredentials(CredentialAlias alias, Secret secret) {
-		if (secret == null) {
-			throw new IllegalArgumentException();
+		super(alias);
+
+		if (!getAlias().equals(String.valueOf(secret.id()))) {
+			throw new IllegalArgumentException("secret slug does not match alias ["+getAlias()+"]");
 		}
 
-		this.alias = String.valueOf(secret.id());
-		this.username = getFieldValue(secret, alias.getUsernameField());
-		this.password = getFieldValue(secret, alias.getPasswordField());
+		this.secret = secret;
 	}
 
-	private String getFieldValue(Secret secret, String slugName) {
+	@Override
+	public String getField(String slugName) {
 		return secret.fields().stream()
 				.filter(field -> field.slug().equals(slugName))
 				.map(Secret.Field::value)
@@ -42,18 +40,4 @@ public class DelineaCredentials implements ICredentials {
 				.orElse(null);
 	}
 
-	@Override
-	public String getAlias() {
-		return alias;
-	}
-
-	@Override
-	public String getUsername() {
-		return username;
-	}
-
-	@Override
-	public String getPassword() {
-		return password;
-	}
 }

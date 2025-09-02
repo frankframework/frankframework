@@ -1,9 +1,9 @@
 package org.frankframework.credentialprovider;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NoSuchElementException;
@@ -29,51 +29,49 @@ public class MapCredentialsTest {
 
 	@Test
 	public void testUnknownAliasNoDefaults() {
-		MapCredentials mc = new MapCredentials(CredentialAlias.parse("fakeAlias"), null);
-		assertThrows(NoSuchElementException.class, mc::getUsername);
+		CredentialAlias alias = CredentialAlias.parse("fakeAlias");
+		assertThrows(NoSuchElementException.class, () -> new MapCredentials(alias, aliases));
 	}
 
 	@Test
-	public void testPasswordWithSlashes() {
+	public void testPasswordWithSlashes() throws IOException {
 		CredentialAlias alias = CredentialAlias.parse("slash");
 
 		MapCredentials mc = new MapCredentials(alias, aliases);
-		assertEquals("username from alias", mc.getUsername());
-		assertEquals("password/with/slash", mc.getPassword());
+		assertEquals("username from alias", mc.getField("username"));
+		assertEquals("password/with/slash", mc.getField("password"));
 	}
 
 	@Test
-	public void testPlainAlias() {
+	public void testPlainAlias() throws IOException {
 		CredentialAlias alias = CredentialAlias.parse("straight");
 		String expectedUsername = "username from alias";
 		String expectedPassword = "password from alias";
 
 		MapCredentials mc = new MapCredentials(alias, aliases);
 
-		assertEquals(expectedUsername, mc.getUsername());
-		assertEquals(expectedPassword, mc.getPassword());
+		assertEquals(expectedUsername, mc.getField("username"));
+		assertEquals(expectedPassword, mc.getField("password"));
 	}
 
 	@Test
-	public void testAliasWithoutUsername() {
+	public void testAliasWithoutUsername() throws IOException {
 		CredentialAlias alias = CredentialAlias.parse("noUsername");
 		String expectedPassword = "password from alias";
 
 		MapCredentials mc = new MapCredentials(alias, aliases);
 
-		assertNull(mc.getUsername());
-		assertEquals(expectedPassword, mc.getPassword());
+		assertThrows(NoSuchElementException.class, () -> mc.getField("username"));
+		assertEquals(expectedPassword, mc.getField("password"));
 	}
 
 	@Test
-	public void testPlainCredential() {
+	public void testPlainCredential() throws IOException {
 		CredentialAlias alias = CredentialAlias.parse("singleValue");
-		String expectedUsername = null;
-		String expectedPassword = "Plain Credential";
 
 		MapCredentials mc = new MapCredentials(alias, aliases);
 
-		assertEquals(expectedUsername, mc.getUsername());
-		assertEquals(expectedPassword, mc.getPassword());
+		assertThrows(NoSuchElementException.class, () -> mc.getField("username"));
+		assertEquals("Plain Credential", mc.getField(""));
 	}
 }

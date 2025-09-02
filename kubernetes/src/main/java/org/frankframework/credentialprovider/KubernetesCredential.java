@@ -23,42 +23,26 @@ import io.fabric8.kubernetes.api.model.Secret;
 import lombok.extern.java.Log;
 
 @Log
-public class KubernetesCredential implements ICredentials {
+public class KubernetesCredential extends org.frankframework.credentialprovider.Secret {
 
-	private final String alias;
-	private final String username;
-	private final String password;
+	private final Secret secret;
 
 	public KubernetesCredential(CredentialAlias alias, Secret secret) {
+		super(alias);
+
 		String secretAlias = secret.getMetadata().getName();
-		if (!alias.getName().equals(secretAlias)) {
+		if (!getAlias().equals(secretAlias)) {
 			throw new IllegalStateException("alias does not match secret");
 		}
 
-		this.alias = alias.getName();
-		username = decodeFromSecret(secret, alias.getUsernameField());
-		password = decodeFromSecret(secret, alias.getPasswordField());
+		this.secret = secret;
 	}
 
 	@Override
-	public String getAlias() {
-		return alias;
-	}
-
-	@Override
-	public String getUsername() {
-		return username;
-	}
-
-	@Override
-	public String getPassword() {
-		return password;
-	}
-
-	protected String decodeFromSecret(Secret secret, String key) {
+	public String getField(String key) {
 		String foundKey = secret.getData().get(key);
 		if (StringUtils.isEmpty(foundKey)) {
-			log.info("no value found for alias [%s] field [%s]".formatted(alias, key));
+			log.info("no value found for alias [%s] field [%s]".formatted(getAlias(), key));
 			return null;
 		}
 		return new String(Base64.getDecoder().decode(foundKey));

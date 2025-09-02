@@ -30,7 +30,7 @@ import org.frankframework.credentialprovider.util.Cache;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
 /**
- * <p>CredentialFactory for Kubernetes Credentials. Fetches credentials from Kubernetes secrets.</p>
+ * <p>CredentialFactory for Kubernetes Secret. Fetches credentials from Kubernetes secrets.</p>
  *
  * <p>The credentials are stored in Kubernetes secrets, which are base64 encoded. The keys used for the secrets are "username" and "password".</p>
  *
@@ -64,7 +64,7 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  * @ff.info The credentials are cached for 60 seconds, to prevent unnecessary calls to the Kubernetes API.
  */
 @Log
-public class KubernetesCredentialFactory implements ICredentialProvider {
+public class KubernetesCredentialFactory implements ISecretProvider {
 
 	private static final String K8_USERNAME = "credentialFactory.kubernetes.username";
 	private static final String K8_PASSWORD = "credentialFactory.kubernetes.password";
@@ -108,17 +108,21 @@ public class KubernetesCredentialFactory implements ICredentialProvider {
 	}
 
 	@Override
-	public boolean hasCredentials(CredentialAlias alias) {
+	public boolean hasSecret(CredentialAlias alias) {
 		try {
-			return getCredentials(alias) != null;
+			return getSecret(alias) != null;
 		} catch (NoSuchElementException e) {
 			return false;
 		}
 	}
 
 	@Override
-	public ICredentials getCredentials(CredentialAlias alias) throws NoSuchElementException {
+	public ISecret getSecret(CredentialAlias alias) throws NoSuchElementException {
 		Secret secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), this::getSecret);
+
+		if (secret == null) {
+			throw new NoSuchElementException();
+		}
 
 		return new KubernetesCredential(alias, secret);
 	}

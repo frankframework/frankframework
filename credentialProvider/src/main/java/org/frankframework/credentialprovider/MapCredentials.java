@@ -15,42 +15,57 @@
 */
 package org.frankframework.credentialprovider;
 
+import java.io.IOException;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
+import java.util.Properties;
 
-public class MapCredentials extends Credentials {
+import jakarta.annotation.Nonnull;
 
-	private final Map<String,String> aliases;
+import org.apache.commons.lang3.StringUtils;
 
-	public MapCredentials(CredentialAlias alias, Map<String,String> aliases) {
+public class MapCredentials extends Secret {
+
+	private final Properties secret;
+
+	public MapCredentials(CredentialAlias alias, @Nonnull Map<String,String> aliases) {
 		super(alias);
-		this.aliases = aliases;
+
+		String aliasName = alias.getName();
+
+		secret = new Properties();
+		for(Entry<String, String> entry: aliases.entrySet()) {
+			String key = entry.getKey();
+			if(key.startsWith(aliasName)) {
+				secret.put(key, entry.getValue());
+			}
+		}
+
+		if (secret.isEmpty()) {
+			throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+alias.getName()+"]: no aliases");
+		}
 	}
 
 	@Override
-	protected void getCredentialsFromAlias(String usernameField, String passwordField) {
-		if (aliases != null) {
-			String usernameKey = "%s/%s".formatted(getAlias(), usernameField);
-			String passwordKey = "%s/%s".formatted(getAlias(), passwordField);
-			boolean foundOne = false;
-			if (aliases.containsKey(usernameKey)) {
-				foundOne = true;
-				setUsername(aliases.get(usernameKey));
+	public String getField(String fieldname) throws IOException {
+		if (secret.size() == 1) {
+			// no field
+			if(StringUtils.isBlank(fieldname)) {
+				return secret.getProperty(getAlias());
 			}
-			if (aliases.containsKey(passwordKey)) {
-				foundOne = true;
-				setPassword(aliases.get(passwordKey));
+
+			// only password field
+			String value = secret.getProperty("%s/%s".formatted(getAlias(), fieldname));
+			if (value != null) {
+				return value;
 			}
-			if (!foundOne && aliases.containsKey(getAlias())) {
-				setPassword(aliases.get(getAlias()));
-				return;
-			}
-			if (foundOne) {
-				return;
-			}
-			throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]: alias not found");
+
+			// field not found
+			throw new NoSuchElementException("cannot obtain field from secret [" + getAlias() + "]");
 		}
-		throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]: no aliases");
+
+		return secret.getProperty("%s/%s".formatted(getAlias(), fieldname));
 	}
 
 }
