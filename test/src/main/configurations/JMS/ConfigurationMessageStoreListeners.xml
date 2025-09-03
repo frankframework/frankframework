@@ -1,7 +1,9 @@
-<Module>
+<Module
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd">
 	<Adapter name="MultipleReceiversAdapter-TestTrigger" active="${active.jms}">
 		<Receiver name="testStep1Trigger-Receiver">
-			<JavaListener serviceName="testStep1Trigger-Listener"/>
+			<JavaListener serviceName="testStep1Trigger-Listener" name="step1"/>
 		</Receiver>
 
 		<Pipeline>
@@ -10,7 +12,7 @@
 					query="DELETE FROM IBISSTORE WHERE SLOTID = 'multiReceiverTest'"
 				/>
 			</SenderPipe>
-			<SenderPipe name="Send Trigger Message">
+			<SenderPipe name="Send Trigger Message" getInputFromSessionKey="originalMessage">
 				<JmsSender
 					jmsRealm="qcf"
 					destinationName="${jms.destination.i4testiaf_in}">
@@ -22,13 +24,13 @@
 
 	<Adapter name="MultipleReceiversAdapter-RetryTrigger" active="${active.jms}">
 		<Receiver name="testStep2Trigger-Receiver">
-			<JavaListener serviceName="testStep2Trigger-Listener"/>
+			<JavaListener serviceName="testStep2Trigger-Listener" name="step2"/>
 		</Receiver>
 
 		<Pipeline>
 			<SenderPipe name="Find Message Key to Retry">
 				<FixedQuerySender
-					queryType="select"
+					queryType="SELECT"
 					query="SELECT MESSAGEKEY FROM IBISSTORE WHERE SLOTID = 'multiReceiverTest'"
 					scalar="true"
 				/>
@@ -42,7 +44,7 @@
 				>
 					<Param name="configuration" value="JMS"/>
 					<Param name="adapterName" value="MultipleReceiversAdapter"/>
-					<Param name="receiverName" value="retryReceiver"/>
+					<Param name="receiverName" sessionKey="originalMessage" xpathExpression="/receiverNameForRetry/text()"/>
 					<Param name="messageIds"/>
 					<Param name="url" pattern="${web.protocol}://${web.host}:${web.port}${web.contextpath}/iaf/api/configurations/{configuration}/adapters/{adapterName}/receivers/{receiverName}/stores/Error"/>
 				</HttpSender>
@@ -83,14 +85,19 @@
 
 		<Pipeline>
 			<Exits>
-				<Exit name="EXIT" state="success" />
-				<Exit name="ERROR" state="error" />
+				<Exit name="EXIT" state="SUCCESS" />
+				<Exit name="ERROR" state="ERROR" />
 			</Exits>
-			<XmlIfPipe name="Check If Pipeline Should Fail or Succeed"
-				getInputFromSessionKey="__isManualRetry" regex="true">
+			<IfPipe name="Check if pipeline should always fail or only on manual retry"
+				xpathExpression="/root = 'fail-always'">
+				<Forward name="then" path="ERROR"/>
+				<Forward name="else" path="Check If Pipeline Should Fail or Succeed"/>
+			</IfPipe>
+			<IfPipe name="Check If Pipeline Should Fail or Succeed"
+				getInputFromSessionKey="__isManualRetry" expressionValue="true">
 				<Forward name="then" path="EXIT"/>
 				<Forward name="else" path="ERROR"/>
-			</XmlIfPipe>
+			</IfPipe>
 		</Pipeline>
 	</Adapter>
 </Module>
