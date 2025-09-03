@@ -38,7 +38,7 @@ public class TransactionConnectorTest {
 	private static final int TX_DEF = TransactionDefinition.PROPAGATION_REQUIRES_NEW;
 
 	@BeforeEach
-	public void setup(DatabaseTestEnvironment env) throws Exception {
+	public void setup(DatabaseTestEnvironment env) {
 		this.env = env;
 		txManager = (IThreadConnectableTransactionManager) env.getTxManager();
 	}

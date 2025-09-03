@@ -20,7 +20,7 @@ import org.junit.platform.commons.util.ReflectionUtils;
 
 public class JUnitDatabaseExtension implements TestTemplateInvocationContextProvider {
 
-	static final Namespace NAMESPACE = Namespace.create(DatabaseTest.class);
+	static final Namespace NAMESPACE = Namespace.create(DatabaseTestOptions.class);
 	static final String DB_INSTANCE = "DB_CONTEXT";
 
 	@Override
@@ -30,7 +30,7 @@ public class JUnitDatabaseExtension implements TestTemplateInvocationContextProv
 		}
 
 		Method testMethod = context.getRequiredTestMethod();
-		if (!isAnnotated(testMethod, DatabaseTest.class)) {
+		if (!isAnnotated(testMethod, DatabaseTestOptions.class)) {
 			throw new JUnitException("Missing DatabaseTest annotation");
 		}
 

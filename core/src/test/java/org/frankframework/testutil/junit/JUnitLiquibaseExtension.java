@@ -44,9 +44,9 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 	private static final Namespace LIQUIBASE_NAMESPACE = Namespace.create(JUnitLiquibaseExtension.class);
 
 	@Override
-	public void beforeEach(ExtensionContext context) throws Exception {
+	public void beforeEach(ExtensionContext context) {
 		Method templateMethod = context.getRequiredTestMethod();
-		boolean isDatabaseTest = AnnotationUtils.findAnnotation(templateMethod, DatabaseTest.class).isPresent();
+		boolean isDatabaseTest = AnnotationUtils.findAnnotation(templateMethod, DatabaseTestOptions.class).isPresent();
 		if(!isDatabaseTest) {
 			throw new JUnitException("Not a @DatabaseTest");
 		}
