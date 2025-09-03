@@ -78,7 +78,11 @@
                 "src/styles.scss"
               ],
               "outputHashing": "all",
-              "optimization": true
+              "optimization": {
+                "styles": {
+                  "inlineCritical": false
+                }
+              }
             },
             "development": {
               "optimization": false,
