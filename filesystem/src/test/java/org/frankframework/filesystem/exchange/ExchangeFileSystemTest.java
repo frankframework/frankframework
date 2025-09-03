@@ -22,6 +22,7 @@ import org.frankframework.util.JacksonUtils;
  * @author Niels Meijer
  */
 @Tag("slow")
+@Tag("unstable") // Relies on a remote API that is not always available for the tests
 public class ExchangeFileSystemTest extends HelperedBasicFileSystemTest<MailItemId, ExchangeFileSystem> {
 
 	@BeforeAll

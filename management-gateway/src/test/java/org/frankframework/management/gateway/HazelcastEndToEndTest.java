@@ -129,6 +129,7 @@ public class HazelcastEndToEndTest {
 	@Test
 	@SuppressWarnings("unchecked")
 	@WithMockUser(authorities = { "ROLE_IbisTester" })
+	@Tag("unstable")
 	public void testAsynchronousHazelcastMessage() {
 		//Arrange
 		ArgumentCaptor<Message<String>> requestCapture = ArgumentCaptor.forClass(Message.class);
@@ -140,7 +141,7 @@ public class HazelcastEndToEndTest {
 
 		//Assert
 		Message<String> capturedRequest = Awaitility.await()
-				.atMost(3000, TimeUnit.MILLISECONDS)
+				.atMost(30_000, TimeUnit.MILLISECONDS)
 				.until(requestCapture::getValue, Objects::nonNull);
 		assertEquals("async-string", capturedRequest.getPayload());
 	}

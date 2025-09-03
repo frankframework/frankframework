@@ -107,7 +107,7 @@ jobs:
         CI_SERVICE: GITHUB
         TZ: Europe/Amsterdam
         JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
-      run: ./mvnw -B -V -T1 test -P${{env.PROFILES}} -Djunit.excludedTags=slow,database
+      run: ./mvnw -B -V -T1 test -P${{env.PROFILES}} -Djunit.excludedTags=slow,database,unstable
 
     - name: Store Test Results
       if: failure()

@@ -231,14 +231,14 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 			// More sub-folders to find, repeat our search
 			return findSubFolder(folder, String.join(",", folderNames));
 		} catch (IOException e) {
-			throw new FileSystemException("unable to find folder ["+parentFolder+"]", e);
+			throw new FileSystemException("unable to find folder [" + parentFolder + "]", e);
 		}
 	}
 
 	private MailFolder findSubFolder(List<MailFolder> childFolders, String childFolderName) throws FileSystemException {
 		for (MailFolder childMailFolder : childFolders) {
 			if (childFolderName.equalsIgnoreCase(childMailFolder.getName())) {
-				log.debug("found id [{}] beloging to subFolder [{}]", childMailFolder::getId, ()->childFolderName);
+				log.debug("found id [{}] beloging to subFolder [{}]", childMailFolder::getId, () -> childFolderName);
 				return childMailFolder;
 			}
 		}
@@ -253,10 +253,31 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 	}
 
 	@Override
+	public DirectoryStream<MailItemId> list(MailItemId folderName, TypeFilter filter) throws FileSystemException {
+		MailFolder folder;
+		if (folderName == null) {
+			folder = mailFolder;
+		} else if (isFolder(folderName)) {
+			folder = (MailFolder) folderName;
+		} else {
+			folder = resolveFolder(getCanonicalName(folderName));
+		}
+		return listItems(folder, filter);
+	}
+
+	@Override
 	public DirectoryStream<MailItemId> list(String folderName, TypeFilter filter) throws FileSystemException {
-		List<MailItemId> items = new ArrayList<>();
+		return listItems(resolveFolder(folderName), filter);
+	}
+
+	private MailFolder resolveFolder(String folderName) throws FileSystemException {
+		return StringUtils.isBlank(folderName) ? mailFolder : findSubFolder(mailFolder, folderName);
+	}
+
+	private DirectoryStream<MailItemId> listItems(MailFolder folder, TypeFilter filter) throws FileSystemException {
 		try {
-			MailFolder folder = StringUtils.isBlank(folderName) ? mailFolder : findSubFolder(mailFolder, folderName);
+			List<MailItemId> items = new ArrayList<>();
+
 			if (filter.includeFolders()) {
 				List<MailFolder> folders = client.getMailFolders(folder);
 				items.addAll(folders);
@@ -265,12 +286,12 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 				List<MailMessage> messages = client.getMailMessages(folder);
 				items.addAll(messages);
 			}
-
 			return FileSystemUtils.getDirectoryStream(items);
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
 	}
+
 
 	@Override
 	public String getName(MailItemId msg) {
@@ -302,7 +323,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 			String folderName = id.substring(0, id.lastIndexOf('/'));
 			String mailId = null;
 			if (id.length() > id.lastIndexOf('/')) {
-				mailId = id.substring(id.lastIndexOf('/')+1);
+				mailId = id.substring(id.lastIndexOf('/') + 1);
 			}
 			return toFile(folderName, mailId);
 		}
@@ -583,6 +604,7 @@ public class ExchangeFileSystem extends AbstractFileSystem<MailItemId> implement
 
 	/**
 	 * Comma separated list of fields to try as response address
+	 *
 	 * @ff.default {@value IMailFileSystem#REPLY_ADDRESS_FIELDS_DEFAULT}
 	 */
 	public void setReplyAddressFields(String replyAddressFields) {

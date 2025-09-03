@@ -188,7 +188,7 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	}
 
 	@Override
-	public DirectoryStream<S3FileRef> list(String folder, TypeFilter filter) throws FileSystemException {
+	public DirectoryStream<S3FileRef> list(S3FileRef folder, TypeFilter filter) throws FileSystemException {
 		List<S3Object> files = new ArrayList<>();
 		List<CommonPrefix> subFolders = new ArrayList<>();
 
@@ -402,6 +402,17 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 
 	private ListObjectsV2Request.Builder createListRequestV2(String folder) {
 		String prefix = folder != null ? FilenameUtils.normalizeNoEndSeparator(folder, true) + FILE_DELIMITER : null;
+		return ListObjectsV2Request.builder()
+				.bucket(bucketName)
+				.delimiter(FILE_DELIMITER)
+				.prefix(prefix);
+	}
+
+	private ListObjectsV2Request.Builder createListRequestV2(S3FileRef folder) {
+		String prefix = null;
+		if (folder != null && StringUtils.isNotEmpty(folder.getKey())){
+			prefix = FilenameUtils.normalizeNoEndSeparator(folder.getKey(), true) + FILE_DELIMITER;
+		}
 		return ListObjectsV2Request.builder()
 				.bucket(bucketName)
 				.delimiter(FILE_DELIMITER)

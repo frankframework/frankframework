@@ -24,9 +24,9 @@ import org.frankframework.jta.xa.XaDatasourceCommitStopper;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ConcurrentActionTester;
 import org.frankframework.testutil.TestConfiguration;
-import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
-import org.frankframework.testutil.junit.TxManagerTest;
+import org.frankframework.testutil.junit.DatabaseTestOptions;
+import org.frankframework.testutil.junit.JtaTxManagerTest;
 
 public class StatusRecordingTransactionManagerImplementationTest extends StatusRecordingTransactionManagerTestBase<AbstractStatusRecordingTransactionManager> {
 
@@ -76,16 +76,16 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 		};
 	}
 
-	@DatabaseTest(cleanupBeforeUse = true, cleanupAfterUse = true)
-	@TxManagerTest
+	@DatabaseTestOptions(cleanupBeforeUse = true, cleanupAfterUse = true)
+	@JtaTxManagerTest
 	public void testSetup() {
 		setupTransactionManager();
 		assertStatus("ACTIVE", txManagerReal.getUid());
 		assertEquals(txManagerReal.getUid(), getTMUID());
 	}
 
-	@DatabaseTest(cleanupBeforeUse = true, cleanupAfterUse = true)
-	@TxManagerTest
+	@DatabaseTestOptions(cleanupBeforeUse = true, cleanupAfterUse = true)
+	@JtaTxManagerTest
 	public void testShutdown() {
 		setupTransactionManager();
 		assertStatus("ACTIVE", txManagerReal.getUid());
@@ -97,8 +97,8 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 
 	}
 
-	@DatabaseTest(cleanupBeforeUse = true, cleanupAfterUse = true)
-	@TxManagerTest
+	@DatabaseTestOptions(cleanupBeforeUse = true, cleanupAfterUse = true)
+	@JtaTxManagerTest
 	@Disabled("This test fails for some databases and hangs for others. Needs to be investigated. (See issue #6935)")
 	public void testShutdownPending() {
 		setupTransactionManager();

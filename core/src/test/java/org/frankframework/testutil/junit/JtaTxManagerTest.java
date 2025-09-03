@@ -1,6 +1,5 @@
 package org.frankframework.testutil.junit;
 
-
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -11,10 +10,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.TestInstance;
 
 /**
- * Run database enabled tests, allows the use of the {@link DatabaseTestEnvironment} object to be used in the test method.
- * Includes the {@link DataSourceArgumentSource} by default.
- *
- * @author Niels Meijer
+ * Annotation to add on tests that should only run with JTA transaction managers, but not with the DataSource Transaction Manager
  */
 @Documented
 @Target(ElementType.METHOD)
@@ -23,6 +19,8 @@ import org.junit.jupiter.api.TestInstance;
 @Nested
 
 @DatabaseTestOptions
-@DataSourceArgumentSource // automatically uses default datasource arguments
-public @interface DatabaseTest {
+
+// Argument sources should add all JTA transaction managers supported by the Frank!Framework; currently only Narayana
+@NarayanaArgumentSource
+public @interface JtaTxManagerTest {
 }
