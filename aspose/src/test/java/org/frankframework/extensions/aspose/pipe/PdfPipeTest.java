@@ -43,6 +43,7 @@ import jakarta.annotation.Nonnull;
 import org.apache.commons.io.FileUtils;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -201,7 +202,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		return sftpTestFS.getAbsolutePath();
 	}
 
-	public void expectUnsuccessfullConversion(String name, String fileToConvert, String fileContaingExpectedXml) throws Exception {
+	public void expectUnSuccessfulConversion(String name, String fileToConvert, String fileContaingExpectedXml) throws Exception {
 		String actualXml = executeConversion(name, fileToConvert);
 		String expected = TestFileUtils.getTestFile(fileContaingExpectedXml);
 
@@ -401,7 +402,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void zip2Pdf() throws Exception {
-		expectUnsuccessfullConversion("Zip2Pdf", "/PdfPipe/PdfPipe.zip", "/PdfPipe/xml-results/zip.xml");
+		expectUnSuccessfulConversion("Zip2Pdf", "/PdfPipe/PdfPipe.zip", "/PdfPipe/xml-results/zip.xml");
 		assertTrue(session.containsKey("documents"));
 		assertFalse(session.containsKey("pdfConversionResultFiles1"));
 		assertFalse(session.containsKey("pdfConversionResultFiles2"));
@@ -624,5 +625,25 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		// comparison
 		PDFUtil pdfUtil = createPdfUtil(CompareMode.TEXT_MODE);
 		assertEquals(0d, pdfUtil.compare(expectedFilePath, resultingFile.toFile().getCanonicalPath()));
+	}
+
+	@Test
+	@DisplayName("Expect successful conversion when providing unsigned PDF")
+	public void unsignedPdf() throws Exception {
+		expectSuccessfulConversion("unsignedPdf", "/PdfPipe/unsigned.pdf", "/PdfPipe/xml-results/pdf.xml", "/PdfPipe/results/unsigned.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
+	}
+
+	@Test
+	@DisplayName("Expect successful conversion when providing signed PDF")
+	public void signedPdf() throws Exception {
+		expectSuccessfulConversion("SignedPdf", "/PdfPipe/signed.pdf", "/PdfPipe/xml-results/signed_pdf.xml", "/PdfPipe/results/signed.pdf");
+		assertTrue(session.containsKey("documents"));
+		assertTrue(session.containsKey("pdfConversionResultFiles1"));
+		assertFalse(session.containsKey("pdfConversionResultFiles2"));
+		assertFalse(session.containsKey("pdfConversionResultFiles3"));
 	}
 }
