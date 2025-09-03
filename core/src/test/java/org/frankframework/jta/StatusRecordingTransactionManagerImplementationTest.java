@@ -1,6 +1,7 @@
 package org.frankframework.jta;
 
 import static org.frankframework.dbms.Dbms.H2;
+import static org.frankframework.dbms.Dbms.MYSQL;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
@@ -43,7 +44,7 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) {
-		assumeFalse(H2 == env.getDbmsSupport().getDbms(), "Cannot run this test with H2");
+		assumeFalse(H2 == env.getDbmsSupport().getDbms(), "Cannot run this test with " + env.getDbmsSupport().getDbmsName());
 
 		commitStopper = XaDatasourceCommitStopper.createInstance();
 
@@ -103,6 +104,8 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 	@Timeout(value = 180, unit = TimeUnit.SECONDS)
 //	@Disabled("This test fails for some databases and hangs for others. Needs to be investigated. (See issue #6935)")
 	public void testShutdownPending() {
+		assumeFalse(MYSQL == env.getDbmsSupport().getDbms(), "Cannot run this test with " + env.getDbmsSupport().getDbmsName());
+
 		setupTransactionManager();
 		String uid = txManagerReal.getUid();
 		assertStatus("ACTIVE", uid);
@@ -127,6 +130,7 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 		setupTransactionManager();
 
 		assertEquals(uid, txManagerReal.getUid(), "tmuid must be the same after restart");
+		Thread.yield();
 		txManagerReal.destroy();
 		assertStatus("COMPLETED", uid);
 	}

@@ -2,6 +2,7 @@ package org.frankframework.jta;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,7 +15,6 @@ import jakarta.transaction.UserTransaction;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.jta.JtaTransactionObject;
@@ -29,7 +29,7 @@ import org.frankframework.util.ClassUtils;
 
 @Log4j2
 @WithLiquibase(file = "Migrator/ChangelogBlobTests.xml", tableName = TransactionConnectorTest.TEST_TABLE)
-@Disabled("When this test is enabled, eventually a later test will fail when running Maven (usually the LockerTest) (See issue #6935)")
+//@Disabled("When this test is enabled, eventually a later test will fail when running Maven (usually the LockerTest) (See issue #6935)")
 public class TransactionConnectorTest {
 	static final String TEST_TABLE = "tx_temp_table";
 	private IThreadConnectableTransactionManager txManager;
@@ -97,6 +97,7 @@ public class TransactionConnectorTest {
 
 	@TxManagerTest
 	public void testBasicSameThread() throws Exception {
+		assumeTrue("DATASOURCE".equals(env.getName()), "For the moment this only works with the DatasourceTransactionManager");
 		runQuery("INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (999, 1)");
 
 		displayTransaction();
@@ -116,6 +117,7 @@ public class TransactionConnectorTest {
 
 	@TxManagerTest
 	public void testBasic() throws Exception {
+		assumeTrue("DATASOURCE".equals(env.getName()), "For the moment this only works with the DatasourceTransactionManager");
 		runQuery("INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (999, 1)");
 		TransactionStatus txStatus = env.startTransaction(TX_DEF);
 
@@ -152,6 +154,7 @@ public class TransactionConnectorTest {
 
 	@TxManagerTest
 	public void testBasicRollbackInChildThread() throws Exception {
+		assumeTrue("DATASOURCE".equals(env.getName()), "For the moment this only works with the DatasourceTransactionManager");
 		runQuery("INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (999, 1)");
 
 		TransactionStatus txStatus = env.startTransaction(TX_DEF);
