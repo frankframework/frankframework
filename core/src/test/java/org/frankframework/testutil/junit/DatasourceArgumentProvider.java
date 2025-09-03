@@ -16,7 +16,7 @@ import org.frankframework.testutil.TransactionManagerType;
  *
  * @author Niels Meijer
  */
-public class DatasourceArgumentSource implements ArgumentsProvider {
+public class DatasourceArgumentProvider implements ArgumentsProvider {
 
 	@Override
 	public final Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {

@@ -58,7 +58,7 @@ class DatabaseTestInvocationContext implements TestTemplateInvocationContext {
 		public DatabaseTestParameterResolver(Method testMethod, Object[] arguments) {
 			this.arguments = arguments;
 
-			DatabaseTest annotation = AnnotationUtils.findAnnotation(testMethod, DatabaseTest.class)
+			DatabaseTestOptions annotation = AnnotationUtils.findAnnotation(testMethod, DatabaseTestOptions.class)
 					.orElseThrow(()->new JUnitException("unable to find DatabaseTest annotation"));
 			boolean cleanupBeforeUse = annotation.cleanupBeforeUse();
 			cleanupAfterUse = annotation.cleanupAfterUse();
@@ -89,9 +89,9 @@ class DatabaseTestInvocationContext implements TestTemplateInvocationContext {
 		}
 
 		private void setAnnotatedFields(Object instance, Class<?> testClass) {
-			AnnotationUtils.findAnnotatedFields(testClass, DatabaseTest.Parameter.class, ReflectionUtils::isNotStatic).forEach(field -> {
+			AnnotationUtils.findAnnotatedFields(testClass, DatabaseTestOptions.Parameter.class, ReflectionUtils::isNotStatic).forEach(field -> {
 				assertNonFinalField(field);
-				int index = field.getDeclaredAnnotation(DatabaseTest.Parameter.class).value();
+				int index = field.getDeclaredAnnotation(DatabaseTestOptions.Parameter.class).value();
 
 				Object valueToSet = arguments[index];
 				if(valueToSet != null) { //Skip null values
