@@ -91,17 +91,9 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	@Override
 	protected IMAPFolder createConnection() throws FileSystemException {
 		try {
-			// emailSession.setDebug(true);
 			CredentialFactory cf = new CredentialFactory(getAuthAlias(), getUsername(), getPassword());
 			Store store = emailSession.getStore(getStoreName());
-			try {
-				store.connect(getHost(), getPort(), cf.getUsername(), cf.getPassword());
-			} catch (Exception e) {
-				throw new FileSystemException("Cannot connect to Store at host ["+getHost()+"] port ["+getPort()+"] user ["+cf.getUsername()+"]", e);
-			}
-			if (!store.isConnected()) {
-				throw new FileSystemException("Cannot connect to Store at host ["+getHost()+"] port ["+getPort()+"] user ["+cf.getUsername()+"]");
-			}
+			connectStore(store, cf);
 			IMAPFolder inbox = (IMAPFolder)store.getFolder("INBOX");
 			IMAPFolder folder;
 			String baseFolder = getBaseFolder();
@@ -122,6 +114,17 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 			return folder;
 		} catch (MessagingException e) {
 			throw new FileSystemException(e);
+		}
+	}
+
+	private void connectStore(Store store, CredentialFactory cf) throws FileSystemException {
+		try {
+			store.connect(getHost(), getPort(), cf.getUsername(), cf.getPassword());
+		} catch (Exception e) {
+			throw new FileSystemException("Cannot connect to Store at host ["+getHost()+"] port ["+getPort()+"] user ["+cf.getUsername()+"]", e);
+		}
+		if (!store.isConnected()) {
+			throw new FileSystemException("Cannot connect to Store at host ["+getHost()+"] port ["+getPort()+"] user ["+cf.getUsername()+"]");
 		}
 	}
 
@@ -240,7 +243,7 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 	}
 
 	@Override
-	public DirectoryStream<Message> list(String foldername, TypeFilter filter) throws FileSystemException {
+	public DirectoryStream<Message> list(Message foldername, TypeFilter filter) throws FileSystemException {
 		if (filter.includeFolders()) {
 			throw new FileSystemException("Filtering on folders is not supported");
 		}
@@ -250,7 +253,7 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 		}
 		boolean invalidateConnectionOnRelease = false;
 		try {
-			IMAPFolder folder = getFolder(baseFolder, foldername);
+			IMAPFolder folder = getFolder(baseFolder, getCanonicalName(foldername));
 			if (!folder.isOpen()) {
 				folder.open(Folder.READ_WRITE);
 			}

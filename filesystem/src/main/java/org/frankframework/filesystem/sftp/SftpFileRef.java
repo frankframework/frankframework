@@ -78,7 +78,10 @@ public class SftpFileRef {
 	/** Returns the canonical name inclusive file path when present */
 	public String getName() {
 		String prefix = folder != null ? folder + "/" : "";
-		return prefix + name;
+		if (StringUtils.isNotEmpty(prefix) || name != null) {
+			return prefix + name;
+		}
+		return null;
 	}
 
 	@Override
