@@ -11,12 +11,15 @@ import { OrderByPipe } from '../../../pipes/orderby.pipe';
 import { ToDateDirective } from '../../../components/to-date.directive';
 import { HasAccessToLinkDirective } from '../../../components/has-access-to-link.directive';
 import { LaddaModule } from 'angular2-ladda';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faArrowAltCircleDown, faArrowAltCircleLeft } from '@fortawesome/free-regular-svg-icons';
+import { faRepeat, faTimes } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-storage-view',
   templateUrl: './storage-view.component.html',
   styleUrls: ['./storage-view.component.scss'],
-  imports: [NgbAlert, OrderByPipe, ToDateDirective, HasAccessToLinkDirective, LaddaModule],
+  imports: [NgbAlert, OrderByPipe, ToDateDirective, HasAccessToLinkDirective, LaddaModule, FaIconComponent],
 })
 export class StorageViewComponent implements OnInit {
   protected message: PartialMessage = {
@@ -28,15 +31,17 @@ export class StorageViewComponent implements OnInit {
   };
   protected extraProperties: string[] = [];
   protected storageParams;
+  protected readonly faArrowAltCircleLeft = faArrowAltCircleLeft;
+  protected readonly faRepeat = faRepeat;
+  protected readonly faTimes = faTimes;
+  protected readonly faArrowAltCircleDown = faArrowAltCircleDown;
 
   private readonly storageService: StorageService = inject(StorageService);
-
   private readonly base64Service: Base64Service = inject(Base64Service);
   private readonly router: Router = inject(Router);
   private readonly route: ActivatedRoute = inject(ActivatedRoute);
   private readonly SweetAlert: SweetalertService = inject(SweetalertService);
   private readonly appService: AppService = inject(AppService);
-
   private skipProperties: string[] = ['id', 'insertDate', 'correlationId', 'comment', 'message'];
 
   constructor() {

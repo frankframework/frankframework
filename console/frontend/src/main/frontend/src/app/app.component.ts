@@ -45,6 +45,7 @@ import { PagesTopinfobarComponent } from './components/pages/pages-topinfobar/pa
 import { PagesFooterComponent } from './components/pages/pages-footer/pages-footer.component';
 // @ts-expect-error pace-js does not have types
 import Pace from 'pace-js';
+import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-root',
@@ -285,7 +286,7 @@ export class AppComponent implements OnInit, OnDestroy {
 
       if (+version > 0) {
         this.sessionService.set('IAF-Release', release);
-        this.notificationService.add('fa-exclamation-circle', 'FF! update available!', false, () => {
+        this.notificationService.add(faExclamationCircle, 'FF! update available!', false, () => {
           this.router.navigate(['iaf-update']);
         });
       }
@@ -522,13 +523,13 @@ export class AppComponent implements OnInit, OnDestroy {
         // TODO Receiver.started is not really a thing, maybe this should work differently?
         // @ts-expect-error Receiver.started does not exist
         if (adapter.receivers[+x].started === false) {
-          this.notificationService.add('fa-exclamation-circle', `Receiver '${name}' stopped!`, false, () => {
+          this.notificationService.add(faExclamationCircle, `Receiver '${name}' stopped!`, false, () => {
             this.router.navigate(['status'], { fragment: adapter.name });
           });
         }
       }
     } else if (adapter.started === false) {
-      this.notificationService.add('fa-exclamation-circle', `Adapter '${name}' stopped!`, false, () => {
+      this.notificationService.add(faExclamationCircle, `Adapter '${name}' stopped!`, false, () => {
         this.router.navigate(['status'], { fragment: adapter.name });
       });
     }

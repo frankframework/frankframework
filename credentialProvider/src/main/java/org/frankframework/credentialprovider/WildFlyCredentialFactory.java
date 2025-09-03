@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,6 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.function.Supplier;
 import java.util.logging.Logger;
 
 import org.apache.commons.lang3.StringUtils;
@@ -27,7 +26,6 @@ import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.credential.store.CredentialStore;
 import org.wildfly.security.credential.store.CredentialStoreException;
 
@@ -43,7 +41,7 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  *
  * @see <a href="https://www.wildfly.org/guides/security-credential-store-for-passwords">WildFly Credential Store Guide</a>
  */
-public class WildFlyCredentialFactory implements ICredentialFactory {
+public class WildFlyCredentialFactory implements ISecretProvider {
 	private Logger log = Logger.getLogger(this.getClass().getName());
 
 	private static final ServiceName SERVICE_NAME_CRED_STORE = ServiceName.of("org", "wildfly", "security", "credential-store");
@@ -65,20 +63,20 @@ public class WildFlyCredentialFactory implements ICredentialFactory {
 	}
 
 	@Override
-	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) throws NoSuchElementException {
+	public ISecret getSecret(CredentialAlias alias) throws NoSuchElementException {
 		CredentialStore cs = getCredentialStore(credentialStore);
-		if (cs==null) {
+		if (cs == null) {
 			throw new NoSuchElementException("CredentialStore [" + credentialStore + "] not found");
 		}
-		return new WildFlyCredentials(cs, alias, defaultUsernameSupplier, defaultPasswordSupplier);
+		return new WildFlySecret(cs, alias);
 	}
 
 	@Override
-	public boolean hasCredentials(String alias) {
-		CredentialStore cs = getCredentialStore(credentialStore);
+	public boolean hasSecret(CredentialAlias alias) {
 		try {
-			return cs!=null && (cs.exists(alias, PasswordCredential.class) || cs.exists(alias+"/username", PasswordCredential.class));
-		} catch (CredentialStoreException e) {
+			return getSecret(alias) != null;
+
+		} catch (NoSuchElementException e) {
 			log.fine(()->"exception testing for alias ["+alias+"] ("+e.getClass().getName()+") :"+e.getMessage());
 			return false;
 		}
@@ -119,7 +117,7 @@ public class WildFlyCredentialFactory implements ICredentialFactory {
 		return cs;
 	}
 
-	//Make method mockable
+	// Make method mockable
 	protected ServiceContainer getServiceContainer() {
 		return CurrentServiceContainer.getServiceContainer();
 	}

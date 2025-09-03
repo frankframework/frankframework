@@ -106,13 +106,6 @@ public class IafTestInitializer {
 	}
 
 	/**
-	 * Configure the Frank!Framework application, without support for JMS enabled, with default (datasource) transaction-manager and with H2 in-memory database.
-	 */
-	static SpringApplication configureApplication() throws IOException {
-		return configureApplication(null, null, null);
-	}
-
-	/**
 	 * Configure the Frank!Framework application, with options.
 	 *
 	 * @param appServerCustom Customization option for the AppServer, as used by standard in the framework. Supported in IAF-Test: {@code null}, or {@code "NARAYANA"}.
@@ -121,6 +114,24 @@ public class IafTestInitializer {
 	 *                    {@code jms.provider.default=<jmsProvider>}, {@code jms.connectionfactory.qcf.<jmsProvider>=jms/qcf-<jmsProvider>} and {@code jms.destination.suffix=-<jmsProvider>}.
 	 */
 	static SpringApplication configureApplication(@Nullable String appServerCustom, @Nullable String dbms, @Nullable String jmsProvider) throws IOException {
+		if (jmsProvider != null) {
+			System.setProperty("jms.provider.default", jmsProvider);
+		}
+		if (appServerCustom != null) {
+			System.setProperty(ApplicationServerConfigurer.APPLICATION_SERVER_CUSTOMIZATION_PROPERTY, appServerCustom);
+		}
+		if (dbms != null) {
+			System.setProperty("jdbc.dbms.default", dbms);
+		}
+
+		return configureApplication();
+	}
+
+	/**
+	 * Configure the Frank!Framework application, enabling support for JMS depending on the value of {@literal "jms.provider.default"} System property, with
+	 * application server type {@literal "IBISTEST"}.
+	 */
+	static SpringApplication configureApplication() throws IOException {
 		Path projectDir = getProjectDir();
 
 		// Ensure a log.dir has been set
@@ -144,22 +155,22 @@ public class IafTestInitializer {
 		System.setProperty("credentialFactory.map.properties", secrets.toString().replace("\\", "/"));
 		System.setProperty("authAliases.expansion.allowed", "testalias");
 
+		// Configure application server type
+		System.setProperty(ApplicationServerConfigurer.APPLICATION_SERVER_TYPE_PROPERTY, "IBISTEST");
+
 		// Configure JMS
+		String jmsProvider = System.getProperty("jms.provider.default");
+		// ServerType "IBISTEST" disables JMS by default, so we need to override it depending on if this property has been set.
 		System.setProperty("active.jms", jmsProvider != null ? "true" : "false");
 		if (jmsProvider != null) {
-			System.setProperty("jms.provider.default", jmsProvider);
+			// Setting these properties manually is required with application-server type "IBISTEST"
 			System.setProperty("jms.connectionfactory.qcf." + jmsProvider, "jms/qcf-" + jmsProvider);
 			System.setProperty("jms.destination.suffix", "-" + jmsProvider);
 		}
-		System.setProperty(ApplicationServerConfigurer.APPLICATION_SERVER_TYPE_PROPERTY, "IBISTEST");
-		if (appServerCustom != null) {
-			System.setProperty(ApplicationServerConfigurer.APPLICATION_SERVER_CUSTOMIZATION_PROPERTY, appServerCustom);
-		}
-		if (dbms != null) {
-			System.setProperty("jdbc.dbms.default", dbms);
-			if (!"h2".equals(dbms)) {
-				System.setProperty("active.storedProcedureTests", "true");
-			}
+
+		String dbms = System.getProperty("jdbc.dbms.default");
+		if (dbms != null && !"h2".equals(dbms)) {
+			System.setProperty("active.storedProcedureTests", "true");
 		}
 
 		// Start the actual application

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 Nationale-Nederlanden, 2021-2024 WeAreFrank!
+   Copyright 2021 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,23 +25,14 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.function.Supplier;
 
 import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.credentialprovider.util.CredentialConstants;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.StringUtil;
 
-public abstract class AbstractMapCredentialFactory implements ICredentialFactory {
-
-	private final String usernameSuffixProperty = getPropertyBase() + ".usernameSuffix";
-	private final String passwordSuffixProperty = getPropertyBase() + ".passwordSuffix";
-
-	static final String USERNAME_SUFFIX_DEFAULT = "/username";
-	static final String PASSWORD_SUFFIX_DEFAULT = "/password";
-
-	private String usernameSuffix;
-	private String passwordSuffix;
+public abstract class AbstractMapCredentialFactory implements ISecretProvider {
 
 	private Map<String,String> aliases;
 
@@ -53,12 +44,7 @@ public abstract class AbstractMapCredentialFactory implements ICredentialFactory
 		if (aliases == null) {
 			throw new IllegalArgumentException(this.getClass().getName()+" cannot get alias map");
 		}
-
-		usernameSuffix = appConstants.getProperty(usernameSuffixProperty, USERNAME_SUFFIX_DEFAULT);
-		passwordSuffix = appConstants.getProperty(passwordSuffixProperty, PASSWORD_SUFFIX_DEFAULT);
 	}
-
-	protected abstract String getPropertyBase();
 
 	protected abstract Map<String,String> getCredentialMap(CredentialConstants appConstants) throws IOException;
 
@@ -79,25 +65,24 @@ public abstract class AbstractMapCredentialFactory implements ICredentialFactory
 	}
 
 	@Override
-	public boolean hasCredentials(String alias) {
-		return aliases.containsKey(alias) || aliases.containsKey(alias+usernameSuffix) || aliases.containsKey(alias+passwordSuffix);
+	public boolean hasSecret(CredentialAlias alias) {
+		try {
+			return getSecret(alias) != null;
+		} catch (NoSuchElementException e) {
+			return false; // if no aliases exist
+		}
 	}
 
 	@Override
-	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) throws NoSuchElementException {
-		return new MapCredentials(alias, defaultUsernameSupplier, defaultPasswordSupplier, usernameSuffix, passwordSuffix, aliases);
+	public ISecret getSecret(CredentialAlias alias) throws NoSuchElementException {
+		return new MapCredentials(alias, aliases);
 	}
 
 	@Override
-	public Set<String> getConfiguredAliases() throws Exception{
+	public Set<String> getConfiguredAliases() {
 		Set<String> aliasNames = new LinkedHashSet<>();
-		for (String name:aliases.keySet()) {
-			if (name.endsWith(usernameSuffix)) {
-				name = name.substring(0, name.length()-usernameSuffix.length());
-			}
-			if (name.endsWith(passwordSuffix)) {
-				name = name.substring(0, name.length()-passwordSuffix.length());
-			}
+		for (String rawName: aliases.keySet()) {
+			String name = StringUtil.split(rawName, "/").get(0);
 			aliasNames.add(name);
 		}
 		return aliasNames;

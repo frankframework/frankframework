@@ -1,6 +1,6 @@
 <div class="inmodal">
   <div class="modal-header">
-    <h4 class="modal-title"><i class="fa fa-info-circle"></i> Information</h4>
+    <h4 class="modal-title"><fa-icon [icon]="faInfoCircle" /> Information</h4>
   </div>
   <div class="modal-body">
     @if (initialized) {
@@ -40,17 +40,17 @@
   </div>
   <div class="modal-footer">
     <span class="pull-left p-xxs">
-      <a href="//frankframework.org" target="_blank"> <i class="fa fa-globe"></i> frankframework.org </a>
+      <a href="//frankframework.org" target="_blank"> <fa-icon [icon]="faGlobe" /> frankframework.org </a>
       |
       <a href="//github.com/frankframework/frankframework" target="_blank">
-        <i class="fa fa-github"></i> frankframework
+        <fa-icon [icon]="faGithub" /> frankframework
       </a>
     </span>
     <button type="button" class="btn btn-white" title="Copy to clipboard" (click)="copy()">
-      <i class="fa fa-clipboard"></i>
+      <fa-icon [icon]="faClipboard" />
     </button>
     <button type="button" class="btn btn-white" title="Refresh information" (click)="refresh()">
-      <i class="fa fa-refresh"></i>
+      <fa-icon [icon]="faRefresh" />
     </button>
     <button type="button" class="btn btn-white" (click)="close()">Close</button>
   </div>

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 Nationale-Nederlanden, 2021-2023 WeAreFrank!
+   Copyright 2021 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -50,18 +50,12 @@ import org.frankframework.util.StreamUtil;
  * @see <a href="https://docs.ansible.com/ansible/latest/vault_guide/index.html">Ansible Vault Documentation</a>
  */
 public class AnsibleVaultCredentialFactory extends AbstractMapCredentialFactory {
-	private static final String PROPERTY_BASE = "credentialFactory.ansibleVault";
 
-	private static final String VAULT_PROPERTY = PROPERTY_BASE + ".vaultFile";
-	private static final String VAULT_KEY_PROPERTY = PROPERTY_BASE + ".keyFile";
+	private static final String VAULT_PROPERTY = "credentialFactory.ansibleVault.vaultFile";
+	private static final String VAULT_KEY_PROPERTY = "credentialFactory.ansibleVault.keyFile";
 
 	private static final String DEFAULT_VAULT_FILE = "catalina-secure-store.vault";
 	private static final String DEFAULT_VAULT_KEY_FILE = ".secure-vault-keyfile";
-
-	@Override
-	public String getPropertyBase() {
-		return PROPERTY_BASE;
-	}
 
 	@Override
 	protected Map<String, String> getCredentialMap(CredentialConstants appConstants) throws IOException {
@@ -88,10 +82,10 @@ public class AnsibleVaultCredentialFactory extends AbstractMapCredentialFactory 
 			}
 
 			return properties.entrySet().stream()
-			    .collect(Collectors.toMap(
-			        entry -> (String) entry.getKey(),
-			        entry -> (String) entry.getValue()
-			    ));
+				.collect(Collectors.toMap(
+					entry -> (String) entry.getKey(),
+					entry -> (String) entry.getValue()
+				));
 		}
 	}
 }

@@ -65,7 +65,6 @@ import software.amazon.awssdk.services.s3.model.ListObjectsV2Response;
 import software.amazon.awssdk.services.s3.model.NoSuchKeyException;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
 import software.amazon.awssdk.services.s3.model.S3Object;
-import software.amazon.awssdk.services.s3.model.StorageClass;
 
 import org.frankframework.aws.AwsUtil;
 import org.frankframework.configuration.ConfigurationException;
@@ -101,7 +100,7 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	private @Getter Integer proxyPort = null;
 	private @Getter int maxConnections = 50;
 
-	private @Getter StorageClass storageClass = StorageClass.STANDARD;
+	private @Getter S3StorageClass storageClass = S3StorageClass.STANDARD;
 
 	private S3Client s3Client;
 	private AwsCredentialsProvider credentialProvider;
@@ -280,7 +279,7 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 					.bucket(f.getBucketName())
 					.key(f.getKey())
 					.contentEncoding("UTF-8")
-					.storageClass(storageClass);
+					.storageClass(storageClass.getStorageClass());
 
 			String fileName = f.hasName() ? f.getName() : null;
 			MimeType mimeType = MessageUtils.computeMimeType(message, fileName);
@@ -500,7 +499,7 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 				.sourceKey(source.getKey())
 				.destinationBucket(destination.getBucketName())
 				.destinationKey(destination.getKey())
-				.storageClass(getStorageClass())
+				.storageClass(getStorageClass().getStorageClass())
 				.metadata(metadata)
 				.build();
 		s3Client.copyObject(copyObjectRequest);
@@ -531,7 +530,7 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 				.sourceKey(s3Object.getKey())
 				.destinationBucket(bucketName)
 				.destinationKey(destinationFile)
-				.storageClass(getStorageClass())
+				.storageClass(getStorageClass().getStorageClass())
 				.metadata(metadata)
 				.build();
 		CopyObjectResponse copyObjectResponse = s3Client.copyObject(copyObjectRequest);
@@ -685,10 +684,11 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 
 	/**
 	 * Set the desired storage class for the S3 object when action is move,copy or write.
-	 * More info on storage classes can be found on the AWS S3 docs: https://aws.amazon.com/s3/storage-classes/
-	 * @ff.default STANDARD
+	 * More info on storage classes can be found on the <a href="https://aws.amazon.com/s3/storage-classes/">AWS S3 docs</a>.
+	 *
+	 * @ff.default {@literal STANDARD}
 	 */
-	public void setStorageClass(StorageClass storageClass) {
+	public void setStorageClass(S3StorageClass storageClass) {
 		this.storageClass = storageClass;
 	}
 

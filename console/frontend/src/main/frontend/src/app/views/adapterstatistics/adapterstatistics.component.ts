@@ -18,16 +18,30 @@ import {
   HourlyStatistics,
   SLOStatistics,
 } from './adapterstatistics-charts/adapterstatistics-charts.component';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faArrowAltCircleLeft } from '@fortawesome/free-regular-svg-icons';
+import { faChevronDown, faChevronUp, faRefresh } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-adapterstatistics',
-  imports: [LaddaModule, RouterLink, FormatStatKeysPipe, FormatStatisticsPipe, AdapterstatisticsChartsComponent],
+  imports: [
+    LaddaModule,
+    RouterLink,
+    FormatStatKeysPipe,
+    FormatStatisticsPipe,
+    AdapterstatisticsChartsComponent,
+    FaIconComponent,
+  ],
   templateUrl: './adapterstatistics.component.html',
   styleUrls: ['./adapterstatistics.component.scss'],
 })
 export class AdapterstatisticsComponent implements OnInit, OnDestroy {
   @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
 
+  protected readonly faArrowAltCircleLeft = faArrowAltCircleLeft;
+  protected readonly faRefresh = faRefresh;
+  protected readonly faChevronUp = faChevronUp;
+  protected readonly faChevronDown = faChevronDown;
   protected adapterName: string | null = null;
   protected configuration: string | null = null;
   protected refreshing = false;

@@ -3,18 +3,24 @@ import { AppService } from 'src/app/app.service';
 import { ApiListener, Service, WebservicesService, Wsdl } from './webservices.service';
 
 import { HasAccessToLinkDirective } from '../../components/has-access-to-link.directive';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faExternalLink, faArrowAltCircleDown, faFileArchive, faFileCode } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-webservices',
   templateUrl: './webservices.component.html',
   styleUrls: ['./webservices.component.scss'],
-  imports: [HasAccessToLinkDirective],
+  imports: [HasAccessToLinkDirective, FaIconComponent],
 })
 export class WebservicesComponent implements OnInit {
   protected services: Service[] = [];
   protected apiListeners: ApiListener[] = [];
   protected wsdls: Wsdl[] = [];
   protected rootURL: string;
+  protected readonly faExternalLink = faExternalLink;
+  protected readonly faArrowAltCircleDown = faArrowAltCircleDown;
+  protected readonly faFileArchive = faFileArchive;
+  protected readonly faFileCode = faFileCode;
 
   private readonly wsService: WebservicesService = inject(WebservicesService);
   private readonly appService: AppService = inject(AppService);

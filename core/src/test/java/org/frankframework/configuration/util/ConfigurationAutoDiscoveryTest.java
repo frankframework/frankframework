@@ -45,7 +45,6 @@ public class ConfigurationAutoDiscoveryTest {
 
 	@BeforeAll
 	public static void setUp() throws Exception {
-		AppConstants.removeInstance();
 		AppConstants.getInstance().setProperty("configurations.configuration2.parentConfig", "configuration4");
 		AppConstants.getInstance().setProperty("configurations.configuration3.parentConfig", "configuration4");
 		AppConstants.getInstance().setProperty("configurations.Config.parentConfig", "ClassLoader");
@@ -57,7 +56,8 @@ public class ConfigurationAutoDiscoveryTest {
 	}
 
 	@AfterAll
-	public static void tearDown() {
+	@BeforeAll
+	public static void removeAppConstantsInstance() {
 		AppConstants.removeInstance();
 	}
 
@@ -112,7 +112,7 @@ public class ConfigurationAutoDiscoveryTest {
 	@DatabaseTest
 	@WithLiquibase(file = "Migrator/CreateIbisConfig.xml")
 	@WithLiquibase(file = "Migrator/SetupConfigsInDatabase.xml")
-	public void retrieveAllConfigNamesTestWithFS(DatabaseTestEnvironment env) throws IOException {
+	public void retrieveAllConfigNamesTestWithDbAndFs(DatabaseTestEnvironment env) throws IOException {
 		TestConfiguration applicationContext = env.getConfiguration();
 		ConfigurationAutoDiscovery autoDiscovery = applicationContext.createBean();
 		autoDiscovery.withDatabaseScanner(env.getDataSourceName());

@@ -1,0 +1,51 @@
+/*
+   Copyright 2025 WeAreFrank!
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+*/
+package org.frankframework.credentialprovider;
+
+import java.util.Base64;
+
+import org.apache.commons.lang3.StringUtils;
+
+import io.fabric8.kubernetes.api.model.Secret;
+import lombok.extern.java.Log;
+
+@Log
+public class KubernetesCredential extends org.frankframework.credentialprovider.Secret {
+
+	private final Secret secret;
+
+	public KubernetesCredential(CredentialAlias alias, Secret secret) {
+		super(alias);
+
+		String secretAlias = secret.getMetadata().getName();
+		if (!getAlias().equals(secretAlias)) {
+			throw new IllegalStateException("alias does not match secret");
+		}
+
+		this.secret = secret;
+	}
+
+	@Override
+	public String getField(String key) {
+		String foundKey = secret.getData().get(key);
+		if (StringUtils.isEmpty(foundKey)) {
+			log.info("no value found for alias [%s] field [%s]".formatted(getAlias(), key));
+			return null;
+		}
+		return new String(Base64.getDecoder().decode(foundKey));
+	}
+
+}

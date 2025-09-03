@@ -14,7 +14,7 @@
       <app-ng-mermaid [nmModel]="flow.data ?? ''" [nmRefreshInterval]="500" [flowName]="flowName" />
     } @else {
       <button appHasAccessToLink="getAdapterFlow" class="btn btn-info">
-        <i class="fa fa-share-alt-square"></i> Flow Diagram
+        <fa-icon [icon]="faShareAltSquare" /> Flow Diagram
       </button>
     }
   </div>

@@ -94,18 +94,13 @@ public class PdfImageConvertor extends AbstractConvertor {
 			page.getPageInfo().getMargin().setLeft(PageConvertUtil.convertCmToPoints(marginInCm));
 			page.getPageInfo().getMargin().setRight(PageConvertUtil.convertCmToPoints(marginInCm));
 
-			com.aspose.imaging.Image image = null;
-			try(InputStream is = message.asInputStream()) {
-				image = com.aspose.imaging.Image.load(is);
-				if(mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
+			try (InputStream is = message.asInputStream();
+				 com.aspose.imaging.Image image = com.aspose.imaging.Image.load(is)) {
+
+				if (mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
 					handleTiff((TiffImage) image, page);
 				} else {
 					handleImage(message, image, page, marginInCm);
-				}
-			} finally {
-				if (image != null) {
-					image.close();
-					image = null;
 				}
 			}
 
@@ -121,14 +116,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 		BufferedImage bufferedImage = ImageExtensions.toJava(image);
 		LOGGER.debug("Image info height:{} width:{}", bufferedImage::getHeight, bufferedImage::getWidth);
 
-		float maxImageWidthInPoints = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_WIDHT_IN_CM - NUMBER_OF_MARGINS * marginInCm);
-		float maxImageHeightInPoints = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_HEIGTH_IN_CM - NUMBER_OF_MARGINS * marginInCm);
-
-		float scaleWidth = maxImageWidthInPoints / bufferedImage.getWidth();
-		float scaleHeight = maxImageHeightInPoints / bufferedImage.getHeight();
-
-		// Get the smallest scale factor so it will fit on the paper.
-		float scaleFactor = Math.min(scaleWidth, scaleHeight);
+		float scaleFactor = getScaleFactor(marginInCm, bufferedImage);
 		if (scaleFactor > NO_SCALE_FACTOR) {
 			scaleFactor = NO_SCALE_FACTOR;
 		}
@@ -142,9 +130,21 @@ public class PdfImageConvertor extends AbstractConvertor {
 		page.getParagraphs().add(pdfImage);
 	}
 
+	private float getScaleFactor(float marginInCm, BufferedImage bufferedImage) {
+		float maxImageWidthInPoints = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_WIDHT_IN_CM - NUMBER_OF_MARGINS * marginInCm);
+		float maxImageHeightInPoints = PageConvertUtil.convertCmToPoints(PageConvertUtil.PAGE_HEIGTH_IN_CM - NUMBER_OF_MARGINS * marginInCm);
+
+		float scaleWidth = maxImageWidthInPoints / bufferedImage.getWidth();
+		float scaleHeight = maxImageHeightInPoints / bufferedImage.getHeight();
+
+		// Get the smallest scale factor so it will fit on the paper.
+		return Math.min(scaleWidth, scaleHeight);
+	}
+
 	private void handleTiff(TiffImage tiffImage, Page page) throws IOException {
 		TiffFrame[] frames = tiffImage.getFrames();
-		try(PngOptions pngOptions = new PngOptions()) {
+
+		try (PngOptions pngOptions = new PngOptions()) {
 			for (TiffFrame tiffFrame : frames) {
 				MessageBuilder messageBuilder = new MessageBuilder();
 				try (OutputStream out = messageBuilder.asOutputStream()) {
@@ -164,5 +164,4 @@ public class PdfImageConvertor extends AbstractConvertor {
 	protected boolean isPasswordException(Exception e) {
 		return false;
 	}
-
 }

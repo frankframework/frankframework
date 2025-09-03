@@ -25,7 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.web.client.RestTemplate;
 
 /**
- * RestTemplate implementation for the Delinea Secret Server REST API.
+ * RestTemplate implementation for the Delinea DelineaSecret Server REST API.
  */
 public class DelineaClient extends RestTemplate {
 	static final String SECRETS_URI = "/v2/secrets";
@@ -39,13 +39,13 @@ public class DelineaClient extends RestTemplate {
 	static final String EXPECTED_VIEW_COMMENT_RESPONSE = "true";
 
 	/**
-	 * Fetch and return a {@link Secret} from Delinea Secret Server, including {@code fileAttachments}
+	 * Fetch and return a {@link DelineaSecret} from Delinea DelineaSecret Server, including {@code fileAttachments}
 	 *
 	 * @param id               - the integer ID of the secret to be fetched
 	 * @param autoCommentValue - the auto comment value to be used if not empty
-	 * @return the {@link Secret} object
+	 * @return the {@link DelineaSecret} object
 	 */
-	public Secret getSecret(String id, String autoCommentValue) {
+	public DelineaSecret getSecret(String id, String autoCommentValue) {
 		// it is possible to create a new view comment before getting the secret details. Enabled when autoCommentValue is not empty.
 		// see: https://updates.thycotic.net/secretserver/restapiguide/TokenAuth/#tag/SecretAccessRequests/operation/SecretAccessRequestsService_CreateViewComment
 		if (StringUtils.isNotBlank(autoCommentValue)) {
@@ -57,7 +57,7 @@ public class DelineaClient extends RestTemplate {
 		}
 
 		// Get secret
-		return getForObject(SECRET_ID_URI, Secret.class, id);
+		return getForObject(SECRET_ID_URI, DelineaSecret.class, id);
 	}
 
 	/**

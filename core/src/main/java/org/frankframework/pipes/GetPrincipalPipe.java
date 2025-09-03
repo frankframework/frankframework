@@ -37,7 +37,7 @@ import org.frankframework.stream.Message;
  * @author  Gerrit van Brakel
  * @since   4.7
  */
-@Forward(name = "*", description = "principal has not been found, when @{literal notFoundForwardName} is used")
+@Forward(name = "*", description = "principal has not been found, when {@literal notFoundForwardName} is used")
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.SESSION)
 public class GetPrincipalPipe extends FixedForwardPipe {
 	private @Getter String notFoundForwardName;

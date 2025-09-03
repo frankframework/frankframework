@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2021 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -42,8 +42,7 @@ public class CredentialProvidingPropertySource implements PropertySource {
 		String[] keyAndDefault = key.split(DEFAULT_MARKER);
 
 		String[] pathElements = keyAndDefault[0].split("/");
-		String alias = pathElements[0].trim(); // ignore default value in key, it will be handled by Tomcat when necessary
-		//System.out.println("CredentialProvidingPropertySource key ["+key+"] alias ["+alias+"]");
+		String alias = pathElements[0].trim(); // Ignore default value in key, it will be handled by Tomcat when necessary
 
 		try {
 			if (!CredentialFactory.hasCredential(alias)) {
@@ -58,8 +57,8 @@ public class CredentialProvidingPropertySource implements PropertySource {
 		}
 
 		boolean returnPassword = pathElements.length==1 || "password".equalsIgnoreCase(pathElements[1].trim());
-		ICredentials credentials = CredentialFactory.getCredentials(alias, null, null);
 
+		ICredentials credentials = CredentialFactory.getCredentials(alias, null, null);
 		return returnPassword ? credentials.getPassword() : credentials.getUsername();
 	}
 

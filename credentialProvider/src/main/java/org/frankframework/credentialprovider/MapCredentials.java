@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2021 Nationale-Nederlanden, 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,54 +15,57 @@
 */
 package org.frankframework.credentialprovider;
 
+import java.io.IOException;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.NoSuchElementException;
-import java.util.function.Supplier;
+import java.util.Properties;
+
+import jakarta.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class MapCredentials extends Credentials {
+public class MapCredentials extends Secret {
 
-	private final String usernameSuffix;
-	private final String passwordSuffix;
+	private final Properties secret;
 
-	private final Map<String,String> aliases;
+	public MapCredentials(CredentialAlias alias, @Nonnull Map<String,String> aliases) {
+		super(alias);
 
-	public MapCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier, Map<String,String> aliases) {
-		this(alias, defaultUsernameSupplier, defaultPasswordSupplier, null, null, aliases);
-	}
+		String aliasName = alias.getName();
 
-	public MapCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier, String usernameSuffix, String passwordSuffix, Map<String,String> aliases) {
-		super(alias, defaultUsernameSupplier, defaultPasswordSupplier);
-		this.aliases = aliases;
-		this.usernameSuffix = StringUtils.isNotEmpty(usernameSuffix) ? usernameSuffix : AbstractMapCredentialFactory.USERNAME_SUFFIX_DEFAULT;
-		this.passwordSuffix = StringUtils.isNotEmpty(passwordSuffix) ? passwordSuffix : AbstractMapCredentialFactory.PASSWORD_SUFFIX_DEFAULT;
+		secret = new Properties();
+		for(Entry<String, String> entry: aliases.entrySet()) {
+			String key = entry.getKey();
+			if(key.startsWith(aliasName)) {
+				secret.put(key, entry.getValue());
+			}
+		}
+
+		if (secret.isEmpty()) {
+			throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+alias.getName()+"]: no aliases");
+		}
 	}
 
 	@Override
-	protected void getCredentialsFromAlias() {
-		if (aliases!=null) {
-			String usernameKey = getAlias()+usernameSuffix;
-			String passwordKey = getAlias()+passwordSuffix;
-			boolean foundOne = false;
-			if (aliases.containsKey(usernameKey)) {
-				foundOne = true;
-				setUsername(aliases.get(usernameKey));
+	public String getField(String fieldname) throws IOException {
+		if (secret.size() == 1) {
+			// no field
+			if(StringUtils.isBlank(fieldname)) {
+				return secret.getProperty(getAlias());
 			}
-			if (aliases.containsKey(passwordKey)) {
-				foundOne = true;
-				setPassword(aliases.get(passwordKey));
+
+			// only password field
+			String value = secret.getProperty("%s/%s".formatted(getAlias(), fieldname));
+			if (value != null) {
+				return value;
 			}
-			if (!foundOne && aliases.containsKey(getAlias())) {
-				setPassword(aliases.get(getAlias()));
-				return;
-			}
-			if (foundOne) {
-				return;
-			}
-			throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]: alias not found");
+
+			// field not found
+			throw new NoSuchElementException("cannot obtain field from secret [" + getAlias() + "]");
 		}
-		throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+getAlias()+"]: no aliases");
+
+		return secret.getProperty("%s/%s".formatted(getAlias(), fieldname));
 	}
 
 }

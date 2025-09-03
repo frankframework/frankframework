@@ -11,7 +11,7 @@
           target="_blank"
           href="https://github.com/frankframework/frankframework"
           aria-label="Star frankframework/frankframework on GitHub"
-          ><i class="fa fa-github"></i>Star on Github</a
+          ><fa-icon [icon]="faGithub" />Star on Github</a
         >
       </li>
       <li>
@@ -31,7 +31,7 @@
       }
       <li ngbDropdown (click)="resetNotificationCount()">
         <a class="count-info" ngbDropdownToggle>
-          <i class="fa fa-bell"></i>
+          <fa-icon [icon]="faBell" />
           @let count = notificationCount();
           @if (count > 0) {
             <span class="label label-primary">{{ count > 5 ? '5+' : count }}</span>
@@ -42,7 +42,7 @@
             <li ngbDropdownItem>
               <a routerLink="/notifications" [queryParams]="{ id: message.id }">
                 <div>
-                  <i [class]="`fa ${message.icon} fa-fw`"></i>
+                  <fa-icon [fixedWidth]="true" [icon]="message.icon" />
                   {{ message.title }}
                   <span class="pull-right text-muted small" appTimeSince [time]="message.time"></span>
                 </div>

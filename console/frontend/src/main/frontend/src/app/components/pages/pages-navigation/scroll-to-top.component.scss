@@ -1,0 +1,30 @@
+.scroll-to-top {
+  visibility: visible;
+  opacity: 1;
+  transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+  position: fixed;
+  bottom: 20px;
+  margin-left: 15px;
+  padding: 2px 10px;
+  cursor: pointer;
+  font-size: 13px;
+  border-radius: 3px;
+  border: 1px solid #293846;
+  background: #293846;
+
+  &:hover {
+    border: 1px solid #19aa8d;
+    color: white;
+  }
+
+  &.hidden-scroll {
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  a {
+    font-weight: 600;
+    color: inherit;
+  }
+}
+

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,38 +29,31 @@ import org.frankframework.util.StreamUtil;
 /**
  * <p>CredentialFactory that reads its credentials from a plain (unencrypted) .properties file.</p>
  *
- * <p>Credentials are stored in the properties file as key/value pairs, where the key is the alias and the value is the password.</p>
+ * <p>Secret are stored in the properties file as key/value pairs, where the key is the alias and the value is the password.</p>
  *
  * @ff.info For adequate privacy in production environments, the source file should not be readable by unauthorised users.
  * @author Gerrit van Brakel
  */
 public class PropertyFileCredentialFactory extends AbstractMapCredentialFactory {
 
-	private static final String PROPERTY_BASE = "credentialFactory.map";
-
-	private static final String FILE_PROPERTY = PROPERTY_BASE + ".properties";
+	private static final String PROPERTY_BASE = "credentialFactory.map.properties";
 
 	private static final String DEFAULT_PROPERTIES_FILE = "credentials.properties";
 
 	@Override
-	public String getPropertyBase() {
-		return PROPERTY_BASE;
-	}
-
-	@Override
 	protected Map<String, String> getCredentialMap(CredentialConstants appConstants) throws IOException {
-		try (InputStream propertyStream = getInputStream(appConstants, FILE_PROPERTY, DEFAULT_PROPERTIES_FILE, "Credentials");
+		try (InputStream propertyStream = getInputStream(appConstants, PROPERTY_BASE, DEFAULT_PROPERTIES_FILE, "Secret");
 			Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(propertyStream)) {
 			Properties properties = new Properties();
 			properties.load(reader);
 
 			return properties.entrySet().stream()
-			    .collect(Collectors.toMap(
-			        entry -> (String) entry.getKey(),
-			        entry -> (String) entry.getValue(),
-			        (existing, replacement) -> existing, // Handle duplicate keys
-			        LinkedHashMap::new
-			    ));
+				.collect(Collectors.toMap(
+					entry -> (String) entry.getKey(),
+					entry -> (String) entry.getValue(),
+					(existing, replacement) -> existing, // Handle duplicate keys
+					LinkedHashMap::new
+				));
 		}
 	}
 }

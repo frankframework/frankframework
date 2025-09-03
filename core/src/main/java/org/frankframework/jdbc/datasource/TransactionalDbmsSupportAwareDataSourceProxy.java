@@ -22,7 +22,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.sql.DataSource;
-import javax.sql.XADataSource;
 
 import jakarta.annotation.Nullable;
 
@@ -71,7 +70,7 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 		databaseMetadata.put("product-version", md.getDatabaseProductVersion());
 		databaseMetadata.put("driver", md.getDriverName());
 		databaseMetadata.put("driver-version", md.getDriverVersion());
-		databaseMetadata.put("XA", String.valueOf(getTargetDataSource() instanceof XADataSource));
+		databaseMetadata.put("XA", String.valueOf(JdbcPoolUtil.isXaCapable(this)));
 
 		metadata = databaseMetadata;
 	}

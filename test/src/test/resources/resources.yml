@@ -1,3 +1,5 @@
+# All resources used when running tests in IAF-TEst should be defined here because the embedded Tomcat does not define an initial JNDI context from which to create JNDI resources
+
 jdbc:
   - name: "ibis4test-h2"
     type: "org.h2.jdbcx.JdbcDataSource"
@@ -9,8 +11,114 @@ jdbc:
     username: "testiaf_user"
     password: "testiaf_user00"
 
+  - name: "ibis4test-oracle"
+    type: "oracle.jdbc.pool.OracleDataSource"
+    url: "jdbc:oracle:thin:@${jdbc.hostname:-localhost}:1521:XE"
+    authalias: "${db.authalias}"
+    username: "testiaf_user"
+    password: "testiaf_user00"
+
+  - name: "ibis4test-oracle-xa"
+    type: "oracle.jdbc.xa.client.OracleXADataSource"
+    url: "jdbc:oracle:thin:@${jdbc.hostname:-localhost}:1521:XE"
+    authalias: "${db.authalias}"
+    username: "testiaf_user"
+    password: "testiaf_user00"
+
+
+  - name: "ibis4test-mssql"
+    type: "com.microsoft.sqlserver.jdbc.SQLServerXADataSource"
+    url: "jdbc:sqlserver://${jdbc.hostname:-localhost}:1433;database=testiaf"
+    authalias: "${db.authalias}"
+    username: "testiaf_user"
+    password: "testiaf_user00"
+    properties:
+      sendStringParametersAsUnicode: "false"
+      sendTimeAsDatetime: "true"
+      selectMethod: "direct"
+      responseBuffering: "adaptive"
+      packetSize: "4096"
+      loginTimeout: "10"
+      lockTimeout: "2000"
+      lastUpdateCount: "false"
+      encrypt: "false"
+      disableStatementPooling: "true"
+      applicationName: "iaf-test on TomCat"
+      applicationIntent: "readwrite"
+
+  - name: "ibis4test-mysql"
+    type: "com.mysql.cj.jdbc.MysqlXADataSource"
+    url: "jdbc:mysql://${jdbc.hostname:-localhost}:3307/testiaf"
+    authalias: "${db.authalias}"
+    username: "testiaf_user"
+    password: "testiaf_user00"
+    properties:
+      sslMode: "DISABLED"
+      serverTimezone: "Europe/Amsterdam"
+      allowPublicKeyRetrieval: "true"
+      pinGlobalTxToPhysicalConnection: "true"
+      socketTimeout: "5000"
+
+
+  - name: "ibis4test-mariadb"
+    type: "org.mariadb.jdbc.MariaDbDataSource"
+    url: "jdbc:mariadb://${jdbc.hostname:-localhost}:3306/testiaf"
+    authalias: "${db.authalias}"
+    username: "testiaf_user"
+    password: "testiaf_user00"
+
+    # Postgres XA does not work without Narayana, gives ClassCastException casting the XA datasource to Java datasource, so add non-XA for those cases
+  - name: "ibis4test-postgres"
+    type: "org.postgresql.Driver"
+    url: "jdbc:postgresql://${jdbc.hostname:-localhost}:5432/testiaf"
+    authalias: "${db.authalias}"
+    username: "testiaf_user"
+    password: "testiaf_user00"
+
+  - name: "ibis4test-postgres-xa"
+    type: "org.postgresql.xa.PGXADataSource"
+    url: "jdbc:postgresql://${jdbc.hostname:-localhost}:5432/testiaf"
+    authalias: "${db.authalias}"
+    username: "testiaf_user"
+    password: "testiaf_user00"
+
+  - name: "ibis4test-db2"
+    type: "com.ibm.db2.jcc.DB2SimpleDataSource"
+    url: "jdbc:db2://${jdbc.hostname:-localhost}:50000/testiaf"
+    authalias: "${db.authalias}"
+    username: "testiaf_user"
+    password: "testiaf_user00"
+
+  - name: "ibis4test-db2-xa"
+    type: "com.ibm.db2.jcc.DB2XADataSource"
+    url: "jdbc:db2://${jdbc.hostname:-localhost}:50000/testiaf"
+    authalias: "${db.authalias}"
+    username: "testiaf_user"
+    password: "testiaf_user00"
+
+#mongodb:
+#  - name: "ibis4test-mongodb"
+#    type: "com.mongodb.MongoClient"
+#    url: "mongodb://mongodb:27017"
 
 jms:
+  - name: "qcf-activemq"
+    type: "org.apache.activemq.ActiveMQXAConnectionFactory"
+    url: "tcp://${jms.hostname:-localhost}:61616?jms.xaAckMode=1"
+
+  - name: "qcf-artemis"
+    type: "org.apache.activemq.artemis.jms.client.ActiveMQXAConnectionFactory"
+    url: "tcp://${jms.hostname:-localhost}:61615"
+
+  - name: "qcf-rabbitmq"
+    type: "com.rabbitmq.jms.admin.RMQConnectionFactory"
+    url: "amqp://rabbitmq:5672/"
+    properties:
+      virtualHost: "/"
+      host: "rabbitmq"
+      username: "guest"
+      password: "guest"
+
   - name: "qcf-inmem"
     type: "org.apache.activemq.artemis.jms.client.ActiveMQXAConnectionFactory"
     url: "vm://localhost?broker.persistent=false"

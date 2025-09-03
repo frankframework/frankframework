@@ -14,6 +14,18 @@ import { FormsModule } from '@angular/forms';
 import { ConfigurationMessagesComponent } from './configuration-messages/configuration-messages.component';
 import { AdapterStatusComponent } from './adapter-status/adapter-status.component';
 import { SearchFilterPipe } from '../../pipes/search-filter.pipe';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import {
+  faAngleDoubleDown,
+  faAngleDoubleUp,
+  faPlay,
+  faRefresh,
+  faSearch,
+  faStop,
+  faTimes,
+  faUndo,
+  faFileImage,
+} from '@fortawesome/free-solid-svg-icons';
 
 type Filter = Record<AdapterStatus, boolean>;
 
@@ -33,6 +45,7 @@ type Filter = Record<AdapterStatus, boolean>;
     ConfigurationFilterPipe,
     SearchFilterPipe,
     KeyValuePipe,
+    FaIconComponent,
   ],
 })
 export class StatusComponent implements OnInit, OnDestroy {
@@ -78,6 +91,15 @@ export class StatusComponent implements OnInit, OnDestroy {
   protected serverInfo: Signal<ServerInfo | null>;
   protected readonly alerts: Signal<Alert[]>;
   protected readonly messageLog: Signal<Record<string, MessageLog>>;
+  protected readonly faStop = faStop;
+  protected readonly faPlay = faPlay;
+  protected readonly faAngleDoubleDown = faAngleDoubleDown;
+  protected readonly faAngleDoubleUp = faAngleDoubleUp;
+  protected readonly faUndo = faUndo;
+  protected readonly faRefresh = faRefresh;
+  protected readonly faFileImage = faFileImage;
+  protected readonly faTimes = faTimes;
+  protected readonly faSearch = faSearch;
 
   private adapterName = '';
   private _subscriptions = new Subscription();

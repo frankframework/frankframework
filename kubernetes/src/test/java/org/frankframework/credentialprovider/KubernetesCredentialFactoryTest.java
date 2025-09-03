@@ -6,10 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.List;
@@ -19,7 +18,6 @@ import java.util.NoSuchElementException;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 
 import io.fabric8.kubernetes.api.model.ObjectMeta;
 import io.fabric8.kubernetes.api.model.Secret;
@@ -41,17 +39,15 @@ class KubernetesCredentialFactoryTest {
 		Secret secret1 = createSecret("alias1", "testUsername1", "testPassword1");
 		Secret secret2 = createSecret("alias2", "testUsername2", "testPassword2");
 		Secret secret3 = createSecret(null, "noAliasUsername", "noAliasPassword");
-		Secret secret4 = createSecret("alias4", "noPasswordUser", null);
-		Secret secret5 = createSecret("alias5", "testUsername5", "testUsername5");
-		secret5.getData().replace(KubernetesCredentialFactory.USERNAME_KEY, "wrongBase64Encoding");
+		Secret secret4 = createSecret("alias4", "noPassword", null);
+		Secret secret5 = createSecret("alias5", null, "noUsername");
+		secret5.getData().replace("username", "wrongBase64Encoding");
 
 		when(client.secrets()).thenReturn(mock(MixedOperation.class));
 		when(client.secrets().inNamespace(KubernetesCredentialFactory.DEFAULT_NAMESPACE)).thenReturn(mock(NonNamespaceOperation.class));
 		when(client.secrets().inNamespace(KubernetesCredentialFactory.DEFAULT_NAMESPACE).list()).thenReturn(mock(SecretList.class));
-		when(client.secrets()
-				.inNamespace(KubernetesCredentialFactory.DEFAULT_NAMESPACE)
-				.list()
-				.getItems()).thenReturn(List.of(secret1, secret2, secret3, secret4, secret5));
+		when(client.secrets().inNamespace(KubernetesCredentialFactory.DEFAULT_NAMESPACE).list().getItems()).thenReturn(List.of(secret1, secret2, secret3,
+				secret4, secret5));
 
 		when(client.getConfiguration()).thenReturn(new Config());
 		CredentialConstants.getInstance().setProperty(KubernetesCredentialFactory.K8_MASTER_URL, "http://localhost:8080");
@@ -66,120 +62,77 @@ class KubernetesCredentialFactoryTest {
 
 	@Test
 	void testGetAliases() throws UnsupportedOperationException {
-		List<String> aliases = (List) credentialFactory.getConfiguredAliases();
-		assertEquals(4, aliases.size());
+		CredentialAlias alias1 = CredentialAlias.parse("alias1"); // need to fetch the alias first
+		assertTrue(credentialFactory.hasSecret(alias1));
+
+		List<String> aliases = List.copyOf(credentialFactory.getConfiguredAliases());
+		assertFalse(aliases.isEmpty());
 		assertEquals("alias1", aliases.get(0));
-		assertEquals("alias2", aliases.get(1));
 	}
 
 	@Test
-	void testGetCredentials() throws UnsupportedOperationException {
-		List<Credentials> credentials = credentialFactory.getCredentials();
-		assertEquals("alias1", credentials.get(0).getAlias());
-		assertEquals("testUsername1", credentials.get(0).getUsername());
-		assertEquals("testPassword1", credentials.get(0).getPassword());
+	void testGetCredential1() throws IOException {
+		CredentialAlias alias = CredentialAlias.parse("alias1");
+		ISecret credential = credentialFactory.getSecret(alias);
+		assertEquals("testUsername1", credential.getField("username"));
+		assertEquals("testPassword1", credential.getField("password"));
+	}
 
-		assertEquals("alias2", credentials.get(1).getAlias());
-		assertEquals("testUsername2", credentials.get(1).getUsername());
-		assertEquals("testPassword2", credentials.get(1).getPassword());
+	@Test
+	void testGetCredential2() throws IOException {
+		CredentialAlias alias = CredentialAlias.parse("alias2");
+		ISecret credential = credentialFactory.getSecret(alias);
+		assertEquals("testUsername2", credential.getField("username"));
+		assertEquals("testPassword2", credential.getField("password"));
+	}
 
-		assertNull(credentials.get(2).getAlias());
-		assertEquals("noAliasUsername", credentials.get(2).getUsername());
-		assertEquals("noAliasPassword", credentials.get(2).getPassword());
+	@Test
+	void testGetCredentialWithoutPassword() throws IOException {
+		CredentialAlias alias = CredentialAlias.parse("alias4");
+		ISecret credential = credentialFactory.getSecret(alias);
+		assertEquals("noPassword", credential.getField("username"));
+		assertNull(credential.getField("password"));
+	}
 
-		assertEquals("alias4", credentials.get(3).getAlias());
-		assertNull(credentials.get(3).getPassword());
-		assertEquals(5, credentials.size());
+	@Test
+	void testGetCredentialWithoutUsername() throws IOException {
+		CredentialAlias alias = CredentialAlias.parse("alias5");
+		ISecret credential = credentialFactory.getSecret(alias);
+		assertNull(credential.getField("username"));
+		assertEquals("noUsername", credential.getField("password"));
 	}
 
 	@Test
 	void testHasCredential() throws UnsupportedOperationException {
-		assertTrue(credentialFactory.hasCredentials("alias1"));
-		assertFalse(credentialFactory.hasCredentials("aliasX"));
+		CredentialAlias alias1 = CredentialAlias.parse("alias1");
+		assertTrue(credentialFactory.hasSecret(alias1));
+
+		CredentialAlias aliasX = CredentialAlias.parse("aliasX");
+		assertFalse(credentialFactory.hasSecret(aliasX));
 	}
 
 	@Test
-	void testGetCredentialsWithDetails() throws UnsupportedOperationException {
-		ICredentials credential1 = credentialFactory.getCredentials("alias1", () -> "testUsername", () -> "testPassword");
-		assertEquals("testUsername1", credential1.getUsername());
-		assertEquals("testPassword1", credential1.getPassword());
+	void testGetCredentialsWithDetails() throws IOException {
+		CredentialAlias alias = CredentialAlias.parse("alias1");
+		ISecret credential1 = credentialFactory.getSecret(alias);
+		assertEquals("testUsername1", credential1.getField("username"));
+		assertEquals("testPassword1", credential1.getField("password"));
 
-		ICredentials credential2 = credentialFactory.getCredentials("alias1", null, null);
-		assertEquals("testUsername1", credential2.getUsername());
-		assertEquals("testPassword1", credential2.getPassword());
-	}
-
-	@Test
-	void testGetCredentialsWithoutAlias() throws UnsupportedOperationException {
-		ICredentials credential1 = credentialFactory.getCredentials(null, () -> "testUsername2", () -> "testPassword2");
-		assertNull(credential1.getAlias());
-		assertEquals("testUsername2", credential1.getUsername());
-		assertEquals("testPassword2", credential1.getPassword());
-	}
-
-	@Test
-	void testGetCredentialsWithOneDetail() throws UnsupportedOperationException {
-		ICredentials credentials1 = credentialFactory.getCredentials(null, () -> "testUsername2", null);
-		ICredentials credentials2 = credentialFactory.getCredentials(null, null, () -> "testPassword2");
-
-		assertEquals("testUsername2", credentials1.getUsername());
-		assertNull(credentials1.getPassword());
-		assertNull(credentials1.getAlias());
-
-		assertEquals("testPassword2", credentials2.getPassword());
-		assertNull(credentials2.getUsername());
-		assertNull(credentials2.getAlias());
+		ISecret credential2 = credentialFactory.getSecret(alias);
+		assertEquals("testUsername1", credential2.getField("username"));
+		assertEquals("testPassword1", credential2.getField("password"));
 	}
 
 	@Test
 	void testUnknownAliasNoDefaults() {
-		assertThrows(NoSuchElementException.class, () -> credentialFactory.getCredentials("fakeAlias", () -> null, () -> null));
-	}
-
-	@Test
-	void testGetCredentialsWithNothing() {
-		ICredentials credentials = credentialFactory.getCredentials(null, () -> null, () -> null);
-		assertNull(credentials.getAlias());
-		assertNull(credentials.getUsername());
-		assertNull(credentials.getPassword());
-
-		ICredentials credentials2 = credentialFactory.getCredentials(null, null, null);
-		assertNull(credentials2.getAlias());
-		assertNull(credentials2.getUsername());
-		assertNull(credentials2.getPassword());
-	}
-
-	@Test
-	void testGetCredentialsWithWrongDetailsDirectlyReturnsGivenData() {
-		ICredentials credentials = credentialFactory.getCredentials(null, () -> "fakeUsername", () -> "fakePassword");
-		assertEquals("fakeUsername", credentials.getUsername());
-		assertEquals("fakePassword", credentials.getPassword());
-		assertNull(credentials.getAlias());
-	}
-
-	@Test
-	void testCachingSecretsWorks() {
-		// Should be called once
-		Mockito.clearInvocations(client);
-		credentialFactory.clearTimer();
-		credentialFactory.getCredentials();
-		verify(client).secrets();
-
-		// Now it should not be called again
-		Mockito.clearInvocations(client);
-		credentialFactory.getCredentials();
-		verifyNoInteractions(client);
-
-		// Simulate a new fetch
-		credentialFactory.clearTimer();
-		credentialFactory.getCredentials();
-		verify(client).secrets();
+		CredentialAlias alias = CredentialAlias.parse("fakeAlias");
+		assertThrows(NoSuchElementException.class, () -> credentialFactory.getSecret(alias));
 	}
 
 	private static Secret createSecret(String alias, String userName, String password) {
 		Map<String, String> usernamePasswordMap = new HashMap<>();
-		if (userName != null) usernamePasswordMap.put(KubernetesCredentialFactory.USERNAME_KEY, Base64.getEncoder().encodeToString(userName.getBytes()));
-		if (password != null) usernamePasswordMap.put(KubernetesCredentialFactory.PASSWORD_KEY, Base64.getEncoder().encodeToString(password.getBytes()));
+		if (userName != null) usernamePasswordMap.put(CredentialFactory.DEFAULT_USERNAME_FIELD, Base64.getEncoder().encodeToString(userName.getBytes()));
+		if (password != null) usernamePasswordMap.put(CredentialFactory.DEFAULT_PASSWORD_FIELD, Base64.getEncoder().encodeToString(password.getBytes()));
 
 		ObjectMeta objectMeta = new ObjectMeta().toBuilder().withName(alias).build();
 		return new Secret().toBuilder().withMetadata(objectMeta).withData(usernamePasswordMap).build();

@@ -1,6 +1,6 @@
 # Testing with IAF-Test
 
-To ensure that your contribution doesn't break any logic, we would like you to run the test scenario's within the iaf-test module before committing your changes. To do this, a number of extra dependencies are required. These are placed as runtime-dependencies in the `test/pom.xml` but the overview is placed below for verification, and in case something goes wrong with the dependency management.
+To ensure that your contribution doesn't break any logic, we would like you to run the test scenarios within the iaf-test module before committing your changes. To do this, a number of extra dependencies are required. These are placed as runtime-dependencies in the `test/pom.xml` but the overview is placed below for verification, and in case something goes wrong with the dependency management.
 
 This guide was written with the assertion that you are A) using Eclipse, and B) have successfully ran the iaf-example module before. If this is not the case, please follow the steps as described on our [CONTRIBUTING](https://github.com/frankframework/frankframework/blob/master/CONTRIBUTING.md#developing-with-eclipse) page. For users of IntelliJ, see chapter 3.
 
@@ -14,11 +14,13 @@ If you use IntelliJ, open "Settings | Build, Execution, Deployment | Application
 * [jakarta.activation-api-2.1.3](https://mvnrepository.com/artifact/jakarta.activation/jakarta.activation-api/2.1.3)
 
 If you want to use Queuing or a DBMS other than H2, you need to ensure the corresponding JDBC drivers are in place:
-* For MariaDB or MySQL: [mysql-connector-java-8.0.20.jar](https://dev.mysql.com/downloads/connector/j/) (N.B. for proper XA support, the MySQL driver is used for MariaDB DBMS too)
-* For MSSQL           : [mssql-jdbc-7.2.2.jre8.jar](https://docs.microsoft.com/en-us/sql/connect/jdbc/download-microsoft-jdbc-driver-for-sql-server)
-* For Oracle          : [ojdbc8.jar](https://www.oracle.com/database/technologies/appdev/jdbc-ucp-183-downloads.html)
-* For PostgreSQL      : [postgresql-42.2.14](https://jdbc.postgresql.org/download/postgresql-42.2.14.jar)
-* For ActiveMQ        : [activemq-all-5.8.0.jar](https://mvnrepository.com/artifact/org.apache.activemq/activemq-core/5.8.0)
+* For MariaDB: [mariadb-java-client-3.5.5.jar](https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client) 
+* For MySQL: [mysql-connector-java-9.4.0.jar](https://dev.mysql.com/downloads/connector/j/)
+* For MSSQL: [mssql-jdbc-12.10.1.jre11.jar](https://docs.microsoft.com/en-us/sql/connect/jdbc/download-microsoft-jdbc-driver-for-sql-server)
+* For Oracle: [ojdbc8.jar](https://www.oracle.com/database/technologies/appdev/jdbc-ucp-183-downloads.html)
+* For PostgreSQL: [postgresql-42.7.7](https://jdbc.postgresql.org/download/postgresql-42.7.7.jar)
+* For ActiveMQ (Classic): [activemq-client-6.1.7.jar](https://mvnrepository.com/artifact/org.apache.activemq/activemq-client)
+* For ActiveMQ Artemis: [artemis-client-2.42.0.jar](https://mvnrepository.com/artifact/org.apache.activemq/artemis-jms-client)
 
 > [!WARNING]\
 > Versions are subject to change, please check our [pom.xml](https://github.com/frankframework/frankframework/blob/master/pom.xml) for the current driver(s) and their corresponding versions.
@@ -61,33 +63,52 @@ parallel, so you can for instance run multiple debug sessions side by side to co
 ### Create a Tomcat Run Configuration and set the following:
 1. Select your installed Tomcat Application Server
 2. Make sure that you have enabled the Maven profile `database-drivers` and reload the Maven project after enabling it. Make sure to hit "Sync all maven projects" and not "Reload all maven projects" in the Maven tool window!
-2. Add the following parameters to the VM Options:
+3. Add the following parameters to the VM Options:
    - `-Ddtap.stage=LOC`
    - `-DauthAliases.expansion.allowed=testalias`
    - `-Dlog.dir=c:/temp` (lower case 'c' is mandatory) (or whatever works for your system, drive letters on Windows must be lowercase).
    - `-DcredentialFactory.class=org.frankframework.credentialprovider.PropertyFileCredentialFactory`
    - `-DcredentialFactory.map.properties=<path to your sources root>/test/src/main/secrets/credentials.properties`
-3. Set the Tomcat HTTP port to `80`
+4. Set the Tomcat HTTP port to `80`
 NB: If you want to run on a different port, you also need to add to your VM options the option `-Dweb.port=8080` (or whatever port you chose).
-4. In the tab "Deployments", select the module `frankframework-test: war exploded` and the application context-path `/iaf-test`.
-5. Other settings as you find appropriate
+5. In the tab "Deployments", select the module `frankframework-test: war exploded` and the application context-path `/iaf-test`.
+6. Other settings as you find appropriate
 
 ### Note about the log dir:
 See the Eclipse instructions for an important note about the `log.dir` setting.
 
-## 4. Select database
+## 4. Select database and JMS server
 
 The frankframework-test project supports multiple databases. By default, an H2 local database is used.
 Docker projects for a number of other DMBSes are provided in GitHub project https://github.com/frankframework/ci-images. To use one of the provided databases, run the `rebuild.bat` script in the corresponding directory. (requires Docker to be installed on your machine). To configure the frankframework-test application, set in the catalina.properties or the VM Options the property `jdbc.dbms.default` to `oracle`, `mssql`, `mysql`, `mariadb` or `postgres`.
+If the database runs on another host than your own test-machine, set `jdbc.hostname`.
 
-## 5. Running the test scenarios
+The `ci-images` project also provides Docker projects for the ActiveMQ and ActiveMQ Artemis message brokers, pre-configured to work with IAF-Test.
+To use either, build the Docker images and set the VM Option `jms.provider.default` to either `activemq` or `artemis`.
+If the JMS broker runs on another host than your own test-machine, set `jms.hostname`.
+
+When testing with JMS you should also enable the Narayana JTA transaction-manager to enable transactions that span both the JMS and database, by setting the VM option `application.server.type.custom` to `NARAYANA`. (Not needed when running in WildFly or JBoss application servers, as they include Narayana transaction manager by default). When running with the Narayana transaction manager, you have to use the XA-enabled datasources for some databases: `postgres-xa`, or `oracle-xa`.
+
+Testing with JMS enabled activates a number of extra Larva tests in IAF-Test which depend on JMS or the JTA transaction manager.
+
+
+## 5. Running as Spring Boot application
+
+It is possible to start the Frank!Framework as a Spring Boot application. Specifically for development-testing with IAF-Test, there is the class `IafTestInitializer` which can be started as a Spring Boot application that includes both the console and the core backend. You can create a run configuration to start `IafTestInitializer#run`, configuring it with most of the same VM options as when testing with Tomcat: `jdbc.dbms.default`, `jms.provider.default`, `application.server.type.custom`
+
+**NB 1:** Do not set `log.dir`, `dtap.stage`, `authAliases.expansion.allowed`, and `credentialFactory.*` properties as these are set by IafTestInitalizer. Setting some of these properties can lead to adverse side-effects as a result.
+
+**NB 2:** This does not start the Frank!Framework in the same way as when running in Tomcat. This is only suitable for limited development testing. Some IAF-Test Larva scenarios are known to fail as a result of these differences in environment. See the list of "Ignored Tests" at the top of the test-class `RunLarvaTests`.
+
+
+## 6. Running the test scenarios
 
 ### Eclipse
 Run your Tomcat server from Eclipse's Servers view. It may take up to a minute for Eclipse to launch it; once ready, you can find the Frank!Framework console by browsing to http://localhost/iaf-test/.
 
 ### IntelliJ
 Start your IAF-Test Run Configuration from the "Run Configurations" menu or from the "Services" tool panel, either in "Run" or in "Debug" mode.
-Depending on how you configured it when the system is ready it will either open a browser window automatically, or you can manually navigate to http://localhost/iaf-test/ in your browser of choice.
+Depending on how you configured it, when the system is ready it will either open a browser window automatically, or you can manually navigate to http://localhost/iaf-test/ in your browser of choice.
 
 ### Starting the Tests
 Once the Frank!Framework console is loaded, go to the Larva testtool in the sidebar. Specify which scenarios to run and under which conditions - the default settings should be good for checking if everything works.
@@ -96,7 +117,7 @@ Press [ Start ], sit back, relax, do some stretches, and let's hope for the best
 
 ---
 
-### Troubleshooting
+## 7. Troubleshooting
 
 * Some parts of the iaf-test module rely on proprietary modules. To tell Maven that it should download these modules, go to Window > Preferences > Maven > User Settings. If you already have a _settings.xml_ file, press the "Open file" link. Otherwise, browse to _C:/Users/(your name)/.m2/_ and create a _settings.xml_ file. Edit the file by adding your own repository or the [frankframework nexus repository](https://nexus.frankframework.org/content/groups/private/) as [mirror](https://maven.apache.org/guides/mini/guide-mirror-settings.html).
 * When your IP-address is dynamically generated, you may have problems connecting to your database that runs in a docker image. The Larva tests reference the database host by a DNS name, `host.docker.internal`. Docker may not automatically update the IP address to which this name refers when your computer is assigned a new IP address. To see whether you have this issue, do `ping host.docker.internal` in a command prompt. If you cannot reach this address, refresh your docker network. You can do that using docker desktop. Press the settings icon (cogwheel) to the top. In the left-hand menu, choose Resources | Network. Update the docker subnet.

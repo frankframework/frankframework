@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,27 +15,22 @@
 */
 package org.frankframework.credentialprovider;
 
-import java.util.Base64;
 import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Objects;
 import java.util.Optional;
-import java.util.function.Supplier;
-import java.util.logging.Logger;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.StringUtils;
 
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
+import lombok.extern.java.Log;
 
+import org.frankframework.credentialprovider.util.Cache;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
 /**
- * <p>CredentialFactory for Kubernetes Credentials. Fetches credentials from Kubernetes secrets.</p>
+ * <p>CredentialFactory for Kubernetes Secret. Fetches credentials from Kubernetes secrets.</p>
  *
  * <p>The credentials are stored in Kubernetes secrets, which are base64 encoded. The keys used for the secrets are "username" and "password".</p>
  *
@@ -68,23 +63,21 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  *
  * @ff.info The credentials are cached for 60 seconds, to prevent unnecessary calls to the Kubernetes API.
  */
-public class KubernetesCredentialFactory implements ICredentialFactory {
-	protected static final Logger log = Logger.getLogger(KubernetesCredentialFactory.class.getName());
+@Log
+public class KubernetesCredentialFactory implements ISecretProvider {
 
 	private static final String K8_USERNAME = "credentialFactory.kubernetes.username";
 	private static final String K8_PASSWORD = "credentialFactory.kubernetes.password";
 	static final String K8_MASTER_URL = "credentialFactory.kubernetes.masterUrl";
 	private static final String K8_NAMESPACE_PROPERTY = "credentialFactory.kubernetes.namespace";
 
-	private static final long CREDENTIALS_CACHE_DURATION_MILLIS = 60_000L;
-	protected static final String USERNAME_KEY = "username";
-	protected static final String PASSWORD_KEY = "password";
+	private static final int CACHE_DURATION_MILLIS = 60_000;
 	public static final String DEFAULT_NAMESPACE = "default";
 
 	protected String namespace;
 	private KubernetesClient client;
-	private List<Credentials> credentials; // Refreshed every SECRETS_CACHE_TIMEOUT_MILLIS
-	private long lastFetch = 0;
+
+	private final Cache<String, Secret, NoSuchElementException> configuredAliases = new Cache<>(CACHE_DURATION_MILLIS);
 
 	@Override
 	public void initialize() {
@@ -109,62 +102,50 @@ public class KubernetesCredentialFactory implements ICredentialFactory {
 		}
 
 		// Fetch secrets directly at startup, from Kubernetes cluster
-		log.info("Fetching secrets from Kubernetes namespace: " + namespace);
-		credentials = getCredentials();
-		log.info("Loaded Credential amount from Kubernetes: " + credentials.size());
+		log.info("fetching secrets from Kubernetes namespace [" + namespace + "]");
+		List<Secret> secrets = getSecretsFromKubernetes();
+		log.info("found [" + secrets.size() + "] secrets in namespace [" + namespace + "]");
 	}
 
 	@Override
-	public boolean hasCredentials(String alias) {
-		return getConfiguredAliases().contains(alias);
+	public boolean hasSecret(CredentialAlias alias) {
+		try {
+			return getSecret(alias) != null;
+		} catch (NoSuchElementException e) {
+			return false;
+		}
 	}
 
 	@Override
-	public ICredentials getCredentials(String alias, Supplier<String> defaultUsernameSupplier, Supplier<String> defaultPasswordSupplier) throws NoSuchElementException {
-		if (StringUtils.isEmpty(alias)) {
-			return new Credentials(null, defaultUsernameSupplier, defaultPasswordSupplier);
+	public ISecret getSecret(CredentialAlias alias) throws NoSuchElementException {
+		Secret secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), this::getSecret);
+
+		if (secret == null) {
+			throw new NoSuchElementException();
 		}
 
-		return getCredentials().stream()
-				.filter(credential -> alias.equalsIgnoreCase(credential.getAlias()))
-				.findFirst()
-				.orElseThrow(() -> new NoSuchElementException("cannot obtain credentials from authentication alias [" + alias + "]: alias not found"));
+		return new KubernetesCredential(alias, secret);
 	}
 
 	@Override
 	public Collection<String> getConfiguredAliases() {
-		return getCredentials().stream()
-				.map(Credentials::getAlias)
-				.filter(Objects::nonNull)
-				.toList();
+		return configuredAliases.keySet();
 	}
 
-	protected synchronized List<Credentials> getCredentials() {
-		if (lastFetch + CREDENTIALS_CACHE_DURATION_MILLIS > System.currentTimeMillis()) {
-			return credentials;
-		}
+	private Secret getSecret(String aliasToRetrieve) throws NoSuchElementException {
+		return getSecretsFromKubernetes().stream()
+				.filter(e -> aliasToRetrieve.equals(e.getMetadata().getName()))
+				.findFirst()
+				.orElseThrow(() -> new NoSuchElementException("alias ["+aliasToRetrieve+"] not found"));
+	}
+
+	protected synchronized List<Secret> getSecretsFromKubernetes() {
 		List<Secret> secrets = client.secrets().inNamespace(namespace).list().getItems();
-		lastFetch = System.currentTimeMillis();
 		if (secrets.isEmpty()) {
-			log.warning("No secrets found in namespace: " + namespace);
+			log.warning("no secrets found in namespace: " + namespace);
 		}
-		credentials = secrets.stream()
-				.map(secret -> new Credentials(
-						secret.getMetadata().getName(),
-						() -> decodeFromSecret(secret, USERNAME_KEY),
-						() -> decodeFromSecret(secret, PASSWORD_KEY)
-				))
-				.collect(Collectors.toList());
-		return credentials;
-	}
 
-	protected static String decodeFromSecret(Secret secret, String key) {
-		String foundKey = secret.getData().get(key);
-		if (StringUtils.isEmpty(foundKey)) {
-			log.info("On Credential with alias [" + secret.getMetadata().getName() + "]: No value found for key: " + key);
-			return null;
-		}
-		return new String(Base64.getDecoder().decode(foundKey));
+		return secrets;
 	}
 
 	/** Close Kubernetes client */
@@ -177,10 +158,4 @@ public class KubernetesCredentialFactory implements ICredentialFactory {
 		log.info("Setting Kubernetes client to: " + client.getClass().getName());
 		this.client = client;
 	}
-
-	// For testing purposes
-	void clearTimer() {
-		lastFetch = 0;
-	}
-
 }

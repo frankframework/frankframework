@@ -11,6 +11,7 @@ import java.sql.ResultSet;
 import java.util.Arrays;
 import java.util.List;
 
+import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -71,6 +72,11 @@ public class ClassLoaderManagerTest extends Mockito {
 	@BeforeAll
 	public static void before() throws Exception {
 		mockDatabase();
+	}
+
+	@AfterAll
+	public static void teardown() {
+		AppConstants.removeInstance();
 	}
 
 	public void configureClassloader(String type, String configurationName) {

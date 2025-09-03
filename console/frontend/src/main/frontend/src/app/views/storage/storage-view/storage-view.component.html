@@ -8,7 +8,7 @@
         <div class="ibox-title">
           <div class="pull-right">
             <button class="btn btn-xs pull-right btn-info" type="button" (click)="goBack()">
-              <i class="fa fa-arrow-circle-o-left" aria-hidden="true"></i>
+              <fa-icon aria-hidden="true" [icon]="faArrowAltCircleLeft" />
               <span> Back</span>
             </button>
           </div>
@@ -38,7 +38,7 @@
                 [ladda]="message.processing"
                 (click)="resendMessage(message)"
               >
-                <i class="fa fa-repeat"></i> Resend
+                <fa-icon [icon]="faRepeat" /> Resend
               </button>
               <button
                 appHasAccessToLink="deleteReceiverMessage"
@@ -49,7 +49,7 @@
                 [ladda]="message.processing"
                 (click)="deleteMessage(message)"
               >
-                <i class="fa fa-times"></i> Delete
+                <fa-icon [icon]="faTimes" /> Delete
               </button>
             }
             <button
@@ -59,7 +59,7 @@
               type="button"
               (click)="downloadMessage(message.id)"
             >
-              <i class="fa fa-arrow-circle-o-down"></i> Download
+              <fa-icon [icon]="faArrowAltCircleDown" /> Download
             </button>
           </p>
           <pre>{{ data['message'] ?? '' }}</pre>

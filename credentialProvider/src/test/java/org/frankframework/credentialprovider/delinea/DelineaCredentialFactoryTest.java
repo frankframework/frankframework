@@ -1,23 +1,24 @@
 package org.frankframework.credentialprovider.delinea;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import org.frankframework.credentialprovider.ICredentials;
+import org.frankframework.credentialprovider.CredentialAlias;
+import org.frankframework.credentialprovider.ISecret;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
 class DelineaCredentialFactoryTest {
@@ -26,10 +27,10 @@ class DelineaCredentialFactoryTest {
 
 	@BeforeEach
 	void beforeEach() {
-		Secret secret1 = createSecret(1, 11, "user1", "password1");
-		Secret secret2 = createSecret(2, 22, "user2", "password2");
-		Secret secret3 = createSecret(3, 33, "user3", "password3");
-		Secret secret4 = createSecret(4, 44, "user4", "password4");
+		DelineaSecret secret1 = createSecret(1, 11, "user1", "password1");
+		DelineaSecret secret2 = createSecret(2, 22, "user2", "password2");
+		DelineaSecret secret3 = createSecret(3, 33, "user3", "password3");
+		DelineaSecret secret4 = createSecret(4, 44, "user4", "password4");
 
 		DelineaClient client = mock(DelineaClient.class);
 
@@ -63,8 +64,8 @@ class DelineaCredentialFactoryTest {
 		Collection<String> configuredAliases = credentialFactory.getConfiguredAliases();
 		assertEquals(0, configuredAliases.size());
 
-		credentialFactory.hasCredentials("1");
-		credentialFactory.getCredentials("2", () -> null, () -> null);
+		credentialFactory.hasSecret(CredentialAlias.parse("1"));
+		credentialFactory.getSecret(CredentialAlias.parse("2"));
 
 		// Expect a list of 2 secrets after hasCredentials and getCredentials calls
 		configuredAliases = credentialFactory.getConfiguredAliases();
@@ -72,36 +73,25 @@ class DelineaCredentialFactoryTest {
 	}
 
 	@Test
-	void testGetSecret() {
-		ICredentials credentials = credentialFactory.getCredentials("1", () -> null, () -> null);
+	void testGetSecret() throws IOException {
+		CredentialAlias alias = CredentialAlias.parse("1");
+		ISecret credentials = credentialFactory.getSecret(alias);
 
 		assertNotNull(credentials);
-		assertEquals("user1", credentials.getUsername());
-
-		// Get a non-existing secret
-		ICredentials credentials2 = credentialFactory.getCredentials("16", () -> null, () -> null);
-
-		// Expect a null return value, because alias 16 does not exist
-		assertNull(credentials2);
+		assertEquals("user1", credentials.getField("username"));
 	}
 
 	@Test
-	void testHasCredentials() {
-		assertTrue(credentialFactory.hasCredentials("1"));
-		assertTrue(credentialFactory.hasCredentials("2"));
-		assertTrue(credentialFactory.hasCredentials("3"));
-		assertTrue(credentialFactory.hasCredentials("4"));
-
-		// Should not be present
-		assertFalse(credentialFactory.hasCredentials("5"));
-
-		assertEquals(5, credentialFactory.getConfiguredAliases().size());
+	void testGetNonExistingSecret() {
+		CredentialAlias alias = CredentialAlias.parse("16");
+		assertThrows(NoSuchElementException.class, () -> credentialFactory.hasSecret(alias));
+		assertThrows(NoSuchElementException.class, () -> credentialFactory.getSecret(alias));
 	}
 
-	static Secret createSecret(int id, int folderId, String username, String password) {
-		Secret.Field usernameField = new Secret.Field(1, username, "username");
-		Secret.Field passwordField = new Secret.Field(2, password, "password");
+	static DelineaSecret createSecret(int id, int folderId, String username, String password) {
+		DelineaSecret.Field usernameField = new DelineaSecret.Field(1, username, "username");
+		DelineaSecret.Field passwordField = new DelineaSecret.Field(2, password, "password");
 
-		return new Secret(id, folderId, "", true, List.of(usernameField, passwordField));
+		return new DelineaSecret(id, folderId, "", true, List.of(usernameField, passwordField));
 	}
 }

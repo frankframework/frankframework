@@ -12,10 +12,12 @@ import {
   supportedConnectionOptions,
 } from './security-items.service';
 import { KeyValuePipe, NgClass } from '@angular/common';
+import { FaIconComponent } from '@fortawesome/angular-fontawesome';
+import { faCheck, faCheckSquare, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-security-items',
-  imports: [NgClass, KeyValuePipe],
+  imports: [KeyValuePipe, FaIconComponent],
   templateUrl: './security-items.component.html',
   styleUrls: ['./security-items.component.scss'],
 })
@@ -35,10 +37,12 @@ export class SecurityItemsComponent implements OnInit {
     cyphers: [],
   };
   protected links: Link[] = [];
-
   protected transactionManager: Signal<string> = computed(
     () => (this.appService.appConstants()['application.server.type.custom'] as string) || 'NONE',
   );
+  protected readonly faCheckSquare = faCheckSquare;
+  protected readonly faTimesCircle = faTimesCircle;
+  protected readonly faCheck = faCheck;
 
   private readonly appService: AppService = inject(AppService);
   private readonly securityItemsService: SecurityItemsService = inject(SecurityItemsService);

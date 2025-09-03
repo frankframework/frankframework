@@ -3,6 +3,7 @@
   "include": ["./**/*.ts", "../cypress.config.ts"],
   "exclude": [],
   "compilerOptions": {
+    "moduleResolution": "node",
     "sourceMap": false,
     "types": ["cypress"],
   }
