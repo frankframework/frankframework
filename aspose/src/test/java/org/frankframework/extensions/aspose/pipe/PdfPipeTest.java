@@ -628,7 +628,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	}
 
 	@Test
-	@DisplayName("Expect successful conversion when providing signed PDF")
+	@DisplayName("Expect successful conversion when providing unsigned PDF")
 	public void unsignedPdf() throws Exception {
 		expectSuccessfulConversion("unsignedPdf", "/PdfPipe/unsigned.pdf", "/PdfPipe/xml-results/pdf.xml", "/PdfPipe/results/unsigned.pdf");
 		assertTrue(session.containsKey("documents"));
