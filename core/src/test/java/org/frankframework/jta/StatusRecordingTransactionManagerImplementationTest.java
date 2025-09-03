@@ -4,8 +4,6 @@ import static org.frankframework.dbms.Dbms.H2;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
-import java.io.IOException;
-
 import org.apache.commons.lang3.NotImplementedException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,6 +16,7 @@ import com.arjuna.ats.arjuna.common.arjPropertyManager;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.jdbc.DirectQuerySender;
@@ -41,7 +40,7 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 	private String tableName;
 
 	@BeforeEach
-	public void setup(DatabaseTestEnvironment env) throws IOException {
+	public void setup(DatabaseTestEnvironment env) {
 		assumeFalse("DATASOURCE".equals(env.getName()), "Testing XA transaction-manager, not the DatasourceTransactionManager");
 		assumeFalse(H2 == env.getDbmsSupport().getDbms(), "Cannot run this test with H2");
 
@@ -71,14 +70,10 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 	}
 
 	protected String getTMUID() {
-		switch (env.getName()) {
-		case "DATASOURCE":
-			return null;
-		case "NARAYANA":
-			return arjPropertyManager.getCoreEnvironmentBean().getNodeIdentifier();
-		default:
-			throw new NotImplementedException("Unknown transaction manager type ["+env.getName()+"]");
-		}
+		return switch (env.getName()) {
+			case "NARAYANA" -> arjPropertyManager.getCoreEnvironmentBean().getNodeIdentifier();
+			default -> throw new NotImplementedException("Unknown transaction manager type [" + env.getName() + "]");
+		};
 	}
 
 	@DatabaseTest(cleanupBeforeUse = true, cleanupAfterUse = true)
@@ -124,17 +119,16 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 		txManagerReal.destroy();
 		assertStatus("PENDING", uid);
 
-		teardown();
+		log.info("<*> Allow blocked transactions to proceed");
 		XaDatasourceCommitStopper.stop(false);
 
-		log.debug("recreating transaction manager");
+		log.info("<*> Recreating transaction manager");
 		setupTransactionManager();
 
 		assertEquals(uid, txManagerReal.getUid(), "tmuid must be the same after restart");
 		txManagerReal.destroy();
 		assertStatus("COMPLETED", uid);
 	}
-
 
 	public void prepareTable(String datasourceName) throws ConfigurationException, SenderException, TimeoutException {
 		DirectQuerySender fs1 = new DirectQuerySender();
@@ -144,12 +138,12 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 		fs1.configure();
 		fs1.start();
 		try {
-			fs1.sendMessageOrThrow(new Message("DROP TABLE "+tableName),null);
+			fs1.sendMessageOrThrow(new Message("DROP TABLE "+tableName),new PipeLineSession());
 		} catch (Exception e) {
 			log.warn(e);
 		}
 
-		fs1.sendMessageOrThrow(new Message("CREATE TABLE "+tableName+"(id char(1))"),null);
+		fs1.sendMessageOrThrow(new Message("CREATE TABLE "+tableName+"(id char(1))"),new PipeLineSession());
 		fs1.stop();
 	}
 
@@ -180,10 +174,10 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 
 			TransactionDefinition txDef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW, 10);
 			TransactionStatus txStatus = txManager.getTransaction(txDef);
-			try {
+			try (PipeLineSession pls = new PipeLineSession()) {
 
-				fs1.sendMessageOrThrow(new Message("INSERT INTO "+tableName+" (id) VALUES ('x')"),null);
-				fs2.sendMessageOrThrow(new Message("INSERT INTO "+tableName+" (id) VALUES ('x')"),null);
+				fs1.sendMessageOrThrow(new Message("INSERT INTO "+tableName+" (id) VALUES ('x')"),pls);
+				fs2.sendMessageOrThrow(new Message("INSERT INTO "+tableName+" (id) VALUES ('x')"),pls);
 			} finally {
 				txManager.commit(txStatus);
 			}

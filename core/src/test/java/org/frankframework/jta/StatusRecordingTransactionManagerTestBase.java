@@ -2,7 +2,6 @@ package org.frankframework.jta;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
@@ -32,8 +31,8 @@ import org.frankframework.util.LogUtil;
 public abstract class StatusRecordingTransactionManagerTestBase<S extends AbstractStatusRecordingTransactionManager> {
 	protected Logger log = LogUtil.getLogger(this);
 
-	public String STATUS_FILE = "status.txt";
-	public String TMUID_FILE = "tm-uid.txt";
+	public static final String STATUS_FILE = "status.txt";
+	public static final String TMUID_FILE = "tm-uid.txt";
 
 	@TempDir
 	public Path folder;
@@ -46,9 +45,9 @@ public abstract class StatusRecordingTransactionManagerTestBase<S extends Abstra
 	protected abstract S createTransactionManager();
 
 	@BeforeEach
-	public void setup() throws IOException {
-		statusFile = folder.toAbsolutePath().toString()+"/"+STATUS_FILE;
-		tmUidFile = folder.toAbsolutePath().toString()+"/"+TMUID_FILE;
+	public void setup() {
+		statusFile = folder.toAbsolutePath() +"/"+STATUS_FILE;
+		tmUidFile = folder.toAbsolutePath() +"/"+TMUID_FILE;
 
 		delete(tmUidFile);
 	}
@@ -81,9 +80,7 @@ public abstract class StatusRecordingTransactionManagerTestBase<S extends Abstra
 	public void delete(String filename) throws TransactionSystemException {
 		Path file = Paths.get(filename);
 		try {
-			if (Files.exists(file)) {
-				Files.delete(file);
-			}
+			Files.deleteIfExists(file);
 		} catch (Exception e) {
 			throw new TransactionSystemException("Cannot delete file ["+file+"]", e);
 		}

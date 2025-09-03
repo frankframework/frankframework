@@ -35,11 +35,15 @@ import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 /**
  * XAResourceRecoveryHelper implementation which gets XIDs, which needs to be recovered, from the database.
  * See org.springframework.boot.jta.narayana.DataSourceXAResourceRecoveryHelper.
- *
+ * This class has been extended with a ConnectionManager to ensure operations can succeed. This has been copied from the JmsXAResourceRecoveryHelper.
+ * <p>
  * Required as we wrap the connection in a pooling-capable factory, and do not use the native Narayana connection factory.
+ *</p>
  *
- * Additionally this also implements `XAResourceWrapper`, which (AFAIK) only adds debug info.
+ * <p>
+ * Additionally, this also implements `XAResourceWrapper`, which (AFAIK) only adds debug info.
  * See XAResourceRecord#getJndiName()
+ *</p>
  *
  * @author Gytis Trikleris
  * @author Niels Meijer
@@ -248,9 +252,9 @@ public class DataSourceXAResourceRecoveryHelper implements XAResourceRecoveryHel
 		}
 
 		/**
-		 * Check if JMS connection is active.
+		 * Check if XaDataSource connection is active.
 		 *
-		 * @return {@code true} if JMS connection is active.
+		 * @return {@code true} if XaDataSource connection is active.
 		 */
 		boolean isConnected() {
 			return xaConnection != null;

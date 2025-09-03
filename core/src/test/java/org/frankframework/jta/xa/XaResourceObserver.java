@@ -4,12 +4,10 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.util.LogUtil;
-
+@Log4j2
 public class XaResourceObserver implements XAResource {
-	protected Logger log = LogUtil.getLogger(this);
 
 	private final XAResource target;
 

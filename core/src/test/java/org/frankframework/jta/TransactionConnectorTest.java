@@ -31,7 +31,7 @@ import org.frankframework.util.ClassUtils;
 @WithLiquibase(file = "Migrator/ChangelogBlobTests.xml", tableName = TransactionConnectorTest.TEST_TABLE)
 @Disabled("When this test is enabled, eventually a later test will fail when running Maven (usually the LockerTest) (See issue #6935)")
 public class TransactionConnectorTest {
-	static final String TEST_TABLE = "temp_table";
+	static final String TEST_TABLE = "tx_temp_table";
 	private IThreadConnectableTransactionManager txManager;
 	private DatabaseTestEnvironment env;
 

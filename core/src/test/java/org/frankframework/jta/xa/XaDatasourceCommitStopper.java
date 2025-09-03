@@ -7,32 +7,30 @@ import javax.transaction.xa.XAException;
 import javax.transaction.xa.XAResource;
 import javax.transaction.xa.Xid;
 
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.util.LogUtil;
-
+@Log4j2
 public class XaDatasourceCommitStopper extends XaResourceObserver{
-	protected static Logger LOG = LogUtil.getLogger(XaDatasourceCommitStopper.class);
 
 	private static boolean stop;
-	public static Phaser commitGuard;
+	public static volatile Phaser commitGuard;
 
 
 	public XaDatasourceCommitStopper(XAResource target) {
 		super(target);
 	}
 
-	public static void stop(boolean stop) {
+	public static synchronized void stop(boolean stop) {
 		if (XaDatasourceCommitStopper.stop && !stop && commitGuard != null) {
 			// Signal all waiting that they can continue
-			LOG.info("Cleaning up pending commits that are on hold -- Signalling other participants they can proceed to do commit");
+			log.info("Cleaning up pending commits that are on hold -- Signalling other participants they can proceed to do commit");
 			int cs1 = commitGuard.arriveAndAwaitAdvance();
-			LOG.info ("<*> Phase at CS1: {}", cs1);
-			LOG.info("Waiting for other participants to have finished their commits");
+			log.info (" *> Phaser at CS1: {}", cs1);
+			log.info("  > Waiting for other participants to have finished their commits");
 			// Wait for all commits to have completed before continuing
 			int cs2 = commitGuard.arriveAndAwaitAdvance();
-			LOG.info("<*> Phase at CS2: {}", cs2);
-			LOG.info("All pending transactions should now be completed");
+			log.info(" *> Phaser at CS2: {}", cs2);
+			log.info("<*> All pending transactions should now be completed");
 		}
 		XaDatasourceCommitStopper.stop = stop;
 		if (stop) {
@@ -52,18 +50,19 @@ public class XaDatasourceCommitStopper extends XaResourceObserver{
 		Phaser commitGuard = XaDatasourceCommitStopper.commitGuard;
 		if (inStoppingMode) {
 			try {
-				LOG.warn("commit() waiting 'endless' to perform commit to simulate unresponsive RM");
+				log.warn("commit() waiting 'endless' to perform commit to simulate unresponsive RM");
 				// Arrive at this phaser to signal controlling test that it can proceed
 				// Block our own commit
-				LOG.info("Signalling other participants we have arrived in commit and wait for them");
+				log.info("Signalling other participants we have arrived in commit and wait for them");
 				int cmt1 = commitGuard.arriveAndAwaitAdvance();
-				LOG.info("<*> Phase at CMT1: {}", cmt1);
+				log.info("<*> Phaser at CMT1: {}, waiting until we may commit", cmt1);
 
-				LOG.info("Wait until we can proceed to complete our commit");
+				log.info("Wait until we can proceed to complete our commit");
 				// Second "arrive" and await on the guard will block until the "stop" method will arrive and advance
 				int cmt2 = commitGuard.awaitAdvanceInterruptibly(commitGuard.arrive());
-				LOG.info("<*> Phase at CMT2: {}", cmt2);
+				log.info("<*> Phaser at CMT2: {}, we can now commit", cmt2);
 			} catch (InterruptedException e) {
+				log.warn("commit() interrupted");
 				throw new XAException(e.getMessage());
 			}
 		}
@@ -72,9 +71,9 @@ public class XaDatasourceCommitStopper extends XaResourceObserver{
 		} finally {
 			if (inStoppingMode) {
 				// 2nd arrive() signals that we done the commit and that the "stop" method can advance to completion.
-				LOG.info("Signalling other participants that we are finished with commit");
+				log.info("Signalling other participants that we are finished with commit");
 				int cmt3 = commitGuard.arriveAndDeregister();
-				LOG.info("<*> Phase at CMT3: {}", cmt3);
+				log.info("<*> Phaser at CMT3: {}, we have committed", cmt3);
 			}
 		}
 	}
