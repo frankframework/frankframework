@@ -13,6 +13,7 @@ import org.frankframework.senders.ExchangeFileSystemSender;
 import org.frankframework.testutil.TestAssertions;
 
 @Tag("slow")
+@Tag("unstable") // Relies on a remote API that is not always available for the tests
 public class ExchangeFileSystemSenderTest extends FileSystemSenderTest<ExchangeFileSystemSender, MailItemId, ExchangeFileSystem> {
 
 	@BeforeAll
