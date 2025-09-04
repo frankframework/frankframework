@@ -9,6 +9,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Timeout;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -102,7 +103,7 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 	@DatabaseTestOptions(cleanupBeforeUse = true, cleanupAfterUse = true)
 	@JtaTxManagerTest
 	@Timeout(value = 180, unit = TimeUnit.SECONDS)
-//	@Disabled("This test fails for some databases and hangs for others. Needs to be investigated. (See issue #6935)")
+	@Disabled("This test fails for some databases and hangs for others. Needs to be investigated. (See issue #6935)")
 	public void testShutdownPending() {
 		assumeFalse(MYSQL == env.getDbmsSupport().getDbms(), "Cannot run this test with " + env.getDbmsSupport().getDbmsName());
 
