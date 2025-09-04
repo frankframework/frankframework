@@ -5,8 +5,10 @@ import java.util.Properties;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
+import jakarta.annotation.Nonnull;
+
 import org.frankframework.jta.narayana.NarayanaDataSourceFactory;
-import org.frankframework.jta.xa.XaDatasourceCommitStopper;
+import org.frankframework.jta.xa.XaDataSourceModifier;
 import org.frankframework.testutil.FindAvailableDataSources.TestDatasource;
 
 /**
@@ -16,7 +18,7 @@ import org.frankframework.testutil.FindAvailableDataSources.TestDatasource;
 public class TestNarayanaDataSourceFactory extends NarayanaDataSourceFactory {
 
 	@Override
-	public DataSource getDataSource(String jndiName, Properties jndiEnvironment) {
+	public DataSource getDataSource(@Nonnull String jndiName, Properties jndiEnvironment) {
 		String enrichedDataSourceName = TestDatasource.valueOf(jndiName).getXaDataSourceName();
 		return super.getDataSource(enrichedDataSourceName, jndiEnvironment);
 	}
@@ -24,6 +26,6 @@ public class TestNarayanaDataSourceFactory extends NarayanaDataSourceFactory {
 	@Override
 	protected DataSource createXADataSource(XADataSource xaDataSource, String product) {
 		setMaxPoolSize(0); // Always disable, some tests change the default values. This ensure we never pool
-		return super.createXADataSource(XaDatasourceCommitStopper.augmentXADataSource(xaDataSource), product);
+		return super.createXADataSource(XaDataSourceModifier.augmentXADataSource(xaDataSource), product);
 	}
 }

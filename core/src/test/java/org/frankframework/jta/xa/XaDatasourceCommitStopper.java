@@ -10,41 +10,28 @@ import javax.transaction.xa.Xid;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
-public class XaDatasourceCommitStopper {
-
-	private static XaDatasourceCommitStopper instance;
+public class XaDatasourceCommitStopper implements XaResourceObserverFactory {
 
 	private boolean stop;
 	private Phaser commitGuard;
 
 	public static synchronized XaDatasourceCommitStopper createInstance() {
-		if (instance != null)
-		{
-			throw new  IllegalStateException("Already created");
-		}
 		log.info("Creating new instance");
-		instance = new XaDatasourceCommitStopper();
+		XaDatasourceCommitStopper instance = new XaDatasourceCommitStopper();
+		XaDataSourceModifier.registerFactory(instance);
 		return instance;
 	}
 
 	public static void destroyInstance() {
+		XaDatasourceCommitStopper instance = XaDataSourceModifier.removeFactory(XaDatasourceCommitStopper.class);
 		if (instance != null) {
 			log.info("Destroying instance");
 			instance.unblockPendingCommits();
-			instance = null;
 			log.info("Instance destroyed");
 		}
 	}
 
-	public static XADataSource augmentXADataSource(XADataSource dataSource) {
-		if (instance == null) {
-			log.trace("No instance, returning datasource unchanged");
-			return dataSource;
-		}
-		return instance.wrapXADataSource(dataSource);
-	}
-
-	private XADataSource wrapXADataSource(XADataSource dataSource) {
+	public XADataSource augmentXADataSource(XADataSource dataSource) {
 		log.info("Wrap XADataSource");
 		return new XaDatasourceObserver(dataSource, c -> new XaConnectionObserver(c, XaCommitStoppingWrapper::new));
 	}

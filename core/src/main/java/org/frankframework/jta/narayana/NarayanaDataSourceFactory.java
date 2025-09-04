@@ -40,7 +40,7 @@ import org.frankframework.util.AppConstants;
 public class NarayanaDataSourceFactory extends AbstractXADataSourceFactory {
 
 	private @Setter NarayanaJtaTransactionManager transactionManager;
-	private boolean useNativePoolingMechanism;
+	private final boolean useNativePoolingMechanism;
 
 	public NarayanaDataSourceFactory() {
 		// For backwards compatibility, apply these configuration constants if they're found.
