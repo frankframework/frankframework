@@ -96,7 +96,7 @@ public class DelineaCredentialFactory implements ISecretProvider {
 
 	private static final int CACHE_DURATION_MILLIS = 60_000;
 
-	private final Cache<String, DelineaSecret, NoSuchElementException> configuredAliases = new Cache<>(CACHE_DURATION_MILLIS);
+	private final Cache<String, DelineaSecretDto, NoSuchElementException> configuredAliases = new Cache<>(CACHE_DURATION_MILLIS);
 
 	private DelineaClientSettings delineaClientSettings;
 
@@ -149,13 +149,13 @@ public class DelineaCredentialFactory implements ISecretProvider {
 	@Override
 	public ISecret getSecret(CredentialAlias alias) throws NoSuchElementException {
 		// Make sure to always get a live copy of the secret
-		DelineaSecret secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), aliasToRetrieve -> delineaClient.getSecret(aliasToRetrieve, delineaClientSettings.autoCommentValue()));
+		DelineaSecretDto secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), aliasToRetrieve -> delineaClient.getSecret(aliasToRetrieve, delineaClientSettings.autoCommentValue()));
 
 		if (secret == null) {
 			throw new NoSuchElementException();
 		}
 
-		return new DelineaCredentials(alias, secret);
+		return new DelineaSecret(alias, secret);
 	}
 
 	void setDelineaClient(DelineaClient delineaClient) {

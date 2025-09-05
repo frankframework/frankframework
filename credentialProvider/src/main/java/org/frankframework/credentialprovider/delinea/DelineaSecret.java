@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,97 +15,32 @@
 */
 package org.frankframework.credentialprovider.delinea;
 
-import java.util.Collections;
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.frankframework.credentialprovider.CredentialAlias;
+import org.frankframework.credentialprovider.Secret;
 
 /**
- * Java representation of a <i>DelineaSecret</i> retrieved from Delinea Secret Server.
- * <br/>
- *
- * For example:
- * <pre>{@code
- *   {
- *     "id": 1,
- *     "name": "Example account",
- *     "secretTemplateId": 9,
- *     "folderId": 13,
- *     "active": true,
- *     "items": []
- *     ...
- *     "checkedOut": false,
- *     "checkOutEnabled": false,
- *     "siteId": 1,
- *     ...
- *     "enableInheritSecretPolicy": true,
- *     "secretPolicyId": -1,
- *     "lastHeartBeatStatus": "Pending",
- *     "lastHeartBeatCheck": null,
- *     "failedPasswordChangeAttempts": 0,
- *     "lastPasswordChangeAttempt": null,
- *     "secretTemplateName": "Web Password",
- *     "responseCodes": [],
- *     "webLauncherRequiresIncognitoMode": false
- *   }
- * }</pre>
- *
- * @see <a href="https://docs.delinea.com/online-help/platform-api/secret-server-apis-from-platform.htm#UsingtheAccessTokentoCalltheSecretServerAPI">example response</a>
+ * Delinea secret implementation. Not to be confused with the DTO to represent the JSON response.
  */
-@JsonIgnoreProperties(ignoreUnknown = true)
-public record DelineaSecret(
-	int id,
-	int folderId,
-	String name,
-	boolean active,
+public class DelineaSecret extends Secret {
 
-	// List of Field objects
-	@JsonProperty("items")
-	List<Field> fields) {
+	private final DelineaSecretDto secret;
 
-		@Override
-		public List<Field> fields() {
-			return Collections.unmodifiableList(fields); // Return an unmodifiable view
+	public DelineaSecret(CredentialAlias alias, DelineaSecretDto secret) {
+		super(alias);
+
+		if (!getAlias().equals(String.valueOf(secret.id()))) {
+			throw new IllegalArgumentException("secret slug does not match alias ["+getAlias()+"]");
 		}
 
-		@Override
-		public String toString() {
-			return String.format("DelineaSecret { id: %d, folderId: %d, name: %s}",
-					this.id, this.folderId, this.name);
-		}
+		this.secret = secret;
+	}
 
-	/**
-	 * Java representation of an <i>Item</i> of a <i>DelineaSecret</i>.
-	 * <br/>
-	 * For example:
-	 *
-	 * <pre>{@code
-	 *   {
-	 *     "itemId": 4,
-	 *     "fileAttachmentId": null,
-	 *     "filename": null,
-	 *     "itemValue": "",
-	 *     "fieldId": 41,
-	 *     "fieldName": "Notes",
-	 *     "slug": "notes",
-	 *     "fieldDescription": "Any comments or additional information for the secret.",
-	 *     "isFile": false,
-	 *     "isNotes": true,
-	 *     "isPassword": false,
-	 *     "isList": false,
-	 *     "listType": "None"
-	 *   }
-	 * }</pre>
-	 */
-	@JsonIgnoreProperties(ignoreUnknown = true)
-	public record Field(
-		@JsonProperty("itemId")
-		int id,
-
-		@JsonProperty("itemValue")
-		String value,
-
-		String slug) {
+	@Override
+	public String getField(String slugName) {
+		return secret.fields().stream()
+				.filter(field -> field.slug().equals(slugName))
+				.map(DelineaSecretDto.Field::value)
+				.findFirst()
+				.orElse(null);
 	}
 }

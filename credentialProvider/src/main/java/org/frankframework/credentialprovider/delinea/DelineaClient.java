@@ -39,13 +39,13 @@ public class DelineaClient extends RestTemplate {
 	static final String EXPECTED_VIEW_COMMENT_RESPONSE = "true";
 
 	/**
-	 * Fetch and return a {@link DelineaSecret} from Delinea DelineaSecret Server, including {@code fileAttachments}
+	 * Fetch and return a {@link DelineaSecretDto} from Delinea DelineaSecret Server, including {@code fileAttachments}
 	 *
 	 * @param id               - the integer ID of the secret to be fetched
 	 * @param autoCommentValue - the auto comment value to be used if not empty
-	 * @return the {@link DelineaSecret} object
+	 * @return the {@link DelineaSecretDto} object
 	 */
-	public DelineaSecret getSecret(String id, String autoCommentValue) {
+	public DelineaSecretDto getSecret(String id, String autoCommentValue) {
 		// it is possible to create a new view comment before getting the secret details. Enabled when autoCommentValue is not empty.
 		// see: https://updates.thycotic.net/secretserver/restapiguide/TokenAuth/#tag/SecretAccessRequests/operation/SecretAccessRequestsService_CreateViewComment
 		if (StringUtils.isNotBlank(autoCommentValue)) {
@@ -57,7 +57,7 @@ public class DelineaClient extends RestTemplate {
 		}
 
 		// Get secret
-		return getForObject(SECRET_ID_URI, DelineaSecret.class, id);
+		return getForObject(SECRET_ID_URI, DelineaSecretDto.class, id);
 	}
 
 	/**
@@ -66,12 +66,12 @@ public class DelineaClient extends RestTemplate {
 	 * @return a list of all Secrets
 	 */
 	public List<String> getSecrets() {
-		List<SecretsList> resultPages = new ArrayList<>();
+		List<SecretsListDto> resultPages = new ArrayList<>();
 		boolean getNextPage = true;
 		int skip = 0;
 
 		while (getNextPage) {
-			SecretsList page = getSecretsPage(skip);
+			SecretsListDto page = getSecretsPage(skip);
 			if (page != null) {
 				resultPages.add(page);
 				getNextPage = page.hasNext();
@@ -83,7 +83,7 @@ public class DelineaClient extends RestTemplate {
 
 		return resultPages.stream()
 				.flatMap(page -> page.records().stream())
-				.map(SecretsList.CategorizedListSummary::id)
+				.map(SecretsListDto.CategorizedListSummary::id)
 				.map(Objects::toString)
 				.toList();
 	}
@@ -91,12 +91,12 @@ public class DelineaClient extends RestTemplate {
 	/**
 	 * This is a paginated api. Called with a 'skip' parameter to skip a page of results.
 	 */
-	private SecretsList getSecretsPage(int skip) {
+	private SecretsListDto getSecretsPage(int skip) {
 		final Map<String, String> params = new HashMap<>();
 		params.put("skip", String.valueOf(skip));
 
 		// see: https://updates.thycotic.net/secretserver/restapiguide/TokenAuth/#tag/Secrets/operation/SecretsService_SearchV2
-		return getForObject(SECRETS_URI, SecretsList.class, params);
+		return getForObject(SECRETS_URI, SecretsListDto.class, params);
 	}
 
 	// Simple POJO to represent SecretAccessRequest body

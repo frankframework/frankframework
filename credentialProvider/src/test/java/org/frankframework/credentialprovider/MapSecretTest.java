@@ -11,7 +11,7 @@ import java.util.NoSuchElementException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class MapCredentialsTest {
+public class MapSecretTest {
 
 	private Map<String,String> aliases;
 
@@ -30,14 +30,14 @@ public class MapCredentialsTest {
 	@Test
 	public void testUnknownAliasNoDefaults() {
 		CredentialAlias alias = CredentialAlias.parse("fakeAlias");
-		assertThrows(NoSuchElementException.class, () -> new MapCredentials(alias, aliases));
+		assertThrows(NoSuchElementException.class, () -> new MapSecret(alias, aliases));
 	}
 
 	@Test
 	public void testPasswordWithSlashes() throws IOException {
 		CredentialAlias alias = CredentialAlias.parse("slash");
 
-		MapCredentials mc = new MapCredentials(alias, aliases);
+		MapSecret mc = new MapSecret(alias, aliases);
 		assertEquals("username from alias", mc.getField("username"));
 		assertEquals("password/with/slash", mc.getField("password"));
 	}
@@ -48,7 +48,7 @@ public class MapCredentialsTest {
 		String expectedUsername = "username from alias";
 		String expectedPassword = "password from alias";
 
-		MapCredentials mc = new MapCredentials(alias, aliases);
+		MapSecret mc = new MapSecret(alias, aliases);
 
 		assertEquals(expectedUsername, mc.getField("username"));
 		assertEquals(expectedPassword, mc.getField("password"));
@@ -59,7 +59,7 @@ public class MapCredentialsTest {
 		CredentialAlias alias = CredentialAlias.parse("noUsername");
 		String expectedPassword = "password from alias";
 
-		MapCredentials mc = new MapCredentials(alias, aliases);
+		MapSecret mc = new MapSecret(alias, aliases);
 
 		assertThrows(NoSuchElementException.class, () -> mc.getField("username"));
 		assertEquals(expectedPassword, mc.getField("password"));
@@ -69,7 +69,7 @@ public class MapCredentialsTest {
 	public void testPlainCredential() throws IOException {
 		CredentialAlias alias = CredentialAlias.parse("singleValue");
 
-		MapCredentials mc = new MapCredentials(alias, aliases);
+		MapSecret mc = new MapSecret(alias, aliases);
 
 		assertThrows(NoSuchElementException.class, () -> mc.getField("username"));
 		assertEquals("Plain Credential", mc.getField(""));

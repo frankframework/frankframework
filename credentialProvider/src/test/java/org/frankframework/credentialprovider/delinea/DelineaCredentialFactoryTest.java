@@ -27,10 +27,10 @@ class DelineaCredentialFactoryTest {
 
 	@BeforeEach
 	void beforeEach() {
-		DelineaSecret secret1 = createSecret(1, 11, "user1", "password1");
-		DelineaSecret secret2 = createSecret(2, 22, "user2", "password2");
-		DelineaSecret secret3 = createSecret(3, 33, "user3", "password3");
-		DelineaSecret secret4 = createSecret(4, 44, "user4", "password4");
+		DelineaSecretDto secret1 = createSecret(1, 11, "user1", "password1");
+		DelineaSecretDto secret2 = createSecret(2, 22, "user2", "password2");
+		DelineaSecretDto secret3 = createSecret(3, 33, "user3", "password3");
+		DelineaSecretDto secret4 = createSecret(4, 44, "user4", "password4");
 
 		DelineaClient client = mock(DelineaClient.class);
 
@@ -88,10 +88,10 @@ class DelineaCredentialFactoryTest {
 		assertThrows(NoSuchElementException.class, () -> credentialFactory.getSecret(alias));
 	}
 
-	static DelineaSecret createSecret(int id, int folderId, String username, String password) {
-		DelineaSecret.Field usernameField = new DelineaSecret.Field(1, username, "username");
-		DelineaSecret.Field passwordField = new DelineaSecret.Field(2, password, "password");
+	static DelineaSecretDto createSecret(int id, int folderId, String username, String password) {
+		DelineaSecretDto.Field usernameField = new DelineaSecretDto.Field(1, username, "username");
+		DelineaSecretDto.Field passwordField = new DelineaSecretDto.Field(2, password, "password");
 
-		return new DelineaSecret(id, folderId, "", true, List.of(usernameField, passwordField));
+		return new DelineaSecretDto(id, folderId, "", true, List.of(usernameField, passwordField));
 	}
 }
