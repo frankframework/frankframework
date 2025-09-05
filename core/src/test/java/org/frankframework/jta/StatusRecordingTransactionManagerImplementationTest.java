@@ -103,7 +103,7 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 	@DatabaseTestOptions(cleanupBeforeUse = true, cleanupAfterUse = true)
 	@JtaTxManagerTest
 	@Timeout(value = 180, unit = TimeUnit.SECONDS)
-	@Disabled("This test fails for some databases and hangs for others. Needs to be investigated. (See issue #6935)")
+	@Disabled("This test is unreliable, often failing in a full build but passing in individual testrun. Might need more time? (Perhaps still see issue #6935)")
 	public void testShutdownPending() {
 		assumeFalse(MYSQL == env.getDbmsSupport().getDbms(), "Cannot run this test with " + env.getDbmsSupport().getDbmsName());
 

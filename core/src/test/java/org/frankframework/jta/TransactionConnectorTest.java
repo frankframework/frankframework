@@ -17,8 +17,9 @@ import jakarta.transaction.UserTransaction;
 
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.jta.JtaTransactionObject;
@@ -29,13 +30,15 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.jdbc.datasource.JdbcPoolUtil;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
+import org.frankframework.testutil.junit.DatabaseTestOptions;
 import org.frankframework.testutil.junit.TxManagerTest;
 import org.frankframework.testutil.junit.WithLiquibase;
+import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
 
 @Log4j2
 @WithLiquibase(file = "Migrator/ChangelogBlobTests.xml", tableName = TransactionConnectorTest.TEST_TABLE)
-@Disabled("When this test is enabled, eventually a later test will fail when running Maven (usually the LockerTest) (See issue #6935)")
+//@Disabled("When this test is enabled, eventually a later test will fail when running Maven (usually the LockerTest) (See issue #6935)")
 public class TransactionConnectorTest {
 	static final String TEST_TABLE = "tx_temp_table";
 	private IThreadConnectableTransactionManager txManager;
@@ -43,12 +46,25 @@ public class TransactionConnectorTest {
 
 	private static final int TX_DEF_REQUIRES_NEW = TransactionDefinition.PROPAGATION_REQUIRES_NEW;
 
+	@BeforeAll
+	public static void beforeAll() {
+		AppConstants appConstants = AppConstants.getInstance();
+		appConstants.setProperty("transactionmanager.narayana.jdbc.connection.maxPoolSize", "2");
+	}
+
+	@AfterAll
+	public static void afterAll() {
+		AppConstants appConstants = AppConstants.getInstance();
+		appConstants.setProperty("transactionmanager.narayana.jdbc.connection.maxPoolSize", "0");
+	}
+
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) {
 		this.env = env;
 		txManager = (IThreadConnectableTransactionManager) env.getTxManager();
 	}
 
+	@DatabaseTestOptions(cleanupBeforeUse = true, cleanupAfterUse = true)
 	@TxManagerTest
 	public void testSimpleTransaction() throws Exception {
 		runQuery("INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (999, 1)");
@@ -68,6 +84,7 @@ public class TransactionConnectorTest {
 		}
 	}
 
+	@DatabaseTestOptions(cleanupBeforeUse = true, cleanupAfterUse = true)
 	@TxManagerTest
 	public void testNewTransactionMustLock() throws Exception {
 		assumeTrue("DATASOURCE".equals(env.getName()), "For the moment this only works with the DatasourceTransactionManager");
@@ -105,6 +122,7 @@ public class TransactionConnectorTest {
 		assertEquals(2, runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
 	}
 
+	@DatabaseTestOptions(cleanupBeforeUse = true, cleanupAfterUse = true)
 	@TxManagerTest
 	public void testBasicSameThread() throws Exception {
 //		assumeTrue("DATASOURCE".equals(env.getName()), "For the moment this only works with the DatasourceTransactionManager");
@@ -131,6 +149,7 @@ public class TransactionConnectorTest {
 		assertEquals(3, runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
 	}
 
+	@DatabaseTestOptions(cleanupBeforeUse = true, cleanupAfterUse = true)
 	@TxManagerTest
 	public void testBasic() throws Exception {
 //		assumeTrue("DATASOURCE".equals(env.getName()), "For the moment this only works with the DatasourceTransactionManager");
@@ -158,6 +177,7 @@ public class TransactionConnectorTest {
 		assertEquals(3, runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
 	}
 
+	@DatabaseTestOptions(cleanupBeforeUse = true, cleanupAfterUse = true)
 	@TxManagerTest
 	public void testNoOuterTransaction() throws Exception {
 		runQuery("INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (999, 1)");
@@ -174,6 +194,7 @@ public class TransactionConnectorTest {
 		assertEquals(3, runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
 	}
 
+	@DatabaseTestOptions(cleanupBeforeUse = true, cleanupAfterUse = true)
 	@TxManagerTest
 	public void testBasicRollbackInChildThread() throws Exception {
 		// TODO: How does this test trigger a rollback in the child thread???
