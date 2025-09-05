@@ -25,6 +25,8 @@ import javax.transaction.xa.Xid;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.jboss.narayana.jta.jms.XAResourceConsumer;
+import org.jboss.narayana.jta.jms.XAResourceFunction;
 import org.jboss.tm.XAResourceWrapper;
 import org.springframework.util.Assert;
 
@@ -33,11 +35,15 @@ import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 /**
  * XAResourceRecoveryHelper implementation which gets XIDs, which needs to be recovered, from the database.
  * See org.springframework.boot.jta.narayana.DataSourceXAResourceRecoveryHelper.
- *
+ * This class has been extended with a ConnectionManager to ensure operations can succeed. This has been copied from the JmsXAResourceRecoveryHelper.
+ * <p>
  * Required as we wrap the connection in a pooling-capable factory, and do not use the native Narayana connection factory.
+ *</p>
  *
- * Additionally this also implements `XAResourceWrapper`, which (AFAIK) only adds debug info.
+ * <p>
+ * Additionally, this also implements `XAResourceWrapper`, which (AFAIK) only adds debug info.
  * See XAResourceRecord#getJndiName()
+ *</p>
  *
  * @author Gytis Trikleris
  * @author Niels Meijer
@@ -49,10 +55,8 @@ public class DataSourceXAResourceRecoveryHelper implements XAResourceRecoveryHel
 	private static final Log logger = LogFactory.getLog(DataSourceXAResourceRecoveryHelper.class);
 
 	private final String name;
-	private final XADataSource xaDataSource;
 
-	private XAConnection xaConnection;
-	private XAResource delegate;
+	private final ConnectionManager connectionManager;
 
 	/**
 	 * Create a new {@link DataSourceXAResourceRecoveryHelper} instance.
@@ -60,7 +64,7 @@ public class DataSourceXAResourceRecoveryHelper implements XAResourceRecoveryHel
 	 */
 	public DataSourceXAResourceRecoveryHelper(XADataSource xaDataSource, String name) {
 		Assert.notNull(xaDataSource, "XADataSource must not be null");
-		this.xaDataSource = xaDataSource;
+		this.connectionManager = new ConnectionManager(xaDataSource);
 		this.name = name;
 	}
 
@@ -76,102 +80,67 @@ public class DataSourceXAResourceRecoveryHelper implements XAResourceRecoveryHel
 	 */
 	@Override
 	public XAResource[] getXAResources() {
-		if (connect()) {
+		if (connectionManager.connect()) {
 			return new XAResourceWrapper[] { this };
 		}
 		return NO_XA_RESOURCES;
 	}
 
-	private boolean connect() {
-		if (delegate == null) {
-			try {
-				xaConnection = getXaConnection();
-				delegate = xaConnection.getXAResource();
-			}
-			catch (SQLException ex) {
-				logger.warn("Failed to create connection", ex);
-				return false;
-			}
-		}
-		return true;
-	}
-
-	private XAConnection getXaConnection() throws SQLException {
-		return xaDataSource.getXAConnection();
-	}
-
 	@Override
 	public Xid[] recover(int flag) throws XAException {
 		try {
-			return getDelegate(true).recover(flag);
+			return connectionManager.connectAndApply(delegate -> delegate.recover(flag));
 		}
 		finally {
 			if (flag == XAResource.TMENDRSCAN) {
-				disconnect();
+				connectionManager.disconnect();
 			}
-		}
-	}
-
-	private void disconnect() {
-		try {
-			xaConnection.close();
-		}
-		catch (SQLException e) {
-			logger.warn("Failed to close connection", e);
-		} finally {
-			xaConnection = null;
-			delegate = null;
 		}
 	}
 
 	@Override
 	public void start(Xid xid, int flags) throws XAException {
-		getDelegate(true).start(xid, flags);
+		connectionManager.connectAndAccept(delegate -> delegate.start(xid, flags));
 	}
 
 	@Override
 	public void end(Xid xid, int flags) throws XAException {
-		getDelegate(true).end(xid, flags);
+		connectionManager.connectAndAccept(delegate -> delegate.end(xid, flags));
 	}
 
 	@Override
 	public int prepare(Xid xid) throws XAException {
-		return getDelegate(true).prepare(xid);
+		return connectionManager.connectAndApply(delegate -> delegate.prepare(xid));
 	}
 
 	@Override
 	public void commit(Xid xid, boolean onePhase) throws XAException {
-		getDelegate(true).commit(xid, onePhase);
+		connectionManager.connectAndAccept(delegate -> delegate.commit(xid, onePhase));
 	}
 
 	@Override
 	public void rollback(Xid xid) throws XAException {
-		getDelegate(true).rollback(xid);
+		connectionManager.connectAndAccept(delegate -> delegate.rollback(xid));
 	}
 
 	@Override
 	public boolean isSameRM(XAResource xaResource) throws XAException {
-		return getDelegate(true).isSameRM(xaResource);
+		return connectionManager.connectAndApply(delegate -> delegate.isSameRM(xaResource));
 	}
 
 	@Override
 	public void forget(Xid xid) throws XAException {
-		getDelegate(true).forget(xid);
+		connectionManager.connectAndAccept(delegate -> delegate.forget(xid));
 	}
 
 	@Override
 	public int getTransactionTimeout() throws XAException {
-		return getDelegate(true).getTransactionTimeout();
+		return connectionManager.connectAndApply(XAResource::getTransactionTimeout);
 	}
 
 	@Override
 	public boolean setTransactionTimeout(int seconds) throws XAException {
-		return getDelegate(true).setTransactionTimeout(seconds);
-	}
-
-	private XAResource getDelegate(boolean required) {
-		Assert.state(delegate != null || !required, "Connection has not been opened");
-		return delegate;
+		return connectionManager.connectAndApply(delegate -> delegate.setTransactionTimeout(seconds));
 	}
 
 	@Override
@@ -194,4 +163,105 @@ public class DataSourceXAResourceRecoveryHelper implements XAResourceRecoveryHel
 		return name;
 	}
 
+	/**
+	 * Based on the JMS ConnectionManager class from the Narayana code base.
+	 *
+	 * @author <a href="mailto:gytis@redhat.com">Gytis Trikleris</a>
+	 * @author Tim van der Leeuw
+	 */
+	static class ConnectionManager {
+
+		private final XADataSource xaDataSource;
+
+		private XAConnection xaConnection;
+		private XAResource delegate;
+
+		ConnectionManager(XADataSource xaDataSource) {
+			this.xaDataSource = xaDataSource;
+		}
+
+		/**
+		 * Invoke {@link XAResourceConsumer} accept method before making sure that JMS connection is available. Current
+		 * connection is used if one is available. If connection is not available, new connection is created before the
+		 * accept call and closed after it.
+		 *
+		 * @param consumer {@link XAResourceConsumer} to be executed.
+		 * @throws XAException if JMS connection cannot be created.
+		 */
+		void connectAndAccept(XAResourceConsumer consumer) throws XAException {
+			if (isConnected()) {
+				consumer.accept(delegate);
+				return;
+			}
+
+			connect();
+			try {
+				consumer.accept(delegate);
+			} finally {
+				disconnect();
+			}
+		}
+
+		/**
+		 * Invoke {@link XAResourceFunction} apply method before making sure that JMS connection is available. Current
+		 * connection is used if one is available. If connection is not available, new connection is created before the
+		 * apply call and closed after it.
+		 *
+		 * @param function {@link XAResourceFunction} to be executed.
+		 * @param <T> Return type of the {@link XAResourceFunction}.
+		 * @return The result of {@link XAResourceFunction}.
+		 * @throws XAException if JMS connection cannot be created.
+		 */
+		<T> T connectAndApply(XAResourceFunction<T> function) throws XAException {
+			if (isConnected()) {
+				return function.apply(delegate);
+			}
+
+			connect();
+			try {
+				return function.apply(delegate);
+			} finally {
+				disconnect();
+			}
+		}
+
+		boolean connect() {
+			if (delegate == null) {
+				try {
+					xaConnection = getXaConnection();
+					delegate = xaConnection.getXAResource();
+				}
+				catch (SQLException ex) {
+					logger.warn("Failed to create connection", ex);
+					return false;
+				}
+			}
+			return true;
+		}
+
+		void disconnect() {
+			try {
+				xaConnection.close();
+			}
+			catch (SQLException e) {
+				logger.warn("Failed to close connection", e);
+			} finally {
+				xaConnection = null;
+				delegate = null;
+			}
+		}
+
+		/**
+		 * Check if XaDataSource connection is active.
+		 *
+		 * @return {@code true} if XaDataSource connection is active.
+		 */
+		boolean isConnected() {
+			return xaConnection != null;
+		}
+
+		private XAConnection getXaConnection() throws SQLException {
+			return xaDataSource.getXAConnection();
+		}
+	}
 }

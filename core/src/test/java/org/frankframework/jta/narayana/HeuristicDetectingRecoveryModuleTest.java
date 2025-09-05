@@ -41,14 +41,14 @@ public class HeuristicDetectingRecoveryModuleTest {
 
 	@ParameterizedTest
 	@NullAndEmptySource
-	public void testEmptyBackoffDuration(String heuristicFailuresBackoff) throws Exception {
+	public void testEmptyBackoffDuration(String heuristicFailuresBackoff) {
 		Duration backoffDuration = HeuristicDetectingRecoveryModule.calculateHeuristicFailuresBackoffDuration(2, heuristicFailuresBackoff, 180);
 		assertEquals(370L, backoffDuration.getSeconds());
 	}
 
 	@ParameterizedTest
 	@CsvSource({"10,910", "15,910", "16,960", "25,1500", "1000,60000"})
-	public void testBackoffDuration(String heuristicFailuresBackoff, String expected) throws Exception {
+	public void testBackoffDuration(String heuristicFailuresBackoff, String expected) {
 		Duration backoffDuration = HeuristicDetectingRecoveryModule.calculateHeuristicFailuresBackoffDuration(5, heuristicFailuresBackoff, 180);
 		assertEquals(Long.parseLong(expected), backoffDuration.getSeconds());
 	}

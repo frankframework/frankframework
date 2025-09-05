@@ -28,6 +28,7 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.jta.JtaTransactionManager;
 
 import org.frankframework.jta.SpringTxManagerProxy;
+import org.frankframework.jta.narayana.NarayanaDataSource;
 
 public class JdbcPoolUtil {
 
@@ -82,7 +83,7 @@ public class JdbcPoolUtil {
 
 	public static boolean isXaCapable(DataSource dataSource) {
 		DataSource innerDs = getInnerDataSource(dataSource);
-		return innerDs instanceof XADataSource || innerDs instanceof ManagedDataSource;
+		return innerDs instanceof XADataSource || innerDs instanceof ManagedDataSource || innerDs instanceof NarayanaDataSource;
 	}
 
 	public static boolean isXaCapable(PlatformTransactionManager transactionManager) {

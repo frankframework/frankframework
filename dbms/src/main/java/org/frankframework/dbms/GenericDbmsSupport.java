@@ -54,11 +54,6 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	protected static Map<String, ISqlTranslator> sqlTranslators = new HashMap<>();
 
 	@Override
-	public String getDbmsName() {
-		return getDbms().getKey();
-	}
-
-	@Override
 	public Dbms getDbms() {
 		return Dbms.GENERIC;
 	}
