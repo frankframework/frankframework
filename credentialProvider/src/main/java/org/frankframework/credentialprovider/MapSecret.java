@@ -25,11 +25,11 @@ import jakarta.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
 
-public class MapCredentials extends Secret {
+public class MapSecret extends Secret {
 
 	private final Properties secret;
 
-	public MapCredentials(CredentialAlias alias, @Nonnull Map<String,String> aliases) {
+	public MapSecret(CredentialAlias alias, @Nonnull Map<String,String> aliases) {
 		super(alias);
 
 		String aliasName = alias.getName();

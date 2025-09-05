@@ -124,7 +124,7 @@ public class KubernetesCredentialFactory implements ISecretProvider {
 			throw new NoSuchElementException();
 		}
 
-		return new KubernetesCredential(alias, secret);
+		return new KubernetesSecret(alias, secret);
 	}
 
 	@Override

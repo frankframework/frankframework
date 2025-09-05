@@ -56,13 +56,13 @@ public class DelineaClientTest {
 	@Test
 	void testGetSecret() throws IOException {
 		ObjectMapper objectMapper = new ObjectMapper();
-		DelineaSecret secret = objectMapper.readValue(getContents("delinea/secret_3.json"), DelineaSecret.class);
+		DelineaSecretDto secret = objectMapper.readValue(getContents("delinea/secret_3.json"), DelineaSecretDto.class);
 
 		doReturn(secret)
 				.when(delineaClient)
-				.getForObject(eq(SECRET_ID_URI), eq(DelineaSecret.class), anyString());
+				.getForObject(eq(SECRET_ID_URI), eq(DelineaSecretDto.class), anyString());
 
-		DelineaSecret secretFromClient = delineaClient.getSecret("3", null);
+		DelineaSecretDto secretFromClient = delineaClient.getSecret("3", null);
 
 		assertNotNull(secretFromClient);
 		assertEquals(3, secretFromClient.id());
@@ -71,7 +71,7 @@ public class DelineaClientTest {
 	@Test
 	void testGetSecretWithComment() throws IOException {
 		ObjectMapper objectMapper = new ObjectMapper();
-		DelineaSecret secret = objectMapper.readValue(getContents("delinea/secret_3.json"), DelineaSecret.class);
+		DelineaSecretDto secret = objectMapper.readValue(getContents("delinea/secret_3.json"), DelineaSecretDto.class);
 
 		// mock the comment request
 		doReturn(DelineaClient.EXPECTED_VIEW_COMMENT_RESPONSE)
@@ -81,9 +81,9 @@ public class DelineaClientTest {
 		// mock the secret request
 		doReturn(secret)
 				.when(delineaClient)
-				.getForObject(eq(SECRET_ID_URI), eq(DelineaSecret.class), anyString());
+				.getForObject(eq(SECRET_ID_URI), eq(DelineaSecretDto.class), anyString());
 
-		DelineaSecret secretFromClient = delineaClient.getSecret("3", "test with comment!");
+		DelineaSecretDto secretFromClient = delineaClient.getSecret("3", "test with comment!");
 
 		assertNotNull(secretFromClient);
 		assertEquals(3, secretFromClient.id());
@@ -96,7 +96,7 @@ public class DelineaClientTest {
 				.when(delineaClient)
 				.postForObject(eq(SECRETS_ACCESS_REQUESTS_URI), any(), any(), eq("3"));
 
-		DelineaSecret secretFromClient = delineaClient.getSecret("3", "test with comment!");
+		DelineaSecretDto secretFromClient = delineaClient.getSecret("3", "test with comment!");
 
 		// Expect null because the comment request failed
 		assertNull(secretFromClient);
@@ -105,17 +105,17 @@ public class DelineaClientTest {
 	@Test
 	void testGetSecrets() throws IOException {
 		ObjectMapper objectMapper = new ObjectMapper();
-		SecretsList page1 = objectMapper.readValue(getContents("delinea/page1.json"), SecretsList.class);
-		SecretsList page2 = objectMapper.readValue(getContents("delinea/page2.json"), SecretsList.class);
+		SecretsListDto page1 = objectMapper.readValue(getContents("delinea/page1.json"), SecretsListDto.class);
+		SecretsListDto page2 = objectMapper.readValue(getContents("delinea/page2.json"), SecretsListDto.class);
 
 		// mock config to return different pages based on the skip parameter
 		doReturn(page1)
 				.when(delineaClient)
-				.getForObject(eq(SECRETS_URI), eq(SecretsList.class), argThat((Map<String, ?> map) -> map.get("skip").equals("0")));
+				.getForObject(eq(SECRETS_URI), eq(SecretsListDto.class), argThat((Map<String, ?> map) -> map.get("skip").equals("0")));
 
 		doReturn(page2)
 				.when(delineaClient)
-				.getForObject(eq(SECRETS_URI), eq(SecretsList.class), argThat((Map<String, ?> map) -> map.get("skip").equals("1")));
+				.getForObject(eq(SECRETS_URI), eq(SecretsListDto.class), argThat((Map<String, ?> map) -> map.get("skip").equals("1")));
 
 		List<String> secrets = delineaClient.getSecrets();
 
