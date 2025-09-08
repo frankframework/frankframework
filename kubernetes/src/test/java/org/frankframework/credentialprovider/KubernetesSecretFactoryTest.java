@@ -29,7 +29,7 @@ import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
 
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
-class KubernetesCredentialFactoryTest {
+class KubernetesSecretFactoryTest {
 
 	private static final KubernetesCredentialFactory credentialFactory = new KubernetesCredentialFactory();
 	private static final KubernetesClient client = mock(KubernetesClient.class);

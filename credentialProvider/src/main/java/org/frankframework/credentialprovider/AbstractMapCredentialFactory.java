@@ -75,7 +75,7 @@ public abstract class AbstractMapCredentialFactory implements ISecretProvider {
 
 	@Override
 	public ISecret getSecret(CredentialAlias alias) throws NoSuchElementException {
-		return new MapCredentials(alias, aliases);
+		return new MapSecret(alias, aliases);
 	}
 
 	@Override
