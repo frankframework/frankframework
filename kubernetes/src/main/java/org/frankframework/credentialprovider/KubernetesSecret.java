@@ -23,11 +23,11 @@ import io.fabric8.kubernetes.api.model.Secret;
 import lombok.extern.java.Log;
 
 @Log
-public class KubernetesCredential extends org.frankframework.credentialprovider.Secret {
+public class KubernetesSecret extends org.frankframework.credentialprovider.Secret {
 
 	private final Secret secret;
 
-	public KubernetesCredential(CredentialAlias alias, Secret secret) {
+	public KubernetesSecret(CredentialAlias alias, Secret secret) {
 		super(alias);
 
 		String secretAlias = secret.getMetadata().getName();
