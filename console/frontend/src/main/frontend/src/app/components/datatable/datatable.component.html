@@ -21,9 +21,23 @@
   <table cdk-table [dataSource]="datasource" class="table table-striped table-hover">
     <ng-container *ngFor="let column of displayColumns">
       <ng-container [cdkColumnDef]="column.name">
-        <th cdk-header-cell *cdkHeaderCellDef [className]="column.className" [hidden]="column.hidden">
-          {{ column.displayName }}
-        </th>
+        <ng-container *ngIf="this.datasource.options.columnSort && column.sortable; else non_sortable">
+          <th
+            cdk-header-cell
+            *cdkHeaderCellDef
+            [sortable]="column.name"
+            [className]="column.className + ' sortable'"
+            [hidden]="column.hidden"
+            (sorted)="onColumnSort($event)"
+          >
+            {{ column.displayName }}
+          </th>
+        </ng-container>
+        <ng-template #non_sortable>
+          <th cdk-header-cell *cdkHeaderCellDef [className]="column.className" [hidden]="column.hidden">
+            {{ column.displayName }}
+          </th>
+        </ng-template>
         <td
           cdk-cell
           *cdkCellDef="let element"

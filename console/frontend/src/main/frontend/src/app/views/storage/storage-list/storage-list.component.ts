@@ -87,6 +87,7 @@ export class StorageListComponent implements OnInit, AfterViewInit {
       property: 'insertDate',
       displayName: 'Timestamp',
       className: 'date',
+      sortable: true,
     },
     { name: 'host', property: 'host', displayName: 'Host' },
     {
