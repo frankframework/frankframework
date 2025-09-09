@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ContentChild, Input, OnDestroy } from '@angular/core';
+import { AfterViewInit, Component, ContentChild, Input, OnDestroy, QueryList, ViewChildren } from '@angular/core';
 import { CdkTableModule, DataSource } from '@angular/cdk/table';
 import { CommonModule } from '@angular/common';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
@@ -6,7 +6,7 @@ import { FormsModule } from '@angular/forms';
 import { DtContentDirective } from './dt-content.directive';
 import { TruncatePipe } from '../../pipes/truncate.pipe';
 import { ToDateDirective } from '../to-date.directive';
-import { SortDirection } from '../th-sortable.directive';
+import { basicAnyValueTableSort, SortDirection, SortEvent, ThSortableDirective } from '../th-sortable.directive';
 
 export type TableOptions = {
   sizeOptions: number[];
@@ -14,6 +14,7 @@ export type TableOptions = {
   filter: boolean;
   serverSide: boolean;
   serverSort: SortDirection;
+  columnSort: boolean;
 };
 
 export type DataTableColumn<T> = {
@@ -24,6 +25,7 @@ export type DataTableColumn<T> = {
   html?: boolean;
   className?: string;
   hidden?: boolean;
+  sortable?: boolean;
 };
 
 export type DataTableEntryInfo = {
@@ -49,7 +51,7 @@ export type DataTableServerResponseInfo<T> = {
 
 @Component({
   selector: 'app-datatable',
-  imports: [CommonModule, FormsModule, CdkTableModule, TruncatePipe, ToDateDirective, ToDateDirective],
+  imports: [CommonModule, FormsModule, CdkTableModule, TruncatePipe, ToDateDirective, ThSortableDirective],
   templateUrl: './datatable.component.html',
   styleUrl: './datatable.component.scss',
 })
@@ -59,6 +61,7 @@ export class DatatableComponent<T> implements AfterViewInit, OnDestroy {
   @Input() public truncate = false;
   @Input() public truncateLength = 30;
 
+  @ViewChildren(ThSortableDirective) sortableHeaders!: QueryList<ThSortableDirective>;
   @ContentChild(DtContentDirective) protected content!: DtContentDirective<T>;
   protected totalFilteredEntries = 0;
   protected totalEntries = 0;
@@ -66,6 +69,7 @@ export class DatatableComponent<T> implements AfterViewInit, OnDestroy {
   protected maxPageEntry = 0;
 
   private datasourceSubscription: Subscription = new Subscription();
+  private originalData: T[] | null = null;
 
   protected get displayedColumns(): string[] {
     return this.displayColumns.map((column) => column.name);
@@ -103,6 +107,11 @@ export class DatatableComponent<T> implements AfterViewInit, OnDestroy {
   checkIfNotDate(column: DataTableColumn<T>): boolean {
     return !column.className?.includes('date');
   }
+
+  protected onColumnSort(event: SortEvent): void {
+    if (this.originalData === null) this.originalData = this.datasource.data;
+    this.datasource.data = basicAnyValueTableSort(this.originalData, this.sortableHeaders, event);
+  }
 }
 
 export class DataTableDataSource<T> extends DataSource<T> {
@@ -115,6 +124,7 @@ export class DataTableDataSource<T> extends DataSource<T> {
     filter: true,
     serverSide: false,
     serverSort: 'NONE',
+    columnSort: true,
   });
   private _entriesInfo = new BehaviorSubject<DataTableEntryInfo>({
     minPageEntry: 0,
