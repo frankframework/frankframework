@@ -26,9 +26,22 @@
       @for (column of displayColumns; track column.name) {
         @if (column.name && column.name !== '') {
           <ng-container [cdkColumnDef]="column.name">
-            <th cdk-header-cell *cdkHeaderCellDef [className]="column.className" [hidden]="column.hidden">
-              {{ column.displayName }}
-            </th>
+            @if (this.datasource.options.columnSort && column.sortable) {
+              <th
+                cdk-header-cell
+                *cdkHeaderCellDef
+                [sortable]="column.name"
+                [className]="column.className + ' sortable'"
+                [hidden]="column.hidden"
+                (sorted)="onColumnSort($event)"
+              >
+                {{ column.displayName }}
+              </th>
+            } @else {
+              <th cdk-header-cell *cdkHeaderCellDef [className]="column.className" [hidden]="column.hidden">
+                {{ column.displayName }}
+              </th>
+            }
             <td
               cdk-cell
               *cdkCellDef="let element"

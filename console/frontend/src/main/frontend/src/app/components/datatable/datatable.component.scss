@@ -1,5 +1,9 @@
 table {
   margin-bottom: 10px;
+
+  th.sortable {
+    cursor: pointer;
+  }
 }
 
 .dt-options {
