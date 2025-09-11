@@ -7,10 +7,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import jakarta.annotation.Nonnull;
@@ -118,8 +116,6 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 		assertStatus("ACTIVE", uid);
 		commitStopper.blockCommits();
 		ConcurrentXATransactionTester xaTester = new ConcurrentXATransactionTester(commitStopper);
-		Semaphore actionDone = new Semaphore(0);
-		xaTester.setActionDone(actionDone);
 
 		xaTester.start();
 
@@ -141,11 +137,10 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 
 		assertEquals(uid, txManagerReal.getUid(), "tmuid must be the same after restart");
 		Thread.yield();
-		boolean actionCompleted = actionDone.tryAcquire(1, 30, TimeUnit.SECONDS);
+		xaTester.join();
 
 		txManagerReal.destroy();
 
-		assertTrue(actionCompleted, "action did not complete within 30 seconds");
 		assertStatus("COMPLETED", uid);
 	}
 
