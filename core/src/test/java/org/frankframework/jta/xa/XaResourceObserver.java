@@ -77,7 +77,7 @@ public class XaResourceObserver implements XAResource {
 		try {
 			target.start(xid, flags);
 		} catch (XAException e) {
-			e.printStackTrace();
+			log.error("XAException", e);
 			throw e;
 		}
 	}

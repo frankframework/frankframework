@@ -71,10 +71,10 @@ public abstract class StatusRecordingTransactionManagerTestBase<S extends Abstra
 
 
 	public void assertStatus(String status, String tmUid) {
-		assertEquals(status, read(statusFile));
 		if (tmUid!=null) {
 			assertEquals(tmUid, read(tmUidFile));
 		}
+		assertEquals(status, read(statusFile));
 	}
 
 	public void delete(String filename) throws TransactionSystemException {

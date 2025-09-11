@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -38,7 +37,6 @@ import org.frankframework.util.ClassUtils;
 
 @Log4j2
 @WithLiquibase(file = "Migrator/ChangelogBlobTests.xml", tableName = TransactionConnectorTest.TEST_TABLE)
-//@Disabled("When this test is enabled, eventually a later test will fail when running Maven (usually the LockerTest) (See issue #6935)")
 public class TransactionConnectorTest {
 	static final String TEST_TABLE = "tx_temp_table";
 	private IThreadConnectableTransactionManager txManager;
@@ -48,14 +46,14 @@ public class TransactionConnectorTest {
 
 	@BeforeAll
 	public static void beforeAll() {
+		// With NARAYANA Transaction Manager, this test needs Connection Pooling to pass.
 		AppConstants appConstants = AppConstants.getInstance();
 		appConstants.setProperty("transactionmanager.narayana.jdbc.connection.maxPoolSize", "2");
 	}
 
 	@AfterAll
 	public static void afterAll() {
-		AppConstants appConstants = AppConstants.getInstance();
-		appConstants.setProperty("transactionmanager.narayana.jdbc.connection.maxPoolSize", "0");
+		AppConstants.removeInstance();
 	}
 
 	@BeforeEach
@@ -87,7 +85,7 @@ public class TransactionConnectorTest {
 	@DatabaseTestOptions(cleanupBeforeUse = true, cleanupAfterUse = true)
 	@TxManagerTest
 	public void testNewTransactionMustLock() throws Exception {
-		assumeTrue("DATASOURCE".equals(env.getName()), "For the moment this only works with the DatasourceTransactionManager");
+//		assumeTrue("DATASOURCE".equals(env.getName()), "For the moment this only works with the DatasourceTransactionManager");
 		runQuery("INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (999, 1)");
 		TransactionStatus txStatus = env.startTransaction(TX_DEF_REQUIRES_NEW, 10);
 
@@ -194,10 +192,10 @@ public class TransactionConnectorTest {
 		assertEquals(3, runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
 	}
 
+	// TODO: How does this test trigger a rollback in the child thread???
 	@DatabaseTestOptions(cleanupBeforeUse = true, cleanupAfterUse = true)
 	@TxManagerTest
 	public void testBasicRollbackInChildThread() throws Exception {
-		// TODO: How does this test trigger a rollback in the child thread???
 //		assumeTrue("DATASOURCE".equals(env.getName()), "For the moment this only works with the DatasourceTransactionManager");
 		runQuery("INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (999, 1)");
 

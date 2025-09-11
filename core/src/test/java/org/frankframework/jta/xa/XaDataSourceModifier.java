@@ -2,8 +2,6 @@ package org.frankframework.jta.xa;
 
 import javax.sql.XADataSource;
 
-import jakarta.annotation.Nonnull;
-
 public class XaDataSourceModifier {
 	private static XaResourceObserverFactory xaResourceObserverFactory;
 
@@ -21,19 +19,15 @@ public class XaDataSourceModifier {
 		XaDataSourceModifier.xaResourceObserverFactory = xaResourceObserverFactory;
 	}
 
-	/**
-	 * Remove the current factory, but only if it is of the requested type. Otherwise, throw an IllegalArgumentException
-	 */
-	public static <T> T removeFactory(@Nonnull Class<T> type) {
-		if (type.isInstance(XaDataSourceModifier.xaResourceObserverFactory)) {
-			//noinspection unchecked
-			T instance = (T)XaDataSourceModifier.xaResourceObserverFactory;
-			XaDataSourceModifier.xaResourceObserverFactory = null;
-			return instance;
-		} else if (XaDataSourceModifier.xaResourceObserverFactory != null) {
-			throw new IllegalArgumentException("Cannot remove factory, it is of type [" + XaDataSourceModifier.xaResourceObserverFactory.getClass().getName() + "] instead of requested type [" + type.getName() + "]");
+	public static <T extends XaResourceObserverFactory> T getXaResourceObserverFactory(T... type) {
+		return (T)XaDataSourceModifier.xaResourceObserverFactory;
+	}
+
+	public static synchronized void removeFactory() {
+		if (XaDataSourceModifier.xaResourceObserverFactory != null) {
+			XaDataSourceModifier.xaResourceObserverFactory.destroy();
 		}
-		return null;
+		XaDataSourceModifier.xaResourceObserverFactory = null;
 	}
 
 	public static XADataSource augmentXADataSource(XADataSource xaDataSource) {

@@ -15,25 +15,15 @@ public class XaDatasourceCommitStopper implements XaResourceObserverFactory {
 	private boolean stop;
 	private Phaser commitGuard;
 
-	public static synchronized XaDatasourceCommitStopper createInstance() {
-		log.info("Creating new instance");
-		XaDatasourceCommitStopper instance = new XaDatasourceCommitStopper();
-		XaDataSourceModifier.registerFactory(instance);
-		return instance;
-	}
-
-	public static void destroyInstance() {
-		XaDatasourceCommitStopper instance = XaDataSourceModifier.removeFactory(XaDatasourceCommitStopper.class);
-		if (instance != null) {
-			log.info("Destroying instance");
-			instance.unblockPendingCommits();
-			log.info("Instance destroyed");
-		}
-	}
-
+	@Override
 	public XADataSource augmentXADataSource(XADataSource dataSource) {
 		log.info("Wrap XADataSource");
 		return new XaDatasourceObserver(dataSource, c -> new XaConnectionObserver(c, XaCommitStoppingWrapper::new));
+	}
+
+	@Override
+	public void destroy() {
+		unblockPendingCommits();
 	}
 
 	public int getNumberOfParticipants() {
@@ -61,12 +51,11 @@ public class XaDatasourceCommitStopper implements XaResourceObserverFactory {
 		this.stop = false;
 	}
 
-	public void unblockPendingCommits() {
+	public synchronized void unblockPendingCommits() {
+		this.stop = false;
 		if (this.commitGuard == null) {
 			return;
 		}
-
-		this.stop = false;
 
 		// Signal all waiting that they can continue
 		log.info("Cleaning up pending commits that are on hold -- Signalling other participants they can proceed to do commit");
@@ -89,6 +78,7 @@ public class XaDatasourceCommitStopper implements XaResourceObserverFactory {
 		commitGuard.register();
 	}
 
+
 	class XaCommitStoppingWrapper extends XaResourceObserver {
 
 		public XaCommitStoppingWrapper(XAResource target) {
@@ -96,24 +86,23 @@ public class XaDatasourceCommitStopper implements XaResourceObserverFactory {
 			log.trace("XaCommitStoppingWrapper created");
 		}
 
-
 		@Override
 		public void commit(Xid xid, boolean onePhase) throws XAException {
 			// Local shadow of the "stop" flag in case it is changed while we're in the call
 			boolean inStoppingMode = stop;
-			Phaser commitGuard = XaDatasourceCommitStopper.this.commitGuard;
+			Phaser txGuard = commitGuard;
 			if (inStoppingMode) {
 				try {
 					log.warn("commit() waiting 'endless' to perform commit to simulate unresponsive RM");
 					// Arrive at this phaser to signal controlling test that it can proceed
 					// Block our own commit
 					log.info("Signalling other participants we have arrived in commit and wait for them");
-					int cmt1 = commitGuard.arriveAndAwaitAdvance();
+					int cmt1 = txGuard.arriveAndAwaitAdvance();
 					log.info("<*> Phaser at CMT1: {}, waiting until we may commit", cmt1);
 
 					log.info("Wait until we can proceed to complete our commit");
 					// Second "arrive" and await on the guard will block until the "stop" method will arrive and advance
-					int cmt2 = commitGuard.awaitAdvanceInterruptibly(commitGuard.arrive());
+					int cmt2 = txGuard.awaitAdvanceInterruptibly(txGuard.arrive());
 					log.info("<*> Phaser at CMT2: {}, we can now commit", cmt2);
 				} catch (InterruptedException e) {
 					log.warn("commit() interrupted");
@@ -127,7 +116,7 @@ public class XaDatasourceCommitStopper implements XaResourceObserverFactory {
 				if (inStoppingMode) {
 					// 2nd arrive() signals that we done the commit and that the "stop" method can advance to completion.
 					log.info("Signalling other participants that we are finished with commit");
-					int cmt3 = commitGuard.arriveAndDeregister();
+					int cmt3 = txGuard.arriveAndDeregister();
 					log.info("<*> Phaser at CMT3: {}, we have committed", cmt3);
 				}
 			}
