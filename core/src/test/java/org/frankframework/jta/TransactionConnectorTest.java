@@ -277,27 +277,28 @@ public class TransactionConnectorTest {
 	}
 
 	public void displayTransaction() throws SystemException, IllegalArgumentException, SecurityException, IllegalAccessException, NoSuchFieldException {
-		if (txManager != null) {
-			IThreadConnectableTransactionManager tctm = txManager;
-			Object transaction = tctm.getCurrentTransaction();
-			if (transaction instanceof JtaTransactionObject object) {
-				UserTransaction ut =object.getUserTransaction();
-				System.out.println("-> UserTransaction status: "+ut.getStatus());
-			} else {
-				return;
-			}
-			Object resources = tctm.suspendTransaction(transaction);
-			tctm.resumeTransaction(transaction, resources);
-			System.out.println("-> Transaction: "+ToStringBuilder.reflectionToString(transaction, ToStringStyle.MULTI_LINE_STYLE));
-			System.out.println("-> Resources: "+ToStringBuilder.reflectionToString(resources, ToStringStyle.MULTI_LINE_STYLE));
+		if (txManager == null) {
+			return;
+		}
+		IThreadConnectableTransactionManager tctm = txManager;
+		Object transaction = tctm.getCurrentTransaction();
+		if (transaction instanceof JtaTransactionObject object) {
+			UserTransaction ut =object.getUserTransaction();
+			System.out.println("-> UserTransaction status: "+ut.getStatus());
+		} else {
+			return;
+		}
+		Object resources = tctm.suspendTransaction(transaction);
+		tctm.resumeTransaction(transaction, resources);
+		System.out.println("-> Transaction: "+ToStringBuilder.reflectionToString(transaction, ToStringStyle.MULTI_LINE_STYLE));
+		System.out.println("-> Resources: "+ToStringBuilder.reflectionToString(resources, ToStringStyle.MULTI_LINE_STYLE));
 
-			Object wasActive = ClassUtils.getDeclaredFieldValue(resources, "wasActive");
-			System.out.println("-> wasActive: "+wasActive);
+		Object wasActive = ClassUtils.getDeclaredFieldValue(resources, "wasActive");
+		System.out.println("-> wasActive: "+wasActive);
 
-			Object suspendedResources = ClassUtils.getDeclaredFieldValue(resources, "suspendedResources");
-			if (suspendedResources!=null) {
-				System.out.println("-> suspendedResources: "+ToStringBuilder.reflectionToString(suspendedResources, ToStringStyle.MULTI_LINE_STYLE));
-			}
+		Object suspendedResources = ClassUtils.getDeclaredFieldValue(resources, "suspendedResources");
+		if (suspendedResources!=null) {
+			System.out.println("-> suspendedResources: "+ToStringBuilder.reflectionToString(suspendedResources, ToStringStyle.MULTI_LINE_STYLE));
 		}
 	}
 }
