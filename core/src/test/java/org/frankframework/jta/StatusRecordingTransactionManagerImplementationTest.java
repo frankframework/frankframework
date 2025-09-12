@@ -1,15 +1,22 @@
 package org.frankframework.jta;
 
-import static org.frankframework.dbms.Dbms.H2;
+import static org.awaitility.Awaitility.await;
+import static org.frankframework.dbms.Dbms.MYSQL;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
-import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.lang3.NotImplementedException;
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Timeout;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
 
@@ -18,20 +25,25 @@ import com.arjuna.ats.arjuna.common.arjPropertyManager;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.jdbc.DirectQuerySender;
+import org.frankframework.jta.xa.XaDataSourceModifier;
 import org.frankframework.jta.xa.XaDatasourceCommitStopper;
+import org.frankframework.jta.xa.XaDatasourceOperationCounter;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ConcurrentActionTester;
+import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.DatabaseTestOptions;
 import org.frankframework.testutil.junit.JtaTxManagerTest;
 
+@Tag("slow")
 public class StatusRecordingTransactionManagerImplementationTest extends StatusRecordingTransactionManagerTestBase<AbstractStatusRecordingTransactionManager> {
 
-	private static final String SECONDARY_PRODUCT = "H2";
+	private static final String SECONDARY_PRODUCT = "H2db2";
 
 	protected SpringTxManagerProxy txManager;
 	protected AbstractStatusRecordingTransactionManager txManagerReal;
@@ -41,12 +53,7 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 	private String tableName;
 
 	@BeforeEach
-	public void setup(DatabaseTestEnvironment env) throws IOException {
-		assumeFalse(H2 == env.getDbmsSupport().getDbms(), "Cannot run this test with H2");
-
-		// Release any hanging commits that might be from previous tests
-		XaDatasourceCommitStopper.stop(false);
-
+	public void setup(DatabaseTestEnvironment env) {
 		super.setup();
 		this.env = env;
 	}
@@ -66,18 +73,13 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 	@AfterEach
 	public void teardown() {
 		log.debug("teardown");
-		XaDatasourceCommitStopper.stop(false);
 	}
 
 	protected String getTMUID() {
-		switch (env.getName()) {
-		case "DATASOURCE":
-			return null;
-		case "NARAYANA":
+		if (env.getName().equals("NARAYANA")) {
 			return arjPropertyManager.getCoreEnvironmentBean().getNodeIdentifier();
-		default:
-			throw new NotImplementedException("Unknown transaction manager type ["+env.getName()+"]");
 		}
+		throw new IllegalArgumentException("Unknown transaction manager type [" + env.getName() + "]");
 	}
 
 	@DatabaseTestOptions(cleanupBeforeUse = true, cleanupAfterUse = true)
@@ -94,7 +96,7 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 		setupTransactionManager();
 		assertStatus("ACTIVE", txManagerReal.getUid());
 		assertEquals(txManagerReal.getUid(), getTMUID());
-		ConcurrentXATransactionTester xaTester = new ConcurrentXATransactionTester();
+		ConcurrentXATransactionTester xaTester = new ConcurrentXATransactionTester(null);
 		xaTester.start(); // same thread
 		txManagerReal.destroy();
 		assertStatus("COMPLETED", txManagerReal.getUid());
@@ -102,87 +104,198 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 	}
 
 	@DatabaseTestOptions(cleanupBeforeUse = true, cleanupAfterUse = true)
-	@JtaTxManagerTest
-	@Disabled("This test fails for some databases and hangs for others. Needs to be investigated. (See issue #6935)")
-	public void testShutdownPending() {
+	@JtaTxManagerTest(resourceObserverFactory = XaDatasourceCommitStopper.class)
+	@Timeout(value = 180, unit = TimeUnit.SECONDS)
+	public void testShutdownPending() throws Exception {
+		assumeFalse(TestAssertions.isTestRunningOnGitHub() && MYSQL == env.getDbmsSupport().getDbms(), "Cannot reliably run this test on Github with database " + env.getDbmsSupport().getDbmsName());
+
+		XaDatasourceCommitStopper commitStopper = XaDataSourceModifier.getXaResourceObserverFactory();
 		setupTransactionManager();
 		String uid = txManagerReal.getUid();
 		assertStatus("ACTIVE", uid);
-		XaDatasourceCommitStopper.stop(true);
-		ConcurrentXATransactionTester xaTester = new ConcurrentXATransactionTester();
-		// Register each ConcurrentXATransactionTester instance right away
-		XaDatasourceCommitStopper.commitGuard.register();
+		commitStopper.blockCommits();
+		ConcurrentXATransactionTester xaTester = new ConcurrentXATransactionTester(commitStopper);
 
 		xaTester.start();
+
 		// Wait for all others to have arrived here too.
-		log.info("<*> Nr of participants: {}", XaDatasourceCommitStopper.commitGuard.getRegisteredParties());
+		log.info("<*> Nr of participants: {}", commitStopper.getNumberOfParticipants());
 		log.info("Waiting for all other participants to arrive in 'commit'");
-		int tst1 = XaDatasourceCommitStopper.commitGuard.arriveAndAwaitAdvance();
-		log.info("<*> Phase at Tst1: {}", tst1);
+		int tst1 = commitStopper.proceed();
+		log.info("<*> Phaser at Tst1: {}", tst1);
+
+		commitStopper.allowNewCommits();
+		txManagerReal.destroy();
+		assertStatus("PENDING", uid);
+
+		log.info("<*> Allow blocked transactions to proceed");
+		commitStopper.unblockPendingCommits();
+
+		log.info("<*> Recreating transaction manager");
+		setupTransactionManager();
+
+		assertEquals(uid, txManagerReal.getUid(), "tmuid must be the same after restart");
+		Thread.yield();
+		xaTester.join();
+
+		txManagerReal.destroy();
+
+		assertStatus("COMPLETED", uid);
+	}
+
+	@DatabaseTestOptions(cleanupBeforeUse = true, cleanupAfterUse = true)
+	@JtaTxManagerTest(resourceObserverFactory = XaDatasourceOperationCounter.class)
+	@Timeout(value = 180, unit = TimeUnit.SECONDS)
+	public void testRecoverIncompleteTransactions() throws Exception {
+		// Arrange
+		XaDatasourceOperationCounter opCounter = XaDataSourceModifier.getXaResourceObserverFactory();
+
+		setupTransactionManager();
+		prepareTable(env.getDataSourceName());
+		String uid = txManagerReal.getUid();
+		assertStatus("ACTIVE", uid);
+
+		final DirectQuerySender dqs1 = buildQuerySender(env.getDataSourceName(), "dqs1");
+		final DirectQuerySender dqs2 = buildQuerySender(SECONDARY_PRODUCT, "dqs2");
+
+		opCounter.blockNewCommitsAndRollbacks();
+
+		// Act
+		ConcurrentActionTester action1 = new ConcurrentActionTester() {
+			@Override
+			public void action() {
+				TransactionStatus txStatus = env.startTransaction(TransactionDefinition.PROPAGATION_REQUIRES_NEW, 5);
+				doQuery(dqs1, "INSERT INTO "+tableName+" (id) VALUES ('y')");
+				doQuery(dqs2, "INSERT INTO "+tableName+" (id) VALUES ('y')");
+				env.getTxManager().commit(txStatus);
+			}
+		};
+		ConcurrentActionTester action2 = new ConcurrentActionTester() {
+			@Override
+			public void action() {
+				TransactionStatus txStatus = env.startTransaction(TransactionDefinition.PROPAGATION_REQUIRES_NEW, 5);
+				doQuery(dqs1, "INSERT INTO "+tableName+" (id) VALUES ('z')");
+				doQuery(dqs2, "INSERT INTO "+tableName+" (id) VALUES ('z')");
+				env.getTxManager().rollback(txStatus);
+			}
+		};
+		ConcurrentActionTester action3 = new ConcurrentActionTester() {
+			@Override
+			public void action() {
+				env.startTransaction(TransactionDefinition.PROPAGATION_REQUIRES_NEW, 1);
+				doQuery(dqs1, "INSERT INTO "+tableName+" (id) VALUES ('v')");
+				doQuery(dqs2, "INSERT INTO "+tableName+" (id) VALUES ('v')");
+				// Do not commit or rollback transaction, let it time out
+				// Since this action does not commit or rollback, it is also not a participant in the phaser
+				await().atLeast(5, TimeUnit.SECONDS);
+			}
+		};
+
+		opCounter.registerParticipant(action1);
+		opCounter.registerParticipant(action2);
+		// Action3 does not commit or rollback so it's not registered as "participant".
+		action1.start();
+		action2.start();
+		action3.start();
+
+		opCounter.awaitActions();
 
 		txManagerReal.destroy();
 		assertStatus("PENDING", uid);
 
-		teardown();
-		XaDatasourceCommitStopper.stop(false);
-
-		log.debug("recreating transaction manager");
+		log.info("<*> Recreating transaction manager");
 		setupTransactionManager();
 
 		assertEquals(uid, txManagerReal.getUid(), "tmuid must be the same after restart");
+
+		opCounter.allowNewOperations();
+		opCounter.awaitOperationsDone();
+
+		action1.join();
+		action2.join();
+		action3.join();
+		Thread.yield();
+
 		txManagerReal.destroy();
+
+		// Assert
 		assertStatus("COMPLETED", uid);
+
+		assertAll(
+				() -> assertEquals(6, opCounter.getStartCount(), "Expected 6 TX Starts"),
+				() -> assertEquals(6, opCounter.getEndCount(), "Expected 6 TX Ends"),
+				() -> assertEquals(2, opCounter.getCommitCount(), "Expected a TX commit"),
+				() -> assertEquals(4, opCounter.getRollbackCount(), "Expected a TX rollback"),
+				() -> assertEquals(0, opCounter.getForgetCount(),  "Expected no TX forget"),
+				() -> assertEquals(2, opCounter.getPrepareCount(),  "Expected 2 TX prepares"),
+				() -> assertThat("Expected TX Recover", opCounter.getRecoverCount(), greaterThanOrEqualTo(3)),
+				() -> assertThat("Expected TX isSameRM", opCounter.getSameRMCount(), greaterThanOrEqualTo(1))
+		);
 	}
 
-
 	public void prepareTable(String datasourceName) throws ConfigurationException, SenderException, TimeoutException {
-		DirectQuerySender fs1 = new DirectQuerySender();
-		configuration.autowireByName(fs1);
-		fs1.setName("fs1");
-		fs1.setDatasourceName(datasourceName);
-		fs1.configure();
-		fs1.start();
+		DirectQuerySender fs1 = buildQuerySender(datasourceName, "fs1");
 		try {
-			fs1.sendMessageOrThrow(new Message("DROP TABLE "+tableName),null);
+			fs1.sendMessageOrThrow(new Message("DROP TABLE "+tableName),new PipeLineSession());
 		} catch (Exception e) {
 			log.warn(e);
 		}
 
-		fs1.sendMessageOrThrow(new Message("CREATE TABLE "+tableName+"(id char(1))"),null);
+		fs1.sendMessageOrThrow(new Message("CREATE TABLE "+tableName+"(id char(1))"),new PipeLineSession());
 		fs1.stop();
 	}
 
+	@Nonnull
+	private DirectQuerySender buildQuerySender(@Nonnull String datasourceName, @Nonnull String name) throws ConfigurationException {
+		DirectQuerySender qs = new DirectQuerySender();
+		configuration.autowireByName(qs);
+		qs.setName(name);
+		qs.setDatasourceName(datasourceName);
+		qs.configure(true);
+		qs.start();
+		return qs;
+	}
+
+	private void doQuery(DirectQuerySender qs, String query) {
+		try (PipeLineSession session = new PipeLineSession();
+			 Message queryMessage = new Message(query)) {
+			qs.sendMessageOrThrow(queryMessage, session);
+		} catch (Exception e) {
+			log.warn(e.getMessage(), e);
+		}
+	}
+
+
 	private class ConcurrentXATransactionTester extends ConcurrentActionTester {
+
+		ConcurrentXATransactionTester(@Nullable XaDatasourceCommitStopper commitStopper) {
+			if (commitStopper != null) {
+				commitStopper.register();
+			}
+		}
 
 		@Override
 		public void initAction() throws ConfigurationException, SenderException, TimeoutException {
+			log.info("Initializing ConcurrentXATransactionTester");
 			prepareTable(env.getDataSourceName());
 			prepareTable(SECONDARY_PRODUCT);
 		}
 
 		@Override
 		public void action() throws ConfigurationException, SenderException, TimeoutException {
-			DirectQuerySender fs1 = new DirectQuerySender();
-			configuration.autowireByName(fs1);
-			fs1.setName("fs1");
-			fs1.setDatasourceName(env.getDataSourceName());
-			fs1.configure();
+			log.info("Running ConcurrentXATransactionTester action");
 
-			DirectQuerySender fs2 = new DirectQuerySender();
-			configuration.autowireByName(fs2);
-			fs2.setName("fs1");
-			fs2.setDatasourceName(SECONDARY_PRODUCT);
-			fs2.configure();
+			// Sender 1 inserts into primary database (MariaDB, Oracle, MySQL, etc)
+			DirectQuerySender fs1 = buildQuerySender(env.getDataSourceName(), "fs1");
 
-			fs1.start();
-			fs2.start();
+			// Sender 2 inserts into H2 - test db 2 so that there's always a secondary DB for XA-transactions
+			DirectQuerySender fs2 = buildQuerySender(SECONDARY_PRODUCT, "fs2");
 
-			TransactionDefinition txDef = SpringTxManagerProxy.getTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRES_NEW, 10);
-			TransactionStatus txStatus = txManager.getTransaction(txDef);
-			try {
+			TransactionStatus txStatus = env.startTransaction(TransactionDefinition.PROPAGATION_REQUIRES_NEW, 5);
+			try (PipeLineSession pls = new PipeLineSession()) {
 
-				fs1.sendMessageOrThrow(new Message("INSERT INTO "+tableName+" (id) VALUES ('x')"),null);
-				fs2.sendMessageOrThrow(new Message("INSERT INTO "+tableName+" (id) VALUES ('x')"),null);
+				fs1.sendMessageOrThrow(new Message("INSERT INTO "+tableName+" (id) VALUES ('x')"),pls);
+				fs2.sendMessageOrThrow(new Message("INSERT INTO "+tableName+" (id) VALUES ('x')"),pls);
 			} finally {
 				txManager.commit(txStatus);
 			}

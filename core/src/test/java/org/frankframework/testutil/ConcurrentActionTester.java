@@ -32,6 +32,7 @@ public abstract class ConcurrentActionTester extends Thread {
 
 	@Override
 	public void run() {
+		log.info("Starting action tester");
 		try {
 			initAction();
 			if (initActionDone!=null) initActionDone.release();

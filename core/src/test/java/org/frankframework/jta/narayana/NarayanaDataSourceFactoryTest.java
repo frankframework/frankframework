@@ -5,27 +5,31 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 
-import org.frankframework.util.AppConstants;
-
 public class NarayanaDataSourceFactoryTest {
 
 	@AfterAll
 	public static void tearDown() {
-		AppConstants.removeInstance();
+		System.clearProperty("transactionmanager.jdbc.connection.minIdle");
+		System.clearProperty("transactionmanager.jdbc.connection.maxPoolSize");
+		System.clearProperty("transactionmanager.jdbc.connection.maxIdle");
+		System.clearProperty("transactionmanager.jdbc.connection.maxLifeTime");
+		System.clearProperty("transactionmanager.narayana.jdbc.connection.minPoolSize");
+		System.clearProperty("transactionmanager.narayana.jdbc.connection.maxPoolSize");
+		System.clearProperty("transactionmanager.narayana.jdbc.connection.maxIdle");
+		System.clearProperty("transactionmanager.narayana.jdbc.connection.maxLifeTime");
 	}
 
 	@Test
 	public void testSetup() {
 		// Arrange
-		AppConstants appConstants = AppConstants.getInstance();
-		appConstants.setProperty("transactionmanager.jdbc.connection.minIdle", "10");
-		appConstants.setProperty("transactionmanager.jdbc.connection.maxPoolSize", "20");
-		appConstants.setProperty("transactionmanager.jdbc.connection.maxIdle", "30");
-		appConstants.setProperty("transactionmanager.jdbc.connection.maxLifeTime", "40");
-		appConstants.setProperty("transactionmanager.narayana.jdbc.connection.minPoolSize", "1");
-		appConstants.setProperty("transactionmanager.narayana.jdbc.connection.maxPoolSize", "2");
-		appConstants.setProperty("transactionmanager.narayana.jdbc.connection.maxIdle", "3");
-		appConstants.setProperty("transactionmanager.narayana.jdbc.connection.maxLifeTime", "4");
+		System.setProperty("transactionmanager.jdbc.connection.minIdle", "10");
+		System.setProperty("transactionmanager.jdbc.connection.maxPoolSize", "20");
+		System.setProperty("transactionmanager.jdbc.connection.maxIdle", "30");
+		System.setProperty("transactionmanager.jdbc.connection.maxLifeTime", "40");
+		System.setProperty("transactionmanager.narayana.jdbc.connection.minPoolSize", "1");
+		System.setProperty("transactionmanager.narayana.jdbc.connection.maxPoolSize", "2");
+		System.setProperty("transactionmanager.narayana.jdbc.connection.maxIdle", "3");
+		System.setProperty("transactionmanager.narayana.jdbc.connection.maxLifeTime", "4");
 
 		// Act
 		NarayanaDataSourceFactory factory = new NarayanaDataSourceFactory();

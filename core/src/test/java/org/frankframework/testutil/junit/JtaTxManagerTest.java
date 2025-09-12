@@ -9,6 +9,8 @@ import java.lang.annotation.Target;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.TestInstance;
 
+import org.frankframework.jta.xa.XaResourceObserverFactory;
+
 /**
  * Annotation to add on tests that should only run with JTA transaction managers, but not with the DataSource Transaction Manager
  */
@@ -23,4 +25,6 @@ import org.junit.jupiter.api.TestInstance;
 // Argument sources should add all JTA transaction managers supported by the Frank!Framework; currently only Narayana
 @NarayanaArgumentSource
 public @interface JtaTxManagerTest {
+
+	Class<? extends XaResourceObserverFactory> resourceObserverFactory() default XaResourceObserverFactory.class;
 }

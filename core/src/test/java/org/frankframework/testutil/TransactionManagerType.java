@@ -127,6 +127,7 @@ public enum TransactionManagerType {
 				removePreviousTxLogFiles(ac);
 			}
 		}
+		LogManager.getLogger(this.getClass()).info("Closed transaction manager configuration context [{}]", this);
 	}
 
 	public static synchronized void closeAllConfigurationContexts() {

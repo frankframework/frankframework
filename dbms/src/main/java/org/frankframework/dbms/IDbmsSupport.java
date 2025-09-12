@@ -41,7 +41,9 @@ public interface IDbmsSupport {
 
 	Dbms getDbms();
 
-	String getDbmsName();
+	default String getDbmsName() {
+		return getDbms().getKey();
+	}
 
 	boolean isParameterTypeMatchRequired();
 
