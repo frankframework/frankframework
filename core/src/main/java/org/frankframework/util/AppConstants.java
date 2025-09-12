@@ -51,10 +51,18 @@ public final class AppConstants extends PropertyLoader {
 
 	private static final Properties additionalProperties = new Properties();
 
-	private static final ConcurrentHashMap<ClassLoader, AppConstants> appConstantsMap = new ConcurrentHashMap<>();
+	private static final ConcurrentHashMap<Integer, AppConstants> appConstantsMap = new ConcurrentHashMap<>();
 
 	private AppConstants(ClassLoader classLoader) {
 		super(classLoader, APP_CONSTANTS_PROPERTIES_FILE);
+
+		// Calculate this outside the cleaner-function to make sure we do not accidentally capture a reference
+		// to it for forever
+		int key = System.identityHashCode(classLoader);
+		// Register a cleaning-function so that when the classloader goes out of scope, the AppConstants instance
+		// will be automatically removed.
+		// This prevents leaks of ClassLoader and AppConstants instances.
+		CleanerProvider.register(classLoader, () -> appConstantsMap.remove(key));
 
 		//Add all ibis properties
 		putAll(additionalProperties);
@@ -83,7 +91,7 @@ public final class AppConstants extends PropertyLoader {
 			throw new IllegalStateException("calling AppConstants.getInstance without ClassLoader");
 		}
 
-		return appConstantsMap.computeIfAbsent(classLoader, AppConstants::new);
+		return appConstantsMap.computeIfAbsent(System.identityHashCode(classLoader), k-> new AppConstants(classLoader));
 	}
 
 	public static void removeInstance() {
@@ -94,9 +102,10 @@ public final class AppConstants extends PropertyLoader {
 		if(cl == null) {
 			throw new IllegalStateException("calling AppConstants.removeInstance without ClassLoader");
 		}
-		AppConstants instance = appConstantsMap.get(cl);
+		int key = System.identityHashCode(cl);
+		AppConstants instance = appConstantsMap.get(key);
 		if (instance != null) {
-			appConstantsMap.remove(cl);
+			appConstantsMap.remove(key);
 		}
 	}
 
@@ -174,7 +183,7 @@ public final class AppConstants extends PropertyLoader {
 			//noinspection deprecation
 			return super.put(key, value);
 		} else {
-			for (java.util.Map.Entry<ClassLoader, AppConstants> mapElement : appConstantsMap.entrySet()) {
+			for (java.util.Map.Entry<Integer, AppConstants> mapElement : appConstantsMap.entrySet()) {
 				mapElement.getValue().setProperty(key, value, true);
 			}
 			//Store in a map in case a new AppConstants instance is created after the property has already been set
