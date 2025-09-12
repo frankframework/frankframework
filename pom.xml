@@ -110,7 +110,7 @@
 		<oracle.driver.jdkversion>11</oracle.driver.jdkversion>
 		<mssql.driver.version>12.10.1.jre11</mssql.driver.version>
 		<mysql.driver.version>9.4.0</mysql.driver.version>
-		<mariadb.driver.version>3.5.5</mariadb.driver.version>
+		<mariadb.driver.version>3.5.6</mariadb.driver.version>
 		<postgresql.driver.version>42.7.7</postgresql.driver.version>
 		<mongodb.driver.version>5.5.1</mongodb.driver.version>
 
