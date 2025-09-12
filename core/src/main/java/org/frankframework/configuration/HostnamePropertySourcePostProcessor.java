@@ -38,7 +38,7 @@ public class HostnamePropertySourcePostProcessor extends AbstractPropertySourceP
 		String hostname = appConstants.getProperty(HOSTNAME_PROPERTY);
 		if (StringUtils.isEmpty(hostname)) {
 			hostname = Misc.getHostname();
-			appConstants.setProperty(HOSTNAME_PROPERTY, hostname);
+			AppConstants.setGlobalProperty(HOSTNAME_PROPERTY, hostname);
 			props.put(HOSTNAME_PROPERTY, hostname);
 		}
 	}

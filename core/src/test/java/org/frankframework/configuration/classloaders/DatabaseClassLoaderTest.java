@@ -144,7 +144,8 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 	public void testExceptionHandlingERROR() throws Exception {
 		mockDatabase(true);
 
-		appConstants.put("configurations."+getConfigurationName()+".reportLevel", "ERROR");
+		String key = "configurations."+getConfigurationName()+".reportLevel";
+		appConstants.setProperty(key, "ERROR");
 		ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
 		ClassLoader config = null;
 		boolean makeSureAnExceptionIsThrown = false;
@@ -173,7 +174,8 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 		try (TestAppender appender = TestAppender.newBuilder().build()) {
 			mockDatabase(true);
 
-			appConstants.put("configurations."+getConfigurationName()+".reportLevel", "DEBUG");
+			String key = "configurations."+getConfigurationName()+".reportLevel";
+			appConstants.setProperty(key, "DEBUG");
 			ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
 			ClassLoader config = manager.get(getConfigurationName()); // Does not throw an exception
 
@@ -202,7 +204,8 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 		try (TestAppender appender = TestAppender.newBuilder().build()) {
 			mockDatabase(true);
 
-			appConstants.put("configurations."+getConfigurationName()+".reportLevel", "INFO");
+			String key = "configurations."+getConfigurationName()+".reportLevel";
+			appConstants.setProperty(key, "INFO");
 			ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
 			ClassLoader config = manager.get(getConfigurationName()); // Does not throw an exception
 
@@ -232,7 +235,8 @@ public class DatabaseClassLoaderTest extends ConfigurationClassLoaderTestBase<Da
 		try (TestAppender appender = TestAppender.newBuilder().build()) {
 			mockDatabase(true);
 
-			appConstants.put("configurations."+getConfigurationName()+".reportLevel", "WARN");
+			String key = "configurations."+getConfigurationName()+".reportLevel";
+			appConstants.setProperty(key, "WARN");
 			ClassLoaderManager manager = new ClassLoaderManager(ibisContext);
 			ClassLoader config = manager.get(getConfigurationName()); // Does not throw an exception
 

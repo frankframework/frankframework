@@ -527,7 +527,7 @@ public static class ParallelSenderExecutorWrapper implements Runnable {
 
 	private void setEnabled(boolean enable) {
 		enabled = enable;
-		AppConstants.getInstance().put("testtool.enabled", String.valueOf(enable));
+		AppConstants.setGlobalProperty("testtool.enabled", enable);
 	}
 	private boolean isEnabled() {
 		return reportGenerator != null && enabled;

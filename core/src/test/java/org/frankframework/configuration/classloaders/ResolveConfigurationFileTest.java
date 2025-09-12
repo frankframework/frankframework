@@ -55,12 +55,12 @@ public class ResolveConfigurationFileTest {
 		}
 		if(configurationFile != null) {
 			classLoader.setConfigurationFile(configurationFile);
-			appConstants.put("configurations."+getConfigurationName()+".configurationFile", configurationFile);
+			appConstants.setProperty("configurations."+getConfigurationName()+".configurationFile", configurationFile);
 		} else {
-			appConstants.put("configurations."+getConfigurationName()+".configurationFile", "");
+			appConstants.setProperty("configurations."+getConfigurationName()+".configurationFile", "");
 		}
 
-		appConstants.put("configurations."+getConfigurationName()+".classLoaderType", classLoader.getClass().getSimpleName());
+		appConstants.setProperty("configurations."+getConfigurationName()+".classLoaderType", classLoader.getClass().getSimpleName());
 		IbisContext ibisContext = mock(IbisContext.class);
 		classLoader.configure(ibisContext, getConfigurationName());
 	}
@@ -73,7 +73,7 @@ public class ResolveConfigurationFileTest {
 
 		DirectoryClassLoader cl = new DirectoryClassLoader(parent);
 		cl.setDirectory(file.getFile());
-		appConstants.put("configurations."+getConfigurationName()+".directory", file.getFile());
+		appConstants.setProperty("configurations."+getConfigurationName()+".directory", file.getFile());
 		return cl;
 	}
 

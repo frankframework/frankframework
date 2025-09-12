@@ -64,7 +64,8 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 			classLoader.setBasePath(basePath);
 		}
 
-		appConstants.put("configurations."+getConfigurationName()+".classLoaderType", classLoader.getClass().getSimpleName());
+		String key = "configurations."+getConfigurationName()+".classLoaderType";
+		appConstants.setProperty(key, classLoader.getClass().getSimpleName());
 		classLoader.configure(ibisContext, getConfigurationName());
 	}
 
@@ -200,7 +201,9 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 	public void configurationFileCustomLocation() throws Exception {
 		createAndConfigure("Config");
 		String name = "Config/NonDefaultConfiguration.xml";
-		AppConstants.getInstance(classLoader).put("configurations."+getConfigurationName()+".configurationFile", name);
+		AppConstants appConstants1 = AppConstants.getInstance(classLoader);
+		String key = "configurations."+getConfigurationName()+".configurationFile";
+		appConstants1.setProperty(key, name);
 		String configFile = ConfigurationUtils.getConfigurationFile(classLoader, getConfigurationName());
 		assertEquals("NonDefaultConfiguration.xml", configFile);
 		URL configURL = classLoader.getResource(configFile);
@@ -223,10 +226,12 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 
 		// We have to set both the name as well as the appconstants variable.
 		String configKey = "configurations."+getConfigurationName()+".configurationFile";
-		AppConstants.getInstance(classLoader).put(configKey, file);
+		AppConstants appConstants1 = AppConstants.getInstance(classLoader);
+		appConstants1.setProperty(configKey, file);
 		classLoader.setConfigurationFile(path);
 
-		appConstants.put("configurations."+getConfigurationName()+".classLoaderType", classLoader.getClass().getSimpleName());
+		String key = "configurations."+getConfigurationName()+".classLoaderType";
+		appConstants.setProperty(key, classLoader.getClass().getSimpleName());
 		classLoader.configure(ibisContext, getConfigurationName());
 
 		String configFile = ConfigurationUtils.getConfigurationFile(classLoader, getConfigurationName());

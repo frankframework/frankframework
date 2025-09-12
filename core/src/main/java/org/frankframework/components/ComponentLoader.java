@@ -33,7 +33,6 @@ import org.frankframework.util.LogUtil;
 
 @Log4j2
 public class ComponentLoader {
-	protected static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 
 	private static Collection<Module> modules = null;
@@ -65,7 +64,7 @@ public class ComponentLoader {
 		try {
 			ModuleInformation moduleInfo = module.getModuleInformation();
 
-			APP_CONSTANTS.put(moduleInfo.getArtifactId() + ".version", moduleInfo.getVersion()); // Should look like `frankframework-core.version`
+			AppConstants.setGlobalProperty(moduleInfo.getArtifactId() + ".version", moduleInfo.getVersion()); // Should look like `frankframework-core.version`
 			APPLICATION_LOG.debug("Loading {}", moduleInfo);
 		} catch (NoSuchFileException e) {
 			log.info("unable to find module manifest file", e);

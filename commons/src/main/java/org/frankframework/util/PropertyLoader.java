@@ -46,7 +46,6 @@ public class PropertyLoader extends Properties {
 		super(defaults);
 		rootPropertyFile = propertiesFile.getAbsolutePath();
 		loadResource(propertiesFile.toURI().toURL());
-//		loadFile(propertiesFile);
 	}
 
 	public PropertyLoader(String propertiesFile) {
@@ -74,7 +73,7 @@ public class PropertyLoader extends Properties {
 	 * @param key The key to search for.
 	 * @return the string value of the system property, or NULL if there is no property with that key.
 	 */
-	private String getSystemProperty(String key) {
+	private static String getSystemProperty(String key) {
 		try {
 			String result = System.getenv().get(key);
 			if (result != null) {

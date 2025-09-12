@@ -104,7 +104,7 @@ public abstract class AbstractStatusRecordingTransactionManager extends ThreadCo
 	}
 
 	public void setUid(String transactionManagerUid) {
-		AppConstants.getInstance().setProperty("transactionmanager.uid", transactionManagerUid);
+		AppConstants.setGlobalProperty("transactionmanager.uid", transactionManagerUid);
 		this.uid = transactionManagerUid;
 	}
 
@@ -116,7 +116,7 @@ public abstract class AbstractStatusRecordingTransactionManager extends ThreadCo
 		log.info("transaction manager shutdown completed");
 	}
 
-	public void writeStatus(Status status) throws TransactionSystemException {
+	protected void writeStatus(Status status) throws TransactionSystemException {
 		write(getStatusFile(), status.toString());
 	}
 

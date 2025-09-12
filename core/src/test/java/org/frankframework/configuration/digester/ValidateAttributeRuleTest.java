@@ -52,12 +52,12 @@ public class ValidateAttributeRuleTest {
 
 	@BeforeAll
 	public static void beforeAll() {
-		AppConstants.getInstance().put(SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY.getKey(), "false");
+		AppConstants.setGlobalProperty(SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY.getKey(), false);
 	}
 
 	@AfterAll
 	public static void afterAll() {
-		AppConstants.getInstance().put(SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY.getKey(), "true");
+		AppConstants.setGlobalProperty(SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY.getKey(), true);
 	}
 
 	// Convenience method to create an Attribute list to be parsed
@@ -68,12 +68,9 @@ public class ValidateAttributeRuleTest {
 		}
 
 		Attributes attrs = spy(Attributes.class);
-		when(attrs.getLocalName(anyInt())).thenAnswer(new Answer<String>() {
-			@Override
-			public String answer(InvocationOnMock invocation) throws Throwable {
-				int i = (int) invocation.getArguments()[0];
-				return attList.get(i)[0];
-			}
+		when(attrs.getLocalName(anyInt())).thenAnswer((Answer<String>) invocation -> {
+			int i = (int) invocation.getArguments()[0];
+			return attList.get(i)[0];
 		});
 		when(attrs.getValue(anyInt())).thenAnswer(new Answer<String>() {
 			@Override
@@ -311,21 +308,26 @@ public class ValidateAttributeRuleTest {
 	public void testAttributeValueEqualToDefaultValueWarningsSuppressed() throws Exception {
 		// Arrange
 		configuration = new TestConfiguration(TestConfiguration.TEST_CONFIGURATION_FILE);
-		AppConstants appConstants = loadAppConstants(configuration);
-		appConstants.setProperty(SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY.getKey(), true);
+		loadAppConstants(configuration);
 
-		Map<String, String> attr = new LinkedHashMap<>();
-		attr.put("testString", "test");
-		attr.put("testInteger", "0");
-		attr.put("testLong", "0");
-		attr.put("testBoolean", "false");
-		attr.put("testEnum", "one");
+		// This test has a different value for this property than the other tests in this class
+		AppConstants.setGlobalProperty(SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY.getKey(), true);
 
-		// Act
-		runRule(ClassWithEnum.class, attr);
+		try {
+			Map<String, String> attr = new LinkedHashMap<>();
+			attr.put("testString", "test");
+			attr.put("testInteger", "0");
+			attr.put("testLong", "0");
+			attr.put("testBoolean", "false");
+			attr.put("testEnum", "one");
 
-		// After
-		appConstants.remove(SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY.getKey());
+			// Act
+			runRule(ClassWithEnum.class, attr);
+		} finally {
+			// After
+			// Restore the value that other tests in the class have
+			AppConstants.setGlobalProperty(SuppressKeys.DEFAULT_VALUE_SUPPRESS_KEY.getKey(), false);
+		}
 
 
 		// Assert
@@ -527,8 +529,8 @@ public class ValidateAttributeRuleTest {
 		// Arrange
 		configuration = new TestConfiguration("testConfigurationWithDigester.xml");
 		configuration.setId("TestSuppressDeprecationWarningsConfiguration");
-		AppConstants appConstants = loadAppConstants(configuration);
-		appConstants.setProperty("configuration.warnings.linenumbers", true);
+		loadAppConstants(configuration);
+		AppConstants.setGlobalProperty("configuration.warnings.linenumbers", true);
 
 		try {
 			// Act
@@ -552,7 +554,7 @@ public class ValidateAttributeRuleTest {
 
 		} finally {
 			// Cleanup so we don't crash other tests
-			appConstants.setProperty("configuration.warnings.linenumbers", false);
+			AppConstants.setGlobalProperty("configuration.warnings.linenumbers", false);
 		}
 	}
 
@@ -585,11 +587,11 @@ public class ValidateAttributeRuleTest {
 		return appConstants;
 	}
 
-	public static enum TestEnum {
+	public enum TestEnum {
 		ONE, TWO;
 	}
 
-	public static interface InterfaceWithDefaultMethod extends NameAware, HasName {
+	public interface InterfaceWithDefaultMethod extends NameAware, HasName {
 
 		default void setNaam(String naam) {
 			setName(naam);
