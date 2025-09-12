@@ -46,7 +46,6 @@ public class PropertyLoader extends Properties {
 		super(defaults);
 		rootPropertyFile = propertiesFile.getAbsolutePath();
 		loadResource(propertiesFile.toURI().toURL());
-//		loadFile(propertiesFile);
 	}
 
 	public PropertyLoader(String propertiesFile) {
