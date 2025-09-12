@@ -1,10 +1,12 @@
 package org.frankframework.jta;
 
 import static org.awaitility.Awaitility.await;
+import static org.frankframework.dbms.Dbms.MYSQL;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.util.concurrent.TimeUnit;
 
@@ -31,6 +33,7 @@ import org.frankframework.jta.xa.XaDatasourceCommitStopper;
 import org.frankframework.jta.xa.XaDatasourceOperationCounter;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ConcurrentActionTester;
+import org.frankframework.testutil.TestAssertions;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.DatabaseTestOptions;
@@ -102,6 +105,7 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 	@JtaTxManagerTest(resourceObserverFactory = XaDatasourceCommitStopper.class)
 	@Timeout(value = 180, unit = TimeUnit.SECONDS)
 	public void testShutdownPending() throws Exception {
+		assumeFalse(TestAssertions.isTestRunningOnGitHub() && MYSQL == env.getDbmsSupport().getDbms(), "Cannot reliably run this test on Github with database " + env.getDbmsSupport().getDbmsName());
 
 		XaDatasourceCommitStopper commitStopper = XaDataSourceModifier.getXaResourceObserverFactory();
 		setupTransactionManager();
