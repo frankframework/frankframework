@@ -74,11 +74,11 @@ public class AppConstantsTest {
 	@Test
 	public void checkPersistance() {
 		AppConstants constants1 = AppConstants.getInstance(classLoader);
-		constants1.put("constants1", "1");
+		constants1.setProperty("constants1", "1");
 		AppConstants constants2 = AppConstants.getInstance(classLoader);
-		constants2.put("constants2", "2");
+		constants2.setProperty("constants2", "2");
 		AppConstants constants3 = AppConstants.getInstance(classLoader);
-		constants3.put("constants3", "3");
+		constants3.setProperty("constants3", "3");
 
 		assertTrue(constants == constants1, "Singleton instance is not identical");
 		assertTrue(constants2 == constants3, "Singleton instance is not identical");
@@ -91,7 +91,7 @@ public class AppConstantsTest {
 	@Test
 	public void removeInstance() {
 		AppConstants old = AppConstants.getInstance();
-		old.put("dummy-key", "1");
+		old.setProperty("dummy-key", "1");
 		AppConstants.removeInstance();
 
 		assertFalse(AppConstants.getInstance().contains("dummy-key"), "should not contain key [dummy-key]");
@@ -137,7 +137,8 @@ public class AppConstantsTest {
 		// Remove the default instance
 		AppConstants.removeInstance();
 		// Create a new one and set a property on the newly created instance
-		AppConstants.getInstance().put("dummyConstant", "2.7");
+		AppConstants appConstants = AppConstants.getInstance();
+		appConstants.setProperty("dummyConstant", "2.7");
 		// Retrieve the property through a different instance
 		assertNotEquals("2.7", constants.get("dummyConstant"));
 	}

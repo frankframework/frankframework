@@ -50,7 +50,8 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 
 		JarFileClassLoader cl = new JarFileClassLoader(parent);
 		cl.setJar(file.getFile());
-		appConstants.put("configurations."+getConfigurationName()+".jar", file.getFile());
+		String key = "configurations."+getConfigurationName()+".jar";
+		appConstants.setProperty(key, file.getFile());
 		return cl;
 	}
 
@@ -90,7 +91,7 @@ public class JarFileClassLoaderTest extends ConfigurationClassLoaderTestBase<Jar
 		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build()) {
 			JarFileClassLoader classLoader = createClassLoader(null, "/ClassLoader/zip/myConfig.zip");
 
-			appConstants.put("configurations.myConfig.classLoaderType", classLoader.getClass().getSimpleName());
+			appConstants.setProperty("configurations.myConfig.classLoaderType", classLoader.getClass().getSimpleName());
 			classLoader.configure(ibisContext, "myConfig");
 
 			List<String> logEvents = appender.getLogLines();

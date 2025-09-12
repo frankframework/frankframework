@@ -140,10 +140,6 @@ public final class AppConstants extends PropertyLoader {
 		return setProperty(key, ""+value);
 	}
 
-	public void put(String key, String value) {
-		setProperty(key, value);
-	}
-
 	public static @Nullable Boolean setGlobalProperty(@Nonnull String key, boolean value) {
 		String retval = setGlobalProperty(key, "" + value);
 		if (retval == null) {
