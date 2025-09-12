@@ -17,10 +17,10 @@ package org.frankframework.util;
 
 import java.io.IOException;
 import java.util.Properties;
-import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -49,15 +49,16 @@ public final class AppConstants extends PropertyLoader {
 	public static final String APPLICATION_SERVER_CUSTOMIZATION_PROPERTY = ApplicationServerConfigurer.APPLICATION_SERVER_CUSTOMIZATION_PROPERTY;
 	public static final String ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY = ADDITIONAL_PROPERTIES_FILE_KEY+".SUFFIX";
 
-	private static final Properties additionalProperties = new Properties();
+	private static final Properties globalAppConstants = new Properties();
 
 	private static final ConcurrentHashMap<ClassLoader, AppConstants> appConstantsMap = new ConcurrentHashMap<>();
 
 	private AppConstants(ClassLoader classLoader) {
 		super(classLoader, APP_CONSTANTS_PROPERTIES_FILE);
 
-		//Add all ibis properties
-		putAll(additionalProperties);
+		// Add all global properties
+		// This is a bit of an ugly hack, but otherwise these properties cannot be retrieved via get/getProperty methods
+		putAll(globalAppConstants);
 	}
 
 	/**
@@ -98,19 +99,6 @@ public final class AppConstants extends PropertyLoader {
 		if (instance != null) {
 			appConstantsMap.remove(cl);
 		}
-	}
-
-	/**
-	 * Creates a tokenizer from the resolved value of this key. As a separator the "," is used.
-	 * Uses the {@link #getResolvedProperty(String)} method.
-	 * Can be used to process lists of values.
-	 */
-	@Deprecated
-	public StringTokenizer getTokenizedProperty(String key, @Nonnull String defaults) {
-		String list = getResolvedProperty(key);
-		if (list==null)
-			list = defaults;
-		return new StringTokenizer(list, ",");
 	}
 
 	/**
@@ -174,12 +162,32 @@ public final class AppConstants extends PropertyLoader {
 			//noinspection deprecation
 			return super.put(key, value);
 		} else {
-			for (java.util.Map.Entry<ClassLoader, AppConstants> mapElement : appConstantsMap.entrySet()) {
-				mapElement.getValue().setProperty(key, value, true);
-			}
-			//Store in a map in case a new AppConstants instance is created after the property has already been set
-			return additionalProperties.put(key, value);
+			return setGlobalProperty(key, value);
 		}
+	}
+
+	public static @Nullable Boolean setGlobalProperty(@Nonnull String key, boolean value) {
+		String retval = setGlobalProperty(key, "" + value);
+		if (retval == null) {
+			return null;
+		}
+		return Boolean.parseBoolean(retval);
+	}
+
+	public static synchronized @Nullable String setGlobalProperty(@Nonnull String key, @Nonnull String value) {
+		// Copying global app-constant values to all instances is a bit of a hack but there's not much else we can do
+		for (AppConstants localAppConstants : appConstantsMap.values()) {
+			localAppConstants.setProperty(key, value, true);
+		}
+		//Store in a map in case a new AppConstants instance is created after the property has already been set
+		return (String)globalAppConstants.put(key, value);
+	}
+
+	public static synchronized @Nullable String clearGlobalProperty(@Nonnull String key) {
+		for (AppConstants localAppConstants : appConstantsMap.values()) {
+			localAppConstants.remove(key);
+		}
+		return (String)globalAppConstants.remove(key);
 	}
 
 	@Override

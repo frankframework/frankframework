@@ -24,6 +24,8 @@ import org.frankframework.util.AppConstants;
  * Overwrite a property available to the Ibis configuration and the Spring
  * configuration. When the property isn't present it will be added.
  *
+ * TODO: Is this class still used or can it be removed?
+ *
  * @author Jaco de Groot
  */
 public class OverwritePropertySourcePostProcessor extends AbstractPropertySourcePostProcessor {
@@ -32,8 +34,7 @@ public class OverwritePropertySourcePostProcessor extends AbstractPropertySource
 
 	@Override
 	protected void convertProperties(Properties props) {
-		AppConstants appConstants = AppConstants.getInstance();
-		appConstants.setProperty(propertyName, propertyValue);
+		AppConstants.setGlobalProperty(propertyName, propertyValue);
 		props.put(propertyName, propertyValue);
 	}
 
