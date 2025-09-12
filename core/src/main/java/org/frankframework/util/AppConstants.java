@@ -136,34 +136,12 @@ public final class AppConstants extends PropertyLoader {
 		return filteredProperties;
 	}
 
-	/**
-	 * Add property to global AppConstants
-	 */
-	@Override
-	public synchronized Object setProperty(String key, String value) {
-		return setProperty(key, value, false);
-	}
-
 	public Object setProperty(String key, boolean value) {
-		return setProperty(key, ""+value, false);
-	}
-	/**
-	 * Add property to global (all) AppConstants
-	 */
-	public void put(String key, String value) {
-		setProperty(key, value, false);
+		return setProperty(key, ""+value);
 	}
 
-	/**
-	 * Add property to local (local=true) or global (local=false) AppConstants
-	 */
-	private synchronized Object setProperty(String key, String value, boolean local) {
-		if(local) {
-			//noinspection deprecation
-			return super.put(key, value);
-		} else {
-			return setGlobalProperty(key, value);
-		}
+	public void put(String key, String value) {
+		setProperty(key, value);
 	}
 
 	public static @Nullable Boolean setGlobalProperty(@Nonnull String key, boolean value) {
@@ -177,7 +155,7 @@ public final class AppConstants extends PropertyLoader {
 	public static synchronized @Nullable String setGlobalProperty(@Nonnull String key, @Nonnull String value) {
 		// Copying global app-constant values to all instances is a bit of a hack but there's not much else we can do
 		for (AppConstants localAppConstants : appConstantsMap.values()) {
-			localAppConstants.setProperty(key, value, true);
+			localAppConstants.setProperty(key, value);
 		}
 		//Store in a map in case a new AppConstants instance is created after the property has already been set
 		return (String)globalAppConstants.put(key, value);

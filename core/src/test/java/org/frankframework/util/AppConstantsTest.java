@@ -2,6 +2,8 @@ package org.frankframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -127,17 +129,17 @@ public class AppConstantsTest {
 
 	@Test
 	public void callNonExistingProperty() {
-		assertEquals(null, constants.getProperty("i.dont.exist"));
+		assertNull(constants.getProperty("i.dont.exist"));
 	}
 
 	@Test
 	public void setRuntimePropertyThroughPut() {
-		//Remove the default instance
+		// Remove the default instance
 		AppConstants.removeInstance();
-		//Create a new one and set a property on the newly created instance
+		// Create a new one and set a property on the newly created instance
 		AppConstants.getInstance().put("dummyConstant", "2.7");
-		//Retrieve the property through a different instance
-		assertEquals("2.7", constants.get("dummyConstant"));
+		// Retrieve the property through a different instance
+		assertNotEquals("2.7", constants.get("dummyConstant"));
 	}
 
 	@Test
@@ -147,7 +149,19 @@ public class AppConstantsTest {
 		//Create a new one and set a property on the newly created instance
 		AppConstants.getInstance().setProperty("dummyConstant2", "2.8");
 		//Retrieve the property through a different instance
-		assertEquals("2.8", constants.get("dummyConstant2"));
+		assertNotEquals("2.8", constants.get("dummyConstant2"));
+	}
+
+	@Test
+	public void setRuntimePropertyThroughSetGlobalProperty() {
+		// Set as global property
+		AppConstants.setGlobalProperty("dummyConstant3", "2.9");
+		// Retrieve the property through the instance
+		assertEquals("2.9", constants.get("dummyConstant3"));
+		// Remove the default instance
+		AppConstants.removeInstance();
+		// Retrieve through a new instance
+		assertEquals("2.9", AppConstants.getInstance().get("dummyConstant3"));
 	}
 
 	@Test
