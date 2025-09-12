@@ -112,7 +112,7 @@
 		<mysql.driver.version>9.4.0</mysql.driver.version>
 		<mariadb.driver.version>3.5.5</mariadb.driver.version>
 		<postgresql.driver.version>42.7.7</postgresql.driver.version>
-		<mongodb.driver.version>5.5.1</mongodb.driver.version>
+		<mongodb.driver.version>5.6.0</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
 		<activemq.driver.version>6.1.7</activemq.driver.version>
