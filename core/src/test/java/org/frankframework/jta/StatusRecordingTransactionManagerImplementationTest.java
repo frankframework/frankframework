@@ -1,13 +1,10 @@
 package org.frankframework.jta;
 
 import static org.awaitility.Awaitility.await;
-import static org.frankframework.dbms.Dbms.H2;
-import static org.frankframework.dbms.Dbms.MYSQL;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.util.concurrent.TimeUnit;
 
@@ -41,7 +38,7 @@ import org.frankframework.testutil.junit.JtaTxManagerTest;
 
 public class StatusRecordingTransactionManagerImplementationTest extends StatusRecordingTransactionManagerTestBase<AbstractStatusRecordingTransactionManager> {
 
-	private static final String SECONDARY_PRODUCT = "H2";
+	private static final String SECONDARY_PRODUCT = "H2db2";
 
 	protected SpringTxManagerProxy txManager;
 	protected AbstractStatusRecordingTransactionManager txManagerReal;
@@ -52,8 +49,6 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment env) {
-		assumeFalse(H2 == env.getDbmsSupport().getDbms(), "Cannot run this test with " + env.getDbmsSupport().getDbmsName());
-
 		super.setup();
 		this.env = env;
 	}
@@ -106,9 +101,7 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 	@DatabaseTestOptions(cleanupBeforeUse = true, cleanupAfterUse = true)
 	@JtaTxManagerTest(resourceObserverFactory = XaDatasourceCommitStopper.class)
 	@Timeout(value = 180, unit = TimeUnit.SECONDS)
-//	@Disabled("This test is unreliable, often failing in a full build but passing in individual testrun. Might need more time? (Perhaps still see issue #6935)")
 	public void testShutdownPending() throws Exception {
-		assumeFalse(MYSQL == env.getDbmsSupport().getDbms(), "Cannot run this test with " + env.getDbmsSupport().getDbmsName());
 
 		XaDatasourceCommitStopper commitStopper = XaDataSourceModifier.getXaResourceObserverFactory();
 		setupTransactionManager();
@@ -183,7 +176,7 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 		ConcurrentActionTester action3 = new ConcurrentActionTester() {
 			@Override
 			public void action() {
-				TransactionStatus txStatus = env.startTransaction(TransactionDefinition.PROPAGATION_REQUIRES_NEW, 1);
+				env.startTransaction(TransactionDefinition.PROPAGATION_REQUIRES_NEW, 1);
 				doQuery(dqs1, "INSERT INTO "+tableName+" (id) VALUES ('v')");
 				doQuery(dqs2, "INSERT INTO "+tableName+" (id) VALUES ('v')");
 				// Do not commit or rollback transaction, let it time out
@@ -257,16 +250,15 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 		return qs;
 	}
 
-	private String doQuery(DirectQuerySender qs, String query) {
+	private void doQuery(DirectQuerySender qs, String query) {
 		try (PipeLineSession session = new PipeLineSession();
 			 Message queryMessage = new Message(query)) {
-			Message result = qs.sendMessageOrThrow(queryMessage, session);
-			return result.asString();
+			qs.sendMessageOrThrow(queryMessage, session);
 		} catch (Exception e) {
 			log.warn(e.getMessage(), e);
-			return e.getMessage();
 		}
 	}
+
 
 	private class ConcurrentXATransactionTester extends ConcurrentActionTester {
 
@@ -287,10 +279,10 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 		public void action() throws ConfigurationException, SenderException, TimeoutException {
 			log.info("Running ConcurrentXATransactionTester action");
 
-			// Sender 1 inserts into primary database (MariaDB, Oracle, MySQL, etc, not H2)
+			// Sender 1 inserts into primary database (MariaDB, Oracle, MySQL, etc)
 			DirectQuerySender fs1 = buildQuerySender(env.getDataSourceName(), "fs1");
 
-			// Sender 2 inserts into H2
+			// Sender 2 inserts into H2 - test db 2 so that there's always a secondary DB for XA-transactions
 			DirectQuerySender fs2 = buildQuerySender(SECONDARY_PRODUCT, "fs2");
 
 			TransactionStatus txStatus = env.startTransaction(TransactionDefinition.PROPAGATION_REQUIRES_NEW, 5);

@@ -85,9 +85,8 @@ public class TransactionConnectorTest {
 
 	@DatabaseTestOptions(cleanupBeforeUse = true, cleanupAfterUse = true)
 	@TxManagerTest
-	@Disabled("Something in this test is not right at the moment")
+	@Disabled("Something in this test is not right yet at the moment")
 	public void testNewTransactionMustLock() throws Exception {
-//		assumeTrue("DATASOURCE".equals(env.getName()), "For the moment this only works with the DatasourceTransactionManager");
 		runQuery("INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (999, 1)");
 		TransactionStatus txStatus = env.startTransaction(TX_DEF_REQUIRES_NEW, 10);
 
@@ -125,7 +124,6 @@ public class TransactionConnectorTest {
 	@DatabaseTestOptions(cleanupBeforeUse = true, cleanupAfterUse = true)
 	@TxManagerTest
 	public void testBasicSameThread() throws Exception {
-//		assumeTrue("DATASOURCE".equals(env.getName()), "For the moment this only works with the DatasourceTransactionManager");
 		if (!"DATASOURCE".equals(env.getName())) {
 			assertTrue(JdbcPoolUtil.isXaCapable(env.getDataSource()), "In environment [" + env.getName() + "] the datasource [" + env.getDataSourceName() + "] should be XA-Capable but it was not");
 			assertTrue(JdbcPoolUtil.isXaCapable(txManager), "In environment [" + env.getName() + "] the transaction manager should be XA-Capable but it was not");
@@ -152,7 +150,6 @@ public class TransactionConnectorTest {
 	@DatabaseTestOptions(cleanupBeforeUse = true, cleanupAfterUse = true)
 	@TxManagerTest
 	public void testBasic() throws Exception {
-//		assumeTrue("DATASOURCE".equals(env.getName()), "For the moment this only works with the DatasourceTransactionManager");
 		if (!"DATASOURCE".equals(env.getName())) {
 			assertTrue(JdbcPoolUtil.isXaCapable(env.getDataSource()), "In environment [" + env.getName() + "] the datasource [" + env.getDataSourceName() + "] should be XA-Capable but it was not");
 			assertTrue(JdbcPoolUtil.isXaCapable(txManager), "In environment [" + env.getName() + "] the transaction manager should be XA-Capable but it was not");
@@ -194,11 +191,10 @@ public class TransactionConnectorTest {
 		assertEquals(3, runSelectQuery("SELECT TINT FROM "+TEST_TABLE+" WHERE TKEY=999"));
 	}
 
-	// TODO: How does this test trigger a rollback in the child thread???
+	// TODO: How does this test trigger a rollback in the child thread??? Should we try to make that so?
 	@DatabaseTestOptions(cleanupBeforeUse = true, cleanupAfterUse = true)
 	@TxManagerTest
 	public void testBasicRollbackInChildThread() throws Exception {
-//		assumeTrue("DATASOURCE".equals(env.getName()), "For the moment this only works with the DatasourceTransactionManager");
 		runQuery("INSERT INTO "+TEST_TABLE+" (TKEY,TINT) VALUES (999, 1)");
 
 		TransactionStatus txStatus = env.startTransaction(TX_DEF_REQUIRES_NEW);

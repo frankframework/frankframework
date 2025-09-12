@@ -19,7 +19,8 @@ public class XaDataSourceModifier {
 		XaDataSourceModifier.xaResourceObserverFactory = xaResourceObserverFactory;
 	}
 
-	public static <T extends XaResourceObserverFactory> T getXaResourceObserverFactory(T... type) {
+	public static <T extends XaResourceObserverFactory> T getXaResourceObserverFactory() {
+		//noinspection unchecked
 		return (T)XaDataSourceModifier.xaResourceObserverFactory;
 	}
 
