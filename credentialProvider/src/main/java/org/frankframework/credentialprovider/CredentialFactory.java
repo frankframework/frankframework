@@ -117,10 +117,8 @@ public class CredentialFactory {
 	}
 
 	/**
-	 * Entrypoint.
-	 *
-	 * Attempts to find the credential for the specified alias.
-	 * If non is found, returns NULL, else the credential.
+	 * Entrypoint. Attempts to find the credential for the specified alias.
+	 * If none is found, returns NULL, else the credential.
 	 */
 	@Nullable
 	public static ICredentials getCredentials(@Nullable String rawAlias) {
@@ -138,11 +136,8 @@ public class CredentialFactory {
 	}
 
 	/**
-	 * Entrypoint
-	 *
-	 * Attempts to find the credential for the specified alias.
-	 *
-	 * When non is found, uses the default (provided) fallback user/pass combination.
+	 * Entrypoint. Attempts to find the credential for the specified alias.
+	 * When none is found, uses the default (provided) fallback user/pass combination.
 	 */
 	@Nonnull
 	public static ICredentials getCredentials(@Nullable String rawAlias, @Nullable String defaultUsername, @Nullable String defaultPassword) {
