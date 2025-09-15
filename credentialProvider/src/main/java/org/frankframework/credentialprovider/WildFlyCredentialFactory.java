@@ -20,7 +20,6 @@ import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import jakarta.annotation.Nonnull;
 
@@ -31,6 +30,8 @@ import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.wildfly.security.credential.store.CredentialStore;
 import org.wildfly.security.credential.store.CredentialStoreException;
+
+import lombok.extern.java.Log;
 
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
@@ -44,8 +45,8 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  *
  * @see <a href="https://www.wildfly.org/guides/security-credential-store-for-passwords">WildFly Credential Store Guide</a>
  */
+@Log
 public class WildFlyCredentialFactory implements ISecretProvider {
-	private Logger log = Logger.getLogger(this.getClass().getName());
 
 	private static final ServiceName SERVICE_NAME_CRED_STORE = ServiceName.of("org", "wildfly", "security", "credential-store");
 
@@ -53,7 +54,7 @@ public class WildFlyCredentialFactory implements ISecretProvider {
 
 	private String credentialStore = "CS";
 
-	private CredentialStore cs=null;
+	private CredentialStore cs = null;
 
 	@Override
 	public void initialize() {
@@ -61,17 +62,17 @@ public class WildFlyCredentialFactory implements ISecretProvider {
 		CredentialConstants appConstants = CredentialConstants.getInstance();
 		credentialStore = appConstants.getProperty(WILDFLY_CREDENTIAL_STORE_PROPERTY, credentialStore);
 		if (StringUtils.isEmpty(credentialStore)) {
-			throw new IllegalStateException("No valid property ["+ WILDFLY_CREDENTIAL_STORE_PROPERTY +"] found");
+			throw new IllegalStateException("No valid property [" + WILDFLY_CREDENTIAL_STORE_PROPERTY + "] found");
 		}
 	}
 
 	@Override
 	public ISecret getSecret(@Nonnull CredentialAlias alias) throws NoSuchElementException {
-		CredentialStore cs = getCredentialStore(credentialStore);
-		if (cs == null) {
+		CredentialStore store = getCredentialStore(credentialStore);
+		if (store == null) {
 			throw new NoSuchElementException("CredentialStore [" + credentialStore + "] not found");
 		}
-		return new WildFlySecret(cs, alias);
+		return new WildFlySecret(store, alias);
 	}
 
 	@Override
@@ -80,23 +81,23 @@ public class WildFlyCredentialFactory implements ISecretProvider {
 			return getSecret(alias) != null;
 
 		} catch (NoSuchElementException e) {
-			log.log(Level.FINE, e, ()->"exception testing for alias ["+alias+"] ("+e.getClass().getName()+") :"+e.getMessage());
+			log.log(Level.FINE, e, () -> "exception testing for alias [" + alias + "] (" + e.getClass().getName() + ") :" + e.getMessage());
 			return false;
 		}
 	}
 
 	@Override
 	public Collection<String> getConfiguredAliases() throws UnsupportedOperationException, CredentialStoreException {
-		CredentialStore cs = getCredentialStore(credentialStore);
-		if (cs==null) {
-			return null;
+		CredentialStore store = getCredentialStore(credentialStore);
+		if (store == null) {
+			return Set.of();
 		}
 		Set<String> result = new LinkedHashSet<>();
-		Set<String> aliases = cs.getAliases();
-		if (aliases!=null) {
+		Set<String> aliases = store.getAliases();
+		if (aliases != null) {
 			for (String csAlias : aliases) {
 				if (csAlias.endsWith("/username")) {
-					csAlias = csAlias.substring(0, csAlias.length()-9);
+					csAlias = csAlias.substring(0, csAlias.length() - 9);
 				}
 				result.add(csAlias);
 			}
@@ -105,10 +106,10 @@ public class WildFlyCredentialFactory implements ISecretProvider {
 	}
 
 	private CredentialStore getCredentialStore(String credentialStore) {
-		if (cs==null) {
+		if (cs == null) {
 			ServiceContainer registry = getServiceContainer();
 
-			if (registry==null) {
+			if (registry == null) {
 				throw new IllegalStateException("no ServiceContainer registry found");
 			}
 			ServiceController<?> credStoreService = registry.getService(ServiceName.of(SERVICE_NAME_CRED_STORE, credentialStore));
