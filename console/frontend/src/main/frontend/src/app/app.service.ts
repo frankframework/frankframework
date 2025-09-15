@@ -201,6 +201,7 @@ export type ServerEnvironmentVariables = {
 
 export type ClusterMember = {
   id: string;
+  name: string;
   address: string;
   localMember: boolean;
   selectedMember: boolean;
