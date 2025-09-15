@@ -99,7 +99,7 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 	@Override
 	@Nonnull
 	public <I, O> Message<O> sendSyncMessage(Message<I> in) {
-		String tempReplyChannelName = "__tmp."+ NUMBER_GENERATOR.nextAlphanumeric(32);
+		String tempReplyChannelName = "__tmp." + NUMBER_GENERATOR.nextAlphanumeric(32);
 		long receiveTimeout = receiveTimeout(in);
 		log.debug("sending synchronous request to topic [{}] message [{}] reply-queue [{}] receiveTimeout [{}]", requestTopicName, in, tempReplyChannelName, receiveTimeout);
 
@@ -118,7 +118,7 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 			return replyMessage;
 		}
 
-		throw new BusException("no reponse found on temporary reply-queue ["+tempReplyChannelName+"] within receiveTimeout ["+receiveTimeout+"]");
+		throw new BusException("no reponse found on temporary reply-queue [" + tempReplyChannelName + "] within receiveTimeout [" + receiveTimeout + "]");
 	}
 
 	private void silentlyRemoveQueue(IQueue<?> responseQueue) {
@@ -134,7 +134,7 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 		try {
 			Message<O> response = responseQueue.poll(receiveTimeout, TimeUnit.MILLISECONDS);
 
-			if(response != null) {
+			if (response != null) {
 				log.trace("received message with id [{}]", () -> response.getHeaders().getId());
 				return response;
 			}
@@ -167,6 +167,8 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 		}
 		cm.setAttributes(attrs);
 		cm.setLocalMember(member.localMember());
+		cm.setName(attrs.containsKey(HazelcastConfig.ATTRIBUTE_APPLICATION_KEY) ? attrs.get(HazelcastConfig.ATTRIBUTE_APPLICATION_KEY) : member.getUuid()
+				.toString());
 		return cm;
 	}
 
