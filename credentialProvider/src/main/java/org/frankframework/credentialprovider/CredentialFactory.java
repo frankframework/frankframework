@@ -23,18 +23,19 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.extern.java.Log;
+
 import org.frankframework.credentialprovider.util.CredentialConstants;
 import org.frankframework.util.ClassUtils;
 
+@Log
 public class CredentialFactory {
-	protected static final Logger log = Logger.getLogger(CredentialFactory.class.getName());
 
 	private static final String CREDENTIAL_FACTORY_KEY = "credentialFactory.class";
 	public static final String CREDENTIAL_FACTORY_ALIAS_PREFIX_KEY = "credentialFactory.optionalPrefix";
@@ -125,12 +126,12 @@ public class CredentialFactory {
 		try {
 			ICredentials credential = getCredentials(rawAlias, null, null);
 			if (credential instanceof FallbackCredential) {
-				log.fine("no credential found, no default provided");
+				log.info("no credential found, no default provided");
 				return null;
 			}
 			return credential;
 		} catch (Exception e) {
-			log.log(Level.FINE, e.getMessage(), e);
+			log.log(Level.INFO, e, () -> "Cannot get credentials: " + e.getMessage());
 			return null;
 		}
 	}
@@ -156,7 +157,7 @@ public class CredentialFactory {
 				return readSecretFields(secret, alias);
 			} catch (NoSuchElementException | IOException e) {
 				// The alias was not found in this factory, continue searching
-				log.log(Level.FINE, e, () -> rawAlias + " not found in credential factory [" + factory.getClass().getName() + "]: " + e.getMessage());
+				log.log(Level.INFO, e, () -> rawAlias + " not found in credential factory [" + factory.getClass().getName() + "]: " + e.getMessage());
 			}
 		}
 

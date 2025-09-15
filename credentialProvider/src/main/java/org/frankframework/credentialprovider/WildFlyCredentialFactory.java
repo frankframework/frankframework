@@ -81,7 +81,7 @@ public class WildFlyCredentialFactory implements ISecretProvider {
 			return getSecret(alias) != null;
 
 		} catch (NoSuchElementException e) {
-			log.log(Level.FINE, e, () -> "exception testing for alias [" + alias + "] (" + e.getClass().getName() + ") :" + e.getMessage());
+			log.log(Level.INFO, e, () -> "exception testing for alias [" + alias + "] (" + e.getClass().getName() + ") :" + e.getMessage());
 			return false;
 		}
 	}

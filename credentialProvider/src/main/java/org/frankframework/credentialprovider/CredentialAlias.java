@@ -134,13 +134,13 @@ public class CredentialAlias {
 	@Nullable
 	public static CredentialAlias parse(String rawAlias) {
 		if (StringUtils.isBlank(rawAlias)) {
-			log.fine("raw alias is empty, returning null");
+			log.info("raw alias is empty, returning null");
 			return null;
 		}
 		try {
 			return new CredentialAlias(rawAlias);
 		} catch (Exception e) {
-			log.log(Level.FINE, "Cannot parse credential alias, returning null: " + e.getMessage(), e);
+			log.log(Level.INFO, "Cannot parse credential alias, returning null: " + e.getMessage(), e);
 			return null;
 		}
 	}
