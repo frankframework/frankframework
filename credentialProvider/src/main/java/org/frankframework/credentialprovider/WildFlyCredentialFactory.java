@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jakarta.annotation.Nonnull;
@@ -79,7 +80,7 @@ public class WildFlyCredentialFactory implements ISecretProvider {
 			return getSecret(alias) != null;
 
 		} catch (NoSuchElementException e) {
-			log.fine(()->"exception testing for alias ["+alias+"] ("+e.getClass().getName()+") :"+e.getMessage());
+			log.log(Level.FINE, e, ()->"exception testing for alias ["+alias+"] ("+e.getClass().getName()+") :"+e.getMessage());
 			return false;
 		}
 	}

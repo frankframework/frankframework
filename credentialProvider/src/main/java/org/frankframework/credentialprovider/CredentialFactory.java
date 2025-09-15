@@ -22,6 +22,7 @@ import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import jakarta.annotation.Nonnull;
@@ -91,13 +92,13 @@ public class CredentialFactory {
 
 	private void tryFactory(String factoryClassName) {
 		try {
-			log.info("trying to configure CredentialFactory [" + factoryClassName + "]");
+			log.info(() -> "trying to configure CredentialFactory [" + factoryClassName + "]");
 			ISecretProvider delegate = ClassUtils.newInstance(factoryClassName, ISecretProvider.class);
 			delegate.initialize();
-			log.info("installed CredentialFactory [" + factoryClassName + "]");
+			log.info(() -> "installed CredentialFactory [" + factoryClassName + "]");
 			delegates.add(delegate);
 		} catch (Exception e) {
-			log.warning("Cannot instantiate CredentialFactory [" + factoryClassName + "] (" + e.getClass().getTypeName() + "): " + e.getMessage());
+			log.log(Level.WARNING, e, () -> "Cannot instantiate CredentialFactory [" + factoryClassName + "] (" + e.getClass().getTypeName() + "): " + e.getMessage());
 		}
 	}
 
@@ -131,7 +132,7 @@ public class CredentialFactory {
 			}
 			return credential;
 		} catch (Exception e) {
-			log.fine(e.getMessage());
+			log.log(Level.FINE, e.getMessage(), e);
 			return null;
 		}
 	}
@@ -160,7 +161,7 @@ public class CredentialFactory {
 				return readSecretFields(secret, alias);
 			} catch (NoSuchElementException | IOException e) {
 				// The alias was not found in this factory, continue searching
-				log.info(rawAlias + " not found in credential factory [" + factory.getClass().getName() + "]: " + e.getMessage());
+				log.log(Level.FINE, e, () -> rawAlias + " not found in credential factory [" + factory.getClass().getName() + "]: " + e.getMessage());
 			}
 		}
 
@@ -237,7 +238,7 @@ public class CredentialFactory {
 					aliases.addAll(configuredAliases);
 				}
 			} catch (Exception e) {
-				log.warning("unable to find configured aliases in factory ["+factory+"]");
+				log.log(Level.WARNING, e, () -> "unable to find configured aliases in factory ["+factory+"]");
 			}
 		}
 		return aliases;
