@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.credentialprovider.util.CredentialConstants;
@@ -60,12 +62,12 @@ public class FileSystemCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public boolean hasSecret(CredentialAlias alias) {
+	public boolean hasSecret(@Nonnull CredentialAlias alias) {
 		return Files.exists(root.resolve(alias.getName()));
 	}
 
 	@Override
-	public ISecret getSecret(CredentialAlias alias) throws NoSuchElementException {
+	public ISecret getSecret(@Nonnull CredentialAlias alias) throws NoSuchElementException {
 		return new FileSystemSecret(alias, root);
 	}
 

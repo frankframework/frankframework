@@ -21,6 +21,8 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
@@ -63,7 +65,7 @@ public class WildFlyCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public ISecret getSecret(CredentialAlias alias) throws NoSuchElementException {
+	public ISecret getSecret(@Nonnull CredentialAlias alias) throws NoSuchElementException {
 		CredentialStore cs = getCredentialStore(credentialStore);
 		if (cs == null) {
 			throw new NoSuchElementException("CredentialStore [" + credentialStore + "] not found");
@@ -72,7 +74,7 @@ public class WildFlyCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public boolean hasSecret(CredentialAlias alias) {
+	public boolean hasSecret(@Nonnull CredentialAlias alias) {
 		try {
 			return getSecret(alias) != null;
 

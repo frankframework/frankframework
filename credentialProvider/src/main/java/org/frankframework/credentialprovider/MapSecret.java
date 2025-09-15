@@ -48,7 +48,7 @@ public class MapSecret extends Secret {
 	}
 
 	@Override
-	public String getField(String fieldname) throws IOException {
+	public String getField(@Nonnull String fieldname) throws IOException {
 		if (secret.size() == 1) {
 			// no field
 			if(StringUtils.isBlank(fieldname)) {

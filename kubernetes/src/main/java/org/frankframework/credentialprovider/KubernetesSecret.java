@@ -17,6 +17,8 @@ package org.frankframework.credentialprovider;
 
 import java.util.Base64;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import io.fabric8.kubernetes.api.model.Secret;
@@ -39,7 +41,7 @@ public class KubernetesSecret extends org.frankframework.credentialprovider.Secr
 	}
 
 	@Override
-	public String getField(String key) {
+	public String getField(@Nonnull String key) {
 		String foundKey = secret.getData().get(key);
 		if (StringUtils.isEmpty(foundKey)) {
 			log.info("no value found for alias [%s] field [%s]".formatted(getAlias(), key));
