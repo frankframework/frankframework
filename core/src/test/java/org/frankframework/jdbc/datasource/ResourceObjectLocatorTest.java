@@ -1,10 +1,13 @@
 package org.frankframework.jdbc.datasource;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.h2.jdbcx.JdbcDataSource;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
@@ -19,6 +22,9 @@ public class ResourceObjectLocatorTest {
 
 		Object obj = locator.lookup("jdbc/H2", null, Object.class);
 		assertNotNull(obj);
+		JdbcDataSource jdbcDataSource = assertInstanceOf(JdbcDataSource.class, obj);
+		assertEquals("fake+user", jdbcDataSource.getUser());
+		assertEquals("fake_pwd", jdbcDataSource.getPassword());
 	}
 
 	@Test
@@ -33,7 +39,7 @@ public class ResourceObjectLocatorTest {
 	}
 
 	@Test
-	public void testInvalidFile() throws Exception {
+	public void testInvalidFile() {
 		ResourceObjectLocator locator = new ResourceObjectLocator();
 		locator.setResourceFile("ResourceLocator/invalidResources.yml");
 

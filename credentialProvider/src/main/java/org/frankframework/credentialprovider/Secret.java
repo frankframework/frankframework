@@ -19,7 +19,7 @@ import jakarta.annotation.Nonnull;
 
 public abstract class Secret implements ISecret {
 
-	private CredentialAlias alias;
+	private final CredentialAlias alias;
 
 	protected Secret(@Nonnull CredentialAlias alias) {
 		this.alias = alias;

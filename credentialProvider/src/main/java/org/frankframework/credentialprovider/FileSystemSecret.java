@@ -20,6 +20,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.NoSuchElementException;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 public class FileSystemSecret extends Secret {
@@ -40,7 +42,7 @@ public class FileSystemSecret extends Secret {
 	}
 
 	@Override
-	public String getField(String fieldname) throws IOException {
+	public String getField(@Nonnull String fieldname) throws IOException {
 		if (StringUtils.isNotBlank(fieldname) && Files.isRegularFile(aliasPath)) {
 			throw new NoSuchElementException("cannot obtain field from secret [" + this + "]");
 		}

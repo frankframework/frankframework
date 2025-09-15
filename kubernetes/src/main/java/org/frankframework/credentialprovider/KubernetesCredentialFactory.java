@@ -20,6 +20,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+import jakarta.annotation.Nonnull;
+
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -108,7 +110,7 @@ public class KubernetesCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public boolean hasSecret(CredentialAlias alias) {
+	public boolean hasSecret(@Nonnull CredentialAlias alias) {
 		try {
 			return getSecret(alias) != null;
 		} catch (NoSuchElementException e) {
@@ -117,7 +119,7 @@ public class KubernetesCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public ISecret getSecret(CredentialAlias alias) throws NoSuchElementException {
+	public ISecret getSecret(@Nonnull CredentialAlias alias) throws NoSuchElementException {
 		Secret secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), this::getSecret);
 
 		if (secret == null) {
