@@ -73,7 +73,7 @@ public class RunCypressE2eTest {
 	private static final Logger CYPRESS_LOG = LogUtil.getLogger("cypress");
 
 	@BeforeAll
-	public static void setUp() throws IOException {
+	static void setUp() throws IOException {
 		// Pollers for WebSockets have a enormous delay for larger applications.
 		System.setProperty("console.socket.poller.startDelay", "15");
 		System.setProperty("console.socket.poller.warnings", "5");
@@ -116,6 +116,7 @@ public class RunCypressE2eTest {
 
 		container = new CypressContainer();
 		container.withBaseUrl("http://host.testcontainers.internal:8080/iaf-test/iaf/gui");
+		container.withLogConsumer(new Log4j2LogConsumer("CypressContainer", "CYPRESS"));
 
 		container.start();
 
@@ -123,7 +124,7 @@ public class RunCypressE2eTest {
 	}
 
 	@AfterAll
-	public static void tearDown() {
+	static void tearDown() {
 		if (run == null) return;
 
 		run.stop();
