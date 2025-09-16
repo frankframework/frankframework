@@ -43,7 +43,7 @@ public class MapSecret extends Secret {
 		}
 
 		if (secret.isEmpty()) {
-			throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+alias.getName()+"]: no aliases");
+			throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+alias.getName()+"]: no aliases configured");
 		}
 	}
 

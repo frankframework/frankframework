@@ -28,6 +28,36 @@ public class CredentialAliasTest {
 	}
 
 	@Test
+	public void verifyAliasWithHyphen() {
+		CredentialAlias alias = CredentialAlias.parse("alias-with-hyphen");
+		assertEquals("alias-with-hyphen", alias.getName());
+		assertEquals("username", alias.getUsernameField());
+		assertEquals("password", alias.getPasswordField());
+	}
+
+	@Test
+	public void verifyAliasWithDots() {
+		CredentialAlias alias = CredentialAlias.parse("alias.with.dots");
+		assertEquals("alias.with.dots", alias.getName());
+		assertEquals("username", alias.getUsernameField());
+		assertEquals("password", alias.getPasswordField());
+	}
+
+	@Test
+	public void verifyAliasWithUnderscore() {
+		CredentialAlias alias = CredentialAlias.parse("alias_with_unserscore");
+		assertEquals("alias_with_unserscore", alias.getName());
+		assertEquals("username", alias.getUsernameField());
+		assertEquals("password", alias.getPasswordField());
+	}
+
+	@Test
+	public void verifyAliasWithPlus() {
+		// A plus is not allowed, returns null.
+		assertNull(CredentialAlias.parse("alias+with+plus"));
+	}
+
+	@Test
 	public void verifyAliasNameWithDifferentUsername() {
 		CredentialAlias alias = CredentialAlias.parse("alias{clientId}");
 		assertEquals("alias", alias.getName());
