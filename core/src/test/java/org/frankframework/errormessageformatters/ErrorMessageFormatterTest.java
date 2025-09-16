@@ -2,8 +2,12 @@ package org.frankframework.errormessageformatters;
 
 import static org.frankframework.testutil.MatchUtils.assertJsonEquals;
 import static org.frankframework.testutil.MatchUtils.assertXmlEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
+import java.io.Reader;
 import java.util.Map;
 
 import org.junit.jupiter.api.AfterEach;
@@ -15,6 +19,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.stream.Message;
+import org.frankframework.testutil.LargeStructuredMockData;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.TimeProvider;
 
@@ -175,5 +180,15 @@ class ErrorMessageFormatterTest {
 				.replaceAll("\"\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}\"", "\"-timestamp-\"")
 				.replaceAll("(\\n|\\\\n|\\r\\n|\\\\r\\\\n)?(\\t|\\\\t)+at.+?(\\n|\\\\n|\\r\\n|\\\\r\\\\n)", "") // Ignore stacktraces
 				;
+	}
+
+	@Test
+	public void testLongOriginalMessage() throws IOException {
+		Reader reader = LargeStructuredMockData.getLargeJsonDataReader(Message.MESSAGE_MAX_IN_MEMORY + 2000);
+		try (Message originalMessage = new Message(reader)) {
+			String result = formatter.getMessageAsString(originalMessage, null);
+			assertTrue(result.endsWith(" ...(2331 characters remaining)"));
+			assertEquals(Message.MESSAGE_MAX_IN_MEMORY + 1, result.length());
+		}
 	}
 }
