@@ -56,8 +56,13 @@ export class PagesTopnavbarComponent implements OnChanges {
     }
   }
 
+  getClusterMemberName(member: ClusterMember): string {
+    return member.name;
+  }
+
   getClusterMemberTitle(member: ClusterMember): string {
-    return `Name: ${member.attributes.name ?? ''}
+    return `Name: ${member.name ?? ''}
+InstanceName: ${member.attributes.application ?? ''}
 ID: ${member.id}
 Address: ${member.address}`;
   }

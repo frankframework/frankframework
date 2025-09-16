@@ -26,6 +26,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.credentialprovider.util.CredentialConstants;
@@ -65,7 +67,7 @@ public abstract class AbstractMapCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public boolean hasSecret(CredentialAlias alias) {
+	public boolean hasSecret(@Nonnull CredentialAlias alias) {
 		try {
 			return getSecret(alias) != null;
 		} catch (NoSuchElementException e) {
@@ -74,7 +76,7 @@ public abstract class AbstractMapCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public ISecret getSecret(CredentialAlias alias) throws NoSuchElementException {
+	public ISecret getSecret(@Nonnull CredentialAlias alias) throws NoSuchElementException {
 		return new MapSecret(alias, aliases);
 	}
 

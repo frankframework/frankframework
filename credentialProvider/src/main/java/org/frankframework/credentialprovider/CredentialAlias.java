@@ -15,6 +15,8 @@
 */
 package org.frankframework.credentialprovider;
 
+import java.util.logging.Level;
+
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
@@ -131,9 +133,14 @@ public class CredentialAlias {
 
 	@Nullable
 	public static CredentialAlias parse(String rawAlias) {
+		if (StringUtils.isBlank(rawAlias)) {
+			log.info("raw alias is empty, returning null");
+			return null;
+		}
 		try {
 			return new CredentialAlias(rawAlias);
 		} catch (Exception e) {
+			log.log(Level.INFO, "Cannot parse credential alias, returning null: " + e.getMessage(), e);
 			return null;
 		}
 	}

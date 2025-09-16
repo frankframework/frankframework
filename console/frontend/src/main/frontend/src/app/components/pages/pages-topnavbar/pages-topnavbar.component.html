@@ -66,7 +66,7 @@
           >
             @for (member of clusterMembers; track member.id) {
               <option [ngValue]="member" [title]="getClusterMemberTitle(member)">
-                {{ member.address }}
+                {{ getClusterMemberName(member) }}
               </option>
             }
           </select>

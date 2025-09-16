@@ -45,6 +45,7 @@ public interface OutboundGateway extends IntegrationPattern {
 	@Getter
 	class ClusterMember {
 		private UUID id;
+		private String name;
 		private String address;
 		private boolean localMember;
 		private boolean selectedMember;

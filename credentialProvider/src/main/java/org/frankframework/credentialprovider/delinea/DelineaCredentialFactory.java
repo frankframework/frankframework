@@ -18,6 +18,8 @@ package org.frankframework.credentialprovider.delinea;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.extern.log4j.Log4j2;
@@ -137,7 +139,7 @@ public class DelineaCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public boolean hasSecret(CredentialAlias alias) {
+	public boolean hasSecret(@Nonnull CredentialAlias alias) {
 		return getSecret(alias) != null;
 	}
 
@@ -147,7 +149,7 @@ public class DelineaCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public ISecret getSecret(CredentialAlias alias) throws NoSuchElementException {
+	public ISecret getSecret(@Nonnull CredentialAlias alias) throws NoSuchElementException {
 		// Make sure to always get a live copy of the secret
 		DelineaSecretDto secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), aliasToRetrieve -> delineaClient.getSecret(aliasToRetrieve, delineaClientSettings.autoCommentValue()));
 

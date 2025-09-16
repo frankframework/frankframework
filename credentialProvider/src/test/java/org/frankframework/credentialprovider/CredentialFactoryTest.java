@@ -3,6 +3,7 @@ package org.frankframework.credentialprovider;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -42,7 +43,18 @@ class CredentialFactoryTest {
 		ICredentials c = CredentialFactory.getCredentials("account");
 
 		// Assert
+		assertNotNull(c);
 		assertEquals("fakeUsername", c.getUsername());
+		assertEquals("fakePassword", c.getPassword());
+	}
+
+	@Test
+	void testEmptyAliasWithNoUsernameAndDefaultPassword() {
+		// Act
+		ICredentials c = CredentialFactory.getCredentials("", null, "fakePassword");
+
+		// Assert
+		assertNull(c.getUsername());
 		assertEquals("fakePassword", c.getPassword());
 	}
 
@@ -64,6 +76,7 @@ class CredentialFactoryTest {
 		ICredentials c = CredentialFactory.getCredentials("fakePrefix:account");
 
 		// Assert
+		assertNotNull(c);
 		assertEquals("fakeUsername", c.getUsername());
 		assertEquals("fakePassword", c.getPassword());
 	}
@@ -98,6 +111,7 @@ class CredentialFactoryTest {
 		ICredentials c = CredentialFactory.getCredentials("aliasWith{username+domain,secret}");
 
 		// Assert values are from the first factory that returns a value
+		assertNotNull(c);
 		assertEquals("name+domain.com", c.getUsername());
 		assertEquals("fakePassword", c.getPassword());
 	}
@@ -111,6 +125,7 @@ class CredentialFactoryTest {
 		ICredentials c = CredentialFactory.getCredentials("aliasWith{username:unknown,secret+domain}");
 
 		// Assert values are from the first factory that returns a value
+		assertNotNull(c);
 		assertEquals("name:", c.getUsername());
 		assertEquals("fakePassword+domain.com", c.getPassword());
 	}
@@ -124,6 +139,7 @@ class CredentialFactoryTest {
 		ICredentials c = CredentialFactory.getCredentials("account");
 
 		// Assert values are from the first factory that returns a value
+		assertNotNull(c);
 		assertEquals("fakeUsername", c.getUsername());
 		assertEquals("fakePassword", c.getPassword());
 	}
@@ -142,6 +158,7 @@ class CredentialFactoryTest {
 		ICredentials c = CredentialFactory.getCredentials("account2");
 
 		// Assert values are from the second factory
+		assertNotNull(c);
 		assertEquals("mockUsername", c.getUsername());
 		assertEquals("mockPassword", c.getPassword());
 	}
@@ -159,6 +176,9 @@ class CredentialFactoryTest {
 		ICredentials alias2 = CredentialFactory.getCredentials("alias2");
 
 		// Assert
+		assertNotNull(account);
+		assertNotNull(alias1);
+		assertNotNull(alias2);
 		assertEquals("fakeUsername", account.getUsername());
 		assertEquals("mockGoesFirst", account.getPassword());
 		assertEquals("alias1Username", alias1.getUsername());
@@ -183,6 +203,9 @@ class CredentialFactoryTest {
 		ICredentials alias2 = CredentialFactory.getCredentials("alias2");
 
 		// Assert
+		assertNotNull(account);
+		assertNotNull(alias1);
+		assertNotNull(alias2);
 		assertEquals("fakeUsername", account.getUsername());
 		assertEquals("fakePassword", account.getPassword()); // comes from property file, ignore mock value
 		assertEquals("username1", alias1.getUsername());
@@ -204,6 +227,7 @@ class CredentialFactoryTest {
 		CredentialConstants.getInstance().setProperty("credentialFactory.filesystem.root", root.toString());
 
 		ICredentials credentials = CredentialFactory.getCredentials("singleValue");
+		assertNotNull(credentials);
 		assertNull(credentials.getUsername());
 		assertEquals("Plain Credential", credentials.getPassword());
 	}
