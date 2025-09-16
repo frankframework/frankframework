@@ -296,14 +296,17 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 	}
 
 	private @Nullable String getMessageAsString(@Nullable Message originalMessage, @Nullable String messageId) {
-		String originalMessageAsString;
 		try {
-			originalMessageAsString = originalMessage != null ? originalMessage.asString() : null;
+			if (originalMessage.size() < Message.MESSAGE_MAX_IN_MEMORY) {
+				return originalMessage != null ? originalMessage.asString() : null;
+			}
+
+			long remainder = originalMessage.size() - Message.MESSAGE_MAX_IN_MEMORY;
+			return originalMessage.peek((int) Message.MESSAGE_MAX_IN_MEMORY) + "... (%d characters remaining)".formatted(remainder);
 		} catch (IOException e) {
 			log.warn("Could not convert originalMessage for messageId [{}]", messageId, e);
-			originalMessageAsString = originalMessage.toString();
+			return originalMessage.toString();
 		}
-		return originalMessageAsString;
 	}
 
 	protected @Nullable String getErrorMessage(@Nullable String message, @Nullable Throwable t) {
