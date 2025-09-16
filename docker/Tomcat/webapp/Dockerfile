@@ -10,8 +10,10 @@ RUN set -eux && \
 	# Create default directory for configurations, properties and credential filesystem
 	mkdir -p /opt/frank/secrets && \
 	mkdir -p /opt/frank/configurations && \
-    mkdir -p /opt/frank/testtool && \
-    mkdir -p /opt/frank/testtool-ext && \
+	mkdir -p /opt/frank/drivers && \
+	mkdir -p /opt/frank/plugins && \
+	mkdir -p /opt/frank/testtool && \
+	mkdir -p /opt/frank/testtool-ext && \
 	# Create tomcat user for stepping down from root
 	groupadd -g ${GID} tomcat && \
 	useradd -u ${UID} -g tomcat -s /usr/sbin/nologin -l tomcat -d ${CATALINA_HOME} && \

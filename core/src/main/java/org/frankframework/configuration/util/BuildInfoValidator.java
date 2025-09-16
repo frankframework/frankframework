@@ -162,6 +162,6 @@ public class BuildInfoValidator {
 		return configInfo.getName();
 	}
 	public String getVersion() {
-		return configInfo.getLegacyVersion();
+		return configInfo.getVersion();
 	}
 }

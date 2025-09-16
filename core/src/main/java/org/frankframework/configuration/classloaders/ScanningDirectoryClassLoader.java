@@ -24,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.IbisContext;
+import org.frankframework.management.Action;
 
 /**
  * Actively scans the configuration directory for file changes.
@@ -124,7 +125,7 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 		File[] files = getDirectory().listFiles();
 		if(hasBeenModified(files)) {
 			log.debug("detected file change, reloading configuration");
-			getIbisContext().reload(getConfigurationName());
+			getIbisManager().handleAction(Action.RELOAD, getConfigurationName(), null, null, toString(), false);
 
 			schedule();
 		}

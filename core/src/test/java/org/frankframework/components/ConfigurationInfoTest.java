@@ -21,13 +21,13 @@ public class ConfigurationInfoTest {
 
 	@Test
 	public void testDate() {
-		ConfigurationInfo info = new ConfigurationInfo("name", "version", "20100526-1145");
+		ComponentInfo info = new ConfigurationInfo("name", "version", "20100526-1145");
 		assertEquals(Instant.parse("2010-05-26T11:45:00.000Z"), info.getTimestamp());
 	}
 
 	@Test
 	public void testStrangeVersion() {
-		ConfigurationInfo info = new ConfigurationInfo("name", "25c04aa", "20100526-1145");
+		ComponentInfo info = new ConfigurationInfo("name", "25c04aa", "20100526-1145");
 		assertEquals(Instant.parse("2010-05-26T11:45:00.000Z"), info.getTimestamp());
 	}
 
@@ -37,14 +37,13 @@ public class ConfigurationInfoTest {
 		URL manifestFile = TestFileUtils.getTestFileURL("/ConfigurationUtils/MANIFEST.MF");
 		assertNotNull(manifestFile);
 		Manifest manifest = new Manifest(manifestFile.openStream());
-		ConfigurationInfo info = new ConfigurationInfo(manifest);
+		ComponentInfo info = new ConfigurationInfo(manifest);
 
 		assertAll(
 				() -> assertEquals("Configuration_Template", ConfigurationInfo.fromManifest(manifest).getName()),
 				() -> assertEquals("Configuration_Template", info.getName()),
-				() -> assertEquals(new DefaultArtifactVersion("0.0.1-SNAPSHOT"), info.getVersion()),
+				() -> assertEquals("0.0.1-SNAPSHOT_2025-08-09T10:03:00Z", info.getVersion()),
 				() -> assertEquals(expectedDate, info.getTimestamp()), // 2025-08-09 12:03
-				() -> assertEquals("org.frankframework:jar-configuration:20250809-1003:0.0.1-SNAPSHOT", info.getArtifact().toString()),
 				() -> assertEquals("FrankFramework! ConfigurationJar", info.getDescription()),
 				() -> assertEquals("FrankFramework!", info.getOrganisation()),
 				() -> assertEquals(new DefaultArtifactVersion("9.2.0"), info.getFrameworkVersion().getRecommendedVersion())
