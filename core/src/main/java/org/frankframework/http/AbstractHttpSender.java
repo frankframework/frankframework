@@ -63,6 +63,7 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TransformerPool;
@@ -226,7 +227,6 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 	public void start() {
 		if (StringUtils.isNotBlank(sharedResourceRef)) {
 			try {
-
 				HttpSession session = getSharedResource(sharedResourceRef);
 				setHttpClient(session.getHttpClient());
 				setHttpContext(session.getDefaultHttpClientContext());
@@ -472,6 +472,28 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 			return "dynamic url";
 		}
 		return getUrl();
+	}
+
+	private HttpSession getSharedSession() {
+		return StringUtils.isNotBlank(sharedResourceRef) ? getSharedResource(sharedResourceRef) : null;
+	}
+
+	@Override
+	public CredentialFactory getCredentials() {
+		HttpSession sharedSession = getSharedSession();
+		return sharedSession != null ? sharedSession.getCredentials() : super.getCredentials();
+	}
+
+	@Override
+	public String getTokenEndpoint() {
+		HttpSession sharedSession = getSharedSession();
+		return sharedSession != null ? sharedSession.getTokenEndpoint() : super.getTokenEndpoint();
+	}
+
+	@Override
+	public OauthAuthenticationMethod getOauthAuthenticationMethod() {
+		HttpSession sharedSession = getSharedSession();
+		return sharedSession != null ? sharedSession.getOauthAuthenticationMethod() : super.getOauthAuthenticationMethod();
 	}
 
 	/** URL or base of URL to be used. Expects all parts of the URL to already be encoded. */

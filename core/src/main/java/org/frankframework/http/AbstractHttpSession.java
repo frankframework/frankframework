@@ -343,18 +343,18 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 			throw new ConfigurationException("maxConnections is set to ["+getMaxConnections()+"], which is not enough for adequate operation");
 		}
 
-		if (oauthAuthenticationMethod == null) {
+		if (getOauthAuthenticationMethod() == null) {
 			if (getTokenEndpoint() != null) {
 				ConfigurationWarnings.add(this, log, "Use oauthAuthenticationMethod to explicitly set the Oauth2 method to be used. This is currently automatically determined, but will be removed in the future.");
 			}
 			oauthAuthenticationMethod = OauthAuthenticationMethod.determineOauthAuthenticationMethod(this);
 		}
 
-		credentials = getCredentialFactory(oauthAuthenticationMethod);
+		credentials = getCredentialFactory(getOauthAuthenticationMethod());
 
 		if (oauthAuthenticationMethod != null) {
 			try {
-				authenticator = oauthAuthenticationMethod.newAuthenticator(this);
+				authenticator = getOauthAuthenticationMethod().newAuthenticator(this);
 				authenticator.configure();
 			} catch (HttpAuthenticationException e) {
 				throw new ConfigurationException(e);
@@ -365,7 +365,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 
 		AuthSSLContextFactory.verifyKeystoreConfiguration(this, this);
 
-		if (StringUtils.isNotEmpty(getTokenEndpoint()) && StringUtils.isEmpty(credentials.getUsername()) && StringUtils.isEmpty(credentials.getPassword())) {
+		if (StringUtils.isNotEmpty(getTokenEndpoint()) && StringUtils.isEmpty(getCredentials().getUsername()) && StringUtils.isEmpty(getCredentials().getPassword())) {
 			// Should be unreachable since an exception would have been thrown at: authenticator.configure()
 			throw new ConfigurationException("To obtain an accessToken at tokenEndpoint ["+getTokenEndpoint()+"] a clientAuthAlias or ClientId and ClientSecret must be specified");
 		}
@@ -586,7 +586,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		Assert.notNull(defaultHttpClientContext, "no HttpClientContext created during configure"); // This should be set in #configure()
 
 		CredentialsProvider credentialsProvider = new BasicCredentialsProvider();
-		if (StringUtils.isNotEmpty(credentials.getUsername()) || StringUtils.isNotEmpty(getTokenEndpoint())) {
+		if (StringUtils.isNotEmpty(getCredentials().getUsername()) || StringUtils.isNotEmpty(getTokenEndpoint())) {
 
 			credentialsProvider.setCredentials(new AuthScope(AuthScope.ANY_HOST, AuthScope.ANY_PORT), getDomainAwareCredentials());
 
@@ -599,7 +599,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 				httpClientBuilder.setTargetAuthenticationStrategy(new OAuthPreferringAuthenticationStrategy());
 			}
 		}
-		if (proxy!=null) {
+		if (proxy != null) {
 			AuthScope authScope = new AuthScope(proxy, proxyRealm, AuthScope.ANY_SCHEME);
 			if (StringUtils.isNotEmpty(proxyCredentials.getUsername())) {
 				Credentials httpCredentials = new UsernamePasswordCredentials(proxyCredentials.getUsername(), proxyCredentials.getPassword());
@@ -629,9 +629,10 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	 * {@link OAuthAccessTokenManager} decides if and when to refresh the access token.
 	 */
 	private void preAuthenticate(HttpClientContext clientContext) {
-		if (credentials != null && !StringUtils.isEmpty(credentials.getUsername())) {
+		// This is only executed when an authenticator is present within the given context.
+		if (clientContext.getAttribute(AUTHENTICATION_METHOD_KEY) != null) {
 			AuthState authState = clientContext.getTargetAuthState();
-			if (authState==null) {
+			if (authState == null) {
 				authState = new AuthState();
 				clientContext.setAttribute(HttpClientContext.TARGET_AUTH_STATE, authState);
 			}
@@ -643,12 +644,12 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	public Credentials getDomainAwareCredentials() {
 		String uname;
 		if (StringUtils.isNotEmpty(getAuthDomain())) {
-			uname = getAuthDomain() + "\\" + credentials.getUsername();
+			uname = getAuthDomain() + "\\" + getCredentials().getUsername();
 		} else {
-			uname = credentials.getUsername();
+			uname = getCredentials().getUsername();
 		}
 
-		return new UsernamePasswordCredentials(uname, credentials.getPassword());
+		return new UsernamePasswordCredentials(uname, getCredentials().getPassword());
 	}
 
 	private AuthenticationScheme getPreferredAuthenticationScheme() {
