@@ -313,7 +313,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 
 		try {
 			if (originalMessage.size() < Message.MESSAGE_MAX_IN_MEMORY) {
-				return originalMessage != null ? originalMessage.asString() : null;
+				return originalMessage.asString();
 			}
 
 			// Offset -30 for the 'remainder tail'.
