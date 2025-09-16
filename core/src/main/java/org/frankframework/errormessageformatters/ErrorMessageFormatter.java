@@ -297,7 +297,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 
 	/**
 	 * Attempts to convert the originalMessage to a String.
-	 * 
+	 *
 	 * <br/>Returns NULL when the Message is null or empty.
 	 * <br/>Returns the entire Message when it's smaller than {@link Message#MESSAGE_MAX_IN_MEMORY}.
 	 * <br/>Returns a shortened Message roughly of length {@link Message#MESSAGE_MAX_IN_MEMORY} suffixed with `...(%d characters remaining)`.
