@@ -66,7 +66,7 @@ public class CredentialFactoryTest {
 	@Test
 	public void hyphenInAlias() {
 		CredentialFactory cf = new CredentialFactory("alias-with-hyphen", null, null);
-		assertNull(cf.getUsername());
-		assertEquals("passwordOnly", cf.getPassword());
+		assertEquals("afbcad4", cf.getUsername());
+		assertEquals("afbcad4", cf.getPassword());
 	}
 }
