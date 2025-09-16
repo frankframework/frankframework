@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -40,50 +41,48 @@ public class FileSystemCredentialFactoryTest {
 
 	@Test
 	public void testAliasNoDefault() {
-		String alias = "dummy";
+		CredentialAlias alias = CredentialAlias.parse("dummy");
 
-		ICredentials mc = credentialFactory.getCredentials(CredentialAlias.parse(alias));
-		NoSuchElementException e = assertThrows(NoSuchElementException.class, mc::getUsername);
+		NoSuchElementException e = assertThrows(NoSuchElementException.class, () -> credentialFactory.getSecret(alias));
 		assertEquals("cannot obtain credentials from authentication alias [dummy]: alias not found", e.getMessage());
 	}
 
 	@Test
-	public void testPlainAlias() {
-		String alias = "straight";
+	public void testPlainAlias() throws IOException {
+		CredentialAlias alias = CredentialAlias.parse("straight");
 
-		ICredentials mc = credentialFactory.getCredentials(CredentialAlias.parse(alias));
+		ISecret mc = credentialFactory.getSecret(alias);
 
-		assertEquals("username from alias", mc.getUsername());
-		assertEquals("password from alias", mc.getPassword());
+		assertEquals("username from alias", mc.getField("username"));
+		assertEquals("password from alias", mc.getField("password"));
 	}
 
 	@Test
 	public void testUnknownAlias() {
-		ICredentials mc = credentialFactory.getCredentials(CredentialAlias.parse("unknown"));
+		CredentialAlias alias = CredentialAlias.parse("unknown");
 
-		assertThrows(NoSuchElementException.class, mc::getUsername);
+		assertThrows(NoSuchElementException.class, () -> credentialFactory.getSecret(alias));
 	}
 
 	@Test
-	public void testAliasWithoutUsername() {
-		String alias = "noUsername";
+	public void testAliasWithoutUsername() throws IOException {
+		CredentialAlias alias = CredentialAlias.parse("noUsername");
 		String expectedPassword = "password from alias";
 
-		ICredentials mc = credentialFactory.getCredentials(CredentialAlias.parse(alias));
+		ISecret mc = credentialFactory.getSecret(alias);
 
-		assertNull(mc.getUsername());
-		assertEquals(expectedPassword, mc.getPassword());
+		assertNull(mc.getField("username"));
+		assertEquals(expectedPassword, mc.getField("password"));
 	}
 
 	@Test
-	public void testPlainCredential() {
-		String alias = "singleValue";
-		String expectedPassword = "Plain Credential";
+	public void testPlainCredential() throws IOException {
+		CredentialAlias alias = CredentialAlias.parse("singleValue");
 
-		ICredentials mc = credentialFactory.getCredentials(CredentialAlias.parse(alias));
+		ISecret mc = credentialFactory.getSecret(alias);
 
-		assertNull(mc.getUsername());
-		assertEquals(expectedPassword, mc.getPassword());
+		assertThrows(NoSuchElementException.class, () -> mc.getField("username"));
+		assertEquals("Plain Credential", mc.getField(""));
 	}
 
 	@Test

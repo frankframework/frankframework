@@ -1,6 +1,5 @@
 package org.frankframework.testutil.junit;
 
-import java.lang.reflect.Method;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -42,13 +41,13 @@ import org.frankframework.util.SpringUtils;
 public class DatabaseTestEnvironment implements Store.CloseableResource {
 
 	private final @Getter String dataSourceName;
-	private final DataSource dataSource;
-	private @Getter IDbmsSupport dbmsSupport;
+	private final @Getter DataSource dataSource;
+	private final @Getter IDbmsSupport dbmsSupport;
 	private final TransactionManagerType type;
 	private final @Getter TestConfiguration configuration;
 	private final AtomicInteger connectionCount = new AtomicInteger();
 
-	private @Getter final PlatformTransactionManager txManager;
+	private final @Getter PlatformTransactionManager txManager;
 	private final List<TransactionStatus> transactionsToClose = new ArrayList<>();
 
 	/**
@@ -69,15 +68,13 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 		ProxyFactory factory = new ProxyFactory();
 		factory.setInterfaces(new Class[] {Connection.class});
 
-		return (Connection) factory.create(new Class[0], new Object[0], new MethodHandler() {
-			@Override
-			public Object invoke(Object self, Method method, Method proceed, Object[] args) throws Throwable {
-				if("close".equals(method.getName())) {
-					connectionCount.decrementAndGet();
-				}
-				return method.invoke(connection, args);
+		return (Connection) factory.create(new Class[0], new Object[0], (MethodHandler) (self, method, proceed, args) -> {
+			if("close".equals(method.getName())) {
+				connectionCount.decrementAndGet();
 			}
-		});
+			return method.invoke(connection, args);
+		}
+		);
 	}
 
 	public String getName() {
@@ -156,6 +153,10 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 
 	public TransactionStatus startTransaction(final int transactionAttribute) {
 		return startTransaction(getTxDef(transactionAttribute));
+	}
+
+	public TransactionStatus startTransaction(final int transactionAttribute, int timeout) {
+		return startTransaction(getTxDef(transactionAttribute,  timeout));
 	}
 
 	protected TransactionStatus startTransaction(final TransactionDefinition txDef) {

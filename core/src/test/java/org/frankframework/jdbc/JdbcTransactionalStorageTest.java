@@ -32,6 +32,9 @@ import java.sql.Statement;
 import java.util.zip.DeflaterOutputStream;
 
 import org.junit.jupiter.api.BeforeEach;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionStatus;
+import org.springframework.transaction.support.DefaultTransactionDefinition;
 
 import org.frankframework.core.IMessageBrowsingIteratorItem;
 import org.frankframework.core.PipeLineSession;
@@ -235,7 +238,7 @@ public class JdbcTransactionalStorageTest {
 	}
 
 	@DatabaseTest
-	public void testStoreAndGetMessage() throws Exception {
+	public void testStoreAndConsumeMessage() throws Exception {
 		storage.configure();
 
 		String message = createMessage();
@@ -246,8 +249,10 @@ public class JdbcTransactionalStorageTest {
 			key = storeMessageOutput.substring(storeMessageOutput.indexOf(">") + 1, storeMessageOutput.lastIndexOf("<"));
 		}
 
-		String result = storage.getMessage(key).getRawMessage();
+		TransactionStatus tx = storage.getTxManager().getTransaction(new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED));
+		String result = storage.consumeMessage(key).getRawMessage();
 		assertEquals(message, result);
+		storage.getTxManager().commit(tx);
 	}
 
 	@DatabaseTest
@@ -268,8 +273,10 @@ public class JdbcTransactionalStorageTest {
 			assertEquals("label", item.getLabel());
 		}
 
-		String result = storage.getMessage(key).getRawMessage();
+		TransactionStatus tx = storage.getTxManager().getTransaction(new DefaultTransactionDefinition(TransactionDefinition.PROPAGATION_REQUIRED));
+		String result = storage.consumeMessage(key).getRawMessage();
 		assertEquals(message, result);
+		storage.getTxManager().commit(tx);
 	}
 
 }

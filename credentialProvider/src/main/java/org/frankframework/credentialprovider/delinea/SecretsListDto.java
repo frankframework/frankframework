@@ -23,7 +23,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
  * Response POJO for listing all secrets.
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
-public record SecretsList (
+public record SecretsListDto(
 	boolean hasNext,
 	boolean hasPrev,
 	boolean success,

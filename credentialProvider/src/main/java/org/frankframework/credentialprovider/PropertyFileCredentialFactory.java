@@ -29,7 +29,7 @@ import org.frankframework.util.StreamUtil;
 /**
  * <p>CredentialFactory that reads its credentials from a plain (unencrypted) .properties file.</p>
  *
- * <p>Credentials are stored in the properties file as key/value pairs, where the key is the alias and the value is the password.</p>
+ * <p>Secret are stored in the properties file as key/value pairs, where the key is the alias and the value is the password.</p>
  *
  * @ff.info For adequate privacy in production environments, the source file should not be readable by unauthorised users.
  * @author Gerrit van Brakel
@@ -42,7 +42,7 @@ public class PropertyFileCredentialFactory extends AbstractMapCredentialFactory 
 
 	@Override
 	protected Map<String, String> getCredentialMap(CredentialConstants appConstants) throws IOException {
-		try (InputStream propertyStream = getInputStream(appConstants, PROPERTY_BASE, DEFAULT_PROPERTIES_FILE, "Credentials");
+		try (InputStream propertyStream = getInputStream(appConstants, PROPERTY_BASE, DEFAULT_PROPERTIES_FILE, "Secret");
 			Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(propertyStream)) {
 			Properties properties = new Properties();
 			properties.load(reader);

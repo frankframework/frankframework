@@ -27,7 +27,7 @@ import jakarta.annotation.Nonnull;
  *
  * <p>Implementations of this interface should be thread-safe.</p>
  */
-public interface ICredentialProvider {
+public interface ISecretProvider {
 
 	/**
 	 * initialize() of an implementation can throw an exception when the credentialFactory cannot be properly configured and used.
@@ -35,9 +35,9 @@ public interface ICredentialProvider {
 	@SuppressWarnings("java:S112")
 	void initialize() throws Exception;
 
-	boolean hasCredentials(@Nonnull CredentialAlias alias);
+	boolean hasSecret(@Nonnull CredentialAlias alias);
 
-	ICredentials getCredentials(@Nonnull CredentialAlias alias) throws NoSuchElementException;
+	ISecret getSecret(@Nonnull CredentialAlias alias) throws NoSuchElementException;
 
 	/**
 	 * return a list of all configured aliases, or null if such a list cannot be provided.

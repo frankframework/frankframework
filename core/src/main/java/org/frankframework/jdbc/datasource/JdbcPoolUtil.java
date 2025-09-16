@@ -24,16 +24,25 @@ import jakarta.annotation.Nullable;
 import org.apache.tomcat.dbcp.dbcp2.managed.ManagedDataSource;
 import org.apache.tomcat.dbcp.pool2.impl.GenericObjectPool;
 import org.springframework.jdbc.datasource.DelegatingDataSource;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.jta.JtaTransactionManager;
+
+import org.frankframework.jta.SpringTxManagerProxy;
+import org.frankframework.jta.narayana.NarayanaDataSource;
 
 public class JdbcPoolUtil {
 
 	private static final String CLOSE = "], ";
 
+	private JdbcPoolUtil() {
+		// Empty constructor to prevent creation of instances of static utility-class.
+	}
+
 	/** Returns pool info or NULL when it's not able to do so. */
 	public static @Nullable String getConnectionPoolInfo(@Nullable DataSource datasource) {
 		StringBuilder info = new StringBuilder();
 
-		if (datasource instanceof OpenManagedDataSource targetDataSource) {
+		if (datasource instanceof OpenManagedDataSource<?> targetDataSource) {
 			addPoolMetadata(targetDataSource.getPool(), info);
 		} else if (datasource instanceof org.apache.tomcat.dbcp.dbcp2.PoolingDataSource) {
 			OpenPoolingDataSource<?> dataSource = (OpenPoolingDataSource<?>) datasource;
@@ -74,6 +83,16 @@ public class JdbcPoolUtil {
 
 	public static boolean isXaCapable(DataSource dataSource) {
 		DataSource innerDs = getInnerDataSource(dataSource);
-		return innerDs instanceof XADataSource || innerDs instanceof ManagedDataSource || innerDs instanceof OpenManagedDataSource;
+		return innerDs instanceof XADataSource || innerDs instanceof ManagedDataSource || innerDs instanceof NarayanaDataSource;
+	}
+
+	public static boolean isXaCapable(PlatformTransactionManager transactionManager) {
+		if (transactionManager instanceof JtaTransactionManager) {
+			return true;
+		} else if (transactionManager instanceof SpringTxManagerProxy txManagerProxy) {
+			return isXaCapable(txManagerProxy.getRealTxManager());
+		} else {
+			return false;
+		}
 	}
 }

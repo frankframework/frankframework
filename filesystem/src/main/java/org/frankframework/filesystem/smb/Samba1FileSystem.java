@@ -101,6 +101,9 @@ public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWr
 
 	@Override
 	public SmbFile toFile(@Nullable String filename) throws FileSystemException {
+		if (filename == null) {
+			return null;
+		}
 		try {
 			return new SmbFile(smbContext, filename);
 		} catch (IOException e) {
@@ -114,12 +117,18 @@ public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWr
 	}
 
 	@Override
-	public DirectoryStream<SmbFile> list(String folder, TypeFilter filter) throws FileSystemException {
+	public DirectoryStream<SmbFile> list(SmbFile folder, TypeFilter filter) throws FileSystemException {
 		try {
-			return FileSystemUtils.getDirectoryStream(new SmbFileIterator(folder, filter));
+			return FileSystemUtils.getDirectoryStream(new SmbFileIterator(folder != null ? folder.getURL().getFile() : null, filter));
 		} catch (IOException e) {
 			throw new FileSystemException(e);
 		}
+	}
+
+	@Override
+	public DirectoryStream<SmbFile> list(String folder, TypeFilter filter) throws FileSystemException {
+		SmbFile actualFolder = toFile(folder);
+		return list(actualFolder, filter);
 	}
 
 	@Override

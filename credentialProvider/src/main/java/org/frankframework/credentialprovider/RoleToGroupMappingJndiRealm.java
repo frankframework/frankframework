@@ -104,7 +104,7 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 			close(connection);
 			closePooledConnections();
 			if (this.containerLog.isDebugEnabled()) this.containerLog.debug("Returning null roles.");
-			return null;
+			return List.of();
 		}
 	}
 
@@ -112,10 +112,10 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 	 * Find the LDAP group memberships of this user.
 	 * Based on {@link JNDIRealm#authenticate(JNDIConnection connection, String username, String credentials)}
 	 */
-	public List<String> getRoles(JNDIConnection connection, String username) throws NamingException {
+	private List<String> getRoles(JNDIConnection connection, String username) throws NamingException {
 		if (StringUtils.isEmpty(username)) {
 			containerLog.debug("username null or empty: returning null roles.");
-			return null;
+			return List.of();
 		}
 		if (this.userPatternArray != null) {
 			for (int curUserPattern = 0; curUserPattern < this.userPatternArray.length; curUserPattern++) {
@@ -129,11 +129,11 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 						this.containerLog.warn(sm.getString("jndiRealm.exception"), ine);
 					}
 			}
-			return null;
+			return List.of();
 		}
 		User user = getUser(connection, username, null, -1);
 		if (user == null) {
-			return null;
+			return List.of();
 		}
 		List<String> roles = getRoles(connection, user);
 		if (this.containerLog.isDebugEnabled()) this.containerLog.debug("Found roles: " + roles.toString());

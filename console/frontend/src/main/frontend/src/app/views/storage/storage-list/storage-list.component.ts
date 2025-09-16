@@ -151,6 +151,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
           property: field.property,
           displayName: field.displayName,
           className: field.type === 'date' ? 'date' : undefined,
+          sortable: field.property === 'insertDate',
         })),
       ];
       this.messageFields = response.fields.map((field) => ({ ...field, display: true, filter: '' }));

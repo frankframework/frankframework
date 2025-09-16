@@ -27,6 +27,8 @@ import org.junit.platform.commons.util.ReflectionUtils;
 
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.jta.xa.XaDataSourceModifier;
+import org.frankframework.jta.xa.XaResourceObserverFactory;
 import org.frankframework.testutil.TransactionManagerType;
 
 class DatabaseTestInvocationContext implements TestTemplateInvocationContext {
@@ -58,7 +60,7 @@ class DatabaseTestInvocationContext implements TestTemplateInvocationContext {
 		public DatabaseTestParameterResolver(Method testMethod, Object[] arguments) {
 			this.arguments = arguments;
 
-			DatabaseTest annotation = AnnotationUtils.findAnnotation(testMethod, DatabaseTest.class)
+			DatabaseTestOptions annotation = AnnotationUtils.findAnnotation(testMethod, DatabaseTestOptions.class)
 					.orElseThrow(()->new JUnitException("unable to find DatabaseTest annotation"));
 			boolean cleanupBeforeUse = annotation.cleanupBeforeUse();
 			cleanupAfterUse = annotation.cleanupAfterUse();
@@ -68,11 +70,27 @@ class DatabaseTestInvocationContext implements TestTemplateInvocationContext {
 				TransactionManagerType.closeAllConfigurationContexts();
 			}
 
+			// If the XaResourceObserver is not created and set before the DatabaseTestEnvironment instance is created,
+			// then it is too late and XA DataSources are not wrapped by the XaResourceObserver.
+			// This was not an issue when there was only one single XaResourceObserver for all XA DataSources, the XaCommitStopper.
+			JtaTxManagerTest jtaAnnotation = AnnotationUtils.findAnnotation(testMethod, JtaTxManagerTest.class)
+					.orElse(null);
+			if (jtaAnnotation != null) {
+				Class<? extends XaResourceObserverFactory> resourceObserverFactory = jtaAnnotation.resourceObserverFactory();
+				if (resourceObserverFactory != XaResourceObserverFactory.class) {
+					try {
+						XaDataSourceModifier.registerFactory(resourceObserverFactory.getConstructor().newInstance());
+					} catch (Exception e) {
+						log.warn("Could not invoke default-constructor of JtaResourceObserverFactory class [%s]".formatted(resourceObserverFactory.getName()), e);
+					}
+				}
+			}
+
 			this.dte = new DatabaseTestEnvironment((TransactionManagerType) arguments[0], (String)arguments[1]);
 		}
 
 		@Override
-		public void beforeEach(ExtensionContext context) throws Exception {
+		public void beforeEach(ExtensionContext context) {
 			Object testInstance = context.getRequiredTestInstances().getInnermostInstance();
 			setAnnotatedFields(testInstance, testInstance.getClass());
 
@@ -81,7 +99,8 @@ class DatabaseTestInvocationContext implements TestTemplateInvocationContext {
 		}
 
 		@Override
-		public void afterEach(ExtensionContext context) throws Exception {
+		public void afterEach(ExtensionContext context) {
+			XaDataSourceModifier.removeFactory();
 			if(cleanupAfterUse) {
 				log.info("cleanup TransactionManager after executing test");
 				TransactionManagerType.closeAllConfigurationContexts();
@@ -89,9 +108,9 @@ class DatabaseTestInvocationContext implements TestTemplateInvocationContext {
 		}
 
 		private void setAnnotatedFields(Object instance, Class<?> testClass) {
-			AnnotationUtils.findAnnotatedFields(testClass, DatabaseTest.Parameter.class, ReflectionUtils::isNotStatic).forEach(field -> {
+			AnnotationUtils.findAnnotatedFields(testClass, DatabaseTestOptions.Parameter.class, ReflectionUtils::isNotStatic).forEach(field -> {
 				assertNonFinalField(field);
-				int index = field.getDeclaredAnnotation(DatabaseTest.Parameter.class).value();
+				int index = field.getDeclaredAnnotation(DatabaseTestOptions.Parameter.class).value();
 
 				Object valueToSet = arguments[index];
 				if(valueToSet != null) { //Skip null values

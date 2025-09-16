@@ -13,6 +13,7 @@ import org.frankframework.receivers.ExchangeMailListener;
 import org.frankframework.testutil.TestAssertions;
 
 @Tag("slow")
+@Tag("unstable") // Relies on a remote API that is not always available for the tests
 public class ExchangeFileSystemListenerTest extends BasicFileSystemListenerTest<MailItemId, ExchangeFileSystem> {
 
 	@BeforeAll

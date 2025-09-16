@@ -7,7 +7,7 @@ import org.frankframework.testutil.TransactionManagerType;
  *
  * @author Niels Meijer
  */
-public class NarayanaArgumentsProvider extends DatasourceArgumentSource {
+public class NarayanaArgumentsProvider extends DatasourceArgumentProvider {
 
 	@Override
 	protected TransactionManagerType getTransactionManagerType() {

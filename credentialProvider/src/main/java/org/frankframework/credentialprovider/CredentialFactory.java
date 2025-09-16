@@ -15,24 +15,27 @@
 */
 package org.frankframework.credentialprovider;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.logging.Logger;
+import java.util.logging.Level;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 
+import lombok.extern.java.Log;
+
 import org.frankframework.credentialprovider.util.CredentialConstants;
 import org.frankframework.util.ClassUtils;
 
+@Log
 public class CredentialFactory {
-	protected static final Logger log = Logger.getLogger(CredentialFactory.class.getName());
 
 	private static final String CREDENTIAL_FACTORY_KEY = "credentialFactory.class";
 	public static final String CREDENTIAL_FACTORY_ALIAS_PREFIX_KEY = "credentialFactory.optionalPrefix";
@@ -44,7 +47,7 @@ public class CredentialFactory {
 	public static final String DEFAULT_USERNAME_FIELD = "username";
 	public static final String DEFAULT_PASSWORD_FIELD = "password";
 
-	private final List<ICredentialProvider> delegates = new ArrayList<>();
+	protected final List<ISecretProvider> delegates = new ArrayList<>();
 
 	private static CredentialFactory self;
 
@@ -90,13 +93,13 @@ public class CredentialFactory {
 
 	private void tryFactory(String factoryClassName) {
 		try {
-			log.info("trying to configure CredentialFactory [" + factoryClassName + "]");
-			ICredentialProvider delegate = ClassUtils.newInstance(factoryClassName, ICredentialProvider.class);
+			log.info(() -> "trying to configure CredentialFactory [" + factoryClassName + "]");
+			ISecretProvider delegate = ClassUtils.newInstance(factoryClassName, ISecretProvider.class);
 			delegate.initialize();
-			log.info("installed CredentialFactory [" + factoryClassName + "]");
+			log.info(() -> "installed CredentialFactory [" + factoryClassName + "]");
 			delegates.add(delegate);
 		} catch (Exception e) {
-			log.warning("Cannot instantiate CredentialFactory [" + factoryClassName + "] (" + e.getClass().getTypeName() + "): " + e.getMessage());
+			log.log(Level.WARNING, e, () -> "Cannot instantiate CredentialFactory [" + factoryClassName + "] (" + e.getClass().getTypeName() + "): " + e.getMessage());
 		}
 	}
 
@@ -104,8 +107,8 @@ public class CredentialFactory {
 		final CredentialAlias alias = CredentialAlias.parse(rawAlias);
 
 		if (alias != null) {
-			for (ICredentialProvider factory : getInstance().delegates) {
-				if (factory.hasCredentials(alias)) {
+			for (ISecretProvider factory : getInstance().delegates) {
+				if (factory.hasSecret(alias)) {
 					return true;
 				}
 			}
@@ -115,54 +118,46 @@ public class CredentialFactory {
 	}
 
 	/**
-	 * Entrypoint.
-	 *
-	 * Attempts to find the credential for the specified alias.
-	 * If non is found, returns NULL, else the credential.
+	 * Entrypoint. Attempts to find the credential for the specified alias.
+	 * If none is found, returns NULL, else the credential.
 	 */
 	@Nullable
 	public static ICredentials getCredentials(@Nullable String rawAlias) {
 		try {
 			ICredentials credential = getCredentials(rawAlias, null, null);
 			if (credential instanceof FallbackCredential) {
-				log.fine("no credential found, no default provided");
+				log.info("no credential found, no default provided");
 				return null;
 			}
 			return credential;
 		} catch (Exception e) {
-			log.fine(e.getMessage());
+			log.log(Level.INFO, e, () -> "Cannot get credentials: " + e.getMessage());
 			return null;
 		}
 	}
 
 	/**
-	 * Entrypoint
-	 *
-	 * Attempts to find the credential for the specified alias.
-	 *
-	 * When non is found, uses the default (provided) fallback user/pass combination.
+	 * Entrypoint. Attempts to find the credential for the specified alias.
+	 * When none is found, uses the default (provided) fallback user/pass combination.
 	 */
 	@Nonnull
 	public static ICredentials getCredentials(@Nullable String rawAlias, @Nullable String defaultUsername, @Nullable String defaultPassword) {
 		final CredentialAlias alias = CredentialAlias.parse(rawAlias);
-		List<ICredentialProvider> credentialFactoryDelegates = getInstance().delegates;
+		List<ISecretProvider> credentialFactoryDelegates = getInstance().delegates;
 
-		// If there are no delegates, return a Credentials object with the default values
+		// If there are no delegates, return a Secret object with the default values
 		if (alias == null || credentialFactoryDelegates.isEmpty()) {
 			return new FallbackCredential(rawAlias, defaultUsername, defaultPassword);
 		}
 
-		for (ICredentialProvider factory : credentialFactoryDelegates) {
+		for (ISecretProvider factory : credentialFactoryDelegates) {
 			try {
-				ICredentials result = factory.getCredentials(alias);
+				ISecret secret = factory.getSecret(alias);
 
-				// Check if the alias is the same as the one we are looking for - will throw if not
-				result.getPassword(); // Validate if we can fetch the password.
-
-				return result;
-			} catch (NoSuchElementException e) {
+				return readSecretFields(secret, alias);
+			} catch (NoSuchElementException | IOException e) {
 				// The alias was not found in this factory, continue searching
-				log.info(rawAlias + " not found in credential factory [" + factory.getClass().getName() + "]");
+				log.log(Level.INFO, e, () -> rawAlias + " not found in credential factory [" + factory.getClass().getName() + "]: " + e.getMessage());
 			}
 		}
 
@@ -172,16 +167,74 @@ public class CredentialFactory {
 		throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+ rawAlias +"]: alias not found");
 	}
 
+	private static ICredentials readSecretFields(ISecret secret, CredentialAlias alias) throws IOException {
+		String username = null;
+		String password = null;
+
+		try {
+			username = substitute(alias.getUsernameField(), secret);
+			password = substitute(alias.getPasswordField(), secret);
+		} catch (NoSuchElementException | IOException ioe) {
+			password = secret.getField("");
+		}
+
+		return new Credential(alias.getName(), username, password);
+	}
+
+	private static String substitute(String input, ISecret secret) throws IOException {
+		if (StringUtils.isBlank(input) || StringUtils.containsNone(input, CredentialAlias.SEPARATOR_CHARACTERS)) {
+			return secret.getField(input);
+		}
+
+		// Here we require some form of substitution
+		List<String> usernameParts = splitWithSeparators(input, CredentialAlias.SEPARATOR_CHARACTERS);
+		StringBuilder result = new StringBuilder();
+		for (String part : usernameParts) {
+			if (part.length() == 1 && CredentialAlias.SEPARATOR_CHARACTERS.contains(part)) {
+				result.append(part);
+			} else {
+				String fieldValue = secret.getField(part);
+				if (fieldValue != null) {
+					result.append(fieldValue);
+				}
+			}
+		}
+
+		return result.isEmpty() ? null : result.toString();
+	}
+
+	/**
+	 * String split method, includes the characters to split on.
+	 * When the input is abc@def, the output will be a list ['abc', '@', 'def'].
+	 */
+	private static List<String> splitWithSeparators(@Nonnull String str, @Nonnull String charsToSplitOn) {
+		final char[] c = str.toCharArray();
+		final List<String> list = new ArrayList<>();
+		int tokenStart = 0;
+		for (int pos = tokenStart + 1; pos < c.length; pos++) {
+			if (charsToSplitOn.indexOf(c[pos]) == -1) {
+				continue;
+			}
+			list.add(new String(c, tokenStart, pos - tokenStart));
+			list.add(Character.toString(c[pos]));
+			tokenStart = pos+1;
+		}
+		if (tokenStart < c.length) {
+			list.add(new String(c, tokenStart, c.length - tokenStart));
+		}
+		return list;
+	}
+
 	public static Collection<String> getConfiguredAliases() throws Exception {
 		Collection<String> aliases = new LinkedHashSet<>();
-		for (ICredentialProvider factory : getInstance().delegates) {
+		for (ISecretProvider factory : getInstance().delegates) {
 			try {
 				Collection<String> configuredAliases = factory.getConfiguredAliases();
 				if (configuredAliases != null) {
 					aliases.addAll(configuredAliases);
 				}
 			} catch (Exception e) {
-				log.warning("unable to find configured aliases in factory ["+factory+"]");
+				log.log(Level.WARNING, e, () -> "unable to find configured aliases in factory ["+factory+"]");
 			}
 		}
 		return aliases;

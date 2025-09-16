@@ -21,6 +21,7 @@ import java.io.InputStream;
 import com.aspose.pdf.Document;
 import com.aspose.pdf.exceptions.InvalidPasswordException;
 
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -60,6 +61,8 @@ public class AmountOfPagesPipe extends FixedForwardPipe {
 	 * Charset to be used to read the input message.
 	 * Defaults to the message's known charset or UTF-8 when unknown.
 	 */
+	@Deprecated(since = "9.3.0", forRemoval = true)
+	@ConfigurationWarning("Charset property will be removed in a future version. ")
 	public void setCharset(String charset){
 		this.charset = charset;
 	}

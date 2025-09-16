@@ -23,6 +23,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.credentialprovider.util.CredentialConstants;
@@ -40,7 +42,7 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  * @ff.info It's required to set the property {@value FileSystemCredentialFactory#FILESYSTEM_ROOT_PROPERTY} to the directory you wish to read credentials from.
  *
  */
-public class FileSystemCredentialFactory implements ICredentialProvider {
+public class FileSystemCredentialFactory implements ISecretProvider {
 	private static final String FILESYSTEM_ROOT_PROPERTY = "credentialFactory.filesystem.root";
 
 	private Path root;
@@ -60,13 +62,13 @@ public class FileSystemCredentialFactory implements ICredentialProvider {
 	}
 
 	@Override
-	public boolean hasCredentials(CredentialAlias alias) {
-		return Files.exists(Paths.get(root.toString(), alias.getName()));
+	public boolean hasSecret(@Nonnull CredentialAlias alias) {
+		return Files.exists(root.resolve(alias.getName()));
 	}
 
 	@Override
-	public ICredentials getCredentials(CredentialAlias alias) throws NoSuchElementException {
-		return new FileSystemCredentials(alias, root);
+	public ISecret getSecret(@Nonnull CredentialAlias alias) throws NoSuchElementException {
+		return new FileSystemSecret(alias, root);
 	}
 
 	@Override

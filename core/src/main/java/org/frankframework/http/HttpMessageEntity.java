@@ -101,7 +101,7 @@ public class HttpMessageEntity extends AbstractHttpEntity {
 	// size (getContentLength) and encoding (getContentEncoding) of the InputStream must match the way it is being read / sent!
 	@Override
 	public InputStream getContent() throws IOException {
-		return message.asInputStream(message.getCharset());
+		return message.asInputStream();
 	}
 
 	@Override

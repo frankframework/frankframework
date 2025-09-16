@@ -27,6 +27,7 @@ import org.apache.commons.lang3.mutable.MutableInt;
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -259,6 +260,8 @@ public class PdfPipe extends FixedForwardPipe {
 	 * charset to be used to decode the given input message in case the input is not binary but character stream
 	 * @ff.default UTF-8
 	 */
+	@Deprecated(since = "9.3.0", forRemoval = true)
+	@ConfigurationWarning("Charset property will be removed in a future version. ")
 	public void setCharset(String charset) {
 		this.charset = charset;
 	}

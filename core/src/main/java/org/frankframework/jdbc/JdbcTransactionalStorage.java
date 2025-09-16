@@ -62,6 +62,7 @@ import org.frankframework.core.TransactionAttributes;
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
+import org.frankframework.jdbc.datasource.JdbcPoolUtil;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
@@ -99,13 +100,16 @@ import org.frankframework.util.TimeProvider;
  * Storage structure is defined in /IAF_util/IAF_DatabaseChangelog.xml. If these database objects do not exist,
  * the Frank!Framework will try to create them.
  * <br/><br/>
- * N.B. Note on using XA transactions:
+ * {@ff.warning When using an XA transaction manager like Narayana, make sure to configure an XA-capable datasource
+ * for the JdbcErrorStorage or JdbcMessageLog. Otherwise messages may get lost.}
+ * {@ff.info N.B. Note on using XA transactions:
  * If transactions are used on Oracle, make sure that the database user can access the table SYS.DBA_PENDING_TRANSACTIONS.
  * If not, transactions present when the server goes down cannot be properly recovered, resulting in exceptions like:
  * <pre>
    The error code was XAER_RMERR. The exception stack trace follows: javax.transaction.xa.XAException
 	at oracle.jdbc.xa.OracleXAResource.recover(OracleXAResource.java:508)
    </pre>
+ * }
  *
  * @author Gerrit van Brakel
  * @author Jaco de Groot
@@ -146,7 +150,8 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 
 	protected @Getter @Setter PlatformTransactionManager txManager;
 
-	private TransactionDefinition txDef;
+	private TransactionDefinition txRequired;
+	private TransactionDefinition txMandatory;
 
 	private static final Set<String> checkedTables = new HashSet<>();
 	private static final Set<String> checkedIndices = new HashSet<>();
@@ -262,12 +267,12 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	private void checkIndexOnColumnsPresent(Connection connection, List<String> columns) throws JdbcException {
 		if (columns!=null && !columns.isEmpty()) {
 			if (!getDbmsSupport().hasIndexOnColumns(connection, getSchemaOwner4Check(), getTableName(), columns)) {
-				String msg="table ["+getTableName()+"] has no index on columns ["+columns.get(0);
+				StringBuilder msg= new StringBuilder("table [" + getTableName() + "] has no index on columns [" + columns.get(0));
 				for (int i=1;i<columns.size();i++) {
-					msg+=","+columns.get(i);
+					msg.append(",").append(columns.get(i));
 				}
-				msg+="]";
-				ConfigurationWarnings.add(this, log, msg);
+				msg.append("]");
+				ConfigurationWarnings.add(this, log, msg.toString());
 			}
 		}
 	}
@@ -347,7 +352,23 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		}
 		super.configure();
 		checkDatabase();
-		txDef = TransactionAttributes.configureTransactionAttributes(log, TransactionAttribute.REQUIRED, 0);
+		checkTxManagerAndDataSource();
+		txRequired = TransactionAttributes.configureTransactionAttributes(log, TransactionAttribute.REQUIRED, 0);
+		txMandatory = TransactionAttributes.configureTransactionAttributes(log, TransactionAttribute.MANDATORY, 0);
+	}
+
+	private void checkTxManagerAndDataSource() throws ConfigurationException {
+		try {
+			boolean isXaTxManager = JdbcPoolUtil.isXaCapable(txManager);
+			if (isXaTxManager) {
+				boolean xaCapableDS = JdbcPoolUtil.isXaCapable(getDatasource());
+				if (!xaCapableDS) {
+					ConfigurationWarnings.add(this, log, "The transaction manager is XA-Capable but the configured datasource [" + getDatasourceName() + "] is not. This can cause issues and lost messages.");
+				}
+			}
+		} catch (JdbcException e) {
+			throw new ConfigurationException("Cannot get the configured datasource [" + getDatasourceName() + "]", e);
+		}
 	}
 
 	@Override
@@ -633,7 +654,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 			throw new SenderException("correlationId cannot be null");
 		}
 
-		IbisTransaction itx = new IbisTransaction(txManager, txDef, ClassUtils.nameOf(this));
+		IbisTransaction itx = new IbisTransaction(txManager, txRequired, ClassUtils.nameOf(this));
 		try {
 			try (Connection conn = getConnection()) {
 				return storeMessage(conn, messageId, correlationId, receivedDate, comments, label, message);
@@ -723,11 +744,21 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 *
+	 * This method should always run in an existing transaction.
+	 */
 	@Override
-	public RawMessageWrapper<S> getMessage(String storageKey) throws ListenerException {
-		RawMessageWrapper<S> result = browseMessage(storageKey);
-		deleteMessage(storageKey);
-		return result;
+	public RawMessageWrapper<S> consumeMessage(String storageKey) throws ListenerException {
+		IbisTransaction itx = new IbisTransaction(txManager, txMandatory, ClassUtils.nameOf(this));
+		try {
+			RawMessageWrapper<S> result = browseMessage(storageKey);
+			deleteMessage(storageKey);
+			return result;
+		} finally {
+			itx.complete();
+		}
 	}
 
 	private static OutputStream getBlobOutputStream(IDbmsSupport dbmsSupport, Object blobUpdateHandle, PreparedStatement stmt, int columnIndex, boolean compressBlob) throws DbmsException, SQLException {

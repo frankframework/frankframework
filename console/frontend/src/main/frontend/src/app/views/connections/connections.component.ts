@@ -29,11 +29,11 @@ export class ConnectionsComponent implements OnInit {
   protected minimalTruncateLength = 100;
   protected datasource = new DataTableDataSource<ConnectionsData>();
   protected displayedColumns: DataTableColumn<ConnectionsData>[] = [
-    { name: 'adapterName', displayName: 'Adapter Name', property: 'adapterName' },
-    { name: 'componentName', displayName: 'Listener/Sender Name', property: 'componentName' },
-    { name: 'domain', displayName: 'Domain', property: 'domain' },
-    { name: 'destination', displayName: 'Destination', property: 'destination' },
-    { name: 'direction', displayName: 'Direction', property: 'direction' },
+    { name: 'adapterName', displayName: 'Adapter Name', property: 'adapterName', sortable: true },
+    { name: 'componentName', displayName: 'Listener/Sender Name', property: 'componentName', sortable: true },
+    { name: 'domain', displayName: 'Domain', property: 'domain', sortable: true },
+    { name: 'destination', displayName: 'Destination', property: 'destination', sortable: true },
+    { name: 'direction', displayName: 'Direction', property: 'direction', sortable: true },
   ];
 
   private readonly http: HttpClient = inject(HttpClient);

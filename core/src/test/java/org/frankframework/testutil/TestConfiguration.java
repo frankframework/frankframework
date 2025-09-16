@@ -74,6 +74,13 @@ public class TestConfiguration extends Configuration {
 		}
 	}
 
+	@Override
+	public void close() {
+		ClassLoader classLoader = getClassLoader();
+		super.close();
+		AppConstants.removeInstance(classLoader);
+	}
+
 	public String getConfigWarning(int index) {
 		return getConfigurationWarnings().getWarnings().get(index);
 	}
