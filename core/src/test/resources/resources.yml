@@ -3,6 +3,10 @@ jdbc:
     type: "org.h2.jdbcx.JdbcDataSource"
     url: "jdbc:h2:mem:test;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;TRACE_LEVEL_FILE=0;"
 
+  - name: "H2db2"
+    type: "org.h2.jdbcx.JdbcDataSource"
+    url: "jdbc:h2:mem:test_db2;NON_KEYWORDS=VALUE;DB_CLOSE_ON_EXIT=FALSE;DB_CLOSE_DELAY=-1;TRACE_LEVEL_FILE=0;"
+
   - name: "Oracle"
     type: "oracle.jdbc.datasource.impl.OracleDataSource"
     url: "jdbc:oracle:thin:@${jdbc.hostname:-localhost}:1521:XE"
