@@ -63,25 +63,6 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3FileRef, AmazonS3Fi
 	}
 
 	@Test
-	public void assertMoveToSameDirectoryNotPossible() throws Exception {
-		String filename = "file.txt";
-		String contents = "regeltje tekst";
-
-		fileSystem.configure();
-		fileSystem.open();
-
-		String rootFolder = null;
-		createFile(rootFolder, filename, contents);
-
-		waitForActionToFinish();
-
-		S3FileRef file = fileSystem.toFile(filename);
-
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> fileSystem.moveFile(file, rootFolder, false));
-		assertEquals("Cannot rename/move a file to the same name: [file.txt]", e.getMessage());
-	}
-
-	@Test
 	public void writableFileSystemTestRenameToOtherFolderWithBucketNamePrefix() throws Exception {
 		String destinationFile = "fileRenamed.txt";
 		String bucketName = "other-bucket123";
@@ -209,13 +190,6 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3FileRef, AmazonS3Fi
 	@Override
 	public void writableFileSystemTestDeleteAppendedFile() throws Exception{
 		super.writableFileSystemTestDeleteAppendedFile();
-	}
-
-	@Disabled // atomic move is not implemented. It could be possible to arrange this using ObjectLock.LegalHold
-	@Test
-	@Override
-	public void basicFileSystemTestMoveFileMustFailWhenTargetAlreadyExists() throws Exception {
-		super.basicFileSystemTestMoveFileMustFailWhenTargetAlreadyExists();
 	}
 
 	@Test

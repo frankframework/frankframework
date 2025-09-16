@@ -311,8 +311,14 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 				throw new FileSystemException("Cannot create folder ["+ destinationFolder +"]", e);
 			}
 		}
+
 		try {
-			Path result = Files.move(f, toFile(destinationFolder, getName(f)));
+			Path target = toFile(destinationFolder, getName(f));
+			if (exists(target)) {
+				throw new FileSystemException("Cannot move file ["+ f +"] to ["+ destinationFolder+"], source and destination are the same");
+			}
+
+			Path result = Files.move(f, target);
 			addCustomFileAttributes(result, customFileAttributes);
 			return result;
 		} catch (FileNotFoundException e) {

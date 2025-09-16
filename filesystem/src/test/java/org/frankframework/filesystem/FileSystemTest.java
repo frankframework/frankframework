@@ -565,6 +565,25 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		assertNotNull(f, "Copied file cannot be null");
 	}
 
+	@Test
+	public void writableFileSystemAssertMoveToSameDirectoryNotPossible() throws Exception {
+		String filename = "file.txt";
+		String contents = "regeltje tekst";
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		String rootFolder = "testFolder";
+		createFolderIfNotExists(rootFolder);
+		createFile(rootFolder, filename, contents);
+
+		waitForActionToFinish();
+
+		F file = fileSystem.toFile(rootFolder, filename);
+
+		assertThrows(FileSystemException.class, () -> fileSystem.moveFile(file, rootFolder, false));
+	}
+
 	private void createFolderIfNotExists(final String folderName) throws Exception {
 		if (!_folderExists(folderName)) {
 			log.debug("creating folder [{}]", folderName);

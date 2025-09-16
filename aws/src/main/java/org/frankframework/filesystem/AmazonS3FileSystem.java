@@ -486,14 +486,14 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 
 	// rename is implemented via copy & delete
 	@Override
-	public S3FileRef renameFile(S3FileRef source, S3FileRef destination) {
+	public S3FileRef renameFile(S3FileRef source, S3FileRef destination) throws FileSystemException {
 		return renameFile(source, destination, Map.of());
 	}
 
 	@Override
-	public S3FileRef renameFile(S3FileRef source, S3FileRef destination, Map<String, String> customFileAttributes) {
-		if (source.getKey().equals(destination.getKey())) {
-			throw new IllegalArgumentException("Cannot rename/move a file to the same name: [" + source.getKey() + "]");
+	public S3FileRef renameFile(S3FileRef source, S3FileRef destination, Map<String, String> customFileAttributes) throws FileSystemException {
+		if (exists(destination)) {
+			throw new FileAlreadyExistsException("target already exists");
 		}
 
 		Map<String, String> metadata = new HashMap<>(customFileAttributes);
@@ -546,12 +546,12 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 
 	@Override
 	// move is actually implemented via copy and delete
-	public S3FileRef moveFile(S3FileRef f, String destinationFolder, boolean createFolder) {
+	public S3FileRef moveFile(S3FileRef f, String destinationFolder, boolean createFolder) throws FileSystemException {
 		return moveFile(f, destinationFolder, createFolder, Map.of());
 	}
 
 	@Override
-	public S3FileRef moveFile(S3FileRef f, String destinationFolder, boolean createFolder, Map<String, String> customFileAttributes) {
+	public S3FileRef moveFile(S3FileRef f, String destinationFolder, boolean createFolder, Map<String, String> customFileAttributes) throws FileSystemException {
 		return renameFile(f, toFile(destinationFolder, getName(f)), customFileAttributes);
 	}
 
