@@ -153,6 +153,7 @@ public class CredentialFactory {
 		for (ISecretProvider factory : credentialFactoryDelegates) {
 			try {
 				ISecret secret = factory.getSecret(alias);
+				log.log(Level.INFO, () -> "found secret ["+secret+"] in provider ["+factory+"]");
 
 				return readSecretFields(secret, alias);
 			} catch (NoSuchElementException | IOException e) {
@@ -173,6 +174,11 @@ public class CredentialFactory {
 
 		try {
 			username = substitute(alias.getUsernameField(), secret);
+		} catch (NoSuchElementException | IOException e) {
+			log.log(Level.FINE, e, () -> "username field not found in alias ["+alias+"]");
+		}
+
+		try {
 			password = substitute(alias.getPasswordField(), secret);
 		} catch (NoSuchElementException | IOException ioe) {
 			password = secret.getField("");

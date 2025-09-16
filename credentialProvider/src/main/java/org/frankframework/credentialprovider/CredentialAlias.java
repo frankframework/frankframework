@@ -98,8 +98,8 @@ public class CredentialAlias {
 		}
 
 		String cleanAliasName = StringUtil.split(aliasName, "{").get(0);
-		if (!cleanAliasName.matches("[a-zA-Z0-9.]+")) {
-			throw new IllegalArgumentException("alias must only consist of letters and numbers");
+		if (!cleanAliasName.matches("[a-zA-Z0-9._-]+")) {
+			throw new IllegalArgumentException("alias must only consist of letters, numbers, hyphens and dots");
 		}
 
 		return aliasName; // Return the name without the optional prefix.
@@ -140,7 +140,7 @@ public class CredentialAlias {
 		try {
 			return new CredentialAlias(rawAlias);
 		} catch (Exception e) {
-			log.log(Level.INFO, "Cannot parse credential alias, returning null: " + e.getMessage(), e);
+			log.log(Level.WARNING, "Cannot parse credential alias, returning null: " + e.getMessage(), e);
 			return null;
 		}
 	}
