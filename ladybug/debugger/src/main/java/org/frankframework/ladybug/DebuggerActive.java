@@ -32,7 +32,6 @@ import org.frankframework.util.AppConstants;
  * @see IbisDebuggerAdvice
  */
 public class DebuggerActive implements ApplicationEventPublisherAware, InitializingBean {
-	private static final AppConstants APP_CONSTANTS = AppConstants.getInstance();
 
 	private ApplicationEventPublisher applicationEventPublisher;
 
@@ -48,17 +47,18 @@ public class DebuggerActive implements ApplicationEventPublisherAware, Initializ
 		// - to get notified of changes, components should listen to DebuggerStatusChangedEvents
 		// IbisDebuggerAdvice stores state in appconstants testtool.enabled for use by GUI
 
-		boolean testToolEnabled = true;
-		String testToolEnabledProperty = APP_CONSTANTS.getProperty("testtool.enabled");
+		final AppConstants appConstants = AppConstants.getInstance();
+		String testToolEnabledProperty = appConstants.getProperty("testtool.enabled");
 
+		boolean testToolEnabled = true;
 		if (StringUtils.isNotEmpty(testToolEnabledProperty)) {
-			testToolEnabled = "true".equalsIgnoreCase(testToolEnabledProperty);
+			testToolEnabled = "true".equalsIgnoreCase(testToolEnabledProperty) || "!false".equalsIgnoreCase(testToolEnabledProperty);
 		} else {
-			String stage = APP_CONSTANTS.getProperty("dtap.stage");
+			String stage = appConstants.getProperty("dtap.stage");
 			if ("ACC".equals(stage) || "PRD".equals(stage)) {
 				testToolEnabled = false;
 			}
-			APP_CONSTANTS.setProperty("testtool.enabled", testToolEnabled);
+			AppConstants.setGlobalProperty("testtool.enabled", testToolEnabled);
 		}
 
 		// notify other components of status of debugger

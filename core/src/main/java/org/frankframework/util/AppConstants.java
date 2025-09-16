@@ -17,10 +17,10 @@ package org.frankframework.util;
 
 import java.io.IOException;
 import java.util.Properties;
-import java.util.StringTokenizer;
 import java.util.concurrent.ConcurrentHashMap;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -30,12 +30,23 @@ import org.apache.logging.log4j.Logger;
 import org.frankframework.lifecycle.servlets.ApplicationServerConfigurer;
 
 /**
- * Singleton class that has the constant values for this application. <br/>
+ * Configuration Constants for this application.
+ *
  * <p>When an instance is created, it tries to load the properties file specified
- * by the <code>propertiesFileName</code> field</p>
+ * by the <code>propertiesFileName</code> field</p>.
  * <p>If a property exits with the name <code>ADDITIONAL.PROPERTIES.FILE</code>
  * that file is loaded also</p>
-
+ *
+ * <p>
+ *     There is a global instance that can be retrieved with {@link AppConstants#getInstance()}, and an
+ *     instance per configuration that can be retrieved with {@link AppConstants#getInstance(ClassLoader)}
+ *     using the configuration classloader. Each method will the instance if it does not yet exist.
+ * </p>
+ * <p>
+ *     To change a value across all instances, use {@link AppConstants#setGlobalProperty(String, String)}. Changing
+ *     a value for only a single instance with {@link AppConstants#setProperty(String, String)} is in general recommended
+ *     only for tests.
+ * </p>
  * @author Niels Meijer
  * @version 2.1
  *
@@ -49,7 +60,7 @@ public final class AppConstants extends PropertyLoader {
 	public static final String APPLICATION_SERVER_CUSTOMIZATION_PROPERTY = ApplicationServerConfigurer.APPLICATION_SERVER_CUSTOMIZATION_PROPERTY;
 	public static final String ADDITIONAL_PROPERTIES_FILE_SUFFIX_KEY = ADDITIONAL_PROPERTIES_FILE_KEY+".SUFFIX";
 
-	private static final Properties additionalProperties = new Properties();
+	private static final Properties globalAppConstants = new Properties();
 
 	private static final ConcurrentHashMap<Integer, AppConstants> appConstantsMap = new ConcurrentHashMap<>();
 
@@ -64,8 +75,9 @@ public final class AppConstants extends PropertyLoader {
 		// This prevents leaks of ClassLoader and AppConstants instances.
 		CleanerProvider.register(classLoader, () -> appConstantsMap.remove(key));
 
-		//Add all ibis properties
-		putAll(additionalProperties);
+		// Add all global properties
+		// This is a bit of an ugly hack, but otherwise these properties cannot be retrieved via get/getProperty methods
+		putAll(globalAppConstants);
 	}
 
 	/**
@@ -110,19 +122,6 @@ public final class AppConstants extends PropertyLoader {
 	}
 
 	/**
-	 * Creates a tokenizer from the resolved value of this key. As a separator the "," is used.
-	 * Uses the {@link #getResolvedProperty(String)} method.
-	 * Can be used to process lists of values.
-	 */
-	@Deprecated
-	public StringTokenizer getTokenizedProperty(String key, @Nonnull String defaults) {
-		String list = getResolvedProperty(key);
-		if (list==null)
-			list = defaults;
-		return new StringTokenizer(list, ",");
-	}
-
-	/**
 	 * Returns a list of {@link AppConstants#getInstance() AppConstants} which names begin with the keyBase
 	 */
 	public Properties getAppConstants(String keyBase) {
@@ -158,37 +157,74 @@ public final class AppConstants extends PropertyLoader {
 	}
 
 	/**
-	 * Add property to global AppConstants
+	 * Use this method for testing only, when only local properties need to be set that do not
+	 * affect other tests.
+	 *
+	 * @param key the key to be placed into this property list.
+	 * @param value the value corresponding to {@code key}.
+	 * @return Previous value, or null
 	 */
 	@Override
 	public synchronized Object setProperty(String key, String value) {
-		return setProperty(key, value, false);
+		return super.setProperty(key, value);
 	}
 
+	/**
+	 * Set key as boolean. Use this method for testing only, when local properties need to be set
+	 * that do not affect other tests.
+	 *
+	 * @param key the key to be placed into this property list.
+	 * @param value the value corresponding to {@code key}.
+	 * @return Previous value, or null
+	 */
 	public Object setProperty(String key, boolean value) {
-		return setProperty(key, ""+value, false);
-	}
-	/**
-	 * Add property to global (all) AppConstants
-	 */
-	public void put(String key, String value) {
-		setProperty(key, value, false);
+		return setProperty(key, ""+value);
 	}
 
 	/**
-	 * Add property to local (local=true) or global (local=false) AppConstants
+	 * Set boolean value in all instances of AppConstants, current and future.
+	 * Use this in production-code to make sure a settings-change is propagated to all configurations.
+	 *
+	 * @param key the key to be placed into this property list.
+	 * @param value the value corresponding to {@code key}.
+	 * @return Previous value, or null
 	 */
-	private synchronized Object setProperty(String key, String value, boolean local) {
-		if(local) {
-			//noinspection deprecation
-			return super.put(key, value);
-		} else {
-			for (java.util.Map.Entry<Integer, AppConstants> mapElement : appConstantsMap.entrySet()) {
-				mapElement.getValue().setProperty(key, value, true);
-			}
-			//Store in a map in case a new AppConstants instance is created after the property has already been set
-			return additionalProperties.put(key, value);
+	public static @Nullable Boolean setGlobalProperty(@Nonnull String key, boolean value) {
+		String retval = setGlobalProperty(key, "" + value);
+		if (retval == null) {
+			return null;
 		}
+		return Boolean.parseBoolean(retval);
+	}
+
+	/**
+	 * Set value in all instances of AppConstants, current and future.
+	 * Use this in production-code to make sure a settings-change is propagated to all configurations.
+	 *
+	 * @param key the key to be placed into this property list.
+	 * @param value the value corresponding to {@code key}.
+	 * @return Previous value, or null
+	 */
+	public static synchronized @Nullable String setGlobalProperty(@Nonnull String key, @Nonnull String value) {
+		// Copying global app-constant values to all instances is a bit of a hack but there's not much else we can do
+		for (AppConstants localAppConstants : appConstantsMap.values()) {
+			localAppConstants.setProperty(key, value);
+		}
+		//Store in a map in case a new AppConstants instance is created after the property has already been set
+		return (String)globalAppConstants.put(key, value);
+	}
+
+	/**
+	 * Clear a property in all instances of AppConstants.
+	 *
+	 * @param key the key to be removed
+	 * @return The value associated with the key, or null
+	 */
+	public static synchronized @Nullable String clearGlobalProperty(@Nonnull String key) {
+		for (AppConstants localAppConstants : appConstantsMap.values()) {
+			localAppConstants.remove(key);
+		}
+		return (String)globalAppConstants.remove(key);
 	}
 
 	@Override
