@@ -492,6 +492,10 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 
 	@Override
 	public S3FileRef renameFile(S3FileRef source, S3FileRef destination, Map<String, String> customFileAttributes) {
+		if (source.getKey().equals(destination.getKey())) {
+			throw new IllegalArgumentException("Cannot rename/move a file to the same name: [" + source.getKey() + "]");
+		}
+
 		Map<String, String> metadata = new HashMap<>(customFileAttributes);
 		metadata.putAll(source.getUserMetadata());
 		CopyObjectRequest copyObjectRequest = CopyObjectRequest.builder()
