@@ -76,8 +76,8 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	private String connectionName;
 	private AddressType addressType = AddressType.QUEUE;
 	private String address;
-	/** Reply queue name is used internally when dynamic reply queues are not supported by the broker but until there is filtering of messages, cannot be configured */
-	private String replyQueueName;
+	/** The replyAddress is used internally when dynamic reply queues are not supported by the broker but until there is filtering of messages, cannot be configured */
+	private String replyAddress;
 	private long timeout = DEFAULT_TIMEOUT_SECONDS;
 	private MessageType messageType = MessageType.AUTO;
 	private boolean streamingMessages = false;
@@ -124,7 +124,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 			throw new ConfigurationException("Destination Address is empty");
 		}
 
-		if (messageProtocol == MessageProtocol.FF && StringUtils.isNotEmpty(replyQueueName)) {
+		if (messageProtocol == MessageProtocol.FF && StringUtils.isNotEmpty(replyAddress)) {
 			ConfigurationWarnings.add(this, log, "Reply queue is ignored for Fire & Forget Senders");
 		}
 
@@ -143,20 +143,20 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 			log.info("AMPQ Connection Created, server offers capabilities: {}", offeredCapabilities);
 			log.info("AMQP Server Properties: {}", connection.properties());
 
-			// NB: There are a number of things that might go wrong only when using RabbitMQ but we don't know if we're talking to
+			// NB: There are a number of things that might go wrong only when using RabbitMQ, but we don't know if we're talking to
 			// RabbitMQ or another server until we open the connection. So we create a test-connection here.
 			serverIsRabbitMQ = "RabbitMQ".equals(connection.properties().get("product"));
 
 			if (serverIsRabbitMQ) {
 				// The "/" should be legal in RabbitMQ queue names, but there are errors when I use it. Perhaps because queues are not pre-created? Dunno.
 				// For now, giving a warning on it.
-				if (Strings.CS.contains(address, "/") || Strings.CS.contains(replyQueueName, "/")) {
-					ConfigurationWarnings.add(this, log, "RabbitMQ might not allow slashes in queue names (queue: [" + address + "]; reply queue: [" + replyQueueName + "])");
+				if (Strings.CS.contains(address, "/") || Strings.CS.contains(replyAddress, "/")) {
+					ConfigurationWarnings.add(this, log, "RabbitMQ might not allow slashes in queue names (queue: [" + address + "]; reply queue: [" + replyAddress + "])");
 				}
 
-				if (messageProtocol == MessageProtocol.RR && StringUtils.isEmpty(replyQueueName)) {
-					replyQueueName = Misc.getHostname() + ":" + UUIDUtil.createRandomUUID();
-					ConfigurationWarnings.add(this, log, "RabbitMQ does not support dynamic request-reply queues. Using randomly generated queue name [" + replyQueueName + "]");
+				if (messageProtocol == MessageProtocol.RR && StringUtils.isEmpty(replyAddress)) {
+					replyAddress = Misc.getHostname() + ":" + UUIDUtil.createRandomUUID();
+					ConfigurationWarnings.add(this, log, "RabbitMQ does not support dynamic request-reply queues. Using randomly generated queue name [" + replyAddress + "]");
 				}
 			}
 		} catch (ClientException e) {
@@ -225,7 +225,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	private @Nonnull SenderResult sendRequestResponse(@Nonnull Message message) throws SenderException {
 
 		// It seems that dynamic receivers cannot be streaming?
-		try (Receiver responseReceiver = StringUtils.isEmpty(replyQueueName) ? session.openDynamicReceiver() : session.openReceiver(replyQueueName)) {
+		try (Receiver responseReceiver = StringUtils.isEmpty(replyAddress) ? session.openDynamicReceiver() : session.openReceiver(replyAddress)) {
 			String responseQueueAddress = responseReceiver.address();
 			doSend(message, responseQueueAddress);
 			Delivery response = responseReceiver.receive(timeout, TimeUnit.SECONDS);
@@ -368,6 +368,9 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		}
 	}
 
+	/**
+	 * Name of the AMQP connection in the {@literal amqp} section of the {@code resources.yaml} file.
+	 */
 	public void setConnectionName(String connectionName) {
 		this.connectionName = connectionName;
 	}
