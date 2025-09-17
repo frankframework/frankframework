@@ -82,7 +82,7 @@ jobs:
       with:
         node-version: 20.x
         cache: pnpm
-        cache-dependency-path: console/frontend/src/main/frontend/pnpm-lock.yaml
+        cache-dependency-path: '**/pnpm-lock.yaml'
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
