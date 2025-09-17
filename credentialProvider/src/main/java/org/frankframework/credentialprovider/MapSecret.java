@@ -48,15 +48,15 @@ public class MapSecret extends Secret {
 	}
 
 	@Override
-	public String getField(@Nonnull String fieldname) throws IOException {
+	public String getField(@Nonnull String fieldName) throws IOException {
 		if (secret.size() == 1) {
 			// no field
-			if(StringUtils.isBlank(fieldname)) {
+			if(StringUtils.isBlank(fieldName)) {
 				return secret.getProperty(getAlias());
 			}
 
 			// only password field
-			String value = secret.getProperty("%s/%s".formatted(getAlias(), fieldname));
+			String value = secret.getProperty("%s/%s".formatted(getAlias(), fieldName));
 			if (value != null) {
 				return value;
 			}
@@ -65,7 +65,6 @@ public class MapSecret extends Secret {
 			throw new NoSuchElementException("cannot obtain field from secret [" + getAlias() + "]");
 		}
 
-		return secret.getProperty("%s/%s".formatted(getAlias(), fieldname));
+		return secret.getProperty("%s/%s".formatted(getAlias(), fieldName));
 	}
-
 }
