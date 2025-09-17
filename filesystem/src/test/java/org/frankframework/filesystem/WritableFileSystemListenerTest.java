@@ -394,7 +394,7 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 		processResult.setState(PipeLine.ExitState.ERROR);
 
 		fileSystemListener.changeProcessState(resultFile, ProcessState.ERROR, "test");// this action was formerly executed by afterMessageProcessed(), but has been moved to Receiver.moveInProcessToError()
-		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
+		fileSystemListener.afterMessageProcessed(processResult, rawMessage, session);
 		waitForActionToFinish();
 
 		// Assert 2

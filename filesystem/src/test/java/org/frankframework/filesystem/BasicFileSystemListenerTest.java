@@ -38,6 +38,7 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineResult;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.RawMessageWrapper;
@@ -356,7 +357,8 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		assertNotNull(rawMessage);
 		PipeLineResult processResult = new PipeLineResult();
 		processResult.setState(ExitState.SUCCESS);
-		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
+		PipeLineSession.updateListenerParameters(session, rawMessage.getId(), rawMessage.getCorrelationId());
+		fileSystemListener.afterMessageProcessed(processResult, rawMessage, session);
 		waitForActionToFinish();
 		// test
 		assertFalse(_fileExists(id), "Expected file [" + filename + "] not to be present");
@@ -391,7 +393,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		PipeLineResult processResult = new PipeLineResult();
 		processResult.setState(ExitState.SUCCESS);
 		fileSystemListener.changeProcessState(rawMessage, ProcessState.DONE, "test");
-		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
+		fileSystemListener.afterMessageProcessed(processResult, rawMessage, session);
 		waitForActionToFinish();
 
 		assertTrue(_folderExists(processedFolder), "Destination folder must exist");
@@ -429,7 +431,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		PipeLineResult processResult = new PipeLineResult();
 		processResult.setState(ExitState.SUCCESS);
 		fileSystemListener.changeProcessState(rawMessage, ProcessState.DONE, "test");
-		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
+		fileSystemListener.afterMessageProcessed(processResult, rawMessage, session);
 		waitForActionToFinish();
 
 		assertTrue(_folderExists(processedFolder), "Destination folder must exist");
@@ -438,7 +440,31 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 	}
 
 	@Test
-	public void fileListenerTestAfterMessageProcessedErrorDelete() throws Exception {
+	public void fileListenerTestAfterMessageProcessedSuccessDelete() throws Exception {
+		String filename = "AfterMessageProcessedDelete" + FILE1;
+
+		fileSystemListener.setMinStableTime(0);
+		fileSystemListener.setDelete(true);
+		fileSystemListener.configure();
+		fileSystemListener.start();
+
+		String id = createFile(null, filename, "maakt niet uit");
+		waitForActionToFinish();
+		// test
+		existsCheck(id);
+
+		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
+		assertNotNull(rawMessage);
+		PipeLineResult processResult = new PipeLineResult();
+		processResult.setState(ExitState.SUCCESS);
+		fileSystemListener.afterMessageProcessed(processResult, rawMessage, session);
+		waitForActionToFinish();
+		// test
+		assertFalse(_fileExists(id), "Expected file [" + filename + "] not to be present");
+	}
+
+	@Test
+	public void fileListenerTestAfterMessageProcessedErrorDeleteErrorFolderDoesNotExist() throws Exception {
 		String filename = "AfterMessageProcessedDelete" + FILE1;
 
 		fileSystemListener.setMinStableTime(0);
@@ -455,10 +481,66 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		assertNotNull(rawMessage);
 		PipeLineResult processResult = new PipeLineResult();
 		processResult.setState(ExitState.ERROR);
-		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
+		fileSystemListener.afterMessageProcessed(processResult, rawMessage, session);
 		waitForActionToFinish();
 		// test
 		assertFalse(_fileExists(id), "Expected file [" + filename + "] not to be present");
+	}
+
+	@Test
+	public void fileListenerTestAfterMessageProcessedErrorDeleteErrorFolderExists() throws Exception {
+		String filename = "AfterMessageProcessedDelete" + FILE1;
+
+		String errorFolder = "errorFolder";
+		_createFolder(errorFolder);
+		fileSystemListener.setMinStableTime(0);
+		fileSystemListener.setErrorFolder(fileAndFolderPrefix + errorFolder);
+		fileSystemListener.setDelete(true);
+		fileSystemListener.configure();
+		fileSystemListener.start();
+
+		String id = createFile(null, filename, "maakt niet uit");
+		waitForActionToFinish();
+		// test
+		existsCheck(id);
+
+		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
+		assertNotNull(rawMessage);
+		PipeLineResult processResult = new PipeLineResult();
+		processResult.setState(ExitState.ERROR);
+		fileSystemListener.afterMessageProcessed(processResult, rawMessage, session);
+		waitForActionToFinish();
+		// test
+		assertTrue(_fileExists(id), "Expected file [" + filename + "] to be present");
+	}
+
+	@Test
+	public void fileListenerTestAfterMessageProcessedManualRetrySuccessDelete() throws Exception {
+		String filename = "AfterMessageProcessedDelete" + FILE1;
+
+		String errorFolder = "errorFolder";
+		_createFolder(errorFolder);
+		fileSystemListener.setMinStableTime(0);
+		fileSystemListener.setErrorFolder(fileAndFolderPrefix + errorFolder);
+		fileSystemListener.setDelete(true);
+		fileSystemListener.configure();
+		fileSystemListener.start();
+
+		String id = createFile(null, filename, "maakt niet uit");
+		waitForActionToFinish();
+		// test
+		existsCheck(id);
+
+		RawMessageWrapper<F> rawMessage = fileSystemListener.getRawMessage(threadContext);
+		assertNotNull(rawMessage);
+		PipeLineResult processResult = new PipeLineResult();
+		processResult.setState(ExitState.SUCCESS);
+		session.put(PipeLineSession.MANUAL_RETRY_KEY, "true");
+		fileSystemListener.afterMessageProcessed(processResult, rawMessage, session);
+		waitForActionToFinish();
+		// test
+		// Not deleted after manual-retry
+		assertTrue(_fileExists(id), "Expected file [" + filename + "] to be present");
 	}
 
 	@Test
@@ -490,7 +572,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		PipeLineResult processResult = new PipeLineResult();
 		processResult.setState(ExitState.ERROR);
 		fileSystemListener.changeProcessState(rawMessage, ProcessState.ERROR, "test");  // this action was formerly executed by afterMessageProcessed(), but has been moved to Receiver.moveInProcessToError()
-		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
+		fileSystemListener.afterMessageProcessed(processResult, rawMessage, session);
 		waitForActionToFinish();
 
 		assertTrue(_folderExists(processedFolder), "Error folder must exist");
@@ -527,7 +609,7 @@ public abstract class BasicFileSystemListenerTest<F, S extends IBasicFileSystem<
 		PipeLineResult processResult = new PipeLineResult();
 		processResult.setState(ExitState.ERROR);
 		fileSystemListener.changeProcessState(rawMessage, ProcessState.DONE, "test"); // this action was formerly executed by afterMessageProcessed(), but has been moved to Receiver.moveInProcessToError()
-		fileSystemListener.afterMessageProcessed(processResult, rawMessage, null);
+		fileSystemListener.afterMessageProcessed(processResult, rawMessage, session);
 		waitForActionToFinish();
 
 		assertTrue(_folderExists(processedFolder), "Error folder must exist");
