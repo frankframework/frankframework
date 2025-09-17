@@ -315,7 +315,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		try {
 			Path target = toFile(destinationFolder, getName(f));
 			if (exists(target)) {
-				throw new FileSystemException("Cannot move file ["+ f +"] to ["+ destinationFolder+"], source and destination are the same");
+				throw new FileAlreadyExistsException("Target already exists");
 			}
 
 			Path result = Files.move(f, target);

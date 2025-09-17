@@ -493,7 +493,7 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	@Override
 	public S3FileRef renameFile(S3FileRef source, S3FileRef destination, Map<String, String> customFileAttributes) throws FileSystemException {
 		if (exists(destination)) {
-			throw new FileAlreadyExistsException("target already exists");
+			throw new FileAlreadyExistsException("Target already exists");
 		}
 
 		Map<String, String> metadata = new HashMap<>(customFileAttributes);

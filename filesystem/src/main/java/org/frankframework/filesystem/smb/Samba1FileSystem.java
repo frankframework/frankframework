@@ -259,8 +259,8 @@ public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWr
 		SmbFile dest = toFile(destinationFolder, f.getName());
 
 		try {
-			if (f.equals(dest)) {
-				throw new FileSystemException("Cannot move file [" + getName(f) + "] to itself");
+			if (exists(dest)) {
+				throw new FileAlreadyExistsException("Target already exists");
 			}
 
 			f.renameTo(dest);
