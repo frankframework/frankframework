@@ -229,7 +229,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 			try {
 				HttpSession session = getSharedResource(sharedResourceRef);
 				log.debug("Using shared HttpSession [{}]", sharedResourceRef);
-				
+
 				setHttpClient(session.getHttpClient());
 				setHttpContext(session.getDefaultHttpClientContext());
 			} catch (Exception e) {
