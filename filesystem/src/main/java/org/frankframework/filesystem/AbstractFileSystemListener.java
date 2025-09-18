@@ -53,7 +53,6 @@ import org.frankframework.documentbuilder.DocumentFormat;
 import org.frankframework.documentbuilder.ObjectBuilder;
 import org.frankframework.documentbuilder.XmlDocumentBuilder;
 import org.frankframework.lifecycle.LifecycleException;
-import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
@@ -303,19 +302,20 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 	@Override
 	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<F> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
 		log.debug("After Message Processed - begin");
-		FS fileSystem=getFileSystem();
-		if (rawMessage instanceof MessageWrapper<?> wrapper) {
+		FS fs = getFileSystem();
+		if (pipeLineSession.get(PipeLineSession.MANUAL_RETRY_KEY, false)) {
 			if (StringUtils.isNotEmpty(getLogFolder()) || StringUtils.isNotEmpty(getErrorFolder()) || StringUtils.isNotEmpty(getProcessedFolder())) {
-				log.warn("cannot write [{}] to logFolder, errorFolder or processedFolder after manual retry from errorStorage", wrapper.getId());
+				// TODO: Why not actually? Is this the case, or is this a holdover from the past?
+				log.warn("cannot write [{}] to logFolder, errorFolder or processedFolder after manual retry from errorStorage", pipeLineSession.getMessageId());
 			}
 		} else {
 			F file = rawMessage.getRawMessage();
 			try {
 				if (isDelete() && (processResult.isSuccessful() || StringUtils.isEmpty(getErrorFolder()))) {
-					fileSystem.deleteFile(file);
+					fs.deleteFile(file);
 				}
 			} catch (FileSystemException e) {
-				throw new ListenerException("Could not copy or delete file ["+fileSystem.getName(file)+"]",e);
+				throw new ListenerException("Could not copy or delete file ["+fs.getName(file)+"]",e);
 			}
 		}
 		log.debug("After Message Processed - end");

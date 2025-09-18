@@ -69,7 +69,7 @@ jobs:
         path: |
           ~/.m2/repository
           ~/.sonar/cache
-        key: project-cache-
+        key: maven-build-cache
 
     - name: Set up JDK ${{ env.JDK_VERSION }}
       uses: actions/setup-java@v3
@@ -87,7 +87,7 @@ jobs:
       with:
         node-version: 22.x
         cache: pnpm
-        cache-dependency-path: console/frontend/src/main/frontend/pnpm-lock.yaml
+        cache-dependency-path: '**/pnpm-lock.yaml'
 
     - name: Create Maven settings.xml file
       if: ${{ env.USE_PROPRIETARY == 'true' }}
@@ -189,4 +189,4 @@ jobs:
         path: |
           ~/.m2/repository
           ~/.sonar/cache
-        key: project-cache-${{ github.run_id }}-${{ github.run_attempt }}
+        key: maven-build-cache

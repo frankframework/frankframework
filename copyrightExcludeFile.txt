@@ -93,3 +93,5 @@ site.webmanifest
 .patch
 .http
 .importorder
+pnpm-lock.yaml
+pnpm-workspace.yaml

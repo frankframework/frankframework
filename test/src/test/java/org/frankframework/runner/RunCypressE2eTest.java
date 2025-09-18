@@ -21,6 +21,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -71,6 +73,8 @@ public class RunCypressE2eTest {
 	private static CypressContainer container;
 	private static ConfigurableApplicationContext run;
 	private static final Logger CYPRESS_LOG = LogUtil.getLogger("cypress");
+	private static final String TEST_CONTAINER_BASE_URL = "http://host.testcontainers.internal:8080";
+	private static final Path MOCHAWESOME_REPORTS_DIR = Paths.get("target/test-classes/e2e/cypress/test-results/reports/mochawesome");
 
 	@BeforeAll
 	static void setUp() throws IOException {
@@ -115,7 +119,10 @@ public class RunCypressE2eTest {
 		org.testcontainers.Testcontainers.exposeHostPorts(8080);
 
 		container = new CypressContainer();
-		container.withBaseUrl("http://host.testcontainers.internal:8080/iaf-test/iaf/gui");
+		container.withBaseUrl(TEST_CONTAINER_BASE_URL + "/iaf-test/iaf/gui");
+		container.withMochawesomeReportsAt(MOCHAWESOME_REPORTS_DIR);
+		container.withClasspathResourcePath("e2e");
+		container.withWorkingDirectory("/e2e/cypress");
 		container.withLogConsumer(new Log4j2LogConsumer("CypressContainer", "CYPRESS"));
 
 		container.start();

@@ -148,7 +148,8 @@
         "cypress-run": {
           "builder": "@cypress/schematic:cypress",
           "options": {
-            "devServerTarget": "ff-console-gui:serve"
+            "devServerTarget": "ff-console-gui:serve",
+            "project": "cypress"
           },
           "configurations": {
             "production": {
@@ -160,7 +161,8 @@
           "builder": "@cypress/schematic:cypress",
           "options": {
             "watch": true,
-            "headless": false
+            "headless": false,
+            "project": "cypress"
           }
         },
         "e2e": {
@@ -168,12 +170,14 @@
           "options": {
             "devServerTarget": "ff-console-gui:serve:development-fftest",
             "watch": true,
-            "headless": false
+            "headless": false,
+            "project": "cypress"
           },
           "configurations": {
             "ci": {
               "devServerTarget": "ff-console-gui:serve:development-fftest",
-              "headless": true
+              "headless": true,
+              "project": "cypress"
             }
           }
         },

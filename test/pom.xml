@@ -204,8 +204,13 @@
 								<testResource>
 									<directory>${iaf.rootdir}/console/frontend/src/main/frontend</directory>
 									<filtering>false</filtering>
+									<includes>
+										<include>tsconfig.json</include>
+										<include>cypress/**</include>
+									</includes>
 									<excludes>
-										<exclude>**/node_modules/**</exclude>
+										<exclude>cypress/node_modules/**</exclude>
+										<exclude>cypress/test-results/**</exclude>
 									</excludes>
 									<targetPath>e2e</targetPath>
 								</testResource>
