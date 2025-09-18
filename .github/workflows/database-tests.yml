@@ -99,7 +99,7 @@ jobs:
         path: |
           ~/.m2/repository
           ~/.sonar/cache
-        key: project-cache-
+        key: maven-build-cache
 
     - name: Create Maven settings.xml file
       if: ${{ env.USE_PROPRIETARY == 'true' }}
@@ -146,4 +146,4 @@ jobs:
         path: |
           ~/.m2/repository
           ~/.sonar/cache
-        key: project-cache-${{ github.run_id }}-${{ github.run_attempt }}
+        key: maven-build-cache
