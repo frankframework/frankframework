@@ -37,17 +37,19 @@ import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.DestinationType;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.IPushingListener;
+import org.frankframework.core.IThreadCountControllable;
 import org.frankframework.core.IbisExceptionListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.Category;
 import org.frankframework.receivers.RawMessageWrapper;
+import org.frankframework.receivers.ResourceLimiter;
 
 @Category(Category.Type.EXPERIMENTAL)
 @DestinationType(DestinationType.Type.AMQP)
 @Log4j2
-public class AmqpListener implements IPushingListener<Message<?>> {
+public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountControllable {
 	public static final long DEFAULT_TIMEOUT_SECONDS = 30L;
 	public static final long DEFAULT_TIME_TO_LIVE = Header.DEFAULT_TIME_TO_LIVE;
 
@@ -67,6 +69,9 @@ public class AmqpListener implements IPushingListener<Message<?>> {
 	private @Setter @Getter IbisExceptionListener exceptionListener;
 	private @Setter @Getter ApplicationContext applicationContext;
 	private @Setter @Getter String name;
+
+	private int maxThreadCount = 1;
+	private @Getter ResourceLimiter resourceLimiter;
 
 	@Override
 	public RawMessageWrapper<Message<?>> wrapRawMessage(Message<?> rawMessage, PipeLineSession session) throws ListenerException {
@@ -104,12 +109,13 @@ public class AmqpListener implements IPushingListener<Message<?>> {
 
 	@Override
 	public void start() {
-
+		resourceLimiter = new ResourceLimiter(maxThreadCount);
+		listenerContainerManager.openListener(this);
 	}
 
 	@Override
 	public void stop() {
-
+		listenerContainerManager.closeListener(this);
 	}
 
 	@Override
@@ -126,6 +132,7 @@ public class AmqpListener implements IPushingListener<Message<?>> {
 	public void afterMessageProcessed(PipeLineResult processResult, RawMessageWrapper<Message<?>> rawMessage, PipeLineSession pipeLineSession) throws ListenerException {
 		// No-op
 	}
+
 	/**
 	 * Name of the AMQP connection in the {@literal amqp} section of the {@code resources.yaml} file.
 	 */
@@ -193,4 +200,40 @@ public class AmqpListener implements IPushingListener<Message<?>> {
 		this.subscriptionName = subscriptionName;
 	}
 
+	public void setMaxThreadCount(int maxThreadCount) {
+		this.maxThreadCount = maxThreadCount;
+	}
+
+	@Override
+	public boolean isThreadCountReadable() {
+		return true;
+	}
+
+	@Override
+	public boolean isThreadCountControllable() {
+		return true;
+	}
+
+	@Override
+	public int getCurrentThreadCount() {
+		if (resourceLimiter == null) {
+			return 0;
+		}
+		return resourceLimiter.getMaxResourceLimit() - resourceLimiter.availablePermits();
+	}
+
+	@Override
+	public int getMaxThreadCount() {
+		return maxThreadCount;
+	}
+
+	@Override
+	public void increaseThreadCount() {
+		++maxThreadCount;
+	}
+
+	@Override
+	public void decreaseThreadCount() {
+		--maxThreadCount;
+	}
 }
