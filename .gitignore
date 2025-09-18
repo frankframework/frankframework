@@ -2,6 +2,7 @@
 *.iml
 *.log
 target
+node_modules
 lib
 bin
 

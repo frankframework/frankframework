@@ -1,6 +1,6 @@
 {
   "extends": "../tsconfig.json",
-  "include": ["./**/*.ts", "../cypress.config.ts"],
+  "include": ["./**/*.ts", "cypress.config.ts"],
   "exclude": [],
   "compilerOptions": {
     "moduleResolution": "node",
