@@ -295,15 +295,34 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		return extractPipeRunException(t.getCause());
 	}
 
-	private @Nullable String getMessageAsString(@Nullable Message originalMessage, @Nullable String messageId) {
-		String originalMessageAsString;
+	/**
+	 * Attempts to convert the originalMessage to a String.
+	 *
+	 * <br/>Returns NULL when the Message is null or empty.
+	 * <br/>Returns the entire Message when it's smaller than {@link Message#MESSAGE_MAX_IN_MEMORY}.
+	 * <br/>Returns a shortened Message roughly of length {@link Message#MESSAGE_MAX_IN_MEMORY} suffixed with `...(%d characters remaining)`.
+	 * <p>
+	 * NB. Roughly because %d may be n characters long, which influences the lenght a tiny bit.
+	 * </p>
+	 */
+	// Protected for test purposes only
+	protected final @Nullable String getMessageAsString(@Nullable Message originalMessage, @Nullable String messageId) {
+		if (Message.isEmpty(originalMessage)) {
+			return null;
+		}
+
 		try {
-			originalMessageAsString = originalMessage != null ? originalMessage.asString() : null;
+			if (originalMessage.size() < Message.MESSAGE_MAX_IN_MEMORY) {
+				return originalMessage.asString();
+			}
+
+			// Offset -30 for the 'remainder tail'.
+			long remainder = originalMessage.size() - Message.MESSAGE_MAX_IN_MEMORY - 30;
+			return originalMessage.peek((int) Message.MESSAGE_MAX_IN_MEMORY - 30) + " ...(%d characters remaining)".formatted(remainder);
 		} catch (IOException e) {
 			log.warn("Could not convert originalMessage for messageId [{}]", messageId, e);
-			originalMessageAsString = originalMessage.toString();
+			return originalMessage.toString();
 		}
-		return originalMessageAsString;
 	}
 
 	protected @Nullable String getErrorMessage(@Nullable String message, @Nullable Throwable t) {

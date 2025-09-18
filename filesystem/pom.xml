@@ -24,7 +24,7 @@
 		<dependency>
 			<groupId>com.microsoft.azure</groupId>
 			<artifactId>msal4j</artifactId>
-			<version>1.23.0</version>
+			<version>1.23.1</version>
 		</dependency>
 
 		<dependency>
@@ -59,7 +59,7 @@
 		<dependency>
 			<groupId>com.microsoft.graph</groupId>
 			<artifactId>microsoft-graph</artifactId>
-			<version>6.52.0</version>
+			<version>6.53.0</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
@@ -71,7 +71,7 @@
 		<dependency>
 			<groupId>com.azure</groupId>
 			<artifactId>azure-identity</artifactId>
-			<version>1.17.0</version>
+			<version>1.18.0</version>
 			<scope>test</scope>
 		</dependency>
 

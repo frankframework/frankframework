@@ -153,28 +153,36 @@ public class CredentialFactory {
 		for (ISecretProvider factory : credentialFactoryDelegates) {
 			try {
 				ISecret secret = factory.getSecret(alias);
-
+				log.log(Level.FINE, () -> "found secret [" + secret + "] in provider [" + factory + "]");
 				return readSecretFields(secret, alias);
 			} catch (NoSuchElementException | IOException e) {
 				// The alias was not found in this factory, continue searching
-				log.log(Level.INFO, e, () -> rawAlias + " not found in credential factory [" + factory.getClass().getName() + "]: " + e.getMessage());
+				log.log(Level.FINE, e, () -> "Alias [" + rawAlias + "] not found in credential factory [" + factory.getClass().getName() + "]: " + e.getMessage());
 			}
 		}
 
 		if (StringUtils.isNotEmpty(defaultUsername) || StringUtils.isNotEmpty(defaultPassword)) {
+			log.info("no credentials found for alias [" + rawAlias + "], using default credentials");
 			return new FallbackCredential(rawAlias, defaultUsername, defaultPassword);
 		}
 		throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+ rawAlias +"]: alias not found");
 	}
 
 	private static ICredentials readSecretFields(ISecret secret, CredentialAlias alias) throws IOException {
-		String username = null;
-		String password = null;
+		String username;
+		String password;
 
 		try {
 			username = substitute(alias.getUsernameField(), secret);
+		} catch (NoSuchElementException | IOException e) {
+			log.log(Level.FINE, e, () -> "username field not found in alias [" + alias + "]");
+			username = null;
+		}
+
+		try {
 			password = substitute(alias.getPasswordField(), secret);
-		} catch (NoSuchElementException | IOException ioe) {
+		} catch (NoSuchElementException | IOException e) {
+			log.log(Level.FINE, e, () -> "password field not found in alias [" + alias + "], get password from default");
 			password = secret.getField("");
 		}
 

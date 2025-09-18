@@ -34,7 +34,7 @@ public class LowerCasePropertySourcePostProcessor extends AbstractPropertySource
 		String instanceName = appConstants.getProperty("instance.name");
 		if (instanceName != null) {
 			String lowerCase = instanceName.toLowerCase();
-			appConstants.setProperty("instance.name.lc", lowerCase);
+			AppConstants.setGlobalProperty("instance.name.lc", lowerCase);
 			props.put("instance.name.lc", lowerCase);
 		}
 	}

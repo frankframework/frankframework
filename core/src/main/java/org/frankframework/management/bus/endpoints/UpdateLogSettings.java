@@ -100,7 +100,7 @@ public class UpdateLogSettings extends BusEndpointBase implements ApplicationEve
 
 		boolean logIntermediary = AppConstants.getInstance().getBoolean(LOG_INTERMEDIARY_RESULTS_PROPERTY, true);
 		if(logIntermediaryResults != null && logIntermediary != logIntermediaryResults) {
-			AppConstants.getInstance().put(LOG_INTERMEDIARY_RESULTS_PROPERTY, "" + logIntermediaryResults);
+			AppConstants.setGlobalProperty(LOG_INTERMEDIARY_RESULTS_PROPERTY, "" + logIntermediaryResults);
 
 			if(!msg.isEmpty())
 				msg.append(", logIntermediaryResults from [").append(logIntermediary).append("] to [").append(logIntermediaryResults).append("]");
@@ -119,7 +119,7 @@ public class UpdateLogSettings extends BusEndpointBase implements ApplicationEve
 		if (enableDebugger != null) {
 			boolean testtoolEnabled=AppConstants.getInstance().getBoolean(TESTTOOL_ENABLED_PROPERTY, true);
 			if (testtoolEnabled!=enableDebugger) {
-				AppConstants.getInstance().put(TESTTOOL_ENABLED_PROPERTY, "" + enableDebugger);
+				AppConstants.setGlobalProperty(TESTTOOL_ENABLED_PROPERTY, "" + enableDebugger);
 				DebuggerStatusChangedEvent event = new DebuggerStatusChangedEvent(this, enableDebugger);
 				if (applicationEventPublisher!=null) {
 					log.info("setting debugger enabled [{}]", enableDebugger);

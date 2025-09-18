@@ -16,6 +16,7 @@
 package org.frankframework.credentialprovider;
 
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -43,6 +44,7 @@ public class CredentialAlias {
 	public static final String DEFAULT_PASSWORD_FIELD;
 
 	public static final String SEPARATOR_CHARACTERS = "@#:+";
+	private static final Pattern ALIAS_ALLOWED_CHARACTERS = Pattern.compile("[a-zA-Z0-9._-]+");
 
 	@Getter
 	private final String name;
@@ -98,8 +100,8 @@ public class CredentialAlias {
 		}
 
 		String cleanAliasName = StringUtil.split(aliasName, "{").get(0);
-		if (!cleanAliasName.matches("[a-zA-Z0-9.]+")) {
-			throw new IllegalArgumentException("alias must only consist of letters and numbers");
+		if (!ALIAS_ALLOWED_CHARACTERS.matcher(cleanAliasName).matches()) {
+			throw new IllegalArgumentException("alias must only consist of letters, numbers, hyphens and dots");
 		}
 
 		return aliasName; // Return the name without the optional prefix.
@@ -114,11 +116,11 @@ public class CredentialAlias {
 			name = cleanAlias.substring(0, openParenthesis);
 
 			String remainder = cleanAlias.substring(openParenthesis+1, cleanAlias.length()-1);
-			String[] fieldnames = remainder.split(",");
-			usernameField = StringUtils.defaultIfBlank(fieldnames[0], DEFAULT_USERNAME_FIELD);
+			String[] fieldNames = remainder.split(",");
+			usernameField = StringUtils.defaultIfBlank(fieldNames[0], DEFAULT_USERNAME_FIELD);
 
-			if (fieldnames.length == 2) {
-				passwordField = StringUtils.defaultIfBlank(fieldnames[1], DEFAULT_PASSWORD_FIELD);
+			if (fieldNames.length == 2) {
+				passwordField = StringUtils.defaultIfBlank(fieldNames[1], DEFAULT_PASSWORD_FIELD);
 			} else {
 				passwordField = DEFAULT_PASSWORD_FIELD;
 			}
@@ -140,7 +142,7 @@ public class CredentialAlias {
 		try {
 			return new CredentialAlias(rawAlias);
 		} catch (Exception e) {
-			log.log(Level.INFO, "Cannot parse credential alias, returning null: " + e.getMessage(), e);
+			log.log(Level.WARNING, e, () -> "Cannot parse credential alias [" + rawAlias + "], returning null: " + e.getMessage());
 			return null;
 		}
 	}

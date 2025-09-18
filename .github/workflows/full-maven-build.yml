@@ -69,7 +69,7 @@ jobs:
         path: |
           ~/.m2/repository
           ~/.sonar/cache
-        key: project-cache-
+        key: maven-build-cache
 
     - name: Set up JDK ${{ env.JDK_VERSION }}
       uses: actions/setup-java@v3
@@ -189,4 +189,4 @@ jobs:
         path: |
           ~/.m2/repository
           ~/.sonar/cache
-        key: project-cache-${{ github.run_id }}-${{ github.run_attempt }}
+        key: maven-build-cache

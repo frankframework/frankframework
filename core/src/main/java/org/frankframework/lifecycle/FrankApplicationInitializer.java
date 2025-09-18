@@ -53,11 +53,10 @@ public class FrankApplicationInitializer implements WebApplicationInitializer {
 	public void onStartup(ServletContext servletContext) throws ServletException {
 		APPLICATION_LOG.debug("Starting Frank ApplicationContext");
 		servletContext.addListener(new ContextCloseEventListener());
-		AppConstants appConstants = AppConstants.getInstance();
 
 		String realPath = servletContext.getRealPath("/");
 		if (realPath != null) {
-			appConstants.put("webapp.realpath", realPath);
+			AppConstants.setGlobalProperty("webapp.realpath", realPath);
 		} else {
 			log.warn("Could not determine webapp.realpath");
 		}

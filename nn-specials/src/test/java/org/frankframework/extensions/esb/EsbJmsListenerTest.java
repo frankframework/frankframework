@@ -99,7 +99,8 @@ class EsbJmsListenerTest {
 
 	@Test
 	void testConfigureWithRRProtocol_DefaultSetForceMessageIdAsCorrelationId() throws Exception {
-		AppConstants.getInstance().put(EsbJmsListener.JMS_RR_FORCE_MESSAGE_KEY, "false");
+		AppConstants appConstants = AppConstants.getInstance();
+		appConstants.setProperty(EsbJmsListener.JMS_RR_FORCE_MESSAGE_KEY, "false");
 		setUp(); // Reset the listener to re-read the AppConstants
 		jmsListener.setMessageProtocol(EsbJmsListener.MessageProtocol.RR);
 		jmsListener.configure();

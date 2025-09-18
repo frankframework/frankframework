@@ -56,7 +56,7 @@ public class LockerTest {
 
 	@TxManagerTest
 	public void testBasicLockNoTransactionManager(DatabaseTestEnvironment env) throws Exception {
-		String objectId = null;
+		String objectId;
 		locker.setObjectId("myLocker");
 		locker.configure();
 		objectId = locker.acquire();
