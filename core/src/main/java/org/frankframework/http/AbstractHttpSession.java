@@ -629,8 +629,8 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	 * {@link OAuthAccessTokenManager} decides if and when to refresh the access token.
 	 */
 	private void preAuthenticate(HttpClientContext clientContext) {
-		// This is only executed when an authenticator is present within the given context.
-		if (clientContext.getAttribute(AUTHENTICATION_METHOD_KEY) != null) {
+		// This is only executed when credentials are available.
+		if (getCredentials() != null && !StringUtils.isEmpty(getCredentials().getUsername())) {
 			AuthState authState = clientContext.getTargetAuthState();
 			if (authState == null) {
 				authState = new AuthState();
