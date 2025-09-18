@@ -47,7 +47,7 @@ class CredentialFactoryTest {
 		// Assert
 		assertNotNull(c);
 		assertEquals("fakeUsername", c.getUsername());
-		assertEquals("fakePassword", c.getPassword());
+		assertEquals("fake~Passw#rd", c.getPassword());
 	}
 
 	@Test
@@ -80,7 +80,7 @@ class CredentialFactoryTest {
 		// Assert
 		assertNotNull(c);
 		assertEquals("fakeUsername", c.getUsername());
-		assertEquals("fakePassword", c.getPassword());
+		assertEquals("fake~Passw#rd", c.getPassword());
 	}
 
 	@Test
@@ -142,7 +142,7 @@ class CredentialFactoryTest {
 		// Assert values are from the first factory that returns a value
 		assertNotNull(c);
 		assertEquals("fakeUsername", c.getUsername());
-		assertEquals("fakePassword", c.getPassword());
+		assertEquals("fake~Passw#rd", c.getPassword());
 	}
 
 	/**
@@ -208,7 +208,7 @@ class CredentialFactoryTest {
 		assertNotNull(alias1);
 		assertNotNull(alias2);
 		assertEquals("fakeUsername", account.getUsername());
-		assertEquals("fakePassword", account.getPassword()); // comes from property file, ignore mock value
+		assertEquals("fake~Passw#rd", account.getPassword()); // comes from property file, ignore mock value
 		assertEquals("username1", alias1.getUsername());
 		assertEquals("password1", alias1.getPassword());
 		assertEquals("passwordOnly", alias2.getPassword());
