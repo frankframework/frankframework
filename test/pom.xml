@@ -208,6 +208,10 @@
 										<include>tsconfig.json</include>
 										<include>cypress/**</include>
 									</includes>
+									<excludes>
+										<exclude>cypress/node_modules/**</exclude>
+										<exclude>cypress/test-results/**</exclude>
+									</excludes>
 									<targetPath>e2e</targetPath>
 								</testResource>
 								<!-- Copy scenarios -->
