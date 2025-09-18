@@ -46,7 +46,7 @@ public class ObjectCreator {
 		Class<?> clazz = ClassUtils.loadClass(type);
 
 		if(lookupClass.isAssignableFrom(DataSource.class) && Driver.class.isAssignableFrom(clazz)) { // It's also possible to use the native drivers instead of the DataSources directly.
-			return (O) loadDataSourceThroughDriver(clazz, url, properties);
+			return (O) loadDataSourceThroughDriver(clazz, resource, properties);
 		}
 
 		if(lookupClass.isAssignableFrom(clazz)) {
@@ -59,9 +59,15 @@ public class ObjectCreator {
 	/**
 	 * Ensure that the driver is loaded, else the DriverManagerDataSource can not load it.
 	 */
-	private DataSource loadDataSourceThroughDriver(Class<?> clazz, String url, Properties properties) {
-		DriverManagerDataSource dmds = new DriverManagerDataSource(url, properties);
+	private DataSource loadDataSourceThroughDriver(Class<?> clazz, FrankResource resource, Properties properties) {
+		DriverManagerDataSource dmds = new DriverManagerDataSource(resource.getUrl(), properties);
 		dmds.setDriverClassName(clazz.getCanonicalName()); // Initialize the JDBC Driver
+
+		// Technically this is not required, but perhaps somebody uses the DataSource directly without the Driver?
+		CredentialFactory credentials = resource.getCredentials();
+		dmds.setUsername(credentials.getUsername());
+		dmds.setPassword(credentials.getPassword());
+
 		return dmds;
 	}
 
