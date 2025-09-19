@@ -42,14 +42,16 @@ import org.frankframework.core.IbisExceptionListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.RequestReplyListener;
 import org.frankframework.doc.Category;
+import org.frankframework.extensions.messaging.MessageProtocol;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.ResourceLimiter;
 
 @Category(Category.Type.EXPERIMENTAL)
 @DestinationType(DestinationType.Type.AMQP)
 @Log4j2
-public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountControllable {
+public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountControllable, RequestReplyListener {
 	public static final long DEFAULT_TIMEOUT_SECONDS = 30L;
 	public static final long DEFAULT_TIME_TO_LIVE = Header.DEFAULT_TIME_TO_LIVE;
 
@@ -60,8 +62,10 @@ public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountC
 	private @Getter boolean durable;
 	private @Getter String subscriptionName;
 	private @Getter DeliveryMode deliveryMode = DeliveryMode.AT_LEAST_ONCE;
+	private @Getter MessageProtocol messageProtocol = MessageProtocol.FF;
 	private @Getter long replyTimeToLive = DEFAULT_TIME_TO_LIVE;
 	private @Getter long sendReplyTimeout = DEFAULT_TIMEOUT_SECONDS;
+	private ExceptionHandlingMethod onException;
 
 	@Autowired
 	private AmqpListenerContainerManager listenerContainerManager;
@@ -104,6 +108,12 @@ public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountC
 		}
 		if (listenerContainerManager == null) {
 			throw new IllegalStateException("No ListenerContainerManager set");
+		}
+		if (onException == ExceptionHandlingMethod.FORMAT_AND_RETURN && messageProtocol == MessageProtocol.FF) {
+			throw new ConfigurationException("Cannot use onException=FORMAT_AND_RETURN with Fire&Forget MessageProtocol");
+		}
+		if (onException == null) {
+			onException = messageProtocol == MessageProtocol.FF ? ExceptionHandlingMethod.RETHROW : ExceptionHandlingMethod.FORMAT_AND_RETURN;
 		}
 	}
 
@@ -193,6 +203,16 @@ public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountC
 	}
 
 	/**
+	 * Receive message as Fire-and-Forget, or as Request-Reply
+	 *
+	 * @param messageProtocol {@literal FF} for Fire-and-Forget, or {@literal RR} for Request-Reply.
+	 * @ff.default {@literal FF}
+	 */
+	public void setMessageProtocol(MessageProtocol messageProtocol) {
+		this.messageProtocol = messageProtocol;
+	}
+
+	/**
 	 * When the listener is durable, then a subscriptionName should be set so the message broker
 	 * can keep track of which subscribers have already received each message.
 	 */
@@ -235,5 +255,15 @@ public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountC
 	@Override
 	public void decreaseThreadCount() {
 		--maxThreadCount;
+	}
+
+	@Override
+	public void setOnException(ExceptionHandlingMethod method) {
+		this.onException = method;
+	}
+
+	@Override
+	public ExceptionHandlingMethod getOnException() {
+		return onException;
 	}
 }

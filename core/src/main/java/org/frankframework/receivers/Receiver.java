@@ -885,7 +885,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		return (IMessageBrowser<M>)messageBrowsers.get(state);
 	}
 
-
 	protected void startProcessingMessage() {
 		threadsProcessing.getAndIncrement();
 		log.debug("{} starts processing message", this::getLogPrefix);

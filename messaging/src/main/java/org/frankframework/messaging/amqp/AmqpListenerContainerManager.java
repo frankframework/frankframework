@@ -20,11 +20,18 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
-public class AmqpListenerContainerManager {
+import lombok.Setter;
+
+/**
+ * Manage all {@link AmqpListenerContainer}s for all {@link AmqpListener}s. Create a listener-container
+ * per AMQP connection.
+ */
+public class AmqpListenerContainerManager implements ApplicationContextAware {
 
 	@Autowired
-	private ApplicationContext applicationContext;
+	private @Setter ApplicationContext applicationContext;
 
 	private final Map<String, AmqpListenerContainer> listenerContainers = new ConcurrentHashMap<>();
 
