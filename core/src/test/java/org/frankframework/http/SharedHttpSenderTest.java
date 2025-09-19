@@ -6,7 +6,9 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentCaptor.forClass;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -16,6 +18,9 @@ import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.protocol.HttpClientContext;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.protocol.HttpContext;
+
+import org.frankframework.core.SharedResource;
+
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -25,9 +30,11 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.http.AbstractHttpSender.HttpMethod;
 import org.frankframework.stream.Message;
 
+import org.springframework.context.ApplicationContext;
+
 public class SharedHttpSenderTest {
 
-	private ArgumentCaptor<HttpContext> context;
+	private ArgumentCaptor<HttpClientContext> context;
 	private PipeLineSession session;
 	private HttpSender sender;
 	private String sessionKey;
@@ -45,6 +52,16 @@ public class SharedHttpSenderTest {
 
 		when(sender.getHttpClient()).thenReturn(httpClient);
 		doNothing().when(sender).start();
+
+		// Mock shared resource and context
+		ApplicationContext applicationContext = mock(ApplicationContext.class);
+		when(applicationContext.containsBean(eq("shared$$dummy"))).thenReturn(true);
+		HttpSession sharedResource = spy(HttpSession.class);
+		HttpClientContext httpClientContext = HttpClientContext.create();
+		doReturn(httpClientContext).when(sharedResource).getDefaultHttpClientContext();
+		when(applicationContext.getBean("shared$$dummy", SharedResource.class)).thenReturn(sharedResource);
+
+		sender.setApplicationContext(applicationContext);
 
 		//Some default settings, url will be mocked.
 		sender.setUrl("http://127.0.0.1/test");

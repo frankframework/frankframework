@@ -477,11 +477,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 	}
 
 	private HttpSession getSharedSession() {
-		try {
-			return StringUtils.isNotBlank(sharedResourceRef) ? getSharedResource(sharedResourceRef) : null;
-		} catch (NullPointerException e) {
-			return null;
-		}
+		return StringUtils.isNotBlank(sharedResourceRef) ? getSharedResource(sharedResourceRef) : null;
 	}
 
 	@Override
