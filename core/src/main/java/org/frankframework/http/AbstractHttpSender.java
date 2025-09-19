@@ -21,9 +21,11 @@ import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -43,6 +45,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.CanUseSharedResource;
 import org.frankframework.core.DestinationType;
 import org.frankframework.core.DestinationType.Type;
@@ -156,6 +159,18 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 		if(StringUtils.isBlank(sharedResourceRef)) {
 			log.debug("configuring local HttpSession");
 			super.configure();
+		} else {
+			List<String> overriddenProperties = new ArrayList<>();
+
+			// Check if any properties are set, that will be overridden by the sharedResource
+			if (super.getCredentials() != null) overriddenProperties.add("credentials");
+			if (super.getTokenEndpoint() != null) overriddenProperties.add("tokenEndpoint");
+			if (super.getOauthAuthenticationMethod() != null) overriddenProperties.add("oauthMethod");
+
+			if (!overriddenProperties.isEmpty()) {
+				String message = "sharedResourceRef is defined. The following properties will be ignored: " + String.join(", ", overriddenProperties);
+				ConfigurationWarnings.add(this, log, message);
+			}
 		}
 
 		paramList.configure();
@@ -480,6 +495,8 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 		return StringUtils.isNotBlank(sharedResourceRef) ? getSharedResource(sharedResourceRef) : null;
 	}
 
+	// When a shared session is defined, these three methods will override the local values.
+	// This allows the HttpSender to use the properties defined in the shared session without copying them.
 	@Override
 	public CredentialFactory getCredentials() {
 		HttpSession sharedSession = getSharedSession();
