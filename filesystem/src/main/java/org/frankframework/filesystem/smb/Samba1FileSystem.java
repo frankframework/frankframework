@@ -257,12 +257,7 @@ public class Samba1FileSystem extends AbstractFileSystem<SmbFile> implements IWr
 		}
 
 		SmbFile dest = toFile(destinationFolder, f.getName());
-
 		try {
-			if (exists(dest)) {
-				throw new FileAlreadyExistsException("Target already exists");
-			}
-
 			f.renameTo(dest);
 			return dest;
 		} catch (Exception e) {

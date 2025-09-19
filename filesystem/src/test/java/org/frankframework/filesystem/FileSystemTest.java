@@ -521,7 +521,6 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		assertTrue(fileSystem.exists(file2));
 		assertThat(fileSystem.getCanonicalName(file2),anyOf(endsWith(absoluteName1),endsWith(absoluteName2)));
 		assertThat(fileSystem.getName(file2),endsWith(filename));
-
 	}
 
 	@Test
@@ -533,7 +532,6 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 
 		fileSystem.createFile(fileSystem.toFile(filename), null);
 		assertTrue(fileSystem.exists(fileSystem.toFile(filename)));
-
 	}
 
 	@Test
@@ -563,25 +561,6 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		F f = fileSystem.copyFile(fileSystem.toFile(folderName, filename), "folder", true);
 
 		assertNotNull(f, "Copied file cannot be null");
-	}
-
-	@Test
-	public void writableFileSystemAssertMoveToSameDirectoryNotPossible() throws Exception {
-		String filename = "file.txt";
-		String contents = "regeltje tekst";
-
-		fileSystem.configure();
-		fileSystem.open();
-
-		String rootFolder = "testFolder";
-		createFolderIfNotExists(rootFolder);
-		createFile(rootFolder, filename, contents);
-
-		waitForActionToFinish();
-
-		F file = fileSystem.toFile(rootFolder, filename);
-
-		assertThrows(FileSystemException.class, () -> fileSystem.moveFile(file, rootFolder, false));
 	}
 
 	private void createFolderIfNotExists(final String folderName) throws Exception {

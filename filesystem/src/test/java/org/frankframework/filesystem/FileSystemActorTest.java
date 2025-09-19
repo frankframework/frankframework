@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.endsWith;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -68,7 +69,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 	}
 
 	@Test
-	public void fileSystemActorTestConfigureNoAction() throws Exception {
+	public void fileSystemActorTestConfigureNoAction()  {
 		ConfigurationException e = assertThrows(ConfigurationException.class, () -> actor.configure(fileSystem, parameters, adapter));
 		assertThat(e.getMessage(), containsString("either attribute [action] or parameter [action] must be specified"));
 		assertThat(e.getMessage(), containsString("TestAdapter of " + this.getClass().getSimpleName()));
@@ -651,8 +652,8 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		}
 	}
 
-	@Test()
-	public void fileSystemActorMoveActionTestForDestinationParameter() throws Exception {
+	@Test
+	public void fileSystemActorMoveActionTestForDestinationParameter() {
 		actor.setAction(FileSystemAction.MOVE);
 
 		ConfigurationException e = assertThrows(ConfigurationException.class, () -> actor.configure(fileSystem, parameters, adapter));
@@ -710,10 +711,69 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 	}
 
 	@Test
-	public void fileSystemActorMoveActionTestRootToFolderFailIfolderDoesNotExist() throws Exception {
+	public void fileSystemActorMoveActionTestRootToFolderFailIfolderDoesNotExist() {
 		FileSystemException e = assertThrows(FileSystemException.class, () -> fileSystemActorMoveActionTest(null, "folder", false, false));
 		assertThat(e.getMessage(), containsString("unable to process [MOVE] action for File ["));
 		assertThat(e.getMessage(), containsString("]: destination folder [folder] does not exist"));
+	}
+
+	@Test
+	public void fileSystemActorMoveActionFailsIfTargetExists() throws Exception {
+		String filename = "sendermove" + FILE1;
+		String contents = "Tekst om te lezen";
+
+		String targetFolder = "testFolder";
+		_createFolder(targetFolder);
+
+		// Create source and target file with same name
+		String sourceId = createFile(null, filename, contents);
+		createFile(targetFolder, filename, contents);
+		waitForActionToFinish();
+
+		actor.setAction(FileSystemAction.MOVE);
+		parameters.add(new Parameter("destination", targetFolder));
+		parameters.configure();
+
+		actor.configure(fileSystem, parameters, adapter);
+		actor.open();
+
+		Message message = new Message(sourceId);
+		ParameterValueList pvl = parameters.getValues(message, session);
+
+		// Expect fileSystemException, which wraps a FileAlreadyExistsException
+		FileSystemException fileSystemException = assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl, session));
+
+		// Expect a FileAlreadyExistsException, because we try to move a file onto itself
+		assertInstanceOf(FileAlreadyExistsException.class, fileSystemException.getCause());
+	}
+
+	@Test
+	public void fileSystemActorMoveActionFailsIfMovingToItself() throws Exception {
+		String filename = "sendermove" + FILE1;
+		String contents = "Tekst om te lezen";
+
+		String folder = "testFolder";
+
+		_createFolder(folder);
+
+		String id = folder + "/" + createFile(folder, filename, contents);
+		waitForActionToFinish();
+
+		actor.setAction(FileSystemAction.MOVE);
+		parameters.add(new Parameter("destination", folder));
+		parameters.configure();
+
+		actor.configure(fileSystem, parameters, adapter);
+		actor.open();
+
+		Message message = new Message(id);
+		ParameterValueList pvl = parameters.getValues(message, session);
+
+		// Expect fileSystemException, which wraps a FileAlreadyExistsException
+		FileSystemException fileSystemException = assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl, session));
+
+		// Expect a FileAlreadyExistsException, because we try to move a file onto itself
+		assertInstanceOf(FileAlreadyExistsException.class, fileSystemException.getCause());
 	}
 
 	@Test
