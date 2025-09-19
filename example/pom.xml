@@ -14,7 +14,7 @@
 	<name>Frank!Framework example</name>
 
 	<properties>
-		<m2eclipse.wtp.contextRoot>iaf-example</m2eclipse.wtp.contextRoot>
+		<m2eclipse.wtp.contextRoot>/</m2eclipse.wtp.contextRoot>
 		<failOnMissingWebXml>false</failOnMissingWebXml>
 	</properties>
 
