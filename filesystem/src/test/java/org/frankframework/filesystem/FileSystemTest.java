@@ -521,7 +521,6 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 		assertTrue(fileSystem.exists(file2));
 		assertThat(fileSystem.getCanonicalName(file2),anyOf(endsWith(absoluteName1),endsWith(absoluteName2)));
 		assertThat(fileSystem.getName(file2),endsWith(filename));
-
 	}
 
 	@Test
@@ -533,7 +532,6 @@ public abstract class FileSystemTest<F, FS extends IWritableFileSystem<F>> exten
 
 		fileSystem.createFile(fileSystem.toFile(filename), null);
 		assertTrue(fileSystem.exists(fileSystem.toFile(filename)));
-
 	}
 
 	@Test

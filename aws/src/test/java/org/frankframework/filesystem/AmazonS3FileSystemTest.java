@@ -192,13 +192,6 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3FileRef, AmazonS3Fi
 		super.writableFileSystemTestDeleteAppendedFile();
 	}
 
-	@Disabled // atomic move is not implemented. It could be possible to arrange this using ObjectLock.LegalHold
-	@Test
-	@Override
-	public void basicFileSystemTestMoveFileMustFailWhenTargetAlreadyExists() throws Exception {
-		super.basicFileSystemTestMoveFileMustFailWhenTargetAlreadyExists();
-	}
-
 	@Test
 	public void testToFileWithBucketnameInFilename() {
 		// arrange
@@ -261,5 +254,24 @@ public class AmazonS3FileSystemTest extends FileSystemTest<S3FileRef, AmazonS3Fi
 		S3FileRef file = fileSystem.toFile(foldername);
 		// test
 		assertEquals(file.getBucketName()+"|"+foldername, fileSystem.getCanonicalName(file));
+	}
+
+	@Test
+	public void writableFileSystemAssertMoveToSameDirectoryNotPossible() throws Exception {
+		String filename = "file.txt";
+		String contents = "regeltje tekst";
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		String rootFolder = "testFolder";
+		_createFolder(rootFolder);
+		createFile(rootFolder, filename, contents);
+
+		waitForActionToFinish();
+
+		S3FileRef file = fileSystem.toFile(rootFolder, filename);
+
+		assertThrows(FileSystemException.class, () -> fileSystem.moveFile(file, rootFolder, false));
 	}
 }
