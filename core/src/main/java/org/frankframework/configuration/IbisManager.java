@@ -40,9 +40,6 @@ import org.frankframework.receivers.Receiver;
 import org.frankframework.util.LogUtil;
 
 /**
- * Implementation of IbisManager which does not use EJB for
- * managing IBIS Adapters.
- *
  * @author  Tim van der Leeuw
  * @since   4.8
  */

@@ -46,7 +46,7 @@ public class ClassLoaderManager {
 	private final AppConstants APP_CONSTANTS = AppConstants.getInstance(); // Cannot make this final because of tests
 	private final int MAX_CLASSLOADER_ITEMS = APP_CONSTANTS.getInt("classloader.items.max", 100);
 	private final Map<String, ClassLoader> classLoaders = new TreeMap<>();
-	private final ClassLoader classPathClassLoader = Thread.currentThread().getContextClassLoader();
+	private final ClassLoader classPathClassLoader;
 
 	public static final String CLASSLOADER_PACKAGE_LOCATION = "org.frankframework.configuration.classloaders.%s";
 
@@ -54,6 +54,8 @@ public class ClassLoaderManager {
 
 	public ClassLoaderManager(IbisContext ibisContext) {
 		this.ibisContext = ibisContext;
+
+		classPathClassLoader = Thread.currentThread().getContextClassLoader();
 	}
 
 	private ClassLoader createClassloader(String configurationName, String classLoaderType) throws ClassLoaderException {
