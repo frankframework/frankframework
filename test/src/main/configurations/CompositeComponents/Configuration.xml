@@ -1,0 +1,34 @@
+<Configuration
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd"
+	active="${plugins.enabled}">
+
+	<Adapter name="testCustomClassFromPlugin">
+		<Receiver>
+			<JavaListener name="testPluginListenerDirect" />
+		</Receiver>
+		<Pipeline>
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" />
+			</Exits>
+
+			<Pipe className="org.frankframework.plugin.ReadFromLocalClassPath" name="plugin" />
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="testPipelinePartFromPlugin">
+		<Receiver>
+			<JavaListener name="testPlugin" />
+		</Receiver>
+		<Pipeline>
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" />
+			</Exits>
+
+			<!-- custom pipe of sender (in plugin) -->
+			<Pipe name="plugin1" plugin="demo-plugin" className="org.frankframework.plugin.ReadFromLocalClassPath" />
+
+			<PipelinePart name="plugin2" plugin="demo-plugin" ref="demo-test-part" />
+		</Pipeline>
+	</Adapter>
+</Configuration>

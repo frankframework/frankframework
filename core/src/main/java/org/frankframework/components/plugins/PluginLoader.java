@@ -18,13 +18,20 @@ package org.frankframework.components.plugins;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import jakarta.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.pf4j.PluginManager;
+import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.InitializingBean;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.util.AppConstants;
 
+@Log4j2
 public class PluginLoader implements InitializingBean {
+
 	private Path directory;
 	private PluginManager pluginManager;
 
@@ -41,13 +48,26 @@ public class PluginLoader implements InitializingBean {
 		}
 	}
 
+	@Nullable
+	public PluginWrapper findPlugin(String pluginName) {
+		if (pluginManager == null) {
+			return null;
+		}
+
+		return pluginManager.getPlugin(pluginName);
+	}
+
 	@Override
 	public void afterPropertiesSet() {
 		if (directory == null) {
+			log.info("disabled plugin capability");
 			return;
 		}
+		log.info("enabled plugin capability using directory [{}]", directory);
 
 		pluginManager = new FrankPluginManager(directory);
 		pluginManager.loadPlugins();
+
+		log.info("loaded [{}] plugin(s) / component(s)", pluginManager.getPlugins().size());
 	}
 }

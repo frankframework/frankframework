@@ -43,6 +43,8 @@
 
 	<bean id="VerifyDatabaseConnectionBean" class="org.frankframework.lifecycle.VerifyDatabaseConnectionBean" />
 
+	<bean id="PluginLoader" class="org.frankframework.components.plugins.PluginLoader" />
+
 	<bean
 		name="hostnamePropertySourcePostProcessor"
 		class="org.frankframework.configuration.HostnamePropertySourcePostProcessor"
