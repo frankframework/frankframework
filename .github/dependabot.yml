@@ -20,7 +20,10 @@ updates:
       - dependency-name: "org.eclipse.m2e:lifecycle-mapping"
 
   - package-ecosystem: "npm"
-    directory: "/console/frontend/src/main/frontend"
+    directories: 
+      - "/" # for pnpm-lock & pnpm-workspace
+      - "/console/frontend/src/main/frontend"
+      - "/console/frontend/src/main/frontend/cypress"
     schedule:
       interval: "weekly"
     labels:

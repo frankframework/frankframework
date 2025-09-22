@@ -35,6 +35,7 @@ import org.springframework.core.SmartClassLoader;
 import org.frankframework.configuration.ApplicationWarnings;
 import org.frankframework.configuration.ClassLoaderException;
 import org.frankframework.configuration.IbisContext;
+import org.frankframework.configuration.IbisManager;
 import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
@@ -137,8 +138,8 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	 * Only for internal use within ClassLoaders
 	 * Retrieve the IbisContext from the ClassLoader which is set when the {@link IConfigurationClassLoader#configure(IbisContext, String) configure} method is called
 	 */
-	protected IbisContext getIbisContext() {
-		return ibisContext;
+	protected IbisManager getIbisManager() {
+		return ibisContext.getIbisManager();
 	}
 
 	@Override
