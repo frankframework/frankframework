@@ -90,7 +90,7 @@
 		<spring.version>6.2.11</spring.version>
 		<spring-security.version>6.4.6</spring-security.version>
 		<spring-integration.version>6.5.2</spring-integration.version>
-		<spring.boot.version>3.5.5</spring.boot.version>
+		<spring.boot.version>3.5.6</spring.boot.version>
 		<tomcat.version>10.1.46</tomcat.version>
 		<bouncycastle.version>1.82</bouncycastle.version>
 
@@ -101,7 +101,7 @@
 		<!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
 		<frankdoc.version>4.1-SNAPSHOT</frankdoc.version>
-		<javadoc-plugin.version>3.11.3</javadoc-plugin.version>
+		<javadoc-plugin.version>3.12.0</javadoc-plugin.version>
 
 		<!-- DB Driver Versions -->
 		<h2.driver.version>2.3.232</h2.driver.version>
@@ -111,7 +111,7 @@
 		<mssql.driver.version>12.10.1.jre11</mssql.driver.version>
 		<mysql.driver.version>9.4.0</mysql.driver.version>
 		<mariadb.driver.version>3.5.6</mariadb.driver.version>
-		<postgresql.driver.version>42.7.7</postgresql.driver.version>
+		<postgresql.driver.version>42.7.8</postgresql.driver.version>
 		<mongodb.driver.version>5.6.0</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
@@ -124,7 +124,7 @@
 		<aws.java.sdk.version>2.32.7</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
-		<mockito.version>5.19.0</mockito.version>
+		<mockito.version>5.20.0</mockito.version>
 		<junit.version>5.13.4</junit.version>
 	</properties>
 
@@ -511,7 +511,7 @@
 			<dependency>
 				<groupId>jakarta.mail</groupId>
 				<artifactId>jakarta.mail-api</artifactId>
-				<version>2.1.4</version>
+				<version>2.1.5</version>
 			</dependency>
 			<dependency>
 				<groupId>org.eclipse.angus</groupId>
@@ -602,7 +602,7 @@
 			<dependency>
 				<groupId>org.projectlombok</groupId>
 				<artifactId>lombok</artifactId>
-				<version>1.18.40</version>
+				<version>1.18.42</version>
 				<scope>provided</scope>
 			</dependency>
 
@@ -835,7 +835,7 @@
 						<dependency>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
-							<version>1.18.40</version>
+							<version>1.18.42</version>
 						</dependency>
 					</dependencies>
 					<executions>
@@ -1073,7 +1073,7 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>flatten-maven-plugin</artifactId>
-					<version>1.7.2</version>
+					<version>1.7.3</version>
 					<configuration>
 						<updatePomFile>true</updatePomFile>
 						<flattenMode>resolveCiFriendliesOnly</flattenMode>
