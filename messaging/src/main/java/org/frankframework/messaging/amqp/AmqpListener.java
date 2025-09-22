@@ -57,6 +57,7 @@ public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountC
 
 
 	private @Getter String connectionName;
+	private @Getter AddressType addressType = AddressType.QUEUE;
 	private @Getter String address;
 	private @Getter String replyAddress;
 	private @Getter boolean durable;
@@ -68,7 +69,7 @@ public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountC
 	private ExceptionHandlingMethod onException;
 
 	@Autowired
-	private AmqpListenerContainerManager listenerContainerManager;
+	private @Setter AmqpListenerContainerManager listenerContainerManager;
 	private @Setter @Getter IMessageHandler<Message<?>> handler;
 	private @Setter @Getter IbisExceptionListener exceptionListener;
 	private @Setter @Getter ApplicationContext applicationContext;
@@ -100,6 +101,10 @@ public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountC
 		if (durable) {
 			if (StringUtils.isBlank(subscriptionName)) {
 				throw new ConfigurationException("The subscriptionName cannot be empty when selecting durable listener");
+			}
+			if (addressType ==  AddressType.QUEUE) {
+				addressType = AddressType.TOPIC;
+				log.info("Using [addressType=TOPIC] because [durable=true]");
 			}
 		} else {
 			if (StringUtils.isNotBlank(subscriptionName)) {
@@ -157,6 +162,16 @@ public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountC
 	 */
 	public void setSendReplyTimeout(long timeout) {
 		this.sendReplyTimeout = timeout;
+	}
+
+	/**
+	 * Set the type of address to which messages are being sent, TOPIC or QUEUE.
+	 * For {@literal MessageProtocol#RR} the type will always be QUEUE.
+	 *
+	 * @ff.default {@literal QUEUE}
+	 */
+	public void setAddressType(AddressType addressType) {
+		this.addressType = addressType;
 	}
 
 	/**

@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import jakarta.annotation.Nonnull;
@@ -117,6 +118,7 @@ public class AmqpListenerContainer {
 		}
 		ReceiverOptions options = new ReceiverOptions();
 		options.deliveryMode(amqpListener.getDeliveryMode());
+		options.sourceOptions().capabilities(amqpListener.getAddressType().getCapabilityName());
 
 		Receiver receiver;
 		try {
@@ -147,6 +149,8 @@ public class AmqpListenerContainer {
 		if (receiver != null) {
 			receivers.remove(receiver);
 			receiver.close();
+		} else {
+			log.warn("No AMQP Receiver found for listener[{}]", amqpListener.getName());
 		}
 		isClosing.set(receivers.isEmpty());
 		return receivers.isEmpty();
@@ -155,11 +159,11 @@ public class AmqpListenerContainer {
 	private void startListenerThread() {
 		Thread listenerThread = new Thread(() -> {
 			isRunning.set(true);
-			try (Connection theConnection = connection; Session theSession = session) {
+			try (Connection ignored = connection; Session theSession = session) {
 				while (!isClosing.get()) {
-					final Receiver receiver = theSession.nextReceiver();
+					final Receiver receiver = theSession.nextReceiver(5, TimeUnit.SECONDS);
 					if (receiver == null) {
-						break;
+						continue;
 					}
 					AmqpListener listener = receivers.get(receiver);
 					Delivery delivery = receiver.receive();
@@ -169,6 +173,8 @@ public class AmqpListenerContainer {
 				log.warn("Error receiving messages", e);
 			} finally {
 				isRunning.set(false);
+				connection = null;
+				connectionName = null;
 			}
 		});
 		listenerThread.start();

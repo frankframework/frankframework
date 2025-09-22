@@ -387,6 +387,8 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	/**
 	 * Set the type of address to which messages are being sent, TOPIC or QUEUE.
 	 * For {@literal MessageProtocol#RR} the type will always be QUEUE.
+	 *
+	 * @ff.default {@literal QUEUE}
 	 */
 	public void setAddressType(AddressType addressType) {
 		this.addressType = addressType;
