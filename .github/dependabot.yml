@@ -23,6 +23,7 @@ updates:
     directories: 
       - "/" # for pnpm-lock & pnpm-workspace
       - "/console/frontend/src/main/frontend"
+      - "/console/frontend/src/main/frontend/cypress"
     schedule:
       interval: "weekly"
     labels:
