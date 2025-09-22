@@ -40,7 +40,7 @@ public class DatabaseClassLoader extends AbstractJarBytesClassLoader {
 		Map<String, Object> loadedConfiguration;
 		try {
 			// Make sure there's a database present
-			ApplicationContext ac = getIbisContext().getIbisManager().getApplicationContext();
+			ApplicationContext ac = getIbisManager().getApplicationContext();
 			loadedConfiguration = ConfigurationUtils.getActiveConfigFromDatabase(ac, getConfigurationName(), datasourceName);
 		}
 		catch (Throwable t) {
