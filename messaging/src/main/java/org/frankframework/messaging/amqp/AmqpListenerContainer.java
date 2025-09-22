@@ -72,6 +72,13 @@ public class AmqpListenerContainer {
 	private final AtomicBoolean isRunning = new AtomicBoolean(false);
 	private final AtomicBoolean isClosing = new AtomicBoolean(false);
 
+	/**
+	 * Open connection for which this instance is managing receivers. This connection needs
+	 * to be opened before any {@link AmqpListener}s can be registered with this container.
+	 *
+	 * @param connectionName
+	 * @throws LifecycleException
+	 */
 	public void openConnection(@Nonnull String connectionName) throws LifecycleException {
 		if (this.connectionName != null) {
 			throw new IllegalStateException("connectionName is already set");
@@ -91,11 +98,27 @@ public class AmqpListenerContainer {
 		return connection != null;
 	}
 
+	/**
+	 * Open a listener in this listener-container. The listener-container should have an open connection
+	 * before a listener can be opened, and the listener connection-name should be for the same connection
+	 * as this listener-container instance.
+	 *
+	 * @param amqpListener
+	 */
 	public void openListener(@Nonnull AmqpListener amqpListener) {
-		Receiver receiver;
+		if (this.connectionName == null) {
+			throw new IllegalStateException("connection for the AmqpListenerContainer is not yet open");
+		}
+		if (!this.connectionName.equals(amqpListener.getConnectionName())) {
+			throw new IllegalStateException("AmqpListener[" + amqpListener.getName() +
+					"] connection [" + amqpListener.getConnectionName() +
+					"] is not the same as connection [" + this.connectionName +
+					"] for this AmqpListenerContainer");
+		}
 		ReceiverOptions options = new ReceiverOptions();
 		options.deliveryMode(amqpListener.getDeliveryMode());
 
+		Receiver receiver;
 		try {
 			if (amqpListener.isDurable()) {
 				receiver = session.openDurableReceiver(amqpListener.getAddress(), amqpListener.getSubscriptionName(), options);
@@ -132,9 +155,9 @@ public class AmqpListenerContainer {
 	private void startListenerThread() {
 		Thread listenerThread = new Thread(() -> {
 			isRunning.set(true);
-			try {
+			try (Connection theConnection = connection; Session theSession = session) {
 				while (!isClosing.get()) {
-					final Receiver receiver = session.nextReceiver();
+					final Receiver receiver = theSession.nextReceiver();
 					if (receiver == null) {
 						break;
 					}

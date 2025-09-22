@@ -18,7 +18,10 @@ package org.frankframework.messaging.amqp;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+import jakarta.annotation.Nonnull;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -30,23 +33,23 @@ import lombok.Setter;
  */
 public class AmqpListenerContainerManager implements ApplicationContextAware {
 
-	@Autowired
+	@Qualifier("webApplicationContext") @Autowired
 	private @Setter ApplicationContext applicationContext;
 
 	private final Map<String, AmqpListenerContainer> listenerContainers = new ConcurrentHashMap<>();
 
-	public void openListener(AmqpListener amqpListener) {
+	public void openListener(@Nonnull AmqpListener amqpListener) {
 		getListenerContainer(amqpListener).openListener(amqpListener);
 	}
 
-	public void closeListener(AmqpListener amqpListener) {
+	public void closeListener(@Nonnull AmqpListener amqpListener) {
 		boolean closed = getListenerContainer(amqpListener).closeListener(amqpListener);
 		if (closed) {
 			listenerContainers.remove(amqpListener.getConnectionName());
 		}
 	}
 
-	private AmqpListenerContainer getListenerContainer(AmqpListener listener) {
+	private @Nonnull AmqpListenerContainer getListenerContainer(@Nonnull AmqpListener listener) {
 		String connectionName = listener.getConnectionName();
 		return listenerContainers.computeIfAbsent(connectionName, key -> {
 			AmqpListenerContainer listenerContainer = applicationContext.getAutowireCapableBeanFactory().createBean(AmqpListenerContainer.class);
