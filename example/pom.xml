@@ -25,12 +25,6 @@
 			<version>${h2.driver.version}</version>
 		</dependency>
 
-		<dependency>
-			<groupId>jakarta.servlet</groupId>
-			<artifactId>jakarta.servlet-api</artifactId>
-			<scope>test</scope>
-		</dependency>
-
 		<!-- This should be the only required test dependency to run IbisTester -->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
