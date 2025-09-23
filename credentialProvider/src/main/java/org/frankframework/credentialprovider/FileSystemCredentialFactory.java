@@ -34,8 +34,8 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  *
  * <p>It reads the username and password from files in a directory. The directory is set by the property {@value #FILESYSTEM_ROOT_PROPERTY}.</p>
  *
- * <p>It reads the username from a file with the name set by the property {@value CredentialFactory#DEFAULT_USERNAME_FIELD} and the password from a file with the name set by
- * the property {@value #PASSWORD_FILE_PROPERTY}. These values are relative to the {@value #FILESYSTEM_ROOT_PROPERTY}</p>
+ * <p>It reads the username from a file with the name set by the property {@value CredentialFactory#DEFAULT_USERNAME_FIELD} and the password from a file with
+ * the name set by the property {@value CredentialFactory#DEFAULT_PASSWORD_FIELD}. These values are relative to the {@value #FILESYSTEM_ROOT_PROPERTY}</p>
  *
  * <p>By default, the default values {@code username} and {@code password} are used for these files.</p>
  *
