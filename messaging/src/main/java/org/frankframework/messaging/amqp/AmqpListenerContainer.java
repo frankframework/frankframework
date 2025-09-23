@@ -243,18 +243,15 @@ public class AmqpListenerContainer {
 		}
 	}
 
-	private void closeAllListeners(ClientException ex) {
+	public void closeAllListeners(ClientException ex) {
 		Set<AmqpListener> allListeners = new HashSet<>(listeners.keySet());
 		for (AmqpListener listener : allListeners) {
 			listener.stop();
 			IMessageHandler<Message<?>> handler = listener.getHandler();
-			if (handler instanceof IbisExceptionListener exceptionListener) {
+			if (handler instanceof IbisExceptionListener exceptionListener && ex != null) {
 				exceptionListener.exceptionThrown(listener, ex);
 			}
 		}
-
-		session.close();
-		connection.close();
 		isClosing.set(true);
 	}
 

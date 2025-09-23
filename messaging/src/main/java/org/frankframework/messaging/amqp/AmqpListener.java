@@ -114,6 +114,10 @@ public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountC
 		if (listenerContainerManager == null) {
 			throw new IllegalStateException("No ListenerContainerManager set");
 		}
+		if (messageProtocol == MessageProtocol.RR && addressType == AddressType.TOPIC) {
+			messageProtocol = MessageProtocol.FF;
+			ConfigurationWarnings.add(this, log, "[messageProtocol] cannot be [RR] when [addressType] = [TOPIC]");
+		}
 		if (onException == ExceptionHandlingMethod.FORMAT_AND_RETURN && messageProtocol == MessageProtocol.FF) {
 			throw new ConfigurationException("Cannot use onException=FORMAT_AND_RETURN with Fire&Forget MessageProtocol");
 		}

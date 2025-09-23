@@ -47,13 +47,13 @@ class RabbitMQ3AmqpListenerTest extends AmqpListenerTest {
 		log.info("Result of enabling AMQP plugin: {}", enableResult);
 	}
 
-	@Disabled("Topic Exchange on AMQP1 does not work on RabbitMQ3")
+	@Disabled("Durable Topic Exchange on AMQP1 does not work on RabbitMQ3")
 	@Override
 	void testListenFFDurableTopicReceiveBinary() throws Exception {
 		super.testListenFFDurableTopicReceiveBinary();
 	}
 
-	@Disabled("Topic Exchange on AMQP1 does not work on RabbitMQ3")
+	@Disabled("Durable Topic Exchange on AMQP1 does not work on RabbitMQ3")
 	@Override
 	void testListenFFDurableTopicReceiveText() throws Exception {
 		super.testListenFFDurableTopicReceiveText();

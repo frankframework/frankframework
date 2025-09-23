@@ -25,6 +25,7 @@ import org.springframework.core.task.SimpleAsyncTaskExecutor;
 
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.ListenerException;
 import org.frankframework.extensions.messaging.MessageProtocol;
@@ -37,11 +38,11 @@ import org.frankframework.stream.Message;
 abstract class AmqpListenerTest {
 	private static final String QUEUE_EXCHANGE_NAME = "test:testQueueExchange";
 	private static final String TOPIC_EXCHANGE_NAME = "test:testTopicExchange";
+	private static final String DURABLE_TOPIC_EXCHANGE_NAME = "test:testDurableTopicExchange";
 	private AmqpConnectionFactoryFactory factory;
 	private AmqpListener listener;
 	private AmqpListenerContainerManager containerManager;
 	private ApplicationContext applicationContext;
-	private AutowireCapableBeanFactory beanFactory;
 
 	private final List<AmqpListenerContainer> containers = new ArrayList<>();
 	private final List<Message> receivedMessages = new ArrayList<>();
@@ -50,7 +51,7 @@ abstract class AmqpListenerTest {
 	void setUp() throws Exception {
 		factory = createAmqpConnectionFactory();
 
-		beanFactory = mock();
+		AutowireCapableBeanFactory beanFactory = mock();
 		when(beanFactory.createBean(AmqpListenerContainer.class)).thenAnswer(
 				invocation -> {
 					AmqpListenerContainer listenerContainer = new AmqpListenerContainer();
@@ -113,8 +114,11 @@ abstract class AmqpListenerTest {
 
 	@AfterEach
 	void tearDown() {
-//		CloseUtils.closeSilently(session);
-		listener.stop();
+		// Close all listener-containers first, then wait to make sure each of
+		// them is closed
+		containers.forEach(container->{
+			container.closeAllListeners(null);
+		});
 		containers.forEach(container->{
 			await().atMost(10, TimeUnit.SECONDS)
 							.until(() -> !container.isOpen());
@@ -193,9 +197,65 @@ abstract class AmqpListenerTest {
 	}
 
 	@Test
-	void testListenFFDurableTopicReceiveText() throws Exception {
+	void testListenFFTopicReceiveText() throws Exception {
 		// Arrange
 		String addressToUse = TOPIC_EXCHANGE_NAME + "_1";
+
+		// Now setup and start the listener
+		listener.setDurable(false);
+		listener.setAddressType(AddressType.TOPIC);
+		listener.setAddress(addressToUse);
+		listener.setMessageProtocol(MessageProtocol.FF);
+		listener.setName("testListener testListenFFTopicReceiveText");
+		listener.configure();
+		listener.start();
+
+		// Act
+		Amqp1Helper.sendFFMessage(factory, getResourceName(), addressToUse, AddressType.TOPIC, new Message("test"));
+
+		// Assert
+		await().atMost(10, TimeUnit.SECONDS)
+				.until(() -> receivedMessages.size() == 1);
+
+		Message message = receivedMessages.get(0);
+		assertNotNull(message);
+		assertFalse(message.isBinary(), "Expected text message");
+		assertEquals("test", message.asString());
+	}
+
+	@Test
+	void testListenFFTopicReceiveBinary() throws Exception {
+		// Arrange
+		String addressToUse = TOPIC_EXCHANGE_NAME + "_2";
+
+		// Now setup and start the listener
+		listener.setDurable(false);
+		listener.setAddressType(AddressType.TOPIC);
+		listener.setAddress(addressToUse);
+		listener.setSubscriptionName("test-listener-2");
+		listener.setMessageProtocol(MessageProtocol.FF);
+		listener.setName("testListener testListenFFTopicReceiveBinary");
+		listener.configure();
+		listener.start();
+
+		// Act
+		Amqp1Helper.sendFFMessage(factory, getResourceName(), addressToUse, AddressType.TOPIC, new Message("test".getBytes()));
+
+		// Assert
+		await().atMost(10, TimeUnit.SECONDS)
+				.until(() -> receivedMessages.size() == 1);
+
+		Message message = receivedMessages.get(0);
+		assertNotNull(message);
+		assertTrue(message.isBinary(), "Expected binary message");
+		assertEquals("test", message.asString());
+	}
+
+
+	@Test
+	void testListenFFDurableTopicReceiveText() throws Exception {
+		// Arrange
+		String addressToUse = DURABLE_TOPIC_EXCHANGE_NAME + "_1";
 
 		// For ActiveMQ test to pass, we need to send message to the durable topic (thus creating it) before we start listening
 		if (getResourceName().equals("ActiveMQ")) {
@@ -217,7 +277,7 @@ abstract class AmqpListenerTest {
 		}
 
 		// Assert
-		await().atMost(20, TimeUnit.SECONDS)
+		await().atMost(10, TimeUnit.SECONDS)
 				.until(() -> receivedMessages.size() == 1);
 
 		Message message = receivedMessages.get(0);
@@ -229,7 +289,7 @@ abstract class AmqpListenerTest {
 	@Test
 	void testListenFFDurableTopicReceiveBinary() throws Exception {
 		// Arrange
-		String addressToUse = TOPIC_EXCHANGE_NAME + "_2";
+		String addressToUse = DURABLE_TOPIC_EXCHANGE_NAME + "_2";
 
 		// For ActiveMQ test to pass, we need to send message to the durable topic (thus creating it) before we start listening
 		if (getResourceName().equals("ActiveMQ")) {
@@ -259,4 +319,53 @@ abstract class AmqpListenerTest {
 		assertTrue(message.isBinary(), "Expected binary message");
 		assertEquals("test", message.asString());
 	}
+
+	@Test
+	void testManyListenersOnSameConnection() throws Exception {
+		// Arrange
+		startListener(listener, AddressType.QUEUE, QUEUE_EXCHANGE_NAME, "-1");
+
+		AmqpListener listener1 = createAmqpListener();
+		startListener(listener1, AddressType.QUEUE, QUEUE_EXCHANGE_NAME, "-2");
+
+		AmqpListener listener2 = createAmqpListener();
+		startListener(listener2, AddressType.TOPIC, TOPIC_EXCHANGE_NAME, "-1");
+
+		// Act 1
+		Amqp1Helper.sendFFMessage(factory, getResourceName(), TOPIC_EXCHANGE_NAME + "-1", AddressType.TOPIC, new Message("topic message 1"));
+
+		// Assert 1
+		await().atMost(10, TimeUnit.SECONDS)
+				.until(() -> receivedMessages.size() == 1);
+
+		Message message = receivedMessages.get(0);
+		assertEquals("topic message 1", message.asString());
+
+		receivedMessages.clear();
+
+		// Act 2
+
+		for (int i = 1; i <= 10; i++) {
+			Amqp1Helper.sendFFMessage(factory, getResourceName(), QUEUE_EXCHANGE_NAME + "-1", AddressType.QUEUE, new Message("test q1 " + i));
+			Amqp1Helper.sendFFMessage(factory, getResourceName(), QUEUE_EXCHANGE_NAME + "-2", AddressType.QUEUE, new Message("test q2 " + i));
+			Amqp1Helper.sendFFMessage(factory, getResourceName(), TOPIC_EXCHANGE_NAME + "-1", AddressType.TOPIC, new Message("test t1 " + i));
+		}
+
+		// Assert 2
+		await().atMost(10, TimeUnit.SECONDS)
+				.until(() -> receivedMessages.size() == 30);
+	}
+
+	private static void startListener(AmqpListener amqpListener, AddressType addressType, String baseAddress, String suffix) throws ConfigurationException {
+		amqpListener.setAddressType(addressType);
+		amqpListener.setAddress(baseAddress + suffix);
+		amqpListener.setName(baseAddress + suffix);
+		amqpListener.setMaxThreadCount(2);
+		amqpListener.configure();
+		amqpListener.start();
+	}
+
+	// TODO: Test with multiple threads per listener
+	// TODO: Test with Request-Reply
+	// TODO: Test with multiple connection names (which creates multiple listener-containers)
 }
