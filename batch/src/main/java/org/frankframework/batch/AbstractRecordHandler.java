@@ -59,6 +59,8 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	private final List<Integer> recordIdentifyingFields = new ArrayList<>();
 
 	protected @Getter @Nonnull ParameterList paramList = new ParameterList();
+	
+	private @Getter int recordLength=-1;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -259,8 +261,11 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 
 	/** Comma separated specification of field lengths. if neither this attribute nor <code>inputSeparator</code> is specified then the entire record is parsed */
 	public void setInputFields(String fieldLengths) {
+		recordLength = 0;
 		for (String token : StringUtil.split(fieldLengths)) {
-			addInputField(Integer.parseInt(token));
+			int fieldLength = Integer.parseInt(token);
+			addInputField(fieldLength);
+			recordLength += fieldLength;
 		}
 	}
 

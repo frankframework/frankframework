@@ -15,6 +15,9 @@
 */
 package org.frankframework.batch;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.Reader;
 import java.util.Map;
 
 import lombok.Getter;
@@ -34,6 +37,7 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 
 	private @Getter int startPosition;
 	private @Getter int endPosition=-1;
+	private @Getter boolean singleLine;
 
 	@Override
 	public RecordHandlingFlow getRecordHandler(PipeLineSession session, String record) throws Exception {
@@ -71,6 +75,48 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 		return super.getRecordHandlerByKey(value);
 	}
 
+	@Override
+	public String getFirstPartOfNextRecord(BufferedReader reader) throws IOException {
+		if (isSingleLine()) {
+			return readUpToXChars(reader, endPosition);
+		}
+		return super.getFirstPartOfNextRecord(reader);
+	}
+
+	@Override
+	public String getFullRecord(BufferedReader reader, RecordHandlingFlow flow, String firstPart) throws IOException {
+		if (isSingleLine()) {
+			IRecordHandler handler = flow.getRecordHandler();
+			if (handler!=null) {
+				int recordLength=handler.getRecordLength();
+				if (recordLength > 0) {
+					if (recordLength > firstPart.length()) {
+						return firstPart+readUpToXChars(reader, recordLength-firstPart.length());
+					}
+					return firstPart;
+				}
+				return firstPart+reader.readLine();
+			}
+		}
+		return super.getFullRecord(reader, flow, firstPart);
+	}
+	
+	private String readUpToXChars(Reader reader, int maxChars) throws IOException {
+	    char[] buffer = new char[maxChars];
+	    int totalRead = 0;
+
+	    while (totalRead < maxChars) {
+	        int charsRead = reader.read(buffer, totalRead, maxChars - totalRead);
+	        if (charsRead == -1) {
+	            break; // EOF
+	        }
+	        totalRead += charsRead;
+	    }
+	    if (totalRead == 0) {
+	    	return null;
+	    }
+	    return new String(buffer, 0, totalRead);
+	}
 
 	/**
 	 * Start position of the field in the record that identifies the recordtype (first character is 0)
@@ -81,10 +127,19 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 	}
 
 	/**
-	 * If endposition &gt;= 0 then this field contains the endPosition of the recordtype field in the record; All characters beyond this position are ignored. Else, if endPosition &lt; 0 then it depends on the length of the recordkey in the flow
+	 * If endPosition &gt;= 0 then this field contains the endPosition (Java style, i.e the position of the next character) of the recordtype field in the record; All characters beyond this position are ignored. Else, if endPosition &lt; 0 then it depends on the length of the recordkey in the flow
 	 * @ff.default -1
 	 */
 	public void setEndPosition(int i) {
 		endPosition = i;
+	}
+	
+	/**
+	 * 
+	 * If <code>true</code>, no newlines are expected, all records of the size specified in the flows are read from a single 'line'. 
+	 * @ff.default false
+	 */
+	public void setSingleLine(boolean value) {
+		singleLine = value;
 	}
 }

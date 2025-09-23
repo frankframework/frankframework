@@ -84,4 +84,20 @@ class RecordTransformerTest {
 
 		assertEquals("2009-12-01 00:00:00", result.toString());
 	}
+	
+	@Test
+	void testPositveRecordLengh() throws ConfigurationException {
+		RecordTransformer handler = new RecordTransformer();
+		handler.setInputFields("1,5, 7");
+		handler.configure();
+		assertEquals(13, handler.getRecordLength());
+	}
+
+	@Test
+	void testNegativeRecordLengh() throws ConfigurationException {
+		RecordTransformer handler = new RecordTransformer();
+		handler.setInputSeparator(",");
+		handler.configure();
+		assertEquals(-1, handler.getRecordLength());
+	}
 }
