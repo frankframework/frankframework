@@ -876,9 +876,17 @@
 					</configuration>
 					<executions>
 						<execution>
+							<id>check</id>
 							<goals>
 								<goal>check</goal>
 							</goals>
+						</execution>
+						<execution>
+							<id>auto-apply</id>
+							<goals>
+								<goal>apply</goal>
+							</goals>
+							<phase>compile</phase>
 						</execution>
 					</executions>
 				</plugin>
@@ -1048,6 +1056,7 @@
 					<artifactId>maven-checkstyle-plugin</artifactId>
 					<version>3.6.0</version>
 					<configuration>
+						<consoleOutput>true</consoleOutput>
 						<configLocation>${iaf.rootdir}/checkstyle.xml</configLocation>
 						<propertyExpansion>config_loc=${iaf.rootdir}</propertyExpansion>
 						<logViolationsToConsole>true</logViolationsToConsole>
@@ -1184,6 +1193,7 @@
 										<versionRange>[2.46.1,)</versionRange>
 										<goals>
 											<goal>check</goal>
+											<goal>apply</goal>
 										</goals>
 									</pluginExecutionFilter>
 									<action>

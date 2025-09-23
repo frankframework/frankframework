@@ -48,6 +48,7 @@ import org.frankframework.util.StreamUtil;
  * <p>Note that the vault file and key file are read from the classpath. If you want to use a different location, you can specify the full path to the file.</p>
  *
  * @see <a href="https://docs.ansible.com/ansible/latest/vault_guide/index.html">Ansible Vault Documentation</a>
+ * @ff.info See the official <a href="https://docs.oracle.com/cd/E23095_01/Platform.93/ATGProgGuide/html/s0204propertiesfileformat01.html">Java Properties file format</a> for information about escaping and special characters.
  */
 public class AnsibleVaultCredentialFactory extends AbstractMapCredentialFactory {
 
