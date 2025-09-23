@@ -24,17 +24,6 @@
 			<artifactId>h2</artifactId>
 			<version>${h2.driver.version}</version>
 		</dependency>
-		<dependency>
-			<groupId>jakarta.servlet</groupId>
-			<artifactId>jakarta.servlet-api</artifactId>
-			<scope>provided</scope>
-		</dependency>
-		<!-- Includes missing jakarta.jms.JMSExceptions class -->
-		<dependency>
-			<groupId>jakarta.jms</groupId>
-			<artifactId>jakarta.jms-api</artifactId>
-			<scope>runtime</scope>
-		</dependency>
 
 		<!-- This should be the only required test dependency to run IbisTester -->
 		<dependency>
