@@ -3,6 +3,7 @@ package org.frankframework.messaging.amqp;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
@@ -28,6 +29,7 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IMessageHandler;
 import org.frankframework.core.ListenerException;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.extensions.messaging.MessageProtocol;
 import org.frankframework.jdbc.datasource.ResourceObjectLocator;
 import org.frankframework.receivers.MessageWrapper;
@@ -194,6 +196,41 @@ abstract class AmqpListenerTest {
 		assertNotNull(message);
 		assertTrue(message.isBinary(), "Expected binary message");
 		assertEquals("test", message.asString());
+	}
+
+	@Test
+	void testListenRRQueueReceiveAndRespond() throws Exception {
+		// Arrange
+		String addressToUse = QUEUE_EXCHANGE_NAME + "_RR";
+		listener.setAddress(addressToUse);
+		listener.setReplyAddress(addressToUse + "_replies"); // Not all brokers support dynamic reply queues
+		listener.setAddressType(AddressType.QUEUE);
+		listener.setMessageProtocol(MessageProtocol.RR);
+		listener.setName("testListener testListenRRQueueReceiveAndRespond");
+		listener.configure();
+		listener.start();
+
+		AmqpSender sender = new AmqpSender();
+		sender.setConnectionFactoryFactory(factory);
+		sender.setConnectionName(getResourceName());
+		sender.setAddress(addressToUse);
+		sender.setAddressType(AddressType.QUEUE);
+		sender.setMessageProtocol(MessageProtocol.RR);
+		sender.setName("testSender testListenRRQueueReceiveAndRespond");
+		sender.configure();
+		sender.start();
+
+		try (PipeLineSession pipeLineSession = new PipeLineSession() ) {
+			// Act
+			Message reply = sender.sendMessageOrThrow(new Message("where-is-my-reply"), pipeLineSession);
+
+			// Assert
+			assertNotNull(reply);
+			String replyString = assertInstanceOf(String.class, reply.asString());
+			assertEquals("where-is-my-reply", replyString);
+		} finally {
+			sender.stop();
+		}
 	}
 
 	@Test
@@ -364,8 +401,4 @@ abstract class AmqpListenerTest {
 		amqpListener.configure();
 		amqpListener.start();
 	}
-
-	// TODO: Test with multiple threads per listener
-	// TODO: Test with Request-Reply
-	// TODO: Test with multiple connection names (which creates multiple listener-containers)
 }

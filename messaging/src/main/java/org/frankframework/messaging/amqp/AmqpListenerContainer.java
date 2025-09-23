@@ -230,6 +230,7 @@ public class AmqpListenerContainer {
 			} else {
 				replyMessage = Message.create(result.asString());
 			}
+			replyMessage.correlationId(delivery.message().messageId());
 			sender.send(replyMessage);
 		}
 	}
