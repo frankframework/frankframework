@@ -1552,6 +1552,8 @@
 				<module>webapp</module>
 				<module>test</module>
 				<module>example</module>
+
+				<module>build-templates</module>
 			</modules>
 		</profile>
 		<profile>
