@@ -76,7 +76,7 @@
                 ) {
                   <tr>
                     <td class="col-lg-3">{{ vari.key }}</td>
-                    <td class="col-lg-9">{{ vari.value }}</td>
+                    <td class="col-lg-9">{{ vari.value | literal }}</td>
                   </tr>
                 }
                 @if ((environmentProperties | variablesFilter: this.searchFilter).length === 0) {
