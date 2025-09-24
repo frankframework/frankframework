@@ -3,7 +3,7 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.frankframework</groupId>
-	<artifactId>frankframework-build-templates</artifactId>
+	<artifactId>build-templates</artifactId>
 	<packaging>pom</packaging>
 	<name>Frank!Framework Build Templates</name>
 	<description>Sub-modules define parent pom files so packaging will be done uniformly</description>
@@ -77,6 +77,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
+					<version>3.14.1</version>
 					<configuration>
 						<source>${maven.compiler.source}</source>
 						<target>${maven.compiler.target}</target>
@@ -89,16 +90,17 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-resources-plugin</artifactId>
+					<version>3.3.1</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
+					<version>3.4.2</version>
 					<configuration>
 						<archive>
 							<addMavenDescriptor>true</addMavenDescriptor>
 							<manifest>
 								<addClasspath>true</addClasspath>
-								<classpathPrefix>lib/</classpathPrefix>
 								<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 								<addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
 								<useUniqueVersions>true</useUniqueVersions>
@@ -119,6 +121,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-source-plugin</artifactId>
+					<version>3.3.1</version>
 					<executions>
 						<execution>
 							<id>attach-sources</id>
@@ -217,7 +220,7 @@
 							<descriptorRef>jar-with-dependencies</descriptorRef>
 						</descriptorRefs>
 						<appendAssemblyId>false</appendAssemblyId>
-						<attach>false</attach>
+						<attach>true</attach>
 						<archive>
 							<addMavenDescriptor>true</addMavenDescriptor>
 							<manifest>
@@ -331,4 +334,36 @@
 			</plugins>
 		</pluginManagement>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>ibissource</id>
+			<distributionManagement>
+				<repository>
+					<id>frankframework</id>
+					<url>https://nexus.frankframework.org/content/repositories/releases</url>
+				</repository>
+				<snapshotRepository>
+					<id>frankframework</id>
+					<url>https://nexus.frankframework.org/content/repositories/snapshots</url>
+				</snapshotRepository>
+				<site>
+					<id>www.ibissource.org</id>
+					<url>file:target/site-deploy</url>
+				</site>
+			</distributionManagement>
+
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-assembly-plugin</artifactId>
+						<configuration>
+							<skipAssembly>true</skipAssembly>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

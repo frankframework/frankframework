@@ -4,14 +4,14 @@
 
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>frankframework-build-templates</artifactId>
+		<artifactId>build-templates</artifactId>
 		<version>${revision}</version>
 	</parent>
 
 	<artifactId>configuration-parent</artifactId>
 	<packaging>pom</packaging>
-	<name>Frank!Framework Configuration POM</name>
-	<description>Configuration pom-blueprint</description>
+
+	<description>Frank!Framework Configuration parent-POM</description>
 
 	<properties>
 		<plugin.type>configuration</plugin.type>
@@ -34,7 +34,7 @@
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-assembly-plugin</artifactId>
+				<artifactId>maven-jar-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>

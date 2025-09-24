@@ -4,14 +4,14 @@
 
 	<parent>
 		<groupId>org.frankframework</groupId>
-		<artifactId>frankframework-build-templates</artifactId>
+		<artifactId>build-templates</artifactId>
 		<version>${revision}</version>
 	</parent>
 
 	<artifactId>plugin-parent</artifactId>
 	<packaging>pom</packaging>
-	<name>Frank!Framework Plugin POM</name>
-	<description>Plugin pom-blueprint</description>
+
+	<description>Frank!Framework Plugin parent-POM</description>
 
 	<properties>
 		<plugin.type>plugin</plugin.type>
