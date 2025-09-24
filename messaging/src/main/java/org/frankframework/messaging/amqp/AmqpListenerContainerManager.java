@@ -27,6 +27,8 @@ import org.springframework.context.ApplicationContextAware;
 
 import lombok.Setter;
 
+import org.frankframework.util.SpringUtils;
+
 /**
  * Manage all {@link AmqpListenerContainer}s for all {@link AmqpListener}s. Create a listener-container
  * per AMQP connection.
@@ -52,7 +54,7 @@ public class AmqpListenerContainerManager implements ApplicationContextAware {
 	private @Nonnull AmqpListenerContainer getListenerContainer(@Nonnull AmqpListener listener) {
 		String connectionName = listener.getConnectionName();
 		return listenerContainers.computeIfAbsent(connectionName, key -> {
-			AmqpListenerContainer listenerContainer = applicationContext.getAutowireCapableBeanFactory().createBean(AmqpListenerContainer.class);
+			AmqpListenerContainer listenerContainer = SpringUtils.createBean(applicationContext);
 			listenerContainer.openConnection(connectionName);
 			return listenerContainer;
 		});

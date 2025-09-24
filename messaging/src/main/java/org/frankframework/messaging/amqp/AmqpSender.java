@@ -67,6 +67,9 @@ import org.frankframework.util.Misc;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.UUIDUtil;
 
+/**
+ * Sender to send to AMQP 1.0 end-points.
+ */
 @Category(Category.Type.EXPERIMENTAL)
 @DestinationType(DestinationType.Type.AMQP)
 public class AmqpSender extends AbstractSenderWithParameters implements ISenderWithParameters, HasPhysicalDestination {
@@ -86,7 +89,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	private DeliveryMode deliveryMode = DeliveryMode.AT_LEAST_ONCE;
 	private MessageProtocol messageProtocol = MessageProtocol.FF;
 
-	private @Setter AmqpConnectionFactoryFactory connectionFactoryFactory;
+	private @Setter AmqpConnectionFactoryFactory amqpConnectionFactoryFactory;
 	private AmqpConnectionFactory connectionFactory;
 	private Session session;
 	private Sender sender;
@@ -114,7 +117,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		if (connectionFactoryFactory == null) {
+		if (amqpConnectionFactoryFactory == null) {
 			throw new ConfigurationException("ConnectionFactory is null");
 		}
 		if (StringUtils.isEmpty(connectionName)) {
@@ -131,7 +134,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		if (streamingMessages && messageType != MessageType.BINARY) {
 			ConfigurationWarnings.add(this, log, "[messageType] is ignored, because [streamingMessages] is set to [true]");
 		}
-		connectionFactory = connectionFactoryFactory.getConnectionFactory(connectionName);
+		connectionFactory = amqpConnectionFactoryFactory.getConnectionFactory(connectionName);
 
 		try (Connection connection = connectionFactory.getConnection()) {
 			List<String> offeredCapabilities;
@@ -370,6 +373,8 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 
 	/**
 	 * Name of the AMQP connection in the {@literal amqp} section of the {@code resources.yaml} file.
+	 *
+	 * @ff.mandatory
 	 */
 	public void setConnectionName(String connectionName) {
 		this.connectionName = connectionName;
@@ -395,7 +400,9 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	}
 
 	/**
-	 * Set the address (name of the queue or topic) on which to send messages
+	 * Set the address (name of the queue or topic) on which to send messages.
+	 *
+	 * @ff.mandatory
 	 */
 	public void setAddress(String address) {
 		this.address = address;

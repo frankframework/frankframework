@@ -122,3 +122,13 @@ jms:
   - name: "qcf-inmem"
     type: "org.apache.activemq.artemis.jms.client.ActiveMQXAConnectionFactory"
     url: "vm://localhost?broker.persistent=false"
+
+amqp:
+  - name: "inmem"
+    url: "amqp://localhost:5672"
+
+  - name: "activemq"
+    url: "amqp://${jms.hostname:-localhost}:5672"
+
+  - name: "artemis"
+    url: "amqp://${jms.hostname:-localhost}:5672"

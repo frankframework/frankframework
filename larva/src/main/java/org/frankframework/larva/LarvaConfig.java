@@ -43,7 +43,7 @@ public class LarvaConfig {
 	 * if allowReadlineSteps is set to true, actual results can be compared in line by using .readline steps.
 	 * Those results cannot be saved to the expected value defined inline, however.
 	 */
-	private @Getter @Setter boolean allowReadlineSteps = false;
+	private @Getter @Setter boolean allowReadlineSteps = true;
 
 	private @Getter @Setter String activeScenariosDirectory;
 }

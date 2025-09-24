@@ -20,6 +20,7 @@ import jakarta.annotation.Nullable;
 
 import org.apache.qpid.protonj2.client.Connection;
 import org.apache.qpid.protonj2.client.Delivery;
+import org.apache.qpid.protonj2.client.DeliveryMode;
 import org.apache.qpid.protonj2.client.Receiver;
 import org.apache.qpid.protonj2.client.ReceiverOptions;
 import org.apache.qpid.protonj2.client.Sender;
@@ -61,7 +62,8 @@ public abstract class AmqpSenderTest {
 		sender = new AmqpSender();
 		sender.setAddress(AmqpSenderTest.QUEUE_EXCHANGE_NAME);
 		sender.setConnectionName(getResourceName());
-		sender.setConnectionFactoryFactory(factory);
+		sender.setAmqpConnectionFactoryFactory(factory);
+		sender.setDeliveryMode(DeliveryMode.AT_LEAST_ONCE);
 
 		session = new PipeLineSession();
 	}

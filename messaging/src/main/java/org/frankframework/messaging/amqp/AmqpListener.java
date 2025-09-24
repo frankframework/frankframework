@@ -48,6 +48,9 @@ import org.frankframework.extensions.messaging.MessageProtocol;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.ResourceLimiter;
 
+/**
+ * Listener for AMQP 1.0 end-points.
+ */
 @Category(Category.Type.EXPERIMENTAL)
 @DestinationType(DestinationType.Type.AMQP)
 @Log4j2
@@ -69,7 +72,7 @@ public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountC
 	private ExceptionHandlingMethod onException;
 
 	@Autowired
-	private @Setter AmqpListenerContainerManager listenerContainerManager;
+	private @Setter AmqpListenerContainerManager amqpListenerContainerManager;
 	private @Setter @Getter IMessageHandler<Message<?>> handler;
 	private @Setter @Getter IbisExceptionListener exceptionListener;
 	private @Setter @Getter ApplicationContext applicationContext;
@@ -111,7 +114,7 @@ public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountC
 				ConfigurationWarnings.add(this, log, "A subscriptionName is set but durable=false. Ignoring subscriptionName");
 			}
 		}
-		if (listenerContainerManager == null) {
+		if (amqpListenerContainerManager == null) {
 			throw new IllegalStateException("No ListenerContainerManager set");
 		}
 		if (messageProtocol == MessageProtocol.RR && addressType == AddressType.TOPIC) {
@@ -129,12 +132,12 @@ public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountC
 	@Override
 	public void start() {
 		resourceLimiter = new ResourceLimiter(maxThreadCount);
-		listenerContainerManager.openListener(this);
+		amqpListenerContainerManager.openListener(this);
 	}
 
 	@Override
 	public void stop() {
-		listenerContainerManager.closeListener(this);
+		amqpListenerContainerManager.closeListener(this);
 	}
 
 	@Override
@@ -154,6 +157,8 @@ public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountC
 
 	/**
 	 * Name of the AMQP connection in the {@literal amqp} section of the {@code resources.yaml} file.
+	 *
+	 * @ff.mandatory
 	 */
 	public void setConnectionName(String connectionName) {
 		this.connectionName = connectionName;
@@ -180,6 +185,8 @@ public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountC
 
 	/**
 	 * Set the address (name of the queue or topic) on which to send messages
+	 *
+	 * @ff.mandatory
 	 */
 	public void setAddress(String address) {
 		this.address = address;

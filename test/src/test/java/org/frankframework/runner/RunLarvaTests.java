@@ -148,11 +148,13 @@ public class RunLarvaTests {
 	}
 
 	private static EmbeddedActiveMQ configureEmbeddedJmsServer() throws Exception {
+		log.info("Starting in-memory Artemis message broker");
 		String jmsDataDir = IafTestInitializer.getLogDir(IafTestInitializer.getProjectDir()) + "/ArtemisMQ";
 
 		Configuration artemisJmsConfig = new ConfigurationImpl();
 		artemisJmsConfig.addAcceptorConfiguration("in-vm", "vm://0")
-			.setSecurityEnabled(false)
+				.addAcceptorConfiguration("amqp", "tcp://localhost:5672?sslEnabled=false&transport.trustAll=true&transport.verifyHost=false")
+				.setSecurityEnabled(false)
 				.setName("ArtemisJmsServer-Larva")
 				.setBindingsDirectory(jmsDataDir + "/bindings")
 				.setJournalDirectory(jmsDataDir + "/journal")
@@ -162,7 +164,7 @@ public class RunLarvaTests {
 		EmbeddedActiveMQ embeddedServer = new EmbeddedActiveMQ();
 		embeddedServer.setConfiguration(artemisJmsConfig);
 		embeddedServer.start();
-		log.info("Started embedded in-memory JMS server");
+		log.info("Started embedded in-memory Artemis message broker");
 		return embeddedServer;
 	}
 

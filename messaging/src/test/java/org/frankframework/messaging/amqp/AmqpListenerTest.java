@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 
 import jakarta.annotation.Nonnull;
 
+import org.apache.qpid.protonj2.client.DeliveryMode;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -57,7 +58,7 @@ abstract class AmqpListenerTest {
 		when(beanFactory.createBean(AmqpListenerContainer.class)).thenAnswer(
 				invocation -> {
 					AmqpListenerContainer listenerContainer = new AmqpListenerContainer();
-					listenerContainer.setConnectionFactoryFactory(factory);
+					listenerContainer.setAmqpConnectionFactoryFactory(factory);
 					listenerContainer.setTaskExecutor(new SimpleAsyncTaskExecutor("AmqpListenerContainer"));
 					containers.add(listenerContainer);
 					return listenerContainer;
@@ -77,7 +78,9 @@ abstract class AmqpListenerTest {
 		AmqpListener amqpListener = new AmqpListener();
 		amqpListener.setConnectionName(getResourceName());
 		amqpListener.setApplicationContext(applicationContext);
-		amqpListener.setListenerContainerManager(containerManager);
+		amqpListener.setAmqpListenerContainerManager(containerManager);
+		amqpListener.setDeliveryMode(DeliveryMode.AT_LEAST_ONCE);
+		amqpListener.setReplyTimeToLive(10_000L);
 
 		IMessageHandler<org.apache.qpid.protonj2.client.Message<?>> messageHandler = mock();
 		amqpListener.setHandler(messageHandler);
@@ -211,7 +214,7 @@ abstract class AmqpListenerTest {
 		listener.start();
 
 		AmqpSender sender = new AmqpSender();
-		sender.setConnectionFactoryFactory(factory);
+		sender.setAmqpConnectionFactoryFactory(factory);
 		sender.setConnectionName(getResourceName());
 		sender.setAddress(addressToUse);
 		sender.setAddressType(AddressType.QUEUE);

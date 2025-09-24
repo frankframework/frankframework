@@ -49,6 +49,10 @@ public class AdapterMessageEvent extends MessageEvent<Adapter> {
 		super(source, ClassUtils.nameOf(namedObject) + " " + message, MessageEventLevel.ERROR, e);
 	}
 
+	public <M> AdapterMessageEvent(Adapter source, Object namedObject, String message, MessageEventLevel level, Throwable t) {
+		super(source, ClassUtils.nameOf(namedObject) + " " + message, level, t);
+	}
+
 	@Override
 	protected String getMessagePrefix() {
 		return "";

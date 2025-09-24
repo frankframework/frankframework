@@ -32,6 +32,7 @@ import org.apache.qpid.protonj2.client.Message;
 import org.apache.qpid.protonj2.client.Receiver;
 import org.apache.qpid.protonj2.client.ReceiverOptions;
 import org.apache.qpid.protonj2.client.Sender;
+import org.apache.qpid.protonj2.client.SenderOptions;
 import org.apache.qpid.protonj2.client.Session;
 import org.apache.qpid.protonj2.client.SessionOptions;
 import org.apache.qpid.protonj2.client.exceptions.ClientException;
@@ -60,7 +61,7 @@ import org.frankframework.receivers.ResourceLimiter;
 @Log4j2
 public class AmqpListenerContainer {
 	@Autowired
-	private @Setter AmqpConnectionFactoryFactory connectionFactoryFactory;
+	private @Setter AmqpConnectionFactoryFactory amqpConnectionFactoryFactory;
 	private String connectionName;
 	private Connection connection;
 	private Session session;
@@ -87,7 +88,7 @@ public class AmqpListenerContainer {
 		this.connectionName = connectionName;
 
 		try {
-			connection = connectionFactoryFactory.getConnectionFactory(connectionName).getConnection();
+			connection = amqpConnectionFactoryFactory.getConnectionFactory(connectionName).getConnection();
 			SessionOptions sessionOptions = new SessionOptions();
 			session = connection.openSession(sessionOptions);
 		} catch (ClientException e) {
@@ -223,7 +224,9 @@ public class AmqpListenerContainer {
 			throw new ListenerException("No reply-to address found, cannot deliver message reply");
 		}
 
-		try (Sender sender = session.openSender(replyAddress)) {
+		SenderOptions options = new SenderOptions();
+		options.deliveryMode(listener.getDeliveryMode());
+		try (Sender sender = session.openSender(replyAddress, options)) {
 			Message<?> replyMessage;
 			if (result.isBinary()) {
 				replyMessage = Message.create(result.asByteArray());
@@ -231,6 +234,7 @@ public class AmqpListenerContainer {
 				replyMessage = Message.create(result.asString());
 			}
 			replyMessage.correlationId(delivery.message().messageId());
+			replyMessage.timeToLive(listener.getReplyTimeToLive());
 			sender.send(replyMessage);
 		}
 	}
