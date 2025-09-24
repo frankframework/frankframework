@@ -16,6 +16,8 @@ export default defineConfig({
     },
     videosFolder: 'test-results/videos',
     screenshotsFolder: 'test-results/screenshot',
+    viewportWidth: 1920,
+    viewportHeight: 1080,
     setupNodeEvents(on, config) {
       on('after:spec', (spec, results) => {
         if (results && results.video) {
