@@ -93,6 +93,7 @@ import { ConfigurationTabListComponent } from './components/tab-list/configurati
 import { TabListComponent } from './components/tab-list/tab-list.component';
 import { HasAccessToLinkDirective } from './components/has-access-to-link.directive';
 import { ComboboxComponent } from './components/combobox/combobox.component';
+import { LiteralPipe } from './pipes/literal.pipe';
 
 const windowProvider: ValueProvider = {
   provide: Window,
@@ -159,6 +160,7 @@ const windowProvider: ValueProvider = {
     FormatStatKeysPipe,
     WithJavaListenerPipe,
     MarkDownPipe,
+    LiteralPipe,
 
     // directives
     ConfigurationMessagesComponent,
