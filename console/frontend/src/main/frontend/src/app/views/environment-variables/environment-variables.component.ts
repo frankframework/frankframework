@@ -6,12 +6,13 @@ import { TabListComponent } from '../../components/tab-list/tab-list.component';
 import { FormsModule } from '@angular/forms';
 import { VariablesFilterPipe } from '../../pipes/variables-filter.pipe';
 import { OrderByPipe } from '../../pipes/orderby.pipe';
+import { LiteralPipe } from '../../pipes/literal.pipe';
 
 type keyValueProperty = KeyValue<string, string>;
 
 @Component({
   selector: 'app-environment-variables',
-  imports: [TabListComponent, FormsModule, VariablesFilterPipe, OrderByPipe],
+  imports: [TabListComponent, FormsModule, VariablesFilterPipe, OrderByPipe, LiteralPipe],
   templateUrl: './environment-variables.component.html',
   styleUrls: ['./environment-variables.component.scss'],
 })
