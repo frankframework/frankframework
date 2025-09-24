@@ -163,8 +163,13 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 			List<String> overriddenProperties = new ArrayList<>();
 
 			// Check if any properties are set, that will be overridden by the sharedResource
-			if (super.getCredentials() != null) overriddenProperties.add("credentials");
-			if (super.getTokenEndpoint() != null) overriddenProperties.add("tokenEndpoint");
+			if (StringUtils.isNotBlank(super.getUsername())) overriddenProperties.add("username");
+			if (StringUtils.isNotBlank(super.getPassword())) overriddenProperties.add("password");
+			if (StringUtils.isNotBlank(super.getClientAuthAlias())) overriddenProperties.add("clientAuthAlias");
+			if (StringUtils.isNotBlank(super.getAuthAlias())) overriddenProperties.add("alias");
+			if (StringUtils.isNotBlank(super.getClientId())) overriddenProperties.add("clientId");
+			if (StringUtils.isNotBlank(super.getClientSecret())) overriddenProperties.add("clientSecret");
+			if (StringUtils.isNotBlank(super.getTokenEndpoint())) overriddenProperties.add("tokenEndpoint");
 			if (super.getOauthAuthenticationMethod() != null) overriddenProperties.add("oauthMethod");
 
 			if (!overriddenProperties.isEmpty()) {
