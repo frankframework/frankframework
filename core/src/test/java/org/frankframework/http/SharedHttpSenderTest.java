@@ -123,7 +123,7 @@ public class SharedHttpSenderTest {
 			sender.configure();
 
 			// Capture the actual call
-			ArgumentCaptor<String> messageCaptor = ArgumentCaptor.forClass(String.class);
+			ArgumentCaptor<String> messageCaptor = forClass(String.class);
 			mockedWarnings.verify(() -> ConfigurationWarnings.add(eq(sender), any(), messageCaptor.capture()));
 
 			// Assert that all property names appear in the message
