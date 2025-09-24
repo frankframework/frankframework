@@ -175,7 +175,6 @@ public class AmqpListenerContainer {
 			} finally {
 				isRunning.set(false);
 				connection = null;
-				connectionName = null;
 			}
 		});
 		listenerThread.start();

@@ -45,9 +45,14 @@ public class AmqpListenerContainerManager implements ApplicationContextAware {
 	}
 
 	public void closeListener(@Nonnull AmqpListener amqpListener) {
-		boolean closed = getListenerContainer(amqpListener).closeListener(amqpListener);
-		if (closed) {
-			listenerContainers.remove(amqpListener.getConnectionName());
+		synchronized (listenerContainers) {
+			if (!listenerContainers.containsKey(amqpListener.getConnectionName())) {
+				return;
+			}
+			boolean closed = getListenerContainer(amqpListener).closeListener(amqpListener);
+			if (closed) {
+				listenerContainers.remove(amqpListener.getConnectionName());
+			}
 		}
 	}
 
