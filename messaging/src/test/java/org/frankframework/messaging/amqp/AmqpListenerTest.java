@@ -55,7 +55,7 @@ abstract class AmqpListenerTest {
 		factory = createAmqpConnectionFactory();
 
 		AutowireCapableBeanFactory beanFactory = mock();
-		when(beanFactory.createBean(AmqpListenerContainer.class)).thenAnswer(
+		when(beanFactory.createBean(AmqpListenerContainer.class, AutowireCapableBeanFactory.AUTOWIRE_BY_NAME, false)).thenAnswer(
 				invocation -> {
 					AmqpListenerContainer listenerContainer = new AmqpListenerContainer();
 					listenerContainer.setAmqpConnectionFactoryFactory(factory);
