@@ -34,7 +34,6 @@ export class EnvironmentVariablesComponent implements OnInit {
 
   ngOnInit(): void {
     this.appService.getEnvironmentVariables().subscribe((data) => {
-      console.log(data);
       const appConstants = data['Application Constants'];
       let instanceName = null;
       for (const configName in appConstants) {
