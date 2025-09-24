@@ -14,7 +14,7 @@
       @for (prop of properties() | orderby: 'key'; track prop.key) {
         <tr>
           <td class="col-lg-3">{{ prop.key }}</td>
-          <td class="col-lg-9">{{ prop.value }}</td>
+          <td class="col-lg-9">{{ prop.value | literal }}</td>
         </tr>
       } @empty {
         @if (this.searchFilter() === '') {
