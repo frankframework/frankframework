@@ -48,7 +48,7 @@
 		<geronimo.jta.spec.version>1.1.1</geronimo.jta.spec.version>
 		<geronimo.j2ee.spec.version>1.0.1</geronimo.j2ee.spec.version>
 
-		<aws.java.sdk.version>2.32.27</aws.java.sdk.version>
+		<aws.java.sdk.version>2.32.7</aws.java.sdk.version>
 	</properties>
 
 	<name>Ibis AdapterFramework parent</name>
@@ -117,7 +117,7 @@
 			<dependency>
 				<groupId>net.minidev</groupId>
 				<artifactId>json-smart</artifactId>
-				<version>2.5.0</version>
+				<version>2.5.2</version>
 			</dependency>
 			<dependency>
 				<groupId>org.jdom</groupId>
