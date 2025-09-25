@@ -410,7 +410,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 			String attrSpec = "user:" + String.join(",", attributeNames);
 			Map<String, Object> result = new LinkedHashMap<>();
 			Files.readAttributes(file, attrSpec)
-					.forEach((name, value) -> result.put(name, readAttributeValue(value)));
+					.forEach((name, value) -> result.put(name, readAttributeValue(file, name, value)));
 			return result;
 		} catch (UnsupportedOperationException e) {
 			return null;
@@ -419,13 +419,18 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		}
 	}
 
-	private String readAttributeValue(Object attributeValue) {
-		if (attributeValue instanceof byte[] bytes) {
-			return new String(bytes);
-		} else if (attributeValue instanceof ByteBuffer buffer) {
-			return new String(buffer.array());
-		} else {
-			return attributeValue.toString();
+	private String readAttributeValue(Path file, String name, Object attributeValue) {
+		try {
+			if (attributeValue instanceof byte[] bytes) {
+				return new String(bytes);
+			} else if (attributeValue instanceof ByteBuffer buffer) {
+				return new String(buffer.array());
+			} else {
+				return attributeValue.toString();
+			}
+		} catch (Exception e) {
+			log.warn(() -> "Error parsing file attribute [%s] on file [%s]:".formatted(name, file), e);
+			return "<attribute not readable>";
 		}
 	}
 
