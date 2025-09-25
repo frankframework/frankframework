@@ -84,7 +84,7 @@ class RecordTransformerTest {
 
 		assertEquals("2009-12-01 00:00:00", result.toString());
 	}
-	
+
 	@Test
 	void testPositveRecordLengh() throws ConfigurationException {
 		RecordTransformer handler = new RecordTransformer();

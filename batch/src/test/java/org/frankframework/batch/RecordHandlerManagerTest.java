@@ -14,9 +14,9 @@ class RecordHandlerManagerTest {
 	public void testGetFirstPartOfNextRecord() throws IOException {
 		BufferedReader reader = new BufferedReader(new StringReader("eerste regel\ntweede regel\nderde regel"));
 		reader.readLine();
-		
+
 		RecordHandlerManager manager = new RecordHandlerManager();
-		
+
 		assertEquals("tweede regel", manager.getFirstPartOfNextRecord(reader));
 	}
 
@@ -25,9 +25,9 @@ class RecordHandlerManagerTest {
 		BufferedReader reader = new BufferedReader(new StringReader("eerste regel\ntweede regel\nderde regel"));
 		reader.readLine();
 		String firstPart = reader.readLine();
-		
+
 		RecordHandlerManager manager = new RecordHandlerManager();
-		
+
 		assertEquals("tweede regel", manager.getFullRecord(reader, null, firstPart));
 	}
 

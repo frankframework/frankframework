@@ -53,7 +53,7 @@ public interface IRecordHandler extends IConfigurable, FrankElement, NameAware {
 	boolean isNewRecordType(PipeLineSession session, boolean equalRecordTypes, List<String> prevRecord, List<String> curRecord) throws Exception;
 
 	public String getRecordType(List<String> record);
-	
+
 	/**
 	 * @return the length of the raw record, or -1 if it is unknown up front
 	 */

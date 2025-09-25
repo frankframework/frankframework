@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 
 	private @Getter int startPosition;
 	private @Getter int endPosition=-1;
-	private @Getter boolean singleLine;
+	private @Getter boolean newLineSeparated=true;
 
 	@Override
 	public RecordHandlingFlow getRecordHandler(PipeLineSession session, String record) throws Exception {
@@ -77,7 +77,7 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 
 	@Override
 	public String getFirstPartOfNextRecord(BufferedReader reader) throws IOException {
-		if (isSingleLine()) {
+		if (!isNewLineSeparated()) {
 			return readUpToXChars(reader, endPosition);
 		}
 		return super.getFirstPartOfNextRecord(reader);
@@ -85,7 +85,7 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 
 	@Override
 	public String getFullRecord(BufferedReader reader, RecordHandlingFlow flow, String firstPart) throws IOException {
-		if (isSingleLine()) {
+		if (!isNewLineSeparated()) {
 			IRecordHandler handler = flow.getRecordHandler();
 			if (handler!=null) {
 				int recordLength=handler.getRecordLength();
@@ -100,7 +100,7 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 		}
 		return super.getFullRecord(reader, flow, firstPart);
 	}
-	
+
 	private String readUpToXChars(Reader reader, int maxChars) throws IOException {
 	    char[] buffer = new char[maxChars];
 	    int totalRead = 0;
@@ -133,13 +133,13 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 	public void setEndPosition(int i) {
 		endPosition = i;
 	}
-	
+
 	/**
-	 * 
-	 * If <code>true</code>, no newlines are expected, all records of the size specified in the flows are read from a single 'line'. 
-	 * @ff.default false
+	 *
+	 * If <code>false</code>, no newlines are expected, all records of the size specified in the flows are read from a single 'line'.
+	 * @ff.default true
 	 */
-	public void setSingleLine(boolean value) {
-		singleLine = value;
+	public void setNewLineSeparated(boolean value) {
+		newLineSeparated = value;
 	}
 }
