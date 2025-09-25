@@ -103,13 +103,11 @@ public class SharedHttpSenderTest {
 
 	@Test
 	public void sharedSenderWithOverriddenPropertiesShouldLogWarning() throws Exception {
-		String mockValue = "mockValue";
-        
-        sender.setSharedResourceRef("dummy");
+		sender.setSharedResourceRef("dummy");
 
 		// set all properties that will be overridden
 		sender.setUsername("test-user");
-		sender.setPassword(mockValue);
+		sender.setPassword("test-pass");
 		sender.setClientAlias("test-client-alias");
 		sender.setAuthAlias("test-alias");
 		sender.setClientId("test-client-id");
