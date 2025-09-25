@@ -43,6 +43,9 @@ import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 
+import com.ibm.icu.text.CharsetDetector;
+import com.ibm.icu.text.CharsetMatch;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -53,7 +56,9 @@ import org.frankframework.core.DestinationType.Type;
 import org.frankframework.doc.Default;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.util.XmlEncodingUtils;
 
 /**
  * {@link IWritableFileSystem FileSystem} representation of the local filesystem.
@@ -204,7 +209,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	private static @Nonnull String readAttribute(@Nonnull UserDefinedFileAttributeView userDefinedAttributes, @Nonnull String attributeName) throws IOException {
 		ByteBuffer bfr = ByteBuffer.allocate(userDefinedAttributes.size(attributeName));
 		userDefinedAttributes.read(attributeName, bfr);
-		return new String(bfr.array());
+		return bytesToString(bfr.array());
 	}
 
 	@Override
@@ -422,9 +427,9 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	private String readAttributeValue(Path file, String name, Object attributeValue) {
 		try {
 			if (attributeValue instanceof byte[] bytes) {
-				return new String(bytes);
+				return bytesToString(bytes);
 			} else if (attributeValue instanceof ByteBuffer buffer) {
-				return new String(buffer.array());
+				return bytesToString(buffer.array());
 			} else {
 				return attributeValue.toString();
 			}
@@ -432,6 +437,21 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 			log.warn(() -> "Error parsing file attribute [%s] on file [%s]:".formatted(name, file), e);
 			return "<attribute not readable>";
 		}
+	}
+
+	@Nonnull
+	private static String bytesToString(byte[] bytes) {
+		CharsetDetector detector = new CharsetDetector();
+		detector.setText(bytes);
+		CharsetMatch match = detector.detect();
+		Charset charset;
+		if (match.getConfidence() >= MessageUtils.CHARSET_CONFIDENCE_LEVEL) {
+			charset = Charset.forName(match.getName());
+		} else {
+			// If confidence was low, use system default charset
+			charset = Charset.defaultCharset();
+		}
+		return XmlEncodingUtils.replaceNonValidXmlCharacters(new String(bytes, charset), '?', false, true);
 	}
 
 	@Nullable
