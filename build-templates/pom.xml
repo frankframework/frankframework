@@ -145,7 +145,25 @@
 					</dependencies>
 					<executions>
 						<execution>
-							<id>display-info</id>
+							<id>no-framework-dependencies-in-release</id>
+							<goals>
+								<goal>enforce</goal>
+							</goals>
+							<phase>validate</phase>
+							<configuration>
+								<rules>
+									<bannedDependencies>
+										<excludes>
+											<exclude>org.frankframework:*:*:*:compile</exclude>
+											<exclude>org.frankframework:*:*:*:runtime</exclude>
+										</excludes>
+										<message>Frank!Framework dependencies should not be included, please set the scope to PROVIDED</message>
+									</bannedDependencies>
+								</rules>
+							</configuration>
+						</execution>
+						<execution>
+							<id>ensure-correct-versions</id>
 							<goals>
 								<goal>enforce</goal>
 							</goals>
@@ -170,24 +188,6 @@
 											<exclude>com.google.code.findbugs:jsr305</exclude>
 										</excludes>
 									</requireUpperBoundDeps>
-								</rules>
-							</configuration>
-						</execution>
-						<execution>
-							<id>no-framework-dependencies-in-release</id>
-							<goals>
-								<goal>enforce</goal>
-							</goals>
-							<phase>validate</phase>
-							<configuration>
-								<rules>
-									<bannedDependencies>
-										<excludes>
-											<exclude>org.frankframework:*:*:*:compile</exclude>
-											<exclude>org.frankframework:*:*:*:runtime</exclude>
-										</excludes>
-										<message>Frank!Framework dependencies should not be included</message>
-									</bannedDependencies>
 								</rules>
 							</configuration>
 						</execution>
