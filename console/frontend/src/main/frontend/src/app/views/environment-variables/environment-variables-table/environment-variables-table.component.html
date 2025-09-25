@@ -3,7 +3,7 @@
     {{ name() }}
     <small class="m-l-sm">&nbsp;({{ properties().length }})</small>
   </h2>
-  <table class="table">
+  <table class="table" data-cy="env-vars__global-table">
     <thead>
       <tr>
         <td><strong>Property</strong></td>
@@ -13,8 +13,8 @@
     <tbody>
       @for (prop of properties() | orderby: 'key'; track prop.key) {
         <tr>
-          <td class="col-lg-3">{{ prop.key }}</td>
-          <td class="col-lg-9">{{ prop.value }}</td>
+          <td class="col-lg-3" data-cy="global-table__key">{{ prop.key }}</td>
+          <td class="col-lg-9" data-cy="global-table__value">{{ prop.value | literal }}</td>
         </tr>
       } @empty {
         @if (this.searchFilter() === '') {
