@@ -44,7 +44,7 @@
                 @for (vari of configProperties | variablesFilter: this.searchFilter | orderby: 'key'; track vari.key) {
                   <tr>
                     <td class="col-lg-3">{{ vari.key }}</td>
-                    <td class="col-lg-9">{{ vari.value }}</td>
+                    <td class="col-lg-9">{{ vari.value | literal }}</td>
                   </tr>
                 }
                 @if ((configProperties | variablesFilter: this.searchFilter).length === 0) {
@@ -76,7 +76,7 @@
                 ) {
                   <tr>
                     <td class="col-lg-3">{{ vari.key }}</td>
-                    <td class="col-lg-9">{{ vari.value }}</td>
+                    <td class="col-lg-9">{{ vari.value | literal }}</td>
                   </tr>
                 }
                 @if ((environmentProperties | variablesFilter: this.searchFilter).length === 0) {
@@ -103,7 +103,7 @@
                 @for (vari of systemProperties | variablesFilter: this.searchFilter | orderby: 'key'; track vari.key) {
                   <tr>
                     <td class="col-lg-3">{{ vari.key }}</td>
-                    <td class="col-lg-9">{{ vari.value }}</td>
+                    <td class="col-lg-9">{{ vari.value | literal }}</td>
                   </tr>
                 }
                 @if ((systemProperties | variablesFilter: this.searchFilter).length === 0) {
