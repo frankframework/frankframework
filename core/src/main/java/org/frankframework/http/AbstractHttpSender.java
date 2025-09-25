@@ -21,9 +21,11 @@ import java.net.SocketTimeoutException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -43,6 +45,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.CanUseSharedResource;
 import org.frankframework.core.DestinationType;
 import org.frankframework.core.DestinationType.Type;
@@ -63,6 +66,7 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TransformerPool;
@@ -155,6 +159,23 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 		if(StringUtils.isBlank(sharedResourceRef)) {
 			log.debug("configuring local HttpSession");
 			super.configure();
+		} else {
+			List<String> overriddenProperties = new ArrayList<>();
+
+			// Check if any properties are set, that will be overridden by the sharedResource
+			if (StringUtils.isNotBlank(super.getUsername())) overriddenProperties.add("username");
+			if (StringUtils.isNotBlank(super.getPassword())) overriddenProperties.add("password");
+			if (StringUtils.isNotBlank(super.getClientAuthAlias())) overriddenProperties.add("clientAuthAlias");
+			if (StringUtils.isNotBlank(super.getAuthAlias())) overriddenProperties.add("alias");
+			if (StringUtils.isNotBlank(super.getClientId())) overriddenProperties.add("clientId");
+			if (StringUtils.isNotBlank(super.getClientSecret())) overriddenProperties.add("clientSecret");
+			if (StringUtils.isNotBlank(super.getTokenEndpoint())) overriddenProperties.add("tokenEndpoint");
+			if (super.getOauthAuthenticationMethod() != null) overriddenProperties.add("oauthMethod");
+
+			if (!overriddenProperties.isEmpty()) {
+				String message = "sharedResourceRef is defined. The following properties will be ignored: " + String.join(", ", overriddenProperties);
+				ConfigurationWarnings.add(this, log, message);
+			}
 		}
 
 		paramList.configure();
@@ -226,8 +247,9 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 	public void start() {
 		if (StringUtils.isNotBlank(sharedResourceRef)) {
 			try {
-
 				HttpSession session = getSharedResource(sharedResourceRef);
+				log.debug("Using shared HttpSession [{}]", sharedResourceRef);
+
 				setHttpClient(session.getHttpClient());
 				setHttpContext(session.getDefaultHttpClientContext());
 			} catch (Exception e) {
@@ -472,6 +494,30 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 			return "dynamic url";
 		}
 		return getUrl();
+	}
+
+	private HttpSession getSharedSession() {
+		return StringUtils.isNotBlank(sharedResourceRef) ? getSharedResource(sharedResourceRef) : null;
+	}
+
+	// When a shared session is defined, these three methods will override the local values.
+	// This allows the HttpSender to use the properties defined in the shared session without copying them.
+	@Override
+	public CredentialFactory getCredentials() {
+		HttpSession sharedSession = getSharedSession();
+		return sharedSession != null ? sharedSession.getCredentials() : super.getCredentials();
+	}
+
+	@Override
+	public String getTokenEndpoint() {
+		HttpSession sharedSession = getSharedSession();
+		return sharedSession != null ? sharedSession.getTokenEndpoint() : super.getTokenEndpoint();
+	}
+
+	@Override
+	public OauthAuthenticationMethod getOauthAuthenticationMethod() {
+		HttpSession sharedSession = getSharedSession();
+		return sharedSession != null ? sharedSession.getOauthAuthenticationMethod() : super.getOauthAuthenticationMethod();
 	}
 
 	/** URL or base of URL to be used. Expects all parts of the URL to already be encoded. */
