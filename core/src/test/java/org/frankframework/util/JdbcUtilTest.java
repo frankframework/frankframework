@@ -2,6 +2,7 @@ package org.frankframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.StringReader;
@@ -17,6 +18,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.xml.sax.SAXException;
 
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.DbmsSupportFactory;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.parameters.DateParameter.DateFormatType;
@@ -48,6 +50,10 @@ public class JdbcUtilTest {
 
 	@BeforeEach
 	public void setup(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		// Before changing this to a WithLquibaseTest, this ran only on H2, so we keep that assumption
+		Dbms databaseUnderTest = databaseTestEnvironment.getDbmsSupport().getDbms();
+		assumeTrue(Dbms.H2 == databaseUnderTest);
+
 		connection = databaseTestEnvironment.getConnection();
 		dbmsSupport = new DbmsSupportFactory().getDbmsSupport(connection);
 	}
