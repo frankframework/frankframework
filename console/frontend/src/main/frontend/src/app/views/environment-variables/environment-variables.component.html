@@ -46,7 +46,7 @@
               <tbody>
                 <tr *ngFor="let vari of configProperties | variablesFilter: this.searchFilter | orderby: 'key'">
                   <td class="col-lg-3">{{ vari.key }}</td>
-                  <td class="col-lg-9">{{ vari.value }}</td>
+                  <td class="col-lg-9">{{ vari.value | literal }}</td>
                 </tr>
                 <tr *ngIf="(configProperties | variablesFilter: this.searchFilter).length === 0">
                   <td colspan="2">No variables found matching '{{ searchFilter }}'</td>
@@ -71,7 +71,7 @@
               <tbody>
                 <tr *ngFor="let vari of environmentProperties | variablesFilter: this.searchFilter | orderby: 'key'">
                   <td class="col-lg-3">{{ vari.key }}</td>
-                  <td class="col-lg-9">{{ vari.value }}</td>
+                  <td class="col-lg-9">{{ vari.value | literal }}</td>
                 </tr>
                 <tr *ngIf="(environmentProperties | variablesFilter: this.searchFilter).length === 0">
                   <td colspan="2">No variables found matching '{{ searchFilter }}'</td>
@@ -94,7 +94,7 @@
               <tbody>
                 <tr *ngFor="let vari of systemProperties | variablesFilter: this.searchFilter | orderby: 'key'">
                   <td class="col-lg-3">{{ vari.key }}</td>
-                  <td class="col-lg-9">{{ vari.value }}</td>
+                  <td class="col-lg-9">{{ vari.value | literal }}</td>
                 </tr>
                 <tr *ngIf="(systemProperties | variablesFilter: this.searchFilter).length === 0">
                   <td colspan="2">No variables found matching '{{ searchFilter }}'</td>
