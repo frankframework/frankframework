@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.frankframework</groupId>
+		<artifactId>build-templates</artifactId>
+		<version>${revision}</version>
+	</parent>
+
+	<artifactId>configuration-parent</artifactId>
+	<packaging>pom</packaging>
+
+	<description>Frank!Framework Configuration parent-POM</description>
+
+	<properties>
+		<plugin.type>configuration</plugin.type>
+	</properties>
+
+	<build>
+		<defaultGoal>package</defaultGoal>
+
+		<resources>
+			<resource>
+				<targetPath>${project.name}</targetPath>
+				<directory>src/main/resources</directory>
+			</resource>
+		</resources>
+
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+</project>
