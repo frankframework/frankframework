@@ -36,7 +36,6 @@ import org.apache.qpid.protonj2.client.SenderOptions;
 import org.apache.qpid.protonj2.client.Session;
 import org.apache.qpid.protonj2.client.SessionOptions;
 import org.apache.qpid.protonj2.client.exceptions.ClientException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.task.TaskExecutor;
 
 import lombok.Getter;
@@ -60,7 +59,6 @@ import org.frankframework.receivers.ResourceLimiter;
  */
 @Log4j2
 public class AmqpListenerContainer {
-	@Autowired
 	private @Setter AmqpConnectionFactoryFactory amqpConnectionFactoryFactory;
 	private String connectionName;
 	private Connection connection;
@@ -177,6 +175,7 @@ public class AmqpListenerContainer {
 				connection = null;
 			}
 		});
+		listenerThread.setDaemon(true);
 		listenerThread.start();
 	}
 

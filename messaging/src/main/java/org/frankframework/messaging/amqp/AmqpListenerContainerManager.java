@@ -20,8 +20,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import jakarta.annotation.Nonnull;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -35,7 +33,6 @@ import org.frankframework.util.SpringUtils;
  */
 public class AmqpListenerContainerManager implements ApplicationContextAware {
 
-	@Qualifier("webApplicationContext") @Autowired
 	private @Setter ApplicationContext applicationContext;
 
 	private final Map<String, AmqpListenerContainer> listenerContainers = new ConcurrentHashMap<>();
