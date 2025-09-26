@@ -555,11 +555,12 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 	public long getFileSize(S3FileRef f) throws FileSystemException {
 		// Probably a folder, which cannot have a size.
 		if (!f.hasName()) {
-			return 0;
+			return 0L;
 		}
 
 		updateFileAttributes(f);
-		return f.getContentLength();
+		Long contentLength = f.getContentLength();
+		return contentLength != null ? contentLength : 0L;
 	}
 
 	@Override

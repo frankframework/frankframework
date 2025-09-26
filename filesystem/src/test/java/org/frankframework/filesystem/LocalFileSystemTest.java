@@ -5,11 +5,16 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+import java.io.ByteArrayInputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.URL;
+import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.UserDefinedFileAttributeView;
+import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -117,4 +122,34 @@ public class LocalFileSystemTest extends FileSystemTest<Path, LocalFileSystem> {
 		}
 	}
 
+	@Test
+	void localFileSystemTestReadExtendedAttributeWithIllegalEncodedValue() throws Exception {
+		String filename = "createFileAbsolute" + FILE1;
+		String contents = "regeltje tekst";
+
+		fileSystem.configure();
+		fileSystem.open();
+
+		deleteFile(null, filename);
+		waitForActionToFinish();
+
+		Path file = fileSystem.toFile(fileSystem.getRoot() + "/" + filename);
+		fileSystem.createFile(file, new ByteArrayInputStream(contents.getBytes()));
+
+		waitForActionToFinish();
+
+		ByteBuffer bfr = ByteBuffer.allocate(10);
+		bfr.put("test".getBytes());
+		bfr.put((byte)0);
+		bfr.put("test".getBytes());
+
+		UserDefinedFileAttributeView fileAttributeView = Files.getFileAttributeView(file, UserDefinedFileAttributeView.class);
+		fileAttributeView.write("testAttribute", bfr);
+
+		// test
+		Map<String, Object> additionalFileProperties = fileSystem.getAdditionalFileProperties(file);
+
+		assertTrue(additionalFileProperties.containsKey("testAttribute"), "Custom file attribute 'testAttribute' missing");
+		assertEquals("?", additionalFileProperties.get("testAttribute"));
+	}
 }
