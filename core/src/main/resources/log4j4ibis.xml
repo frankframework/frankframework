@@ -32,7 +32,7 @@
 				<SizeBasedTriggeringPolicy size="${ff:log.maxFileSize}" />
 				<OnStartupTriggeringPolicy />
 			</Policies>
-			<RolloverStrategy type="DefaultRolloverStrategy" max="${ff:log.maxBackupIndex}" fileIndex="min"  />
+			<RolloverStrategy type="DefaultRolloverStrategy" max="${ff:log.maxBackupIndex}" fileIndex="min" />
 		</Appender>
 		<Appender name="msg-text" type="RollingFile" fileName="${ff:log.dir}/${ff:instance.name.lc}-messages.log" filePattern="${ff:log.dir}/${ff:instance.name.lc}-messages.log.%i" append="true">
 			<Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m %TC %x%n"/>
@@ -101,6 +101,7 @@
 		<Logger name="org.apache.http.wire" level="WARN" /> <!-- include a definition, enabling to increase the level in the console -->
 		<Logger name="org.aspectj.weaver" level="WARN" />
 		<Logger name="com.arjuna" level="INFO" />
+		<Logger name="com.arjuna.ats.jta" level="INFO" />
 		<Logger name="org.frankframework.jta.narayana.NarayanaJtaTransactionManager" level="WARN" />
 		<Logger name="org.frankframework.jta.ThreadConnectableDataSourceTransactionManager" level="INFO" />
 		<Logger name="com.hierynomus" level="WARN" /> <!-- SMB2 client -->
