@@ -1,0 +1,4 @@
+<request action="NamedParams">
+	<param1>1</param1>
+	<param2>John%</param2>
+</request>
