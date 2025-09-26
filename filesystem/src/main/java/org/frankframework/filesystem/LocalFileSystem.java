@@ -206,10 +206,10 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		return userDefinedAttributes.list().stream().anyMatch(attributeName::equals);
 	}
 
-	private static @Nonnull String readAttribute(@Nonnull UserDefinedFileAttributeView userDefinedAttributes, @Nonnull String attributeName) throws IOException {
+	private @Nonnull String readAttribute(@Nonnull Path file, @Nonnull UserDefinedFileAttributeView userDefinedAttributes, @Nonnull String attributeName) throws IOException {
 		ByteBuffer bfr = ByteBuffer.allocate(userDefinedAttributes.size(attributeName));
 		userDefinedAttributes.read(attributeName, bfr);
-		return bytesToString(bfr.array());
+		return readAttributeValue(file, attributeName, bfr);
 	}
 
 	@Override
@@ -393,7 +393,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 			if (Files.getFileStore(f).supportsFileAttributeView(UserDefinedFileAttributeView.class)) {
 				UserDefinedFileAttributeView userDefinedAttributes = getUserDefinedAttributes(f);
 				if (hasAttribute(userDefinedAttributes, ORIGINAL_LAST_MODIFIED_TIME_ATTRIBUTE)) {
-					String lastModifiedTime = readAttribute(userDefinedAttributes, ORIGINAL_LAST_MODIFIED_TIME_ATTRIBUTE);
+					String lastModifiedTime = readAttribute(f, userDefinedAttributes, ORIGINAL_LAST_MODIFIED_TIME_ATTRIBUTE);
 					return new Date(Long.parseLong(lastModifiedTime));
 				}
 			}
@@ -424,7 +424,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		}
 	}
 
-	private String readAttributeValue(Path file, String name, Object attributeValue) {
+	private @Nonnull String readAttributeValue(@Nonnull Path file, @Nonnull String name, @Nonnull Object attributeValue) {
 		try {
 			if (attributeValue instanceof byte[] bytes) {
 				return bytesToString(bytes);
@@ -440,7 +440,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	}
 
 	@Nonnull
-	private static String bytesToString(byte[] bytes) {
+	private static String bytesToString(@Nonnull byte[] bytes) {
 		CharsetDetector detector = new CharsetDetector();
 		detector.setText(bytes);
 		CharsetMatch match = detector.detect();
