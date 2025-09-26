@@ -94,7 +94,7 @@
 		<tomcat.version>10.1.46</tomcat.version>
 		<bouncycastle.version>1.82</bouncycastle.version>
 
-		<narayana.version>7.2.2.Final</narayana.version>
+		<narayana.version>7.3.0.Final</narayana.version>
 		<jboss-logging.version>3.6.1.Final</jboss-logging.version>
 		<micrometer.version>1.15.4</micrometer.version>
 		<argLine />
@@ -104,7 +104,7 @@
 		<javadoc-plugin.version>3.12.0</javadoc-plugin.version>
 
 		<!-- DB Driver Versions -->
-		<h2.driver.version>2.3.232</h2.driver.version>
+		<h2.driver.version>2.4.240</h2.driver.version>
 		<db2.driver.version>11.5.9.0</db2.driver.version>
 		<oracle.driver.version>23.9.0.25.07</oracle.driver.version>
 		<oracle.driver.jdkversion>11</oracle.driver.jdkversion>
@@ -1297,7 +1297,7 @@
 							<configuration>
 								<rules>
 									<requireJavaVersion>
-										<version>[17,25)</version>
+										<version>[17,26)</version>
 									</requireJavaVersion>
 								</rules>
 							</configuration>

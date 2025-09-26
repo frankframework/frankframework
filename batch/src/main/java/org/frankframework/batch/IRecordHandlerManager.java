@@ -15,6 +15,8 @@
 */
 package org.frankframework.batch;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.Map;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -51,6 +53,16 @@ public interface IRecordHandlerManager extends NameAware, HasName {
 	 * @return the IRecordHandlingManager to be used initially based on the name of the input file
 	 */
 	IRecordHandlerManager getRecordFactoryUsingFilename(PipeLineSession session, String filename);
+
+	/**
+	 * @return the first part of the next record, containing at least the key
+	 */
+	String getFirstPartOfNextRecord(BufferedReader reader) throws IOException;
+
+	/**
+	 * @return expand the first part to the full record
+	 */
+	public String getFullRecord(BufferedReader reader, RecordHandlingFlow flow, String firstPart) throws IOException;
 
 	/** indicates if this manager is the initial manager */
 	void setInitial(boolean initialFactory);

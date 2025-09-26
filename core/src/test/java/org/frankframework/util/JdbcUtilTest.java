@@ -2,6 +2,7 @@ package org.frankframework.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.ByteArrayInputStream;
 import java.io.StringReader;
@@ -9,20 +10,17 @@ import java.nio.charset.Charset;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.util.List;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.DbmsSupportFactory;
 import org.frankframework.dbms.IDbmsSupport;
-import org.frankframework.dbms.JdbcException;
 import org.frankframework.parameters.DateParameter.DateFormatType;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterType;
@@ -38,37 +36,37 @@ import org.frankframework.testutil.ThrowingAfterCloseInputStream;
 import org.frankframework.testutil.ThrowingAfterCloseReader;
 import org.frankframework.testutil.VirtualInputStream;
 import org.frankframework.testutil.VirtualReader;
+import org.frankframework.testutil.junit.DatabaseTest;
+import org.frankframework.testutil.junit.DatabaseTestEnvironment;
+import org.frankframework.testutil.junit.WithLiquibase;
 import org.frankframework.xml.PrettyPrintFilter;
 import org.frankframework.xml.SaxElementBuilder;
 import org.frankframework.xml.XmlWriter;
 
+@WithLiquibase(tableName = "TEMP", file = "JdbcUtil/JdbcUtilTest.xml")
 public class JdbcUtilTest {
-	private static final String H2_CONNECTION_STRING = "jdbc:h2:mem:test";
-
 	private Connection connection;
 	private IDbmsSupport dbmsSupport;
 
 	@BeforeEach
-	public void startDatabase() throws SQLException, JdbcException {
-		connection = DriverManager.getConnection(H2_CONNECTION_STRING);
+	public void setup(DatabaseTestEnvironment databaseTestEnvironment) throws Exception {
+		// Before changing this to a WithLquibaseTest, this ran only on H2, so we keep that assumption
+		Dbms databaseUnderTest = databaseTestEnvironment.getDbmsSupport().getDbms();
+		assumeTrue(Dbms.H2 == databaseUnderTest);
+
+		connection = databaseTestEnvironment.getConnection();
 		dbmsSupport = new DbmsSupportFactory().getDbmsSupport(connection);
-		if (dbmsSupport.isTablePresent(connection, "TEMP")) {
-			connection.createStatement().execute("DROP TABLE TEMP");
-		}
-		connection.createStatement().execute("CREATE TABLE TEMP(TKEY INT PRIMARY KEY, TVARCHAR VARCHAR(100), TVARCHAR2 VARCHAR(100), TINT INT, TDATETIME DATETIME, TBLOB BLOB, TCLOB CLOB)");
 	}
 
 	@AfterEach
-	public void closeDatabase() throws SQLException {
-		if (connection != null) {
-			connection.createStatement().execute("DROP TABLE TEMP");
+	public void teardown() throws Exception {
+		if (connection != null && !connection.isClosed()) {
 			connection.close();
 		}
 	}
 
-
 	@SuppressWarnings({"DataFlowIssue", "unchecked"})
-	@Test
+	@DatabaseTest
 	public void testExecuteStatementAndQuery() throws Exception {
 		// Arrange
 		String query = "INSERT INTO TEMP (TKEY, TVARCHAR, TINT) VALUES (1, 'just a text', 1793)";
@@ -169,7 +167,7 @@ public class JdbcUtilTest {
 		assertEquals(5, result);
 	}
 
-	@Test
+	@DatabaseTest
 	public void testBytesCase() throws Exception {
 		// Arrange
 		String query = "INSERT INTO TEMP (TKEY, TBLOB) VALUES (?, ?)";
@@ -200,7 +198,7 @@ public class JdbcUtilTest {
 		assertEquals(20_000, blob.length());
 	}
 
-	@Test
+	@DatabaseTest
 	@SuppressWarnings("unchecked")
 	public void testLargeLobs() throws Exception {
 		// Arrange
@@ -234,14 +232,14 @@ public class JdbcUtilTest {
 		assertEquals(20_000, blob.length());
 	}
 
-	@Test
+	@DatabaseTest
 	public void testWarningsToString() {
 		String expected = getExpectedWarningXml();
 		String actual = JdbcUtil.warningsToString(getWarnings());
 		MatchUtils.assertXmlEquals(expected,actual);
 	}
 
-	@Test
+	@DatabaseTest
 	public void testWarningsToXml() throws SAXException {
 		String expected = getExpectedWarningXml();
 		XmlWriter writer = new XmlWriter();
@@ -267,5 +265,4 @@ public class JdbcUtilTest {
 		warning1.setNextWarning(warning2);
 		return warning1;
 	}
-
 }

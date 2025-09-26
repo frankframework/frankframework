@@ -44,9 +44,9 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.StreamUtil;
 
 /**
- * Pipe for transforming a stream with records. Records in the stream must be separated with new line characters.
+ * Pipe for transforming a stream with records. Records in the stream must be separated with new line characters, or be of fixed length.
  *
- * For file containing only a single type of lines, a simpler configuration without managers and flows
+ * For files containing only a single type of lines, a simpler configuration without managers and flows
  * can be specified. A single recordHandler with key="*" and (optional) a single resultHandler need to be specified.
  * Each line will be handled by this recordHandler and resultHandler.
  *
@@ -409,7 +409,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 		IRecordHandlerManager currentManager = initialManager.getRecordFactoryUsingFilename(session, streamId);
 		try {
 			openDocument(session, streamId);
-			while ((rawRecord = reader.readLine()) != null) {
+			while ((rawRecord = currentManager.getFirstPartOfNextRecord(reader)) != null) {
 				if (Thread.currentThread().isInterrupted()) {
 					throw new InterruptedException();
 				}
@@ -437,6 +437,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 				}
 				openBlock(session, resultHandler, streamId, flow, obbl, blocks);
 
+				rawRecord = currentManager.getFullRecord(reader, flow, rawRecord);
 				if (isStoreOriginalBlock()) {
 					if (resultHandler instanceof ResultBlock2Sender) {
 						// If blocks does not contain a previous block, it never existed, or has been removed by closing the block.

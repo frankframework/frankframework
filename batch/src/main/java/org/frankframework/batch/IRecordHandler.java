@@ -54,4 +54,9 @@ public interface IRecordHandler extends IConfigurable, FrankElement, NameAware {
 
 	public String getRecordType(List<String> record);
 
+	/**
+	 * @return the length of the raw record, or -1 if it is unknown up front
+	 */
+	int getRecordLength();
+
 }
