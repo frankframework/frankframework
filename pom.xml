@@ -104,7 +104,7 @@
 		<javadoc-plugin.version>3.12.0</javadoc-plugin.version>
 
 		<!-- DB Driver Versions -->
-		<h2.driver.version>2.3.232</h2.driver.version>
+		<h2.driver.version>2.4.240</h2.driver.version>
 		<db2.driver.version>11.5.9.0</db2.driver.version>
 		<oracle.driver.version>23.9.0.25.07</oracle.driver.version>
 		<oracle.driver.jdkversion>11</oracle.driver.jdkversion>
@@ -481,7 +481,7 @@
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-lang3</artifactId>
-				<version>3.18.0</version>
+				<version>3.19.0</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
@@ -1297,7 +1297,7 @@
 							<configuration>
 								<rules>
 									<requireJavaVersion>
-										<version>[17,25)</version>
+										<version>[17,26)</version>
 									</requireJavaVersion>
 								</rules>
 							</configuration>
@@ -1552,6 +1552,8 @@
 				<module>webapp</module>
 				<module>test</module>
 				<module>example</module>
+
+				<module>build-templates</module>
 			</modules>
 		</profile>
 		<profile>

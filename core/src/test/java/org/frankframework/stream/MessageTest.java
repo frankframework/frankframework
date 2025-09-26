@@ -421,7 +421,7 @@ public class MessageTest {
 	@Test
 	public void testUnknownURL() throws Exception {
 		String unknownFile = "xxx.bestaat.niet.txt";
-		URL source = new URL("file://" + unknownFile);
+		URL source = new URL("file:" + unknownFile);
 		adapter = new UrlMessage(source);
 		Exception exception = assertThrows(Exception.class, adapter::asInputStream);
 		assertThat(exception.getMessage(), containsString(unknownFile));
