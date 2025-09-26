@@ -31,8 +31,6 @@ import jakarta.xml.soap.AttachmentPart;
 import jakarta.xml.soap.MimeHeader;
 import jakarta.xml.soap.SOAPException;
 
-import com.ibm.icu.text.CharsetDetector;
-import com.ibm.icu.text.CharsetMatch;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
@@ -46,6 +44,9 @@ import org.springframework.util.DigestUtils;
 import org.springframework.util.MimeType;
 import org.springframework.util.StreamUtils;
 
+import com.ibm.icu.text.CharsetDetector;
+import com.ibm.icu.text.CharsetMatch;
+
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
@@ -53,8 +54,9 @@ import org.frankframework.stream.MessageContext;
 public class MessageUtils {
 
 	private static final Logger LOG = LogUtil.getLogger(MessageUtils.class);
-	private static final int CHARSET_CONFIDENCE_LEVEL = AppConstants.getInstance().getInt("charset.confidenceLevel", 65);
 	private static final Tika TIKA = new Tika();
+
+	public static final int CHARSET_CONFIDENCE_LEVEL = AppConstants.getInstance().getInt("charset.confidenceLevel", 65);
 
 	private MessageUtils() {
 		throw new IllegalStateException("Don't construct utility class");
