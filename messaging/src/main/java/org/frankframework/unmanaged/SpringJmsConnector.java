@@ -252,7 +252,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 
 
 	@Override
-	public void onMessage(Message message, @Nonnull Session session)	throws JMSException {
+	public void onMessage(Message message, @Nonnull Session session) throws JMSException {
 		TransactionStatus txStatus=null;
 
 		final long onMessageStart= System.currentTimeMillis();
@@ -284,7 +284,7 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 				}
 			}
 		} finally {
-			if (txStatus!=null && !txStatus.isCompleted()) {
+			if (txStatus != null && !txStatus.isCompleted()) {
 				if (!txStatus.isRollbackOnly()) {
 					log.debug("{} committing transaction {}", logPrefix, txStatus);
 					txManager.commit(txStatus);
@@ -293,7 +293,9 @@ public class SpringJmsConnector extends AbstractJmsConfigurator implements IList
 					txManager.rollback(txStatus);
 				}
 			}
+
 			threadsProcessing.decrementAndGet();
+
 			if (log.isInfoEnabled()) {
 				long onMessageEnd= System.currentTimeMillis();
 
