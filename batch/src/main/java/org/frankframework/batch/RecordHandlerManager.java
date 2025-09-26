@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
 */
 package org.frankframework.batch;
 
+import java.io.BufferedReader;
+import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -45,6 +47,16 @@ public class RecordHandlerManager implements IRecordHandlerManager {
 	@Override
 	public IRecordHandlerManager getRecordFactoryUsingFilename(PipeLineSession session, String inputFilename) {
 		return this;
+	}
+
+	@Override
+	public String getFirstPartOfNextRecord(BufferedReader reader) throws IOException {
+		return reader.readLine();
+	}
+
+	@Override
+	public String getFullRecord(BufferedReader reader, RecordHandlingFlow flow, String firstPart) throws IOException {
+		return firstPart;
 	}
 
 	@Override
