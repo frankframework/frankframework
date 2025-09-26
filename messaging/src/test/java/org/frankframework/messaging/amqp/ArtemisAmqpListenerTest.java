@@ -7,7 +7,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Testcontainers(disabledWithoutDocker = true)
-public class ArtemisAmqpSenderTest extends AmqpSenderTest {
+public class ArtemisAmqpListenerTest extends AmqpListenerTest {
 	private static final String ARTEMIS_TAG = "apache/activemq-artemis";
 
 	@Container

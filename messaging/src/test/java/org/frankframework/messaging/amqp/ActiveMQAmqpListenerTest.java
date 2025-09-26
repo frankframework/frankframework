@@ -2,22 +2,21 @@ package org.frankframework.messaging.amqp;
 
 import jakarta.annotation.Nonnull;
 
-import org.testcontainers.activemq.ArtemisContainer;
+import org.testcontainers.activemq.ActiveMQContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 @Testcontainers(disabledWithoutDocker = true)
-public class ArtemisAmqpSenderTest extends AmqpSenderTest {
-	private static final String ARTEMIS_TAG = "apache/activemq-artemis";
+public class ActiveMQAmqpListenerTest extends AmqpListenerTest {
+	private static final String ACTIVEMQ_TAG = "apache/activemq-classic";
 
 	@Container
-	private static final ArtemisContainer container = new ArtemisContainer(ARTEMIS_TAG)
-			.withEnv("ANONYMOUS_LOGIN", "true");
+	private static final ActiveMQContainer container = new ActiveMQContainer(ACTIVEMQ_TAG);
 
 	@Nonnull
 	@Override
 	protected String getResourceName() {
-		return "Artemis";
+		return "ActiveMQ";
 	}
 
 	@Nonnull

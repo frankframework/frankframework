@@ -421,7 +421,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 */
 	protected void error(@Nonnull String msg, @Nullable Throwable t) {
 		if (adapter != null) {
-			adapter.publishEvent(new AdapterMessageEvent(adapter, this, msg, MessageEventLevel.ERROR));
+			adapter.publishEvent(new AdapterMessageEvent(adapter, this, msg, t));
 		} else {
 			log.error(() -> "%s%s".formatted(getLogPrefix(), msg), t);
 		}
@@ -884,7 +884,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		//noinspection unchecked
 		return (IMessageBrowser<M>)messageBrowsers.get(state);
 	}
-
 
 	protected void startProcessingMessage() {
 		threadsProcessing.getAndIncrement();

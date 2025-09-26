@@ -1957,7 +1957,7 @@
     <xs:attribute name="storageClass">
       <xs:annotation>
         <xs:documentation>Set the desired storage class for the S3 object when action is move,copy or write.
- More info on storage classes can be found on the &lt;a href="https://aws.amazon.com/s3/storage-classes/"&gt;AWS S3 docs&lt;/a&gt;. Default: STANDARD</xs:documentation>
+ More info on storage classes can be found on the &lt;a href="https://aws.amazon.com/s3/storage-classes/"&gt;AWS S3 docs&lt;/a&gt;. Default: &lt;pre&gt;STANDARD&lt;/pre&gt;</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="S3StorageClassAttributeValuesType variableRef" />
@@ -2098,7 +2098,11 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.messaging.amqp.AmqpSender" />
   </xs:complexType>
   <xs:attributeGroup name="AmqpSenderDeclaredAttributeGroup">
-    <xs:attribute name="connectionName" type="xs:string" />
+    <xs:attribute name="connectionName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Name of the AMQP connection in the &lt;pre&gt;amqp&lt;/pre&gt; section of the &lt;code&gt;resources.yaml&lt;/code&gt; file.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
     <xs:attribute name="timeout" type="frankInt">
       <xs:annotation>
         <xs:documentation>Timeout in seconds for sending messages and receiving replies. Default: &lt;code&gt;30&lt;/code&gt;</xs:documentation>
@@ -2107,15 +2111,15 @@
     <xs:attribute name="addressType">
       <xs:annotation>
         <xs:documentation>Set the type of address to which messages are being sent, TOPIC or QUEUE.
- For &lt;pre&gt;MessageProtocol#RR&lt;/pre&gt; the type will always be QUEUE.</xs:documentation>
+ For &lt;pre&gt;MessageProtocol#RR&lt;/pre&gt; the type will always be QUEUE. Default: &lt;pre&gt;QUEUE&lt;/pre&gt;</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="AddressTypeAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="address" type="xs:string">
+    <xs:attribute name="address" type="xs:string" use="required">
       <xs:annotation>
-        <xs:documentation>Set the address (name of the queue or topic) on which to send messages</xs:documentation>
+        <xs:documentation>Set the address (name of the queue or topic) on which to send messages.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="messageType">
@@ -6089,6 +6093,15 @@
   </xs:attributeGroup>
   <xs:group name="ListenerElementGroupBase">
     <xs:choice>
+      <xs:element name="AmqpListener">
+        <xs:complexType>
+          <xs:complexContent>
+            <xs:extension base="AmqpListenerType">
+              <xs:attribute name="elementRole" type="xs:string" fixed="listener" />
+            </xs:extension>
+          </xs:complexContent>
+        </xs:complexType>
+      </xs:element>
       <xs:element name="ApiListener">
         <xs:complexType>
           <xs:complexContent>
@@ -6352,6 +6365,91 @@
       </xs:element>
     </xs:choice>
   </xs:group>
+  <xs:complexType name="AmqpListenerType">
+    <xs:attributeGroup ref="AmqpListenerDeclaredAttributeGroup" />
+    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.messaging.amqp.AmqpListener" />
+  </xs:complexType>
+  <xs:attributeGroup name="AmqpListenerDeclaredAttributeGroup">
+    <xs:attribute name="connectionName" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Name of the AMQP connection in the &lt;pre&gt;amqp&lt;/pre&gt; section of the &lt;code&gt;resources.yaml&lt;/code&gt; file.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="sendReplyTimeout" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Timeout in seconds for sending messages and receiving replies. Default: &lt;code&gt;30&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="addressType">
+      <xs:annotation>
+        <xs:documentation>Set the type of address to which messages are being sent, TOPIC or QUEUE.
+ For &lt;pre&gt;MessageProtocol#RR&lt;/pre&gt; the type will always be QUEUE. Default: &lt;pre&gt;QUEUE&lt;/pre&gt;</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="AddressTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="address" type="xs:string" use="required">
+      <xs:annotation>
+        <xs:documentation>Set the address (name of the queue or topic) on which to send messages</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="replyAddress" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>If the adapter needs to send a reply message, and the address of the reply-queue is not
+ dynamically set on the message, then a &lt;code&gt;replyAddressName&lt;/code&gt; can be configured for the
+ queue on which to send the reply message. If a &lt;code&gt;replyAddressName&lt;/code&gt; is configured but
+ the message does have a dynamic reply-queue, then the dynamic reply-queue is used and the
+ &lt;code&gt;replyAddressName&lt;/code&gt; is ignored.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="durable" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;pre&gt;true&lt;/pre&gt;, then listen for durable messages on a topic</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="replyTimeToLive" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Set the message time-to-live, in milliseconds, for any reply messages sent by this listener. Default: &lt;pre&gt;-1&lt;/pre&gt;ms, meaning no expiry.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="messageProtocol">
+      <xs:annotation>
+        <xs:documentation>Receive message as Fire-and-Forget, or as Request-Reply Default: &lt;pre&gt;FF&lt;/pre&gt;</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="MessageProtocolAttributeValuesType_2 variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="subscriptionName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>When the listener is durable, then a subscriptionName should be set so the message broker
+ can keep track of which subscribers have already received each message.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maxThreadCount" type="frankInt" />
+    <xs:attribute name="onException">
+      <xs:annotation>
+        <xs:documentation>When an exception happens in the execution of the pipeline, with &lt;code&gt;RETHROW&lt;/code&gt; the
+ exception is thrown to the caller. With &lt;code&gt;FORMAT_AND_RETURN&lt;/code&gt; the exception is processed
+ by the Adapter#setErrorMessageFormatter(IErrorMessageFormatter) and returned as result-message
+ of the Adapter.
+
+ &lt;br/&gt;
+ The default is currently &lt;code&gt;RETHROW&lt;/code&gt; for backwards compatibility but will become &lt;code&gt;FORMAT_AND_RETURN&lt;/code&gt; in a future version. Default: RETHROW</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="ExceptionHandlingMethodAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The functional name of the object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
+  </xs:attributeGroup>
   <xs:complexType name="ApiListenerType">
     <xs:attributeGroup ref="ApiListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.http.rest.ApiListener" />
@@ -16303,6 +16401,12 @@
       <xs:pattern value="[nN][oO]" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="ExceptionHandlingMethodAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:pattern value="[rR][eE][tT][hH][rR][oO][wW]" />
+      <xs:pattern value="[fF][oO][rR][mM][aA][tT][__][aA][nN][dD][__][rR][eE][tT][uU][rR][nN]" />
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="HttpMethodAttributeValuesType">
     <xs:restriction base="xs:string">
       <xs:pattern value="[gG][eE][tT]" />
@@ -16377,12 +16481,6 @@
       <xs:pattern value="[hH][eE][aA][dD][eE][rR]" />
       <xs:pattern value="[aA][uU][tT][hH][rR][oO][lL][eE]" />
       <xs:pattern value="[jJ][wW][tT]" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="ExceptionHandlingMethodAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:pattern value="[rR][eE][tT][hH][rR][oO][wW]" />
-      <xs:pattern value="[fF][oO][rR][mM][aA][tT][__][aA][nN][dD][__][rR][eE][tT][uU][rR][nN]" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="CacheModeAttributeValuesType">

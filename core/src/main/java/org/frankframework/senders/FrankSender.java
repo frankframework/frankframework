@@ -316,7 +316,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	public void configure() throws ConfigurationException {
 		super.configure();
 		ParameterList pl = getParameterList();
-		if (StringUtils.isBlank(getTarget()) && (pl == null || !pl.hasParameter(TARGET_PARAM_NAME))) {
+		if (StringUtils.isBlank(getTarget()) && !pl.hasParameter(TARGET_PARAM_NAME)) {
 			throw new ConfigurationException("[target] required, either as parameter or as attribute in the configuration");
 		}
 		if (StringUtils.isNotBlank(getTarget()) && getScope() == Scope.ADAPTER) {
