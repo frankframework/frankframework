@@ -115,3 +115,10 @@ jms:
       host: "rabbitmq"
       username: "guest"
       password: "guest"
+
+amqp:
+  - name: "activemq"
+    url: "amqp://${jms.hostname:-localhost}:5672"
+
+  - name: "artemis"
+    url: "amqp://${jms.hostname:-localhost}:5672"

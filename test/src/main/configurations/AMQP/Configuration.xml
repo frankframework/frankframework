@@ -1,0 +1,32 @@
+<Configuration
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd"
+	active="${active.amqp}">
+
+	<Adapter name="AmqpSenderListenerTest">
+		<Receiver>
+			<FrankListener name="amqpSenderListenerTest" />
+		</Receiver>
+		<Pipeline>
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" />
+			</Exits>
+
+			<SenderPipe name="Send AMQP Message">
+				<AmqpSender address="test:rr_queue_in" messageProtocol="RR" connectionName="${amqp.connection}"/>
+			</SenderPipe>
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="AmqpListenerTest">
+		<Receiver>
+			<AmqpListener address="test:rr_queue_in" messageProtocol="RR" connectionName="${amqp.connection}" maxThreadCount="2"/>
+		</Receiver>
+		<Pipeline>
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" />
+			</Exits>
+			<EchoPipe name="result" getInputFromFixedValue="AMQP Reply"/>
+		</Pipeline>
+	</Adapter>
+</Configuration>

@@ -162,10 +162,14 @@ public class IafTestInitializer {
 		String jmsProvider = System.getProperty("jms.provider.default");
 		// ServerType "IBISTEST" disables JMS by default, so we need to override it depending on if this property has been set.
 		System.setProperty("active.jms", jmsProvider != null ? "true" : "false");
+		if ("inmem".equals(jmsProvider)) {
+			System.setProperty("active.amqp", "false");
+		}
 		if (jmsProvider != null) {
 			// Setting these properties manually is required with application-server type "IBISTEST"
 			System.setProperty("jms.connectionfactory.qcf." + jmsProvider, "jms/qcf-" + jmsProvider);
 			System.setProperty("jms.destination.suffix", "-" + jmsProvider);
+			System.setProperty("amqp.connection", "amqp/" + jmsProvider);
 		}
 
 		String dbms = System.getProperty("jdbc.dbms.default");

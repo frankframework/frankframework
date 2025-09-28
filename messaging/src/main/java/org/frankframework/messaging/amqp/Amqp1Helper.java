@@ -17,6 +17,7 @@ package org.frankframework.messaging.amqp;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import jakarta.annotation.Nonnull;
@@ -26,10 +27,13 @@ import org.apache.qpid.protonj2.client.Connection;
 import org.apache.qpid.protonj2.client.Delivery;
 import org.apache.qpid.protonj2.client.Receiver;
 import org.apache.qpid.protonj2.client.ReceiverOptions;
+import org.apache.qpid.protonj2.client.Sender;
+import org.apache.qpid.protonj2.client.SenderOptions;
 import org.apache.qpid.protonj2.client.StreamDelivery;
 import org.apache.qpid.protonj2.client.StreamReceiver;
 import org.apache.qpid.protonj2.client.StreamReceiverMessage;
 import org.apache.qpid.protonj2.client.StreamReceiverOptions;
+import org.apache.qpid.protonj2.client.Tracker;
 import org.apache.qpid.protonj2.client.exceptions.ClientException;
 
 import lombok.extern.log4j.Log4j2;
@@ -99,13 +103,35 @@ public class Amqp1Helper {
 		try (Receiver receiver = connection.openReceiver(address, receiverOptions)) {
 			Delivery delivery = receiver.receive(15, TimeUnit.SECONDS);
 			if (delivery != null) {
-				org.apache.qpid.protonj2.client.Message<Object> amqpMessage = delivery.message();
-				Message ffMessage = convertAmqpMessageToFFMessage(amqpMessage);
+				Message ffMessage = convertAmqpMessageToFFMessage(delivery.message());
 				delivery.accept();
 				return ffMessage;
 			}
 		}
 		log.error("Could not get message from {} [{}]", addressType, address);
 		return null;
+	}
+
+	public static @Nullable String sendFFMessage(@Nonnull AmqpConnectionFactoryFactory connectionFactory, @Nonnull String connectionName, @Nonnull String address, @Nonnull AddressType addressType, @Nonnull Message message) throws ClientException, IOException {
+		try (Connection connection = connectionFactory.getConnectionFactory(connectionName).getConnection()) {
+			return sendFFMessage(connection, address, addressType, message);
+		}
+	}
+
+	private static @Nullable String sendFFMessage(Connection connection, String address, @Nonnull AddressType addressType, Message message) throws ClientException, IOException {
+		SenderOptions options = new SenderOptions();
+		options.targetOptions().capabilities(addressType.getCapabilityName());
+
+		try (Sender sender = connection.openSender(address, options)) {
+			org.apache.qpid.protonj2.client.Message<?> amqpMessage;
+			if (message.isBinary()) {
+				amqpMessage = org.apache.qpid.protonj2.client.Message.create(message.asByteArray());
+			} else {
+				amqpMessage = org.apache.qpid.protonj2.client.Message.create(message.asString());
+			}
+			Tracker tracker = sender.send(amqpMessage);
+			tracker.awaitSettlement();
+			return Objects.toString(amqpMessage.messageId(), null);
+		}
 	}
 }

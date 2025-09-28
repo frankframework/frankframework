@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2019 WeAreFrank!
+   Copyright 2017-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -65,6 +65,6 @@ public class ApiDispatchConfig {
 
 	@Override
 	public String toString() {
-		return this.getClass().toString() + " methods" + getMethods().toString() + " uriPattern["+getUriPattern()+"]";
+		return this.getClass() + " methods" + getMethods() + " uriPattern[" + getUriPattern() + "]";
 	}
 }

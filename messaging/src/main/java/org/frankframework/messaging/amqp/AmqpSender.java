@@ -67,6 +67,9 @@ import org.frankframework.util.Misc;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.UUIDUtil;
 
+/**
+ * Sender to send to AMQP 1.0 end-points.
+ */
 @Category(Category.Type.EXPERIMENTAL)
 @DestinationType(DestinationType.Type.AMQP)
 public class AmqpSender extends AbstractSenderWithParameters implements ISenderWithParameters, HasPhysicalDestination {
@@ -76,8 +79,8 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	private String connectionName;
 	private AddressType addressType = AddressType.QUEUE;
 	private String address;
-	/** Reply queue name is used internally when dynamic reply queues are not supported by the broker but until there is filtering of messages, cannot be configured */
-	private String replyQueueName;
+	/** The replyAddress is used internally when dynamic reply queues are not supported by the broker but until there is filtering of messages, cannot be configured */
+	private String replyAddress;
 	private long timeout = DEFAULT_TIMEOUT_SECONDS;
 	private MessageType messageType = MessageType.AUTO;
 	private boolean streamingMessages = false;
@@ -86,7 +89,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	private DeliveryMode deliveryMode = DeliveryMode.AT_LEAST_ONCE;
 	private MessageProtocol messageProtocol = MessageProtocol.FF;
 
-	private @Setter AmqpConnectionFactoryFactory connectionFactoryFactory;
+	private @Setter AmqpConnectionFactoryFactory amqpConnectionFactoryFactory;
 	private AmqpConnectionFactory connectionFactory;
 	private Session session;
 	private Sender sender;
@@ -114,7 +117,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	public void configure() throws ConfigurationException {
 		super.configure();
 
-		if (connectionFactoryFactory == null) {
+		if (amqpConnectionFactoryFactory == null) {
 			throw new ConfigurationException("ConnectionFactory is null");
 		}
 		if (StringUtils.isEmpty(connectionName)) {
@@ -124,14 +127,14 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 			throw new ConfigurationException("Destination Address is empty");
 		}
 
-		if (messageProtocol == MessageProtocol.FF && StringUtils.isNotEmpty(replyQueueName)) {
+		if (messageProtocol == MessageProtocol.FF && StringUtils.isNotEmpty(replyAddress)) {
 			ConfigurationWarnings.add(this, log, "Reply queue is ignored for Fire & Forget Senders");
 		}
 
 		if (streamingMessages && messageType != MessageType.BINARY) {
 			ConfigurationWarnings.add(this, log, "[messageType] is ignored, because [streamingMessages] is set to [true]");
 		}
-		connectionFactory = connectionFactoryFactory.getConnectionFactory(connectionName);
+		connectionFactory = amqpConnectionFactoryFactory.getConnectionFactory(connectionName);
 
 		try (Connection connection = connectionFactory.getConnection()) {
 			List<String> offeredCapabilities;
@@ -143,20 +146,20 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 			log.info("AMPQ Connection Created, server offers capabilities: {}", offeredCapabilities);
 			log.info("AMQP Server Properties: {}", connection.properties());
 
-			// NB: There are a number of things that might go wrong only when using RabbitMQ but we don't know if we're talking to
+			// NB: There are a number of things that might go wrong only when using RabbitMQ, but we don't know if we're talking to
 			// RabbitMQ or another server until we open the connection. So we create a test-connection here.
 			serverIsRabbitMQ = "RabbitMQ".equals(connection.properties().get("product"));
 
 			if (serverIsRabbitMQ) {
 				// The "/" should be legal in RabbitMQ queue names, but there are errors when I use it. Perhaps because queues are not pre-created? Dunno.
 				// For now, giving a warning on it.
-				if (Strings.CS.contains(address, "/") || Strings.CS.contains(replyQueueName, "/")) {
-					ConfigurationWarnings.add(this, log, "RabbitMQ might not allow slashes in queue names (queue: [" + address + "]; reply queue: [" + replyQueueName + "])");
+				if (Strings.CS.contains(address, "/") || Strings.CS.contains(replyAddress, "/")) {
+					ConfigurationWarnings.add(this, log, "RabbitMQ might not allow slashes in queue names (queue: [" + address + "]; reply queue: [" + replyAddress + "])");
 				}
 
-				if (messageProtocol == MessageProtocol.RR && StringUtils.isEmpty(replyQueueName)) {
-					replyQueueName = Misc.getHostname() + ":" + UUIDUtil.createRandomUUID();
-					ConfigurationWarnings.add(this, log, "RabbitMQ does not support dynamic request-reply queues. Using randomly generated queue name [" + replyQueueName + "]");
+				if (messageProtocol == MessageProtocol.RR && StringUtils.isEmpty(replyAddress)) {
+					replyAddress = Misc.getHostname() + ":" + UUIDUtil.createRandomUUID();
+					ConfigurationWarnings.add(this, log, "RabbitMQ does not support dynamic request-reply queues. Using randomly generated queue name [" + replyAddress + "]");
 				}
 			}
 		} catch (ClientException e) {
@@ -225,7 +228,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	private @Nonnull SenderResult sendRequestResponse(@Nonnull Message message) throws SenderException {
 
 		// It seems that dynamic receivers cannot be streaming?
-		try (Receiver responseReceiver = StringUtils.isEmpty(replyQueueName) ? session.openDynamicReceiver() : session.openReceiver(replyQueueName)) {
+		try (Receiver responseReceiver = StringUtils.isEmpty(replyAddress) ? session.openDynamicReceiver() : session.openReceiver(replyAddress)) {
 			String responseQueueAddress = responseReceiver.address();
 			doSend(message, responseQueueAddress);
 			Delivery response = responseReceiver.receive(timeout, TimeUnit.SECONDS);
@@ -368,6 +371,11 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		}
 	}
 
+	/**
+	 * Name of the AMQP connection in the {@literal amqp} section of the {@code resources.yaml} file.
+	 *
+	 * @ff.mandatory
+	 */
 	public void setConnectionName(String connectionName) {
 		this.connectionName = connectionName;
 	}
@@ -384,13 +392,17 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	/**
 	 * Set the type of address to which messages are being sent, TOPIC or QUEUE.
 	 * For {@literal MessageProtocol#RR} the type will always be QUEUE.
+	 *
+	 * @ff.default {@literal QUEUE}
 	 */
 	public void setAddressType(AddressType addressType) {
 		this.addressType = addressType;
 	}
 
 	/**
-	 * Set the address (name of the queue or topic) on which to send messages
+	 * Set the address (name of the queue or topic) on which to send messages.
+	 *
+	 * @ff.mandatory
 	 */
 	public void setAddress(String address) {
 		this.address = address;
