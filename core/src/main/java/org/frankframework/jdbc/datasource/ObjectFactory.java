@@ -21,6 +21,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -108,7 +109,7 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 				throw new IllegalStateException("unable to create resource ["+name+"] found in locator [" + objectLocator + "]", e);
 			}
 		}
-		throw new IllegalStateException("unable to find resource ["+name+"] using locators " + objectLocators);
+		throw new NoSuchElementException("unable to find resource ["+name+"] using locators " + objectLocators);
 	}
 
 	@Override
