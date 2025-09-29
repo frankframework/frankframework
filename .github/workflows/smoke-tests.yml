@@ -4,7 +4,7 @@
 name: Java partial Maven build (aka Smoke-Tests)
 
 env:
-  PROFILES: frankframework,codecoverage,ci
+  PROFILES: frankframework,ci,smoketests
   USE_PROPRIETARY: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'frankframework') && github.actor != 'dependabot[bot]' }}
 
 on:
@@ -72,23 +72,6 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: ${{ matrix.java }}
-
-    - name: Install pnpm
-      uses: pnpm/action-setup@v4
-      with:
-        version: 10
-        run_install: false
-
-    - name: Set up Node.js 22.x
-      uses: actions/setup-node@v4
-      with:
-        node-version: 22.x
-        cache: pnpm
-        cache-dependency-path: '**/pnpm-lock.yaml'
-
-    - name: Install dependencies
-      working-directory: ./console/frontend/src/main/frontend/
-      run: pnpm install --frozen-lockfile
 
     - name: Create Maven settings.xml file
       if: ${{ env.USE_PROPRIETARY == 'true' }}

@@ -18,4 +18,13 @@
 		<module>war</module>
 	</modules>
 
+	<profiles>
+		<profile>
+			<id>smoketests</id>
+			<modules>
+				<module>backend</module>
+				<module>war</module>
+			</modules>
+		</profile>
+	</profiles>
 </project>
