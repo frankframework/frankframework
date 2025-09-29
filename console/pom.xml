@@ -20,7 +20,7 @@
 
 	<profiles>
 		<profile>
-			<id>smoketests</id>
+			<id>skip-console-frontend</id>
 			<modules>
 				<module>backend</module>
 				<module>war</module>

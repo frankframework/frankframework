@@ -4,7 +4,7 @@
 name: Java partial Maven build (aka Smoke-Tests)
 
 env:
-  PROFILES: frankframework,ci,smoketests
+  PROFILES: frankframework,ci,skip-console-frontend
   USE_PROPRIETARY: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'frankframework') && github.actor != 'dependabot[bot]' }}
 
 on:
