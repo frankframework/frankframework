@@ -1371,12 +1371,15 @@
 					<plugin>
 						<groupId>org.sonatype.central</groupId>
 						<artifactId>central-publishing-maven-plugin</artifactId>
-						<version>0.8.0</version>
+						<version>0.9.0</version>
 						<extensions>true</extensions>
 						<configuration>
-							<autoPublish>false</autoPublish><!-- Don't release the build directly after it's been published to Central (staging). -->
+							<!-- Don't release the build directly after it's been published to Central (staging). -->
+							<autoPublish>false</autoPublish>
+							<!-- Central OSS Server -->
 							<publishingServerId>ossrh</publishingServerId>
-							<waitUntil>validated</waitUntil><!-- Wait until the deployment bundle has been uploaded and validated. -->
+							<!-- Wait until the deployment bundle has been uploaded and validated. -->
+							<waitUntil>validated</waitUntil>
 						</configuration>
 					</plugin>
 				</plugins>
