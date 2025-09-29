@@ -36,10 +36,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+
+import com.ibm.icu.text.CharsetDetector;
+import com.ibm.icu.text.CharsetMatch;
 
 import lombok.Getter;
 
@@ -47,6 +51,8 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.Default;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.PathMessage;
+import org.frankframework.util.MessageUtils;
+import org.frankframework.util.XmlEncodingUtils;
 
 /**
  * {@link IWritableFileSystem FileSystem} representation of the local filesystem.
@@ -313,7 +319,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 			String attrSpec = "user:" + String.join(",", attributeNames);
 			Map<String, Object> result = new LinkedHashMap<>();
 			Files.readAttributes(file, attrSpec)
-					.forEach((name, value) -> result.put(name, readAttributeValue(value)));
+					.forEach((name, value) -> result.put(name, readAttributeValue(file, name, value)));
 			return result;
 		} catch (UnsupportedOperationException e) {
 			return null;
@@ -322,14 +328,34 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		}
 	}
 
-	private String readAttributeValue(Object attributeValue) {
-		if (attributeValue instanceof byte[] bytes) {
-			return new String(bytes);
-		} else if (attributeValue instanceof ByteBuffer buffer) {
-			return new String((buffer).array());
-		} else {
-			return attributeValue.toString();
+	private @Nonnull String readAttributeValue(@Nonnull Path file, @Nonnull String name, @Nonnull Object attributeValue) {
+		try {
+			if (attributeValue instanceof byte[] bytes) {
+				return bytesToString(bytes);
+			} else if (attributeValue instanceof ByteBuffer buffer) {
+				return bytesToString(buffer.array());
+			} else {
+				return attributeValue.toString();
+			}
+		} catch (Exception e) {
+			log.warn(() -> "Error parsing file attribute [%s] on file [%s]:".formatted(name, file), e);
+			return "<attribute not readable>";
 		}
+	}
+
+	@Nonnull
+	private static String bytesToString(@Nonnull byte[] bytes) {
+		CharsetDetector detector = new CharsetDetector();
+		detector.setText(bytes);
+		CharsetMatch match = detector.detect();
+		Charset charset;
+		if (match.getConfidence() >= MessageUtils.CHARSET_CONFIDENCE_LEVEL) {
+			charset = Charset.forName(match.getName());
+		} else {
+			// If confidence was low, use system default charset
+			charset = Charset.defaultCharset();
+		}
+		return XmlEncodingUtils.replaceNonValidXmlCharacters(new String(bytes, charset), '?', false, true);
 	}
 
 	@Override
