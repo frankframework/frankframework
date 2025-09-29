@@ -1146,32 +1146,21 @@
 						</executions>
 					</plugin>
 					<plugin>
-						<groupId>org.sonatype.plugins</groupId>
-						<artifactId>nexus-staging-maven-plugin</artifactId>
-						<version>1.6.13</version>
+						<groupId>org.sonatype.central</groupId>
+						<artifactId>central-publishing-maven-plugin</artifactId>
+						<version>0.9.0</version>
 						<extensions>true</extensions>
 						<configuration>
-							<serverId>ossrh</serverId>
-							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
-							<autoReleaseAfterClose>false</autoReleaseAfterClose>
+							<!-- Don't release the build directly after it's been published to Central (staging). -->
+							<autoPublish>false</autoPublish>
+							<!-- Central OSS Server -->
+							<publishingServerId>ossrh</publishingServerId>
+							<!-- Wait until the deployment bundle has been uploaded and validated. -->
+							<waitUntil>validated</waitUntil>
 						</configuration>
 					</plugin>
 				</plugins>
 			</build>
-			<distributionManagement>
-				<repository>
-					<id>ossrh</id>
-					<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-				</repository>
-				<snapshotRepository>
-					<id>ossrh</id>
-					<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-				</snapshotRepository>
-				<site>
-					<id>www.ibissource.org</id>
-					<url>file:target/site-deploy</url>
-				</site>
-			</distributionManagement>
 		</profile>
 		<profile>
 			<id>ibissource</id>
