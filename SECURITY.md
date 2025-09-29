@@ -28,14 +28,11 @@ best practices and perform security testing before releasing your application.
 | ------- | -------------------------- | ------------------------ | ----------- | ---------------- |
 | latest  | :white_check_mark:         |:white_check_mark:        | Java SE 17  |                  |
 | 9.2.x   | :white_check_mark:         |:white_check_mark:        | Java SE 17  | Jul 9, 2025      |
-| 9.1.x   | :x:                        |:white_check_mark:        | Java SE 17  | Apr 10, 2025     |
-| 9.0.x   | :eight_pointed_black_star: |:white_check_mark:        | Java SE 17  | Jan 06, 2025     |
+| 9.1.x   | :x:                        |:eight_pointed_black_star:| Java SE 17  | Apr 10, 2025     |
+| 9.0.x   | :white_check_mark:         |:white_check_mark:        | Java SE 17  | Jan 06, 2025     |
 | 8.3.x   | :x:                        |:eight_pointed_black_star:| Java SE 17  | Oct 10, 2024     |
-| 8.2.x   | :x:                        |:x:                       | Java SE 17  | Jul 11, 2024     |
-| 8.1.x   | :x:                        |:x:                       | Java SE 17  | Apr 5, 2024      |
-| 8.0.x   | :x:                        |:x:                       | Java SE 11  | Dec 23, 2023     |
+| Older   | :x:                        |:x:                       |             |                  |
 | 7.9.x   | :x:                        |:eight_pointed_black_star:| Java SE 8   | Dec 14, 2023     |
-| < 7.8   | :x:                        |:x:                       | Java SE 8   | Apr 5, 2023      |
 
 ### Legend
 
@@ -44,7 +41,7 @@ best practices and perform security testing before releasing your application.
 :eight_pointed_black_star: Only major CVE's and bugs will be patched  
 
 
-Features will only be added to the latest version. Bug fixes and security updates will happen in the last major and minor versions.  
+\*) Features will only be added to the latest version. Bug fixes and security updates will happen in the last major and minor versions.  
 Please always update to the latest available release. CVE's are solved on a best-effort basis, on versions not older then 1 year after the initial release date (specified in the table above). For more information see our [Security monitoring procedure](https://github.com/frankframework/frankframework/wiki/Security-monitoring-procedure).
 
 ## Reporting a Vulnerability
