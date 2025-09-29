@@ -98,13 +98,3 @@ jobs:
       with:
         name: java${{ matrix.java }}_Surefire
         path: ${{ github.workspace }}/*/target/surefire-reports/*
-
-    - name: Save cached directories
-      uses: actions/cache/save@v4
-      if: |
-        always() &&
-        (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release') || startsWith(github.ref, 'refs/heads/[0-9]+.[0-9]+-release'))
-      with:
-        path: |
-          ~/.m2/repository
-        key: maven-build-cache
