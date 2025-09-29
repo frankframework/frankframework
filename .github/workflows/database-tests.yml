@@ -4,7 +4,7 @@
 name: Database Tests
 
 env:
-  PROFILES: frankframework,ci
+  PROFILES: frankframework,ci,skip-console-frontend
   USE_PROPRIETARY: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'frankframework') && github.actor != 'dependabot[bot]' }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
   PR_NUMBER: ${{ github.event.number || '' }}
@@ -136,14 +136,3 @@ jobs:
         COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
       run: |
         echo "sha: $COMMIT_SHA"
-
-    - name: Save cached directories
-      uses: actions/cache/save@v4
-      if: |
-        always() &&
-        (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release') || startsWith(github.ref, 'refs/heads/[0-9]+.[0-9]+-release'))
-      with:
-        path: |
-          ~/.m2/repository
-          ~/.sonar/cache
-        key: maven-build-cache
