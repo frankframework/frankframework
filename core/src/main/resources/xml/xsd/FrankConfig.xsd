@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Public FrankDoc XSD, should be used within an IDE to validate a configuration. -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.2.0">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.2.1">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -1565,7 +1565,7 @@
  The generated OpenAPI specifications have &lt;code&gt;servers&lt;/code&gt; and &lt;code&gt;paths&lt;/code&gt; objects and
  therefore they document the full URLs of the provided services.
  &lt;p&gt;
- It is possible to automatically generate eTags over the listener result. This can be controlled by globally 
+ It is possible to automatically generate eTags over the listener result. This can be controlled by globally
  setting the property &lt;code&gt;api.etag.enabled&lt;/code&gt; or by setting the attribute &lt;code&gt;updateEtag="true"&lt;/code&gt;.
  When enabled the listener will respond to the &lt;code&gt;If-Match&lt;/code&gt;, &lt;code&gt;If-None-Match&lt;/code&gt; headers and may return status code 304.
  &lt;p&gt;
@@ -1580,7 +1580,14 @@
  &lt;li&gt;&lt;code&gt;etag.cache.username&lt;/code&gt;&lt;/li&gt;
  &lt;li&gt;&lt;code&gt;etag.cache.password&lt;/code&gt;&lt;/li&gt;
  &lt;li&gt;&lt;code&gt;etag.cache.authalias&lt;/code&gt;&lt;/li&gt;
- &lt;/ul&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;The OPTIONS verb will automatically be handled by the framework.&lt;/p&gt;</xs:documentation>
+ &lt;/ul&gt;
+
+ Custom pages can be added to the console (using a comma separated list, no spaces) with the following property
+ &lt;code&gt;customViews.names=MyApplication&lt;/code&gt;.
+
+ Specify details for each view, the url is either a relative path from the web-content folder or an external url, eq. &lt;code&gt;http://google.com/&lt;/code&gt;.
+ &lt;code&gt;customViews.MyApplication.name=Custom View&lt;/code&gt;
+ &lt;code&gt;customViews.MyApplication.url=myWebapp&lt;/code&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;The OPTIONS verb will automatically be handled by the framework.&lt;/p&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;Its possible to change the URL mapping from /api to /rest (or use both) for easy transitions from the RestListener.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -2171,27 +2178,6 @@
         <xs:complexType>
           <xs:complexContent>
             <xs:extension base="PushingListenerAdapterType">
-              <xs:attribute name="elementRole" type="xs:string" fixed="listener" use="prohibited" />
-            </xs:extension>
-          </xs:complexContent>
-        </xs:complexType>
-      </xs:element>
-      <xs:element name="RestListener">
-        <xs:annotation>
-          <xs:documentation>Listener that allows a Receiver to receive messages as a REST webservice.
- Prepends the configured URI pattern with &lt;code&gt;rest/&lt;/code&gt;. When you are writing a new Frank config, you are recommended
- to use an ApiListener instead. You can find all serviced URI patterns
- in the Frank!Console: main menu item Webservice, heading Available REST Services.
-
- &lt;p&gt;
- Note:
- Servlets' multipart configuration expects a Content-Type of &lt;code&gt;multipart/form-data&lt;/code&gt; (see http://docs.oracle.com/javaee/6/api/javax/servlet/annotation/MultipartConfig.html).
- So do not use other multipart content types like &lt;code&gt;multipart/related&lt;/code&gt;
- &lt;/p&gt;</xs:documentation>
-        </xs:annotation>
-        <xs:complexType>
-          <xs:complexContent>
-            <xs:extension base="RestListenerType">
               <xs:attribute name="elementRole" type="xs:string" fixed="listener" use="prohibited" />
             </xs:extension>
           </xs:complexContent>
@@ -3875,85 +3861,6 @@
     <xs:attributeGroup ref="AbstractJmsListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jms.PullingJmsListener" use="prohibited" />
   </xs:complexType>
-  <xs:complexType name="RestListenerType">
-    <xs:attributeGroup ref="RestListenerCumulativeAttributeGroup" />
-    <xs:attribute name="className" type="xs:string" fixed="org.frankframework.http.RestListener" use="prohibited" />
-  </xs:complexType>
-  <xs:attributeGroup name="RestListenerDeclaredAttributeGroup">
-    <xs:attribute name="uriPattern" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Uri pattern to match, the {uri} part in https://mydomain.com/ibis4something/rest/{uri}, where mydomain.com and ibis4something refer to 'your ibis'.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="method" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Method (e.g. GET or POST) to match</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="etagSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Key of session variable to store etag</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="contentTypeSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Key of Session variable that determines requested content type, overrides produces</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="restPath" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Can be either &lt;code&gt;/rest&lt;/code&gt; or &lt;code&gt;/rest-public&lt;/code&gt; and must correspond with the available RestListenerServlet path(s).</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="authRoles" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Comma separated list of authorization roles which are granted for this rest service Default: IbisWebService,IbisObserver,IbisDataAdmin,IbisAdmin,IbisTester</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="writeToSecLog" type="frankBoolean" />
-    <xs:attribute name="writeSecLogMessage" type="frankBoolean" />
-    <xs:attribute name="retrieveMultipart" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Indicates whether the parts of a multipart entity should be retrieved and put in session keys. This can only be done once! Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="consumes">
-      <xs:annotation>
-        <xs:documentation>Mediatype (e.g. XML, JSON, TEXT) the RestServiceDispatcher receives as input Default: XML</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="MediaTypesAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="produces">
-      <xs:annotation>
-        <xs:documentation>Mediatype (e.g. XML, JSON, TEXT) the RestServiceDispatcher sends as output, if set to json the ibis will automatically try to convert the xml message Default: XML</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="MediaTypesAttributeValuesType variableRef" />
-      </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="validateEtag" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If set to true the ibis will automatically validate and process etags Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="generateEtag" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If set to true the ibis will automatically create an etag Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="automaticallyTransformToAndFromJson" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Uses an JsonPipe to convert the json-input to xml, and xml-output to json.
- Use with caution, a properly configured Input/Output-wrapper can do much more and is more robust! Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="RestListenerCumulativeAttributeGroup">
-    <xs:attributeGroup ref="RestListenerDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="PushingListenerAdapterDeclaredAttributeGroup" />
-  </xs:attributeGroup>
   <xs:complexType name="Samba2ListenerType">
     <xs:attributeGroup ref="Samba2ListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.Samba2Listener" use="prohibited" />
@@ -16274,9 +16181,9 @@
     </xs:attribute>
     <xs:attribute name="checkRoles" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Set to &lt;code&gt;true&lt;/code&gt; when the pipeline is triggered by a user (e.g. using an http based listener
- that will add a securityHandler session key) and you don't want the listener to check whether the user
- is autorised and/or you want the enforce the roles as configured for the Ladybug Default: false</xs:documentation>
+        <xs:documentation>Set this to &lt;code&gt;true&lt;/code&gt; if you wish to enforce the
+ user roles (e.g. when using an HTTP based listener).
+ When set to false the Ladybug is run anonymously. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="enableReportGenerator" type="frankBoolean">
@@ -19906,13 +19813,6 @@
       <xs:enumeration value="STRING" />
       <xs:enumeration value="CLOB" />
       <xs:enumeration value="BLOB" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="MediaTypesAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="XML" />
-      <xs:enumeration value="JSON" />
-      <xs:enumeration value="TEXT" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="Samba2AuthTypeAttributeValuesType">

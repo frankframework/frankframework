@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Compatibility XSD, internal use only! -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.2.0">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.2.1">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -13556,9 +13556,9 @@
     </xs:attribute>
     <xs:attribute name="checkRoles" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>Set to &lt;code&gt;true&lt;/code&gt; when the pipeline is triggered by a user (e.g. using an http based listener
- that will add a securityHandler session key) and you don't want the listener to check whether the user
- is autorised and/or you want the enforce the roles as configured for the Ladybug Default: false</xs:documentation>
+        <xs:documentation>Set this to &lt;code&gt;true&lt;/code&gt; if you wish to enforce the
+ user roles (e.g. when using an HTTP based listener).
+ When set to false the Ladybug is run anonymously. Default: false</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="enableReportGenerator" type="frankBoolean">
