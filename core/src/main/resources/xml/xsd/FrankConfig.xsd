@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.3.2">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="8.3.3">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -231,14 +231,9 @@
         <xs:union memberTypes="CheckForDuplicatesMethodAttributeValuesType variableRef" />
       </xs:simpleType>
     </xs:attribute>
-    <xs:attribute name="maxDeliveries" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>The maximum delivery count after which to stop processing the message (only for listeners that know the delivery count of received messages). If -1 the delivery count is ignored Default: 5</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="maxRetries" type="frankInt">
       <xs:annotation>
-        <xs:documentation>The number of times a processing attempt is automatically retried after an exception is caught or rollback is experienced. If &lt;code&gt;maxRetries &amp;lt; 0&lt;/code&gt; the number of attempts is infinite Default: 1</xs:documentation>
+        <xs:documentation>The number of times a processing attempt is automatically retried after an exception is caught or rollback is experienced. If &lt;code&gt;maxRetries &amp;lt; 0&lt;/code&gt; the number of attempts is infinite Default: 1, or 3 for JMS Listeners or other listeners implementing IKnowsDeliveryCount.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="processResultCacheSize" type="frankInt">
@@ -248,12 +243,12 @@
     </xs:attribute>
     <xs:attribute name="correlationIDXPath" type="xs:string">
       <xs:annotation>
-        <xs:documentation>XPath expression to extract correlationid from message</xs:documentation>
+        <xs:documentation>XPath expression to extract correlationId from message</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="correlationIDNamespaceDefs" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Namespace defintions for correlationIDXPath. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions</xs:documentation>
+        <xs:documentation>Namespace definitions for correlationIDXPath. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="correlationIDStyleSheet" type="xs:string">
@@ -268,7 +263,7 @@
     </xs:attribute>
     <xs:attribute name="labelNamespaceDefs" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Namespace defintions for labelXPath. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions</xs:documentation>
+        <xs:documentation>Namespace definitions for labelXPath. Must be in the form of a comma or space separated list of &lt;code&gt;prefix=namespaceuri&lt;/code&gt;-definitions</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="labelStyleSheet" type="xs:string">
@@ -323,6 +318,32 @@
     <xs:attribute name="numberOfExceptionsCaughtWithoutMessageBeingReceivedThreshold" type="frankInt">
       <xs:annotation>
         <xs:documentation>Number of connection attempts to put the adapter in warning status Default: 5</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maxBackoffDelay" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>After a message has an error in processing, there is a small delay before processing the next
+ message before processing the next message or retrying the failed message.
+ This is so that errors coming from external systems so not overload those external systems.
+ &lt;p&gt;
+     The delay doubles after every failure, until the maximum set here is reached. See:
+     &lt;a href="https://en.wikipedia.org/wiki/Exponential_backoff"&gt;https://en.wikipedia.org/wiki/Exponential_backoff&lt;/a&gt;.
+ &lt;/p&gt;
+ &lt;p&gt;
+     If the transaction timeout can be determined, then the backoff-delay is capped by half the transaction timeout to
+     avoid messages automatically timing out.
+ &lt;/p&gt;
+ &lt;p&gt;
+     There is no backoff-time after a message is successfully processed. After a message is successfully processed,
+     the actual backoff-time is reset to 1 second.
+ &lt;/p&gt;
+ &lt;p&gt;
+     If set to 0, then there is no delay after messages that had an error.
+ &lt;/p&gt;
+ &lt;p&gt;
+     If this is not set on the receiver, then a default is taken from the configuration property `${receiver.defaultMaxBackoffDelay}` which
+     defaults to 60 seconds.
+ &lt;/p&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="transactionTimeout" />
@@ -21611,7 +21632,7 @@
   </xs:attribute>
   <xs:attribute name="transactionTimeout" type="frankInt">
     <xs:annotation>
-      <xs:documentation>Timeout (in seconds) of transaction started to process a message. Default: &lt;code&gt;0&lt;/code&gt; (use system default)</xs:documentation>
+      <xs:documentation>Set transactionTimeout in seconds. Default: &lt;code&gt;0&lt;/code&gt; (use system default)</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="transactionAttribute">
