@@ -125,7 +125,7 @@
 
 		<!-- Some test dependency versions -->
 		<mockito.version>5.20.0</mockito.version>
-		<junit.version>5.13.4</junit.version>
+		<junit.version>5.14.0</junit.version>
 	</properties>
 
 	<dependencyManagement>
