@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.frankframework.jta.narayana;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Properties;
 
 import javax.naming.NamingException;
@@ -29,6 +30,7 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.jndi.JndiTemplate;
 
 import com.arjuna.ats.arjuna.common.MetaObjectStoreEnvironmentBean;
+import com.arjuna.ats.arjuna.common.ObjectStoreEnvironmentBean;
 import com.arjuna.ats.arjuna.exceptions.ObjectStoreException;
 import com.arjuna.ats.internal.arjuna.objectstore.jdbc.JDBCStore;
 import com.arjuna.common.internal.util.propertyservice.BeanPopulator;
@@ -40,7 +42,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.JndiContextPrefixFactory;
-import org.frankframework.jdbc.datasource.DataSourceFactory;
+import org.frankframework.jdbc.datasource.NonTransactionalDataSourceFactory;
 import org.frankframework.jdbc.datasource.PoolingDataSourceFactory;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.SpringUtils;
@@ -88,13 +90,25 @@ public class NarayanaConfigurationBean implements InitializingBean, ApplicationC
 
 		// Set/Update the JdbcAccess value
 		final MetaObjectStoreEnvironmentBean jdbcStoreEnvironment = BeanPopulator.getDefaultInstance(MetaObjectStoreEnvironmentBean.class);
+		log.info("Configuring Narayana Transaction Manager with object store implementation [{}]", jdbcStoreEnvironment.getObjectStoreType());
 		if(JDBCStore.class.getCanonicalName().equals(jdbcStoreEnvironment.getObjectStoreType())) {
-			jdbcStoreEnvironment.setJdbcDataSource(getObjectStoreDataSource());
-
+			DataSource objectStoreDataSource = getObjectStoreDataSource();
+			setJdbcDataSource(jdbcStoreEnvironment, objectStoreDataSource);
 			String tablePrefix = AppConstants.getInstance().getString("transactionmanager.narayana.objectStoreTablePrefix", null);
 			if (StringUtils.isNotEmpty(tablePrefix)) {
 				jdbcStoreEnvironment.setTablePrefix(tablePrefix + "_");
 			}
+		}
+	}
+
+	private static void setJdbcDataSource(MetaObjectStoreEnvironmentBean jdbcStoreEnvironment, DataSource objectStoreDataSource) {
+		jdbcStoreEnvironment.setJdbcDataSource(objectStoreDataSource);
+
+		// Necessary workaround for the fact that the MetaObjectStoreEnvironmentBean doesn't set the JDBC DataSource on
+		// all instances it wraps around. So we have to manually get those instances and set it.
+		for (String name: List.of("", "stateStore", "communicationStore")) {
+			ObjectStoreEnvironmentBean objectStoreEnvironmentBean = BeanPopulator.getNamedInstance(ObjectStoreEnvironmentBean.class, name.isEmpty() ? null : name);
+			objectStoreEnvironmentBean.setJdbcDataSource(objectStoreDataSource);
 		}
 	}
 
@@ -113,11 +127,10 @@ public class NarayanaConfigurationBean implements InitializingBean, ApplicationC
 			throw new ObjectStoreException("no datasource name provided, please set property [transactionmanager.narayana.objectStoreDatasource]");
 		}
 		try {
-			DataSourceFactory plainDataSourceFactory = SpringUtils.createBean(applicationContext);
+			NonTransactionalDataSourceFactory plainDataSourceFactory = SpringUtils.createBean(applicationContext);
 			DataSource dataSource = plainDataSourceFactory.getDataSource(objectStoreDatasource);
 			if (dataSource != null) {
-				boolean isPooled = PoolingDataSourceFactory.isPooledDataSource(dataSource);
-				log.info("found Narayana ObjectStoreDatasource [{}] in resources.yml, pooled: [{}]", dataSource, isPooled);
+				log.info("found Narayana ObjectStoreDatasource [{}] in resources.yml:", dataSource);
 				return dataSource;
 			}
 		} catch (Exception e) {
