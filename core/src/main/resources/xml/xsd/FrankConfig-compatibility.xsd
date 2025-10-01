@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.0.1">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.0.2">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -11777,7 +11777,16 @@
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.api.ApiStreamPipe" />
   </xs:complexType>
   <xs:attributeGroup name="ApiStreamPipeDeclaredAttributeGroup">
-    <xs:attribute name="jmsRealm" type="xs:string" />
+    <xs:attribute name="datasourceName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>JNDI name of datasource to be used, can be configured via jmsRealm, too Default: &lt;code&gt;jdbc.datasource.default&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="jmsRealm" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>loads JNDI (and other) properties from a JmsRealm</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="ApiStreamPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="ApiStreamPipeDeclaredAttributeGroup" />
