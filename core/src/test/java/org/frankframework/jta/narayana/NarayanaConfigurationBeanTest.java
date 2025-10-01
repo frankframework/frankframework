@@ -23,6 +23,9 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionStatus;
 import org.springframework.transaction.support.DefaultTransactionDefinition;
 
+import com.arjuna.ats.arjuna.common.MetaObjectStoreEnvironmentBean;
+import com.arjuna.common.internal.util.propertyservice.BeanPopulator;
+
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.testutil.TestAppender;
@@ -35,16 +38,27 @@ import org.frankframework.util.AppConstants;
 class NarayanaConfigurationBeanTest {
 
 	private Path txLogPath;
+	private MetaObjectStoreEnvironmentBean jdbcStoreEnvironment;
+	private String objectStoreType;
 
 	@BeforeEach
 	void setUp() {
 		// Make sure that we don't re-use an existing TestConfiguration
 		TransactionManagerType.NARAYANA.closeConfigurationContext();
 		AppConstants.removeInstance();
+
+		// Workarounds for the fact that Narayana uses a lot of JVM-global instances that get reused
+		// across tests because they cannot be destroyed.
+		jdbcStoreEnvironment = BeanPopulator.getDefaultInstance(MetaObjectStoreEnvironmentBean.class);
+		objectStoreType = jdbcStoreEnvironment.getObjectStoreType();
 	}
 
 	@AfterEach
 	void tearDown() {
+		// Workarounds for the fact that Narayana uses a lot of JVM-global instances that get reused
+		// across tests because they cannot be destroyed.
+		jdbcStoreEnvironment.setObjectStoreType(objectStoreType);
+
 		AppConstants.clearGlobalProperty("transactionmanager.narayana.objectStoreType");
 		AppConstants.clearGlobalProperty("transactionmanager.narayana.objectStoreDatasource");
 		TransactionManagerType.NARAYANA.closeConfigurationContext();
@@ -64,6 +78,10 @@ class NarayanaConfigurationBeanTest {
 		// Arrange
 		AppConstants.setGlobalProperty("transactionmanager.narayana.objectStoreType", "com.arjuna.ats.internal.arjuna.objectstore.jdbc.JDBCStore");
 		AppConstants.setGlobalProperty("transactionmanager.narayana.objectStoreDatasource", "jdbc/H2-txlog");
+
+		// Workarounds for the fact that Narayana uses a lot of JVM-global instances that get reused
+		// across tests because they cannot be destroyed.
+		jdbcStoreEnvironment.setObjectStoreType("com.arjuna.ats.internal.arjuna.objectstore.jdbc.JDBCStore");
 
 		try (TestAppender testAppender = TestAppender.newBuilder().build()) {
 
