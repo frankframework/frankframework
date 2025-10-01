@@ -15,6 +15,8 @@
 */
 package org.frankframework.extensions.mqtt;
 
+import jakarta.annotation.Nonnull;
+
 import org.frankframework.jdbc.datasource.FrankResource;
 import org.frankframework.jdbc.datasource.ObjectFactory;
 
@@ -24,8 +26,9 @@ public class MqttClientFactoryFactory extends ObjectFactory<MqttClientFactory, O
 		super(null, "mqtt", "MQTT");
 	}
 
+	@Nonnull
 	@Override
-	protected MqttClientFactory augment(Object object, String objectName) {
+	protected MqttClientFactory augment(@Nonnull Object object, @Nonnull String objectName) {
 		if (object instanceof FrankResource resource) {
 			return new MqttClientFactory(objectName, resource);
 		}

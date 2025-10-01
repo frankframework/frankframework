@@ -129,6 +129,9 @@ public class NarayanaJtaTransactionManager extends AbstractStatusRecordingTransa
 			}
 			return recoveryStoreEmpty();
 		} catch (Exception e) {
+			if (e instanceof InterruptedException) {
+				Thread.currentThread().interrupt();
+			}
 			log.warn("could not shutdown transaction manager", e);
 			return false;
 		}
@@ -153,8 +156,8 @@ public class NarayanaJtaTransactionManager extends AbstractStatusRecordingTransa
 	}
 
 	private boolean isNotBlankArray(byte[] arr) {
-		for(int i=0; i<arr.length; i++) {
-			if (arr[i]!=0) {
+		for (byte b : arr) {
+			if (b != 0) {
 				return true;
 			}
 		}

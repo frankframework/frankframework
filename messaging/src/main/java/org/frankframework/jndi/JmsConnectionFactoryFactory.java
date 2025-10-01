@@ -18,6 +18,7 @@ package org.frankframework.jndi;
 import java.util.List;
 import java.util.Properties;
 
+import jakarta.annotation.Nonnull;
 import jakarta.jms.ConnectionFactory;
 
 import org.frankframework.jdbc.datasource.ObjectFactory;
@@ -43,8 +44,9 @@ public class JmsConnectionFactoryFactory extends ObjectFactory<ConnectionFactory
 		return cf;
 	}
 
+	@Nonnull
 	@Override
-	protected final ConnectionFactory augment(ConnectionFactory connectionFactory, String objectName) {
+	protected final ConnectionFactory augment(@Nonnull ConnectionFactory connectionFactory, @Nonnull String objectName) {
 		return new TransactionalMetadataAwareConnectionFactoryProxy(augmentConnectionFactory(connectionFactory, objectName));
 	}
 
@@ -63,6 +65,7 @@ public class JmsConnectionFactoryFactory extends ObjectFactory<ConnectionFactory
 		return getObjectNames();
 	}
 
+	@Nonnull
 	@Override
 	protected ObjectInfo toObjectInfo(String name) {
 		ConnectionFactory cf = getConnectionFactory(name);

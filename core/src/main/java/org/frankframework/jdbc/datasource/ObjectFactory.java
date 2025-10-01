@@ -74,7 +74,7 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	 * Allows the originally created object to be mutated to another object. Useful to generate an object from a filled DTO.
 	 */
 	@SuppressWarnings({ "java:S1172", "unchecked" })
-	protected O augment(P object, String objectName) {
+	protected @Nonnull O augment(@Nonnull P object, @Nonnull String objectName) {
 		return (O) object;
 	}
 
@@ -84,7 +84,7 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	 *
 	 * When using a JNDI environment it allows initial properties to use for JNDI lookups.
 	 */
-	protected final O get(String name, Properties environment) {
+	protected final @Nonnull O get(String name, Properties environment) {
 		String nameWithResourcePrefix = Strings.CS.prependIfMissing(name, resourcePrefix + "/");
 		return objects.computeIfAbsent(nameWithResourcePrefix, k -> compute(k, environment));
 	}
@@ -93,11 +93,11 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	 * Add and augment an Object to this factory so it can be used without the need of a lookup.
 	 * Should only be called during jUnit Tests or when registering an Object through Spring. Never through a lookup.
 	 */
-	public O add(P object, String name) {
+	public @Nonnull O add(P object, String name) {
 		return objects.computeIfAbsent(name, k -> augment(object, name));
 	}
 
-	private O compute(String name, Properties environment) {
+	private @Nonnull O compute(String name, Properties environment) {
 		for(IObjectLocator objectLocator : objectLocators) {
 			try {
 				P object = objectLocator.lookup(name, environment, lookupClass);
@@ -119,27 +119,27 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 		}
 	}
 
-	protected List<String> getObjectNames() {
+	protected @Nonnull List<String> getObjectNames() {
 		List<String> names = new ArrayList<>(objects.keySet());
 		names.sort(Comparator.naturalOrder()); // AlphaNumeric order
 		return Collections.unmodifiableList(names);
 	}
 
-	public List<ObjectInfo> getObjectInfo() {
+	public @Nonnull List<ObjectInfo> getObjectInfo() {
 		return getObjectNames().stream().map(this::toObjectInfo).toList();
 	}
 
 	/**
 	 * Mapping from <O> to a information object, used for logging and console actions.
 	 */
-	protected ObjectInfo toObjectInfo(String name) {
+	protected @Nonnull ObjectInfo toObjectInfo(String name) {
 		Object obj = get(name, null);
 		return new ObjectInfo(name, StringUtil.reflectionToString(obj), null);
 	}
 
 	public record ObjectInfo (String name, String info, String connectionPoolProperties) {
 		@Override
-		public String toString() {
+		public @Nonnull String toString() {
 			return "Resource [%s] %s, POOL: %s".formatted(name, info, connectionPoolProperties);
 		}
 	}
