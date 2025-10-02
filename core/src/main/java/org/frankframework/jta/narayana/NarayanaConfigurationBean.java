@@ -20,14 +20,12 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.Properties;
 
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.jndi.JndiTemplate;
 
 import com.arjuna.ats.arjuna.common.MetaObjectStoreEnvironmentBean;
 import com.arjuna.ats.arjuna.common.ObjectStoreEnvironmentBean;
@@ -41,9 +39,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.core.JndiContextPrefixFactory;
 import org.frankframework.jdbc.datasource.NonTransactionalDataSourceFactory;
-import org.frankframework.jdbc.datasource.PoolingDataSourceFactory;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.SpringUtils;
 
@@ -129,26 +125,10 @@ public class NarayanaConfigurationBean implements InitializingBean, ApplicationC
 		try {
 			NonTransactionalDataSourceFactory plainDataSourceFactory = SpringUtils.createBean(applicationContext);
 			DataSource dataSource = plainDataSourceFactory.getDataSource(objectStoreDatasource);
-			if (dataSource != null) {
-				log.info("found Narayana ObjectStoreDatasource [{}] in resources.yml:", dataSource);
-				return dataSource;
-			}
-		} catch (Exception e) {
-			log.debug(() -> "Cannot find ObjectStore Datasource [%s] in resources, will search JNDI fallback".formatted(objectStoreDatasource), e);
-		}
-
-		// Fallback JNDI context for locating the data-source.
-		JndiContextPrefixFactory jndiContextFactory = applicationContext.getBean("jndiContextPrefixFactory", JndiContextPrefixFactory.class);
-		String jndiPrefix = jndiContextFactory.getContextPrefix();
-		String fullJndiName = StringUtils.isNotEmpty(jndiPrefix) ? jndiPrefix + objectStoreDatasource : objectStoreDatasource;
-		try {
-			JndiTemplate locator = new JndiTemplate();
-			DataSource dataSource = locator.lookup(fullJndiName, DataSource.class);
-			boolean isPooled = PoolingDataSourceFactory.isPooledDataSource(dataSource);
-			log.info("found Narayana ObjectStoreDatasource [{}] in JNDI, pooled: [{}]", dataSource, isPooled);
+			log.info("found Narayana ObjectStoreDatasource [{}] in resources.yml:", dataSource);
 			return dataSource;
-		} catch (NamingException e) {
-			throw new ObjectStoreException("unable to find datasource [%s] in resources or JNDI fallback".formatted(objectStoreDatasource), e);
+		} catch (Exception e) {
+			throw new ObjectStoreException("Cannot find ObjectStore Datasource [%s]".formatted(objectStoreDatasource), e);
 		}
 	}
 }
