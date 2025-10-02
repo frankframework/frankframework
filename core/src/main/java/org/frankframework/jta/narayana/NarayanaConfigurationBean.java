@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,21 +17,20 @@ package org.frankframework.jta.narayana;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Properties;
 
-import javax.naming.NamingException;
 import javax.sql.DataSource;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.jndi.JndiTemplate;
 
 import com.arjuna.ats.arjuna.common.MetaObjectStoreEnvironmentBean;
+import com.arjuna.ats.arjuna.common.ObjectStoreEnvironmentBean;
 import com.arjuna.ats.arjuna.exceptions.ObjectStoreException;
 import com.arjuna.ats.internal.arjuna.objectstore.jdbc.JDBCStore;
-import com.arjuna.ats.internal.arjuna.objectstore.jdbc.accessors.DataSourceJDBCAccess;
 import com.arjuna.common.internal.util.propertyservice.BeanPopulator;
 import com.arjuna.common.util.propertyservice.PropertiesFactory;
 import com.arjuna.common.util.propertyservice.PropertiesFactoryStax;
@@ -40,8 +39,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.core.JndiContextPrefixFactory;
-import org.frankframework.jdbc.datasource.PoolingDataSourceFactory;
+import org.frankframework.jdbc.datasource.NonTransactionalDataSourceFactory;
 import org.frankframework.util.AppConstants;
 
 @Log4j2
@@ -87,9 +85,10 @@ public class NarayanaConfigurationBean implements InitializingBean, ApplicationC
 
 		// Set/Update the JdbcAccess value
 		final MetaObjectStoreEnvironmentBean jdbcStoreEnvironment = BeanPopulator.getDefaultInstance(MetaObjectStoreEnvironmentBean.class);
+		log.info("Configuring Narayana Transaction Manager with object store implementation [{}]", jdbcStoreEnvironment.getObjectStoreType());
 		if(JDBCStore.class.getCanonicalName().equals(jdbcStoreEnvironment.getObjectStoreType())) {
-			jdbcStoreEnvironment.setJdbcAccess(getObjectStoreJndiName());
-
+			DataSource objectStoreDataSource = getObjectStoreDataSource();
+			setJdbcDataSource(jdbcStoreEnvironment, objectStoreDataSource);
 			String tablePrefix = AppConstants.getInstance().getString("transactionmanager.narayana.objectStoreTablePrefix", null);
 			if (StringUtils.isNotEmpty(tablePrefix)) {
 				jdbcStoreEnvironment.setTablePrefix(tablePrefix + "_");
@@ -97,35 +96,38 @@ public class NarayanaConfigurationBean implements InitializingBean, ApplicationC
 		}
 	}
 
+	private static void setJdbcDataSource(MetaObjectStoreEnvironmentBean jdbcStoreEnvironment, DataSource objectStoreDataSource) {
+		jdbcStoreEnvironment.setJdbcDataSource(objectStoreDataSource);
+
+		// Necessary workaround for the fact that the MetaObjectStoreEnvironmentBean doesn't set the JDBC DataSource on
+		// all instances it wraps around. So we have to manually get those instances and set it.
+		for (String name: List.of("", "stateStore", "communicationStore")) {
+			ObjectStoreEnvironmentBean objectStoreEnvironmentBean = BeanPopulator.getNamedInstance(ObjectStoreEnvironmentBean.class, name.isEmpty() ? null : name);
+			objectStoreEnvironmentBean.setJdbcDataSource(objectStoreDataSource);
+		}
+	}
+
 	/**
-	 * Tests if we can find a (valid) DataSource. Takes ApplicationServer specific jndiPrefixes into account.
-	 * If the DataSource is valid it will be returned with the {@link PoolingDataSourceJDBCAccess} prefix.
+	 * Find the datasource for the Narayano Object Store, specified by the property {@code transactionmanager.narayana.objectStoreDatasource}.
+	 * The datasource is first looked up in the {@code resources.yml} file, and if it cannot be found there it
+	 * will be looked up in the JNDI.
+	 * Since the datasource is used by Narayana internally, it cannot be an XA-Only datasource.
 	 */
-	private String getObjectStoreJndiName() throws ObjectStoreException {
+	private DataSource getObjectStoreDataSource() throws ObjectStoreException {
+		if (applicationContext == null) {
+			throw new ObjectStoreException("no ApplicationContext to retrieve DataSource from");
+		}
 		String objectStoreDatasource = AppConstants.getInstance().getProperty("transactionmanager.narayana.objectStoreDatasource");
 		if (StringUtils.isBlank(objectStoreDatasource)) {
 			throw new ObjectStoreException("no datasource name provided, please set property [transactionmanager.narayana.objectStoreDatasource]");
 		}
-
-		if (applicationContext == null) {
-			throw new ObjectStoreException("no ApplicationContext to retrieve DataSource from");
-		}
-
-		JndiContextPrefixFactory jndiContextFactory = applicationContext.getBean("jndiContextPrefixFactory", JndiContextPrefixFactory.class);
-		String jndiPrefix = jndiContextFactory.getContextPrefix();
-		String fullJndiName = StringUtils.isNotEmpty(jndiPrefix) ? jndiPrefix + objectStoreDatasource : objectStoreDatasource;
 		try {
-			JndiTemplate locator = new JndiTemplate();
-			DataSource dataSource = locator.lookup(fullJndiName, DataSource.class);
-			boolean isPooled = PoolingDataSourceFactory.isPooledDataSource(dataSource);
-			log.info("found Narayana ObjectStoreDatasource [{}] pooled [{}]", dataSource, isPooled);
-			if (isPooled) {
-				return DataSourceJDBCAccess.class.getCanonicalName() + ";datasourceName=" + fullJndiName;
-			}
-
-			return PoolingDataSourceJDBCAccess.class.getCanonicalName() + ';' + fullJndiName;
-		} catch (NamingException e) {
-			throw new ObjectStoreException("unable to find datasource", e);
+			NonTransactionalDataSourceFactory plainDataSourceFactory = applicationContext.getBean("nonTransactionalDataSourceFactory", NonTransactionalDataSourceFactory.class);
+			DataSource dataSource = plainDataSourceFactory.getDataSource(objectStoreDatasource);
+			log.info("found Narayana ObjectStoreDatasource [{}] in resources.yml:", dataSource);
+			return dataSource;
+		} catch (Exception e) {
+			throw new ObjectStoreException("Cannot find ObjectStore Datasource [%s]".formatted(objectStoreDatasource), e);
 		}
 	}
 }

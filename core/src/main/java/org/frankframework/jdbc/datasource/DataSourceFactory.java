@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 - 2024 WeAreFrank!
+   Copyright 2021 - 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,30 +15,21 @@
 */
 package org.frankframework.jdbc.datasource;
 
-import java.util.List;
-import java.util.Properties;
-
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
-import org.frankframework.jdbc.IDataSourceFactory;
 import org.frankframework.util.StringUtil;
 
 /**
  * Factory through which (TX-enabled) DataSources can be retrieved.
- * Default implementation, does not use pooling, wraps the DataSource in a TransactionAwareDataSourceProxy.
+ * Default implementation, does not use pooling, wraps the {@link DataSource} in a {@link TransactionAwareDataSourceProxy).
  *
  */
-public class DataSourceFactory extends ObjectFactory<DataSource, CommonDataSource> implements IDataSourceFactory {
-
-	public DataSourceFactory() {
-		super(CommonDataSource.class, "jdbc", "DataSources");
-	}
+public class DataSourceFactory extends NonTransactionalDataSourceFactory {
 
 	/**
 	 * Allow implementing classes to augment the DataSource.
@@ -53,26 +44,13 @@ public class DataSourceFactory extends ObjectFactory<DataSource, CommonDataSourc
 	 * Ensure that the outermost DataSource proxy/wrapper in the chain is the {@link TransactionAwareDataSourceProxy}.
 	 * Otherwise the {@link TransactionAwareDataSourceProxy} will NOT work!
 	 */
+	@Nonnull
 	@Override
-	protected final DataSource augment(CommonDataSource dataSource, String dataSourceName) {
+	protected final DataSource augment(@Nonnull CommonDataSource dataSource, @Nonnull String dataSourceName) {
 		return new TransactionalDbmsSupportAwareDataSourceProxy(augmentDatasource(dataSource, dataSourceName));
 	}
 
-	@Override
-	public DataSource getDataSource(String dataSourceName) {
-		return getDataSource(dataSourceName, null);
-	}
-
-	@Override
-	public DataSource getDataSource(@Nonnull String dataSourceName, @Nullable Properties environment) {
-		return get(dataSourceName, environment);
-	}
-
-	@Override
-	public List<String> getDataSourceNames() {
-		return getObjectNames();
-	}
-
+	@Nonnull
 	@Override
 	protected ObjectInfo toObjectInfo(String name) {
 		DataSource datasource = getDataSource(name);

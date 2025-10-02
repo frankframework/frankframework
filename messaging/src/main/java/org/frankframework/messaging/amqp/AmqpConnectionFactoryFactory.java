@@ -46,8 +46,9 @@ public class AmqpConnectionFactoryFactory extends ObjectFactory<AmqpConnectionFa
 		defaultClient = Client.create(clientOptions);
 	}
 
+	@Nonnull
 	@Override
-	protected AmqpConnectionFactory augment(Object object, String objectName) {
+	protected AmqpConnectionFactory augment(@Nonnull Object object, @Nonnull String objectName) {
 		if (object instanceof FrankResource resource) {
 			return map(resource, objectName);
 		}

@@ -36,8 +36,8 @@
 	<bean id="ResourceObjectLocator" class="org.frankframework.jdbc.datasource.ResourceObjectLocator" />
 	<bean id="JndiObjectLocator" class="org.frankframework.jndi.JndiObjectLocator" />
 
-	<bean id="dataSourceFactory" class="org.frankframework.jdbc.datasource.DataSourceFactory" autowire="byType"/>
-	<bean id="mongoClientFactory" class="org.frankframework.mongodb.MongoClientFactoryFactory" autowire="byType" />
+	<bean id="dataSourceFactory" class="org.frankframework.jdbc.datasource.DataSourceFactory" autowire="byType" primary="true"/>
+	<bean id="mongoClientFactory" class="org.frankframework.mongodb.MongoClientFactoryFactory" autowire="byType" lazy-init="true"/>
 
 	<bean id="jdbcPropertySourceFactory" class="org.frankframework.jdbc.JdbcPropertySourceFactory" />
 

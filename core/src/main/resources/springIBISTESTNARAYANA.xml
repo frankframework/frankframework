@@ -44,7 +44,8 @@
 		</property>
 	</bean>
 
-	<bean id="dataSourceFactory" class="org.frankframework.jta.narayana.NarayanaDataSourceFactory" depends-on="txManagerReal" autowire="byType" >
+	<bean id="dataSourceFactory" class="org.frankframework.jta.narayana.NarayanaDataSourceFactory" depends-on="txManagerReal" autowire="byType" primary="true">
 		<property name="transactionManager" ref="txManagerReal"/>
 	</bean>
+	<bean id="nonTransactionalDataSourceFactory" class="org.frankframework.jdbc.datasource.NonTransactionalDataSourceFactory" autowire="byType" lazy-init="true"/>
 </beans>

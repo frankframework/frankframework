@@ -15,6 +15,8 @@
 */
 package org.frankframework.mongodb;
 
+import jakarta.annotation.Nonnull;
+
 import org.frankframework.jdbc.datasource.FrankResource;
 import org.frankframework.jdbc.datasource.ObjectFactory;
 import org.frankframework.util.AppConstants;
@@ -34,8 +36,9 @@ public class MongoClientFactoryFactory extends ObjectFactory<MongoClientFactory,
 		super(null, "mongodb", "MongoDB");
 	}
 
+	@Nonnull
 	@Override
-	protected MongoClientFactory augment(Object object, String objectName) {
+	protected MongoClientFactory augment(@Nonnull Object object, @Nonnull String objectName) {
 		if (object instanceof FrankResource resource) {
 			return new MongoClientFactory(objectName, resource);
 		}
