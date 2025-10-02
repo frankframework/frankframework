@@ -57,7 +57,8 @@ public class ConfigurationInfoTest {
 
 		try (JarInputStream jarInputStream = new JarInputStream(zip.openStream())) {
 			assertNotNull(jarInputStream.getManifest(), "config has no valid manifest file"); // Ensure the jar has a metainf.md file
-			assertThrows(IllegalArgumentException.class, () -> new ConfigurationInfo(jarInputStream.getManifest()));
+			Manifest manifest = jarInputStream.getManifest();
+			assertThrows(IllegalArgumentException.class, () -> new ConfigurationInfo(manifest));
 		}
 	}
 }
