@@ -56,19 +56,16 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
-import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.ArgumentCaptor;
 import org.mockito.stubbing.Answer;
-import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
 import org.springframework.context.event.SimpleApplicationEventMulticaster;
 import org.springframework.context.support.AbstractApplicationContext;
@@ -133,22 +130,15 @@ public class ReceiverTest {
 	private TestConfiguration configuration;
 	private String adapterName;
 
-	@BeforeAll
-	static void beforeAll() {
-		// Ensure all lingering contexts from previous tests are closed.
-		TransactionManagerType.closeAllConfigurationContexts();
-	}
-
 	@BeforeEach
 	public void beforeEach(TestInfo testInfo) {
 		adapterName = testInfo.getDisplayName().replace('/', '_');
 	}
 
 	@AfterEach
-	@Timeout(value = 30) // Unfortunately this doesn't work on other threads
 	void tearDown() {
 		if (configuration != null) {
-			configuration.close();
+			configuration.closeAsync();
 			configuration = null;
 		}
 	}
@@ -394,10 +384,6 @@ public class ReceiverTest {
 		mockListenerThread.start();
 		semaphore.acquire(); // Wait until thread is finished.
 
-		if (txManager instanceof DisposableBean disposableBean) {
-			disposableBean.destroy();
-		}
-
 		// Assert
 		assertAll(
 			() -> assertEquals(3, receiver.getMaxRetries()),
@@ -516,10 +502,6 @@ public class ReceiverTest {
 		// Act
 		mockListenerThread.start();
 		semaphore.acquire(); // Wait until thread is finished.
-
-		if (txManager instanceof DisposableBean disposableBean) {
-			disposableBean.destroy();
-		}
 
 		// Assert
 		int expectedNrTimesMessageActuallyOffered = receiver.getMaxRetries() + 2;
@@ -1286,11 +1268,6 @@ public class ReceiverTest {
 		assertEquals(0, adapter.getNumOfMessagesInError());
 
 		assertThrows(RuntimeException.class, () -> txManager.commit(tx));
-
-		// A bit of cleanup
-		if (txManager instanceof DisposableBean disposableBean) {
-			disposableBean.destroy();
-		}
 
 		configuration.getIbisManager().handleAction(Action.STOPADAPTER, configuration.getName(), adapter.getName(), receiver.getName(), null, true);
 		waitForState(adapter, RunState.STOPPED);

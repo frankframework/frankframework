@@ -4,9 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.sql.ResultSet;
+import java.util.concurrent.CompletableFuture;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
+import org.springframework.core.task.TaskExecutor;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
@@ -79,6 +81,15 @@ public class TestConfiguration extends Configuration {
 		ClassLoader classLoader = getClassLoader();
 		super.close();
 		AppConstants.removeInstance(classLoader);
+	}
+
+	/**
+	 * Close the test-context in a background-thread so that tests are not held up by the closing of contexts. This is relevant especially for TestConfigurations made with the
+	 * Narayana transaction manager, as it often takes up to 10 seconds to close the context for these tests.
+	 */
+	public CompletableFuture<Void> closeAsync() {
+		TaskExecutor taskExecutor = getBean(TaskExecutor.class);
+		return CompletableFuture.runAsync(this::close, taskExecutor);
 	}
 
 	public String getConfigWarning(int index) {
