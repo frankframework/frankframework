@@ -124,8 +124,10 @@ public class NarayanaJtaTransactionManager extends AbstractStatusRecordingTransa
 						}
 					}
 				}
+				recoveryManager.removeAllModules(true);
 				recoveryManager.terminate();
-				recoveryManager=null;
+				recoveryManager = null;
+				StoreManager.shutdown();
 			}
 			return recoveryStoreEmpty();
 		} catch (Exception e) {
