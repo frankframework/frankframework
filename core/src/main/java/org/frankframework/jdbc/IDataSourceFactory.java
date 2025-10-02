@@ -20,6 +20,8 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import jakarta.annotation.Nonnull;
+
 import org.springframework.jndi.JndiLocatorSupport;
 
 import org.frankframework.util.AppConstants;
@@ -32,17 +34,17 @@ public interface IDataSourceFactory {
 	/**
 	 * Look up a DataSource from the JNDI
 	 */
-	DataSource getDataSource(String dataSourceName) throws IllegalStateException;
+	@Nonnull DataSource getDataSource(String dataSourceName) throws IllegalStateException;
 
 	/**
 	 * Set the JNDI environment to use for JNDI lookups.
 	 * <p>Uses a Spring JndiTemplate with the given environment settings.
 	 * @see JndiLocatorSupport#setJndiTemplate
 	 */
-	DataSource getDataSource(String dataSourceName, Properties jndiEnvironment) throws IllegalStateException;
+	@Nonnull DataSource getDataSource(String dataSourceName, Properties jndiEnvironment) throws IllegalStateException;
 
 	/**
 	 * Return all known/registered DataSources
 	 */
-	List<String> getDataSourceNames();
+	@Nonnull List<String> getDataSourceNames();
 }

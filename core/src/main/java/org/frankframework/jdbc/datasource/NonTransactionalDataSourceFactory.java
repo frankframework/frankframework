@@ -37,16 +37,19 @@ public class NonTransactionalDataSourceFactory extends ObjectFactory<DataSource,
 		super(CommonDataSource.class, "jdbc", "DataSources");
 	}
 
+	@Nonnull
 	@Override
 	public DataSource getDataSource(String dataSourceName) {
 		return getDataSource(dataSourceName, null);
 	}
 
+	@Nonnull
 	@Override
 	public DataSource getDataSource(@Nonnull String dataSourceName, @Nullable Properties environment) {
 		return get(dataSourceName, environment);
 	}
 
+	@Nonnull
 	@Override
 	public List<String> getDataSourceNames() {
 		return getObjectNames();

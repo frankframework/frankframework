@@ -20,6 +20,7 @@ import org.frankframework.testutil.FindAvailableDataSources.TestDatasource;
 @Log4j2
 public class TestNarayanaDataSourceFactory extends NarayanaDataSourceFactory {
 
+	@Nonnull
 	@Override
 	public DataSource getDataSource(@Nonnull String jndiName, Properties jndiEnvironment) {
 		try {

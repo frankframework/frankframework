@@ -8,6 +8,8 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.tomcat.dbcp.dbcp2.PoolableConnectionFactory;
 import org.apache.tomcat.dbcp.pool2.impl.GenericObjectPool;
 import org.mockito.Mockito;
@@ -25,16 +27,23 @@ public class DataSourceFactoryMock implements IDataSourceFactory {
 		objects.put(IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME, new TransactionalDbmsSupportAwareDataSourceProxy(ds));
 	}
 
+	@Nonnull
 	@Override
 	public DataSource getDataSource(String dataSourceName) {
 		return getDataSource(dataSourceName, null);
 	}
 
+	@Nonnull
 	@Override
 	public DataSource getDataSource(String dataSourceName, Properties jndiEnvironment) {
-		return objects.get(dataSourceName);
+		DataSource dataSource = objects.get(dataSourceName);
+		if (dataSource == null) {
+			throw new IllegalArgumentException("DataSource [%s]".formatted(dataSourceName));
+		}
+		return dataSource;
 	}
 
+	@Nonnull
 	@Override
 	public List<String> getDataSourceNames() {
 		return new ArrayList<>(objects.keySet());

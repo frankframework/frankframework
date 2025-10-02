@@ -14,6 +14,7 @@ import org.frankframework.testutil.FindAvailableDataSources.TestDatasource;
  */
 public class TestDataSourceFactory extends DataSourceFactory {
 
+	@Nonnull
 	@Override
 	public DataSource getDataSource(@Nonnull String jndiName, Properties jndiEnvironment) {
 		String enrichedDataSourceName = TestDatasource.valueOf(jndiName).getDataSourceName();
