@@ -36,6 +36,7 @@ import com.arjuna.ats.arjuna.state.InputObjectState;
 import com.arjuna.ats.internal.arjuna.recovery.AdvancedAtomicActionExpiryScanner;
 import com.arjuna.ats.internal.arjuna.recovery.AdvancedAtomicActionPurgeExpiryScanner;
 import com.arjuna.ats.internal.jta.recovery.arjunacore.XARecoveryModule;
+import com.arjuna.ats.jta.common.jtaPropertyManager;
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
 import lombok.Getter;
@@ -72,6 +73,8 @@ public class NarayanaJtaTransactionManager extends AbstractStatusRecordingTransa
 
 			try {
 				arjPropertyManager.getCoreEnvironmentBean().setNodeIdentifier(getUid());
+
+				jtaPropertyManager.getJTAEnvironmentBean().setXaRecoveryNodes(List.of(getUid()));
 			} catch (CoreEnvironmentBeanException e) {
 				throw new TransactionSystemException("Cannot set TmUid", e);
 			}
