@@ -48,7 +48,7 @@ public class SharedHttpSenderTest {
 		CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
 		context = forClass(HttpClientContext.class);
 
-		//Mock all requests
+		// Mock all requests
 		when(httpClient.execute(any(HttpHost.class), any(HttpRequestBase.class), context.capture())).thenAnswer(new HttpResponseMock());
 		sessionKey = PipeLineSession.SYSTEM_MANAGED_RESOURCE_PREFIX + "HttpContext" + httpClient.hashCode();
 
@@ -57,7 +57,7 @@ public class SharedHttpSenderTest {
 
 		// Mock shared resource and context
 		ApplicationContext applicationContext = mock(ApplicationContext.class);
-		when(applicationContext.containsBean(eq("shared$$dummy"))).thenReturn(true);
+		when(applicationContext.containsBean("shared$$dummy")).thenReturn(true);
 		HttpSession sharedResource = spy(HttpSession.class);
 		HttpClientContext httpClientContext = HttpClientContext.create();
 		doReturn(httpClientContext).when(sharedResource).getDefaultHttpClientContext();
@@ -65,7 +65,7 @@ public class SharedHttpSenderTest {
 
 		sender.setApplicationContext(applicationContext);
 
-		//Some default settings, url will be mocked.
+		// Some default settings, url will be mocked.
 		sender.setUrl("http://127.0.0.1/test");
 		sender.setVerifyHostname(false);
 		sender.setAllowSelfSignedCertificates(true);
@@ -86,7 +86,7 @@ public class SharedHttpSenderTest {
 		assertNotNull(result1);
 		assertThat(result1.asString(), Matchers.containsString("GET /test"));
 
-		int contextId1 = context.getValue().hashCode(); //Store value for later
+		int contextId1 = context.getValue().hashCode(); // Store value for later
 
 		// Act
 		Message result2 = sender.sendMessageOrThrow(new Message("dummy"), session);
@@ -97,7 +97,7 @@ public class SharedHttpSenderTest {
 
 		// Test Assertion
 		int contextId2 = context.getValue().hashCode();
-		assertEquals(contextId1, contextId2, "The same HttpContext should be used"); //The real test!
+		assertEquals(contextId1, contextId2, "The same HttpContext should be used"); // The real test!
 		assertNull(session.get(sessionKey), "Should not be in the session");
 	}
 
@@ -149,7 +149,7 @@ public class SharedHttpSenderTest {
 		assertNotNull(result1);
 		assertThat(result1.asString(), Matchers.containsString("GET /test"));
 
-		int contextId1 = context.getValue().hashCode(); //Store value for later
+		int contextId1 = context.getValue().hashCode(); // Store value for later
 
 		// Act
 		Message result2 = sender.sendMessageOrThrow(new Message("dummy"), session);
@@ -160,7 +160,7 @@ public class SharedHttpSenderTest {
 
 		// Test Assertion
 		int contextId2 = context.getValue().hashCode();
-		assertEquals(contextId1, contextId2, "The same HttpContext should be used"); //The real test!
+		assertEquals(contextId1, contextId2, "The same HttpContext should be used"); // The real test!
 		HttpContext context = (HttpContext) session.get(sessionKey);
 		assertNotNull(context, "Should exist in the session");
 		assertEquals(this.context.getValue(), context);

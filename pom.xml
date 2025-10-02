@@ -1488,7 +1488,7 @@
 						<configuration>
 							<!-- Don't release the build directly after it's been published to Central (staging). -->
 							<autoPublish>false</autoPublish>
-							<!-- . -->
+							<!-- Central OSS Server -->
 							<publishingServerId>ossrh</publishingServerId>
 							<!-- Wait until the deployment bundle has been uploaded and validated. -->
 							<waitUntil>validated</waitUntil>

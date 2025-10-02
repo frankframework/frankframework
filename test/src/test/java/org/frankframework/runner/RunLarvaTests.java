@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.File;
+import java.io.PrintWriter;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.List;
@@ -22,6 +23,10 @@ import org.apache.activemq.artemis.core.config.Configuration;
 import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
 import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.io.IoBuilder;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -71,6 +76,7 @@ import org.frankframework.util.SpringUtils;
 @Tag("integration")
 @Log4j2
 public class RunLarvaTests {
+	private static final Logger stdOut = LogManager.getLogger("stdout"); // Console appender
 
 	public static final LarvaLogLevel LARVA_LOG_LEVEL = LarvaLogLevel.WRONG_PIPELINE_MESSAGES_PREPARED_FOR_DIFF;
 	public static final Set<String> IGNORED_SCENARIOS = Set.of(
@@ -187,7 +193,9 @@ public class RunLarvaTests {
 		larvaConfig.setLogLevel(LARVA_LOG_LEVEL);
 		larvaConfig.setMultiThreaded(false);
 
-		larvaWriter = new LarvaWriter(larvaConfig, System.out);
+		PrintWriter logger = IoBuilder.forLogger(stdOut).setLevel(Level.DEBUG).buildPrintWriter();
+
+		larvaWriter = new LarvaWriter(larvaConfig, logger);
 		larvaTool.setWriter(larvaWriter);
 		testExecutionObserver = new PlainTextScenarioOutputRenderer(larvaWriter);
 	}
@@ -238,7 +246,7 @@ public class RunLarvaTests {
 		testRunStatus.readScenarioFiles(larvaTool.getScenarioLoader());
 		List<Scenario> allScenarios = testRunStatus.getScenariosToRun(larvaTool.getLarvaConfig().getActiveScenariosDirectory());
 		assertFalse(allScenarios.isEmpty(), () -> "Did not find any scenario-files in scenarioRootDir [%s]!".formatted(scenarioRootDir));
-		System.err.printf("Creating JUnit tests from %d scenarios loaded from [%s]%n", allScenarios.size(), scenarioRootDir);
+		stdOut.info("Creating JUnit tests from {} scenarios loaded from [{}]", allScenarios.size(), scenarioRootDir);
 		return createScenarios(scenarioRootDir, "", allScenarios);
 	}
 
@@ -270,7 +278,7 @@ public class RunLarvaTests {
 		String scenarioName = scenario.getName();
 		return DynamicTest.dynamicTest(
 				scenarioName, scenario.getScenarioFile().toURI(), () -> {
-					System.out.println("Running scenario: [" + scenarioName + "]");
+					stdOut.info("Running scenario: [{}]", scenarioName);
 					int scenarioPassed = scenarioRunner.runOneFile(scenario, true);
 					larvaWriter.flush();
 
@@ -290,12 +298,12 @@ public class RunLarvaTests {
 		long start = System.currentTimeMillis();
 		TestRunStatus result = larvaTool.runScenarios(larvaTool.getActiveScenariosDirectory(), testExecutionObserver, larvaWriter);
 		long end = System.currentTimeMillis();
-		System.err.printf("Scenarios executed; duration: %dms%n", end - start);
+		stdOut.info("Scenarios executed; duration: {}ms", end - start);
 
 		if (result.getScenariosFailedCount() > 0) {
-			System.err.printf("%d Larva tests failed, duration: %dms; %n%n", result.getScenariosFailedCount(), end - start);
+			stdOut.info("[{}] Larva tests failed, duration: {}ms", result.getScenariosFailedCount(), end - start);
 		} else {
-			System.err.printf("All %d Larva tests succeeded in %dms%n", result.getScenarioExecuteCount(), end - start);
+			stdOut.info("All [{}] Larva tests succeeded in {}ms", result.getScenarioExecuteCount(), end - start);
 		}
 
 		// About 15 to 18 scenarios will fail because the environment is not set up entirely correct. Do not fail the build because of that, still get the extra coverage.
