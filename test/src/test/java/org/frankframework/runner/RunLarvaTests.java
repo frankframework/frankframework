@@ -246,7 +246,7 @@ public class RunLarvaTests {
 		testRunStatus.readScenarioFiles(larvaTool.getScenarioLoader());
 		List<Scenario> allScenarios = testRunStatus.getScenariosToRun(larvaTool.getLarvaConfig().getActiveScenariosDirectory());
 		assertFalse(allScenarios.isEmpty(), () -> "Did not find any scenario-files in scenarioRootDir [%s]!".formatted(scenarioRootDir));
-		stdOut.info("Creating JUnit tests from %d scenarios loaded from [%s]%n", allScenarios.size(), scenarioRootDir);
+		stdOut.info("Creating JUnit tests from {} scenarios loaded from [{}]", allScenarios.size(), scenarioRootDir);
 		return createScenarios(scenarioRootDir, "", allScenarios);
 	}
 
@@ -298,12 +298,12 @@ public class RunLarvaTests {
 		long start = System.currentTimeMillis();
 		TestRunStatus result = larvaTool.runScenarios(larvaTool.getActiveScenariosDirectory(), testExecutionObserver, larvaWriter);
 		long end = System.currentTimeMillis();
-		stdOut.info("Scenarios executed; duration: %dms%n", end - start);
+		stdOut.info("Scenarios executed; duration: {}ms", end - start);
 
 		if (result.getScenariosFailedCount() > 0) {
-			stdOut.info("%d Larva tests failed, duration: %dms; %n%n", result.getScenariosFailedCount(), end - start);
+			stdOut.info("[{}] Larva tests failed, duration: {}ms", result.getScenariosFailedCount(), end - start);
 		} else {
-			stdOut.info("All %d Larva tests succeeded in %dms%n", result.getScenarioExecuteCount(), end - start);
+			stdOut.info("All [{}] Larva tests succeeded in {}ms", result.getScenarioExecuteCount(), end - start);
 		}
 
 		// About 15 to 18 scenarios will fail because the environment is not set up entirely correct. Do not fail the build because of that, still get the extra coverage.
