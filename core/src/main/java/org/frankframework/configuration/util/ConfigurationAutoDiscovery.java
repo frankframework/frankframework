@@ -251,7 +251,7 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 
 	@Nonnull
 	private List<String> retrieveConfigNamesFromDatabase(@Nonnull String dataSourceName) throws SQLException, DbmsException {
-		IDataSourceFactory dsFactory = applicationContext.getBean(IDataSourceFactory.class);
+		IDataSourceFactory dsFactory = applicationContext.getBean("dataSourceFactory", IDataSourceFactory.class);
 		DataSource dataSource = dsFactory.getDataSource(dataSourceName);
 
 		DbmsSupportFactory dbmsSupportFactory = applicationContext.getBean(DbmsSupportFactory.class);

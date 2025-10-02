@@ -41,7 +41,6 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.jdbc.datasource.NonTransactionalDataSourceFactory;
 import org.frankframework.util.AppConstants;
-import org.frankframework.util.SpringUtils;
 
 @Log4j2
 public class NarayanaConfigurationBean implements InitializingBean, ApplicationContextAware {
@@ -123,7 +122,7 @@ public class NarayanaConfigurationBean implements InitializingBean, ApplicationC
 			throw new ObjectStoreException("no datasource name provided, please set property [transactionmanager.narayana.objectStoreDatasource]");
 		}
 		try {
-			NonTransactionalDataSourceFactory plainDataSourceFactory = SpringUtils.createBean(applicationContext);
+			NonTransactionalDataSourceFactory plainDataSourceFactory = applicationContext.getBean("nonTransactionalDataSourceFactory", NonTransactionalDataSourceFactory.class);
 			DataSource dataSource = plainDataSourceFactory.getDataSource(objectStoreDatasource);
 			log.info("found Narayana ObjectStoreDatasource [{}] in resources.yml:", dataSource);
 			return dataSource;

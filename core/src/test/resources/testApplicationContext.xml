@@ -16,7 +16,10 @@
 
 	<bean id="ResourceObjectLocator" class="org.frankframework.jdbc.datasource.ResourceObjectLocator" />
 	<bean id="JndiObjectLocator" class="org.frankframework.jndi.JndiObjectLocator" />
-	<bean id="dataSourceFactory" class="org.frankframework.testutil.TestDataSourceFactory" autowire="byType"/>
+	<bean id="dataSourceFactory" class="org.frankframework.testutil.TestDataSourceFactory" autowire="byType" primary="true"/>
+
+	<!-- This bean is used only with Narayana but define it always in test Spring context to catch ambiguous uses of ac.getBean(IDataSourceFactory.class) -->
+	<bean id="nonTransactionalDataSourceFactory" class="org.frankframework.jdbc.datasource.NonTransactionalDataSourceFactory" autowire="byType" lazy-init="true"/>
 
 	<bean name="meterRegistry" class="org.frankframework.metrics.MetricsRegistryFactoryBean" autowire="byName"/>
 

@@ -44,7 +44,7 @@ public enum TransactionManagerType {
 	}
 
 	public IDataSourceFactory getDataSourceFactory(ApplicationContext ac) {
-		return ac.getBean(IDataSourceFactory.class, "dataSourceFactory");
+		return ac.getBean("dataSourceFactory", IDataSourceFactory.class);
 	}
 
 	/**

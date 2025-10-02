@@ -114,7 +114,7 @@ public class VerifyDatabaseConnectionBean implements ApplicationContextAware, In
 
 	private @Nonnull DataSource getDefaultDataSource() {
 		try {
-			IDataSourceFactory dsf = applicationContext.getBean(IDataSourceFactory.class);
+			IDataSourceFactory dsf = applicationContext.getBean("dataSourceFactory", IDataSourceFactory.class);
 			DataSource dataSource = dsf.getDataSource(defaultDatasource);
 			log.info("found default datasource [{}]", dataSource);
 			return dataSource;
