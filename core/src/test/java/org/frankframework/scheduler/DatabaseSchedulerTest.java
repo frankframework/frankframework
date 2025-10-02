@@ -27,7 +27,7 @@ public class DatabaseSchedulerTest extends Mockito {
 	@BeforeEach
 	public void setup() throws Exception {
 		configuration = new TestConfiguration();
-		configuration.getIbisManager(); //Sets a dummy IbisManager if non is found
+		configuration.getIbisManager(); //Sets a dummy IbisManager if none is found
 
 		job = configuration.createBean();
 		job.setName("testJob");
@@ -37,7 +37,7 @@ public class DatabaseSchedulerTest extends Mockito {
 	@AfterEach
 	public void tearDown() {
 		configuration.close();
-		configuration = null; // <- force GC to cleanup!
+		configuration = null; // <- Allow GC to clean up
 	}
 
 	@Test

@@ -113,18 +113,17 @@ public enum TransactionManagerType {
 			Iterator<TestConfiguration> it = datasourceConfigurations.values().iterator();
 			while(it.hasNext()) {
 				TestConfiguration ac = it.next();
-				if(ac != null) {
-					ac.close();
-				}
 				it.remove();
+				if(ac != null) {
+					ac.closeAsync();
+				}
 			}
 		} else {
-			TestConfiguration ac = transactionManagerConfigurations.remove(this);
-			if(ac != null) {
-				ac.close();
-			}
-			if (ac != null) {
-				removePreviousTxLogFiles(ac);
+			TestConfiguration testConfiguration = transactionManagerConfigurations.remove(this);
+			if(testConfiguration != null) {
+				testConfiguration
+						.closeAsync()
+						.thenRun(() -> removePreviousTxLogFiles(testConfiguration));
 			}
 		}
 		LogManager.getLogger(this.getClass()).info("Closed transaction manager configuration context [{}]", this);
