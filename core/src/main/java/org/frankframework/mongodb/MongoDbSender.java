@@ -157,6 +157,7 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 		super.start();
 	}
 
+	@Nonnull
 	private MongoClientFactory getClientFactory() {
 		if (clientFactory == null) {
 			clientFactory = mongoClientFactoryFactory.getMongoClientFactory(getDatasourceName());
@@ -178,7 +179,8 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 	}
 
 	@Override
-	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+	@Nonnull
+	public SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		MongoAction mongoAction = getAction();
 		try {
 			MessageBuilder messageBuilder = new MessageBuilder();

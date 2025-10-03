@@ -24,6 +24,8 @@ import java.util.Date;
 
 import javax.sql.DataSource;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -117,6 +119,7 @@ public abstract class AbstractJdbcMessageBrowser<M> extends JdbcFacade implement
 		}
 	}
 
+	@Nonnull
 	@Override
 	protected DataSource getDatasource() throws JdbcException {
 		return datasource!=null ? datasource : super.getDatasource();

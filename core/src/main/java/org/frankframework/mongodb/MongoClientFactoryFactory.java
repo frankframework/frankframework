@@ -45,6 +45,7 @@ public class MongoClientFactoryFactory extends ObjectFactory<MongoClientFactory,
 		throw new IllegalArgumentException("resource ["+objectName+"] not of required type");
 	}
 
+	@Nonnull
 	public MongoClientFactory getMongoClientFactory(String name) {
 		return get(name, null);
 	}

@@ -20,6 +20,9 @@ import java.util.Properties;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -57,7 +60,8 @@ public class JndiObjectLocator implements IObjectLocator, ApplicationContextAwar
 	 * @param <O> Object class used by clients
 	 */
 	@Override
-	public <O> O lookup(String jndiName, Properties jndiEnvironment, Class<O> lookupClass) throws NamingException {
+	@Nullable
+	public <O> O lookup(@Nonnull String jndiName, @Nullable Properties jndiEnvironment, @Nullable Class<O> lookupClass) throws NamingException {
 		String prefixedJndiName = getPrefixedJndiName(jndiName);
 		JndiTemplate locator = getJndiTemplate(jndiEnvironment);
 		try {

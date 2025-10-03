@@ -22,6 +22,8 @@ import javax.sql.CommonDataSource;
 import javax.sql.ConnectionPoolDataSource;
 import javax.sql.DataSource;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tomcat.dbcp.dbcp2.ConnectionFactory;
 import org.apache.tomcat.dbcp.dbcp2.DataSourceConnectionFactory;
@@ -60,8 +62,9 @@ public class PoolingDataSourceFactory extends DataSourceFactory {
 		testQuery = appConstants.getString("transactionmanager.jdbc.connection.testQuery", testQuery);
 	}
 
+	@Nonnull
 	@Override
-	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
+	protected DataSource augmentDatasource(@Nonnull CommonDataSource dataSource, @Nonnull String dataSourceName) {
 		if(maxPoolSize > 1) {
 			log.info("Creating connection pool for datasource [{}]", dataSourceName);
 			return createPool((DataSource)dataSource, dataSourceName);
@@ -70,13 +73,14 @@ public class PoolingDataSourceFactory extends DataSourceFactory {
 		return (DataSource) dataSource;
 	}
 
-	public static boolean isPooledDataSource(CommonDataSource dataSource) {
+	public static boolean isPooledDataSource(@Nonnull CommonDataSource dataSource) {
 		return dataSource instanceof ConnectionPoolDataSource
 				|| dataSource.getClass().getName().startsWith("org.apache.tomcat")
 				;
 	}
 
-	protected DataSource createPool(DataSource dataSource, String dataSourceName) {
+	@Nonnull
+	protected DataSource createPool(@Nonnull DataSource dataSource, @Nonnull String dataSourceName) {
 		if (isPooledDataSource(dataSource)) {
 			log.warn("DataSource [{}] already implements pooling. Will not be wrapped with DBCP2 pool. Frank!Framework connection pooling configuration is ignored, configure pooling properties in the JNDI Resource to avoid issues.", dataSourceName);
 			return dataSource;
@@ -90,7 +94,8 @@ public class PoolingDataSourceFactory extends DataSourceFactory {
 		return ds;
 	}
 
-	protected GenericObjectPool<PoolableConnection> createConnectionPool(PoolableConnectionFactory poolableConnectionFactory) {
+	@Nonnull
+	protected GenericObjectPool<PoolableConnection> createConnectionPool(@Nonnull PoolableConnectionFactory poolableConnectionFactory) {
 		poolableConnectionFactory.setAutoCommitOnReturn(false);
 		poolableConnectionFactory.setDefaultTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 		if (maxLifeTime > 0) {

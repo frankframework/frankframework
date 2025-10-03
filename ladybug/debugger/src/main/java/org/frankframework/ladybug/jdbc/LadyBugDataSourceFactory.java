@@ -18,12 +18,15 @@ package org.frankframework.ladybug.jdbc;
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
+import jakarta.annotation.Nonnull;
+
 import org.frankframework.jdbc.datasource.PoolingDataSourceFactory;
 
 public class LadyBugDataSourceFactory extends PoolingDataSourceFactory {
 
+	@Nonnull
 	@Override
-	protected DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
+	protected DataSource augmentDatasource(@Nonnull CommonDataSource dataSource, @Nonnull String dataSourceName) {
 		if(dataSource instanceof DataSource && isNotOracleDataSource(dataSource)) {
 			// Augment the traditional way, with an optional pool.
 			return super.augmentDatasource(dataSource, dataSourceName);

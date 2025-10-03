@@ -107,8 +107,9 @@ public class ResourceObjectLocator implements IObjectLocator, InitializingBean {
 	}
 
 	@Override
+	@Nullable
 	@SuppressWarnings("unchecked")
-	public <O> O lookup(String name, Properties environment, Class<O> lookupClass) throws Exception {
+	public <O> O lookup(@Nonnull String name, @Nullable Properties environment, @Nullable Class<O> lookupClass) throws Exception {
 		if (resourceUrl == null) {
 			log.debug("resource locator is not configured, skip lookup");
 			return null;

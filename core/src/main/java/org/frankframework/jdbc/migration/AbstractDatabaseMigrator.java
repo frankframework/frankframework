@@ -18,8 +18,11 @@ package org.frankframework.jdbc.migration;
 import java.io.Writer;
 import java.net.URL;
 import java.sql.SQLException;
+import java.util.NoSuchElementException;
 
 import javax.sql.DataSource;
+
+import jakarta.annotation.Nonnull;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
@@ -83,11 +86,12 @@ public abstract class AbstractDatabaseMigrator implements ConfigurableLifecycle,
 		return ((AbstractClassLoader) configurationClassLoader).getResource(path, false);
 	}
 
+	@Nonnull
 	protected final DataSource lookupMigratorDatasource() throws SQLException {
 		try {
 			log.debug("looking up Datasource [{}] for JdbcMigrator [{}]", getDatasourceName(), getName());
 			return dataSourceFactory.getDataSource(getDatasourceName());
-		} catch (IllegalStateException e) {
+		} catch (IllegalStateException | NoSuchElementException e) {
 			throw new SQLException("cannot connect to datasource ["+getDatasourceName()+"]", e);
 		}
 	}

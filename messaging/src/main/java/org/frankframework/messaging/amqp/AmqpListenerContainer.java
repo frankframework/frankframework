@@ -18,6 +18,7 @@ package org.frankframework.messaging.amqp;
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
@@ -89,7 +90,7 @@ public class AmqpListenerContainer {
 			connection = amqpConnectionFactoryFactory.getConnectionFactory(connectionName).getConnection();
 			SessionOptions sessionOptions = new SessionOptions();
 			session = connection.openSession(sessionOptions);
-		} catch (ClientException e) {
+		} catch (ClientException | NoSuchElementException | IllegalStateException e) {
 			throw new LifecycleException("Cannot open AMQP connection", e);
 		}
 	}

@@ -15,6 +15,8 @@
 */
 package org.frankframework.extensions.mqtt;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.eclipse.paho.client.mqttv3.MqttClient;
 import org.springframework.context.ApplicationContext;
@@ -125,6 +127,7 @@ public abstract class MqttFacade implements HasPhysicalDestination, IConfigurabl
 		this.resourceName = resourceName;
 	}
 
+	@Nonnull
 	protected MqttClientFactory getClientFactory() {
 		if (clientFactory == null) {
 			clientFactory = mqttClientFactoryFactory.getClientFactory(resourceName);

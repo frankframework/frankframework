@@ -75,7 +75,7 @@ public class AmqpConnectionFactoryFactory extends ObjectFactory<AmqpConnectionFa
 		return Client.create(clientOptions);
 	}
 
-
+	@Nonnull
 	public AmqpConnectionFactory getConnectionFactory(String name) {
 		return get(name, null);
 	}

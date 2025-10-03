@@ -32,6 +32,7 @@ public class TestNarayanaDataSourceFactory extends NarayanaDataSourceFactory {
 		}
 	}
 
+	@Nonnull
 	@Override
 	protected DataSource createXADataSource(XADataSource xaDataSource, String product) {
 		//setMaxPoolSize(0); // Always disable, some tests change the default values. This ensure we never pool

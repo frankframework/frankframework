@@ -18,8 +18,11 @@ package org.frankframework.jdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 import javax.sql.DataSource;
+
+import jakarta.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -123,6 +126,7 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 		return started;
 	}
 
+	@Nonnull
 	protected DataSource getDatasource() throws JdbcException {
 		if (datasource==null) {
 			String dsName = getDatasourceName();
@@ -132,11 +136,8 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 
 			try {
 				datasource = getDataSourceFactory().getDataSource(dsName);
-			} catch (IllegalStateException e) {
+			} catch (IllegalStateException | NoSuchElementException e) {
 				throw new JdbcException("Could not find Datasource ["+dsName+"]", e);
-			}
-			if (datasource==null) {
-				throw new JdbcException("Could not find Datasource ["+dsName+"]");
 			}
 
 			String dsinfo = datasource.toString();

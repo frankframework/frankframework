@@ -39,12 +39,6 @@ public class NonTransactionalDataSourceFactory extends ObjectFactory<DataSource,
 
 	@Nonnull
 	@Override
-	public DataSource getDataSource(String dataSourceName) {
-		return getDataSource(dataSourceName, null);
-	}
-
-	@Nonnull
-	@Override
 	public DataSource getDataSource(@Nonnull String dataSourceName, @Nullable Properties environment) {
 		return get(dataSourceName, environment);
 	}

@@ -17,8 +17,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
-import javax.naming.NamingException;
-
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.jms.Connection;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.ConnectionMetaData;
@@ -83,16 +83,13 @@ public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 		return handler;
 	}
 
+	@Nonnull
 	@Override
-	public ConnectionFactory getConnectionFactory(String connectionFactoryName) throws NamingException {
-		return getConnectionFactory(connectionFactoryName, null);
-	}
-
-	@Override
-	public ConnectionFactory getConnectionFactory(String connectionFactoryName, Properties jndiEnvironment) throws NamingException {
+	public ConnectionFactory getConnectionFactory(@Nonnull String connectionFactoryName, @Nullable Properties jndiEnvironment) {
 		return objects.get(connectionFactoryName);
 	}
 
+	@Nonnull
 	@Override
 	public List<String> getConnectionFactoryNames() {
 		return new ArrayList<>(objects.keySet());
