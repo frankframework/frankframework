@@ -7,8 +7,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import javax.naming.NamingException;
-
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.JMSException;
 import jakarta.jms.MessageListener;
@@ -40,16 +40,19 @@ public class MockRunnerConnectionFactoryFactory implements IConnectionFactoryFac
 		connectionFactory = MOCK_FACTORY.getMockQueueConnectionFactory();
 	}
 
+	@Nonnull
 	@Override
-	public ConnectionFactory getConnectionFactory(String connectionFactoryName) throws NamingException {
+	public ConnectionFactory getConnectionFactory(@Nonnull String connectionFactoryName) {
 		return connectionFactory;
 	}
 
+	@Nonnull
 	@Override
-	public ConnectionFactory getConnectionFactory(String connectionFactoryName, Properties jndiEnvironment) throws NamingException {
+	public ConnectionFactory getConnectionFactory(@Nonnull String connectionFactoryName, @Nullable Properties jndiEnvironment) {
 		return connectionFactory;
 	}
 
+	@Nonnull
 	@Override
 	public List<String> getConnectionFactoryNames() {
 		return Collections.singletonList(MOCK_CONNECTION_FACTORY_NAME);

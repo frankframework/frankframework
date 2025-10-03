@@ -16,20 +16,43 @@
 package org.frankframework.jms;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 
-import javax.naming.NamingException;
-
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.jms.ConnectionFactory;
+
+import org.springframework.jndi.JndiLocatorSupport;
 
 public interface IConnectionFactoryFactory {
 
-	ConnectionFactory getConnectionFactory(String connectionFactoryName) throws NamingException;
-	ConnectionFactory getConnectionFactory(String connectionFactoryName, Properties jndiEnvironment) throws NamingException;
+	/**
+	 * Lookup a JMS {@link ConnectionFactory} by name.
+	 *
+	 * @throws NoSuchElementException if the DataSource cannot be found in any of the configured sources
+	 * @throws IllegalStateException if the DataSource cannot be created
+	 */
+	@Nonnull
+	default ConnectionFactory getConnectionFactory(@Nonnull String connectionFactoryName) throws IllegalStateException, NoSuchElementException {
+		return getConnectionFactory(connectionFactoryName, null);
+	}
+
+	/**
+	 * Lookup a JMS {@link ConnectionFactory} by name, with optional JNDI environment or other additional properties to be used for the lookup of the datasource.
+	 * @see org.frankframework.jdbc.datasource.ObjectFactory#get(String, Properties)
+	 * @see JndiLocatorSupport#setJndiTemplate
+	 *
+	 * @throws NoSuchElementException if the DataSource cannot be found in any of the configured sources
+	 * @throws IllegalStateException if the DataSource cannot be created
+	 */
+	@Nonnull
+	ConnectionFactory getConnectionFactory(@Nonnull String connectionFactoryName, @Nullable Properties jndiEnvironment) throws IllegalStateException, NoSuchElementException;
 
 	/**
 	 * Return all known/registered ConnectionFactories
 	 */
+	@Nonnull
 	List<String> getConnectionFactoryNames();
 
 }

@@ -53,12 +53,6 @@ public class JmsConnectionFactoryFactory extends ObjectFactory<ConnectionFactory
 
 	@Nonnull
 	@Override
-	public ConnectionFactory getConnectionFactory(@Nonnull String connectionFactoryName) {
-		return getConnectionFactory(connectionFactoryName, null);
-	}
-
-	@Nonnull
-	@Override
 	public ConnectionFactory getConnectionFactory(@Nonnull String connectionFactoryName, @Nullable Properties environment) {
 		return get(connectionFactoryName, environment);
 	}

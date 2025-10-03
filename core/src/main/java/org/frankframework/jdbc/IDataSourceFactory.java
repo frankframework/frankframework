@@ -33,16 +33,22 @@ public interface IDataSourceFactory {
 	String GLOBAL_DEFAULT_DATASOURCE_NAME = AppConstants.getInstance().getProperty(DEFAULT_DATASOURCE_NAME_PROPERTY);
 
 	/**
-	 * Look up a DataSource from the JNDI
+	 * Look up a {@link DataSource} by name.
+	 *
+	 * @throws NoSuchElementException if the DataSource cannot be found in any of the configured sources
+	 * @throws IllegalStateException if the DataSource cannot be created
 	 */
 	default @Nonnull DataSource getDataSource(String dataSourceName) throws IllegalStateException, NoSuchElementException {
 		return getDataSource(dataSourceName, null);
 	}
 
 	/**
-	 * Set the JNDI environment to use for JNDI lookups.
-	 * <p>Uses a Spring JndiTemplate with the given environment settings.
+	 * Look up a {@link DataSource} by name with optional JNDI Environment or other additional properties to be used for the lookup of the datasource.
+	 * @see org.frankframework.jdbc.datasource.ObjectFactory#get(String, Properties)
 	 * @see JndiLocatorSupport#setJndiTemplate
+	 *
+	 * @throws NoSuchElementException if the DataSource cannot be found in any of the configured sources
+	 * @throws IllegalStateException if the DataSource cannot be created
 	 */
 	@Nonnull DataSource getDataSource(String dataSourceName, Properties jndiEnvironment) throws IllegalStateException, NoSuchElementException;
 
