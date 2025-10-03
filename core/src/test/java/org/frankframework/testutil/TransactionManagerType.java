@@ -10,6 +10,8 @@ import java.util.WeakHashMap;
 
 import javax.sql.DataSource;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.springframework.context.ApplicationContext;
@@ -142,7 +144,7 @@ public enum TransactionManagerType {
 	/**
 	 * fetch the DataSource through the configured {@link DataSourceFactory}.
 	 */
-	public DataSource getDataSource(String productKey) {
+	public @Nonnull DataSource getDataSource(String productKey) {
 		ApplicationContext ac = getConfigurationContext(productKey);
 		return getDataSourceFactory(ac).getDataSource(productKey);
 	}

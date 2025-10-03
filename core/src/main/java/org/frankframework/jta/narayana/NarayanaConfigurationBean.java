@@ -22,6 +22,8 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -113,7 +115,7 @@ public class NarayanaConfigurationBean implements InitializingBean, ApplicationC
 	 * will be looked up in the JNDI.
 	 * Since the datasource is used by Narayana internally, it cannot be an XA-Only datasource.
 	 */
-	private DataSource getObjectStoreDataSource() throws ObjectStoreException {
+	private @Nonnull DataSource getObjectStoreDataSource() throws ObjectStoreException {
 		if (applicationContext == null) {
 			throw new ObjectStoreException("no ApplicationContext to retrieve DataSource from");
 		}

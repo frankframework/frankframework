@@ -16,6 +16,7 @@
 package org.frankframework.jdbc;
 
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Properties;
 
 import javax.sql.DataSource;
@@ -34,14 +35,16 @@ public interface IDataSourceFactory {
 	/**
 	 * Look up a DataSource from the JNDI
 	 */
-	@Nonnull DataSource getDataSource(String dataSourceName) throws IllegalStateException;
+	default @Nonnull DataSource getDataSource(String dataSourceName) throws IllegalStateException, NoSuchElementException {
+		return getDataSource(dataSourceName, null);
+	}
 
 	/**
 	 * Set the JNDI environment to use for JNDI lookups.
 	 * <p>Uses a Spring JndiTemplate with the given environment settings.
 	 * @see JndiLocatorSupport#setJndiTemplate
 	 */
-	@Nonnull DataSource getDataSource(String dataSourceName, Properties jndiEnvironment) throws IllegalStateException;
+	@Nonnull DataSource getDataSource(String dataSourceName, Properties jndiEnvironment) throws IllegalStateException, NoSuchElementException;
 
 	/**
 	 * Return all known/registered DataSources

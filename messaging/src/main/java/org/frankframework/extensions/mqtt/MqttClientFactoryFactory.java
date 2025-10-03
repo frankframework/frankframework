@@ -35,6 +35,7 @@ public class MqttClientFactoryFactory extends ObjectFactory<MqttClientFactory, O
 		throw new IllegalArgumentException("resource ["+objectName+"] not of required type");
 	}
 
+	@Nonnull
 	public MqttClientFactory getClientFactory(String name) {
 		return get(name, null);
 	}

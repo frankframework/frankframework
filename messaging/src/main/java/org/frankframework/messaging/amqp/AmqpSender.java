@@ -134,7 +134,11 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		if (streamingMessages && messageType != MessageType.BINARY) {
 			ConfigurationWarnings.add(this, log, "[messageType] is ignored, because [streamingMessages] is set to [true]");
 		}
-		connectionFactory = amqpConnectionFactoryFactory.getConnectionFactory(connectionName);
+		try {
+			connectionFactory = amqpConnectionFactoryFactory.getConnectionFactory(connectionName);
+		} catch (Exception e) {
+			throw new ConfigurationException("Cannot create connection to the AMQP message broker", e);
+		}
 
 		try (Connection connection = connectionFactory.getConnection()) {
 			List<String> offeredCapabilities;

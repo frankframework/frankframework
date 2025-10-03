@@ -157,7 +157,7 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 		super.start();
 	}
 
-	private MongoClientFactory getClientFactory() {
+	private @Nonnull MongoClientFactory getClientFactory() {
 		if (clientFactory == null) {
 			clientFactory = mongoClientFactoryFactory.getMongoClientFactory(getDatasourceName());
 		}

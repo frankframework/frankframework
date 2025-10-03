@@ -19,10 +19,13 @@ import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
+import jakarta.annotation.Nonnull;
+
 public abstract class AbstractXADataSourceFactory extends PoolingDataSourceFactory {
 
+	@Nonnull
 	@Override
-	protected final DataSource augmentDatasource(CommonDataSource dataSource, String dataSourceName) {
+	protected final DataSource augmentDatasource(@Nonnull CommonDataSource dataSource, @Nonnull String dataSourceName) {
 		if (dataSource instanceof XADataSource xaDataSource) {
 			log.info("DataSource [{}] is XA enabled, registering with a Transaction Manager", dataSourceName);
 			return createXADataSource(xaDataSource, dataSourceName);
@@ -36,5 +39,6 @@ public abstract class AbstractXADataSourceFactory extends PoolingDataSourceFacto
 		return (DataSource) dataSource;
 	}
 
+	@Nonnull
 	protected abstract DataSource createXADataSource(XADataSource xaDataSource, String dataSourceName);
 }

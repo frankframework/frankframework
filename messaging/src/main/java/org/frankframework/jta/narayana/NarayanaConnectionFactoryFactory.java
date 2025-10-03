@@ -15,6 +15,7 @@
 */
 package org.frankframework.jta.narayana;
 
+import jakarta.annotation.Nonnull;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.XAConnectionFactory;
 
@@ -42,8 +43,9 @@ public class NarayanaConnectionFactoryFactory extends JmsConnectionFactoryFactor
 	private @Getter @Setter int maxSessions = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxSessions", 500);
 	private @Getter @Setter int sessionWaitTimeout = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connections.sessionWaitTimeout", 15);
 
+	@Nonnull
 	@Override
-	protected ConnectionFactory augmentConnectionFactory(ConnectionFactory connectionFactory, String connectionFactoryName) {
+	protected ConnectionFactory augmentConnectionFactory(@Nonnull ConnectionFactory connectionFactory, @Nonnull String connectionFactoryName) {
 		if (connectionFactory instanceof XAConnectionFactory factory) {
 			XAResourceRecoveryHelper recoveryHelper = new JmsXAResourceRecoveryHelper(factory, connectionFactoryName);
 			this.transactionManager.registerXAResourceRecoveryHelper(recoveryHelper);

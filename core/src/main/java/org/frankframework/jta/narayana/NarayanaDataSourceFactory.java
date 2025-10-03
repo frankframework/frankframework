@@ -20,6 +20,8 @@ import static java.util.Objects.requireNonNull;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.tomcat.dbcp.dbcp2.PoolableConnection;
 import org.apache.tomcat.dbcp.dbcp2.PoolableConnectionFactory;
 import org.apache.tomcat.dbcp.dbcp2.managed.DataSourceXAConnectionFactory;
@@ -53,6 +55,7 @@ public class NarayanaDataSourceFactory extends AbstractXADataSourceFactory {
 		testQuery = appConstants.getString("transactionmanager.narayana.jdbc.connection.testQuery", testQuery);
 	}
 
+	@Nonnull
 	@Override
 	protected DataSource createXADataSource(XADataSource xaDataSource, String dataSourceName) {
 		XAResourceRecoveryHelper recoveryHelper = new DataSourceXAResourceRecoveryHelper(xaDataSource, dataSourceName);

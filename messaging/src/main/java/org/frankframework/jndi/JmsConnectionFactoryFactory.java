@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Properties;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.jms.ConnectionFactory;
 
 import org.frankframework.jdbc.datasource.ObjectFactory;
@@ -40,7 +41,7 @@ public class JmsConnectionFactoryFactory extends ObjectFactory<ConnectionFactory
 	 * See {@link #augment(ConnectionFactory, String)}.
 	 */
 	@SuppressWarnings("java:S1172")
-	protected ConnectionFactory augmentConnectionFactory(ConnectionFactory cf, String objectName) {
+	protected @Nonnull ConnectionFactory augmentConnectionFactory(@Nonnull ConnectionFactory cf, @Nonnull String objectName) {
 		return cf;
 	}
 
@@ -50,16 +51,19 @@ public class JmsConnectionFactoryFactory extends ObjectFactory<ConnectionFactory
 		return new TransactionalMetadataAwareConnectionFactoryProxy(augmentConnectionFactory(connectionFactory, objectName));
 	}
 
+	@Nonnull
 	@Override
-	public ConnectionFactory getConnectionFactory(String connectionFactoryName) {
+	public ConnectionFactory getConnectionFactory(@Nonnull String connectionFactoryName) {
 		return getConnectionFactory(connectionFactoryName, null);
 	}
 
+	@Nonnull
 	@Override
-	public ConnectionFactory getConnectionFactory(String connectionFactoryName, Properties environment) {
+	public ConnectionFactory getConnectionFactory(@Nonnull String connectionFactoryName, @Nullable Properties environment) {
 		return get(connectionFactoryName, environment);
 	}
 
+	@Nonnull
 	@Override
 	public List<String> getConnectionFactoryNames() {
 		return getObjectNames();
@@ -67,7 +71,7 @@ public class JmsConnectionFactoryFactory extends ObjectFactory<ConnectionFactory
 
 	@Nonnull
 	@Override
-	protected ObjectInfo toObjectInfo(String name) {
+	protected ObjectInfo toObjectInfo(@Nonnull String name) {
 		ConnectionFactory cf = getConnectionFactory(name);
 		if (cf instanceof TransactionalMetadataAwareConnectionFactoryProxy mcf) {
 			return new ObjectInfo(name, mcf.getInfo(), mcf.getPoolInfo());

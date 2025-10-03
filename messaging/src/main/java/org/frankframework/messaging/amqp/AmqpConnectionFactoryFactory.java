@@ -76,7 +76,7 @@ public class AmqpConnectionFactoryFactory extends ObjectFactory<AmqpConnectionFa
 	}
 
 
-	public AmqpConnectionFactory getConnectionFactory(String name) {
+	public @Nonnull AmqpConnectionFactory getConnectionFactory(String name) {
 		return get(name, null);
 	}
 

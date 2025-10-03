@@ -26,6 +26,7 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.Strings;
 import org.apache.logging.log4j.Logger;
@@ -83,8 +84,11 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	 * If not cached yet, attempts to traverse all {@link IObjectLocator IObjectLocators} to do so.
 	 *
 	 * When using a JNDI environment it allows initial properties to use for JNDI lookups.
+	 *
+	 * @throws NoSuchElementException when the object cannot be found
+	 * @throws IllegalStateException when an object definition can be found, but the object instance cannot be created
 	 */
-	protected final @Nonnull O get(String name, Properties environment) {
+	protected final @Nonnull O get(@Nonnull String name, @Nullable Properties environment) throws NoSuchElementException, IllegalStateException {
 		String nameWithResourcePrefix = Strings.CS.prependIfMissing(name, resourcePrefix + "/");
 		return objects.computeIfAbsent(nameWithResourcePrefix, k -> compute(k, environment));
 	}
@@ -93,11 +97,20 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	 * Add and augment an Object to this factory so it can be used without the need of a lookup.
 	 * Should only be called during jUnit Tests or when registering an Object through Spring. Never through a lookup.
 	 */
-	public @Nonnull O add(P object, String name) {
+	public @Nonnull O add(@Nonnull P object, @Nonnull String name) {
 		return objects.computeIfAbsent(name, k -> augment(object, name));
 	}
 
-	private @Nonnull O compute(String name, Properties environment) {
+	/**
+	 * Find the object-definition in any of the configured locators and create and configure an instance.
+	 *
+	 * @param name Name of the object to be found
+	 * @param environment Optional additional properties for looking up the object, in for instance a JNDI environment.
+	 * @return New object instance
+	 * @throws NoSuchElementException If no object definition can be found
+	 * @throws IllegalStateException If the instance cannot be created
+	 */
+	private @Nonnull O compute(@Nonnull String name, @Nullable Properties environment) throws NoSuchElementException, IllegalStateException {
 		for(IObjectLocator objectLocator : objectLocators) {
 			try {
 				P object = objectLocator.lookup(name, environment, lookupClass);
