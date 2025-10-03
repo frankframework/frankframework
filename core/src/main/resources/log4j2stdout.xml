@@ -4,8 +4,15 @@
 	<!--  This is for logging with Loki in kubernetes  -->
 	<Appenders>
 		<Console name="json-stdout">
-			<JsonTemplateLayout eventTemplateUri="classpath:EcsLayout.json"  />
+			<JsonTemplateLayout eventTemplateUri="classpath:EcsLayout.json" />
 		</Console>
+
+		<Async name="stdout">
+			<AppenderRef ref="json-stdout"/>
+		</Async>
+		<Async name="application-log-appender">
+			<AppenderRef ref="json-stdout"/>
+		</Async>
 	</Appenders>
 
 	<Loggers>
