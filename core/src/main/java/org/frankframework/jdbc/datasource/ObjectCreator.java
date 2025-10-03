@@ -59,7 +59,7 @@ public class ObjectCreator {
 	/**
 	 * Ensure that the driver is loaded, else the DriverManagerDataSource can not load it.
 	 */
-	private DataSource loadDataSourceThroughDriver(Class<?> clazz, FrankResource resource, Properties properties) {
+	private @Nonnull DataSource loadDataSourceThroughDriver(@Nonnull Class<?> clazz, @Nonnull FrankResource resource, @Nonnull Properties properties) {
 		DriverManagerDataSource dmds = new DriverManagerDataSource(resource.getUrl(), properties);
 		dmds.setDriverClassName(clazz.getCanonicalName()); // Initialize the JDBC Driver
 
@@ -74,7 +74,7 @@ public class ObjectCreator {
 	/**
 	 * Creates the class and populates available fields
 	 */
-	private <O> O createInstance(Class<O> clazz, String url, Properties properties) {
+	private <O> @Nonnull O createInstance(@Nonnull Class<O> clazz, @Nonnull String url, @Nonnull Properties properties) {
 		try {
 			O instance = clazz.getDeclaredConstructor().newInstance();
 
@@ -101,7 +101,7 @@ public class ObjectCreator {
 	/**
 	 * Combines the optional (supplied) environment, provided driver properties and resolved credentials.
 	 */
-	private Properties getConnectionProperties(FrankResource resource, Properties environment) {
+	private @Nonnull Properties getConnectionProperties(@Nonnull FrankResource resource, @Nullable Properties environment) {
 		Properties mergedProps = new Properties();
 		if(environment != null) {
 			mergedProps.putAll(environment);

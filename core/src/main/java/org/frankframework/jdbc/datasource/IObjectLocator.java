@@ -17,6 +17,9 @@ package org.frankframework.jdbc.datasource;
 
 import java.util.Properties;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 public interface IObjectLocator {
 
 	/**
@@ -24,6 +27,6 @@ public interface IObjectLocator {
 	 * find the requested resource so the next {@link IObjectLocator} can give it a
 	 * shot.
 	 */
-	public <O> O lookup(String name, Properties environment, Class<O> lookupClass) throws Exception;
+	public <O> @Nullable O lookup(@Nonnull String name, @Nullable Properties environment, @Nullable Class<O> lookupClass) throws Exception;
 
 }
