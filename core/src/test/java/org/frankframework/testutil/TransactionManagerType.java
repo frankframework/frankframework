@@ -144,7 +144,8 @@ public enum TransactionManagerType {
 	/**
 	 * fetch the DataSource through the configured {@link DataSourceFactory}.
 	 */
-	public @Nonnull DataSource getDataSource(String productKey) {
+	@Nonnull
+	public DataSource getDataSource(String productKey) {
 		ApplicationContext ac = getConfigurationContext(productKey);
 		return getDataSourceFactory(ac).getDataSource(productKey);
 	}

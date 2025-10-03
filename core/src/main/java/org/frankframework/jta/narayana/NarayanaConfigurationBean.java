@@ -115,7 +115,8 @@ public class NarayanaConfigurationBean implements InitializingBean, ApplicationC
 	 * will be looked up in the JNDI.
 	 * Since the datasource is used by Narayana internally, it cannot be an XA-Only datasource.
 	 */
-	private @Nonnull DataSource getObjectStoreDataSource() throws ObjectStoreException {
+	@Nonnull
+	private DataSource getObjectStoreDataSource() throws ObjectStoreException {
 		if (applicationContext == null) {
 			throw new ObjectStoreException("no ApplicationContext to retrieve DataSource from");
 		}

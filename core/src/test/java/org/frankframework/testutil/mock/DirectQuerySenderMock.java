@@ -10,6 +10,8 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import jakarta.annotation.Nonnull;
+
 import org.mockito.Mockito;
 
 import org.frankframework.core.PipeLineSession;
@@ -53,6 +55,7 @@ public class DirectQuerySenderMock extends DirectQuerySender {
 		return super.getConnection();
 	}
 
+	@Nonnull
 	@Override
 	protected DataSource getDatasource() throws JdbcException {
 		if(mocks.containsKey(getName())) {

@@ -86,7 +86,8 @@ public abstract class AbstractDatabaseMigrator implements ConfigurableLifecycle,
 		return ((AbstractClassLoader) configurationClassLoader).getResource(path, false);
 	}
 
-	protected final @Nonnull DataSource lookupMigratorDatasource() throws SQLException {
+	@Nonnull
+	protected final DataSource lookupMigratorDatasource() throws SQLException {
 		try {
 			log.debug("looking up Datasource [{}] for JdbcMigrator [{}]", getDatasourceName(), getName());
 			return dataSourceFactory.getDataSource(getDatasourceName());

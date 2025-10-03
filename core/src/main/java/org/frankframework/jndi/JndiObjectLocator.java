@@ -60,7 +60,8 @@ public class JndiObjectLocator implements IObjectLocator, ApplicationContextAwar
 	 * @param <O> Object class used by clients
 	 */
 	@Override
-	public <O> @Nullable O lookup(@Nonnull String jndiName, @Nullable Properties jndiEnvironment, @Nullable Class<O> lookupClass) throws NamingException {
+	@Nullable
+	public <O> O lookup(@Nonnull String jndiName, @Nullable Properties jndiEnvironment, @Nullable Class<O> lookupClass) throws NamingException {
 		String prefixedJndiName = getPrefixedJndiName(jndiName);
 		JndiTemplate locator = getJndiTemplate(jndiEnvironment);
 		try {

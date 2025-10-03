@@ -41,7 +41,8 @@ public class JmsConnectionFactoryFactory extends ObjectFactory<ConnectionFactory
 	 * See {@link #augment(ConnectionFactory, String)}.
 	 */
 	@SuppressWarnings("java:S1172")
-	protected @Nonnull ConnectionFactory augmentConnectionFactory(@Nonnull ConnectionFactory cf, @Nonnull String objectName) {
+	@Nonnull
+	protected ConnectionFactory augmentConnectionFactory(@Nonnull ConnectionFactory cf, @Nonnull String objectName) {
 		return cf;
 	}
 

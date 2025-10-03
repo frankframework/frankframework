@@ -38,7 +38,8 @@ public interface IDataSourceFactory {
 	 * @throws NoSuchElementException if the DataSource cannot be found in any of the configured sources
 	 * @throws IllegalStateException if the DataSource cannot be created
 	 */
-	default @Nonnull DataSource getDataSource(String dataSourceName) throws IllegalStateException, NoSuchElementException {
+	@Nonnull
+	default DataSource getDataSource(String dataSourceName) throws IllegalStateException, NoSuchElementException {
 		return getDataSource(dataSourceName, null);
 	}
 
@@ -50,10 +51,12 @@ public interface IDataSourceFactory {
 	 * @throws NoSuchElementException if the DataSource cannot be found in any of the configured sources
 	 * @throws IllegalStateException if the DataSource cannot be created
 	 */
-	@Nonnull DataSource getDataSource(String dataSourceName, Properties jndiEnvironment) throws IllegalStateException, NoSuchElementException;
+	@Nonnull
+	DataSource getDataSource(String dataSourceName, Properties jndiEnvironment) throws IllegalStateException, NoSuchElementException;
 
 	/**
 	 * Return all known/registered DataSources
 	 */
-	@Nonnull List<String> getDataSourceNames();
+	@Nonnull
+	List<String> getDataSourceNames();
 }

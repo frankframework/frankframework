@@ -27,6 +27,7 @@ public interface IObjectLocator {
 	 * find the requested resource so the next {@link IObjectLocator} can give it a
 	 * shot.
 	 */
-	public <O> @Nullable O lookup(@Nonnull String name, @Nullable Properties environment, @Nullable Class<O> lookupClass) throws Exception;
+	@Nullable
+	public <O> O lookup(@Nonnull String name, @Nullable Properties environment, @Nullable Class<O> lookupClass) throws Exception;
 
 }

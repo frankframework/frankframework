@@ -127,7 +127,8 @@ public abstract class MqttFacade implements HasPhysicalDestination, IConfigurabl
 		this.resourceName = resourceName;
 	}
 
-	protected @Nonnull MqttClientFactory getClientFactory() {
+	@Nonnull
+	protected MqttClientFactory getClientFactory() {
 		if (clientFactory == null) {
 			clientFactory = mqttClientFactoryFactory.getClientFactory(resourceName);
 		}

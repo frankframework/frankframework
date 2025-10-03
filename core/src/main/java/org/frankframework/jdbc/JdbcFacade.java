@@ -126,7 +126,8 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 		return started;
 	}
 
-	protected @Nonnull DataSource getDatasource() throws JdbcException {
+	@Nonnull
+	protected DataSource getDatasource() throws JdbcException {
 		if (datasource==null) {
 			String dsName = getDatasourceName();
 			if(StringUtils.isBlank(dsName)) { // for getPhysicalDestinationName (console) when not yet configured.

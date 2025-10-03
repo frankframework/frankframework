@@ -75,7 +75,8 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	 * Allows the originally created object to be mutated to another object. Useful to generate an object from a filled DTO.
 	 */
 	@SuppressWarnings({ "java:S1172", "unchecked" })
-	protected @Nonnull O augment(@Nonnull P object, @Nonnull String objectName) {
+	@Nonnull
+	protected O augment(@Nonnull P object, @Nonnull String objectName) {
 		return (O) object;
 	}
 
@@ -89,7 +90,8 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	 * @throws NoSuchElementException when the object cannot be found
 	 * @throws IllegalStateException when an object definition can be found, but the object instance cannot be created
 	 */
-	protected final @Nonnull O get(@Nonnull String name, @Nullable Properties environment) throws NoSuchElementException, IllegalStateException {
+	@Nonnull
+	protected final O get(@Nonnull String name, @Nullable Properties environment) throws NoSuchElementException, IllegalStateException {
 		String nameWithResourcePrefix = Strings.CS.prependIfMissing(name, resourcePrefix + "/");
 		return objects.computeIfAbsent(nameWithResourcePrefix, k -> compute(k, environment));
 	}
@@ -98,7 +100,8 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	 * Add and augment an Object to this factory so it can be used without the need of a lookup.
 	 * Should only be called during jUnit Tests or when registering an Object through Spring. Never through a lookup.
 	 */
-	public @Nonnull O add(@Nonnull P object, @Nonnull String name) {
+	@Nonnull
+	public O add(@Nonnull P object, @Nonnull String name) {
 		return objects.computeIfAbsent(name, k -> augment(object, name));
 	}
 
@@ -111,7 +114,8 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	 * @throws NoSuchElementException If no object definition can be found
 	 * @throws IllegalStateException If the instance cannot be created
 	 */
-	private @Nonnull O compute(@Nonnull String name, @Nullable Properties environment) throws NoSuchElementException, IllegalStateException {
+	@Nonnull
+	private O compute(@Nonnull String name, @Nullable Properties environment) throws NoSuchElementException, IllegalStateException {
 		for(IObjectLocator objectLocator : objectLocators) {
 			try {
 				P object = objectLocator.lookup(name, environment, lookupClass);
@@ -133,27 +137,31 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 		}
 	}
 
-	protected @Nonnull List<String> getObjectNames() {
+	@Nonnull
+	protected List<String> getObjectNames() {
 		List<String> names = new ArrayList<>(objects.keySet());
 		names.sort(Comparator.naturalOrder()); // AlphaNumeric order
 		return Collections.unmodifiableList(names);
 	}
 
-	public @Nonnull List<ObjectInfo> getObjectInfo() {
+	@Nonnull
+	public List<ObjectInfo> getObjectInfo() {
 		return getObjectNames().stream().map(this::toObjectInfo).toList();
 	}
 
 	/**
 	 * Mapping from <O> to a information object, used for logging and console actions.
 	 */
-	protected @Nonnull ObjectInfo toObjectInfo(String name) {
+	@Nonnull
+	protected ObjectInfo toObjectInfo(String name) {
 		Object obj = get(name, null);
 		return new ObjectInfo(name, StringUtil.reflectionToString(obj), null);
 	}
 
 	public record ObjectInfo (String name, String info, String connectionPoolProperties) {
 		@Override
-		public @Nonnull String toString() {
+		@Nonnull
+		public String toString() {
 			return "Resource [%s] %s, POOL: %s".formatted(name, info, connectionPoolProperties);
 		}
 	}
