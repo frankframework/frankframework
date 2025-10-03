@@ -135,7 +135,7 @@
 		<Logger name="CONFIG" additivity="false" level="INFO">
 			<AppenderRef ref="config"/>
 		</Logger>
-		<Logger name="APPLICATION" additivity="true" level="DEBUG">
+		<Logger name="APPLICATION" additivity="false" level="DEBUG">
 			<AppenderRef ref="application-log-appender"/>
 		</Logger>
 		<Logger name="LEAK_LOG" additivity="false" level="ERROR">
