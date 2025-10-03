@@ -82,9 +82,10 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	/**
 	 * Returns the object matching the name and return type.
 	 * If not cached yet, attempts to traverse all {@link IObjectLocator IObjectLocators} to do so.
-	 *
+	 * If a new instance is created, {@link #augment(Object, String)} is called to allow subclasses to wrap or modify the object.
+	 * <p>
 	 * When using a JNDI environment it allows initial properties to use for JNDI lookups.
-	 *
+	 * </p>
 	 * @throws NoSuchElementException when the object cannot be found
 	 * @throws IllegalStateException when an object definition can be found, but the object instance cannot be created
 	 */
@@ -102,7 +103,7 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	}
 
 	/**
-	 * Find the object-definition in any of the configured locators and create and configure an instance.
+	 * Find the object-definition in any of the configured locators and create, configure and {@link #augment(Object, String)} an instance.
 	 *
 	 * @param name Name of the object to be found
 	 * @param environment Optional additional properties for looking up the object, in for instance a JNDI environment.
