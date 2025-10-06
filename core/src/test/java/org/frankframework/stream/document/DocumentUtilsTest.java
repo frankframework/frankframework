@@ -118,6 +118,4 @@ public class DocumentUtilsTest {
 	public void testSimple() throws Exception {
 			testBuild("{\"a\":1,\"b\":{\"c\":2}}","<root><a>1</a><b><c>2</c></b></root>");
 	}
-
-
 }

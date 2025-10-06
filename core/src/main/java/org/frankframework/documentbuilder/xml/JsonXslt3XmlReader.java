@@ -15,8 +15,6 @@
 */
 package org.frankframework.documentbuilder.xml;
 
-import static org.frankframework.documentbuilder.xml.JsonXslt3XmlHandler.TARGET_NAMESPACE;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
@@ -41,6 +39,7 @@ import org.frankframework.util.StreamUtil;
 
 public class JsonXslt3XmlReader implements XMLReader {
 
+	private static final String TARGET_NAMESPACE = "http://www.w3.org/2013/XSL/json";
 	private static final String FEATURE_NAMESPACES = "http://xml.org/sax/features/namespaces";
 	private static final String FEATURE_NAMESPACE_PREFIXES = "http://xml.org/sax/features/namespace-prefixes";
 
@@ -79,6 +78,7 @@ public class JsonXslt3XmlReader implements XMLReader {
 			return false;
 		} else if (event == Event.START_ARRAY) {
 			startElement("array", key);
+			//noinspection StatementWithEmptyBody
 			while (parse(null, parser)) ; // parse array elements until the close
 			endElement("array");
 		} else {

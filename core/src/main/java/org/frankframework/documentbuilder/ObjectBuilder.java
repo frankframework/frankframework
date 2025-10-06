@@ -19,6 +19,7 @@ import org.xml.sax.SAXException;
 
 import org.frankframework.util.XmlUtils;
 
+@SuppressWarnings("resource")
 public abstract class ObjectBuilder extends StructureBuilder implements IObjectBuilder {
 
 	public void add(String name, String value) throws SAXException {

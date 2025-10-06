@@ -27,6 +27,7 @@ public class JsonNodeBuilder implements INodeBuilder {
 
 	@Override
 	public void close() throws SAXException {
+		// No-op in the base builder class
 	}
 
 	@Override

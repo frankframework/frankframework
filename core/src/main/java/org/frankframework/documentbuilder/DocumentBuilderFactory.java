@@ -21,7 +21,12 @@ import org.xml.sax.SAXException;
 
 import org.frankframework.stream.MessageBuilder;
 
+@SuppressWarnings("resource")
 public class DocumentBuilderFactory {
+
+	private DocumentBuilderFactory() {
+		// Private constructor for static utility class
+	}
 
 	public static IDocumentBuilder startDocument(DocumentFormat format, String rootElement, MessageBuilder messageBuilder, boolean prettyPrint) throws SAXException {
 		return switch (format) {

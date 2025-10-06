@@ -61,7 +61,7 @@ public class XmlObjectBuilder extends ObjectBuilder {
 	}
 
 	@Override
-	public ArrayBuilder addRepeatedField(String fieldName) throws SAXException {
+	public ArrayBuilder addRepeatedField(String fieldName) {
 		return new XmlArrayBuilder(current, fieldName);
 	}
 

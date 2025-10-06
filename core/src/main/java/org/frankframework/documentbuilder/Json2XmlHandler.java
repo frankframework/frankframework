@@ -15,13 +15,17 @@
 */
 package org.frankframework.documentbuilder;
 
-import java.util.Stack;
+import java.util.ArrayDeque;
+import java.util.Deque;
 
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import org.frankframework.xml.SaxException;
 
+/**
+ * NOTE: This class is currently only used in tests.
+ */
 public class Json2XmlHandler implements JsonEventHandler {
 
 	private static final String DEFAULT_ARRAY_ELEMENT_NAME = "item";
@@ -30,7 +34,7 @@ public class Json2XmlHandler implements JsonEventHandler {
 	private final ContentHandler handler;
 	private final boolean prettyPrint;
 
-	private final Stack<Object> stack = new Stack<>();
+	private final Deque<Object> stack = new ArrayDeque<>();
 
 	public Json2XmlHandler(ContentHandler handler, boolean prettyPrint) {
 		this("root", handler, prettyPrint);
@@ -55,32 +59,35 @@ public class Json2XmlHandler implements JsonEventHandler {
 	}
 
 	private void checkPendingFieldOrElement() throws SAXException {
-		Object top=stack.peek();
+		final Object top = stack.peek();
 		if (top instanceof INodeBuilder) {
 			((INodeBuilder)stack.pop()).close();
 		}
 	}
 
 	private Object checkField() throws SAXException {
-		Object top = stack.peek();
+		final Object top = stack.peek();
 		if (top instanceof String) {
 			String key = (String)stack.pop();
 			ObjectBuilder objectBuilder = (ObjectBuilder)stack.peek();
-			top=objectBuilder.addField(key);
-			stack.push(top);
-			return top;
+			if (objectBuilder == null) {
+				throw new IllegalStateException("Object stack is empty, expected to find an ObjectBuilder");
+			}
+			Object newField = objectBuilder.addField(key);
+			stack.push(newField);
+			return newField;
 		}
 		if (top instanceof ArrayBuilder builder) {
-			top=builder.addElement();
-			stack.push(top);
-			return top;
+			Object newArrayElement = builder.addElement();
+			stack.push(newArrayElement);
+			return newArrayElement;
 		}
 		return top;
 	}
 
 	@Override
 	public void startObject() throws SAXException {
-		Object top = checkField();
+		final Object top = checkField();
 		if (top instanceof IDocumentBuilder builder) {
 			stack.push(builder.asObjectBuilder());
 			return;
@@ -94,7 +101,7 @@ public class Json2XmlHandler implements JsonEventHandler {
 
 	@Override
 	public void startObjectEntry(String key) throws SAXException {
-		Object top = stack.peek();
+		final Object top = stack.peek();
 		if (top instanceof ObjectBuilder) {
 			stack.push(key);
 			return;
@@ -110,7 +117,7 @@ public class Json2XmlHandler implements JsonEventHandler {
 
 	@Override
 	public void startArray() throws SAXException {
-		Object top = stack.peek();
+		final Object top = stack.peek();
 		if (top instanceof IDocumentBuilder builder) {
 			stack.push(builder.asArrayBuilder(DEFAULT_ARRAY_ELEMENT_NAME));
 			return;
@@ -122,8 +129,10 @@ public class Json2XmlHandler implements JsonEventHandler {
 		if (top instanceof String) {
 			String key = (String)stack.pop();
 			ObjectBuilder objectBuilder = (ObjectBuilder)stack.peek();
-			top=objectBuilder.addRepeatedField(key);
-			stack.push(top);
+			if (objectBuilder == null) {
+				throw new IllegalStateException("Object stack is empty, expected to find an ObjectBuilder");
+			}
+			stack.push(objectBuilder.addRepeatedField(key));
 			return;
 		}
 		throw new SaxException("Do not expect startObject() with stack top ["+top+"]");
@@ -137,8 +146,8 @@ public class Json2XmlHandler implements JsonEventHandler {
 
 	@Override
 	public void primitive(Object value) throws SAXException {
-		INodeBuilder top = (INodeBuilder)checkField();
-		try (INodeBuilder node = top) {
+		final INodeBuilder top = (INodeBuilder)checkField();
+		try (INodeBuilder ignored = top) {
 			if (value instanceof String string) {
 				top.setValue(string);
 			} else if (value instanceof Boolean boolean1) {
@@ -157,11 +166,9 @@ public class Json2XmlHandler implements JsonEventHandler {
 	@Override
 	public void number(String value) throws SAXException {
 		INodeBuilder top = (INodeBuilder)checkField();
-		try (INodeBuilder node = top) {
+		try (INodeBuilder ignored = top) {
 			top.setNumberValue(value);
 		}
 		stack.pop();
 	}
-
-
 }

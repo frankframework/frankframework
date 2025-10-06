@@ -17,6 +17,7 @@ package org.frankframework.documentbuilder;
 
 import org.xml.sax.SAXException;
 
+@SuppressWarnings("resource")
 public abstract class ArrayBuilder extends StructureBuilder implements IArrayBuilder {
 
 	public void addElement(String value) throws SAXException {
