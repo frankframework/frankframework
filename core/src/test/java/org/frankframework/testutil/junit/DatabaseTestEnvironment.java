@@ -11,7 +11,6 @@ import javax.sql.DataSource;
 
 import jakarta.annotation.Nonnull;
 
-import org.junit.jupiter.api.extension.ExtensionContext.Store;
 import org.junit.platform.commons.JUnitException;
 import org.junit.platform.commons.util.ExceptionUtils;
 import org.springframework.jdbc.datasource.DelegatingDataSource;
@@ -38,7 +37,7 @@ import org.frankframework.util.SpringUtils;
  * @author Niels Meijer
  */
 @Log4j2
-public class DatabaseTestEnvironment implements Store.CloseableResource {
+public class DatabaseTestEnvironment implements AutoCloseable {
 
 	private final @Getter String dataSourceName;
 	private final @Getter DataSource dataSource;
@@ -134,7 +133,7 @@ public class DatabaseTestEnvironment implements Store.CloseableResource {
 	}
 
 	@Override
-	public void close() throws Throwable {
+	public void close() {
 		Collections.reverse(transactionsToClose);
 		transactionsToClose.forEach(this::completeTxSafely);
 
