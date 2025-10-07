@@ -18,6 +18,6 @@ public class NarayanaJtaTransactionManagerTest {
 	public void testDefaultRecoveryNode(DatabaseTestEnvironment env) {
 		SpringTxManagerProxy txManagerProxy = assertInstanceOf(SpringTxManagerProxy.class, env.getTxManager());
 		NarayanaJtaTransactionManager txManager = assertInstanceOf(NarayanaJtaTransactionManager.class, txManagerProxy.getRealTxManager());
-		Assertions.assertIterableEquals(List.of("NARAYANA"), txManager.getRecoveryNodes());
+		Assertions.assertIterableEquals(List.of(txManager.getUid()), txManager.getRecoveryNodes());
 	}
 }
