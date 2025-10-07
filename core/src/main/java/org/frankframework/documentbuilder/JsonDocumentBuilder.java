@@ -41,6 +41,7 @@ public class JsonDocumentBuilder extends JsonNodeBuilder implements IDocumentBui
 		this.handler=handler;
 		handler.startDocument();
 	}
+
 	@Override
 	public void close() throws SAXException {
 		try {

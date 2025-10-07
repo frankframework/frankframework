@@ -1,15 +1,23 @@
 package org.frankframework.stream.document;
 
+import static org.frankframework.testutil.MatchUtils.assertXmlEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.Writer;
 
 import jakarta.json.Json;
+import jakarta.json.JsonArray;
+import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonValue;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.xml.sax.SAXException;
 
 import org.frankframework.documentbuilder.ArrayBuilder;
@@ -22,14 +30,18 @@ import org.frankframework.documentbuilder.JsonDocumentBuilder;
 import org.frankframework.documentbuilder.ObjectBuilder;
 import org.frankframework.documentbuilder.XmlDocumentBuilder;
 import org.frankframework.documentbuilder.json.JsonWriter;
-import org.frankframework.testutil.MatchUtils;
+import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.XmlWriter;
 
 public class DocumentBuilderTest {
 
-	private final String expectedJson = "{\"attr1\":\"alpha quote[\\\"]\",\"attr2\":1.2,\"attr3\":true,\"attr4\":\"a b  c d e f   g\",\"veld1\":\"waarde1 quote[\\\"]\",\"veld2\":10,\"array\":[\"elem1\",\"elem2\"],\"repField\":[\"rep1\",\"rep2\"],\"objField\":{\"o1\":\"w1\",\"o2\":10}}";
-	private final String expectedXml = "<root attr1=\"alpha quote[&quot;]\" attr2=\"1.2\" attr3=\"true\" attr4=\"a b  c d e f   g\"><veld1>waarde1 quote[\"]</veld1><veld2>10</veld2><array><element>elem1</element><element>elem2</element></array><repField>rep1</repField><repField>rep2</repField><objField><o1>w1</o1><o2>10</o2></objField></root>";
-	private final String expectedXmlPref = "<root pref_attr1=\"pref:alpha quote[&quot;]\" pref_attr2=\"1.2\" pref_attr3=\"true\" pref_attr4=\"a b  c d e f   g\"><pref_veld1>pref:waarde1 quote[\"]</pref_veld1><pref_veld2>10</pref_veld2><pref_array><pref_element>pref:elem1</pref_element><pref_element>pref:elem2</pref_element></pref_array><pref_repField>pref:rep1</pref_repField><pref_repField>pref:rep2</pref_repField><pref_objField><pref_o1>pref:w1</pref_o1><pref_o2>10</pref_o2></pref_objField></root>";
+	private static final String EXPECTED_JSON = "{\"attr1\":\"alpha quote[\\\"]\",\"attr2\":1.2,\"attr3\":true,\"attr4\":\"a b  c d e f   g\",\"veld1\":\"waarde1 quote[\\\"]\",\"veld2\":10,\"array\":[\"elem1\",\"elem2\"],\"repField\":[\"rep1\",\"rep2\"],\"objField\":{\"o1\":\"w1\",\"o2\":10}}";
+	private static final String EXPECTED_XML = "<root attr1=\"alpha quote[&quot;]\" attr2=\"1.2\" attr3=\"true\" attr4=\"a b  c d e f   g\"><veld1>waarde1 quote[\"]</veld1><veld2>10</veld2><array><element>elem1</element><element>elem2</element></array><repField>rep1</repField><repField>rep2</repField><objField><o1>w1</o1><o2>10</o2></objField></root>";
+	private static final String EXPECTED_XML_PREF = "<root pref_attr1=\"pref:alpha quote[&quot;]\" pref_attr2=\"1.2\" pref_attr3=\"true\" pref_attr4=\"a b  c d e f   g\"><pref_veld1>pref:waarde1 quote[\"]</pref_veld1><pref_veld2>10</pref_veld2><pref_array><pref_element>pref:elem1</pref_element><pref_element>pref:elem2</pref_element></pref_array><pref_repField>pref:rep1</pref_repField><pref_repField>pref:rep2</pref_repField><pref_objField><pref_o1>pref:w1</pref_o1><pref_o2>10</pref_o2></pref_objField></root>";
+
+	private static final String STR_WITH_ILLEGAL_CHARS = "abcdefg" + (char) 0 + "123456";
+	private static final String STR_CLEANED_VALUE = "abcdefg?#0;123456";
+	private static final String STR_CLEANED_ELEM = "abcdefg_123456";
 
 	public void buildDocument(IDocumentBuilder root) throws SAXException {
 		try (ObjectBuilder object = root.startObject()) {
@@ -42,7 +54,7 @@ public class DocumentBuilderTest {
 	}
 
 	public String getExpectedXml(String elementPrefix, String valuePrefix) {
-		return expectedXmlPref.replace("pref_", elementPrefix).replace("pref:", valuePrefix);
+		return EXPECTED_XML_PREF.replace("pref_", elementPrefix).replace("pref:", valuePrefix);
 	}
 
 	public void buildObject(ObjectBuilder object, String prefix) throws SAXException {
@@ -70,18 +82,18 @@ public class DocumentBuilderTest {
 
 	@Test
 	public void testXmlDocumentBuilder() throws SAXException {
-		String expected = expectedXml;
+		String expected = EXPECTED_XML;
 		XmlWriter writer = new XmlWriter();
 		try (IDocumentBuilder root = new XmlDocumentBuilder("root", writer, false)) {
 			buildDocument(root);
 		}
-		MatchUtils.assertXmlEquals(expected, writer.toString());
+		assertXmlEquals(expected, writer.toString());
 		assertEquals(expected, writer.toString());
 	}
 
 	@Test
 	public void testJsonDocumentBuilder() throws SAXException {
-		String expected = expectedJson;
+		String expected = EXPECTED_JSON;
 		StringWriter result = new StringWriter();
 		JsonWriter writer = new JsonWriter(result, true);
 		try (IDocumentBuilder root = new JsonDocumentBuilder(writer)) {
@@ -93,7 +105,7 @@ public class DocumentBuilderTest {
 
 	@Test
 	public void testJsonDocumentBuilderDefault() throws SAXException {
-		String expected = expectedJson;
+		String expected = EXPECTED_JSON;
 		try (IDocumentBuilder root = new JsonDocumentBuilder()) {
 			buildDocument(root);
 			root.close();
@@ -103,17 +115,17 @@ public class DocumentBuilderTest {
 
 	@Test
 	public void testXmlDocumentBuilderDefault() throws SAXException {
-		String expected = expectedXml;
+		String expected = EXPECTED_XML;
 		XmlWriter writer = new XmlWriter();
 		try (IDocumentBuilder root = new XmlDocumentBuilder("root", writer, true)) {
 			buildDocument(root);
 		}
-		MatchUtils.assertXmlEquals(expected, writer.toString());
+		assertXmlEquals(expected, writer.toString());
 	}
 
 	@Test
 	public void testJsonObjectDocumentBuilder() throws SAXException {
-		String expected = expectedJson;
+		String expected = EXPECTED_JSON;
 		try (ObjectBuilder root = DocumentBuilderFactory.startDocument(DocumentFormat.JSON, "dummy", new StringWriter()).asObjectBuilder()) {
 			buildObject(root);
 			root.close();
@@ -123,11 +135,11 @@ public class DocumentBuilderTest {
 
 	@Test
 	public void testXmlObjectDocumentBuilder() throws SAXException {
-		String expected = expectedXml;
+		String expected = EXPECTED_XML;
 		try (ObjectBuilder root = DocumentBuilderFactory.startDocument(DocumentFormat.XML, "root", new StringWriter()).asObjectBuilder()) {
 			buildObject(root);
 			root.close();
-			MatchUtils.assertXmlEquals(expected, root.toString());
+			assertXmlEquals(expected, root.toString());
 		}
 	}
 
@@ -144,7 +156,7 @@ public class DocumentBuilderTest {
 				buildObject(object, prefix);
 			}
 		}
-		MatchUtils.assertXmlEquals(expected, writer.toString());
+		assertXmlEquals(expected, writer.toString());
 		assertEquals(expected, writer.toString());
 	}
 
@@ -166,17 +178,18 @@ public class DocumentBuilderTest {
 			try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("root", writer)) {
 				DocumentUtils.jsonValue2Document(jValue, documentBuilder);
 			}
-			MatchUtils.assertXmlEquals(expected, writer.toString());
+			assertXmlEquals(expected, writer.toString());
 		}
 	}
 
 
-	@Test
-	public void jsonToJsonObject() throws Exception {
-		String input="{\"a\":\"aa\"}";
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"{\"a\":\"aa\"}", "[\"a\",\"b\"]"
+	})
+	public void testJsonValueToDocument(String input) throws SAXException {
 		try(JsonReader jr = Json.createReader(new StringReader(input))) {
-			JsonValue jValue=null;
-			jValue = jr.read();
+			JsonValue jValue = jr.read();
 			StringWriter writer = new StringWriter();
 			try (JsonDocumentBuilder documentBuilder = new JsonDocumentBuilder(writer)) {
 				DocumentUtils.jsonValue2Document(jValue, documentBuilder);
@@ -186,16 +199,51 @@ public class DocumentBuilderTest {
 	}
 
 	@Test
-	public void jsonToJsonArray() throws Exception {
-		String input="[\"a\",\"b\"]";
-		try(JsonReader jr = Json.createReader(new StringReader(input))) {
-			JsonValue jValue=null;
-			jValue = jr.read();
-			StringWriter writer = new StringWriter();
-			try (JsonDocumentBuilder documentBuilder = new JsonDocumentBuilder(writer)) {
-				DocumentUtils.jsonValue2Document(jValue, documentBuilder);
-			}
-			assertEquals(input, writer.toString());
+	public void testJsonIllegalCharacters() throws Exception {
+		StringWriter writer = new StringWriter();
+		try (JsonDocumentBuilder documentBuilder = new JsonDocumentBuilder(writer)) {
+			ObjectBuilder ob = documentBuilder.asObjectBuilder();
+			ArrayBuilder array = ob.addArrayField(STR_WITH_ILLEGAL_CHARS, "dummy");
+			array.addElement(STR_WITH_ILLEGAL_CHARS);
+			array.close();
+			ob.close();
 		}
+		String result = writer.toString();
+
+		// Check that the builder did what we expected it to do
+		assertEquals("{\"%s\":[\"%s\"]}".formatted(STR_CLEANED_VALUE, STR_CLEANED_VALUE), result);
+
+		// Verify the resulting JSON is valid by parsing it
+		// Check the contents too, because the parser is incremental and this forces it to read everything
+		try(JsonReader jr = Json.createReader(new StringReader(result))) {
+			JsonValue jValue = jr.read();
+			JsonObject jObject = assertInstanceOf(JsonObject.class, jValue);
+			assertTrue(jObject.containsKey(STR_CLEANED_VALUE));
+			JsonArray jArray = assertInstanceOf(JsonArray.class, jObject.get(STR_CLEANED_VALUE));
+			assertEquals(1, jArray.size());
+			assertEquals(STR_CLEANED_VALUE, jArray.getString(0));
+		}
+	}
+
+	@Test
+	public void testXmlIllegalCharacters() throws Exception {
+		StringWriter writer = new StringWriter();
+		try (XmlDocumentBuilder documentBuilder = new XmlDocumentBuilder("root", writer)) {
+			ObjectBuilder ob = documentBuilder.asObjectBuilder()
+					.addObjectField(STR_WITH_ILLEGAL_CHARS);
+			ob.addAttribute(STR_WITH_ILLEGAL_CHARS, STR_WITH_ILLEGAL_CHARS);
+			ob.add("elem",  STR_WITH_ILLEGAL_CHARS);
+			ob.close();
+			documentBuilder.asObjectBuilder().close();
+		}
+
+		String result = writer.toString();
+
+		// Check the builder did what we expected it to do
+		assertXmlEquals("<root><%s %s=\"%s\"><elem>%s</elem></%s></root>".formatted(STR_CLEANED_ELEM, STR_CLEANED_ELEM, STR_CLEANED_VALUE, STR_CLEANED_VALUE, STR_CLEANED_ELEM), result);
+
+		// Verify the resulting XML is valid by parsing it
+		// Not checking the contents, parser will parse the full document
+		XmlUtils.parseXml(result, new XmlWriter(Writer.nullWriter()));
 	}
 }

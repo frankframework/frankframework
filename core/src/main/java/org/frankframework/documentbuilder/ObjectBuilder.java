@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import org.xml.sax.SAXException;
 
 import org.frankframework.util.XmlUtils;
 
+@SuppressWarnings("resource")
 public abstract class ObjectBuilder extends StructureBuilder implements IObjectBuilder {
 
 	public void add(String name, String value) throws SAXException {

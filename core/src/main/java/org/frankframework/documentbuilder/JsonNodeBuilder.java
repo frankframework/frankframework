@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,6 +27,7 @@ public class JsonNodeBuilder implements INodeBuilder {
 
 	@Override
 	public void close() throws SAXException {
+		// No-op in the base builder class
 	}
 
 	@Override

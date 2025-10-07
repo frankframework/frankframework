@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,6 +25,7 @@ import org.apache.commons.text.StringEscapeUtils;
 import org.xml.sax.SAXException;
 
 import org.frankframework.documentbuilder.JsonEventHandler;
+import org.frankframework.util.XmlEncodingUtils;
 import org.frankframework.xml.SaxException;
 
 public class JsonWriter implements JsonEventHandler {
@@ -78,7 +79,7 @@ public class JsonWriter implements JsonEventHandler {
 			if (state.firstElemSeen) {
 				writer.write(",");
 			} else {
-				state.firstElemSeen=true;
+				state.firstElemSeen = true;
 			}
 		}
 	}
@@ -98,7 +99,7 @@ public class JsonWriter implements JsonEventHandler {
 	public void startObjectEntry(String key) throws SAXException {
 		try {
 			writeSeparatingComma(true);
-			writer.write("\""+key+"\":");
+			writer.write("\"" + StringEscapeUtils.escapeJson(XmlEncodingUtils.replaceNonValidXmlCharacters(key, '?', true, true)) + "\":");
 		} catch (IOException e) {
 			throw new SaxException(e);
 		}
@@ -140,11 +141,11 @@ public class JsonWriter implements JsonEventHandler {
 		try {
 			writeSeparatingComma(false);
 			if (value instanceof String string) {
-				writer.write("\""+StringEscapeUtils.escapeJson(string)+"\"");
+				writer.write("\"" + StringEscapeUtils.escapeJson(XmlEncodingUtils.replaceNonValidXmlCharacters(string, '?',  true, true)) + "\"");
 			} else if (value == null) {
 				writer.write("null");
 			} else {
-				writer.write(StringEscapeUtils.escapeJson(value.toString()));
+				writer.write(StringEscapeUtils.escapeJson(XmlEncodingUtils.replaceNonValidXmlCharacters(value.toString(), '?',  true, true)));
 			}
 		} catch (IOException e) {
 			throw new SaxException(e);

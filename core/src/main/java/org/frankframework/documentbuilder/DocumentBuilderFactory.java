@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2024 WeAreFrank!
+   Copyright 2021, 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,12 @@ import org.xml.sax.SAXException;
 
 import org.frankframework.stream.MessageBuilder;
 
+@SuppressWarnings("resource")
 public class DocumentBuilderFactory {
+
+	private DocumentBuilderFactory() {
+		// Private constructor for static utility class
+	}
 
 	public static IDocumentBuilder startDocument(DocumentFormat format, String rootElement, MessageBuilder messageBuilder, boolean prettyPrint) throws SAXException {
 		return switch (format) {

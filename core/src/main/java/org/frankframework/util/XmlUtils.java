@@ -795,11 +795,11 @@ public class XmlUtils {
 	}
 
 	public static String normalizeAttributeValue(String input) {
-		return normalizeWhitespace(convertEndOfLines(input));
+		return XmlEncodingUtils.replaceNonValidXmlCharacters(normalizeWhitespace(convertEndOfLines(input)), '?', true, true);
 	}
 
 	public static String cleanseElementName(String candidateName) {
-		return candidateName!=null ? candidateName.replaceAll("[^\\w\\-.]", "_") : null;
+		return candidateName!=null ? XmlEncodingUtils.replaceNonValidXmlCharacters(candidateName.replaceAll("[^\\w\\-.]", "_"), '?', true, true) : null;
 	}
 
 	/**
