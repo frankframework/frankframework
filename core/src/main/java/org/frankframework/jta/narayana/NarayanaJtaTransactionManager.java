@@ -91,7 +91,7 @@ public class NarayanaJtaTransactionManager extends AbstractStatusRecordingTransa
 	}
 
 	protected List<String> getRecoveryNodes() {
-		List<String> recoveryNodeList = new ArrayList<String>();
+		List<String> recoveryNodeList = new ArrayList<>();
 
 		if (StringUtils.isBlank(xaRecoveryNodes)) {
 			recoveryNodeList.add(getUid());
