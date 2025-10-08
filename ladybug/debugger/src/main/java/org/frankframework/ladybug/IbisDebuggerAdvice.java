@@ -20,6 +20,8 @@ import java.io.Writer;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.springframework.beans.FatalBeanException;
@@ -71,10 +73,9 @@ import org.frankframework.xml.XmlWriter;
  * @author Jaco de Groot
  * @author Niels Meijer
  */
+@SuppressWarnings("unchecked")
 @Log4j2
 public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEventListener<ThreadDebugInfo>, ApplicationListener<DebuggerStatusChangedEvent>, IXmlDebugger {
-
-	private static final String REQUESTER = "TestTool";
 
 	private @Setter @Autowired LadybugReportGenerator reportGenerator;
 	private @Setter @Autowired LadybugDebugger debugger;
@@ -91,7 +92,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	@Override
 	public void afterPropertiesSet() {
 		// As reportGenerator lives in the WebApplicationContext it cannot get wired with ibisManager by Spring
-		if(reportGenerator == null) {
+		if (reportGenerator == null) {
 			log.info("no Ladybug found on classpath, skipping reportGenerator.");
 		} else {
 			if(debugger == null) {
@@ -123,7 +124,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			Object[] args = proceedingJoinPoint.getArgs();
 			args[3] = pipeLineSessionDebugger;
 			pipeLineResult = (PipeLineResult)proceedingJoinPoint.proceed(args);
-		} catch(Throwable throwable) {
+		} catch (Throwable throwable) {
 			throw reportGenerator.pipelineAbort(pipeLine, correlationId, throwable);
 		}
 		reportGenerator.showOutputValue(correlationId, "exitState", pipeLineResult.getState().name());
@@ -135,7 +136,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			reportGenerator.pipelineAbort(pipeLine, correlationId, pipeLineResult.getResult());
 		} else {
 			Message result = reportGenerator.pipelineOutput(pipeLine, correlationId, pipeLineResult.getResult());
-			if(Message.isNull(result)) {
+			if (Message.isNull(result)) {
 				log.error("debugger returned NULL, pipeline result was: [{}]", pipeLineResult.getResult());
 			}
 			pipeLineResult.setResult(result);
@@ -204,7 +205,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			Object[] args = proceedingJoinPoint.getArgs();
 			args[2] = result;
 			pipeRunResult = (PipeRunResult)proceedingJoinPoint.proceed(args); // in case of 'preserveInput', this result is already replaced with the preserved input
-		} catch(Throwable throwable) {
+		} catch (Throwable throwable) {
 			throw reportGenerator.pipeAbort(pipeLine, validator, correlationId, throwable);
 		}
 		pipeRunResult.setResult(reportGenerator.pipeOutput(pipeLine, validator, correlationId, pipeRunResult.getResult()));
@@ -304,7 +305,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			Writer writer = writerPlaceHolder.getWriter();
 			session.scheduleCloseOnSessionExit(writer);
 			XmlWriter xmlWriter = new XmlWriter(limitSize(writer, writerPlaceHolder.getSizeLimit()), true);
-			contentHandler = new XmlTee(contentHandler, new PrettyPrintFilter(xmlWriter));
+			return new XmlTee(contentHandler, new PrettyPrintFilter(xmlWriter));
 		}
 		return contentHandler;
 	}
@@ -315,7 +316,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			private long written;
 
 			@Override
-			public void write(char[] buffer, int offset, int length) throws IOException {
+			public void write(@Nonnull char[] buffer, int offset, int length) throws IOException {
 				if (written <= maxSize) {
 					writer.write(buffer, offset, length);
 					written += length;
@@ -348,7 +349,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			return (SenderResult)proceedingJoinPoint.proceed();
 		}
 		String correlationId = getCorrelationId(pipeLineSession);
-		message = debugGetInputFrom(
+		Message result = debugGetInputFrom(
 				pipeLineSession, correlationId, message,
 				senderWrapperBase.getGetInputFromSessionKey(),
 				senderWrapperBase.getGetInputFromFixedValue(),
@@ -357,7 +358,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			return null;
 		}
 		Object[] args = proceedingJoinPoint.getArgs();
-		args[1] = message;
+		args[1] = result;
 		return (SenderResult)proceedingJoinPoint.proceed(args); // this message contains the original result, before replacing via preserveInput
 	}
 
@@ -365,16 +366,16 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		if (!isEnabled()) {
 			return (M)proceedingJoinPoint.proceed();
 		}
-		correlationId = reportGenerator.replyListenerInput(listener, pipeLineSession.getMessageId(), correlationId);
-		M result;
-		if (debugger.stubReplyListener(listener, correlationId)) {
+		String updatedCorrelationId = reportGenerator.replyListenerInput(listener, pipeLineSession.getMessageId(), correlationId);
+		if (debugger.stubReplyListener(listener, updatedCorrelationId)) {
 			return null;
 		}
+		M result;
 		try {
 			Object[] args = proceedingJoinPoint.getArgs();
-			args[1] = correlationId;
+			args[1] = updatedCorrelationId;
 			result = (M)proceedingJoinPoint.proceed(args);
-		} catch(Throwable throwable) {
+		} catch (Throwable throwable) {
 			throw reportGenerator.replyListenerAbort(listener, pipeLineSession.getMessageId(), throwable);
 		}
 		return reportGenerator.replyListenerOutput(listener, pipeLineSession.getMessageId(), result);
@@ -478,25 +479,26 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	}
 
 	private Message debugGetInputFrom(PipeLineSession pipeLineSession, String correlationId, Message input, String inputFromSessionKey, String inputFromFixedValue, String emptyInputReplacement) {
-		if (StringUtils.isNotEmpty(inputFromSessionKey)) {
-			input = Message.asMessage(pipeLineSession.get(inputFromSessionKey));
-			input = (Message)reportGenerator.getInputFromSessionKey(correlationId, inputFromSessionKey, input);
-		}
+		Message result;
 		if (StringUtils.isNotEmpty(inputFromFixedValue)) {
-			input =  Message.asMessage(reportGenerator.getInputFromFixedValue(correlationId, inputFromFixedValue));
-		}
-		if (StringUtils.isNotEmpty(emptyInputReplacement) && Message.isEmpty(input)) {
-			input = Message.asMessage(reportGenerator.getEmptyInputReplacement(correlationId, emptyInputReplacement));
+			result =  Message.asMessage(reportGenerator.getInputFromFixedValue(correlationId, inputFromFixedValue));
+		} else if (StringUtils.isNotEmpty(inputFromSessionKey)) {
+			result = (Message)reportGenerator.getInputFromSessionKey(correlationId, inputFromSessionKey, Message.asMessage(pipeLineSession.get(inputFromSessionKey)));
+		} else {
+			result = input;
 		}
 
-		return input;
+		if (StringUtils.isNotEmpty(emptyInputReplacement) && Message.isEmpty(result)) {
+			return Message.asMessage(reportGenerator.getEmptyInputReplacement(correlationId, emptyInputReplacement));
+		}
+		return result;
 	}
 
-public static class ParallelSenderExecutorWrapper implements Runnable {
+	static class ParallelSenderExecutorWrapper implements Runnable {
 		private final AbstractRequestReplyExecutor requestReplyExecutor;
 		private final ThreadConnector<ThreadDebugInfo> threadConnector;
 
-		public ParallelSenderExecutorWrapper(ParallelSenderExecutor parallelSenderExecutor, ThreadLifeCycleEventListener<ThreadDebugInfo> threadLifeCycleEventListener) {
+		ParallelSenderExecutorWrapper(ParallelSenderExecutor parallelSenderExecutor, ThreadLifeCycleEventListener<ThreadDebugInfo> threadLifeCycleEventListener) {
 			this.requestReplyExecutor=parallelSenderExecutor;
 			this.threadConnector = new ThreadConnector<>(parallelSenderExecutor, "Debugger", threadLifeCycleEventListener, null, parallelSenderExecutor.getSession());
 		}
