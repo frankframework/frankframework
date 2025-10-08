@@ -23,11 +23,11 @@ import java.util.List;
 
 import org.apache.logging.log4j.Logger;
 
+import liquibase.ChecksumVersion;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
 import liquibase.Scope;
-import liquibase.UpdateSummaryOutputEnum;
 import liquibase.change.CheckSum;
 import liquibase.changelog.ChangeLogHistoryService;
 import liquibase.changelog.ChangeLogHistoryServiceFactory;
@@ -44,6 +44,7 @@ import liquibase.executor.ExecutorService;
 import liquibase.lockservice.LockService;
 import liquibase.lockservice.LockServiceFactory;
 import liquibase.resource.ResourceAccessor;
+import liquibase.ui.LoggerUIService;
 
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.classloaders.AbstractClassLoader;
@@ -55,8 +56,8 @@ import org.frankframework.util.LogUtil;
 /**
  * LiquiBase implementation for IAF
  *
- * @author	Niels Meijer
- * @since	7.0-B4
+ * @author    Niels Meijer
+ * @since 7.0-B4
  *
  */
 public class LiquibaseMigrator extends AbstractDatabaseMigrator {
@@ -73,14 +74,14 @@ public class LiquibaseMigrator extends AbstractDatabaseMigrator {
 		ClassLoader classLoader = getConfigurationClassLoader();
 		if (classLoader instanceof AbstractClassLoader base) {
 			URL url = base.getResource(changeLogFile, false);
-			if (url==null) {
+			if (url == null) {
 				log.debug("database changelog file [{}] not found as local resource of classLoader [{}]", changeLogFile, classLoader);
 				return null;
 			}
 		}
 
 		Resource resource = Resource.getResource(this, changeLogFile);
-		if(resource == null) {
+		if (resource == null) {
 			log.debug("unable to find database changelog file [{}] in classLoader [{}]", changeLogFile, classLoader);
 			return null;
 		}
@@ -92,7 +93,7 @@ public class LiquibaseMigrator extends AbstractDatabaseMigrator {
 	}
 
 	private Liquibase createMigrator(Resource resource) throws SQLException, LiquibaseException {
-		if(resource == null) {
+		if (resource == null) {
 			throw new LiquibaseException("no resource provided");
 		}
 
@@ -112,19 +113,16 @@ public class LiquibaseMigrator extends AbstractDatabaseMigrator {
 	@Override
 	public boolean validate() {
 		try {
-			if(hasMigrationScript()) {
+			if (hasMigrationScript()) {
 				doValidate();
 				return true;
 			}
-		}
-		catch (ValidationFailedException e) {
-			ConfigurationWarnings.add(this, log, "liquibase validation failed: "+e.getMessage(), e);
-		}
-		catch (LiquibaseException e) {
+		} catch (ValidationFailedException e) {
+			ConfigurationWarnings.add(this, log, "liquibase validation failed: " + e.getMessage(), e);
+		} catch (LiquibaseException e) {
 			ConfigurationWarnings.add(this, log, "liquibase failed to initialize", e);
-		}
-		catch (SQLException e) {
-			ConfigurationWarnings.add(this, log, "liquibase failed to initialize, error connecting to database ["+getDatasourceName()+"]", e);
+		} catch (SQLException e) {
+			ConfigurationWarnings.add(this, log, "liquibase failed to initialize, error connecting to database [" + getDatasourceName() + "]", e);
 		}
 		return false;
 	}
@@ -137,9 +135,9 @@ public class LiquibaseMigrator extends AbstractDatabaseMigrator {
 			lockService.waitForLock();
 
 			List<RanChangeSet> alreadyExecutedChangeSets = database.getRanChangeSetList();
-			for(RanChangeSet ranChangeSet : alreadyExecutedChangeSets) {
+			for (RanChangeSet ranChangeSet : alreadyExecutedChangeSets) {
 				CheckSum checkSum = ranChangeSet.getLastCheckSum();
-				if(checkSum != null && checkSum.getVersion() < CheckSum.getCurrentVersion()) {
+				if (checkSum != null && checkSum.getVersion() < ChecksumVersion.latest().getVersion()) {
 					migrationLog.warn("checksum [{}] for changeset [{}] is outdated and will be updated", checkSum, ranChangeSet);
 				}
 			}
@@ -147,7 +145,9 @@ public class LiquibaseMigrator extends AbstractDatabaseMigrator {
 			DatabaseChangeLog changeLog;
 			try {
 				changeLog = liquibase.getDatabaseChangeLog();
-				ChangeLogHistoryService changeLogHistoryService = ChangeLogHistoryServiceFactory.getInstance().getChangeLogService(database);
+				ChangeLogHistoryService changeLogHistoryService = Scope.getCurrentScope()
+						.getSingleton(ChangeLogHistoryServiceFactory.class)
+						.getChangeLogService(database);
 				changeLogHistoryService.init();
 				changeLogHistoryService.upgradeChecksums(changeLog, contexts, labelExpression); //Validate old checksums and update if required
 				changeLogHistoryService.reset();
@@ -161,7 +161,7 @@ public class LiquibaseMigrator extends AbstractDatabaseMigrator {
 				}
 
 				LockServiceFactory.getInstance().resetAll();
-				ChangeLogHistoryServiceFactory.getInstance().resetAll();
+				Scope.getCurrentScope().getSingleton(ChangeLogHistoryServiceFactory.class).resetAll();
 				Scope.getCurrentScope().getSingleton(ExecutorService.class).reset();
 				liquibase.setChangeExecListener(null);
 			}
@@ -171,35 +171,39 @@ public class LiquibaseMigrator extends AbstractDatabaseMigrator {
 	@Override
 	public void update() {
 		List<String> changes = new ArrayList<>();
+		try {
+			Scope.child(
+					Scope.Attr.ui.name(), new LoggerUIService(),
+					() -> this.doUpdate(changes)
+			);
+		} catch (Exception e) {
+			String errorMsg = "Error running LiquiBase update. Failed to execute [" + changes.size() + "] change(s): " + e.getMessage();
+			ConfigurationWarnings.add(this, log, errorMsg, e);
+		}
+	}
+
+	private void doUpdate(List<String> changes) throws LiquibaseException, SQLException {
 		try (Liquibase liquibase = createMigrator()) {
-			// Don't show "UPDATE SUMMARY" in System.out
-			liquibase.setShowSummaryOutput(UpdateSummaryOutputEnum.LOG);
 			List<ChangeSet> changeSets = liquibase.listUnrunChangeSets(contexts, labelExpression);
 			for (ChangeSet changeSet : changeSets) {
-				changes.add("LiquiBase applying change ["+changeSet.getId()+":"+changeSet.getAuthor()+"] description ["+changeSet.getDescription()+"]");
+				changes.add("LiquiBase applying change [" + changeSet.getId() + ":" + changeSet.getAuthor() + "] description [" + changeSet.getDescription() + "]");
 			}
 
-			if(!changeSets.isEmpty()) {
+			if (!changeSets.isEmpty()) {
 				liquibase.update(contexts);
 
-				ChangeSet lastChange = changeSets.get(changeSets.size()-1);
+				ChangeSet lastChange = changeSets.get(changeSets.size() - 1);
 				String tag = lastChange.getId() + ":" + lastChange.getAuthor();
 				liquibase.tag(tag);
 
-				if(changes.size() > 1) {
-					logConfigurationMessage("LiquiBase applied ["+changes.size()+"] change(s) and added tag ["+tag+"]");
-				}
-				else {
+				if (changes.size() > 1) {
+					logConfigurationMessage("LiquiBase applied [" + changes.size() + "] change(s) and added tag [" + tag + "]");
+				} else {
 					for (String change : changes) {
-						logConfigurationMessage(change + " tag ["+tag+"]");
+						logConfigurationMessage(change + " tag [" + tag + "]");
 					}
 				}
 			}
-		}
-		catch (Exception e) {
-			String errorMsg = "Error running LiquiBase update. Failed to execute ["+changes.size()+"] change(s): ";
-			errorMsg += e.getMessage();
-			ConfigurationWarnings.add(this, log, errorMsg, e);
 		}
 	}
 
