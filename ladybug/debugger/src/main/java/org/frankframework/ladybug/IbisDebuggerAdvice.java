@@ -114,8 +114,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		reportGenerator.pipelineInput(pipeLine, correlationId, message);
 		TreeSet<String> keys = new TreeSet<>(pipeLineSession.keySet());
 		for (String sessionKey : keys) {
-			Object sessionValue = pipeLineSession.get(sessionKey);
-			sessionValue = reportGenerator.sessionInputPoint(correlationId, sessionKey, sessionValue);
+			Object sessionValue = reportGenerator.sessionInputPoint(correlationId, sessionKey, pipeLineSession.get(sessionKey));
 			pipeLineSession.put(sessionKey, sessionValue);
 		}
 		PipeLineResult pipeLineResult;
@@ -535,7 +534,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	}
 
 	@Override
-	public void onApplicationEvent(DebuggerStatusChangedEvent event) {
+	public void onApplicationEvent(@Nonnull DebuggerStatusChangedEvent event) {
 		log.debug("received DebuggerStatusChangedEvent [{}]", event);
 		setEnabled(event.isEnabled());
 	}
