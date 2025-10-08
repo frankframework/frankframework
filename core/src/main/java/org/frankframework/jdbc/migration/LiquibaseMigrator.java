@@ -28,6 +28,7 @@ import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
 import liquibase.Scope;
+import liquibase.UpdateSummaryOutputEnum;
 import liquibase.change.CheckSum;
 import liquibase.changelog.ChangeLogHistoryService;
 import liquibase.changelog.ChangeLogHistoryServiceFactory;
@@ -56,7 +57,7 @@ import org.frankframework.util.LogUtil;
 /**
  * LiquiBase implementation for IAF
  *
- * @author    Niels Meijer
+ * @author Niels Meijer
  * @since 7.0-B4
  *
  */
@@ -99,8 +100,10 @@ public class LiquibaseMigrator extends AbstractDatabaseMigrator {
 
 		try (ResourceAccessor resourceAccessor = new LiquibaseResourceAccessor(resource)) {
 			DatabaseConnection connection = getDatabaseConnection();
-
-			return new Liquibase(resource.getSystemId(), resourceAccessor, connection);
+			Liquibase liquibase = new Liquibase(resource.getSystemId(), resourceAccessor, connection);
+			// Don't show "UPDATE SUMMARY" in System.out
+			liquibase.setShowSummaryOutput(UpdateSummaryOutputEnum.LOG);
+			return liquibase;
 		} catch (Exception e) {
 			throw new LiquibaseException("unable to close ResourceAccessor", e);
 		}
