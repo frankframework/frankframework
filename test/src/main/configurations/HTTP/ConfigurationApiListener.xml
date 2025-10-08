@@ -170,7 +170,7 @@
 
 	<adapter name="CallApiListenerMultipleTimes">
 		<receiver>
-			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-CallApiListenermMultipleTimes" />
+			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-CallApiListenerMultipleTimes" />
 		</receiver>
 		<pipeline firstPipe="forEachElement">
 			<ForEachChildElementPipe name="forEachElement" elementXPathExpression="/requests/request">

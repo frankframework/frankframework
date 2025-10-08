@@ -17,7 +17,6 @@ package org.frankframework.ladybug;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -44,7 +43,7 @@ import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StringUtil;
 
 /**
- * Interface between the AOP config and the Ladybug. Takes case of boilerplate code such as report name, checkpoint names, pipe descriptions.
+ * Interface between the AOP config and the Ladybug. Takes care of boilerplate code such as report name, checkpoint names, pipe descriptions.
  */
 @Log4j2
 public class LadybugReportGenerator implements InitializingBean {
@@ -109,9 +108,7 @@ public class LadybugReportGenerator implements InitializingBean {
 		T result = testTool.startpoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), input, extractMessageContext(input));
 		if (pipeDescription.getDescription() != null) {
 			testTool.infopoint(correlationId, pipe.getClass().getName(), pipeDescription.getCheckpointName(), pipeDescription.getDescription());
-			Iterator<String> iterator = pipeDescription.getResourceNames().iterator();
-			while (iterator.hasNext()) {
-				String resourceName = iterator.next();
+			for (String resourceName : pipeDescription.getResourceNames()) {
 				testTool.infopoint(correlationId, pipe.getClass().getName(), resourceName, pipeDescriptionProvider.getResource(pipeLine, resourceName));
 			}
 		}
