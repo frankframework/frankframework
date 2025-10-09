@@ -38,8 +38,6 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
 import org.w3c.dom.Document;
 
@@ -47,6 +45,7 @@ import com.jayway.jsonpath.JsonPath;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.util.ConfigurationUtils;
@@ -109,8 +108,8 @@ import org.frankframework.util.XmlUtils;
  * @ff.parameters Parameters themselves can have parameters too, for instance if a XSLT transformation is used, that transformation can have parameters.
  */
 @SuppressWarnings("removal")
+@Log4j2
 public abstract class AbstractParameter implements IConfigurable, IWithParameters, IParameter {
-	private static final Logger LOG = LogManager.getLogger(Parameter.class);
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
@@ -202,7 +201,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			tpDynamicSessionKey = TransformerPool.configureTransformer(this, getNamespaceDefs(), getSessionKeyXPath(), null, OutputType.TEXT,false,null);
 		}
 		if (getType() == null) {
-			LOG.info("parameter [{} has no type. Setting the type to [{}]", this::getType, ()->ParameterType.STRING);
+			log.info("parameter [{} has no type. Setting the type to [{}]", this::getType, ()->ParameterType.STRING);
 			setType(ParameterType.STRING);
 		}
 		jsonPath = JsonUtil.compileJsonPath(jsonPathExpression);
@@ -258,7 +257,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	@Override
 	public Object getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		Object result = null;
-		LOG.debug("Calculating value for Parameter [{}]", this::getName);
+		log.debug("Calculating value for Parameter [{}]", this::getName);
 		if (!configured) {
 			throw new ParameterException(getName(), "Parameter ["+getName()+"] not configured");
 		}
@@ -324,20 +323,20 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 							sourceMsg = Message.asMessage(sourceMsg.getContext().get(getContextKey()));
 						}
 						if (!sourceMsg.isEmpty()) {
-							LOG.debug("Parameter [{}] using sessionvariable [{}] as source for transformation", this::getName, () -> requestedSessionKey);
+							log.debug("Parameter [{}] using sessionvariable [{}] as source for transformation", this::getName, () -> requestedSessionKey);
 							source = sourceMsg.asSource();
 						} else {
-							LOG.debug("Parameter [{}] sessionvariable [{}] empty, no transformation will be performed", this::getName, () -> requestedSessionKey);
+							log.debug("Parameter [{}] sessionvariable [{}] empty, no transformation will be performed", this::getName, () -> requestedSessionKey);
 							source = null;
 						}
 					}
 				} else if (StringUtils.isNotEmpty(getPattern())) {
 					String sourceString = formatPattern(alreadyResolvedParameters, session);
 					if (StringUtils.isNotEmpty(sourceString)) {
-						LOG.debug("Parameter [{}] using pattern [{}] as source for transformation", this::getName, this::getPattern);
+						log.debug("Parameter [{}] using pattern [{}] as source for transformation", this::getName, this::getPattern);
 						source = XmlUtils.stringToSourceForSingleUse(sourceString, namespaceAware);
 					} else {
-						LOG.debug("Parameter [{}] pattern [{}] empty, no transformation will be performed", this::getName, this::getPattern);
+						log.debug("Parameter [{}] pattern [{}] empty, no transformation will be performed", this::getName, this::getPattern);
 						source = null;
 					}
 				} else if (message != null) {
@@ -430,7 +429,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		if (result != null && !"".equals(result)) {
 			// If result is not empty log it
 			final Object finalResult = result;
-			LOG.debug("Parameter [{}] resolved to [{}]", this::getName, ()-> isHidden() ? hide(finalResult.toString()) : finalResult);
+			log.debug("Parameter [{}] resolved to [{}]", this::getName, ()-> isHidden() ? hide(finalResult.toString()) : finalResult);
 		} else {
 			// If result is empty then return specified default value
 			Object valueByDefault=null;
@@ -464,7 +463,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			if (valueByDefault != null) {
 				result = valueByDefault;
 				final Object finalResult = result;
-				LOG.debug("Parameter [{}] resolved to default value [{}]", this::getName, ()-> isHidden() ? hide(finalResult.toString()) : finalResult);
+				log.debug("Parameter [{}] resolved to default value [{}]", this::getName, ()-> isHidden() ? hide(finalResult.toString()) : finalResult);
 			}
 		}
 
@@ -505,10 +504,10 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		if (input instanceof Message message1 && StringUtils.isNotEmpty(getContextKey())) {
 			input = message1.getContext().get(getContextKey());
 		}
-		if (LOG.isDebugEnabled() && (input == null ||
+		if (log.isDebugEnabled() && (input == null ||
 				((input instanceof String string) && string.isEmpty()) ||
 				((input instanceof Message message1) && message1.isEmpty()))) {
-			LOG.debug("Parameter [{}] session variable [{}] is empty", this::getName, () -> requestedSessionKey);
+			log.debug("Parameter [{}] session variable [{}] is empty", this::getName, () -> requestedSessionKey);
 		}
 		return input;
 	}
@@ -532,12 +531,12 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 
 	private String applyMinAndMaxLengths(String stringResult) {
 		if (getMinLength() >= 0 && !(this instanceof NumberParameter) && stringResult.length() < getMinLength()) {
-			LOG.debug("Padding parameter [{}] because length [{}] falls short of minLength [{}]", this::getName, stringResult::length, this::getMinLength);
+			log.debug("Padding parameter [{}] because length [{}] falls short of minLength [{}]", this::getName, stringResult::length, this::getMinLength);
 			return StringUtils.rightPad(stringResult, getMinLength());
 		}
 
 		if (getMaxLength() >= 0 && stringResult.length() > getMaxLength()) { // Still trims length regardless of type
-			LOG.debug("Trimming parameter [{}] because length [{}] exceeds maxLength [{}]", this::getName, stringResult::length, this::getMaxLength);
+			log.debug("Trimming parameter [{}] because length [{}] exceeds maxLength [{}]", this::getName, stringResult::length, this::getMaxLength);
 			return stringResult.substring(0, getMaxLength());
 		}
 
@@ -549,7 +548,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	protected Object getValueAsType(@Nonnull Message request, boolean namespaceAware) throws ParameterException, IOException {
 		Object result = request.asObject();
 
-		LOG.debug("final result [{}][{}]", ()->result != null ? result.getClass().getName() : null, ()-> result);
+		log.debug("final result [{}][{}]", ()->result != null ? result.getClass().getName() : null, ()-> result);
 
 		return result;
 	}

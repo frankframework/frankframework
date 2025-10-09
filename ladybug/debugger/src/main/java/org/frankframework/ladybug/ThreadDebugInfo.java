@@ -15,7 +15,7 @@
 */
 package org.frankframework.ladybug;
 
-class ThreadDebugInfo {
+public class ThreadDebugInfo {
 	public Object owner;
 	public String threadId;
 	public String correlationId;
