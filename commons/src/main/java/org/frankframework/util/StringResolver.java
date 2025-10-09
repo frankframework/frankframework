@@ -459,8 +459,8 @@ public class StringResolver {
 		int stopPos = startPos - delimStop.length();
 		int numEmbeddedStart = 0;
 		int numEmbeddedStop = 0;
+		startPos += delimStart.length();
 		do {
-			startPos += delimStart.length();
 			stopPos = val.indexOf(delimStop, stopPos + delimStop.length());
 			if (stopPos > 0) {
 				String key = val.substring(startPos, stopPos);
