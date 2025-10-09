@@ -49,7 +49,7 @@ import org.frankframework.util.StringUtil;
  */
 @Log4j2
 public class JexlPropertyEvaluation implements AdditionalStringResolver {
-	private final static String EXPRESSION_START_TOKEN = "=";
+	private static final String EXPRESSION_START_TOKEN = "=";
 
 	private final JexlEngine jexl;
 
@@ -62,6 +62,8 @@ public class JexlPropertyEvaluation implements AdditionalStringResolver {
 				.sideEffect(false)
 				.annotation(false)
 				.lambda(true)
+				.arrayReferenceExpr(true)
+				.methodCall(true)
 				.importPragma(true);
 
 		JexlPermissions jexlPermissions = JexlPermissions.RESTRICTED
@@ -74,6 +76,7 @@ public class JexlPropertyEvaluation implements AdditionalStringResolver {
 		jexl = new JexlBuilder()
 				.features(features)
 				.permissions(jexlPermissions)
+				.antish(true)
 				.create();
 	}
 
