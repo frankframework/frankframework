@@ -118,7 +118,7 @@
 		<!-- Suppress `implements ApplicationListener interface but is not reachable for event multicasting` -->
 		<Logger name="org.springframework.context.support.ApplicationListenerDetector" level="ERROR" />
 
-		<Logger name="liquibase.migrationLog" level="INFO">
+		<Logger name="liquibase.util.ShowSummaryUtil" level="INFO">
 			<AppenderRef ref="application-log-appender"/>
 		</Logger>
 
