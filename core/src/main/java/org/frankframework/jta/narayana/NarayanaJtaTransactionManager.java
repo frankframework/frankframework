@@ -16,11 +16,13 @@
 package org.frankframework.jta.narayana;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.transaction.TransactionManager;
 import jakarta.transaction.UserTransaction;
 
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.transaction.TransactionSystemException;
 
 import com.arjuna.ats.arjuna.AtomicAction;
@@ -43,10 +45,12 @@ import lombok.Getter;
 
 import org.frankframework.jta.AbstractStatusRecordingTransactionManager;
 import org.frankframework.util.AppConstants;
+import org.frankframework.util.StringUtil;
 
 public class NarayanaJtaTransactionManager extends AbstractStatusRecordingTransactionManager {
 
 	private final boolean heuristicDetectorEnabled = AppConstants.getInstance().getBoolean("transactionmanager.narayana.detectStuckTransactions", false);
+	private final String xaRecoveryNodes = AppConstants.getInstance().getString("transactionmanager.narayana.xaRecoveryNodes", null);
 
 	private static final long serialVersionUID = 1L;
 
@@ -73,17 +77,29 @@ public class NarayanaJtaTransactionManager extends AbstractStatusRecordingTransa
 
 			try {
 				arjPropertyManager.getCoreEnvironmentBean().setNodeIdentifier(getUid());
-
-				jtaPropertyManager.getJTAEnvironmentBean().setXaRecoveryNodes(List.of(getUid()));
 			} catch (CoreEnvironmentBeanException e) {
 				throw new TransactionSystemException("Cannot set TmUid", e);
 			}
+
+			jtaPropertyManager.getJTAEnvironmentBean().setXaRecoveryNodes(getRecoveryNodes());
 
 			log.debug("TMUID [{}]", arjPropertyManager.getCoreEnvironmentBean().getNodeIdentifier());
 			log.debug("ObjectStoreDir [{}]", arjPropertyManager.getObjectStoreEnvironmentBean().getObjectStoreDir());
 
 			initializeRecoveryManager();
 		}
+	}
+
+	protected List<String> getRecoveryNodes() {
+		List<String> recoveryNodeList = new ArrayList<>();
+
+		if (StringUtils.isBlank(xaRecoveryNodes)) {
+			recoveryNodeList.add(getUid());
+		} else {
+			recoveryNodeList.addAll(StringUtil.split(xaRecoveryNodes));
+		}
+
+		return recoveryNodeList;
 	}
 
 	private void initializeRecoveryManager() {
