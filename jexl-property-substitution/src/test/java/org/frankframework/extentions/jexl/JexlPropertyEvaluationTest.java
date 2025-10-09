@@ -22,11 +22,26 @@ class JexlPropertyEvaluationTest {
 		map.put("key", "value");
 
 		// Act
-		Optional<String> value = jexlPropertyEvaluation.resolve("key", map, null, null, StringResolver.DELIM_START, StringResolver.DELIM_STOP, false);
+		Optional<String> value = jexlPropertyEvaluation.resolve("=key", map, null, null, StringResolver.DELIM_START, StringResolver.DELIM_STOP, false);
 
 		// Assert
 		assertTrue(value.isPresent());
 		assertEquals("value", value.get());
+	}
+
+	@Test
+	void testResolveSimpleCalculation() {
+		// Arrange
+		JexlPropertyEvaluation jexlPropertyEvaluation = new JexlPropertyEvaluation();
+
+		Map<String, Object> map = new HashMap<>();
+
+		// Act
+		Optional<String> value = jexlPropertyEvaluation.resolve("=4 * 5", map, null, null, StringResolver.DELIM_START, StringResolver.DELIM_STOP, false);
+
+		// Assert
+		assertTrue(value.isPresent());
+		assertEquals("20", value.get());
 	}
 
 	@Test
@@ -38,7 +53,7 @@ class JexlPropertyEvaluationTest {
 		map.put("key", "value");
 
 		// Act
-		Optional<String> value = jexlPropertyEvaluation.resolve("key.toUpperCase()", map, null, null, StringResolver.DELIM_START, StringResolver.DELIM_STOP, false);
+		Optional<String> value = jexlPropertyEvaluation.resolve("=key.toUpperCase()", map, null, null, StringResolver.DELIM_START, StringResolver.DELIM_STOP, false);
 
 		// Assert
 		assertTrue(value.isPresent());
@@ -56,7 +71,7 @@ class JexlPropertyEvaluationTest {
 		map2.put("v2", 1);
 
 		// Act
-		Optional<String> value = jexlPropertyEvaluation.resolve("Math.min(v1, v2)", map1, map2, null, StringResolver.DELIM_START, StringResolver.DELIM_STOP, false);
+		Optional<String> value = jexlPropertyEvaluation.resolve("=Math.min(v1, v2)", map1, map2, null, StringResolver.DELIM_START, StringResolver.DELIM_STOP, false);
 
 		// Assert
 		assertTrue(value.isPresent());

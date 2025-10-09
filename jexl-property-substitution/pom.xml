@@ -7,7 +7,7 @@
 		<version>${revision}</version>
 	</parent>
 	<artifactId>jexl-property-substitution</artifactId>
-	<name>String Resolver using JEXL expression evaluation</name>
+	<name>JEXL expression String Resolver</name>
 
 	<dependencies>
 		<dependency>

@@ -48,10 +48,11 @@ import org.frankframework.util.StringUtil;
  */
 @Log4j2
 public class JexlPropertyEvaluation implements AdditionalStringResolver {
+	private final static String EXPRESSION_START_TOKEN = "=";
 
 	private final JexlEngine jexl;
 
-	private final Set<String> failedExpressions = new HashSet<>();
+	private final Set<String> invalidExpressions = new HashSet<>();
 
 	public JexlPropertyEvaluation() {
 		JexlFeatures features = new JexlFeatures()
@@ -77,12 +78,21 @@ public class JexlPropertyEvaluation implements AdditionalStringResolver {
 	@Override
 	public Optional<String> resolve(String key, Map<?, ?> props1, Map<?, ?> props2, Set<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) {
 		// Don't retry keys which already gave an exception once
-		if (failedExpressions.contains(key)) {
+		if (invalidExpressions.contains(key) || !key.startsWith(EXPRESSION_START_TOKEN)) {
+			return Optional.empty();
+		}
+
+		JexlScript expression;
+		try {
+			expression = jexl.createScript(key.substring(EXPRESSION_START_TOKEN.length()));
+		} catch (Exception e) {
+			// This probably wasn't a JEXL script. Pass on to other string resolvers, don't try same key again.
+			log.warn(() -> "Cannot parse [%s] as JEXL expression".formatted(key), e);
+			invalidExpressions.add(key);
 			return Optional.empty();
 		}
 
 		try {
-			JexlScript expression = jexl.createScript(key);
 			@SuppressWarnings("unchecked")
 			JexlContext context = createJexlContext((Map<String, Object>) props1, (Map<String, Object>) props2);
 
@@ -93,9 +103,8 @@ public class JexlPropertyEvaluation implements AdditionalStringResolver {
 				return Optional.of(result.toString());
 			}
 		} catch (Exception e) {
-			// This probably wasn't a JEXL script. Pass on to other string resolvers.
-			log.debug(() -> "Cannot evaluate [%s] as JEXL expression".formatted(key), e);
-			failedExpressions.add(key);
+			// Script was probably valid but not in the context of variables given
+			log.warn(() -> "Cannot evaluate JEXL expression [%s]".formatted(key), e);
 			return Optional.empty();
 		}
 	}
