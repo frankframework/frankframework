@@ -464,8 +464,18 @@ public class StringResolver {
 			stopPos = val.indexOf(delimStop, stopPos + delimStop.length());
 			if (stopPos > 0) {
 				String key = val.substring(startPos, stopPos);
-				numEmbeddedStart = StringUtils.countMatches(key, delimStart);
-				numEmbeddedStop = StringUtils.countMatches(key, delimStop);
+				// Allow both nested variable references, and blocks surrounded by curly braces to be embedded in the 'key'
+				// This is to allow blocks in JEXL expressions.
+				if (delimStart.contains("{")) {
+					numEmbeddedStart = StringUtils.countMatches(key, "{");
+				} else {
+					numEmbeddedStart = StringUtils.countMatches(key, delimStart) + StringUtils.countMatches(key, "{");
+				}
+				if (delimStop.contains("}")) {
+					numEmbeddedStop = StringUtils.countMatches(key, "}");
+				} else {
+					numEmbeddedStop = StringUtils.countMatches(key, delimStop) + StringUtils.countMatches(key, "}");
+				}
 			}
 		} while (stopPos > 0 && numEmbeddedStart != numEmbeddedStop);
 		return stopPos;

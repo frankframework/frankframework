@@ -58,8 +58,8 @@ public class JexlPropertyEvaluation implements AdditionalStringResolver {
 	public JexlPropertyEvaluation() {
 		JexlFeatures features = new JexlFeatures()
 				.loops(false)
-				.sideEffectGlobal(false)
-				.sideEffect(false)
+				.sideEffectGlobal(true)
+				.sideEffect(true)
 				.annotation(false)
 				.lambda(true)
 				.arrayReferenceExpr(true)
@@ -92,7 +92,7 @@ public class JexlPropertyEvaluation implements AdditionalStringResolver {
 			expression = jexl.createScript(key.substring(EXPRESSION_START_TOKEN.length()));
 		} catch (Exception e) {
 			// This probably wasn't a JEXL script. Pass on to other string resolvers, don't try same key again.
-			log.warn(() -> "Cannot parse [%s] as JEXL expression".formatted(key), e);
+			log.error(() -> "Cannot parse [%s] as JEXL expression".formatted(key), e);
 			invalidExpressions.add(key);
 			return Optional.empty();
 		}
@@ -109,7 +109,7 @@ public class JexlPropertyEvaluation implements AdditionalStringResolver {
 			}
 		} catch (Exception e) {
 			// Script was probably valid but not in the context of variables given
-			log.warn(() -> "Cannot evaluate JEXL expression [%s]".formatted(key), e);
+			log.error(() -> "Cannot evaluate JEXL expression [%s]".formatted(key), e);
 			return Optional.empty();
 		}
 	}
@@ -126,6 +126,7 @@ public class JexlPropertyEvaluation implements AdditionalStringResolver {
 		context.set("Math", Math.class);
 		context.set("StringUtils", StringUtils.class);
 		context.set("StringUtil", StringUtil.class);
+		context.set("log", log);
 
 		return context;
 	}
