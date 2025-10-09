@@ -63,7 +63,7 @@ import org.frankframework.util.LogUtil;
  */
 public class LiquibaseMigrator extends AbstractDatabaseMigrator {
 
-	protected Logger migrationLog = LogUtil.getLogger("liquibase.migrationLog");
+	private static Logger applicationLog = LogUtil.getLogger("APPLICATION");
 	private Contexts contexts;
 	private final LabelExpression labelExpression = new LabelExpression();
 
@@ -141,7 +141,7 @@ public class LiquibaseMigrator extends AbstractDatabaseMigrator {
 			for (RanChangeSet ranChangeSet : alreadyExecutedChangeSets) {
 				CheckSum checkSum = ranChangeSet.getLastCheckSum();
 				if (checkSum != null && checkSum.getVersion() < ChecksumVersion.latest().getVersion()) {
-					migrationLog.warn("checksum [{}] for changeset [{}] is outdated and will be updated", checkSum, ranChangeSet);
+					applicationLog.warn("checksum [{}] for changeset [{}] is outdated and will be updated", checkSum, ranChangeSet);
 				}
 			}
 
@@ -152,10 +152,10 @@ public class LiquibaseMigrator extends AbstractDatabaseMigrator {
 						.getSingleton(ChangeLogHistoryServiceFactory.class)
 						.getChangeLogService(database);
 				changeLogHistoryService.init();
-				changeLogHistoryService.upgradeChecksums(changeLog, contexts, labelExpression); //Validate old checksums and update if required
+				changeLogHistoryService.upgradeChecksums(changeLog, contexts, labelExpression); // Validate old checksums and update if required
 				changeLogHistoryService.reset();
 
-				changeLog.validate(database, contexts, labelExpression); //Validate the new (updated) checksums
+				changeLog.validate(database, contexts, labelExpression); // Validate the new (updated) checksums
 			} finally {
 				try {
 					lockService.releaseLock();
