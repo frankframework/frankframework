@@ -103,33 +103,8 @@ public class JexlPropertyEvaluation implements AdditionalStringResolver {
 	@Nonnull
 	private static JexlContext createJexlContext(Map<String, Object> props1, Map<String, Object> props2) {
 		// Create basic context
-		Map<String, Object> contextCustomValues = new HashMap<>();
-		CompositeMap.MapMutator<String, Object> mutator = new CompositeMap.MapMutator<>() {
-
-			@Override
-			public Object put(CompositeMap<String, Object> map, Map<String, Object>[] composited, String key, Object value) {
-				return contextCustomValues.put(key, value);
-			}
-
-			@Override
-			public void putAll(CompositeMap<String, Object> map, Map<String, Object>[] composited, Map<? extends String, ?> mapToAdd) {
-				contextCustomValues.putAll(mapToAdd);
-			}
-
-			@Override
-			public void resolveCollision(CompositeMap<String, Object> composite, Map<String, Object> existing, Map<String, Object> added, Collection<String> intersect) {
-				throw new UnsupportedOperationException();
-			}
-		};
-		CompositeMap<String, Object> contextBackingMap;
-		if (props2 == null) {
-			contextBackingMap = new CompositeMap<>(contextCustomValues, props1);
-		} else {
-			// The 'props' maps might be "smart" map-like objects like PropertyLoader that do value-substitution. So they should not be copied into a single map, but queried directly.
-			contextBackingMap = new CompositeMap<>(contextCustomValues, props1, props2);
-		}
-		contextBackingMap.setMutator(mutator);
-		JexlContext context = new MapContext(contextBackingMap);
+		CompositeMap<String, Object> contextMap = createContextMap(props1, props2);
+		JexlContext context = new MapContext(contextMap);
 
 		// Make static methods from some common util classes easily available
 		context.set("Collections", Collections.class);
@@ -139,5 +114,46 @@ public class JexlPropertyEvaluation implements AdditionalStringResolver {
 		context.set("StringUtil", StringUtil.class);
 
 		return context;
+	}
+
+	@SuppressWarnings("unchecked")
+	@Nonnull
+	private static CompositeMap<String, Object> createContextMap(Map<String, Object> props1, Map<String, Object> props2) {
+		Map<String, Object> contextCustomValues = new HashMap<>();
+		CompositeMap.MapMutator<String, Object> mutator = new BackingMapMutator(contextCustomValues);
+
+		CompositeMap<String, Object> contextMap;
+		if (props2 == null) {
+			contextMap = new CompositeMap<>(contextCustomValues, props1);
+		} else {
+			// The 'props' maps might be "smart" map-like objects like PropertyLoader that do value-substitution. So they should not be copied into a single map, but queried directly.
+			contextMap = new CompositeMap<>(contextCustomValues, props1, props2);
+		}
+		contextMap.setMutator(mutator);
+		return contextMap;
+	}
+
+	private static class BackingMapMutator implements CompositeMap.MapMutator<String, Object> {
+
+		private final transient Map<String, Object> contextCustomValues;
+
+		public BackingMapMutator(Map<String, Object> contextCustomValues) {
+			this.contextCustomValues = contextCustomValues;
+		}
+
+		@Override
+		public Object put(CompositeMap<String, Object> map, Map<String, Object>[] composited, String key, Object value) {
+			return contextCustomValues.put(key, value);
+		}
+
+		@Override
+		public void putAll(CompositeMap<String, Object> map, Map<String, Object>[] composited, Map<? extends String, ?> mapToAdd) {
+			contextCustomValues.putAll(mapToAdd);
+		}
+
+		@Override
+		public void resolveCollision(CompositeMap<String, Object> composite, Map<String, Object> existing, Map<String, Object> added, Collection<String> intersect) {
+			throw new UnsupportedOperationException();
+		}
 	}
 }
