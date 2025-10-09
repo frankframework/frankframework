@@ -23,6 +23,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
 
@@ -60,6 +61,7 @@ public class JexlPropertyEvaluation implements AdditionalStringResolver {
 				.sideEffectGlobal(false)
 				.sideEffect(false)
 				.annotation(false)
+				.lambda(true)
 				.importPragma(true);
 
 		JexlPermissions jexlPermissions = JexlPermissions.RESTRICTED
@@ -113,7 +115,7 @@ public class JexlPropertyEvaluation implements AdditionalStringResolver {
 	private static JexlContext createJexlContext(Map<String, Object> props1, Map<String, Object> props2) {
 		// Create basic context
 		CompositeMap<String, Object> contextMap = createContextMap(props1, props2);
-		JexlContext context = new MapContext(contextMap);
+		JexlContext context = new StreamContext(contextMap);
 
 		// Make static methods from some common util classes easily available
 		context.set("Collections", Collections.class);
@@ -163,6 +165,38 @@ public class JexlPropertyEvaluation implements AdditionalStringResolver {
 		@Override
 		public void resolveCollision(CompositeMap<String, Object> composite, Map<String, Object> existing, Map<String, Object> added, Collection<String> intersect) {
 			throw new UnsupportedOperationException();
+		}
+	}
+
+	/**
+	 * A MapContext that can operate on streams.
+	 *
+	 * Based on example in https://commons.apache.org/proper/commons-jexl/
+	 */
+	public static class StreamContext extends MapContext {
+
+		public StreamContext(Map<String, Object> contextMap) {
+			super(contextMap);
+		}
+
+		/**
+		 * This allows using a JEXL lambda as a mapper.
+		 * @param stream the stream
+		 * @param mapper the lambda to use as mapper
+		 * @return the mapped stream
+		 */
+		public Stream<?> map(Stream<?> stream, final JexlScript mapper) {
+			return stream.map( x -> mapper.execute(this, x));
+		}
+
+		/**
+		 * This allows using a JEXL lambda as a filter.
+		 * @param stream the stream
+		 * @param filter the lambda to use as filter
+		 * @return the filtered stream
+		 */
+		public Stream<?> filter(Stream<?> stream, final JexlScript filter) {
+			return stream.filter(x -> Boolean.TRUE.equals(filter.execute(this, x)));
 		}
 	}
 }

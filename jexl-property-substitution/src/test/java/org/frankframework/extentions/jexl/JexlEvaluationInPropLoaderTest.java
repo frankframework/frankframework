@@ -14,6 +14,7 @@ public class JexlEvaluationInPropLoaderTest {
 	@AfterEach
 	public void afterEach() {
 		System.clearProperty("test.v3");
+		System.clearProperty("str.switch");
 	}
 
 	@Test
@@ -40,5 +41,42 @@ public class JexlEvaluationInPropLoaderTest {
 
 		// Assert
 		assertEquals("10", value);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {"str.text1", "str.text2", "str.text3"})
+	public void testJexlStringTest(String propertyName) {
+		// Arrange
+		PropertyLoader props = new PropertyLoader("test.properties");
+
+		// Act
+		String value = props.getProperty(propertyName);
+
+		// Assert
+		assertEquals("We Are Frank", value);
+	}
+
+	@Test
+	public void testJexlStringTest2() {
+		// Arrange
+		PropertyLoader props = new PropertyLoader("test.properties");
+		System.setProperty("str.switch", "5");
+		// Act
+		String value = props.getProperty("str.text2");
+
+		// Assert
+		assertEquals("We Are IBIS", value);
+	}
+
+	@Test
+	public void testJexlStringTest3() {
+		// Arrange
+		PropertyLoader props = new PropertyLoader("test.properties");
+		System.setProperty("str.switch", "5");
+		// Act
+		String value = props.getProperty("str.transform1");
+
+		// Assert
+		assertEquals("we, are, iBIS", value);
 	}
 }
