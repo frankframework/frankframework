@@ -210,7 +210,8 @@ public class StringUtil {
 	/**
 	 * Turns the first Char into lower case.
 	 */
-	public static String lcFirst(String input) {
+	@Nonnull
+	public static String lcFirst(@Nonnull String input) {
 		char[] c = input.toCharArray();
 		c[0] = Character.toLowerCase(c[0]);
 		return new String(c);
@@ -219,13 +220,18 @@ public class StringUtil {
 	/**
 	 * Turns the first Char into upper case.
 	 */
-	public static String ucFirst(String input) {
+	@Nonnull
+	public static String ucFirst(@Nonnull String input) {
 		char[] c = input.toCharArray();
 		c[0] = Character.toUpperCase(c[0]);
 		return new String(c);
 	}
 
-	public static String safeCollectionToString(Collection<?> collection) {
+	@Nonnull
+	public static String safeCollectionToString(@Nullable Collection<?> collection) {
+		if (collection == null) {
+			return "";
+		}
 		StringBuilder sb = new StringBuilder();
 		try {
 			for (Object o : collection) {
