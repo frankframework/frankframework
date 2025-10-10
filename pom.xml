@@ -271,7 +271,7 @@
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>jexl-property-substitution</artifactId>
+				<artifactId>script-property-substitution</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -1533,7 +1533,7 @@
 			</activation>
 			<modules>
 				<module>commons</module>
-				<module>jexl-property-substitution</module>
+				<module>script-property-substitution</module>
 				<module>security</module>
 				<module>credentialProvider</module>
 				<module>management-gateway</module>

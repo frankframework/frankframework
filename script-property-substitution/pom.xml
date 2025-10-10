@@ -6,8 +6,8 @@
 		<artifactId>frankframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
-	<artifactId>jexl-property-substitution</artifactId>
-	<name>JEXL expression String Resolver</name>
+	<artifactId>script-property-substitution</artifactId>
+	<name>Script expression String Resolver</name>
 
 	<dependencies>
 		<dependency>
