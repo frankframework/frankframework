@@ -80,6 +80,9 @@ public class AmqpConnectionFactory implements DisposableBean {
 		// TODO: All client options and host/port can be pre-created and cached.
 		ConnectionOptions connectionOptions = new ConnectionOptions();
 		connectionOptions.reconnectEnabled(true);
+		connectionOptions.reconnectOptions().maxReconnectAttempts(2);
+		connectionOptions.reconnectOptions().maxInitialConnectionAttempts(2);
+
 
 		connectionOptions.disconnectedHandler((conn, disconnectionEvent) -> {
 			log.warn(() -> "Disconnected from AMQP connection to [%s:%d]:".formatted(disconnectionEvent.host(), disconnectionEvent.port()), disconnectionEvent.failureCause());
