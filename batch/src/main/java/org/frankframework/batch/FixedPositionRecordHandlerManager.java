@@ -78,7 +78,7 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 	@Override
 	public String getFirstPartOfNextRecord(BufferedReader reader) throws IOException {
 		if (!isNewLineSeparated()) {
-			return readUpToXChars(reader, endPosition);
+			return readUpToXChars(reader, endPosition<=0 ? 1 : endPosition); // try to read at least 1 character, to be able to detect EOF
 		}
 		return super.getFirstPartOfNextRecord(reader);
 	}
