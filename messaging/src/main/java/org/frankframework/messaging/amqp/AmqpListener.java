@@ -45,6 +45,7 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.RequestReplyListener;
 import org.frankframework.doc.Category;
 import org.frankframework.extensions.messaging.MessageProtocol;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.ResourceLimiter;
 
@@ -132,12 +133,20 @@ public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountC
 	@Override
 	public void start() {
 		resourceLimiter = new ResourceLimiter(maxThreadCount);
-		amqpListenerContainerManager.openListener(this);
+		try {
+			amqpListenerContainerManager.openListener(this);
+		} catch (Exception e) {
+			throw new LifecycleException("Failed to start AmqpListener", e);
+		}
 	}
 
 	@Override
 	public void stop() {
-		amqpListenerContainerManager.closeListener(this);
+		try {
+			amqpListenerContainerManager.closeListener(this);
+		} catch (Exception e) {
+			throw new LifecycleException("Failed to stop AmqpListener", e);
+		}
 	}
 
 	@Override

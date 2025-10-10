@@ -164,6 +164,8 @@ public class IafTestInitializer {
 		System.setProperty("active.jms", jmsProvider != null ? "true" : "false");
 		if ("inmem".equals(jmsProvider)) {
 			System.setProperty("active.amqp", "false");
+		} else {
+			System.setProperty("active.amqp", jmsProvider != null ? "true" : "false");
 		}
 		if (jmsProvider != null) {
 			// Setting these properties manually is required with application-server type "IBISTEST"

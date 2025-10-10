@@ -462,7 +462,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				throw new TimeoutException("timeout exceeded while starting receiver");
 			}
 		}
-		if (getListener() instanceof IPullingListener){
+		if (getListener() instanceof IPullingListener) {
 			// start all threads. Also sets runstate=STARTED
 			listenerContainer.start();
 		}
