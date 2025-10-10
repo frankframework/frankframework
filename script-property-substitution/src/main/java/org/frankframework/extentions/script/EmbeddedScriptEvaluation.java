@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.extentions.jexl;
+package org.frankframework.extentions.script;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -48,14 +48,14 @@ import org.frankframework.util.StringUtil;
  * @see <a href="https://commons.apache.org/proper/commons-jexl/">Apache JEXL Homepage</a>
  */
 @Log4j2
-public class JexlPropertyEvaluation implements AdditionalStringResolver {
+public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 	private static final String EXPRESSION_START_TOKEN = "=";
 
 	private final JexlEngine jexl;
 
 	private final Set<String> invalidExpressions = new HashSet<>();
 
-	public JexlPropertyEvaluation() {
+	public EmbeddedScriptEvaluation() {
 		JexlFeatures features = new JexlFeatures()
 				.loops(false)
 				.sideEffectGlobal(true)
@@ -77,6 +77,7 @@ public class JexlPropertyEvaluation implements AdditionalStringResolver {
 				.features(features)
 				.permissions(jexlPermissions)
 				.antish(true)
+				.debug(true)
 				.create();
 	}
 
@@ -99,7 +100,7 @@ public class JexlPropertyEvaluation implements AdditionalStringResolver {
 
 		try {
 			@SuppressWarnings("unchecked")
-			JexlContext context = createJexlContext((Map<String, Object>) props1, (Map<String, Object>) props2);
+			JexlContext context = createScriptContext((Map<String, Object>) props1, (Map<String, Object>) props2);
 
 			Object result = expression.execute(context);
 			if (result == null) {
@@ -115,10 +116,10 @@ public class JexlPropertyEvaluation implements AdditionalStringResolver {
 	}
 
 	@Nonnull
-	private static JexlContext createJexlContext(Map<String, Object> props1, Map<String, Object> props2) {
+	private static JexlContext createScriptContext(Map<String, Object> props1, Map<String, Object> props2) {
 		// Create basic context
 		CompositeMap<String, Object> contextMap = createContextMap(props1, props2);
-		JexlContext context = new StreamContext(contextMap);
+		JexlContext context = new FrankScriptContext(contextMap);
 
 		// Make static methods from some common util classes easily available
 		context.set("Collections", Collections.class);
@@ -126,9 +127,24 @@ public class JexlPropertyEvaluation implements AdditionalStringResolver {
 		context.set("Math", Math.class);
 		context.set("StringUtils", StringUtils.class);
 		context.set("StringUtil", StringUtil.class);
-		context.set("log", log);
+		context.set("log", log); // log is needed for method calls on ApplicationWarnings
 
+		// Some classes to load dynamically from other modules
+		tryAddClassDynamically(context, "org.frankframework.configuration.ApplicationWarnings");
+		tryAddClassDynamically(context, "org.frankframework.util.MessageUtils");
+		tryAddClassDynamically(context, "org.frankframework.util.Misc");
 		return context;
+	}
+
+	private static void tryAddClassDynamically(JexlContext context, String className) {
+		try {
+			Class<?> cls = EmbeddedScriptEvaluation.class.getClassLoader().loadClass(className);
+			if (cls != null) {
+				context.set(cls.getSimpleName(), cls);
+			}
+		} catch (ClassNotFoundException e) {
+			log.info("Cannot load class ["+ className + "]");
+		}
 	}
 
 	@SuppressWarnings("unchecked")
@@ -150,7 +166,7 @@ public class JexlPropertyEvaluation implements AdditionalStringResolver {
 
 	private static class BackingMapMutator implements CompositeMap.MapMutator<String, Object> {
 
-		private final transient Map<String, Object> contextCustomValues;
+		private final Map<String, Object> contextCustomValues;
 
 		public BackingMapMutator(Map<String, Object> contextCustomValues) {
 			this.contextCustomValues = contextCustomValues;
@@ -173,14 +189,20 @@ public class JexlPropertyEvaluation implements AdditionalStringResolver {
 	}
 
 	/**
-	 * A MapContext that can operate on streams.
-	 *
+	 * A MapContext that can operate on streams and has Frank!Framework specific custom functionality.
+	 * <p>
 	 * Based on example in https://commons.apache.org/proper/commons-jexl/
+	 * </p>
 	 */
-	public static class StreamContext extends MapContext {
+	public static class FrankScriptContext extends MapContext {
 
-		public StreamContext(Map<String, Object> contextMap) {
+		public FrankScriptContext(Map<String, Object> contextMap) {
 			super(contextMap);
+		}
+
+		public void warn(String message) {
+			log.error(message);
+			System.out.println(message);
 		}
 
 		/**

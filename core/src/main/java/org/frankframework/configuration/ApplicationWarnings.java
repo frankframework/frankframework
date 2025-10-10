@@ -41,6 +41,9 @@ public class ApplicationWarnings extends AbstractApplicationWarnings {
 
 	private ApplicationWarnings(boolean springInstantiated) {
 		LOG.debug("ApplicationWarnings instantiated {}", springInstantiated ? "through Spring" : "manually");
+		if (springInstantiated && instance == null) {
+			instance = this;
+		}
 	}
 
 	/**

@@ -1,4 +1,4 @@
-package org.frankframework.extentions.jexl;
+package org.frankframework.extentions.script;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
