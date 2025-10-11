@@ -1,0 +1,138 @@
+<module>
+	<Adapter name="TrinoSender"
+		description="Test the functioning of the TrinoSender">
+		<Receiver>
+			<JavaListener name="ibis4test-TrinoSender"
+				serviceName="ibis4test-TrinoSender" />
+		</Receiver>
+		<pipeline>
+			<exits>
+				<exit name="EXIT" state="success" />
+			</exits>
+			<XmlSwitchPipe name="switchAction"
+				xpathExpression="request/@action"
+				getInputFromSessionKey="originalMessage" />
+
+			<SenderPipe name="CreateSchema">
+				<sender className="org.frankframework.jdbc.TrinoSender"
+					name="CreateSchemaSender"
+					query="CREATE SCHEMA IF NOT EXISTS memory.test_schema"
+					datasourceName="jdbc/trino" catalog="memory"
+					disableQueryPrefixing="true" />
+				<forward name="success" path="EXIT" />
+			</SenderPipe>
+
+			<SenderPipe name="CreateTable">
+				<sender className="org.frankframework.jdbc.TrinoSender"
+					name="CreateTableSender"
+					query="CREATE TABLE IF NOT EXISTS memory.test_schema.users (
+						id INTEGER,
+						name VARCHAR,
+						email VARCHAR,
+						created_at TIMESTAMP
+					)"
+					datasourceName="jdbc/trino" catalog="memory" schema="test_schema"
+					disableQueryPrefixing="true" />
+				<forward name="success" path="EXIT" />
+			</SenderPipe>
+
+			<SenderPipe name="Select">
+
+				<sender className="org.frankframework.jdbc.TrinoSender"
+					query="SELECT name FROM users where name = ? LIMIT 1"
+					queryType="select" name="SelectSender" datasourceName="jdbc/trino"
+					catalog="memory" schema="test_schema">
+					<param name="value" xpathExpression="/request/name" />
+				</sender>
+				<forward name="success" path="EXIT" />
+			</SenderPipe>
+
+			<SenderPipe name="Insert">
+				<param name="id" xpathExpression="/request/id" />
+				<param name="name" xpathExpression="/request/name" />
+				<param name="email" xpathExpression="/request/email" />
+				<param name="created_at" xpathExpression="/request/created_at" />
+				<sender className="org.frankframework.jdbc.TrinoSender"
+					name="InsertSender" datasourceName="jdbc/trino"
+					query="INSERT INTO users (id, name, email, created_at) VALUES (CAST(? AS INTEGER), ?, ?, CAST(? AS TIMESTAMP))"
+					catalog="memory" schema="test_schema">
+				</sender>
+				<forward name="success" path="EXIT" />
+			</SenderPipe>
+
+			<SenderPipe name="DisablePrefixing">
+				<sender className="org.frankframework.jdbc.TrinoSender"
+					queryType="select" name="DisablePrefixingSender"
+					query="SELECT * FROM memory.test_schema.users LIMIT 1"
+					datasourceName="jdbc/trino" disableQueryPrefixing="true" />
+				<forward name="success" path="EXIT" />
+			</SenderPipe>
+
+			<SenderPipe name="NamedParams">
+				<sender className="org.frankframework.jdbc.TrinoSender"
+					name="NamedParamsSender" queryType="select"
+					query="SELECT * FROM users WHERE id = CAST(? AS INTEGER) AND name LIKE ? LIMIT 1"
+					datasourceName="jdbc/trino" catalog="memory" schema="test_schema">
+
+					<param name="p1" xpathExpression="request/param1" />
+					<param name="p2" xpathExpression="request/param2" />
+				</sender>
+				<forward name="success" path="EXIT" />
+			</SenderPipe>
+
+			<SenderPipe name="AdvancedQuery">
+				<sender className="org.frankframework.jdbc.TrinoSender"
+					name="AdvancedQuerySender" queryType="select"
+					query="SELECT name, COUNT(*) as user_count 
+                   FROM users 
+                   GROUP BY Name"
+					datasourceName="jdbc/trino" includeFieldDefinition="false"
+					outputFormat="xml" prettyPrint="true" catalog="memory"
+					schema="test_schema" />
+				<forward name="success" path="EXIT" />
+			</SenderPipe>
+
+			<SenderPipe name="SubqueryAndJoins">
+				<sender className="org.frankframework.jdbc.TrinoSender"
+					name="SubqueryAndJoinsSender" queryType="select"
+					query="WITH recent_users AS (
+                       SELECT * FROM users 
+                       WHERE created_at > TIMESTAMP '2023-01-01'
+                   )
+                   SELECT u.id, u.name, u.email, COUNT(l.id) as login_count
+                   FROM recent_users u
+                   LEFT JOIN user_logins l ON u.id = l.user_id
+                   GROUP BY u.id, u.name, u.email
+                   ORDER BY login_count DESC, u.id
+                   LIMIT 5"
+					datasourceName="jdbc/trino" catalog="memory" schema="test_schema" />
+				<forward name="success" path="EXIT" />
+			</SenderPipe>
+
+			<SenderPipe name="CleanupDatabase">
+				<sender className="org.frankframework.jdbc.TrinoSender"
+					query="DROP SCHEMA IF EXISTS memory.test_schema CASCADE"
+					datasourceName="jdbc/trino" disableQueryPrefixing="true" />
+			</SenderPipe>
+
+			<SenderPipe name="CreateEmptyTable">
+				<sender className="org.frankframework.jdbc.TrinoSender"
+					name="CreateEmptyTableSender"
+					query="CREATE TABLE IF NOT EXISTS empty_table (
+                    id INTEGER,
+                    name VARCHAR
+                  )"
+					datasourceName="jdbc/trino" catalog="memory" schema="test_schema" />
+				<forward name="success" path="EXIT" />
+			</SenderPipe>
+
+			<SenderPipe name="QueryEmptyTable">
+				<sender className="org.frankframework.jdbc.TrinoSender"
+					name="QueryEmptyTableSender" queryType="select"
+					query="SELECT * FROM empty_table" datasourceName="jdbc/trino"
+					catalog="memory" schema="test_schema" />
+				<forward name="success" path="EXIT" />
+			</SenderPipe>
+		</pipeline>
+	</Adapter>
+</module>
