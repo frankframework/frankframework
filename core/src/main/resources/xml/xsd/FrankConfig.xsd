@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Public FrankDoc XSD, should be used within an IDE to validate a configuration. -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.3.0-SNAPSHOT">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.3.0">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -7387,7 +7387,12 @@
     </xs:attribute>
     <xs:attribute name="endPosition" type="frankInt">
       <xs:annotation>
-        <xs:documentation>If endposition &amp;gt;= 0 then this field contains the endPosition of the recordtype field in the record; All characters beyond this position are ignored. Else, if endPosition &amp;lt; 0 then it depends on the length of the recordkey in the flow Default: -1</xs:documentation>
+        <xs:documentation>If endPosition &amp;gt;= 0 then this field contains the endPosition (Java style, i.e the position of the next character) of the recordtype field in the record; All characters beyond this position are ignored. Else, if endPosition &amp;lt; 0 then it depends on the length of the recordkey in the flow Default: -1</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="newLineSeparated" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;false&lt;/code&gt;, no newlines are expected, all records of the size specified in the flows are read from a single 'line'. Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -14657,9 +14662,9 @@
       </xs:element>
       <xs:element name="StreamTransformerPipe">
         <xs:annotation>
-          <xs:documentation>Pipe for transforming a stream with records. Records in the stream must be separated with new line characters.
+          <xs:documentation>Pipe for transforming a stream with records. Records in the stream must be separated with new line characters, or be of fixed length.
 
- For file containing only a single type of lines, a simpler configuration without managers and flows
+ For files containing only a single type of lines, a simpler configuration without managers and flows
  can be specified. A single recordHandler with key="*" and (optional) a single resultHandler need to be specified.
  Each line will be handled by this recordHandler and resultHandler.</xs:documentation>
         </xs:annotation>

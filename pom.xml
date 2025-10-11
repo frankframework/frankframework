@@ -67,12 +67,12 @@
 	<scm>
 		<connection>scm:git:https://github.com/frankframework/frankframework.git</connection>
 		<developerConnection>scm:git:https://github.com/frankframework/frankframework.git</developerConnection>
-		<tag>HEAD</tag>
+		<tag>v9.3.0</tag>
 		<url>https://github.com/frankframework/frankframework</url>
 	</scm>
 
 	<properties>
-		<revision>9.3.0-SNAPSHOT</revision>
+		<revision>9.3.0</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>17</maven.compiler.target>
 		<maven.compiler.source>17</maven.compiler.source>
