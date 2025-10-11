@@ -11,6 +11,7 @@
 	<artifactId>plugin-parent</artifactId>
 	<packaging>pom</packaging>
 
+	<name>Frank!Framework Plugin Template</name>
 	<description>Frank!Framework Plugin parent-POM</description>
 
 	<properties>

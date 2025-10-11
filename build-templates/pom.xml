@@ -4,15 +4,46 @@
 
 	<groupId>org.frankframework</groupId>
 	<artifactId>build-templates</artifactId>
-	<packaging>pom</packaging>
-	<name>Frank!Framework Build Templates</name>
-	<description>Sub-modules define parent pom files so packaging will be done uniformly</description>
 	<version>${revision}</version>
+	<packaging>pom</packaging>
+
+	<name>Frank!Framework Build Templates</name>
+	<description>Module parent to ensure packaging will be done uniformly</description>
+	<url>https://frankframework.org</url>
+
+	<organization>
+		<name>Frank!Framework</name>
+		<url>https://frankframework.org</url>
+	</organization>
+
+	<licenses>
+		<license>
+			<name>Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<name>Niels Meijer</name>
+			<email>niels@frankframework.org</email>
+			<organization>Frank!Framework</organization>
+			<organizationUrl>https://frankframework.org</organizationUrl>
+		</developer>
+	</developers>
 
 	<modules>
 		<module>plugin-parent</module>
 		<module>configuration-parent</module>
 	</modules>
+
+	<scm>
+		<connection>scm:git:https://github.com/frankframework/frankframework.git</connection>
+		<developerConnection>scm:git:https://github.com/frankframework/frankframework.git</developerConnection>
+		<tag>HEAD</tag>
+		<url>https://github.com/frankframework/frankframework</url>
+	</scm>
 
 	<properties>
 		<maven.compiler.target>17</maven.compiler.target>
@@ -37,6 +68,14 @@
 		<dependencies>
 			<dependency>
 				<groupId>org.frankframework</groupId>
+				<artifactId>frankframework-parent</artifactId>
+				<version>${framework.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>org.frankframework</groupId>
 				<artifactId>plugin-parent</artifactId>
 				<version>${revision}</version>
 			</dependency>
@@ -44,14 +83,6 @@
 				<groupId>org.frankframework</groupId>
 				<artifactId>configuration-parent</artifactId>
 				<version>${revision}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.frankframework</groupId>
-				<artifactId>frankframework-parent</artifactId>
-				<version>${framework.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
 			</dependency>
 
 			<dependency>
@@ -65,12 +96,6 @@
 
 	<build>
 		<defaultGoal>package</defaultGoal>
-		<plugins>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>flatten-maven-plugin</artifactId>
-			</plugin>
-		</plugins>
 
 		<pluginManagement>
 			<plugins>
@@ -279,6 +304,43 @@
 						</execution>
 					</executions>
 				</plugin>
+
+				<plugin>
+					<groupId>com.diffplug.spotless</groupId>
+					<artifactId>spotless-maven-plugin</artifactId>
+					<version>2.46.1</version>
+					<configuration>
+						<java>
+							<removeUnusedImports />
+							<endWithNewline />
+							<trimTrailingWhitespace />
+						</java>
+						<pom>
+							<sortPom>
+								<expandEmptyElements>false</expandEmptyElements>
+								<sortDependencies>scope</sortDependencies>
+								<sortDependencyExclusions>groupId,artifactId</sortDependencyExclusions>
+								<spaceBeforeCloseEmptyElement>true</spaceBeforeCloseEmptyElement>
+								<nrOfIndentSpace>-1</nrOfIndentSpace>
+							</sortPom>
+						</pom>
+					</configuration>
+					<executions>
+						<execution>
+							<id>check</id>
+							<goals>
+								<goal>check</goal>
+							</goals>
+						</execution>
+						<execution>
+							<id>auto-apply</id>
+							<goals>
+								<goal>apply</goal>
+							</goals>
+							<phase>compile</phase>
+						</execution>
+					</executions>
+				</plugin>
 				<!-- This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself -->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
@@ -333,6 +395,17 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
+
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>flatten-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>com.diffplug.spotless</groupId>
+				<artifactId>spotless-maven-plugin</artifactId>
+			</plugin>
+		</plugins>
 	</build>
 
 	<profiles>

@@ -11,6 +11,7 @@
 	<artifactId>configuration-parent</artifactId>
 	<packaging>pom</packaging>
 
+	<name>Frank!Framework Configuration Template</name>
 	<description>Frank!Framework Configuration parent-POM</description>
 
 	<properties>
