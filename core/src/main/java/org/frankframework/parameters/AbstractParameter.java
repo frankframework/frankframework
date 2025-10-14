@@ -18,6 +18,7 @@ package org.frankframework.parameters;
 import static org.frankframework.util.StringUtil.hide;
 
 import java.io.IOException;
+import java.security.Principal;
 import java.text.DateFormat;
 import java.text.MessageFormat;
 import java.text.ParseException;
@@ -37,6 +38,7 @@ import javax.xml.transform.dom.DOMResult;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
+import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 import org.w3c.dom.Document;
@@ -310,10 +312,10 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 						// larva can produce the sourceObject as map
 						Map<String, String> items = (Map<String, String>) sourceObject;
 						XmlBuilder itemsXml = new XmlBuilder("items");
-						for (String item : items.keySet()) {
+						for (Map.Entry<String, String> item : items.entrySet()) {
 							XmlBuilder itemXml = new XmlBuilder("item");
-							itemXml.addAttribute("name", item);
-							itemXml.setValue(items.get(item));
+							itemXml.addAttribute("name", item.getKey());
+							itemXml.setValue(item.getValue());
 							itemsXml.addSubElement(itemXml);
 						}
 						source = XmlUtils.stringToSourceForSingleUse(itemsXml.asXmlString(), namespaceAware);
@@ -680,6 +682,17 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 				yield UUIDUtil.createRandomUUID();
 			case "hostname":
 				yield Misc.getHostname();
+			case "principal":
+				Principal principal;
+				try {
+					principal = session.getSecurityHandler().getPrincipal();
+				} catch (NotImplementedException e) {
+					yield null;
+				}
+				if (principal == null) {
+					yield null;
+				}
+				yield principal.getName();
 			case "fixeddate":
 				if (!ConfigurationUtils.isConfigurationStubbed(configurationClassLoader)) {
 					throw new ParameterException(getName(), "Parameter pattern [" + substitutionPattern.name + "] only allowed in stub mode");

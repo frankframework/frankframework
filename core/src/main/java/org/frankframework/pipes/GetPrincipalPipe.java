@@ -66,7 +66,7 @@ public class GetPrincipalPipe extends FixedForwardPipe {
 		} else {
 			try {
 				principalName = principal.getName();
-			} catch (Throwable e) {
+			} catch (Exception e) {
 				throw new PipeRunException(this,"got exception getting name from principal",e);
 			}
 		}

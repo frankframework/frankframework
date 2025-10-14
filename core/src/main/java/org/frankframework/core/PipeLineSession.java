@@ -309,7 +309,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		put(SECURITY_HANDLER_KEY, handler);
 	}
 
-	public ISecurityHandler getSecurityHandler() throws NotImplementedException {
+	public @Nonnull ISecurityHandler getSecurityHandler() throws NotImplementedException {
 		if (securityHandler == null) {
 			securityHandler = (ISecurityHandler) get(SECURITY_HANDLER_KEY);
 			if (securityHandler == null) {
