@@ -15,6 +15,7 @@
 */
 package org.frankframework.extentions.script;
 
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -36,6 +37,7 @@ import org.apache.commons.jexl3.JexlScript;
 import org.apache.commons.jexl3.MapContext;
 import org.apache.commons.jexl3.introspection.JexlPermissions;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -43,7 +45,74 @@ import org.frankframework.util.AdditionalStringResolver;
 import org.frankframework.util.StringUtil;
 
 /**
- * Try to evaluate the key as a JEXL expression.
+ * Evaluate a JEXL expression embedded in a string substitution performed by {@link org.frankframework.util.StringResolver}.
+ * For a string substitution to be evaluated as expression, it has to be prefixed with a {@value EXPRESSION_START_TOKEN} inside
+ * the string substitution delimiters, so by default this would be {@code ${=...}}.
+ * <p>
+ *     Inside the expression you can reference other properties from the source maps, either as nested string substitutions
+ *     or as direct references. Since Java properties are loaded as string values, numerical or boolean values would be
+ *     strings if referenced directly and this can have confusing effects when using them in calculations or boolean evaluations.
+ * </p>
+ * <h3>Some examples</h3>
+ * <p>
+ *     <pre>{@code
+ *     my.custom.value=Hello!
+ *     padding.size=5
+ *     total.length=${=my.custom.value.length() + ${padding.size}}
+ *     }</pre>
+ *     The result of evaluating {@code total.length} would be 11. The padding size is used here as an embedded string
+ *     substitution, which is evaluated before the expression is evaluated. As you can see, it is possible to use regular Java string
+ *     functions inside the expressions.
+ * </p>
+ * <p>
+ *     <pre>{@code
+ *     value1=5
+ *     value2=10
+ *     sum=${=value1 + value2}
+ *     }</pre>
+ *     Because direct references are strings when loaded as Java properties, the result of this expression is the string-concatenations {@literal 510} instead of the sum {@literal 15}.
+ *     To get the correct outcome, you can write either:
+ *     <pre>{@code
+ *     value1=5
+ *     value2=10
+ *     sum=${=Integer.parseInt(value1) + Integer.parseInt(value2)}
+ *     }</pre>
+ *     Or, perhaps easier:
+ *     <pre>{@code
+ *     value1=5
+ *     value2=10
+ *     sum=${=${value1} + ${value2}}
+ *     }</pre>
+ * </p>
+ * <p>
+ *     Here is an example with a conditional evaluation giving a warning:
+ *     <pre>{@code
+ *     remote.host=
+ *     remote.port=
+ *     remote.url=${= if (StringUtils.isBlank(remote.host) || StringUtils.isBlank(remote.port) { ApplicationWarnings.add(log, "properties remote.host and remote.port should be set"} else { return "http://$s:$s/api/".formatted(remote.host, remote.port); }}
+ *     }</pre>
+ * </p>
+ *
+ * <h3>Available Classes</h3>
+ * The following classes are available in the evaluation context so that static methods of these classes can be
+ * used in expressions:
+ * <ul>
+ *     <li>java.lang.String</li>
+ *     <li>java.lang.Boolean</li>
+ *     <li>java.lang.Integer</li>
+ *     <li>java.lang.Long</li>
+ *     <li>java.lang.Double</li>
+ *     <li>java.lang.Math</li>
+ *     <li>java.util.Arrays</li>
+ *     <li>java.util.Collections</li>
+ *     <li>java.util.stream.Collectors</li>
+ *     <li>org.apache.commons.lang3.Strings</li>
+ *     <li>org.apache.commons.lang3.StringUtils</li>
+ *     <li>org.frankframework.util.StringUtil</li>
+ *     <li>org.frankframework.util.Misc</li>
+ *     <li>org.frankframework.util.MessageUtils</li>
+ *     <li>org.frankframework.configuration.ApplicationWarnings</li>
+ * </ul>
  *
  * @see <a href="https://commons.apache.org/proper/commons-jexl/">Apache JEXL Homepage</a>
  */
@@ -93,7 +162,7 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 			expression = jexl.createScript(key.substring(EXPRESSION_START_TOKEN.length()));
 		} catch (Exception e) {
 			// This probably wasn't a JEXL script. Pass on to other string resolvers, don't try same key again.
-			log.error(() -> "Cannot parse [%s] as JEXL expression".formatted(key), e);
+			log.error(() -> "Cannot parse [%s] as JEXL expression".formatted(key.substring(EXPRESSION_START_TOKEN.length())), e);
 			invalidExpressions.add(key);
 			return Optional.empty();
 		}
@@ -121,12 +190,20 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 		CompositeMap<String, Object> contextMap = createContextMap(props1, props2);
 		JexlContext context = new FrankScriptContext(contextMap);
 
-		// Make static methods from some common util classes easily available
-		context.set("Collections", Collections.class);
-		context.set("Collectors", Collectors.class);
-		context.set("Math", Math.class);
-		context.set("StringUtils", StringUtils.class);
-		context.set("StringUtil", StringUtil.class);
+		// Make static methods from some common types and util classes easily available
+		addClass(context, String.class);
+		addClass(context, Boolean.class);
+		addClass(context, Integer.class);
+		addClass(context, Long.class);
+		addClass(context, Double.class);
+		addClass(context, Math.class);
+		addClass(context, Arrays.class);
+		addClass(context, Collections.class);
+		addClass(context, Collectors.class);
+		addClass(context, Strings.class);
+		addClass(context, StringUtils.class);
+		addClass(context, StringUtil.class);
+
 		context.set("log", log); // log is needed for method calls on ApplicationWarnings
 
 		// Some classes to load dynamically from other modules
@@ -136,7 +213,11 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 		return context;
 	}
 
-	private static void tryAddClassDynamically(JexlContext context, String className) {
+	private static void addClass(@Nonnull JexlContext context, @Nonnull Class<?> clazz) {
+		context.set(clazz.getSimpleName(), clazz);
+	}
+
+	private static void tryAddClassDynamically(@Nonnull JexlContext context, @Nonnull String className) {
 		try {
 			Class<?> cls = EmbeddedScriptEvaluation.class.getClassLoader().loadClass(className);
 			if (cls != null) {
@@ -201,8 +282,7 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 		}
 
 		public void warn(String message) {
-			log.error(message);
-			System.out.println(message);
+			log.warn(message);
 		}
 
 		/**

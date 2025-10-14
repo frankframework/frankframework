@@ -104,4 +104,22 @@ public class ApplicationWarningsTest {
 		assertEquals(1, applWarnings.size());
 		assertEquals("missing property", applWarnings.get(0));
 	}
+
+	@Test
+	void testConditionalWarningOrValueFromAppConstants() {
+		// Arrange
+		AppConstants appConstants = AppConstants.getInstance();
+		appConstants.setProperty("remote.url", "${= if (StringUtils.isBlank(remote.host) || StringUtils.isBlank(remote.port)) { ApplicationWarnings.add(log, \"missing property remote.host or remote.port\"); } else { return \"http://%s:%s/api\".formatted(remote.host, remote.port); }}");
+		appConstants.setProperty("remote.host", "example.com");
+		appConstants.setProperty("remote.port", "8080");
+
+		// Act
+		String result = appConstants.getProperty("remote.url");
+
+		// Assert
+		assertEquals("http://example.com:8080/api", result);
+
+		List<String> applWarnings = ApplicationWarnings.getWarningsList();
+		assertEquals(0, applWarnings.size());
+	}
 }
