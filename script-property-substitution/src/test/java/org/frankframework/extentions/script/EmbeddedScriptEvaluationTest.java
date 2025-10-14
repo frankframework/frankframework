@@ -79,19 +79,6 @@ class EmbeddedScriptEvaluationTest {
 	}
 
 	@Test
-	void testWriteSomething() {
-		// Arrange
-		EmbeddedScriptEvaluation embeddedScriptEvaluation = new EmbeddedScriptEvaluation();
-
-		Map<String, Object> map = new HashMap<>();
-
-		// Act
-		embeddedScriptEvaluation.resolve("=log.error(\"Log Me!\");", map, null, null, StringResolver.DELIM_START, StringResolver.DELIM_STOP, false);
-
-		// Assert
-	}
-
-	@Test
 	void testIfCondition() {
 		// Arrange
 		EmbeddedScriptEvaluation embeddedScriptEvaluation = new EmbeddedScriptEvaluation();
@@ -105,19 +92,5 @@ class EmbeddedScriptEvaluationTest {
 		// Assert
 		assertTrue(result.isPresent());
 		assertEquals("2", result.get());
-	}
-
-	@Test
-	void testConditionalLog() {
-		// Arrange
-		EmbeddedScriptEvaluation embeddedScriptEvaluation = new EmbeddedScriptEvaluation();
-
-		Map<String, Object> map = new HashMap<>();
-
-		// Act
-		embeddedScriptEvaluation.resolve("=if(StringUtils.isBlank(no.Such.Property)) { warn(\"my property is missing\"); } else { System.err.println(\"Meep!\"); }", map, null, null, null, null, false);
-
-		// Assert
-
 	}
 }

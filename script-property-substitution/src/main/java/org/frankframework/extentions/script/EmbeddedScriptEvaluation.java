@@ -24,7 +24,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import jakarta.annotation.Nonnull;
 
@@ -34,7 +33,6 @@ import org.apache.commons.jexl3.JexlContext;
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlFeatures;
 import org.apache.commons.jexl3.JexlScript;
-import org.apache.commons.jexl3.MapContext;
 import org.apache.commons.jexl3.introspection.JexlPermissions;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
@@ -269,40 +267,4 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 		}
 	}
 
-	/**
-	 * A MapContext that can operate on streams and has Frank!Framework specific custom functionality.
-	 * <p>
-	 * Based on example in https://commons.apache.org/proper/commons-jexl/
-	 * </p>
-	 */
-	public static class FrankScriptContext extends MapContext {
-
-		public FrankScriptContext(Map<String, Object> contextMap) {
-			super(contextMap);
-		}
-
-		public void warn(String message) {
-			log.warn(message);
-		}
-
-		/**
-		 * This allows using a JEXL lambda as a mapper.
-		 * @param stream the stream
-		 * @param mapper the lambda to use as mapper
-		 * @return the mapped stream
-		 */
-		public Stream<?> map(Stream<?> stream, final JexlScript mapper) {
-			return stream.map( x -> mapper.execute(this, x));
-		}
-
-		/**
-		 * This allows using a JEXL lambda as a filter.
-		 * @param stream the stream
-		 * @param filter the lambda to use as filter
-		 * @return the filtered stream
-		 */
-		public Stream<?> filter(Stream<?> stream, final JexlScript filter) {
-			return stream.filter(x -> Boolean.TRUE.equals(filter.execute(this, x)));
-		}
-	}
 }
