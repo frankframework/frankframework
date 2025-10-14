@@ -77,7 +77,7 @@ public class ConsoleStandaloneInitializer {
 				log.fatal("unable to start application", event.getException());
 			}
 
-			System.exit(1); //Terminate the JVM
+			System.exit(1); // Terminate the JVM
 		}
 
 	}

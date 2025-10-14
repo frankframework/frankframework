@@ -32,7 +32,7 @@ import org.frankframework.util.LogUtil;
 public class ApplicationWarnings extends AbstractApplicationWarnings {
 	private static final Logger LOG = LogUtil.getLogger(ApplicationWarnings.class);
 
-	//Only allow static references to this class to ensure no objects are stored elsewhere
+	// Only allow static references to this class to ensure no objects are stored elsewhere
 	private static ApplicationWarnings instance = null;
 
 	public ApplicationWarnings() {
@@ -89,13 +89,13 @@ public class ApplicationWarnings extends AbstractApplicationWarnings {
 
 		super.afterPropertiesSet();
 
-		//Register the bean in the Spring Context
+		// Register the bean in the Spring Context
 		overrideInstance(this);
 	}
 
 	@Override
 	public void destroy() {
-		removeInstance(); //Remove static reference when Spring shuts down.
+		removeInstance(); // Remove static reference when Spring shuts down.
 	}
 
 	public static int getSize() {

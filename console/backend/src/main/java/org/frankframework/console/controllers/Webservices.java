@@ -71,8 +71,7 @@ public class Webservices {
 	@Relation("webservices")
 	@Description("view WDSL specificiation")
 	@GetMapping(value = "/webservices/{configuration}/{resourceName}", produces = MediaType.APPLICATION_XML_VALUE)
-	public ResponseEntity<?> getWsdl(WsdlPathVariables path,
-									 WsdlParameters params) {
+	public ResponseEntity<?> getWsdl(WsdlPathVariables path, WsdlParameters params) {
 		RequestMessageBuilder request = RequestMessageBuilder.create(BusTopic.WEBSERVICES, BusAction.DOWNLOAD);
 
 		request.addHeader("indent", params.indent);

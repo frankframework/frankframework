@@ -420,7 +420,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 				result = FileSystemUtils.moveFile(getFileSystem(), message.getRawMessage(), getStateFolder(toState), reason, isOverwrite(), getNumberOfBackups(), isCreateFolders(), false);
 			} else if (toState==ProcessState.INPROCESS && isFileTimeSensitive() && getFileSystem() instanceof IWritableFileSystem) {
 				F movedFile = getFileSystem().moveFile(message.getRawMessage(), getStateFolder(toState), false);
-				 result = renameFileWithTimeStamp(message, toState, movedFile);
+				result = renameFileWithTimeStamp(message, toState, movedFile);
 			} else {
 				result = getFileSystem().moveFile(message.getRawMessage(), getStateFolder(toState), false);
 			}

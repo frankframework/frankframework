@@ -55,9 +55,9 @@ public class ApiCacheManager {
 		String pattern = listener.getCleanPattern();
 		// Not only remove the eTag for the selected resources but also the collection
 		if((method == HttpMethod.PUT || method == HttpMethod.PATCH || method == HttpMethod.DELETE) && pattern != null && pattern.endsWith("/*")) {
-			//Check the amount of asterisks, if there is only 1, this will return false
+			// Check the amount of asterisks, if there is only 1, this will return false
 			if(listener.getCleanPattern().indexOf("*") < listener.getCleanPattern().lastIndexOf("*")) {
-				//Get collection uri
+				// Get collection uri
 				String parentUri = uri.substring(0, uri.lastIndexOf("/"));
 				return buildCacheKey(parentUri);
 			}

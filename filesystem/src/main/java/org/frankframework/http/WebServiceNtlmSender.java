@@ -152,7 +152,6 @@ public class WebServiceNtlmSender extends AbstractSenderWithParameters implement
 
 	@Override
 	public void stop() {
-//		httpClient.getConnectionManager().shutdown();
 		connectionManager.shutdown();
 		connectionManager=null;
 	}

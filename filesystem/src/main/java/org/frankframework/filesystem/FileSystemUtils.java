@@ -349,7 +349,7 @@ public class FileSystemUtils {
 
 				// Get the modification date of the file
 				Date modificationDate = fileSystem.getModificationTime(f);
-				//add date
+				// Add date
 				if (modificationDate != null) {
 					String date = DateFormatUtils.format(modificationDate, DateFormatUtils.ISO_DATE_FORMATTER);
 					file.addAttribute("modificationDate", date);

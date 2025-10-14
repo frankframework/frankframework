@@ -53,7 +53,7 @@ public class ConsoleFrontend extends HttpServlet implements EnvironmentAware, In
 
 	private static final long serialVersionUID = 1L;
 	private static final String WELCOME_FILE = "index.html";
-	private static final String DEFAULT_CONSOLE_PATH = "console"; //WebSphere doesn't like the classpath: protocol and resources should not start with a slash?
+	private static final String DEFAULT_CONSOLE_PATH = "console"; // WebSphere doesn't like the classpath: protocol and resources should not start with a slash?
 
 	@SuppressWarnings("java:S2226") // Initialized through Spring (which is a Sonar Exception)
 	private String frontendPath = null;
@@ -66,8 +66,8 @@ public class ConsoleFrontend extends HttpServlet implements EnvironmentAware, In
 		if(environment != null && Arrays.asList(environment.getActiveProfiles()).contains("dev")) {
 			String devFrontendLocation = environment.getProperty("frontend.resources.location");
 			if(devFrontendLocation == null) {
-				Path rootPath = Paths.get("").toAbsolutePath(); // get default location based on current working directory, in IntelliJ this is the project root.
-				devFrontendLocation = rootPath.resolve("console/frontend/target/frontend/").toString(); //Navigate to the target of the frontend module
+				Path rootPath = Paths.get("").toAbsolutePath(); // Get default location based on current working directory, in IntelliJ this is the project root.
+				devFrontendLocation = rootPath.resolve("console/frontend/target/frontend/").toString(); // Navigate to the target of the frontend module
 			}
 
 			frontendPath = ResourceUtils.FILE_URL_PREFIX + FilenameUtils.getFullPath(devFrontendLocation);
@@ -91,13 +91,13 @@ public class ConsoleFrontend extends HttpServlet implements EnvironmentAware, In
 	 */
 	private void doGetSafely(HttpServletRequest req, HttpServletResponse resp) throws IOException {
 		String path = req.getPathInfo();
-		if(StringUtils.isBlank(path)) { //getPathInfo may return null, redirect to {base}+'/' when that happens.
+		if(StringUtils.isBlank(path)) { // getPathInfo may return null, redirect to {base}+'/' when that happens.
 			String fullPath = req.getRequestURI();
 			if(!fullPath.endsWith("/")) {
 				resp.sendRedirect(req.getContextPath() + req.getServletPath() + "/");
 				return;
 			} else {
-				//WebSphere likes to add a slash to the requestURI but leaves it out of the pathInfo
+				// WebSphere likes to add a slash to the requestURI but leaves it out of the pathInfo
 				if(path == null) {
 					path = "/";
 				} else {

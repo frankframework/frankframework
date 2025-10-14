@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -114,8 +114,7 @@ public class Configurations {
 	@Relation("configuration")
 	@Description("view individual loaded/original configuration")
 	@GetMapping(value = "/configurations/{configuration}", produces = MediaType.APPLICATION_XML_VALUE)
-	public ResponseEntity<?> getConfigurationByName(@PathVariable String configuration,
-													ConfigurationParameters params) throws ApiException {
+	public ResponseEntity<?> getConfigurationByName(@PathVariable String configuration, ConfigurationParameters params) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.GET);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, configuration);
 
@@ -164,8 +163,7 @@ public class Configurations {
 	@Relation("configuration")
 	@Description("view a list of all known configuration versions")
 	@GetMapping(value = "/configurations/{configuration}/versions", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getConfigurationDetailsByName(ConfigurationPathVariables path,
-														   ConfigurationParameters params) throws ApiException {
+	public ResponseEntity<?> getConfigurationDetailsByName(ConfigurationPathVariables path, ConfigurationParameters params) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.FIND);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
 		builder.addHeader(BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, params.datasourceName);
@@ -240,8 +238,7 @@ public class Configurations {
 	@Relation("configuration")
 	@Description("download a specific configuration version")
 	@GetMapping(value = "/configurations/{configuration}/versions/{version}/download", produces = MediaType.APPLICATION_OCTET_STREAM_VALUE)
-	public ResponseEntity<?> downloadConfiguration(ConfigurationPathVariables path,
-												   ConfigurationParameters params) throws ApiException {
+	public ResponseEntity<?> downloadConfiguration(ConfigurationPathVariables path, ConfigurationParameters params) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.DOWNLOAD);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
 		builder.addHeader(BUS_HEADER_VERSION, path.version);
@@ -254,8 +251,7 @@ public class Configurations {
 	@Relation("configuration")
 	@Description("delete a specific configuration")
 	@DeleteMapping(value = "/configurations/{configuration}/versions/{version}")
-	public ResponseEntity<?> deleteConfiguration(ConfigurationPathVariables path,
-												 ConfigurationParameters params) throws ApiException {
+	public ResponseEntity<?> deleteConfiguration(ConfigurationPathVariables path, ConfigurationParameters params) throws ApiException {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.CONFIGURATION, BusAction.DELETE);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
 		builder.addHeader(BUS_HEADER_VERSION, path.version);

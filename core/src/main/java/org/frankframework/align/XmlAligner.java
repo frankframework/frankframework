@@ -363,13 +363,13 @@ public class XmlAligner extends XMLFilterImpl {
 		return getAttributeUses(typeDefinition);
 	}
 
+	@SuppressWarnings("unchecked")
 	public @Nonnull List<XSAttributeUse> getAttributeUses(XSTypeDefinition typeDefinition) {
 		if (typeDefinition==null) {
 			log.trace("getAttributeUses typeDefinition is null");
 			return List.of();
 		}
 		if (typeDefinition instanceof XSComplexTypeDefinition complexTypeDefinition) {
-			//noinspection unchecked
 			return complexTypeDefinition.getAttributeUses();
 		}
 		if (log.isTraceEnabled()) log.trace("typeDefinition [{}] SimpleType, no attributes", typeDefinition.getClass().getSimpleName());

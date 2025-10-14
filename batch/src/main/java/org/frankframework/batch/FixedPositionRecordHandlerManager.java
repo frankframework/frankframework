@@ -102,20 +102,20 @@ public class FixedPositionRecordHandlerManager extends RecordHandlerManager {
 	}
 
 	private String readUpToXChars(Reader reader, int maxChars) throws IOException {
-	    char[] buffer = new char[maxChars];
-	    int totalRead = 0;
+		char[] buffer = new char[maxChars];
+		int totalRead = 0;
 
-	    while (totalRead < maxChars) {
-	        int charsRead = reader.read(buffer, totalRead, maxChars - totalRead);
-	        if (charsRead == -1) {
-	            break; // EOF
-	        }
-	        totalRead += charsRead;
-	    }
-	    if (totalRead == 0) {
-	    	return null;
-	    }
-	    return new String(buffer, 0, totalRead);
+		while (totalRead < maxChars) {
+			int charsRead = reader.read(buffer, totalRead, maxChars - totalRead);
+			if (charsRead == -1) {
+				break; // EOF
+			}
+			totalRead += charsRead;
+		}
+		if (totalRead == 0) {
+			return null;
+		}
+		return new String(buffer, 0, totalRead);
 	}
 
 	/**

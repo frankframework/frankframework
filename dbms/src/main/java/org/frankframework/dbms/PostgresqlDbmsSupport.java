@@ -316,22 +316,6 @@ public class PostgresqlDbmsSupport extends GenericDbmsSupport {
 		throw new IllegalArgumentException(getDbms() + " does not support setting lock wait timeout in query");
 	}
 
-	// commented out prepareSessionForNonLockingRead(), see https://dev.mysql.com/doc/refman/8.0/en/innodb-consistent-read.html
-//	@Override
-//	public JdbcSession prepareSessionForNonLockingRead(Connection conn) throws DbmsException {
-//		DbmsUtil.executeStatement(conn, "SET TRANSACTION ISOLATION LEVEL READ COMMITTED");
-//		DbmsUtil.executeStatement(conn, "START TRANSACTION");
-//		return new JdbcSession() {
-//
-//			@Override
-//			public void close() throws Exception {
-//				DbmsUtil.executeStatement(conn, "COMMIT");
-//			}
-//
-//		};
-//	}
-
-
 	public int alterAutoIncrement(Connection connection, String tableName, int startWith) throws DbmsException {
 		String query = "ALTER TABLE " + tableName + " AUTO_INCREMENT=" + startWith;
 		return DbmsUtil.executeIntQuery(connection, query);

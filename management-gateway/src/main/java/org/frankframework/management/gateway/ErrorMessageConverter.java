@@ -42,7 +42,7 @@ public class ErrorMessageConverter extends AbstractReplyProducingMessageHandler 
 		if (requestMessage.getPayload() instanceof Exception e) {
 			log.error("an error occurred while handling frank-management-bus request", e);
 
-			if(e instanceof MessageDeliveryException) { //hide timeouts
+			if(e instanceof MessageDeliveryException) { // Hide timeouts
 				return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 			}
 

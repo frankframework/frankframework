@@ -9,6 +9,12 @@
 		<!-- The property config_loc is automatically set by the eclipse-cs plugin -->
 		<property name="file" value="${config_loc}/checkstyle-suppressions.xml"/>
 	</module>
+	<module name="BeforeExecutionExclusionFileFilter">
+		<property name="fileNamePattern" value=".*[\\/]src[\\/]test[\\/].*$"/>
+	</module>
+	<module name="BeforeExecutionExclusionFileFilter">
+		<property name="fileNamePattern" value=".*[\\/]net[\\/]wedjaa[\\/]ansible[\\/].*$"/>
+	</module>
 
 	<property name="severity" value="error" />
 	<module name="TreeWalker">
@@ -62,6 +68,24 @@
 			<property name="message" value="You shouldn't use file.deleteOnExit()!" />
 			<property name="ignoreComments" value="true" />
 		</module>
+
+		<module name="RegexpSinglelineJava">
+			<property name="format" value="^\t* +\t+ *[^\s]" />
+			<property name="message" value="Indent must use tab characters." />
+			<property name="ignoreComments" value="true" />
+		</module>
+		<module name="RegexpSinglelineJava">
+			<property name="format" value="\s+$" />
+			<property name="message" value="Line has trailing spaces." />
+			<property name="ignoreComments" value="true" />
+		</module>
+
+		<module name="RegexpSinglelineJava">
+			<property name="id" value="systemout"/>
+			<property name="format" value="^.*System\.(out|err).*$"/>
+			<property name="message" value="Don't use System.out/err, use LOG4J2 instead."/>
+			<property name="ignoreComments" value="true" />
+		</module>
 	</module>
 
 	<module name="SuppressionSingleFilter">
@@ -92,27 +116,16 @@
 		<module name="SuppressWarnings">
 			<property name="format" value="^all$" />
 		</module>
+
+		<module name="RegexpSinglelineJava">
+			<property name="format" value="^\t* " />
+			<property name="message" value="Indent contains spaces." />
+			<property name="ignoreComments" value="true" />
+		</module>
 	</module>
 
 	<module name="TreeWalker">
 		<property name="severity" value="warning" />
-		<module name="RegexpSinglelineJava">
-			<property name="format" value="^\t* " />
-			<property name="message" value="Indent must use tab characters." />
-			<property name="ignoreComments" value="true" />
-		</module>
-		<module name="RegexpSinglelineJava">
-			<property name="format" value="\s+$" />
-			<property name="message" value="Line has trailing spaces." />
-			<property name="ignoreComments" value="true" />
-		</module>
-
-		<module name="RegexpSinglelineJava">
-			<property name="id" value="systemout"/>
-			<property name="format" value="^.*System\.(out|err).*$"/>
-			<property name="message" value="Don't use System.out/err, use LOG4J2 instead."/>
-			<property name="ignoreComments" value="true" />
-		</module>
 		<module name="MatchXpath">
 			<property name="id" value="singleLineCommentStartWithSpace"/>
 			<property name="query"

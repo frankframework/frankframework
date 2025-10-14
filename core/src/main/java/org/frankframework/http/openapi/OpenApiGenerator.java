@@ -198,7 +198,7 @@ public class OpenApiGenerator {
 		});
 	}
 
-	//ContentType may have more parameters such as charset and formdata-boundary, strip those
+	// ContentType may have more parameters such as charset and formdata-boundary, strip those
 	private static String mimeTypeToString(MimeType mimeType) {
 		return mimeType.getType() + "/" + mimeType.getSubtype();
 	}

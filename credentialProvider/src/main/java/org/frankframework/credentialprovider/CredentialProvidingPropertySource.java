@@ -19,6 +19,8 @@ import java.util.NoSuchElementException;
 
 import org.apache.tomcat.util.IntrospectionUtils.PropertySource;
 
+import lombok.extern.java.Log;
+
 /**
  * Tomcat PropertySource that gets its data from the configured CredentialFactory.
  *
@@ -33,6 +35,7 @@ import org.apache.tomcat.util.IntrospectionUtils.PropertySource;
  * @author Gerrit van Brakel
  *
  */
+@Log
 public class CredentialProvidingPropertySource implements PropertySource {
 
 	public static final String DEFAULT_MARKER = ":";
@@ -49,10 +52,10 @@ public class CredentialProvidingPropertySource implements PropertySource {
 				return null;
 			}
 		} catch (NoSuchElementException e) {
-			System.err.println("CredentialProvidingPropertySource: Cannot resolve alias ["+alias+"]");
+			log.severe("CredentialProvidingPropertySource: Cannot resolve alias ["+alias+"]");
 			return null;
 		} catch (Exception e) {
-			System.err.println("CredentialProvidingPropertySource: Cannot resolve alias ["+alias+"] ("+e.getClass().getTypeName()+"): "+e.getMessage());
+			log.severe("CredentialProvidingPropertySource: Cannot resolve alias ["+alias+"] ("+e.getClass().getTypeName()+"): "+e.getMessage());
 			return null;
 		}
 

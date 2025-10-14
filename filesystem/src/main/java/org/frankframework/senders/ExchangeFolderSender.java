@@ -24,5 +24,5 @@ import org.frankframework.filesystem.AbstractFileSystemSender;
 @Deprecated(forRemoval = true)
 @ConfigurationWarning("please use the 'ExchangeFileSystemSender' instead")
 public class ExchangeFolderSender extends ExchangeFileSystemSender {
-	//NO OP
+	// NO OP
 }

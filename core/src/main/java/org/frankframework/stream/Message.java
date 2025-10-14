@@ -314,8 +314,7 @@ public class Message implements Serializable, Closeable {
 						this.request = bos.toByteArray();
 					}
 				} else {
-					try (StringWriter sw = new StringWriter();
-						 Reader reader = serializableFileReference.getReader()) {
+					try (StringWriter sw = new StringWriter(); Reader reader = serializableFileReference.getReader()) {
 						reader.transferTo(sw);
 						this.request = sw.toString();
 					}

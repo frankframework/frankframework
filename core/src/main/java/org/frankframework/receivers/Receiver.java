@@ -1200,13 +1200,13 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	private RawMessageWrapper<M> getMessageToRetryFromErrorBrowser(String storageKey) throws ListenerException {
 		IMessageBrowser<?> errorStorageBrowser = messageBrowsers.get(ProcessState.ERROR);
 
-		//noinspection unchecked
+		@SuppressWarnings("unchecked")
 		RawMessageWrapper<M> msg = (RawMessageWrapper<M>) errorStorageBrowser.browseMessage(storageKey);
 
 		// If the listener has process-states, then try to move the message back to "In Process" before retrying it.
 		// If we don't do that, and the message has again an error, some listeners might get confused trying to move a message from "Error" to "Error".
 		if (isSupportProgrammaticRetry()) {
-			//noinspection unchecked
+			@SuppressWarnings("unchecked")
 			IHasProcessState<M> hasProcessState = (IHasProcessState<M>) listener;
 			return hasProcessState.changeProcessState(msg, ProcessState.INPROCESS, "Message manually retried");
 		}

@@ -101,7 +101,7 @@ public class ApiException extends RuntimeException implements Serializable {
 		if (message != null) {
 			Map<String, String> json = new HashMap<>();
 			json.put("status", HttpStatus.valueOf(status.value()).getReasonPhrase());
-			//Replace non ASCII characters, tabs, spaces and newlines.
+			// Replace non ASCII characters, tabs, spaces and newlines.
 			json.put("error", message.replace("\n", " ").replace(System.lineSeparator(), " "));
 
 			builder.contentType(MediaType.APPLICATION_JSON);

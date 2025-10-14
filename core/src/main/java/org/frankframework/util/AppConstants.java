@@ -210,7 +210,7 @@ public final class AppConstants extends PropertyLoader {
 		for (AppConstants localAppConstants : appConstantsMap.values()) {
 			localAppConstants.setProperty(key, value);
 		}
-		//Store in a map in case a new AppConstants instance is created after the property has already been set
+		// Store in a map in case a new AppConstants instance is created after the property has already been set
 		return (String)globalAppConstants.put(key, value);
 	}
 
@@ -247,7 +247,7 @@ public final class AppConstants extends PropertyLoader {
 		for (final String theFilename : StringUtil.split(filename)) {
 			super.load(classLoader, theFilename);
 
-			String loadFile = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY); //Only load additional properties if it's defined...
+			String loadFile = getProperty(ADDITIONAL_PROPERTIES_FILE_KEY); // Only load additional properties if it's defined...
 			if (loadAdditionalPropertiesFiles && StringUtils.isNotEmpty(loadFile)) {
 				// Add properties after load(is) to prevent load(is)
 				// from overriding them

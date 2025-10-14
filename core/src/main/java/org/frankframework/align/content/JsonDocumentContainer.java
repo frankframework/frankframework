@@ -138,6 +138,7 @@ public class JsonDocumentContainer {
 		toWriter(writer, content, indent ? 0 : -1);
 	}
 
+	@SuppressWarnings("unchecked")
 	protected void toWriter(Writer w, Object item, int indentLevel) throws IOException {
 		if (item == null) {
 			w.append("null");
@@ -147,7 +148,6 @@ public class JsonDocumentContainer {
 			w.append("{");
 			if (indentLevel >= 0) indentLevel++;
 			boolean first = true;
-			//noinspection unchecked
 			for (Entry<String, Object> entry : ((Map<String, Object>) item).entrySet()) {
 				if (!first) w.append(",");
 				first = false;

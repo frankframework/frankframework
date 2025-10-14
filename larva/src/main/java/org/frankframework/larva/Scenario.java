@@ -30,12 +30,10 @@ import java.util.stream.Collectors;
 import jakarta.annotation.Nonnull;
 
 import lombok.Getter;
-import lombok.extern.log4j.Log4j2;
 
 /**
  * Data class to hold scenario data.
  */
-@Log4j2
 public class Scenario {
 
 	public static final String CLASS_NAME_PROPERTY_SUFFIX = ".className";
@@ -127,7 +125,6 @@ public class Scenario {
 				.toList();
 
 		// Validate that there are no duplicate step numbers
-		//noinspection ResultOfMethodCallIgnored
 		steps.stream()
 				.mapToInt(Step::getIndex)
 				.reduce(-1, (lastStepNr, stepNr) -> {

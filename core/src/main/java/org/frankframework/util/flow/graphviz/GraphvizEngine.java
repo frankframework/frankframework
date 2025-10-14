@@ -81,7 +81,7 @@ public class GraphvizEngine {
 			throw new IllegalArgumentException("unknown format[" + FILE_FORMAT + "], must be one of " + Format.values());
 		}
 
-		//Create the GraphvizEngine, make sure it can find and load the required libraries
+		// Create the GraphvizEngine, make sure it can find and load the required libraries
 		getEngine();
 
 		CleanupEngineAction cleanupEngineAction = new CleanupEngineAction(engine);
@@ -223,7 +223,7 @@ public class GraphvizEngine {
 
 		private void startEngine(JavascriptEngine<?> engine, ResultHandler resultHandler, String initScript, String graphvisJsLibrary) throws JavascriptException {
 			log.info("Starting runtime for Javascript Engine...");
-			engine.setGlobalAlias("GraphvizJS"); //Set a global alias so all scripts can be cached
+			engine.setGlobalAlias("GraphvizJS"); // Set a global alias so all scripts can be cached
 			engine.startRuntime();
 			log.info("Started Javascript Engine runtime. Initializing Graphviz...");
 			engine.executeScript(graphvisJsLibrary);
@@ -237,7 +237,7 @@ public class GraphvizEngine {
 				jsEngine.executeScript(call);
 				return resultHandler.waitFor();
 			} catch (FlowGenerationException e) {
-				throw e; //Don't wrap this one!
+				throw e; // Don't wrap this one!
 			} catch (Throwable e) {
 				throw new FlowGenerationException(e);
 			}

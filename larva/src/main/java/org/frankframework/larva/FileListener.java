@@ -85,7 +85,7 @@ public class FileListener implements IConfigurable, AutoCloseable {
 			} catch(ListenerException e) {
 				throw new ConfigurationException("Could read message from fileListener ["+getName()+"]: " + e.getMessage(), e);
 			} catch (TimeoutException e) {
-				//Simply means no message was found
+				// Simply means no message was found
 			}
 		} finally {
 			setTimeout(oldTimeOut);

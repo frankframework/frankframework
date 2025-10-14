@@ -44,7 +44,7 @@ public class CacheControlFilter implements Filter {
 	public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException, ServletException {
 		HttpServletResponse resp = (HttpServletResponse) response;
 		HttpServletRequest req = (HttpServletRequest) request;
-		//resp.setHeader("Expires", "Tue, 03 Jul 2001 06:00:00 GMT");
+		// resp.setHeader("Expires", "Tue, 03 Jul 2001 06:00:00 GMT");
 		resp.setDateHeader("Last-Modified", TimeProvider.nowAsMillis());
 		resp.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0, post-check=0, pre-check=0");
 		resp.setHeader("Pragma", "no-cache");
@@ -54,6 +54,6 @@ public class CacheControlFilter implements Filter {
 
 	@Override
 	public void destroy() {
-		//We have nothing to destroy
+		// We have nothing to destroy
 	}
 }

@@ -75,7 +75,7 @@ public class IbisCacheManager {
 
 	public Ehcache addCache(Cache cache) {
 		log.debug("registering cache [{}]", cache.getName());
-		cacheManager.addCache(cache); //ObjectExistsException
+		cacheManager.addCache(cache); // ObjectExistsException
 		return cacheManager.getEhcache(cache.getName());
 	}
 

@@ -48,7 +48,7 @@ public class PdfStandaardConvertor extends AbstractConvertor {
 			Files.copy(is, Paths.get(result.getPdfResultFile().getCanonicalPath()));
 		}
 
- 		result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
+		result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 	}
 
 	@Override

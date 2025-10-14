@@ -144,7 +144,7 @@ public class BusMessageUtils {
 	public static boolean hasRole(String role) {
 		boolean granted = false;
 		for(GrantedAuthority grantedAuthority : getAuthorities()) {
-			String authorityName = grantedAuthority.getAuthority().substring(5); //chomp off the AuthorityAuthorizationManager#ROLE_PREFIX
+			String authorityName = grantedAuthority.getAuthority().substring(5); // Chomp off the AuthorityAuthorizationManager#ROLE_PREFIX
 			granted = authorityName.equals(role);
 			if(granted) {
 				return true;

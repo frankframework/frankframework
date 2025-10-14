@@ -73,7 +73,7 @@ import org.frankframework.validation.xsd.StringXsd;
 public class SchemaUtils {
 	protected static final Logger LOG = LogManager.getLogger(SchemaUtils.class);
 
-	public static final String XSD		  = XMLConstants.W3C_XML_SCHEMA_NS_URI;//"http://www.w3.org/2001/XMLSchema";
+	public static final String XSD		  = XMLConstants.W3C_XML_SCHEMA_NS_URI; // "http://www.w3.org/2001/XMLSchema";
 
 	public static final QName SCHEMA		 = new QName(XSD,  "schema");
 	public static final QName ELEMENT		 = new QName(XSD,  "element");
