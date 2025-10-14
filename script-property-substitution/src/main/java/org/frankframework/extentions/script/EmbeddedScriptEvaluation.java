@@ -111,6 +111,7 @@ import org.frankframework.util.StringUtil;
  *     <li>{@link org.frankframework.util.MessageUtils}</li>
  *     <li>{@link org.frankframework.configuration.ApplicationWarnings}</li>
  * </ul>
+ * You should not use the package names when using these classes, just the class name and the method name. See the examples above.
  *
  * @see <a href="https://commons.apache.org/proper/commons-jexl/">Apache JEXL Homepage</a>
  */
@@ -189,26 +190,26 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 		JexlContext context = new FrankScriptContext(contextMap);
 
 		// Make static methods from some common types and util classes easily available
-		addClass(context, String.class);
-		addClass(context, Boolean.class);
-		addClass(context, Integer.class);
-		addClass(context, Long.class);
-		addClass(context, Double.class);
-		addClass(context, Math.class);
-		addClass(context, Arrays.class);
-		addClass(context, Collections.class);
-		addClass(context, Collectors.class);
-		addClass(context, Strings.class);
-		addClass(context, StringUtils.class);
-		addClass(context, StringUtil.class);
+		addClasses(context, String.class, Boolean.class, Integer.class, Long.class, Double.class, Math.class,
+				Arrays.class, Collections.class, Collectors.class, Strings.class, StringUtils.class, StringUtil.class);
 
 		context.set("log", log); // log is needed for method calls on ApplicationWarnings
 
 		// Some classes to load dynamically from other modules
-		tryAddClassDynamically(context, "org.frankframework.configuration.ApplicationWarnings");
-		tryAddClassDynamically(context, "org.frankframework.util.MessageUtils");
-		tryAddClassDynamically(context, "org.frankframework.util.Misc");
+		tryAddClassesDynamically(context, "org.frankframework.configuration.ApplicationWarnings", "org.frankframework.util.MessageUtils", "org.frankframework.util.Misc");
 		return context;
+	}
+
+	private static void addClasses(@Nonnull JexlContext context, Class<?>... classes) {
+		for (Class<?> clazz : classes) {
+			addClass(context, clazz);
+		}
+	}
+
+	private static void tryAddClassesDynamically(@Nonnull JexlContext context, @Nonnull String... classNames) {
+		for (String className : classNames) {
+			tryAddClassDynamically(context, className);
+		}
 	}
 
 	private static void addClass(@Nonnull JexlContext context, @Nonnull Class<?> clazz) {
@@ -218,11 +219,9 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 	private static void tryAddClassDynamically(@Nonnull JexlContext context, @Nonnull String className) {
 		try {
 			Class<?> cls = EmbeddedScriptEvaluation.class.getClassLoader().loadClass(className);
-			if (cls != null) {
-				context.set(cls.getSimpleName(), cls);
-			}
-		} catch (ClassNotFoundException e) {
-			log.info("Cannot load class ["+ className + "]");
+			context.set(cls.getSimpleName(), cls);
+		} catch (Exception e) {
+			log.info("Cannot load class [{}]: {}",  className, e.getMessage());
 		}
 	}
 
@@ -245,9 +244,9 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 
 	private static class BackingMapMutator implements CompositeMap.MapMutator<String, Object> {
 
-		private final Map<String, Object> contextCustomValues;
+		private final transient Map<String, Object> contextCustomValues;
 
-		public BackingMapMutator(Map<String, Object> contextCustomValues) {
+		public BackingMapMutator(@Nonnull Map<String, Object> contextCustomValues) {
 			this.contextCustomValues = contextCustomValues;
 		}
 
@@ -266,5 +265,4 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 			throw new UnsupportedOperationException();
 		}
 	}
-
 }

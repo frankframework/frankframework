@@ -100,8 +100,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	}
 
 	private void createCloseAction() {
-		PipeLineSessionCloseAction closeAction;
-		closeAction = new PipeLineSessionCloseAction(this.closeables);
+		PipeLineSessionCloseAction closeAction = new PipeLineSessionCloseAction(this.closeables);
 		cleanable = CleanerProvider.CLEANER.register(this, closeAction);
 	}
 
