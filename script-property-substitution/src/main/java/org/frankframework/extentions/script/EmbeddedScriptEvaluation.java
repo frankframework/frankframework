@@ -95,21 +95,21 @@ import org.frankframework.util.StringUtil;
  * The following classes are available in the evaluation context so that static methods of these classes can be
  * used in expressions:
  * <ul>
- *     <li>java.lang.String</li>
- *     <li>java.lang.Boolean</li>
- *     <li>java.lang.Integer</li>
- *     <li>java.lang.Long</li>
- *     <li>java.lang.Double</li>
- *     <li>java.lang.Math</li>
- *     <li>java.util.Arrays</li>
- *     <li>java.util.Collections</li>
- *     <li>java.util.stream.Collectors</li>
- *     <li>org.apache.commons.lang3.Strings</li>
- *     <li>org.apache.commons.lang3.StringUtils</li>
- *     <li>org.frankframework.util.StringUtil</li>
- *     <li>org.frankframework.util.Misc</li>
- *     <li>org.frankframework.util.MessageUtils</li>
- *     <li>org.frankframework.configuration.ApplicationWarnings</li>
+ *     <li>{@link java.lang.String}</li>
+ *     <li>{@link java.lang.Boolean}</li>
+ *     <li>{@link java.lang.Integer}</li>
+ *     <li>{@link java.lang.Long}</li>
+ *     <li>{@link java.lang.Double}</li>
+ *     <li>{@link java.lang.Math}</li>
+ *     <li>{@link java.util.Arrays}</li>
+ *     <li>{@link java.util.Collections}</li>
+ *     <li>{@link java.util.stream.Collectors}</li>
+ *     <li>{@link org.apache.commons.lang3.Strings}</li>
+ *     <li>{@link org.apache.commons.lang3.StringUtils}</li>
+ *     <li>{@link org.frankframework.util.StringUtil}</li>
+ *     <li>{@link org.frankframework.util.Misc}</li>
+ *     <li>{@link org.frankframework.util.MessageUtils}</li>
+ *     <li>{@link org.frankframework.configuration.ApplicationWarnings}</li>
  * </ul>
  *
  * @see <a href="https://commons.apache.org/proper/commons-jexl/">Apache JEXL Homepage</a>
