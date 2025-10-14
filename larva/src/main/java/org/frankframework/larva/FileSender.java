@@ -17,10 +17,13 @@ package org.frankframework.larva;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
 
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.io.IoBuilder;
 import org.apache.tools.ant.DefaultLogger;
 import org.apache.tools.ant.Project;
 import org.apache.tools.ant.ProjectHelper;
@@ -29,6 +32,7 @@ import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.FrankElement;
@@ -45,6 +49,7 @@ import org.frankframework.util.Dir2Xml;
  *
  * @author Jaco de Groot
  */
+@Log4j2
 public class FileSender implements IConfigurable, FrankElement {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -133,26 +138,33 @@ public class FileSender implements IConfigurable, FrankElement {
 	}
 
 	private void runAntScript() {
-		Project ant = new Project();
-		DefaultLogger consoleLogger = new DefaultLogger();
-		consoleLogger.setErrorPrintStream(System.err);
-		consoleLogger.setOutputPrintStream(System.out);
-		consoleLogger.setMessageOutputLevel(Project.MSG_INFO);
-		ant.addBuildListener(consoleLogger);
+		PrintStream errorStream = IoBuilder.forLogger(log).setLevel(Level.INFO).buildPrintStream();
+		PrintStream outputStream = IoBuilder.forLogger(log).setLevel(Level.ERROR).buildPrintStream();
 
-		// iterate over appConstants and add them as properties
-		AppConstants appConstants = AppConstants.getInstance();
-		@SuppressWarnings("unchecked")
-		Enumeration<String> enums = (Enumeration<String>) appConstants.propertyNames();
-		while (enums.hasMoreElements()) {
-			String key = enums.nextElement();
-			ant.setProperty(key, appConstants.getProperty(key));
+		try (errorStream; outputStream) {
+			Project ant = new Project();
+
+			// Set ANT logger
+			DefaultLogger consoleLogger = new DefaultLogger();
+			consoleLogger.setErrorPrintStream(errorStream);
+			consoleLogger.setOutputPrintStream(outputStream);
+			consoleLogger.setMessageOutputLevel(Project.MSG_INFO);
+			ant.addBuildListener(consoleLogger);
+
+			// Iterate over AppConstants and add them as properties
+			AppConstants appConstants = AppConstants.getInstance();
+			@SuppressWarnings("unchecked")
+			Enumeration<String> enums = (Enumeration<String>) appConstants.propertyNames();
+			while (enums.hasMoreElements()) {
+				String key = enums.nextElement();
+				ant.setProperty(key, appConstants.getProperty(key));
+			}
+			ant.init();
+
+			ProjectHelper helper = new ProjectHelperImpl();
+			helper.parse(ant, file);
+			ant.executeTarget(ant.getDefaultTarget());
 		}
-
-		ant.init();
-		ProjectHelper helper = new ProjectHelperImpl();
-		helper.parse(ant, file);
-		ant.executeTarget(ant.getDefaultTarget());
 	}
 
 	private boolean recursiveDelete(File path) {

@@ -35,7 +35,7 @@ import org.frankframework.util.LogUtil;
  *
  * @author Gerrit van Brakel
  */
-public class IntraGrammarPoolEntityResolver implements XMLEntityResolver { //ClassLoaderXmlEntityResolver
+public class IntraGrammarPoolEntityResolver implements XMLEntityResolver { // ClassLoaderXmlEntityResolver
 	protected Logger log = LogUtil.getLogger(this);
 
 	private final List<Schema> schemas;

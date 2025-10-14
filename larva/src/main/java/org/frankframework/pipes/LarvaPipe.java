@@ -39,6 +39,7 @@ import org.frankframework.larva.output.LarvaWriter;
 import org.frankframework.larva.output.PlainTextScenarioOutputRenderer;
 import org.frankframework.larva.output.TestExecutionObserver;
 import org.frankframework.stream.Message;
+import org.frankframework.util.LogUtil;
 
 /**
  * Call Larva Test Tool
@@ -119,6 +120,7 @@ public class LarvaPipe extends FixedForwardPipe {
 	/**
 	 * @ff.default false
 	 */
+	@Deprecated(since = "9.3")
 	public void setWriteToSystemOut(boolean writeToSystemOut) {
 		this.writeToSystemOut = writeToSystemOut;
 	}
@@ -143,7 +145,7 @@ public class LarvaPipe extends FixedForwardPipe {
 		this.waitBeforeCleanup = waitBeforeCleanup;
 	}
 
-	 /** the larva timeout in milliseconds
+	/** the larva timeout in milliseconds
 	 * @ff.default 10000
 	 */
 	public void setTimeout(int timeout) {
@@ -153,6 +155,8 @@ public class LarvaPipe extends FixedForwardPipe {
 
 @AllArgsConstructor
 class LogWriter extends StringWriter {
+	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
+
 	private Logger log;
 	private boolean writeToLog;
 	private boolean writeToSystemOut;
@@ -160,10 +164,12 @@ class LogWriter extends StringWriter {
 	@Override
 	public void write(String str) {
 		if (writeToLog) {
+			// Normal logger
 			log.debug(str);
 		}
 		if (writeToSystemOut) {
-			System.out.println(str);
+			// Application log prints to std::out
+			APPLICATION_LOG.info(str);
 		}
 		super.write(str);
 	}

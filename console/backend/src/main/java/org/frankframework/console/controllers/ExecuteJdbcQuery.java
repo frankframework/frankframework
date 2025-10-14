@@ -75,7 +75,7 @@ public class ExecuteJdbcQuery {
 		if ("AUTO".equals(queryType)) {
 			queryType = "other"; // defaults to other
 
-			String[] commands = new String[]{"select", "show"}; //if it matches, set it to select
+			String[] commands = new String[]{"select", "show"}; // If it matches, set it to select
 			for (String command : commands) {
 				if (query.toLowerCase().startsWith(command)) {
 					queryType = "select";

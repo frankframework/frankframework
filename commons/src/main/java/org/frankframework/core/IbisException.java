@@ -142,7 +142,6 @@ public class IbisException extends Exception {
 		}
 		if (result == null) {
 			// do not replace the following with toString(), this causes an endless loop. GvB
-//			result="no message, fields of this exception: " + ReflectionToStringBuilder.toStringExclude(e, "java.lang.Exception.serialVersionUID");
 			result = "no message in exception: " + e.getClass().getCanonicalName();
 		}
 		return result;

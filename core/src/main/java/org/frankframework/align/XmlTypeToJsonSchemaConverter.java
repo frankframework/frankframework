@@ -455,7 +455,6 @@ public class XmlTypeToJsonSchemaConverter  {
 
 	private void handleElementDeclaration(JsonObjectBuilder builder, XSElementDeclaration elementDeclaration, boolean multiOccurring, boolean shouldCreateReferences) {
 		String elementName=elementDeclaration.getName();
-		//if (log.isTraceEnabled()) log.trace("XSElementDeclaration name ["+elementName+"]");
 		if (log.isTraceEnabled())
 			log.trace("XSElementDeclaration element [{}][{}]", elementName, ToStringBuilder.reflectionToString(elementDeclaration, ToStringStyle.MULTI_LINE_STYLE));
 

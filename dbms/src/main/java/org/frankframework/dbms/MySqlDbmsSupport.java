@@ -84,21 +84,6 @@ public class MySqlDbmsSupport extends GenericDbmsSupport {
 		throw new IllegalArgumentException(getDbms() + " does not support setting lock wait timeout in query");
 	}
 
-	// commented out prepareSessionForNonLockingRead(), see https://dev.mysql.com/doc/refman/8.0/en/innodb-consistent-read.html
-//	@Override
-//	public JdbcSession prepareSessionForNonLockingRead(Connection conn) throws DbmsException {
-//		DbmsUtil.executeStatement(conn, "SET TRANSACTION ISOLATION LEVEL READ UNCOMMITTED");
-//		DbmsUtil.executeStatement(conn, "START TRANSACTION");
-//		return new JdbcSession() {
-//
-//			@Override
-//			public void close() throws DbmsException {
-//				DbmsUtil.executeStatement(conn, "COMMIT");
-//			}
-//
-//		};
-//	}
-
 	@Override
 	public boolean hasIndexOnColumns(Connection conn, String schemaOwner, String tableName, List<String> columns) {
 		StringBuilder query = new StringBuilder("select count(*) from information_schema.statistics is1");

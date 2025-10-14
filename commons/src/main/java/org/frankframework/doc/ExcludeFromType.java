@@ -23,5 +23,5 @@ import java.lang.annotation.Target;
 @Target(TYPE)
 @Documented
 public @interface ExcludeFromType {
-	Class<?>[] value(); //TODO why is this an array?
+	Class<?>[] value(); // See frankframework/frank-doc/issues/432
 }

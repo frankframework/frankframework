@@ -78,7 +78,7 @@ class FixedPositionRecordHandlerManagerTest {
 		firstPart = manager.getFirstPartOfNextRecord(reader);
 		assertEquals("pqrs", firstPart);
 		assertEquals("pqrs6789", manager.getFullRecord(reader, flow, firstPart));
-	
+
 		// after last record
 		firstPart = manager.getFirstPartOfNextRecord(reader);
 		assertNull(firstPart);
@@ -126,7 +126,7 @@ class FixedPositionRecordHandlerManagerTest {
 		firstPart = manager.getFirstPartOfNextRecord(reader);
 		assertEquals("pqrs", firstPart);
 		assertEquals("pqrs67", manager.getFullRecord(reader, flow, firstPart));
-	
+
 		// after last record
 		firstPart = manager.getFirstPartOfNextRecord(reader);
 		assertNull(firstPart);
@@ -209,7 +209,7 @@ class FixedPositionRecordHandlerManagerTest {
 		firstPart = manager.getFirstPartOfNextRecord(reader);
 		assertEquals("p", firstPart);
 		assertEquals("pqrs6789", manager.getFullRecord(reader, flow, firstPart));
-	
+
 		// after last record
 		firstPart = manager.getFirstPartOfNextRecord(reader);
 		assertNull(firstPart);

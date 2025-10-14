@@ -121,15 +121,14 @@ public class Adapters {
 			}
 		}
 
-		return ResponseEntity.status(HttpStatus.ACCEPTED).build(); //PUT defaults to no content
+		return ResponseEntity.status(HttpStatus.ACCEPTED).build(); // PUT defaults to no content
 	}
 
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("adapter")
 	@Description("start/stop an adapter")
 	@PutMapping(value = "/configurations/{configuration}/adapters/{adapter}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateAdapter(AdapterPathVariables path,
-										   @RequestBody UpdateAdapterOrReceiverModel model) {
+	public ResponseEntity<?> updateAdapter(AdapterPathVariables path, @RequestBody UpdateAdapterOrReceiverModel model) {
 		Action action = getActionOrThrow(model.action);
 
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.IBISACTION);

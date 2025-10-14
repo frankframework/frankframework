@@ -141,7 +141,7 @@ public class MultipartEntityBuilder {
 
 	/* utility methods */
 	public MultipartEntityBuilder addTextBody(String name, final String text) {
-		return addTextBody(name, text, ContentType.DEFAULT_TEXT); //ISO-8859-1
+		return addTextBody(name, text, ContentType.DEFAULT_TEXT); // ISO-8859-1
 	}
 	public MultipartEntityBuilder addTextBody(String name, String text, ContentType contentType) {
 		return addPart(name, new StringBody(text, contentType));
@@ -156,7 +156,7 @@ public class MultipartEntityBuilder {
 	/* end utility methods */
 
 	private String generateBoundary() {
-		//See: https://tools.ietf.org/html/rfc2046#section-5.1.1
+		// See: https://tools.ietf.org/html/rfc2046#section-5.1.1
 		StringBuilder buffer = new StringBuilder();
 		if(mtom)
 			buffer.append("----=_Part_");

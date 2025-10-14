@@ -112,7 +112,7 @@ public class SpringBusRerunner implements Rerunner {
 		builder.setHeader(BusMessageUtils.HEADER_PREFIX+BusMessageUtils.HEADER_ADAPTER_NAME_KEY, adapterName);
 		builder.setHeader(BusMessageUtils.HEADER_PREFIX+"sessionKeys", toJson(threadContext));
 
-		return processRequest(builder.build()); //null implies success
+		return processRequest(builder.build()); // A null result implies success
 	}
 
 	protected String toJson(Map<String, String> threadContext) {

@@ -59,8 +59,7 @@ public class Monitors {
 	@Relation("monitoring")
 	@Description("view all available monitors")
 	@GetMapping(value = {"", "/"})
-	public ResponseEntity<?> getMonitors(MonitorPathVariables path,
-										 @RequestParam(value = "xml", defaultValue = "false") boolean showConfigXml) {
+	public ResponseEntity<?> getMonitors(MonitorPathVariables path, @RequestParam(value = "xml", defaultValue = "false") boolean showConfigXml) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.GET);
 		builder.addHeader(BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY, path.configuration);
 		builder.addHeader("xml", showConfigXml);
@@ -94,8 +93,7 @@ public class Monitors {
 	@Relation("monitoring")
 	@Description("update a specific monitor")
 	@PutMapping(value = "/{monitorName}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateMonitor(MonitorPathVariables path,
-										   @RequestBody UpdateMonitorRequestModel model) {
+	public ResponseEntity<?> updateMonitor(MonitorPathVariables path, @RequestBody UpdateMonitorRequestModel model) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.MANAGE);
 		addDefaultHeaders(path.configuration, path.monitorName, builder);
 
@@ -155,8 +153,7 @@ public class Monitors {
 	@Relation("monitoring")
 	@Description("update a specific monitor triggers")
 	@PutMapping(value = "/{monitorName}/triggers/{trigger}", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> updateTrigger(MonitorPathVariables path,
-										   @RequestBody AddOrUpdateTriggerModel model) {
+	public ResponseEntity<?> updateTrigger(MonitorPathVariables path, @RequestBody AddOrUpdateTriggerModel model) {
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.MONITORING, BusAction.MANAGE);
 		addDefaultHeaders(path.configuration, path.monitorName, builder);
 		builder.addHeader(TRIGGER_HEADER, path.trigger);

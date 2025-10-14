@@ -581,7 +581,7 @@ public class ImapFileSystem extends AbstractMailFileSystem<Message, MimeBodyPart
 			// Fill in header
 			forward.setRecipients(Message.RecipientType.TO, InternetAddress.parse(destination));
 			forward.setSubject("Fwd: " + emailMessage.getSubject());
-			//forward.setFrom(new InternetAddress(emailMessage.get));
+			// This doesn't work: forward.setFrom(new InternetAddress(emailMessage.get));
 			// Create the message part
 			MimeBodyPart messageBodyPart = new MimeBodyPart();
 			// Create a multipart message

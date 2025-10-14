@@ -52,7 +52,7 @@ import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 
 import lombok.Setter;
 
-public class JwtSecurityFilter implements Filter, InitializingBean { //OncePerRequestFilter
+public class JwtSecurityFilter implements Filter, InitializingBean { // Should we use the OncePerRequestFilter?
 	private static final String JWT_TOKEN_CONTEXT_KEY = "JWT_TOKEN_CONTEXT_KEY";
 	private ConfigurableJWTProcessor<SecurityContext> jwtProcessor;
 	private final Logger log = LogManager.getLogger(JwtSecurityFilter.class);
@@ -64,7 +64,7 @@ public class JwtSecurityFilter implements Filter, InitializingBean { //OncePerRe
 
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
-		// nothing to init
+		// Nothing to init
 	}
 
 	@Override

@@ -133,7 +133,7 @@ public class HttpInboundGateway implements WebSecurityConfigurer<WebSecurity>, S
 	}
 
 	public void createGatewayEndpoint() {
-		HttpRequestHandlerServlet servlet = new HttpRequestHandlerServlet(); //name of this servlet must match the inbound gateway name
+		HttpRequestHandlerServlet servlet = new HttpRequestHandlerServlet(); // The name of this servlet must match the inbound gateway name
 
 		log.info("created management service endpoint [{}]", httpPath);
 
@@ -197,9 +197,9 @@ public class HttpInboundGateway implements WebSecurityConfigurer<WebSecurity>, S
 
 	@Override
 	public void configure(WebSecurity webSecurity) {
-		SecurityFilterChain chain = createSecurityFilterChain(); //Create
-		SpringUtils.registerSingleton(applicationContext, "HttpInboundGateway-SecurityFilter", chain); //Register
-		webSecurity.addSecurityFilterChainBuilder(() -> chain); //Configure
+		SecurityFilterChain chain = createSecurityFilterChain(); // Create
+		SpringUtils.registerSingleton(applicationContext, "HttpInboundGateway-SecurityFilter", chain); // Register
+		webSecurity.addSecurityFilterChainBuilder(() -> chain); // Configure
 	}
 
 	private SecurityFilterChain createSecurityFilterChain() {
@@ -209,13 +209,13 @@ public class HttpInboundGateway implements WebSecurityConfigurer<WebSecurity>, S
 
 	private SecurityFilterChain configureHttpSecurity(HttpSecurity http) {
 		try {
-			//Apply defaults to disable bloated filters, see DefaultSecurityFilterChain.getFilters for the actual list.
-			http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); //Allow same origin iframe request
+			// Apply defaults to disable bloated filters, see DefaultSecurityFilterChain.getFilters for the actual list.
+			http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); // Allow same origin iframe request
 			http.csrf(AbstractHttpConfigurer::disable);
 			http.securityMatcher(new AntPathRequestMatcher(httpPath));
-			http.formLogin(AbstractHttpConfigurer::disable); //Disable the form login filter
-			http.anonymous(AbstractHttpConfigurer::disable); //Disable the default anonymous filter
-			http.logout(AbstractHttpConfigurer::disable); //Disable the logout endpoint on every filter
+			http.formLogin(AbstractHttpConfigurer::disable); // Disable the form login filter
+			http.anonymous(AbstractHttpConfigurer::disable); // Disable the default anonymous filter
+			http.logout(AbstractHttpConfigurer::disable); // Disable the logout endpoint on every filter
 			http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
 			http.authorizeHttpRequests(requests -> requests.anyRequest().authenticated());
 

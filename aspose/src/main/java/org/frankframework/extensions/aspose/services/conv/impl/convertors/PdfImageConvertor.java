@@ -94,8 +94,7 @@ public class PdfImageConvertor extends AbstractConvertor {
 			page.getPageInfo().getMargin().setLeft(PageConvertUtil.convertCmToPoints(marginInCm));
 			page.getPageInfo().getMargin().setRight(PageConvertUtil.convertCmToPoints(marginInCm));
 
-			try (InputStream is = message.asInputStream();
-				 com.aspose.imaging.Image image = com.aspose.imaging.Image.load(is)) {
+			try (InputStream is = message.asInputStream(); com.aspose.imaging.Image image = com.aspose.imaging.Image.load(is)) {
 
 				if (mediaType.getSubtype().equalsIgnoreCase(TIFF)) {
 					handleTiff((TiffImage) image, page);

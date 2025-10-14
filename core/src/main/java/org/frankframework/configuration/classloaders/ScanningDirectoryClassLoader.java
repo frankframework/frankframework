@@ -144,7 +144,8 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 				changed = hasBeenModified(file);
 			}
 
-			if(changed) { //Only return something when a change has been detected
+			if(changed) {
+				// Only return something when a change has been detected
 				return changed;
 			}
 		}

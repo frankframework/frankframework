@@ -182,7 +182,7 @@ public class PipeDescriptionProvider {
 		}
 	}
 
-	//Protected for tests
+	// Protected for tests
 	protected void addResourceNamesToPipeDescription(Node element, PipeDescription pipeDescription) {
 		NamedNodeMap attributes = element.getAttributes();
 		for (int i = 0, size = attributes.getLength(); i < size; i++) {

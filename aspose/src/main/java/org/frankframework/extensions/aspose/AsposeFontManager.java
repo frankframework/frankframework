@@ -50,7 +50,7 @@ import org.frankframework.util.TemporaryDirectoryUtils;
 @Log4j2
 public class AsposeFontManager {
 
-	private static final String FONTS_RESOURCE_NAME = "/fonts.zip"; //lots of commonly used fonts
+	private static final String FONTS_RESOURCE_NAME = "/fonts.zip"; // Lots of commonly used fonts
 	private static final String FONTS_RESOURCE_DIR = "fonts";
 	private static final String TRUETYPE_FONT_EXT = ".ttf";
 
@@ -89,7 +89,7 @@ public class AsposeFontManager {
 			unpackDefaultFontArchive();
 		}
 
-		loadFonts(); //load all the newly unpacked fonts into the systems GraphicsEnvironment
+		loadFonts(); // Load all the newly unpacked fonts into the systems GraphicsEnvironment
 
 		loadFontsForWord();
 		loadFontsForSlides();
@@ -154,13 +154,13 @@ public class AsposeFontManager {
 	}
 
 	private void loadFontsForSlides() {
-		//We have to explicitly set the font directory for unix systems
+		// We have to explicitly set the font directory for unix systems
 		final String[] fontDirectories = new String[] { getFontsPath() };
 		FontsLoader.loadExternalFonts(fontDirectories);
 	}
 
 	private void loadFontsForCells() {
-		//We have to explicitly set the font directory for unix systems
+		// We have to explicitly set the font directory for unix systems
 		FontConfigs.setFontFolder(getFontsPath(), false);
 	}
 

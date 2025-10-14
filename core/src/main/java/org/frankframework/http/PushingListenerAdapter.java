@@ -131,7 +131,7 @@ public class PushingListenerAdapter implements RequestReplyListener, IPushingLis
 
 	@Override
 	public void setExceptionListener(IbisExceptionListener exceptionListener) {
-		//	Not Implemented
+		// Not Implemented
 	}
 
 	@Deprecated(since = "9.2")

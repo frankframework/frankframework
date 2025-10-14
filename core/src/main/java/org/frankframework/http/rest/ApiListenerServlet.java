@@ -248,7 +248,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 					.collect(Collectors.joining(", "));
 			response.setHeader("Access-Control-Allow-Methods", methods);
 
-			//Only cut off OPTIONS (aka preflight) requests
+			// Only cut off OPTIONS (aka preflight) requests
 			if (method == ApiListener.HttpMethod.OPTIONS) {
 				response.setStatus(200);
 				LOG.trace("Aborting preflight request with status [200], method [{}]", method);
@@ -534,7 +534,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				if (Boolean.TRUE.equals(pipelineSession.getBoolean(UPDATE_ETAG_CONTEXT_KEY))) {
 					LOG.debug("calculating etags over processed result");
 					String cleanPattern = listener.getCleanPattern();
-					if (!Message.isEmpty(result) && method == ApiListener.HttpMethod.GET && cleanPattern != null) { //If the data has changed, generate a new eTag
+					if (!Message.isEmpty(result) && method == ApiListener.HttpMethod.GET && cleanPattern != null) { // If the data has changed, generate a new eTag
 						String eTag = MessageUtils.generateMD5Hash(result);
 						if(eTag != null) {
 							LOG.debug("adding/overwriting etag with key[{}] value[{}]", etagCacheKey, eTag);
@@ -628,7 +628,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				}
 				catch (IOException | IllegalStateException ex) {
 					LOG.warn("an error occurred while trying to handle exception [{}]", e.getMessage(), ex);
-					//We're only informing the end user(s), no need to catch this error...
+					// We're only informing the end user(s), no need to catch this error...
 					response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				}
 			}

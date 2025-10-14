@@ -104,7 +104,7 @@ public abstract class AbstractResponseValidatorWrapper<V extends AbstractValidat
 
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) {
-		//Can ignore this as it's not set through Spring
+		// Can ignore this as it's not set through Spring
 	}
 
 	@Override

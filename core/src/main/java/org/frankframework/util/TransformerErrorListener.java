@@ -81,19 +81,4 @@ public class TransformerErrorListener implements ErrorListener {
 	public IOException getFatalIOException() {
 		return fatalIOException;
 	}
-
-//	@Override
-//	public void error(SAXParseException e) throws SAXException {
-//		log.error("SAX error",e);
-//	}
-//
-//	@Override
-//	public void fatalError(SAXParseException e) throws SAXException {
-//		log.error("SAX fatalError",e);
-//	}
-//
-//	@Override
-//	public void warning(SAXParseException e) throws SAXException {
-//		log.warn("SAX warning",e);
-//	}
 }

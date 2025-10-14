@@ -16,7 +16,7 @@
 package org.frankframework.extensions.aspose;
 
 public enum ConversionOption {
-    SINGLEPDF(0), SEPARATEPDF(1);
+	SINGLEPDF(0), SEPARATEPDF(1);
 
 	private final int value;
 

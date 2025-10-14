@@ -110,7 +110,7 @@ public class JavaxXmlValidator extends AbstractXmlValidator {
 
 			xsModels = new ArrayList<>();
 			Grammar[] grammars=xercesSchema.getGrammarPool().retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
-			//namespaceSet.add(""); // allow empty namespace, to cover 'ElementFormDefault="Unqualified"'. N.B. beware, this will cause SoapValidator to miss validation failure of a non-namespaced SoapBody
+			// namespaceSet.add(""); // allow empty namespace, to cover 'ElementFormDefault="Unqualified"'. N.B. beware, this will cause SoapValidator to miss validation failure of a non-namespaced SoapBody
 			for (Grammar grammar : grammars) {
 				XSModel model = ((XSGrammar) grammar).toXSModel();
 				xsModels.add(model);

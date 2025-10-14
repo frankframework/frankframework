@@ -47,7 +47,7 @@ public class KerberosLoginConfiguration extends Configuration {
 		}
 
 		logger.error("neither ({}) nor ({}) class is found, unable to use KRB5 authentication", ORACLE_LOGIN_MODULE_CLASSNAME, IBM_LOGIN_MODULE_CLASSNAME);
-		return null; //API requires a null to be returned when no AuthenticationEntry is found.
+		return null; // API requires a null to be returned when no AuthenticationEntry is found.
 	}
 
 	private AppConfigurationEntry createAppConfigurationEntry(String loginModule) {

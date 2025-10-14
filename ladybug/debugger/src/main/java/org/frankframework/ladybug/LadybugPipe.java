@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Logger;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -47,6 +48,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Forward;
 import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
+import org.frankframework.util.LogUtil;
 import org.frankframework.util.XmlBuilder;
 
 /**
@@ -58,7 +60,9 @@ import org.frankframework.util.XmlBuilder;
 @Forward(name = "success", description = "no errors and all tests passed")
 @Forward(name = "failure", description = "errors or failed tests")
 public class LadybugPipe extends FixedForwardPipe {
+	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 	private static final String FAILURE_FORWARD_NAME = "failure";
+
 	private PipeForward failureForward;
 	private boolean writeToLog = false;
 	private boolean writeToSystemOut = false;
@@ -208,7 +212,8 @@ public class LadybugPipe extends FixedForwardPipe {
 			log.info(message);
 		}
 		if (writeToSystemOut) {
-			System.out.println(message);
+			// Application log prints to std::out
+			APPLICATION_LOG.info(message);
 		}
 	}
 
@@ -234,6 +239,7 @@ public class LadybugPipe extends FixedForwardPipe {
 	 * whether or not to write results to system out
 	 * @ff.default false
 	 */
+	@Deprecated(since = "9.3")
 	public void setWriteToSystemOut(boolean writeToSystemOut) {
 		this.writeToSystemOut = writeToSystemOut;
 	}
