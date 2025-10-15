@@ -74,4 +74,19 @@ public class JexlEvaluationInStringVarSubstTest {
 		// Assert
 		assertEquals("25", result);
 	}
+
+	@Test
+	void testCallFunctionOnMissingAntishValue() {
+		// Arrange
+		Map<String, Object> vars = new HashMap<>();
+
+		String input = "${= instance.name.toLowerCase()}";
+
+		// Act
+		String result = StringResolver.substVars(input, vars);
+
+
+		// Assert
+		assertEquals("", result);
+	}
 }

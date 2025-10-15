@@ -1,6 +1,7 @@
 package org.frankframework.extentions.script;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.HashMap;
@@ -8,6 +9,8 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 import org.frankframework.util.StringResolver;
 
@@ -92,5 +95,39 @@ class EmbeddedScriptEvaluationTest {
 		// Assert
 		assertTrue(result.isPresent());
 		assertEquals("2", result.get());
+	}
+
+	@Test
+	void testCallFunctionOnMissingAntishValue() {
+		// Arrange
+		EmbeddedScriptEvaluation embeddedScriptEvaluation = new EmbeddedScriptEvaluation();
+		Map<String, Object> map = new HashMap<>();
+
+		// Act
+		Optional<String> result = embeddedScriptEvaluation.resolve("= instance.name.toLowerCase()", map, null, null, StringResolver.DELIM_START, StringResolver.DELIM_STOP, false);
+
+		// Assert
+		assertFalse(result.isPresent());
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+			"true, , true",
+			"false, , false",
+			"true, example.com, false"
+	})
+	void booleanLikeEvaluation(boolean isActive, String hostName, boolean expected) {
+		// Arrange
+		EmbeddedScriptEvaluation embeddedScriptEvaluation = new EmbeddedScriptEvaluation();
+		Map<String, Object> map = new HashMap<>();
+		map.put("mail.active", isActive);
+		map.put("mail.host", hostName != null ? hostName : ""); // May not be null in this expression but that shouldn't be a problem when backed by an actual PropertyLoader
+
+		// Act
+		Optional<String> result = embeddedScriptEvaluation.resolve("= mail.active && !mail.host", map, null, null, StringResolver.DELIM_START, StringResolver.DELIM_STOP, false);
+
+		// Assert
+		assertTrue(result.isPresent());
+		assertEquals(Boolean.toString(expected), result.get());
 	}
 }

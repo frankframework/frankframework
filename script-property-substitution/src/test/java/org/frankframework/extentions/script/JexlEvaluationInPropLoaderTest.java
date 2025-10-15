@@ -5,9 +5,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import org.frankframework.util.PropertyLoader;
+import org.frankframework.util.StringResolver;
 
 public class JexlEvaluationInPropLoaderTest {
 
@@ -61,6 +63,7 @@ public class JexlEvaluationInPropLoaderTest {
 		// Arrange
 		PropertyLoader props = new PropertyLoader("test.properties");
 		System.setProperty("str.switch", "5");
+
 		// Act
 		String value = props.getProperty("str.text2");
 
@@ -73,10 +76,49 @@ public class JexlEvaluationInPropLoaderTest {
 		// Arrange
 		PropertyLoader props = new PropertyLoader("test.properties");
 		System.setProperty("str.switch", "5");
+
 		// Act
 		String value = props.getProperty("str.transform1");
 
 		// Assert
 		assertEquals("we, are, iBIS", value);
+	}
+
+	@Test
+	public void testStringOperationOnMissingProperty() {
+		// Arrange
+		PropertyLoader props = new PropertyLoader("test.properties");
+
+		// Act
+		String value = props.getProperty("instance.name.lc");
+
+		// Assert
+		assertEquals("", value);
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+			"true, , true", // Param hostName = null
+			"true, '', true", // Param hostName = empty string
+			"false, , false", // Param hostName = null
+			"false, '', false", // Param hostName = empty string
+			"true, example.com, false",
+			"false, example.com, false"
+	})
+	void booleanLikeEvaluation(boolean isActive, String hostName, boolean expectToGiveWarning) {
+		// Arrange
+		PropertyLoader map = new PropertyLoader("test.properties");
+		map.setProperty("mail.active", Boolean.toString(isActive));
+		if (hostName != null) {
+			map.setProperty("mail.host", hostName);
+		}
+
+		// Act
+
+		// In the expression, the second value should be made null-safe.
+		String giveWarning = StringResolver.substVars("${= mail.active && !\"${mail.host}\" }", map);
+
+		// Assert
+		assertEquals(Boolean.toString(expectToGiveWarning), giveWarning);
 	}
 }

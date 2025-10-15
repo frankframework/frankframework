@@ -94,9 +94,10 @@ public class ApplicationWarningsTest {
 
 		// Act
 		try (TestAppender testAppender = TestAppender.newBuilder().build()) {
-			appConstants.getProperty("test");
+			String result = appConstants.getProperty("test");
 
 			assertThat(testAppender.getLogLines(), hasItem(containsString("missing property")));
+			assertEquals("", result);
 		}
 		// Assert
 		List<String> applWarnings = ApplicationWarnings.getWarningsList();
