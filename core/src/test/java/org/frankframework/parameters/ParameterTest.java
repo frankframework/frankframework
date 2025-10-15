@@ -12,12 +12,15 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.io.ByteArrayInputStream;
 import java.net.URL;
+import java.security.Principal;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
@@ -41,6 +44,7 @@ import org.w3c.dom.Node;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.core.Adapter;
+import org.frankframework.core.ISecurityHandler;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLine.ExitState;
@@ -1813,5 +1817,75 @@ public class ParameterTest {
 
 		// Act
 		assertThrows(ConfigurationException.class, parameter::configure);
+	}
+
+	@Test
+	public void testParameterPrincipalPattern() throws Exception {
+		// Arrange
+		Parameter parameter = new Parameter();
+		parameter.setName("p1");
+		parameter.setPattern("{principal}");
+		parameter.configure();
+
+		ISecurityHandler securityHandler = mock();
+		Principal principal = mock();
+		when(principal.getName()).thenReturn("rando.muser");
+		when(securityHandler.getPrincipal()).thenReturn(principal);
+
+		PipeLineSession session = new PipeLineSession();
+		session.setSecurityHandler(securityHandler);
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+
+		// Act
+		Object value = parameter.getValue(alreadyResolvedParameters, Message.nullMessage(), session, true);
+
+		// Assert
+		assertEquals("rando.muser", value);
+	}
+
+	@Test
+	public void testParameterPrincipalPatternNotLoggedIn() throws Exception {
+		// Arrange
+		Parameter parameter = new Parameter();
+		parameter.setName("p1");
+		parameter.setPattern("{principal}");
+		parameter.setIgnoreUnresolvablePatternElements(true);
+		parameter.configure();
+
+		ISecurityHandler securityHandler = mock();
+		Principal principal = mock();
+		when(principal.getName()).thenReturn(null);
+		when(securityHandler.getPrincipal()).thenReturn(principal);
+
+		PipeLineSession session = new PipeLineSession();
+		session.setSecurityHandler(securityHandler);
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+
+		// Act
+		Object value = parameter.getValue(alreadyResolvedParameters, Message.nullMessage(), session, true);
+
+		// Assert
+		assertEquals("", value);
+	}
+
+	@Test
+	public void testParameterPrincipalPatternNoSecurityContext() throws Exception {
+		// Arrange
+		Parameter parameter = new Parameter();
+		parameter.setName("p1");
+		parameter.setPattern("{principal}");
+		parameter.setIgnoreUnresolvablePatternElements(true);
+		parameter.configure();
+
+		PipeLineSession session = new PipeLineSession();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+
+		// Act
+		Object value = parameter.getValue(alreadyResolvedParameters, Message.nullMessage(), session, true);
+
+		// Assert
+		assertEquals("", value);
 	}
 }
