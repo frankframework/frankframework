@@ -108,7 +108,6 @@ import org.frankframework.util.StringUtil;
  *     <li>{@link org.apache.commons.lang3.StringUtils}</li>
  *     <li>{@link org.frankframework.util.StringUtil}</li>
  *     <li>{@link org.frankframework.util.Misc}</li>
- *     <li>{@link org.frankframework.util.MessageUtils}</li>
  *     <li>{@link org.frankframework.configuration.ApplicationWarnings}</li>
  * </ul>
  * You should not use the package names when using these classes, just the class name and the method name. See the examples above.
@@ -196,7 +195,7 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 		context.set("log", log); // log is needed for method calls on ApplicationWarnings
 
 		// Some classes to load dynamically from other modules
-		tryAddClassesDynamically(context, "org.frankframework.configuration.ApplicationWarnings", "org.frankframework.util.MessageUtils", "org.frankframework.util.Misc");
+		tryAddClassesDynamically(context, "org.frankframework.configuration.ApplicationWarnings", "org.frankframework.util.Misc");
 		return context;
 	}
 
