@@ -22,35 +22,35 @@ public class CredentialCheckingPipeTest extends PipeTestBase<CredentialCheckingP
     public void getterSetterAuthAlias() {
         String dummyString = "dummyString";
         pipe.setAuthAlias(dummyString);
-        assertEquals(pipe.getAuthAlias(), dummyString);
+        assertEquals(dummyString, pipe.getAuthAlias());
     }
 
     @Test
     public void getterSetterTargetUserId() {
         String dummyString = "dummyString";
         pipe.setTargetUserid(dummyString);
-        assertEquals(pipe.getTargetUserid(), dummyString);
+        assertEquals(dummyString, pipe.getTargetUserid());
     }
 
     @Test
     public void getterSetterTargetPassword() {
         String dummyString = "dummyString";
         pipe.setTargetPassword(dummyString);
-        assertEquals(pipe.getTargetPassword(), dummyString);
+        assertEquals(dummyString, pipe.getTargetPassword());
     }
 
     @Test
     public void getterSetterDefaultPassword() {
         String dummyString = "dummyString";
         pipe.setDefaultPassword(dummyString);
-        assertEquals(pipe.getDefaultPassword(), dummyString);
+        assertEquals(dummyString, pipe.getDefaultPassword());
     }
 
     @Test
     public void getterSetterDefaultUserId() {
         String dummyString = "dummyString";
         pipe.setDefaultUserid(dummyString);
-        assertEquals(pipe.getDefaultUserid(), dummyString);
+        assertEquals(dummyString, pipe.getDefaultUserid());
     }
 
     @Test
@@ -78,7 +78,7 @@ public class CredentialCheckingPipeTest extends PipeTestBase<CredentialCheckingP
     }
 
     @Test
-	public void testNonExisitingTarget() {
+	public void testNonExistingTarget() {
 		assertThrows(ConfigurationException.class, () -> pipe.configure());
     }
 

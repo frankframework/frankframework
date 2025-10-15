@@ -116,7 +116,7 @@ public class JexlEvaluationInPropLoaderTest {
 
 		// Act
 
-		// In the boolean expression, none of the values can be null. (null is not automatically 'false').
+		// In the boolean expression, none of the values can be null. (null is not automatically 'false', but gives an exception).
 		String giveWarning1 = StringResolver.substVars("${= mail.active && !\"${mail.host}\" }", map); // Put quotes and nested evaluation around the potential null-value
 		String giveWarning2 = StringResolver.substVars("${= mail.active && !mail.hostname }", map); // Use indirection to solve the null-value-problem
 		String giveWarning3 = StringResolver.substVars("${= mail.active && StringUtils.isBlank(mail.host) }", map); // The potential null-value is not a problem as argument to this method
