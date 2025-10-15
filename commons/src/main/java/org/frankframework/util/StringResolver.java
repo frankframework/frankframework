@@ -61,8 +61,8 @@ public class StringResolver {
 	private static Collection<AdditionalStringResolver> additionalStringResolvers = null;
 
 	/**
-	 * Do variable substitution on a string to resolve ${x2} to the value of the
-	 * property x2. When provided Map implementations are instance of {@link PropertyLoader} or a subclass thereof, this is done recursively so that <br/>
+	 * Do variable substitution on a string to resolve ${test.xx} to the value of the
+	 * property {@code test.xx}. When provided Map implementations are instance of {@link PropertyLoader} or a subclass thereof, this is done recursively so that <br/>
 	 * <pre>{@code
 	 * PropertyLoader prop = new PropertyLoader(propFileRef);
 	 * prop.put("test.name", "this is a name with ${test.xx}");
@@ -91,8 +91,8 @@ public class StringResolver {
 	}
 
 	/**
-	 * Do variable substitution on a string to resolve ${x2} to the value of the
-	 * property x2. When provided Map implementations are instance of {@link PropertyLoader} or a subclass thereof, this is done recursively so that <br/>
+	 * Do variable substitution on a string to resolve ${test.xx} to the value of the
+	 * property {@code test.xx}. When provided Map implementations are instance of {@link PropertyLoader} or a subclass thereof, this is done recursively so that <br/>
 	 * <pre>{@code
 	 * PropertyLoader prop = new PropertyLoader(propFileRef);
 	 * prop.put("test.name", "this is a name with ${test.xx}");
@@ -123,8 +123,8 @@ public class StringResolver {
 	}
 
 	/**
-	 * Do variable substitution on a string to resolve ${x2} to the value of the
-	 * property x2. When provided Map implementations are instance of {@link PropertyLoader} or a subclass thereof, this is done recursively so that <br/>
+	 * Do variable substitution on a string to resolve ${test.xx} to the value of the
+	 * property {@code test.xx}. When provided Map implementations are instance of {@link PropertyLoader} or a subclass thereof, this is done recursively so that <br/>
 	 * <pre>{@code
 	 * PropertyLoader prop = new PropertyLoader(propFileRef);
 	 * prop.put("test.name", "this is a name with ${test.xx}");
@@ -318,8 +318,8 @@ public class StringResolver {
 	}
 
 	/**
-	 * Do variable substitution on a string to resolve ${x2} to the value of the
-	 * property x2. When provided Map implementations are instance of {@link PropertyLoader} or a subclass thereof, this is done recursively so that <br/>
+	 * Do variable substitution on a string to resolve ${test.xx} to the value of the
+	 * property {@code test.xx}. When provided Map implementations are instance of {@link PropertyLoader} or a subclass thereof, this is done recursively so that <br/>
 	 * <pre>{@code
 	 * PropertyLoader prop = new PropertyLoader(propFileRef);
 	 * prop.put("test.name", "this is a name with ${test.xx}");
@@ -346,8 +346,8 @@ public class StringResolver {
 	}
 
 	/**
-	 * Do variable substitution on a string to resolve ${x2} to the value of the
-	 * property x2. When provided Map implementations are instance of {@link PropertyLoader} or a subclass thereof, this is done recursively so that <br/>
+	 * Do variable substitution on a string to resolve ${test.xx} to the value of the
+	 * property {@code test.xx}. When provided Map implementations are instance of {@link PropertyLoader} or a subclass thereof, this is done recursively so that <br/>
 	 * <pre>{@code
 	 * PropertyLoader prop = new PropertyLoader(propFileRef);
 	 * prop.put("test.name", "this is a name with ${test.xx}");
@@ -372,8 +372,8 @@ public class StringResolver {
 	}
 
 	/**
-	 * Do variable substitution on a string to resolve ${x2} to the value of the
-	 * property x2. When provided Map implementations are instance of {@link PropertyLoader} or a subclass thereof, this is done recursively so that <br/>
+	 * Do variable substitution on a string to resolve ${test.xx} to the value of the
+	 * property {@code test.xx}. When provided Map implementations are instance of {@link PropertyLoader} or a subclass thereof, this is done recursively so that <br/>
 	 * <pre>{@code
 	 * PropertyLoader prop = new PropertyLoader(propFileRef);
 	 * prop.put("test.name", "this is a name with ${test.xx}");
@@ -400,8 +400,8 @@ public class StringResolver {
 	}
 
 	/**
-	 * Do variable substitution on a string to resolve ${x2} to the value of the
-	 * property x2. When provided Map implementations are instance of {@link PropertyLoader} or a subclass thereof, this is done recursively so that <br/>
+	 * Do variable substitution on a string to resolve ${test.xx} to the value of the
+	 * property {@code test.xx}. When provided Map implementations are instance of {@link PropertyLoader} or a subclass thereof, this is done recursively so that <br/>
 	 * <pre>{@code
 	 * PropertyLoader prop = new PropertyLoader(propFileRef);
 	 * prop.put("test.name", "this is a name with ${test.xx}");
@@ -430,8 +430,8 @@ public class StringResolver {
 	}
 
 	/**
-	 * Do variable substitution on a string to resolve ${x2} to the value of the
-	 * property x2. When provided Map implementations are instance of {@link PropertyLoader} or a subclass thereof, this is done recursively so that <br/>
+	 * Do variable substitution on a string to resolve ${test.xx} to the value of the
+	 * property {@code test.xx}. When provided Map implementations are instance of {@link PropertyLoader} or a subclass thereof, this is done recursively so that <br/>
 	 * <pre>{@code
 	 * PropertyLoader prop = new PropertyLoader(propFileRef);
 	 * prop.put("test.name", "this is a name with ${test.xx}");

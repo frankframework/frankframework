@@ -35,6 +35,11 @@ import org.apache.commons.lang3.StringUtils;
 
 import lombok.extern.log4j.Log4j2;
 
+/**
+ * Load properties from a file on classpath. The file can be in {@code .properties} format, or {@code yaml} format.
+ * When getting a property, if the value contains any string substitution expressions these are first evaluated. See {@link StringResolver}
+ * for more information on the format.
+ */
 @Log4j2
 public class PropertyLoader extends Properties {
 
