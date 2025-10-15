@@ -105,7 +105,7 @@ public class JexlEvaluationInPropLoaderTest {
 			"true, example.com, false",
 			"false, example.com, false"
 	})
-	void booleanLikeEvaluation(boolean isActive, String hostName, boolean shouldToGiveWarning) {
+	void booleanLikeEvaluation(boolean isActive, String hostName, boolean shouldGiveWarning) {
 		// Arrange
 		PropertyLoader map = new PropertyLoader("test.properties");
 		map.setProperty("mail.active", Boolean.toString(isActive));
@@ -122,8 +122,8 @@ public class JexlEvaluationInPropLoaderTest {
 		String giveWarning3 = StringResolver.substVars("${= mail.active && StringUtils.isBlank(mail.host) }", map); // The potential null-value is not a problem as argument to this method
 
 		// Assert
-		assertEquals(Boolean.toString(shouldToGiveWarning), giveWarning1);
-		assertEquals(Boolean.toString(shouldToGiveWarning), giveWarning2);
-		assertEquals(Boolean.toString(shouldToGiveWarning), giveWarning3);
+		assertEquals(Boolean.toString(shouldGiveWarning), giveWarning1);
+		assertEquals(Boolean.toString(shouldGiveWarning), giveWarning2);
+		assertEquals(Boolean.toString(shouldGiveWarning), giveWarning3);
 	}
 }
