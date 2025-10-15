@@ -105,20 +105,25 @@ public class JexlEvaluationInPropLoaderTest {
 			"true, example.com, false",
 			"false, example.com, false"
 	})
-	void booleanLikeEvaluation(boolean isActive, String hostName, boolean expectToGiveWarning) {
+	void booleanLikeEvaluation(boolean isActive, String hostName, boolean shouldToGiveWarning) {
 		// Arrange
 		PropertyLoader map = new PropertyLoader("test.properties");
 		map.setProperty("mail.active", Boolean.toString(isActive));
 		if (hostName != null) {
 			map.setProperty("mail.host", hostName);
 		}
+		map.setProperty("mail.hostname", "${mail.host}"); // This indirection makes for a null-safe variable 'mail.hostname'
 
 		// Act
 
-		// In the expression, the second value should be made null-safe.
-		String giveWarning = StringResolver.substVars("${= mail.active && !\"${mail.host}\" }", map);
+		// In the boolean expression, none of the values can be null. (null is not automatically 'false').
+		String giveWarning1 = StringResolver.substVars("${= mail.active && !\"${mail.host}\" }", map); // Put quotes and nested evaluation around the potential null-value
+		String giveWarning2 = StringResolver.substVars("${= mail.active && !mail.hostname }", map); // Use indirection to solve the null-value-problem
+		String giveWarning3 = StringResolver.substVars("${= mail.active && StringUtils.isBlank(mail.host) }", map); // The potential null-value is not a problem as argument to this method
 
 		// Assert
-		assertEquals(Boolean.toString(expectToGiveWarning), giveWarning);
+		assertEquals(Boolean.toString(shouldToGiveWarning), giveWarning1);
+		assertEquals(Boolean.toString(shouldToGiveWarning), giveWarning2);
+		assertEquals(Boolean.toString(shouldToGiveWarning), giveWarning3);
 	}
 }
