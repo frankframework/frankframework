@@ -91,7 +91,7 @@
 		<spring-security.version>6.4.6</spring-security.version>
 		<spring-integration.version>6.5.2</spring-integration.version>
 		<spring.boot.version>3.5.6</spring.boot.version>
-		<tomcat.version>10.1.47</tomcat.version>
+		<tomcat.version>10.1.48</tomcat.version>
 		<bouncycastle.version>1.82</bouncycastle.version>
 
 		<narayana.version>7.3.0.Final</narayana.version>
