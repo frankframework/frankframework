@@ -55,7 +55,7 @@ public class JexlEvaluationInPropLoaderTest {
 		String value = props.getProperty(propertyName);
 
 		// Assert
-		assertEquals("We Are Frank", value);
+		assertEquals("We Use Frank!Framework", value);
 	}
 
 	@Test
@@ -68,7 +68,7 @@ public class JexlEvaluationInPropLoaderTest {
 		String value = props.getProperty("str.text2");
 
 		// Assert
-		assertEquals("We Are IBIS", value);
+		assertEquals("We Use IBIS", value);
 	}
 
 	@Test
@@ -81,7 +81,7 @@ public class JexlEvaluationInPropLoaderTest {
 		String value = props.getProperty("str.transform1");
 
 		// Assert
-		assertEquals("we, are, iBIS", value);
+		assertEquals("we, use, iBIS", value);
 	}
 
 	@Test
