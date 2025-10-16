@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<log4j2:Configuration xmlns:log4j2="log4j-config.xsd">
+	<Appenders>
+		<Console name="Console">
+			<PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+		</Console>
+	</Appenders>
+	<Loggers>
+		<Logger name="org.frankframework" level="debug" additivity="false">
+			<AppenderRef ref="Console"/>
+		</Logger>
+		<Root level="info">
+			<AppenderRef ref="Console"/>
+		</Root>
+	</Loggers>
+</log4j2:Configuration>

@@ -131,12 +131,19 @@ public class ConsoleFrontend extends HttpServlet implements EnvironmentAware, In
 	}
 
 	private @Nullable URL findResource(@Nonnull String path) {
+		// Basic validations: block protocol references, non-rooted paths
 		if (path.contains(":") || !path.startsWith("/")) {
 			log.warn("path [{}] may not contain a protocol or port and must start with slash", path);
 			return null;
 		}
 
+		// Ensure the normalized resource is strictly under frontendPath
 		String normalized = FilenameUtils.normalize(frontendPath+path, true);
+		if (!normalized.startsWith(frontendPath + "/")) {
+			log.warn("attempt to access resource [{}] outside of valid root [{}]", normalized, frontendPath);
+			return null;
+		}
+
 		log.trace("trying to find resource [{}]", normalized);
 
 		try {
