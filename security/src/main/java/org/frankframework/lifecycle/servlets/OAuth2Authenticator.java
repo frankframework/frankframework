@@ -172,7 +172,6 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	/**
 	 * The tenant ID to use for the Azure provider.
 	 */
-	@Mandatory
 	private @Setter String tenantId = null;
 
 	/**
