@@ -68,7 +68,7 @@ public class JexlEvaluationInPropLoaderTest {
 		String value = props.getProperty("str.text2");
 
 		// Assert
-		assertEquals("We Use IBIS", value);
+		assertEquals("We Use IBIS Adapter Framework", value);
 	}
 
 	@Test
@@ -81,7 +81,7 @@ public class JexlEvaluationInPropLoaderTest {
 		String value = props.getProperty("str.transform1");
 
 		// Assert
-		assertEquals("we, use, iBIS", value);
+		assertEquals("we, use, iBIS, adapter, framework", value);
 	}
 
 	@Test
