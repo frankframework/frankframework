@@ -204,7 +204,7 @@ public class MessageContext implements Serializable {
 		put(METADATA_LOCATION, location);
 		return this;
 	}
-	public MessageContext with(@Nonnull String name, @Nullable String value) {
+	public MessageContext with(@Nonnull String name, @Nullable Serializable value) {
 		put(name, value);
 		return this;
 	}

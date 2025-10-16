@@ -1,5 +1,6 @@
 package org.frankframework.parameters;
 
+import static org.frankframework.testutil.MatchUtils.assertXmlEquals;
 import static org.frankframework.testutil.TestAssertions.assertJsonEquals;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
@@ -58,15 +59,16 @@ import org.frankframework.processors.CorePipeProcessor;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.UrlMessage;
-import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.TimeProvider;
 import org.frankframework.util.XmlUtils;
 
+@SuppressWarnings("removal")
 @Isolated("Tests manipulate current time, so should not be run concurrently with other tests")
 public class ParameterTest {
 
@@ -435,6 +437,66 @@ public class ParameterTest {
 	}
 
 	@Test
+	public void testContextKeyWildcard() throws Exception {
+		// Arrange
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setContextKey("*");
+		p.configure();
+
+		Message input = new Message("fakeMessage", new MessageContext().with("fakeContextKey", "fakeContextValue").with("fakeKey2", 2));
+		PipeLineSession session = new PipeLineSession();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+
+		// Act
+		Object result = p.getValue(alreadyResolvedParameters, input, session, false);
+
+		// Assert
+		assertXmlEquals(
+				"""
+						<items>
+						<item name="fakeContextKey">fakeContextValue</item>
+						<item name="fakeKey2">2</item>
+						</items>""",
+				MessageUtils.asString(result)
+		);
+
+		assertFalse(p.requiresInputValueForResolution());
+	}
+
+
+	@Test
+	public void testContextKeyWildcardAsJson() throws Exception {
+		// Arrange
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setContextKey("*");
+		p.setType(ParameterType.JSON);
+		p.configure();
+
+		Message input = new Message("fakeMessage", new MessageContext().with("fakeContextKey", "fakeContextValue").with("fakeKey2", 2));
+		PipeLineSession session = new PipeLineSession();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+
+		// Act
+		Object result = p.getValue(alreadyResolvedParameters, input, session, false);
+
+		// Assert
+		assertJsonEquals(
+				"""
+						{
+							"items": {
+								"fakeContextKey": "fakeContextValue",
+								"fakeKey2": 2
+							}
+						}""",
+				MessageUtils.asString(result)
+		);
+
+		assertFalse(p.requiresInputValueForResolution());
+	}
+
+	@Test
 	public void testContextKeyWithSessionKey() throws ConfigurationException, ParameterException {
 		Parameter p = new Parameter();
 		p.setName("dummy");
@@ -450,6 +512,73 @@ public class ParameterTest {
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 
 		assertEquals("fakeContextValue2", p.getValue(alreadyResolvedParameters, input, session, false));
+
+		assertFalse(p.requiresInputValueForResolution());
+		assertFalse(p.consumesSessionVariable("fakeSessionKey"));
+	}
+
+	@Test
+	public void testContextKeyWildcardWithSessionKey() throws Exception {
+		// Arrange
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setSessionKey("fakeSessionKey");
+		p.setContextKey("*");
+		p.configure();
+
+		Message input = new Message("fakeMessage1", new MessageContext().with("fakeContextKey", "fakeContextValue1"));
+		Message sessionValue = new Message("fakeMessage2", new MessageContext().with("fakeContextKey", "fakeContextValue2"));
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("fakeSessionKey", sessionValue);
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+
+		// Act
+		Object result = p.getValue(alreadyResolvedParameters, input, session, false);
+
+		// Assert
+		assertXmlEquals(
+				"""
+						<items>
+						<item name="fakeContextKey">fakeContextValue2</item>
+						</items>""",
+				MessageUtils.asString(result)
+		);
+
+		assertFalse(p.requiresInputValueForResolution());
+		assertFalse(p.consumesSessionVariable("fakeSessionKey"));
+	}
+
+	@Test
+	public void testContextKeyWildcardWithSessionKeyAsJson() throws Exception {
+		// Arrange
+		Parameter p = new Parameter();
+		p.setType(ParameterType.JSON);
+		p.setName("dummy");
+		p.setSessionKey("fakeSessionKey");
+		p.setContextKey("*");
+		p.configure();
+
+		Message input = new Message("fakeMessage1", new MessageContext().with("fakeContextKey", "fakeContextValue1"));
+		Message sessionValue = new Message("fakeMessage2", new MessageContext().with("fakeContextKey", "fakeContextValue2"));
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("fakeSessionKey", sessionValue);
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+
+		// Act
+		Object result = p.getValue(alreadyResolvedParameters, input, session, false);
+
+		// Assert
+		assertJsonEquals(
+				"""
+						{
+							"items": {
+								"fakeContextKey": "fakeContextValue2"
+							}
+						}""",
+				MessageUtils.asString(result)
+		);
 
 		assertFalse(p.requiresInputValueForResolution());
 		assertFalse(p.consumesSessionVariable("fakeSessionKey"));
@@ -473,6 +602,40 @@ public class ParameterTest {
 	}
 
 	@Test
+	public void testContextKeyWildcardWithXPath() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setContextKey("*");
+		p.setXpathExpression("count(items/item)");
+		p.configure();
+
+		Message input = new Message("fakeMessage", new MessageContext().with("fakeContextKey", "<root><a/><a/></root>").with("fakeContextKey2", "<root><a/></root>").with("fakeContextKey3", "<root><a/></root>"));
+		PipeLineSession session = new PipeLineSession();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+
+		assertEquals("3", p.getValue(alreadyResolvedParameters, input, session, false));
+
+		assertFalse(p.requiresInputValueForResolution());
+	}
+
+	@Test
+	public void testContextKeyWildcardWithJsonPath() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setContextKey("*");
+		p.setJsonPathExpression("$.items.length()");
+		p.configure();
+
+		Message input = new Message("fakeMessage", new MessageContext().with("fakeContextKey", "<root><a/><a/></root>").with("fakeContextKey2", "<root><a/></root>").with("fakeContextKey3", "<root><a/></root>"));
+		PipeLineSession session = new PipeLineSession();
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+
+		assertEquals("3", p.getValue(alreadyResolvedParameters, input, session, false));
+
+		assertFalse(p.requiresInputValueForResolution());
+	}
+
+	@Test
 	public void testContextKeyWithSessionKeyAndXPath() throws ConfigurationException, ParameterException {
 		Parameter p = new Parameter();
 		p.setName("dummy");
@@ -489,6 +652,50 @@ public class ParameterTest {
 		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 
 		assertEquals("3", p.getValue(alreadyResolvedParameters, input, session, false));
+
+		assertFalse(p.requiresInputValueForResolution());
+		assertFalse(p.consumesSessionVariable("fakeSessionKey"));
+	}
+
+	@Test
+	public void testContextKeyWildcardWithSessionKeyAndXPath() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setSessionKey("fakeSessionKey");
+		p.setContextKey("*");
+		p.setXpathExpression("count(items/item)");
+		p.configure();
+
+		Message input = new Message("fakeMessage1", new MessageContext().with("fakeContextKey", "<root><a/><a/></root>"));
+		Message sessionValue = new Message("fakeMessage2", new MessageContext().with("fakeContextKey", "<root><a/><a/><a/></root>").with("fakeContextKey2", "<root><a/></root>"));
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("fakeSessionKey", sessionValue);
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+
+		assertEquals("2", p.getValue(alreadyResolvedParameters, input, session, false));
+
+		assertFalse(p.requiresInputValueForResolution());
+		assertFalse(p.consumesSessionVariable("fakeSessionKey"));
+	}
+
+	@Test
+	public void testContextKeyWildcardWithSessionKeyAndJsonPath() throws ConfigurationException, ParameterException {
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setSessionKey("fakeSessionKey");
+		p.setContextKey("*");
+		p.setJsonPathExpression("$.items.length()");
+		p.configure();
+
+		Message input = new Message("fakeMessage1", new MessageContext().with("fakeContextKey", "<root><a/><a/></root>"));
+		Message sessionValue = new Message("fakeMessage2", new MessageContext().with("fakeContextKey", "<root><a/><a/><a/></root>").with("fakeContextKey2", "<root><a/></root>"));
+
+		PipeLineSession session = new PipeLineSession();
+		session.put("fakeSessionKey", sessionValue);
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+
+		assertEquals("2", p.getValue(alreadyResolvedParameters, input, session, false));
 
 		assertFalse(p.requiresInputValueForResolution());
 		assertFalse(p.consumesSessionVariable("fakeSessionKey"));
@@ -1101,7 +1308,7 @@ public class ParameterTest {
 			assertEquals(ExitState.SUCCESS, pipeRunResult.getState());
 			assertEquals(testMessage, pipeRunResult.getResult().asString());
 
-			MatchUtils.assertXmlEquals(testMessageChild1, session.getString("xmlMessageChild"));
+			assertXmlEquals(testMessageChild1, session.getString("xmlMessageChild"));
 			assertEquals("X", session.getString("xmlMessageChild2"));
 		}
 	}
