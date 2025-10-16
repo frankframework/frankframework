@@ -139,8 +139,8 @@ public class ConsoleFrontend extends HttpServlet implements EnvironmentAware, In
 
 		// Ensure the normalized resource is strictly under frontendPath
 		String normalized = FilenameUtils.normalize(frontendPath+path, true);
-		if (!normalized.startsWith(frontendPath + "/")) {
-			log.warn("attempt to access resource [{}] outside of valid root [{}]", normalized, frontendPath);
+		if (normalized == null || !normalized.startsWith(frontendPath + "/")) {
+			log.warn("attempt to access resource [{}] outside of valid root [{}]", path, frontendPath);
 			return null;
 		}
 
