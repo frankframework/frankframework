@@ -22,6 +22,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -52,7 +53,7 @@ import org.frankframework.util.ClassUtils;
 public class ConsoleFrontend extends HttpServlet implements EnvironmentAware, InitializingBean {
 
 	private static final long serialVersionUID = 1L;
-	private static final String WELCOME_FILE = "index.html";
+	private static final String WELCOME_FILE = "/index.html";
 	private static final String DEFAULT_CONSOLE_PATH = "console"; // WebSphere doesn't like the classpath: protocol and resources should not start with a slash?
 
 	@SuppressWarnings("java:S2226") // Initialized through Spring (which is a Sonar Exception)
@@ -107,7 +108,7 @@ public class ConsoleFrontend extends HttpServlet implements EnvironmentAware, In
 			}
 		}
 		if("/".equals(path)) {
-			path += WELCOME_FILE;
+			path = WELCOME_FILE;
 		}
 
 		URL resource = findResource(path);
@@ -129,10 +130,16 @@ public class ConsoleFrontend extends HttpServlet implements EnvironmentAware, In
 		}
 	}
 
-	private @Nullable URL findResource(String path) {
+	private @Nullable URL findResource(@Nonnull String path) {
+		if (path.contains(":") || !path.startsWith("/")) {
+			log.warn("path [{}] may not contain a protocol or port and must start with slash", path);
+			return null;
+		}
+
+		String normalized = FilenameUtils.normalize(frontendPath+path, true);
+		log.trace("trying to find resource [{}]", normalized);
+
 		try {
-			String normalized = FilenameUtils.normalize(frontendPath+path, true);
-			log.trace("trying to find resource [{}]", normalized);
 			URL resource = ClassUtils.getResourceURL(normalized);
 			if(resource == null) {
 				log.debug("unable to locate resource [{}]", path);
