@@ -57,6 +57,18 @@ public class ConsoleFrontendTest {
 	}
 
 	@ParameterizedTest
+	@ValueSource(strings = {"../dummy.txt", "/../dummy.txt", "/%20.txt", "/#/../../dummy.txt"})
+	public void testFileRetrievalOutsideConsoleDirectory(String path) throws UnsupportedEncodingException {
+		MockHttpServletRequest request = createRequest(path);
+
+		MockHttpServletResponse response = new MockHttpServletResponse();
+		servlet.doGet(request, response);
+
+		assertEquals(404, response.getStatus());
+		assertEquals("", response.getContentAsString());
+	}
+
+	@ParameterizedTest
 	@NullAndEmptySource
 	public void noPathShouldRedirect(String path) throws UnsupportedEncodingException {
 		MockHttpServletRequest request = createRequest(path);
@@ -69,7 +81,7 @@ public class ConsoleFrontendTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {"/", "/index.html"})
+	@ValueSource(strings = {"/", "/index.html", "/#/../index.html"})
 	public void testIndex(String path) throws UnsupportedEncodingException {
 		MockHttpServletRequest request = createRequest(path);
 
