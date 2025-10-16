@@ -908,6 +908,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	 * <li>{hostname}: the name of the machine the application runs on</li>
 	 * <li>{username}: username from the credentials found using authAlias, or the username attribute</li>
 	 * <li>{password}: password from the credentials found using authAlias, or the password attribute</li>
+	 * <li>{principal}: Name of the current principal, similar to the {@link org.frankframework.pipes.GetPrincipalPipe}.</li>
 	 * <li>{fixeddate}: fake date, for testing only</li>
 	 * <li>{fixeduid}: fake uid, for testing only</li>
 	 * <li>{fixedhostname}: fake hostname, for testing only</li>
