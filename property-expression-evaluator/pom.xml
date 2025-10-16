@@ -6,7 +6,7 @@
 		<artifactId>frankframework-parent</artifactId>
 		<version>${revision}</version>
 	</parent>
-	<artifactId>script-property-substitution</artifactId>
+	<artifactId>property-expression-evaluator</artifactId>
 	<name>Script expression String Resolver</name>
 
 	<dependencies>

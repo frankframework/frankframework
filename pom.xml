@@ -271,7 +271,7 @@
 			</dependency>
 			<dependency>
 				<groupId>org.frankframework</groupId>
-				<artifactId>script-property-substitution</artifactId>
+				<artifactId>property-expression-evaluator</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -1533,7 +1533,7 @@
 			</activation>
 			<modules>
 				<module>commons</module>
-				<module>script-property-substitution</module>
+				<module>property-expression-evaluator</module>
 				<module>security</module>
 				<module>credentialProvider</module>
 				<module>management-gateway</module>
