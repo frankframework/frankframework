@@ -16,6 +16,10 @@
 			<artifactId>frankframework-commons</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>credentialprovider</artifactId>
+		</dependency>
+		<dependency>
 			<!-- allows this module to be build without use commons transitivily -->
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>

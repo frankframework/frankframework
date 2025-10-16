@@ -39,6 +39,9 @@ import org.springframework.security.web.SecurityFilterChain;
 import lombok.Getter;
 import lombok.Setter;
 
+import org.frankframework.credentialprovider.CredentialFactory;
+import org.frankframework.credentialprovider.ICredentials;
+import org.frankframework.doc.Mandatory;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.SpringUtils;
@@ -151,25 +154,23 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 
 	/**
 	 * The client ID to use for the OAuth2 provider.
-	 * <p>
-	 * This is required when using the OAuth2 provider.
-	 * </p>
 	 */
 	private @Setter String clientId = null;
 
 	/**
 	 * The client secret to use for the OAuth2 provider.
-	 * <p>
-	 * This is required when using the OAuth2 provider.
-	 * </p>
 	 */
 	private @Setter String clientSecret = null;
 
 	/**
+	 * The AuthAlias which contains the clientId and clientSecret.
+	 */
+	private @Setter String clientAuthAlias = null;
+
+	private ICredentials clientCredentials;
+
+	/**
 	 * The tenant ID to use for the Azure provider.
-	 * <p>
-	 * This is required when using the Azure provider.
-	 * </p>
 	 */
 	private @Setter String tenantId = null;
 
@@ -187,6 +188,7 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	 * </ul>
 	 * </p>
 	 */
+	@Mandatory
 	private @Setter String provider;
 
 	private ClientRegistrationRepository clientRepository;
@@ -233,12 +235,15 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	}
 
 	private void configure() throws FileNotFoundException {
-		if (StringUtils.isEmpty(clientId) || StringUtils.isEmpty(clientSecret)) {
+		ICredentials credentials = CredentialFactory.getCredentials(clientAuthAlias, clientId, clientSecret);
+		if (StringUtils.isEmpty(credentials.getUsername()) || StringUtils.isEmpty(credentials.getPassword())) {
 			throw new IllegalStateException("clientId and clientSecret must be set");
 		}
 		if (StringUtils.isEmpty(provider)) {
 			throw new IllegalStateException("A provider must be set");
 		}
+
+		this.clientCredentials = credentials;
 
 		roleMappingURL = ClassUtils.getResourceURL(roleMappingFile);
 		if(roleMappingURL == null) {
@@ -255,33 +260,36 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 
 	public ClientRegistrationRepository getOrCreateClientRegistrationRepository() {
 		if (clientRepository == null) {
-			clientRepository = new InMemoryClientRegistrationRepository(getRegistration(provider));
+			clientRepository = new InMemoryClientRegistrationRepository(getRegistration(provider, clientCredentials));
 			SpringUtils.registerSingleton(getApplicationContext(), "clientRegistrationRepository", clientRepository);
 			clientService = new InMemoryOAuth2AuthorizedClientService(clientRepository);
 		}
 		return clientRepository;
 	}
 
-	private ClientRegistration getRegistration(@Nonnull String provider) {
+	protected ClientRegistration getRegistration(@Nonnull String provider, @Nonnull ICredentials credentials) {
 		ClientRegistration.Builder builder = switch (provider.toLowerCase()) {
 			case "google", "github", "facebook", "okta" -> {
 				CommonOAuth2Provider commonProvider = EnumUtils.parse(CommonOAuth2Provider.class, provider);
 				yield commonProvider.getBuilder(provider);
 			}
-			case "azure" -> createAzureBuilder();
+			case "azure" -> createAzureBuilder(credentials.getUsername());
 			case "custom" -> createCustomBuilder(provider, provider.toLowerCase());
 			default -> throw new IllegalStateException("unknown OAuth provider");
 		};
 
-		builder.clientId(clientId).clientSecret(clientSecret);
+		builder.clientId(credentials.getUsername()).clientSecret(credentials.getPassword());
 
 		builder.redirectUri(getRedirectUri());
 
 		return builder.build();
 	}
 
-	// https://login.microsoftonline.com/%s/.well-known/openid-configuration
-	private ClientRegistration.Builder createAzureBuilder() {
+	/**
+	 * @param appId the Azure ClientID
+	 * See https://login.microsoftonline.com/%s/.well-known/openid-configuration
+	 */
+	private ClientRegistration.Builder createAzureBuilder(@Nonnull String appId) {
 		if (StringUtils.isBlank(tenantId)) throw new IllegalStateException("when using Azure provider the tenantId property is required");
 
 		ClientRegistration.Builder builder = ClientRegistration.withRegistrationId("azure");
@@ -293,7 +301,7 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 
 		builder.authorizationUri("https://login.microsoftonline.com/%s/oauth2/v2.0/authorize".formatted(tenantId));
 		builder.tokenUri("https://login.microsoftonline.com/%s/oauth2/v2.0/token".formatted(tenantId));
-		builder.jwkSetUri("https://login.microsoftonline.com/%s/discovery/v2.0/keys?appid=%s".formatted(tenantId, clientId));
+		builder.jwkSetUri("https://login.microsoftonline.com/%s/discovery/v2.0/keys?appid=%s".formatted(tenantId, appId));
 		builder.issuerUri("https://login.microsoftonline.com/%s/v2.0".formatted(tenantId));
 		builder.userInfoUri("https://graph.microsoft.com/oidc/userinfo");
 		builder.userNameAttributeName("email");
