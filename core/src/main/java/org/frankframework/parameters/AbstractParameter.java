@@ -320,14 +320,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 						// larva can produce the sourceObject as map
 						@SuppressWarnings("unchecked")
 						Map<String, String> items = (Map<String, String>) sourceObject;
-						XmlBuilder itemsXml = new XmlBuilder("items");
-						for (Map.Entry<String, String> item : items.entrySet()) {
-							XmlBuilder itemXml = new XmlBuilder("item");
-							itemXml.addAttribute("name", item.getKey());
-							itemXml.setValue(item.getValue());
-							itemsXml.addSubElement(itemXml);
-						}
-						source = XmlUtils.stringToSourceForSingleUse(itemsXml.asXmlString(), namespaceAware);
+						source = buildMessageFromMap(items).asSource();
 					} else {
 						Message sourceMsg = Message.asMessage(sourceObject);
 						if ("*".equals(getContextKey())) {
