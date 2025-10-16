@@ -27,7 +27,19 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
- * Provide functionality to resolve ${property.key} to the value of the property key, recursively.
+ * Provide functionality to resolve ${property.key} to the value of the map/property key. If Maps passed to the various substitution methods are
+ * instances of {@link PropertyLoader} or a subclass thereof, the string value substitution will be done recursively.
+ * <p>
+ *     Implementations of {@link AdditionalStringResolver} that are loaded via the Java {@link ServiceLoader} mechanism can provide additional
+ *     sources or operations for string evaluation.
+ * </p>
+ * <p>
+ *     If the module {@code credentialProvider} is available on the classpath then credential properties will be resolved.
+ * </p>
+ * <p>
+ *     If the module {@code script-property-substitution} is available on the classpath then embedded JEXL expressions will also be evaluated.
+ *     See {@link org.frankframework.extentions.script.EmbeddedScriptEvaluation} for more information.
+ * </p>
  *
  * @author Johan Verrips
  */
@@ -49,12 +61,13 @@ public class StringResolver {
 	private static Collection<AdditionalStringResolver> additionalStringResolvers = null;
 
 	/**
-	 * Do variable substitution on a string to resolve ${x2} to the value of the
-	 * property x2. This is done recursive, so that <br/>
+	 * Do variable substitution on a string to resolve ${test.xx} to the value of the
+	 * property {@code test.xx}. When provided Map implementations are instance of {@link PropertyLoader} or a subclass thereof, this is done recursively so that <br/>
 	 * <pre>{@code
-	 * Properties prop = new Properties();
+	 * PropertyLoader prop = new PropertyLoader(propFileRef);
 	 * prop.put("test.name", "this is a name with ${test.xx}");
-	 * prop.put("test.xx", "again");
+	 * prop.put("test.xx", "${text.x}");
+	 * prop.put("test.x", "again");
 	 * System.out.println(prop.get("test.name"));
 	 * }</pre>
 	 * will print <code>this is a name with again</code>
@@ -78,12 +91,13 @@ public class StringResolver {
 	}
 
 	/**
-	 * Do variable substitution on a string to resolve ${x2} to the value of the
-	 * property x2. This is done recursive, so that <br/>
+	 * Do variable substitution on a string to resolve ${test.xx} to the value of the
+	 * property {@code test.xx}. When provided Map implementations are instance of {@link PropertyLoader} or a subclass thereof, this is done recursively so that <br/>
 	 * <pre>{@code
-	 * Properties prop = new Properties();
+	 * PropertyLoader prop = new PropertyLoader(propFileRef);
 	 * prop.put("test.name", "this is a name with ${test.xx}");
-	 * prop.put("test.xx", "again");
+	 * prop.put("test.xx", "${text.x}");
+	 * prop.put("test.x", "again");
 	 * System.out.println(prop.get("test.name"));
 	 * }</pre>
 	 * will print <code>this is a name with again</code>
@@ -109,12 +123,13 @@ public class StringResolver {
 	}
 
 	/**
-	 * Do variable substitution on a string to resolve ${x2} to the value of the
-	 * property x2. This is done recursive, so that <br/>
+	 * Do variable substitution on a string to resolve ${test.xx} to the value of the
+	 * property {@code test.xx}. When provided Map implementations are instance of {@link PropertyLoader} or a subclass thereof, this is done recursively so that <br/>
 	 * <pre>{@code
-	 * Properties prop = new Properties();
+	 * PropertyLoader prop = new PropertyLoader(propFileRef);
 	 * prop.put("test.name", "this is a name with ${test.xx}");
-	 * prop.put("test.xx", "again");
+	 * prop.put("test.xx", "${text.x}");
+	 * prop.put("test.x", "again");
 	 * System.out.println(prop.get("test.name"));
 	 * }</pre>
 	 * will print <code>this is a name with again</code>
@@ -303,12 +318,13 @@ public class StringResolver {
 	}
 
 	/**
-	 * Do variable substitution on a string to resolve ${x2} to the value of the
-	 * property x2. This is done recursive, so that <br/>
+	 * Do variable substitution on a string to resolve ${test.xx} to the value of the
+	 * property {@code test.xx}. When provided Map implementations are instance of {@link PropertyLoader} or a subclass thereof, this is done recursively so that <br/>
 	 * <pre>{@code
-	 * Properties prop = new Properties();
+	 * PropertyLoader prop = new PropertyLoader(propFileRef);
 	 * prop.put("test.name", "this is a name with ${test.xx}");
-	 * prop.put("test.xx", "again");
+	 * prop.put("test.xx", "${text.x}");
+	 * prop.put("test.x", "again");
 	 * System.out.println(prop.get("test.name"));
 	 * }</pre>
 	 * will print <code>this is a name with again</code>
@@ -330,12 +346,13 @@ public class StringResolver {
 	}
 
 	/**
-	 * Do variable substitution on a string to resolve ${x2} to the value of the
-	 * property x2. This is done recursive, so that <br/>
+	 * Do variable substitution on a string to resolve ${test.xx} to the value of the
+	 * property {@code test.xx}. When provided Map implementations are instance of {@link PropertyLoader} or a subclass thereof, this is done recursively so that <br/>
 	 * <pre>{@code
-	 * Properties prop = new Properties();
+	 * PropertyLoader prop = new PropertyLoader(propFileRef);
 	 * prop.put("test.name", "this is a name with ${test.xx}");
-	 * prop.put("test.xx", "again");
+	 * prop.put("test.xx", "${text.x}");
+	 * prop.put("test.x", "again");
 	 * System.out.println(prop.get("test.name"));
 	 * }</pre>
 	 * will print <code>this is a name with again</code>
@@ -355,12 +372,13 @@ public class StringResolver {
 	}
 
 	/**
-	 * Do variable substitution on a string to resolve ${x2} to the value of the
-	 * property x2. This is done recursive, so that <br/>
+	 * Do variable substitution on a string to resolve ${test.xx} to the value of the
+	 * property {@code test.xx}. When provided Map implementations are instance of {@link PropertyLoader} or a subclass thereof, this is done recursively so that <br/>
 	 * <pre>{@code
-	 * Properties prop = new Properties();
+	 * PropertyLoader prop = new PropertyLoader(propFileRef);
 	 * prop.put("test.name", "this is a name with ${test.xx}");
-	 * prop.put("test.xx", "again");
+	 * prop.put("test.xx", "${text.x}");
+	 * prop.put("test.x", "again");
 	 * System.out.println(prop.get("test.name"));
 	 * }</pre>
 	 * will print <code>this is a name with again</code>
@@ -382,12 +400,13 @@ public class StringResolver {
 	}
 
 	/**
-	 * Do variable substitution on a string to resolve ${x2} to the value of the
-	 * property x2. This is done recursive, so that <br/>
+	 * Do variable substitution on a string to resolve ${test.xx} to the value of the
+	 * property {@code test.xx}. When provided Map implementations are instance of {@link PropertyLoader} or a subclass thereof, this is done recursively so that <br/>
 	 * <pre>{@code
-	 * Properties prop = new Properties();
+	 * PropertyLoader prop = new PropertyLoader(propFileRef);
 	 * prop.put("test.name", "this is a name with ${test.xx}");
-	 * prop.put("test.xx", "again");
+	 * prop.put("test.xx", "${text.x}");
+	 * prop.put("test.x", "again");
 	 * System.out.println(prop.get("test.name"));
 	 * }</pre>
 	 * will print <code>this is a name with again</code>
@@ -411,12 +430,13 @@ public class StringResolver {
 	}
 
 	/**
-	 * Do variable substitution on a string to resolve ${x2} to the value of the
-	 * property x2. This is done recursive, so that <br/>
+	 * Do variable substitution on a string to resolve ${test.xx} to the value of the
+	 * property {@code test.xx}. When provided Map implementations are instance of {@link PropertyLoader} or a subclass thereof, this is done recursively so that <br/>
 	 * <pre>{@code
-	 * Properties prop = new Properties();
+	 * PropertyLoader prop = new PropertyLoader(propFileRef);
 	 * prop.put("test.name", "this is a name with ${test.xx}");
-	 * prop.put("test.xx", "again");
+	 * prop.put("test.xx", "${text.x}");
+	 * prop.put("test.x", "again");
 	 * System.out.println(prop.get("test.name"));
 	 * }</pre>
 	 * will print <code>this is a name with again</code>
@@ -459,13 +479,23 @@ public class StringResolver {
 		int stopPos = startPos - delimStop.length();
 		int numEmbeddedStart = 0;
 		int numEmbeddedStop = 0;
+		startPos += delimStart.length();
 		do {
-			startPos += delimStart.length();
 			stopPos = val.indexOf(delimStop, stopPos + delimStop.length());
 			if (stopPos > 0) {
 				String key = val.substring(startPos, stopPos);
-				numEmbeddedStart = StringUtils.countMatches(key, delimStart);
-				numEmbeddedStop = StringUtils.countMatches(key, delimStop);
+				// Allow both nested variable references, and blocks surrounded by curly braces to be embedded in the 'key'
+				// This is to allow blocks in JEXL expressions.
+				if (delimStart.contains("{")) {
+					numEmbeddedStart = StringUtils.countMatches(key, "{");
+				} else {
+					numEmbeddedStart = StringUtils.countMatches(key, delimStart) + StringUtils.countMatches(key, "{");
+				}
+				if (delimStop.contains("}")) {
+					numEmbeddedStop = StringUtils.countMatches(key, "}");
+				} else {
+					numEmbeddedStop = StringUtils.countMatches(key, delimStop) + StringUtils.countMatches(key, "}");
+				}
 			}
 		} while (stopPos > 0 && numEmbeddedStart != numEmbeddedStop);
 		return stopPos;

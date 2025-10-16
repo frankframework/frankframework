@@ -47,6 +47,11 @@ import org.frankframework.lifecycle.servlets.ApplicationServerConfigurer;
  *     a value for only a single instance with {@link AppConstants#setProperty(String, String)} is in general recommended
  *     only for tests.
  * </p>
+ *
+ * {@inheritClassDoc}
+ *
+ * For more advanced string interpolation features, you can use JEXL expressions as explained in {@link org.frankframework.extentions.script.EmbeddedScriptEvaluation}.
+ *
  * @author Niels Meijer
  * @version 2.1
  *
