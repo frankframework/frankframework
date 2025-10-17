@@ -171,7 +171,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		digestConfiguration(configuration, configurationResource);
 	}
 
-	private void digestConfiguration(Configuration configuration, Resource configurationResource) throws ConfigurationException {
+	void digestConfiguration(Configuration configuration, Resource configurationResource) throws ConfigurationException {
 		Digester digester = getDigester(configuration);
 		try {
 			log.debug("digesting configuration [{}] configurationFile [{}]", configuration::getName, configurationResource::getSystemId);

@@ -30,6 +30,7 @@ import org.frankframework.statistics.MetricsInitializer;
  * but since it's almost always required. For now, this keeps things backwards compatible.
  */
 public interface FrankElement extends ApplicationContextAware, HasApplicationContext, HasName {
+	@SuppressWarnings("unused") // Used by ConfigurationDigester via digester-rules
 	default void addConfigWarning(String message) {
 		ConfigurationWarnings.add(this, message);
 	}

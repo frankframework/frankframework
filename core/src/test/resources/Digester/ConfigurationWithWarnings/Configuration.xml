@@ -1,0 +1,26 @@
+<Configuration
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd"
+>
+	<ConfigWarning active="true">C1 Warning</ConfigWarning>
+	<Adapter name="Adapt1">
+		<ConfigWarning active="${= false == false}">A1 Warning</ConfigWarning>
+		<Receiver>
+			<ConfigWarning active="!${= false != true}">R1 Warning</ConfigWarning>
+			<JavaListener name="List1"/>
+		</Receiver>
+		<Pipeline>
+			<EchoPipe name="ping"/>
+		</Pipeline>
+	</Adapter>
+	<Adapter name="Adapt2">
+		<Receiver>
+			<JavaListener name="List2">
+				<ConfigWarning active="${=true}">JL2 Warning</ConfigWarning>
+			</JavaListener>
+		</Receiver>
+		<Pipeline>
+			<EchoPipe name="pong"/>
+		</Pipeline>
+	</Adapter>
+</Configuration>
