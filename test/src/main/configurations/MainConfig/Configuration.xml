@@ -68,4 +68,5 @@
 	<Include ref="ConfigurationApiWsdlGenerator.xml"/>
 	<Include ref="ConfigurationUnzip.xml"/>
 	<Include ref="ConfigurationFrankSender.xml"/>
+	<ConfigWarning>My First Config Warning</ConfigWarning>
 </Configuration>
