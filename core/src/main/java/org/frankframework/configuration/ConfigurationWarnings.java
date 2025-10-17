@@ -62,14 +62,14 @@ public class ConfigurationWarnings extends AbstractApplicationWarnings {
 	/**
 	 * Add a (globally-)suppressible ConfigurationWarning (optionally with NameAware prefix).
 	 */
-	public static void add(@Nullable HasApplicationContext source, @Nonnull Logger log, @Nonnull String message, SuppressKeys suppressionKey) {
+	public static void add(@Nullable HasApplicationContext source, @Nonnull Logger log, @Nonnull String message, @Nonnull SuppressKeys suppressionKey) {
 		add(source, log, message, suppressionKey, null);
 	}
 
 	/**
 	 * Add a suppressible ConfigurationWarning (optionally with NameAware prefix).
 	 */
-	public static void add(@Nullable HasApplicationContext source, @Nonnull Logger log, @Nonnull String message, SuppressKeys suppressionKey, @Nullable Adapter adapter) {
+	public static void add(@Nullable HasApplicationContext source, @Nonnull Logger log, @Nonnull String message, @Nonnull SuppressKeys suppressionKey, @Nullable Adapter adapter) {
 		ConfigurationWarnings instance = getInstance(source); // We could call two statics, this prevents a double getInstance(..) lookup.
 		if(instance != null) {
 			instance.add((Object) source, log, message, suppressionKey, adapter);
@@ -97,17 +97,11 @@ public class ConfigurationWarnings extends AbstractApplicationWarnings {
 	}
 
 	private boolean doIsSuppressed(@Nonnull SuppressKeys key, @Nullable Adapter adapter) {
-		if(key == null) {
-			throw new IllegalArgumentException("SuppressKeys may not be NULL");
-		}
-
 		return isSuppressed(key) || adapter != null && getAppConstants().getBoolean(key.getKey() + "." + adapter.getName(), false); // or warning is suppressed for this adapter only.
 	}
 
 	public boolean isSuppressed(@Nonnull SuppressKeys key) {
-		if(key == null) {
-			throw new IllegalArgumentException("SuppressKeys may not be NULL");
-		} else if(key == SuppressKeys.SQL_INJECTION_SUPPRESS_KEY) {
+		if(key == SuppressKeys.SQL_INJECTION_SUPPRESS_KEY) {
 			return "true".equals(System.getProperty(SuppressKeys.SQL_INJECTION_SUPPRESS_KEY.getKey()));
 		}
 
@@ -141,5 +135,4 @@ public class ConfigurationWarnings extends AbstractApplicationWarnings {
 			doAdd(source, log, message, hint);
 		}
 	}
-
 }
