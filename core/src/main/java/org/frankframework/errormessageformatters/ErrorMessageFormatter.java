@@ -79,8 +79,8 @@ import org.frankframework.util.XmlEncodingUtils;
  *    <location class="org.frankframework.pipes.SwitchPipe" name="ServiceSwitch"/>
  *    <details>Exception and stacktrace</details>
  *    <params>
- *      <param name="sampleParam>paramValue</param>
- *      <param name="errorCode>535</param>
+ *      <param name="sampleParam">paramValue</param>
+ *      <param name="errorCode">535</param>
  *    </params>
  *    <originalMessage messageId="..." receivedTime="Mon Oct 27 12:10:18 CET 2003" >
  *        <![CDATA[contents of message for which the error occurred]]>

@@ -18,6 +18,7 @@ package org.frankframework.parameters;
 import static org.frankframework.util.StringUtil.hide;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.security.Principal;
 import java.text.DateFormat;
 import java.text.MessageFormat;
@@ -42,6 +43,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 import com.jayway.jsonpath.JsonPath;
 
@@ -57,11 +59,17 @@ import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.doc.DocumentedEnum;
 import org.frankframework.doc.EnumLabel;
+import org.frankframework.documentbuilder.ArrayBuilder;
+import org.frankframework.documentbuilder.INodeBuilder;
+import org.frankframework.documentbuilder.JsonDocumentBuilder;
+import org.frankframework.documentbuilder.ObjectBuilder;
+import org.frankframework.documentbuilder.XmlDocumentBuilder;
 import org.frankframework.jdbc.StoredProcedureQuerySender;
 import org.frankframework.json.JsonException;
 import org.frankframework.json.JsonUtil;
 import org.frankframework.pipes.PutSystemDateInSession;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.EnumUtils;
@@ -112,6 +120,7 @@ import org.frankframework.util.XmlUtils;
 @SuppressWarnings("removal")
 @Log4j2
 public abstract class AbstractParameter implements IConfigurable, IWithParameters, IParameter {
+	public static final String CONTEXT_KEY_WILDCARD = "*";
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
@@ -310,18 +319,14 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 						source = XmlUtils.stringToSourceForSingleUse(itemsXml.asXmlString(), namespaceAware);
 					} else if (getType() == ParameterType.MAP && sourceObject instanceof Map) {
 						// larva can produce the sourceObject as map
+						@SuppressWarnings("unchecked")
 						Map<String, String> items = (Map<String, String>) sourceObject;
-						XmlBuilder itemsXml = new XmlBuilder("items");
-						for (Map.Entry<String, String> item : items.entrySet()) {
-							XmlBuilder itemXml = new XmlBuilder("item");
-							itemXml.addAttribute("name", item.getKey());
-							itemXml.setValue(item.getValue());
-							itemsXml.addSubElement(itemXml);
-						}
-						source = XmlUtils.stringToSourceForSingleUse(itemsXml.asXmlString(), namespaceAware);
+						source = buildMessageFromMap(items).asSource();
 					} else {
 						Message sourceMsg = Message.asMessage(sourceObject);
-						if (StringUtils.isNotEmpty(getContextKey())) {
+						if (CONTEXT_KEY_WILDCARD.equals(getContextKey())) {
+							sourceMsg = buildMessageFromMap(sourceMsg.getContext().getAll());
+						} else if (StringUtils.isNotEmpty(getContextKey())) {
 							sourceMsg = Message.asMessage(sourceMsg.getContext().get(getContextKey()));
 						}
 						if (!sourceMsg.isEmpty()) {
@@ -342,7 +347,9 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 						source = null;
 					}
 				} else if (message != null) {
-					if (StringUtils.isNotEmpty(getContextKey())) {
+					if (CONTEXT_KEY_WILDCARD.equals(getContextKey())) {
+						source = buildMessageFromMap(message.getContext().getAll()).asSource();
+					} else if (StringUtils.isNotEmpty(getContextKey())) {
 						source = Message.asMessage(message.getContext().get(getContextKey())).asSource();
 					} else {
 						source = message.asSource();
@@ -490,9 +497,74 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		return result;
 	}
 
-	private Object getParameterValueFromInputMessage(Message message) {
+	private Message buildMessageFromMap(Map<String, ? extends Serializable> items) throws ParameterException {
+		try {
+			MessageBuilder messageBuilder = new MessageBuilder();
+			if ((getType() == ParameterType.JSON && transformerPool == null) || jsonPath != null) {
+				buildJsonMessage(messageBuilder, items);
+			} else {
+				buildXmlMessage(messageBuilder, items);
+			}
+			return messageBuilder.build();
+		} catch (IOException e) {
+			throw new ParameterException(getName(), e);
+		}
+	}
+
+	private void buildJsonMessage(MessageBuilder messageBuilder, Map<String, ? extends Serializable> items) throws ParameterException {
+		try (JsonDocumentBuilder jsonBuilder = new JsonDocumentBuilder(messageBuilder.asJsonWriter());
+			 ObjectBuilder jsonRoot = jsonBuilder.asObjectBuilder();
+			 ObjectBuilder jsonItems = jsonRoot.addObjectField("items")
+		) {
+			for (Map.Entry<String, ? extends Serializable> item : items.entrySet()) {
+				Serializable itemValue = item.getValue();
+				if (itemValue instanceof Number number) {
+					jsonItems.add(item.getKey(), number);
+				} else if (itemValue instanceof String string) {
+					jsonItems.add(item.getKey(), string);
+				} else if (itemValue instanceof Boolean bool) {
+					jsonItems.add(item.getKey(), bool);
+				} else if (itemValue instanceof Message message) {
+					jsonItems.add(item.getKey(), message.asString());
+				} else if (itemValue != null) {
+					jsonItems.add(item.getKey(), itemValue.toString());
+				} else {
+					jsonItems.addField(item.getKey()).close();
+				}
+			}
+		} catch (SAXException | IOException e) {
+			throw new ParameterException(getName(), e);
+		}
+	}
+
+	private void buildXmlMessage(MessageBuilder messageBuilder, Map<String, ? extends Serializable> items) throws ParameterException {
+		try (XmlDocumentBuilder xmlBuilder = new XmlDocumentBuilder("items", messageBuilder.asXmlWriter(), true);
+			 ArrayBuilder xmlItems = xmlBuilder.asArrayBuilder("item")
+		) {
+			for (Map.Entry<String, ? extends Serializable> item : items.entrySet()) {
+				INodeBuilder itemNode = xmlItems.addElement();
+				try (ObjectBuilder itemElement = itemNode.startObject()) {
+					itemElement.addAttribute("name", item.getKey());
+					Serializable itemValue = item.getValue();
+					if (itemValue instanceof Message message) {
+						itemNode.setValue(message.asString());
+					} else if (itemValue != null) {
+						itemNode.setValue(itemValue.toString());
+					} else {
+						itemNode.setValue((String)null);
+					}
+				}
+			}
+		} catch (SAXException | IOException e) {
+			throw new ParameterException(getName(), e);
+		}
+	}
+
+	private Object getParameterValueFromInputMessage(Message message) throws ParameterException {
 		Object input;
-		if (StringUtils.isNotEmpty(getContextKey())) {
+		if (CONTEXT_KEY_WILDCARD.equals(getContextKey())) {
+			input = buildMessageFromMap(message.getContext().getAll());
+		} else if (StringUtils.isNotEmpty(getContextKey())) {
 			input = message.getContext().get(getContextKey());
 		} else {
 			input = message;
@@ -501,10 +573,14 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	}
 
 	@Nullable
-	private Object getParameterValueFromSessionKey(PipeLineSession session, String requestedSessionKey) {
+	private Object getParameterValueFromSessionKey(PipeLineSession session, String requestedSessionKey) throws ParameterException {
 		Object input = session.get(requestedSessionKey);
-		if (input instanceof Message message1 && StringUtils.isNotEmpty(getContextKey())) {
-			input = message1.getContext().get(getContextKey());
+		if (input instanceof Message message1) {
+			if (CONTEXT_KEY_WILDCARD.equals(getContextKey())) {
+				input = buildMessageFromMap(message1.getContext().getAll());
+			} else if (StringUtils.isNotEmpty(getContextKey())) {
+				input = message1.getContext().get(getContextKey());
+			}
 		}
 		if (log.isDebugEnabled() && (input == null ||
 				((input instanceof String string) && string.isEmpty()) ||
@@ -821,7 +897,10 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		sessionKey = string;
 	}
 
-	/** key of message context variable to use as source, instead of the message found from input message or sessionKey itself */
+	/**
+	 * Key of {@link org.frankframework.stream.MessageContext} variable to use as source, instead of the {@link Message} found from input message or sessionKey itself. Use a {@literal *}
+	 * to get an XML or JSON document containing all values from the {@link org.frankframework.stream.MessageContext}.
+	 */
 	public void setContextKey(String string) {
 		contextKey = string;
 	}
