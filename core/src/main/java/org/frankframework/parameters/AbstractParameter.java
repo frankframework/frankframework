@@ -120,6 +120,7 @@ import org.frankframework.util.XmlUtils;
 @SuppressWarnings("removal")
 @Log4j2
 public abstract class AbstractParameter implements IConfigurable, IWithParameters, IParameter {
+	public static final String CONTEXT_KEY_WILDCARD = "*";
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
 
@@ -323,7 +324,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 						source = buildMessageFromMap(items).asSource();
 					} else {
 						Message sourceMsg = Message.asMessage(sourceObject);
-						if ("*".equals(getContextKey())) {
+						if (CONTEXT_KEY_WILDCARD.equals(getContextKey())) {
 							sourceMsg = buildMessageFromMap(sourceMsg.getContext().getAll());
 						} else if (StringUtils.isNotEmpty(getContextKey())) {
 							sourceMsg = Message.asMessage(sourceMsg.getContext().get(getContextKey()));
@@ -346,7 +347,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 						source = null;
 					}
 				} else if (message != null) {
-					if ("*".equals(getContextKey())) {
+					if (CONTEXT_KEY_WILDCARD.equals(getContextKey())) {
 						source = buildMessageFromMap(message.getContext().getAll()).asSource();
 					} else if (StringUtils.isNotEmpty(getContextKey())) {
 						source = Message.asMessage(message.getContext().get(getContextKey())).asSource();
@@ -561,7 +562,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 
 	private Object getParameterValueFromInputMessage(Message message) throws ParameterException {
 		Object input;
-		if ("*".equals(getContextKey())) {
+		if (CONTEXT_KEY_WILDCARD.equals(getContextKey())) {
 			input = buildMessageFromMap(message.getContext().getAll());
 		} else if (StringUtils.isNotEmpty(getContextKey())) {
 			input = message.getContext().get(getContextKey());
@@ -575,7 +576,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	private Object getParameterValueFromSessionKey(PipeLineSession session, String requestedSessionKey) throws ParameterException {
 		Object input = session.get(requestedSessionKey);
 		if (input instanceof Message message1) {
-			if ("*".equals(getContextKey())) {
+			if (CONTEXT_KEY_WILDCARD.equals(getContextKey())) {
 				input = buildMessageFromMap(message1.getContext().getAll());
 			} else if (StringUtils.isNotEmpty(getContextKey())) {
 				input = message1.getContext().get(getContextKey());
