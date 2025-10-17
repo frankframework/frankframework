@@ -21,12 +21,6 @@
 		<property name="enabled" value="false" />
 	</bean>
 
-	<bean
-		name="lowerCasePropertySourcePostProcessor"
-		class="org.frankframework.configuration.LowerCasePropertySourcePostProcessor"
-		autowire="byName"
-	/>
-
 	<bean class="org.frankframework.ladybug.DeploymentSpecificsBeanPostProcessor"/>
 
 	<bean name="reportGenerator" class="org.frankframework.ladybug.LadybugReportGenerator" />

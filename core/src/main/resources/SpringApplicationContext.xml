@@ -23,12 +23,6 @@
 		</property>
 	</bean>
 
-	<bean
-		name="lowerCasePropertySourcePostProcessor"
-		class="org.frankframework.configuration.LowerCasePropertySourcePostProcessor"
-		autowire="byName"
-	/>
-
 	<bean id="jndiContextPrefix" factory-bean="jndiContextPrefixFactory" factory-method="getContextPrefix" />
 	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory" />
 
