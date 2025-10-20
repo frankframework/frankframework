@@ -19,6 +19,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.DisposableBean;
@@ -72,12 +75,13 @@ public abstract class AbstractApplicationWarnings implements ApplicationContextA
 		return appConstants;
 	}
 
+	@Nonnull
 	public final List<String> getWarnings() {
 		return Collections.unmodifiableList(warnings);
 	}
 
-
-	private String prefixLogMessage(Object source, String message) {
+	@Nonnull
+	private String prefixLogMessage(@Nullable Object source, @Nonnull String message) {
 		String msg = "";
 		if (source != null) {
 			msg = ClassUtils.nameOf(source) + " ";
@@ -88,14 +92,14 @@ public abstract class AbstractApplicationWarnings implements ApplicationContextA
 	/**
 	 * Add a warning with Object Class + Name prefix
 	 */
-	public void add(Object source, Logger log, String message) {
+	public void add(@Nullable Object source, @Nonnull Logger log, @Nonnull String message) {
 		add(source, log, message, null);
 	}
 
 	/**
 	 * Add a warning with Object Class + Name prefix and log the exception stack
 	 */
-	public void add(Object source, Logger log, String message, Throwable t) {
+	public void add(@Nullable Object source, @Nonnull Logger log, @Nonnull String message, @Nullable Throwable t) {
 		doAdd(source, log, message, t);
 	}
 
@@ -103,15 +107,15 @@ public abstract class AbstractApplicationWarnings implements ApplicationContextA
 		doAdd(log, prefixLogMessage(source, message), t);
 	}
 
-	protected void doAdd(Object source, Logger log, String message, String hint) {
+	protected void doAdd(@Nullable Object source, @Nonnull Logger log, @Nonnull String message, @Nullable String hint) {
 		doAdd(log, prefixLogMessage(source, message), hint, null);
 	}
 
-	protected void doAdd(Logger log, String message, Throwable t) {
+	protected void doAdd(@Nonnull Logger log, @Nonnull String message, @Nullable Throwable t) {
 		doAdd(log, message, null, t);
 	}
 
-	private void doAdd(Logger log, String message, String postfixLogMessage, Throwable t) {
+	private void doAdd(@Nonnull Logger log, @Nonnull String message, @Nullable String postfixLogMessage, @Nullable Throwable t) {
 		String logMessage = StringUtils.isEmpty(postfixLogMessage) ? message : message + postfixLogMessage;
 		if (t == null) {
 			log.warn(logMessage);

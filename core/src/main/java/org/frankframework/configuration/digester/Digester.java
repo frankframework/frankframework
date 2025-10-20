@@ -40,6 +40,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.Configuration;
+import org.frankframework.core.Adapter;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringUtil;

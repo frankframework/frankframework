@@ -7,6 +7,8 @@
 
 	<rule pattern="*/include" registerMethod="addInclude" beanClass="org.frankframework.configuration.Include" />
 
+	<rule pattern="*/configWarning" registerTextMethod="addConfigWarning" />
+
 	<rule pattern="configuration/jmsRealms" registerMethod="setJmsRealms" factory="org.frankframework.configuration.digester.JmsRealmsFactory"/>
 	<rule pattern="*/jmsRealm" registerMethod="addJmsRealm" beanClass="org.frankframework.jms.JmsRealm"/>
 

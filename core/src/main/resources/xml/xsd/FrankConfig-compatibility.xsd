@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Compatibility XSD, internal use only! -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.3.0-SNAPSHOT">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.4.0-SNAPSHOT">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -15,6 +15,7 @@
         <xs:element name="Monitoring" minOccurs="0" maxOccurs="1" type="MonitoringType" />
         <xs:element name="SharedResources" minOccurs="0" maxOccurs="1" type="SharedResourcesType" />
         <xs:group ref="ErrorMessageFormatterElementGroup" minOccurs="0" maxOccurs="1" />
+        <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
       </xs:choice>
     </xs:sequence>
     <xs:attribute name="autoStart" type="frankBoolean">
@@ -53,6 +54,7 @@
         <xs:element name="Receiver" minOccurs="1" maxOccurs="unbounded" type="ReceiverType" />
         <xs:group ref="ErrorMessageFormatterElementGroup" minOccurs="0" maxOccurs="1" />
         <xs:element name="Pipeline" minOccurs="1" maxOccurs="1" type="PipelineType" />
+        <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
       </xs:choice>
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required">
@@ -115,6 +117,7 @@
         <xs:group ref="SenderElementGroup_2" minOccurs="0" maxOccurs="1" />
         <xs:group ref="ErrorStorageElementGroup" minOccurs="0" maxOccurs="1" />
         <xs:group ref="MessageLogElementGroup" minOccurs="0" maxOccurs="1" />
+        <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
       </xs:choice>
     </xs:sequence>
     <xs:attribute name="name" type="xs:string">
@@ -318,6 +321,7 @@
         <xs:element name="Locker" minOccurs="0" maxOccurs="1" type="LockerType" />
         <xs:group ref="CacheElementGroup" minOccurs="0" maxOccurs="1" />
         <xs:group ref="PipeElementGroup" minOccurs="1" maxOccurs="unbounded" />
+        <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
       </xs:choice>
     </xs:sequence>
     <xs:attribute name="firstPipe" type="xs:string">
@@ -383,6 +387,11 @@
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:complexType>
   <xs:complexType name="LockerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attribute name="objectId" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Identifier for this lock</xs:documentation>
@@ -759,6 +768,7 @@
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:group ref="TriggerElementGroup" minOccurs="0" maxOccurs="unbounded" />
+        <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
       </xs:choice>
     </xs:sequence>
     <xs:attribute name="destinations" type="xs:string" />
@@ -818,6 +828,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
               <xs:group ref="ParamElementGroup" />
               <xs:group ref="SenderElementGroup" />
             </xs:choice>
@@ -837,6 +848,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
               <xs:group ref="ParamElementGroup" />
             </xs:choice>
           </xs:sequence>
@@ -910,6 +922,7 @@
   <xs:group name="AbstractParameterDeclaredChildGroup">
     <xs:sequence>
       <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractParameterDeclaredAttributeGroup">
@@ -1007,6 +1020,7 @@
  &lt;li&gt;{hostname}: the name of the machine the application runs on&lt;/li&gt;
  &lt;li&gt;{username}: username from the credentials found using authAlias, or the username attribute&lt;/li&gt;
  &lt;li&gt;{password}: password from the credentials found using authAlias, or the password attribute&lt;/li&gt;
+ &lt;li&gt;{principal}: Name of the current principal, similar to the org.frankframework.pipes.GetPrincipalPipe.&lt;/li&gt;
  &lt;li&gt;{fixeddate}: fake date, for testing only&lt;/li&gt;
  &lt;li&gt;{fixeduid}: fake uid, for testing only&lt;/li&gt;
  &lt;li&gt;{fixedhostname}: fake hostname, for testing only&lt;/li&gt;
@@ -1177,6 +1191,7 @@
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:group ref="CacheElementGroup" />
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
               <xs:group ref="ParamElementGroup" />
               <xs:group ref="SenderElementGroup" />
             </xs:choice>
@@ -1194,6 +1209,11 @@
     <xs:choice>
       <xs:element name="Cache">
         <xs:complexType>
+          <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+            </xs:choice>
+          </xs:sequence>
           <xs:attribute ref="active" />
           <xs:attribute name="elementRole" type="xs:string" fixed="cache" />
           <xs:attribute name="className" type="xs:string" default="org.frankframework.cache.EhCache" />
@@ -1217,6 +1237,11 @@
     </xs:choice>
   </xs:group>
   <xs:complexType name="EhCacheType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractCacheAdapterDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="EhCacheCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.cache.EhCache" />
   </xs:complexType>
@@ -1271,6 +1296,11 @@
     <xs:attributeGroup ref="EhCacheDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractCacheAdapterDeclaredAttributeGroup" />
   </xs:attributeGroup>
+  <xs:group name="AbstractCacheAdapterDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="AbstractCacheAdapterDeclaredAttributeGroup">
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
@@ -1879,9 +1909,19 @@
     </xs:choice>
   </xs:group>
   <xs:complexType name="Afm2EdiFactSenderType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="Afm2EdiFactSenderDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="Afm2EdiFactSenderDeclaredAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.afm.Afm2EdiFactSender" />
   </xs:complexType>
+  <xs:group name="Afm2EdiFactSenderDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="Afm2EdiFactSenderDeclaredAttributeGroup">
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
@@ -1897,7 +1937,7 @@
   <xs:complexType name="AmazonS3SenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="AmazonS3SenderCumulativeAttributeGroup" />
@@ -1976,6 +2016,17 @@
   <xs:group name="AbstractSenderWithParametersDeclaredChildGroup">
     <xs:sequence>
       <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="AbstractSenderWithParametersCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+      <xs:group ref="AbstractSenderDeclaredChildGroup" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="AbstractSenderDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractSenderDeclaredAttributeGroup">
@@ -2091,7 +2142,7 @@
   <xs:complexType name="AmqpSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="AmqpSenderCumulativeAttributeGroup" />
@@ -2166,7 +2217,7 @@
   <xs:complexType name="BisJmsSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="JmsSenderDeclaredChildGroup" />
+        <xs:group ref="JmsSenderCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="BisJmsSenderCumulativeAttributeGroup" />
@@ -2190,7 +2241,7 @@
   <xs:complexType name="JmsSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="JmsSenderDeclaredChildGroup" />
+        <xs:group ref="JmsSenderCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="JmsSenderCumulativeAttributeGroup" />
@@ -2199,6 +2250,12 @@
   <xs:group name="JmsSenderDeclaredChildGroup">
     <xs:sequence>
       <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="JmsSenderCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="JmsSenderDeclaredChildGroup" />
+      <xs:group ref="JMSFacadeDeclaredChildGroup" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="JmsSenderDeclaredAttributeGroup">
@@ -2246,9 +2303,19 @@
     <xs:attributeGroup ref="JMSFacadeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="JMSFacadeType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JMSFacadeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="JMSFacadeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jms.JMSFacade" use="prohibited" />
   </xs:complexType>
+  <xs:group name="JMSFacadeDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="JMSFacadeDeclaredAttributeGroup">
     <xs:attribute ref="messageClass" />
     <xs:attribute ref="jndiContextPrefix" />
@@ -2347,7 +2414,7 @@
   <xs:complexType name="CmisSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="CmisSenderCumulativeAttributeGroup" />
@@ -2570,7 +2637,7 @@
   <xs:complexType name="CommandSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="CommandSenderCumulativeAttributeGroup" />
@@ -2598,6 +2665,11 @@
     <xs:attributeGroup ref="AbstractSenderDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="DelaySenderType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractSenderDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="DelaySenderCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.DelaySender" />
   </xs:complexType>
@@ -2615,7 +2687,7 @@
   <xs:complexType name="DirectQuerySenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractJdbcSenderDeclaredChildGroup" />
+        <xs:group ref="AbstractJdbcSenderCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="AbstractJdbcQuerySenderCumulativeAttributeGroup" />
@@ -2624,6 +2696,12 @@
   <xs:group name="AbstractJdbcSenderDeclaredChildGroup">
     <xs:sequence>
       <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="AbstractJdbcSenderCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="AbstractJdbcSenderDeclaredChildGroup" />
+      <xs:group ref="JdbcFacadeDeclaredChildGroup" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractJdbcSenderDeclaredAttributeGroup">
@@ -2638,9 +2716,19 @@
     <xs:attributeGroup ref="JdbcFacadeDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="JdbcFacadeType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JdbcFacadeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="JdbcFacadeDeclaredAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.JdbcFacade" use="prohibited" />
   </xs:complexType>
+  <xs:group name="JdbcFacadeDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="JdbcFacadeDeclaredAttributeGroup">
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
@@ -2790,7 +2878,7 @@
   <xs:complexType name="EchoSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="EchoSenderCumulativeAttributeGroup" />
@@ -2810,7 +2898,7 @@
   <xs:complexType name="EsbJmsSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="JmsSenderDeclaredChildGroup" />
+        <xs:group ref="JmsSenderCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="EsbJmsSenderCumulativeAttributeGroup" />
@@ -2881,7 +2969,7 @@
   <xs:complexType name="ExchangeFileSystemSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="ExchangeFileSystemSenderCumulativeAttributeGroup" />
@@ -3049,7 +3137,7 @@
   <xs:complexType name="ExchangeFolderSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="ExchangeFileSystemSenderCumulativeAttributeGroup" />
@@ -3058,7 +3146,7 @@
   <xs:complexType name="FileSystemSenderWithAttachmentsType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="AbstractFileSystemSenderCumulativeAttributeGroup" />
@@ -3067,7 +3155,7 @@
   <xs:complexType name="FixedQuerySenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractJdbcSenderDeclaredChildGroup" />
+        <xs:group ref="AbstractJdbcSenderCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="FixedQuerySenderCumulativeAttributeGroup" />
@@ -3088,7 +3176,7 @@
   <xs:complexType name="FixedResultSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="FixedResultSenderCumulativeAttributeGroup" />
@@ -3121,7 +3209,7 @@
   <xs:complexType name="FrankSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="FrankSenderCumulativeAttributeGroup" />
@@ -3173,7 +3261,7 @@
   <xs:complexType name="FtpFileSystemSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="FtpFileSystemSenderCumulativeAttributeGroup" />
@@ -3348,7 +3436,7 @@
   <xs:complexType name="HttpSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractHttpSenderDeclaredChildGroup" />
+        <xs:group ref="AbstractHttpSenderCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="HttpSenderCumulativeAttributeGroup" />
@@ -3401,6 +3489,12 @@
   <xs:group name="AbstractHttpSenderDeclaredChildGroup">
     <xs:sequence>
       <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="AbstractHttpSenderCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="AbstractHttpSenderDeclaredChildGroup" />
+      <xs:group ref="AbstractHttpSessionDeclaredChildGroup" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractHttpSenderDeclaredAttributeGroup">
@@ -3501,6 +3595,11 @@
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
+  <xs:group name="AbstractHttpSessionDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="AbstractHttpSessionDeclaredAttributeGroup">
     <xs:attribute name="timeout" type="frankInt">
       <xs:annotation>
@@ -3580,7 +3679,7 @@
   <xs:complexType name="IMSSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="JmsSenderDeclaredChildGroup" />
+        <xs:group ref="JmsSenderCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="IMSSenderCumulativeAttributeGroup" />
@@ -3600,7 +3699,7 @@
   <xs:complexType name="IbisJavaSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="IbisJavaSenderCumulativeAttributeGroup" />
@@ -3636,7 +3735,7 @@
   <xs:complexType name="IbisLocalSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="IbisLocalSenderCumulativeAttributeGroup" />
@@ -3697,7 +3796,7 @@
   <xs:complexType name="IdinSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="IdinSenderCumulativeAttributeGroup" />
@@ -3819,7 +3918,7 @@
   <xs:complexType name="IdocSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="SapSenderBaseDeclaredChildGroup" />
+        <xs:group ref="SapSenderBaseCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="SapSenderBaseCumulativeAttributeGroup" />
@@ -3828,6 +3927,12 @@
   <xs:group name="SapSenderBaseDeclaredChildGroup">
     <xs:sequence>
       <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="SapSenderBaseCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="SapSenderBaseDeclaredChildGroup" />
+      <xs:group ref="SapFunctionFacadeDeclaredChildGroup" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="SapSenderBaseDeclaredAttributeGroup">
@@ -3846,6 +3951,11 @@
     <xs:attributeGroup ref="SapSenderBaseDeclaredAttributeGroup" />
     <xs:attributeGroup ref="SapFunctionFacadeDeclaredAttributeGroup" />
   </xs:attributeGroup>
+  <xs:group name="SapFunctionFacadeDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="SapFunctionFacadeDeclaredAttributeGroup">
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
@@ -3869,7 +3979,7 @@
   <xs:complexType name="ImapSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="ImapSenderCumulativeAttributeGroup" />
@@ -3997,7 +4107,7 @@
   <xs:group name="AbstractSenderWrapperCumulativeChildGroup">
     <xs:sequence>
       <xs:group ref="AbstractSenderWrapperDeclaredChildGroup" />
-      <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+      <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractSenderWrapperDeclaredAttributeGroup">
@@ -4034,7 +4144,7 @@
   <xs:complexType name="JsonXsltSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="JsonXsltSenderCumulativeAttributeGroup" />
@@ -4124,7 +4234,7 @@
   <xs:complexType name="XsltSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="XsltSenderCumulativeAttributeGroup" />
@@ -4208,9 +4318,19 @@
     <xs:attributeGroup ref="AbstractSenderDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="KafkaSenderType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="KafkaSenderDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="KafkaSenderCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.kafka.KafkaSender" />
   </xs:complexType>
+  <xs:group name="KafkaSenderDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="KafkaSenderDeclaredAttributeGroup">
     <xs:attribute name="topic" type="xs:string">
       <xs:annotation>
@@ -4257,6 +4377,7 @@
   <xs:group name="LdapSenderDeclaredChildGroup">
     <xs:sequence>
       <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="LdapSenderDeclaredAttributeGroup">
@@ -4329,7 +4450,7 @@
   <xs:complexType name="LocalFileSystemSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="LocalFileSystemSenderCumulativeAttributeGroup" />
@@ -4355,7 +4476,7 @@
   <xs:complexType name="LogSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="LogSenderCumulativeAttributeGroup" />
@@ -4380,7 +4501,7 @@
   <xs:complexType name="MQSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="JmsSenderDeclaredChildGroup" />
+        <xs:group ref="JmsSenderCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="JmsSenderCumulativeAttributeGroup" />
@@ -4389,7 +4510,7 @@
   <xs:complexType name="MailSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="MailSenderCumulativeAttributeGroup" />
@@ -4448,7 +4569,7 @@
   <xs:complexType name="MessageStoreSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="MessageStoreSenderDeclaredChildGroup" />
+        <xs:group ref="MessageStoreSenderCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="MessageStoreSenderCumulativeAttributeGroup" />
@@ -4457,6 +4578,12 @@
   <xs:group name="MessageStoreSenderDeclaredChildGroup">
     <xs:sequence>
       <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="MessageStoreSenderCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="MessageStoreSenderDeclaredChildGroup" />
+      <xs:group ref="JdbcFacadeDeclaredChildGroup" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="MessageStoreSenderDeclaredAttributeGroup">
@@ -4503,6 +4630,11 @@
     <xs:attributeGroup ref="JdbcTableMessageBrowserCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="JdbcTransactionalStorageType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JdbcFacadeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="JdbcTransactionalStorageCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.JdbcTransactionalStorage" />
   </xs:complexType>
@@ -4546,6 +4678,11 @@
     <xs:attributeGroup ref="JdbcTableMessageBrowserCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="JdbcTableMessageBrowserType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JdbcFacadeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="JdbcTableMessageBrowserCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.JdbcTableMessageBrowser" use="prohibited" />
   </xs:complexType>
@@ -4644,7 +4781,7 @@
   <xs:complexType name="MongoDbSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="MongoDbSenderCumulativeAttributeGroup" />
@@ -4710,7 +4847,7 @@
   <xs:complexType name="MqttSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="MqttSenderDeclaredChildGroup" />
+        <xs:group ref="MqttSenderCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="MqttSenderCumulativeAttributeGroup" />
@@ -4719,6 +4856,12 @@
   <xs:group name="MqttSenderDeclaredChildGroup">
     <xs:sequence>
       <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="MqttSenderCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="MqttSenderDeclaredChildGroup" />
+      <xs:group ref="MqttFacadeDeclaredChildGroup" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="MqttSenderDeclaredAttributeGroup">
@@ -4747,6 +4890,11 @@
     <xs:attribute ref="active" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
+  <xs:group name="MqttFacadeDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="MqttFacadeDeclaredAttributeGroup">
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
@@ -4771,7 +4919,7 @@
   <xs:complexType name="NetStorageSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractHttpSenderDeclaredChildGroup" />
+        <xs:group ref="AbstractHttpSenderCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="NetStorageSenderCumulativeAttributeGroup" />
@@ -4979,7 +5127,7 @@
   <xs:complexType name="ReloadSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="ReloadSenderCumulativeAttributeGroup" />
@@ -4999,7 +5147,7 @@
   <xs:complexType name="ResultSet2FileSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractJdbcSenderDeclaredChildGroup" />
+        <xs:group ref="AbstractJdbcSenderCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="ResultSet2FileSenderCumulativeAttributeGroup" />
@@ -5035,7 +5183,7 @@
   <xs:complexType name="Samba1SenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="Samba1SenderCumulativeAttributeGroup" />
@@ -5085,7 +5233,7 @@
   <xs:complexType name="Samba2SenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="Samba2SenderCumulativeAttributeGroup" />
@@ -5159,7 +5307,7 @@
   <xs:complexType name="SapSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="SapSenderBaseDeclaredChildGroup" />
+        <xs:group ref="SapSenderBaseCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="SapSenderImplCumulativeAttributeGroup" />
@@ -5189,7 +5337,7 @@
   <xs:complexType name="SendGridSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="SendGridSenderCumulativeAttributeGroup" />
@@ -5393,7 +5541,7 @@
   <xs:complexType name="SftpFileSystemSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="SftpFileSystemSenderCumulativeAttributeGroup" />
@@ -5536,7 +5684,7 @@
   <xs:complexType name="StoredProcedureQuerySenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractJdbcSenderDeclaredChildGroup" />
+        <xs:group ref="AbstractJdbcSenderCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="StoredProcedureQuerySenderCumulativeAttributeGroup" />
@@ -5590,7 +5738,7 @@
   <xs:complexType name="WebServiceNtlmSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="WebServiceNtlmSenderCumulativeAttributeGroup" />
@@ -5652,7 +5800,7 @@
   <xs:complexType name="WebServiceSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractHttpSenderDeclaredChildGroup" />
+        <xs:group ref="AbstractHttpSenderCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="WebServiceSenderCumulativeAttributeGroup" />
@@ -5819,7 +5967,7 @@
   <xs:complexType name="XComSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="XComSenderCumulativeAttributeGroup" />
@@ -5926,7 +6074,7 @@
   <xs:complexType name="XfbSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="XfbSenderCumulativeAttributeGroup" />
@@ -5963,7 +6111,7 @@
   <xs:complexType name="XmlJmsBrowserSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="AbstractSenderDeclaredAttributeGroup" />
@@ -5972,13 +6120,18 @@
   <xs:complexType name="XmlQuerySenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractJdbcSenderDeclaredChildGroup" />
+        <xs:group ref="AbstractJdbcSenderCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="AbstractJdbcQuerySenderCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.XmlQuerySender" />
   </xs:complexType>
   <xs:complexType name="XmlValidatorSenderType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractXmlValidatorDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="XmlValidatorSenderCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.senders.XmlValidatorSender" />
   </xs:complexType>
@@ -5993,6 +6146,11 @@
     <xs:attributeGroup ref="XmlValidatorSenderDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractXmlValidatorDeclaredAttributeGroup" />
   </xs:attributeGroup>
+  <xs:group name="AbstractXmlValidatorDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="AbstractXmlValidatorDeclaredAttributeGroup">
     <xs:attribute name="fullSchemaChecking" type="frankBoolean">
       <xs:annotation>
@@ -6058,7 +6216,7 @@
   <xs:complexType name="ZipWriterSenderType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractSenderWithParametersDeclaredChildGroup" />
+        <xs:group ref="AbstractSenderWithParametersCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="ZipWriterSenderCumulativeAttributeGroup" />
@@ -6366,9 +6524,19 @@
     </xs:choice>
   </xs:group>
   <xs:complexType name="AmqpListenerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AmqpListenerDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="AmqpListenerDeclaredAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.messaging.amqp.AmqpListener" />
   </xs:complexType>
+  <xs:group name="AmqpListenerDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="AmqpListenerDeclaredAttributeGroup">
     <xs:attribute name="connectionName" type="xs:string" use="required">
       <xs:annotation>
@@ -6451,6 +6619,11 @@
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
   <xs:complexType name="ApiListenerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="PushingListenerAdapterDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="ApiListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.http.rest.ApiListener" />
   </xs:complexType>
@@ -6659,9 +6832,19 @@
     <xs:attributeGroup ref="PushingListenerAdapterDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="PushingListenerAdapterType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="PushingListenerAdapterDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="PushingListenerAdapterDeclaredAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.http.PushingListenerAdapter" />
   </xs:complexType>
+  <xs:group name="PushingListenerAdapterDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="PushingListenerAdapterDeclaredAttributeGroup">
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
@@ -6689,7 +6872,7 @@
   <xs:complexType name="BisJmsListenerType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractJmsListenerDeclaredChildGroup" />
+        <xs:group ref="AbstractJmsListenerCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="BisJmsListenerCumulativeAttributeGroup" />
@@ -6717,6 +6900,12 @@
     <xs:sequence>
       <xs:group ref="SenderElementGroup" minOccurs="0" maxOccurs="1" />
       <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="AbstractJmsListenerCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="AbstractJmsListenerDeclaredChildGroup" />
+      <xs:group ref="JMSFacadeDeclaredChildGroup" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractJmsListenerDeclaredAttributeGroup">
@@ -6758,7 +6947,7 @@
   <xs:complexType name="PushingJmsListenerType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractJmsListenerDeclaredChildGroup" />
+        <xs:group ref="AbstractJmsListenerCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="PushingJmsListenerCumulativeAttributeGroup" />
@@ -6822,6 +7011,11 @@
     <xs:attributeGroup ref="JndiBaseDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="CmisEventListenerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="PushingListenerAdapterDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="CmisEventListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.cmis.CmisEventListener" />
   </xs:complexType>
@@ -6833,6 +7027,11 @@
     <xs:attributeGroup ref="PushingListenerAdapterDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="DirectoryListenerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractFileSystemListenerDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="DirectoryListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.DirectoryListener" />
   </xs:complexType>
@@ -6855,6 +7054,11 @@
     <xs:attributeGroup ref="DirectoryListenerDeclaredAttributeGroup" />
     <xs:attributeGroup ref="AbstractFileSystemListenerDeclaredAttributeGroup" />
   </xs:attributeGroup>
+  <xs:group name="AbstractFileSystemListenerDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="AbstractFileSystemListenerDeclaredAttributeGroup">
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
@@ -6968,7 +7172,7 @@
   <xs:complexType name="EsbJmsListenerType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractJmsListenerDeclaredChildGroup" />
+        <xs:group ref="AbstractJmsListenerCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="EsbJmsListenerCumulativeAttributeGroup" />
@@ -7059,6 +7263,11 @@
     <xs:attributeGroup ref="JndiBaseDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="ExchangeMailListenerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractFileSystemListenerDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="ExchangeMailListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.ExchangeMailListener" />
   </xs:complexType>
@@ -7222,9 +7431,19 @@
     <xs:attributeGroup ref="AbstractFileSystemListenerDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="FrankListenerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="FrankListenerDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="FrankListenerDeclaredAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.FrankListener" />
   </xs:complexType>
+  <xs:group name="FrankListenerDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="FrankListenerDeclaredAttributeGroup">
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
@@ -7251,6 +7470,11 @@
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
   <xs:complexType name="FtpFileSystemListenerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractFileSystemListenerDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="FtpFileSystemListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.FtpFileSystemListener" />
   </xs:complexType>
@@ -7431,7 +7655,7 @@
   <xs:complexType name="FxfListenerType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractJmsListenerDeclaredChildGroup" />
+        <xs:group ref="AbstractJmsListenerCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="FxfListenerCumulativeAttributeGroup" />
@@ -7464,6 +7688,11 @@
     <xs:attributeGroup ref="EsbJmsListenerCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="ImapListenerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractFileSystemListenerDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="ImapListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.ImapListener" />
   </xs:complexType>
@@ -7538,9 +7767,19 @@
     <xs:attributeGroup ref="AbstractFileSystemListenerDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="JavaListenerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JavaListenerDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="JavaListenerDeclaredAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.JavaListener" />
   </xs:complexType>
+  <xs:group name="JavaListenerDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="JavaListenerDeclaredAttributeGroup">
     <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
@@ -7587,6 +7826,11 @@
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
   <xs:complexType name="JdbcListenerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JdbcFacadeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="JdbcListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.JdbcListener" />
   </xs:complexType>
@@ -7648,6 +7892,11 @@
     <xs:attributeGroup ref="JdbcFacadeDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="JdbcQueryListenerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JdbcFacadeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="JdbcQueryListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.JdbcQueryListener" />
   </xs:complexType>
@@ -7685,6 +7934,11 @@
     <xs:attributeGroup ref="JdbcListenerCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="JdbcTableListenerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JdbcFacadeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="JdbcTableListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.JdbcTableListener" />
   </xs:complexType>
@@ -7747,16 +8001,26 @@
   <xs:complexType name="JmsListenerType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractJmsListenerDeclaredChildGroup" />
+        <xs:group ref="AbstractJmsListenerCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="PushingJmsListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jms.JmsListener" />
   </xs:complexType>
   <xs:complexType name="KafkaListenerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="KafkaListenerDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="KafkaListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.kafka.KafkaListener" />
   </xs:complexType>
+  <xs:group name="KafkaListenerDeclaredChildGroup">
+    <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="KafkaListenerDeclaredAttributeGroup">
     <xs:attribute name="groupId" type="xs:string">
       <xs:annotation>
@@ -7792,6 +8056,11 @@
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
   <xs:complexType name="MessageStoreListenerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JdbcFacadeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="MessageStoreListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.MessageStoreListener" />
   </xs:complexType>
@@ -7910,19 +8179,29 @@
     <xs:attributeGroup ref="JdbcFacadeDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="MqttListenerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="MqttFacadeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="MqttFacadeDeclaredAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.mqtt.MqttListener" />
   </xs:complexType>
   <xs:complexType name="PullingJmsListenerType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractJmsListenerDeclaredChildGroup" />
+        <xs:group ref="AbstractJmsListenerCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="AbstractJmsListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jms.PullingJmsListener" />
   </xs:complexType>
   <xs:complexType name="RestListenerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="PushingListenerAdapterDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="RestListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.http.RestListener" />
   </xs:complexType>
@@ -8002,6 +8281,11 @@
     <xs:attributeGroup ref="PushingListenerAdapterDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="Samba2ListenerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractFileSystemListenerDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="Samba2ListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.Samba2Listener" />
   </xs:complexType>
@@ -8079,10 +8363,20 @@
     <xs:attributeGroup ref="AbstractFileSystemListenerDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="SambaListenerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractFileSystemListenerDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="Samba2ListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.SambaListener" />
   </xs:complexType>
   <xs:complexType name="SapListenerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="SapFunctionFacadeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="SapListenerImplCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.sap.SapListener" />
   </xs:complexType>
@@ -8120,6 +8414,11 @@
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
   <xs:complexType name="SftpFileSystemListenerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractFileSystemListenerDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="SftpFileSystemListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.receivers.SftpFileSystemListener" />
   </xs:complexType>
@@ -8236,6 +8535,11 @@
     <xs:attributeGroup ref="AbstractFileSystemListenerDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="SimpleJdbcListenerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JdbcFacadeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="SimpleJdbcListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.SimpleJdbcListener" />
   </xs:complexType>
@@ -8254,13 +8558,18 @@
   <xs:complexType name="TibcoLogJmsListenerType">
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
-        <xs:group ref="AbstractJmsListenerDeclaredChildGroup" />
+        <xs:group ref="AbstractJmsListenerCumulativeChildGroup" />
       </xs:choice>
     </xs:sequence>
     <xs:attributeGroup ref="PushingJmsListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.tibco.TibcoLogJmsListener" />
   </xs:complexType>
   <xs:complexType name="WebServiceListenerType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="PushingListenerAdapterDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="WebServiceListenerCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.http.WebServiceListener" />
   </xs:complexType>
@@ -8316,6 +8625,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
               <xs:group ref="ParamElementGroup" />
             </xs:choice>
           </xs:sequence>
@@ -8381,6 +8691,11 @@
     <xs:choice>
       <xs:element name="ErrorStorage">
         <xs:complexType>
+          <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+            </xs:choice>
+          </xs:sequence>
           <xs:attribute ref="active" />
           <xs:attribute name="elementRole" type="xs:string" fixed="errorStorage" />
           <xs:attribute name="className" type="xs:string" use="required" />
@@ -8431,14 +8746,29 @@
     </xs:choice>
   </xs:group>
   <xs:complexType name="DummyTransactionalStorageType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JdbcFacadeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="JdbcTransactionalStorageCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jdbc.DummyTransactionalStorage" />
   </xs:complexType>
   <xs:complexType name="EsbJmsTransactionalStorageType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JMSFacadeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="JmsTransactionalStorageCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.esb.EsbJmsTransactionalStorage" />
   </xs:complexType>
   <xs:complexType name="JmsTransactionalStorageType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="JMSFacadeDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="JmsTransactionalStorageCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.jms.JmsTransactionalStorage" />
   </xs:complexType>
@@ -8495,6 +8825,11 @@
     <xs:choice>
       <xs:element name="MessageLog">
         <xs:complexType>
+          <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+            </xs:choice>
+          </xs:sequence>
           <xs:attribute ref="active" />
           <xs:attribute name="elementRole" type="xs:string" fixed="messageLog" />
           <xs:attribute name="className" type="xs:string" use="required" />
@@ -8754,6 +9089,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
               <xs:element name="Forward" type="ForwardType" />
               <xs:element name="Locker" type="LockerType" />
               <xs:group ref="ParamElementGroup" />
@@ -8878,6 +9214,7 @@
       <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
       <xs:element name="Locker" minOccurs="0" maxOccurs="1" type="LockerType" />
       <xs:element name="Forward" minOccurs="0" maxOccurs="unbounded" type="ForwardType" />
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractPipeDeclaredAttributeGroup">
@@ -9489,6 +9826,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
               <xs:element name="Forward" type="ForwardType" />
               <xs:element name="Locker" type="LockerType" />
               <xs:group ref="ParamElementGroup" />
@@ -9594,6 +9932,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
               <xs:element name="Forward" type="ForwardType" />
               <xs:element name="Locker" type="LockerType" />
               <xs:group ref="ParamElementGroup" />
@@ -9956,6 +10295,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
               <xs:element name="Forward" type="ForwardType" />
               <xs:element name="Locker" type="LockerType" />
               <xs:group ref="ParamElementGroup" />
@@ -10027,6 +10367,7 @@
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:group ref="CacheElementGroup" />
               <xs:group ref="ChildElementGroup" />
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
               <xs:element name="Forward" type="ForwardType" />
               <xs:group ref="InputValidatorElementGroup" />
               <xs:group ref="InputWrapperElementGroup" />
@@ -10059,6 +10400,7 @@
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:group ref="ChildElementGroup_2" />
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
               <xs:element name="Flow" type="FlowType" />
               <xs:element name="InputFields" type="InputFieldsType" />
               <xs:element name="OutputFields" type="OutputFieldsType" />
@@ -10181,7 +10523,12 @@
     </xs:attribute>
     <xs:attribute name="endPosition" type="frankInt">
       <xs:annotation>
-        <xs:documentation>If endposition &amp;gt;= 0 then this field contains the endPosition of the recordtype field in the record; All characters beyond this position are ignored. Else, if endPosition &amp;lt; 0 then it depends on the length of the recordkey in the flow Default: -1</xs:documentation>
+        <xs:documentation>If endPosition &amp;gt;= 0 then this field contains the endPosition (Java style, i.e the position of the next character) of the recordtype field in the record; All characters beyond this position are ignored. Else, if endPosition &amp;lt; 0 then it depends on the length of the recordkey in the flow Default: -1</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="newLineSeparated" type="frankBoolean">
+      <xs:annotation>
+        <xs:documentation>If &lt;code&gt;false&lt;/code&gt;, no newlines are expected, all records of the size specified in the flows are read from a single 'line'. Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -10229,6 +10576,7 @@
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:group ref="ChildElementGroup_2" />
+        <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
         <xs:element name="InputFields" type="InputFieldsType" />
         <xs:element name="OutputFields" type="OutputFieldsType" />
         <xs:group ref="ParamElementGroup" />
@@ -10255,6 +10603,7 @@
     <xs:sequence>
       <xs:element name="InputFields" minOccurs="0" maxOccurs="unbounded" type="InputFieldsType" />
       <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractRecordHandlerDeclaredAttributeGroup">
@@ -10448,6 +10797,7 @@
   <xs:group name="AbstractResultHandlerDeclaredChildGroup">
     <xs:sequence>
       <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractResultHandlerDeclaredAttributeGroup">
@@ -10612,6 +10962,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
               <xs:group ref="ParamElementGroup" />
               <xs:group ref="SenderElementGroup" />
             </xs:choice>
@@ -10753,6 +11104,7 @@
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:group ref="ChildElementGroup_2" />
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
               <xs:element name="InputFields" type="InputFieldsType" />
               <xs:element name="OutputFields" type="OutputFieldsType" />
               <xs:group ref="ParamElementGroup" />
@@ -10805,6 +11157,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
               <xs:group ref="ParamElementGroup" />
               <xs:group ref="SenderElementGroup" />
             </xs:choice>
@@ -12264,6 +12617,7 @@
     <xs:sequence>
       <xs:choice minOccurs="0" maxOccurs="unbounded">
         <xs:group ref="ChildElementGroup" />
+        <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
         <xs:element name="Forward" type="ForwardType" />
         <xs:element name="Locker" type="LockerType" />
         <xs:group ref="ManagerElementGroup" />
@@ -15477,6 +15831,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
               <xs:element name="DirectoryCleaner" type="DirectoryCleanerType" />
               <xs:element name="Locker" type="LockerType" />
             </xs:choice>
@@ -15613,6 +15968,7 @@
   <xs:group name="AbstractJobDefDeclaredChildGroup">
     <xs:sequence>
       <xs:element name="Locker" minOccurs="0" maxOccurs="1" type="LockerType" />
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractJobDefDeclaredAttributeGroup">
@@ -15977,6 +16333,11 @@
     <xs:choice>
       <xs:element name="SharedResource">
         <xs:complexType>
+          <xs:sequence>
+            <xs:choice minOccurs="0" maxOccurs="unbounded">
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+            </xs:choice>
+          </xs:sequence>
           <xs:attribute ref="active" />
           <xs:attribute name="elementRole" type="xs:string" fixed="sharedResource" />
           <xs:attribute name="className" type="xs:string" use="required" />
@@ -16000,6 +16361,11 @@
     </xs:choice>
   </xs:group>
   <xs:complexType name="HttpSessionType">
+    <xs:sequence>
+      <xs:choice minOccurs="0" maxOccurs="unbounded">
+        <xs:group ref="AbstractHttpSessionDeclaredChildGroup" />
+      </xs:choice>
+    </xs:sequence>
     <xs:attributeGroup ref="AbstractHttpSessionDeclaredAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.http.HttpSession" />
   </xs:complexType>
