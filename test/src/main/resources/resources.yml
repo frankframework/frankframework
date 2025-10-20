@@ -11,6 +11,11 @@ jdbc:
     username: "testiaf_user"
     password: "testiaf_user00"
 
+  - name: "trino"
+    type: "io.trino.jdbc.TrinoDataSource"
+    url: "jdbc:trino://localhost:8090"
+    username: "trino"  # Add if needed
+    password: ""       # Add if needed
 #  - name: "ibis4test-oracle-xa"
 #    type: "oracle.jdbc.xa.client.OracleXADataSource"
 #    url: "jdbc:oracle:thin:@${jdbc.hostname:-localhost}:1521:XE"

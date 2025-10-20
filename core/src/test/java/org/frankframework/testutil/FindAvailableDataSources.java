@@ -29,7 +29,8 @@ public class FindAvailableDataSources {
 		MS_SQL,
 		MySQL,
 		MariaDB,
-		PostgreSQL("PostgreSQL-xa");
+		PostgreSQL("PostgreSQL-xa"),
+		trino;
 
 		private final String dataSourceName;
 		TestDatasource() {
