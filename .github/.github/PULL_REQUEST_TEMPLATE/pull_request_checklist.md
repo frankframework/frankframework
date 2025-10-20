@@ -1,6 +1,6 @@
 ## Changes
 <!--
-Describe the changes that are made in this pull-request.
+Describe the changes that are made in this pull request.
 -->
 
 
