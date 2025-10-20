@@ -25,6 +25,12 @@
 			<classifier>fatjar</classifier>
 		</dependency>
 		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-kubernetes</artifactId>
+			<version>${project.version}</version>
+			<classifier>fatjar</classifier>
+		</dependency>
+		<dependency>
 			<groupId>${oracle.driver.groupid}</groupId>
 			<artifactId>ojdbc${oracle.driver.jdkversion}</artifactId>
 			<version>${oracle.driver.version}</version>
