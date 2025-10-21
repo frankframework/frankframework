@@ -14,18 +14,20 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.frankframework</groupId>
-			<artifactId>frankframework-commons</artifactId>
+			<groupId>io.fabric8</groupId>
+			<artifactId>kubernetes-client</artifactId>
+			<version>6.14.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
 		</dependency>
 
+		<!-- Provided scoped dependencies -->
 		<dependency>
-			<groupId>io.fabric8</groupId>
-			<artifactId>kubernetes-client</artifactId>
-			<version>6.14.0</version>
+			<groupId>org.frankframework</groupId>
+			<artifactId>frankframework-commons</artifactId>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.frankframework</groupId>
@@ -69,7 +71,6 @@
 						<phase>package</phase>
 						<configuration>
 							<createDependencyReducedPom>false</createDependencyReducedPom>
-							<minimizeJar>true</minimizeJar>
 							<shadedArtifactAttached>true</shadedArtifactAttached>
 							<shadedClassifierName>fatjar</shadedClassifierName>
 						</configuration>
