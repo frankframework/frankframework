@@ -142,6 +142,16 @@
 						</goals>
 						<phase>package</phase>
 						<configuration>
+							<filters>
+								<filter>
+									<artifact>org.springframework:spring-web</artifact>
+									<excludes>
+										<!-- Remove unused serviceloader classes to prevent ClassNotFoundExceptions. -->
+										<exclude>META-INF/web-fragment.xml</exclude>
+										<exclude>META-INF/services/jakarta.servlet.ServletContainerInitializer</exclude>
+									</excludes>
+								</filter>
+							</filters>
 							<createDependencyReducedPom>false</createDependencyReducedPom>
 							<minimizeJar>true</minimizeJar>
 							<shadedArtifactAttached>true</shadedArtifactAttached>

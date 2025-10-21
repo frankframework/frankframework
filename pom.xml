@@ -1358,10 +1358,6 @@
 				<artifactId>directory-maven-plugin</artifactId>
 			</plugin>
 			<plugin>
-				<groupId>org.glassfish.copyright</groupId>
-				<artifactId>glassfish-copyright-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
 				<groupId>org.jasig.maven</groupId>
 				<artifactId>notice-maven-plugin</artifactId>
 			</plugin>
@@ -1403,14 +1399,6 @@
 			<plugin>
 				<groupId>com.diffplug.spotless</groupId>
 				<artifactId>spotless-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.cyclonedx</groupId>
-				<artifactId>cyclonedx-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.spdx</groupId>
-				<artifactId>spdx-maven-plugin</artifactId>
 			</plugin>
 		</plugins>
 	</build>
@@ -1730,6 +1718,26 @@
 					</plugin>
 				</plugins>
 			</reporting>
+		</profile>
+		<profile>
+			<id>ci</id>
+			<build>
+				<plugins>
+					<!-- Niels: The Copyright plugin adds 13 minutes to the build. -->
+					<plugin>
+						<groupId>org.glassfish.copyright</groupId>
+						<artifactId>glassfish-copyright-maven-plugin</artifactId>
+					</plugin>
+					<plugin>
+						<groupId>org.cyclonedx</groupId>
+						<artifactId>cyclonedx-maven-plugin</artifactId>
+					</plugin>
+					<plugin>
+						<groupId>org.spdx</groupId>
+						<artifactId>spdx-maven-plugin</artifactId>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 		<profile>
 			<!-- https://stackoverflow.com/a/12598554/17193564 -->
