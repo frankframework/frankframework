@@ -65,12 +65,14 @@ public class SftpFileSystem extends SftpSession implements IWritableFileSystem<S
 
 	@Override
 	public void open() throws FileSystemException {
-		ftpClient = openClient(remoteDirectory);
+		super.open();
+		ftpClient = getClient();
+		changeDirectory(remoteDirectory);
 	}
 
 	@Override
 	public void close() {
-		close(ftpClient);
+		super.close();
 		ftpClient = null;
 	}
 

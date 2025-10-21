@@ -45,6 +45,7 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination, AutoCloseab
 
 	void configure() throws ConfigurationException;
 	void open() throws FileSystemException;
+
 	@Override
 	void close() throws FileSystemException;
 
