@@ -59,6 +59,20 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper {
 		cleanFolder();
 	}
 
+	private void open() throws FileSystemException, ConfigurationException, SftpException {
+		SftpSession ftpSession = new SftpSession();
+		ftpSession.setUsername(username);
+		ftpSession.setPassword(password);
+		ftpSession.setHost(host);
+		ftpSession.setPort(port);
+		ftpSession.setStrictHostKeyChecking(false);
+		ftpSession.configure();
+
+		ftpSession.open();
+		ftpClient = ftpSession.getClient();
+		ftpClient.cd(remoteDirectory);
+	}
+
 	@Override
 	@AfterEach
 	public void tearDown() throws Exception {
@@ -138,20 +152,6 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper {
 		if(folder != null) {
 			ftpClient.rmdir(folder);
 		}
-	}
-
-	private void open() throws FileSystemException, ConfigurationException, SftpException {
-		SftpSession ftpSession = new SftpSession();
-		ftpSession.setUsername(username);
-		ftpSession.setPassword(password);
-		ftpSession.setHost(host);
-		ftpSession.setPort(port);
-		ftpSession.setStrictHostKeyChecking(false);
-		ftpSession.configure();
-
-		ftpSession.open();
-		ftpClient = ftpSession.getClient();
-		ftpClient.cd(remoteDirectory);
 	}
 
 	@Override

@@ -18,6 +18,7 @@ package org.frankframework.filesystem.sftp;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 
+import com.jcraft.jsch.Channel;
 import com.jcraft.jsch.ChannelExec;
 import com.jcraft.jsch.ChannelSftp;
 import com.jcraft.jsch.JSch;
@@ -76,20 +77,28 @@ public class SftpSession implements IConfigurable {
 	private boolean strictHostKeyChecking = true;
 
 	private JSch jsch;
-	private ChannelSftp sftpClient; // Actions
+	private ChannelSftp sftpChannel; // Actions
 	private Session sftpSession; // Authentication
 
 	public void open() throws FileSystemException {
 		log.debug("open sftp client");
-		if (sftpClient != null || sftpClient.isClosed())
+
+		sftpSession = createSftpSession(jsch);
+		final Channel channel;
 		try {
-			sftpSession = createSftpSession(jsch);
-			ChannelSftp channel = (ChannelSftp) sftpSession.openChannel("sftp");
+			channel = sftpSession.openChannel("sftp");
 			channel.connect();
-			sftpClient = channel; // Only set if connected
 		} catch (JSchException e) {
 			throw new FileSystemException("unable to open SFTP channel");
 		}
+
+		if (!(channel instanceof ChannelSftp channelSftp)) {
+			close();
+
+			throw new IllegalStateException("incompatible channel");
+		}
+
+		sftpChannel = channelSftp; // Only set if connected
 	}
 
 	@Override
@@ -120,20 +129,20 @@ public class SftpSession implements IConfigurable {
 	 * Get the client to execute SFTP commands on.
 	 */
 	protected ChannelSftp getClient() {
-		if (sftpClient == null || sftpClient.isClosed()) {
+		if (sftpChannel == null || sftpChannel.isClosed()) {
 			throw new IllegalStateException("sftp client is not open");
 		}
-		return sftpClient;
+		return sftpChannel;
 	}
 
 	/**
 	 * Closes the client and correlating SFTP session.
 	 */
 	protected void close() {
-		if (sftpClient != null && sftpClient.isConnected()) {
+		if (sftpChannel != null && sftpChannel.isConnected()) {
 			log.debug("closing sftp client");
-			sftpClient.disconnect(); // Close the channel
-			sftpClient = null;
+			sftpChannel.disconnect(); // Close the channel
+			sftpChannel = null;
 		}
 
 		if (sftpSession != null && sftpSession.isConnected()) {
@@ -188,7 +197,7 @@ public class SftpSession implements IConfigurable {
 
 	protected boolean isSessionStillWorking() {
 		try {
-			Session session = sftpClient.getSession();
+			Session session = sftpChannel.getSession();
 			ChannelExec testChannel = (ChannelExec) session.openChannel("exec");
 			testChannel.setCommand("true");
 			testChannel.connect();
