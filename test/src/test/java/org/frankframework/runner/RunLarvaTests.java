@@ -80,36 +80,21 @@ public class RunLarvaTests {
 
 	public static final LarvaLogLevel LARVA_LOG_LEVEL = LarvaLogLevel.WRONG_PIPELINE_MESSAGES_PREPARED_FOR_DIFF;
 	public static final Set<String> IGNORED_SCENARIOS = Set.of(
+			// These scenarios might fail, mostly in Maven builds, some in IntelliJ builds
 			"Base64Pipe/scenario01",
 			"Base64Pipe/scenario02",
 			"FileSender/scenario01",
+			"LadybugIntegration/scenario02",
 			"ManagedFileHandler/scenario01",
 			"ManagedFileHandler/scenario02",
-			"Validators/SoapValidator/scenario07",
 			"WebServiceListenerSender/scenario11b",
 			"WebServiceListenerSender/scenario11c",
 			"WebServiceListenerSender/scenario11d",
 			"WsdlGeneratorPipe/scenario01",
 			"WsdlGeneratorPipe/scenario02",
 			"WsdlGeneratorPipe/scenario03",
-
-			// These scenarios likely fail when Narayana is used
-			"JdbcListener/scenario02",
-			"OutputStreaming/scenario04",
-			"Receivers/Transacted/NoInProcess/scenario01",
-			"Receivers/Transacted/NoInProcess/scenario02",
-			"TransactionHandling/MultiThread/scenario20",
-			"TransactionHandling/MultiThread/scenario21",
-			"TransactionHandling/MultiThread/scenario22",
-
-			// These scenarios will likely fail when JMS is active but Narayana is not used
 			"FxF3/scenario11",
-			"FxF3/scenario12",
-			"JmsListenerSender/FF/scenario03",
-			"JmsListenerSender/FF/scenario07",
-			"JmsListenerSender/FF/scenario09",
-			"JmsListenerSender/FF/scenario11",
-			"JmsRetryListener/scenario01"
+			"FxF3/scenario12"
 			);
 
 	private static ConfigurableApplicationContext parentContext;
@@ -154,6 +139,9 @@ public class RunLarvaTests {
 	}
 
 	private static EmbeddedActiveMQ configureEmbeddedJmsServer() throws Exception {
+		// NB: Currently with current ActiveMQ Artemis releases the in-memory broker is not compatible with JDK23 and above.
+		// See: https://issues.apache.org/jira/browse/ARTEMIS-4975, https://issues.apache.org/jira/browse/ARTEMIS-5711
+		// However work is underway to fix this in an upcoming release, probably before we are ready to release F!F 10.0 and move to JDK25.
 		log.info("Starting in-memory Artemis message broker");
 		String jmsDataDir = IafTestInitializer.getLogDir(IafTestInitializer.getProjectDir()) + "/ArtemisMQ";
 
