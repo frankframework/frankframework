@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,7 +27,6 @@ import com.jcraft.jsch.ProxyHTTP;
 import com.jcraft.jsch.ProxySOCKS4;
 import com.jcraft.jsch.ProxySOCKS5;
 import com.jcraft.jsch.Session;
-import com.jcraft.jsch.SftpException;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -40,6 +39,8 @@ import org.frankframework.util.CredentialFactory;
 
 /**
  * Helper class for sftp.
+ * Use {@link SftpSession#getClient()} to retrieve the SFTP Client.
+ * Don't forget to call {@link #close()} to close the Client!
  *
  * @author Niels Meijer
  */
@@ -75,7 +76,21 @@ public class SftpSession implements IConfigurable {
 	private boolean strictHostKeyChecking = true;
 
 	private JSch jsch;
-	private ChannelSftp sftpClient;
+	private ChannelSftp sftpClient; // Actions
+	private Session sftpSession; // Authentication
+
+	public void open() throws FileSystemException {
+		log.debug("open sftp client");
+		if (sftpClient != null || sftpClient.isClosed())
+		try {
+			sftpSession = createSftpSession(jsch);
+			ChannelSftp channel = (ChannelSftp) sftpSession.openChannel("sftp");
+			channel.connect();
+			sftpClient = channel; // Only set if connected
+		} catch (JSchException e) {
+			throw new FileSystemException("unable to open SFTP channel");
+		}
+	}
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -101,29 +116,30 @@ public class SftpSession implements IConfigurable {
 		}
 	}
 
-	public synchronized ChannelSftp openClient(String remoteDirectory) throws FileSystemException {
-		log.debug("open sftp client");
+	/**
+	 * Get the client to execute SFTP commands on.
+	 */
+	protected ChannelSftp getClient() {
 		if (sftpClient == null || sftpClient.isClosed()) {
-			openSftpClient(remoteDirectory);
+			throw new IllegalStateException("sftp client is not open");
 		}
 		return sftpClient;
 	}
 
-	private void openSftpClient(String remoteDirectory) throws FileSystemException {
-		try {
-			Session sftpSession = createSftpSession(jsch);
-			ChannelSftp channel = (ChannelSftp) sftpSession.openChannel("sftp");
-			channel.connect();
+	/**
+	 * Closes the client and correlating SFTP session.
+	 */
+	protected void close() {
+		if (sftpClient != null && sftpClient.isConnected()) {
+			log.debug("closing sftp client");
+			sftpClient.disconnect(); // Close the channel
+			sftpClient = null;
+		}
 
-			if (StringUtils.isNotEmpty(remoteDirectory)) {
-				channel.cd(remoteDirectory);
-			}
-
-			sftpClient = channel;
-		} catch (JSchException e) {
-			throw new FileSystemException("unable to open SFTP channel");
-		} catch (SftpException e) {
-			throw new FileSystemException("unable to enter remote directory ["+remoteDirectory+"]");
+		if (sftpSession != null && sftpSession.isConnected()) {
+			log.debug("closing sftp session");
+			sftpSession.disconnect();
+			sftpSession = null;
 		}
 	}
 
@@ -211,17 +227,6 @@ public class SftpSession implements IConfigurable {
 			default:
 				throw new IllegalStateException("proxy type does not exist");
 		}
-	}
-
-	public static void close(ChannelSftp sftpClient) {
-		if (sftpClient != null && sftpClient.isConnected()) {
-			log.debug("closing sftp client");
-			sftpClient.disconnect();
-		}
-	}
-
-	public void close() {
-		close(sftpClient);
 	}
 
 	/** Name or ip address of remote host */

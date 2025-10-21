@@ -54,7 +54,7 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper {
 
 	@Override
 	@BeforeEach
-	public void setUp() throws ConfigurationException, FileSystemException {
+	public void setUp() throws ConfigurationException, FileSystemException, SftpException {
 		open();
 		cleanFolder();
 	}
@@ -62,7 +62,7 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper {
 	@Override
 	@AfterEach
 	public void tearDown() throws Exception {
-		SftpSession.close(ftpClient);
+		ftpClient.disconnect();
 	}
 
 	static SshServer createSshServer(String username, String password, int port) throws IOException {
@@ -140,7 +140,7 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper {
 		}
 	}
 
-	private void open() throws FileSystemException, ConfigurationException {
+	private void open() throws FileSystemException, ConfigurationException, SftpException {
 		SftpSession ftpSession = new SftpSession();
 		ftpSession.setUsername(username);
 		ftpSession.setPassword(password);
@@ -149,7 +149,9 @@ public class SftpFileSystemTestHelper implements IFileSystemTestHelper {
 		ftpSession.setStrictHostKeyChecking(false);
 		ftpSession.configure();
 
-		ftpClient = ftpSession.openClient(remoteDirectory);
+		ftpSession.open();
+		ftpClient = ftpSession.getClient();
+		ftpClient.cd(remoteDirectory);
 	}
 
 	@Override

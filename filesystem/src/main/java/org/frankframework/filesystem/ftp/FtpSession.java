@@ -237,7 +237,8 @@ public class FtpSession implements IConfigurable, HasKeystore, HasTruststore {
 		return null;
 	}
 
-	public static void close(FTPClient ftpClient) {
+	// Used in tests
+	protected static void close(FTPClient ftpClient) {
 		if (ftpClient != null && ftpClient.isConnected()) {
 			LOG.debug("closing ftp client");
 			try {
