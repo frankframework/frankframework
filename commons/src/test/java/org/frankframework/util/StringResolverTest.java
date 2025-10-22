@@ -33,7 +33,7 @@ public class StringResolverTest {
 
 		InputStream propsStream = propertiesURL.openStream();
 		properties.load(propsStream);
-		assertTrue(!properties.isEmpty(), "did not find any properties!");
+		assertFalse(properties.isEmpty(), "did not find any properties!");
 
 		System.setProperty("authAliases.expansion.allowed", "${allowedAliases}");
 	}
@@ -396,5 +396,19 @@ public class StringResolverTest {
 	void testNeedsResolution(String input, boolean expected) {
 		// Act / Assert
 		assertEquals(expected, StringResolver.needsResolution(input));
+	}
+
+	@Test
+	void testResolveReplacementContainsJson() {
+		// Arrange
+		PropertyLoader props = new PropertyLoader("StringResolver.properties");
+
+		props.setProperty("json.value.prop", "$.preferred_username");
+
+		// Act
+		String result = StringResolver.substVars("${json.value.prop}", props);
+
+		// Assert
+		assertEquals("$.preferred_username", result);
 	}
 }
