@@ -172,6 +172,8 @@ public class JsonUtil {
 			Message inputMessage = MessageUtils.convertToJsonMessage(input);
 			Object result = jsonPath.read(inputMessage.asInputStream());
 			return getJsonPathResult(result);
+		} catch (PathNotFoundException e) {
+			throw new JsonPathNotFoundException("Cannot find path in input", e);
 		} catch (Exception e) {
 			throw new JsonException("Cannot evaluate JSonPathExpression on parameter value", e);
 		}
