@@ -2015,6 +2015,66 @@ public class ParameterTest {
 	}
 
 	@Test
+	public void testParameterWithJsonPathExpressionUsesDefaultValueWhenInputIsNullMessage() throws Exception {
+		// Arrange
+		Parameter parameter = new Parameter();
+		parameter.setName("p1");
+		parameter.setJsonPathExpression("$.root.a");
+		parameter.setDefaultValue("based");
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = Message.nullMessage();
+		PipeLineSession session = new PipeLineSession();
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		assertEquals("based", result);
+	}
+
+	@Test
+	public void testParameterWithJsonPathExpressionUsesDefaultValueWhenInputIsEmpty() throws Exception {
+		// Arrange
+		Parameter parameter = new Parameter();
+		parameter.setName("p1");
+		parameter.setJsonPathExpression("$.root.a");
+		parameter.setDefaultValue("based");
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = Message.asMessage("");
+		PipeLineSession session = new PipeLineSession();
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		assertEquals("based", result);
+	}
+
+	@Test
+	public void testParameterWithJsonPathExpressionUsesDefaultValueWhenInputDoesNotContainPath() throws Exception {
+		// Arrange
+		Parameter parameter = new Parameter();
+		parameter.setName("p1");
+		parameter.setJsonPathExpression("$.root.a");
+		parameter.setDefaultValue("based");
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = Message.asMessage("{\"B\": 52}");
+		PipeLineSession session = new PipeLineSession();
+
+		// Act
+		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+
+		// Assert
+		assertEquals("based", result);
+	}
+
+	@Test
 	public void testParameterCannotHaveBothXPathAndJsonPathExpression() {
 		// Arrange
 		Parameter parameter = new Parameter();
