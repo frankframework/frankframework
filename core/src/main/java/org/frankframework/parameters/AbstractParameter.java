@@ -66,6 +66,7 @@ import org.frankframework.documentbuilder.ObjectBuilder;
 import org.frankframework.documentbuilder.XmlDocumentBuilder;
 import org.frankframework.jdbc.StoredProcedureQuerySender;
 import org.frankframework.json.JsonException;
+import org.frankframework.json.JsonPathNotFoundException;
 import org.frankframework.json.JsonUtil;
 import org.frankframework.pipes.PutSystemDateInSession;
 import org.frankframework.stream.Message;
@@ -401,9 +402,11 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			} else {
 				input = null;
 			}
-			if (input != null) {
+			if (input != null && !(input instanceof Message m && m.isEmpty())) {
 				try {
 					result = JsonUtil.evaluateJsonPath(jsonPath, input);
+				} catch (JsonPathNotFoundException e) {
+					log.debug("Parameter [{}] jsonpath exception, cannot find path in input [{}]:", jsonPathExpression, input, e);
 				} catch (JsonException e) {
 					throw new ParameterException(getName(), e);
 				}
