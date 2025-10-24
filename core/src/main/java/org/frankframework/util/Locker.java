@@ -192,9 +192,9 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 					stmt.setString(3, Misc.getHostname());
 					stmt.setTimestamp(4, Timestamp.from(instant));
 
-					instant = instant.plus(getRetention(), getType().getChronoUnit());
+					Instant expiry = instant.plus(getRetention(), getType().getChronoUnit());
 
-					stmt.setTimestamp(5, Timestamp.from(instant));
+					stmt.setTimestamp(5, Timestamp.from(expiry));
 					TimeoutGuard timeoutGuard = null;
 					if (lockWaitTimeout > 0) {
 						timeoutGuard = new TimeoutGuard(lockWaitTimeout, "lockWaitTimeout") {
@@ -253,25 +253,23 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	public void release(String objectIdWithSuffix) throws JdbcException, SQLException {
 		if (LOCK_IGNORED.equals(objectIdWithSuffix)) {
 			log.info("lock not set, ignoring unlock");
-		} else {
-			if (LockType.T.equals(getType())) {
-				log.debug("preparing to remove lock [{}]", objectIdWithSuffix);
-				IbisTransaction itx = new IbisTransaction(getTxManager(), getTxDef(), "locker [" + getName() + "]");
+		} else if (getType() == LockType.T) {
+			log.debug("preparing to remove lock [{}]", objectIdWithSuffix);
+			IbisTransaction itx = new IbisTransaction(getTxManager(), getTxDef(), "locker [" + getName() + "]");
 
-				try (Connection conn = getConnection();
-					 PreparedStatement statement = conn.prepareStatement(UNLOCK_OBJECT_QUERY)) {
+			try (Connection conn = getConnection();
+				 PreparedStatement statement = conn.prepareStatement(UNLOCK_OBJECT_QUERY)) {
 
-					statement.clearParameters();
-					statement.setString(1, objectIdWithSuffix);
-					statement.executeUpdate();
+				statement.clearParameters();
+				statement.setString(1, objectIdWithSuffix);
+				statement.executeUpdate();
 
-					log.debug("lock [{}] removed", objectIdWithSuffix);
-				} catch(JdbcException | SQLException e) {
-					itx.setRollbackOnly();
-					throw e;
-				} finally {
-					itx.complete();
-				}
+				log.debug("lock [{}] removed", objectIdWithSuffix);
+			} catch(JdbcException | SQLException e) {
+				itx.setRollbackOnly();
+				throw e;
+			} finally {
+				itx.complete();
 			}
 		}
 	}
