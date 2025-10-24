@@ -47,30 +47,30 @@ import org.frankframework.util.MessageKeeper.MessageKeeperLevel;
 
 /**
  * Locker of scheduler jobs and pipes.
- *
+ * <p>
  * Tries to set a lock (by inserting a record in the database table IbisLock) and only if this is done
  * successfully the job is executed.
- *
+ * <p>
  * For an Oracle database the following objects are used:
- *  <pre>
-	CREATE TABLE &lt;schema_owner&gt;.IBISLOCK
-	(
-	OBJECTID VARCHAR2(100 CHAR),
-	TYPE CHAR(1 CHAR),
-	HOST VARCHAR2(100 CHAR),
-	CREATIONDATE TIMESTAMP(6),
-	EXPIRYDATE TIMESTAMP(6)
-	CONSTRAINT PK_IBISLOCK PRIMARY KEY (OBJECTID)
-	);
-
-	CREATE INDEX &lt;schema_owner&gt;.IX_IBISLOCK ON &lt;schema_owner&gt;.IBISLOCK
-	(EXPIRYDATE);
-
-	GRANT DELETE, INSERT, SELECT, UPDATE ON &lt;schema_owner&gt;.IBISLOCK TO &lt;rolename&gt;;
-	GRANT SELECT ON SYS.DBA_PENDING_TRANSACTIONS TO &lt;rolename&gt;;
-
-	COMMIT;
- *  </pre>
+ *  <pre>{@code
+ *	CREATE TABLE &lt;schema_owner&gt;.IBISLOCK
+ *	(
+ *	OBJECTID VARCHAR2(100 CHAR),
+ *	TYPE CHAR(1 CHAR),
+ *	HOST VARCHAR2(100 CHAR),
+ *	CREATIONDATE TIMESTAMP(6),
+ *	EXPIRYDATE TIMESTAMP(6)
+ *	CONSTRAINT PK_IBISLOCK PRIMARY KEY (OBJECTID)
+ *	);
+ *
+ *	CREATE INDEX &lt;schema_owner&gt;.IX_IBISLOCK ON &lt;schema_owner&gt;.IBISLOCK
+ *	(EXPIRYDATE);
+ *
+ *	GRANT DELETE, INSERT, SELECT, UPDATE ON &lt;schema_owner&gt;.IBISLOCK TO &lt;rolename&gt;;
+ *	GRANT SELECT ON SYS.DBA_PENDING_TRANSACTIONS TO &lt;rolename&gt;;
+ *
+ *	COMMIT;
+ *  }</pre>
  *
  * @author  Peter Leeuwenburgh
  */
@@ -99,19 +99,33 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	private @Getter TransactionDefinition txDef = null;
 
 	public enum LockType {
-		/** Temporary */
-		T,
-		/** Permanent */
-		P
+		/* Temporary */
+		T(4, ChronoUnit.HOURS),
+
+		/* Permanent */
+		P(30, ChronoUnit.DAYS);
+
+		@Getter
+		private final int getDefaultRetention;
+
+		@Getter
+		private final ChronoUnit chronoUnit;
+
+		LockType(int getDefaultRetention, ChronoUnit chronoUnit) {
+			this.getDefaultRetention = getDefaultRetention;
+			this.chronoUnit = chronoUnit;
+		}
 	}
 
 	@Override
 	public void configure() throws ConfigurationException {
 		super.configure();
 		txDef = TransactionAttributes.configureTransactionAttributes(log, getTransactionAttribute(), getTransactionTimeout());
+
 		if (StringUtils.isEmpty(getObjectId())) {
 			throw new ConfigurationException(getLogPrefix()+ "an objectId must be specified");
 		}
+
 		if (StringUtils.isNotEmpty(getDateFormatSuffix())) {
 			try {
 				formatter = DateTimeFormatter.ofPattern(getDateFormatSuffix());
@@ -119,12 +133,9 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 				throw new ConfigurationException(getLogPrefix()+"has an illegal value for dateFormat", ex);
 			}
 		}
-		if (retention<0) {
-			if (getType()==LockType.T) {
-				retention = 4;
-			} else {
-				retention = 30;
-			}
+
+		if (retention < 0) {
+			retention = getType().getGetDefaultRetention();
 		}
 	}
 
@@ -161,6 +172,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 			if (r > 0) {
 				Thread.sleep(retryDelay);
 			}
+
 			IbisTransaction itx = new IbisTransaction(getTxManager(), getTxDef(), "locker [" + getName() + "]");
 			try {
 				Instant instant = TimeProvider.now();
@@ -175,18 +187,14 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 				log.debug("preparing to set lock [{}]", objectIdWithSuffix);
 				try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(LOCK_OBJECT_QUERY)) {
 					stmt.clearParameters();
-					stmt.setString(1,objectIdWithSuffix);
-					stmt.setString(2,getType().name());
-					stmt.setString(3,Misc.getHostname());
+					stmt.setString(1, objectIdWithSuffix);
+					stmt.setString(2, getType().name());
+					stmt.setString(3, Misc.getHostname());
 					stmt.setTimestamp(4, Timestamp.from(instant));
 
-					if (getType() == LockType.T) {
-						instant.plus(getRetention(), ChronoUnit.HOURS);
-					} else {
-						instant.plus(getRetention(), ChronoUnit.DAYS);
-					}
+					Instant expiry = instant.plus(getRetention(), getType().getChronoUnit());
 
-					stmt.setTimestamp(5, Timestamp.from(instant));
+					stmt.setTimestamp(5, Timestamp.from(expiry));
 					TimeoutGuard timeoutGuard = null;
 					if (lockWaitTimeout > 0) {
 						timeoutGuard = new TimeoutGuard(lockWaitTimeout, "lockWaitTimeout") {
@@ -206,16 +214,17 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 						stmt.executeUpdate();
 						log.debug("lock [{}] inserted executed", objectIdWithSuffix);
 					} finally {
-						if (timeoutGuard!=null && timeoutGuard.cancel()) {
+						if (timeoutGuard != null && timeoutGuard.cancel()) {
 							log.warn("Timeout obtaining lock [{}]", objectId);
 							itx.setRollbackOnly();
-							timeout=true;
+							timeout = true;
 							return null;
 						}
 					}
 				} catch (Exception e) {
 					itx.setRollbackOnly();
 					log.debug("{}error executing insert query (as part of locker): ", getLogPrefix(), e);
+
 					if (numRetries == -1 || r < numRetries) {
 						log.debug("{}will try again", getLogPrefix());
 						objectIdWithSuffix = null;
@@ -244,22 +253,23 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	public void release(String objectIdWithSuffix) throws JdbcException, SQLException {
 		if (LOCK_IGNORED.equals(objectIdWithSuffix)) {
 			log.info("lock not set, ignoring unlock");
-		} else {
-			if (getType()==LockType.T) {
-				log.debug("preparing to remove lock [{}]", objectIdWithSuffix);
-				IbisTransaction itx = new IbisTransaction(getTxManager(), getTxDef(), "locker [" + getName() + "]");
+		} else if (getType() == LockType.T) {
+			log.debug("preparing to remove lock [{}]", objectIdWithSuffix);
+			IbisTransaction itx = new IbisTransaction(getTxManager(), getTxDef(), "locker [" + getName() + "]");
 
-				try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(UNLOCK_OBJECT_QUERY)) {
-					stmt.clearParameters();
-					stmt.setString(1,objectIdWithSuffix);
-					stmt.executeUpdate();
-					log.debug("lock [{}] removed", objectIdWithSuffix);
-				} catch(JdbcException | SQLException e) {
-					itx.setRollbackOnly();
-					throw e;
-				} finally {
-					itx.complete();
-				}
+			try (Connection conn = getConnection();
+				 PreparedStatement statement = conn.prepareStatement(UNLOCK_OBJECT_QUERY)) {
+
+				statement.clearParameters();
+				statement.setString(1, objectIdWithSuffix);
+				statement.executeUpdate();
+
+				log.debug("lock [{}] removed", objectIdWithSuffix);
+			} catch(JdbcException | SQLException e) {
+				itx.setRollbackOnly();
+				throw e;
+			} finally {
+				itx.complete();
 			}
 		}
 	}
@@ -267,9 +277,11 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	public String getLockerInfo(String objectIdWithSuffix) {
 		try {
 			String query = getDbmsSupport().prepareQueryTextForNonLockingRead(CHECK_OBJECT_LOCK_QUERY);
-			try (Connection conn = getConnection(); PreparedStatement stmt = conn.prepareStatement(query)) {
+			try (Connection conn = getConnection();
+				 PreparedStatement stmt = conn.prepareStatement(query)) {
+
 				stmt.clearParameters();
-				stmt.setString(1,objectIdWithSuffix);
+				stmt.setString(1, objectIdWithSuffix);
 
 				try (ResultSet rs = stmt.executeQuery()) {
 					if (rs.next()) {
@@ -292,7 +304,6 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	public String toString() {
 		return getLogPrefix()+" type ["+getType()+"] objectId ["+getObjectId()+"] transactionAttribute ["+getTransactionAttribute()+"]";
 	}
-
 
 	/** Identifier for this lock */
 	@Mandatory
@@ -357,5 +368,4 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	public void setIgnoreTableNotExist(boolean b) {
 		ignoreTableNotExist = b;
 	}
-
 }
