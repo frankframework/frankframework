@@ -12,6 +12,8 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
@@ -45,7 +47,6 @@ public class LockerTest {
 	public void setup(DatabaseTestEnvironment env) throws Exception {
 		locker = env.createBean(Locker.class);
 		locker.setFirstDelay(0);
-
 
 		try(Connection conn = env.getConnection()) {
 			if (env.getDbmsSupport().isTablePresent(conn, TABLENAME)) {
@@ -174,6 +175,35 @@ public class LockerTest {
 		} finally {
 			if (testTimeout.cancel()) {
 				fail("test timed out");
+			}
+		}
+	}
+
+	@TxManagerTest
+	void expectExpiryDateIsCorrectlyDetermined() throws Exception {
+		Locker.LockType temporary = Locker.LockType.T;
+
+		locker.setObjectId("myLocker");
+		locker.setType(temporary);
+		locker.configure();
+
+		String lock = locker.acquire();
+
+		// prove that creation date equals expiry date
+		try (Connection connection = locker.getConnectionWithTimeout(0);
+			 PreparedStatement ps = connection.prepareStatement("SELECT CREATIONDATE, EXPIRYDATE FROM " + TABLENAME + " WHERE OBJECTID = ?")) {
+			ps.setString(1, lock);
+			try (var rs = ps.executeQuery()) {
+				if (rs.next()) {
+					Timestamp creationDate = rs.getTimestamp("CREATIONDATE");
+
+					Instant expectedExpiryDate = creationDate.toInstant().plus(temporary.getGetDefaultRetention(), temporary.getChronoUnit());
+
+					var expiryDate = rs.getTimestamp("EXPIRYDATE");
+					assertEquals(expectedExpiryDate, expiryDate.toInstant(), "expiry date should be creation date plus default retention");
+				} else {
+					fail("no lock found with id [" + lock + "]");
+				}
 			}
 		}
 	}
@@ -312,7 +342,6 @@ public class LockerTest {
 		}
 	}
 
-
 	@TxManagerTest
 	public void testLockerUnlock(DatabaseTestEnvironment env) throws Exception {
 		String lockObjectId = null;
@@ -333,7 +362,6 @@ public class LockerTest {
 
 		assertNotNull(lockObjectId);
 		assertEquals(1, getRowCount(env));
-
 	}
 
 	public int getRowCount(DatabaseTestEnvironment env) throws Exception {
@@ -342,7 +370,7 @@ public class LockerTest {
 		}
 	}
 
-	private class LockerTester extends ConcurrentManagedTransactionTester {
+	private static class LockerTester extends ConcurrentManagedTransactionTester {
 
 		private DatabaseTestEnvironment env;
 		private Connection conn;
@@ -359,7 +387,7 @@ public class LockerTest {
 		}
 
 		@Override
-		public void action() throws SQLException, JdbcException {
+		public void action() throws JdbcException {
 			JdbcTestUtil.executeStatement(conn, "INSERT INTO "+LockerTest.TABLENAME+" (OBJECTID) VALUES('myLocker')");
 		}
 
@@ -373,7 +401,5 @@ public class LockerTest {
 				super.finalizeAction();
 			}
 		}
-
 	}
-
 }
