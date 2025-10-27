@@ -22,15 +22,17 @@ import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.pf4j.PluginManager;
+import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.SmartLifecycle;
 
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.util.AppConstants;
 
 @Log4j2
-public class PluginLoader implements InitializingBean {
+public class PluginLoader implements InitializingBean, SmartLifecycle {
 
 	private Path directory;
 	private PluginManager pluginManager;
@@ -69,5 +71,35 @@ public class PluginLoader implements InitializingBean {
 		pluginManager.loadPlugins();
 
 		log.info("loaded [{}] plugin(s) / component(s)", pluginManager.getPlugins().size());
+	}
+
+	@Override
+	public void start() {
+		if (pluginManager != null) {
+			log.info("starting plugins");
+			pluginManager.startPlugins();
+		}
+	}
+
+	@Override
+	public void stop() {
+		if (pluginManager != null) {
+			log.info("stopping plugins");
+			pluginManager.stopPlugins();
+		}
+	}
+
+	@Override
+	public boolean isRunning() {
+		if (pluginManager != null) {
+			for (PluginWrapper pluginWrapper : pluginManager.getResolvedPlugins()) {
+				PluginState pluginState = pluginWrapper.getPluginState();
+				if (!pluginState.isDisabled() && pluginState.isStarted()) {
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 }

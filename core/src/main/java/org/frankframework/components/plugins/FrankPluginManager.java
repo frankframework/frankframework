@@ -21,21 +21,23 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion;
 import org.apache.maven.artifact.versioning.VersionRange;
-import org.pf4j.CompoundPluginRepository;
 import org.pf4j.DefaultPluginManager;
-import org.pf4j.DefaultPluginRepository;
-import org.pf4j.JarPluginRepository;
 import org.pf4j.PluginDescriptor;
 import org.pf4j.PluginDescriptorFinder;
-import org.pf4j.PluginRepository;
+import org.pf4j.PluginFactory;
 import org.pf4j.PluginWrapper;
 import org.pf4j.RuntimeMode;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 
-public class FrankPluginManager extends DefaultPluginManager {
+public class FrankPluginManager extends DefaultPluginManager implements ApplicationContextAware {
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
+
+	private ApplicationContext applicationContext;
 
 	public FrankPluginManager(Path pluginDirectory) {
 		super(pluginDirectory);
@@ -54,15 +56,19 @@ public class FrankPluginManager extends DefaultPluginManager {
 	}
 
 	@Override
-	protected PluginRepository createPluginRepository() {
-		return new CompoundPluginRepository()
-				.add(new JarPluginRepository(getPluginsRoots()))
-				.add(new DefaultPluginRepository(getPluginsRoots()));
+	public boolean isDevelopment() {
+		return false;
 	}
 
 	@Override
 	public RuntimeMode getRuntimeMode() {
 		return "0.0.0".equals(getSystemVersion()) ? RuntimeMode.DEVELOPMENT : RuntimeMode.DEPLOYMENT;
+	}
+
+	@Override
+	protected PluginFactory createPluginFactory() {
+		return new SpringAutowireCapablePluginFactory(applicationContext);
+
 	}
 
 	@Override
@@ -72,7 +78,7 @@ public class FrankPluginManager extends DefaultPluginManager {
 
 	@Override
 	protected boolean isPluginValid(PluginWrapper pluginWrapper) {
-		if (isDevelopment()) {
+		if (getRuntimeMode() == RuntimeMode.DEVELOPMENT) {
 			return true;
 		}
 
@@ -92,5 +98,10 @@ public class FrankPluginManager extends DefaultPluginManager {
 		APPLICATION_LOG.info("Loading Plugin [{}] version [{}] developed by [{}]", descriptor::getPluginId, descriptor::getVersion, descriptor::getProvider);
 
 		return plugin;
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
 	}
 }
