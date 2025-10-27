@@ -47,6 +47,8 @@ public class CredentialFactory {
 	public static final String DEFAULT_USERNAME_FIELD = "username";
 	public static final String DEFAULT_PASSWORD_FIELD = "password";
 
+	private static final boolean THROW_EXCEPTION_WHEN_ALIAS_NOT_FOUND = CredentialConstants.getInstance().getBoolean("credentialFactory.exceptionWhenAliasNotFound", false);
+
 	protected final List<ISecretProvider> delegates = new ArrayList<>();
 
 	private static CredentialFactory self;
@@ -74,6 +76,7 @@ public class CredentialFactory {
 			return;
 		}
 		log.warning("No CredentialFactory installed");
+
 	}
 
 	// Clear the existing static instance, for testing purposes only
@@ -161,7 +164,7 @@ public class CredentialFactory {
 			}
 		}
 
-		if (StringUtils.isNotEmpty(defaultUsername) || StringUtils.isNotEmpty(defaultPassword)) {
+		if (!THROW_EXCEPTION_WHEN_ALIAS_NOT_FOUND || StringUtils.isNotEmpty(defaultUsername) || StringUtils.isNotEmpty(defaultPassword)) {
 			log.info("no credentials found for alias [" + rawAlias + "], using default credentials");
 			return new FallbackCredential(rawAlias, defaultUsername, defaultPassword);
 		}
