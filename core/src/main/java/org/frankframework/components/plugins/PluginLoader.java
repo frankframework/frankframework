@@ -25,6 +25,8 @@ import org.pf4j.PluginManager;
 import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.SmartLifecycle;
 
 import lombok.extern.log4j.Log4j2;
@@ -32,10 +34,11 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.util.AppConstants;
 
 @Log4j2
-public class PluginLoader implements InitializingBean, SmartLifecycle {
+public class PluginLoader implements InitializingBean, SmartLifecycle, ApplicationContextAware {
 
 	private Path directory;
 	private PluginManager pluginManager;
+	private ApplicationContext applicationContext;
 
 	public PluginLoader() {
 		this(AppConstants.getInstance().getProperty("plugins.directory"));
@@ -48,6 +51,11 @@ public class PluginLoader implements InitializingBean, SmartLifecycle {
 				throw new IllegalArgumentException("no valid path provided");
 			}
 		}
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) {
+		this.applicationContext = applicationContext;
 	}
 
 	@Nullable
@@ -67,7 +75,7 @@ public class PluginLoader implements InitializingBean, SmartLifecycle {
 		}
 		log.info("enabled plugin capability using directory [{}]", directory);
 
-		pluginManager = new FrankPluginManager(directory);
+		pluginManager = new FrankPluginManager(applicationContext, directory);
 		pluginManager.loadPlugins();
 
 		log.info("loaded [{}] plugin(s) / component(s)", pluginManager.getPlugins().size());

@@ -27,25 +27,32 @@ import org.pf4j.PluginDescriptorFinder;
 import org.pf4j.PluginFactory;
 import org.pf4j.PluginWrapper;
 import org.pf4j.RuntimeMode;
-import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.LogUtil;
 
-public class FrankPluginManager extends DefaultPluginManager implements ApplicationContextAware {
+public class FrankPluginManager extends DefaultPluginManager {
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 
-	private ApplicationContext applicationContext;
+	private final ApplicationContext applicationContext;
 
-	public FrankPluginManager(Path pluginDirectory) {
+	public FrankPluginManager(ApplicationContext applicationContext, Path pluginDirectory) {
 		super(pluginDirectory);
 
 		String applVersion = AppConstants.getInstance().getProperty("application.version", null);
 		if (StringUtils.isNotBlank(applVersion) && !isTestOrSnapshotVersion(applVersion)) {
 			setSystemVersion(applVersion);
 		}
+		this.applicationContext = applicationContext;
+
+		// Initialize after we've configured the PluginManager
+		super.initialize();
+	}
+
+	@Override
+	protected void initialize() {
+		// NO OP, this is called by the (constructor's) SUPER call, before we get the change to configure the PluginManager.
 	}
 
 	/**
@@ -98,10 +105,5 @@ public class FrankPluginManager extends DefaultPluginManager implements Applicat
 		APPLICATION_LOG.info("Loading Plugin [{}] version [{}] developed by [{}]", descriptor::getPluginId, descriptor::getVersion, descriptor::getProvider);
 
 		return plugin;
-	}
-
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.applicationContext = applicationContext;
 	}
 }
