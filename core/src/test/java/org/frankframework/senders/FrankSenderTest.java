@@ -229,8 +229,6 @@ class FrankSenderTest {
 	@ParameterizedTest
 	@ValueSource(strings = {
 			"noSuchAdapter",
-			"configurationName/noSuchAdapter",
-			"noSuchConfig/adapterName",
 			"/noSuchAdapter"
 	})
 	void findAdapterFailure(String target) {
@@ -251,6 +249,31 @@ class FrankSenderTest {
 
 		// Act / Assert
 		assertThrows(ConfigurationException.class, sender::configure);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"configurationName/noSuchAdapter",
+			"noSuchConfig/adapterName",
+	})
+	void findAdapterNoFailureInConfigureWhenDifferentConfiguration(String target) {
+		// Arrange
+		FrankSender sender = new FrankSender();
+		sender.setTarget(target);
+		sender.setScope(Scope.ADAPTER);
+
+		Adapter adapter = mock();
+		Configuration mockConfiguration = mock();
+		IbisManager ibisManager = mock();
+
+		sender.setIbisManager(ibisManager);
+		sender.setConfiguration(mockConfiguration);
+
+		when(ibisManager.getConfiguration("configurationName")).thenReturn(mockConfiguration);
+		when(mockConfiguration.getRegisteredAdapter("adapterName")).thenReturn(adapter);
+
+		// Act / Assert
+		assertDoesNotThrow(sender::configure);
 	}
 
 	@ParameterizedTest
