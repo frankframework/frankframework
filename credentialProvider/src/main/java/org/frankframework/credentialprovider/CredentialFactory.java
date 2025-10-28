@@ -48,7 +48,7 @@ public class CredentialFactory {
 	public static final String DEFAULT_PASSWORD_FIELD = "password";
 
 	protected final List<ISecretProvider> delegates = new ArrayList<>();
-	protected static boolean ALLOW_DEFAULT_PASSWORD = CredentialConstants.getInstance().getBoolean("credentialFactory.allowDefaultPassword", false);
+	protected static boolean ALLOW_DEFAULT_PASSWORD = CredentialConstants.getInstance().getBoolean("credentialFactory.allowDefaultPassword", true);
 
 	private static CredentialFactory self;
 
