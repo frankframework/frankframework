@@ -14,6 +14,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.Semaphore;
@@ -32,6 +33,7 @@ import org.frankframework.jdbc.dbms.ConcurrentManagedTransactionTester;
 import org.frankframework.jta.SpringTxManagerProxy;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.testutil.JdbcTestUtil;
+import org.frankframework.testutil.junit.DatabaseTest;
 import org.frankframework.testutil.junit.DatabaseTestEnvironment;
 import org.frankframework.testutil.junit.TxManagerTest;
 import org.frankframework.testutil.junit.WithLiquibase;
@@ -55,7 +57,7 @@ public class LockerTest {
 		}
 	}
 
-	@TxManagerTest
+	@DatabaseTest
 	public void testBasicLockNoTransactionManager(DatabaseTestEnvironment env) throws Exception {
 		String objectId;
 		locker.setObjectId("myLocker");
@@ -66,7 +68,7 @@ public class LockerTest {
 		assertEquals(1, getRowCount(env));
 	}
 
-	@TxManagerTest
+	@DatabaseTest
 	public void testBasicLockNoTransactionManagerSecondFails(DatabaseTestEnvironment env) throws Exception {
 		locker.setObjectId("myLocker");
 		locker.configure();
@@ -189,7 +191,7 @@ public class LockerTest {
 
 		String lock = locker.acquire();
 
-		// prove that creation date equals expiry date
+		// prove that expiry date equals creation date plus default offset
 		try (Connection connection = locker.getConnectionWithTimeout(0);
 			 PreparedStatement ps = connection.prepareStatement("SELECT CREATIONDATE, EXPIRYDATE FROM " + TABLENAME + " WHERE OBJECTID = ?")) {
 			ps.setString(1, lock);
@@ -197,7 +199,38 @@ public class LockerTest {
 				if (rs.next()) {
 					Timestamp creationDate = rs.getTimestamp("CREATIONDATE");
 
-					Instant expectedExpiryDate = creationDate.toInstant().plus(temporary.getGetDefaultRetention(), temporary.getChronoUnit());
+					Instant expectedExpiryDate = creationDate.toInstant().plus(temporary.getGetDefaultRetention(), temporary.getTimeUnit().toChronoUnit());
+
+					var expiryDate = rs.getTimestamp("EXPIRYDATE");
+					assertEquals(expectedExpiryDate, expiryDate.toInstant(), "expiry date should be creation date plus default retention");
+				} else {
+					fail("no lock found with id [" + lock + "]");
+				}
+			}
+		}
+	}
+
+	@DatabaseTest
+	void testExpiryDateWithCustomDelayIsCorrectlyDetermined() throws Exception {
+		Locker.LockType temporary = Locker.LockType.T;
+
+		locker.setObjectId("myLocker");
+		locker.setType(temporary);
+		locker.setRetention(15);
+		locker.setRetentionTimeUnit(TimeUnit.MINUTES);
+		locker.configure();
+
+		String lock = locker.acquire();
+
+		// prove that expiry date equals creation date plus default offset
+		try (Connection connection = locker.getConnectionWithTimeout(0);
+			 PreparedStatement ps = connection.prepareStatement("SELECT CREATIONDATE, EXPIRYDATE FROM " + TABLENAME + " WHERE OBJECTID = ?")) {
+			ps.setString(1, lock);
+			try (var rs = ps.executeQuery()) {
+				if (rs.next()) {
+					Timestamp creationDate = rs.getTimestamp("CREATIONDATE");
+
+					Instant expectedExpiryDate = creationDate.toInstant().plus(15, ChronoUnit.MINUTES);
 
 					var expiryDate = rs.getTimestamp("EXPIRYDATE");
 					assertEquals(expectedExpiryDate, expiryDate.toInstant(), "expiry date should be creation date plus default retention");
@@ -330,9 +363,7 @@ public class LockerTest {
 			} catch (Exception e) {
 				log.warn("exception for second insert: "+e.getMessage(), e);
 			} finally {
-				if(mainItx != null) {
-					mainItx.complete();
-				}
+				mainItx.complete();
 			}
 
 		} finally {
@@ -372,7 +403,7 @@ public class LockerTest {
 
 	private static class LockerTester extends ConcurrentManagedTransactionTester {
 
-		private DatabaseTestEnvironment env;
+		private final DatabaseTestEnvironment env;
 		private Connection conn;
 
 		public LockerTester(DatabaseTestEnvironment testEnv) {

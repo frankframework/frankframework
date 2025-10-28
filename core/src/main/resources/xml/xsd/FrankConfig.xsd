@@ -215,10 +215,10 @@
  &lt;/p&gt;</xs:documentation>
     </xs:annotation>
     <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
       <xs:element name="Receiver" minOccurs="1" maxOccurs="unbounded" type="ReceiverType" />
       <xs:group ref="ErrorMessageFormatterElementGroup" minOccurs="0" maxOccurs="1" />
       <xs:element name="Pipeline" minOccurs="1" maxOccurs="1" type="PipelineType" />
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
     </xs:sequence>
     <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
@@ -326,11 +326,11 @@
  &lt;/p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;TIP&lt;/b&gt;&lt;p&gt;Although not mandatory, it is recommended to give your Receiver a clear name. This helps with ConfigurationWarnings and log statements.&lt;/p&gt;</xs:documentation>
     </xs:annotation>
     <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
       <xs:group ref="ListenerElementGroup" minOccurs="1" maxOccurs="1" />
       <xs:group ref="SenderElementGroup" minOccurs="0" maxOccurs="1" />
       <xs:group ref="ErrorStorageElementGroup" minOccurs="0" maxOccurs="1" />
       <xs:group ref="MessageLogElementGroup" minOccurs="0" maxOccurs="1" />
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
     </xs:sequence>
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
@@ -548,6 +548,7 @@
  or marked for roll back by the calling party.</xs:documentation>
     </xs:annotation>
     <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
       <xs:group ref="InputValidatorElementGroup" minOccurs="0" maxOccurs="1" />
       <xs:group ref="OutputValidatorElementGroup" minOccurs="0" maxOccurs="1" />
       <xs:group ref="InputWrapperElementGroup" minOccurs="0" maxOccurs="1" />
@@ -557,7 +558,6 @@
       <xs:element name="Locker" minOccurs="0" maxOccurs="1" type="LockerType" />
       <xs:group ref="CacheElementGroup" minOccurs="0" maxOccurs="1" />
       <xs:group ref="PipeElementGroup" minOccurs="1" maxOccurs="unbounded" />
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
     </xs:sequence>
     <xs:attribute name="firstPipe" type="xs:string">
       <xs:annotation>
@@ -633,13 +633,12 @@
   <xs:complexType name="LockerType">
     <xs:annotation>
       <xs:documentation>Locker of scheduler jobs and pipes.
-
+ &lt;p&gt;
  Tries to set a lock (by inserting a record in the database table IbisLock) and only if this is done
  successfully the job is executed.
-
+ &lt;p&gt;
  For an Oracle database the following objects are used:
-  &lt;pre&gt;
-	CREATE TABLE &amp;lt;schema_owner&amp;gt;.IBISLOCK
+  &lt;pre&gt;&lt;code&gt;CREATE TABLE &amp;amp;lt;schema_owner&amp;amp;gt;.IBISLOCK
 	(
 	OBJECTID VARCHAR2(100 CHAR),
 	TYPE CHAR(1 CHAR),
@@ -649,17 +648,16 @@
 	CONSTRAINT PK_IBISLOCK PRIMARY KEY (OBJECTID)
 	);
 
-	CREATE INDEX &amp;lt;schema_owner&amp;gt;.IX_IBISLOCK ON &amp;lt;schema_owner&amp;gt;.IBISLOCK
+	CREATE INDEX &amp;amp;lt;schema_owner&amp;amp;gt;.IX_IBISLOCK ON &amp;amp;lt;schema_owner&amp;amp;gt;.IBISLOCK
 	(EXPIRYDATE);
 
-	GRANT DELETE, INSERT, SELECT, UPDATE ON &amp;lt;schema_owner&amp;gt;.IBISLOCK TO &amp;lt;rolename&amp;gt;;
-	GRANT SELECT ON SYS.DBA_PENDING_TRANSACTIONS TO &amp;lt;rolename&amp;gt;;
+	GRANT DELETE, INSERT, SELECT, UPDATE ON &amp;amp;lt;schema_owner&amp;amp;gt;.IBISLOCK TO &amp;amp;lt;rolename&amp;amp;gt;;
+	GRANT SELECT ON SYS.DBA_PENDING_TRANSACTIONS TO &amp;amp;lt;rolename&amp;amp;gt;;
 
-	COMMIT;
-  &lt;/pre&gt;</xs:documentation>
+	COMMIT;&lt;/code&gt;&lt;/pre&gt;</xs:documentation>
     </xs:annotation>
     <xs:sequence>
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
     </xs:sequence>
     <xs:attribute name="objectId" type="xs:string" use="required">
       <xs:annotation>
@@ -683,6 +681,15 @@
       <xs:annotation>
         <xs:documentation>The time (for type=P in days and for type=T in hours) to keep the record in the database before making it eligible for deletion by a cleanup process Default: 30 days (type=P), 4 hours (type=T)</xs:documentation>
       </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="retentionTimeUnit">
+      <xs:annotation>
+        <xs:documentation>The unit of time for the retention-time. Possible values: &lt;pre&gt;SECONDS&lt;/pre&gt;, &lt;pre&gt;MINUTES&lt;/pre&gt;, &lt;pre&gt;HOURS&lt;/pre&gt;, &lt;pre&gt;DAYS&lt;/pre&gt;,
+ &lt;pre&gt;WEEKS&lt;/pre&gt;, &lt;pre&gt;MONTHS&lt;/pre&gt; and &lt;pre&gt;YEARS&lt;/pre&gt;. See TimeUnit. Default: DAYS (type=P), HOURS (type=T)</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="TimeUnitAttributeValuesType variableRef" />
+      </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="numRetries" type="frankInt">
       <xs:annotation>
@@ -1097,8 +1104,8 @@
  &amp;lt;/Monitor&amp;gt;&lt;/code&gt;&lt;/pre&gt;</xs:documentation>
     </xs:annotation>
     <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
       <xs:group ref="TriggerElementGroup" minOccurs="0" maxOccurs="unbounded" />
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
     </xs:sequence>
     <xs:attribute name="destinations" type="xs:string" />
     <xs:attribute name="name" type="xs:string" use="required">
@@ -1158,6 +1165,7 @@
   <xs:group name="ConfigurationDeclaredChildGroup">
     <xs:sequence>
       <xs:element ref="Module" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
       <xs:element name="Include" minOccurs="0" maxOccurs="unbounded" type="IncludeType" />
       <xs:element name="Adapter" minOccurs="0" maxOccurs="unbounded" type="AdapterType" />
       <xs:element name="Scheduler" minOccurs="0" maxOccurs="1" type="SchedulerType" />
@@ -1166,7 +1174,6 @@
       <xs:element name="Monitoring" minOccurs="0" maxOccurs="1" type="MonitoringType" />
       <xs:element name="SharedResources" minOccurs="0" maxOccurs="1" type="SharedResourcesType" />
       <xs:group ref="ErrorMessageFormatterElementGroup" minOccurs="0" maxOccurs="1" />
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
     </xs:sequence>
   </xs:group>
   <xs:group name="ListenerElementGroup">
@@ -1175,7 +1182,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
               <xs:group ref="ParamElementGroup" />
             </xs:choice>
           </xs:sequence>
@@ -1307,8 +1314,8 @@
   </xs:complexType>
   <xs:group name="AbstractParameterDeclaredChildGroup">
     <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
       <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractParameterDeclaredAttributeGroup">
@@ -1333,7 +1340,8 @@
     </xs:attribute>
     <xs:attribute name="contextKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>key of message context variable to use as source, instead of the message found from input message or sessionKey itself</xs:documentation>
+        <xs:documentation>Key of org.frankframework.stream.MessageContext variable to use as source, instead of the Message found from input message or sessionKey itself. Use a &lt;pre&gt;*&lt;/pre&gt;
+ to get an XML or JSON document containing all values from the org.frankframework.stream.MessageContext.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="sessionKeyXPath" type="xs:string">
@@ -2390,7 +2398,7 @@
   </xs:complexType>
   <xs:group name="AmqpListenerDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AmqpListenerDeclaredAttributeGroup">
@@ -2690,7 +2698,7 @@
   </xs:complexType>
   <xs:group name="PushingListenerAdapterDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="PushingListenerAdapterDeclaredAttributeGroup">
@@ -2754,7 +2762,7 @@
   </xs:attributeGroup>
   <xs:group name="AbstractFileSystemListenerDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractFileSystemListenerDeclaredAttributeGroup">
@@ -3003,7 +3011,7 @@
   </xs:complexType>
   <xs:group name="JMSFacadeDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="JMSFacadeDeclaredAttributeGroup">
@@ -3304,7 +3312,7 @@
   </xs:complexType>
   <xs:group name="FrankListenerDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="FrankListenerDeclaredAttributeGroup">
@@ -3618,7 +3626,7 @@
   </xs:complexType>
   <xs:group name="JavaListenerDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="JavaListenerDeclaredAttributeGroup">
@@ -3728,7 +3736,7 @@
   </xs:complexType>
   <xs:group name="JdbcFacadeDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="JdbcFacadeDeclaredAttributeGroup">
@@ -3835,7 +3843,7 @@
   </xs:complexType>
   <xs:group name="KafkaListenerDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="KafkaListenerDeclaredAttributeGroup">
@@ -4008,7 +4016,7 @@
   </xs:complexType>
   <xs:group name="MqttFacadeDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="MqttFacadeDeclaredAttributeGroup">
@@ -4122,7 +4130,7 @@
   </xs:complexType>
   <xs:group name="SapFunctionFacadeDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="SapFunctionFacadeDeclaredAttributeGroup">
@@ -4374,7 +4382,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
               <xs:group ref="ParamElementGroup" />
             </xs:choice>
           </xs:sequence>
@@ -4616,7 +4624,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
             </xs:choice>
           </xs:sequence>
           <xs:attribute ref="active" />
@@ -4966,7 +4974,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
             </xs:choice>
           </xs:sequence>
           <xs:attribute ref="active" />
@@ -5162,8 +5170,8 @@
     &amp;lt;location class=&amp;quot;org.frankframework.pipes.SwitchPipe&amp;quot; name=&amp;quot;ServiceSwitch&amp;quot;/&amp;gt;
     &amp;lt;details&amp;gt;Exception and stacktrace&amp;lt;/details&amp;gt;
     &amp;lt;params&amp;gt;
-      &amp;lt;param name=&amp;quot;sampleParam&amp;gt;paramValue&amp;lt;/param&amp;gt;
-      &amp;lt;param name=&amp;quot;errorCode&amp;gt;535&amp;lt;/param&amp;gt;
+      &amp;lt;param name=&amp;quot;sampleParam&amp;quot;&amp;gt;paramValue&amp;lt;/param&amp;gt;
+      &amp;lt;param name=&amp;quot;errorCode&amp;quot;&amp;gt;535&amp;lt;/param&amp;gt;
     &amp;lt;/params&amp;gt;
     &amp;lt;originalMessage messageId=&amp;quot;...&amp;quot; receivedTime=&amp;quot;Mon Oct 27 12:10:18 CET 2003&amp;quot; &amp;gt;
         &amp;lt;![CDATA[contents of message for which the error occurred]]&amp;gt;
@@ -5380,7 +5388,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
               <xs:element name="Forward" type="ForwardType" />
               <xs:element name="Locker" type="LockerType" />
               <xs:group ref="ParamElementGroup" />
@@ -5553,10 +5561,10 @@
   </xs:attributeGroup>
   <xs:group name="AbstractPipeDeclaredChildGroup">
     <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
       <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
       <xs:element name="Locker" minOccurs="0" maxOccurs="1" type="LockerType" />
       <xs:element name="Forward" minOccurs="0" maxOccurs="unbounded" type="ForwardType" />
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractPipeDeclaredAttributeGroup">
@@ -6126,7 +6134,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
               <xs:element name="Forward" type="ForwardType" />
               <xs:element name="Locker" type="LockerType" />
               <xs:group ref="ParamElementGroup" />
@@ -6287,7 +6295,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
               <xs:element name="Forward" type="ForwardType" />
               <xs:element name="Locker" type="LockerType" />
               <xs:group ref="ParamElementGroup" />
@@ -6838,7 +6846,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
               <xs:element name="Forward" type="ForwardType" />
               <xs:element name="Locker" type="LockerType" />
               <xs:group ref="ParamElementGroup" />
@@ -7142,7 +7150,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
             </xs:choice>
           </xs:sequence>
           <xs:attribute ref="active" />
@@ -7230,7 +7238,7 @@
   </xs:attributeGroup>
   <xs:group name="AbstractCacheAdapterDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractCacheAdapterDeclaredAttributeGroup">
@@ -7312,7 +7320,7 @@
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:group ref="CacheElementGroup" />
-              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
               <xs:element name="Forward" type="ForwardType" />
               <xs:group ref="InputValidatorElementGroup" />
               <xs:group ref="InputWrapperElementGroup" />
@@ -7344,7 +7352,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
               <xs:group ref="ParamElementGroup" />
             </xs:choice>
           </xs:sequence>
@@ -7568,7 +7576,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
               <xs:element name="InputFields" type="InputFieldsType" />
               <xs:element name="OutputFields" type="OutputFieldsType" />
               <xs:group ref="ParamElementGroup" />
@@ -7591,7 +7599,7 @@
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
               <xs:group ref="CacheElementGroup" />
-              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
               <xs:group ref="ParamElementGroup" />
               <xs:group ref="SenderElementGroup_2" />
             </xs:choice>
@@ -9093,7 +9101,7 @@
   </xs:complexType>
   <xs:group name="Afm2EdiFactSenderDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="Afm2EdiFactSenderDeclaredAttributeGroup">
@@ -9196,7 +9204,7 @@
   </xs:group>
   <xs:group name="AbstractSenderDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractSenderDeclaredAttributeGroup">
@@ -10375,7 +10383,7 @@
   </xs:attributeGroup>
   <xs:group name="AbstractHttpSessionDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractHttpSessionDeclaredAttributeGroup">
@@ -11014,7 +11022,7 @@
   </xs:complexType>
   <xs:group name="KafkaSenderDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="KafkaSenderDeclaredAttributeGroup">
@@ -11047,8 +11055,8 @@
   </xs:complexType>
   <xs:group name="LdapSenderDeclaredChildGroup">
     <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
       <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="LdapSenderDeclaredAttributeGroup">
@@ -12477,7 +12485,7 @@
   </xs:attributeGroup>
   <xs:group name="AbstractXmlValidatorDeclaredChildGroup">
     <xs:sequence>
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractXmlValidatorDeclaredAttributeGroup">
@@ -12653,9 +12661,9 @@
   </xs:attributeGroup>
   <xs:group name="AbstractRecordHandlerDeclaredChildGroup">
     <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
       <xs:element name="InputFields" minOccurs="0" maxOccurs="unbounded" type="InputFieldsType" />
       <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractRecordHandlerDeclaredAttributeGroup">
@@ -12763,7 +12771,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
               <xs:group ref="ParamElementGroup" />
               <xs:group ref="SenderElementGroup_2" />
             </xs:choice>
@@ -12870,8 +12878,8 @@
   </xs:attributeGroup>
   <xs:group name="AbstractResultHandlerDeclaredChildGroup">
     <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
       <xs:group ref="ParamElementGroup" minOccurs="0" maxOccurs="unbounded" />
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractResultHandlerDeclaredAttributeGroup">
@@ -19344,8 +19352,8 @@
   </xs:attributeGroup>
   <xs:group name="AbstractJobDefDeclaredChildGroup">
     <xs:sequence>
+      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
       <xs:element name="Locker" minOccurs="0" maxOccurs="1" type="LockerType" />
-      <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
     </xs:sequence>
   </xs:group>
   <xs:attributeGroup name="AbstractJobDefDeclaredAttributeGroup">
@@ -19796,7 +19804,7 @@
         <xs:complexType>
           <xs:sequence>
             <xs:choice minOccurs="0" maxOccurs="unbounded">
-              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="xs:string" />
+              <xs:element name="ConfigWarning" minOccurs="0" maxOccurs="unbounded" type="WarningType" />
             </xs:choice>
           </xs:sequence>
           <xs:attribute ref="active" />
@@ -20402,16 +20410,19 @@
   </xs:simpleType>
   <xs:simpleType name="LockTypeAttributeValuesType">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="T">
-        <xs:annotation>
-          <xs:documentation>Temporary</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="P">
-        <xs:annotation>
-          <xs:documentation>Permanent</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
+      <xs:enumeration value="T" />
+      <xs:enumeration value="P" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="TimeUnitAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="SECONDS" />
+      <xs:enumeration value="MINUTES" />
+      <xs:enumeration value="HOURS" />
+      <xs:enumeration value="DAYS" />
+      <xs:enumeration value="WEEKS" />
+      <xs:enumeration value="MONTHS" />
+      <xs:enumeration value="YEARS" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="SoapVersionAttributeValuesType">
@@ -22344,4 +22355,14 @@
       <xs:pattern value="$\{[^\}]+\}" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:complexType name="WarningType">
+    <xs:simpleContent>
+      <xs:annotation>
+        <xs:documentation>The warning will be shown in the Frank!Framework Console when the 'active' attribute evaluates to 'true'</xs:documentation>
+      </xs:annotation>
+      <xs:extension base="xs:string">
+        <xs:attribute ref="active" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
 </xs:schema>
