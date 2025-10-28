@@ -199,7 +199,7 @@ public class LockerTest {
 				if (rs.next()) {
 					Timestamp creationDate = rs.getTimestamp("CREATIONDATE");
 
-					Instant expectedExpiryDate = creationDate.toInstant().plus(temporary.getGetDefaultRetention(), temporary.getChronoUnit());
+					Instant expectedExpiryDate = creationDate.toInstant().plus(temporary.getGetDefaultRetention(), temporary.getTimeUnit().toChronoUnit());
 
 					var expiryDate = rs.getTimestamp("EXPIRYDATE");
 					assertEquals(expectedExpiryDate, expiryDate.toInstant(), "expiry date should be creation date plus default retention");
@@ -217,7 +217,7 @@ public class LockerTest {
 		locker.setObjectId("myLocker");
 		locker.setType(temporary);
 		locker.setRetention(15);
-		locker.setRetentionTimeUnit(ChronoUnit.MINUTES);
+		locker.setRetentionTimeUnit(TimeUnit.MINUTES);
 		locker.configure();
 
 		String lock = locker.acquire();
