@@ -47,26 +47,46 @@ public class StringUtil {
 	 * Concatenates two strings, if specified, uses the separator in between two strings.
 	 * Does not use any separators if both or one of the strings are empty.
 	 * <p>
-	 * Example:
+	 * Examples:
 	 * <pre>
 	 *         String a = "We";
 	 *         String b = "Frank";
 	 *         String separator = "Are";
-	 *         String res = StringUtil.concatStrings(a, separator, b);
-	 *         System.out.println(res); // prints "WeAreFrank"
+	 *         String res1 = StringUtil.concatStrings(a, separator, b);
+	 *         System.out.println(res1); // prints "WeAreFrank"
+	 *
+	 *         String c = null;
+	 *         String d = "Frank";
+	 *         String res2 = StringUtil.concatStrings(c, separator, d);
+	 *         System.out.println(res2); // prints "Frank"
+	 *
+	 *         String e = "We";
+	 *         String f = "";
+	 *         String re3 = StringUtil.concatStrings(c, separator, d);
+	 *         System.out.println(re3); // prints "We"
 	 *     </pre>
 	 * </p>
 	 *
-	 * @param part1     First string
-	 * @param separator Specified separator
-	 * @param part2     Second string
-	 * @return the concatenated string
+	 * @param part1     First string, may be {@literal  null}
+	 * @param separator Specified separator, may not be {@literal null}
+	 * @param part2     Second string, may be NULL
+	 * @return the concatenated string, or NULL of both {@code part1} and {@code part2} were {@literal null}.
 	 */
-	public static String concatStrings(String part1, String separator, String part2) {
+	@Nullable
+	public static String concatStrings(@Nullable String part1, @Nonnull String separator, @Nullable String part2) {
 		return concat(separator, part1, part2);
 	}
 
-	public static String concat(String separator, String... parts) {
+	/**
+	 * Concatenate strings with {@code separator}, skipping any arguments that may be {@literal null} or {@code ""}. If all given parts to be concatenated
+	 * are empty / null, then return null.
+	 *
+	 * @param separator Separator to put between parts
+	 * @param parts All parts to concatenate. May contain {@literal null} values.
+	 * @return Concatenation of all parts with separator, or {@literal null}.
+	 */
+	@Nullable
+	public static String concat(@Nonnull String separator, String... parts) {
 		int i = 0;
 		while (i < parts.length && StringUtils.isEmpty(parts[i])) {
 			i++;
@@ -87,7 +107,8 @@ public class StringUtil {
 	 * @return hidden string with all characters replaced with '*'
 	 * @see #hide(String)
 	 */
-	public static String hide(String string) {
+	@Nullable
+	public static String hide(@Nullable String string) {
 		return hide(string, 0);
 	}
 
@@ -104,7 +125,8 @@ public class StringUtil {
 	 *     </pre>
 	 * </p>
 	 */
-	public static String hide(String string, int mode) {
+	@Nullable
+	public static String hide(@Nullable String string, int mode) {
 		if (StringUtils.isEmpty(string)) {
 			return string;
 		}
@@ -126,7 +148,8 @@ public class StringUtil {
 	 *
 	 * @see #hideAll(String, Collection, int)
 	 */
-	public static String hideAll(String message, Collection<Pattern> collection) {
+	@Nullable
+	public static String hideAll(@Nullable String message, @Nullable Collection<Pattern> collection) {
 		return hideAll(message, collection, 0);
 	}
 
@@ -136,7 +159,8 @@ public class StringUtil {
 	 *
 	 * @see #hideAll(String, String, int)
 	 */
-	public static String hideAll(String message, Collection<Pattern> collection, int mode) {
+	@Nullable
+	public static String hideAll(@Nullable String message, @Nullable Collection<Pattern> collection, int mode) {
 		if (collection == null || collection.isEmpty() || StringUtils.isEmpty(message))
 			return message; // Nothing to do!
 
@@ -150,7 +174,8 @@ public class StringUtil {
 	/**
 	 * @see #hideAll(String, String, int)
 	 */
-	public static String hideAll(String inputString, String regex) {
+	@Nonnull
+	public static String hideAll(@Nonnull String inputString, @Nonnull String regex) {
 		return hideAll(inputString, regex, 0);
 	}
 
@@ -159,7 +184,8 @@ public class StringUtil {
 	 * If mode is set to 1, then the first half of the string gets hidden.
 	 * Else, all of it.
 	 */
-	public static String hideAll(String inputString, String regex, int mode) {
+	@Nonnull
+	public static String hideAll(@Nonnull String inputString, @Nonnull String regex, int mode) {
 		return hideAll(inputString, Pattern.compile(regex), mode);
 	}
 
@@ -168,7 +194,8 @@ public class StringUtil {
 	 * If mode is set to 1, then the first half of the string gets hidden.
 	 * Else, all of it.
 	 */
-	public static String hideAll(String inputString, Pattern regex, int mode) {
+	@Nonnull
+	public static String hideAll(@Nonnull String inputString, @Nonnull Pattern regex, int mode) {
 		StringBuilder result = new StringBuilder();
 		Matcher matcher = regex.matcher(inputString);
 		int previous = 0;
@@ -197,7 +224,7 @@ public class StringUtil {
 	 *     int regexCount = StringUtil.countRegex(s, regex); // regexCount gives out 4
 	 * </pre>
 	 */
-	public static int countRegex(String string, String regex) {
+	public static int countRegex(@Nonnull String string, @Nonnull String regex) {
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(string);
 		int count = 0;
