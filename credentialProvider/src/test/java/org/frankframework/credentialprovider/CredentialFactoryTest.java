@@ -27,6 +27,7 @@ class CredentialFactoryTest {
 	void setup() {
 		MockCredentialFactory.getInstance().clear();
 		CredentialFactory.clearInstance();
+		CredentialFactory.ALLOW_DEFAULT_PASSWORD = true;
 
 		// Make sure the defaults are always the same
 		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.PropertyFileCredentialFactory");
@@ -62,12 +63,33 @@ class CredentialFactoryTest {
 
 	@Test
 	void testUnknownAliasWithNoUsernameAndDefaultPassword() {
+		CredentialFactory.clearInstance();
+		CredentialFactory.ALLOW_DEFAULT_PASSWORD = true;
+
 		// Act
 		ICredentials c = CredentialFactory.getCredentials("unknown", null, "fakePassword");
 
 		// Assert
 		assertNull(c.getUsername());
 		assertEquals("fakePassword", c.getPassword());
+	}
+
+	@Test
+	void testUnknownAliasWithNoUsernameAndNoDefaultPassword() {
+		CredentialFactory.clearInstance();
+		CredentialFactory.ALLOW_DEFAULT_PASSWORD = true;
+
+		// Act
+		assertThrows(NoSuchElementException.class, () -> CredentialFactory.getCredentials("unknown", null, null));
+	}
+
+	@Test
+	void testUnknownAliasShouldThrowException() {
+		CredentialFactory.clearInstance();
+		CredentialFactory.ALLOW_DEFAULT_PASSWORD = false;
+
+		assertThrows(NoSuchElementException.class, () -> CredentialFactory.getCredentials("unknown", null, null));
+		assertThrows(NoSuchElementException.class, () -> CredentialFactory.getCredentials("unknown", null, "fakePassword"));
 	}
 
 	@Test
@@ -236,6 +258,7 @@ class CredentialFactoryTest {
 	@Test
 	public void testCredentialFactoryUnknownAliasNoDefaults() {
 		CredentialFactory.clearInstance();
+		CredentialFactory.ALLOW_DEFAULT_PASSWORD = true;
 
 		CredentialConstants.getInstance().setProperty("credentialFactory.class", "org.frankframework.credentialprovider.FileSystemCredentialFactory");
 		String url = this.getClass().getResource("/secrets").toExternalForm();
@@ -246,7 +269,7 @@ class CredentialFactoryTest {
 
 		assertNull(CredentialFactory.getCredentials("unknown"));
 		NoSuchElementException exception = assertThrows(NoSuchElementException.class, () -> CredentialFactory.getCredentials("unknown", null, null));
-		assertEquals("cannot obtain credentials from authentication alias [unknown]: alias not found", exception.getMessage());
+		assertEquals("cannot obtain credentials from authentication alias [unknown]: alias not found and no default values provided", exception.getMessage());
 	}
 
 	@Test

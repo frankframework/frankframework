@@ -47,9 +47,8 @@ public class CredentialFactory {
 	public static final String DEFAULT_USERNAME_FIELD = "username";
 	public static final String DEFAULT_PASSWORD_FIELD = "password";
 
-	private static final boolean THROW_EXCEPTION_WHEN_ALIAS_NOT_FOUND = CredentialConstants.getInstance().getBoolean("credentialFactory.exceptionWhenAliasNotFound", false);
-
 	protected final List<ISecretProvider> delegates = new ArrayList<>();
+	protected static boolean ALLOW_DEFAULT_PASSWORD = CredentialConstants.getInstance().getBoolean("credentialFactory.allowDefaultPassword", false);
 
 	private static CredentialFactory self;
 
@@ -144,7 +143,7 @@ public class CredentialFactory {
 	 * When none is found, uses the default (provided) fallback user/pass combination.
 	 */
 	@Nonnull
-	public static ICredentials getCredentials(@Nullable String rawAlias, @Nullable String defaultUsername, @Nullable String defaultPassword) {
+	public static ICredentials getCredentials(@Nullable String rawAlias, @Nullable String defaultUsername, @Nullable String defaultPassword) throws NoSuchElementException {
 		final CredentialAlias alias = CredentialAlias.parse(rawAlias);
 		List<ISecretProvider> credentialFactoryDelegates = getInstance().delegates;
 
@@ -164,11 +163,16 @@ public class CredentialFactory {
 			}
 		}
 
-		if (!THROW_EXCEPTION_WHEN_ALIAS_NOT_FOUND || StringUtils.isNotEmpty(defaultUsername) || StringUtils.isNotEmpty(defaultPassword)) {
+		if (!ALLOW_DEFAULT_PASSWORD) {
+			throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+ rawAlias +"]: alias not found");
+		}
+
+		if (StringUtils.isNotEmpty(defaultUsername) || StringUtils.isNotEmpty(defaultPassword)) {
 			log.info("no credentials found for alias [" + rawAlias + "], using default credentials");
 			return new FallbackCredential(rawAlias, defaultUsername, defaultPassword);
 		}
-		throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+ rawAlias +"]: alias not found");
+
+		throw new NoSuchElementException("cannot obtain credentials from authentication alias ["+ rawAlias +"]: alias not found and no default values provided");
 	}
 
 	private static ICredentials readSecretFields(ISecret secret, CredentialAlias alias) throws IOException {
