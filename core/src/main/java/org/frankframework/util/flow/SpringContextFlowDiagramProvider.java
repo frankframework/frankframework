@@ -17,6 +17,7 @@ package org.frankframework.util.flow;
 
 import java.io.IOException;
 
+import org.springframework.beans.factory.NamedBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -36,7 +37,7 @@ import org.frankframework.util.AppConstants;
  * Uses {@link Configuration#getLoadedConfiguration()} (and in case of an Adapter, an xPath on the LoadedConfiguration).
  */
 @Log4j2
-public class SpringContextFlowDiagramProvider implements ConfigurableLifecycle, ApplicationContextAware {
+public class SpringContextFlowDiagramProvider implements ConfigurableLifecycle, ApplicationContextAware, NamedBean {
 	private final boolean suppressWarnings = AppConstants.getInstance().getBoolean(SuppressKeys.FLOW_GENERATION_ERROR.getKey(), false);
 
 	@Setter
@@ -85,5 +86,17 @@ public class SpringContextFlowDiagramProvider implements ConfigurableLifecycle, 
 				ConfigurationWarnings.add((HasApplicationContext) applicationContext, log, "error generating flow diagram", e);
 			}
 		}
+	}
+
+	/**
+	 * Returns `AdapterFlowGenerator` or `AdapterFlowGenerator`.
+	 */
+	@Override
+	public String getBeanName() {
+		if (applicationContext == null) {
+			return null;
+		}
+
+		return "%sFlowGenerator".formatted(applicationContext.getClass().getSimpleName());
 	}
 }

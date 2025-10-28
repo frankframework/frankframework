@@ -158,10 +158,21 @@ public class ClassUtils {
 	}
 
 	/**
-	 * returns the className of the object, without the package name.
+	 * Returns the ClassName or BeanName of the object without the package name AND includes a [name] suffix for a {@link HasName} bean.
 	 */
 	@Nonnull
 	public static String nameOf(Object o) {
+		String head = null;
+		if (isClassPresent("org.springframework.beans.factory.NamedBean")) {
+			// Must be a separate statement because of this optional class
+			if (o instanceof org.springframework.beans.factory.NamedBean namedBean) {
+				head = namedBean.getBeanName();
+			}
+		}
+		if (head == null) {
+			head = classNameOf(o);
+		}
+
 		String tail = null;
 		if (o instanceof HasName object) {
 			String name = object.getName();
@@ -169,11 +180,12 @@ public class ClassUtils {
 				tail = "[" + name + "]";
 			}
 		}
-		return StringUtil.concatStrings(classNameOf(o), " ", tail);
+
+		return StringUtil.concatStrings(head, " ", tail);
 	}
 
 	/**
-	 * returns the className of the object, like {@link #nameOf(Object)}, but without [name] suffix for a {@link HasName}.
+	 * Returns the ClassName of the object (without package name), like {@link #nameOf(Object)}, but without [name] suffix for a {@link HasName}.
 	 */
 	@Nonnull
 	public static String classNameOf(Object o) {
