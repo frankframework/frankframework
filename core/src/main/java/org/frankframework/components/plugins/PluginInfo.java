@@ -22,6 +22,7 @@ import java.util.jar.Manifest;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.DefaultArtifact;
+import org.pf4j.ManifestPluginDescriptorFinder;
 import org.pf4j.Plugin;
 import org.pf4j.PluginDependency;
 import org.pf4j.PluginDescriptor;
@@ -31,6 +32,7 @@ import lombok.Getter;
 import org.frankframework.components.ComponentInfo;
 
 public class PluginInfo extends ComponentInfo implements PluginDescriptor {
+	private final String pluginClass;
 
 	@Getter
 	private final Artifact artifact;
@@ -45,6 +47,9 @@ public class PluginInfo extends ComponentInfo implements PluginDescriptor {
 		} else {
 			this.artifact = null;
 		}
+
+		String pluginClass = manifest.getMainAttributes().getValue(ManifestPluginDescriptorFinder.PLUGIN_CLASS);
+		this.pluginClass = StringUtils.defaultIfBlank(pluginClass, Plugin.class.getCanonicalName());
 	}
 
 	@Override
@@ -74,7 +79,7 @@ public class PluginInfo extends ComponentInfo implements PluginDescriptor {
 
 	@Override
 	public String getPluginClass() {
-		return Plugin.class.getCanonicalName();
+		return pluginClass;
 	}
 
 	@Override

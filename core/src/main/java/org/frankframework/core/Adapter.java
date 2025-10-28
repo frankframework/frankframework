@@ -36,7 +36,6 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.NamedBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -277,7 +276,7 @@ import org.frankframework.util.flow.SpringContextFlowDiagramProvider;
 @Log4j2
 @Category(Category.Type.BASIC)
 @FrankDocGroup(FrankDocGroupValue.OTHER)
-public class Adapter extends GenericApplicationContext implements ManagableLifecycle, FrankElement, InitializingBean, NamedBean, NameAware {
+public class Adapter extends GenericApplicationContext implements ManagableLifecycle, FrankElement, InitializingBean, NameAware {
 	protected Logger msgLog = LogUtil.getLogger(LogUtil.MESSAGE_LOGGER);
 
 	public static final String PROCESS_STATE_OK = "OK";
@@ -1161,14 +1160,6 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 			}
 		}
 		log.trace("No more messages in process - lock released on statsMessageProcessingDuration {}", statsMessageProcessingDuration);
-	}
-
-	/* (non-Javadoc)
-	 * @see org.springframework.beans.factory.NamedBean#getBeanName()
-	 */
-	@Override
-	public String getBeanName() {
-		return name;
 	}
 
 	/**
