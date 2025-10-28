@@ -88,6 +88,9 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 		// Ordinal of the HideMethod enum matches to the mode parameter value for hideAll method
 		int hideMode = messageBrowser.getHideMethod().ordinal();
 		String result = StringUtil.hideAll(inputString, IbisMaskingLayout.getGlobalReplace(), hideMode);
+		if (result == null) {
+			return null;
+		}
 		if (adapter.getComposedHideRegexPattern() != null) {
 			result = StringUtil.hideAll(result, adapter.getComposedHideRegexPattern(), hideMode);
 		}
