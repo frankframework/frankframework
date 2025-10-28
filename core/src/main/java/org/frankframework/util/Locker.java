@@ -85,6 +85,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	private @Getter LockType type = LockType.T;
 	private @Getter String dateFormatSuffix;
 	private @Getter int retention = -1;
+	private @Getter ChronoUnit retentionTimeUnit = null;
 	private DateTimeFormatter formatter;
 	private @Getter int numRetries = 0;
 	private @Getter int firstDelay = 0;
@@ -136,6 +137,9 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 
 		if (retention < 0) {
 			retention = getType().getGetDefaultRetention();
+		}
+		if (retentionTimeUnit == null) {
+			retentionTimeUnit = getType().getChronoUnit();
 		}
 	}
 
@@ -192,8 +196,7 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 					stmt.setString(3, Misc.getHostname());
 					stmt.setTimestamp(4, Timestamp.from(instant));
 
-					Instant expiry = instant.plus(getRetention(), getType().getChronoUnit());
-
+					Instant expiry = instant.plus(getRetention(), getRetentionTimeUnit());
 					stmt.setTimestamp(5, Timestamp.from(expiry));
 					TimeoutGuard timeoutGuard = null;
 					if (lockWaitTimeout > 0) {
@@ -330,6 +333,15 @@ public class Locker extends JdbcFacade implements HasTransactionAttribute {
 	 */
 	public void setRetention(int retention) {
 		this.retention = retention;
+	}
+
+	/**
+	 * The unit of time for the retention-time. Possible values: {@literal MINUTES}, {@literal HOURS}, {@literal DAYS}. See {@link ChronoUnit}.
+	 *
+	 * @ff.default DAYS (type=P), HOURS (type=T)
+	 */
+	public void setRetentionTimeUnit(ChronoUnit retentionTimeUnit) {
+		this.retentionTimeUnit = retentionTimeUnit;
 	}
 
 	/**
