@@ -16,6 +16,7 @@
 package org.frankframework.util;
 
 import java.util.Collection;
+import java.util.NoSuchElementException;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -30,11 +31,20 @@ public class CredentialFactory {
 	private final String defaultUsername;
 	private final String defaultPassword;
 
-	public CredentialFactory(String alias) {
+	/**
+	 * Attempts to resolve the provided alias
+	 * @throws NoSuchElementException when it cannot find the alias.
+	 */
+	public CredentialFactory(String alias) throws NoSuchElementException {
 		this(alias, null, null);
 	}
 
-	public CredentialFactory(String alias, String defaultUsername, String defaultPassword) {
+	/**
+	 * Attempts to resolve the provided alias, uses default username/password when provided.
+	 * 
+	 * @throws NoSuchElementException when it cannot find the alias, and no default username/password is provided.
+	 */
+	public CredentialFactory(String alias, String defaultUsername, String defaultPassword) throws NoSuchElementException {
 		credentials = org.frankframework.credentialprovider.CredentialFactory.getCredentials(alias, defaultUsername, defaultPassword);
 		this.defaultUsername = defaultUsername;
 		this.defaultPassword = defaultPassword;

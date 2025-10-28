@@ -28,11 +28,11 @@ public class CredentialFactoryTest {
 	public void testCredentialFactoryUnknownAliasNoDefaults() {
 		// This uses the PropertyFileCredentialFactory
 		NoSuchElementException e = assertThrows(NoSuchElementException.class, () -> new CredentialFactory("unknown"));
-		assertEquals("cannot obtain credentials from authentication alias [unknown]: alias not found", e.getMessage());
+		assertEquals("cannot obtain credentials from authentication alias [unknown]: alias not found and no default values provided", e.getMessage());
 
 		// Technically the same method, but to ensure it works as expected test to see if we get the same exception.
 		NoSuchElementException f = assertThrows(NoSuchElementException.class, () -> new CredentialFactory("unknown", null, null));
-		assertEquals("cannot obtain credentials from authentication alias [unknown]: alias not found", f.getMessage());
+		assertEquals("cannot obtain credentials from authentication alias [unknown]: alias not found and no default values provided", f.getMessage());
 	}
 
 	@Test
