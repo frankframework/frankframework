@@ -200,7 +200,7 @@ class FrankSenderTest {
 			"configurationName/adapterName",
 			"/adapterName"
 	})
-	void findAdapterSuccess(String target) throws SenderException, ConfigurationException {
+	void testFindAdapterSuccessInConfigure(String target) throws SenderException, ConfigurationException {
 		// Arrange
 		configuration = new TestConfiguration(false);
 		FrankSender sender = configuration.createBean();
@@ -228,29 +228,93 @@ class FrankSenderTest {
 
 	@ParameterizedTest
 	@ValueSource(strings = {
-			"noSuchAdapter",
 			"configurationName/noSuchAdapter",
-			"noSuchConfig/adapterName",
+			"noSuchAdapter",
 			"/noSuchAdapter"
 	})
-	void findAdapterFailure(String target) {
+	void testFindAdapterFailureInConfigure(String target) {
 		// Arrange
 		FrankSender sender = new FrankSender();
 		sender.setTarget(target);
 		sender.setScope(Scope.ADAPTER);
 
-		Adapter adapter = mock();
 		Configuration mockConfiguration = mock();
+		when(mockConfiguration.getName()).thenReturn("configurationName");
 		IbisManager ibisManager = mock();
 
 		sender.setIbisManager(ibisManager);
 		sender.setConfiguration(mockConfiguration);
 
 		when(ibisManager.getConfiguration("configurationName")).thenReturn(mockConfiguration);
-		when(mockConfiguration.getRegisteredAdapter("adapterName")).thenReturn(adapter);
 
 		// Act / Assert
 		assertThrows(ConfigurationException.class, sender::configure);
+	}
+
+	@Test
+	void testNoFailureInConfigureWhenDifferentConfiguration() {
+		// Arrange
+		String target = "otherConfiguration/noSuchAdapter";
+		FrankSender sender = new FrankSender();
+		sender.setTarget(target);
+		sender.setScope(Scope.ADAPTER);
+
+		Configuration mockConfiguration = mock();
+		when(mockConfiguration.getName()).thenReturn("configurationName");
+
+		IbisManager ibisManager = mock();
+		sender.setIbisManager(ibisManager);
+		sender.setConfiguration(mockConfiguration);
+
+		// Act / Assert
+		assertDoesNotThrow(sender::configure);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"noSuchAdapter",
+			"/noSuchAdapter"
+	})
+	void testFailureWhenNoConfigurationInTargetOrSender(String target) {
+		// Arrange
+		FrankSender sender = new FrankSender();
+		sender.setTarget(target);
+		sender.setScope(Scope.ADAPTER);
+
+		Configuration mockConfiguration = mock();
+		IbisManager ibisManager = mock();
+
+		sender.setIbisManager(ibisManager);
+		// No configuration for this FrankSender; this happens when it is created from a Larva scenario.
+		// The target should contain name of configuration.
+		sender.setConfiguration(null);
+
+		when(ibisManager.getConfiguration("configurationName")).thenReturn(mockConfiguration);
+
+		// Act / Assert
+		assertThrows(ConfigurationException.class, sender::configure);
+	}
+
+	@ParameterizedTest
+	@ValueSource(strings = {
+			"configurationName/noSuchAdapter",
+			"noSuchConfig/adapterName",
+	})
+	void testNoFailureInConfigureWhenConfigurationOnlyInTarget(String target) {
+		// Arrange
+		FrankSender sender = new FrankSender();
+		sender.setTarget(target);
+		sender.setScope(Scope.ADAPTER);
+
+		IbisManager ibisManager = mock();
+		sender.setIbisManager(ibisManager);
+
+		// No configuration for this FrankSender; this happens when it is created from a Larva scenario.
+		// The target should contain name of configuration.
+		sender.setConfiguration(null);
+
+		// Act / Assert
+		assertDoesNotThrow(sender::configure);
 	}
 
 	@ParameterizedTest
