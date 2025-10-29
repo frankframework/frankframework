@@ -330,11 +330,14 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 		int configNameSeparator = targetAdapter.indexOf(CONFIG_NAME_SEPARATOR);
 		if (configNameSeparator > 0) {
 			String configName = targetAdapter.substring(0, configNameSeparator);
-			if (configuration != null && !configName.equals(configuration.getName())) {
+			if (configuration == null || !configName.equals(configuration.getName())) {
 				// Do not validate the target adapter if it's in a different configuration, since that configuration may not have started up yet.
 				// If the target configuration will not be loaded at all, then there will be an error in runtime.
 				return;
 			}
+		} else if (configuration == null) {
+			// Configuration is not set when the FrankSender is created inside a Larva scenario. In this case the configuration-name must be set as part of the target.
+			throw new ConfigurationException("This FrankSender is not part of a configuration, therefore [target] must contain the name of the targeted configuration.");
 		}
 		try {
 			findAdapter(targetAdapter);
