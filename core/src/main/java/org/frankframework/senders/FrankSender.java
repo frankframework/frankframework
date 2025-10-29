@@ -330,7 +330,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 		int configNameSeparator = targetAdapter.indexOf(CONFIG_NAME_SEPARATOR);
 		if (configNameSeparator > 0) {
 			String configName = targetAdapter.substring(0, configNameSeparator);
-			if (!configName.equals(configuration.getName())) {
+			if (configuration != null && !configName.equals(configuration.getName())) {
 				// Do not validate the target adapter if it's in a different configuration, since that configuration may not have started up yet.
 				// If the target configuration will not be loaded at all, then there will be an error in runtime.
 				return;
