@@ -74,7 +74,7 @@ import org.frankframework.util.MessageUtils;
  * that is followed when the called adapter exits with the mentioned exit. This does not work if the code is for example {@code c2}.
  * </p>
  * <p>
- * A FrankSender makes a call to either an {@link Adapter} or an external program by setting the {@link #scope}. By default the scope is {@code ADAPTER}.
+ * A FrankSender makes a call to either an {@link Adapter} or an external program by setting the {@link #scope}. By default, the scope is {@code ADAPTER}.
  * </p>
  * <p/>
  *
@@ -103,7 +103,7 @@ import org.frankframework.util.MessageUtils;
  *   <li>In the target adapter, define a {@link org.frankframework.receivers.Receiver} with a {@link FrankListener}</li>
  *   <li>Give a unique name to the listener: {@link FrankListener#setName(String)}. If the name is not set, the name of the {@link Adapter} will be used.</li>
  *   <li>Set the {@link #setScope(Scope)} to {@code LISTENER} and the {@link #setTarget(String)} to the listener name as per previous point</li>
- *   <li>If the listener is in a different configuration, prefix the listener name with the name of the configuration and a slash ({@code /}) as separator between configuration and listener name</li>
+ *   <li>If the listener is in a different configuration, prefix the listener name with the name of the configuration and a slash ({@value #CONFIG_NAME_SEPARATOR}) as separator between configuration and listener name</li>
  * </ul>
  *
  * <h4>Configuring FrankSender and Remote Application</h4>
@@ -120,7 +120,7 @@ import org.frankframework.util.MessageUtils;
  * <ul>
  *     <li>Implement the interface {@code nl.nn.adapterframework.dispatcher.RequestProcessor} from the IbisServiceDispatcher library</li>
  *     <li>Register the instance with the {@code nl.nn.adapterframework.dispatcher.DispatcherManager} obtained via the {@code nl.nn.adapterframework.dispatcher.DispatcherManagerFactory}</li>
- *     <li>See the implementation code of the {@code JavaListener} in the Frank!Framework for an example</li>
+ *     <li>See the implementation code of the {@link org.frankframework.receivers.JavaListener} in the Frank!Framework for an example</li>
  * </ul>
  * </p>
  * <p>
@@ -282,6 +282,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	public static final String TARGET_PARAM_NAME = "target";
 	public static final String SCOPE_PARAM_NAME = "scope";
 	public static final String TEST_TOOL_LISTENER_PREFIX = "testtool";
+	public static final char CONFIG_NAME_SEPARATOR = '/';
 
 	/**
 	 * Scope for {@link FrankSender} call: Another Frank!Framework Adapter, or another Java application running in the same JVM.
@@ -320,11 +321,28 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 			throw new ConfigurationException("[target] required, either as parameter or as attribute in the configuration");
 		}
 		if (StringUtils.isNotBlank(getTarget()) && getScope() == Scope.ADAPTER) {
-			try {
-				findAdapter(getTarget());
-			} catch (SenderException e) {
-				throw new ConfigurationException("Cannot find adapter specified in configuration", e);
+			validateTarget();
+		}
+	}
+
+	private void validateTarget() throws ConfigurationException {
+		String targetAdapter = getTarget();
+		int configNameSeparator = targetAdapter.indexOf(CONFIG_NAME_SEPARATOR);
+		if (configNameSeparator > 0) {
+			String configName = targetAdapter.substring(0, configNameSeparator);
+			if (configuration == null || !configName.equals(configuration.getName())) {
+				// Do not validate the target adapter if it's in a different configuration, since that configuration may not have started up yet.
+				// If the target configuration will not be loaded at all, then there will be an error in runtime.
+				return;
 			}
+		} else if (configuration == null) {
+			// Configuration is not set when the FrankSender is created inside a Larva scenario. In this case the configuration-name must be set as part of the target.
+			throw new ConfigurationException("This FrankSender is not part of a configuration, therefore [target] must contain the name of the targeted configuration.");
+		}
+		try {
+			findAdapter(targetAdapter);
+		} catch (SenderException e) {
+			throw new ConfigurationException("Cannot find adapter specified in configuration", e);
 		}
 	}
 
@@ -489,13 +507,13 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	}
 
 	private @Nonnull String getFullFrankListenerName(@Nonnull String target) {
-		int configNameSeparator = target.indexOf('/');
+		int configNameSeparator = target.indexOf(CONFIG_NAME_SEPARATOR);
 		if (configuration == null || configNameSeparator > 0) {
 			return target;
 		} else if (configNameSeparator == 0) {
 			return configuration.getName() + target;
 		} else {
-			return configuration.getName() + "/" + target;
+			return configuration.getName() + CONFIG_NAME_SEPARATOR + target;
 		}
 	}
 
@@ -503,7 +521,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	protected Adapter findAdapter(String target) throws SenderException {
 		Configuration actualConfiguration;
 		String adapterName;
-		int configNameSeparator = target.indexOf('/');
+		int configNameSeparator = target.indexOf(CONFIG_NAME_SEPARATOR);
 		if (configNameSeparator > 0) {
 			adapterName = target.substring(configNameSeparator + 1);
 			String configurationName = target.substring(0, configNameSeparator);
