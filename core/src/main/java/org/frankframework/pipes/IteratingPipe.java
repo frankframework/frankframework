@@ -93,35 +93,38 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	protected static final String STOP_CONDITION_MET_FORWARD = "stopConditionMet";
 
 	private @Getter String styleSheetName;
-	private @Getter String xpathExpression=null;
+	private @Getter String xpathExpression = null;
 	private @Getter String namespaceDefs = null;
-	private @Getter OutputType outputType=OutputType.TEXT;
-	private @Getter boolean omitXmlDeclaration=true;
+	private @Getter OutputType outputType = OutputType.TEXT;
+	private @Getter boolean omitXmlDeclaration = true;
 
-	private @Getter String itemNoSessionKey=null;
+	private @Getter String itemNoSessionKey = null;
 
-	private @Getter String stopConditionXPathExpression=null;
+	private @Getter String stopConditionXPathExpression = null;
 	private @Getter int maxItems;
-	private @Getter boolean ignoreExceptions=false;
+	private @Getter boolean ignoreExceptions = false;
 
-	private @Getter boolean collectResults=true;
-	private @Getter boolean removeXmlDeclarationInResults=false;
-	private @Getter boolean addInputToResult=false;
-	private @Getter boolean removeDuplicates=false;
+	private @Getter boolean collectResults = true;
+	private @Getter boolean removeXmlDeclarationInResults = false;
+	private @Getter boolean addInputToResult = false;
+	private @Getter boolean removeDuplicates = false;
 
-	private @Getter boolean closeIteratorOnExit=true;
+	private @Getter boolean closeIteratorOnExit = true;
 	private @Getter boolean parallel = false;
 	private @Getter int maxChildThreads = 0;
 
-	private @Getter int blockSize=0;
+	private @Getter int blockSize = 0;
 
 	private @Getter @Setter TaskExecutor taskExecutor;
 	protected TransformerPool msgTransformerPool;
-	private TransformerPool stopConditionTp=null;
+	private TransformerPool stopConditionTp = null;
 
 	private final Map<String, DistributionSummary> statisticsMap = new ConcurrentHashMap<>();
 
 	private ResourceLimiter childLimiter = null;
+
+	protected @Getter @Setter String wrapperStart = "<results>\n";
+	protected @Getter @Setter String wrapperEnd = "</results>";
 
 	protected enum StopReason {
 		MAX_ITEMS_REACHED(MAX_ITEMS_REACHED_FORWARD),
@@ -208,17 +211,17 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		private final PipeLineSession session;
 		private final ISender sender;
 		private final Writer results;
-		private int itemsInBlock=0;
-		private int totalItems=0;
+		private int itemsInBlock = 0;
+		private int totalItems = 0;
 		private boolean blockOpen=false;
 		private Object blockHandle;
 		private final List<I> inputItems = Collections.synchronizedList(new ArrayList<>());
 		private List<ParallelSenderExecutor> executorList;
 
 		public ItemCallback(PipeLineSession session, ISender sender, Writer out) {
-			this.session=session;
-			this.sender=sender;
-			this.results=out;
+			this.session = session;
+			this.sender = sender;
+			this.results = out;
 			if (isParallel() && isCollectResults()) {
 				executorList = new ArrayList<>();
 			}
@@ -226,28 +229,33 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 		public void startIterating() throws SenderException, TimeoutException, IOException {
 			if (isCollectResults()) {
-				results.append("<results>\n");
+				results.append(wrapperStart);
 			}
 			if (!isParallel() && sender instanceof IBlockEnabledSender<?> enabledSender) {
 				blockHandle = enabledSender.openBlock(session);
-				blockOpen=true;
+				blockOpen = true;
 			}
 		}
+
 		public void endIterating() throws SenderException, IOException, TimeoutException {
 			if (blockOpen && sender instanceof IBlockEnabledSender<?>) {
 				((IBlockEnabledSender)sender).closeBlock(blockHandle, session);
 			}
 			if (isCollectResults()) {
 				waitForResults();
-				results.append("</results>");
+				results.append(wrapperEnd);
 			} else {
-				results.append("<results count=\"").append(String.valueOf(getCount())).append("\"/>");
+				results.append(wrapperStart)
+						.append("\"count\":")
+						.append(String.valueOf(getCount()))
+						.append(wrapperEnd);
 			}
 		}
+
 		public void startBlock() throws SenderException, TimeoutException {
 			if (!isParallel() && !blockOpen && sender instanceof IBlockEnabledSender<?> enabledSender) {
 				blockHandle = enabledSender.openBlock(session);
-				blockOpen=true;
+				blockOpen = true;
 			}
 		}
 		/**
@@ -256,27 +264,30 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		public boolean endBlock() throws SenderException {
 			if (!isParallel() && sender instanceof IBlockEnabledSender<?>) {
 				((IBlockEnabledSender)sender).closeBlock(blockHandle, session);
-				blockOpen=false;
+				blockOpen = false;
 			}
-			itemsInBlock=0;
+			itemsInBlock = 0;
 			return true;
+		}
+
+		private boolean isDuplicate(I item) {
+			boolean duplicate = inputItems.contains(item);
+			if (!duplicate) inputItems.add(item);
+			return duplicate;
 		}
 
 		/**
 		 * @return a non-null StopReason when stop is required
 		 */
 		public StopReason handleItem(I item) throws SenderException, TimeoutException, IOException {
-			if (isRemoveDuplicates()) {
-				if (inputItems.contains(item)) {
-					log.debug("duplicate item [{}] will not be processed", item);
-					return null;
-				}
-				inputItems.add(item);
+			if (isRemoveDuplicates() && isDuplicate(item)) {
+				log.debug("duplicate item [{}] will not be processed", item);
+				return null;
 			}
 
 			// This session will be closed in either the ParallelSenderExecutor or the finally statement below.
 			PipeLineSession childSession = new PipeLineSession(session);
-			String itemResult=null;
+			String itemResult = null;
 			totalItems++;
 
 			if (StringUtils.isNotEmpty(getItemNoSessionKey())) {
@@ -314,14 +325,14 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						}
 						getTaskExecutor().execute(pse);
 					} else {
-						if (getBlockSize()>0 && itemsInBlock==0) {
+						if (getBlockSize() > 0 && itemsInBlock == 0) {
 							startBlock();
 						}
-						long senderStartTime= System.currentTimeMillis();
+						long senderStartTime = System.currentTimeMillis();
 						Message resultMessage;
 						if (sender instanceof IBlockEnabledSender<?>) {
-							//noinspection unchecked
-							SenderResult senderResult=((IBlockEnabledSender<Object>)sender).sendMessage(blockHandle, message, childSession);
+							// noinspection unchecked
+							SenderResult senderResult = ((IBlockEnabledSender<Object>)sender).sendMessage(blockHandle, message, childSession);
 							resultMessage = senderResult.getResult();
 							if (!senderResult.isSuccess()) {
 								throw new SenderException(senderResult.getErrorMessage());
@@ -334,7 +345,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 							resultMessage.close();
 						}
 						senderStatistics.record((double) System.currentTimeMillis() - senderStartTime);
-						if (getBlockSize()>0 && ++itemsInBlock >= getBlockSize()) {
+						if (getBlockSize() > 0 && ++itemsInBlock >= getBlockSize()) {
 							endBlock();
 						}
 					}
@@ -347,14 +358,14 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				} catch (SenderException e) {
 					if (isIgnoreExceptions()) {
 						log.info("ignoring SenderException after execution of sender for item [{}]", item, e);
-						itemResult="<exception>"+ XmlEncodingUtils.encodeChars(e.getMessage())+"</exception>";
+						itemResult = "<exception>" + XmlEncodingUtils.encodeChars(e.getMessage()) + "</exception>";
 					} else {
 						throw e;
 					}
 				} catch (TimeoutException e) {
 					if (isIgnoreExceptions()) {
 						log.info("ignoring TimeOutException after execution of sender item [{}]", item, e);
-						itemResult="<timeout>"+ XmlEncodingUtils.encodeChars(e.getMessage())+"</timeout>";
+						itemResult = "<timeout>" + XmlEncodingUtils.encodeChars(e.getMessage()) + "</timeout>";
 					} else {
 						throw e;
 					}
@@ -363,11 +374,11 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					if (isCollectResults() && !isParallel()) {
 						addResult(totalItems, message, itemResult);
 					}
-					if (getMaxItems()>0 && totalItems>=getMaxItems()) {
+					if (getMaxItems() > 0 && totalItems >= getMaxItems()) {
 						log.debug("count [{}] reached maxItems [{}], stopping loop", totalItems, getMaxItems());
 						return StopReason.MAX_ITEMS_REACHED;
 					}
-					if (getStopConditionTp()!=null) {
+					if (getStopConditionTp() != null) {
 						long stopConditionStartTime = System.currentTimeMillis();
 						String stopConditionResult = getStopConditionTp().transformToString(itemResult,null);
 						long stopConditionEndTime = System.currentTimeMillis();
@@ -381,9 +392,9 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 					}
 					return null;
 				} catch (SAXException e) {
-					throw new SenderException("cannot parse input",e);
+					throw new SenderException("cannot parse input", e);
 				} catch (TransformerException e) {
-					throw new SenderException("cannot serialize item",e);
+					throw new SenderException("cannot serialize item", e);
 				}
 			} finally {
 				if (!isParallel()) {
@@ -417,11 +428,11 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 				itemResult = XmlUtils.skipXmlDeclaration(itemResult);
 			}
 			log.debug("partial result [{}]", itemResult);
-			String itemInput="";
+			String itemInput = "";
 			if (isAddInputToResult()) {
-				itemInput = "<input>"+(isRemoveXmlDeclarationInResults()?XmlUtils.skipXmlDeclaration(message.asString()):message.asString())+"</input>";
+				itemInput = "<input>" + (isRemoveXmlDeclarationInResults()?XmlUtils.skipXmlDeclaration(message.asString()):message.asString()) + "</input>";
 			}
-			itemResult = "<result item=\"" + count + "\">\n"+itemInput+itemResult+"\n</result>";
+			itemResult = "<result item=\"" + count + "\">\n" + itemInput + itemResult + "\n</result>";
 			results.append(itemResult).append("\n");
 		}
 
