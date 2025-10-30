@@ -272,6 +272,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	 */
 	// TODO: this method should be tested and refactored...
 	@Nullable
+	@Override
 	public PipeForward findForward(@Nullable String forward) {
 		if (StringUtils.isEmpty(forward)) {
 			return null;

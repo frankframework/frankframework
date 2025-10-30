@@ -76,6 +76,21 @@ public class ExceptionHandlingPipeProcessorTest extends PipeProcessorTestBase {
 	}
 
 	@Test
+	void testWithPipeRunExceptionAndGlobalForwardExceptionForward() throws Exception {
+		configurePipeLine(pipeLine ->  pipeLine.addForward(new PipeForward("exception", "exit")));
+		createPipe(EchoPipe.class, "Echo pipe", "Exception pipe");
+		createPipe(ThrowExceptionPipe.class, "Exception pipe", "success");
+
+		Message result = processPipeLine(new Message("PipeRun"));
+
+		assertEquals("""
+				<errorMessage timestamp="IGNORE" originator="IAF LOCKED_FF_CORE_VERSION" message="ThrowExceptionPipe [Exception pipe] msgId [fake-mid]">
+					<location class="org.frankframework.processors.ExceptionHandlingPipeProcessorTest$ThrowExceptionPipe" name="Exception pipe"/>
+					<originalMessage messageId="fake-mid">PipeRun</originalMessage>
+				</errorMessage>""", result.asString().replaceAll("timestamp=\"[A-Za-z0-9: ]+\"", "timestamp=\"IGNORE\""));
+	}
+
+	@Test
 	void testWithPipeRunExceptionExitAndNormalPipeAndTsReceived() throws Exception {
 		Instant tsReceived = Instant.ofEpochMilli(1234567890L);
 		session.put(PipeLineSession.TS_RECEIVED_KEY, DateFormatUtils.format(tsReceived, DateFormatUtils.FULL_GENERIC_FORMATTER));

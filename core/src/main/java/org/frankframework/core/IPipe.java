@@ -18,6 +18,8 @@ package org.frankframework.core;
 import java.util.Collection;
 import java.util.Map;
 
+import jakarta.annotation.Nullable;
+
 import org.springframework.context.Lifecycle;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -54,6 +56,9 @@ public interface IPipe extends IConfigurable, IForwardTarget, FrankElement, Name
 	 * called by one thread at a time, should make sure getMaxThreads always returns a value of 1.
 	 */
 	int getMaxThreads();
+
+	@Nullable
+	PipeForward findForward(@Nullable String forward);
 
 	/**
 	 * Get pipe forwards.

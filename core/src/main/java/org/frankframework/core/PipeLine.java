@@ -546,8 +546,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		for (int i=0; i<pipes.size(); i++) {
 			result.append("pipe").append(i).append("=[").append(getPipe(i).getName()).append("]");
 		}
-		for (String exitName : pipeLineExits.keySet()) {
-			PipeLineExit pe = pipeLineExits.get(exitName);
+		for (PipeLineExit pe : pipeLineExits.values()) {
 			result.append("[name:").append(pe.getName()).append(" state:").append(pe.getState()).append("]");
 		}
 		return result.toString();
