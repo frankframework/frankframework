@@ -484,7 +484,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 			PipeRunResult prr = new PipeRunResult(getSuccessForward(), messageBuilder.build());
 			if(stopReason != null) {
-				PipeForward forward = getForwards().get(stopReason.getForwardName());
+				PipeForward forward = findForward(stopReason.getForwardName());
 				if(forward != null) {
 					prr.setPipeForward(forward);
 				}
