@@ -34,6 +34,7 @@ public class EventHandler extends FrankApiWebSocketBase {
 
 	@Scheduled(fixedDelayString = "${console.socket.poller.warnings}", timeUnit = TimeUnit.SECONDS, initialDelayString = "${console.socket.poller.startDelay}")
 	public void serverWarnings() {
+		if (this.getClusterMembers().isEmpty()) return;
 		propagateAuthenticationContext("server-warnings");
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.APPLICATION, BusAction.WARNINGS);
 		convertAndSendToMembers(builder, "server-warnings");
@@ -41,6 +42,7 @@ public class EventHandler extends FrankApiWebSocketBase {
 
 	@Scheduled(fixedDelayString = "${console.socket.poller.adapters}", timeUnit = TimeUnit.SECONDS, initialDelayString = "${console.socket.poller.startDelay}")
 	public void expandedAdapters() {
+		if (this.getClusterMembers().isEmpty()) return;
 		propagateAuthenticationContext("adapter-info");
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.GET);
 		builder.addHeader("expanded", "all");
@@ -50,6 +52,7 @@ public class EventHandler extends FrankApiWebSocketBase {
 	// So users get a quicker response when starting/stopping an adapter
 	@Scheduled(fixedDelayString = "${console.socket.poller.messages}", timeUnit = TimeUnit.SECONDS, initialDelayString = "${console.socket.poller.startDelay}")
 	public void adapters() {
+		if (this.getClusterMembers().isEmpty()) return;
 		propagateAuthenticationContext("adapter-info");
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.GET);
 		builder.addHeader("expanded", "messages");

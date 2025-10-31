@@ -243,7 +243,9 @@ export class AppComponent implements OnInit, OnDestroy {
               }
               if (this.selectedClusterMember != null) {
                 this.appService.triggerReload();
+                return;
               }
+              this.router.navigate(['error']);
             },
             error: () => {
               this.sweetAlertService
