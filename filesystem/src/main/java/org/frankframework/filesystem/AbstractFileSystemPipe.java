@@ -16,7 +16,6 @@
 package org.frankframework.filesystem;
 
 import java.util.List;
-import java.util.Map;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
@@ -116,10 +115,9 @@ public abstract class AbstractFileSystemPipe<F, FS extends IBasicFileSystem<F>> 
 			result = actor.doAction(message, pvl, session);
 		} catch (FileSystemException e) {
 			String forwardName = e.getForward().getForwardName();
-
-			Map<String, PipeForward> forwards = getForwards();
-			if (forwards.containsKey(forwardName)) {
-				return new PipeRunResult(getForwards().get(forwardName), e.getMessage());
+			PipeForward forward = findForward(forwardName);
+			if (forward != null) {
+				return new PipeRunResult(forward, e.getMessage());
 			}
 			throw new PipeRunException(this, "cannot perform action", e);
 		}

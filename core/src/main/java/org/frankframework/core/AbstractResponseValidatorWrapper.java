@@ -18,6 +18,8 @@ package org.frankframework.core;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.annotation.Nullable;
+
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
@@ -70,6 +72,20 @@ public abstract class AbstractResponseValidatorWrapper<V extends AbstractValidat
 	@Override
 	public Map<String, PipeForward> getForwards() {
 		return forwards;
+	}
+
+	@Override
+	@Nullable
+	public PipeForward findForward(String forward) {
+		PipeForward pipeForward = forwards.get(forward);
+		if (pipeForward != null) {
+			return pipeForward;
+		}
+		PipeLine pipeLine = owner.getPipeLine();
+		if (pipeLine != null) {
+			return pipeLine.findGlobalForward(forward);
+		}
+		return null;
 	}
 
 	@Override
