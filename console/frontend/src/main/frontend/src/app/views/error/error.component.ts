@@ -27,6 +27,8 @@ export class ErrorComponent implements OnInit, OnDestroy {
   protected cooldownCounter = 0;
   protected viewStackTrace = false;
   protected stackTrace?: stackTrace[];
+  protected readonly faLifeRing = faLifeRing;
+  protected readonly faBug = faBug;
 
   private interval?: number;
   private readonly router: Router = inject(Router);
@@ -46,6 +48,8 @@ export class ErrorComponent implements OnInit, OnDestroy {
     if (httpCode < 400 || httpCode > 502) this.router.navigate(['/status']);
 
     this.cooldownCounter = 60;
+
+    // TODO check if no cluster members, set error to "No cluster members found"
     this.appService.startupError.set(error);
     this.stackTrace = stackTrace;
 
@@ -71,7 +75,4 @@ export class ErrorComponent implements OnInit, OnDestroy {
       },
     });
   }
-
-  protected readonly faLifeRing = faLifeRing;
-  protected readonly faBug = faBug;
 }
