@@ -121,7 +121,7 @@ public class BusMessageUtils {
 	}
 
 	@Nonnull
-	private static Collection<? extends GrantedAuthority> getAuthorities() {
+	public static Collection<? extends GrantedAuthority> getAuthorities() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if(authentication != null) {
 			return authentication.getAuthorities();

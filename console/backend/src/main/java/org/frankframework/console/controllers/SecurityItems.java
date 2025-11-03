@@ -15,8 +15,14 @@
 */
 package org.frankframework.console.controllers;
 
+import lombok.Getter;
+
+import org.frankframework.management.bus.BusMessageUtils;
+
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -24,6 +30,11 @@ import org.frankframework.console.AllowAllIbisUserRoles;
 import org.frankframework.console.Relation;
 import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.management.bus.BusTopic;
+
+import java.security.Principal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 public class SecurityItems {
@@ -38,7 +49,42 @@ public class SecurityItems {
 	@GetMapping(value = "/securityitems", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("securityitems")
 	public ResponseEntity<?> getSecurityItems() {
+		if (frankApiService.getClusterMembers().isEmpty()) {
+			return ResponseEntity.status(503).body(getUnavailableSecurityItems());
+		}
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SECURITY_ITEMS);
 		return frankApiService.callSyncGateway(builder);
+	}
+
+	private Map<String, Object> getUnavailableSecurityItems() {
+		Map<String, Object> returnMap = new HashMap<>();
+		Map<String, Object> emptyMap = Map.of();
+		List<Object> emptyList = List.of();
+		returnMap.put("securityRoles", getSecurityRoles());
+		returnMap.put("jmsRealms", emptyMap);
+		returnMap.put("resourceFactories", emptyList);
+		returnMap.put("sapSystems", emptyList);
+		returnMap.put("authEntries", emptyList);
+		returnMap.put("xmlComponents", emptyMap);
+		returnMap.put("supportedConnectionOptions", emptyMap);
+		returnMap.put("expiringCertificates", emptyList);
+		return returnMap;
+	}
+
+	private List<SecurityRolesDTO> getSecurityRoles() {
+		return BusMessageUtils.getAuthorities()
+			.stream()
+			.map(authority -> new SecurityRolesDTO(authority.getAuthority().substring(5)))
+			.toList();
+	}
+
+	private static class SecurityRolesDTO {
+		private final @Getter String name;
+		private final @Getter boolean allowed;
+
+		public SecurityRolesDTO(String role) {
+			this.name = role;
+			this.allowed = BusMessageUtils.hasRole(role);
+		}
 	}
 }
