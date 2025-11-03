@@ -32,7 +32,7 @@
 			<pipe name="errorState" className="org.frankframework.pipes.EchoPipe" getInputFromFixedValue="&lt;reply&gt;errorStateResult&lt;/reply&gt;">
 				<forward name="success" path="ERROR" />
 			</pipe>
-			<pipe name="exception" className="org.frankframework.pipes.ExceptionPipe">
+			<pipe name="exception-pipe" className="org.frankframework.pipes.ExceptionPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 			<pipe name="mdc local" className="org.frankframework.pipes.LogContextPipe">
