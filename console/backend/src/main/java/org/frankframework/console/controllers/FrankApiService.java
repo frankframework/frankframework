@@ -15,14 +15,18 @@
 */
 package org.frankframework.console.controllers;
 
+import java.util.List;
 import java.util.UUID;
 
 import jakarta.annotation.Nonnull;
+
+import org.frankframework.management.gateway.events.ClusterMemberEvent;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationListener;
 import org.springframework.core.env.Environment;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.Message;
@@ -39,10 +43,11 @@ import org.frankframework.console.util.ResponseUtils;
 import org.frankframework.management.bus.OutboundGateway;
 
 @Service
-public class FrankApiService implements ApplicationContextAware, InitializingBean {
+public class FrankApiService implements ApplicationContextAware, InitializingBean, ApplicationListener<ClusterMemberEvent> {
 
 	private @Getter ApplicationContext applicationContext;
 	private @Getter Environment environment;
+	private @Getter List<OutboundGateway.ClusterMember> clusterMembers;
 
 	private final ClientSession session;
 	private final MessageCacheStore messageCacheStore;
@@ -52,8 +57,21 @@ public class FrankApiService implements ApplicationContextAware, InitializingBea
 		this.messageCacheStore = messageCacheStore;
 	}
 
+	@Override
+	public void onApplicationEvent(ClusterMemberEvent event) {
+		afterPropertiesSet();
+	}
+
 	protected final OutboundGateway getGateway() {
 		return getApplicationContext().getBean("outboundGateway", OutboundGateway.class);
+	}
+
+	@Override
+	public final void afterPropertiesSet() {
+		environment = applicationContext.getEnvironment();
+		clusterMembers = getGateway().getMembers().stream()
+				.filter(m -> "worker".equals(m.getType()))
+				.toList();
 	}
 
 	@Nonnull
@@ -105,11 +123,6 @@ public class FrankApiService implements ApplicationContextAware, InitializingBea
 	@Override
 	public final void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
-	}
-
-	@Override
-	public final void afterPropertiesSet() {
-		environment = applicationContext.getEnvironment();
 	}
 
 	private UUID getMemberTarget() {
