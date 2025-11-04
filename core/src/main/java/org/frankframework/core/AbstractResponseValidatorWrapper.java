@@ -15,7 +15,6 @@
 */
 package org.frankframework.core;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import jakarta.annotation.Nullable;
@@ -38,9 +37,6 @@ public abstract class AbstractResponseValidatorWrapper<V extends AbstractValidat
 
 	private @Getter @Setter String name;
 	private boolean started = false;
-
-	private final Map<String, PipeForward> forwards = new HashMap<>();
-
 	protected V owner;
 
 	protected AbstractResponseValidatorWrapper(V owner) {
@@ -71,26 +67,20 @@ public abstract class AbstractResponseValidatorWrapper<V extends AbstractValidat
 
 	@Override
 	public Map<String, PipeForward> getForwards() {
-		return forwards;
+		// Only here because PipeLine configuration calls it, and interface demands it. There will never be any forwards owned or used by the wrapper.
+		return owner.getForwards();
 	}
 
 	@Override
 	@Nullable
 	public PipeForward findForward(String forward) {
-		PipeForward pipeForward = forwards.get(forward);
-		if (pipeForward != null) {
-			return pipeForward;
-		}
-		PipeLine pipeLine = owner.getPipeLine();
-		if (pipeLine != null) {
-			return pipeLine.findGlobalForward(forward);
-		}
-		return null;
+		// Only here because interface demands it, but should never be called
+		throw new UnsupportedOperationException("Forwards should be determined from the owner");
 	}
 
 	@Override
 	public void addForward(PipeForward forward) {
-		forwards.put(forward.getName(), forward);
+		// No-op, only here because PipeLine configuration calls it and interface demands it
 	}
 
 	@Override
