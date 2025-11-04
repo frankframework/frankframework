@@ -77,6 +77,14 @@ jobs:
         distribution: 'temurin'
         java-version: ${{ env.JDK_VERSION }}
 
+    - name: Create cypress.env.json from secret
+      uses: mobiledevops/secret-to-file-action@v1
+      with:
+        base64-encoded-secret: ${{ secrets.CI_CYPRESS_ENV }}
+        filename: "cypress.env.json"
+        is-executable: true
+        working-directory: "console/frontend/src/main/frontend/cypress"
+
     - name: Install pnpm
       uses: pnpm/action-setup@v4
       with:
