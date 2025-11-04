@@ -82,7 +82,6 @@ jobs:
       with:
         base64-encoded-secret: ${{ secrets.CI_CYPRESS_ENV }}
         filename: "cypress.env.json"
-        is-executable: true
         working-directory: "console/frontend/src/main/frontend/cypress"
 
     - name: Install pnpm
