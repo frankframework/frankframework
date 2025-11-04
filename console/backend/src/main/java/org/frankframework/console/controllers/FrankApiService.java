@@ -20,8 +20,6 @@ import java.util.UUID;
 
 import jakarta.annotation.Nonnull;
 
-import org.frankframework.management.gateway.events.ClusterMemberEvent;
-
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -41,6 +39,7 @@ import org.frankframework.console.controllers.socket.MessageCacheStore;
 import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.console.util.ResponseUtils;
 import org.frankframework.management.bus.OutboundGateway;
+import org.frankframework.management.gateway.events.ClusterMemberEvent;
 
 @Service
 public class FrankApiService implements ApplicationContextAware, InitializingBean, ApplicationListener<ClusterMemberEvent> {

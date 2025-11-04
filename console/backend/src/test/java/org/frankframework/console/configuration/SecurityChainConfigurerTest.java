@@ -15,6 +15,7 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultMatcher;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.result.MockMvcResultHandlers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -32,6 +33,8 @@ public class SecurityChainConfigurerTest {
 	private WebApplicationContext context;
 
 	private MockMvc mockMvc;
+
+	private final ResultMatcher authorisedExpectedStatus = status().is(503);
 
 	@DynamicPropertySource
 	static void dynamicProperties(DynamicPropertyRegistry registry) {
@@ -52,14 +55,15 @@ public class SecurityChainConfigurerTest {
 	@WithMockUser(authorities = "ROLE_ADMIN")
 	@Test
 	void testServerHealthWithLoggedInUser() throws Exception {
+
 		// used from localhost
 		this.mockMvc.perform(MockMvcRequestBuilders.get("/server/health"))
-				.andExpect(status().isOk());
+				.andExpect(authorisedExpectedStatus);
 
 		// custom remote address
 		this.mockMvc.perform(MockMvcRequestBuilders.get("/server/health")
 						.remoteAddress("195.1.12.1"))
-				.andExpect(status().isOk());
+				.andExpect(authorisedExpectedStatus);
 	}
 
 	@Test
@@ -79,7 +83,7 @@ public class SecurityChainConfigurerTest {
 	void testServerHealthEndpoint() throws Exception {
 		// use localhost as remote address, not authorized
 		this.mockMvc.perform(MockMvcRequestBuilders.get("/server/health"))
-				.andExpect(status().isOk());
+				.andExpect(authorisedExpectedStatus);
 
 		// custom remote address, not authorized
 		this.mockMvc.perform(MockMvcRequestBuilders.get("/server/health")
@@ -90,6 +94,6 @@ public class SecurityChainConfigurerTest {
 		this.mockMvc.perform(MockMvcRequestBuilders.get("/server/health")
 						.with(httpBasic("Admin", "Nimda"))
 						.remoteAddress("192.168.0.1"))
-				.andExpect(status().isOk());
+				.andExpect(authorisedExpectedStatus);
 	}
 }

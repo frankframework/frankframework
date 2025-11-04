@@ -15,8 +15,6 @@
 */
 package org.frankframework.console.controllers;
 
-import org.frankframework.console.ApiException;
-
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +22,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.frankframework.console.AllowAllIbisUserRoles;
+import org.frankframework.console.ApiException;
 import org.frankframework.console.Description;
 import org.frankframework.console.Relation;
 import org.frankframework.console.util.RequestMessageBuilder;

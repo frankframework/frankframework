@@ -15,26 +15,22 @@
 */
 package org.frankframework.console.controllers;
 
-import lombok.Getter;
-
-import org.frankframework.management.bus.BusMessageUtils;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import lombok.Getter;
 
 import org.frankframework.console.AllowAllIbisUserRoles;
 import org.frankframework.console.Relation;
 import org.frankframework.console.util.RequestMessageBuilder;
+import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-
-import java.security.Principal;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @RestController
 public class SecurityItems {

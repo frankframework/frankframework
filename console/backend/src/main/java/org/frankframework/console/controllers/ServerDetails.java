@@ -15,33 +15,29 @@
 */
 package org.frankframework.console.controllers;
 
+import java.time.ZonedDateTime;
+import java.util.HashMap;
+import java.util.Map;
+
 import jakarta.annotation.security.PermitAll;
-
-import org.frankframework.console.ApiException;
-
-import org.frankframework.management.bus.message.JsonMessage;
-import org.frankframework.util.TimeProvider;
 
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.Message;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.frankframework.console.AllowAllIbisUserRoles;
+import org.frankframework.console.ApiException;
 import org.frankframework.console.Description;
 import org.frankframework.console.Relation;
 import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.BusTopic;
-
-import java.time.ZonedDateTime;
-import java.util.HashMap;
-import java.util.Map;
+import org.frankframework.util.TimeProvider;
 
 @RestController
 @RequestMapping("/server")
