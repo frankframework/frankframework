@@ -45,7 +45,7 @@ public class SecurityItems {
 	@GetMapping(value = "/securityitems", produces = MediaType.APPLICATION_JSON_VALUE)
 	@Relation("securityitems")
 	public ResponseEntity<?> getSecurityItems() {
-		if (frankApiService.getClusterMembers().isEmpty()) {
+		if (frankApiService.hasNoAvailableWorker()) {
 			return ResponseEntity.status(503).body(getUnavailableSecurityItems());
 		}
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.SECURITY_ITEMS);

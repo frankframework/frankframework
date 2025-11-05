@@ -43,7 +43,7 @@ public class Logging {
 	@Description("view files/folders inside the log directory")
 	@GetMapping(value = "/logging", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getLogDirectory(ParametersModel params) {
-		if (frankApiService.getClusterMembers().isEmpty()) {
+		if (frankApiService.hasNoAvailableWorker()) {
 			return ApiException.formatExceptionResponse("Can't access logs without a running framework instance", HttpStatusCode.valueOf(503));
 		}
 

@@ -39,6 +39,7 @@ import org.frankframework.console.controllers.socket.MessageCacheStore;
 import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.console.util.ResponseUtils;
 import org.frankframework.management.bus.OutboundGateway;
+import org.frankframework.management.gateway.HazelcastOutboundGateway;
 import org.frankframework.management.gateway.events.ClusterMemberEvent;
 
 @Service
@@ -122,6 +123,10 @@ public class FrankApiService implements ApplicationContextAware, InitializingBea
 	@Override
 	public final void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
+	}
+
+	protected boolean hasNoAvailableWorker() {
+		return getGateway() instanceof HazelcastOutboundGateway && clusterMembers.isEmpty() ;
 	}
 
 	private UUID getMemberTarget() {

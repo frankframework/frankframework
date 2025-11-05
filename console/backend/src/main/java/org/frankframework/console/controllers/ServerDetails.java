@@ -52,7 +52,7 @@ public class ServerDetails {
 	@AllowAllIbisUserRoles
 	@GetMapping(value = "/info", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getServerInformation() {
-		if (frankApiService.getClusterMembers().isEmpty()) {
+		if (frankApiService.hasNoAvailableWorker()) {
 			return ResponseEntity.ok(getUnavailableServerInformation());
 		}
 
@@ -87,7 +87,7 @@ public class ServerDetails {
 	@PermitAll
 	@GetMapping(value = "/health", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getFrankHealth() {
-		if (frankApiService.getClusterMembers().isEmpty()) {
+		if (frankApiService.hasNoAvailableWorker()) {
 			return ApiException.formatExceptionResponse("No cluster members available", HttpStatusCode.valueOf(503));
 		}
 		return frankApiService.callSyncGateway(RequestMessageBuilder.create(BusTopic.HEALTH));

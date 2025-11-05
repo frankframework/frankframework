@@ -66,10 +66,10 @@ public class SecurityChainConfigurerWithoutAuthenticationTest {
 	void testServerHealthEndpoint() throws Exception {
 		// use localhost as remote address, not authorized
 		this.mockMvc.perform(MockMvcRequestBuilders.get("/server/health"))
-				.andExpect(status().is(503));
+				.andExpect(status().isOk());
 
 		this.mockMvc.perform(MockMvcRequestBuilders.get("/server/health")
 						.remoteAddress("195.1.12.1"))
-				.andExpect(status().is(503));
+				.andExpect(status().isOk());
 	}
 }
