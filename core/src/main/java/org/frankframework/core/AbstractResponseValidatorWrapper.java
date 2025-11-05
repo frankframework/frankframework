@@ -74,13 +74,13 @@ public abstract class AbstractResponseValidatorWrapper<V extends AbstractValidat
 	@Override
 	@Nullable
 	public PipeForward findForward(String forward) {
-		// Only here because interface demands it, but should never be called
-		throw new UnsupportedOperationException("Forwards should be determined from the owner");
+		// Should not usually be called for validators, but might be called from error-handling code paths. Should then use exception forwards from original validator.
+		return owner.findForward(forward);
 	}
 
 	@Override
 	public void addForward(PipeForward forward) {
-		// No-op, only here because PipeLine configuration calls it and interface demands it
+		// No-op, only here because PipeLine configuration calls it and interface demands it. PipeLine will always call it only to add the SUCCESS-Forward and that is already added on the owner too, and only that is actually used.
 	}
 
 	@Override
