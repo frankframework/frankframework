@@ -94,7 +94,7 @@
 		<tomcat.version>10.1.48</tomcat.version>
 		<bouncycastle.version>1.82</bouncycastle.version>
 
-		<narayana.version>7.3.0.Final</narayana.version>
+		<narayana.version>7.3.2.Final</narayana.version>
 		<jboss-logging.version>3.6.1.Final</jboss-logging.version>
 		<micrometer.version>1.15.5</micrometer.version>
 		<argLine />
