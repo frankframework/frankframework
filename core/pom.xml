@@ -271,7 +271,7 @@
 		<dependency>
 			<groupId>org.apache.wss4j</groupId>
 			<artifactId>wss4j-ws-security-dom</artifactId>
-			<version>3.0.4</version>
+			<version>3.0.5</version>
 			<exclusions>
 				<!-- we don't use the caching functionality, prevents a duplicate jar (different groupId) -->
 				<exclusion>
