@@ -62,6 +62,7 @@ class ConsoleStandaloneInitializerTest {
 
 	}
 
+	// Ignores all http errors so no exception gets thrown, useful to test for 4xx and 5xx http status codes
 	private ResponseErrorHandler ignoreErrorHandler() {
 		return new DefaultResponseErrorHandler() {
 			@Override

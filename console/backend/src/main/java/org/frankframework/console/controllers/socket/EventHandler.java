@@ -34,29 +34,32 @@ public class EventHandler extends FrankApiWebSocketBase {
 
 	@Scheduled(fixedDelayString = "${console.socket.poller.warnings}", timeUnit = TimeUnit.SECONDS, initialDelayString = "${console.socket.poller.startDelay}")
 	public void serverWarnings() {
-		if (hasNoAvailableWorker()) return;
-		propagateAuthenticationContext("server-warnings");
-		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.APPLICATION, BusAction.WARNINGS);
-		convertAndSendToMembers(builder, "server-warnings");
+		if (hasAvailableWorker()) {
+			propagateAuthenticationContext("server-warnings");
+			RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.APPLICATION, BusAction.WARNINGS);
+			convertAndSendToMembers(builder, "server-warnings");
+		}
 	}
 
 	@Scheduled(fixedDelayString = "${console.socket.poller.adapters}", timeUnit = TimeUnit.SECONDS, initialDelayString = "${console.socket.poller.startDelay}")
 	public void expandedAdapters() {
-		if (hasNoAvailableWorker()) return;
-		propagateAuthenticationContext("adapter-info");
-		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.GET);
-		builder.addHeader("expanded", "all");
-		convertAndSendToMembers(builder, "adapters");
+		if (hasAvailableWorker()) {
+			propagateAuthenticationContext("adapter-info");
+			RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.GET);
+			builder.addHeader("expanded", "all");
+			convertAndSendToMembers(builder, "adapters");
+		}
 	}
 
 	// So users get a quicker response when starting/stopping an adapter
 	@Scheduled(fixedDelayString = "${console.socket.poller.messages}", timeUnit = TimeUnit.SECONDS, initialDelayString = "${console.socket.poller.startDelay}")
 	public void adapters() {
-		if (hasNoAvailableWorker()) return;
-		propagateAuthenticationContext("adapter-info");
-		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.GET);
-		builder.addHeader("expanded", "messages");
-		convertAndSendToMembers(builder, "adapters", "ADAPTER_MESSAGES");
+		if (hasAvailableWorker()) {
+			propagateAuthenticationContext("adapter-info");
+			RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.GET);
+			builder.addHeader("expanded", "messages");
+			convertAndSendToMembers(builder, "adapters", "ADAPTER_MESSAGES");
+		};
 	}
 
 	private void convertAndSendToMembers(RequestMessageBuilder builder, String eventEndpoint) {

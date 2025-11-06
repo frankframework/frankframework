@@ -21,6 +21,7 @@ import java.util.Map;
 
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -54,23 +55,21 @@ public class SecurityItems {
 
 	private Map<String, Object> getUnavailableSecurityItems() {
 		Map<String, Object> returnMap = new HashMap<>();
-		Map<String, Object> emptyMap = Map.of();
-		List<Object> emptyList = List.of();
 		returnMap.put("securityRoles", getSecurityRoles());
-		returnMap.put("jmsRealms", emptyMap);
-		returnMap.put("resourceFactories", emptyList);
-		returnMap.put("sapSystems", emptyList);
-		returnMap.put("authEntries", emptyList);
-		returnMap.put("xmlComponents", emptyMap);
-		returnMap.put("supportedConnectionOptions", emptyMap);
-		returnMap.put("expiringCertificates", emptyList);
+		returnMap.put("jmsRealms", Map.of());
+		returnMap.put("resourceFactories", List.of());
+		returnMap.put("sapSystems", List.of());
+		returnMap.put("authEntries", List.of());
+		returnMap.put("xmlComponents", Map.of());
+		returnMap.put("supportedConnectionOptions", Map.of());
+		returnMap.put("expiringCertificates", List.of());
 		return returnMap;
 	}
 
 	private List<SecurityRolesDTO> getSecurityRoles() {
 		return BusMessageUtils.getAuthorities()
 			.stream()
-			.map(authority -> new SecurityRolesDTO(authority.getAuthority().substring(5)))
+			.map(SecurityRolesDTO::new)
 			.toList();
 	}
 
@@ -78,9 +77,9 @@ public class SecurityItems {
 		private final @Getter String name;
 		private final @Getter boolean allowed;
 
-		public SecurityRolesDTO(String role) {
-			this.name = role;
-			this.allowed = BusMessageUtils.hasRole(role);
+		public SecurityRolesDTO(GrantedAuthority authority) {
+			this.name = authority.getAuthority().substring(5);
+			this.allowed = BusMessageUtils.hasRole(this.name);
 		}
 	}
 }

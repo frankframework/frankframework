@@ -107,8 +107,8 @@ public class FrankApiWebSocketBase implements InitializingBean, ApplicationListe
 		return convertMessageToDiff(target, cacheTopic, stringResponse);
 	}
 
-	protected boolean hasNoAvailableWorker() {
-		return gateway instanceof HazelcastOutboundGateway && clusterMembers.isEmpty() ;
+	protected boolean hasAvailableWorker() {
+		return !(gateway instanceof HazelcastOutboundGateway && clusterMembers.isEmpty()) ;
 	}
 
 	/** we can assume that all messages stored in the cache are JSON messages */
