@@ -1,7 +1,27 @@
 @if (url.length > 0) {
-  <div [style]="`margin: 0 -15px; height: calc(100% - ${getTopBarHeight()}px);`">
-    <iframe style="width: 100%; height: 100%; border: none; overflow: hidden" [src]="iframeSrc"></iframe>
-  </div>
+  @switch (iframeState) {
+    @case ('show') {
+      <div class="iframe-wrapper" [style]="`height: calc(100% - ${getTopBarHeight()}px);`">
+        <iframe [src]="iframeSrc"></iframe>
+      </div>
+    }
+    @case ('error') {
+      <div class="text-center animated fadeInRightBig" style="margin-top: 140px">
+        <p>{{ iframeName | titlecase }} is not available</p>
+      </div>
+    }
+    @default {
+      <div class="text-center" style="margin-top: 140px">
+        <div class="sk-spinner sk-spinner-wave">
+          <div class="sk-rect1"></div>
+          <div class="sk-rect2"></div>
+          <div class="sk-rect3"></div>
+          <div class="sk-rect4"></div>
+          <div class="sk-rect5"></div>
+        </div>
+      </div>
+    }
+  }
 }
 
 @if (redirectURL && redirectURL.length > 0) {

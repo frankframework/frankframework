@@ -1,17 +1,21 @@
 import { Component, HostListener, inject, OnDestroy, OnInit } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AppService } from 'src/app/app.service';
+import { HttpClient } from '@angular/common/http';
 
 @Component({
   template: '',
 })
 export abstract class BaseIframeComponent implements OnInit, OnDestroy {
   protected url = '';
+  protected iframeState: 'loading' | 'show' | 'error' = 'loading';
+  protected iframeName = 'custom page';
   protected iframeSrc?: SafeResourceUrl;
   protected redirectURL?: string;
 
   protected readonly sanitizer = inject(DomSanitizer);
   protected readonly appService = inject(AppService);
+  protected readonly http = inject(HttpClient);
 
   private topBarHeightPx = 99;
 
@@ -33,10 +37,23 @@ export abstract class BaseIframeComponent implements OnInit, OnDestroy {
     document.body.classList.remove('no-scroll');
   }
 
-  protected setIframeSource(ffPage: string): void {
+  protected setFFIframeSource(ffPage: string): void {
     this.url = `${this.appService.getServerPath()}iaf/${ffPage}`;
-    this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(this.url);
-    this.appService.iframePopoutUrl.set(this.url);
+    this.setIframeSource(this.url, ffPage);
+  }
+
+  protected setIframeSource(url: string, pageName: string): void {
+    this.appService.iframePopoutUrl.set(url);
+    this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(url);
+    this.iframeName = pageName;
+    this.checkIframeUrl(this.url);
+  }
+
+  protected checkIframeUrl(url: string): void {
+    this.http.head(url).subscribe({
+      next: () => (this.iframeState = 'show'),
+      error: () => (this.iframeState = 'error'),
+    });
   }
 
   protected getTopBarHeight(): number {

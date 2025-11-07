@@ -41,7 +41,7 @@ public class CredentialFactory {
 
 	/**
 	 * Attempts to resolve the provided alias, uses default username/password when provided.
-	 * 
+	 *
 	 * @throws NoSuchElementException when it cannot find the alias, and no default username/password is provided.
 	 */
 	public CredentialFactory(String alias, String defaultUsername, String defaultPassword) throws NoSuchElementException {
