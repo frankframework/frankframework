@@ -1,0 +1,15 @@
+<Configuration
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd"
+>
+	<Adapter name="Adapt1">
+		<Receiver>
+			<JavaListener name="List1"/>
+		</Receiver>
+		<Pipeline>
+			<FixedResultPipe name="fr1"/>
+			<Include ref="included-part.xml"/>
+			<EchoPipe name="e2"/>
+		</Pipeline>
+	</Adapter>
+</Configuration>
