@@ -72,6 +72,9 @@ public class AuthorityMapper implements GrantedAuthoritiesMapper {
 		}
 	}
 
+	/**
+	 * Overloaded constructor to support a custom authorities claim name.
+	 */
 	public AuthorityMapper(URL roleMappingURL, Set<String> securityRoles, Properties environmentProperties, String authoritiesClaimName) throws IOException {
 		this(roleMappingURL, securityRoles, environmentProperties);
 
@@ -107,12 +110,16 @@ public class AuthorityMapper implements GrantedAuthoritiesMapper {
 				.toList();
 	}
 
-	// The given authority should be OAuth2UserAuthority or OidcUserAuthority. Check their attributes for the key.
-	// Spring always maps one or the other. See https://docs.spring.io/spring-security/reference/servlet/oauth2/login/advanced.html#oauth2login-advanced-map-authorities
+	/**
+	 *	The given authority should be OAuth2UserAuthority or OidcUserAuthority. Check their attributes for the key.
+	 * 	Spring always maps one or the other. See <a href="https://docs.spring.io/spring-security/reference/servlet/oauth2/login/advanced.html#oauth2login-advanced-map-authorities">spring security documentation</a>
+	 * 	for more information.
+	 */
 	private List<String> getValuesFromToken(GrantedAuthority authority) {
 		if (authority instanceof OidcUserAuthority oidcUserAuthority) {
 			return getRolesFromUserInfo(oidcUserAuthority.getUserInfo()).stream().toList();
-		} else if (authority instanceof OAuth2UserAuthority oAuth2UserAuthority) {
+		} else
+			if (authority instanceof OAuth2UserAuthority oAuth2UserAuthority) {
 			return getKeyValues(oAuth2UserAuthority.getAttributes());
 		}
 
@@ -134,26 +141,22 @@ public class AuthorityMapper implements GrantedAuthoritiesMapper {
 		}
 	}
 
-	// TODO
 	private List<String> getKeyValues(Map<String, Object> userAttributes) {
 		if (userAttributes == null || userAttributes.isEmpty()) {
 			return List.of();
 		}
 
-		// check if the key contains a '.', for instance 'realm_access.roles'
-		if (StringUtils.contains(authoritiesClaimName, ".")) {
+		// use a normal get if the key does not contain a '.'
+		if (!Strings.CS.contains(authoritiesClaimName, ".")) {
+			return (List<String>) userAttributes.get(authoritiesClaimName);
+		} else {
 			String[] keyParts = authoritiesClaimName.split("\\.");
 
 			// get the first part of the key
-			userAttributes.get(keyParts[0]);
+			Map<String, Collection<String>> realmAccess = (Map<String, Collection<String>>) userAttributes.get(keyParts[0]);
+
+			// get second part of the key
+			return (List<String>) realmAccess.get(keyParts[1]);
 		}
-
-		 if (userAttributes.containsKey(authoritiesClaimName)) {
-			Object o = userAttributes.get(authoritiesClaimName);
-		}
-
-
-		return List.of();
-
 	}
 }
