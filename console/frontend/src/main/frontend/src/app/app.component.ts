@@ -235,22 +235,7 @@ export class AppComponent implements OnInit, OnDestroy {
         if (error.status.toString().startsWith('5')) {
           this.router.navigate(['error']);
         } else if (error.status === 400) {
-          this.appService.getClusterMembers().subscribe({
-            next: (data) => {
-              this.clusterMembers = data;
-              if (data.length > 0) {
-                this.selectedClusterMember = data.find((member) => member.selectedMember) ?? null;
-              }
-              if (this.selectedClusterMember != null) {
-                this.appService.triggerReload();
-              }
-            },
-            error: () => {
-              this.sweetAlertService
-                .error("Couldn't initialize Frank!Console", 'Please make sure the Frank!Framework is setup correctly!')
-                .then(() => this.appService.triggerReload());
-            },
-          });
+          this.handleUnavailableHealthEndpoint();
         }
       },
     });
@@ -576,5 +561,24 @@ export class AppComponent implements OnInit, OnDestroy {
           });
       }
     }
+  }
+
+  private handleUnavailableHealthEndpoint(): void {
+    this.appService.getClusterMembers().subscribe({
+      next: (data) => {
+        this.clusterMembers = data;
+        this.selectedClusterMember = data.find((member) => member.selectedMember) ?? null;
+        if (this.selectedClusterMember != null) {
+          this.appService.triggerReload();
+          return;
+        }
+        this.router.navigate(['error']);
+      },
+      error: () => {
+        this.sweetAlertService
+          .error("Couldn't initialize Frank!Console", 'Please make sure the Frank!Framework is setup correctly!')
+          .then(() => this.appService.triggerReload());
+      },
+    });
   }
 }

@@ -15,6 +15,7 @@
 */
 package org.frankframework.console.runner;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -51,7 +52,15 @@ public class ConsoleStandaloneInitializer {
 
 	// Should start a XmlServletWebServerApplicationContext.
 	// Optionally, in order to enable the ladybug the profile ladybug-file or ladybug-database can be enabled.
-	public static void main(String[] args) {
+	public static void main(String[] args) throws IOException {
+		SpringApplication app = configureApplication();
+		app.run(args);
+	}
+
+	/**
+	 * Configure the Frank!Framework application
+	 */
+	static SpringApplication configureApplication() throws IOException {
 		SpringApplication app = new SpringApplication();
 		app.setAllowBeanDefinitionOverriding(true);
 		app.setWebApplicationType(WebApplicationType.SERVLET);
@@ -61,7 +70,7 @@ public class ConsoleStandaloneInitializer {
 		app.setSources(set);
 		app.addPrimarySources(List.of(WsSciWrapper.class));
 
-		app.run(args);
+		return app;
 	}
 
 	/**

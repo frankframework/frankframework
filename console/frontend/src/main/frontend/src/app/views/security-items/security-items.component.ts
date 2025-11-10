@@ -11,9 +11,10 @@ import {
   SecurityRole,
   supportedConnectionOptions,
 } from './security-items.service';
-import { KeyValuePipe, NgClass } from '@angular/common';
+import { KeyValuePipe } from '@angular/common';
 import { FaIconComponent } from '@fortawesome/angular-fontawesome';
 import { faCheck, faCheckSquare, faTimesCircle } from '@fortawesome/free-solid-svg-icons';
+import { HttpErrorResponse } from '@angular/common/http';
 
 @Component({
   selector: 'app-security-items',
@@ -64,15 +65,22 @@ export class SecurityItemsComponent implements OnInit {
       }
     }
 
-    this.securityItemsService.getSecurityItems().subscribe((data) => {
-      this.authEntries = data.authEntries;
-      this.resourceFactories = data.resourceFactories;
-      this.jmsRealms = data.jmsRealms;
-      this.sapSystems = data.sapSystems;
-      this.securityRoles = data.securityRoles;
-      this.xmlComponents = data.xmlComponents;
-      this.supportedConnectionOptions = data.supportedConnectionOptions;
-      this.expiringCertificates = data.expiringCertificates;
+    this.securityItemsService.getSecurityItems().subscribe({
+      next: (data) => {
+        this.authEntries = data.authEntries;
+        this.resourceFactories = data.resourceFactories;
+        this.jmsRealms = data.jmsRealms;
+        this.sapSystems = data.sapSystems;
+        this.securityRoles = data.securityRoles;
+        this.xmlComponents = data.xmlComponents;
+        this.supportedConnectionOptions = data.supportedConnectionOptions;
+        this.expiringCertificates = data.expiringCertificates;
+      },
+      error: (error: HttpErrorResponse) => {
+        if (error.status === 503) {
+          this.securityRoles = error.error.securityRoles;
+        }
+      },
     });
 
     this.securityItemsService.getEndpointsWithRoles().subscribe(({ links }) => {

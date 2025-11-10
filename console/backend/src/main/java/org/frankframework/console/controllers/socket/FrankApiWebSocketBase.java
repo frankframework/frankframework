@@ -47,6 +47,7 @@ import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.console.util.ResponseUtils;
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.bus.OutboundGateway.ClusterMember;
+import org.frankframework.management.gateway.HazelcastOutboundGateway;
 import org.frankframework.management.gateway.events.ClusterMemberEvent;
 
 @Log4j2
@@ -104,6 +105,10 @@ public class FrankApiWebSocketBase implements InitializingBean, ApplicationListe
 
 		String cacheTopic = customTopic != null ? customTopic : builder.getTopic().name();
 		return convertMessageToDiff(target, cacheTopic, stringResponse);
+	}
+
+	protected boolean hasAvailableWorker() {
+		return !(gateway instanceof HazelcastOutboundGateway && clusterMembers.isEmpty()) ;
 	}
 
 	/** we can assume that all messages stored in the cache are JSON messages */
