@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Compatibility XSD, internal use only! -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.3.0">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.3.1">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -17980,4 +17980,14 @@
       <xs:pattern value="$\{[^\}]+\}" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:complexType name="WarningType">
+    <xs:simpleContent>
+      <xs:annotation>
+        <xs:documentation>The warning will be shown in the Frank!Framework Console when the 'active' attribute evaluates to 'true'</xs:documentation>
+      </xs:annotation>
+      <xs:extension base="xs:string">
+        <xs:attribute ref="active" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
 </xs:schema>

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Public FrankDoc XSD, should be used within an IDE to validate a configuration. -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.3.0">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.3.1">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -630,13 +630,12 @@
   <xs:complexType name="LockerType">
     <xs:annotation>
       <xs:documentation>Locker of scheduler jobs and pipes.
-
+ &lt;p&gt;
  Tries to set a lock (by inserting a record in the database table IbisLock) and only if this is done
  successfully the job is executed.
-
+ &lt;p&gt;
  For an Oracle database the following objects are used:
-  &lt;pre&gt;
-	CREATE TABLE &amp;lt;schema_owner&amp;gt;.IBISLOCK
+  &lt;pre&gt;&lt;code&gt;CREATE TABLE &amp;amp;lt;schema_owner&amp;amp;gt;.IBISLOCK
 	(
 	OBJECTID VARCHAR2(100 CHAR),
 	TYPE CHAR(1 CHAR),
@@ -646,14 +645,13 @@
 	CONSTRAINT PK_IBISLOCK PRIMARY KEY (OBJECTID)
 	);
 
-	CREATE INDEX &amp;lt;schema_owner&amp;gt;.IX_IBISLOCK ON &amp;lt;schema_owner&amp;gt;.IBISLOCK
+	CREATE INDEX &amp;amp;lt;schema_owner&amp;amp;gt;.IX_IBISLOCK ON &amp;amp;lt;schema_owner&amp;amp;gt;.IBISLOCK
 	(EXPIRYDATE);
 
-	GRANT DELETE, INSERT, SELECT, UPDATE ON &amp;lt;schema_owner&amp;gt;.IBISLOCK TO &amp;lt;rolename&amp;gt;;
-	GRANT SELECT ON SYS.DBA_PENDING_TRANSACTIONS TO &amp;lt;rolename&amp;gt;;
+	GRANT DELETE, INSERT, SELECT, UPDATE ON &amp;amp;lt;schema_owner&amp;amp;gt;.IBISLOCK TO &amp;amp;lt;rolename&amp;amp;gt;;
+	GRANT SELECT ON SYS.DBA_PENDING_TRANSACTIONS TO &amp;amp;lt;rolename&amp;amp;gt;;
 
-	COMMIT;
-  &lt;/pre&gt;</xs:documentation>
+	COMMIT;&lt;/code&gt;&lt;/pre&gt;</xs:documentation>
     </xs:annotation>
     <xs:attribute name="objectId" type="xs:string" use="required">
       <xs:annotation>
@@ -7769,7 +7767,7 @@
  that is followed when the called adapter exits with the mentioned exit. This does not work if the code is for example &lt;code&gt;c2&lt;/code&gt;.
  &lt;/p&gt;
  &lt;p&gt;
- A FrankSender makes a call to either an Adapter or an external program by setting the #scope. By default the scope is &lt;code&gt;ADAPTER&lt;/code&gt;.
+ A FrankSender makes a call to either an Adapter or an external program by setting the #scope. By default, the scope is &lt;code&gt;ADAPTER&lt;/code&gt;.
  &lt;/p&gt;
  &lt;p/&gt;
 
@@ -7815,7 +7813,7 @@
  &lt;ul&gt;
      &lt;li&gt;Implement the interface &lt;code&gt;nl.nn.adapterframework.dispatcher.RequestProcessor&lt;/code&gt; from the IbisServiceDispatcher library&lt;/li&gt;
      &lt;li&gt;Register the instance with the &lt;code&gt;nl.nn.adapterframework.dispatcher.DispatcherManager&lt;/code&gt; obtained via the &lt;code&gt;nl.nn.adapterframework.dispatcher.DispatcherManagerFactory&lt;/code&gt;&lt;/li&gt;
-     &lt;li&gt;See the implementation code of the &lt;code&gt;JavaListener&lt;/code&gt; in the Frank!Framework for an example&lt;/li&gt;
+     &lt;li&gt;See the implementation code of the org.frankframework.receivers.JavaListener in the Frank!Framework for an example&lt;/li&gt;
  &lt;/ul&gt;
  &lt;/p&gt;
  &lt;p&gt;
@@ -20206,16 +20204,8 @@
   </xs:simpleType>
   <xs:simpleType name="LockTypeAttributeValuesType">
     <xs:restriction base="xs:string">
-      <xs:enumeration value="T">
-        <xs:annotation>
-          <xs:documentation>Temporary</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
-      <xs:enumeration value="P">
-        <xs:annotation>
-          <xs:documentation>Permanent</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
+      <xs:enumeration value="T" />
+      <xs:enumeration value="P" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="SoapVersionAttributeValuesType">
@@ -22148,4 +22138,14 @@
       <xs:pattern value="$\{[^\}]+\}" />
     </xs:restriction>
   </xs:simpleType>
+  <xs:complexType name="WarningType">
+    <xs:simpleContent>
+      <xs:annotation>
+        <xs:documentation>The warning will be shown in the Frank!Framework Console when the 'active' attribute evaluates to 'true'</xs:documentation>
+      </xs:annotation>
+      <xs:extension base="xs:string">
+        <xs:attribute ref="active" />
+      </xs:extension>
+    </xs:simpleContent>
+  </xs:complexType>
 </xs:schema>
