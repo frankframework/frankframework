@@ -118,8 +118,7 @@ public class AuthorityMapper implements GrantedAuthoritiesMapper {
 	private List<String> getValuesFromToken(GrantedAuthority authority) {
 		if (authority instanceof OidcUserAuthority oidcUserAuthority) {
 			return getRolesFromUserInfo(oidcUserAuthority.getUserInfo()).stream().toList();
-		} else
-			if (authority instanceof OAuth2UserAuthority oAuth2UserAuthority) {
+		} else if (authority instanceof OAuth2UserAuthority oAuth2UserAuthority) {
 			return getKeyValues(oAuth2UserAuthority.getAttributes());
 		}
 
