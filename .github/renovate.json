@@ -8,10 +8,11 @@
   ],
   "packageRules": [
     {
-      "description": "Maven dependencies - daily schedule, ignore major updates and specific packages",
+      "description": "Maven dependencies - daily schedule, ignore major updates, group all updates",
       "matchManagers": ["maven"],
       "schedule": ["every day"],
       "addLabels": ["Java"],
+      "groupName": "maven-dependencies",
       "separateMajorMinor": true,
       "major": {
         "enabled": false
@@ -37,8 +38,22 @@
       "enabled": false
     },
     {
-      "description": "NPM dependencies - weekly schedule, ignore major updates",
+      "description": "All other NPM dependencies - weekly schedule, ignore major updates",
       "matchManagers": ["npm"],
+      "schedule": ["every week"],
+      "addLabels": ["JavaScript"],
+      "groupName": "npm-dependencies",
+      "separateMajorMinor": true,
+      "major": {
+        "enabled": false
+      }
+    },
+    {
+      "description": "Angular packages - group minor and patch updates",
+      "matchManagers": ["npm"],
+      "matchPackagePatterns": ["^@angular"],
+      "matchPackageNames": ["zone.js"],
+      "groupName": "angular",
       "schedule": ["every week"],
       "addLabels": ["JavaScript"],
       "separateMajorMinor": true,
@@ -47,20 +62,11 @@
       }
     },
     {
-      "description": "Angular packages - group minor and patch updates",
-      "matchPackagePatterns": ["^@angular"],
-      "matchPackageNames": ["zone.js"],
-      "groupName": "angular",
-      "addLabels": ["JavaScript"],
-      "separateMajorMinor": true,
-      "major": {
-        "enabled": false
-      }
-    },
-    {
       "description": "ESLint packages - group minor and patch updates",
+      "matchManagers": ["npm"],
       "matchPackagePatterns": ["eslint"],
       "groupName": "frontend-linting",
+      "schedule": ["every week"],
       "addLabels": ["JavaScript"],
       "separateMajorMinor": true,
       "major": {
@@ -68,11 +74,12 @@
       }
     },
     {
-      "description": "Docker dependencies - daily schedule",
+      "description": "Docker dependencies - daily schedule, group all updates",
       "matchManagers": ["dockerfile", "docker-compose"],
       "matchPaths": ["docker/**"],
       "schedule": ["every day"],
-      "addLabels": ["Docker"]
+      "addLabels": ["Docker"],
+      "groupName": "docker-dependencies"
     }
   ],
   "lockFileMaintenance": {
