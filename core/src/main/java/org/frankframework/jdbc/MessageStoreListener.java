@@ -132,6 +132,14 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 		}
 	}
 
+	@Nonnull
+	@Override
+	protected Map<String, String> getConfiguredColumnNames() {
+		Map<String, String> configuredColumnNames = super.getConfiguredColumnNames();
+		configuredColumnNames.put("SLOTID", "SLOTID");
+		return configuredColumnNames;
+	}
+
 	public void extractSessionKeyList() {
 		sessionKeysList = StringUtil.split(sessionKeys);
 	}

@@ -40,6 +40,7 @@ import org.frankframework.core.IProvidesMessageBrowsers;
 import org.frankframework.core.ITransactionalStorage;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.ProcessState;
+import org.frankframework.dbms.DbmsException;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.RawMessageWrapper;
@@ -115,7 +116,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		if (!isConnectionsArePooled()) {
 			try {
 				validateQueryFields(connection);
-			} catch (SQLException e) {
+			} catch (SQLException | DbmsException e) {
 				throw new LifecycleException("Error requesting database metadata", e);
 			}
 		} else {
@@ -127,13 +128,10 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		}
 	}
 
-	private void validateQueryFields(Connection conn) throws LifecycleException, SQLException {
+	private void validateQueryFields(Connection conn) throws LifecycleException, SQLException, DbmsException {
 		Set<String> columnNames = getTableColumnNames(conn, tableName);
 		if (columnNames.isEmpty()) {
-			columnNames = getTableColumnNames(conn, tableName.toUpperCase());
-		}
-		if (columnNames.isEmpty()) {
-			throw new LifecycleException("Cannot find columns for table [%s]".formatted(tableName));
+			throw new LifecycleException("Cannot find any columns for table [%s]".formatted(tableName));
 		}
 		Map<String, String> configuredColumnNames = getConfiguredColumnNames();
 		configuredColumnNames.values().removeAll(columnNames);
@@ -142,10 +140,13 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		}
 	}
 
+	/**
+	 * Get a set of all column names of the table. If the table cannot be found in the database schema, then the result will be an empty set.
+	 */
 	@Nonnull
-	private Set<String> getTableColumnNames(@Nonnull Connection conn, @Nonnull String table) throws SQLException {
+	private Set<String> getTableColumnNames(@Nonnull Connection conn, @Nonnull String table) throws SQLException, DbmsException {
 		Set<String> columnNames = new HashSet<>();
-		try (ResultSet columns = conn.getMetaData().getColumns(null, null, table, "%")) {
+		try (ResultSet columns = getDbmsSupport().getTableColumns(conn, table)) {
 			while (columns.next()) {
 				columnNames.add(columns.getString("COLUMN_NAME").toUpperCase());
 			}
@@ -153,19 +154,26 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		return columnNames;
 	}
 
-	private Map<String, String> getConfiguredColumnNames() {
-		// Some of these fields might be NULL. Set.of() constructor doesn't allow NULL values.
+	/**
+	 * Get a map with all configured column names. The key is the functional name of the field and the value the column name in the database. Subclasses
+	 * may potentially override this method to add more fields that the subclass defines.
+	 * The returned map must be modifiable.
+	 */
+	@Nonnull
+	protected Map<String, String> getConfiguredColumnNames() {
+		// Some of these fields might be NULL. Map.of() constructor doesn't allow NULL values so we need a roundabout way to define the full map.
 		String[][] columnNames = {{"keyField", getKeyField()}, {"statusField", getStatusField()}, {"messageField", getMessageField()},
 				{"messageIdField", getMessageIdField()}, {"correlationIdField", getCorrelationIdField()}, {"commentField", getCommentField()},
 				{"statusField", getStatusField()}, {"timestampField", getTimestampField()}, {"orderField", getOrderField()}};
 
-		// We may have additional fields that need to be added and checked, so need to add those.
 		Map<String, String> configuredColumnNames = new HashMap<>();
 		for (String[] columnDefinition : columnNames) {
 			if (columnDefinition[1] != null) {
 				configuredColumnNames.put(columnDefinition[0], columnDefinition[1].toUpperCase());
 			}
 		}
+
+		// We may have additional fields that need to be added and checked, so need to add those.
 		int i = 0;
 		for (String additionalField : getAdditionalFieldsList()) {
 			configuredColumnNames.put("AdditionalField" + i++, additionalField.toUpperCase());
