@@ -48,19 +48,30 @@
         "enabled": false
       }
     },
-    {
-      "description": "Angular packages - group minor and patch updates",
-      "matchManagers": ["npm"],
-      "matchPackagePatterns": ["^@angular"],
-      "matchPackageNames": ["zone.js"],
-      "groupName": "angular",
-      "schedule": ["every week"],
-      "addLabels": ["JavaScript"],
-      "separateMajorMinor": true,
-      "major": {
-        "enabled": false
-      }
-    },
+      {
+          "description": "Angular packages - group minor and patch updates",
+          "matchManagers": ["npm"],
+          "matchPackagePatterns": ["^@angular"],
+          "groupName": "angular",
+          "schedule": ["every week"],
+          "addLabels": ["JavaScript"],
+          "separateMajorMinor": true,
+          "major": {
+              "enabled": false
+          }
+      },
+      {
+          "description": "Angular packages (zone.js) - group minor and patch updates",
+          "matchManagers": ["npm"],
+          "matchPackageNames": ["zone.js"],
+          "groupName": "angular",
+          "schedule": ["every week"],
+          "addLabels": ["JavaScript"],
+          "separateMajorMinor": true,
+          "major": {
+              "enabled": false
+          }
+      },
     {
       "description": "ESLint packages - group minor and patch updates",
       "matchManagers": ["npm"],
