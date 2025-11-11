@@ -67,7 +67,8 @@ public class AuthorityMapperTest {
 	public static List<Arguments> data() {
 		return Arrays.asList(new Arguments[]{
 				Arguments.of("roles", Map.of("roles", List.of("IbisAdmin"))),
-				Arguments.of("realm_access.roles", Map.of("realm_access", Map.of("roles", List.of("IbisAdmin"))))
+				Arguments.of("realm_access.roles", Map.of("realm_access", Map.of("roles", List.of("IbisAdmin")))),
+				Arguments.of("realm_access.roles", Map.of("realm_access", Map.of("roles", List.of("IbisAdmin", "IbisObserver"))))
 		});
 	}
 
