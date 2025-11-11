@@ -147,7 +147,7 @@ public interface IDbmsSupport {
 	String getSchema(Connection conn) throws DbmsException;
 
 	@Nonnull
-	String convertQuery(@Nonnull String query, @Nonnull String sqlDialectFrom) throws SQLException, DbmsException;
+	String convertQuery(@Nonnull String query, @Nonnull String sqlDialectFrom) throws DbmsException;
 
 	ResultSet getTableColumns(Connection conn, String tableName) throws DbmsException;
 

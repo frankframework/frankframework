@@ -16,11 +16,18 @@
 package org.frankframework.jdbc;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
+
+import jakarta.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -33,6 +40,8 @@ import org.frankframework.core.IProvidesMessageBrowsers;
 import org.frankframework.core.ITransactionalStorage;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.ProcessState;
+import org.frankframework.dbms.JdbcException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.RawMessageWrapper;
 
 /**
@@ -93,6 +102,75 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		if (StringUtils.isEmpty(getStatusValue(ProcessState.INPROCESS)) && !getDbmsSupport().hasSkipLockedFunctionality()) {
 			ConfigurationWarnings.add(this, log, "Database [" + getDbmsSupport().getDbmsName() + "] needs statusValueInProcess to run in multiple threads");
 		}
+	}
+
+	@Override
+	public void start() {
+		super.start();
+		// Validate this in start not configure, because a broken configuration could otherwise prevent the startup of the entire application.
+		validateQueryFields();
+	}
+
+	private void validateQueryFields() throws LifecycleException {
+		if (!isConnectionsArePooled()) {
+			try {
+				validateQueryFields(connection);
+			} catch (SQLException e) {
+				throw new LifecycleException("Error requesting database metadata", e);
+			}
+		} else {
+			try (Connection conn = getConnection()) {
+				validateQueryFields(conn);
+			} catch (JdbcException | SQLException e) {
+				throw new LifecycleException("Error requesting database metadata", e);
+			}
+		}
+	}
+
+	private void validateQueryFields(Connection conn) throws LifecycleException, SQLException {
+		Set<String> columnNames = getTableColumnNames(conn, tableName);
+		if (columnNames.isEmpty()) {
+			columnNames = getTableColumnNames(conn, tableName.toUpperCase());
+		}
+		if (columnNames.isEmpty()) {
+			throw new LifecycleException("Cannot find columns for table [%s]".formatted(tableName));
+		}
+		Map<String, String> configuredColumnNames = getConfiguredColumnNames();
+		configuredColumnNames.values().removeAll(columnNames);
+		if (!configuredColumnNames.isEmpty()) {
+			throw new LifecycleException("The following columns cannot be found in the schema for table [%s]: [%s]".formatted(tableName, configuredColumnNames));
+		}
+	}
+
+	@Nonnull
+	private Set<String> getTableColumnNames(@Nonnull Connection conn, @Nonnull String table) throws SQLException {
+		Set<String> columnNames = new HashSet<>();
+		try (ResultSet columns = conn.getMetaData().getColumns(null, null, table, "%")) {
+			while (columns.next()) {
+				columnNames.add(columns.getString("COLUMN_NAME").toUpperCase());
+			}
+		}
+		return columnNames;
+	}
+
+	private Map<String, String> getConfiguredColumnNames() {
+		// Some of these fields might be NULL. Set.of() constructor doesn't allow NULL values.
+		String[][] columnNames = {{"keyField", getKeyField()}, {"statusField", getStatusField()}, {"messageField", getMessageField()},
+				{"messageIdField", getMessageIdField()}, {"correlationIdField", getCorrelationIdField()}, {"commentField", getCommentField()},
+				{"statusField", getStatusField()}, {"timestampField", getTimestampField()}, {"orderField", getOrderField()}};
+
+		// We may have additional fields that need to be added and checked, so need to add those.
+		Map<String, String> configuredColumnNames = new HashMap<>();
+		for (String[] columnDefinition : columnNames) {
+			if (columnDefinition[1] != null) {
+				configuredColumnNames.put(columnDefinition[0], columnDefinition[1].toUpperCase());
+			}
+		}
+		int i = 0;
+		for (String additionalField : getAdditionalFieldsList()) {
+			configuredColumnNames.put("AdditionalField" + i++, additionalField.toUpperCase());
+		}
+		return configuredColumnNames;
 	}
 
 	private void verifySelectCondition() {
