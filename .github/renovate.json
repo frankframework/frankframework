@@ -1,0 +1,82 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:recommended"
+  ],
+  "labels": [
+    "Dependencies"
+  ],
+  "packageRules": [
+    {
+      "description": "Maven dependencies - daily schedule, ignore major updates and specific packages",
+      "matchManagers": ["maven"],
+      "schedule": ["every day"],
+      "addLabels": ["Java"],
+      "separateMajorMinor": true,
+      "major": {
+        "enabled": false
+      }
+    },
+    {
+      "description": "Ignore specific Maven dependencies",
+      "matchManagers": ["maven"],
+      "matchPackageNames": [
+        "org.ibissource:ibis-ladybug",
+        "org.wearefrank:ladybug",
+        "com.sap.jco3:sapidoc",
+        "org.frankframework:frankframework-ear",
+        "org.filesys:jfileserver-enterprise",
+        "org.eclipse.m2e:lifecycle-mapping"
+      ],
+      "enabled": false
+    },
+    {
+      "description": "Ignore com.aspose packages",
+      "matchManagers": ["maven"],
+      "matchPackagePatterns": ["^com\\.aspose:"],
+      "enabled": false
+    },
+    {
+      "description": "NPM dependencies - weekly schedule, ignore major updates",
+      "matchManagers": ["npm"],
+      "schedule": ["every week"],
+      "addLabels": ["JavaScript"],
+      "separateMajorMinor": true,
+      "major": {
+        "enabled": false
+      }
+    },
+    {
+      "description": "Angular packages - group minor and patch updates",
+      "matchPackagePatterns": ["^@angular"],
+      "matchPackageNames": ["zone.js"],
+      "groupName": "angular",
+      "addLabels": ["JavaScript"],
+      "separateMajorMinor": true,
+      "major": {
+        "enabled": false
+      }
+    },
+    {
+      "description": "ESLint packages - group minor and patch updates",
+      "matchPackagePatterns": ["eslint"],
+      "groupName": "frontend-linting",
+      "addLabels": ["JavaScript"],
+      "separateMajorMinor": true,
+      "major": {
+        "enabled": false
+      }
+    },
+    {
+      "description": "Docker dependencies - daily schedule",
+      "matchManagers": ["dockerfile", "docker-compose"],
+      "matchPaths": ["docker/**"],
+      "schedule": ["every day"],
+      "addLabels": ["Docker"]
+    }
+  ],
+  "lockFileMaintenance": {
+    "enabled": false
+  },
+  "rangeStrategy": "bump"
+}
