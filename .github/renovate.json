@@ -6,6 +6,12 @@
     "labels": [
         "Dependencies"
     ],
+    "ignoreDeps": ["pnpm"],
+    "postUpgradeTasks": {
+        "commands": ["pnpm install --lockfile-only"],
+        "fileFilters": ["pnpm-lock.yaml", "**/package.json"],
+        "executionMode": "branch"
+    },
     "packageRules": [
         {
             "description": "Maven dependencies - daily schedule, ignore major updates, group all updates",
@@ -38,43 +44,7 @@
             "enabled": false
         },
         {
-            "description": "Angular packages - group minor and patch updates",
-            "matchManagers": ["npm"],
-            "matchPackagePatterns": ["^@angular"],
-            "groupName": "angular",
-            "schedule": ["* 0 * * 1"],
-            "addLabels": ["JavaScript"],
-            "separateMajorMinor": true,
-            "major": {
-                "enabled": false
-            }
-        },
-        {
-            "description": "Angular packages (zone.js) - group minor and patch updates",
-            "matchManagers": ["npm"],
-            "matchPackageNames": ["zone.js"],
-            "groupName": "angular",
-            "schedule": ["* 0 * * 1"],
-            "addLabels": ["JavaScript"],
-            "separateMajorMinor": true,
-            "major": {
-                "enabled": false
-            }
-        },
-        {
-            "description": "ESLint packages - group minor and patch updates",
-            "matchManagers": ["npm"],
-            "matchPackagePatterns": ["(^eslint)|(^@eslint/)"],
-            "groupName": "frontend-linting",
-            "schedule": ["* 0 * * 1"],
-            "addLabels": ["JavaScript"],
-            "separateMajorMinor": true,
-            "major": {
-                "enabled": false
-            }
-        },
-        {
-            "description": "All other NPM dependencies - weekly schedule, ignore major updates",
+            "description": "All NPM dependencies - weekly schedule, ignore major updates (base rule)",
             "matchManagers": ["npm"],
             "schedule": ["* 0 * * 1"],
             "addLabels": ["JavaScript"],
@@ -83,6 +53,29 @@
             "major": {
                 "enabled": false
             }
+        },
+        {
+            "description": "Angular packages - override groupName",
+            "matchManagers": ["npm"],
+            "matchPackagePatterns": ["^@angular"],
+            "groupName": "angular"
+        },
+        {
+            "description": "Angular packages (zone.js) - override groupName",
+            "matchManagers": ["npm"],
+            "matchPackageNames": ["zone.js"],
+            "groupName": "angular"
+        },
+        {
+            "description": "ESLint packages - override groupName",
+            "matchManagers": ["npm"],
+            "matchPackagePatterns": ["(^eslint)|(^@eslint/)"],
+            "groupName": "frontend-linting"
+        },
+        {
+            "description": "Ignore peer dependencies",
+            "matchDepTypes": ["peerDependencies"],
+            "enabled": false
         },
         {
             "description": "Docker dependencies - daily schedule, group all updates",
