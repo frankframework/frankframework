@@ -125,6 +125,10 @@ public class AuthorityMapper implements GrantedAuthoritiesMapper {
 		return List.of();
 	}
 
+	/**
+	 * Get roles from OidcUserInfo based on the authoritiesClaimName. Please note that {@code OAuth2Authenticator.configure()} makes sure that a maximum
+	 * of only one (1) '.' is allowed in the authoritiesClaimName.
+	 */
 	private Collection<String> getRolesFromUserInfo(OidcUserInfo userInfo) {
 		// use a normal get if the key does not contain a '.'
 		if (!Strings.CS.contains(authoritiesClaimName, ".")) {
@@ -140,6 +144,10 @@ public class AuthorityMapper implements GrantedAuthoritiesMapper {
 		}
 	}
 
+	/**
+	 * Get roles from OAuth2UserAuthority userAttributes based on the authoritiesClaimName. Please note that {@code OAuth2Authenticator.configure()} makes
+	 * sure that a maximum of only one (1) '.' is allowed in the authoritiesClaimName.
+	 */
 	private List<String> getKeyValues(Map<String, Object> userAttributes) {
 		if (userAttributes == null || userAttributes.isEmpty()) {
 			return List.of();
