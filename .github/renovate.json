@@ -3,6 +3,7 @@
     "extends": [
         "config:recommended"
     ],
+    "baseBranches": ["master", "/.*-release$/", "/^release\\//"],
     "labels": [
         "Dependencies"
     ],
