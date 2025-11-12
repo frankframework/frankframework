@@ -15,15 +15,14 @@
 */
 package org.frankframework.http.authentication;
 
+import java.util.List;
+
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.Credentials;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
-
 import org.apache.http.message.BasicNameValuePair;
 
 import org.frankframework.http.AbstractHttpSession;
-
-import java.util.List;
 
 public class ClientCredentialsQueryParameters extends AbstractClientCredentials {
 
@@ -33,8 +32,8 @@ public class ClientCredentialsQueryParameters extends AbstractClientCredentials 
 
 	@Override
 	protected HttpEntityEnclosingRequestBase createRequest(Credentials credentials, List<NameValuePair> parameters) throws HttpAuthenticationException {
-		parameters.add(new BasicNameValuePair("client_secret", session.getClientSecret()));
-		parameters.add(new BasicNameValuePair("client_id", session.getClientId()));
+		parameters.add(new BasicNameValuePair("client_secret", clientCredentials.getPassword()));
+		parameters.add(new BasicNameValuePair("client_id", clientCredentials.getUsername()));
 
 		return super.createRequest(credentials, parameters);
 	}

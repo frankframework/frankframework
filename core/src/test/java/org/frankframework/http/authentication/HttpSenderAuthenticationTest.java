@@ -216,6 +216,40 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		assertNotNull(result.asString());
 	}
 
+	@Test
+	void testOAuthAuthenticationWithoutAuthenticatedTokenRequestUsingAuthAlias1() throws Exception {
+		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.oauthPath);
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setTokenEndpoint(getTokenEndpoint() + MockTokenServer.PATH);
+		sender.setClientAlias("alias3"); // Alias does not exist, fallback to configured values
+		sender.setClientId(MockTokenServer.CLIENT_ID);
+		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);
+		sender.setAuthenticatedTokenRequest(false);
+
+		sender.configure();
+		sender.start();
+
+		result = sendMessage();
+		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
+		assertNotNull(result.asString());
+	}
+
+	@Test
+	void testOAuthAuthenticationWithoutAuthenticatedTokenRequestUsingAuthAlias2() throws Exception {
+		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.oauthPath);
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setTokenEndpoint(getTokenEndpoint() + MockTokenServer.PATH);
+		sender.setClientAlias("alias1"); // Alias should exist, no fallback to configured values
+		sender.setAuthenticatedTokenRequest(false);
+
+		sender.configure();
+		sender.start();
+
+		result = sendMessage();
+		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
+		assertNotNull(result.asString());
+	}
+
 
 	@Test
 	void testOAuthAuthenticationUnchallenged() throws Exception {
@@ -233,15 +267,43 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		assertNotNull(result.asString());
 	}
 
+	@Test
+	void testOAuthAuthenticationUnchallengedUsingAuthAlias() throws Exception {
+		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.oauthPathUnchallenged);
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setTokenEndpoint(getTokenEndpoint() + MockTokenServer.PATH);
+		sender.setClientAlias("alias3"); // Alias does not exist, fallback to configured values
+		sender.setClientId(MockTokenServer.CLIENT_ID);
+		sender.setClientSecret(MockTokenServer.CLIENT_SECRET);
+
+		sender.configure();
+		sender.start();
+
+		result = sendMessage();
+		assertEquals("200", session.getString(RESULT_STATUS_CODE_SESSIONKEY));
+		assertNotNull(result.asString());
+	}
+
 
 	@Test
-	void testOAuthAuthenticationNoCredentials() throws Exception {
+	void testOAuthAuthenticationNoCredentials() {
 		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.oauthPath);
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
 		sender.setTokenEndpoint(getTokenEndpoint() + MockTokenServer.PATH);
 
 		ConfigurationException exception = assertThrows(ConfigurationException.class, ()->sender.configure());
 		assertThat(exception.getMessage(), containsString("clientId is required"));
+	}
+
+	@Test
+	void testOAuthAuthenticationNoCredentialsUsingAuthAlias() {
+		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.oauthPath);
+		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
+		sender.setTokenEndpoint(getTokenEndpoint() + MockTokenServer.PATH);
+		sender.setClientAlias("alias3"); // Alias does not exist
+
+		ConfigurationException exception = assertThrows(ConfigurationException.class, ()->sender.configure());
+		assertThat(exception.getMessage(), containsString("clientId not set"));
 	}
 
 	@Test
