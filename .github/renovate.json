@@ -21,9 +21,8 @@
     },
     "packageRules": [
         {
-            "description": "Release branches - disable regular updates, security/CVE updates still work via vulnerabilityAlerts",
+            "description": "Release branches - disable ALL regular updates (only security/CVE updates via vulnerabilityAlerts)",
             "matchBaseBranches": ["/^release\\/9\\./", "/^release\\/8\\.0$/", "7.9-release", "/^release\\/10\\./"],
-            "matchUpdateTypes": ["major", "minor", "patch", "pin", "digest"],
             "enabled": false
         },
         {
