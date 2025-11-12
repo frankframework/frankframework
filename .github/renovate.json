@@ -3,11 +3,17 @@
     "extends": [
         "config:recommended"
     ],
-    "baseBranches": ["master", "/.*-release$/", "/^release\\//"],
+    "baseBranches": ["master", "/^release\\/9\\./", "/^release\\/8\\.0$/", "7.9-release", "/^release\\/10\\./"],
     "labels": [
         "Dependencies"
     ],
     "ignoreDeps": ["pnpm"],
+    "vulnerabilityAlerts": {
+        "enabled": true,
+        "labels": ["security", "Dependencies"],
+        "addLabels": ["CVE"]
+    },
+    "osvVulnerabilityAlerts": true,
     "postUpgradeTasks": {
         "commands": ["pnpm install --lockfile-only"],
         "fileFilters": ["pnpm-lock.yaml", "**/package.json"],
@@ -15,9 +21,9 @@
     },
     "packageRules": [
         {
-            "description": "Maven dependencies - daily schedule, ignore major updates, group all updates",
+            "description": "Maven dependencies - weekly on Mondays at 6 AM, ignore major updates, group all updates",
             "matchManagers": ["maven"],
-            "schedule": ["* 0 * * *"],
+            "schedule": ["before 6am on monday"],
             "addLabels": ["Java"],
             "groupName": "maven-dependencies",
             "separateMajorMinor": true,
@@ -45,9 +51,9 @@
             "enabled": false
         },
         {
-            "description": "All NPM dependencies - weekly schedule, ignore major updates (base rule)",
+            "description": "All NPM dependencies - monthly schedule, ignore major updates (base rule)",
             "matchManagers": ["npm"],
-            "schedule": ["* 0 * * 1"],
+            "schedule": ["before 6am on the first day of the month"],
             "addLabels": ["JavaScript"],
             "groupName": "npm-dependencies",
             "separateMajorMinor": true,
@@ -79,12 +85,21 @@
             "enabled": false
         },
         {
-            "description": "Docker dependencies - daily schedule, group all updates",
+            "description": "Docker dependencies - monthly schedule, group all updates",
             "matchManagers": ["dockerfile", "docker-compose"],
             "matchFileNames": ["docker/**"],
-            "schedule": ["* 0 * * *"],
+            "schedule": ["before 6am on the first day of the month"],
             "addLabels": ["Docker"],
-            "groupName": "docker-dependencies"
+            "groupName": "docker-dependencies",
+            "separateMajorMinor": false
+        },
+        {
+            "description": "GitHub Actions - monthly schedule, group all updates",
+            "matchManagers": ["github-actions"],
+            "schedule": ["before 6am on the first day of the month"],
+            "addLabels": ["CI/CD"],
+            "groupName": "github-actions",
+            "separateMajorMinor": false
         }
     ],
     "lockFileMaintenance": {
