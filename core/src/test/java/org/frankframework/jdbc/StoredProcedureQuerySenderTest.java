@@ -24,6 +24,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -851,8 +852,7 @@ public class StoredProcedureQuerySenderTest {
 	private int countAllRows(DatabaseTestEnvironment databaseTestEnvironment) throws SQLException, JdbcException {
 		String checkValueStatement = databaseTestEnvironment.getDbmsSupport().convertQuery("SELECT COUNT(*) FROM SP_TESTDATA", "Oracle");
 		int rowsCounted;
-		Connection connection = databaseTestEnvironment.getConnection();
-		try (PreparedStatement statement = connection.prepareStatement(checkValueStatement)) {
+		try (Connection connection = databaseTestEnvironment.getConnection(); PreparedStatement statement = connection.prepareStatement(checkValueStatement)) {
 			ResultSet resultSet = statement.executeQuery();
 			if (resultSet.next()) {
 				rowsCounted = resultSet.getInt(1);
@@ -860,106 +860,85 @@ public class StoredProcedureQuerySenderTest {
 				rowsCounted = 0;
 			}
 		}
-		connection.close();
 		return rowsCounted;
 	}
 
 	private long insertRowWithMessageValue(final String value, DatabaseTestEnvironment databaseTestEnvironment) throws SQLException, JdbcException {
 		String insertValueQuery = databaseTestEnvironment.getDbmsSupport().convertQuery("INSERT INTO SP_TESTDATA (TMESSAGE, TCHAR) VALUES (?, 'E')", "Oracle");
 		// Column name of generated key-field should be in lowercase for PostgreSQL
-		Connection connection = databaseTestEnvironment.getConnection();
-		try (PreparedStatement statement = connection.prepareStatement(insertValueQuery, new String[]{"tkey"})) {
+		try (Connection connection = databaseTestEnvironment.getConnection(); PreparedStatement statement = connection.prepareStatement(insertValueQuery, new String[]{ "tkey" })) {
 			statement.setString(1, value);
 			statement.executeUpdate();
 			ResultSet generatedKeys = statement.getGeneratedKeys();
 			if (!generatedKeys.next()) {
-				connection.close();
 				fail("No generated keys from insert statement");
 			}
 			return generatedKeys.getLong(1);
-		} finally {
-			connection.close();
 		}
 	}
 
 	private long insertRowWithBlobValue(final String value, final boolean compressed, DatabaseTestEnvironment databaseTestEnvironment) throws SQLException, JdbcException {
 		String insertValueQuery = databaseTestEnvironment.getDbmsSupport().convertQuery("INSERT INTO SP_TESTDATA (TBLOB, TCHAR) VALUES (?, 'B')", "Oracle");
 		// Column name of generated key-field should be in lowercase for PostgreSQL
-		Connection connection = databaseTestEnvironment.getConnection();
-		try (PreparedStatement statement = connection.prepareStatement(insertValueQuery, new String[]{"tkey"})) {
+		try (Connection connection = databaseTestEnvironment.getConnection(); PreparedStatement statement = connection.prepareStatement(insertValueQuery, new String[]{ "tkey" })) {
 			ByteArrayInputStream inputStream = new ByteArrayInputStream(value.getBytes(StandardCharsets.UTF_8));
 			statement.setBlob(1, compressed ? new DeflaterInputStream(inputStream) : inputStream);
 			statement.executeUpdate();
 			ResultSet generatedKeys = statement.getGeneratedKeys();
 			if (!generatedKeys.next()) {
-				connection.close();
 				fail("No generated keys from insert statement");
 			}
 			return generatedKeys.getLong(1);
-		} finally {
-			connection.close();
 		}
 	}
 
 	private long insertRowWithClobValue(final String value, DatabaseTestEnvironment databaseTestEnvironment) throws SQLException, JdbcException {
 		String insertValueQuery = databaseTestEnvironment.getDbmsSupport().convertQuery("INSERT INTO SP_TESTDATA (TCLOB, TCHAR) VALUES (?, 'C')", "Oracle");
 		// Column name of generated key-field should be in lowercase for PostgreSQL
-		Connection connection = databaseTestEnvironment.getConnection();
-		try (PreparedStatement statement = connection.prepareStatement(insertValueQuery, new String[]{"tkey"})) {
+		try (Connection connection = databaseTestEnvironment.getConnection(); PreparedStatement statement = connection.prepareStatement(insertValueQuery, new String[]{ "tkey" })) {
 			statement.setClob(1, new StringReader(value));
 			statement.executeUpdate();
 			ResultSet generatedKeys = statement.getGeneratedKeys();
 			if (!generatedKeys.next()) {
-				connection.close();
 				fail("No generated keys from insert statement");
 			}
 			return generatedKeys.getLong(1);
-		} finally {
-			connection.close();
 		}
 	}
 
 	private String getBlobValueAsString(final long id, DatabaseTestEnvironment databaseTestEnvironment) throws SQLException, JdbcException, IOException {
 		String getBlobQuery = databaseTestEnvironment.getDbmsSupport().convertQuery("SELECT TBLOB FROM SP_TESTDATA WHERE TKEY = ?", "Oracle");
-		Connection connection = databaseTestEnvironment.getConnection();
-		try (PreparedStatement statement = connection.prepareStatement(getBlobQuery)) {
+		try (Connection connection = databaseTestEnvironment.getConnection(); PreparedStatement statement = connection.prepareStatement(getBlobQuery)) {
 			statement.setLong(1, id);
 			ResultSet rs = statement.executeQuery();
 			if (!rs.next()) {
-				connection.close();
 				fail("No data found for id = " + id);
 			}
 			Blob blob = rs.getBlob(1);
 			try (InputStream in = blob.getBinaryStream()) {
 				return StreamUtil.streamToString(in);
 			}
-		} finally {
-			connection.close();
 		}
 	}
 
 	private String getClobValueAsString(final long id, DatabaseTestEnvironment databaseTestEnvironment) throws SQLException, JdbcException, IOException {
 		String getClobQuery = databaseTestEnvironment.getDbmsSupport().convertQuery("SELECT TCLOB FROM SP_TESTDATA WHERE TKEY = ?", "Oracle");
-		Connection connection = databaseTestEnvironment.getConnection();
-		try (PreparedStatement statement = connection.prepareStatement(getClobQuery)) {
+		try (Connection connection = databaseTestEnvironment.getConnection(); PreparedStatement statement = connection.prepareStatement(getClobQuery)) {
 			statement.setLong(1, id);
 			ResultSet rs = statement.executeQuery();
 			if (!rs.next()) {
-				connection.close();
 				fail("No data found for id = " + id);
 			}
 			Clob clob = rs.getClob(1);
 			try (Reader in = clob.getCharacterStream()) {
 				return StreamUtil.readerToString(in, "\n");
 			}
-		} finally {
-			connection.close();
 		}
 	}
 
 	private static String cleanActualOutput(final SenderResult result) throws IOException {
-		return result.getResult()
-				.asString()
+		return Objects.requireNonNull(result.getResult()
+						.asString())
 				.replaceAll("\\.0+<", "<")
 				.replaceAll("(?ms)<fielddefinition>.+?</fielddefinition>", "<fielddefinition>IGNORE</fielddefinition>");
 	}
