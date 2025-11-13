@@ -19,9 +19,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -54,6 +56,7 @@ import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.DbmsException;
 import org.frankframework.functional.ThrowingSupplier;
 import org.frankframework.jdbc.dbms.ConcurrentJdbcActionTester;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.receivers.Receiver;
 import org.frankframework.stream.Message;
@@ -112,9 +115,29 @@ public class JdbcTableListenerTest {
 	}
 
 	@DatabaseTest
-	public void testSetup() throws ConfigurationException {
-		listener.configure();
-		listener.start();
+	public void testSetupSuccess() {
+		assertDoesNotThrow(listener::configure);
+		assertDoesNotThrow(listener::start);
+	}
+
+	@DatabaseTest
+	public void testSetupFailWithIncorrectTableName() {
+		listener.setTableName("missing_table");
+
+		assertDoesNotThrow(listener::configure);
+		LifecycleException lifecycleException = assertThrows(LifecycleException.class, listener::start);
+		assertThat(lifecycleException.getMessage(), containsString("missing_table"));
+	}
+
+	@DatabaseTest
+	public void testSetupFailWithIncorrectFieldConfiguration() {
+		listener.setCommentField("missing_one");
+		listener.setAdditionalFields("missing_two");
+
+		assertDoesNotThrow(listener::configure);
+		LifecycleException lifecycleException = assertThrows(LifecycleException.class, listener::start);
+		assertThat(lifecycleException.getMessage(), containsString("MISSING_ONE"));
+		assertThat(lifecycleException.getMessage(), containsString("MISSING_TWO"));
 	}
 
 	@DatabaseTest

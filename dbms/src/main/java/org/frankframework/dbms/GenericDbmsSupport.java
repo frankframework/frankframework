@@ -501,7 +501,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 
 	@Override
 	@Nonnull
-	public String convertQuery(@Nonnull String query, @Nonnull String sqlDialectFrom) throws SQLException, DbmsException {
+	public String convertQuery(@Nonnull String query, @Nonnull String sqlDialectFrom) throws DbmsException {
 		if (!isQueryConversionRequired(sqlDialectFrom)) {
 			return query;
 		}
