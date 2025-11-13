@@ -8,7 +8,7 @@
 	<changeSet id="TestTable:1:BLOB_NOT_NULL" author="Tim van der Leeuw">
 		<comment>Add BLOB_NOT_NULL Table</comment>
 		<createTable tableName="BLOB_NOT_NULL">
-			<column name="TKEY" type="BIGINT">
+			<column name="TKEY" type="BIGINT" autoIncrement="true">
 				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_BLOB_NOT_NULL"/>
 			</column>
 			<!-- LONGBLOB required for MySQL and MariaDB, compatible with BLOB for other dbmses -->
@@ -24,7 +24,7 @@
 	<changeSet id="TestTable:3:CLOB_NOT_NULL" author="Tim van der Leeuw">
 		<comment>Add CLOB_NOT_NULL Table</comment>
 		<createTable tableName="CLOB_NOT_NULL">
-			<column name="TKEY" type="BIGINT">
+			<column name="TKEY" type="BIGINT" autoIncrement="true">
 				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_CLOB_NOT_NULL"/>
 			</column>
 			<column name="TCLOB" type="CLOB">

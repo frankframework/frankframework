@@ -16,6 +16,7 @@ import java.sql.SQLException;
 
 import org.junit.jupiter.api.BeforeEach;
 
+import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.testutil.junit.DatabaseTest;
@@ -38,13 +39,20 @@ public class SqlTranslatorQueryTest {
 	@DatabaseTest
 	void testInsertEmptyBlob() throws SQLException, JdbcException, IOException {
 		// Arrange
-		String originalQuery = "INSERT INTO BLOB_NOT_NULL(TKEY, TBLOB) VALUES (SEQ_BLOB_NOT_NULL.NEXTVAL, EMPTY_BLOB())";
+		String originalQuery;
+		if (Dbms.MSSQL == dbmsSupport.getDbms()) {
+			// Inserting a "sequence-nextval" like substitute doesn't work in MS SQL with auto-increment columns
+			// However we do want to test this SQL translation for all other databases
+			originalQuery = "INSERT INTO BLOB_NOT_NULL(TBLOB) VALUES (EMPTY_BLOB())";
+		} else {
+			originalQuery = "INSERT INTO BLOB_NOT_NULL(TKEY, TBLOB) VALUES (SEQ_BLOB_NOT_NULL.NEXTVAL, EMPTY_BLOB())";
+		}
 
 		// Act
 		String convertedQuery = dbmsSupport.convertQuery(originalQuery, "Oracle");
 
 		// Execute query to test
-		long key = runInsertQuery(convertedQuery, "tkey");
+		long key = runInsertQuery(convertedQuery, "TKEY");
 
 		// Assert
 		String result = getBlobValueAsString("SELECT TBLOB FROM BLOB_NOT_NULL WHERE TKEY = ?", key);
@@ -54,13 +62,20 @@ public class SqlTranslatorQueryTest {
 	@DatabaseTest
 	void testInsertEmptyClob() throws SQLException, IOException, JdbcException {
 		// Arrange
-		String originalQuery = "INSERT INTO CLOB_NOT_NULL(TKEY, TCLOB) VALUES (SEQ_CLOB_NOT_NULL.NEXTVAL, EMPTY_CLOB())";
+		String originalQuery;
+		if (Dbms.MSSQL == dbmsSupport.getDbms()) {
+			// Inserting a "sequence-nextval" like substitute doesn't work in MS SQL with auto-increment columns
+			// However we do want to test this SQL translation for all other databases
+			originalQuery = "INSERT INTO CLOB_NOT_NULL(TCLOB) VALUES (EMPTY_CLOB())";
+		} else {
+			originalQuery = "INSERT INTO CLOB_NOT_NULL(TKEY, TCLOB) VALUES (SEQ_CLOB_NOT_NULL.NEXTVAL, EMPTY_CLOB())";
+		}
 
 		// Act
 		String convertedQuery = dbmsSupport.convertQuery(originalQuery, "Oracle");
 
 		// Execute query to test
-		long key = runInsertQuery(convertedQuery, "tkey");
+		long key = runInsertQuery(convertedQuery, "TKEY");
 
 		// Assert
 		String result = getClobValueAsString("SELECT TCLOB FROM CLOB_NOT_NULL WHERE TKEY = ?", key);
@@ -69,8 +84,14 @@ public class SqlTranslatorQueryTest {
 
 	private long runInsertQuery(String query, String keyField) throws SQLException {
 		// Column name of generated key-field should be in lowercase for PostgreSQL
+		String keyFieldToUse;
+		if (dbmsSupport.getDbms() == Dbms.POSTGRESQL) {
+			keyFieldToUse = keyField.toLowerCase();
+		} else {
+			keyFieldToUse = keyField;
+		}
 		try (Connection conn = env.getConnection();
-			 PreparedStatement stmt = conn.prepareStatement(query, new String[]{ keyField.toLowerCase()})) {
+			 PreparedStatement stmt = conn.prepareStatement(query, new String[]{ keyFieldToUse })) {
 
 			stmt.executeUpdate();
 			ResultSet generatedKeys = stmt.getGeneratedKeys();
@@ -89,9 +110,14 @@ public class SqlTranslatorQueryTest {
 			if (!rs.next()) {
 				fail("No data found for id = " + id);
 			}
-			Blob blob = rs.getBlob(1);
-			try (InputStream in = blob.getBinaryStream()) {
-				return StreamUtil.streamToString(in);
+			if (dbmsSupport.getDbms() ==  Dbms.POSTGRESQL) {
+				// Liquibase didn't make a true Blob column for Postgresql but a byte[] column
+				return new String(rs.getBytes(1));
+			} else {
+				Blob blob = rs.getBlob(1);
+				try (InputStream in = blob.getBinaryStream()) {
+					return StreamUtil.streamToString(in);
+				}
 			}
 		}
 	}
@@ -104,9 +130,14 @@ public class SqlTranslatorQueryTest {
 			if (!rs.next()) {
 				fail("No data found for id = " + id);
 			}
-			Clob clob = rs.getClob(1);
-			try (Reader in = clob.getCharacterStream()) {
-				return StreamUtil.readerToString(in, "\n");
+			if (dbmsSupport.getDbms() ==  Dbms.POSTGRESQL) {
+				// Liquibase didn't make a true clob column for Postgresql but a text column
+				return rs.getString(1);
+			} else {
+				Clob clob = rs.getClob(1);
+				try (Reader in = clob.getCharacterStream()) {
+					return StreamUtil.readerToString(in, "\n");
+				}
 			}
 		}
 	}
