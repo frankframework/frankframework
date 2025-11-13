@@ -15,8 +15,6 @@
 */
 package org.frankframework.configuration.filters;
 
-import java.util.Arrays;
-import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.xml.sax.Attributes;
@@ -32,25 +30,23 @@ import org.frankframework.xml.FullXmlFilter;
  */
 public class SkipContainersFilter extends FullXmlFilter {
 
-	// Here are the omitted XML elements.
-	//
-	// The Frank!Doc trusts that this class is used to omit the <Module> element.
-	// If you ever want to remove Module from this list, please update the Frank!Doc.
-	// To search for the relevant Frank!Doc code, you can start at
-	// org.frankframework.frankdoc.Constants.MODULE_ELEMENT_NAME.
-	private static final String[] SKIPABLE_CONTAINERS = { "Exits", "Forwards", "Module", "Root", "GlobalForwards", "Global-forwards", "Scheduler", "PipelinePart" };
-	private final Set<String> skipableContainers = new LinkedHashSet<>(Arrays.asList(SKIPABLE_CONTAINERS));
-
-	public SkipContainersFilter() {
-		super();
-	}
+	/**
+	  * Here are the omitted XML elements.
+	  * <br/>
+	  * The Frank!Doc trusts that this class is used to omit the <Module> element.
+	  * If you ever want to remove Module from this list, please update the Frank!Doc.
+	  * To search for the relevant Frank!Doc code, you can start at
+	  * org.frankframework.frankdoc.Constants.MODULE_ELEMENT_NAME and org.frankframework.frankdoc.wrapper.AdditionalRootElement
+	 */
+	private static final Set<String> SKIPPABLE_CONTAINERS = Set.of("Exits", "Forwards", "Module", "Root", "GlobalForwards", "Global-forwards", "Scheduler", "PipelinePart");
 
 	public SkipContainersFilter(ContentHandler handler) {
 		super(handler);
 	}
 
+	@SuppressWarnings("BooleanMethodIsAlwaysInverted")
 	protected boolean isContainer(String localName) {
-		return skipableContainers.contains(localName);
+		return SKIPPABLE_CONTAINERS.contains(localName);
 	}
 
 	@Override
