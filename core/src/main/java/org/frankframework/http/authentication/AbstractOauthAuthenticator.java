@@ -17,15 +17,14 @@ package org.frankframework.http.authentication;
 
 import static org.frankframework.util.StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 
-
-import jakarta.annotation.Nullable;
-import lombok.extern.log4j.Log4j2;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
+
+import jakarta.annotation.Nullable;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.Credentials;
@@ -38,8 +37,12 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 
+import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.task.TimeoutGuard;
+import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.JacksonUtils;
 
@@ -47,6 +50,7 @@ import org.frankframework.util.JacksonUtils;
 public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator {
 
 	protected final AbstractHttpSession session;
+	protected final CredentialFactory clientCredentials;
 
 	protected final URI authorizationEndpoint;
 	protected final int overwriteExpiryMs;
@@ -56,6 +60,16 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 
 	AbstractOauthAuthenticator(final AbstractHttpSession session) throws HttpAuthenticationException {
 		this.session = session;
+		CredentialFactory credentialFactory;
+		try {
+			credentialFactory = new CredentialFactory(session.getClientAuthAlias(), session.getClientId(), session.getClientSecret());
+		} catch (Exception e) {
+			// If the auth-alias cannot be found we might get an exception. Passing null for auth-alias avoids that. We probably have an invalid
+			// configuration now, but we will then catch that later in the configure-method so we can throw a proper exception.
+			// This is a bit of a hack but avoids fixing issues deeper in the credential provider.
+			credentialFactory = new CredentialFactory(null, session.getClientId(), session.getClientSecret());
+		}
+		this.clientCredentials = credentialFactory;
 		try {
 			this.authorizationEndpoint = new URI(session.getTokenEndpoint());
 		} catch (URISyntaxException e) {
@@ -84,6 +98,27 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 			return request;
 		} catch (UnsupportedEncodingException e) {
 			throw new HttpAuthenticationException(e);
+		}
+	}
+
+	@Override
+	public void configure() throws ConfigurationException {
+		// For prettier error messages, distinguish in validations between clientAuthAlias set or not set
+		if (session.getClientAuthAlias() != null) {
+			if (clientCredentials.getUsername() == null) {
+				throw new ConfigurationException("Client Auth Alias [%s] does not contain username (clientId), or clientId not set".formatted(session.getClientAuthAlias()));
+			}
+			if (clientCredentials.getPassword() == null) {
+				throw new ConfigurationException("Client Auth Alias [%s] does not contain password (clientSecret), or clientSecret not set".formatted(session.getClientAuthAlias()));
+			}
+			return;
+		}
+		if (session.getClientId() == null) {
+			throw new ConfigurationException("clientAuthAlias or clientId is required");
+		}
+
+		if (session.getClientSecret() == null) {
+			throw new ConfigurationException("clientAuthAlias or clientSecret is required");
 		}
 	}
 

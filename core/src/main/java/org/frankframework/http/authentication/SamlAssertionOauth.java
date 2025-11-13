@@ -41,10 +41,6 @@ import org.apache.xml.security.algorithms.MessageDigestAlgorithm;
 import org.apache.xml.security.exceptions.XMLSecurityException;
 import org.apache.xml.security.signature.XMLSignature;
 import org.apache.xml.security.transforms.Transforms;
-
-import org.frankframework.util.DomBuilderException;
-import org.frankframework.util.XmlUtils;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -52,6 +48,8 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.encryption.EncryptionException;
 import org.frankframework.encryption.PkiUtil;
 import org.frankframework.http.AbstractHttpSession;
+import org.frankframework.util.DomBuilderException;
+import org.frankframework.util.XmlUtils;
 
 public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 
@@ -71,13 +69,7 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		if (session.getClientId() == null) {
-			throw new ConfigurationException("clientId is required");
-		}
-
-		if (session.getClientSecret() == null) {
-			throw new ConfigurationException("clientSecret is required");
-		}
+		super.configure();
 
 		try {
 			privateKey = PkiUtil.getPrivateKey(session, "Creation of SAML assertion");
@@ -188,7 +180,7 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 
 		Element attributeValue = doc.createElementNS(SAML2_NAMESPACE_URI, "saml2:AttributeValue");
 		attributeValue.setAttribute("xsi:type", "xs:string");
-		attributeValue.setTextContent(session.getClientId());
+		attributeValue.setTextContent(clientCredentials.getUsername());
 
 		attribute.appendChild(attributeValue);
 		attributeStatement.appendChild(attribute);
@@ -238,8 +230,8 @@ public class SamlAssertionOauth extends AbstractOauthAuthenticator {
 	@Override
 	protected HttpEntityEnclosingRequestBase createRequest(Credentials credentials, List<NameValuePair> parameters) throws HttpAuthenticationException {
 		parameters.add(new BasicNameValuePair("grant_type", SAML2_BEARER_GRANT_TYPE));
-		parameters.add(new BasicNameValuePair("client_id", session.getClientId()));
-		parameters.add(new BasicNameValuePair("client_secret", session.getClientSecret()));
+		parameters.add(new BasicNameValuePair("client_id", clientCredentials.getUsername()));
+		parameters.add(new BasicNameValuePair("client_secret", clientCredentials.getPassword()));
 
 		if (session.getScope() != null) {
 			parameters.add(getScopeHeader());

@@ -15,31 +15,19 @@
 */
 package org.frankframework.http.authentication;
 
+import java.util.List;
+
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.Credentials;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.message.BasicNameValuePair;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.http.AbstractHttpSession;
-
-import java.util.List;
 
 public abstract class AbstractResourceOwnerPasswordCredentials extends AbstractOauthAuthenticator {
 
 	AbstractResourceOwnerPasswordCredentials(AbstractHttpSession session) throws HttpAuthenticationException {
 		super(session);
-	}
-
-	@Override
-	public final void configure() throws ConfigurationException {
-		if (session.getClientId() == null) {
-			throw new ConfigurationException("clientId is required");
-		}
-
-		if (session.getClientSecret() == null) {
-			throw new ConfigurationException("clientSecret is required");
-		}
 	}
 
 	@Override

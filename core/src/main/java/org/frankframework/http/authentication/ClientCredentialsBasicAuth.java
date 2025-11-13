@@ -15,19 +15,19 @@
 */
 package org.frankframework.http.authentication;
 
-import com.nimbusds.jose.util.Base64;
+import static org.apache.http.entity.mime.MIME.UTF8_CHARSET;
+
+import java.net.URLEncoder;
+import java.util.List;
 
 import org.apache.http.HttpHeaders;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.Credentials;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 
+import com.nimbusds.jose.util.Base64;
+
 import org.frankframework.http.AbstractHttpSession;
-
-import java.net.URLEncoder;
-import java.util.List;
-
-import static org.apache.http.entity.mime.MIME.UTF8_CHARSET;
 
 public class ClientCredentialsBasicAuth extends AbstractClientCredentials {
 
@@ -36,9 +36,9 @@ public class ClientCredentialsBasicAuth extends AbstractClientCredentials {
 	}
 
 	private String createAuthorizationHeaderValue() {
-		String value = URLEncoder.encode(session.getClientId(), UTF8_CHARSET) +
+		String value = URLEncoder.encode(clientCredentials.getUsername(), UTF8_CHARSET) +
 				':' +
-				URLEncoder.encode(session.getClientSecret(), UTF8_CHARSET);
+				URLEncoder.encode(clientCredentials.getPassword(), UTF8_CHARSET);
 
 		return "Basic " + Base64.encode(value.getBytes(UTF8_CHARSET));
 	}
