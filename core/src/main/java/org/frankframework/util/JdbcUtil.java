@@ -47,6 +47,7 @@ import java.util.zip.ZipException;
 
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
@@ -290,6 +291,7 @@ public class JdbcUtil {
 		}
 	}
 
+	// This should not have a charset nor base64 argument...
 	private static void streamBlob(final InputStream blobInputStream, String charset, Direction blobBase64Direction, Object target, boolean close) throws JdbcException, IOException {
 		if (target == null) {
 			throw new JdbcException("cannot stream Blob to null object");
@@ -300,7 +302,12 @@ public class JdbcUtil {
 				Base64InputStream base64DecodedStream = new Base64InputStream(blobInputStream);
 				StreamUtil.copyStream(base64DecodedStream, outputStream, 50000);
 			} else if (blobBase64Direction == Direction.ENCODE) {
-				Base64InputStream base64EncodedStream = new Base64InputStream(blobInputStream, true);
+				// Though technically not required, we're setting the line length to 76.
+				InputStream base64EncodedStream = Base64InputStream.builder()
+						.setInputStream(blobInputStream)
+						.setEncode(true)
+						.setBaseNCodec(Base64.builder().setLineLength(76).get())
+						.get();
 				StreamUtil.copyStream(base64EncodedStream, outputStream, 50000);
 			} else {
 				StreamUtil.copyStream(blobInputStream, outputStream, 50000);
