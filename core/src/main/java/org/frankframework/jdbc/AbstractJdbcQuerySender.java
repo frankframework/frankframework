@@ -949,29 +949,37 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	}
 
 	/**
-	 * For querytype 'updateBlob': key of session variable that contains the data (String or InputStream) to be loaded to the BLOB. When empty, the input of the pipe, which then must be a String, is used.
-	 * For querytype 'select': key of session variable that contains the OutputStream, Writer or Filename to write the BLOB to
+	 * For querytype 'updateBlob': key of session variable that contains the data (String or InputStream) to be loaded to the BLOB. When empty, the input of the pipe is used.
+	 * For querytype 'select': key of session variable that contains the OutputStream, Writer or Filename to write the BLOB to.
 	 */
+	// TODO To be replaced with the default 'storeResultInSessionKey' and 'getInputFromSessionKey'.
 	public void setBlobSessionKey(String string) {
 		blobSessionKey = string;
 	}
 
 	/**
-	 * controls whether blobdata is stored compressed in the database
+	 * Controls whether blobdata is stored compressed in the database.
 	 * @ff.default true
 	 */
 	public void setBlobsCompressed(boolean b) {
 		blobsCompressed = b;
 	}
 
-	/** controls whether the streamed blobdata will need to be base64 <code>encode</code> or <code>decode</code> or not. */
+	/** 
+	 * Controls whether the streamed blobdata will need to be base64 <code>encode</code> or <code>decode</code> or not.
+	 * Before version 7.6, blobs were base64 encoded after being read to accommodate for the fact that senders need to return a String.
+	 * This is no longer the case and since 9.0 streaming binary data will be faster then converting from/to a Base64 string.
+	 */
+	@Deprecated(since = "9.4")
+	@ConfigurationWarning("The framework can stream any type of data and no longer requires string conversions. If you want to use Base64 conversions it's best to use a Base64Pipe")
 	public void setBlobBase64Direction(Base64Pipe.Direction value) {
 		blobBase64Direction = value;
 	}
 
 	/**
 	 * Charset that is used to read and write BLOBs. This assumes the blob contains character data.
-	 * If blobCharset and blobSmartGet are not set, BLOBs are returned as bytes. Before version 7.6, blobs were base64 encoded after being read to accommodate for the fact that senders need to return a String. This is no longer the case
+	 * If blobCharset and blobSmartGet are not set, BLOBs are returned as bytes. Before version 7.6, blobs were base64 encoded after being
+	 * read to accommodate for the fact that senders need to return a String. This is no longer the case.
 	 */
 	@Deprecated(since = "9.3.0", forRemoval = true)
 	@ConfigurationWarning("BlobCharset property will be removed in a future version. ")
