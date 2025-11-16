@@ -61,16 +61,23 @@ public class CommandSender extends AbstractSenderWithParameters {
 				throw new SenderException(getLogPrefix(),e);
 			}
 		}
+
 		ParameterValueList pvl;
 		try {
 			pvl = paramList.getValues(message, session);
 		} catch (ParameterException e) {
-			throw new SenderException("Could not extract parametervalues",e);
+			throw new SenderException("could not extract parametervalues", e);
 		}
+
 		for(ParameterValue pv : pvl) {
 			commandline.add(pv.asStringValue());
 		}
-		return new SenderResult(ProcessUtil.executeCommand(commandline, timeout));
+
+		try {
+			return new SenderResult(ProcessUtil.executeCommand(commandline, timeout));
+		} catch (IOException e) {
+			throw new SenderException("could not execute command", e);
+		}
 	}
 
 	private List<String> commandToList(String command) {

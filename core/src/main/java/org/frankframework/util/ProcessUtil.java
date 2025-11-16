@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,14 +18,21 @@ package org.frankframework.util;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.ProcessBuilder.Redirect;
+import java.lang.ref.Cleaner.Cleanable;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Logger;
 
-import org.frankframework.core.SenderException;
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.core.TimeoutException;
+import org.frankframework.stream.Message;
+import org.frankframework.stream.PathMessage;
+import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.task.TimeoutGuard;
 
 /**
@@ -34,8 +41,8 @@ import org.frankframework.task.TimeoutGuard;
  * @author  Gerrit van Brakel
  * @since   4.8
  */
+@Log4j2
 public class ProcessUtil {
-	private static final Logger log = LogUtil.getLogger(ProcessUtil.class);
 
 	private static String readStream(InputStream stream) throws IOException {
 		StringBuilder result = new StringBuilder();
@@ -67,11 +74,11 @@ public class ProcessUtil {
 		return Arrays.asList(command.split("(\\s|\f)+"));
 	}
 
-	public static String executeCommand(String command) throws SenderException {
+	public static Message executeCommand(String command) throws IOException {
 		try {
 			return executeCommand(splitUpCommandString(command),0);
 		} catch (TimeoutException e) {
-			throw new SenderException(e);
+			throw new IOException(e);
 		}
 	}
 
@@ -79,58 +86,94 @@ public class ProcessUtil {
 	 * Execute a command as a process in the operating system.
 	 * Timeout is passed in seconds, or 0 to wait indefinitely until the process ends
 	 */
-	public static String executeCommand(List<String> command, int timeout) throws TimeoutException, SenderException {
-		String output;
-		String errors;
+	public static Message executeCommand(List<String> command, int timeout) throws IOException, TimeoutException {
+		Path tempFile = executeCommandInternal(command, timeout);
+
+		// Assume that if the above method returned successfully we are now in charge of cleaning the file.
+		return PathMessage.asTemporaryMessage(tempFile);
+	}
+
+	/**
+	 * Complex method that deals with the execution of the command.
+	 * The results are stored in a file to allow for large results.
+	 * If something goes wrong the file needs to be cleaned.
+	 * See the CleanerProvider and CleanerAction below.
+	 */
+	private static Path executeCommandInternal(List<String> command, int timeout) throws IOException, TimeoutException {
+		Path tempDir = TemporaryDirectoryUtils.getTempDirectory(SerializableFileReference.TEMP_MESSAGE_DIRECTORY);
+		Path stdoutFile = Files.createTempFile(tempDir, "msg", "dat");
 
 		final Process process;
 		try {
-			process = Runtime.getRuntime().exec(command.toArray(new String[0]));
+			process = new ProcessBuilder(command.toArray(new String[0]))
+					.redirectOutput(Redirect.to(stdoutFile.toFile()))
+					.start();
 		} catch (Throwable t) {
-			throw new SenderException("Could not execute command [" + getCommandLine(command) + "]", t);
+			Files.delete(stdoutFile);
+			throw new IOException("unable to execute command [" + getCommandLine(command) + "]", t);
 		}
-		TimeoutGuard tg = new TimeoutGuard("ProcessUtil") {
 
-			@Override
-			protected void abort() {
-				process.destroy();
+		TimeoutGuard tg = new TimeoutGuard("ProcessUtil", process::destroy);
+		tg.activateGuard(timeout);
+
+		try {
+			// Wait until the process is completely finished, or timeout is expired.
+			process.waitFor();
+
+			// Process execution has been completed.
+			// Read the errors of the process.
+			String errors = readStream(process.getErrorStream());
+			if (StringUtils.isNotEmpty(errors)) {
+				log.warn("command [{}] had error output [{}]", getCommandLine(command), errors);
 			}
 
-		};
-		tg.activateGuard(timeout) ;
-		try {
-			// Wait until the process is completely finished, or timeout is expired
-			process.waitFor();
-		} catch(InterruptedException e) {
+			// Throw an exception if the command returns an error exit value.
+			int exitValue = process.exitValue();
+			if (exitValue != 0) {
+				String outputStr = Files.readString(stdoutFile);
+				throw new IOException("nonzero exit value [" + exitValue + "] output was [" + outputStr + "], error output was [" + errors + "]");
+			}
+
+			// Everything went well?
+			return stdoutFile;
+
+			// Yes catch the above Exception, so we can uniform the error handling (file-cleanup).
+		} catch(Exception e) {
+			CleanupFileAction cleanupFileAction = new CleanupFileAction(stdoutFile);
+			Cleanable cleanable = CleanerProvider.register(process, cleanupFileAction);
+
+			try {
+				Files.delete(stdoutFile);
+				// If we've reached this point we were able to remove the file, no need for the cleaner anymore :).
+				CleanerProvider.clean(cleanable);
+			} catch(IOException ignored) {
+				// We were not able to directly clean the File, rely on the CleanerProvider to clean our mess.
+			}
+
 			if (tg.threadKilled()) {
-				throw new TimeoutException("command ["+getCommandLine(command)+"] timed out",e);
+				throw new TimeoutException("command ["+getCommandLine(command)+"] timed out", e);
 			} else {
-				throw new SenderException("command ["+getCommandLine(command)+"] interrupted while waiting for process",e);
+				throw new IOException("error while executing command ["+getCommandLine(command)+"]", e);
 			}
 		} finally {
 			tg.cancel();
 		}
-		// Read the output of the process
-		try {
-			output=readStream(process.getInputStream());
-		} catch (IOException e) {
-			throw new SenderException("Could not read output of command ["+getCommandLine(command)+"]",e);
-		}
-		// Read the errors of the process
-		try {
-			errors=readStream(process.getErrorStream());
-		} catch (IOException e) {
-			throw new SenderException("Could not read errors of command ["+getCommandLine(command)+"]",e);
-		}
-		// Throw an exception if the command returns an error exit value
-		int exitValue = process.exitValue();
-		if (exitValue != 0) {
-			throw new SenderException("Nonzero exit value [" + exitValue + "] for command  ["+getCommandLine(command)+"], process output was [" + output + "], error output was [" + errors + "]");
-		}
-		if (StringUtils.isNotEmpty(errors)) {
-			log.warn("command [{}] had error output [{}]", getCommandLine(command), errors);
-		}
-		return output;
 	}
 
+	private static class CleanupFileAction implements Runnable {
+		private final Path fileToClean;
+
+		private CleanupFileAction(Path fileToClean) {
+			this.fileToClean = fileToClean;
+		}
+
+		@Override
+		public void run() {
+			try {
+				Files.deleteIfExists(fileToClean);
+			} catch (Exception e) {
+				log.warn("failed to remove file reference [{}]. Exception message: {}", fileToClean, e.getMessage());
+			}
+		}
+	}
 }
