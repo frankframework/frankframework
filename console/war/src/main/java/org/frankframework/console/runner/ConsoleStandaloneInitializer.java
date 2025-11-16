@@ -60,7 +60,7 @@ public class ConsoleStandaloneInitializer {
 	/**
 	 * Configure the Frank!Framework application
 	 */
-	static SpringApplication configureApplication() throws IOException {
+	static SpringApplication configureApplication() {
 		SpringApplication app = new SpringApplication();
 		app.setAllowBeanDefinitionOverriding(true);
 		app.setWebApplicationType(WebApplicationType.SERVLET);
