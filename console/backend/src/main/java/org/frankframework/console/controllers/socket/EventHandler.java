@@ -59,7 +59,7 @@ public class EventHandler extends FrankApiWebSocketBase {
 			RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.ADAPTER, BusAction.GET);
 			builder.addHeader("expanded", "messages");
 			convertAndSendToMembers(builder, "adapters", "ADAPTER_MESSAGES");
-		};
+		}
 	}
 
 	private void convertAndSendToMembers(RequestMessageBuilder builder, String eventEndpoint) {
