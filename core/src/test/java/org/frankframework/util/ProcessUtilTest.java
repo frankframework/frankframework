@@ -47,6 +47,6 @@ public class ProcessUtilTest {
 	public void invalidCommand() throws TimeoutException, SenderException, IOException {
 		List<String> invalidCommand = List.of("!@$#%^&");
 		IOException ex = assertThrows(IOException.class, () -> ProcessUtil.executeCommand(invalidCommand, 2));
-		assertEquals("could not execute command [!@$#%^&]", ex.getMessage());
+		assertEquals("unable to execute command [!@$#%^&]", ex.getMessage());
 	}
 }
