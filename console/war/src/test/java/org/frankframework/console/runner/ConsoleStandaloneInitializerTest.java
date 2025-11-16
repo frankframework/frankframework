@@ -1,5 +1,9 @@
 package org.frankframework.console.runner;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -14,10 +18,6 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.web.client.DefaultResponseErrorHandler;
 import org.springframework.web.client.ResponseErrorHandler;
 import org.springframework.web.client.RestTemplate;
-
-import java.io.IOException;
-
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Tag("slow")
 class ConsoleStandaloneInitializerTest {
