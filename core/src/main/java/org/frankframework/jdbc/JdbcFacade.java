@@ -187,7 +187,7 @@ public class JdbcFacade implements HasPhysicalDestination, IXAEnabled, Configura
 		if (timeout<=0) {
 			return getConnection();
 		}
-		TimeoutGuard tg = new TimeoutGuard("Connection ");
+		TimeoutGuard tg = new TimeoutGuard("Connection");
 		try {
 			tg.activateGuard(timeout);
 			return getConnection();
