@@ -3,7 +3,7 @@
     "extends": [
         "config:recommended"
     ],
-    "baseBranches": ["master", "/^release\\/9\\./", "/^release\\/8\\.0$/", "7.9-release", "/^release\\/10\\./"],
+    "baseBranches": ["master", "/^release\\/9\\./", "/^release\\/8\\.0$/", "/^release\\/10\\./"],
     "labels": [
         "Dependencies"
     ],
@@ -22,7 +22,7 @@
     "packageRules": [
         {
             "description": "Release branches - disable ALL regular updates (only security/CVE updates via vulnerabilityAlerts)",
-            "matchBaseBranches": ["/^release\\/9\\./", "/^release\\/8\\.0$/", "7.9-release", "/^release\\/10\\./"],
+            "matchBaseBranches": ["/^release\\/9\\./", "/^release\\/8\\.0$/", "/^release\\/10\\./"],
             "enabled": false
         },
         {
@@ -65,6 +65,14 @@
             "major": {
                 "enabled": false
             }
+        },
+        {
+            "description": "Ignore specific NPM dependencies",
+            "matchManagers": ["npm"],
+            "matchPackageNames": [
+                "bootstrap"
+            ],
+            "enabled": false
         },
         {
             "description": "Angular packages - override groupName",
