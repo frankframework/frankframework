@@ -118,7 +118,7 @@ public class XfbSender extends AbstractSenderWithParameters {
 				command = command + " noname=" +getNoname();
 			}
 			command = command + " filename=" +file.getAbsolutePath();
-			String output = ProcessUtil.executeCommand(command);
+			Message output = ProcessUtil.executeCommand(command);
 			return new SenderResult(output);
 		} catch (IOException e) {
 			throw new SenderException(getLogPrefix(),e);
