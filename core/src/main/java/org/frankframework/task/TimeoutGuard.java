@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden
+   Copyright 2013, 2020 Nationale-Nederlanden, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,6 +36,7 @@ public class TimeoutGuard {
 
 	int timeout;
 	@Getter @Setter String description;
+	private Runnable abortAction;
 	boolean threadKilled;
 	private final Exception source = new Exception("TimeoutGuard created from source point");
 	private Timer timer;
@@ -75,12 +76,35 @@ public class TimeoutGuard {
 	}
 
 	/**
+	 * Create a new TimeoutGuard
+	 * @param description name of the guard
+	 * @param abortAction lambda which will be triggered stop the process and cleanup the resources you are 'guarding'.
+	 */
+	public TimeoutGuard(String description, Runnable abortAction) {
+		super();
+		this.description=description;
+		this.abortAction = abortAction;
+	}
+
+	/**
 	 * Create a new TimeoutGuard and activate immediately
 	 * @param timeout in seconds
 	 * @param description name of the guard
 	 */
 	public TimeoutGuard(int timeout, String description) {
 		this(description);
+		activateGuard(timeout);
+	}
+
+	/**
+	 * Create a new TimeoutGuard and activate immediately
+	 * @param timeout in seconds
+	 * @param description name of the guard
+	 * @param abortAction lambda which will be triggered stop the process and cleanup the resources you are 'guarding'.
+	 */
+	public TimeoutGuard(int timeout, String description, Runnable abortAction) {
+		this(description);
+		this.abortAction = abortAction;
 		activateGuard(timeout);
 	}
 
@@ -113,8 +137,12 @@ public class TimeoutGuard {
 	/**
 	 * Implement this method to stop the process and cleanup the resources you are 'guarding'.
 	 */
+	@Deprecated
 	protected void abort() {
 		// can be called in descendants to kill the guarded job when timeout is exceeded.
+		if (abortAction != null) {
+			abortAction.run();
+		}
 	}
 
 	public boolean threadKilled() {

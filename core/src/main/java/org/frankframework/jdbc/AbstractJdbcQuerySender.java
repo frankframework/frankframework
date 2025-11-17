@@ -965,7 +965,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 		blobsCompressed = b;
 	}
 
-	/** 
+	/**
 	 * Controls whether the streamed blobdata will need to be base64 <code>encode</code> or <code>decode</code> or not.
 	 * Before version 7.6, blobs were base64 encoded after being read to accommodate for the fact that senders need to return a String.
 	 * This is no longer the case and since 9.0 streaming binary data will be faster then converting from/to a Base64 string.

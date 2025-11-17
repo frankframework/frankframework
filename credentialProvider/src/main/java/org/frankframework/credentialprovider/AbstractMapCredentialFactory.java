@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.LinkedHashSet;
 import java.util.Map;
@@ -50,13 +51,17 @@ public abstract class AbstractMapCredentialFactory implements ISecretProvider {
 
 	protected abstract Map<String,String> getCredentialMap(CredentialConstants appConstants) throws IOException;
 
-	protected InputStream getInputStream(CredentialConstants appConstants, String key, String defaultValue, String purpose) throws IOException {
+	protected InputStream getInputStream(CredentialConstants appConstants, String key, String defaultValue) throws IOException {
 		String filename = appConstants.getProperty(key, defaultValue);
 		if (StringUtils.isEmpty(filename)) {
-			throw new IllegalStateException("No property ["+key+"] found for "+purpose);
+			throw new IllegalStateException("property ["+key+"] may not be empty");
 		}
 		try {
-			return Files.newInputStream(Paths.get(filename));
+			Path path = Paths.get(filename);
+			if (Files.isDirectory(path)) {
+				throw new IllegalStateException("attempted to load file ["+filename+"] but it was a directory.");
+			}
+			return Files.newInputStream(path);
 		} catch (Exception e) {
 			URL url = ClassUtils.getResourceURL(filename);
 			if (url == null) {

@@ -48,8 +48,8 @@ public class PluginInfo extends ComponentInfo implements PluginDescriptor {
 			this.artifact = null;
 		}
 
-		String pluginClass = manifest.getMainAttributes().getValue(ManifestPluginDescriptorFinder.PLUGIN_CLASS);
-		this.pluginClass = StringUtils.defaultIfBlank(pluginClass, Plugin.class.getCanonicalName());
+		String pluginClassAttr = manifest.getMainAttributes().getValue(ManifestPluginDescriptorFinder.PLUGIN_CLASS);
+		this.pluginClass = StringUtils.defaultIfBlank(pluginClassAttr, Plugin.class.getCanonicalName());
 	}
 
 	@Override
