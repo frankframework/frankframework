@@ -36,7 +36,7 @@ public class ProcessUtilTest {
 		if (TestAssertions.isTestRunningOnWindows()) {
 			command = List.of("cmd", "echo", "test");
 		} else {
-			command = List.of("echo", "test");
+			command = List.of("sleep", "5");
 		}
 
 		TimeoutException ex = assertThrows(TimeoutException.class, () -> ProcessUtil.executeCommand(command, 2));
