@@ -65,14 +65,12 @@
                 "enabled": false
             }
         },
-        {
-            "description": "Ignore specific NPM dependencies",
-            "matchManagers": ["npm"],
-            "matchPackageNames": [
-                "bootstrap"
-            ],
-            "enabled": false
-        },
+		{
+		    "description": "Ignore specific NPM dependencies",
+		    "matchManagers": ["npm"],
+		    "matchPackagePatterns": ["^bootstrap$"],
+		    "enabled": false
+		},
         {
             "description": "Angular packages - override groupName",
             "matchManagers": ["npm"],
