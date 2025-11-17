@@ -40,7 +40,7 @@ public class ProcessUtilTest {
 		}
 
 		TimeoutException ex = assertThrows(TimeoutException.class, () -> ProcessUtil.executeCommand(command, 2));
-		assertEquals("command [cmd echo test] timed out: (InterruptedException)", ex.getMessage());
+		assertEquals("command ["+String.join(" ", command)+"] timed out: (InterruptedException)", ex.getMessage());
 	}
 
 	@Test
