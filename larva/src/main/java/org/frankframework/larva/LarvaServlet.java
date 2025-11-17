@@ -29,7 +29,6 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 
-import org.frankframework.core.SenderException;
 import org.frankframework.http.AbstractHttpServlet;
 import org.frankframework.lifecycle.IbisInitializer;
 import org.frankframework.util.AppConstants;
@@ -180,9 +179,6 @@ public class LarvaServlet extends AbstractHttpServlet {
 				try {
 					LarvaTool larvaTool = LarvaTool.createInstance(getServletContext());
 					larvaTool.windiff(request.getParameter("expectedFileName"), request.getParameter("expectedBox"), request.getParameter("resultBox"));
-				} catch (SenderException e) {
-					log.warn("unable to execute windiff command", e);
-					resp.sendError(500, "unable to save file");
 				} catch (IOException e) {
 					log.warn("unable to write tempFile", e);
 					resp.sendError(500, "unable to write tempFile");
