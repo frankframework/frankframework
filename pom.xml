@@ -115,7 +115,7 @@
 		<mongodb.driver.version>5.6.1</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
-		<activemq.driver.version>6.1.8</activemq.driver.version>
+		<activemq.driver.version>6.2.0</activemq.driver.version>
 		<artemis.driver.version>2.44.0</artemis.driver.version>
 
 		<rabbitmq.driver.version>5.27.1</rabbitmq.driver.version>
