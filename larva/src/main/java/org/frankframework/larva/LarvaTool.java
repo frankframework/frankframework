@@ -64,7 +64,6 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.core.SenderException;
 import org.frankframework.json.JsonUtil;
 import org.frankframework.larva.output.HtmlScenarioOutputRenderer;
 import org.frankframework.larva.output.LarvaHtmlWriter;
@@ -265,7 +264,7 @@ public class LarvaTool {
 	}
 
 	// Used by saveResultToFile.jsp
-	public void windiff(String expectedFileName, String result, String expected) throws IOException, SenderException {
+	public void windiff(String expectedFileName, String result, String expected) throws IOException {
 		AppConstants appConstants = AppConstants.getInstance();
 		String windiffCommand = appConstants.getProperty("larva.windiff.command");
 		if (windiffCommand == null) {
