@@ -43,7 +43,6 @@
                 "org.ibissource:ibis-ladybug",
                 "org.wearefrank:ladybug",
                 "com.sap.jco3:sapidoc",
-                "org.frankframework:frankframework-ear",
                 "org.filesys:jfileserver-enterprise",
                 "org.eclipse.m2e:lifecycle-mapping"
             ],
