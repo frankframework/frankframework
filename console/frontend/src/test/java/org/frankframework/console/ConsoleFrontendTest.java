@@ -85,7 +85,7 @@ public class ConsoleFrontendTest {
 			"../dummy.txt", "/../dummy.txt", "/%20.txt", "/#/../../dummy.txt"})
 	// Tests  ForbiddenUrls
 	// Tests FileRetrieval outside 'ConsoleDirectory'
-	public void testForbinnenAndRelativeUrls(String path) throws UnsupportedEncodingException {
+	public void testForbiddenAndRelativeUrls(String path) throws UnsupportedEncodingException {
 		MockHttpServletRequest request = createRequest(path);
 
 		MockHttpServletResponse response = new MockHttpServletResponse();
