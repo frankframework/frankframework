@@ -68,7 +68,7 @@
 		{
 		    "description": "Ignore specific NPM dependencies",
 		    "matchManagers": ["npm"],
-		    "matchPackagePatterns": ["^bootstrap$"],
+		    "matchPackagePatterns": ["bootstrap$"],
 		    "enabled": false
 		},
         {
