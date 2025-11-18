@@ -169,7 +169,7 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 			tags.add(Tag.of("adapter", adapter.getName()));
 		}
 		Configuration configuration = getConfiguration(frankElement);
-		if(configuration != null) {
+		if(configuration != null && StringUtils.isNotEmpty(configuration.getId())) {
 			tags.add(Tag.of("configuration", configuration.getId()));
 		}
 		tags.add(Tag.of("name", name));
