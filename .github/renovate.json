@@ -8,17 +8,14 @@
         "Dependencies"
     ],
     "ignoreDeps": ["pnpm"],
+    "prHourlyLimit": 5,
+    "rebaseWhen": "conflicted",
     "vulnerabilityAlerts": {
         "enabled": true,
         "labels": ["security", "Dependencies"],
         "addLabels": ["CVE"]
     },
     "osvVulnerabilityAlerts": true,
-    "postUpgradeTasks": {
-        "commands": ["pnpm install --lockfile-only"],
-        "fileFilters": ["pnpm-lock.yaml", "**/package.json"],
-        "executionMode": "branch"
-    },
     "packageRules": [
         {
             "description": "Release branches - disable ALL regular updates (only security/CVE updates via vulnerabilityAlerts)",
@@ -68,6 +65,7 @@
 		{
 		    "description": "Ignore specific NPM dependencies",
 		    "matchManagers": ["npm"],
+            "matchPackageNames": ["mermaid"],
 		    "matchPackagePatterns": ["bootstrap$"],
 		    "enabled": false
 		},
@@ -98,6 +96,7 @@
             "description": "Docker dependencies - monthly schedule, group all updates",
             "matchManagers": ["dockerfile", "docker-compose"],
             "matchFileNames": ["docker/**"],
+            "matchBaseBranches": ["master"],
             "schedule": ["before 6am on the first day of the month"],
             "addLabels": ["Docker"],
             "groupName": "docker-dependencies",

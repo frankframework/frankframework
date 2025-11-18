@@ -1,0 +1,40 @@
+﻿name: Renovate Lockfile Fixer
+
+on:
+  push:
+    branches:
+      - 'renovate/**'
+
+permissions:
+  contents: write
+
+jobs:
+  fix-lockfile:
+    runs-on: ubuntu-latest
+    if: github.actor == 'renovate[bot]' || contains(github.event.head_commit.message, 'renovate')
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'pnpm'
+
+      - name: Run pnpm install after dependency bump
+        run: pnpm install --lockfile-only --ignore-scripts
+
+      - name: Commit changes if necessary
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore(deps): update pnpm-lock.yaml after dependency bump"
+          file_pattern: "pnpm-lock.yaml"
