@@ -59,11 +59,6 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	public boolean isParameterTypeMatchRequired() {
-		return false;
-	}
-
-	@Override
 	public boolean hasSkipLockedFunctionality() {
 		return false;
 	}
