@@ -14,11 +14,6 @@
         "addLabels": ["CVE"]
     },
     "osvVulnerabilityAlerts": true,
-    "postUpgradeTasks": {
-        "commands": ["pnpm install --lockfile-only"],
-        "fileFilters": ["pnpm-lock.yaml", "**/package.json"],
-        "executionMode": "branch"
-    },
     "packageRules": [
         {
             "description": "Release branches - disable ALL regular updates (only security/CVE updates via vulnerabilityAlerts)",
