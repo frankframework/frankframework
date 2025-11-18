@@ -32,7 +32,7 @@
     "@popperjs/core": "^2.11.8",
     "@stomp/stompjs": "^7.1.1",
     "angular2-ladda": "^5.0.0",
-    "bootstrap": "3.3.6",
+    "bootstrap": "4.0.0",
     "chart.js": "^4.5.0",
     "font-awesome": "4.7.0",
     "ladda": "^2.0.3",
