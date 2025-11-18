@@ -45,6 +45,11 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 		dbmsHasSkipLockedFunctionality = determineSkipLockedCapability(productVersion);
 	}
 
+	@Override
+	public boolean isParameterTypeMatchRequired() {
+		return true;
+	}
+
 	// Example output `2.3.232 (2024-08-11)`
 	private boolean determineSkipLockedCapability(String productVersion) {
 		if (StringUtils.isEmpty(productVersion)) {

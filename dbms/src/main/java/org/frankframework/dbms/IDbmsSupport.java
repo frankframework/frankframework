@@ -45,7 +45,9 @@ public interface IDbmsSupport {
 		return getDbms().getKey();
 	}
 
-	boolean isParameterTypeMatchRequired();
+	default boolean isParameterTypeMatchRequired() {
+		return false;
+	}
 
 	boolean hasSkipLockedFunctionality();
 
