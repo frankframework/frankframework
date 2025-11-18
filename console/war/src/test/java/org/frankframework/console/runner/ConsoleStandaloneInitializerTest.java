@@ -2,8 +2,6 @@ package org.frankframework.console.runner;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.io.IOException;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -25,7 +23,7 @@ class ConsoleStandaloneInitializerTest {
 	private static ConfigurableApplicationContext applicationContext = null;
 
 	@BeforeEach
-	void setUp() throws IOException {
+	void setUp() {
 		System.setProperty("application.security.console.authentication.type", "NONE");
 		SpringApplication springApplication = ConsoleStandaloneInitializer.configureApplication();
 		applicationContext = springApplication.run();

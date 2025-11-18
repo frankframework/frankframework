@@ -15,7 +15,6 @@
 */
 package org.frankframework.console.runner;
 
-import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -52,7 +51,7 @@ public class ConsoleStandaloneInitializer {
 
 	// Should start a XmlServletWebServerApplicationContext.
 	// Optionally, in order to enable the ladybug the profile ladybug-file or ladybug-database can be enabled.
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) {
 		SpringApplication app = configureApplication();
 		app.run(args);
 	}
