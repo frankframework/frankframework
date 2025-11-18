@@ -93,6 +93,7 @@
             "description": "Docker dependencies - monthly schedule, group all updates",
             "matchManagers": ["dockerfile", "docker-compose"],
             "matchFileNames": ["docker/**"],
+            "matchBaseBranches": ["master"],
             "schedule": ["before 6am on the first day of the month"],
             "addLabels": ["Docker"],
             "groupName": "docker-dependencies",
