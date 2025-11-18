@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - 'renovate/**'
+    paths:
+      - '**/package.json'
+      - 'pnpm-lock.yaml'
 
 permissions:
   contents: write
