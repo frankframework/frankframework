@@ -238,10 +238,12 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 
 	@Override
 	public void destroy() throws Exception {
-		Search search = Search.in(meterRegistry).tag("configuration", applicationContext.getId());
-		search.counters().forEach(meterRegistry::remove);
-		search.gauges().forEach(meterRegistry::remove);
-		search.summaries().forEach(meterRegistry::remove);
+		if (applicationContext != null && StringUtils.isNotBlank(applicationContext.getId())) {
+			Search search = Search.in(meterRegistry).tag("configuration", applicationContext.getId());
+			search.counters().forEach(meterRegistry::remove);
+			search.gauges().forEach(meterRegistry::remove);
+			search.summaries().forEach(meterRegistry::remove);
+		}
 	}
 
 }
