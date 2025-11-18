@@ -8,6 +8,8 @@
         "Dependencies"
     ],
     "ignoreDeps": ["pnpm"],
+    "prHourlyLimit": 5,
+    "rebaseWhen": "conflicted",
     "vulnerabilityAlerts": {
         "enabled": true,
         "labels": ["security", "Dependencies"],
@@ -63,6 +65,7 @@
 		{
 		    "description": "Ignore specific NPM dependencies",
 		    "matchManagers": ["npm"],
+            "matchPackageNames": ["mermaid"],
 		    "matchPackagePatterns": ["bootstrap$"],
 		    "enabled": false
 		},
