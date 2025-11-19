@@ -10,6 +10,9 @@
     "ignoreDeps": ["pnpm"],
     "prHourlyLimit": 5,
     "rebaseWhen": "conflicted",
+    "commitMessageTopic": "{{depName}}",
+    "commitMessageAction": "Update dependency",
+    "commitMessageExtra": "to {{#if isMajor}}v{{newMajor}}{{else}}v{{newVersion}}{{/if}}",
     "vulnerabilityAlerts": {
         "enabled": true,
         "labels": ["security", "Dependencies"],
@@ -17,6 +20,11 @@
     },
     "osvVulnerabilityAlerts": true,
     "packageRules": [
+        {
+            "description": "Dynamic label extraction from release base branches using regex",
+            "matchBaseBranches": ["/^release\\/(\\d+\\.\\d+)/"],
+            "addLabels": ["{{replace 'release/' '' baseBranch}}"]
+        },
         {
             "description": "Release branches - disable ALL regular updates (only security/CVE updates via vulnerabilityAlerts)",
             "matchBaseBranches": ["/^release\\/9\\./", "/^release\\/8\\.0$/", "/^release\\/10\\./"],
@@ -62,13 +70,13 @@
                 "enabled": false
             }
         },
-		{
-		    "description": "Ignore specific NPM dependencies",
-		    "matchManagers": ["npm"],
+        {
+            "description": "Ignore specific NPM dependencies",
+            "matchManagers": ["npm"],
             "matchPackageNames": ["mermaid"],
-		    "matchPackagePatterns": ["bootstrap$"],
-		    "enabled": false
-		},
+            "matchPackagePatterns": ["bootstrap$"],
+            "enabled": false
+        },
         {
             "description": "Angular packages - override groupName",
             "matchManagers": ["npm"],
