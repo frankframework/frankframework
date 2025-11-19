@@ -25,6 +25,7 @@ import org.springframework.context.Lifecycle;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
+import org.frankframework.doc.Mandatory;
 import org.frankframework.stream.Message;
 import org.frankframework.util.Locker;
 
@@ -41,6 +42,17 @@ public interface IPipe extends IConfigurable, IForwardTarget, FrankElement, Name
 	String LONG_DURATION_MONITORING_EVENT = "Pipe Long Processing Duration";
 	String PIPE_EXCEPTION_MONITORING_EVENT = "Pipe Exception";
 	String MESSAGE_SIZE_MONITORING_EVENT = "Pipe Message Size Exceeding";
+
+	/**
+	 * The functional name of this pipe. It can be referenced by the <code>path</code> attribute of a {@link PipeForward}.
+	 *
+	 * @ff.warning If the name of the pipe is the name of one of the forward-names of another pipe, and that pipe does not have that forward explicitly
+	 * specified, then this pipe will be used as that forward. Example: if you name a pipe {@literal exception} then it will be used as the {@literal exception}
+	 * forward for all pipes that do not explicitly specify an {@literal exception} forward.
+	 */
+	@Override
+	@Mandatory
+	void setName(String name);
 
 	/**
 	 * This is where the action takes place. Pipes may only throw a PipeRunException,
@@ -61,9 +73,9 @@ public interface IPipe extends IConfigurable, IForwardTarget, FrankElement, Name
 	PipeForward findForward(@Nullable String forward);
 
 	/**
-	 * Get pipe forwards.
+	 * Get all registered pipe forwards (excluding global forwards, or pipes in the pipeline with the name of one of the forwards).
 	 */
-	Map<String, PipeForward> getForwards();
+	Map<String, PipeForward> getRegisteredForwards();
 
 	/**
 	 * Register a PipeForward object to this Pipe. Global Forwards are added

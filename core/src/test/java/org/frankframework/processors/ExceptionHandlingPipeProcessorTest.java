@@ -52,7 +52,7 @@ public class ExceptionHandlingPipeProcessorTest extends PipeProcessorTestBase {
 	void runtimeExceptionWithoutExceptionForwardAndExceptionPipe() throws Exception {
 		createPipe(EchoPipe.class, "Echo pipe", "Exception pipe");
 		createPipe(ThrowExceptionPipe.class, "Exception pipe", "success");
-		createPipe(ExceptionPipe.class, "exception", "success"); // Pipe named exception is instance of ExceptionPipe so will not be used by the ExceptionHandlingPipeProcessor
+		createPipe(ExceptionPipe.class, "exception", "success"); // Pipe named exception is instance of ExceptionPipe so will not be used as exception-forward by the ExceptionHandlingPipeProcessor
 
 		PipeRunException ex = assertThrows(PipeRunException.class, () -> processPipeLine(new Message("Runtime")));
 

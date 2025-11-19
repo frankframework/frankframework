@@ -31,7 +31,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import javax.xml.transform.Result;
 import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMResult;
@@ -238,7 +237,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	private Document transformToDocument(Source xmlSource, ParameterValueList pvl) throws TransformerException, IOException {
 		TransformerPool pool = getTransformerPool();
 		DOMResult transformResult = new DOMResult();
-		pool.transform(xmlSource, (Result) transformResult, pvl ==null? null : pvl.getValueMap());
+		pool.transform(xmlSource, transformResult, pvl ==null? null : pvl.getValueMap());
 		return (Document) transformResult.getNode();
 	}
 
@@ -266,6 +265,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	/**
 	 * determines the raw value
 	 */
+	@SuppressWarnings({ "deprecation", "resource" })
 	@Override
 	public Object getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		Object result = null;

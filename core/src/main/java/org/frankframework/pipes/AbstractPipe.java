@@ -113,6 +113,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 
 	private final List<PipeForward> registeredForwards = new ArrayList<>();
 	private final Map<String, PipeForward> configuredForwards = new HashMap<>();
+	private final Map<String, PipeForward> allForwards = new HashMap<>(); // allForwards combines configuredForwards with cache of looked up pipeline forwards
 	private final @Nonnull ParameterList parameterList = new ParameterList();
 	protected boolean parameterNamesMustBeUnique;
 	private @Setter EventPublisher eventPublisher=null;
@@ -135,6 +136,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		}
 
 		registeredForwards.forEach(this::configureForward);
+		allForwards.putAll(configuredForwards);
 
 		ParameterList params = getParameterList();
 		try {
@@ -277,8 +279,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		if (StringUtils.isEmpty(forward)) {
 			return null;
 		}
-		if (configuredForwards.containsKey(forward)) {
-			return configuredForwards.get(forward);
+		if (allForwards.containsKey(forward)) {
+			return allForwards.get(forward);
 		}
 		if (pipeLine == null) {
 			return null;
@@ -296,25 +298,17 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 				result = new PipeForward(forward, forward);
 			}
 		}
+		// Cache the result in the allForwards map
 		if (result != null) {
-			configuredForwards.put(forward, result);
+			allForwards.put(forward, result);
 		}
 		return result;
 	}
 
 	@Override
 	@Nonnull
-	public Map<String, PipeForward> getForwards() {
-		Map<String, PipeForward> forwards = new HashMap<>(configuredForwards);
-		PipeLine pipeline = getPipeLine();
-		if (pipeline == null) {
-			return forwards;
-		}
-
-		// Omit global pipeline-forwards and only return local pipe-forwards
-		pipeline.getPipes()
-				.forEach(pipe -> forwards.remove(pipe.getName()));
-		return forwards;
+	public Map<String, PipeForward> getRegisteredForwards() {
+		return new HashMap<>(configuredForwards);
 	}
 
 	@Override
@@ -349,9 +343,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		return sessionKey.equals(getInputFromSessionKey) || parameterList.consumesSessionVariable(sessionKey);
 	}
 
-	/**
-	 * The functional name of this pipe. It can be referenced by the <code>path</code> attribute of a {@link PipeForward}.
-	 */
 	@Override
 	@Mandatory
 	public void setName(String name) {

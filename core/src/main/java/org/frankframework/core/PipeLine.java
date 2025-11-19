@@ -341,7 +341,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 
 			pipe.configure();
 
-			for(PipeForward forward : pipe.getForwards().values()) {
+			for(PipeForward forward : pipe.getRegisteredForwards().values()) {
 				String path=forward.getPath();
 				if (path!=null) {
 					PipeLineExit plExit = pipeLineExits.get(path);
