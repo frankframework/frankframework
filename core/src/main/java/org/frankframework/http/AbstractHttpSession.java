@@ -709,12 +709,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 			hardTimeout = getTimeout(); // Default timeout
 		}
 
-		TimeoutGuard tg = new TimeoutGuard(1+hardTimeout/1000, getName()) {
-			@Override
-			protected void abort() {
-				httpRequestBase.abort();
-			}
-		};
+		TimeoutGuard tg = new TimeoutGuard(1+hardTimeout/1000, getName(), httpRequestBase::abort);
 
 		try {
 			log.trace("executing request using HttpClient [{}] HttpContext [{}] timeout [{}]", client::hashCode, () -> context, () -> hardTimeout);

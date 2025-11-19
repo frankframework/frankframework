@@ -60,8 +60,8 @@ public class AnsibleVaultCredentialFactory extends AbstractMapCredentialFactory 
 
 	@Override
 	protected Map<String, String> getCredentialMap(CredentialConstants appConstants) throws IOException {
-		try (InputStream vaultStream = getInputStream(appConstants, VAULT_PROPERTY, DEFAULT_VAULT_FILE, "Ansible Vault");
-			InputStream keyStream = getInputStream(appConstants, VAULT_KEY_PROPERTY, DEFAULT_VAULT_KEY_FILE, "Ansible Vault Key")) {
+		try (InputStream vaultStream = getInputStream(appConstants, VAULT_PROPERTY, DEFAULT_VAULT_FILE);
+			InputStream keyStream = getInputStream(appConstants, VAULT_KEY_PROPERTY, DEFAULT_VAULT_KEY_FILE)) {
 
 			String vaultKey = StreamUtil.streamToString(keyStream).trim();
 			String encrypted = StreamUtil.streamToString(vaultStream);

@@ -16,7 +16,7 @@
 	</Appenders>
 
 	<Loggers>
-		<Root>
+		<Root level="${ff:log.level}">
 			<AppenderRef ref="json-stdout"/>
 		</Root>
 	</Loggers>

@@ -32,9 +32,11 @@ import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.GenericDbmsSupport;
+import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.JdbcListener;
 import org.frankframework.jdbc.MessageStoreListener;
 import org.frankframework.jdbc.datasource.DataSourceFactory;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.stream.Message;
 
 @SuppressWarnings("unchecked")
@@ -59,14 +61,24 @@ public class MessageStoreListenerTest extends ListenerTestBase<Serializable, Mes
 				}
 				return result;
 			}
+
+			@Override
+			public void start() {
+				// Override to suppress validations that will fail
+				try {
+					connection = getConnection();
+				} catch (JdbcException e) {
+					throw new LifecycleException(e);
+				}
+			}
 		});
-		DatabaseMetaData md = mock(DatabaseMetaData.class);
+		DatabaseMetaData md = mock();
 		doReturn("product").when(md).getDatabaseProductName();
 		doReturn("version").when(md).getDatabaseProductVersion();
-		Connection conn = mock(Connection.class);
+		Connection conn = mock();
 		doReturn(md).when(conn).getMetaData();
 		DataSourceFactory factory = new DataSourceFactory();
-		DataSource dataSource = mock(DataSource.class);
+		DataSource dataSource = mock();
 		String dataSourceName = "jdbc/myDummyDataSource";
 		factory.add(dataSource, dataSourceName);
 		listener.setDataSourceFactory(factory);

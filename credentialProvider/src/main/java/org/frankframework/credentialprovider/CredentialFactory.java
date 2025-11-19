@@ -101,7 +101,10 @@ public class CredentialFactory {
 			log.info(() -> "installed CredentialFactory [" + factoryClassName + "]");
 			delegates.add(delegate);
 		} catch (Exception e) {
-			log.log(Level.WARNING, e, () -> "Cannot instantiate CredentialFactory [" + factoryClassName + "] (" + e.getClass().getTypeName() + "): " + e.getMessage());
+			// Log WARN message
+			log.log(Level.WARNING, () -> "Cannot instantiate CredentialFactory [" + factoryClassName + "] (" + e.getClass().getTypeName() + "): " + e.getMessage());
+			// Log INFO stacktrace
+			log.log(Level.INFO, e, () -> "Exception instantiating CredentialFactory [" + factoryClassName + "]");
 		}
 	}
 

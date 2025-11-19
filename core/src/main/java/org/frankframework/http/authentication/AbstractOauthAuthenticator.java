@@ -116,14 +116,7 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 		HttpRequestBase request = createRequest(credentials, new ArrayList<>());
 
 		CloseableHttpClient apacheHttpClient = session.getHttpClient();
-		TimeoutGuard tg = new TimeoutGuard(1 + session.getTimeout() / 1000, "token retrieval") {
-
-			@Override
-			protected void abort() {
-				request.abort();
-			}
-
-		};
+		TimeoutGuard tg = new TimeoutGuard(1 + session.getTimeout() / 1000, "token retrieval", request::abort);
 
 		try (CloseableHttpResponse response = apacheHttpClient.execute(request)) {
 			String responseBody = EntityUtils.toString(response.getEntity());

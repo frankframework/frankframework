@@ -38,13 +38,12 @@ import org.frankframework.util.StreamUtil;
  */
 public class PropertyFileCredentialFactory extends AbstractMapCredentialFactory {
 
-	private static final String PROPERTY_BASE = "credentialFactory.map.properties";
-
+	private static final String PROPERTY_FILE_KEY = "credentialFactory.map.properties";
 	private static final String DEFAULT_PROPERTIES_FILE = "credentials.properties";
 
 	@Override
 	protected Map<String, String> getCredentialMap(CredentialConstants appConstants) throws IOException {
-		try (InputStream propertyStream = getInputStream(appConstants, PROPERTY_BASE, DEFAULT_PROPERTIES_FILE, "Secret");
+		try (InputStream propertyStream = getInputStream(appConstants, PROPERTY_FILE_KEY, DEFAULT_PROPERTIES_FILE);
 			Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(propertyStream)) {
 			Properties properties = new Properties();
 			properties.load(reader);

@@ -113,6 +113,10 @@
               "proxyConfig": "src/proxy.conf.json",
               "buildTarget": "ff-console-gui:build:development"
             },
+            "development-ffexample": {
+              "proxyConfig": "src/proxy.conf.json",
+              "buildTarget": "ff-console-gui:build:development"
+            },
             "development-fftest": {
               "proxyConfig": "src/proxy-fftest.conf.json",
               "buildTarget": "ff-console-gui:build:development"

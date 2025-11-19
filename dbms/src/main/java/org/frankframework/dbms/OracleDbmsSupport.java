@@ -29,7 +29,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 public class OracleDbmsSupport extends GenericDbmsSupport {
 
-	public static final CustomSQLType ORACLE_CURSOR_TYPE_DEF = new CustomSQLType("Oracle", -10 /* (OracleTypes.CURSOR) */);
+	private static final SQLType ORACLE_CURSOR_TYPE_DEF = new CustomSQLType("Oracle", -10 /* (OracleTypes.CURSOR) */);
 
 	@Override
 	public Dbms getDbms() {

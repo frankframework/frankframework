@@ -16,11 +16,18 @@
 package org.frankframework.jdbc;
 
 import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
+
+import jakarta.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -33,6 +40,9 @@ import org.frankframework.core.IProvidesMessageBrowsers;
 import org.frankframework.core.ITransactionalStorage;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.ProcessState;
+import org.frankframework.dbms.DbmsException;
+import org.frankframework.dbms.JdbcException;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.receivers.RawMessageWrapper;
 
 /**
@@ -93,6 +103,82 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 		if (StringUtils.isEmpty(getStatusValue(ProcessState.INPROCESS)) && !getDbmsSupport().hasSkipLockedFunctionality()) {
 			ConfigurationWarnings.add(this, log, "Database [" + getDbmsSupport().getDbmsName() + "] needs statusValueInProcess to run in multiple threads");
 		}
+	}
+
+	@Override
+	public void start() {
+		super.start();
+		// Validate this in start not configure, because a broken configuration could otherwise prevent the startup of the entire application.
+		validateQueryFields();
+	}
+
+	private void validateQueryFields() throws LifecycleException {
+		if (!isConnectionsArePooled()) {
+			try {
+				validateQueryFields(connection);
+			} catch (SQLException | DbmsException e) {
+				throw new LifecycleException("Error requesting database metadata", e);
+			}
+		} else {
+			try (Connection conn = getConnection()) {
+				validateQueryFields(conn);
+			} catch (JdbcException | SQLException e) {
+				throw new LifecycleException("Error requesting database metadata", e);
+			}
+		}
+	}
+
+	private void validateQueryFields(Connection conn) throws LifecycleException, SQLException, DbmsException {
+		Set<String> columnNames = getTableColumnNames(conn, tableName);
+		if (columnNames.isEmpty()) {
+			throw new LifecycleException("Cannot find any columns for table [%s]".formatted(tableName));
+		}
+		Map<String, String> configuredColumnNames = getConfiguredColumnNames();
+		configuredColumnNames.values().removeAll(columnNames);
+		if (!configuredColumnNames.isEmpty()) {
+			throw new LifecycleException("The following columns cannot be found in the schema for table [%s]: [%s]".formatted(tableName, configuredColumnNames));
+		}
+	}
+
+	/**
+	 * Get a set of all column names of the table. If the table cannot be found in the database schema, then the result will be an empty set.
+	 */
+	@Nonnull
+	private Set<String> getTableColumnNames(@Nonnull Connection conn, @Nonnull String table) throws SQLException, DbmsException {
+		Set<String> columnNames = new HashSet<>();
+		try (ResultSet columns = getDbmsSupport().getTableColumns(conn, table)) {
+			while (columns.next()) {
+				columnNames.add(columns.getString("COLUMN_NAME").toUpperCase());
+			}
+		}
+		return columnNames;
+	}
+
+	/**
+	 * Get a map with all configured column names. The key is the functional name of the field and the value the column name in the database. Subclasses
+	 * may potentially override this method to add more fields that the subclass defines.
+	 * The returned map must be modifiable.
+	 */
+	@Nonnull
+	protected Map<String, String> getConfiguredColumnNames() {
+		// Some of these fields might be NULL. Map.of() constructor doesn't allow NULL values so we need a roundabout way to define the full map.
+		String[][] columnNames = {{"keyField", getKeyField()}, {"statusField", getStatusField()}, {"messageField", getMessageField()},
+				{"messageIdField", getMessageIdField()}, {"correlationIdField", getCorrelationIdField()}, {"commentField", getCommentField()},
+				{"statusField", getStatusField()}, {"timestampField", getTimestampField()}, {"orderField", getOrderField()}};
+
+		Map<String, String> configuredColumnNames = new HashMap<>();
+		for (String[] columnDefinition : columnNames) {
+			if (columnDefinition[1] != null) {
+				configuredColumnNames.put(columnDefinition[0], columnDefinition[1].toUpperCase());
+			}
+		}
+
+		// We may have additional fields that need to be added and checked, so need to add those.
+		int i = 0;
+		for (String additionalField : getAdditionalFieldsList()) {
+			configuredColumnNames.put("AdditionalField" + i++, additionalField.toUpperCase());
+		}
+		return configuredColumnNames;
 	}
 
 	private void verifySelectCondition() {

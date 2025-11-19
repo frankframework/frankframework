@@ -1,0 +1,118 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": [
+        "config:recommended"
+    ],
+    "baseBranches": ["master", "/^release\\/9\\./", "/^release\\/8\\.0$/", "/^release\\/10\\./"],
+    "labels": [
+        "Dependencies"
+    ],
+    "ignoreDeps": ["pnpm"],
+    "prHourlyLimit": 5,
+    "rebaseWhen": "conflicted",
+    "vulnerabilityAlerts": {
+        "enabled": true,
+        "labels": ["security", "Dependencies"],
+        "addLabels": ["CVE"]
+    },
+    "osvVulnerabilityAlerts": true,
+    "packageRules": [
+        {
+            "description": "Release branches - disable ALL regular updates (only security/CVE updates via vulnerabilityAlerts)",
+            "matchBaseBranches": ["/^release\\/9\\./", "/^release\\/8\\.0$/", "/^release\\/10\\./"],
+            "enabled": false
+        },
+        {
+            "description": "Maven dependencies - weekly on Mondays at 6 AM, ignore major updates, group all updates",
+            "matchManagers": ["maven"],
+            "schedule": ["before 6am on monday"],
+            "addLabels": ["Java"],
+            "groupName": "maven-dependencies",
+            "separateMajorMinor": true,
+            "major": {
+                "enabled": false
+            }
+        },
+        {
+            "description": "Ignore specific Maven dependencies",
+            "matchManagers": ["maven"],
+            "matchPackageNames": [
+                "org.ibissource:ibis-ladybug",
+                "org.wearefrank:ladybug",
+                "com.sap.jco3:sapidoc",
+                "org.filesys:jfileserver-enterprise",
+                "org.eclipse.m2e:lifecycle-mapping"
+            ],
+            "enabled": false
+        },
+        {
+            "description": "Ignore com.aspose packages",
+            "matchManagers": ["maven"],
+            "matchPackagePatterns": ["^com\\.aspose:"],
+            "enabled": false
+        },
+        {
+            "description": "All NPM dependencies - monthly schedule, ignore major updates (base rule)",
+            "matchManagers": ["npm"],
+            "schedule": ["before 6am on the first day of the month"],
+            "addLabels": ["JavaScript"],
+            "groupName": "npm-dependencies",
+            "separateMajorMinor": true,
+            "major": {
+                "enabled": false
+            }
+        },
+		{
+		    "description": "Ignore specific NPM dependencies",
+		    "matchManagers": ["npm"],
+            "matchPackageNames": ["mermaid"],
+		    "matchPackagePatterns": ["bootstrap$"],
+		    "enabled": false
+		},
+        {
+            "description": "Angular packages - override groupName",
+            "matchManagers": ["npm"],
+            "matchPackagePatterns": ["^@angular"],
+            "groupName": "angular"
+        },
+        {
+            "description": "Angular packages (zone.js) - override groupName",
+            "matchManagers": ["npm"],
+            "matchPackageNames": ["zone.js"],
+            "groupName": "angular"
+        },
+        {
+            "description": "ESLint packages - override groupName",
+            "matchManagers": ["npm"],
+            "matchPackagePatterns": ["(^eslint)|(^@eslint/)"],
+            "groupName": "frontend-linting"
+        },
+        {
+            "description": "Ignore peer dependencies",
+            "matchDepTypes": ["peerDependencies"],
+            "enabled": false
+        },
+        {
+            "description": "Docker dependencies - monthly schedule, group all updates",
+            "matchManagers": ["dockerfile", "docker-compose"],
+            "matchFileNames": ["docker/**"],
+            "matchBaseBranches": ["master"],
+            "schedule": ["before 6am on the first day of the month"],
+            "addLabels": ["Docker"],
+            "groupName": "docker-dependencies",
+            "separateMajorMinor": false
+        },
+        {
+            "description": "GitHub Actions - monthly schedule, group all updates",
+            "matchManagers": ["github-actions"],
+            "schedule": ["before 6am on the first day of the month"],
+            "addLabels": ["CI/CD"],
+            "groupName": "github-actions",
+            "separateMajorMinor": false
+        }
+    ],
+    "lockFileMaintenance": {
+        "enabled": false
+    },
+    "rangeStrategy": "bump"
+}

@@ -18,6 +18,7 @@ jobs:
         with:
           _input-text: "${{ github.ref_name }}"
           -release: ''
+          release/: ''
       - name: Set tag name
         run: echo "TAG=${{ steps.branch.outputs.result }}-nightly" >> $GITHUB_ENV
       - name: Update nightly release
