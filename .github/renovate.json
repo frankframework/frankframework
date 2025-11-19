@@ -21,6 +21,11 @@
     "osvVulnerabilityAlerts": true,
     "packageRules": [
         {
+            "description": "Dynamic label extraction from release base branches using regex",
+            "matchBaseBranches": ["/^release\\/(\\d+\\.\\d+)/"],
+            "addLabels": ["{{replace 'release/' '' baseBranch}}"]
+        },
+        {
             "description": "Release branches - disable ALL regular updates (only security/CVE updates via vulnerabilityAlerts)",
             "matchBaseBranches": ["/^release\\/9\\./", "/^release\\/8\\.0$/", "/^release\\/10\\./"],
             "enabled": false
