@@ -39,7 +39,7 @@ public class ExceptionHandlingPipeProcessor extends AbstractPipeProcessor {
 			return chain.apply(message);
 		} catch (Exception e) {
 			PipeForward exceptionForward = pipe.findForward(PipeForward.EXCEPTION_FORWARD_NAME);
-			if (exceptionForward != null && !(pipe instanceof ExceptionPipe)) {
+			if (exceptionForward != null && !(pipe instanceof ExceptionPipe) && !(pipeLine.getPipe(exceptionForward.getPath()) instanceof ExceptionPipe) ) {
 				final Message errorMessage;
 				if(e instanceof PipeRunException exception) {
 					HasName location = exception.getPipeInError();

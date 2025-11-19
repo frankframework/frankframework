@@ -1,5 +1,5 @@
 <requests>
 	<request>hello</request>
 	<request>hi</request>
-	<request>exception-pipe</request>
+	<request>exception</request>
 </requests>

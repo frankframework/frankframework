@@ -28,7 +28,7 @@
 						<field name="CORRELATIONID">Test Tool correlation id</field>
 						<field name="MESSAGEDATE">2020-07-15 15:44:43</field>
 						<field name="COMMENTS">no audit trail</field>
-						<field name="MESSAGE">&lt;request action="exception-pipe"&gt;
+						<field name="MESSAGE">&lt;request action="exception"&gt;
 	&lt;value&gt;test&lt;/value&gt;
 &lt;/request&gt;</field>
 						<field name="EXPIRYDATE">2020-08-14 15:44:43</field>
@@ -42,8 +42,8 @@
 						<field name="MESSAGEID">ID:LPZWNL000019314-61775-1594817770290-3:27:31:1:1</field>
 						<field name="CORRELATIONID">Test Tool correlation id</field>
 						<field name="MESSAGEDATE">2020-07-15 15:44:43</field>
-						<field name="COMMENTS">too many redeliveries or retries; Pipe [exception-pipe] ERROR</field>
-						<field name="MESSAGE">&lt;request action="exception-pipe"&gt;
+						<field name="COMMENTS">too many redeliveries or retries; Pipe [exception] ERROR</field>
+						<field name="MESSAGE">&lt;request action="exception"&gt;
 	&lt;value&gt;test&lt;/value&gt;
 &lt;/request&gt;</field>
 						<field name="EXPIRYDATE" null="true"/>

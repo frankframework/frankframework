@@ -245,7 +245,7 @@
 				<forward name="echo" path="EXIT" />
 				<forward name="listenerException" path="EXIT" />
 			</pipe>
-			<pipe name="exception-pipe" className="org.frankframework.pipes.ExceptionPipe">
+			<pipe name="exception" className="org.frankframework.pipes.ExceptionPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -285,12 +285,12 @@
 					query="INSERT INTO IBISPROP (NAME,VALUE,LASTMODDATE,LASTMODBY) VALUES ('FIRSTNAME',?,NULL,NULL)">
 					<param name="value" xpathExpression="request/value" />
 				</sender>
-				<forward name="success" path="exception-pipe" />
+				<forward name="success" path="exception" />
 			</pipe>
 			<pipe name="echo" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe name="exception-pipe" className="org.frankframework.pipes.ExceptionPipe">
+			<pipe name="exception" className="org.frankframework.pipes.ExceptionPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
 		</pipeline>
@@ -368,7 +368,7 @@
 			<pipe name="echo" className="org.frankframework.pipes.EchoPipe">
 				<forward name="success" path="EXIT" />
 			</pipe>
-			<pipe name="exception-pipe" className="org.frankframework.pipes.ExceptionPipe"
+			<pipe name="exception" className="org.frankframework.pipes.ExceptionPipe"
 				getInputFromFixedValue="ERROR">
 				<forward name="success" path="EXIT" />
 			</pipe>

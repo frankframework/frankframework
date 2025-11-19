@@ -1,6 +1,6 @@
 <throwable>
   <class>org.frankframework.core.SenderException</class>
-  <message>exception processing message using request processor [ibis4test-JmsFFSender]: (RequestProcessorException) RequestProcessor [ibis4test-JmsFFSender] caught exception: Pipe [exception-pipe] &lt;request action=&quot;exception-pipe&quot;&gt;
+  <message>exception processing message using request processor [ibis4test-JmsFFSender]: (RequestProcessorException) RequestProcessor [ibis4test-JmsFFSender] caught exception: Pipe [exception] &lt;request action=&quot;exception&quot;&gt;
 	&lt;value&gt;test&lt;/value&gt;
 &lt;/request&gt;</message>
   <cause>
@@ -10,13 +10,13 @@
       <cause>
         <throwable>
           <class>org.frankframework.core.ListenerException</class>
-          <message>Pipe [exception-pipe] &lt;request action=&quot;exception-pipe&quot;&gt;
+          <message>Pipe [exception] &lt;request action=&quot;exception&quot;&gt;
 	&lt;value&gt;test&lt;/value&gt;
 &lt;/request&gt;</message>
           <cause>
             <throwable>
               <class>org.frankframework.core.PipeRunException</class>
-              <message>Pipe [exception-pipe] &lt;request action=&quot;exception-pipe&quot;&gt;
+              <message>Pipe [exception] &lt;request action=&quot;exception&quot;&gt;
 	&lt;value&gt;test&lt;/value&gt;
 &lt;/request&gt;</message>
             </throwable>
