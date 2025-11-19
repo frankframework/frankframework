@@ -8,7 +8,7 @@ Upcoming (9.4)
 --------------
 [Commits](https://github.com/frankframework/frankframework/compare/release/9.3...HEAD)
 
-- When an exception occurs during pipeline execution, the pipe does not have an 'exception' forward defined, and there's a Global-Forward named 'exception', this 'exception' Global Forward will be picked up again (like in 7.7). In addition, if there is a pipe in the pipeline named 'exception', and there is no 'exception forward on the pipe not a Global-Forward named 'exception', then the pipeline execution with path to the pipe named 'exception'.
+- When an exception occurs during pipeline execution, and the pipe does not have an 'exception' forward defined, and there's a Global-Forward named 'exception', this 'exception' Global Forward will be used (just like the behaviour of 7.7 and older). In addition, if there is a pipe in the pipeline named 'exception', and there is no 'exception forward' on the pipe and no Global-Forward named 'exception', then exceptions in pipes will be send to the pipe named 'exception'. This pipe name 'exception' should not be of the type 'ExceptionPipe'.
  This could potentially change the exception handling in your pipelines, so check if there are pipes with the exact name 'exception' and verify that there are no undesired changes in behaviour.
 - 
 
