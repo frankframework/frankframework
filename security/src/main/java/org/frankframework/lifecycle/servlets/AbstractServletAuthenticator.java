@@ -50,7 +50,6 @@ import org.springframework.security.web.access.intercept.RequestAuthorizationCon
 import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.util.matcher.AndRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
-import org.springframework.web.filter.ForwardedHeaderFilter;
 
 import lombok.Getter;
 
@@ -202,7 +201,7 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 
 		if (!allowForwardedHeadersPassthrough) {
 			// This filter removes x-forwarded headers and converts them to their corresponding `normal` headers. Eg. `X-Forwarded-Proto` sets HttpServletRequest.isSecure to `true`.
-			http.addFilterBefore(new ForwardedHeaderFilter(), SecurityContextHolderFilter.class);
+			http.addFilterBefore(new CustomizedForwardedHeaderFilter(allowForwardedHeadersPassthrough), SecurityContextHolderFilter.class);
 		}
 		return configure(http);
 	}
