@@ -4,9 +4,17 @@ Frank!Framework Release Notes
 [Tags](https://github.com/frankframework/frankframework/releases)
 [JavaDocs](https://javadoc.frankframework.org/)
 
-Upcoming (9.1)
+Upcoming (9.4)
 --------------
-[Commits](https://github.com/frankframework/frankframework/compare/9.0-release...HEAD)
+[Commits](https://github.com/frankframework/frankframework/compare/release/9.3...HEAD)
+
+- When an exception occurs during pipeline execution, and the pipe does not have an 'exception' forward defined, and there's a Global-Forward named 'exception', this 'exception' Global Forward will be used (just like the behaviour of 7.7 and older). In addition, if there is a pipe in the pipeline named 'exception', and there is no 'exception forward' on the pipe and no Global-Forward named 'exception', then exceptions in pipes will be send to the pipe named 'exception'. This pipe name 'exception' should not be of the type 'ExceptionPipe'.
+ This could potentially change the exception handling in your pipelines, so check if there are pipes with the exact name 'exception' and verify that there are no undesired changes in behaviour.
+- 
+
+9.1.0 - April 10, 2025
+--------------
+[Commits](https://github.com/frankframework/frankframework/compare/v9.0.0...release/9.1)
 
 - Removed deprecated pipes with 'since' 7.8 or older. This means that the following pipes are now removed:
   -  FileLineIteratorPipe, FilenameSwitch, PostboxRetrieverPipe, PutParametersInSession, Stream2StringPipe, XmlBuilderPipe, XmlFileElementIteratorPipe

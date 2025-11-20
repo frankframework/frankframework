@@ -209,12 +209,12 @@ public class AdapterStatus extends BusEndpointBase {
 		for (int i=0; i<totalPipes; i++) {
 			Map<String, Object> pipesInfo = new HashMap<>();
 			IPipe pipe = pipeline.getPipe(i);
-			Map<String, PipeForward> pipeForwards = pipe.getForwards();
+			List<PipeForward> pipeForwards = pipe.getRegisteredForwards();
 
 			String pipeName = pipe.getName();
 
 			Map<String, String> forwards = new HashMap<>();
-			for (PipeForward fwrd : pipeForwards.values()) {
+			for (PipeForward fwrd : pipeForwards) {
 				forwards.put(fwrd.getName(), fwrd.getPath());
 			}
 

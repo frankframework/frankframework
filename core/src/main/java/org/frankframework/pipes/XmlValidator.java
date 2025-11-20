@@ -452,13 +452,13 @@ public class XmlValidator extends AbstractValidator implements SchemasProvider, 
 		return responseMode ? responseRootValidations : requestRootValidations;
 	}
 
-	private void checkInputRootValidations(Set<IXSD> xsds) throws ConfigurationException {
+	private void checkInputRootValidations(Set<IXSD> xsds) {
 		if (getRequestRootValidations() != null) {
 			getRequestRootValidations().check(this, xsds);
 		}
 	}
 
-	private void checkOutputRootValidations(Set<IXSD> xsds) throws ConfigurationException {
+	private void checkOutputRootValidations(Set<IXSD> xsds) {
 		if (getResponseRootValidations() != null) {
 			getResponseRootValidations().check(this, xsds);
 		}

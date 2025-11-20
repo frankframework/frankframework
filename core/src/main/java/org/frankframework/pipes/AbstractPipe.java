@@ -112,7 +112,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	private @Getter String hideRegex = null;
 
 	private final List<PipeForward> registeredForwards = new ArrayList<>();
-	private final Map<String, PipeForward> configuredForwards = new HashMap<>();
+	private final Map<String, PipeForward> cachedForwards = new HashMap<>(); // cachedForwards combines configuredForwards with cache of looked up pipeline forwards
 	private final @Nonnull ParameterList parameterList = new ParameterList();
 	protected boolean parameterNamesMustBeUnique;
 	private @Setter EventPublisher eventPublisher=null;
@@ -134,7 +134,11 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 			throw new ConfigurationException("It is not allowed to have '/' in pipe name ["+getName()+"]");
 		}
 
+		// Configure all registered forwards and seed the cache
 		registeredForwards.forEach(this::configureForward);
+		// The list of RegisteredForwards may contain duplicate names. Get rid of them, so we have a clean list to work with later.
+		registeredForwards.clear();
+		registeredForwards.addAll(cachedForwards.values());
 
 		ParameterList params = getParameterList();
 		try {
@@ -166,9 +170,9 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 			ConfigurationWarnings.add(this, log, "the forward [" + forwardName + "] does not exist and cannot be used in this pipe");
 		}
 
-		PipeForward current = configuredForwards.get(forwardName);
+		PipeForward current = cachedForwards.get(forwardName);
 		if (current == null){
-			configuredForwards.put(forwardName, forward);
+			cachedForwards.put(forwardName, forward);
 		} else {
 			if (StringUtils.isNotBlank(forward.getPath()) && forward.getPath().equals(current.getPath())) {
 				ConfigurationWarnings.add(this, log, "the forward [" + forwardName + "] is already registered on this pipe");
@@ -272,12 +276,13 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	 */
 	// TODO: this method should be tested and refactored...
 	@Nullable
+	@Override
 	public PipeForward findForward(@Nullable String forward) {
 		if (StringUtils.isEmpty(forward)) {
 			return null;
 		}
-		if (configuredForwards.containsKey(forward)) {
-			return configuredForwards.get(forward);
+		if (cachedForwards.containsKey(forward)) {
+			return cachedForwards.get(forward);
 		}
 		if (pipeLine == null) {
 			return null;
@@ -295,25 +300,17 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 				result = new PipeForward(forward, forward);
 			}
 		}
+		// Cache the result in the allForwards map
 		if (result != null) {
-			configuredForwards.put(forward, result);
+			cachedForwards.put(forward, result);
 		}
 		return result;
 	}
 
 	@Override
 	@Nonnull
-	public Map<String, PipeForward> getForwards() {
-		Map<String, PipeForward> forwards = new HashMap<>(configuredForwards);
-		PipeLine pipeline = getPipeLine();
-		if (pipeline == null) {
-			return forwards;
-		}
-
-		// Omit global pipeline-forwards and only return local pipe-forwards
-		pipeline.getPipes()
-				.forEach(pipe -> forwards.remove(pipe.getName()));
-		return forwards;
+	public List<PipeForward> getRegisteredForwards() {
+		return registeredForwards;
 	}
 
 	@Override
@@ -348,9 +345,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		return sessionKey.equals(getInputFromSessionKey) || parameterList.consumesSessionVariable(sessionKey);
 	}
 
-	/**
-	 * The functional name of this pipe. It can be referenced by the <code>path</code> attribute of a {@link PipeForward}.
-	 */
 	@Override
 	@Mandatory
 	public void setName(String name) {

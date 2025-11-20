@@ -15,8 +15,6 @@
 */
 package org.frankframework.processors;
 
-import java.util.Map;
-
 import jakarta.annotation.Nonnull;
 
 import lombok.extern.log4j.Log4j2;
@@ -40,9 +38,8 @@ public class ExceptionHandlingPipeProcessor extends AbstractPipeProcessor {
 		try {
 			return chain.apply(message);
 		} catch (Exception e) {
-			Map<String, PipeForward> forwards = pipe.getForwards();
-			if (forwards!=null && forwards.containsKey(PipeForward.EXCEPTION_FORWARD_NAME) && !(pipe instanceof ExceptionPipe)) {
-
+			PipeForward exceptionForward = pipe.findForward(PipeForward.EXCEPTION_FORWARD_NAME);
+			if (exceptionForward != null && !(pipe instanceof ExceptionPipe) && !(pipeLine.getPipe(exceptionForward.getPath()) instanceof ExceptionPipe) ) {
 				final Message errorMessage;
 				if(e instanceof PipeRunException exception) {
 					HasName location = exception.getPipeInError();
@@ -53,7 +50,7 @@ public class ExceptionHandlingPipeProcessor extends AbstractPipeProcessor {
 				}
 
 				log.info("exception occurred, forwarding to exception-forward [{}]", PipeForward.EXCEPTION_FORWARD_NAME, e);
-				return new PipeRunResult(pipe.getForwards().get(PipeForward.EXCEPTION_FORWARD_NAME), errorMessage);
+				return new PipeRunResult(exceptionForward, errorMessage);
 			}
 			throw e;
 		}

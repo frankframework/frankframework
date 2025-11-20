@@ -15,8 +15,9 @@
 */
 package org.frankframework.core;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
+
+import jakarta.annotation.Nullable;
 
 import org.springframework.context.ApplicationContext;
 
@@ -36,9 +37,6 @@ public abstract class AbstractResponseValidatorWrapper<V extends AbstractValidat
 
 	private @Getter @Setter String name;
 	private boolean started = false;
-
-	private final Map<String, PipeForward> forwards = new HashMap<>();
-
 	protected V owner;
 
 	protected AbstractResponseValidatorWrapper(V owner) {
@@ -68,13 +66,21 @@ public abstract class AbstractResponseValidatorWrapper<V extends AbstractValidat
 	}
 
 	@Override
-	public Map<String, PipeForward> getForwards() {
-		return forwards;
+	public List<PipeForward> getRegisteredForwards() {
+		// Only here because PipeLine configuration calls it, and interface demands it. There will never be any forwards owned or used by the wrapper.
+		return owner.getRegisteredForwards();
+	}
+
+	@Override
+	@Nullable
+	public PipeForward findForward(String forward) {
+		// Should not usually be called for validators, but might be called from error-handling code paths. Should then use exception forwards from original validator.
+		return owner.findForward(forward);
 	}
 
 	@Override
 	public void addForward(PipeForward forward) {
-		forwards.put(forward.getName(), forward);
+		// No-op, only here because PipeLine configuration calls it and interface demands it. PipeLine will always call it only to add the SUCCESS-Forward and that is already added on the owner too, and only that is actually used.
 	}
 
 	@Override

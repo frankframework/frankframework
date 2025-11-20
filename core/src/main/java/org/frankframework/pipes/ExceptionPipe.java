@@ -22,6 +22,7 @@ import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
+import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLineSession;
@@ -56,6 +57,9 @@ public class ExceptionPipe extends AbstractPipe {
 		parameterNamesMustBeUnique = true;
 		super.configure();
 		successForward = findForward(PipeForward.SUCCESS_FORWARD_NAME);
+		if (getName().equals(PipeForward.EXCEPTION_FORWARD_NAME)) {
+			ConfigurationWarnings.add(this, log, "The ExceptionPipe should not be configured as default 'exception' forward in the pipeline");
+		}
 	}
 
 	@Override
