@@ -151,6 +151,7 @@ public class LarvaHtmlWriter extends LarvaWriter {
 				    <input type='hidden' name='iehack' value='&#9760;' />
 				    <h4>Step '%s'</h4>
 				    <hr/>
+				    %s
 				    <div class='resultContainer'>
 				      %s
 				      <h5>Result (%s):</h5>
@@ -174,10 +175,19 @@ public class LarvaHtmlWriter extends LarvaWriter {
 				  </form>
 				</div>
 				""";
+		String savingDisabledMessage;
+		if (!getLarvaConfig().isEnableSaving()) {
+			savingDisabledMessage = "Saving and Windiff are disabled on this environment. Set property 'servlet.LarvaServlet.allowFileSave' to 'true' for this environment to enable saving of results.<hr/>";
+		} else if (stepOutputFilename == null) {
+			savingDisabledMessage = "Saving and Windiff are disabled for this result because this was a step with inline data<hr/>";
+		} else {
+			savingDisabledMessage = "";
+		}
+		boolean canSaveResult = getLarvaConfig().isEnableSaving() && stepOutputFilename != null;
 		String btn1 = "<a class=\"['" + resultBoxId + "','" + expectedBoxId + "']|indentCompare|" + diffBoxId + "\" href=\"javascript:void(0)\">compare</a>";
-		String btn2 = "<a href='javascript:void(0);' class='" + formName + "|indentWindiff'>windiff</a>";
-		String saveCommand = stepOutputFilename != null ? "<a href='javascript:void(0);' class='" + formName + "|saveResults'>save</a>" : null;
-		writeHtml(logLevel, template.formatted(cssClass, formName, encodeForHtml(stepName),
+		String btn2 = canSaveResult ? "<a href='javascript:void(0);' class='" + formName + "|indentWindiff'>windiff</a>" : "";
+		String saveCommand = canSaveResult ? "<a href='javascript:void(0);' class='" + formName + "|saveResults'>save</a>" : null;
+		writeHtml(logLevel, template.formatted(cssClass, formName, encodeForHtml(stepName), savingDisabledMessage,
 				writeCommands(resultBoxId, true, saveCommand),
 				encodeForHtml(headerExtra), resultBoxId, encodeForHtml(actualMessage),
 				writeCommands(expectedBoxId, true, null),

@@ -37,13 +37,14 @@ public class LarvaConfig {
 	private @Getter @Setter boolean scenarioPropertyOverridesIncluded = AppConstants.getInstance().getBoolean("larva.scenarioPropertyOverridesIncluded", false);
 	private @Getter @Setter boolean multiThreaded = false;
 	private @Getter @Setter LarvaLogLevel logLevel = LarvaLogLevel.WRONG_PIPELINE_MESSAGES;
-	private @Getter @Setter boolean autoSaveDiffs = AppConstants.getInstance().getBoolean("larva.diffs.autosave", false);
+	private @Getter @Setter boolean enableSaving = AppConstants.getInstance().getBoolean("servlet.LarvaServlet.allowFileSave", false);
+	private @Getter @Setter boolean autoSaveDiffs = enableSaving && AppConstants.getInstance().getBoolean("larva.diffs.autosave", false);
 
 	/**
 	 * if allowReadlineSteps is set to true, actual results can be compared in line by using .readline steps.
 	 * Those results cannot be saved to the expected value defined inline, however.
 	 */
-	private @Getter @Setter boolean allowReadlineSteps = false;
+	private @Getter @Setter boolean allowReadlineSteps = true;
 
 	private @Getter @Setter String activeScenariosDirectory;
 }
