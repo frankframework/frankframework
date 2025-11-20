@@ -17,10 +17,9 @@
 
 li > a {
   cursor: pointer;
-}
-
-fa-icon + span {
-  margin-left: 6px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 .fa-green {
