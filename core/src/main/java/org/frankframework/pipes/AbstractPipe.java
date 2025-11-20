@@ -113,7 +113,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 
 	private final List<PipeForward> registeredForwards = new ArrayList<>();
 	private final Map<String, PipeForward> configuredForwards = new HashMap<>();
-	private final Map<String, PipeForward> allForwards = new HashMap<>(); // allForwards combines configuredForwards with cache of looked up pipeline forwards
+	private final Map<String, PipeForward> cachedForwards = new HashMap<>(); // cachedForwards combines configuredForwards with cache of looked up pipeline forwards
 	private final @Nonnull ParameterList parameterList = new ParameterList();
 	protected boolean parameterNamesMustBeUnique;
 	private @Setter EventPublisher eventPublisher=null;
@@ -136,7 +136,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		}
 
 		registeredForwards.forEach(this::configureForward);
-		allForwards.putAll(configuredForwards);
+		// Seed the cache with all configured forwards; pipeline global forwards will be added as they are used.
+		cachedForwards.putAll(configuredForwards);
 
 		ParameterList params = getParameterList();
 		try {
@@ -279,8 +280,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		if (StringUtils.isEmpty(forward)) {
 			return null;
 		}
-		if (allForwards.containsKey(forward)) {
-			return allForwards.get(forward);
+		if (cachedForwards.containsKey(forward)) {
+			return cachedForwards.get(forward);
 		}
 		if (pipeLine == null) {
 			return null;
@@ -300,7 +301,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		}
 		// Cache the result in the allForwards map
 		if (result != null) {
-			allForwards.put(forward, result);
+			cachedForwards.put(forward, result);
 		}
 		return result;
 	}
