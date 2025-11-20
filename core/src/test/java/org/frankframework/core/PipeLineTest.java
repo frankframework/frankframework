@@ -148,7 +148,7 @@ public class PipeLineTest {
 
 		EchoPipe pipe2 = configuration.createBean();
 		pipe2.setName(pipeForwardName);
-		pipe.addForward(new PipeForward("success", "exit"));
+		pipe2.addForward(new PipeForward("success", "exit"));
 		pipe2.setPipeLine(pipeline);
 		pipeline.addPipe(pipe2);
 

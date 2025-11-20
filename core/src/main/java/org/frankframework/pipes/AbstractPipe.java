@@ -112,7 +112,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	private @Getter String hideRegex = null;
 
 	private final List<PipeForward> registeredForwards = new ArrayList<>();
-	private final Map<String, PipeForward> configuredForwards = new HashMap<>();
 	private final Map<String, PipeForward> cachedForwards = new HashMap<>(); // cachedForwards combines configuredForwards with cache of looked up pipeline forwards
 	private final @Nonnull ParameterList parameterList = new ParameterList();
 	protected boolean parameterNamesMustBeUnique;
@@ -135,9 +134,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 			throw new ConfigurationException("It is not allowed to have '/' in pipe name ["+getName()+"]");
 		}
 
+		// Configure all registered forwards and seed the cache
 		registeredForwards.forEach(this::configureForward);
-		// Seed the cache with all configured forwards; pipeline global forwards will be added as they are used.
-		cachedForwards.putAll(configuredForwards);
 
 		ParameterList params = getParameterList();
 		try {
@@ -169,9 +167,9 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 			ConfigurationWarnings.add(this, log, "the forward [" + forwardName + "] does not exist and cannot be used in this pipe");
 		}
 
-		PipeForward current = configuredForwards.get(forwardName);
+		PipeForward current = cachedForwards.get(forwardName);
 		if (current == null){
-			configuredForwards.put(forwardName, forward);
+			cachedForwards.put(forwardName, forward);
 		} else {
 			if (StringUtils.isNotBlank(forward.getPath()) && forward.getPath().equals(current.getPath())) {
 				ConfigurationWarnings.add(this, log, "the forward [" + forwardName + "] is already registered on this pipe");
@@ -309,7 +307,12 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	@Override
 	@Nonnull
 	public Map<String, PipeForward> getRegisteredForwards() {
-		return new HashMap<>(configuredForwards);
+		Map<String, PipeForward> result = new HashMap<>();
+		registeredForwards.forEach(forward -> {
+			// We cannot do this with a stream() api because there are situations where the same forward-name might be registered multiple times
+			if (!result.containsKey(forward.getName())) result.put(forward.getName(), forward);
+		});
+		return result;
 	}
 
 	@Override
