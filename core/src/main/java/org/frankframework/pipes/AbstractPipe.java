@@ -136,6 +136,9 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 
 		// Configure all registered forwards and seed the cache
 		registeredForwards.forEach(this::configureForward);
+		// The list of RegisteredForwards may contain duplicate names. Get rid of them, so we have a clean list to work with later.
+		registeredForwards.clear();
+		registeredForwards.addAll(cachedForwards.values());
 
 		ParameterList params = getParameterList();
 		try {
@@ -306,13 +309,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 
 	@Override
 	@Nonnull
-	public Map<String, PipeForward> getRegisteredForwards() {
-		Map<String, PipeForward> result = new HashMap<>();
-		registeredForwards.forEach(forward -> {
-			// We cannot do this with a stream() api because there are situations where the same forward-name might be registered multiple times
-			if (!result.containsKey(forward.getName())) result.put(forward.getName(), forward);
-		});
-		return result;
+	public List<PipeForward> getRegisteredForwards() {
+		return registeredForwards;
 	}
 
 	@Override

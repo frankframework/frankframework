@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
 
@@ -86,10 +88,10 @@ public class PipeLineTest {
 
 		assertTrue(configuration.getConfigurationWarnings().getWarnings().isEmpty(), "pipe should not cause any configuration warnings");
 		assertEquals(1, pipe.getRegisteredForwards().size(), "pipe1 should only have 1 pipe-forward");
-		assertEquals(pipeForwardName, pipe.getRegisteredForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe1 forward should default to next pipe");
+		assertEquals(pipeForwardName, getPipeRegisteredForwardsMap(pipe).get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe1 forward should default to next pipe");
 
 		assertEquals(1, pipe2.getRegisteredForwards().size(), "pipe2 should only have 1 pipe-forward");
-		assertEquals("exit", pipe2.getRegisteredForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe2 forward should default to pipeline-exit");
+		assertEquals("exit", getPipeRegisteredForwardsMap(pipe2).get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe2 forward should default to pipeline-exit");
 	}
 
 	@Test
@@ -128,10 +130,10 @@ public class PipeLineTest {
 		// Assert
 		assertTrue(configuration.getConfigurationWarnings().getWarnings().isEmpty(), "pipe should not cause any configuration warnings");
 		assertEquals(1, pipe.getRegisteredForwards().size(), "pipe1 should only have 1 pipe-forward");
-		assertEquals(pipeForwardName, pipe.getRegisteredForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe1 forward should default to next pipe");
+		assertEquals(pipeForwardName, getPipeRegisteredForwardsMap(pipe).get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe1 forward should default to next pipe");
 
 		assertEquals(1, pipe2.getRegisteredForwards().size(), "pipe2 should only have 1 pipe-forward");
-		assertEquals("exit", pipe2.getRegisteredForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe2 forward should default to successful pipeline-exit");
+		assertEquals("exit", getPipeRegisteredForwardsMap(pipe2).get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe2 forward should default to successful pipeline-exit");
 	}
 
 	@Test
@@ -160,10 +162,10 @@ public class PipeLineTest {
 
 		assertTrue(configuration.getConfigurationWarnings().getWarnings().isEmpty(), "pipe should not cause any configuration warnings");
 		assertEquals(1, pipe.getRegisteredForwards().size(), "pipe1 should only have 1 pipe-forward");
-		assertEquals(pipeForwardName, pipe.getRegisteredForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe1 forward should default to next pipe");
+		assertEquals(pipeForwardName, getPipeRegisteredForwardsMap(pipe).get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe1 forward should default to next pipe");
 
 		assertEquals(1, pipe2.getRegisteredForwards().size(), "pipe2 should only have 1 pipe-forward");
-		assertEquals("exit", pipe2.getRegisteredForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe2 forward should default to pipeline-exit");
+		assertEquals("exit", getPipeRegisteredForwardsMap(pipe2).get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe2 forward should default to pipeline-exit");
 	}
 
 	@Test
@@ -197,10 +199,10 @@ public class PipeLineTest {
 		assertEquals(1, configuration.getConfigurationWarnings().getWarnings().size(), "pipes should cause a configuration warning");
 		assertThat(configuration.getConfigWarning(0), StringEndsWith.endsWith("] the forward [success] is already registered on this pipe"));
 		assertEquals(1, pipe.getRegisteredForwards().size(), "pipe1 should only have 1 pipe-forward");
-		assertEquals(pipeForwardName, pipe.getRegisteredForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe1 forward should default to next pipe");
+		assertEquals(pipeForwardName, getPipeRegisteredForwardsMap(pipe).get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe1 forward should default to next pipe");
 
 		assertEquals(1, pipe2.getRegisteredForwards().size(), "pipe2 should only have 1 pipe-forward");
-		assertEquals("exit", pipe2.getRegisteredForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe2 forward should default to pipeline-exit");
+		assertEquals("exit", getPipeRegisteredForwardsMap(pipe2).get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe2 forward should default to pipeline-exit");
 	}
 
 	@Test
@@ -229,10 +231,16 @@ public class PipeLineTest {
 		assertEquals(1, configuration.getConfigurationWarnings().getWarnings().size(), "pipes should cause a configuration warning");
 		assertThat(configuration.getConfigWarning(0), StringEndsWith.endsWith("] has a forward of which the pipe to execute [the next pipe] is not defined"));
 		assertEquals(1, pipe.getRegisteredForwards().size(), "pipe1 should only have 1 pipe-forward");
-		assertEquals("the next pipe", pipe.getRegisteredForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe1 forward should exist even though next pipe doesn't exist");
+		assertEquals("the next pipe", getPipeRegisteredForwardsMap(pipe).get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe1 forward should exist even though next pipe doesn't exist");
 
 		assertEquals(1, pipe2.getRegisteredForwards().size(), "pipe2 should only have 1 pipe-forward");
-		assertEquals("special exit name", pipe2.getRegisteredForwards().get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe2 forward should default to pipeline-exit");
+		assertEquals("special exit name", getPipeRegisteredForwardsMap(pipe2).get(PipeForward.SUCCESS_FORWARD_NAME).getPath(), "pipe2 forward should default to pipeline-exit");
+	}
+
+	private static Map<String, PipeForward> getPipeRegisteredForwardsMap(IPipe pipe) {
+		return pipe.getRegisteredForwards()
+				.stream()
+				.collect(Collectors.toMap(PipeForward::getName, p -> p));
 	}
 
 	private static class NonFixedForwardPipe extends AbstractPipe {

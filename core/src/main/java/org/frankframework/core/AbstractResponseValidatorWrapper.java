@@ -15,7 +15,7 @@
 */
 package org.frankframework.core;
 
-import java.util.Map;
+import java.util.List;
 
 import jakarta.annotation.Nullable;
 
@@ -66,7 +66,7 @@ public abstract class AbstractResponseValidatorWrapper<V extends AbstractValidat
 	}
 
 	@Override
-	public Map<String, PipeForward> getRegisteredForwards() {
+	public List<PipeForward> getRegisteredForwards() {
 		// Only here because PipeLine configuration calls it, and interface demands it. There will never be any forwards owned or used by the wrapper.
 		return owner.getRegisteredForwards();
 	}

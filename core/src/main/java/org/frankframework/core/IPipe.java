@@ -16,7 +16,7 @@
 package org.frankframework.core;
 
 import java.util.Collection;
-import java.util.Map;
+import java.util.List;
 
 import jakarta.annotation.Nullable;
 
@@ -75,7 +75,7 @@ public interface IPipe extends IConfigurable, IForwardTarget, FrankElement, Name
 	/**
 	 * Get all registered pipe forwards (excluding global forwards, or pipes in the pipeline with the name of one of the forwards).
 	 */
-	Map<String, PipeForward> getRegisteredForwards();
+	List<PipeForward> getRegisteredForwards();
 
 	/**
 	 * Register a PipeForward object to this Pipe. Global Forwards are added
