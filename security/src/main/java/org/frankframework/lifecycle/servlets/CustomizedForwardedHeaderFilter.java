@@ -51,7 +51,7 @@ import org.springframework.web.util.WebUtils;
 
 /**
  * Extract values from "Forwarded" and "X-Forwarded-*" headers, wrap the request
- * and response, and make they reflect the client-originated protocol and
+ * and response, and make them reflect the client-originated protocol and
  * address in the following methods:
  * <ul>
  * <li>{@link HttpServletRequest#getServerName() getServerName()}
