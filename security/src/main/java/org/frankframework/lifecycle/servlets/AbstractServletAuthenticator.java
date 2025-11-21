@@ -199,10 +199,8 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 		RequestMatcher authorizationRequestMatcher = new AndRequestMatcher(securityRequestMatcher, this::authorizationRequestMatcher);
 		http.authorizeHttpRequests(requests -> requests.requestMatchers(authorizationRequestMatcher).access(getAuthorizationManager()));
 
-		if (!allowForwardedHeadersPassthrough) {
-			// This filter removes x-forwarded headers and converts them to their corresponding `normal` headers. Eg. `X-Forwarded-Proto` sets HttpServletRequest.isSecure to `true`.
-			http.addFilterBefore(new CustomizedForwardedHeaderFilter(allowForwardedHeadersPassthrough), SecurityContextHolderFilter.class);
-		}
+		// This filter removes x-forwarded headers and converts them to their corresponding `normal` headers. Eg. `X-Forwarded-Proto` sets HttpServletRequest.isSecure to `true`.
+		http.addFilterBefore(new CustomizedForwardedHeaderFilter(allowForwardedHeadersPassthrough), SecurityContextHolderFilter.class);
 		return configure(http);
 	}
 
