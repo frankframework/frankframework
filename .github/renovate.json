@@ -52,6 +52,9 @@
             "matchManagers": [
                 "maven"
             ],
+            "matchFileNames": [
+                "!/^docker/.*"
+            ],
             "schedule": [
                 "before 6am on monday"
             ],
@@ -154,7 +157,7 @@
             "enabled": false
         },
         {
-            "description": "Docker dependencies - monthly schedule, group all updates",
+            "description": "Docker dependencies - weekly schedule, group all updates",
             "matchManagers": [
                 "dockerfile",
                 "docker-compose"
@@ -175,7 +178,7 @@
             "separateMajorMinor": false
         },
         {
-            "description": "Docker dependencies (for LTS) - monthly schedule, group all updates",
+            "description": "Docker dependencies (for LTS) - weekly schedule, group all updates",
             "matchManagers": [
                 "dockerfile",
                 "docker-compose"
