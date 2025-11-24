@@ -19,7 +19,7 @@
     "ignoreDeps": [
         "pnpm"
     ],
-    "prHourlyLimit": 5,
+    "prHourlyLimit": 10,
     "rebaseWhen": "conflicted",
     "commitMessageTopic": "{{depName}}",
     "commitMessageAction": "Update dependency",
