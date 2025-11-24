@@ -19,7 +19,7 @@ package org.frankframework.validation;
 import static org.apache.xerces.parsers.XMLGrammarCachingConfiguration.BIG_PRIME;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -411,11 +411,11 @@ class PreparseResult {
 
 	public List<XSModel> getXsModels() {
 		if (xsModels == null) {
-			xsModels = new ArrayList<>();
 			Grammar[] grammars = grammarPool.retrieveInitialGrammarSet(XMLGrammarDescription.XML_SCHEMA);
-			for (Grammar grammar : grammars) {
-				xsModels.add(((XSGrammar) grammar).toXSModel());
-			}
+			xsModels = Arrays.stream(grammars)
+					.map(XSGrammar.class::cast)
+					.map(XSGrammar::toXSModel)
+					.toList();
 		}
 		return xsModels;
 	}
