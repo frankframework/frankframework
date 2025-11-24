@@ -74,6 +74,7 @@ import org.springframework.web.util.WebUtils;
  * @see <a href="https://tools.ietf.org/html/rfc7239">https://tools.ietf.org/html/rfc7239</a>
  * @see <a href="https://docs.spring.io/spring-framework/reference/web/webmvc/filters.html#filters-forwarded-headers">Forwarded Headers</a>
  */
+//NOSONAR
 public class CustomizedForwardedHeaderFilter extends OncePerRequestFilter {
 
 	private static final Log logger = LogFactory.getLog(CustomizedForwardedHeaderFilter.class);
