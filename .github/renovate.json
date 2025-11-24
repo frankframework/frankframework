@@ -42,13 +42,19 @@
                 "/^release\\/8\\.0$/",
                 "/^release\\/10\\./"
             ],
+            "matchFileNames": [
+                "!/^docker/.*"
+            ],
+            "schedule": [
+                "* 0-6 * * *"
+            ],
             "addLabels": [
                 "{{replace 'release/' '' baseBranch}}"
             ],
             "enabled": false
         },
         {
-            "description": "Maven dependencies - weekly on Mondays at 6 AM, ignore major updates, group all updates",
+            "description": "Maven dependencies - daily at 6 AM, ignore major updates, group all updates",
             "matchManagers": [
                 "maven"
             ],
@@ -56,7 +62,7 @@
                 "!/^docker/.*"
             ],
             "schedule": [
-                "before 6am on monday"
+                "* 0-6 * * *"
             ],
             "addLabels": [
                 "Java"
