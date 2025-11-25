@@ -21,9 +21,9 @@ import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
 
 import liquibase.integration.spring.SpringLiquibase;
-import nl.nn.testtool.filter.View;
-import nl.nn.testtool.filter.Views;
-import nl.nn.testtool.storage.database.DatabaseStorage;
+import org.wearefrank.ladybug.filter.View;
+import org.wearefrank.ladybug.filter.Views;
+import org.wearefrank.ladybug.storage.database.DatabaseStorage;
 
 import org.frankframework.util.AppConstants;
 
@@ -48,10 +48,10 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor {
 			}
 		}
 
-		if (bean instanceof nl.nn.testtool.storage.file.Storage loggingStorage) {
+		if (bean instanceof org.wearefrank.ladybug.storage.file.Storage loggingStorage) {
 			String maxFileSize = appConstants.getProperty("ibistesttool.maxFileSize");
 			if (maxFileSize != null) {
-				long maxFileSizeLong = OptionConverter.toFileSize(maxFileSize, nl.nn.testtool.storage.file.Storage.DEFAULT_MAXIMUM_FILE_SIZE);
+				long maxFileSizeLong = OptionConverter.toFileSize(maxFileSize, org.wearefrank.ladybug.storage.file.Storage.DEFAULT_MAXIMUM_FILE_SIZE);
 				loggingStorage.setMaximumFileSize(maxFileSizeLong);
 			}
 

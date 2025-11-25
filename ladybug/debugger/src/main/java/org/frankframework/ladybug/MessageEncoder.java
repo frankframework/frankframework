@@ -26,8 +26,8 @@ import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.io.input.BoundedReader;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.MessageEncoderImpl;
+import org.wearefrank.ladybug.Checkpoint;
+import org.wearefrank.ladybug.MessageEncoderImpl;
 
 import org.frankframework.stream.Message;
 

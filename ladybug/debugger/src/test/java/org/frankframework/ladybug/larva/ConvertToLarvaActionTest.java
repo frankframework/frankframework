@@ -20,8 +20,8 @@ import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
 
-import nl.nn.testtool.Report;
-import nl.nn.testtool.storage.StorageException;
+import org.wearefrank.ladybug.Report;
+import org.wearefrank.ladybug.storage.StorageException;
 
 import org.frankframework.ladybug.util.XmlTestStorage;
 import org.frankframework.util.AppConstants;

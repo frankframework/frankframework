@@ -19,11 +19,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.Report;
-import nl.nn.testtool.SecurityContext;
-import nl.nn.testtool.TestTool;
-import nl.nn.testtool.run.ReportRunner;
+import org.wearefrank.ladybug.Checkpoint;
+import org.wearefrank.ladybug.Report;
+import org.wearefrank.ladybug.SecurityContext;
+import org.wearefrank.ladybug.TestTool;
+import org.wearefrank.ladybug.run.ReportRunner;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.core.Adapter;

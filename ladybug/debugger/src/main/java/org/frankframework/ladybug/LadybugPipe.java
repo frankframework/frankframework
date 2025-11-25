@@ -31,14 +31,14 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 
-import nl.nn.testtool.Report;
-import nl.nn.testtool.TestTool;
-import nl.nn.testtool.run.ReportRunner;
-import nl.nn.testtool.run.RunResult;
-import nl.nn.testtool.storage.CrudStorage;
-import nl.nn.testtool.storage.Storage;
-import nl.nn.testtool.storage.StorageException;
-import nl.nn.testtool.transform.ReportXmlTransformer;
+import org.wearefrank.ladybug.Report;
+import org.wearefrank.ladybug.TestTool;
+import org.wearefrank.ladybug.run.ReportRunner;
+import org.wearefrank.ladybug.run.RunResult;
+import org.wearefrank.ladybug.storage.CrudStorage;
+import org.wearefrank.ladybug.storage.Storage;
+import org.wearefrank.ladybug.storage.StorageException;
+import org.wearefrank.ladybug.transform.ReportXmlTransformer;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;

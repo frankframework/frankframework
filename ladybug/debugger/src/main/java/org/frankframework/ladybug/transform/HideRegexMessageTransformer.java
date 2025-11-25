@@ -23,8 +23,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 
-import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.transform.MessageTransformer;
+import org.wearefrank.ladybug.Checkpoint;
+import org.wearefrank.ladybug.transform.MessageTransformer;
 
 import org.frankframework.logging.IbisMaskingLayout;
 import org.frankframework.util.StringUtil;

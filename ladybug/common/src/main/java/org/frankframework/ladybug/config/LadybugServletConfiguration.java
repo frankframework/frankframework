@@ -21,8 +21,8 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import nl.nn.testtool.web.ApiServlet;
-import nl.nn.testtool.web.FrontendServlet;
+import org.wearefrank.ladybug.web.jaxrs.ApiServlet;
+import org.wearefrank.ladybug.web.FrontendServlet;
 
 import org.frankframework.condition.ConditionalOnAppConstants;
 import org.frankframework.lifecycle.DynamicRegistration;

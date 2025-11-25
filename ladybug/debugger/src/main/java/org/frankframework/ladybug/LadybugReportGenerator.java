@@ -28,7 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import nl.nn.testtool.TestTool;
+import org.wearefrank.ladybug.TestTool;
 
 import org.frankframework.core.HasName;
 import org.frankframework.core.IListener;

@@ -22,7 +22,7 @@ import java.util.function.Consumer;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.Setter;
-import nl.nn.testtool.MessageCapturerImpl;
+import org.wearefrank.ladybug.MessageCapturerImpl;
 
 import org.frankframework.stream.Message;
 import org.frankframework.util.CloseUtils;
