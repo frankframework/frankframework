@@ -25,12 +25,14 @@
     "commitMessageExtra": "to {{#if isMajor}}v{{newMajor}}{{else}}v{{newVersion}}{{/if}}",
     "vulnerabilityAlerts": {
         "enabled": true,
+        "vulnerabilityFixStrategy": "highest",
         "labels": [
             "Security",
             "Dependencies"
         ],
         "addLabels": [
-            "CVE"
+            "CVE",
+            "{{replace 'release/' '' baseBranch}}"
         ]
     },
     "osvVulnerabilityAlerts": true,
@@ -45,11 +47,21 @@
             "matchFileNames": [
                 "!docker/**"
             ],
-            "schedule": [
-                "* 0-6 * * *"
+            "enabled": false
+        },
+        {
+            "description": "Release branches - disable JDBC drivers",
+            "matchBaseBranches": [
+                "/^release\\/"
             ],
-            "addLabels": [
-                "{{replace 'release/' '' baseBranch}}"
+            "matchFileNames": [
+                "!docker/**"
+            ],
+            "matchPackageNames": [
+                "com.microsoft.sqlserver:mssql-jdbc",
+                "org.apache.activemq:activemq-client",
+                "org.postgresql:postgresql",
+                "org.apache.kafka:kafka-clients"
             ],
             "enabled": false
         },
@@ -84,7 +96,8 @@
                 "org.wearefrank:ladybug",
                 "com.sap.jco3:sapidoc",
                 "org.filesys:jfileserver-enterprise",
-                "org.eclipse.m2e:lifecycle-mapping"
+                "org.eclipse.m2e:lifecycle-mapping",
+                "com.eclipsesource.j2v8:j2v8_linux_x86_64"
             ],
             "enabled": false
         },
