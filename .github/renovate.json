@@ -31,7 +31,7 @@
         {
             "description": "Release branches - disable ALL regular updates (only security/CVE updates via vulnerabilityAlerts)",
             "matchBaseBranches": [
-                "/^release\\/"
+                "release/**"
             ],
             "matchFileNames": [
                 "!docker/**"
@@ -39,7 +39,7 @@
             "enabled": false
         },
         {
-            "description": "Maven dependencies - daily at 6 AM, ignore major updates, group all updates",
+            "description": "Maven dependencies - daily at 6 AM, ignore major updates",
             "matchManagers": [
                 "maven"
             ],
@@ -63,14 +63,20 @@
             }
         },
         {
-            "description": "Ignore com.aspose packages",
+            "description": "Ignore specific Maven dependencies",
             "matchManagers": [
                 "maven"
             ],
-            "enabled": false,
             "matchPackageNames": [
+                "org.ibissource:ibis-ladybug",
+                "org.wearefrank:ladybug",
+                "com.sap.jco3:sapidoc",
+                "org.filesys:jfileserver-enterprise",
+                "org.eclipse.m2e:lifecycle-mapping",
+                "com.eclipsesource.j2v8:j2v8_linux_x86_64",
                 "/^com\\.aspose:/"
-            ]
+            ],
+            "enabled": false
         },
         {
             "description": "All NPM dependencies - monthly schedule, ignore major updates (base rule)",
@@ -206,14 +212,14 @@
             "com.h2database:h2",
             "com.microsoft.sqlserver:mssql-jdbc",
             "com.mysql:mysql-connector-j",
-            "org.mariadb.jdbc:mariadb-java-client"
+            "org.mariadb.jdbc:mariadb-java-client",
             "org.postgresql:postgresql",
             "com.ibm.db2:jcc",
             "org.apache.activemq:artemis-jakarta-client-all",
             "org.apache.activemq:activemq-client",
             "com.rabbitmq:amqp-client",
             "com.rabbitmq.jms:rabbitmq-jms",
-            "org.apache.kafka:kafka-clients"
+            "org.apache.kafka:kafka-clients",
             "bootstrap",
             "mermaid",
         ]
