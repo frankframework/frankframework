@@ -36,7 +36,7 @@
 		<dependency>
 			<groupId>org.apache.tika</groupId>
 			<artifactId>tika-parsers</artifactId>
-			<version>1.28.5</version>
+			<version>3.2.3</version>
 			<exclusions>
 				<exclusion>
 					<artifactId>json-simple</artifactId>
