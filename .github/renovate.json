@@ -6,6 +6,7 @@
         ":configMigration",
         "security:minimumReleaseAgeNpm"
     ],
+    "dependencyDashboardApproval": true
     "baseBranchPatterns": [
         "master",
         "/^release\\/9\\./",
@@ -16,7 +17,13 @@
         "Dependencies"
     ],
     "ignoreDeps": [
-        "pnpm"
+        "pnpm",
+        "org.ibissource:ibis-ladybug",
+        "org.wearefrank:ladybug",
+        "com.sap.jco3:sapidoc",
+        "org.filesys:jfileserver-enterprise",
+        "org.eclipse.m2e:lifecycle-mapping",
+        "com.eclipsesource.j2v8:j2v8_linux_x86_64"
     ],
     "prHourlyLimit": 10,
     "rebaseWhen": "conflicted",
@@ -73,21 +80,6 @@
             "major": {
                 "enabled": false
             }
-        },
-        {
-            "description": "Ignore specific Maven dependencies",
-            "matchManagers": [
-                "maven"
-            ],
-            "matchPackageNames": [
-                "org.ibissource:ibis-ladybug",
-                "org.wearefrank:ladybug",
-                "com.sap.jco3:sapidoc",
-                "org.filesys:jfileserver-enterprise",
-                "org.eclipse.m2e:lifecycle-mapping",
-                "com.eclipsesource.j2v8:j2v8_linux_x86_64"
-            ],
-            "enabled": false
         },
         {
             "description": "Ignore com.aspose packages",
@@ -229,6 +221,7 @@
     "vulnerabilityAlerts": {
         "enabled": true,
         "vulnerabilityFixStrategy": "highest",
+        "dependencyDashboardApproval": true,
         "commitMessageSuffix": "",
         "labels": [
             "Security",
