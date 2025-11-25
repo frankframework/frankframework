@@ -18,10 +18,6 @@
     ],
     "ignoreDeps": [
         "pnpm",
-        "org.ibissource:ibis-ladybug",
-        "org.wearefrank:ladybug",
-        "com.sap.jco3:sapidoc",
-        "org.filesys:jfileserver-enterprise",
         "org.eclipse.m2e:lifecycle-mapping",
         "com.eclipsesource.j2v8:j2v8_linux_x86_64"
     ],
@@ -35,24 +31,12 @@
         {
             "description": "Release branches - disable ALL regular updates (only security/CVE updates via vulnerabilityAlerts)",
             "matchBaseBranches": [
-                "/^release\\/9\\./",
-                "/^release\\/8\\.0$/",
-                "/^release\\/10\\./"
-            ],
-            "matchFileNames": [
-                "!docker/**"
-            ],
-            "enabled": false
-        },
-        {
-            "description": "Release branches - disable JDBC drivers",
-            "matchBaseBranches": [
                 "/^release\\/"
             ],
             "matchFileNames": [
                 "!docker/**"
             ],
-            "matchPackageNames": [
+            "ignoreDeps": [
                 "com.microsoft.sqlserver:mssql-jdbc",
                 "org.apache.activemq:activemq-client",
                 "org.postgresql:postgresql",
@@ -230,6 +214,12 @@
         "addLabels": [
             "CVE",
             "{{replace 'release/' '' baseBranch}}"
+        ],
+        "ignoreDeps": [
+            "com.microsoft.sqlserver:mssql-jdbc",
+            "org.apache.activemq:activemq-client",
+            "org.postgresql:postgresql",
+            "org.apache.kafka:kafka-clients"
         ]
     },
     "osvVulnerabilityAlerts": true,
