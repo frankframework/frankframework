@@ -68,9 +68,6 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.pool.ConnPoolControl;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.logging.log4j.Logger;
-
-import org.frankframework.http.authentication.IOauthAuthenticator;
-
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 
@@ -80,6 +77,7 @@ import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.AdapterAware;
 import org.frankframework.core.IConfigurationAware;
@@ -93,6 +91,7 @@ import org.frankframework.http.authentication.AuthenticationScheme;
 import org.frankframework.http.authentication.ClientCredentialsBasicAuth;
 import org.frankframework.http.authentication.ClientCredentialsQueryParameters;
 import org.frankframework.http.authentication.HttpAuthenticationException;
+import org.frankframework.http.authentication.IOauthAuthenticator;
 import org.frankframework.http.authentication.OAuthPreferringAuthenticationStrategy;
 import org.frankframework.http.authentication.ResourceOwnerPasswordCredentialsBasicAuth;
 import org.frankframework.http.authentication.ResourceOwnerPasswordCredentialsQueryParameters;
@@ -349,7 +348,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 
 		if (oauthAuthenticationMethod == null) {
 			if (getTokenEndpoint() != null) {
-				ConfigurationWarnings.add(this, log, "Use oauthAuthenticationMethod to explicitly set the Oauth2 method to be used. This is currently automatically determined, but will be removed in the future.");
+				ConfigurationWarnings.add(this, log, "Use oauthAuthenticationMethod to explicitly set the Oauth2 method to be used. This is currently automatically determined, but will be removed in the future.", SuppressKeys.DEPRECATION_SUPPRESS_KEY);
 			}
 			oauthAuthenticationMethod = OauthAuthenticationMethod.determineOauthAuthenticationMethod(this);
 		}

@@ -50,7 +50,6 @@ import org.springframework.security.web.access.intercept.RequestAuthorizationCon
 import org.springframework.security.web.context.SecurityContextHolderFilter;
 import org.springframework.security.web.util.matcher.AndRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
-import org.springframework.web.filter.ForwardedHeaderFilter;
 
 import lombok.Getter;
 
@@ -59,6 +58,7 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 	public static final List<String> DEFAULT_IBIS_ROLES = List.of("IbisWebService", "IbisObserver", "IbisDataAdmin", "IbisAdmin", "IbisTester");
 
 	public static final String ALLOW_OPTIONS_REQUESTS_KEY = "application.security.http.allowUnsecureOptionsRequests";
+	public static final String ALLOW_FORWARDED_HEADERS_PASSTHROUGH_REQUESTS_KEY = "application.security.http.allowForwardedHeadersPassthrough";
 
 	protected final Logger log = LogManager.getLogger(this);
 
@@ -68,12 +68,14 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 	private final @Getter Set<String> securityRoles = new HashSet<>();
 	private Properties applicationConstants = null;
 	private boolean allowUnsecureOptionsRequest = false;
+	private boolean allowForwardedHeadersPassthrough = false;
 
 	@Override
 	public final void setApplicationContext(ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
 		Environment env = applicationContext.getEnvironment();
 		allowUnsecureOptionsRequest = env.getProperty(ALLOW_OPTIONS_REQUESTS_KEY, boolean.class, false);
+		allowForwardedHeadersPassthrough = env.getProperty(ALLOW_FORWARDED_HEADERS_PASSTHROUGH_REQUESTS_KEY, boolean.class, false);
 	}
 
 	protected final synchronized Properties getEnvironmentProperties() {
@@ -197,8 +199,8 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 		RequestMatcher authorizationRequestMatcher = new AndRequestMatcher(securityRequestMatcher, this::authorizationRequestMatcher);
 		http.authorizeHttpRequests(requests -> requests.requestMatchers(authorizationRequestMatcher).access(getAuthorizationManager()));
 
-		// This filter converts x-forwarded headers to their corresponding `normal` headers. Eg. `X-Forwarded-Proto` sets HttpServletRequest.isSecure to `true`.
-		http.addFilterBefore(new ForwardedHeaderFilter(), SecurityContextHolderFilter.class);
+		// This filter removes x-forwarded headers and converts them to their corresponding `normal` headers. Eg. `X-Forwarded-Proto` sets HttpServletRequest.isSecure to `true`.
+		http.addFilterBefore(new CustomizedForwardedHeaderFilter(allowForwardedHeadersPassthrough), SecurityContextHolderFilter.class);
 		return configure(http);
 	}
 
