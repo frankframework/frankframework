@@ -43,7 +43,7 @@
                 "/^release\\/10\\./"
             ],
             "matchFileNames": [
-                "!/^docker/.*"
+                "!docker/**"
             ],
             "schedule": [
                 "* 0-6 * * *"
@@ -59,7 +59,7 @@
                 "maven"
             ],
             "matchFileNames": [
-                "!/^docker/.*"
+                "!docker/**"
             ],
             "schedule": [
                 "* 0-6 * * *"
@@ -69,6 +69,7 @@
             ],
             "groupName": "maven-dependencies",
             "separateMajorMinor": true,
+            "separateMinorPatch": true,
             "major": {
                 "enabled": false
             }
@@ -130,7 +131,7 @@
             "matchManagers": [
                 "npm"
             ],
-            "groupName": "angular",
+            "groupName": "Angular",
             "matchPackageNames": [
                 "/^@angular/"
             ]
@@ -143,14 +144,14 @@
             "matchPackageNames": [
                 "zone.js"
             ],
-            "groupName": "angular"
+            "groupName": "Zone.JS"
         },
         {
             "description": "ESLint packages - override groupName",
             "matchManagers": [
                 "npm"
             ],
-            "groupName": "frontend-linting",
+            "groupName": "ES Lint",
             "matchPackageNames": [
                 "/(^eslint)|(^@eslint/)/"
             ]
@@ -163,7 +164,7 @@
             "enabled": false
         },
         {
-            "description": "Docker dependencies - weekly schedule, group all updates",
+            "description": "Docker dependencies - daily schedule, group all updates",
             "matchManagers": [
                 "dockerfile",
                 "docker-compose"
@@ -175,16 +176,15 @@
                 "master"
             ],
             "schedule": [
-                "before 6am on the first day of the week"
+                "* 0-6 * * *"
             ],
             "addLabels": [
                 "Docker"
             ],
-            "groupName": "docker-dependencies",
-            "separateMajorMinor": false
+            "groupName": "Docker",
         },
         {
-            "description": "Docker dependencies (for LTS) - weekly schedule, group all updates",
+            "description": "Docker dependencies (for LTS) - daily schedule, group all updates",
             "matchManagers": [
                 "dockerfile",
                 "docker-compose"
@@ -198,17 +198,17 @@
                 "/^release\\/10\\./"
             ],
             "schedule": [
-                "before 6am on the first day of the week"
+                "* 0-6 * * *"
             ],
             "addLabels": [
                 "Docker",
                 "{{replace 'release/' '' baseBranch}}"
             ],
-            "groupName": "docker-lts-dependencies",
+            "groupName": "Docker (LTS)",
             "separateMajorMinor": false
         },
         {
-            "description": "GitHub Actions - monthly schedule, group all updates",
+            "description": "GitHub Actions - weekly schedule, group all updates",
             "matchManagers": [
                 "github-actions"
             ],
