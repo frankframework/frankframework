@@ -2009,6 +2009,24 @@ public class ApiListenerServletTest {
 		assertThat(e.getMessage(), containsString("[originalMessage]"));
 	}
 
+	@Test
+	public void testHeaderAccessCaseInsensitive() throws Exception {
+		// Arrange
+		new ApiListenerBuilder("/request/with/header", List.of(HttpMethod.GET))
+				.withResponseFromContextKey("Header.X-FORWARDED-HOST")
+				.build();
+
+		Map<String, String> headers = new HashMap<>();
+		headers.put("X-Forwarded-Host", "localhost");
+
+		// Act
+		Response result = service(createRequest("/request/with/header", HttpMethod.GET, "", headers));
+
+		// Assert
+		assertEquals(200, result.getStatus());
+		assertEquals("localhost", result.getContentAsString());
+	}
+
 	private String createJWT() throws Exception {
 		JWSHeader jwsHeader = new JWSHeader.Builder(JWSAlgorithm.RS256).build();
 
@@ -2343,6 +2361,11 @@ public class ApiListenerServletTest {
 			return this;
 		}
 
+		public ApiListenerBuilder withResponseFromContextKey(String contextKey) {
+			handler.setRespondWithContextKey(contextKey);
+			return this;
+		}
+
 		public ApiListenerBuilder withResultSessionKey(String key, Object value) {
 			handler.addSessionKey(key, value);
 			return this;
@@ -2373,6 +2396,7 @@ public class ApiListenerServletTest {
 		private @Setter int exitCode = 0;
 		private @Setter boolean shouldThrow = false;
 		private @Setter Object responseContent = null;
+		private @Setter String respondWithContextKey = null;
 		private final Map<String, Object> sessionKeysToSet = new HashMap<>();
 
 		public void addSessionKey(String sessionKey, Object value) {
@@ -2401,6 +2425,9 @@ public class ApiListenerServletTest {
 			}
 			if (responseContent != null) {
 				return Message.asMessage(responseContent);
+			}
+			if (respondWithContextKey != null) {
+				return Message.asMessage(message.getContext().get(respondWithContextKey));
 			}
 			return message;
 		}
