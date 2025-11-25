@@ -211,7 +211,9 @@ public class TestRunStatus {
 		int scenariosTotal = getScenarioExecuteCount();
 		int scenariosPassed = getScenariosPassedCount();
 
-		if (scenariosPassed == scenariosTotal) {
+		if (scenariosPassed == 0) {
+			return null;
+		} else if (scenariosPassed == scenariosTotal) {
 			if (scenariosTotal == 1) {
 				return "All scenarios passed (1 scenario executed in " + formattedTime + ")";
 			} else {
@@ -232,7 +234,9 @@ public class TestRunStatus {
 		int scenariosTotal = getScenarioExecuteCount();
 		int scenariosFailed = getScenariosFailedCount();
 
-		if (scenariosFailed == scenariosTotal) {
+		if (scenariosFailed == 0) {
+			return null;
+		} else if (scenariosFailed == scenariosTotal) {
 			if (scenariosTotal == 1) {
 				return "All scenarios failed (1 scenario executed in " + formattedTime + ")";
 			} else {
@@ -253,7 +257,9 @@ public class TestRunStatus {
 		int scenariosTotal = getScenarioExecuteCount();
 		int scenariosAutoSaved = getScenariosAutosavedCount();
 
-		if (scenariosAutoSaved == scenariosTotal) {
+		if (scenariosAutoSaved == 0) {
+			return null;
+		} else if (scenariosAutoSaved == scenariosTotal) {
 			if (scenariosTotal == 1) {
 				return "All scenarios passed after autosave (1 scenario executed in " + formattedTime + ")";
 			} else {
