@@ -25,10 +25,10 @@ import jakarta.annotation.Nonnull;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.wearefrank.ladybug.TestTool;
 
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import org.wearefrank.ladybug.TestTool;
 
 import org.frankframework.core.HasName;
 import org.frankframework.core.IListener;

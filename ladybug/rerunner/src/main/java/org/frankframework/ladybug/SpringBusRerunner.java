@@ -26,7 +26,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
-
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.Rerunner;

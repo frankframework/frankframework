@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Objects;
 
 import org.junit.jupiter.api.Test;
-
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.storage.StorageException;

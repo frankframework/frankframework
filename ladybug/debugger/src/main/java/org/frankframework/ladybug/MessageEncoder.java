@@ -25,7 +25,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;
 import org.apache.commons.io.input.BoundedReader;
 import org.springframework.beans.factory.annotation.Autowired;
-
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.MessageEncoderImpl;
 

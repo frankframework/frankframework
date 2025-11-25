@@ -30,7 +30,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.TestTool;
 import org.wearefrank.ladybug.run.ReportRunner;

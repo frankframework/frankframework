@@ -19,11 +19,11 @@ import org.apache.logging.log4j.core.util.OptionConverter;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.config.BeanPostProcessor;
-
-import liquibase.integration.spring.SpringLiquibase;
 import org.wearefrank.ladybug.filter.View;
 import org.wearefrank.ladybug.filter.Views;
 import org.wearefrank.ladybug.storage.database.DatabaseStorage;
+
+import liquibase.integration.spring.SpringLiquibase;
 
 import org.frankframework.util.AppConstants;
 

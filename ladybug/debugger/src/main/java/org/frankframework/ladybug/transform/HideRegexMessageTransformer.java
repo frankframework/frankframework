@@ -22,7 +22,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.transform.MessageTransformer;
 

@@ -47,7 +47,6 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.CheckpointType;
 import org.wearefrank.ladybug.Report;

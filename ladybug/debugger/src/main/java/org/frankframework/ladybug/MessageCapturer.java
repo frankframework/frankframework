@@ -20,9 +20,9 @@ import java.io.Writer;
 import java.util.function.Consumer;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.wearefrank.ladybug.MessageCapturerImpl;
 
 import lombok.Setter;
-import org.wearefrank.ladybug.MessageCapturerImpl;
 
 import org.frankframework.stream.Message;
 import org.frankframework.util.CloseUtils;

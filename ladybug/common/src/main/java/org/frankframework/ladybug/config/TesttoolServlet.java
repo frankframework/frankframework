@@ -17,10 +17,10 @@ package org.frankframework.ladybug.config;
 
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.context.support.WebApplicationContextUtils;
+import org.wearefrank.ladybug.echo2.Echo2Application;
 
 import nextapp.echo2.app.ApplicationInstance;
 import nextapp.echo2.webcontainer.WebContainerServlet;
-import org.wearefrank.ladybug.echo2.Echo2Application;
 
 /**
  * @author Jaco de Groot

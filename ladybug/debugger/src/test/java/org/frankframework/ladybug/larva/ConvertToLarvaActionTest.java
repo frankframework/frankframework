@@ -19,7 +19,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.Test;
-
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.storage.StorageException;
 

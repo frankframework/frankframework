@@ -15,12 +15,13 @@
 */
 package org.frankframework.ladybug.tibet2;
 
-import lombok.Setter;
-import lombok.extern.log4j.Log4j2;
 import org.wearefrank.ladybug.echo2.BeanParent;
 import org.wearefrank.ladybug.echo2.Echo2Application;
 import org.wearefrank.ladybug.echo2.reports.ReportsComponent;
 import org.wearefrank.ladybug.filter.View;
+
+import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
