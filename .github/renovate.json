@@ -21,21 +21,9 @@
     "prHourlyLimit": 10,
     "rebaseWhen": "conflicted",
     "commitMessageTopic": "{{depName}}",
-    "commitMessageAction": "Update dependency",
+    "commitMessageAction": "Update",
     "commitMessageExtra": "to {{#if isMajor}}v{{newMajor}}{{else}}v{{newVersion}}{{/if}}",
-    "vulnerabilityAlerts": {
-        "enabled": true,
-        "vulnerabilityFixStrategy": "highest",
-        "labels": [
-            "Security",
-            "Dependencies"
-        ],
-        "addLabels": [
-            "CVE",
-            "{{replace 'release/' '' baseBranch}}"
-        ]
-    },
-    "osvVulnerabilityAlerts": true,
+    "commitMessageSuffix": "",
     "packageRules": [
         {
             "description": "Release branches - disable ALL regular updates (only security/CVE updates via vulnerabilityAlerts)",
@@ -238,5 +226,19 @@
     "lockFileMaintenance": {
         "enabled": false
     },
+    "vulnerabilityAlerts": {
+        "enabled": true,
+        "vulnerabilityFixStrategy": "highest",
+        "commitMessageSuffix": "",
+        "labels": [
+            "Security",
+            "Dependencies"
+        ],
+        "addLabels": [
+            "CVE",
+            "{{replace 'release/' '' baseBranch}}"
+        ]
+    },
+    "osvVulnerabilityAlerts": true,
     "rangeStrategy": "bump"
 }
