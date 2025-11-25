@@ -36,12 +36,6 @@
             "matchFileNames": [
                 "!docker/**"
             ],
-            "ignoreDeps": [
-                "com.microsoft.sqlserver:mssql-jdbc",
-                "org.apache.activemq:activemq-client",
-                "org.postgresql:postgresql",
-                "org.apache.kafka:kafka-clients"
-            ],
             "enabled": false
         },
         {
@@ -57,6 +51,9 @@
             ],
             "addLabels": [
                 "Java"
+            ],
+            "ignoreDeps" : [
+                "software.amazon.awssdk:bom"
             ],
             "groupName": "maven-dependencies",
             "separateMajorMinor": true,
@@ -91,17 +88,6 @@
             "major": {
                 "enabled": false
             }
-        },
-        {
-            "description": "Ignore specific NPM dependencies",
-            "matchManagers": [
-                "npm"
-            ],
-            "matchPackageNames": [
-                "mermaid",
-                "/bootstrap$/"
-            ],
-            "enabled": false
         },
         {
             "description": "Angular packages - override groupName",
@@ -216,10 +202,20 @@
             "{{replace 'release/' '' baseBranch}}"
         ],
         "ignoreDeps": [
+            "com.oracle.database.jdbc:ojdbc11",
+            "com.h2database:h2",
             "com.microsoft.sqlserver:mssql-jdbc",
-            "org.apache.activemq:activemq-client",
+            "com.mysql:mysql-connector-j",
+            "org.mariadb.jdbc:mariadb-java-client"
             "org.postgresql:postgresql",
+            "com.ibm.db2:jcc",
+            "org.apache.activemq:artemis-jakarta-client-all",
+            "org.apache.activemq:activemq-client",
+            "com.rabbitmq:amqp-client",
+            "com.rabbitmq.jms:rabbitmq-jms",
             "org.apache.kafka:kafka-clients"
+            "bootstrap",
+            "mermaid",
         ]
     },
     "osvVulnerabilityAlerts": true,
