@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.Duration;
 import java.util.Properties;
@@ -28,6 +29,7 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.io.FilenameUtils;
+import org.springframework.http.MediaType;
 
 import org.frankframework.stream.FileMessage;
 import org.frankframework.stream.Message;
@@ -101,15 +103,27 @@ public class LarvaUtil {
 
 	public static Message readFile(@Nonnull String fileName) {
 		Message message = new FileMessage(new File(fileName));
-		final String encoding;
-		if (fileName.endsWith(".utf8") || fileName.endsWith(".json")) {
-			encoding = "UTF-8";
-		} else if (fileName.endsWith(".ISO-8859-1")) {
-			encoding = "ISO-8859-1";
+
+		final String name = fileName.toLowerCase();
+		if (name.endsWith(".json")) {
+			message.getContext().withMimeType(MediaType.APPLICATION_JSON).withCharset(StandardCharsets.UTF_8);
+		} else if (name.endsWith(".xml")) {
+			message.getContext().withMimeType(MediaType.APPLICATION_XML).withCharset("auto");
 		} else {
-			encoding = "auto";
+			message.getContext().withCharset(getEncoding(name));
 		}
-		message.getContext().withCharset(encoding);
+
 		return message;
+	}
+
+	// Ideally people don't use this...
+	private static final String getEncoding(@Nonnull String fileName) {
+		if (fileName.endsWith(".utf8") || fileName.endsWith(".utf-8")) {
+			return "UTF-8";
+		} else if (fileName.endsWith(".iso-8859-1")) {
+			return "ISO-8859-1";
+		} else {
+			return "auto";
+		}
 	}
 }

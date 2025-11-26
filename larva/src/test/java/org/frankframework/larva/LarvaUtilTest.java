@@ -2,12 +2,14 @@ package org.frankframework.larva;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.IOException;
 import java.net.URL;
 
 import org.apache.commons.io.FilenameUtils;
 import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
 
 import org.frankframework.stream.Message;
 
@@ -33,6 +35,7 @@ public class LarvaUtilTest {
 
 		message.asString(); // computes Charset
 		assertEquals("ISO-8859-1", message.getCharset());
+		assertEquals(MediaType.APPLICATION_XML, message.getContext().getMimeType());
 	}
 
 	@Test
@@ -41,6 +44,7 @@ public class LarvaUtilTest {
 
 		message.asString(); // computes Charset
 		assertEquals("UTF-8", message.getCharset());
+		assertNull(message.getContext().getMimeType());
 	}
 
 	@Test
@@ -49,5 +53,18 @@ public class LarvaUtilTest {
 
 		message.asString(); // computes Charset
 		assertEquals("UTF-8", message.getCharset());
+	}
+
+	@Test
+	public void testJsonFile() throws IOException {
+		Message message = LarvaUtil.readFile(getTestFile("dummy.json"));
+
+		assertEquals("""
+				{
+					"json": true
+				}""", message.asString());
+
+		assertEquals("UTF-8", message.getCharset());
+		assertEquals(MediaType.APPLICATION_JSON, message.getContext().getMimeType());
 	}
 }
