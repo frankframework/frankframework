@@ -37,6 +37,11 @@ public class H2DbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
+	public boolean isParameterTypeMatchRequired() {
+		return true;
+	}
+
+	@Override
 	public String getSchema(Connection conn) throws DbmsException {
 		return DbmsUtil.executeStringQuery(conn, "SELECT SCHEMA()");
 	}
