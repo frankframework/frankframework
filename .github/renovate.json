@@ -60,6 +60,17 @@
             "separateMinorPatch": true
         },
         {
+            "description": "Release branches - disable ALL regular updates (only security/CVE updates via vulnerabilityAlerts)",
+            "matchManagers": [
+                "npm",
+                "maven"
+            ],
+            "matchBaseBranches": [
+                "/^release\\//"
+            ],
+            "enabled": false
+        },
+        {
             "description": "Ignore specific Maven dependencies for ... <= 8.0",
             "matchManagers": [
                 "maven"
