@@ -29,20 +29,12 @@
     "commitMessageSuffix": "",
     "packageRules": [
         {
-            "description": "Release branches - disable ALL regular updates (only security/CVE updates via vulnerabilityAlerts)",
-            "matchManagers": [
-                "npm",
-                "maven"
-            ],
-            "matchBaseBranches": [
-                "release/**"
-            ],
-            "enabled": false
-        },
-        {
             "description": "Maven dependencies - daily at 6 AM, ignore major updates",
             "matchManagers": [
                 "maven"
+            ],
+            "matchBaseBranches": [
+                "master"
             ],
             "schedule": [
                 "* 0-6 * * *"
@@ -51,21 +43,7 @@
                 "Java"
             ],
             "ignoreDeps" : [
-                "software.amazon.awssdk:bom"
-            ],
-            "groupName": "maven-dependencies",
-            "separateMajorMinor": true,
-            "separateMinorPatch": true,
-            "major": {
-                "enabled": false
-            }
-        },
-        {
-            "description": "Ignore specific Maven dependencies",
-            "matchManagers": [
-                "maven"
-            ],
-            "matchPackageNames": [
+                "software.amazon.awssdk:bom",
                 "org.ibissource:ibis-ladybug",
                 "org.wearefrank:ladybug",
                 "com.sap.jco3:sapidoc",
@@ -74,7 +52,12 @@
                 "com.eclipsesource.j2v8:j2v8_linux_x86_64",
                 "/^com\\.aspose:/"
             ],
-            "enabled": false
+            "major": {
+                "enabled": false
+            },
+            "groupName": "maven-dependencies",
+            "separateMajorMinor": true,
+            "separateMinorPatch": true
         },
         {
             "description": "Ignore specific Maven dependencies for ... <= 8.0",
@@ -84,15 +67,14 @@
             "matchBaseBranches": [
                 "release/8.0",
             ],
-            "matchPackageNames" : [
+            "ignoreDeps" : [
                 "org.apache.tika:tika-parsers",
                 "org.springframework.boot:spring-boot-loader",
                 "org.springframework:"
-            ],
-            "enabled": false
+            ]
         },
         {
-            "description": "All NPM dependencies - weekly schedule, ignore major updates (base rule)",
+            "description": "All NPM dependencies - weekly schedule, ignore major updates",
             "matchManagers": [
                 "npm"
             ],
@@ -162,6 +144,9 @@
                 "dockerfile",
                 "docker-compose"
             ],
+            "matchBaseBranches": [
+                "release/**",
+            ],
             "schedule": [
                 "* 0-6 * * *"
             ],
@@ -176,6 +161,9 @@
             "description": "GitHub Actions - weekly schedule, group all updates",
             "matchManagers": [
                 "github-actions"
+            ],
+            "matchBaseBranches": [
+                "master"
             ],
             "schedule": [
                 "before 6am on the first day of the week"
