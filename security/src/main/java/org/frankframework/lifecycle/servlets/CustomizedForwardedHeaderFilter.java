@@ -34,8 +34,6 @@ import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletResponseWrapper;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServletServerHttpRequest;
@@ -49,7 +47,10 @@ import org.springframework.web.util.UriComponentsBuilder;
 import org.springframework.web.util.UrlPathHelper;
 import org.springframework.web.util.WebUtils;
 
+import lombok.extern.log4j.Log4j2;
+
 /**
+ * Customized version of the original class ForwardedHeaderFilter in Spring Framework.
  * Extract values from "Forwarded" and "X-Forwarded-*" headers, wrap the request
  * and response, and make them reflect the client-originated protocol and
  * address in the following methods:
@@ -74,10 +75,8 @@ import org.springframework.web.util.WebUtils;
  * @see <a href="https://tools.ietf.org/html/rfc7239">https://tools.ietf.org/html/rfc7239</a>
  * @see <a href="https://docs.spring.io/spring-framework/reference/web/webmvc/filters.html#filters-forwarded-headers">Forwarded Headers</a>
  */
-//NOSONAR
+@Log4j2
 public class CustomizedForwardedHeaderFilter extends OncePerRequestFilter {
-
-	private static final Log logger = LogFactory.getLog(CustomizedForwardedHeaderFilter.class);
 
 	private static final Set<String> FORWARDED_HEADER_NAMES =
 			Collections.newSetFromMap(new LinkedCaseInsensitiveMap<>(10, Locale.ROOT));
@@ -149,8 +148,8 @@ public class CustomizedForwardedHeaderFilter extends OncePerRequestFilter {
 	}
 
 	@Override
-	protected void doFilterNestedErrorDispatch(HttpServletRequest request, HttpServletResponse response,
-			FilterChain filterChain) throws ServletException, IOException {
+	protected void doFilterNestedErrorDispatch(@Nonnull HttpServletRequest request, @Nonnull HttpServletResponse response,
+											   @Nonnull FilterChain filterChain) throws ServletException, IOException {
 
 		doFilterInternal(request, response, filterChain);
 	}
@@ -235,12 +234,12 @@ public class CustomizedForwardedHeaderFilter extends OncePerRequestFilter {
 			URI uri = request.getURI();
 			HttpHeaders headers = request.getHeaders();
 			UriComponents uriComponents = ForwardedHeaderUtils.adaptFromForwardedHeaders(uri, headers).build();
-			int port = uriComponents.getPort();
+			int portInRequest = uriComponents.getPort();
 
 			this.scheme = uriComponents.getScheme();
 			this.secure = "https".equals(this.scheme) || "wss".equals(this.scheme);
 			this.host = uriComponents.getHost();
-			this.port = (port == -1 ? (this.secure ? 443 : 80) : port);
+			this.port = (portInRequest == -1 ? getDefaultPort() : portInRequest);
 
 			this.remoteAddress = ForwardedHeaderUtils.parseForwardedFor(uri, headers, request.getRemoteAddress());
 
@@ -248,7 +247,11 @@ public class CustomizedForwardedHeaderFilter extends OncePerRequestFilter {
 			Supplier<HttpServletRequest> requestSupplier = () -> (HttpServletRequest) getRequest();
 
 			this.forwardedPrefixExtractor = new ForwardedPrefixExtractor(
-					requestSupplier, (this.scheme + "://" + this.host + (port == -1 ? "" : ":" + port)));
+					requestSupplier, (this.scheme + "://" + this.host + (portInRequest == -1 ? "" : ":" + portInRequest)));
+		}
+
+		private int getDefaultPort() {
+			return this.secure ? 443 : 80;
 		}
 
 		@Override
@@ -285,7 +288,7 @@ public class CustomizedForwardedHeaderFilter extends OncePerRequestFilter {
 
 		@Override
 		public StringBuffer getRequestURL() {
-			return this.forwardedPrefixExtractor.getRequestUrl();
+			return new StringBuffer(this.forwardedPrefixExtractor.getRequestUrl());
 		}
 
 		@Override
@@ -406,9 +409,9 @@ public class CustomizedForwardedHeaderFilter extends OncePerRequestFilter {
 			return this.requestUri;
 		}
 
-		public StringBuffer getRequestUrl() {
+		public String getRequestUrl() {
 			recalculatePathsIfNecessary();
-			return new StringBuffer(this.requestUrl);
+			return this.requestUrl;
 		}
 
 		private void recalculatePathsIfNecessary() {
@@ -424,9 +427,9 @@ public class CustomizedForwardedHeaderFilter extends OncePerRequestFilter {
 		@Nullable
 		public String getErrorRequestUri() {
 			HttpServletRequest request = this.delegate.get();
-			String requestUri = (String) request.getAttribute(WebUtils.ERROR_REQUEST_URI_ATTRIBUTE);
-			if (this.forwardedPrefix == null || requestUri == null) {
-				return requestUri;
+			String uriInRequest = (String) request.getAttribute(WebUtils.ERROR_REQUEST_URI_ATTRIBUTE);
+			if (this.forwardedPrefix == null || uriInRequest == null) {
+				return uriInRequest;
 			}
 			ErrorPathRequest errorRequest = new ErrorPathRequest(request);
 			return this.forwardedPrefix + UrlPathHelper.rawPathInstance.getPathWithinApplication(errorRequest);
