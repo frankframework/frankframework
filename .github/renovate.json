@@ -50,20 +50,30 @@
                 "org.filesys:jfileserver-enterprise",
                 "org.eclipse.m2e:lifecycle-mapping",
                 "com.eclipsesource.j2v8:j2v8_linux_x86_64",
-                "/^com\\.aspose:/"
             ],
             "major": {
                 "enabled": false
             },
             "groupName": "maven-dependencies",
             "separateMajorMinor": true,
-            "separateMinorPatch": true
+            "separateMinorPatch": false
+        },
+        {
+            "description": "Aspose Dependencies",
+            "matchManagers": [
+                "maven"
+            ],
+            "groupName": "Aspose",
+            "matchPackageNames": [
+                "/^com\\.aspose:/"
+            ]
         },
         {
             "description": "Release branches - disable ALL regular updates (only security/CVE updates via vulnerabilityAlerts)",
             "matchManagers": [
                 "npm",
-                "maven"
+                "maven",
+                "github-actions"
             ],
             "matchBaseBranches": [
                 "/^release\\//"
@@ -185,6 +195,7 @@
                 "CI/CD"
             ],
             "groupName": "github-actions",
+            "separateMajorMinor": true,
             "separateMajorMinor": false
         }
     ],
