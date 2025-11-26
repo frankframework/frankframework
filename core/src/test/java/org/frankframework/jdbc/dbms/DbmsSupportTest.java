@@ -363,7 +363,6 @@ public class DbmsSupportTest {
 
 	@DatabaseTest
 	public void testJdbcSetParameterWithNullValues() throws Exception {
-//		assumeFalse("Oracle".equals(dbmsSupport.getDbmsName())); // This fails on Oracle, cannot set a non-integer number via setString()
 		String query = "INSERT INTO " + TEST_TABLE + "(TKEY, TNUMBER, TDATE, TDATETIME) VALUES (5,?,?,?)";
 		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
 
