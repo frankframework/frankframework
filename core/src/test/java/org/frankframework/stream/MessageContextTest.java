@@ -89,4 +89,18 @@ public class MessageContextTest {
 		assertNull(mimetype.getParameter("name"));
 		assertNull(charset);
 	}
+
+	@Test
+	public void testContextIsCaseInsensitive() {
+		// Arrange
+		MessageContext context = new MessageContext();
+
+		context.put("X-Custom-Header", "header-value"); // insert with mixed case
+
+		// Act
+		Object value = context.get("x-custom-header"); // Retrieve with lower case
+
+		// Assert
+		assertEquals("header-value", value.toString());
+	}
 }

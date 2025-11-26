@@ -22,7 +22,6 @@ import java.io.Serializable;
 import java.nio.charset.Charset;
 import java.time.Instant;
 import java.util.Date;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -31,6 +30,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.util.InvalidMimeTypeException;
+import org.springframework.util.LinkedCaseInsensitiveMap;
 import org.springframework.util.MimeType;
 
 import org.frankframework.util.DateFormatUtils;
@@ -54,7 +54,7 @@ public class MessageContext implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final long customSerializationVersion = 1L;
 
-	private Map<String, Object> data = new LinkedHashMap<>();
+	private Map<String, Object> data = new LinkedCaseInsensitiveMap<>();
 
 	public MessageContext() {
 		super();
