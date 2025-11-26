@@ -37,9 +37,6 @@
             "matchBaseBranches": [
                 "release/**"
             ],
-            "matchFileNames": [
-                "!docker/**"
-            ],
             "enabled": false
         },
         {
@@ -67,24 +64,6 @@
             }
         },
         {
-            "description": "Banned dependencies for ... <= 8.0",
-            "matchManagers": [
-                "maven",
-            ],
-            "matchBaseBranches": [
-                "release/8.0",
-            ],
-            "matchPackageNames": [
-                "org.apache.tika:tika-parsers",
-                "org.springframework.boot:spring-boot-loader",
-                "org.springframework:spring-webmvc",
-                "org.springframework:spring-web",
-                "org.springframework:spring-core",
-                "org.springframework:spring-context"
-            ],
-            "enabled": false
-        },
-        {
             "description": "Ignore specific Maven dependencies",
             "matchManagers": [
                 "maven"
@@ -97,6 +76,21 @@
                 "org.eclipse.m2e:lifecycle-mapping",
                 "com.eclipsesource.j2v8:j2v8_linux_x86_64",
                 "/^com\\.aspose:/"
+            ],
+            "enabled": false
+        },
+        {
+            "description": "Ignore specific Maven dependencies for ... <= 8.0",
+            "matchManagers": [
+                "maven"
+            ],
+            "matchBaseBranches": [
+                "release/8.0",
+            ],
+            "matchPackageNames" : [
+                "org.apache.tika:tika-parsers",
+                "org.springframework.boot:spring-boot-loader",
+                "org.springframework:"
             ],
             "enabled": false
         },
@@ -173,11 +167,6 @@
             ],
             "matchFileNames": [
                 "docker/**"
-            ],
-            "matchBaseBranches": [
-                "/^release\\/9\\.0$/",
-                "/^release\\/8\\.0$/",
-                "/^release\\/10\\./"
             ],
             "schedule": [
                 "* 0-6 * * *"
