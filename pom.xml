@@ -88,11 +88,11 @@
 		<jackson.version>2.20.1</jackson.version>
 		<cxf.version>4.1.4</cxf.version>
 		<spring.version>6.2.14</spring.version>
-		<spring-security.version>6.4.6</spring-security.version>
+		<spring-security.version>6.5.7</spring-security.version>
 		<spring-integration.version>6.5.4</spring-integration.version>
 		<spring.boot.version>3.5.8</spring.boot.version>
 		<tomcat.version>10.1.49</tomcat.version>
-		<bouncycastle.version>1.82</bouncycastle.version>
+		<bouncycastle.version>1.83</bouncycastle.version>
 
 		<narayana.version>7.3.3.Final</narayana.version>
 		<jboss-logging.version>3.6.1.Final</jboss-logging.version>
@@ -554,7 +554,7 @@
 			<dependency>
 				<groupId>org.liquibase</groupId>
 				<artifactId>liquibase-core</artifactId>
-				<version>4.29.2</version>
+				<version>4.33.0</version>
 				<exclusions>
 					<exclusion>
 						<groupId>javax.activation</groupId>
@@ -757,7 +757,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
-					<version>3.4.2</version>
+					<version>3.5.0</version>
 					<configuration>
 						<archive>
 							<addMavenDescriptor>true</addMavenDescriptor>
