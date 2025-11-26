@@ -656,10 +656,20 @@ public class JdbcUtil {
 	 * every time this is accessed from the statement can mean another network-access and fetching it once for all parameters reduces the network overhead for those). */
 	public static void setParameter(PreparedStatement statement, int parameterIndex, String value, boolean parameterTypeMatchRequired, ParameterMetaData parameterMetaData) throws SQLException {
 		if (!parameterTypeMatchRequired) {
-			statement.setString(parameterIndex, value);
+			if (value != null) {
+				statement.setString(parameterIndex, value);
+			} else {
+				statement.setNull(parameterIndex, Types.VARCHAR);
+			}
 			return;
 		}
+		// Some databases (MySQL, MariaDB, Oracle) do not support parameter type matching from the metadata. For these databases,
+		// we should return from this function before we reach this statement.
 		int sqlTYpe = parameterMetaData.getParameterType(parameterIndex);
+		if (value == null) {
+			statement.setNull(parameterIndex, sqlTYpe);
+			return;
+		}
 		try {
 			switch (sqlTYpe) {
 				case Types.INTEGER:

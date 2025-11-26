@@ -361,6 +361,29 @@ public class DbmsSupportTest {
 		}
 	}
 
+	@DatabaseTest
+	public void testJdbcSetParameterWithNullValues() throws Exception {
+//		assumeFalse("Oracle".equals(dbmsSupport.getDbmsName())); // This fails on Oracle, cannot set a non-integer number via setString()
+		String query = "INSERT INTO " + TEST_TABLE + "(TKEY, TNUMBER, TDATE, TDATETIME) VALUES (5,?,?,?)";
+		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
+
+		try (Connection connection = env.getConnection(); PreparedStatement stmt = connection.prepareStatement(translatedQuery)) {
+			JdbcUtil.setParameter(stmt, 1, null, dbmsSupport.isParameterTypeMatchRequired());
+			JdbcUtil.setParameter(stmt, 2, null, dbmsSupport.isParameterTypeMatchRequired());
+			JdbcUtil.setParameter(stmt, 3, null, dbmsSupport.isParameterTypeMatchRequired());
+			stmt.execute();
+		}
+
+		try (Connection connection = env.getConnection(); PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TNUMBER, TDATE, TDATETIME FROM " + TEST_TABLE + " WHERE TKEY=5", QueryType.SELECT)) {
+			try (ResultSet resultSet = stmt.executeQuery()) {
+				resultSet.next();
+				assertNull(resultSet.getString(1));
+				assertNull(resultSet.getString(2));
+				assertNull(resultSet.getString(3));
+			}
+		}
+	}
+
 
 	@DatabaseTest
 	public void testWriteAndReadClob() throws Exception {
