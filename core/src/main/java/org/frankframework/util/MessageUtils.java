@@ -262,7 +262,7 @@ public class MessageUtils {
 			return null;
 		}
 
-		if(message.getCharset() != null) { // And is character data?
+		if(message.getCharset() != null && !StreamUtil.AUTO_DETECT_CHARSET.equalsIgnoreCase(message.getCharset())) { // And is character data?
 			LOG.trace("found mimetype [{}] in MessageContext with charset [{}]", ()->mimeType, message::getCharset);
 			return new MimeType(mimeType, Charset.forName(message.getCharset()));
 		}
