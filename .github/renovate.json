@@ -44,9 +44,6 @@
             "matchManagers": [
                 "maven"
             ],
-            "matchFileNames": [
-                "!docker/**"
-            ],
             "schedule": [
                 "* 0-6 * * *"
             ],
@@ -95,12 +92,12 @@
             "enabled": false
         },
         {
-            "description": "All NPM dependencies - monthly schedule, ignore major updates (base rule)",
+            "description": "All NPM dependencies - weekly schedule, ignore major updates (base rule)",
             "matchManagers": [
                 "npm"
             ],
             "schedule": [
-                "before 6am on the first day of the month"
+                "before 6am on the first day of the week"
             ],
             "addLabels": [
                 "JavaScript"
@@ -134,6 +131,9 @@
         },
         {
             "description": "Ignore NPM peer dependencies",
+            "matchManagers": [
+                "npm"
+            ],
             "matchDepTypes": [
                 "peerDependencies"
             ],
@@ -144,9 +144,6 @@
             "matchManagers": [
                 "dockerfile",
                 "docker-compose"
-            ],
-            "matchFileNames": [
-                "docker/**"
             ],
             "matchBaseBranches": [
                 "master"
@@ -164,9 +161,6 @@
             "matchManagers": [
                 "dockerfile",
                 "docker-compose"
-            ],
-            "matchFileNames": [
-                "docker/**"
             ],
             "schedule": [
                 "* 0-6 * * *"
