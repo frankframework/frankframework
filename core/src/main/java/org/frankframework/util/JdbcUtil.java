@@ -665,13 +665,13 @@ public class JdbcUtil {
 		}
 		// Some databases (MySQL, MariaDB, Oracle) do not support parameter type matching from the metadata. For these databases,
 		// we should return from this function before we reach this statement.
-		int sqlTYpe = parameterMetaData.getParameterType(parameterIndex);
+		int sqlType = parameterMetaData.getParameterType(parameterIndex);
 		if (value == null) {
-			statement.setNull(parameterIndex, sqlTYpe);
+			statement.setNull(parameterIndex, sqlType);
 			return;
 		}
 		try {
-			switch (sqlTYpe) {
+			switch (sqlType) {
 				case Types.INTEGER:
 					statement.setInt(parameterIndex, Integer.parseInt(value));
 					break;
@@ -692,7 +692,7 @@ public class JdbcUtil {
 					statement.setTimestamp(parameterIndex, new Timestamp(DateFormatUtils.parseAnyDate(value).getTime()));
 					break;
 				default:
-					log.warn("parameter type [{}] handled as String", () -> JDBCType.valueOf(sqlTYpe).getName());
+					log.warn("parameter type [{}] handled as String", () -> JDBCType.valueOf(sqlType).getName());
 					// $FALL-THROUGH$
 				case Types.CHAR:
 				case Types.VARCHAR:

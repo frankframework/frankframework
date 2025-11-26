@@ -363,20 +363,14 @@ public class DbmsSupportTest {
 
 	@DatabaseTest
 	public void testJdbcSetParameterWithNullValues() throws Exception {
-		assumeFalse(dbmsSupport.getDbms() == Dbms.H2);
-
-		// For all non-H2 databases, make sure it works with whatever the DBMS Support says should work
-		boolean parameterTypeMatchRequired = dbmsSupport.isParameterTypeMatchRequired();
-		testSetParameterWithNullValues(parameterTypeMatchRequired, 6);
-	}
-
-	@DatabaseTest
-	public void testJdbcSetParameterWithNullValuesH2() throws Exception {
-		assumeTrue(dbmsSupport.getDbms() == Dbms.H2);
-
-		// For H2 try both with and without parameter type match, to cover all relevant code paths
-		testSetParameterWithNullValues(true, 7);
-		testSetParameterWithNullValues(false, 8);
+		if (dbmsSupport.getDbms() == Dbms.H2) {
+			// For H2 try both with and without parameter type match, to cover all relevant code paths
+			testSetParameterWithNullValues(true, 6);
+			testSetParameterWithNullValues(false, 7);
+		} else {
+			// For all non-H2 databases, make sure it works with whatever the DBMS Support says should work
+			testSetParameterWithNullValues(dbmsSupport.isParameterTypeMatchRequired(), 6);
+		}
 	}
 
 	private void testSetParameterWithNullValues(boolean parameterTypeMatchRequired, int key) throws Exception {
