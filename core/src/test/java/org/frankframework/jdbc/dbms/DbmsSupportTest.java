@@ -363,17 +363,34 @@ public class DbmsSupportTest {
 
 	@DatabaseTest
 	public void testJdbcSetParameterWithNullValues() throws Exception {
-		String query = "INSERT INTO " + TEST_TABLE + "(TKEY, TNUMBER, TDATE, TDATETIME) VALUES (5,?,?,?)";
+		assumeFalse(dbmsSupport.getDbms() == Dbms.H2);
+
+		// For all non-H2 databases, make sure it works with whatever the DBMS Support says should work
+		boolean parameterTypeMatchRequired = dbmsSupport.isParameterTypeMatchRequired();
+		testSetParameterWithNullValues(parameterTypeMatchRequired, 6);
+	}
+
+	@DatabaseTest
+	public void testJdbcSetParameterWithNullValuesH2() throws Exception {
+		assumeTrue(dbmsSupport.getDbms() == Dbms.H2);
+
+		// For H2 try both with and without parameter type match, to cover all relevant code paths
+		testSetParameterWithNullValues(true, 7);
+		testSetParameterWithNullValues(false, 8);
+	}
+
+	private void testSetParameterWithNullValues(boolean parameterTypeMatchRequired, int key) throws Exception {
+		String query = "INSERT INTO " + TEST_TABLE + "(TKEY, TNUMBER, TDATE, TDATETIME) VALUES (" + key + ",?,?,?)";
 		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
 
 		try (Connection connection = env.getConnection(); PreparedStatement stmt = connection.prepareStatement(translatedQuery)) {
-			JdbcUtil.setParameter(stmt, 1, null, dbmsSupport.isParameterTypeMatchRequired());
-			JdbcUtil.setParameter(stmt, 2, null, dbmsSupport.isParameterTypeMatchRequired());
-			JdbcUtil.setParameter(stmt, 3, null, dbmsSupport.isParameterTypeMatchRequired());
+			JdbcUtil.setParameter(stmt, 1, null, parameterTypeMatchRequired); // Number
+			JdbcUtil.setParameter(stmt, 2, null, parameterTypeMatchRequired); // SQL Date
+			JdbcUtil.setParameter(stmt, 3, null, parameterTypeMatchRequired); // SQL Timestamp
 			stmt.execute();
 		}
 
-		try (Connection connection = env.getConnection(); PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TNUMBER, TDATE, TDATETIME FROM " + TEST_TABLE + " WHERE TKEY=5", QueryType.SELECT)) {
+		try (Connection connection = env.getConnection(); PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TNUMBER, TDATE, TDATETIME FROM " + TEST_TABLE + " WHERE TKEY=" + key, QueryType.SELECT)) {
 			try (ResultSet resultSet = stmt.executeQuery()) {
 				resultSet.next();
 				assertNull(resultSet.getString(1));
