@@ -132,6 +132,8 @@
             "groupName": "Angular",
             "matchPackageNames": [
                 "/^@angular\\//",
+                "/^@angular-devkit\\//",
+                "@angular/common",
                 "zone.js"
             ]
         },
