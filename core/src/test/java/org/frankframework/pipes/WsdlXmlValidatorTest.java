@@ -264,18 +264,45 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
-		assertThrows(XmlValidatorException.class, () ->
+
+		XmlValidatorException ex = assertThrows(XmlValidatorException.class, () ->
 				val.validate("""
 						<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:impl="http://test.example.com">
 							<s:Header/>
 							<s:Body>
-								<impl:add>
+								<impl:rootElement>
 									<impl:numA>3.14</impl:numA>
 									<impl:numB>3.14</impl:numB>
-								</impl:add>
+								</impl:rootElement>
 							</s:Body>
 						</s:Envelope>\
-						""", session));
+						""", session)
+		);
+
+		assertEquals("""
+				Validation using WsdlXmlValidator with '/Validation/Wsdl/multipleOperations.wsdl' failed:
+				/Envelope/Body: Illegal element 'rootElement'. No element expected.""", ex.getMessage());
+	}
+
+	@Test
+	public void testEmptySoapBody() throws Exception {
+		WsdlXmlValidator val = pipe;
+		val.setWsdl(MULTIPLE_OPERATIONS);
+		val.setSoapBody("");
+		val.setThrowException(true);
+		val.addForward(new PipeForward("success", null));
+		val.configure();
+		val.start();
+
+		// There are many spaces!
+		val.validate("""
+				<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:impl="http://test.example.com">
+					<s:Header/>
+					<s:Body>               
+					
+					</s:Body>
+				</s:Envelope>\
+				""", session);
 	}
 
 	@Test

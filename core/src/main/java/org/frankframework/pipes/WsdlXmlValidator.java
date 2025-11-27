@@ -215,12 +215,15 @@ public class WsdlXmlValidator extends SoapValidator {
 		if(StringUtils.isNotEmpty(soapAction)) {
 			String soapBodyFromSoapAction = getSoapBodyFromSoapAction(soapAction, responseMode);
 			if(soapBodyFromSoapAction == null) {
-				log.debug("Could not determine messageRoot from soapAction original messageRoot [{}] will be used", messageRoot);
+				log.debug("could not determine messageRoot from soapAction original messageRoot [{}] will be used", messageRoot);
 			} else if(!soapBodyFromSoapAction.equalsIgnoreCase(messageRoot)) {
 				log.debug("messageRoot [{}] is determined from soapAction [{}]", soapBodyFromSoapAction, soapAction);
 				messageRoot = soapBodyFromSoapAction;
 			}
+		} else if (StringUtils.isAllEmpty(getSoapBody(), messageRoot)) {
+			log.debug("no messageRoot or soapBody 'root' element provided, only allow empty [soap:body] element");
 		}
+
 		return super.validate(messageToValidate, session, responseMode, messageRoot);
 	}
 
