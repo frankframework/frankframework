@@ -69,11 +69,24 @@
             ]
         },
         {
+            "description": "Spring Dependencies",
+            "matchManagers": [
+                "maven"
+            ],
+            "groupName": "Spring",
+            "matchPackageNames": [
+                "org.springframework:",
+                "org.springframework.boot:",
+                "org.springframework.security:"
+            ]
+        },
+        {
             "description": "Release branches - disable ALL regular updates (only security/CVE updates via vulnerabilityAlerts)",
             "matchManagers": [
                 "npm",
                 "maven",
-                "github-actions"
+                "github-actions",
+                "maven-wrapper"
             ],
             "matchBaseBranches": [
                 "/^release\\//"
