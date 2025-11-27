@@ -17,7 +17,6 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -42,11 +41,6 @@ class CustomizedForwardedHeaderFilterTest {
 		request.addHeader("X-My-Header", "My-Header-Value");
 		request.addHeader("X-Forwarded-Host", "example.org");
 		request.addHeader("X-Forwarded-For", "example.com");
-	}
-
-	@AfterEach
-	void tearDown() {
-
 	}
 
 	@Test

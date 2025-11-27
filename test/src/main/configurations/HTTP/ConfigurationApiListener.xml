@@ -284,21 +284,20 @@
 
 	<adapter name="ApiListener_HeaderParams">
 		<receiver
-			checkForDuplicates="true"
-			checkForDuplicatesMethod="CORRELATIONID"
+			checkForDuplicates="false"
 			processResultCacheSize="0">
 			<listener
-				name="SimpleInsertListener"
+				name="ApiListenerHeaderParams"
 				className="org.frankframework.http.rest.ApiListener"
 				uriPattern="headerParams"
 				methods="post"
 				headerParams="X-Forwarded-Host"
 			/>
-			<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage" slotId="ApiListenerDuplicateCheck" />
+			<messageLog className="org.frankframework.jdbc.JdbcTransactionalStorage" slotId="ApiListenerHeaderCheck" />
 		</receiver>
 		<pipeline transactionAttribute="Required">
 			<exits>
-				<exit state="success" path="EXIT" />
+				<exit state="success" name="EXIT" />
 			</exits>
 
 			<pipe name="echo" className="org.frankframework.pipes.EchoPipe" getInputFromSessionKey="headers">
