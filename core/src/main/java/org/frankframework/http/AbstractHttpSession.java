@@ -77,6 +77,7 @@ import lombok.Setter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.FrankElement;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.TimeoutException;
@@ -345,7 +346,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 
 		if (getOauthAuthenticationMethod() == null) {
 			if (getTokenEndpoint() != null) {
-				ConfigurationWarnings.add(this, log, "Use oauthAuthenticationMethod to explicitly set the Oauth2 method to be used. This is currently automatically determined, but will be removed in the future.");
+				ConfigurationWarnings.add(this, log, "Use oauthAuthenticationMethod to explicitly set the Oauth2 method to be used. This is currently automatically determined, but will be removed in the future.", SuppressKeys.DEPRECATION_SUPPRESS_KEY);
 			}
 			oauthAuthenticationMethod = OauthAuthenticationMethod.determineOauthAuthenticationMethod(this);
 		}
