@@ -131,7 +131,7 @@
             ],
             "groupName": "Angular",
             "matchPackageNames": [
-                "/^@angular/",
+                "/^@angular\\//",
                 "zone.js"
             ]
         },
@@ -142,7 +142,7 @@
             ],
             "groupName": "ES Lint",
             "matchPackageNames": [
-                "/(^eslint)|(^@eslint/)/"
+                "/(eslint)/"
             ]
         },
         {
