@@ -215,7 +215,8 @@ class ConvertToLarvaActionTest {
 	@Test
 	void forEachStubbedSender_wearefrank_style_report() throws StorageException, IOException {
 		// Create report
-		File reportFile = new File("Pipeline_ForEachStubbedSender.wearefrank.style.report.xml");
+		File reportFile = new File(Objects.requireNonNull(this.getClass().getClassLoader().getResource("testReport/Pipeline_ForEachStubbedSender.wearefrank.style.report.xml"))
+				.getFile());
 		Report report = XML_TEST_STORAGE.readReportFromFile(reportFile);
 
 		// Create tempdir and set it as the log dir (scenarios will be created in the log dir)
