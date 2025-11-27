@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <java version="1.8.0_181" class="java.beans.XMLDecoder">
-	<object class="nl.nn.testtool.Report">
+	<object class="org.wearefrank.ladybug.Report">
 		<void property="name">
 			<string>Pipeline Frank2Example/ItemIterator</string>
 		</void>
@@ -21,7 +21,7 @@
 		</void>
 		<void property="checkpoints">
 			<void method="add">
-				<object class="nl.nn.testtool.Checkpoint">
+				<object class="org.wearefrank.ladybug.Checkpoint">
 					<void property="name">
 						<string>Pipeline Frank2Example/ItemIterator</string>
 					</void>
@@ -49,7 +49,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="nl.nn.testtool.Checkpoint">
+				<object class="org.wearefrank.ladybug.Checkpoint">
 					<void property="name">
 						<string>SessionKey cid</string>
 					</void>
@@ -71,7 +71,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="nl.nn.testtool.Checkpoint">
+				<object class="org.wearefrank.ladybug.Checkpoint">
 					<void property="name">
 						<string>SessionKey mid</string>
 					</void>
@@ -93,7 +93,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="nl.nn.testtool.Checkpoint">
+				<object class="org.wearefrank.ladybug.Checkpoint">
 					<void property="name">
 						<string>SessionKey originalMessage</string>
 					</void>
@@ -121,7 +121,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="nl.nn.testtool.Checkpoint">
+				<object class="org.wearefrank.ladybug.Checkpoint">
 					<void property="name">
 						<string>SessionKey sessionkey</string>
 					</void>
@@ -143,7 +143,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="nl.nn.testtool.Checkpoint">
+				<object class="org.wearefrank.ladybug.Checkpoint">
 					<void property="name">
 						<string>SessionKey tsReceived</string>
 					</void>
@@ -165,7 +165,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="nl.nn.testtool.Checkpoint">
+				<object class="org.wearefrank.ladybug.Checkpoint">
 					<void property="name">
 						<string>Pipe ItemIteratorPipe</string>
 					</void>
@@ -193,7 +193,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="nl.nn.testtool.Checkpoint">
+				<object class="org.wearefrank.ladybug.Checkpoint">
 					<void property="name">
 						<string>Pipe ItemIteratorPipe</string>
 					</void>
@@ -219,7 +219,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="nl.nn.testtool.Checkpoint">
+				<object class="org.wearefrank.ladybug.Checkpoint">
 					<void property="name">
 						<string>Thread</string>
 					</void>
@@ -241,7 +241,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="nl.nn.testtool.Checkpoint">
+				<object class="org.wearefrank.ladybug.Checkpoint">
 					<void property="name">
 						<string>Sender ItemIteratorPipe-sender</string>
 					</void>
@@ -265,7 +265,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="nl.nn.testtool.Checkpoint">
+				<object class="org.wearefrank.ladybug.Checkpoint">
 					<void property="name">
 						<string>success</string>
 					</void>
@@ -291,7 +291,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="nl.nn.testtool.Checkpoint">
+				<object class="org.wearefrank.ladybug.Checkpoint">
 					<void property="name">
 						<string>Sender ItemIteratorPipe-sender</string>
 					</void>
@@ -313,7 +313,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="nl.nn.testtool.Checkpoint">
+				<object class="org.wearefrank.ladybug.Checkpoint">
 					<void property="name">
 						<string>Sender ItemIteratorPipe-sender</string>
 					</void>
@@ -337,7 +337,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="nl.nn.testtool.Checkpoint">
+				<object class="org.wearefrank.ladybug.Checkpoint">
 					<void property="name">
 						<string>success</string>
 					</void>
@@ -363,7 +363,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="nl.nn.testtool.Checkpoint">
+				<object class="org.wearefrank.ladybug.Checkpoint">
 					<void property="name">
 						<string>Sender ItemIteratorPipe-sender</string>
 					</void>
@@ -385,7 +385,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="nl.nn.testtool.Checkpoint">
+				<object class="org.wearefrank.ladybug.Checkpoint">
 					<void property="name">
 						<string>Sender ItemIteratorPipe-sender</string>
 					</void>
@@ -409,7 +409,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="nl.nn.testtool.Checkpoint">
+				<object class="org.wearefrank.ladybug.Checkpoint">
 					<void property="name">
 						<string>success</string>
 					</void>
@@ -435,7 +435,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="nl.nn.testtool.Checkpoint">
+				<object class="org.wearefrank.ladybug.Checkpoint">
 					<void property="name">
 						<string>Sender ItemIteratorPipe-sender</string>
 					</void>
@@ -457,7 +457,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="nl.nn.testtool.Checkpoint">
+				<object class="org.wearefrank.ladybug.Checkpoint">
 					<void property="name">
 						<string>Thread</string>
 					</void>
@@ -479,7 +479,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="nl.nn.testtool.Checkpoint">
+				<object class="org.wearefrank.ladybug.Checkpoint">
 					<void property="name">
 						<string>XML after preprocessing: filter XPath '/items/item'</string>
 					</void>
@@ -507,7 +507,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="nl.nn.testtool.Checkpoint">
+				<object class="org.wearefrank.ladybug.Checkpoint">
 					<void property="name">
 						<string>Pipe ItemIteratorPipe</string>
 					</void>
@@ -541,7 +541,7 @@ item3 is blue
 				</object>
 			</void>
 			<void method="add">
-				<object class="nl.nn.testtool.Checkpoint">
+				<object class="org.wearefrank.ladybug.Checkpoint">
 					<void property="name">
 						<string>exitState</string>
 					</void>
@@ -563,7 +563,7 @@ item3 is blue
 				</object>
 			</void>
 			<void method="add">
-				<object class="nl.nn.testtool.Checkpoint">
+				<object class="org.wearefrank.ladybug.Checkpoint">
 					<void property="name">
 						<string>Pipeline Frank2Example/ItemIterator</string>
 					</void>

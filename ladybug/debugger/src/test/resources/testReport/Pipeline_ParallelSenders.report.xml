@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <java version="1.8.0_181" class="java.beans.XMLDecoder">
-	<object class="org.wearefrank.ladybug.Report">
+	<object class="nl.nn.testtool.Report">
 		<void property="name">
 			<string>Pipeline Frank2Example/ParallelSenders</string>
 		</void>
@@ -21,7 +21,7 @@
 		</void>
 		<void property="checkpoints">
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Pipeline Frank2Example/ParallelSenders</string>
 					</void>
@@ -45,7 +45,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>SessionKey cid</string>
 					</void>
@@ -67,7 +67,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>SessionKey mid</string>
 					</void>
@@ -89,7 +89,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>SessionKey originalMessage</string>
 					</void>
@@ -113,7 +113,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>SessionKey tsReceived</string>
 					</void>
@@ -135,7 +135,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Pipe ParallelSenders</string>
 					</void>
@@ -159,7 +159,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Pipe ParallelSenders</string>
 					</void>
@@ -190,7 +190,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Sender ParallelSenders-sender</string>
 					</void>
@@ -214,7 +214,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Thread</string>
 					</void>
@@ -238,7 +238,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Sender 1stJmsSenderInParallelSenders</string>
 					</void>
@@ -262,7 +262,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>success</string>
 					</void>
@@ -288,7 +288,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Sender 1stJmsSenderInParallelSenders</string>
 					</void>
@@ -310,7 +310,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Thread</string>
 					</void>
@@ -332,7 +332,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Thread</string>
 					</void>
@@ -356,7 +356,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Sender JmsSender</string>
 					</void>
@@ -380,7 +380,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>success</string>
 					</void>
@@ -406,7 +406,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Sender JmsSender</string>
 					</void>
@@ -428,7 +428,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Thread</string>
 					</void>
@@ -450,7 +450,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Thread</string>
 					</void>
@@ -474,7 +474,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Sender JmsSender</string>
 					</void>
@@ -498,7 +498,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>success</string>
 					</void>
@@ -524,7 +524,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Sender JmsSender</string>
 					</void>
@@ -546,7 +546,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Thread</string>
 					</void>
@@ -568,7 +568,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Thread</string>
 					</void>
@@ -592,7 +592,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Sender JmsSender</string>
 					</void>
@@ -616,7 +616,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>success</string>
 					</void>
@@ -642,7 +642,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Sender JmsSender</string>
 					</void>
@@ -664,7 +664,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Thread</string>
 					</void>
@@ -686,7 +686,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>success</string>
 					</void>
@@ -712,7 +712,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Sender ParallelSenders-sender</string>
 					</void>
@@ -741,7 +741,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Pipe ParallelSenders</string>
 					</void>
@@ -770,7 +770,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Pipe ShadowSender</string>
 					</void>
@@ -799,7 +799,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Pipe ShadowSender</string>
 					</void>
@@ -829,7 +829,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>SessionKey originalMessage</string>
 					</void>
@@ -853,7 +853,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>GetInputFromSessionKey originalMessage</string>
 					</void>
@@ -877,7 +877,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Sender ShadowSender-sender</string>
 					</void>
@@ -901,7 +901,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Sender 1stJmsSenderInShadowSender</string>
 					</void>
@@ -925,7 +925,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>success</string>
 					</void>
@@ -951,7 +951,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Sender 1stJmsSenderInShadowSender</string>
 					</void>
@@ -973,7 +973,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Sender JmsSender</string>
 					</void>
@@ -995,7 +995,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>success</string>
 					</void>
@@ -1021,7 +1021,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Sender JmsSender</string>
 					</void>
@@ -1043,7 +1043,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Sender JmsSender</string>
 					</void>
@@ -1065,7 +1065,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>success</string>
 					</void>
@@ -1091,7 +1091,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Sender JmsSender</string>
 					</void>
@@ -1113,7 +1113,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>success</string>
 					</void>
@@ -1139,7 +1139,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Sender ShadowSender-sender</string>
 					</void>
@@ -1161,7 +1161,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Pipe ShadowSender</string>
 					</void>
@@ -1183,7 +1183,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Pipe JmsSender</string>
 					</void>
@@ -1205,7 +1205,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Pipe JmsSender</string>
 					</void>
@@ -1231,7 +1231,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>SessionKey originalMessage</string>
 					</void>
@@ -1255,7 +1255,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>GetInputFromSessionKey originalMessage</string>
 					</void>
@@ -1279,7 +1279,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Sender JmsSender-sender</string>
 					</void>
@@ -1303,7 +1303,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>success</string>
 					</void>
@@ -1329,7 +1329,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Sender JmsSender-sender</string>
 					</void>
@@ -1351,7 +1351,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Pipe JmsSender</string>
 					</void>
@@ -1373,7 +1373,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>exitState</string>
 					</void>
@@ -1395,7 +1395,7 @@
 				</object>
 			</void>
 			<void method="add">
-				<object class="org.wearefrank.ladybug.Checkpoint">
+				<object class="nl.nn.testtool.Checkpoint">
 					<void property="name">
 						<string>Pipeline Frank2Example/ParallelSenders</string>
 					</void>
