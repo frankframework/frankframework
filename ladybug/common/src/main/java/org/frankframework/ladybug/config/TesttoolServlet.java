@@ -29,7 +29,7 @@ public class TesttoolServlet extends WebContainerServlet {
 	private static final long serialVersionUID = 1L;
 
 	/**
-	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
+	 * @see org.wearefrank.ladybug.echo2.Echo2Application#initBean()
 	 */
 	@Override
 	public ApplicationInstance newApplicationInstance() {
