@@ -131,15 +131,17 @@ public class WsdlXmlValidator extends SoapValidator {
 			String tns = schema.getElement().getAttribute("targetNamespace");
 			NodeList childNodes = schema.getElement().getChildNodes();
 			boolean soapBodyFound = false;
-			for (int i = 0; i < childNodes.getLength(); i++) {
-				Node n = childNodes.item(i);
-				if (n.getNodeType() == Node.ELEMENT_NODE && "element".equals(n.getLocalName())) {
-					String name = n.getAttributes().getNamedItem("name").getNodeValue();
-					if (getSoapBody().equals(name)) {
-						soapBodyFound = true;
-						soapBodyFoundCounter++;
-						if (StringUtils.isNotEmpty(getSoapBodyNamespace())) {
-							tns = getSoapBodyNamespace();
+			if (StringUtils.isNotEmpty(getSoapBody())) {
+				for (int i = 0; i < childNodes.getLength(); i++) {
+					Node n = childNodes.item(i);
+					if (n.getNodeType() == Node.ELEMENT_NODE && "element".equals(n.getLocalName())) {
+						String name = n.getAttributes().getNamedItem("name").getNodeValue();
+						if (getSoapBody().equals(name)) {
+							soapBodyFound = true;
+							soapBodyFoundCounter++;
+							if (StringUtils.isNotEmpty(getSoapBodyNamespace())) {
+								tns = getSoapBodyNamespace();
+							}
 						}
 					}
 				}
@@ -220,8 +222,10 @@ public class WsdlXmlValidator extends SoapValidator {
 				log.debug("messageRoot [{}] is determined from soapAction [{}]", soapBodyFromSoapAction, soapAction);
 				messageRoot = soapBodyFromSoapAction;
 			}
-		} else if (StringUtils.isAllEmpty(getSoapBody(), messageRoot)) {
-			log.debug("no messageRoot or soapBody 'root' element provided, only allow empty [soap:body] element");
+		} else if (getSoapBody() == null && StringUtils.isEmpty(messageRoot)) {
+//			Suppresses the following:
+//			/Envelope/Body: Illegal element 'rootElement'. No element expected.
+			throw new XmlValidatorException("no root element provided to use for validation");
 		}
 
 		return super.validate(messageToValidate, session, responseMode, messageRoot);

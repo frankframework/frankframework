@@ -279,9 +279,31 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 						""", session)
 		);
 
-		assertEquals("""
-				Validation using WsdlXmlValidator with '/Validation/Wsdl/multipleOperations.wsdl' failed:
-				/Envelope/Body: Illegal element 'rootElement'. No element expected.""", ex.getMessage());
+		assertEquals("no root element provided to use for validation", ex.getMessage());
+	}
+
+	@Test
+	public void testNoSoapBody() throws Exception {
+		WsdlXmlValidator val = pipe;
+		val.setWsdl(MULTIPLE_OPERATIONS);
+		val.setSoapBody(null);
+		val.setThrowException(true);
+		val.addForward(new PipeForward("success", null));
+		val.configure();
+		val.start();
+
+		XmlValidatorException ex = assertThrows(XmlValidatorException.class, () ->
+			val.validate("""
+				<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:impl="http://test.example.com">
+					<s:Header/>
+					<s:Body>               
+					
+					</s:Body>
+				</s:Envelope>\
+				""", session)
+		);
+
+		assertEquals("no root element provided to use for validation", ex.getMessage());
 	}
 
 	@Test
@@ -378,7 +400,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
-		assertThrows(XmlValidatorException.class, () ->
+		XmlValidatorException ex = assertThrows(XmlValidatorException.class, () ->
 
 				val.validate("""
 				<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
@@ -407,6 +429,8 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 				</Envelope>
 				""", session)
 		);
+
+		assertEquals("no root element provided to use for validation", ex.getMessage());
 	}
 
 	@Test
