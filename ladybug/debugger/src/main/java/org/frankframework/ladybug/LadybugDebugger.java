@@ -30,18 +30,18 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 import org.springframework.context.ApplicationListener;
+import org.wearefrank.ladybug.Checkpoint;
+import org.wearefrank.ladybug.CheckpointType;
+import org.wearefrank.ladybug.Debugger;
+import org.wearefrank.ladybug.Report;
+import org.wearefrank.ladybug.SecurityContext;
+import org.wearefrank.ladybug.StubType;
+import org.wearefrank.ladybug.TestTool;
+import org.wearefrank.ladybug.run.ReportRunner;
 
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.CheckpointType;
-import nl.nn.testtool.Debugger;
-import nl.nn.testtool.Report;
-import nl.nn.testtool.SecurityContext;
-import nl.nn.testtool.StubType;
-import nl.nn.testtool.TestTool;
-import nl.nn.testtool.run.ReportRunner;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.IbisManager;

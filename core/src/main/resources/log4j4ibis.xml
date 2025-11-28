@@ -142,10 +142,10 @@
 			<AppenderRef ref="leak-log-appender"/>
 		</Logger>
 
-		<Logger name="nl.nn.testtool" additivity="false" level="INFO">
+		<Logger name="org.wearefrank.ladybug" additivity="false" level="INFO">
 			<AppenderRef ref="ladybug"/>
 		</Logger>
-		<Logger name="nl.nn.xmldecoder" additivity="false" level="INFO">
+		<Logger name="org.wearefrank.ladybug.xmldecoder" additivity="false" level="INFO">
 			<AppenderRef ref="ladybug"/>
 		</Logger>
 		<Logger name="org.frankframework.ibistesttool" additivity="false" level="INFO">

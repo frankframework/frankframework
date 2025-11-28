@@ -18,9 +18,9 @@ package org.frankframework.ladybug.metadata;
 import java.util.HashMap;
 import java.util.Map;
 
-import nl.nn.testtool.MetadataFieldExtractor;
-import nl.nn.testtool.Report;
-import nl.nn.testtool.metadata.DefaultValueMetadataFieldExtractor;
+import org.wearefrank.ladybug.MetadataFieldExtractor;
+import org.wearefrank.ladybug.Report;
+import org.wearefrank.ladybug.metadata.DefaultValueMetadataFieldExtractor;
 
 /**
  * @author Jaco de Groot

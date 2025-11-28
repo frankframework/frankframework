@@ -10,7 +10,7 @@
 
 	<!-- scan both the original and overridden configuration -->
 	<context:component-scan base-package="org.frankframework.ladybug" />
-	<context:component-scan base-package="nl.nn.testtool"/>
+	<context:component-scan base-package="org.wearefrank.ladybug"/>
 
 	<!-- enable (AppConstants) properties -->
 	<context:property-placeholder/>
@@ -31,7 +31,7 @@
 		<constructor-arg value="${ibistesttool.maxMessageLength}"/>
 	</bean>
 
-	<bean name="testTool" class="nl.nn.testtool.TestTool" autowire="byName">
+	<bean name="testTool" class="org.wearefrank.ladybug.TestTool" autowire="byName">
 		<property name="maxCheckpoints" value="${ibistesttool.maxCheckpoints}" />
 		<property name="maxMemoryUsage" value="${ibistesttool.maxMemoryUsage}" />
 		<property name="maxMessageLength"><ref bean="maxMessageLength" /></property>
@@ -61,7 +61,7 @@
 	stream can be read after the pipeline has finished (e.g. when Base64Pipe is the last pipe Ladybug would show an
 	empty string while test a pipeline would show the correct result).
 	-->
-	<bean name="closeReportsTask" class="nl.nn.testtool.CloseReportsTask" autowire="byName">
+	<bean name="closeReportsTask" class="org.wearefrank.ladybug.CloseReportsTask" autowire="byName">
 		<property name="messageCapturersTime" value="60000"/>
 		<property name="threadsTime" value="-1"/>
 	</bean>
@@ -75,13 +75,13 @@
 
 	<!-- Storage Profiles -->
 	<beans profile="ladybug-file">
-		<bean name="debugStorage" class="nl.nn.testtool.storage.file.Storage" autowire="byName">
+		<bean name="debugStorage" class="org.wearefrank.ladybug.storage.file.Storage" autowire="byName">
 			<property name="name" value="FileDebugStorage"/>
 			<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
 			<property name="metadataFilename" value="${log.dir}/testtool4${instance.name.lc}.ttm"/>
 		</bean>
 
-		<bean name="testStorage" class="nl.nn.testtool.storage.file.TestStorage" autowire="byName">
+		<bean name="testStorage" class="org.wearefrank.ladybug.storage.file.TestStorage" autowire="byName">
 			<property name="name" value="FileTestStorage"/>
 			<property name="reportsFilename" value="${log.dir}/testtool4${instance.name.lc}.tts"/>
 			<property name="metadataFilename" value="${log.dir}/testtool4${instance.name.lc}.ttm"/>
@@ -107,12 +107,12 @@
 			<constructor-arg value="${ladybug.jdbc.datasource:}"/>
 		</bean>
 
-		<bean name="debugStorage" class="nl.nn.testtool.storage.database.DatabaseLogStorage" autowire="byName"
+		<bean name="debugStorage" class="org.wearefrank.ladybug.storage.database.DatabaseLogStorage" autowire="byName"
 			depends-on="ladybugDatabaseChangelog"
 			>
 			<property name="name" value="DatabaseDebugStorage"/>
 		</bean>
-		<bean name="testStorage" class="nl.nn.testtool.storage.database.DatabaseTestStorage" autowire="byName"
+		<bean name="testStorage" class="org.wearefrank.ladybug.storage.database.DatabaseTestStorage" autowire="byName"
 			depends-on="ladybugDatabaseChangelog"
 			>
 			<property name="name" value="Test"/>
@@ -144,7 +144,7 @@
 
 	<!-- XML only for the test-tab storage. Configured last so it can overwrite either the File or Database Storage. -->
 	<beans profile="ladybug-xml">
-		<bean name="testStorage" class="nl.nn.testtool.storage.xml.XmlStorage" autowire="byName">
+		<bean name="testStorage" class="org.wearefrank.ladybug.storage.xml.XmlStorage" autowire="byName">
 			<property name="name" value="XmlTestStorage"/>
 			<property name="reportsFolder" value="${ibistesttool.directory}"/><!-- contains the reports, may be stored in Git -->
 		</bean>

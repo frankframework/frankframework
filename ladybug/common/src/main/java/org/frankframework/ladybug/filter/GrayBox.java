@@ -18,9 +18,9 @@ package org.frankframework.ladybug.filter;
 import java.util.List;
 import java.util.ListIterator;
 
-import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.CheckpointType;
-import nl.nn.testtool.Report;
+import org.wearefrank.ladybug.Checkpoint;
+import org.wearefrank.ladybug.CheckpointType;
+import org.wearefrank.ladybug.Report;
 
 /**
  * Only show senders and pipelines (within these senders) (show only the pipeline checkpoints, not it's children)
