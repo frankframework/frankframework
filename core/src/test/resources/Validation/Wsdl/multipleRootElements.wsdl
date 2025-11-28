@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<wsdl:definitions xmlns:impl="http://test.example.com" xmlns:wsdl="http://schemas.xmlsoap.org/wsdl/" xmlns:wsdlsoap="http://schemas.xmlsoap.org/wsdl/soap/" xmlns:xsd="http://www.w3.org/2001/XMLSchema" targetNamespace="http://test.example.com">
+	<wsdl:types>
+		<schema xmlns="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://test.example.com">
+			<element name="add" type="xsd:double"/>
+			<element name="add" type="xsd:double"/>
+		</schema>
+	</wsdl:types>
+	<wsdl:service name="LNNCalculatorService">
+		<wsdl:port binding="impl:LNNCalculatorSoapBinding" name="LNNCalculator">
+			<wsdlsoap:address location="http://localhost:8080/king/services/LNNCalculator"/>
+		</wsdl:port>
+	</wsdl:service>
+</wsdl:definitions>

@@ -46,7 +46,7 @@ import org.frankframework.validation.RootValidations;
  */
 public class SoapValidator extends Json2XmlValidator {
 
-	private @Getter String soapBody = "";
+	private @Getter String soapBody = null;
 	private @Getter String outputSoapBody = "";
 	private @Getter String soapHeader = "";
 	private @Getter String soapHeaderNamespace = "";
@@ -139,7 +139,7 @@ public class SoapValidator extends Json2XmlValidator {
 		throw new IllegalArgumentException("The root element of a soap envelope is always " + getRoot());
 	}
 
-	/** Name of the child element of the SOAP body, or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap body, for example to allow element x and an empty soap body use: x,) */
+	/** Name of the child element of the SOAP body, or a comma separated list of names to choose from (only one is allowed) (WSDL generator will use the first element) (use empty value to allow an empty SOAP body, for example to allow element x and an empty SOAP body use: x,) */
 	public void setSoapBody(String soapBody) {
 		this.soapBody = soapBody;
 	}

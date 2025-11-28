@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 import javax.wsdl.Binding;
 import javax.wsdl.BindingOperation;
@@ -128,22 +129,20 @@ public class WsdlXmlValidator extends SoapValidator {
 			if (!(o instanceof Schema schema)) {
 				continue;
 			}
+
 			String tns = schema.getElement().getAttribute("targetNamespace");
-			NodeList childNodes = schema.getElement().getChildNodes();
-			boolean soapBodyFound = false;
-			for (int i = 0; i < childNodes.getLength(); i++) {
-				Node n = childNodes.item(i);
-				if (n.getNodeType() == Node.ELEMENT_NODE && "element".equals(n.getLocalName())) {
-					String name = n.getAttributes().getNamedItem("name").getNodeValue();
-					if (getSoapBody().equals(name)) {
-						soapBodyFound = true;
-						soapBodyFoundCounter++;
-						if (StringUtils.isNotEmpty(getSoapBodyNamespace())) {
-							tns = getSoapBodyNamespace();
-						}
+			List<String> xsElementNames = getXsElementNames(schema);
+
+			boolean soapBodyFound = xsElementNames.contains(getSoapBody());
+			for (String elementName : xsElementNames) {
+				if (elementName.equals(getSoapBody())) {
+					soapBodyFoundCounter++;
+					if (StringUtils.isNotEmpty(getSoapBodyNamespace())) {
+						tns = getSoapBodyNamespace();
 					}
 				}
 			}
+
 			if (!sb.isEmpty()) {
 				sb.append(" ");
 				sbx.append(" ");
@@ -188,6 +187,16 @@ public class WsdlXmlValidator extends SoapValidator {
 		super.configure();
 	}
 
+	private List<String> getXsElementNames(Schema schema) {
+		NodeList childNodes = schema.getElement().getChildNodes();
+		return IntStream.range(0, childNodes.getLength()).mapToObj(childNodes::item)
+				.filter(n -> n.getNodeType() == Node.ELEMENT_NODE)
+				.filter(n -> "element".equals(n.getLocalName()))
+				.map(n -> n.getAttributes().getNamedItem("name").getNodeValue())
+				.filter(StringUtils::isNotBlank)
+				.toList();
+	}
+
 	protected Definition getDefinition(String wsdl) throws ConfigurationException {
 		WSDLReader reader  = FACTORY.newWSDLReader();
 		reader.setFeature("javax.wsdl.verbose", false);
@@ -215,12 +224,17 @@ public class WsdlXmlValidator extends SoapValidator {
 		if(StringUtils.isNotEmpty(soapAction)) {
 			String soapBodyFromSoapAction = getSoapBodyFromSoapAction(soapAction, responseMode);
 			if(soapBodyFromSoapAction == null) {
-				log.debug("Could not determine messageRoot from soapAction original messageRoot [{}] will be used", messageRoot);
+				log.debug("could not determine messageRoot from soapAction original messageRoot [{}] will be used", messageRoot);
 			} else if(!soapBodyFromSoapAction.equalsIgnoreCase(messageRoot)) {
 				log.debug("messageRoot [{}] is determined from soapAction [{}]", soapBodyFromSoapAction, soapAction);
 				messageRoot = soapBodyFromSoapAction;
 			}
+		} else if (getSoapBody() == null && StringUtils.isEmpty(messageRoot)) {
+			// Suppresses the following:
+			// /Envelope/Body: Illegal element 'rootElement'. No element expected.
+			throw new XmlValidatorException("no root element provided to use for validation");
 		}
+
 		return super.validate(messageToValidate, session, responseMode, messageRoot);
 	}
 
