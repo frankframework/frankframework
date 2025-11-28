@@ -16,7 +16,7 @@ jobs:
 
     steps:
     - name: Retrieve target XSD from commit
-      uses: dawidd6/action-download-artifact@v6
+      uses: dawidd6/action-download-artifact@ac66b43f0e6a346234dd65d4d0c8fbb31cb316e5 # v11
       with:
         workflow: maven-build.yml
         commit:  ${{ github.event.inputs.target }}
@@ -24,7 +24,7 @@ jobs:
         path: ${{ github.workspace }}/target/frankdoc/xml/xsd/
 
     - name: Retrieve base Frank!Doc XSD
-      uses: dawidd6/action-download-artifact@v6
+      uses: dawidd6/action-download-artifact@ac66b43f0e6a346234dd65d4d0c8fbb31cb316e5 # v11
       with:
         workflow: maven-build.yml
         branch: master
@@ -32,7 +32,7 @@ jobs:
         path: ${{ github.workspace }}/base/frankdoc/xml/xsd/
 
     - name: Compare strict XSD with target
-      uses: LouisBrunner/diff-action@v0.1.0
+      uses: LouisBrunner/diff-action@9ea7b75986aa27143ad4928974c98a5a1bd92170 # v2.2.0
       with:
         old: ${{ github.workspace }}/base/frankdoc/xml/xsd/FrankConfig-strict.xsd
         new: ${{ github.workspace }}/target/frankdoc/xml/xsd/FrankConfig-strict.xsd
@@ -41,7 +41,7 @@ jobs:
         output: FrankConfig-strict-compare.txt
 
     - name: Compare compatibility XSD with target
-      uses: LouisBrunner/diff-action@v0.1.0
+      uses: LouisBrunner/diff-action@9ea7b75986aa27143ad4928974c98a5a1bd92170 # v2.2.0
       with:
         old: ${{ github.workspace }}/base/frankdoc/xml/xsd/FrankConfig-compatibility.xsd
         new: ${{ github.workspace }}/target/frankdoc/xml/xsd/FrankConfig-compatibility.xsd
