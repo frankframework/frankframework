@@ -53,7 +53,7 @@
 		<dependency>
 			<groupId>org.pf4j</groupId>
 			<artifactId>pf4j</artifactId>
-			<version>3.13.0</version>
+			<version>3.14.0</version>
 		</dependency>
 
 		<!-- Logging -->
@@ -538,7 +538,7 @@
 		<dependency>
 			<groupId>org.jvnet.staxex</groupId>
 			<artifactId>stax-ex</artifactId>
-			<version>2.0.1</version>
+			<version>2.1.0</version>
 		</dependency>
 		<!-- Explicitly add woodstox to ensure this version is used -->
 		<dependency>
@@ -707,7 +707,7 @@
 		<dependency>
 			<groupId>org.wiremock</groupId>
 			<artifactId>wiremock-standalone</artifactId>
-			<version>3.0.3</version>
+			<version>3.13.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

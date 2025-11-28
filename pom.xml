@@ -92,7 +92,7 @@
 		<spring-integration.version>6.5.4</spring-integration.version>
 		<spring.boot.version>3.5.8</spring.boot.version>
 		<tomcat.version>10.1.49</tomcat.version>
-		<bouncycastle.version>1.82</bouncycastle.version>
+		<bouncycastle.version>1.83</bouncycastle.version>
 
 		<narayana.version>7.3.3.Final</narayana.version>
 		<jboss-logging.version>3.6.1.Final</jboss-logging.version>
