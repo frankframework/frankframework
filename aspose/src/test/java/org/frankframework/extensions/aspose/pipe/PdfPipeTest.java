@@ -239,13 +239,6 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	}
 
 	@Test
-	public void asdf() throws Exception {
-		String input = "/PdfPipe/xml-results/mailWithWordAttachment.xml";
-		String expected = TestFileUtils.getTestFile(input);
-		MatchUtils.assertXmlEquals("Conversion XML does not match", applyIgnores(expected), applyIgnores(expected), true);
-	}
-
-	@Test
 	public void testFileWithMimeTypeAndCharset() throws Exception {
 		pipe.setAction(DocumentAction.CONVERT);
 		pipe.configure();
