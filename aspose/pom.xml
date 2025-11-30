@@ -15,12 +15,12 @@
 		<!-- NOTE: some dependencies require the classifier tag to be set to jdk16 (1.6) -->
 		<!-- Latest versions and what libraries need the classifier can be checked on the -->
 		<!-- AsposeJava Maven repository: https://releases.aspose.com/java/repo/com/aspose/ -->
-		<aspose.cells.version>24.3</aspose.cells.version>
-		<aspose.email.version>24.2</aspose.email.version>
-		<aspose.imaging.version>24.3</aspose.imaging.version>
-		<aspose.pdf.version>24.2</aspose.pdf.version>
-		<aspose.slides.version>24.3</aspose.slides.version>
-		<aspose.words.version>24.3</aspose.words.version>
+		<aspose.cells.version>24.12</aspose.cells.version>
+		<aspose.email.version>24.12</aspose.email.version>
+		<aspose.imaging.version>24.12</aspose.imaging.version>
+		<aspose.pdf.version>24.12</aspose.pdf.version>
+		<aspose.slides.version>24.12</aspose.slides.version>
+		<aspose.words.version>24.12</aspose.words.version>
 	</properties>
 
 	<dependencies>
