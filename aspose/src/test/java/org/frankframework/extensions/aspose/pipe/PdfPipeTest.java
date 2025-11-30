@@ -80,11 +80,11 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	private static final String REGEX_TIMESTAMP_IGNORE = "(?<=Timestamp:).*(?=\" n)";
 
 	// The file `Dit is een Document met verschillende fonts Word 2003` may use font's that overflow the document which might create a new page.
-	// This only happens when a font cannot be found (some linux distro's), the new default since #10038 is 2 pages.
+	// This only happens when a font cannot be found (some linux distro's). The new PDF default since #10038 is 2 pages.
 	// If we encounter a single page file, it's ok, just replace the `numberOfPages` to 2 so tests will continue.
-	private static final String REGEX_NUMBER_OF_PAGES = "(?:documentName=\"Dit is een Document met verschillende fonts Word 2003\".* numberOfPages=\")([1-2])(?:\")";
+	private static final Pattern REGEX_NUMBER_OF_PAGES = Pattern.compile("(?:documentName=\"Dit is een Document met verschillende fonts Word 2003\".* numberOfPages=\")([1-2])(?:\")");
 
-	private static final String[] REGEX_IGNORES = {REGEX_PATH_IGNORE, REGEX_TIMESTAMP_IGNORE, REGEX_NUMBER_OF_PAGES};
+	private static final String[] REGEX_IGNORES = {REGEX_PATH_IGNORE, REGEX_TIMESTAMP_IGNORE};
 
 	// Note: this test does not work on ARM64 MacOS. No clue why, but we do not really need it
 	@BeforeAll
@@ -233,7 +233,16 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		for(String ignore : REGEX_IGNORES){
 			result = result.replaceAll(ignore, "IGNORE");
 		}
+
+		REGEX_NUMBER_OF_PAGES.matcher(input).replaceAll("numberOfPages=\"2\"");
 		return result;
+	}
+
+	@Test
+	public void asdf() throws Exception {
+		String input = "/PdfPipe/xml-results/mailWithWordAttachment.xml";
+		String expected = TestFileUtils.getTestFile(input);
+		MatchUtils.assertXmlEquals("Conversion XML does not match", applyIgnores(expected), applyIgnores(expected), true);
 	}
 
 	@Test
