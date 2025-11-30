@@ -234,8 +234,8 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 			result = result.replaceAll(ignore, "IGNORE");
 		}
 
-		REGEX_NUMBER_OF_PAGES.matcher(input).replaceAll("numberOfPages=\"2\"");
-		return result;
+		// If it's 2, revert it to 1.
+		return REGEX_NUMBER_OF_PAGES.matcher(result).replaceAll("numberOfPages=\"1\"");
 	}
 
 	@Test
