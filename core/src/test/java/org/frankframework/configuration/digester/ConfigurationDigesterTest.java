@@ -278,6 +278,33 @@ public class ConfigurationDigesterTest {
 	}
 
 	@Test
+	public void multipleStub4testtoolXslts() throws Exception {
+		String baseDirectory = "/ConfigurationUtils/stub4testtool/FullAdapter";
+
+		StringWriter target = new StringWriter();
+		XmlWriter xmlWriter = new XmlWriter(target);
+
+		PropertyLoader properties = new PropertyLoader("Digester/ConfigurationDigesterTest.properties");
+		properties.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
+		properties.setProperty(ConfigurationUtils.STUB4TESTTOOL_XSLT_KEY, "ConfigurationUtils/adapter-to-connector.xsl,ConfigurationUtils/custom-stub.xsl");
+		properties.setProperty(STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, Boolean.toString(false));
+
+		String originalConfiguration = TestFileUtils.getTestFile(baseDirectory + "/original.xml");
+
+		Configuration configuration = new TestConfiguration();
+		ConfigurationDigester digester = SpringUtils.createBean(configuration);
+		ContentHandler filter = digester.getStub4TesttoolContentHandler(xmlWriter, configuration, properties);
+
+		XmlUtils.parseXml(originalConfiguration, filter);
+
+		String actual = target.toString();
+
+		String expectedConfiguration = TestFileUtils.getTestFile(baseDirectory + "/custom-stub.xml");
+		expectedConfiguration = expectedConfiguration.replaceAll("adapter", "connector"); // We've replaced this element
+		MatchUtils.assertXmlEquals(expectedConfiguration, actual);
+	}
+
+	@Test
 	public void customStub4testtoolTestInScope() throws Exception {
 		String baseDirectory = "/ConfigurationUtils/stub4testtool/FullAdapter";
 

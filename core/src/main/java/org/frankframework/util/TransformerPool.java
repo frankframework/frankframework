@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -46,12 +46,12 @@ import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.SoftReferenceObjectPool;
-import org.apache.logging.log4j.Logger;
 import org.springframework.http.MediaType;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -75,8 +75,8 @@ import org.frankframework.xml.TransformerFilter;
  *
  * @author Gerrit van Brakel
  */
+@Log4j2
 public class TransformerPool {
-	protected static Logger log = LogUtil.getLogger(TransformerPool.class);
 
 	private final TransformerFactory tFactory;
 	private final TransformerErrorListener factoryErrorListener;

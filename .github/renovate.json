@@ -175,7 +175,7 @@
             "addLabels": [
                 "Docker"
             ],
-            "groupName": "Docker",
+            "groupName": "Docker"
         },
         {
             "description": "Docker dependencies (for LTS) - daily schedule, group all updates",
@@ -245,7 +245,7 @@
             "com.rabbitmq.jms:rabbitmq-jms",
             "org.apache.kafka:kafka-clients",
             "bootstrap",
-            "mermaid",
+            "mermaid"
         ]
     },
     "osvVulnerabilityAlerts": true,
