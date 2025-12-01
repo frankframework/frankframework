@@ -49,13 +49,15 @@
                 "com.sap.jco3:sapidoc",
                 "org.filesys:jfileserver-enterprise",
                 "org.eclipse.m2e:lifecycle-mapping",
-                "com.eclipsesource.j2v8:j2v8_linux_x86_64",
+                "com.eclipsesource.j2v8:j2v8_linux_x86_64"
             ],
             "major": {
                 "enabled": false
             },
             "groupName": "maven-dependencies",
             "separateMajorMinor": true,
+            "separateMultipleMinor": true,
+            "separateMultipleMajor": true,
             "separateMinorPatch": false
         },
         {
@@ -75,10 +77,11 @@
             ],
             "groupName": "Spring",
             "matchPackageNames": [
-                "org.springframework:",
-                "org.springframework.boot:",
-                "org.springframework.security:"
-            ]
+                "/^org\\.springframework:/",
+                "/^org\\.springframework\\.boot:/",
+                "/^org\\.springframework\\.security:/"
+            ],
+            "separateMinorPatch": true
         },
         {
             "description": "Release branches - disable ALL regular updates (only security/CVE updates via vulnerabilityAlerts)",
@@ -192,8 +195,7 @@
                 "Docker",
                 "{{replace 'release/' '' baseBranch}}"
             ],
-            "groupName": "Docker (LTS)",
-            "separateMajorMinor": false
+            "groupName": "Docker (LTS)"
         },
         {
             "description": "GitHub Actions - weekly schedule, group all updates",
@@ -210,7 +212,6 @@
                 "CI/CD"
             ],
             "groupName": "github-actions",
-            "separateMajorMinor": true,
             "separateMajorMinor": false
         }
     ],
