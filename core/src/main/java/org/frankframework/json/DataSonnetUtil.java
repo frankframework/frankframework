@@ -56,6 +56,10 @@ import org.frankframework.util.MessageUtils;
 @Log4j2
 public class DataSonnetUtil {
 
+	private DataSonnetUtil() {
+		// Private constructor to prevent instance creations
+	}
+
 	public static class DataSonnetToSenderConnector extends Library {
 		private List<ISender> senders;
 		private PipeLineSession session;
@@ -90,41 +94,37 @@ public class DataSonnetUtil {
 			Map<String, Val.Func> answer = new HashMap<>();
 
 			for (ISender sender : senders) {
-				answer.put(sender.getName(), makeSimpleFunc(List.of("input"), new java.util.function.Function<List<Val>, Val>() {
-
-					@Override
-					public Val apply(List<Val> inputArgs) {
-						String arg = inputArgs.stream()
-								.map(DataSonnetUtil::convertToString)
-								.findFirst()
-								.orElseThrow(() -> new IllegalArgumentException("no value"));
-
-						try (Message input = Message.asMessage(arg); Message result = sender.sendMessageOrThrow(input, session)) {
-							return new Val.Str(result.asString());
-						} catch (Exception e) {
-							throw new IllegalStateException(e);
-						}
-					}
-				}));
+				answer.put(sender.getName(), makeSimpleFunc(List.of("input"), args -> method(args, sender)));
 			}
 
 			return answer;
 		}
-	};
 
-	private static String convertToString(Val value) {
-		if (value == Val.bool(true)) {
-			return "true";
-		} else if (value == Val.bool(false)) {
-			return "false";
-		} else if (value instanceof Val.Num) {
-			Val.Num x = (Val.Num) value;
-			double tmp = x.value();
-			return String.valueOf((long) tmp);
-		} else if (value instanceof Val.Str stringValue) {
-			return stringValue.value();
-		} else {
-			throw new IllegalArgumentException("currently only supports numbers, booleans and string inputs, got: " + value.getClass());
+		private Val method(List<Val> inputArgs, ISender sender) {
+			String arg = inputArgs.stream()
+					.map(this::convertToString)
+					.findFirst()
+					.orElseThrow(() -> new IllegalArgumentException("no value"));
+
+			try (Message input = Message.asMessage(arg); Message result = sender.sendMessageOrThrow(input, session)) {
+				return new Val.Str(result.asString());
+			} catch (Exception e) {
+				throw new IllegalStateException(e);
+			}
+		}
+
+		private String convertToString(Val value) {
+			if (value == Val.bool(true)) {
+				return "true";
+			} else if (value == Val.bool(false)) {
+				return "false";
+			} else if (value instanceof Val.Num number) {
+				return String.valueOf((long) number.value());
+			} else if (value instanceof Val.Str stringValue) {
+				return stringValue.value();
+			} else {
+				throw new IllegalArgumentException("currently only supports numbers, booleans and string inputs, got: " + value.getClass());
+			}
 		}
 	}
 

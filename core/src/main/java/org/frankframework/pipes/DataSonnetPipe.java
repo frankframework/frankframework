@@ -138,7 +138,7 @@ public class DataSonnetPipe extends FixedForwardPipe {
 		MapperBuilder builder = new MapperBuilder(resolvedStyleSheet)
 				.withInputNames(getParameterList().getParameterNames());
 
-		if (senderList != null && !senderList.isEmpty()) {
+		if (!senderList.isEmpty()) {
 			builder.withLibrary(new DataSonnetToSenderConnector(senderList, session));
 		}
 
