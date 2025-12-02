@@ -51,6 +51,7 @@ import org.frankframework.extensions.idin.IdinSender.Action;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.StreamUtil;
+import org.frankframework.util.XmlUtils;
 
 /**
  * Initially I thought, hey lets add some unittests...
@@ -418,7 +419,7 @@ public class IdinSenderTest {
 
 	private static String serialize(Document doc) throws TransformerException {
 		StringWriter sw = new StringWriter();
-		Transformer trans = TransformerFactory.newInstance().newTransformer();
+		Transformer trans = XmlUtils.getTransformerFactory().newTransformer();
 
 		doc.setXmlStandalone(true);
 		trans.transform(new DOMSource(doc), new StreamResult(sw));
