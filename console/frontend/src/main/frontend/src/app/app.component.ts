@@ -582,3 +582,44 @@ export class AppComponent implements OnInit, OnDestroy {
     });
   }
 }
+
+if (typeof Worker === 'undefined') {
+  // Web Workers are not supported in this environment.
+  // You should add a fallback so that your program still executes correctly.
+} else {
+  globalThis.MonacoEnvironment = {
+    getWorker(_: string, label: string): Worker {
+      // Needed until Angular supports Vite worker imports
+      // React example: https://github.com/microsoft/monaco-editor/blob/main/samples/browser-esm-vite-react/src/userWorker.ts
+      const getWorkerModule = (moduleUrl: string, label: string): Worker => {
+        return new Worker(new URL(moduleUrl, import.meta.url), {
+          name: label,
+          type: 'module',
+        });
+      };
+
+      switch (label) {
+        case 'json': {
+          return getWorkerModule('/monaco-editor/esm/vs/language/json/json.worker?worker', label);
+        }
+        case 'css':
+        case 'scss':
+        case 'less': {
+          return getWorkerModule('/monaco-editor/esm/vs/language/css/css.worker?worker', label);
+        }
+        case 'html':
+        case 'handlebars':
+        case 'razor': {
+          return getWorkerModule('/monaco-editor/esm/vs/language/html/html.worker?worker', label);
+        }
+        case 'typescript':
+        case 'javascript': {
+          return getWorkerModule('/monaco-editor/esm/vs/language/typescript/ts.worker?worker', label);
+        }
+        default: {
+          return getWorkerModule('/monaco-editor/esm/vs/editor/editor.worker?worker', label);
+        }
+      }
+    },
+  };
+}

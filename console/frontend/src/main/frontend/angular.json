@@ -38,8 +38,8 @@
               },
               {
                 "glob": "**/*",
-                "input": "node_modules/monaco-editor/min/vs",
-                "output": "assets/monaco/vs"
+                "input": "node_modules/monaco-editor/esm/vs",
+                "output": "/monaco-editor/esm/vs"
               }
             ],
             "styles": [
@@ -56,7 +56,8 @@
               "lodash.merge",
               "tinycon"
             ],
-            "browser": "src/main.ts"
+            "browser": "src/main.ts",
+            "webWorkerTsConfig": "tsconfig.worker.json"
           },
           "configurations": {
             "production": {
@@ -146,7 +147,8 @@
             "styles": [
               "src/styles.scss"
             ],
-            "scripts": []
+            "scripts": [],
+            "webWorkerTsConfig": "tsconfig.worker.json"
           }
         },
         "cypress-run": {

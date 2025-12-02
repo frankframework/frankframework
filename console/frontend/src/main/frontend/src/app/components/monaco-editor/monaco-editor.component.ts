@@ -1,5 +1,3 @@
-// eslint-disable-next-line @typescript-eslint/triple-slash-reference
-/// <reference path="../../../../node_modules/monaco-editor/monaco.d.ts" />
 import {
   AfterViewInit,
   Component,
@@ -16,13 +14,7 @@ import {
 } from '@angular/core';
 import { first, Observable, ReplaySubject } from 'rxjs';
 import { ActivatedRoute, Router } from '@angular/router';
-
-type AMDRequire = {
-  require: {
-    (imports: string[], callback: () => void): void;
-    config(config: { paths: Record<string, string> }): void;
-  };
-};
+import * as monaco from 'monaco-editor';
 
 @Component({
   selector: 'app-monaco-editor',
@@ -106,28 +98,47 @@ export class MonacoEditorComponent implements AfterViewInit, OnChanges, OnDestro
   }
 
   private loadMonaco(): void {
-    if (typeof globalThis.monaco === 'object') {
+    this.initializeMonaco();
+    /*if (typeof globalThis.MonacoEnvironment === 'object') {
       this.initializeMonaco();
       return;
     }
 
-    if ((globalThis as unknown as AMDRequire).require) {
-      this.onAmdLoader();
-    } else {
-      const loaderScript: HTMLScriptElement = document.createElement('script');
-      loaderScript.type = 'text/javascript';
-      loaderScript.src = 'assets/monaco/vs/loader.js';
-      loaderScript.addEventListener('load', () => this.onAmdLoader());
-      document.body.append(loaderScript);
-    }
-  }
+    globalThis.MonacoEnvironment = {
+      getWorker(_: string, label: string): Worker {
+        // Needed until Angular supports Vite worker imports
+        // React example: https://github.com/microsoft/monaco-editor/blob/main/samples/browser-esm-vite-react/src/userWorker.ts
+        const getWorkerModule = (moduleUrl: string, label: string): Worker => {
+          return new Worker(moduleUrl, {
+            name: label,
+            type: 'module',
+          });
+        };
 
-  private onAmdLoader(): void {
-    const windowRequire = (globalThis as unknown as AMDRequire).require;
-    windowRequire.config({ paths: { vs: 'assets/monaco/vs' } });
-    windowRequire(['vs/editor/editor.main'], () => {
-      this.initializeMonaco();
-    });
+        switch (label) {
+          case 'json': {
+            return getWorkerModule('/monaco-editor/esm/vs/language/json/json.worker?worker', label);
+          }
+          case 'css':
+          case 'scss':
+          case 'less': {
+            return getWorkerModule('/monaco-editor/esm/vs/language/css/css.worker?worker', label);
+          }
+          case 'html':
+          case 'handlebars':
+          case 'razor': {
+            return getWorkerModule('/monaco-editor/esm/vs/language/html/html.worker?worker', label);
+          }
+          case 'typescript':
+          case 'javascript': {
+            return getWorkerModule('/monaco-editor/esm/vs/language/typescript/ts.worker?worker', label);
+          }
+          default: {
+            return getWorkerModule('/monaco-editor/esm/vs/editor/editor.worker?worker', label);
+          }
+        }
+      },
+    };*/
   }
 
   private initializeMonaco(): void {
