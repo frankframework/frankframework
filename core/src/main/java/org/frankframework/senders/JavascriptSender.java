@@ -62,6 +62,21 @@ import org.frankframework.util.StreamUtil;
  * <p>
  * Failure to ensure the output is a string may mean the result will look like {@code [Object object]}.
  * </p>
+ * <p>
+ * It is possible to call another process via a sender in this {@code JavascriptSender}. The name of the sender will be the 'function' name
+ * which you can invoke in the js file. For example: *
+ * <pre>{@code
+ * <JavascriptSender>
+ *     <EchoSender name="myFunction" />
+ * </JavascriptSender>
+ * }</pre>
+ * and
+ * <pre>{@code
+ * function main() {
+ *    return myFunction("echo me");
+ * }
+ * }</pre>
+ * Will trigger the inner-sender with data: 'echo me'.
  *
  * @ff.info J2V8 is not compatible with ARM based environments.
  * @ff.warning The default Javascript runtime has been changed from J2V8 to GraalJS.
