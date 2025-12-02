@@ -38,7 +38,6 @@ import com.jayway.jsonpath.JsonPath;
 import com.jayway.jsonpath.PathNotFoundException;
 import com.jayway.jsonpath.spi.json.JsonSmartJsonProvider;
 
-import lombok.extern.log4j.Log4j2;
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
@@ -46,12 +45,10 @@ import net.minidev.json.parser.JSONParser;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.core.Resource;
-import org.frankframework.parameters.ParameterList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamUtil;
 
-@Log4j2
 public class JsonUtil {
 	// Since 2.6.0 json-smart accepts incomplete JSON by default, so we have to use MODE_PERMISSIVE to disable that.
 	private static final Configuration JSON_PATH_CONFIGURATION = Configuration.builder()
@@ -62,15 +59,8 @@ public class JsonUtil {
 		// Private constructor to prevent instance creations
 	}
 
-	public static JsonMapper buildJsonMapper(IScopeProvider scopeProvider, String stylesheetName, DataSonnetOutputType outputType, boolean computeMimeType, ParameterList parameters) throws ConfigurationException {
-		try {
-			return new JsonMapper(getStyleSheet(scopeProvider, stylesheetName), outputType, computeMimeType, parameters.getParameterNames());
-		} catch (RuntimeException e) {
-			throw new ConfigurationException("Cannot configure DataSonnet Mapper", e);
-		}
-	}
-
-	private static String getStyleSheet(IScopeProvider scopeProvider, String styleSheetName) throws ConfigurationException {
+	// This does not feel like a json util method. Perhaps we should move it?
+	public static String getStyleSheet(IScopeProvider scopeProvider, String styleSheetName) throws ConfigurationException {
 		Resource styleSheet = Resource.getResource(scopeProvider, styleSheetName);
 		if (styleSheet == null) {
 			throw new ConfigurationException("StyleSheet [" + styleSheetName + "] not found");

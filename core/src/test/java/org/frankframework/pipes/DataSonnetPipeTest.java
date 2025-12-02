@@ -1,15 +1,20 @@
 package org.frankframework.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeRunException;
 import org.frankframework.json.DataSonnetOutputType;
 import org.frankframework.parameters.JsonParameter;
+import org.frankframework.senders.EchoSender;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.DateParameterBuilder;
+import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.NumberParameterBuilder;
 import org.frankframework.testutil.ParameterBuilder;
 
@@ -46,21 +51,6 @@ public class DataSonnetPipeTest extends PipeTestBase<DataSonnetPipe> {
 		// Assert
 		assertEquals(MediaType.APPLICATION_XML, result.getContext().getMimeType());
 		assertEquals("<?xml version='1.0' encoding='UTF-8'?><root><my-element>Hello World</my-element></root>", result.asString());
-	}
-
-	@Test
-	public void mappingWithParams() throws Exception {
-		pipe.setStyleSheetName("/Pipes/DataSonnet/one-param.jsonnet");
-		pipe.addParameter(ParameterBuilder.create("foo", "{\"bar\":123}")); // text, not interpreted as JSON
-		configureAndStartPipe();
-
-		// Act
-		Message result = doPipe("Hello World").getResult();
-
-		// Assert
-		assertEquals(MediaType.APPLICATION_JSON, result.getContext().getMimeType());
-		assertEquals("""
-				{"greetings":"Hello World","param-one":"{\\"bar\\":123}"}""", result.asString());
 	}
 
 	@Test
@@ -101,7 +91,6 @@ public class DataSonnetPipeTest extends PipeTestBase<DataSonnetPipe> {
 
 	@Test
 	public void computeMappingWithParams() throws Exception {
-		pipe.setComputeMimeType(true);
 		pipe.setStyleSheetName("/Pipes/DataSonnet/one-param.jsonnet");
 		pipe.addParameter(ParameterBuilder.create("foo", "{\"bar\":123}")); // text, but b/c computeMimeType=true will be interpreted as JSON
 		configureAndStartPipe();
@@ -115,6 +104,69 @@ public class DataSonnetPipeTest extends PipeTestBase<DataSonnetPipe> {
 		assertEquals(MediaType.APPLICATION_JSON, result.getContext().getMimeType());
 		assertEquals("""
 				{"greetings":{"foo":456},"param-one":{"bar":123}}""", result.asString());
+	}
+
+	@Test
+	public void callSenderNoArgs() throws Exception {
+		pipe.setStyleSheetName("/Pipes/DataSonnet/call-sender-no-args.jsonnet");
+
+		EchoSender sender = new EchoSender();
+		sender.setName("testName");
+		pipe.addSender(sender);
+
+		configureAndStartPipe();
+
+		Message input = new Message("100");
+		input.getContext().withMimeType(MediaType.APPLICATION_JSON);
+
+		// Act
+		PipeRunException ex = assertThrows(PipeRunException.class, () -> doPipe(input));
+		assertTrue(ex.getMessage().contains("Function parameter std not bound in call"), "Exception was: " + ex.getMessage());
+	}
+
+	@Test
+	public void callSenderOneArg() throws Exception {
+		pipe.setStyleSheetName("/Pipes/DataSonnet/call-sender-one-arg.jsonnet");
+
+		EchoSender sender = new EchoSender();
+		sender.setName("testName");
+		pipe.addSender(sender);
+
+		configureAndStartPipe();
+
+		Message input = new Message("100");
+		input.getContext().withMimeType(MediaType.APPLICATION_JSON);
+
+		// Act
+		Message result = doPipe(input).getResult();
+
+		// Assert
+		assertEquals(MediaType.APPLICATION_JSON, result.getContext().getMimeType());
+		MatchUtils.assertJsonEquals("""
+				[
+					{"string":"101","boolean":"true","number":"1"},
+					{"string":"102","boolean":"true","number":"2"},
+					{"string":"103","boolean":"true","number":"3"},
+					{"string":"104","boolean":"true","number":"4"}
+				]""", result.asString());
+	}
+
+	@Test
+	public void callSenderTwoArgs() throws Exception {
+		pipe.setStyleSheetName("/Pipes/DataSonnet/call-sender-two-args.jsonnet");
+
+		EchoSender sender = new EchoSender();
+		sender.setName("testName");
+		pipe.addSender(sender);
+
+		configureAndStartPipe();
+
+		Message input = new Message("100");
+		input.getContext().withMimeType(MediaType.APPLICATION_JSON);
+
+		// Act
+		PipeRunException ex = assertThrows(PipeRunException.class, () -> doPipe(input));
+		assertTrue(ex.getMessage().contains("Too many args, function has 1 parameter"), "Exception was: " + ex.getMessage());
 	}
 
 	@Test
