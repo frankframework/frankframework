@@ -118,7 +118,7 @@ public interface IPipe extends IConfigurable, IForwardTarget, FrankElement, Name
 	void setGetInputFromSessionKey(String string);
 	String getGetInputFromSessionKey();
 
-	/** If set, this fixed value is taken as input, instead of regular input */
+	/** If set, this fixed value is taken as input, instead of regular input. The input may <i>not</i> be empty. */
 	void setGetInputFromFixedValue(String string);
 	String getGetInputFromFixedValue();
 

@@ -85,7 +85,9 @@ public class PipeLineExit implements IForwardTarget {
 	}
 
 	/**
-	 * If using RestListener and set to <code>true</code>, this removes the output and shows a blank page, the output is still logged in the ladybug testtool
+	 * When set to <code>true</code>, this removes the output, the output is still logged in the Ladybug.
+	 * Metadata may still propagate to the caller, such as the {@code exitCode}.
+	 *
 	 * @ff.default <code>false</code>
 	 */
 	public void setEmpty(boolean b) {
