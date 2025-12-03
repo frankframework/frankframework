@@ -19,7 +19,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
-import nl.nn.testtool.Checkpoint;
+import org.wearefrank.ladybug.Checkpoint;
 
 /**
  * Only show senders that communicate with another system

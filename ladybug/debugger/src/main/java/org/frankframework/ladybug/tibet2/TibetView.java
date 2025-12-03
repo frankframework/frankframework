@@ -15,12 +15,13 @@
 */
 package org.frankframework.ladybug.tibet2;
 
+import org.wearefrank.ladybug.echo2.BeanParent;
+import org.wearefrank.ladybug.echo2.Echo2Application;
+import org.wearefrank.ladybug.echo2.reports.ReportsComponent;
+import org.wearefrank.ladybug.filter.View;
+
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
-import nl.nn.testtool.echo2.BeanParent;
-import nl.nn.testtool.echo2.Echo2Application;
-import nl.nn.testtool.echo2.reports.ReportsComponent;
-import nl.nn.testtool.filter.View;
 
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
@@ -38,7 +39,7 @@ public class TibetView extends View {
 	protected @Setter LadybugDebugger ibisDebugger;
 
 	/**
-	 * @see nl.nn.testtool.echo2.Echo2Application#initBean()
+	 * @see org.wearefrank.ladybug.echo2.Echo2Application#initBean()
 	 */
 	@Override
 	public void initBean(BeanParent beanParent) {
