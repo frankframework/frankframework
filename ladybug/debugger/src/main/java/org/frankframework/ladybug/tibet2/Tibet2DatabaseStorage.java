@@ -328,7 +328,7 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 	private @Nullable String getRowNumber(String metadataName) {
 		Dbms dbms = getDbmsSupport().getDbms();
 		if (dbms == Dbms.ORACLE || dbms == Dbms.MSSQL) {
-			return "row_number() over (order by "+metadataName+("desc"==null?"":" "+"desc")+") rn";
+			return "row_number() over (order by "+metadataName+" desc) rn";
 		}
 		return null;
 	}
