@@ -384,7 +384,7 @@ public class PipeLineSessionTest {
 						child.put("c", i);
 						child.put("d", j);
 
-						child.mergeToParentSession("a,b,c,d", sub);
+						child.mergeToParentSession("a,b,  c  ,d", sub);
 					}
 
 					assertEquals(1, sub.getCloseables().size()); // <<< Keeps growing without the change!
