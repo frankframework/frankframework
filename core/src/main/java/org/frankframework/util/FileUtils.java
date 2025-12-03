@@ -41,6 +41,7 @@ import org.frankframework.parameters.ParameterValueList;
  * @author John Dekker
  */
 @Log4j2
+@SuppressWarnings("java:S899")
 public class FileUtils {
 
 	/**

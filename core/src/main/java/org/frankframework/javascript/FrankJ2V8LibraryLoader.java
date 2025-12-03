@@ -37,6 +37,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+@SuppressWarnings("java:S899")
 class FrankJ2V8LibraryLoader {
 
 	private static final String SEPARATOR = System.getProperty("file.separator");

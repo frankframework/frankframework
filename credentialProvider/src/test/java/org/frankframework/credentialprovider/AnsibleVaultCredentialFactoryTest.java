@@ -24,10 +24,10 @@ import net.wedjaa.ansible.vault.crypto.VaultHandler;
 
 public class AnsibleVaultCredentialFactoryTest {
 
-	public String ANSIBLE_VAULT_FILE="/credentials-vault.txt";
-	public String ANSIBLE_VAULT_KEY_FILE="/credentials-vault-key.txt";
+	public static final String ANSIBLE_VAULT_FILE="/credentials-vault.txt";
+	public static final String ANSIBLE_VAULT_KEY_FILE="/credentials-vault-key.txt";
 
-	public String ANSIBLE_VAULT_PASSWORD="GEHE\\uIM";
+	public static final String ANSIBLE_VAULT_PASSWORD="GEHE\\uIM";
 
 	private AnsibleVaultCredentialFactory credentialFactory;
 
@@ -84,7 +84,7 @@ public class AnsibleVaultCredentialFactoryTest {
 		setupVault(aliases, "test data for Ansible Vault");
 	}
 
-	public void testCreateVaultFromProperties(String resource, String title) throws IOException {
+	public void testCreateVaultFromProperties(String resource) throws IOException {
 		URL urlin = getClass().getResource(resource+".properties");
 		Properties properties = new Properties();
 		properties.load(urlin.openStream());
@@ -95,7 +95,7 @@ public class AnsibleVaultCredentialFactoryTest {
 
 	//@Test
 	public void testCreateVaultFromProperties() throws IOException {
-		testCreateVaultFromProperties("","");
+		testCreateVaultFromProperties("");
 	}
 
 
