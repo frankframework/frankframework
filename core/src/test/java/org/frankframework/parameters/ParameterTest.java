@@ -31,7 +31,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.dom.DOMSource;
 
 import org.junit.jupiter.api.AfterEach;
@@ -76,6 +77,10 @@ public class ParameterTest {
 	void tearDown() {
 		System.getProperties().remove(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY);
 		TimeProvider.resetClock();
+	}
+
+	private Transformer createTransformer() throws TransformerConfigurationException {
+		return XmlUtils.getTransformerFactory().newTransformer();
 	}
 
 	@Test
@@ -1167,7 +1172,7 @@ public class ParameterTest {
 		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
 		assertThat(result, instanceOf(Document.class));
 
-		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Document) result));
+		String contents = XmlUtils.transformXml(createTransformer(), new DOMSource((Document) result));
 		assertEquals(expectedResultContents, contents);
 	}
 
@@ -1193,7 +1198,7 @@ public class ParameterTest {
 		assertThat(result, instanceOf(Node.class));
 		assertThat(result, not(instanceOf(Document.class)));
 
-		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Node) result));
+		String contents = XmlUtils.transformXml(createTransformer(), new DOMSource((Node) result));
 		assertEquals(expectedResultContents, contents);
 	}
 
@@ -1217,7 +1222,7 @@ public class ParameterTest {
 		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
 		assertThat(result, instanceOf(Document.class));
 
-		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Document) result));
+		String contents = XmlUtils.transformXml(createTransformer(), new DOMSource((Document) result));
 		assertEquals(expectedResultContents, contents);
 
 		assertFalse(parameter.requiresInputValueForResolution());
@@ -1245,7 +1250,7 @@ public class ParameterTest {
 		assertInstanceOf(Node.class, result);
 		assertThat(result, not(instanceOf(Document.class)));
 
-		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Node) result));
+		String contents = XmlUtils.transformXml(createTransformer(), new DOMSource((Node) result));
 		assertEquals(expectedResultContents, contents);
 
 		assertFalse(parameter.requiresInputValueForResolution());

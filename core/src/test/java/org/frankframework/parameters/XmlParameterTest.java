@@ -9,7 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URL;
 
-import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.dom.DOMSource;
 
 import org.junit.jupiter.api.Test;
@@ -23,9 +24,14 @@ import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.util.XmlUtils;
 
 public class XmlParameterTest {
+
 	@Test
 	public void testParameterFromURLToDomdocTypeNoNameSpace() throws Exception {
 		testParameterFromURLToDomTypeHelper(ParameterType.DOMDOC, false, Document.class);
+	}
+
+	private Transformer createTransformer() throws TransformerConfigurationException {
+		return XmlUtils.getTransformerFactory().newTransformer();
 	}
 
 	@Test
@@ -84,7 +90,7 @@ public class XmlParameterTest {
 		assertThat(result, instanceOf(Node.class));
 		assertThat(result, not(instanceOf(Document.class)));
 
-		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Node) result));
+		String contents = XmlUtils.transformXml(createTransformer(), new DOMSource((Node) result));
 		assertEquals(expectedResultContents, contents);
 	}
 
@@ -108,7 +114,7 @@ public class XmlParameterTest {
 		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
 		assertInstanceOf(Document.class, result);
 
-		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Document) result));
+		String contents = XmlUtils.transformXml(createTransformer(), new DOMSource((Document) result));
 		assertEquals(expectedResultContents, contents);
 	}
 
@@ -130,7 +136,7 @@ public class XmlParameterTest {
 		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
 		assertThat(result, instanceOf(Document.class));
 
-		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Document) result));
+		String contents = XmlUtils.transformXml(createTransformer(), new DOMSource((Document) result));
 		assertEquals(expectedResultContents, contents);
 	}
 
@@ -153,7 +159,7 @@ public class XmlParameterTest {
 		assertThat(result, instanceOf(Node.class));
 		assertThat(result, not(instanceOf(Document.class)));
 
-		String contents = XmlUtils.transformXml(TransformerFactory.newInstance().newTransformer(), new DOMSource((Node) result));
+		String contents = XmlUtils.transformXml(createTransformer(), new DOMSource((Node) result));
 		assertEquals(expectedResultContents, contents);
 	}
 }
