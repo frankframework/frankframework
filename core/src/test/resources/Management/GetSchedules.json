@@ -4,7 +4,7 @@
         "threadPoolClass": "org.quartz.simpl.SimpleThreadPool",
         "isSchedulerRemote": false,
         "started": true,
-        "version": "2.5.1",
+        "version": "2.5.2",
         "jobStoreSupportsPersistence": false,
         "instanceId": "one",
         "threadPoolSize": 5,
