@@ -16,7 +16,6 @@
 package org.frankframework.json;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.HashMap;
@@ -43,11 +42,8 @@ import net.minidev.json.JSONObject;
 import net.minidev.json.parser.JSONParser;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.core.IScopeProvider;
-import org.frankframework.core.Resource;
 import org.frankframework.stream.Message;
 import org.frankframework.util.MessageUtils;
-import org.frankframework.util.StreamUtil;
 
 public class JsonUtil {
 	// Since 2.6.0 json-smart accepts incomplete JSON by default, so we have to use MODE_PERMISSIVE to disable that.
@@ -57,19 +53,6 @@ public class JsonUtil {
 
 	private JsonUtil() {
 		// Private constructor to prevent instance creations
-	}
-
-	// This does not feel like a json util method. Perhaps we should move it?
-	public static String getStyleSheet(IScopeProvider scopeProvider, String styleSheetName) throws ConfigurationException {
-		Resource styleSheet = Resource.getResource(scopeProvider, styleSheetName);
-		if (styleSheet == null) {
-			throw new ConfigurationException("StyleSheet [" + styleSheetName + "] not found");
-		}
-		try (InputStream is = styleSheet.openStream()) {
-			return StreamUtil.streamToString(is);
-		} catch (IOException e) {
-			throw new ConfigurationException("unable to open/read StyleSheet [" + styleSheetName + "]", e);
-		}
 	}
 
 	/**

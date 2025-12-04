@@ -60,14 +60,20 @@ public class DataSonnetUtil {
 		// Private constructor to prevent instance creations
 	}
 
+	/**
+	 * DataSonnet library that allows you to call another process from within a DataSonnet translation.
+	 * The 'namespace' field is the 'object' in the translation file. For now this has been fixed to 'sender'.
+	 * 
+	 * nb. the extended class 'library' is made in Scala.
+	 */
 	public static class DataSonnetToSenderConnector extends Library {
-		private List<ISender> senders;
-		private PipeLineSession session;
+		private final List<ISender> senders;
+		private final PipeLineSession session;
 
 		public DataSonnetToSenderConnector(@Nonnull List<ISender> senders, @Nonnull PipeLineSession session) {
 			this.senders = senders;
 
-			if (senders.stream().filter(s -> StringUtils.isBlank(s.getName())).count() > 0) {
+			if (senders.stream().anyMatch(s -> StringUtils.isBlank(s.getName()))) {
 				throw new IllegalArgumentException("one or more senders does not have a name");
 			}
 
@@ -94,17 +100,17 @@ public class DataSonnetUtil {
 			Map<String, Val.Func> answer = new HashMap<>();
 
 			for (ISender sender : senders) {
-				answer.put(sender.getName(), makeSimpleFunc(List.of("input"), args -> method(args, sender)));
+				answer.put(sender.getName(), makeSimpleFunc(List.of("input"), args -> sendMessage(args, sender)));
 			}
 
 			return answer;
 		}
 
-		private Val method(List<Val> inputArgs, ISender sender) {
+		private Val sendMessage(List<Val> inputArgs, ISender sender) {
 			String arg = inputArgs.stream()
 					.map(this::convertToString)
 					.findFirst()
-					.orElseThrow(() -> new IllegalArgumentException("no value"));
+					.orElseThrow(() -> new IllegalArgumentException("no value provided"));
 
 			try (Message input = Message.asMessage(arg); Message result = sender.sendMessageOrThrow(input, session)) {
 				return new Val.Str(result.asString());

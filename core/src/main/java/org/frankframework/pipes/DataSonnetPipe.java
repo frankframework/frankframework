@@ -34,11 +34,11 @@ import org.frankframework.doc.Mandatory;
 import org.frankframework.json.DataSonnetOutputType;
 import org.frankframework.json.DataSonnetUtil;
 import org.frankframework.json.DataSonnetUtil.DataSonnetToSenderConnector;
-import org.frankframework.json.JsonUtil;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
+import org.frankframework.util.Misc;
 
 /**
  * <p>
@@ -114,7 +114,7 @@ public class DataSonnetPipe extends FixedForwardPipe {
 			sender.configure();
 		}
 
-		resolvedStyleSheet = JsonUtil.getStyleSheet(this, styleSheetName);
+		resolvedStyleSheet = Misc.getStyleSheet(this, styleSheetName);
 	}
 
 	@Override
