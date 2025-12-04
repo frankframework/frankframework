@@ -62,6 +62,7 @@ import org.frankframework.util.LogUtil;
 import org.frankframework.util.PropertyLoader;
 import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringResolver;
+import org.frankframework.util.StringUtil;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
 import org.frankframework.xml.AttributePropertyResolver;
@@ -269,24 +270,27 @@ public class ConfigurationDigester implements ApplicationContextAware {
 	}
 
 	/**
-	 * Get the contenthandler to stub configurations
-	 * If stubbing is disabled, the input ContentHandler is returned as-is
+	 * Get the ContentHandler to stub configurations
+	 * If stubbing is disabled, the input ContentHandler is returned as-is.
 	 */
 	public ContentHandler getStub4TesttoolContentHandler(ContentHandler handler, IScopeProvider scope, PropertyLoader properties) throws IOException, TransformerConfigurationException {
-		if (properties.getBoolean(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, false)) {
-			String stubFile = properties.getString(ConfigurationUtils.STUB4TESTTOOL_XSLT_KEY, ConfigurationUtils.STUB4TESTTOOL_XSLT_DEFAULT);
-			Resource xslt = Resource.getResource(scope, stubFile);
-			TransformerPool tp = TransformerPool.getInstance(xslt);
-
-			TransformerFilter filter = tp.getTransformerFilter(handler);
-
-			Map<String,Object> parameters = new HashMap<>();
-			parameters.put(ConfigurationUtils.STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, Boolean.parseBoolean(properties.getProperty(ConfigurationUtils.STUB4TESTTOOL_VALIDATORS_DISABLED_KEY,"false")));
-
-			XmlUtils.setTransformerParameters(filter.getTransformer(), parameters);
-
-			return filter;
+		if (!properties.getBoolean(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, false)) {
+			return handler;
 		}
-		return handler;
+
+		String stubFile = properties.getString(ConfigurationUtils.STUB4TESTTOOL_XSLT_KEY, ConfigurationUtils.STUB4TESTTOOL_XSLT_DEFAULT);
+		Map<String, Object> parameters = new HashMap<>();
+		parameters.put(ConfigurationUtils.STUB4TESTTOOL_XSLT_VALIDATORS_PARAM, Boolean.parseBoolean(properties.getProperty(ConfigurationUtils.STUB4TESTTOOL_VALIDATORS_DISABLED_KEY, "false")));
+
+		ContentHandler currentHandler = handler;
+		for (String file : StringUtil.split(stubFile)) {
+			Resource xslt = Resource.getResource(scope, file);
+			TransformerPool tp = TransformerPool.getInstance(xslt);
+			TransformerFilter filter = tp.getTransformerFilter(currentHandler);
+			XmlUtils.setTransformerParameters(filter.getTransformer(), parameters);
+			currentHandler = filter;
+		}
+
+		return currentHandler;
 	}
 }

@@ -26,12 +26,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
-
-import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.Report;
-import nl.nn.testtool.Rerunner;
-import nl.nn.testtool.SecurityContext;
-import nl.nn.testtool.run.ReportRunner;
+import org.wearefrank.ladybug.Checkpoint;
+import org.wearefrank.ladybug.Report;
+import org.wearefrank.ladybug.Rerunner;
+import org.wearefrank.ladybug.SecurityContext;
+import org.wearefrank.ladybug.run.ReportRunner;
 
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusException;

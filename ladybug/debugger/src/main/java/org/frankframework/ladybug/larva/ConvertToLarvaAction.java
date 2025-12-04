@@ -47,12 +47,11 @@ import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
-
-import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.CheckpointType;
-import nl.nn.testtool.Report;
-import nl.nn.testtool.extensions.CustomReportAction;
-import nl.nn.testtool.extensions.CustomReportActionResult;
+import org.wearefrank.ladybug.Checkpoint;
+import org.wearefrank.ladybug.CheckpointType;
+import org.wearefrank.ladybug.Report;
+import org.wearefrank.ladybug.extensions.CustomReportAction;
+import org.wearefrank.ladybug.extensions.CustomReportActionResult;
 
 import org.frankframework.configuration.util.ConfigurationUtils;
 import org.frankframework.core.Resource;

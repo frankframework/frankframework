@@ -10,7 +10,6 @@ import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,7 +17,7 @@ import org.junit.jupiter.api.Test;
 
 public class PropertyFileCredentialFactoryTest {
 
-	public String PROPERTIES_FILE="/credentials-unencrypted.txt";
+	public static final String PROPERTIES_FILE = "/credentials-unencrypted.txt";
 
 	private PropertyFileCredentialFactory credentialFactory;
 
@@ -102,7 +101,7 @@ public class PropertyFileCredentialFactoryTest {
 		Collection<String> aliases = credentialFactory.getConfiguredAliases();
 
 		// Arrange
-		List<String> sortedAliases = aliases.stream().sorted().collect(Collectors.toList());
+		List<String> sortedAliases = aliases.stream().sorted().toList();
 		assertEquals("[noUsername, singleValue, slash, straight]", sortedAliases.toString());
 	}
 }
