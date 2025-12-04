@@ -18,7 +18,9 @@ package org.frankframework.json;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import jakarta.annotation.Nonnull;
@@ -31,6 +33,7 @@ import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.http.MediaType;
 
 import com.jayway.jsonpath.Configuration;
 import com.jayway.jsonpath.JsonPath;
@@ -39,6 +42,7 @@ import com.jayway.jsonpath.spi.json.JsonSmartJsonProvider;
 
 import net.minidev.json.JSONArray;
 import net.minidev.json.JSONObject;
+import net.minidev.json.JSONStyle;
 import net.minidev.json.parser.JSONParser;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -120,7 +124,7 @@ public class JsonUtil {
 		if (jsonPathResult instanceof String string) {
 			return string;
 		}
-		if (jsonPathResult instanceof Number number) {
+		if (jsonPathResult instanceof Number number) { // JSONValue.toJSONString(obj)
 			return number.toString();
 		}
 		if (jsonPathResult instanceof Boolean bool) {
@@ -140,7 +144,7 @@ public class JsonUtil {
 		return "";
 	}
 
-	public static @Nonnull String evaluateJsonPath(@Nonnull JsonPath jsonPath, @Nonnull Object input) throws JsonException {
+	public static @Nonnull Message evaluateJsonPath(@Nonnull JsonPath jsonPath, @Nonnull Object input) throws JsonException {
 		try {
 			Message inputMessage = MessageUtils.convertToJsonMessage(input);
 			Object result = jsonPath.read(inputMessage.asInputStream());
@@ -148,17 +152,31 @@ public class JsonUtil {
 		} catch (PathNotFoundException e) {
 			throw new JsonPathNotFoundException("Cannot find path in input", e);
 		} catch (Exception e) {
-			throw new JsonException("Cannot evaluate JSonPathExpression on parameter value", e);
+			throw new JsonException("Failed to evaluate JSonPathExpression [" + jsonPath + "]", e);
 		}
 	}
 
-	private static @Nonnull String getJsonPathResult(@Nonnull Object result) {
-		if (result instanceof HashMap<?,?> map) {
-			@SuppressWarnings("unchecked")
-			JSONObject jsonObject = new JSONObject((Map<String, ?>) map);
-			return jsonObject.toString();
+	/**
+	 * Official json-smart conversion. Tweaked a bit, when we know it's json, sets the correct mimetype.
+	 */
+	@SuppressWarnings("unchecked")
+	private static Message getJsonPathResult(Object obj) {
+		if (obj instanceof Map jsonObject) {
+			Message result = new Message(JSONObject.toJSONString(jsonObject, JSONStyle.LT_COMPRESS));
+			result.getContext().withMimeType(MediaType.APPLICATION_JSON).withCharset(StandardCharsets.UTF_8);
+			return result;
+		} else if (obj instanceof List jsonArray) {
+			Message result = new Message(JSONArray.toJSONString(jsonArray, JSONStyle.LT_COMPRESS));
+			result.getContext().withMimeType(MediaType.APPLICATION_JSON).withCharset(StandardCharsets.UTF_8);
+			return result;
+		} else if (obj instanceof String || obj instanceof Number || obj instanceof Boolean) {
+			// Scalar value, not JSON!
+			Message result =  new Message(getSingleValueJsonPathResult(obj));
+			result.getContext().withMimeType(MediaType.TEXT_PLAIN).withCharset(StandardCharsets.UTF_8);
+			return result;
+		} else {
+			throw new UnsupportedOperationException(obj.getClass().getName() + " can not be converted to JSON");
 		}
-		return result.toString();
 	}
 
 	public static String jsonPretty(String json) {
