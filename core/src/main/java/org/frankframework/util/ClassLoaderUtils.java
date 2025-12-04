@@ -143,7 +143,7 @@ public class ClassLoaderUtils {
 		if(StringUtils.isBlank(protocolList)) {
 			return Collections.emptyList();
 		}
-		//Arrays.asList(..) won't return an empty List when empty.
+		// Arrays.asList(..) won't return an empty List when empty.
 		return Arrays.asList(protocolList.split(","));
 	}
 }

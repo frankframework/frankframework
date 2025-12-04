@@ -15,11 +15,15 @@
 */
 package org.frankframework.pipes;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.datasonnet.MapperBuilder;
 import com.datasonnet.document.Document;
 
-import lombok.extern.log4j.Log4j2;
-
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
+import org.frankframework.core.ISender;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -28,12 +32,13 @@ import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.doc.Mandatory;
 import org.frankframework.json.DataSonnetOutputType;
-import org.frankframework.json.JsonMapper;
-import org.frankframework.json.JsonUtil;
+import org.frankframework.json.DataSonnetUtil;
+import org.frankframework.json.DataSonnetUtil.DataSonnetToSenderConnector;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
+import org.frankframework.util.Misc;
 
 /**
  * <p>
@@ -68,36 +73,79 @@ import org.frankframework.stream.Message;
  * }
  * }</pre>
  * </p>
+ * <p>
+ * This pipe can also call senders using their names as functions in the jsonnet file. For example:
+ * <pre>{@code
+ * <DataSonnetPipe>
+ *     <EchoSender name="myFunction" />
+ * </DataSonnetPipe>
+ * }</pre>
+ * <pre>{@code
+ * [
+ *   {
+ *     "number": sender.myFunction(x)
+ *   } for x in [ 1, 2, 3, 4 ]
+ * ]
+ * }</pre>
+ * results in {@code [{"number":"1"},{"number":"2"},{"number":"3"},{"number":"4"}]}.
+ * 
+ * </p>
  *
  * @ff.parameters All parameters are added to the {@code .jsonnet} stylesheet. Parameter names must be unique.
  *
  * @see <a href="https://jsonnet.org/">https://jsonnet.org/</a> for live examples.
  * @see <a href="https://datasonnet.github.io/datasonnet-mapper/datasonnet/latest/cookbook.html">DataSonnet cookbook</a>.
  */
-@Log4j2
 @EnterpriseIntegrationPattern(Type.TRANSLATOR)
 public class DataSonnetPipe extends FixedForwardPipe {
 	private String styleSheetName;
-	private JsonMapper mapper;
-	private DataSonnetOutputType outputType = DataSonnetOutputType.JSON;
-	private boolean computeMimeType = false;
+	private String resolvedStyleSheet;
+
+	private final List<ISender> senderList = new ArrayList<>();
+
+	private DataSonnetOutputType outputFileFormat = DataSonnetOutputType.JSON;
 
 	@Override
 	public void configure() throws ConfigurationException {
 		parameterNamesMustBeUnique = true;
 		super.configure();
 
-		mapper = JsonUtil.buildJsonMapper(this, styleSheetName, outputType, computeMimeType, getParameterList());
+		for (ISender sender: senderList) {
+			sender.configure();
+		}
+
+		resolvedStyleSheet = Misc.getStyleSheet(this, styleSheetName);
+	}
+
+	@Override
+	public void start() {
+		senderList.forEach(ISender::start);
+
+		super.start();
+	}
+
+	@Override
+	public void stop() {
+		super.stop();
+
+		senderList.forEach(ISender::stop);
 	}
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		ParameterValueList pvl = getParameters(message, session);
 
+		MapperBuilder builder = new MapperBuilder(resolvedStyleSheet)
+				.withInputNames(getParameterList().getParameterNames());
+
+		if (!senderList.isEmpty()) {
+			builder.withLibrary(new DataSonnetToSenderConnector(senderList, session));
+		}
+
 		try {
-			Message output = mapper.transform(message, pvl);
+			Message output = DataSonnetUtil.transform(builder.build(), message, pvl, outputFileFormat);
 			return new PipeRunResult(getSuccessForward(), output);
-		} catch (Exception e) {
+		} catch (Exception e) { // Typically an IllegalArgumentException
 			throw new PipeRunException(this, "error transforming input", e);
 		}
 	}
@@ -121,19 +169,21 @@ public class DataSonnetPipe extends FixedForwardPipe {
 	}
 
 	/**
-	 * Output file format. DataSonnet is semi-capable of converting the converted JSON to a different format.
+	 * DataSonnet is semi-capable of converting the converted JSON to a different format.
 	 *
 	 * @ff.default JSON
 	 */
+	public void setOutputFileFormat(DataSonnetOutputType outputType) {
+		this.outputFileFormat = outputType;
+	}
+
+	@Deprecated
+	@ConfigurationWarning("for documentation purposes we've renamed this field to [outputFileFormat]")
 	public void setOutputType(DataSonnetOutputType outputType) {
-		this.outputType = outputType;
+		setOutputFileFormat(outputType);
 	}
 
-	/**
-	 * Computes the mimetype when it is unknown. It requires more computation.
-	 */
-	public void setComputeMimeType(boolean computeMimeType) {
-		this.computeMimeType = computeMimeType;
+	public void addSender(ISender sender) {
+		senderList.add(sender);
 	}
-
 }

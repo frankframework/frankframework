@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,17 +15,23 @@
 */
 package org.frankframework.util;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.logging.log4j.Logger;
 
+import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.IScopeProvider;
+import org.frankframework.core.Resource;
+
 
 /**
  * Miscellaneous conversion functions.
  */
-//Be careful: UTIL classes should NOT depend on the Servlet-API
+// Be careful: UTIL classes should NOT depend on the Servlet-API
 public class Misc {
 	private static final Logger log = LogUtil.getLogger(Misc.class);
 	public static final String MESSAGE_SIZE_WARN_BY_DEFAULT_KEY = "message.size.warn.default";
@@ -211,4 +217,18 @@ public class Misc {
 		return defaultValue;
 	}
 
+	/**
+	 * @return 'file content' in String format.
+	 */
+	public static String getStyleSheet(IScopeProvider scopeProvider, String styleSheetName) throws ConfigurationException {
+		Resource styleSheet = Resource.getResource(scopeProvider, styleSheetName);
+		if (styleSheet == null) {
+			throw new ConfigurationException("StyleSheet [" + styleSheetName + "] not found");
+		}
+		try (InputStream is = styleSheet.openStream()) {
+			return StreamUtil.streamToString(is);
+		} catch (IOException e) {
+			throw new ConfigurationException("unable to open/read StyleSheet [" + styleSheetName + "]", e);
+		}
+	}
 }
