@@ -27,7 +27,6 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
@@ -45,6 +44,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.CleanerProvider;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.StringUtil;
 import org.frankframework.util.TimeProvider;
 
 /**
@@ -140,9 +140,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		copyIfExists(EXIT_CODE_CONTEXT_KEY, parentSession);
 		copyIfExists(EXIT_STATE_CONTEXT_KEY, parentSession);
 		if (StringUtils.isNotEmpty(keysToCopy) && !"*".equals(keysToCopy)) {
-			StringTokenizer st = new StringTokenizer(keysToCopy,",;");
-			while (st.hasMoreTokens()) {
-				String key = st.nextToken();
+			for (String key: StringUtil.split(keysToCopy, ",;")) {
 				if (StringUtils.isNotBlank(key) && !MESSAGE_ID_KEY.equals(key)) {
 					parentSession.put(key, get(key));
 				}
@@ -154,6 +152,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 				}
 			});
 		}
+
 		Set<AutoCloseable> closeablesInDestination = parentSession.values().stream()
 				.filter(AutoCloseable.class::isInstance)
 				.map(AutoCloseable.class::cast)
