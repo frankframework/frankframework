@@ -73,7 +73,7 @@ import org.frankframework.util.SpringUtils;
  * Therefore, it will not fail the build and run only to provide extra coverage-reporting.
  *
  */
-@Tag("integration")
+@Tag("larva")
 @Log4j2
 public class RunLarvaTests {
 	private static final Logger stdOut = LogManager.getLogger("stdout"); // Console appender

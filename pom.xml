@@ -790,7 +790,7 @@
 							</goals>
 							<phase>test</phase>
 							<configuration>
-								<excludedGroups>integration,${junit.excludedTags}</excludedGroups>
+								<excludedGroups>larva,integration,${junit.excludedTags}</excludedGroups>
 								<groups>${junit.includedTags}</groups>
 							</configuration>
 						</execution>
@@ -802,7 +802,7 @@
 							<phase>integration-test</phase>
 							<configuration>
 								<excludedGroups>${junit.excludedTags}</excludedGroups>
-								<groups>integration</groups>
+								<groups>integration,larva</groups>
 							</configuration>
 						</execution>
 					</executions>

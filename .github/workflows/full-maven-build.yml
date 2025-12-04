@@ -139,14 +139,14 @@ jobs:
         project-token: ${{ secrets.CODACY_PROJECT_TOKEN }}
 
     - name: Store Test Results
-      if: failure()
+      if: ${{ failure() || cancelled() }}
       uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
       with:
         name: java${{ env.JDK_VERSION }}_Surefire
         path: ${{ github.workspace }}/*/target/surefire-reports/*
 
     - name: Store Test Logs
-      if: failure()
+      if: ${{ failure() || cancelled() }}
       uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4 # v5
       with:
         name: java${{ env.JDK_VERSION }}_Logs
@@ -164,21 +164,6 @@ jobs:
       with:
         name: java${{ env.JDK_VERSION }}_FrankDoc
         path: ${{ github.workspace }}/target/frankdoc/xml/xsd/*.xsd
-
-    - name: Print commit sha
-      shell: bash
-      env:
-        COMMIT_SHA: ${{ github.event.pull_request.head.sha }}
-      run: |
-        echo "sha: $COMMIT_SHA"
-
-    - name: Call [Compare Frank!Doc] workflow
-      uses: benc-uk/workflow-dispatch@e2e5e9a103e331dad343f381a29e654aea3cf8fc # v1
-      if: ${{ github.event_name == 'pull_request_disabled'}}
-      with:
-        workflow: Compare FrankDoc
-        token: ${{ secrets.PAT }}
-        inputs: '{"target": "${{ github.event.pull_request.head.sha }}"}'
 
     - name: Save cached directories
       uses: actions/cache/save@0057852bfaa89a56745cba8c7296529d2fc39830 # v4
