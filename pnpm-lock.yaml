@@ -51,8 +51,8 @@ importers:
         specifier: ^7.1.0
         version: 7.1.0
       '@frankframework/frank-config-layout':
-        specifier: ^1.2.3
-        version: 1.2.3(@angular/core@20.3.15(@angular/compiler@20.3.15)(rxjs@7.8.2)(zone.js@0.16.0))
+        specifier: ^1.2.4
+        version: 1.2.4(@angular/core@20.3.15(@angular/compiler@20.3.15)(rxjs@7.8.2)(zone.js@0.16.0))
       '@ng-bootstrap/ng-bootstrap':
         specifier: ^19.0.1
         version: 19.0.1(@angular/common@20.3.15(@angular/core@20.3.15(@angular/compiler@20.3.15)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@20.3.15(@angular/compiler@20.3.15)(rxjs@7.8.2)(zone.js@0.16.0))(@angular/forms@20.3.15(@angular/common@20.3.15(@angular/core@20.3.15(@angular/compiler@20.3.15)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@20.3.15(@angular/compiler@20.3.15)(rxjs@7.8.2)(zone.js@0.16.0))(@angular/platform-browser@20.3.15(@angular/animations@20.3.15(@angular/core@20.3.15(@angular/compiler@20.3.15)(rxjs@7.8.2)(zone.js@0.16.0)))(@angular/common@20.3.15(@angular/core@20.3.15(@angular/compiler@20.3.15)(rxjs@7.8.2)(zone.js@0.16.0))(rxjs@7.8.2))(@angular/core@20.3.15(@angular/compiler@20.3.15)(rxjs@7.8.2)(zone.js@0.16.0)))(rxjs@7.8.2))(@angular/localize@20.3.15(@angular/compiler-cli@20.3.15(@angular/compiler@20.3.15)(typescript@5.9.3))(@angular/compiler@20.3.15))(@popperjs/core@2.11.8)(rxjs@7.8.2)
@@ -829,8 +829,8 @@ packages:
     resolution: {integrity: sha512-Udu3K7SzAo9N013qt7qmm22/wo2hADdheXtBfxFTecp+ogsc0caQNRKEb7pkvvagUGOpG9wJC1ViH6WXs8oXIA==}
     engines: {node: '>=6'}
 
-  '@frankframework/frank-config-layout@1.2.3':
-    resolution: {integrity: sha512-kiTIx4kI23hozfN8LC360Q/WKd/AfVjPTafybbEGbSPelyebxOl5dlQ7jpmLw1MZD4AN+1NbzASpLFJGvFUdHw==}
+  '@frankframework/frank-config-layout@1.2.4':
+    resolution: {integrity: sha512-zqlhrG7j7mRE5aTnW4ridvAruu+x08YJPGrF6/sqiOoMQzxGgV/4NeAChYg40Wqu4VkFrFLap1C+jLu8RqdjVA==}
     peerDependencies:
       '@angular/core': ^20.2.2
 
@@ -5112,7 +5112,7 @@ snapshots:
     dependencies:
       '@fortawesome/fontawesome-common-types': 7.1.0
 
-  '@frankframework/frank-config-layout@1.2.3(@angular/core@20.3.15(@angular/compiler@20.3.15)(rxjs@7.8.2)(zone.js@0.16.0))':
+  '@frankframework/frank-config-layout@1.2.4(@angular/core@20.3.15(@angular/compiler@20.3.15)(rxjs@7.8.2)(zone.js@0.16.0))':
     dependencies:
       '@angular/core': 20.3.15(@angular/compiler@20.3.15)(rxjs@7.8.2)(zone.js@0.16.0)
       tslib: 2.8.1
