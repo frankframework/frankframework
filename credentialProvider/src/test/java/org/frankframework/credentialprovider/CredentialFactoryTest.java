@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.nio.file.Files;
@@ -124,6 +125,31 @@ class CredentialFactoryTest {
 		assertNull(credentials.getUsername());
 		assertNull(credentials.getPassword());
 		assertEquals("account", credentials.getAlias());
+	}
+
+	@Test
+	void testNoFactoryNoFallback() {
+		CredentialConstants.getInstance().setProperty("credentialFactory.class", "");
+		assertThrows(IllegalStateException.class, () -> new CredentialFactory(false) {
+			@Override
+			protected void exit() {
+				// Exit will stop the testing process, this way we can test the method call at least.
+				throw new IllegalStateException();
+			}
+		});
+	}
+
+	@Test
+	void testNoFactoryWithFallback() {
+		CredentialConstants.getInstance().setProperty("credentialFactory.class", "");
+		CredentialFactory instance = new CredentialFactory(true) {
+			@Override
+			protected void exit() {
+				fail();
+			}
+		};
+
+		assertTrue(instance.delegates.isEmpty());
 	}
 
 	@Test
