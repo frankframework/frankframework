@@ -1,4 +1,4 @@
-FROM eclipse-temurin:24.0.1_9-jre-alpine
+FROM eclipse-temurin:25.0.1_8-jre-alpine
 
 COPY target/frankframework-console-webapp.war /app/frankframework-console-webapp.war
 
