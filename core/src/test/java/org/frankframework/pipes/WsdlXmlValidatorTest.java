@@ -347,7 +347,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 	}
 
 	@Test
-	public void testMultipleSoapElementsWithTns() throws Exception {
+	public void testMultipleSoapElementsWithTns() {
 		WsdlXmlValidator val = pipe;
 		val.setWsdl(MULTIPLE_ROOT_ELEMENTS);
 		val.setSoapBody("add");
@@ -505,6 +505,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 	}
 
 	@Test
+	@SuppressWarnings("deprecation")
 	public void wsdlReasonSessionKey() throws Exception {
 		WsdlXmlValidator val = pipe;
 		val.setWsdl(SIMPLE);
