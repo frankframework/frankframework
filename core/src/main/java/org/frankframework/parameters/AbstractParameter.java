@@ -395,7 +395,11 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			}
 			if (input != null && !(input instanceof Message m && m.isEmpty())) {
 				try {
-					result = JsonUtil.evaluateJsonPath(jsonPath, input);
+					Message jsonResult = JsonUtil.evaluateJsonPath(jsonPath, input);
+					// Sigh, this breaks ParameterTests.
+					// If an appropriate Parameter type is used, this wouldn't happen as they have `requiresTypeConversion` enabled.
+					// I've created #10090 to figure out how we can optimize this...
+					result = jsonResult.asObject();
 				} catch (JsonPathNotFoundException e) {
 					log.debug("Parameter [{}] jsonpath exception, cannot find path in input [{}]:", jsonPathExpression, input, e);
 				} catch (JsonException e) {

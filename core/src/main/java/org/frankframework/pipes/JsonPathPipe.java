@@ -28,6 +28,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.doc.Mandatory;
+import org.frankframework.json.JsonException;
 import org.frankframework.json.JsonUtil;
 import org.frankframework.stream.Message;
 
@@ -100,14 +101,13 @@ public class JsonPathPipe extends FixedForwardPipe {
 
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
-		String result;
 		try {
-			result = JsonUtil.evaluateJsonPath(jsonPath, message);
-		} catch (Exception e) {
+			Message result = JsonUtil.evaluateJsonPath(jsonPath, message);
+			return new PipeRunResult(getSuccessForward(), result);
+		} catch (JsonException e) {
 			throw new PipeRunException(this, "Failed to evaluate json path expression [" + jsonPathExpression + "] on input [" + message + "]", e);
 		}
 
-		return new PipeRunResult(getSuccessForward(), result);
 	}
 
 	@Mandatory
