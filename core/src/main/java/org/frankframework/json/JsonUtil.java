@@ -163,11 +163,11 @@ public class JsonUtil {
 	private static Message getJsonPathResult(Object obj) {
 		if (obj instanceof Map jsonObject) {
 			Message result = new Message(JSONObject.toJSONString(jsonObject, JSONStyle.LT_COMPRESS));
-			result.getContext().withMimeType(MediaType.APPLICATION_JSON).withCharset(StandardCharsets.UTF_8);
+			result.getContext().withMimeType(MediaType.APPLICATION_JSON);
 			return result;
 		} else if (obj instanceof List jsonArray) {
 			Message result = new Message(JSONArray.toJSONString(jsonArray, JSONStyle.LT_COMPRESS));
-			result.getContext().withMimeType(MediaType.APPLICATION_JSON).withCharset(StandardCharsets.UTF_8);
+			result.getContext().withMimeType(MediaType.APPLICATION_JSON);
 			return result;
 		} else if (obj instanceof String || obj instanceof Number || obj instanceof Boolean) {
 			// Scalar value, not JSON!

@@ -22,7 +22,6 @@ import java.io.Reader;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
@@ -484,7 +483,7 @@ public class MessageUtils {
 		String valueAsString = message.asString();
 		String jsonTemplate = isBooleanOrNumber(value, valueAsString) ? JSON_TEMPLATE_VALUE_UNQUOTED : JSON_TEMPLATE_VALUE_QUOTED;
 		Message result = new Message(jsonTemplate.formatted(valueName, valueAsString));
-		result.getContext().withMimeType(MediaType.APPLICATION_JSON).withCharset(StandardCharsets.UTF_8);
+		result.getContext().withMimeType(MediaType.APPLICATION_JSON);
 		return result;
 	}
 

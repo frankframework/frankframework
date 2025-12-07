@@ -230,7 +230,7 @@ public class IfPipe extends AbstractPipe {
 
 		// check if computedType is one of the supported types, or else use the defaultMediaType
 		return Arrays.stream(SupportedMediaType.values())
-				.filter(supportedType -> supportedType.mediaType.equals(computedType))
+				.filter(supportedType -> supportedType.mediaType.equalsTypeAndSubtype(computedType))
 				.findFirst()
 				.orElse(defaultMediaType);
 	}

@@ -95,6 +95,17 @@ public class MessageContextTest {
 	}
 
 	@Test
+	public void jsonMimeTypeMayNotHaveCharset() {
+		MessageContext context = new MessageContext();
+		context.withMimeType("application/json;charset=\"utf-8\"");
+		MimeType mimetype = (MimeType) context.get(MessageContext.METADATA_MIMETYPE);
+		String charset = (String) context.get(MessageContext.METADATA_CHARSET);
+
+		assertEquals("application/json", mimetype.getType() + "/" + mimetype.getSubtype());
+		assertNull(charset);
+	}
+
+	@Test
 	public void testPutNullRemovesKey() {
 		MessageContext context = new MessageContext();
 
