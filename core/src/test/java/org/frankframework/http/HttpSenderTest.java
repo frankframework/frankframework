@@ -253,7 +253,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpGetEncodeMessage.txt"), result.trim());
 	}
 
-	@Test
+	@Test // Although set, content-type header should not exit
 	public void simpleMockedHttpGetWithContentType() throws Throwable {
 		sender = getSender(false); // Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo");
@@ -270,7 +270,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpGetWithContentType.txt"), result.trim());
 	}
 
-	@Test
+	@Test // Although set, content-type header should not exit
 	public void simpleMockedHttpGetWithContentTypeAndCharset() throws Throwable {
 		sender = getSender(false); // Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo");

@@ -166,6 +166,7 @@ public class MessageContext implements Serializable {
 	public MessageContext withMimeType(@Nonnull MimeType mimeType) {
 		if (MediaType.APPLICATION_JSON.equalsTypeAndSubtype(mimeType) && mimeType.getCharset() != null) {
 			// Strip the charset when JSON, see: https://www.rfc-editor.org/rfc/rfc8259
+			remove(METADATA_CHARSET);
 			Map<String, String> params = new HashMap<>(mimeType.getParameters());
 			params.remove("charset");
 			return withMimeType(new MimeType(mimeType, params));
