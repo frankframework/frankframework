@@ -22,7 +22,7 @@
 			<AppenderRef ref="stdout"/>
 		</Logger>
 
-		<Logger name="org.frankframework" level="DEBUG" />
+		<Logger name="org.frankframework" level="INFO" />
 
 		<Logger name="cypress" level="INFO">
 			<AppenderRef ref="container"/>
