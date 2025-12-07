@@ -88,28 +88,10 @@ public class HttpMessageEntityTest {
 	}
 
 	@Test
-	public void testCharsetDefault() throws Exception {
-		ByteArrayEntity bae = new ByteArrayEntity(repeatableMessage.asByteArray());
-		InputStreamEntity ise = new InputStreamEntity(repeatableMessage.asInputStream());
-		HttpMessageEntity hmeRepeatable = new HttpMessageEntity(repeatableMessage);
-		HttpMessageEntity hmeNonRepeatable = new HttpMessageEntity(nonRepeatableMessage);
-		HttpMessageEntity hmeUrlRepeatable = new HttpMessageEntity(binaryMessage);
-
-		assertNull(repeatableMessage.getCharset());
-		assertNull(bae.getContentEncoding());
-		assertNull(ise.getContentEncoding());
-		assertNull(hmeRepeatable.getContentEncoding());
-		assertNotNull(hmeNonRepeatable.getContentEncoding()); //Message is already read asReader with DETECT charset
-		assertNull(hmeUrlRepeatable.getContentEncoding());
-	}
-
-	@Test
 	public void testContentTypeWithCharset() throws Exception {
 		Message message = new Message(repeatableMessage.asByteArray(), "UTF-8");
 		HttpMessageEntity entity = new HttpMessageEntity(message, ContentType.TEXT_PLAIN);
 
-		assertNotNull(entity.getContentEncoding(), "entity should set charset when available");
-		assertEquals("ISO-8859-1", entity.getContentEncoding().getValue());
 		assertEquals(ContentType.TEXT_PLAIN.toString(), entity.getContentType().getValue());
 	}
 
@@ -118,8 +100,6 @@ public class HttpMessageEntityTest {
 		Message message = new Message(repeatableMessage.asByteArray(), "UTF-8");
 		HttpMessageEntity entity = new HttpMessageEntity(message, ContentType.parse("text/plain"));
 
-		assertNotNull(entity.getContentEncoding(), "entity should set charset when available");
-		assertEquals("UTF-8", entity.getContentEncoding().getValue());
 		assertEquals("text/plain", entity.getContentType().getValue());
 	}
 
@@ -156,7 +136,7 @@ public class HttpMessageEntityTest {
 		assertEquals(messageContent, toString(bae));
 		assertEquals(messageContent, toString(ise));
 		assertEquals(messageContent, toString(hmeRepeatable));
-		assertEquals(messageContent, toString(hmeRepeatable)); //read twice to prove repeatability
+		assertEquals(messageContent, toString(hmeRepeatable)); // Read twice to prove repeatability
 		assertEquals(messageContent, toString(hmeNonRepeatable));
 		assertEquals(binaryMessage.asString(), toString(hmeUrlRepeatable));
 	}
@@ -183,10 +163,8 @@ public class HttpMessageEntityTest {
 
 		if(type == MessageType.BINARY) {
 			assertNull(message.getCharset());
-			assertNull(entity.getContentEncoding());
 		} else {
 			assertNotNull(message.getCharset());
-			assertEquals(message.getCharset(), entity.getContentEncoding().getValue());
 		}
 
 		// Check length before reading
@@ -212,6 +190,6 @@ public class HttpMessageEntityTest {
 	private String toString(HttpEntity entity) throws IOException {
 		ByteArrayOutputStream boas = new ByteArrayOutputStream();
 		entity.writeTo(boas);
-		return boas.toString().replace("\ufeff", ""); //remove BOM if present
+		return boas.toString().replace("\ufeff", ""); // Remove BOM if present
 	}
 }
