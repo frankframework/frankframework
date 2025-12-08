@@ -58,11 +58,11 @@
     "zone.js": "0.16.0"
   },
   "devDependencies": {
-    "@angular-devkit/core": "^20.3.12",
+    "@angular-devkit/core": "^20.3.13",
     "@angular-eslint/eslint-plugin": "^20.7.0",
     "@angular-eslint/eslint-plugin-template": "^20.7.0",
     "@angular-eslint/template-parser": "^20.7.0",
-    "@angular/build": "^20.3.12",
+    "@angular/build": "^20.3.13",
     "@angular/cli": "^20.3.13",
     "@angular/compiler-cli": "^20.3.15",
     "@cypress/schematic": "^3.0.0",
@@ -86,7 +86,7 @@
     "karma-coverage": "~2.2.1",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "prettier": "^3.7.2",
+    "prettier": "^3.7.4",
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.48.1"
   },

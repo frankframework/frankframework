@@ -153,6 +153,11 @@ public class RunLarvaTests {
 				.setBindingsDirectory(jmsDataDir + "/bindings")
 				.setJournalDirectory(jmsDataDir + "/journal")
 				.setLargeMessagesDirectory(jmsDataDir + "/largemessages")
+				.setMaxDiskUsage(100) // 90
+				.setJMXManagementEnabled(false)
+				.setMessageCounterEnabled(false)
+				.setMqttSubscriptionPersistenceEnabled(false)
+				.setGlobalMaxSizePercentOfJvmMaxMemory(70) // 50
 		;
 
 		EmbeddedActiveMQ embeddedServer = new EmbeddedActiveMQ();

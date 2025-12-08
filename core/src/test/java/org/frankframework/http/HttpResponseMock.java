@@ -135,10 +135,13 @@ public class HttpResponseMock extends Mockito implements Answer<CloseableHttpRes
 		return null; //HEAD requests do not have a body
 	}
 
-	private void appendHeaders(HttpRequestBase request, StringBuilder response) {
+	private boolean appendHeaders(HttpRequestBase request, StringBuilder response) {
+		boolean foundContentType = false;
 		Header[] headers = request.getAllHeaders();
 		for (Header header : headers) {
 			String headerName = header.getName();
+			if ("content-type".equalsIgnoreCase(headerName)) foundContentType = true;
+
 			String headerValue = header.getValue();
 			if("X-Akamai-ACS-Auth-Data".equals(headerName)) { //Ignore timestamps in request header
 				int start = StringUtils.ordinalIndexOf(headerValue, ",", 3);
@@ -147,6 +150,7 @@ public class HttpResponseMock extends Mockito implements Answer<CloseableHttpRes
 			}
 			response.append(headerName + ": ").append(headerValue).append(lineSeparator);
 		}
+		return foundContentType;
 	}
 
 	private InputStream doPost(HttpHost host, HttpPost request, HttpContext context) throws IOException {
@@ -154,7 +158,7 @@ public class HttpResponseMock extends Mockito implements Answer<CloseableHttpRes
 		StringBuilder response = new StringBuilder();
 		response.append(request).append(lineSeparator);
 
-		appendHeaders(request, response);
+		boolean foundContentType = appendHeaders(request, response);
 
 		HttpEntity entity = request.getEntity();
 		if(entity instanceof MultipartEntity multipartEntity) {
@@ -172,7 +176,7 @@ public class HttpResponseMock extends Mockito implements Answer<CloseableHttpRes
 		}
 		else if(entity != null) {
 			Header contentTypeHeader = request.getEntity().getContentType();
-			if(contentTypeHeader != null) {
+			if(contentTypeHeader != null && !foundContentType) {
 				response.append(contentTypeHeader.getName() + ": ").append(contentTypeHeader.getValue()).append(lineSeparator);
 			}
 
