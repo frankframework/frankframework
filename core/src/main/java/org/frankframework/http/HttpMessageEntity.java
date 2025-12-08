@@ -64,14 +64,6 @@ public class HttpMessageEntity extends AbstractHttpEntity {
 			}
 			setContentType(contentType.toString());
 		}
-		setContentEncoding(charset);
-	}
-
-	@Override // Overridden because we don't want to set empty values
-	public void setContentEncoding(String charset) {
-		if(charset == null || !charset.isEmpty()) {
-			super.setContentEncoding(charset);
-		}
 	}
 
 	@Override
