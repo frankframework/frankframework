@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!
+   Copyright 2020 - 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -84,7 +84,7 @@ public class NetStorageSenderTest extends HttpSenderTestBase<NetStorageSender> {
 		NetStorageSender sender = getSender();
 		sender.setAction(Action.DU);
 		sender.configure();
-		assertNull(sender.getFullContentType(), "no content-type should be present");
+		assertNull(sender.getDefaultContentType(), "no content-type should be present");
 	}
 
 	@Test
