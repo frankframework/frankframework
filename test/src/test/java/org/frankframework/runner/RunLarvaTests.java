@@ -275,7 +275,7 @@ public class RunLarvaTests {
 					String scenarioResultMessage = scenarioRunner.runOneFile(scenario, true);
 					larvaWriter.flush();
 
-					assumeTrue(scenarioResultMessage != null || !IGNORED_SCENARIOS.contains(scenarioName), () -> "Ignoring failure of Blacklisted Scenario: [" + scenarioName + "]");
+					assumeTrue(scenarioResultMessage == null || !IGNORED_SCENARIOS.contains(scenarioName), () -> "Ignoring failure of Blacklisted Scenario: [" + scenarioName + "]");
 					assertNull(scenarioResultMessage, () -> "Scenario failed: [" + scenarioName + "] gave result : " + scenarioResultMessage);
 				}
 		);
