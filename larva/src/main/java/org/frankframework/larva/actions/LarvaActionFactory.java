@@ -48,7 +48,7 @@ import org.frankframework.util.SpringUtils;
 @Log4j2
 public class LarvaActionFactory {
 
-	private final int defaultTimeout;
+	private final long defaultTimeout;
 	private final LarvaTool larvaTool;
 	private final TestExecutionObserver testExecutionObserver;
 
@@ -91,16 +91,16 @@ public class LarvaActionFactory {
 		}
 	}
 
-	private static LarvaScenarioAction create(IConfigurable configurable, Properties actionProperties, int defaultTimeout, String correlationId) {
+	private static LarvaScenarioAction create(IConfigurable configurable, Properties actionProperties, long defaultTimeout, String correlationId) {
 		final AbstractLarvaAction<?> larvaAction;
 		if (configurable instanceof IPullingListener<?> pullingListener) {
-			larvaAction = new PullingListenerAction(pullingListener);
+			larvaAction = new PullingListenerAction(pullingListener, defaultTimeout);
 		} else if (configurable instanceof IPushingListener<?> pushingListener) {
 			larvaAction = new LarvaPushingListenerAction(pushingListener, defaultTimeout);
 		} else if (configurable instanceof ISender sender) {
-			larvaAction = new SenderAction(sender);
+			larvaAction = new SenderAction(sender, defaultTimeout);
 		} else {
-			larvaAction = new LarvaAction(configurable);
+			larvaAction = new LarvaAction(configurable, defaultTimeout);
 		}
 
 		larvaAction.invokeSetters(actionProperties);

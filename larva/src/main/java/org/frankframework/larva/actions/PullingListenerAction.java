@@ -26,8 +26,8 @@ import org.frankframework.stream.Message;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class PullingListenerAction extends AbstractLarvaAction<IPullingListener> {
 
-	public PullingListenerAction(IPullingListener listener) {
-		super(listener);
+	public PullingListenerAction(IPullingListener listener, long timeoutMillis) {
+		super(listener,  timeoutMillis);
 	}
 
 	@Override

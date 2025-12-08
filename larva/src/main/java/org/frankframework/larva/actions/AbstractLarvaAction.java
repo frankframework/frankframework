@@ -46,12 +46,14 @@ public abstract class AbstractLarvaAction<T extends IConfigurable> implements Co
 
 	private static final String CONVERT_MESSAGE_TO_EXCEPTION_PROPERTY_KEY = "convertExceptionToMessage";
 	private final T configurable;
+	private final @Getter long timeoutMillis;
 
 	private @Getter boolean convertExceptionToMessage = false;
 	private @Getter PipeLineSession session = new PipeLineSession();
 
-	protected AbstractLarvaAction(T configurable) {
+	protected AbstractLarvaAction(T configurable, long timeoutMillis) {
 		this.configurable = configurable;
+		this.timeoutMillis = timeoutMillis;
 	}
 
 	protected final T peek() {

@@ -29,8 +29,8 @@ import org.frankframework.stream.Message;
 
 public class LarvaAction extends AbstractLarvaAction<IConfigurable> {
 
-	public LarvaAction(IConfigurable configurable) {
-		super(configurable);
+	public LarvaAction(IConfigurable configurable, long timeoutMillis) {
+		super(configurable,  timeoutMillis);
 	}
 
 	@Override
