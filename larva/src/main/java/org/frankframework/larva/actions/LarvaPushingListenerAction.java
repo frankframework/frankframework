@@ -33,10 +33,10 @@ public class LarvaPushingListenerAction extends AbstractLarvaAction<IPushingList
 	private final ListenerMessageHandler<?> listenerMessageHandler;
 	private ListenerMessage listenerMessage;
 
-	public LarvaPushingListenerAction(IPushingListener listener, long timeout) {
-		super(listener, timeout);
+	public LarvaPushingListenerAction(IPushingListener listener, long timeoutMillis) {
+		super(listener, timeoutMillis);
 
-		listenerMessageHandler = new ListenerMessageHandler<>(timeout);
+		listenerMessageHandler = new ListenerMessageHandler<>(timeoutMillis);
 		listener.setHandler(listenerMessageHandler);
 	}
 

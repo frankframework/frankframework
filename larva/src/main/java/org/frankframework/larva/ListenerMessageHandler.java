@@ -45,10 +45,10 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	private final BlockingQueue<ListenerMessage> requestMessages = new ArrayBlockingQueue<>(10);
 	private final BlockingQueue<ListenerMessage> responseMessages = new ArrayBlockingQueue<>(10);
 
-	private long timeout;
+	private long timeoutMillis;
 
-	public ListenerMessageHandler(long defaultTimeout) {
-		this.timeout = defaultTimeout;
+	public ListenerMessageHandler(long timeoutMillis) {
+		this.timeoutMillis = timeoutMillis;
 	}
 
 	@Override
@@ -67,7 +67,7 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 			ListenerMessage requestMessage = new ListenerMessage(message, session);
 			requestMessages.add(requestMessage);
 
-			ListenerMessage responseMessage = getResponseMessage(timeout);
+			ListenerMessage responseMessage = getResponseMessage(timeoutMillis);
 			Message responseAsMessage = responseMessage.getMessage();
 			if (responseMessage.getContext() != null && responseMessage.getContext() != session) {
 				// Sometimes the response has a different PipeLineSession than the original request. If we don't close it here, we'll leak it.
@@ -85,7 +85,7 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	}
 
 	public @Nonnull ListenerMessage getRequestMessageWithDefaultTimeout() throws TimeoutException {
-		return getRequestMessage(timeout);
+		return getRequestMessage(timeoutMillis);
 	}
 
 	/** Attempt to retrieve a {@link ListenerMessage} with timeout in ms. Returns TimeOutException if non is present */
@@ -125,14 +125,25 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 		}
 	}
 
-	public void setTimeout(long timeout) {
-		this.timeout = timeout;
+	/**
+	 * Can be invoked via properties-setter so name of method should not be changed.
+	 */
+	public void setTimeout(long timeoutMillis) {
+		this.timeoutMillis = timeoutMillis;
 	}
 
+	/**
+	 * Can be invoked via properties-setter so this unused method should not be removed yet for backwards compatibility.
+	 */
+	@SuppressWarnings("unused")
 	public void setRequestTimeOut(int timeout) {
 		setTimeout(timeout);
 	}
 
+	/**
+	 * Can be invoked via properties-setter so this unused method should not be removed yet for backwards compatibility.
+	 */
+	@SuppressWarnings("unused")
 	public void setResponseTimeOut(int timeout) {
 		setTimeout(timeout);
 	}
