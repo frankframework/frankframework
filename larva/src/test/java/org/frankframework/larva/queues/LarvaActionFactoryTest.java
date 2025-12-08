@@ -62,7 +62,7 @@ class LarvaActionFactoryTest {
 		senderAction.executeWrite(new Message("input"), null, null);
 		Message message = senderAction.executeRead(props);
 		long duration = System.currentTimeMillis() - start;
-		assertTrue(duration > 100, "delay should be > 100ms but was " + duration);
+		assertTrue(duration >= 100, "delay should be >= 100ms but was " + duration);
 		assertNotNull(message);
 		assertEquals("input", message.asString());
 	}
