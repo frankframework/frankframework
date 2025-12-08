@@ -24,7 +24,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import lombok.Getter;
 
 import org.frankframework.core.ISender;
-import org.frankframework.core.ListenerException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.jdbc.FixedQuerySender;
@@ -51,8 +50,8 @@ public class SenderAction extends AbstractLarvaAction<ISender> {
 	}
 
 	@Override
-	public void executeWrite(Message fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException, ListenerException {
-		if (peek() instanceof FixedQuerySender) { // QuerySender is reversed, write is read. Just copy the input message here.
+	public void executeWrite(Message fileContent, String correlationId, Map<String, Object> parameters) {
+		if (peek() instanceof FixedQuerySender) { // QuerySender should not be executed in Async thread, only keep reference to the input-file here.
 			inputMessage = fileContent;
 			return;
 		}
@@ -66,7 +65,7 @@ public class SenderAction extends AbstractLarvaAction<ISender> {
 
 	@Override
 	public Message executeRead(Properties properties) throws SenderException, TimeoutException {
-		if (peek() instanceof FixedQuerySender) { // QuerySender is reversed, read is write. Execute the query here.
+		if (peek() instanceof FixedQuerySender) { // QuerySender should not be executed in async thread, so execute here when reading
 			try (Message input = Message.asMessage(inputMessage)) { // Uses the provided message or NULL
 				return peek().sendMessageOrThrow(input, getSession());
 			}
