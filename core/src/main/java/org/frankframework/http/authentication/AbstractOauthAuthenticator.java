@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024 - 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,16 +15,16 @@
 */
 package org.frankframework.http.authentication;
 
-import static org.frankframework.util.StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+import static org.frankframework.util.StreamUtil.DEFAULT_CHARSET;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.annotation.Nullable;
+import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.Credentials;
@@ -37,6 +37,10 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicHeader;
 import org.apache.http.util.EntityUtils;
 
+import com.nimbusds.oauth2.sdk.AccessTokenResponse;
+import com.nimbusds.oauth2.sdk.token.AccessToken;
+import com.nimbusds.oauth2.sdk.util.JSONObjectUtils;
+
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -44,7 +48,6 @@ import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.DateFormatUtils;
-import org.frankframework.util.JacksonUtils;
 
 @Log4j2
 public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator {
@@ -55,7 +58,7 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 	protected final URI authorizationEndpoint;
 	protected final int overwriteExpiryMs;
 
-	private String accessToken;
+	private AccessToken accessToken;
 	private long accessTokenRefreshTime;
 
 	AbstractOauthAuthenticator(final AbstractHttpSession session) throws HttpAuthenticationException {
@@ -88,17 +91,13 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 	}
 
 	protected HttpEntityEnclosingRequestBase createPostRequestWithForm(URI uri, List<NameValuePair> formParameters) throws HttpAuthenticationException {
-		try {
-			UrlEncodedFormEntity body = new UrlEncodedFormEntity(formParameters, DEFAULT_INPUT_STREAM_ENCODING);
+		UrlEncodedFormEntity body = new UrlEncodedFormEntity(formParameters, DEFAULT_CHARSET);
 
-			HttpPost request = new HttpPost(uri);
-			request.addHeader(body.getContentType());
-			request.setEntity(body);
+		HttpPost request = new HttpPost(uri);
+		request.addHeader(body.getContentType());
+		request.setEntity(body);
 
-			return request;
-		} catch (UnsupportedEncodingException e) {
-			throw new HttpAuthenticationException(e);
-		}
+		return request;
 	}
 
 	@Override
@@ -139,19 +138,10 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 		};
 
 		try (CloseableHttpResponse response = apacheHttpClient.execute(request)) {
-			String responseBody = EntityUtils.toString(response.getEntity());
+			AccessTokenResponse successResponse = getTokenResponse(response);
 
-			if (response.getStatusLine().getStatusCode() != 200) {
-				tg.cancel();
-				log.debug("Failed to refresh access token, received status code {}", response.getStatusLine().getStatusCode());
-				throw new HttpAuthenticationException(responseBody);
-			}
-
-			OauthResponseDto dto = JacksonUtils.convertToDTO(responseBody, OauthResponseDto.class);
-
-			accessToken = dto.getAccessToken();
-			long accessTokenLifetime = Long.parseLong(dto.getExpiresIn());
-
+			accessToken = successResponse.getTokens().getAccessToken();
+			long accessTokenLifetime = accessToken.getLifetime();
 			// accessToken will be refreshed when it is half way expiration
 			if (overwriteExpiryMs < 0 && accessTokenLifetime == 0) {
 				log.debug("no accessToken lifetime found in accessTokenResponse, and no expiry specified. Token will not be refreshed preemptively");
@@ -160,7 +150,11 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 				accessTokenRefreshTime = System.currentTimeMillis() + (overwriteExpiryMs < 0 ? 500 * accessTokenLifetime : overwriteExpiryMs);
 				log.debug("set accessTokenRefreshTime [{}]", ()-> DateFormatUtils.format(accessTokenRefreshTime));
 			}
-		} catch (IOException | RuntimeException e) {
+		} catch (HttpAuthenticationException e) {
+			log.debug("Failed to refresh access token, got an HttpAuthenticationException: {}", e.getMessage());
+			tg.cancel();
+			throw e;
+		} catch (IOException e) {
 			log.debug("Failed to refresh access token, got an exception: {}", e.getMessage());
 			request.abort();
 
@@ -176,12 +170,30 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 		}
 	}
 
+	private AccessTokenResponse getTokenResponse(CloseableHttpResponse response) throws HttpAuthenticationException {
+		try {
+			String responseBody = EntityUtils.toString(response.getEntity());
+
+			if (response.getStatusLine().getStatusCode() != HttpServletResponse.SC_OK) {
+				log.debug("Failed to refresh access token, received status code {}", response.getStatusLine().getStatusCode());
+				throw new HttpAuthenticationException(responseBody);
+			}
+
+			return AccessTokenResponse.parse(JSONObjectUtils.parse(responseBody));
+		} catch (IOException | org.apache.http.ParseException | com.nimbusds.oauth2.sdk.ParseException e) {
+			throw new HttpAuthenticationException("unable to parse access token response", e);
+		}
+	}
+
+	@Override
 	public final String getOrRefreshAccessToken(Credentials credentials, boolean forceRefresh) throws HttpAuthenticationException {
 		if (forceRefresh || accessToken == null || accessTokenRefreshTime > 0 && System.currentTimeMillis() > accessTokenRefreshTime) {
-			log.debug("Refreshing accessToken");
+			log.debug("getOrRefreshAccessToken");
 			refreshAccessToken(credentials);
+		} else {
+			log.debug("reusing cached accessToken");
 		}
 
-		return accessToken;
+		return accessToken.toAuthorizationHeader();
 	}
 }

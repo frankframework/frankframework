@@ -68,7 +68,7 @@ public class OAuthAuthenticationScheme extends BasicScheme {
 		try {
 			String accessToken = oauthAuthentication.getOrRefreshAccessToken(credentials, forceRefresh);
 
-			return new BasicHeader(getHeaderName(), "Bearer " + accessToken);
+			return new BasicHeader(getHeaderName(), accessToken);
 		} catch (HttpAuthenticationException e) {
 			throw new AuthenticationException(e.getMessage(), e);
 		}
