@@ -48,15 +48,17 @@ public class SenderThread extends Thread {
 	private SenderException senderException;
 	private TimeoutException timeoutException;
 	private final boolean convertExceptionToMessage;
+	private final long timeoutMillis;
 	private @Setter SecurityContext securityContext;
 
-	public SenderThread(ISender sender, Message request, PipeLineSession session, boolean convertExceptionToMessage, String correlationId) {
+	public SenderThread(ISender sender, Message request, PipeLineSession session, boolean convertExceptionToMessage, String correlationId, long timeoutMillis) {
 		name = sender.getName();
 		this.sender = sender;
 		this.request = request;
 		this.session = session;
 		this.convertExceptionToMessage = convertExceptionToMessage;
 		this.correlationId = correlationId;
+		this.timeoutMillis = timeoutMillis > 0L ? timeoutMillis + 5_000L : 0L; // longer timeout here than is passed on to the sender to allow for the extra overhead
 		log.debug("Creating SenderThread for ISenderWithParameters '{}'", name);
 		log.debug("Request: {}", request);
 	}
@@ -83,44 +85,51 @@ public class SenderThread extends Thread {
 				senderException = e;
 			}
 		} catch(TimeoutException e) {
-			if (convertExceptionToMessage) {
-				response = throwableToXml(e);
-			} else {
-				log.error("timeoutException for ISender '{}'", name, e);
-				timeoutException = e;
-			}
+			processTimeoutException(e);
+		}
+	}
+
+	private void processTimeoutException(TimeoutException e) {
+		if (convertExceptionToMessage) {
+			response = throwableToXml(e);
+		} else {
+			log.error("timeoutException for ISender '{}'", name, e);
+			timeoutException = e;
 		}
 	}
 
 	public Message getResponse() {
 		log.debug("Getting response for Sender: {}", name);
-		while (this.isAlive()) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-			}
-		}
+		waitForTermination();
 		return response;
 	}
 
 	public SenderException getSenderException() {
-		while (this.isAlive()) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-			}
-		}
+		waitForTermination();
 		return senderException;
 	}
 
 	public TimeoutException getTimeoutException() {
-		while (this.isAlive()) {
+		waitForTermination();
+		return timeoutException;
+	}
+
+	private void waitForTermination() {
+		if (this == Thread.currentThread()) {
+			throw new IllegalStateException("Cannot get thread-result from thread itself");
+		}
+		if (this.isAlive()) {
 			try {
-				Thread.sleep(100);
+				this.join(timeoutMillis);
+
+				// Check if the thread is still alive after join() -- that means there is a timeout
+				if (this.isAlive()) {
+					processTimeoutException(new TimeoutException("Timeout waiting for SenderThread to finish after %dms".formatted(timeoutMillis)));
+				}
 			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
 			}
 		}
-		return timeoutException;
 	}
 
 	static Message throwableToXml(Throwable throwable) {
