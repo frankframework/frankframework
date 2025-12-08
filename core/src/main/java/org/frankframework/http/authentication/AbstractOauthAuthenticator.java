@@ -15,8 +15,6 @@
 */
 package org.frankframework.http.authentication;
 
-import static org.frankframework.util.StreamUtil.DEFAULT_CHARSET;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -26,6 +24,7 @@ import java.util.List;
 import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.NameValuePair;
 import org.apache.http.auth.Credentials;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
@@ -43,42 +42,50 @@ import com.nimbusds.oauth2.sdk.util.JSONObjectUtils;
 
 import lombok.extern.log4j.Log4j2;
 
-import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.http.AbstractHttpSession;
 import org.frankframework.task.TimeoutGuard;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.StreamUtil;
+import org.frankframework.util.TimeProvider;
 
 @Log4j2
 public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator {
 
 	protected final AbstractHttpSession session;
-	protected final CredentialFactory clientCredentials;
 
 	protected final URI authorizationEndpoint;
 	protected final int overwriteExpiryMs;
+
+	protected final String username;
+	protected final String password;
+	protected final String clientId;
+	protected final String clientSecret;
 
 	private AccessToken accessToken;
 	private long accessTokenRefreshTime;
 
 	AbstractOauthAuthenticator(final AbstractHttpSession session) throws HttpAuthenticationException {
 		this.session = session;
-		CredentialFactory credentialFactory;
-		try {
-			credentialFactory = new CredentialFactory(session.getClientAuthAlias(), session.getClientId(), session.getClientSecret());
-		} catch (Exception e) {
-			// If the auth-alias cannot be found we might get an exception. Passing null for auth-alias avoids that. We probably have an invalid
-			// configuration now, but we will then catch that later in the configure-method so we can throw a proper exception.
-			// This is a bit of a hack but avoids fixing issues deeper in the credential provider.
-			credentialFactory = new CredentialFactory(null, session.getClientId(), session.getClientSecret());
+
+		if (StringUtils.isBlank(session.getTokenEndpoint())) {
+			throw new HttpAuthenticationException("no tokenEndpoint provided");
 		}
-		this.clientCredentials = credentialFactory;
+
 		try {
 			this.authorizationEndpoint = new URI(session.getTokenEndpoint());
 		} catch (URISyntaxException e) {
 			throw new HttpAuthenticationException(e);
 		}
 		this.overwriteExpiryMs = session.getTokenExpiry() * 1000;
+
+		CredentialFactory userCredentials = session.getCredentials();
+		this.username = userCredentials.getUsername();
+		this.password = userCredentials.getPassword();
+
+		CredentialFactory clientCredentials = new CredentialFactory(session.getClientAuthAlias(), session.getClientId(), session.getClientSecret());
+		this.clientId = clientCredentials.getUsername();
+		this.clientSecret = clientCredentials.getPassword();
 	}
 
 	@Nullable
@@ -91,34 +98,13 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 	}
 
 	protected HttpEntityEnclosingRequestBase createPostRequestWithForm(URI uri, List<NameValuePair> formParameters) throws HttpAuthenticationException {
-		UrlEncodedFormEntity body = new UrlEncodedFormEntity(formParameters, DEFAULT_CHARSET);
+		UrlEncodedFormEntity body = new UrlEncodedFormEntity(formParameters, StreamUtil.DEFAULT_CHARSET);
 
 		HttpPost request = new HttpPost(uri);
 		request.addHeader(body.getContentType());
 		request.setEntity(body);
 
 		return request;
-	}
-
-	@Override
-	public void configure() throws ConfigurationException {
-		// For prettier error messages, distinguish in validations between clientAuthAlias set or not set
-		if (session.getClientAuthAlias() != null) {
-			if (clientCredentials.getUsername() == null) {
-				throw new ConfigurationException("Client Auth Alias [%s] does not contain username (clientId), or clientId not set".formatted(session.getClientAuthAlias()));
-			}
-			if (clientCredentials.getPassword() == null) {
-				throw new ConfigurationException("Client Auth Alias [%s] does not contain password (clientSecret), or clientSecret not set".formatted(session.getClientAuthAlias()));
-			}
-			return;
-		}
-		if (session.getClientId() == null) {
-			throw new ConfigurationException("clientAuthAlias or clientId is required");
-		}
-
-		if (session.getClientSecret() == null) {
-			throw new ConfigurationException("clientAuthAlias or clientSecret is required");
-		}
 	}
 
 	protected abstract HttpEntityEnclosingRequestBase createRequest(Credentials credentials, List<NameValuePair> parameters) throws HttpAuthenticationException;
@@ -140,7 +126,7 @@ public abstract class AbstractOauthAuthenticator implements IOauthAuthenticator 
 				log.debug("no accessToken lifetime found in accessTokenResponse, and no expiry specified. Token will not be refreshed preemptively");
 				accessTokenRefreshTime = -1;
 			} else {
-				accessTokenRefreshTime = System.currentTimeMillis() + (overwriteExpiryMs < 0 ? 500 * accessTokenLifetime : overwriteExpiryMs);
+				accessTokenRefreshTime = TimeProvider.nowAsMillis() + (overwriteExpiryMs < 0 ? 500 * accessTokenLifetime : overwriteExpiryMs);
 				log.debug("set accessTokenRefreshTime [{}]", ()-> DateFormatUtils.format(accessTokenRefreshTime));
 			}
 		} catch (HttpAuthenticationException e) {
