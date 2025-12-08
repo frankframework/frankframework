@@ -603,6 +603,25 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 	}
 
 	@Test
+	public void simpleMockedHttpPostJSONContentTypeAsParam() throws Throwable {
+		sender = getSender(false);
+		Message input = new Message("{\"key\": \"value\"}");
+
+		PipeLineSession pls = new PipeLineSession(session);
+
+		sender.setMethodType(HttpMethod.POST);
+		sender.setContentType("application/xml"); // This will be overridden by the parameter
+		sender.addParameter(ParameterBuilder.create().withName("Content-Type").withValue("application/json"));
+		sender.setHeadersParams("Content-Type");
+
+		sender.configure();
+		sender.start();
+
+		String result = sender.sendMessageOrThrow(input, pls).asString();
+		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPostJSONContentTypeAsParam.txt"), result);
+	}
+
+	@Test
 	public void binaryHttpPostJSON() throws Throwable {
 		sender = getSender();
 		Message input = new Message(new ByteArrayInputStream("{\"key1\": \"value2\"}".getBytes())); // Let's pretend this is a big JSON stream!
