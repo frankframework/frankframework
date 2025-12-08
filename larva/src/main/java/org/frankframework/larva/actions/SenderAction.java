@@ -15,6 +15,7 @@
 */
 package org.frankframework.larva.actions;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
@@ -73,7 +74,10 @@ public class SenderAction extends AbstractLarvaAction<ISender> {
 	public Message executeRead(Properties properties) throws SenderException, TimeoutException {
 		if (shouldExecuteSenderInLarvaThread()) { // QuerySender & DelaySender should not be executed in async thread, so execute here when reading
 			try (Message input = Message.asMessage(inputMessage)) { // Uses the provided message or NULL
-				return peek().sendMessageOrThrow(input, getSession());
+				Message result = peek().sendMessageOrThrow(input, getSession());
+				return result == input ? result.copyMessage() : result;
+			} catch (IOException e) {
+				throw new SenderException(e);
 			}
 		}
 
