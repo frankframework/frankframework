@@ -27,7 +27,6 @@ import org.apache.http.Header;
 import org.apache.http.HeaderElement;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
 import org.apache.http.ParseException;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -48,7 +47,7 @@ import lombok.Getter;
 
 import org.frankframework.http.mime.MultipartEntity;
 
-public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
+public class HttpResponseMock extends Mockito implements Answer<CloseableHttpResponse> {
 
 	private final String lineSeparator = System.getProperty("line.separator");
 	private final int statusCode;
@@ -60,7 +59,7 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 		this.statusCode = statusCode;
 	}
 
-	private HttpResponse buildResponse(InputStream content) throws UnsupportedOperationException, IOException {
+	private CloseableHttpResponse buildResponse(InputStream content) throws UnsupportedOperationException, IOException {
 		CloseableHttpResponse httpResponse = mock(CloseableHttpResponse.class);
 		StatusLine statusLine = mock(StatusLine.class);
 		HttpEntity httpEntity = mock(HttpEntity.class);
@@ -95,7 +94,7 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 	}
 
 	@Override
-	public HttpResponse answer(InvocationOnMock invocation) throws Throwable {
+	public CloseableHttpResponse answer(InvocationOnMock invocation) throws Throwable {
 		HttpHost host = (HttpHost) invocation.getArguments()[0];
 		HttpRequestBase request = (HttpRequestBase) invocation.getArguments()[1];
 		HttpContext context = (HttpContext) invocation.getArguments()[2];

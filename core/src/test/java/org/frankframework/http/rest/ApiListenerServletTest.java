@@ -700,7 +700,6 @@ public class ApiListenerServletTest {
 		Response result = service(createRequest(uri, HttpMethod.POST, builder.build()));
 		assertEquals(200, result.getStatus());
 		assertTrue(result.getContentType().contains("application/json"), "Content-Type header does not contain [application/json]");
-		assertTrue(result.getContentType().contains("charset=UTF-8"), "Content-Type header does not contain correct [charset]");
 		assertEquals("<hello>€ è</hello>", result.getContentAsString()); //Parsed as UTF-8
 		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());

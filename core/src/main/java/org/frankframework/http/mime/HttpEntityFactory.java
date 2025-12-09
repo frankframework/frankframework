@@ -54,6 +54,7 @@ import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DomBuilderException;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
 
@@ -73,7 +74,7 @@ public class HttpEntityFactory {
 		private Set<String> parametersToSkipWhenEmpty = Set.of();
 		private boolean rawWithParametersAppendsInputMessage = false;
 		private String multipartXmlSessionKey;
-		private String charSet = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
+		private String charset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		private String firstBodyPartName;
 		private String mtomContentTransferEncoding;
 
@@ -95,11 +96,6 @@ public class HttpEntityFactory {
 			return this;
 		}
 
-		public Builder contentType(String contentType) {
-			this.contentType = ContentType.create(contentType);
-			return this;
-		}
-
 		public Builder parametersToUse(Set<String> parametersToUse) {
 			this.parametersToUse = parametersToUse;
 			return this;
@@ -115,8 +111,8 @@ public class HttpEntityFactory {
 			return this;
 		}
 
-		public Builder charSet(String charSet) {
-			this.charSet = charSet;
+		public Builder charset(String charset) {
+			this.charset = charset;
 			return this;
 		}
 
@@ -136,7 +132,7 @@ public class HttpEntityFactory {
 		}
 
 		public HttpEntityFactory build() {
-			return new HttpEntityFactory(entityType, contentType, parametersToUse, parametersToSkipWhenEmpty, rawWithParametersAppendsInputMessage, multipartXmlSessionKey, charSet, firstBodyPartName, mtomContentTransferEncoding);
+			return new HttpEntityFactory(entityType, contentType, parametersToUse, parametersToSkipWhenEmpty, rawWithParametersAppendsInputMessage, multipartXmlSessionKey, charset, firstBodyPartName, mtomContentTransferEncoding);
 		}
 	}
 
@@ -148,18 +144,18 @@ public class HttpEntityFactory {
 	private final Set<String> parametersToSkipWhenEmpty;
 	private final boolean rawWithParametersAppendsInputMessage;
 	private final String multipartXmlSessionKey;
-	private final String charSet;
+	private final String charset;
 	private final String firstBodyPartName;
 	private final String mtomContentTransferEncoding;
 
-	private HttpEntityFactory(HttpEntityType entityType, ContentType contentType, Set<String> parametersToUse, Set<String> parametersToSkipWhenEmpty, boolean rawWithParametersAppendsInputMessage, String multipartXmlSessionKey, String charSet, String firstBodyPartName, String mtomContentTransferEncoding) {
+	private HttpEntityFactory(HttpEntityType entityType, ContentType contentType, Set<String> parametersToUse, Set<String> parametersToSkipWhenEmpty, boolean rawWithParametersAppendsInputMessage, String multipartXmlSessionKey, String charset, String firstBodyPartName, String mtomContentTransferEncoding) {
 		this.entityType = entityType;
 		this.contentType = contentType;
 		this.parametersToUse = Collections.unmodifiableSet(parametersToUse);
 		this.parametersToSkipWhenEmpty = Collections.unmodifiableSet(parametersToSkipWhenEmpty);
 		this.rawWithParametersAppendsInputMessage = rawWithParametersAppendsInputMessage;
 		this.multipartXmlSessionKey = multipartXmlSessionKey;
-		this.charSet = charSet;
+		this.charset = charset;
 		this.firstBodyPartName = firstBodyPartName;
 		this.mtomContentTransferEncoding = mtomContentTransferEncoding;
 	}
@@ -201,16 +197,17 @@ public class HttpEntityFactory {
 		if (contentType != null) {
 			return contentType;
 		}
-		MimeType mimeType = message != null ? message.getContext().getMimeType() : null;
+
+		MimeType mimeType = message != null ? MessageUtils.computeMimeType(message) : null;
 		if (mimeType != null) {
-			return ContentType.create(mimeType.getType() + "/" + mimeType.getSubtype(), mimeType.getCharset());
+			return ContentType.parse(mimeType.toString());
 		}
 		return null;
 	}
 
 	@SneakyThrows
 	private String encodeAsUrlParameter(Map.Entry<String, String> entry) {
-		return entry.getKey() + "=" + URLEncoder.encode(entry.getValue(), charSet);
+		return entry.getKey() + "=" + URLEncoder.encode(entry.getValue(), charset);
 	}
 
 	/**
@@ -239,7 +236,7 @@ public class HttpEntityFactory {
 			}
 		}
 		try {
-			return new UrlEncodedFormEntity(requestFormElements, charSet);
+			return new UrlEncodedFormEntity(requestFormElements, charset);
 		} catch (UnsupportedEncodingException e) {
 			throw new IOException("unsupported encoding for one or more POST parameters", e);
 		}
@@ -260,7 +257,7 @@ public class HttpEntityFactory {
 	private HttpEntity createMultiPartEntity(Message message, ParameterValueList parameters, PipeLineSession session) throws IOException {
 		MultipartEntityBuilder entity = MultipartEntityBuilder.create();
 
-		entity.setCharset(Charset.forName(charSet));
+		entity.setCharset(Charset.forName(charset));
 		entity.setMtomMultipart(entityType == HttpEntityType.MTOM);
 
 		if (StringUtils.isNotEmpty(firstBodyPartName)) {

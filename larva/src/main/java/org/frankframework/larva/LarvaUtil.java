@@ -20,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.time.Duration;
 import java.util.Properties;
@@ -106,7 +105,7 @@ public class LarvaUtil {
 
 		final String name = fileName.toLowerCase();
 		if (name.endsWith(".json")) {
-			message.getContext().withMimeType(MediaType.APPLICATION_JSON).withCharset(StandardCharsets.UTF_8);
+			message.getContext().withMimeType(MediaType.APPLICATION_JSON);
 		} else if (name.endsWith(".xml")) {
 			message.getContext().withMimeType(MediaType.APPLICATION_XML).withCharset("auto");
 		} else {

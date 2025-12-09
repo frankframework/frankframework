@@ -64,7 +64,7 @@ public class LarvaUtilTest {
 					"json": true
 				}""", message.asString());
 
-		assertEquals("UTF-8", message.getCharset());
+		assertNull(message.getCharset());
 		assertEquals(MediaType.APPLICATION_JSON, message.getContext().getMimeType());
 	}
 }
