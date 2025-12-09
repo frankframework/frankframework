@@ -47,10 +47,6 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 
 	private long timeoutMillis;
 
-	public ListenerMessageHandler(long timeoutMillis) {
-		this.timeoutMillis = timeoutMillis;
-	}
-
 	@Override
 	public Message processRequest(IPushingListener<M> origin, MessageWrapper<M> rawMessage, PipeLineSession session) throws ListenerException {
 		return processRequest(rawMessage.getMessage(), session);

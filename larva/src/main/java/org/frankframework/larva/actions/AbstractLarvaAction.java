@@ -21,6 +21,7 @@ import java.util.Properties;
 import org.springframework.context.Lifecycle;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -46,14 +47,13 @@ public abstract class AbstractLarvaAction<T extends IConfigurable> implements Co
 
 	private static final String CONVERT_MESSAGE_TO_EXCEPTION_PROPERTY_KEY = "convertExceptionToMessage";
 	private final T configurable;
-	private final @Getter long timeoutMillis;
+	private @Getter @Setter long timeoutMillis;
 
 	private @Getter boolean convertExceptionToMessage = false;
 	private @Getter PipeLineSession session = new PipeLineSession();
 
-	protected AbstractLarvaAction(T configurable, long timeoutMillis) {
+	protected AbstractLarvaAction(T configurable) {
 		this.configurable = configurable;
-		this.timeoutMillis = timeoutMillis;
 	}
 
 	protected final T peek() {

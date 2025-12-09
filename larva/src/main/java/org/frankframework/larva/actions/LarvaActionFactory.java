@@ -93,18 +93,18 @@ public class LarvaActionFactory {
 
 	private LarvaScenarioAction create(Scenario scenario, IConfigurable configurable, Properties actionProperties, String correlationId) {
 
-		long timeoutMillis = getTimeoutMillis(scenario, actionProperties);
 		final AbstractLarvaAction<?> larvaAction;
 		if (configurable instanceof IPullingListener<?> pullingListener) {
-			larvaAction = new PullingListenerAction(pullingListener, timeoutMillis);
+			larvaAction = new PullingListenerAction(pullingListener);
 		} else if (configurable instanceof IPushingListener<?> pushingListener) {
-			larvaAction = new LarvaPushingListenerAction(pushingListener, timeoutMillis);
+			larvaAction = new LarvaPushingListenerAction(pushingListener);
 		} else if (configurable instanceof ISender sender) {
-			larvaAction = new SenderAction(sender, timeoutMillis);
+			larvaAction = new SenderAction(sender);
 		} else {
-			larvaAction = new LarvaAction(configurable, timeoutMillis);
+			larvaAction = new LarvaAction(configurable);
 		}
 
+		larvaAction.setTimeoutMillis(getTimeoutMillis(scenario, actionProperties));
 		larvaAction.invokeSetters(actionProperties);
 		larvaAction.getSession().put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 
@@ -117,7 +117,6 @@ public class LarvaActionFactory {
 				return Long.parseLong(actionProperties.getProperty("timeout"));
 			} catch (NumberFormatException e) {
 				errorMessage(scenario, "timeout cannot be parsed as an integer, using defaultTimeout [%d] for action".formatted(defaultTimeout), e);
-				return defaultTimeout;
 			}
 		}
 		return defaultTimeout;

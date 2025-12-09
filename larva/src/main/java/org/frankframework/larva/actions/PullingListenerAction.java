@@ -27,8 +27,8 @@ import org.frankframework.task.TimeoutGuard;
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class PullingListenerAction extends AbstractLarvaAction<IPullingListener> {
 
-	public PullingListenerAction(IPullingListener listener, long timeoutMillis) {
-		super(listener,  timeoutMillis);
+	public PullingListenerAction(IPullingListener listener) {
+		super(listener);
 	}
 
 	@Override

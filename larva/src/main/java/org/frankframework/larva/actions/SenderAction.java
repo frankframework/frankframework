@@ -37,8 +37,8 @@ public class SenderAction extends AbstractLarvaAction<ISender> {
 
 	private Message inputMessage;
 
-	public SenderAction(ISender sender, long timeoutMillis) {
-		super(sender, timeoutMillis);
+	public SenderAction(ISender sender) {
+		super(sender);
 	}
 
 	@Override
