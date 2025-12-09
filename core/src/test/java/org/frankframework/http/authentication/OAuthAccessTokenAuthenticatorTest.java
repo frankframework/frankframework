@@ -218,7 +218,7 @@ public class OAuthAccessTokenAuthenticatorTest {
 
 		String token = assertDoesNotThrow(() -> authenticator.getOrRefreshAccessToken(mock(Credentials.class), true));
 		assertNotNull(token);
-		assertEquals(MockTokenServer.VALID_TOKEN, token);
+		assertEquals("Bearer " + MockTokenServer.VALID_TOKEN, token);
 	}
 
 }
