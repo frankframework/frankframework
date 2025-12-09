@@ -92,6 +92,7 @@ public class Step implements Comparable<Step> {
 		return  action.toLowerCase().contains("write");
 	}
 
+	@Nonnull
 	public Message getStepMessage(AppConstants appConstants) throws IOException {
 		if (isInline() || isIgnore()) {
 			return new Message(value);

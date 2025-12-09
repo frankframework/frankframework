@@ -101,7 +101,7 @@ public class LarvaUtil {
 		return properties;
 	}
 
-	public static Message readFile(@Nonnull String fileName) {
+	public static @Nonnull Message readFile(@Nonnull String fileName) {
 		Message message = new FileMessage(new File(fileName));
 
 		final String name = fileName.toLowerCase();
@@ -117,7 +117,7 @@ public class LarvaUtil {
 	}
 
 	// Ideally people don't use this...
-	private static final String getEncoding(@Nonnull String fileName) {
+	private static String getEncoding(@Nonnull String fileName) {
 		if (fileName.endsWith(".utf8") || fileName.endsWith(".utf-8")) {
 			return "UTF-8";
 		} else if (fileName.endsWith(".iso-8859-1")) {

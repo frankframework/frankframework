@@ -53,8 +53,11 @@ public class SenderAction extends AbstractLarvaAction<ISender> {
 
 	@Override
 	public void executeWrite(Message fileContent, String correlationId, Map<String, Object> parameters) {
+		if (this.senderThread != null || inputMessage != null) {
+			throw new IllegalStateException("Sender already called, do read before doing another write");
+		}
 		if (shouldExecuteSenderInLarvaThread()) { // QuerySender should not be executed in Async thread, only keep reference to the input-file here.
-			inputMessage = fileContent;
+			this.inputMessage = fileContent;
 			return;
 		}
 
@@ -66,7 +69,7 @@ public class SenderAction extends AbstractLarvaAction<ISender> {
 	}
 
 	private boolean shouldExecuteSenderInLarvaThread() {
-		// QuerySender should not be executed in async thread of SenderThread. DelaySender should not be executed by SenderThread because it should not be interrupted by a timeout.
+		// QuerySender should not be executed in async SenderThread. DelaySender should not be executed by SenderThread because it should not be interrupted by a timeout.
 		return peek() instanceof FixedQuerySender || peek() instanceof DelaySender;
 	}
 
@@ -78,6 +81,8 @@ public class SenderAction extends AbstractLarvaAction<ISender> {
 				return result == input ? result.copyMessage() : result;
 			} catch (IOException e) {
 				throw new SenderException(e);
+			} finally {
+				inputMessage = null;
 			}
 		}
 
