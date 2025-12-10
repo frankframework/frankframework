@@ -281,6 +281,7 @@ public class MessageUtils {
 	 * <p>
 	 * NOTE: This is a resource intensive operation, the first 64k is being read and stored in memory.
 	 */
+	@Nullable
 	public static MimeType computeMimeType(Message message) {
 		return computeMimeType(message, null);
 	}
@@ -295,6 +296,7 @@ public class MessageUtils {
 	 * </p>
 	 * @ff.note This might be a resource intensive operation, the first kilobytes of the message are potentially being read and stored in memory.
 	 */
+	@Nullable
 	public static MimeType computeMimeType(Message message, String filename) {
 		if(Message.isEmpty(message)) {
 			return null;
