@@ -47,4 +47,39 @@
 			</pipe>
 		</pipeline>
 	</adapter>
+
+
+	<Adapter name="ForEachChildElementPipe_ReturnedSessionKeys_Parent">
+		<Receiver>
+			<JavaListener serviceName="ibis4test-ForEachChildElementPipe_ReturnedSessionKeys" />
+		</Receiver>
+
+		<Pipeline>
+			<ForEachChildElementPipe name="ForEachChildElementPipe_call" elementXPathExpression="requests/request">
+				<IbisLocalSender javaListener="ForEachChildElementPipe_ReturnedSessionKeys" returnedSessionKeys="retval" />
+			</ForEachChildElementPipe>
+			<EchoPipe name="get retval" getInputFromSessionKey="retval" />
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="ForEachChildElementPipe_ReturnedSessionKeys_Sub">
+		<Receiver>
+			<JavaListener name="ForEachChildElementPipe_ReturnedSessionKeys" returnedSessionKeys="retval" />
+		</Receiver>
+		<Pipeline>
+			<Exits>
+				<Exit name="EXIT" state="success" />
+				<Exit name="ERROR" state="error" />
+			</Exits>
+
+			<SwitchPipe name="switch" xpathExpression="request" />
+
+			<PutInSessionPipe name="hello" sessionKey="retval" getInputFromFixedValue="&lt;reply&gt;goodbye&lt;/reply&gt;">
+				<Forward name="success" path="EXIT"/>
+			</PutInSessionPipe>
+			<PutInSessionPipe name="hi" sessionKey="retval" getInputFromFixedValue="&lt;reply&gt;ha&lt;/reply&gt;">
+				<Forward name="success" path="EXIT"/>
+			</PutInSessionPipe>
+		</Pipeline>
+	</Adapter>
 </module>

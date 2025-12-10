@@ -128,7 +128,6 @@ public class ExecuteJdbcQuery extends BusEndpointBase {
 				mimetype = MediaType.APPLICATION_XML;
 				break;
 			}
-			message.close();
 		} catch (Exception e) {
 			log.debug("error executing query", e);
 			throw new BusException("error executing query: "+e.getMessage(), 400);

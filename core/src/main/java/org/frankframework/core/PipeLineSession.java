@@ -338,15 +338,12 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		} else if (obj instanceof Number) {
 			return obj.toString();
 		} else if (obj instanceof Message message) {
-			// Existing messages returned directly so they are not closed
-			message.assertNotClosed();
 			return message.asString();
 		} else {
-			// Other types are wrapped into a message, which is closed after converting to String.
 			// NB: If the sessionKey value is a stream this consumes the stream.
-			try (Message message = Message.asMessage(obj)) {
-				return message.asString();
-			}
+			Message message = Message.asMessage(obj);
+			return message.asString();
+
 		}
 	}
 

@@ -1103,13 +1103,8 @@ public class MessageTest {
 		// Act
 		Message msg2 = msg1.copyMessage();
 
-		msg1.close();
-
 		// Assert
-		assertTrue(msg1.isNull());
-		assertFalse(msg2.isNull());
 		assertEquals("a", msg2.asString());
-		msg2.close();
 	}
 
 	@Test
@@ -1120,13 +1115,8 @@ public class MessageTest {
 		// Act
 		Message msg2 = msg1.copyMessage();
 
-		msg1.close();
-
 		// Assert
-		assertTrue(msg1.isNull());
-		assertFalse(msg2.isNull());
 		assertEquals("á", msg2.asString());
-		msg2.close();
 	}
 
 	@Test
@@ -1137,13 +1127,8 @@ public class MessageTest {
 		// Act
 		Message msg2 = msg1.copyMessage();
 
-		msg1.close();
-
 		// Assert
-		assertTrue(msg1.isNull());
-		assertFalse(msg2.isNull());
 		assertEquals("á", msg2.asString());
-		msg2.close();
 	}
 
 	@Test

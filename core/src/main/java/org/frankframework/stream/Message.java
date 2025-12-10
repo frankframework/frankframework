@@ -102,10 +102,9 @@ public class Message implements Serializable, Closeable {
 	private @Getter @Nonnull MessageContext context;
 	private boolean failedToDetermineCharset = false;
 
-	private @Getter boolean closed = false;
-
 	private Message(final @Nonnull MessageContext context, final @Nullable Object request, final @Nullable Class<?> requestClass) {
-		if (request instanceof Message || request instanceof InputStream || request instanceof Reader) {
+		//noinspection ConditionCoveredByFurtherCondition -- in future Message is perhaps no longer AutoCloseable and then we need this check again
+		if (request instanceof Message || (request instanceof AutoCloseable && !(request instanceof SerializableFileReference))) {
 			// this code could be reached when this constructor was public and the actual type of the parameter was not known at compile time.
 			// e.g. new Message(pipeRunResult.getResult());
 			throw new IllegalArgumentException("Cannot pass object of type %s to Message constructor".formatted(ClassUtils.classNameOf(request)));
@@ -396,19 +395,7 @@ public class Message implements Serializable, Closeable {
 
 	@Override
 	public void close() {
-		if (request instanceof AutoCloseable closeable) {
-			CloseUtils.closeSilently(closeable);
-		}
-		request = null;
-		closed = true;
-	}
-
-	private void onExceptionClose(@Nonnull Exception e) {
-		try {
-			close();
-		} catch (Exception e2) {
-			e.addSuppressed(e2);
-		}
+		// No-op, preserve method for backwards compatibility
 	}
 
 	/**
@@ -445,11 +432,9 @@ public class Message implements Serializable, Closeable {
 				return StreamUtil.getCharsetDetectingInputStreamReader(inputStream, readerCharset);
 			} catch (IOException e) {
 				CloseUtils.closeSilently(inputStream);
-				onExceptionClose(e);
 				throw e;
 			} catch (Exception e) {
 				CloseUtils.closeSilently(inputStream);
-				onExceptionClose(e);
 				throw Lombok.sneakyThrow(e);
 			}
 		}
@@ -507,10 +492,8 @@ public class Message implements Serializable, Closeable {
 			LOG.debug("returning String {} as InputStream", this::getObjectId);
 			return new ByteArrayInputStream(request.toString().getBytes(charset));
 		} catch (IOException e) {
-			onExceptionClose(e);
 			throw e;
 		} catch (Exception e) {
-			onExceptionClose(e);
 			throw Lombok.sneakyThrow(e);
 		}
 	}
@@ -744,8 +727,6 @@ public class Message implements Serializable, Closeable {
 			return nullMessage();
 		}
 		if (object instanceof Message message) {
-			// NB: This case can lead to hard-to-debug issues with messages either not being closed, or closed too early. Should ideally be avoided.
-			message.assertNotClosed();
 			return message;
 		}
 		if (object instanceof Reader reader) {
@@ -890,12 +871,6 @@ public class Message implements Serializable, Closeable {
 			contextFromStream = new MessageContext().withCharset(charset);
 		}
 		context = contextFromStream;
-	}
-
-	public void assertNotClosed() {
-		if (isClosed()) {
-			throw new IllegalStateException(getObjectId() + " is used after is has been closed!");
-		}
 	}
 
 	/**

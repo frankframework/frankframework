@@ -528,8 +528,6 @@ class FrankSenderTest {
 		IPipe pipe = new AbstractPipe() {
 			@Override
 			public PipeRunResult doPipe(Message message, PipeLineSession session) {
-				// Assert this to make sure input message is not prematurely closed; normally this is asserted by a PipeLineProcessor but that is not created in the Test SpringContext
-				message.assertNotClosed();
 				semaphore.release();
 				return new PipeRunResult();
 			}

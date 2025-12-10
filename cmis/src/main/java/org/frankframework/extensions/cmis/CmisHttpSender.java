@@ -42,7 +42,6 @@ import org.apache.http.entity.ByteArrayEntity;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
-import org.frankframework.core.SenderResult;
 import org.frankframework.http.AbstractHttpSender;
 import org.frankframework.http.HttpResponseHandler;
 import org.frankframework.parameters.ParameterValueList;
@@ -187,8 +186,7 @@ public abstract class CmisHttpSender extends AbstractHttpSender {
 
 			try {
 				// Message is unused, we use 'Output writer' instead
-				SenderResult ignored = sendMessage(Message.nullMessage(), pls);
-				ignored.getResult().close(); // close our nullMessage
+				sendMessage(Message.nullMessage(), pls);
 				return (Response) pls.get("__response");
 			} catch (Exception e) {
 				throw new CmisConnectionException(getUrl(), responseCode, e);
