@@ -80,7 +80,6 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 
 		// If the input is empty and the pipe has a replacement value, replace the input with the (fixed) value.
 		if (Message.isEmpty(message) && StringUtils.isNotEmpty(pipe.getEmptyInputReplacement())) {
-			message.close(); // Cleanup
 			log.debug("replacing empty input with fixed value [{}]", pipe::getEmptyInputReplacement);
 			message = new Message(pipe.getEmptyInputReplacement());
 		}
