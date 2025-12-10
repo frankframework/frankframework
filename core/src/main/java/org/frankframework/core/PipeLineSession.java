@@ -140,13 +140,13 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		copyIfExists(EXIT_STATE_CONTEXT_KEY, parentSession);
 		if (StringUtils.isNotEmpty(keysToCopy) && !"*".equals(keysToCopy)) {
 			for (String key: StringUtil.split(keysToCopy, ",;")) {
-				if (StringUtils.isNotBlank(key) && !MESSAGE_ID_KEY.equals(key)) {
+				if (!MESSAGE_ID_KEY.equals(key) && !key.equals(ORIGINAL_MESSAGE_KEY)) {
 					parentSession.put(key, get(key));
 				}
 			}
 		} else if (keysToCopy == null || "*".equals(keysToCopy)) { // if keys are not set explicitly, all keys will be copied
 			forEach((key, value) -> {
-				if (!key.equals(MESSAGE_ID_KEY)) {
+				if (!key.equals(MESSAGE_ID_KEY) && !key.equals(ORIGINAL_MESSAGE_KEY)) {
 					parentSession.put(key, value);
 				}
 			});
