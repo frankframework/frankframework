@@ -1114,8 +1114,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			}
 
 			Message output = processMessageInAdapter(messageWrapper, session, manualRetry, retryStatusAlreadyChecked);
-			log.debug("Closing result message [{}]", output);
-			output.close();
+			log.debug("Pipeline result message [{}]", output);
 
 			resetNumberOfExceptionsCaughtWithoutMessageBeingReceived();
 		}
