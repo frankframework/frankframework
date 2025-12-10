@@ -49,7 +49,6 @@ import org.frankframework.core.Adapter;
 import org.frankframework.core.HasName;
 import org.frankframework.core.IListener;
 import org.frankframework.core.ISender;
-import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.management.bus.DebuggerStatusChangedEvent;
@@ -174,8 +173,7 @@ public class LadybugDebugger implements ApplicationContextAware, ApplicationList
 							// Analog to test a pipeline that is using: "testmessage" + Misc.createSimpleUUID();
 							String messageId = MessageUtils.generateMessageId("ladybug-testmessage");
 							pipeLineSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
-							PipeLineResult result = adapter.processMessageDirect(messageId, inputMessage, pipeLineSession);
-							result.getResult().close();
+							adapter.processMessageDirect(messageId, inputMessage, pipeLineSession);
 						}
 						return null;
 					} finally {

@@ -155,7 +155,7 @@ public class ResultBlock2Sender extends Result2StringWriter {
 				Message message=new Message(writer.getBuffer().toString());
 				log.debug("sending block [{}] to sender [{}]", message, sender.getName());
 				writer.getBuffer().setLength(0);
-				getSender().sendMessageOrThrow(message, session).close();
+				getSender().sendMessageOrThrow(message, session);
 			}
 		}
 	}

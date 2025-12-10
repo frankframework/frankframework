@@ -439,7 +439,6 @@ public class MessageUtils {
 			return string;
 		}
 		if (object instanceof Message message) {
-			message.assertNotClosed();
 			return message.asString();
 		}
 		if (object instanceof MessageWrapper<?> wrapper) {
