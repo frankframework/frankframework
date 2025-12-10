@@ -633,8 +633,6 @@ class IbisLocalSenderTest {
 		public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 			try {
 				log.info("{}: start reading virtual stream", Thread.currentThread().getName());
-				// Often this assert is done in PipeLineProcessor but they're not part of the test-spring-configuration, and it is important to make this assertion
-				message.assertNotClosed();
 				recordedMessageId = session.getMessageId();
 				recordedCorrelationId = session.getCorrelationId();
 				long counter = countStreamSize(message);

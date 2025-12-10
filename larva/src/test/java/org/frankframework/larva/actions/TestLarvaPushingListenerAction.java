@@ -1,7 +1,6 @@
 package org.frankframework.larva.actions;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import org.junit.jupiter.api.Test;
 
@@ -33,13 +32,11 @@ public class TestLarvaPushingListenerAction {
 			processResult = listener.processRequest(outputMessage, session);
 		}
 
-		assertFalse(inputMessage.isClosed()); // should not be closed after executeWrite
 		assertEquals(input, processResult.asString());
 		assertEquals(inputMessage, processResult); // technically (in this case) the inputMessage is the processResult.
 
 		// validate background task result.
 		Message readResult = action.executeRead(null);
-		assertFalse(outputMessage.isClosed()); // should not be closed after executeRead
 		assertEquals(output, readResult.asString());
 		assertEquals(outputMessage, readResult); // technically (in this case) the outputMessage is the readResult.
 

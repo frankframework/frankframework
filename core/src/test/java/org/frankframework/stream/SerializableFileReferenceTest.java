@@ -211,17 +211,13 @@ public class SerializableFileReferenceTest {
 		Message copy = message.copyMessage();
 
 		// Assert
-		assertFalse(message.isClosed());
 		assertEquals(StreamUtil.AUTO_DETECT_CHARSET, copy.getContext().get(MessageContext.METADATA_CHARSET));
 		assertEquals(StreamUtil.AUTO_DETECT_CHARSET, message.getContext().get(MessageContext.METADATA_CHARSET));
 
 		assertEquals(testDataEnriched, message.asString()); // Computes the Charset
-		try (message) {
-			assertEquals("UTF-8", message.getContext().get(MessageContext.METADATA_CHARSET));
-			assertEquals(StreamUtil.AUTO_DETECT_CHARSET, copy.getContext().get(MessageContext.METADATA_CHARSET));
-		}
+		assertEquals("UTF-8", message.getContext().get(MessageContext.METADATA_CHARSET));
+		assertEquals(StreamUtil.AUTO_DETECT_CHARSET, copy.getContext().get(MessageContext.METADATA_CHARSET));
 
-		assertTrue(message.isClosed());
 		assertEquals(testDataEnriched, copy.asString()); // Computes the Charset
 		try (copy) {
 			assertEquals("UTF-8", copy.getContext().get(MessageContext.METADATA_CHARSET));

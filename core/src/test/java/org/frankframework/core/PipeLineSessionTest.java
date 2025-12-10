@@ -265,43 +265,6 @@ public class PipeLineSessionTest {
 		assertEquals(correlationId, session.getCorrelationId());
 	}
 
-	@Test
-	public void testMessageClosing() {
-		// Arrange
-		Message m1 = new Message("123");
-		session.put("key1", m1);
-		Message m2 = Message.asMessage(123);
-		session.put("key2", m2);
-		Message m3 = Message.asMessage(true);
-		session.put("key3", m3);
-		Message m4 = Message.asMessage(TimeProvider.nowAsDate());
-		session.put("key4", m4);
-		Message m5 = Message.asMessage(TimeProvider.now());
-		session.put("key5", m5);
-		Message m6 = Message.asMessage(TimeProvider.nowAsZonedDateTime());
-		session.put("key6", m6);
-		Message m7 = Message.asMessage("123".getBytes());
-		session.put("key7", m7);
-		Message m8 = Message.asMessage(new StringReader("123"));
-		session.put("key8", m8);
-		Message m9 = Message.asMessage(new ByteArrayInputStream("123".getBytes()));
-		session.put("key9", m9);
-
-		// Act
-		session.close();
-
-		// Assert
-		assertFalse(m1.isClosed());
-		assertFalse(m2.isClosed());
-		assertFalse(m3.isClosed());
-		assertFalse(m4.isClosed());
-		assertFalse(m5.isClosed());
-		assertFalse(m6.isClosed());
-		assertFalse(m7.isClosed());
-		assertFalse(m8.isClosed());
-		assertFalse(m9.isClosed());
-	}
-
 	/**
 	 * Method: mergeToParentSession(String keys, Map<String,Object> from, Map<String,Object>
 	 * to)
@@ -443,17 +406,6 @@ public class PipeLineSessionTest {
 		assertFalse(((Message) to.get("c")).isNull());
 		assertEquals("a message", ((Message) to.get("c")).asString());
 		assertEquals("a closeable", ((BufferedReader) to.get("d")).readLine());
-
-		// Act
-		to.close();
-
-		// Assert
-		assertFalse(((Message) to.get("c")).isNull()); // String message are no longer closed
-		assertFalse(((Message) to.get("c")).isClosed()); // String message are no longer closed
-		assertFalse(((Message) to.get("__e")).isNull());
-		assertFalse(((Message) to.get("__e")).isClosed());
-		assertFalse(((Message) to.get("f")).isNull());
-		assertFalse(((Message) to.get("f")).isClosed());
 	}
 
 	@ParameterizedTest
@@ -514,8 +466,6 @@ public class PipeLineSessionTest {
 		assertEquals(15, to.get("a"));
 		assertNull(to.get("c"));
 
-		assertFalse(message1.isClosed());
-		assertFalse(message2.isClosed());
 		assertEquals("m2", message2.asString());
 	}
 

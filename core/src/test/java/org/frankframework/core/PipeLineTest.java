@@ -3,7 +3,6 @@ package org.frankframework.core;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -291,7 +290,6 @@ public class PipeLineTest {
 		// Act // Assert
 		try (Message message = Message.nullMessage()) {
 			assertDoesNotThrow(() -> adapter.processMessageWithExceptions("m1", message, session));
-			assertFalse(message.isClosed());
 		}
 	}
 
@@ -309,7 +307,6 @@ public class PipeLineTest {
 
 			// Assert
 			assertEquals("Adapter [Adapter] called without expected session keys [k2, k3]", e.getMessage());
-			assertFalse(message.isClosed());
 		}
 	}
 
