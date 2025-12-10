@@ -30,6 +30,12 @@ import org.frankframework.util.StringUtil;
 /**
  * Implementation of {@link AdditionalStringResolver} for resolving user credentials using
  * the {@link CredentialFactory}.
+ * <br/>
+ * Only supports username and password resolution with the following syntax:
+ * <ul>
+ *   <li>credential:username:authAlias</li>
+ *   <li>credential:password:authAlias</li>
+ * </ul>
  * This class is loaded via the ServiceLoader.
  */
 public class CredentialResolver implements AdditionalStringResolver {

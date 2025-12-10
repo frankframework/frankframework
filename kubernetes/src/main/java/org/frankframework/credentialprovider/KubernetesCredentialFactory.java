@@ -63,6 +63,9 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  * }</pre>
  * </p>
  *
+ * @ff.info Please note that the namespace value requires to be valid according to the rules defined in
+ * <a href="https://tools.ietf.org/html/rfc1123">RFC 1123</a>. This means the namespace must consist of lower case alphanumeric characters, '-' or '.',
+ * and must start and end with an alphanumeric character
  * @ff.info The credentials are cached for 60 seconds, to prevent unnecessary calls to the Kubernetes API.
  */
 @Log
