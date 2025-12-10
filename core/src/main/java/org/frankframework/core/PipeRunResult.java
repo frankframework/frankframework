@@ -91,8 +91,6 @@ public class PipeRunResult implements AutoCloseable {
 
 	@Override
 	public void close() throws Exception {
-		if (result != null) {
-			result.close();
-		}
+		// No-op
 	}
 }

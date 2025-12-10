@@ -398,14 +398,6 @@ public class Message implements Serializable, Closeable {
 		// No-op, preserve method for backwards compatibility
 	}
 
-	private void onExceptionClose(@Nonnull Exception e) {
-		try {
-			close();
-		} catch (Exception e2) {
-			e.addSuppressed(e2);
-		}
-	}
-
 	/**
 	 * Return a {@link Reader} backed by the data in this message. {@link Reader#markSupported()} is guaranteed to be true for the returned stream.
 	 */
@@ -440,11 +432,9 @@ public class Message implements Serializable, Closeable {
 				return StreamUtil.getCharsetDetectingInputStreamReader(inputStream, readerCharset);
 			} catch (IOException e) {
 				CloseUtils.closeSilently(inputStream);
-				onExceptionClose(e);
 				throw e;
 			} catch (Exception e) {
 				CloseUtils.closeSilently(inputStream);
-				onExceptionClose(e);
 				throw Lombok.sneakyThrow(e);
 			}
 		}
@@ -502,10 +492,8 @@ public class Message implements Serializable, Closeable {
 			LOG.debug("returning String {} as InputStream", this::getObjectId);
 			return new ByteArrayInputStream(request.toString().getBytes(charset));
 		} catch (IOException e) {
-			onExceptionClose(e);
 			throw e;
 		} catch (Exception e) {
-			onExceptionClose(e);
 			throw Lombok.sneakyThrow(e);
 		}
 	}

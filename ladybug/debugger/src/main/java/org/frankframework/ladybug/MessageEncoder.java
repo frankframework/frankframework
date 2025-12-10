@@ -77,11 +77,6 @@ public class MessageEncoder extends MessageEncoderImpl {
 
 	@Override
 	public <T> T toObject(Checkpoint originalCheckpoint, T messageToStub) {
-		if (messageToStub instanceof Message message) {
-			// In case a stream is stubbed the replaced stream needs to be closed as next pipe will read and close the
-			// stub which would leave the replaced stream unclosed
-			message.close();
-		}
 		return (T) Message.asMessage(super.toObject(originalCheckpoint, messageToStub));
 	}
 
