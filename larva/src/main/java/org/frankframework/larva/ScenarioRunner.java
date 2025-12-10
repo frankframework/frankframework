@@ -162,8 +162,9 @@ public class ScenarioRunner {
 	/**
 	 * @param scenario full path to the `.properties` configuration file
 	 * @param flushLogsForEveryScenarioStep if true, the log will be flushed after every scenario step
+	 * @return {@code null} when scenario finishes successful, otherwise the reason why the scenario failed.
 	 */
-	public int runOneFile(Scenario scenario, boolean flushLogsForEveryScenarioStep) {
+	public String runOneFile(Scenario scenario, boolean flushLogsForEveryScenarioStep) {
 		long scenarioStart = System.currentTimeMillis();
 		int scenarioResult = LarvaTool.RESULT_ERROR;
 
@@ -184,8 +185,9 @@ public class ScenarioRunner {
 			Map<String, LarvaScenarioAction> larvaActions = actionFactory.createLarvaActions(scenario, scenarioContext, correlationId);
 			if (larvaActions.isEmpty()) {
 				testRunStatus.scenarioFailed(scenario);
-				testExecutionObserver.finishScenario(testRunStatus, scenario, LarvaTool.RESULT_ERROR, "Could not create LarvaActions");
-				return LarvaTool.RESULT_ERROR;
+				String scenarioResultMessage = "Could not create LarvaActions";
+				testExecutionObserver.finishScenario(testRunStatus, scenario, LarvaTool.RESULT_ERROR, scenarioResultMessage);
+				return scenarioResultMessage;
 			}
 			scenarioContext.configure();
 			scenarioContext.start();
@@ -196,12 +198,14 @@ public class ScenarioRunner {
 			List<Step> stepList = getSteps(scenario);
 			if (stepList.isEmpty()) {
 				testRunStatus.scenarioFailed(scenario);
-				testExecutionObserver.finishScenario(testRunStatus, scenario, LarvaTool.RESULT_ERROR, "No steps found");
-				return LarvaTool.RESULT_ERROR;
+				String scenarioResultMessage = "No steps found";
+				testExecutionObserver.finishScenario(testRunStatus, scenario, LarvaTool.RESULT_ERROR, scenarioResultMessage);
+				return scenarioResultMessage;
 			}
 			log.debug("Execute steps");
 			boolean allStepsPassed = true;
 			boolean autoSaved = false;
+			String stepResultMessage = "No steps found";
 			Iterator<Step> steps = stepList.iterator();
 			while (allStepsPassed && steps.hasNext()) {
 				Step step = steps.next();
@@ -211,7 +215,8 @@ public class ScenarioRunner {
 				int stepResult = executeStep(scenario, step, larvaActions, correlationId);
 				long stepEnd = System.currentTimeMillis();
 
-				testExecutionObserver.finishStep(testRunStatus, scenario, step, stepResult, buildStepFinishedMessage(step, stepResult, (stepEnd - stepStart)));
+				stepResultMessage = buildStepFinishedMessage(step, stepResult, (stepEnd - stepStart));
+				testExecutionObserver.finishStep(testRunStatus, scenario, step, stepResult, stepResultMessage);
 				if (stepResult == LarvaTool.RESULT_ERROR) {
 					allStepsPassed = false;
 				} else if (stepResult == LarvaTool.RESULT_AUTOSAVED) {
@@ -244,15 +249,17 @@ public class ScenarioRunner {
 				testRunStatus.scenarioFailed(scenario);
 			}
 			long scenarioDurationMs = System.currentTimeMillis() - scenarioStart;
-			testExecutionObserver.finishScenario(testRunStatus, scenario, scenarioResult, buildScenarioFinishedMessage(scenario, scenarioResult, scenarioDurationMs));
+			String scenarioResultMessage = buildScenarioFinishedMessage(scenario, scenarioResult, scenarioDurationMs);
+			testExecutionObserver.finishScenario(testRunStatus, scenario, scenarioResult, scenarioResultMessage);
 			log.info("Finished scenario [{}], result: {}", scenario.getName(), scenarioResult == LarvaTool.RESULT_OK ? "OK" : "FAILED");
-			return scenarioResult;
+			return scenarioResult == LarvaTool.RESULT_ERROR ? "%s%n%s".formatted(stepResultMessage, scenarioResultMessage) : null;
 		} catch (Exception e) {
 			log.warn("Error occurred while creating Larva Scenario Actions for scenario [{}]", scenario.getName(), e);
 			scenarioError(scenario, e.getClass().getSimpleName() + ": "+e.getMessage(), e);
 			testRunStatus.scenarioFailed(scenario);
-			testExecutionObserver.finishScenario(testRunStatus, scenario, LarvaTool.RESULT_ERROR, "Error occurred while executing Larva Scenario: " + e.getMessage());
-			return LarvaTool.RESULT_ERROR;
+			String scenarioResultMessage = "Error occurred while executing Larva Scenario: " + e.getMessage();
+			testExecutionObserver.finishScenario(testRunStatus, scenario, LarvaTool.RESULT_ERROR, scenarioResultMessage);
+			return scenarioResultMessage;
 		} finally {
 			// Clear caches to keep memory consumption under control
 			scenario.clearScenarioCaches();

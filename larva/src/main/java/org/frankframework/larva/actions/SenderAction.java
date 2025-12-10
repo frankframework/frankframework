@@ -15,6 +15,7 @@
 */
 package org.frankframework.larva.actions;
 
+import java.io.IOException;
 import java.util.Map;
 import java.util.Properties;
 
@@ -24,11 +25,11 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import lombok.Getter;
 
 import org.frankframework.core.ISender;
-import org.frankframework.core.ListenerException;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.jdbc.FixedQuerySender;
 import org.frankframework.larva.SenderThread;
+import org.frankframework.senders.DelaySender;
 import org.frankframework.stream.Message;
 
 public class SenderAction extends AbstractLarvaAction<ISender> {
@@ -51,24 +52,37 @@ public class SenderAction extends AbstractLarvaAction<ISender> {
 	}
 
 	@Override
-	public void executeWrite(Message fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException, ListenerException {
-		if (peek() instanceof FixedQuerySender) { // QuerySender is reversed, write is read. Just copy the input message here.
-			inputMessage = fileContent;
+	public void executeWrite(Message fileContent, String correlationId, Map<String, Object> parameters) {
+		if (this.senderThread != null || inputMessage != null) {
+			throw new IllegalStateException("Sender already called, do read before doing another write");
+		}
+		if (shouldExecuteSenderInLarvaThread()) { // QuerySender should not be executed in Async thread, only keep reference to the input-file here.
+			this.inputMessage = fileContent;
 			return;
 		}
 
 		SecurityContext securityContext = SecurityContextHolder.getContextHolderStrategy().getContext();
-		SenderThread thread = new SenderThread(peek(), fileContent, getSession(), isConvertExceptionToMessage(), correlationId);
+		SenderThread thread = new SenderThread(peek(), fileContent, getSession(), isConvertExceptionToMessage(), correlationId, getTimeoutMillis());
 		thread.setSecurityContext(securityContext);
 		thread.start();
 		this.senderThread = thread;
 	}
 
+	private boolean shouldExecuteSenderInLarvaThread() {
+		// QuerySender should not be executed in async SenderThread. DelaySender should not be executed by SenderThread because it should not be interrupted by a timeout.
+		return peek() instanceof FixedQuerySender || peek() instanceof DelaySender;
+	}
+
 	@Override
 	public Message executeRead(Properties properties) throws SenderException, TimeoutException {
-		if (peek() instanceof FixedQuerySender) { // QuerySender is reversed, read is write. Execute the query here.
+		if (shouldExecuteSenderInLarvaThread()) { // QuerySender & DelaySender should not be executed in async thread, so execute here when reading
 			try (Message input = Message.asMessage(inputMessage)) { // Uses the provided message or NULL
-				return peek().sendMessageOrThrow(input, getSession());
+				Message result = peek().sendMessageOrThrow(input, getSession());
+				return result == input ? result.copyMessage() : result;
+			} catch (IOException e) {
+				throw new SenderException(e);
+			} finally {
+				inputMessage = null;
 			}
 		}
 

@@ -375,7 +375,7 @@ public class HtmlScenarioOutputRenderer implements TestExecutionObserver {
 		writeHtml(TABLE_CLOSING_TAG);
 	}
 
-	private void writeIntOptionBox(String description, String fieldName, String title, int value) {
+	private void writeIntOptionBox(String description, String fieldName, String title, long value) {
 		// Use a span to make IE put table on next line with a smaller window width
 		writeHtml("<span style=\"float: left; font-size: 10pt; width: 0px\">&nbsp; &nbsp; &nbsp;</span>");
 		writeHtml("<table style=\"float:left;height:50px\">");

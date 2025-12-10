@@ -40,21 +40,21 @@ class LarvaActionFactoryTest {
 	}
 
 	@Test
-	void openQueues() throws Exception {
+	void openActions() throws Exception {
 		// Arrange
 		Properties props = new Properties();
-		props.load(this.getClass().getResourceAsStream("/queueCreatorTest.properties"));
-		Scenario scenario = new Scenario(new File("/queueCreatorTest.properties"), "test", "test", props);
+		props.load(this.getClass().getResourceAsStream("/actionCreatorTest.properties"));
+		Scenario scenario = new Scenario(new File("/actionCreatorTest.properties"), "test", "test", props);
 		// Act
-		Map<String, LarvaScenarioAction> queues = actionFactory.createLarvaActions(scenario, applicationContext, "cid");
+		Map<String, LarvaScenarioAction> actions = actionFactory.createLarvaActions(scenario, applicationContext, "cid");
 
 		// Assert
-		assertNotNull(queues);
-		assertTrue(queues.containsKey("thisIsAQueue"));
-		assertTrue(queues.containsKey("this.is.another.queue"));
-		assertFalse(queues.containsKey("prop.without"));
+		assertNotNull(actions);
+		assertTrue(actions.containsKey("thisIsAnAction"));
+		assertTrue(actions.containsKey("this.is.another.action"));
+		assertFalse(actions.containsKey("prop.without"));
 
-		LarvaScenarioAction action = queues.get("thisIsAQueue");
+		LarvaScenarioAction action = actions.get("thisIsAnAction");
 		assertNotNull(action);
 		SenderAction senderAction = assertInstanceOf(SenderAction.class, action);
 
@@ -62,7 +62,7 @@ class LarvaActionFactoryTest {
 		senderAction.executeWrite(new Message("input"), null, null);
 		Message message = senderAction.executeRead(props);
 		long duration = System.currentTimeMillis() - start;
-		assertTrue(duration > 100, "delay should be > 100ms but was " + duration);
+		assertTrue(duration >= 100, "delay should be >= 100ms but was " + duration);
 		assertNotNull(message);
 		assertEquals("input", message.asString());
 	}

@@ -22,6 +22,7 @@ import org.frankframework.core.IPullingListener;
 import org.frankframework.core.ListenerException;
 import org.frankframework.receivers.RawMessageWrapper;
 import org.frankframework.stream.Message;
+import org.frankframework.task.TimeoutGuard;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public class PullingListenerAction extends AbstractLarvaAction<IPullingListener> {
@@ -49,11 +50,15 @@ public class PullingListenerAction extends AbstractLarvaAction<IPullingListener>
 	public Message executeRead(Properties properties) throws ListenerException {
 		Map<String, Object> threadContext = null;
 		IPullingListener pullingListener = peek();
+		TimeoutGuard tg = new TimeoutGuard((int)getTimeoutMillis() + 5_000, "Larva PullingListenerAction");
 		try {
 			threadContext = pullingListener.openThread();
 			RawMessageWrapper rawMessage = pullingListener.getRawMessage(threadContext);
 			if (rawMessage != null) {
 				return pullingListener.extractMessage(rawMessage, threadContext);
+			}
+			if (tg.cancel()) {
+				throw new ListenerException("Cancelled because of timeout");
 			}
 		} finally {
 			if (threadContext != null) {

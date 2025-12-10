@@ -30,9 +30,9 @@ import org.frankframework.util.AppConstants;
  */
 @Log4j2
 public class LarvaConfig {
-	static final int GLOBAL_TIMEOUT_MILLIS = AppConstants.getInstance().getInt("larva.timeout", 10_000);
+	static final long GLOBAL_TIMEOUT_MILLIS = AppConstants.getInstance().getLong("larva.timeout", 10_000L);
 
-	private @Getter @Setter int timeout = GLOBAL_TIMEOUT_MILLIS;
+	private @Getter @Setter long timeout = GLOBAL_TIMEOUT_MILLIS;
 	private @Getter @Setter int waitBeforeCleanup = 100;
 	private @Getter @Setter boolean scenarioPropertyOverridesIncluded = AppConstants.getInstance().getBoolean("larva.scenarioPropertyOverridesIncluded", false);
 	private @Getter @Setter boolean multiThreaded = false;

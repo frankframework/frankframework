@@ -2,7 +2,7 @@ package org.frankframework.runner;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -272,11 +272,11 @@ public class RunLarvaTests {
 		return DynamicTest.dynamicTest(
 				scenarioName, scenario.getScenarioFile().toURI(), () -> {
 					stdOut.info("Running scenario: [{}]", scenarioName);
-					int scenarioPassed = scenarioRunner.runOneFile(scenario, true);
+					String scenarioResultMessage = scenarioRunner.runOneFile(scenario, true);
 					larvaWriter.flush();
 
-					assumeTrue(scenarioPassed != LarvaTool.RESULT_ERROR || !IGNORED_SCENARIOS.contains(scenarioName), () -> "Ignoring Blacklisted Scenario: [" + scenarioName + "]");
-					assertNotEquals(LarvaTool.RESULT_ERROR, scenarioPassed, () -> "Scenario failed: [" + scenarioName + "]");
+					assumeTrue(scenarioResultMessage == null || !IGNORED_SCENARIOS.contains(scenarioName), () -> "Ignoring failure of Blacklisted Scenario: [" + scenarioName + "]");
+					assertNull(scenarioResultMessage, () -> "Scenario failed: [" + scenarioName + "] gave result : " + scenarioResultMessage);
 				}
 		);
 	}

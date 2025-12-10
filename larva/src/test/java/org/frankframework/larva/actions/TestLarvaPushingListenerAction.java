@@ -15,7 +15,8 @@ public class TestLarvaPushingListenerAction {
 	@Test
 	public void testListenerMessageHandler() throws Exception {
 		PushingListenerAdapter listener = new PushingListenerAdapter();
-		LarvaPushingListenerAction action = new LarvaPushingListenerAction(listener, 60);
+		LarvaPushingListenerAction action = new LarvaPushingListenerAction(listener);
+		action.setTimeoutMillis(60L);
 
 		String input = "prepare-input";
 		String output = "pipeline-output";

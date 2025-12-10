@@ -1,5 +1,6 @@
 package org.frankframework.larva;
 
+import static org.frankframework.testutil.TestAssertions.assertEqualsIgnoreCRLF;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -59,7 +60,7 @@ public class LarvaUtilTest {
 	public void testJsonFile() throws IOException {
 		Message message = LarvaUtil.readFile(getTestFile("dummy.json"));
 
-		assertEquals("""
+		assertEqualsIgnoreCRLF("""
 				{
 					"json": true
 				}""", message.asString());
