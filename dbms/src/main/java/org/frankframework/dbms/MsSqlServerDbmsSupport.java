@@ -38,6 +38,11 @@ public class MsSqlServerDbmsSupport extends GenericDbmsSupport {
 	}
 
 	@Override
+	public boolean isParameterTypeMatchRequired() {
+		return true;
+	}
+
+	@Override
 	public boolean hasSkipLockedFunctionality() {
 		return true;
 	}

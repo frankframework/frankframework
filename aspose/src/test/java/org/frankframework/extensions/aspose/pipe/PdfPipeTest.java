@@ -78,6 +78,12 @@ import org.frankframework.util.MessageUtils;
 public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 	private static final String REGEX_PATH_IGNORE = "(?<=convertedDocument=\").*?(?=\")";
 	private static final String REGEX_TIMESTAMP_IGNORE = "(?<=Timestamp:).*(?=\" n)";
+
+	// The file `Dit is een Document met verschillende fonts Word 2003` may use font's that overflow the document which might create a new page.
+	// This only happens when a font cannot be found (some linux distro's). The new PDF default since #10038 is 2 pages.
+	// If we encounter a single page file, it's ok, just replace the `numberOfPages` to 2 so tests will continue.
+	private static final Pattern REGEX_NUMBER_OF_PAGES = Pattern.compile("(?:documentName=\"Dit is een Document met verschillende fonts Word 2003\".* numberOfPages=\")([1-2])(?:\")");
+
 	private static final String[] REGEX_IGNORES = {REGEX_PATH_IGNORE, REGEX_TIMESTAMP_IGNORE};
 
 	// Note: this test does not work on ARM64 MacOS. No clue why, but we do not really need it
@@ -227,7 +233,9 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		for(String ignore : REGEX_IGNORES){
 			result = result.replaceAll(ignore, "IGNORE");
 		}
-		return result;
+
+		// If it's 2, revert it to 1.
+		return REGEX_NUMBER_OF_PAGES.matcher(result).replaceAll("numberOfPages=\"1\"");
 	}
 
 	@Test

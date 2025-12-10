@@ -90,8 +90,8 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	private @Getter String sqlDialect = AppConstants.getInstance().getString("jdbc.sqlDialect", null);
 
 	private @Getter String blobCharset = null;
-	private @Getter boolean blobsCompressed=true;
-	private @Getter boolean blobSmartGet=false;
+	private @Getter boolean blobsCompressed = true;
+	private @Getter boolean blobSmartGet = false;
 
 	private @Setter @Getter boolean trace=false;
 	private @Getter boolean peekUntransacted=true;
@@ -99,7 +99,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	private Map<ProcessState, String> updateStatusQueries = new EnumMap<>(ProcessState.class);
 	private Map<ProcessState, Set<ProcessState>> targetProcessStates = new EnumMap<>(ProcessState.class);
 
-	protected Connection connection=null;
+	protected Connection connection = null;
 
 	private String preparedSelectQuery;
 	private String preparedPeekQuery;
@@ -129,7 +129,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 			}
 			updateStatusQueries=orderedUpdateStatusQueries;
 			targetProcessStates = ProcessState.getTargetProcessStates(knownProcessStates());
-		} catch (JdbcException | SQLException e) {
+		} catch (JdbcException e) {
 			throw new ConfigurationException(e);
 		}
 		// Check that the SELECT query contains the fields wanted
@@ -431,7 +431,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		return false;
 	}
 
-	protected String convertQuery(String query) throws SQLException, DbmsException {
+	protected String convertQuery(String query) throws DbmsException {
 		if (StringUtils.isEmpty(getSqlDialect())) {
 			return query;
 		}

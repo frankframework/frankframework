@@ -24,20 +24,20 @@ jobs:
         working-directory: console/frontend/src/main/frontend/
     steps:
     - name: Checkout code
-      uses: actions/checkout@v2
+      uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
 
     - name: Set timezone
       run: sudo timedatectl set-timezone Europe/Amsterdam
 
     - name: Install pnpm
-      uses: pnpm/action-setup@v4
+      uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
       with:
         version: 10
 
     - name: Set up Node.js 22.x
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@395ad3262231945c25e8478fd5baf05154b1d79f # v6
       with:
-        node-version: 22.x
+        node-version: 24.11.1
         cache: pnpm
         cache-dependency-path: '**/pnpm-lock.yaml'
 

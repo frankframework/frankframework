@@ -13,7 +13,8 @@ public class TestListenerMessageHandler {
 
 	@Test
 	public void testListenerMessageHandler() throws Exception {
-		ListenerMessageHandler<Message> handler = new ListenerMessageHandler<>(60);
+		ListenerMessageHandler<Message> handler = new ListenerMessageHandler<>();
+		handler.setTimeout(60L);
 		PipeLineSession session = new PipeLineSession();
 		handler.putResponseMessage(new ListenerMessage(new Message("fixed response"), session));
 

@@ -484,7 +484,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 
 			PipeRunResult prr = new PipeRunResult(getSuccessForward(), messageBuilder.build());
 			if(stopReason != null) {
-				PipeForward forward = getForwards().get(stopReason.getForwardName());
+				PipeForward forward = findForward(stopReason.getForwardName());
 				if(forward != null) {
 					prr.setPipeForward(forward);
 				}
@@ -530,7 +530,10 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 	}
 
 	/**
-	 * Only valid for xpathexpression
+	 * Only valid for xPathExpression.
+	 * If outputType is {@link OutputType#XML} then the resulting stylesheet will use the {@code copy-of} method instead of {@code value-of}.
+	 * </p>
+	 * This field controls how to iterate over the input and does not determine the pipe's output.
 	 * @ff.default text
 	 */
 	public void setOutputType(OutputType outputType) {

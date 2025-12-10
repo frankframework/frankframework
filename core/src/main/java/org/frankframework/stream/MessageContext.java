@@ -24,7 +24,7 @@ import java.nio.charset.Charset;
 import java.time.Instant;
 import java.util.Collections;
 import java.util.Date;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -34,7 +34,9 @@ import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.MediaType;
 import org.springframework.util.InvalidMimeTypeException;
+import org.springframework.util.LinkedCaseInsensitiveMap;
 import org.springframework.util.MimeType;
 
 import org.frankframework.util.DateFormatUtils;
@@ -60,7 +62,7 @@ public class MessageContext implements Serializable {
 	private static final long serialVersionUID = 1L;
 	private static final long CUSTOM_SERIALIZATION_VERSION = 1L;
 
-	private Map<String, Serializable> data = new LinkedHashMap<>();
+	private Map<String, Serializable> data = new LinkedCaseInsensitiveMap<>();
 
 	public MessageContext() {
 		super();
@@ -162,6 +164,14 @@ public class MessageContext implements Serializable {
 	}
 
 	public MessageContext withMimeType(@Nonnull MimeType mimeType) {
+		if (MediaType.APPLICATION_JSON.equalsTypeAndSubtype(mimeType) && mimeType.getCharset() != null) {
+			// Strip the charset when JSON, see: https://www.rfc-editor.org/rfc/rfc8259
+			remove(METADATA_CHARSET);
+			Map<String, String> params = new HashMap<>(mimeType.getParameters());
+			params.remove("charset");
+			return withMimeType(new MimeType(mimeType, params));
+		}
+
 		put(METADATA_MIMETYPE, mimeType);
 		withCharset(mimeType.getCharset());
 

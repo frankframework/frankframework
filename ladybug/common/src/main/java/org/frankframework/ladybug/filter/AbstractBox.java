@@ -18,10 +18,10 @@ package org.frankframework.ladybug.filter;
 import java.util.List;
 import java.util.ListIterator;
 
-import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.CheckpointType;
-import nl.nn.testtool.Report;
-import nl.nn.testtool.filter.CheckpointMatcher;
+import org.wearefrank.ladybug.Checkpoint;
+import org.wearefrank.ladybug.CheckpointType;
+import org.wearefrank.ladybug.Report;
+import org.wearefrank.ladybug.filter.CheckpointMatcher;
 
 public abstract class AbstractBox implements CheckpointMatcher {
 	public boolean match(Report report, Checkpoint checkpoint) {

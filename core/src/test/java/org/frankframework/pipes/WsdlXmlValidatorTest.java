@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -42,6 +41,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 	private static final String SIVTR					= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/StartIncomingValueTransferProcess_1.wsdl";
 	private static final String SIVTRX					= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/IgnoreImport/StartIncomingValueTransferProcess_1x.wsdl";
 	private static final String MULTIPLE_OPERATIONS		= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/multipleOperations.wsdl";
+	private static final String MULTIPLE_ROOT_ELEMENTS	= ValidatorTestBase.BASE_DIR_VALIDATION+"/Wsdl/multipleRootElements.wsdl";
 
 	@Override
 	public WsdlXmlValidator createPipe() {
@@ -264,18 +264,99 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
-		assertThrows(XmlValidatorException.class, () ->
+
+		XmlValidatorException ex = assertThrows(XmlValidatorException.class, () ->
 				val.validate("""
 						<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:impl="http://test.example.com">
 							<s:Header/>
 							<s:Body>
-								<impl:add>
+								<impl:rootElement>
 									<impl:numA>3.14</impl:numA>
 									<impl:numB>3.14</impl:numB>
-								</impl:add>
+								</impl:rootElement>
 							</s:Body>
 						</s:Envelope>\
-						""", session));
+						""", session)
+		);
+
+		assertEquals("no root element provided to use for validation", ex.getMessage());
+	}
+
+	@Test
+	public void testNoSoapBody() throws Exception {
+		WsdlXmlValidator val = pipe;
+		val.setWsdl(MULTIPLE_OPERATIONS);
+		val.setSoapBody(null);
+		val.setThrowException(true);
+		val.addForward(new PipeForward("success", null));
+		val.configure();
+		val.start();
+
+		XmlValidatorException ex = assertThrows(XmlValidatorException.class, () ->
+			val.validate("""
+				<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:impl="http://test.example.com">
+					<s:Header/>
+					<s:Body>               
+					
+					</s:Body>
+				</s:Envelope>\
+				""", session)
+		);
+
+		assertEquals("no root element provided to use for validation", ex.getMessage());
+	}
+
+	@Test
+	public void testEmptySoapBody() throws Exception {
+		WsdlXmlValidator val = pipe;
+		val.setWsdl(MULTIPLE_OPERATIONS);
+		val.setSoapBody("");
+		val.setThrowException(true);
+		val.addForward(new PipeForward("success", null));
+		val.configure();
+		val.start();
+
+		// There are many spaces!
+		val.validate("""
+				<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:impl="http://test.example.com">
+					<s:Header/>
+					<s:Body>               
+					
+					</s:Body>
+				</s:Envelope>\
+				""", session);
+	}
+
+	// This succeeds because there is no `soapBodyNamespace`
+	@Test
+	public void testMultipleSoapElements() throws Exception {
+		WsdlXmlValidator val = pipe;
+		val.setWsdl(MULTIPLE_ROOT_ELEMENTS);
+		val.setSoapBody("add");
+		val.setThrowException(true);
+		val.addForward(new PipeForward("success", null));
+		val.configure();
+		val.start();
+
+		val.validate("""
+				<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:impl="http://test.example.com">
+					<s:Header/>
+					<s:Body><impl:add>4</impl:add></s:Body>
+				</s:Envelope>\
+				""", session);
+	}
+
+	@Test
+	public void testMultipleSoapElementsWithTns() {
+		WsdlXmlValidator val = pipe;
+		val.setWsdl(MULTIPLE_ROOT_ELEMENTS);
+		val.setSoapBody("add");
+		val.setSoapBodyNamespace("http://test.example.com");
+		val.setThrowException(true);
+		val.addForward(new PipeForward("success", null));
+
+		ConfigurationException ex = assertThrows(ConfigurationException.class, val::configure);
+		assertEquals("soapBody [add] exists multiple times, not possible to create schemaLocation from soapBodyNamespace", ex.getMessage());
 	}
 
 	@Test
@@ -351,7 +432,7 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.addForward(new PipeForward("success", null));
 		val.configure();
 		val.start();
-		assertThrows(XmlValidatorException.class, () ->
+		XmlValidatorException ex = assertThrows(XmlValidatorException.class, () ->
 
 				val.validate("""
 				<Envelope xmlns="http://schemas.xmlsoap.org/soap/envelope/">
@@ -380,6 +461,8 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 				</Envelope>
 				""", session)
 		);
+
+		assertEquals("no root element provided to use for validation", ex.getMessage());
 	}
 
 	@Test
@@ -421,8 +504,8 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		);
 	}
 
-	@Disabled("Travis has problems with this")
 	@Test
+	@SuppressWarnings("deprecation")
 	public void wsdlReasonSessionKey() throws Exception {
 		WsdlXmlValidator val = pipe;
 		val.setWsdl(SIMPLE);
@@ -439,8 +522,8 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		assertEquals("/: at (1,7): cvc-elt.1.a: Cannot find the declaration of element 'xml'.", lines.get(1));
 		assertEquals("/: Illegal element 'xml'. Element(s) 'Envelope' expected.", lines.get(2));
 		assertEquals("/xml: Unknown namespace ''", lines.get(3));
-		assertEquals("/Envelope/Body: Element(s) 'TradePriceRequest' not found", lines.get(4));
-		assertEquals("/: Element(s) 'Envelope' not found", lines.get(5));
+		assertTrue(lines.contains("/Envelope/Body: Element(s) 'TradePriceRequest' not found"));
+		assertTrue(lines.contains("/: Element(s) 'Envelope' not found"));
 	}
 
 	@Test

@@ -17,9 +17,12 @@ package org.frankframework.larva;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.util.Enumeration;
 
 import org.apache.logging.log4j.Level;
@@ -94,40 +97,51 @@ public class FileSender implements IConfigurable, FrankElement {
 				if (file.exists()) {
 					recursiveDelete(file);
 				}
+			} else if (createPath) {
+				if (file.exists()) {
+					throw new SenderException("Path '" + file + "' already exists.");
+				}
+				createDirectories(file);
 			} else {
-				if (createPath) {
-					if (file.exists()) {
-						throw new SenderException("Path '" + file + "' already exists.");
-					}
-					file.mkdirs();
-				} else {
-					if (!overwrite && file.exists()) {
-						throw new SenderException("File '" + file + "' already exists.");
-					}
-					String pathname = file.getParent();
-					File path = new File(pathname);
-					if (!path.exists()) {
-						path.mkdirs();
-					}
+				if (!overwrite && file.exists()) {
+					throw new SenderException("File '" + file + "' already exists.");
+				}
+				String pathname = file.getParent();
+				File path = new File(pathname);
+				if (!path.exists()) {
+					createDirectories(path);
+				}
 
-					try(FileOutputStream fileOutputStream = new FileOutputStream(file)) {
-						fileOutputStream.write(message.asByteArray(encoding));
-					} catch(Exception e) {
-						throw new SenderException("Exception writing file '" + filename + "': " + e.getMessage(), e);
+				try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
+					InputStream inputStream = message.asInputStream(encoding);
+					if (inputStream != null) {
+						inputStream.transferTo(fileOutputStream);
 					}
-					long startTime = System.currentTimeMillis();
-					while (checkDelete && file.exists() && System.currentTimeMillis() < startTime + timeout) {
-						try {
-							Thread.sleep(interval);
-						} catch(InterruptedException e) {
-							throw new SenderException("Exception waiting for deletion of file '" + filename + "': " + e.getMessage(), e);
-						}
-					}
-					if (checkDelete && file.exists()) {
-						throw new TimeoutException("Time out waiting for deletion of file '" + filename + "'.");
+				} catch (Exception e) {
+					throw new SenderException("Exception writing file '" + filename + "': " + e.getMessage(), e);
+				}
+				long startTime = System.currentTimeMillis();
+				while (checkDelete && file.exists() && System.currentTimeMillis() < startTime + timeout) {
+					try {
+						//noinspection BusyWait
+						Thread.sleep(interval);
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+						throw new SenderException("Exception waiting for deletion of file '" + filename + "': " + e.getMessage(), e);
 					}
 				}
+				if (checkDelete && file.exists()) {
+					throw new TimeoutException("Time out waiting for deletion of file '" + filename + "'.");
+				}
 			}
+		}
+	}
+
+	private void createDirectories(File path) throws SenderException {
+		try {
+			Files.createDirectories(path.toPath());
+		} catch (IOException e) {
+			throw new SenderException(e);
 		}
 	}
 

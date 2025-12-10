@@ -24,7 +24,7 @@ public class XmlValidatorException extends IbisException {
 		super(cause,t);
 	}
 
-	XmlValidatorException(String cause) {
+	public XmlValidatorException(String cause) {
 		super(cause);
 	}
 }

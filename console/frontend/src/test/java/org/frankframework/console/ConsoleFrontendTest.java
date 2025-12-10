@@ -57,18 +57,6 @@ public class ConsoleFrontendTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {"../dummy.txt", "/../dummy.txt", "/%20.txt", "/#/../../dummy.txt"})
-	public void testFileRetrievalOutsideConsoleDirectory(String path) throws UnsupportedEncodingException {
-		MockHttpServletRequest request = createRequest(path);
-
-		MockHttpServletResponse response = new MockHttpServletResponse();
-		servlet.doGet(request, response);
-
-		assertEquals(404, response.getStatus());
-		assertEquals("", response.getContentAsString());
-	}
-
-	@ParameterizedTest
 	@NullAndEmptySource
 	public void noPathShouldRedirect(String path) throws UnsupportedEncodingException {
 		MockHttpServletRequest request = createRequest(path);
@@ -93,8 +81,11 @@ public class ConsoleFrontendTest {
 	}
 
 	@ParameterizedTest
-	@ValueSource(strings = {"http://other.url/bar/foo", "/localhost:1337/foo/bar", "without-slash"})
-	public void testForbiddenUrls(String path) throws UnsupportedEncodingException {
+	@ValueSource(strings = {"http://other.url/bar/foo", "/localhost:1337/foo/bar", "without-slash",
+			"../dummy.txt", "/../dummy.txt", "/%20.txt", "/#/../../dummy.txt"})
+	// Tests  ForbiddenUrls
+	// Tests FileRetrieval outside 'ConsoleDirectory'
+	public void testForbiddenAndRelativeUrls(String path) throws UnsupportedEncodingException {
 		MockHttpServletRequest request = createRequest(path);
 
 		MockHttpServletResponse response = new MockHttpServletResponse();

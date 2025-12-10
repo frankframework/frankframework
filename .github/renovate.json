@@ -1,0 +1,253 @@
+{
+    "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+    "extends": [
+        "config:recommended",
+        "helpers:pinGitHubActionDigests",
+        ":configMigration",
+        "security:minimumReleaseAgeNpm"
+    ],
+    "dependencyDashboardApproval": true,
+    "baseBranchPatterns": [
+        "master",
+        "/^release\\/9\\./",
+        "/^release\\/8\\.0$/",
+        "/^release\\/10\\./"
+    ],
+    "labels": [
+        "Dependencies"
+    ],
+    "ignoreDeps": [
+        "pnpm",
+        "org.eclipse.m2e:lifecycle-mapping",
+        "com.eclipsesource.j2v8:j2v8_linux_x86_64"
+    ],
+    "prHourlyLimit": 10,
+    "rebaseWhen": "conflicted",
+    "commitMessageTopic": "{{depName}}",
+    "commitMessageAction": "Update",
+    "commitMessageExtra": "to {{#if isMajor}}v{{newMajor}}{{else}}v{{newVersion}}{{/if}}",
+    "commitMessageSuffix": "",
+    "packageRules": [
+        {
+            "description": "Maven dependencies - daily at 6 AM, ignore major updates",
+            "matchManagers": [
+                "maven"
+            ],
+            "matchBaseBranches": [
+                "master"
+            ],
+            "schedule": [
+                "* 0-6 * * *"
+            ],
+            "addLabels": [
+                "Java"
+            ],
+            "ignoreDeps" : [
+                "software.amazon.awssdk:bom",
+                "org.ibissource:ibis-ladybug",
+                "org.wearefrank:ladybug",
+                "com.sap.jco3:sapidoc",
+                "org.filesys:jfileserver-enterprise",
+                "org.eclipse.m2e:lifecycle-mapping",
+                "com.eclipsesource.j2v8:j2v8_linux_x86_64"
+            ],
+            "major": {
+                "enabled": false
+            },
+            "groupName": "maven-dependencies",
+            "separateMajorMinor": true,
+            "separateMultipleMinor": true,
+            "separateMultipleMajor": true,
+            "separateMinorPatch": false
+        },
+        {
+            "description": "Aspose Dependencies",
+            "matchManagers": [
+                "maven"
+            ],
+            "groupName": "Aspose",
+            "matchPackageNames": [
+                "/^com\\.aspose:/"
+            ]
+        },
+        {
+            "description": "Spring Dependencies",
+            "matchManagers": [
+                "maven"
+            ],
+            "groupName": "Spring",
+            "matchPackageNames": [
+                "/^org\\.springframework:/",
+                "/^org\\.springframework\\.boot:/",
+                "/^org\\.springframework\\.security:/"
+            ],
+            "separateMinorPatch": true
+        },
+        {
+            "description": "Release branches - disable ALL regular updates (only security/CVE updates via vulnerabilityAlerts)",
+            "matchManagers": [
+                "npm",
+                "maven",
+                "github-actions",
+                "maven-wrapper"
+            ],
+            "matchBaseBranches": [
+                "/^release\\//"
+            ],
+            "enabled": false
+        },
+        {
+            "description": "Ignore specific Maven dependencies for ... <= 8.0",
+            "matchManagers": [
+                "maven"
+            ],
+            "matchBaseBranches": [
+                "/^release\\/8\\.0$/"
+            ],
+            "ignoreDeps" : [
+                "org.apache.tika:tika-parsers",
+                "org.springframework.boot:spring-boot-loader",
+                "org.springframework:"
+            ]
+        },
+        {
+            "description": "All NPM dependencies - weekly schedule, ignore major updates",
+            "matchManagers": [
+                "npm"
+            ],
+            "schedule": [
+                "before 6am on the first day of the week"
+            ],
+            "addLabels": [
+                "JavaScript"
+            ],
+            "groupName": "npm-dependencies",
+            "separateMajorMinor": true,
+            "major": {
+                "enabled": false
+            }
+        },
+        {
+            "description": "Angular packages - override groupName",
+            "matchManagers": [
+                "npm"
+            ],
+            "groupName": "Angular",
+            "matchPackageNames": [
+                "/^@angular\\//",
+                "/^@angular-devkit\\//",
+                "@angular/common",
+                "zone.js"
+            ]
+        },
+        {
+            "description": "ESLint packages - override groupName",
+            "matchManagers": [
+                "npm"
+            ],
+            "groupName": "ES Lint",
+            "matchPackageNames": [
+                "/(eslint)/"
+            ]
+        },
+        {
+            "description": "Ignore NPM peer dependencies",
+            "matchManagers": [
+                "npm"
+            ],
+            "matchDepTypes": [
+                "peerDependencies"
+            ],
+            "enabled": false
+        },
+        {
+            "description": "Docker dependencies - daily schedule, group all updates",
+            "matchManagers": [
+                "dockerfile",
+                "docker-compose"
+            ],
+            "matchBaseBranches": [
+                "master"
+            ],
+            "schedule": [
+                "* 0-6 * * *"
+            ],
+            "addLabels": [
+                "Docker"
+            ],
+            "groupName": "Docker"
+        },
+        {
+            "description": "Docker dependencies (for LTS) - daily schedule, group all updates",
+            "matchManagers": [
+                "dockerfile",
+                "docker-compose"
+            ],
+            "matchBaseBranches": [
+                "/^release\\/9\\./",
+                "/^release\\/8\\.0$/",
+                "/^release\\/10\\./"
+            ],
+            "schedule": [
+                "* 0-6 * * *"
+            ],
+            "addLabels": [
+                "Docker",
+                "{{replace 'release/' '' baseBranch}}"
+            ],
+            "groupName": "Docker (LTS)"
+        },
+        {
+            "description": "GitHub Actions - weekly schedule, group all updates",
+            "matchManagers": [
+                "github-actions"
+            ],
+            "matchBaseBranches": [
+                "master"
+            ],
+            "schedule": [
+                "before 6am on the first day of the week"
+            ],
+            "addLabels": [
+                "CI/CD"
+            ],
+            "groupName": "github-actions",
+            "separateMajorMinor": false
+        }
+    ],
+    "lockFileMaintenance": {
+        "enabled": false
+    },
+    "vulnerabilityAlerts": {
+        "enabled": true,
+        "vulnerabilityFixStrategy": "highest",
+        "dependencyDashboardApproval": true,
+        "commitMessageSuffix": "",
+        "labels": [
+            "Security",
+            "Dependencies"
+        ],
+        "addLabels": [
+            "CVE",
+            "{{replace 'release/' '' baseBranch}}"
+        ],
+        "ignoreDeps": [
+            "com.oracle.database.jdbc:ojdbc11",
+            "com.h2database:h2",
+            "com.microsoft.sqlserver:mssql-jdbc",
+            "com.mysql:mysql-connector-j",
+            "org.mariadb.jdbc:mariadb-java-client",
+            "org.postgresql:postgresql",
+            "com.ibm.db2:jcc",
+            "org.apache.activemq:artemis-jakarta-client-all",
+            "org.apache.activemq:activemq-client",
+            "com.rabbitmq:amqp-client",
+            "com.rabbitmq.jms:rabbitmq-jms",
+            "org.apache.kafka:kafka-clients",
+            "bootstrap",
+            "mermaid"
+        ]
+    },
+    "osvVulnerabilityAlerts": true,
+    "rangeStrategy": "bump"
+}

@@ -361,6 +361,39 @@ public class DbmsSupportTest {
 		}
 	}
 
+	@DatabaseTest
+	public void testJdbcSetParameterWithNullValues() throws Exception {
+		if (dbmsSupport.getDbms() == Dbms.H2) {
+			// For H2 try both with and without parameter type match, to cover all relevant code paths
+			testSetParameterWithNullValues(true, 6);
+			testSetParameterWithNullValues(false, 7);
+		} else {
+			// For all non-H2 databases, make sure it works with whatever the DBMS Support says should work
+			testSetParameterWithNullValues(dbmsSupport.isParameterTypeMatchRequired(), 6);
+		}
+	}
+
+	private void testSetParameterWithNullValues(boolean parameterTypeMatchRequired, int key) throws Exception {
+		String query = "INSERT INTO " + TEST_TABLE + "(TKEY, TNUMBER, TDATE, TDATETIME) VALUES (" + key + ",?,?,?)";
+		String translatedQuery = dbmsSupport.convertQuery(query, "Oracle");
+
+		try (Connection connection = env.getConnection(); PreparedStatement stmt = connection.prepareStatement(translatedQuery)) {
+			JdbcUtil.setParameter(stmt, 1, null, parameterTypeMatchRequired); // Number
+			JdbcUtil.setParameter(stmt, 2, null, parameterTypeMatchRequired); // SQL Date
+			JdbcUtil.setParameter(stmt, 3, null, parameterTypeMatchRequired); // SQL Timestamp
+			stmt.execute();
+		}
+
+		try (Connection connection = env.getConnection(); PreparedStatement stmt = executeTranslatedQuery(connection, "SELECT TNUMBER, TDATE, TDATETIME FROM " + TEST_TABLE + " WHERE TKEY=" + key, QueryType.SELECT)) {
+			try (ResultSet resultSet = stmt.executeQuery()) {
+				resultSet.next();
+				assertNull(resultSet.getString(1));
+				assertNull(resultSet.getString(2));
+				assertNull(resultSet.getString(3));
+			}
+		}
+	}
+
 
 	@DatabaseTest
 	public void testWriteAndReadClob() throws Exception {

@@ -99,9 +99,9 @@ public class HttpSender extends AbstractHttpSender {
 		}
 
 		entityBuilder = HttpEntityFactory.Builder.create()
-				.charSet(getCharSet())
+				.charset(getCharSet())
 				.entityType(postType)
-				.contentType(getFullContentType())
+				.contentType(getDefaultContentType())
 				.parametersToSkipWhenEmpty(parametersToSkipWhenEmptySet)
 				.parametersToUse(requestOrBodyParamsSet)
 				.firstBodyPartName(getFirstBodyPartName())
@@ -144,11 +144,7 @@ public class HttpSender extends AbstractHttpSender {
 				}
 
 				HttpGet getMethod = new HttpGet(relativePath+(parameters.size() == 0 && BooleanUtils.isTrue(getTreatInputMessageAsParameters()) && !Message.isEmpty(message)? message.asString():""));
-
 				log.debug("HttpSender constructed GET-method [{}]", () -> getMethod.getURI().getQuery());
-				if (null != getFullContentType()) { // Manually set Content-Type header
-					getMethod.setHeader("Content-Type", getFullContentType().toString());
-				}
 				return getMethod;
 
 			case POST:
@@ -168,9 +164,6 @@ public class HttpSender extends AbstractHttpSender {
 
 			case DELETE:
 				HttpDelete deleteMethod = new HttpDelete(relativePath.toString());
-				if (null != getFullContentType()) { // Manually set Content-Type header
-					deleteMethod.setHeader("Content-Type", getFullContentType().toString());
-				}
 				return deleteMethod;
 
 			case HEAD:
@@ -178,11 +171,7 @@ public class HttpSender extends AbstractHttpSender {
 
 			case REPORT:
 				Element element = XmlUtils.buildElement(message.asString(), true);
-				HttpReport reportMethod = new HttpReport(relativePath.toString(), element);
-				if (null != getFullContentType()) { // Manually set Content-Type header
-					reportMethod.setHeader("Content-Type", getFullContentType().toString());
-				}
-				return reportMethod;
+				return new HttpReport(relativePath.toString(), element);
 
 			default:
 				return null;
@@ -310,5 +299,14 @@ public class HttpSender extends AbstractHttpSender {
 	 */
 	public void setTreatInputMessageAsParameters(Boolean b) {
 		treatInputMessageAsParameters = b;
+	}
+
+	/**
+	 * Content-Type (superset of mimetype + charset) of the request, for <code>POST</code>, <code>PUT</code> and <code>PATCH</code> methods.
+	 * @ff.default text/html, when postType=<code>RAW</code>, else auto-determined
+	 */
+	@Override
+	public void setContentType(String string) {
+		super.setContentType(string);
 	}
 }

@@ -117,7 +117,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 	private @Getter HttpMethod httpMethod = HttpMethod.GET;
 
 	private @Getter String charSet = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
-	private @Getter ContentType fullContentType = null;
+	private @Getter ContentType defaultContentType = null;
 	private @Getter String contentType = null;
 
 	private @Getter String headersParams="";
@@ -205,10 +205,10 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 			}
 		}
 
-		if(StringUtils.isNotEmpty(getContentType())) {
-			fullContentType = ContentType.parse(getContentType());
-			if(fullContentType.getCharset() == null) {
-				fullContentType = fullContentType.withCharset(getCharSet());
+		if(StringUtils.isNotEmpty(getContentType()) && headerParamsSet.stream().noneMatch(e -> e.equalsIgnoreCase("content-type"))) {
+			defaultContentType = ContentType.parse(getContentType());
+			if(defaultContentType.getCharset() == null && !"application/json".equals(defaultContentType.getMimeType())) {
+				defaultContentType = defaultContentType.withCharset(getCharSet());
 			}
 		}
 
@@ -542,8 +542,8 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 	}
 
 	/**
-	 * Content-Type (superset of mimetype + charset) of the request, for <code>POST</code>, <code>PUT</code> and <code>PATCH</code> methods
-	 * @ff.default text/html, when postType=<code>RAW</code>
+	 * Content-Type (superset of mimetype + charset) of the request, for <code>POST</code>, <code>PUT</code> and <code>PATCH</code> methods.
+	 * @ff.default auto-determined
 	 */
 	public void setContentType(String string) {
 		contentType = string;

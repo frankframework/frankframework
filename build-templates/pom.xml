@@ -88,7 +88,7 @@
 			<dependency>
 				<groupId>org.pf4j</groupId>
 				<artifactId>pf4j</artifactId>
-				<version>3.13.0</version>
+				<version>3.14.0</version>
 				<scope>provided</scope>
 			</dependency>
 		</dependencies>
@@ -115,12 +115,12 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-resources-plugin</artifactId>
-					<version>3.3.1</version>
+					<version>3.4.0</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-jar-plugin</artifactId>
-					<version>3.4.2</version>
+					<version>3.5.0</version>
 					<configuration>
 						<archive>
 							<addMavenDescriptor>true</addMavenDescriptor>
@@ -146,7 +146,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-source-plugin</artifactId>
-					<version>3.3.1</version>
+					<version>3.4.0</version>
 					<executions>
 						<execution>
 							<id>attach-sources</id>
@@ -237,7 +237,7 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-assembly-plugin</artifactId>
-					<version>3.7.1</version>
+					<version>3.8.0</version>
 					<configuration>
 						<!-- This produces an error but it still works, see https://github.com/apache/maven-assembly-plugin/issues/1032 -->
 						<finalName>${project.artifactId}-${project.version}-${plugin.type}</finalName>

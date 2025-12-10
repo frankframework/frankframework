@@ -79,7 +79,7 @@ public class MatchUtils {
 			XmlUtils.parseXml(xml, contentHandler);
 			return xmlWriter.toString();
 		} catch (IOException | SAXException e) {
-			throw new RuntimeException("ERROR: could not prettify ["+xml+"]",e);
+			return fail("ERROR: could not prettify ["+xml+"]",e);
 		}
 	}
 
@@ -96,19 +96,10 @@ public class MatchUtils {
 	}
 
 	public static void assertXmlEquals(String description, String xmlExp, String xmlAct, boolean ignoreNamespaces, boolean includeComments) {
-		String xmlExpPretty;
-		String xmlActPretty;
-		try {
-			xmlExpPretty = xmlPretty(xmlExp, ignoreNamespaces, includeComments);
-		} catch (RuntimeException e) {
-			xmlExpPretty = e.getMessage();
-		}
-		try {
-			xmlActPretty = xmlPretty(xmlAct, ignoreNamespaces, includeComments);
-		} catch (RuntimeException e) {
-			xmlActPretty = e.getMessage();
-		}
-		assertEquals(xmlExpPretty,xmlActPretty,description);
+		String xmlExpPretty = xmlPretty(xmlExp, ignoreNamespaces, includeComments);
+		String xmlActPretty = xmlPretty(xmlAct, ignoreNamespaces, includeComments);
+
+		assertEquals(xmlExpPretty, xmlActPretty, description);
 	}
 
 	public static void assertXmlSimilar(String expected, String actual) {

@@ -1,4 +1,4 @@
-import { LocationStrategy } from '@angular/common';
+import { LocationStrategy, TitleCasePipe } from '@angular/common';
 import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BaseIframeComponent } from '../iframe.base';
@@ -8,6 +8,7 @@ import { Subscription } from 'rxjs';
   selector: 'app-iframe-custom-view',
   templateUrl: '../iframe.component.html',
   styleUrls: ['../iframe.component.scss'],
+  imports: [TitleCasePipe],
 })
 export class IframeCustomViewComponent extends BaseIframeComponent implements OnInit, OnDestroy {
   private readonly router: Router = inject(Router);
@@ -50,7 +51,7 @@ export class IframeCustomViewComponent extends BaseIframeComponent implements On
     this.iframeSrc = this.sanitizer.bypassSecurityTrustResourceUrl(this.url);
     setTimeout(() => {
       // run after router events have passed
-      this.appService.iframePopoutUrl.set(this.url);
+      this.setIframeSource(this.url, view['name']);
     }, 50);
   }
 }

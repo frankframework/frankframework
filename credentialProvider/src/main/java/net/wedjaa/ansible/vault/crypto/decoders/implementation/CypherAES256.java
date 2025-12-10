@@ -124,7 +124,7 @@ public class CypherAES256 implements CypherInterface
         return Arrays.copyOfRange(decrypted, 0, length);
     }
 
-    public byte[] pad(byte[] cleartext)
+    public byte[] pad(byte[] cleartext) throws IOException
     {
         byte[] padded = null;
 
@@ -147,7 +147,7 @@ public class CypherAES256 implements CypherInterface
         }
         catch (Exception ex)
         {
-            new IOException("Error calculating padding for " + CYPHER_ALGO + ": " + ex.getMessage());
+            throw new IOException("Error calculating padding for " + CYPHER_ALGO + ": " + ex.getMessage());
         }
 
         return padded;
@@ -188,7 +188,8 @@ public class CypherAES256 implements CypherInterface
         }
     }
 
-    public byte[] decrypt(byte[] encryptedData, String password) throws IOException
+    @Override
+	public byte[] decrypt(byte[] encryptedData, String password) throws IOException
     {
         byte[] decrypted = null;
 
@@ -248,22 +249,26 @@ public class CypherAES256 implements CypherInterface
         return decrypted;
     }
 
-    public void decrypt(OutputStream decodedStream, byte[] encryptedData, String password) throws IOException
+    @Override
+	public void decrypt(OutputStream decodedStream, byte[] encryptedData, String password) throws IOException
     {
         decodedStream.write(decrypt(encryptedData, password));
     }
 
-    public void encrypt(OutputStream encodedStream, byte[] data, String password) throws IOException
+    @Override
+	public void encrypt(OutputStream encodedStream, byte[] data, String password) throws IOException
     {
         encodedStream.write(encrypt(data, password));
     }
 
-    public String infoLine()
+    @Override
+	public String infoLine()
     {
         return VaultInfo.vaultInfoForCypher(CYPHER_ID);
     }
 
-    public byte[] encrypt(byte[] data, String password) throws IOException
+    @Override
+	public byte[] encrypt(byte[] data, String password) throws IOException
     {
         EncryptionKeychain keys = new EncryptionKeychain(SALT_LENGTH, password, KEYLEN, IVLEN, ITERATIONS, KEYGEN_ALGO);
         keys.createKeys();

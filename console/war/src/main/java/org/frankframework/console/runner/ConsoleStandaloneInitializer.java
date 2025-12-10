@@ -52,6 +52,14 @@ public class ConsoleStandaloneInitializer {
 	// Should start a XmlServletWebServerApplicationContext.
 	// Optionally, in order to enable the ladybug the profile ladybug-file or ladybug-database can be enabled.
 	public static void main(String[] args) {
+		SpringApplication app = configureApplication();
+		app.run(args);
+	}
+
+	/**
+	 * Configure the Frank!Framework application
+	 */
+	static SpringApplication configureApplication() {
 		SpringApplication app = new SpringApplication();
 		app.setAllowBeanDefinitionOverriding(true);
 		app.setWebApplicationType(WebApplicationType.SERVLET);
@@ -61,7 +69,7 @@ public class ConsoleStandaloneInitializer {
 		app.setSources(set);
 		app.addPrimarySources(List.of(WsSciWrapper.class));
 
-		app.run(args);
+		return app;
 	}
 
 	/**

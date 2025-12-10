@@ -15,6 +15,8 @@
 */
 package org.frankframework.larva;
 
+import static org.frankframework.larva.output.LarvaHtmlWriter.encodeForHtml;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Writer;
@@ -29,7 +31,6 @@ import org.apache.logging.log4j.Logger;
 
 import lombok.Getter;
 
-import org.frankframework.core.SenderException;
 import org.frankframework.http.AbstractHttpServlet;
 import org.frankframework.lifecycle.IbisInitializer;
 import org.frankframework.util.AppConstants;
@@ -180,12 +181,13 @@ public class LarvaServlet extends AbstractHttpServlet {
 				try {
 					LarvaTool larvaTool = LarvaTool.createInstance(getServletContext());
 					larvaTool.windiff(request.getParameter("expectedFileName"), request.getParameter("expectedBox"), request.getParameter("resultBox"));
-				} catch (SenderException e) {
-					log.warn("unable to execute windiff command", e);
-					resp.sendError(500, "unable to save file");
 				} catch (IOException e) {
 					log.warn("unable to write tempFile", e);
-					resp.sendError(500, "unable to write tempFile");
+					writer.append("<h2 class='warning'>Unable to write tempFile or invoke Windiff command: ")
+							.append(encodeForHtml(e.getMessage()))
+							.append("</h2>")
+							.flush();
+					return;
 				}
 			} else {
 				writer.append("<p>Overwriting expected result with actual result...</p>");

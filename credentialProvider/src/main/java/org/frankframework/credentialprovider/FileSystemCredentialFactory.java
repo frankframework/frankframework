@@ -52,12 +52,12 @@ public class FileSystemCredentialFactory implements ISecretProvider {
 		CredentialConstants appConstants = CredentialConstants.getInstance();
 		String fsroot = appConstants.getProperty(FILESYSTEM_ROOT_PROPERTY);
 		if (StringUtils.isEmpty(fsroot)) {
-			throw new IllegalStateException("No property ["+FILESYSTEM_ROOT_PROPERTY+"] found");
+			throw new IllegalStateException("Property ["+FILESYSTEM_ROOT_PROPERTY+"] not found");
 		}
 		this.root = Paths.get(fsroot);
 
 		if (!Files.exists(root)) {
-			throw new IllegalArgumentException("Credential Filesystem ["+root+"] does not exist");
+			throw new IllegalArgumentException("Credential directory ["+root+"] does not exist");
 		}
 	}
 

@@ -1,6 +1,6 @@
 import { inject, Injectable } from '@angular/core';
 import { AppService } from '../app.service';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { combineLatest, Observable } from 'rxjs';
 import {
   Link,
@@ -24,7 +24,11 @@ export class AuthService {
   private readonly appService: AppService = inject(AppService);
   private readonly http: HttpClient = inject(HttpClient);
   private readonly securityItemsService: SecurityItemsService = inject(SecurityItemsService);
-  private readonly onErrorAllowedLinks: AllowedLinks[] = [{ name: 'getFileContent' }, { name: 'getLogDirectory' }];
+  private readonly onErrorAllowedLinks: AllowedLinks[] = [
+    { name: 'getFileContent' },
+    { name: 'getLogDirectory' },
+    { name: 'getSecurityItems' },
+  ];
 
   /* Currently not being used because servlet handles basic auth */
   /* login(username: string, password: string): void {
@@ -72,7 +76,7 @@ export class AuthService {
           this.updatePermissions(securityItems, links);
           resolve();
         },
-        error: (error) => {
+        error: (error: HttpErrorResponse) => {
           console.error("Couldn't load permissions", error);
           this.allowedLinks = this.onErrorAllowedLinks;
           resolve();

@@ -48,7 +48,7 @@ import org.frankframework.util.SpringUtils;
 @Log4j2
 public class LarvaActionFactory {
 
-	private final int defaultTimeout;
+	private final long defaultTimeout;
 	private final LarvaTool larvaTool;
 	private final TestExecutionObserver testExecutionObserver;
 
@@ -74,7 +74,7 @@ public class LarvaActionFactory {
 				log.debug("created FrankElement [{}]", configurable);
 
 				Properties actionProperties = handleDeprecations(scenario, LarvaActionUtils.getSubProperties(properties, actionName), actionName);
-				LarvaScenarioAction larvaScenarioAction = create(configurable, actionProperties, defaultTimeout, correlationId);
+				LarvaScenarioAction larvaScenarioAction = create(scenario, configurable, actionProperties, correlationId);
 				SpringUtils.registerSingleton(applicationContext, actionName, larvaScenarioAction);
 				larvaActions.put(actionName, larvaScenarioAction);
 				debugMessage("Opened [" + className + "] '" + actionName + "'");
@@ -91,22 +91,35 @@ public class LarvaActionFactory {
 		}
 	}
 
-	private static LarvaScenarioAction create(IConfigurable configurable, Properties actionProperties, int defaultTimeout, String correlationId) {
+	private LarvaScenarioAction create(Scenario scenario, IConfigurable configurable, Properties actionProperties, String correlationId) {
+
 		final AbstractLarvaAction<?> larvaAction;
 		if (configurable instanceof IPullingListener<?> pullingListener) {
 			larvaAction = new PullingListenerAction(pullingListener);
 		} else if (configurable instanceof IPushingListener<?> pushingListener) {
-			larvaAction = new LarvaPushingListenerAction(pushingListener, defaultTimeout);
+			larvaAction = new LarvaPushingListenerAction(pushingListener);
 		} else if (configurable instanceof ISender sender) {
 			larvaAction = new SenderAction(sender);
 		} else {
 			larvaAction = new LarvaAction(configurable);
 		}
 
+		larvaAction.setTimeoutMillis(getTimeoutMillis(scenario, actionProperties));
 		larvaAction.invokeSetters(actionProperties);
 		larvaAction.getSession().put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 
 		return larvaAction;
+	}
+
+	private long getTimeoutMillis(Scenario scenario, Properties actionProperties) {
+		if (actionProperties.containsKey("timeout")) {
+			try {
+				return Long.parseLong(actionProperties.getProperty("timeout"));
+			} catch (NumberFormatException e) {
+				errorMessage(scenario, "timeout cannot be parsed as an integer, using defaultTimeout [%d] for action".formatted(defaultTimeout), e);
+			}
+		}
+		return defaultTimeout;
 	}
 
 	private Properties handleDeprecations(Scenario scenario, Properties actionProperties, String keyBase) {

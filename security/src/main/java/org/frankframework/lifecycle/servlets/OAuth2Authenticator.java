@@ -153,6 +153,17 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	private @Setter String userNameAttributeName;
 
 	/**
+	 * <p>The claim name in the JWT token that contains the authorities of the user.
+	 * Defaults to any of {@code JwtGrantedAuthoritiesConverter#WELL_KNOWN_AUTHORITIES_CLAIM_NAMES} when this value is not set.</p>
+	 * <p>For keycloak, "realm_access.roles" is the standard claim, this is a 'nested' value. When we encounter a dot (.) in the claim name,
+	 * we assume it is a nested claim and use the custom mapper.</p>
+	 *
+	 * @ff.tip can only contain one dot (.) to indicate a nested claim, e.g. "realm_access.roles".
+	 */
+	@Setter
+	private String authoritiesClaimName;
+
+	/**
 	 * The client ID to use for the OAuth2 provider.
 	 */
 	private @Setter String clientId = null;
@@ -220,7 +231,7 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	public SecurityFilterChain configure(HttpSecurity http) throws Exception {
 		configure();
 
-		AuthorityMapper authorityMapper = new AuthorityMapper(roleMappingURL, getSecurityRoles(), getEnvironmentProperties());
+		AuthorityMapper authorityMapper = new AuthorityMapper(roleMappingURL, getSecurityRoles(), getEnvironmentProperties(), authoritiesClaimName);
 
 		// The 3 dynamic URLs use the servlet path, this cannot be changed or contain {baseUrl}.
 		http.oauth2Login(login -> login
@@ -236,11 +247,17 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 
 	private void configure() throws FileNotFoundException {
 		ICredentials credentials = CredentialFactory.getCredentials(clientAuthAlias, clientId, clientSecret);
+
 		if (StringUtils.isEmpty(credentials.getUsername()) || StringUtils.isEmpty(credentials.getPassword())) {
 			throw new IllegalStateException("clientId and clientSecret must be set");
 		}
+
 		if (StringUtils.isEmpty(provider)) {
 			throw new IllegalStateException("A provider must be set");
+		}
+
+		if (StringUtils.countMatches(authoritiesClaimName, ".") > 1) {
+			throw new IllegalArgumentException("The authoritiesClaimName must not contain more than one dot (.) to indicate a nested claim. Found: " + authoritiesClaimName);
 		}
 
 		this.clientCredentials = credentials;

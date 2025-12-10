@@ -52,6 +52,7 @@ public class SecurityChainConfigurerTest {
 	@WithMockUser(authorities = "ROLE_ADMIN")
 	@Test
 	void testServerHealthWithLoggedInUser() throws Exception {
+
 		// used from localhost
 		this.mockMvc.perform(MockMvcRequestBuilders.get("/server/health"))
 				.andExpect(status().isOk());

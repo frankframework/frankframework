@@ -15,12 +15,14 @@
 */
 package org.frankframework.console.controllers;
 
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import org.frankframework.console.AllowAllIbisUserRoles;
+import org.frankframework.console.ApiException;
 import org.frankframework.console.Description;
 import org.frankframework.console.Relation;
 import org.frankframework.console.util.RequestMessageBuilder;
@@ -41,6 +43,10 @@ public class Logging {
 	@Description("view files/folders inside the log directory")
 	@GetMapping(value = "/logging", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> getLogDirectory(ParametersModel params) {
+		if (frankApiService.hasNoAvailableWorker()) {
+			return ApiException.formatExceptionResponse("Can't access logs without a running framework instance", HttpStatusCode.valueOf(503));
+		}
+
 		RequestMessageBuilder builder = RequestMessageBuilder.create(BusTopic.LOGGING, BusAction.GET);
 		builder.addHeader("directory", params.directory);
 		builder.addHeader("wildcard", params.wildcard);

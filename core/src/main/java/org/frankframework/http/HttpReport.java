@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.frankframework.http;
 
 import java.io.ByteArrayOutputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 
 import javax.xml.transform.Result;
 import javax.xml.transform.Source;
@@ -27,6 +28,7 @@ import javax.xml.transform.stream.StreamResult;
 
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.entity.ByteArrayEntity;
+import org.apache.http.entity.ContentType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -36,6 +38,7 @@ import org.frankframework.util.XmlUtils;
 public class HttpReport extends HttpEntityEnclosingRequestBase {
 
 	public static final String METHOD_NAME = "REPORT";
+	private static final ContentType CONTENT_TYPE = ContentType.create("application/xml", StandardCharsets.UTF_8);
 
 	/**
 	 * @param uri to connect to
@@ -55,7 +58,7 @@ public class HttpReport extends HttpEntityEnclosingRequestBase {
 		Result outputTarget = new StreamResult(outputStream);
 		t.transform(xmlSource, outputTarget);
 
-		setEntity(new ByteArrayEntity(outputStream.toByteArray()));
+		setEntity(new ByteArrayEntity(outputStream.toByteArray(), CONTENT_TYPE));
 	}
 
 	/**

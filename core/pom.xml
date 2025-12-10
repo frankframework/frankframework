@@ -53,7 +53,7 @@
 		<dependency>
 			<groupId>org.pf4j</groupId>
 			<artifactId>pf4j</artifactId>
-			<version>3.13.0</version>
+			<version>3.14.0</version>
 		</dependency>
 
 		<!-- Logging -->
@@ -301,7 +301,7 @@
 		<dependency>
 			<groupId>org.quartz-scheduler</groupId>
 			<artifactId>quartz</artifactId>
-			<version>2.5.1</version>
+			<version>2.5.2</version>
 			<exclusions>
 				<exclusion>
 					<groupId>com.zaxxer</groupId>
@@ -538,7 +538,7 @@
 		<dependency>
 			<groupId>org.jvnet.staxex</groupId>
 			<artifactId>stax-ex</artifactId>
-			<version>2.0.1</version>
+			<version>2.1.0</version>
 		</dependency>
 		<!-- Explicitly add woodstox to ensure this version is used -->
 		<dependency>
@@ -619,7 +619,7 @@
 		<dependency>
 			<groupId>org.apache.tika</groupId>
 			<artifactId>tika-core</artifactId>
-			<version>2.9.4</version>
+			<version>3.2.3</version>
 		</dependency>
 		<!-- explicitly defined because of dependency inheritance -->
 		<dependency>
@@ -705,9 +705,9 @@
 			<scope>test</scope>
 		</dependency>
 		<dependency>
-			<groupId>com.github.tomakehurst</groupId>
-			<artifactId>wiremock-jre8-standalone</artifactId>
-			<version>2.35.2</version>
+			<groupId>org.wiremock</groupId>
+			<artifactId>wiremock-standalone</artifactId>
+			<version>3.13.2</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>

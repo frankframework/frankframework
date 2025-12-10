@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.Serializable;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.util.MimeType;
 
@@ -93,6 +95,17 @@ public class MessageContextTest {
 	}
 
 	@Test
+	public void jsonMimeTypeMayNotHaveCharset() {
+		MessageContext context = new MessageContext();
+		context.withMimeType("application/json;charset=\"utf-8\"");
+		MimeType mimetype = (MimeType) context.get(MessageContext.METADATA_MIMETYPE);
+		String charset = (String) context.get(MessageContext.METADATA_CHARSET);
+
+		assertEquals("application/json", mimetype.getType() + "/" + mimetype.getSubtype());
+		assertNull(charset);
+	}
+
+	@Test
 	public void testPutNullRemovesKey() {
 		MessageContext context = new MessageContext();
 
@@ -104,5 +117,19 @@ public class MessageContextTest {
 		context.put("a", null);
 
 		assertFalse(context.containsKey("a"), "Key 'a' should have been removed from MessageContext but still found");
+	}
+
+	@Test
+	public void testContextIsCaseInsensitive() {
+		// Arrange
+		MessageContext context = new MessageContext();
+
+		context.put("X-Custom-Header", "header-value"); // insert with mixed case
+
+		// Act
+		Serializable value = context.get("x-custom-header"); // Retrieve with lower case
+
+		// Assert
+		assertEquals("header-value", value.toString());
 	}
 }

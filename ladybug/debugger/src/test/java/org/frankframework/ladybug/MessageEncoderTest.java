@@ -3,8 +3,7 @@ package org.frankframework.ladybug;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import org.junit.jupiter.api.Test;
-
-import nl.nn.testtool.Checkpoint;
+import org.wearefrank.ladybug.Checkpoint;
 
 public class MessageEncoderTest {
 

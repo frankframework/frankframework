@@ -47,6 +47,7 @@ import java.util.zip.ZipException;
 
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
@@ -290,6 +291,7 @@ public class JdbcUtil {
 		}
 	}
 
+	// This should not have a charset nor base64 argument...
 	private static void streamBlob(final InputStream blobInputStream, String charset, Direction blobBase64Direction, Object target, boolean close) throws JdbcException, IOException {
 		if (target == null) {
 			throw new JdbcException("cannot stream Blob to null object");
@@ -300,7 +302,12 @@ public class JdbcUtil {
 				Base64InputStream base64DecodedStream = new Base64InputStream(blobInputStream);
 				StreamUtil.copyStream(base64DecodedStream, outputStream, 50000);
 			} else if (blobBase64Direction == Direction.ENCODE) {
-				Base64InputStream base64EncodedStream = new Base64InputStream(blobInputStream, true);
+				// Though technically not required, we're setting the line length to 76.
+				InputStream base64EncodedStream = Base64InputStream.builder()
+						.setInputStream(blobInputStream)
+						.setEncode(true)
+						.setBaseNCodec(Base64.builder().setLineLength(76).get())
+						.get();
 				StreamUtil.copyStream(base64EncodedStream, outputStream, 50000);
 			} else {
 				StreamUtil.copyStream(blobInputStream, outputStream, 50000);
@@ -649,12 +656,22 @@ public class JdbcUtil {
 	 * every time this is accessed from the statement can mean another network-access and fetching it once for all parameters reduces the network overhead for those). */
 	public static void setParameter(PreparedStatement statement, int parameterIndex, String value, boolean parameterTypeMatchRequired, ParameterMetaData parameterMetaData) throws SQLException {
 		if (!parameterTypeMatchRequired) {
-			statement.setString(parameterIndex, value);
+			if (value != null) {
+				statement.setString(parameterIndex, value);
+			} else {
+				statement.setNull(parameterIndex, Types.VARCHAR);
+			}
 			return;
 		}
-		int sqlTYpe = parameterMetaData.getParameterType(parameterIndex);
+		// Some databases (MySQL, MariaDB, Oracle) do not support parameter type matching from the metadata. For these databases,
+		// we should return from this function before we reach this statement.
+		int sqlType = parameterMetaData.getParameterType(parameterIndex);
+		if (value == null) {
+			statement.setNull(parameterIndex, sqlType);
+			return;
+		}
 		try {
-			switch (sqlTYpe) {
+			switch (sqlType) {
 				case Types.INTEGER:
 					statement.setInt(parameterIndex, Integer.parseInt(value));
 					break;
@@ -675,7 +692,7 @@ public class JdbcUtil {
 					statement.setTimestamp(parameterIndex, new Timestamp(DateFormatUtils.parseAnyDate(value).getTime()));
 					break;
 				default:
-					log.warn("parameter type [{}] handled as String", () -> JDBCType.valueOf(sqlTYpe).getName());
+					log.warn("parameter type [{}] handled as String", () -> JDBCType.valueOf(sqlType).getName());
 					// $FALL-THROUGH$
 				case Types.CHAR:
 				case Types.VARCHAR:

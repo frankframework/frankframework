@@ -27,7 +27,8 @@ public enum DataSonnetOutputType {
 	JSON(MediaTypes.APPLICATION_JSON),
 	CSV(MediaTypes.APPLICATION_CSV),
 	XML(MediaTypes.APPLICATION_XML),
-	YAML(MediaTypes.APPLICATION_YAML);
+	YAML(MediaTypes.APPLICATION_YAML),
+	TXT(MediaTypes.TEXT_PLAIN);
 
 	final @Getter MediaType mediaType;
 

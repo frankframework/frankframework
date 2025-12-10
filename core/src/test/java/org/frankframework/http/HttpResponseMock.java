@@ -27,7 +27,6 @@ import org.apache.http.Header;
 import org.apache.http.HeaderElement;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpHost;
-import org.apache.http.HttpResponse;
 import org.apache.http.ParseException;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.CloseableHttpResponse;
@@ -48,7 +47,7 @@ import lombok.Getter;
 
 import org.frankframework.http.mime.MultipartEntity;
 
-public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
+public class HttpResponseMock extends Mockito implements Answer<CloseableHttpResponse> {
 
 	private final String lineSeparator = System.getProperty("line.separator");
 	private final int statusCode;
@@ -60,7 +59,7 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 		this.statusCode = statusCode;
 	}
 
-	private HttpResponse buildResponse(InputStream content) throws UnsupportedOperationException, IOException {
+	private CloseableHttpResponse buildResponse(InputStream content) throws UnsupportedOperationException, IOException {
 		CloseableHttpResponse httpResponse = mock(CloseableHttpResponse.class);
 		StatusLine statusLine = mock(StatusLine.class);
 		HttpEntity httpEntity = mock(HttpEntity.class);
@@ -95,7 +94,7 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 	}
 
 	@Override
-	public HttpResponse answer(InvocationOnMock invocation) throws Throwable {
+	public CloseableHttpResponse answer(InvocationOnMock invocation) throws Throwable {
 		HttpHost host = (HttpHost) invocation.getArguments()[0];
 		HttpRequestBase request = (HttpRequestBase) invocation.getArguments()[1];
 		HttpContext context = (HttpContext) invocation.getArguments()[2];
@@ -136,10 +135,13 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 		return null; //HEAD requests do not have a body
 	}
 
-	private void appendHeaders(HttpRequestBase request, StringBuilder response) {
+	private boolean appendHeaders(HttpRequestBase request, StringBuilder response) {
+		boolean foundContentType = false;
 		Header[] headers = request.getAllHeaders();
 		for (Header header : headers) {
 			String headerName = header.getName();
+			if ("content-type".equalsIgnoreCase(headerName)) foundContentType = true;
+
 			String headerValue = header.getValue();
 			if("X-Akamai-ACS-Auth-Data".equals(headerName)) { //Ignore timestamps in request header
 				int start = StringUtils.ordinalIndexOf(headerValue, ",", 3);
@@ -148,6 +150,7 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 			}
 			response.append(headerName + ": ").append(headerValue).append(lineSeparator);
 		}
+		return foundContentType;
 	}
 
 	private InputStream doPost(HttpHost host, HttpPost request, HttpContext context) throws IOException {
@@ -155,7 +158,7 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 		StringBuilder response = new StringBuilder();
 		response.append(request).append(lineSeparator);
 
-		appendHeaders(request, response);
+		boolean foundContentType = appendHeaders(request, response);
 
 		HttpEntity entity = request.getEntity();
 		if(entity instanceof MultipartEntity multipartEntity) {
@@ -173,7 +176,7 @@ public class HttpResponseMock extends Mockito implements Answer<HttpResponse> {
 		}
 		else if(entity != null) {
 			Header contentTypeHeader = request.getEntity().getContentType();
-			if(contentTypeHeader != null) {
+			if(contentTypeHeader != null && !foundContentType) {
 				response.append(contentTypeHeader.getName() + ": ").append(contentTypeHeader.getValue()).append(lineSeparator);
 			}
 

@@ -2,7 +2,7 @@ package org.frankframework.runner;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -73,7 +73,7 @@ import org.frankframework.util.SpringUtils;
  * Therefore, it will not fail the build and run only to provide extra coverage-reporting.
  *
  */
-@Tag("integration")
+@Tag("larva")
 @Log4j2
 public class RunLarvaTests {
 	private static final Logger stdOut = LogManager.getLogger("stdout"); // Console appender
@@ -153,6 +153,11 @@ public class RunLarvaTests {
 				.setBindingsDirectory(jmsDataDir + "/bindings")
 				.setJournalDirectory(jmsDataDir + "/journal")
 				.setLargeMessagesDirectory(jmsDataDir + "/largemessages")
+				.setMaxDiskUsage(100) // 90
+				.setJMXManagementEnabled(false)
+				.setMessageCounterEnabled(false)
+				.setMqttSubscriptionPersistenceEnabled(false)
+				.setGlobalMaxSizePercentOfJvmMaxMemory(70) // 50
 		;
 
 		EmbeddedActiveMQ embeddedServer = new EmbeddedActiveMQ();
@@ -267,11 +272,11 @@ public class RunLarvaTests {
 		return DynamicTest.dynamicTest(
 				scenarioName, scenario.getScenarioFile().toURI(), () -> {
 					stdOut.info("Running scenario: [{}]", scenarioName);
-					int scenarioPassed = scenarioRunner.runOneFile(scenario, true);
+					String scenarioResultMessage = scenarioRunner.runOneFile(scenario, true);
 					larvaWriter.flush();
 
-					assumeTrue(scenarioPassed != LarvaTool.RESULT_ERROR || !IGNORED_SCENARIOS.contains(scenarioName), () -> "Ignoring Blacklisted Scenario: [" + scenarioName + "]");
-					assertNotEquals(LarvaTool.RESULT_ERROR, scenarioPassed, () -> "Scenario failed: [" + scenarioName + "]");
+					assumeTrue(scenarioResultMessage == null || !IGNORED_SCENARIOS.contains(scenarioName), () -> "Ignoring failure of Blacklisted Scenario: [" + scenarioName + "]");
+					assertNull(scenarioResultMessage, () -> "Scenario failed: [" + scenarioName + "] gave result : " + scenarioResultMessage);
 				}
 		);
 	}

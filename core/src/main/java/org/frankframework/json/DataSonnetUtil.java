@@ -16,23 +16,35 @@
 package org.frankframework.json;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import jakarta.annotation.Nonnull;
+
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.MimeType;
 
 import com.datasonnet.Mapper;
-import com.datasonnet.MapperBuilder;
 import com.datasonnet.document.DefaultDocument;
 import com.datasonnet.document.Document;
 import com.datasonnet.document.MediaType;
 import com.datasonnet.document.MediaTypes;
+import com.datasonnet.header.Header;
+import com.datasonnet.jsonnet.Val;
+import com.datasonnet.jsonnet.Val.Func;
+import com.datasonnet.jsonnet.Val.Obj;
+import com.datasonnet.spi.DataFormatService;
+import com.datasonnet.spi.Library;
 
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.core.ISender;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.DateParameter;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.Parameter;
@@ -42,23 +54,89 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.MessageUtils;
 
 @Log4j2
-public class JsonMapper {
+public class DataSonnetUtil {
 
-	private final Mapper mapper;
-	private final DataSonnetOutputType outputType;
-	private final boolean computeMimeType;
-
-	public JsonMapper(String dataSonnet, DataSonnetOutputType outputType, boolean computeMimeType, List<String> parameterNames) {
-		this.outputType = outputType;
-		this.computeMimeType = computeMimeType;
-		this.mapper = new MapperBuilder(dataSonnet)
-				.withInputNames(parameterNames)
-				.build();
+	private DataSonnetUtil() {
+		// Private constructor to prevent instance creations
 	}
 
-	public Message transform(Message input, ParameterValueList parameterValues) throws IOException {
+	/**
+	 * DataSonnet library that allows you to call another process from within a DataSonnet translation.
+	 * The 'namespace' field is the 'object' in the translation file. For now this has been fixed to 'sender'.
+	 * 
+	 * nb. the extended class 'library' is made in Scala.
+	 */
+	public static class DataSonnetToSenderConnector extends Library {
+		private final List<ISender> senders;
+		private final PipeLineSession session;
+
+		public DataSonnetToSenderConnector(@Nonnull List<ISender> senders, @Nonnull PipeLineSession session) {
+			this.senders = senders;
+
+			if (senders.stream().anyMatch(s -> StringUtils.isBlank(s.getName()))) {
+				throw new IllegalArgumentException("one or more senders does not have a name");
+			}
+
+			this.session = session;
+		}
+
+		@Override
+		public String namespace() {
+			return "sender";
+		}
+
+		@Override
+		public Map<String, Obj> modules(DataFormatService dataFormats, Header header) {
+			return Collections.emptyMap();
+		}
+
+		@Override
+		public Set<String> libsonnets() {
+			return Collections.emptySet();
+		}
+
+		@Override
+		public Map<String, Func> functions(DataFormatService dataFormats, Header header) {
+			Map<String, Val.Func> answer = new HashMap<>();
+
+			for (ISender sender : senders) {
+				answer.put(sender.getName(), makeSimpleFunc(List.of("input"), args -> sendMessage(args, sender)));
+			}
+
+			return answer;
+		}
+
+		private Val sendMessage(List<Val> inputArgs, ISender sender) {
+			String arg = inputArgs.stream()
+					.map(this::convertToString)
+					.findFirst()
+					.orElseThrow(() -> new IllegalArgumentException("no value provided"));
+
+			try (Message input = Message.asMessage(arg); Message result = sender.sendMessageOrThrow(input, session)) {
+				return new Val.Str(result.asString());
+			} catch (Exception e) {
+				throw new IllegalStateException(e);
+			}
+		}
+
+		private String convertToString(Val value) {
+			if (value == Val.bool(true)) {
+				return "true";
+			} else if (value == Val.bool(false)) {
+				return "false";
+			} else if (value instanceof Val.Num number) {
+				return String.valueOf((long) number.value());
+			} else if (value instanceof Val.Str stringValue) {
+				return stringValue.value();
+			} else {
+				throw new IllegalArgumentException("currently only supports numbers, booleans and string inputs, got: " + value.getClass());
+			}
+		}
+	}
+
+	public static Message transform(Mapper mapper, Message input, ParameterValueList parameterValues, DataSonnetOutputType outputType) throws IOException {
 		Map<String, Document<?>> parameters = getParameters(parameterValues);
-		Document<String> document = mapper.transform(new JsonMapper.FrankMessageDocument(input, computeMimeType), parameters, outputType.getMediaType());
+		Document<String> document = mapper.transform(new DataSonnetUtil.FrankMessageDocument(input, true), parameters, outputType.getMediaType());
 		Message output = new Message(document.getContent());
 		output.getContext().withMimeType(document.getMediaType().toString());
 		return output;
@@ -67,9 +145,9 @@ public class JsonMapper {
 	/**
 	 * Loops over all the {@link IParameter Parameters} and converts them to DataSonnet {@link Document Documents}.
 	 */
-	private Map<String, Document<?>> getParameters(ParameterValueList parameterValues) {
+	private static Map<String, Document<?>> getParameters(ParameterValueList parameterValues) {
 		return StreamSupport.stream(parameterValues.spliterator(), false)
-				.collect(Collectors.toMap(ParameterValue::getName, this::toDocument, (prev, next) -> next, HashMap::new));
+				.collect(Collectors.toMap(ParameterValue::getName, DataSonnetUtil::toDocument, (prev, next) -> next, HashMap::new));
 	}
 
 	/**
@@ -77,12 +155,12 @@ public class JsonMapper {
 	 * Messages may contain a context (with a specific MimeType) and should be parsed as-is.
 	 * Whatever remains may be parsed as a `raw` value.
 	 */
-	private Document<?> toDocument(ParameterValue pv) {
+	private static Document<?> toDocument(ParameterValue pv) {
 		if(pv.getDefinition() instanceof DateParameter) {
 			return new DefaultDocument<>(pv.asStringValue());
 		} else if(pv.getDefinition() instanceof Parameter || pv.getValue() instanceof Message) {
 			try {
-				return new JsonMapper.FrankMessageDocument(pv.asMessage(), computeMimeType);
+				return new DataSonnetUtil.FrankMessageDocument(pv.asMessage(), true);
 			} catch (IOException e) {
 				log.warn("unable to read message", e);
 				throw new IllegalStateException(e.getMessage());
@@ -92,8 +170,7 @@ public class JsonMapper {
 		return new DefaultDocument<>(pv.getValue(), MediaTypes.APPLICATION_JAVA);
 	}
 
-
-	public static class FrankMessageDocument implements Document<String> {
+	private static class FrankMessageDocument implements Document<String> {
 		private final String message;
 		private final MediaType mediaType;
 

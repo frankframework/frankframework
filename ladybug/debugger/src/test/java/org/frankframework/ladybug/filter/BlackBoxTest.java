@@ -8,10 +8,9 @@ import java.util.List;
 import java.util.Objects;
 
 import org.junit.jupiter.api.Test;
-
-import nl.nn.testtool.Checkpoint;
-import nl.nn.testtool.Report;
-import nl.nn.testtool.storage.StorageException;
+import org.wearefrank.ladybug.Checkpoint;
+import org.wearefrank.ladybug.Report;
+import org.wearefrank.ladybug.storage.StorageException;
 
 import org.frankframework.ladybug.util.XmlTestStorage;
 

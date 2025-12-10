@@ -39,7 +39,8 @@ public class CredentialFactory {
 
 	private static final String CREDENTIAL_FACTORY_KEY = "credentialFactory.class";
 	public static final String CREDENTIAL_FACTORY_ALIAS_PREFIX_KEY = "credentialFactory.optionalPrefix";
-	private static final String DEFAULT_CREDENTIAL_FACTORY = FileSystemCredentialFactory.class.getName();
+
+	private static final String FALLBACK_CREDENTIAL_FACTORY = FileSystemCredentialFactory.class.getName();
 
 	public static final String LEGACY_PACKAGE_NAME = "nl.nn.credentialprovider.";
 	public static final String ORG_FRANKFRAMEWORK_PACKAGE_NAME = "org.frankframework.credentialprovider.";
@@ -49,6 +50,7 @@ public class CredentialFactory {
 
 	protected final List<ISecretProvider> delegates = new ArrayList<>();
 	protected static boolean ALLOW_DEFAULT_PASSWORD = CredentialConstants.getInstance().getBoolean("credentialFactory.allowDefaultPassword", true);
+	private static boolean ALLOW_FALLBACK = CredentialConstants.getInstance().getBoolean("credentialFactory.allowFallbackProvider", true);
 
 	private static CredentialFactory self;
 
@@ -59,8 +61,30 @@ public class CredentialFactory {
 		return self;
 	}
 
-	// Parameter is for testing purposes only
 	private CredentialFactory() {
+		this(ALLOW_FALLBACK);
+	}
+
+	// Create a non static instance, for testing purposes only
+	protected CredentialFactory(boolean allowFallbackProvider) {
+		// Attempt to load the provided CredentialProviders
+		if (!loadFactoryClasses()) {
+			// Oops, no factories found
+			if (allowFallbackProvider && !tryFactories(FALLBACK_CREDENTIAL_FACTORY)) {
+				// We were allowed to try the fallback provider but it didn't work either.
+				log.severe("No CredentialFactory installed");
+			} else {
+				// No factories found and no fallback allowed, abort!
+				exit();
+			}
+		}
+	}
+
+	/**
+	 * 
+	 * @return true if we've found one or more factories
+	 */
+	private boolean loadFactoryClasses() {
 		String factoryClassNames = CredentialConstants.getInstance().getProperty(CREDENTIAL_FACTORY_KEY);
 
 		// Legacy support for old package names; to be removed in Frank!Framework 8.1 or later
@@ -68,14 +92,13 @@ public class CredentialFactory {
 			log.severe("please update your CredentialFactory properties to use the new namespace!");
 			factoryClassNames = factoryClassNames.replace(LEGACY_PACKAGE_NAME, ORG_FRANKFRAMEWORK_PACKAGE_NAME);
 		}
-		if (tryFactories(factoryClassNames)) {
-			return;
-		}
-		if (tryFactories(DEFAULT_CREDENTIAL_FACTORY)) {
-			return;
-		}
-		log.warning("No CredentialFactory installed");
 
+		// Attempt to load the provided factories
+		return tryFactories(factoryClassNames);
+	}
+
+	protected void exit() {
+		System.exit(12);
 	}
 
 	// Clear the existing static instance, for testing purposes only
@@ -101,7 +124,10 @@ public class CredentialFactory {
 			log.info(() -> "installed CredentialFactory [" + factoryClassName + "]");
 			delegates.add(delegate);
 		} catch (Exception e) {
-			log.log(Level.WARNING, e, () -> "Cannot instantiate CredentialFactory [" + factoryClassName + "] (" + e.getClass().getTypeName() + "): " + e.getMessage());
+			// Log WARN message
+			log.log(Level.WARNING, () -> "Cannot instantiate CredentialFactory [" + factoryClassName + "] (" + e.getClass().getTypeName() + "): " + e.getMessage());
+			// Log INFO stacktrace
+			log.log(Level.INFO, e, () -> "Exception instantiating CredentialFactory [" + factoryClassName + "]");
 		}
 	}
 
@@ -232,7 +258,7 @@ public class CredentialFactory {
 			}
 			list.add(new String(c, tokenStart, pos - tokenStart));
 			list.add(Character.toString(c[pos]));
-			tokenStart = pos+1;
+			tokenStart = pos + 1;
 		}
 		if (tokenStart < c.length) {
 			list.add(new String(c, tokenStart, c.length - tokenStart));
@@ -249,7 +275,7 @@ public class CredentialFactory {
 					aliases.addAll(configuredAliases);
 				}
 			} catch (Exception e) {
-				log.log(Level.WARNING, e, () -> "unable to find configured aliases in factory ["+factory+"]");
+				log.log(Level.WARNING, e, () -> "unable to find configured aliases in factory [" + factory + "]");
 			}
 		}
 		return aliases;

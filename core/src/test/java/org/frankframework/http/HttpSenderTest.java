@@ -162,7 +162,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender = getSender(false); // Cannot add headers (aka parameters) for this test!
 		sender.setContentType("text/xml");
 		sender.configure();
-		assertEqualsIgnoreCRLF("text/xml; charset=UTF-8", sender.getFullContentType().toString());
+		assertEqualsIgnoreCRLF("text/xml; charset=UTF-8", sender.getDefaultContentType().toString());
 	}
 
 	@Test
@@ -171,7 +171,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.setCharSet("ISO-8859-1");
 		sender.setMethodType(HttpMethod.POST);
 		sender.configure();
-		assertEqualsIgnoreCRLF("text/html; charset=ISO-8859-1", sender.getFullContentType().toString());
+		assertEqualsIgnoreCRLF("text/html; charset=ISO-8859-1", sender.getDefaultContentType().toString());
 	}
 
 	@Test
@@ -182,7 +182,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 
 		// Make sure charset is parsed properly and capital case
-		assertEqualsIgnoreCRLF("text/xml; charset=ISO-8859-1", sender.getFullContentType().toString());
+		assertEqualsIgnoreCRLF("text/xml; charset=ISO-8859-1", sender.getDefaultContentType().toString());
 	}
 
 	@Test
@@ -193,7 +193,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender.configure();
 
 		// Make sure charset is parsed properly and capital case
-		assertEqualsIgnoreCRLF("application/xml; charset=UTF-8", sender.getFullContentType().toString());
+		assertEqualsIgnoreCRLF("application/xml; charset=UTF-8", sender.getDefaultContentType().toString());
 	}
 
 	@Test
@@ -201,14 +201,14 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender = getSender(false); // Cannot add headers (aka parameters) for this test
 		sender.setContentType("text/xml; charset=ISO-8859-1");
 		sender.configure();
-		assertEqualsIgnoreCRLF("text/xml; charset=ISO-8859-1", sender.getFullContentType().toString());
+		assertEqualsIgnoreCRLF("text/xml; charset=ISO-8859-1", sender.getDefaultContentType().toString());
 	}
 
 	@Test
 	public void notContentTypeUnlessExplicitlySet() throws Throwable {
 		sender = getSender(false); // Cannot add headers (aka parameters) for this test
 		sender.configure();
-		assertNull(sender.getFullContentType());
+		assertNull(sender.getDefaultContentType());
 	}
 
 	@Test()
@@ -216,7 +216,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		sender = getSender(false); // Cannot add headers (aka parameters) for this test!
 		sender.setCharSet("ISO-8859-1");
 		sender.configure();
-		assertNull(sender.getFullContentType());
+		assertNull(sender.getDefaultContentType());
 	}
 
 	@Test
@@ -253,7 +253,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpGetEncodeMessage.txt"), result.trim());
 	}
 
-	@Test
+	@Test // Although set, content-type header should not exist
 	public void simpleMockedHttpGetWithContentType() throws Throwable {
 		sender = getSender(false); // Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo");
@@ -270,7 +270,7 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpGetWithContentType.txt"), result.trim());
 	}
 
-	@Test
+	@Test // Although set, content-type header should not exist
 	public void simpleMockedHttpGetWithContentTypeAndCharset() throws Throwable {
 		sender = getSender(false); // Cannot add headers (aka parameters) for this test!
 		Message input = new Message("hallo");
@@ -600,6 +600,25 @@ public class HttpSenderTest extends HttpSenderTestBase<HttpSender> {
 
 		String result = sender.sendMessageOrThrow(input, pls).asString();
 		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPostJSON.txt"), result);
+	}
+
+	@Test
+	public void simpleMockedHttpPostJSONContentTypeAsParam() throws Throwable {
+		sender = getSender(false);
+		Message input = new Message("{\"key\": \"value\"}");
+
+		PipeLineSession pls = new PipeLineSession(session);
+
+		sender.setMethodType(HttpMethod.POST);
+		sender.setContentType("application/xml"); // This will be overridden by the parameter
+		sender.addParameter(ParameterBuilder.create().withName("Content-Type").withValue("application/json"));
+		sender.setHeadersParams("Content-Type");
+
+		sender.configure();
+		sender.start();
+
+		String result = sender.sendMessageOrThrow(input, pls).asString();
+		assertEqualsIgnoreCRLF(getFile("simpleMockedHttpPostJSONContentTypeAsParam.txt"), result);
 	}
 
 	@Test
