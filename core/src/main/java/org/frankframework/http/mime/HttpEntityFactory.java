@@ -198,7 +198,7 @@ public class HttpEntityFactory {
 			return contentType;
 		}
 
-		MimeType mimeType = message != null ? MessageUtils.computeMimeType(message) : null;
+		MimeType mimeType = MessageUtils.computeMimeType(message);
 		if (mimeType != null) {
 			return ContentType.parse(mimeType.toString());
 		}
