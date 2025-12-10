@@ -288,7 +288,6 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			if (msgTransformerPool != null) {
 				Message transformedMessage = transformMessage(message);
 				log.debug("iteration [{}] transformed item [{}] into [{}]", totalItems, message, transformedMessage);
-				message.close();
 				message = transformedMessage;
 			} else {
 				log.debug("iteration [{}] item [{}]", totalItems, message);
