@@ -112,7 +112,7 @@ public class MessageCapturerTest {
 
 		ByteArrayOutputStream capture = new ByteArrayOutputStream();
 		capturer.setMaxMessageLength(ladybugMaxLength);
-		Message spyMessaged = capturer.toOutputStream(message, capture, e -> {}, Lombok::sneakyThrow);
+		capturer.toOutputStream(message, capture, e -> {}, Lombok::sneakyThrow);
 		// No point to verify the read data at this point.
 		// Read 20 bytes, in chunks, to trigger a capture close.
 		try (Reader str = message.asReader()) {
