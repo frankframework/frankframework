@@ -124,7 +124,7 @@
 		<aws.java.sdk.version>2.39.2</aws.java.sdk.version>
 
 		<!-- Some test dependency versions -->
-		<mockito.version>5.20.0</mockito.version>
+		<mockito.version>5.21.0</mockito.version>
 		<junit.version>5.14.1</junit.version>
 	</properties>
 
