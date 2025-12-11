@@ -150,9 +150,7 @@ public class GraalJS implements JavascriptEngine<ScriptEngine> {
 		context.getBindings(LANGUAGE_ID).putMember(sender.getName(), (JavaCallback) s -> {
 			try {
 				Message msg = Message.asMessage(s[0]);
-				try (Message message = sender.sendMessageOrThrow(msg, session)) {
-					return message.asString();
-				}
+				return sender.sendMessageOrThrow(msg, session).asString();
 			} catch (Exception e) {
 				throw new IllegalStateException(e);
 			}

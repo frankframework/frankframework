@@ -64,7 +64,7 @@ public class IsolatedServiceExecutor extends AbstractRequestReplyExecutor {
 				guard.countDown();
 			}
 			if (ownSession) {
-				CloseUtils.closeSilently(session, request);
+				CloseUtils.closeSilently(session);
 			}
 		}
 	}

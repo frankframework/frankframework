@@ -82,7 +82,7 @@ public class MessageZipEntry extends ZipEntry {
 	 * Note: this consumes the {@link Message}.
 	 */
 	public void writeTo(OutputStream outputStream) throws IOException {
-		try (message; InputStream is = message.asInputStream()) {
+		try (InputStream is = message.asInputStream()) {
 			StreamUtil.streamToStream(is, outputStream);
 		}
 	}

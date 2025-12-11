@@ -301,9 +301,7 @@ public class SoapWrapper {
 			return result;
 		}
 
-		try (Message ignore = result) {
-			return signMessage(result, wsscf.getUsername(), wsscf.getPassword(), passwordDigest);
-		}
+		return signMessage(result, wsscf.getUsername(), wsscf.getPassword(), passwordDigest);
 	}
 
 	public Message createSoapFaultMessage(String faultcode, String faultstring) {

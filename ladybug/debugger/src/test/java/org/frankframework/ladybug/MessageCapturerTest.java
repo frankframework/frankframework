@@ -38,22 +38,19 @@ public class MessageCapturerTest {
 
 		StringWriter capture = spy(new StringWriter());
 		capturer.setMaxMessageLength(ladybugMaxLength);
-		try (Message spyMessaged = capturer.toWriter(message, capture, Lombok::sneakyThrow)) {
-			// No point to verify the read data at this point.
-			// Read 20 bytes, in chunks, to trigger a capture close.
-			try (InputStream str = message.asInputStream()) {
-				int charsRead;
-				byte[] buffer = new byte[20];
-				while (true) {
-					charsRead = str.read(buffer, 0, 20);
-					if (charsRead <= 0) {
-						break;
-					}
+		capturer.toWriter(message, capture, Lombok::sneakyThrow);
+		// No point to verify the read data at this point.
+		// Read 20 bytes, in chunks, to trigger a capture close.
+		try (InputStream str = message.asInputStream()) {
+			int charsRead;
+			byte[] buffer = new byte[20];
+			while (true) {
+				charsRead = str.read(buffer, 0, 20);
+				if (charsRead <= 0) {
+					break;
 				}
 			}
 		}
-
-		verify(message, times(1)).close();
 		verify(capture, times(1)).close();
 
 		String expected = new String(testFileURL.openStream().readAllBytes());
@@ -71,10 +68,9 @@ public class MessageCapturerTest {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ByteArrayOutputStream capture = new ByteArrayOutputStream();
 		capturer.setMaxMessageLength(ladybugMaxLength);
-		try (Message spyMessaged = capturer.toOutputStream(message, capture, e -> {}, Lombok::sneakyThrow)) {
-			// Read 20 bytes, and then the rest, to trigger a capture close.
-			StreamUtil.copyStream(spyMessaged.asInputStream(), baos, 20);
-		}
+		Message spyMessaged = capturer.toOutputStream(message, capture, e -> {}, Lombok::sneakyThrow);
+		// Read 20 bytes, and then the rest, to trigger a capture close.
+		StreamUtil.copyStream(spyMessaged.asInputStream(), baos, 20);
 
 		String expected = new String(testFileURL.openStream().readAllBytes());
 		assertEquals(expected, baos.toString());
@@ -95,13 +91,11 @@ public class MessageCapturerTest {
 		StringWriter baos = new StringWriter();
 		StringWriter capture = spy(new StringWriter());
 		capturer.setMaxMessageLength(ladybugMaxLength);
-		try (Message spyMessaged = capturer.toWriter(message, capture, Lombok::sneakyThrow)) {
-			// Read 20 bytes, and then the rest, to trigger a capture close.
-			StreamUtil.copyReaderToWriter(spyMessaged.asReader(), baos, 20);
-		}
+		Message spyMessaged = capturer.toWriter(message, capture, Lombok::sneakyThrow);
+		// Read 20 bytes, and then the rest, to trigger a capture close.
+		StreamUtil.copyReaderToWriter(spyMessaged.asReader(), baos, 20);
 
 		assertEquals(input, baos.toString());
-		verify(message, times(1)).close();
 		verify(capture, times(1)).close();
 
 		String captureString = capture.toString();
@@ -118,17 +112,16 @@ public class MessageCapturerTest {
 
 		ByteArrayOutputStream capture = new ByteArrayOutputStream();
 		capturer.setMaxMessageLength(ladybugMaxLength);
-		try (Message spyMessaged = capturer.toOutputStream(message, capture, e -> {}, Lombok::sneakyThrow)) {
-			// No point to verify the read data at this point.
-			// Read 20 bytes, in chunks, to trigger a capture close.
-			try (Reader str = message.asReader()) {
-				int charsRead;
-				char[] buffer = new char[20];
-				while (true) {
-					charsRead = str.read(buffer, 0, 20);
-					if (charsRead <= 0) {
-						break;
-					}
+		Message spyMessaged = capturer.toOutputStream(message, capture, e -> {}, Lombok::sneakyThrow);
+		// No point to verify the read data at this point.
+		// Read 20 bytes, in chunks, to trigger a capture close.
+		try (Reader str = message.asReader()) {
+			int charsRead;
+			char[] buffer = new char[20];
+			while (true) {
+				charsRead = str.read(buffer, 0, 20);
+				if (charsRead <= 0) {
+					break;
 				}
 			}
 		}
@@ -146,10 +139,9 @@ public class MessageCapturerTest {
 		StringWriter capture = new StringWriter();
 		capturer.setMaxMessageLength(1024);
 
-		try (Message spyMessaged = capturer.toWriter(message, capture, Lombok::sneakyThrow)) {
-			// Read 20 bytes, and then the rest, to trigger a capture close.
-			StreamUtil.copyStream(spyMessaged.asInputStream(), baos, 20);
-		}
+		Message spyMessaged = capturer.toWriter(message, capture, Lombok::sneakyThrow);
+		// Read 20 bytes, and then the rest, to trigger a capture close.
+		StreamUtil.copyStream(spyMessaged.asInputStream(), baos, 20);
 
 		assertEquals("", baos.toString());
 
@@ -165,10 +157,9 @@ public class MessageCapturerTest {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ByteArrayOutputStream capture = new ByteArrayOutputStream();
 		capturer.setMaxMessageLength(1024);
-		try (Message spyMessaged = capturer.toOutputStream(message, capture, e -> {}, Lombok::sneakyThrow)) {
-			// Read 20 bytes, and then the rest, to trigger a capture close.
-			StreamUtil.copyStream(spyMessaged.asInputStream(), baos, 20);
-		}
+		Message spyMessaged = capturer.toOutputStream(message, capture, e -> {}, Lombok::sneakyThrow);
+		// Read 20 bytes, and then the rest, to trigger a capture close.
+		StreamUtil.copyStream(spyMessaged.asInputStream(), baos, 20);
 
 		assertEquals("", baos.toString());
 
@@ -185,9 +176,8 @@ public class MessageCapturerTest {
 		StringWriter capture = new StringWriter();
 		capturer.setMaxMessageLength(1024);
 
-		try (Message spyMessaged = capturer.toWriter(message, capture, Lombok::sneakyThrow)) {
-			assertEquals("", spyMessaged.asString());
-		}
+		Message spyMessaged = capturer.toWriter(message, capture, Lombok::sneakyThrow);
+		assertEquals("", spyMessaged.asString());
 
 		assertEquals("", baos.toString());
 
@@ -206,13 +196,11 @@ public class MessageCapturerTest {
 		StringWriter capture = spy(new StringWriter());
 		capturer.setMaxMessageLength(1024);
 
-		try (Message spyMessaged = capturer.toWriter(message, capture, Lombok::sneakyThrow)) {
-			assertEquals(expected, spyMessaged.asString());
-		}
+		Message spyMessaged = capturer.toWriter(message, capture, Lombok::sneakyThrow);
+		assertEquals(expected, spyMessaged.asString());
 
 		assertEquals(expected, capture.toString());
 
-		verify(message, times(1)).close();
 		verify(stream, times(1)).close();
 		verify(capture, times(1)).close();
 	}
@@ -224,10 +212,9 @@ public class MessageCapturerTest {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		StringWriter capture = new StringWriter();
 		capturer.setMaxMessageLength(1024);
-		try (Message spyMessaged = capturer.toWriter(message, capture, Lombok::sneakyThrow)) {
-			// Read 20 bytes, and then the rest, to trigger a capture close.
-			StreamUtil.copyStream(spyMessaged.asInputStream(), baos, 20);
-		}
+		Message spyMessaged = capturer.toWriter(message, capture, Lombok::sneakyThrow);
+		// Read 20 bytes, and then the rest, to trigger a capture close.
+		StreamUtil.copyStream(spyMessaged.asInputStream(), baos, 20);
 
 		assertEquals("", baos.toString());
 
@@ -243,10 +230,9 @@ public class MessageCapturerTest {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		ByteArrayOutputStream capture = new ByteArrayOutputStream();
 		capturer.setMaxMessageLength(1024);
-		try (Message spyMessaged = capturer.toOutputStream(message, capture, e -> {}, Lombok::sneakyThrow)) {
-			// Read 20 bytes, and then the rest, to trigger a capture close.
-			StreamUtil.copyStream(spyMessaged.asInputStream(), baos, 20);
-		}
+		Message spyMessaged = capturer.toOutputStream(message, capture, e -> {}, Lombok::sneakyThrow);
+		// Read 20 bytes, and then the rest, to trigger a capture close.
+		StreamUtil.copyStream(spyMessaged.asInputStream(), baos, 20);
 
 		assertEquals("", baos.toString());
 

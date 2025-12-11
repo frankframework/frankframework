@@ -193,13 +193,12 @@ class JsonPathPipeTest {
 		pipe.setJsonPathExpression(jsonPath);
 		pipe.configure();
 
-		try (Message input = Message.asMessage(TEST_INPUT)) {
-			// Act
-			Message output = pipe.doPipe(input, session).getResult();
+		Message input = Message.asMessage(TEST_INPUT);
+		// Act
+		Message output = pipe.doPipe(input, session).getResult();
 
-			// Assert
-			assertEquals(result, output.asString());
-			assertEquals(mimetype, output.getContext().getMimeType());
-		}
+		// Assert
+		assertEquals(result, output.asString());
+		assertEquals(mimetype, output.getContext().getMimeType());
 	}
 }

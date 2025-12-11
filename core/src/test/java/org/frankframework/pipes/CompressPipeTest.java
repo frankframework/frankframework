@@ -208,7 +208,6 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 			assertNotNull(url);
 			UrlMessage urlMessage = new UrlMessage(url);
 			assertEquals(urlMessage.asString(), StreamUtil.streamToString(CloseUtils.dontClose(zipin)));
-			urlMessage.close();
 
 			entry = zipin.getNextEntry();
 			assertNotNull(entry);
@@ -218,7 +217,6 @@ public class CompressPipeTest extends PipeTestBase<CompressPipe> {
 			assertNotNull(url2);
 			UrlMessage urlMessage2 = new UrlMessage(url2);
 			assertEquals(urlMessage2.asString(), StreamUtil.streamToString(CloseUtils.dontClose(zipin)));
-			urlMessage2.close();
 		}
 	}
 

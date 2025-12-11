@@ -1132,9 +1132,7 @@ public class XmlUtils {
 	}
 
 	public static boolean isWellFormed(String input, String root) {
-		try (Message message = new Message(input)) {
-		return isWellFormed(message, root);
-		}
+		return isWellFormed(new Message(input), root);
 	}
 
 	public static boolean isWellFormed(Message input, String root) {

@@ -142,7 +142,8 @@ public class WebServiceSenderResultTest {
 		sender.configure();
 		sender.start();
 
-		try (PipeLineSession pls = new PipeLineSession(); Message message = new Message("tralala")) {
+		try (PipeLineSession pls = new PipeLineSession()) {
+			Message message = new Message("tralala");
 			assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(message, pls).asString());
 		}
 	}
@@ -154,7 +155,8 @@ public class WebServiceSenderResultTest {
 		sender.configure();
 		sender.start();
 
-		try (PipeLineSession pls = new PipeLineSession(); Message message = new Message("tralala")) {
+		try (PipeLineSession pls = new PipeLineSession()) {
+			Message message = new Message("tralala");
 			Throwable exception = assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(message, pls).asString());
 			assertTrue(exception.getMessage().contains("Missing start boundary"));
 		}
@@ -167,7 +169,8 @@ public class WebServiceSenderResultTest {
 		sender.configure();
 		sender.start();
 
-		try (PipeLineSession pls = new PipeLineSession(); Message message = new Message("tralala")) {
+		try (PipeLineSession pls = new PipeLineSession()) {
+			Message message = new Message("tralala");
 			Throwable exception = assertThrows(SenderException.class, () -> sender.sendMessageOrThrow(message, pls));
 			assertTrue(exception.getMessage().contains("SOAP fault [soapenv:Client]: much error"));
 		}

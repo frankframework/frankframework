@@ -64,7 +64,7 @@ public class DataSonnetUtil {
 	/**
 	 * DataSonnet library that allows you to call another process from within a DataSonnet translation.
 	 * The 'namespace' field is the 'object' in the translation file. For now this has been fixed to 'sender'.
-	 * 
+	 *
 	 * nb. the extended class 'library' is made in Scala.
 	 */
 	public static class DataSonnetToSenderConnector extends Library {
@@ -113,7 +113,9 @@ public class DataSonnetUtil {
 					.findFirst()
 					.orElseThrow(() -> new IllegalArgumentException("no value provided"));
 
-			try (Message input = Message.asMessage(arg); Message result = sender.sendMessageOrThrow(input, session)) {
+			try {
+				Message input = Message.asMessage(arg);
+				Message result = sender.sendMessageOrThrow(input, session);
 				return new Val.Str(result.asString());
 			} catch (Exception e) {
 				throw new IllegalStateException(e);

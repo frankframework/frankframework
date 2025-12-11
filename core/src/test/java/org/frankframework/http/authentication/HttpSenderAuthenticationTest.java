@@ -17,7 +17,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.SocketException;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -65,14 +64,6 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		MockTokenServer.createStubs(tokenServer);
 		MockAuthenticatedService.createStubs(authenticatedService);
 		super.setUp();
-	}
-
-	@AfterEach
-	public void after() throws Exception {
-		super.tearDown();
-		if (result != null) {
-			result.close();
-		}
 	}
 
 	public String getTokenEndpoint() {

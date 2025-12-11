@@ -203,12 +203,11 @@ public class CompressPipe extends FixedForwardPipe {
 	}
 
 	private String getZipEntryName(String input, PipeLineSession session) throws ParameterException, IOException {
-		try (Message pvlInput = new Message(input)) {
-			ParameterValueList pvl = getParameterList().getValues(pvlInput, session);
-			String value = ParameterValueList.getValue(pvl, "zipEntryPattern", (String) null);
-			if(value != null) {
-				return value;
-			}
+		Message pvlInput = new Message(input);
+		ParameterValueList pvl = getParameterList().getValues(pvlInput, session);
+		String value = ParameterValueList.getValue(pvl, "zipEntryPattern", (String) null);
+		if (value != null) {
+			return value;
 		}
 
 		if (messageIsContent) {

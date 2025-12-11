@@ -149,7 +149,7 @@ public class LadybugDebugger implements ApplicationContextAware, ApplicationList
 						inRerun.add(correlationId);
 					}
 
-					try (Message inputMessage = new Message(checkpoint.getMessageWithResolvedVariables(reportRunner))) {
+					try {
 						// Try with resource will make sure pipeLineSession is closed and all (possibly opened)
 						// streams are also closed and the generated report will not remain in progress
 						try (PipeLineSession pipeLineSession = new PipeLineSession()) {
@@ -173,6 +173,7 @@ public class LadybugDebugger implements ApplicationContextAware, ApplicationList
 							// Analog to test a pipeline that is using: "testmessage" + Misc.createSimpleUUID();
 							String messageId = MessageUtils.generateMessageId("ladybug-testmessage");
 							pipeLineSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
+							Message inputMessage = new Message(checkpoint.getMessageWithResolvedVariables(reportRunner));
 							adapter.processMessageDirect(messageId, inputMessage, pipeLineSession);
 						}
 						return null;

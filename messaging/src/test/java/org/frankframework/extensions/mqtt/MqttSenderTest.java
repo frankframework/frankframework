@@ -23,7 +23,6 @@ import org.frankframework.jdbc.datasource.ResourceObjectLocator;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
-import org.frankframework.util.CloseUtils;
 
 @Testcontainers(disabledWithoutDocker = true)
 @Tag("integration") // Requires Docker; exclude with '-DexcludedGroups=integration'
@@ -91,7 +90,6 @@ public class MqttSenderTest extends SenderTestBase<MqttSender> {
 
 		// Test that sending succeeds first time
 		SenderResult result = assertDoesNotThrow(() -> sender.sendMessage(new Message("dummy"), session));
-		CloseUtils.closeSilently(result.getResult());
 
 		// Stop and Restart the sender
 		sender.stop();
@@ -99,7 +97,6 @@ public class MqttSenderTest extends SenderTestBase<MqttSender> {
 
 		// Test that sending succeeds first time
 		result = assertDoesNotThrow(() -> sender.sendMessage(new Message("dummy"), session));
-		CloseUtils.closeSilently(result.getResult());
 	}
 
 	@Test
@@ -110,7 +107,6 @@ public class MqttSenderTest extends SenderTestBase<MqttSender> {
 		sender.start();
 
 		SenderResult result = assertDoesNotThrow(() -> sender.sendMessage(new Message("dummy"), session));
-		CloseUtils.closeSilently(result.getResult());
 	}
 
 	@Test
@@ -126,7 +122,6 @@ public class MqttSenderTest extends SenderTestBase<MqttSender> {
 		session.put("topicKey", "dummyTopic");
 
 		SenderResult result = assertDoesNotThrow(() -> sender.sendMessage(new Message("dummy"), session));
-		CloseUtils.closeSilently(result.getResult());
 	}
 
 	@Test
@@ -164,9 +159,7 @@ public class MqttSenderTest extends SenderTestBase<MqttSender> {
 		sender2.start();
 
 		SenderResult result1 = assertDoesNotThrow(() -> sender1.sendMessage(new Message("dummy"), session));
-		CloseUtils.closeSilently(result1.getResult());
 
 		SenderResult result2 = assertDoesNotThrow(() -> sender2.sendMessage(new Message("dummy"), session));
-		CloseUtils.closeSilently(result2.getResult());
 	}
 }

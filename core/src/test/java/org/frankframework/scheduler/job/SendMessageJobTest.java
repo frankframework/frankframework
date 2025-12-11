@@ -36,7 +36,6 @@ class SendMessageJobTest {
 
 		verify(localSenderMock).sendMessageOrThrow(any(), any());
 		verify(localSenderMock).stop();
-		verify(messageMock).close();
 	}
 
 	@Test

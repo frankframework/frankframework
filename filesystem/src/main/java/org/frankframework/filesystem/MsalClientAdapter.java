@@ -243,8 +243,8 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 
 	@Override
 	public IHttpResponse send(HttpRequest httpRequest) throws Exception {
-		try (PipeLineSession session = prepareSession(httpRequest); Message request = new Message(httpRequest.body())) {
-
+		try (PipeLineSession session = prepareSession(httpRequest)) {
+			Message request = new Message(httpRequest.body());
 			Message response = sendMessageOrThrow(request, session);
 			return new MsalResponse(response, session);
 		} catch (Exception e) {

@@ -319,8 +319,9 @@ public abstract class AmqpSenderTest {
 		for (String messageText : messagesToSend) {
 			new Thread(() -> {
 				try (PipeLineSession localSession = new PipeLineSession();
-					 Message message = new Message(messageText);
 				) {
+					Message message = new Message(messageText);
+
 					// Wait until all threads have started
 					syncPoint.arriveAndAwaitAdvance();
 					sender.sendMessage(message, localSession);

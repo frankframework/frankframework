@@ -296,7 +296,8 @@ public class FixedResultPipe extends FixedForwardPipe {
 			}
 
 			if (stringBasedOperationNeeded()) {
-				try (Message msg = new UrlMessage(resource)) {
+				try {
+					Message msg = new UrlMessage(resource);
 					resultString = msg.asString();
 				} catch (Exception e) {
 					throw new PipeRunException(this, "got exception loading [" + filename + "]", e);

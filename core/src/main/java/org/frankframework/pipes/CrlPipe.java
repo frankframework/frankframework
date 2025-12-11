@@ -32,7 +32,6 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.stream.Message;
-import org.frankframework.util.CloseUtils;
 import org.frankframework.util.XmlBuilder;
 
 /**
@@ -106,8 +105,6 @@ public class CrlPipe extends FixedForwardPipe {
 			}
 		} catch (CertificateException | IOException e) {
 			throw new PipeRunException(this, "Could not read issuer certificate", e);
-		} finally {
-			CloseUtils.closeSilently(issuer);
 		}
 		return false;
 	}

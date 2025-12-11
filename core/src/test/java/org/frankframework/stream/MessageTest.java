@@ -43,7 +43,6 @@ import java.nio.file.Paths;
 
 import org.apache.commons.codec.binary.Hex;
 import org.apache.logging.log4j.Logger;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.util.StreamUtils;
@@ -57,7 +56,6 @@ import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.SerializationTester;
 import org.frankframework.testutil.TestAppender;
 import org.frankframework.testutil.TestFileUtils;
-import org.frankframework.util.CloseUtils;
 import org.frankframework.util.LogUtil;
 import org.frankframework.util.StreamUtil;
 import org.frankframework.util.XmlUtils;
@@ -107,11 +105,6 @@ public class MessageTest {
 		try (Writer fw = new OutputStreamWriter(new FileOutputStream(file), StandardCharsets.UTF_8)) {
 			fw.write(contents);
 		}
-	}
-
-	@AfterEach
-	public void tearDown() {
-		CloseUtils.closeSilently(adapter);
 	}
 
 	protected void testAsInputStream(Message message) throws IOException {
@@ -359,7 +352,6 @@ public class MessageTest {
 
 		String actual = message.asString();
 		assertEquals("", actual);
-		message.close();
 	}
 
 	@Test
@@ -620,9 +612,8 @@ public class MessageTest {
 
 		File file = new File(url.toURI());
 		FileInputStream fis = new FileInputStream(file);
-		try (Message message = new Message(fis)) {
-			testAsInputStream(message);
-		}
+		Message message = new Message(fis);
+		testAsInputStream(message);
 	}
 
 	@Test
@@ -664,100 +655,93 @@ public class MessageTest {
 	public void testSerializeWithString() throws Exception {
 		// NB: This test logs a serialization-wire that can be added to the array `characterWires` when there are change to the class structure, to protect a version against breakage by future changes.
 		String source = testString;
-		try (Message in = new Message(source)) {
-			in.getContext().put("TEST-KEY-STRING", "TEST-VALUE");
-			in.getContext().put("TEST-KEY-INT", 1);
-			byte[] wire = serializationTester.serialize(in);
-			log.debug("Current characterWire: [{}]", () -> Hex.encodeHexString(wire));
+		Message in = new Message(source);
+		in.getContext().put("TEST-KEY-STRING", "TEST-VALUE");
+		in.getContext().put("TEST-KEY-INT", 1);
+		byte[] wire = serializationTester.serialize(in);
+		log.debug("Current characterWire: [{}]", () -> Hex.encodeHexString(wire));
 
-			assertNotNull(wire);
-			try (Message out = serializationTester.deserialize(wire)) {
-				assertFalse(out.isBinary());
-				assertEquals(testString, out.asString());
-				assertTrue(out.getContext().containsKey("TEST-KEY-STRING"));
-				assertEquals("TEST-VALUE", out.getContext().get("TEST-KEY-STRING"));
-				assertTrue(out.getContext().containsKey("TEST-KEY-INT"));
-				assertEquals(1, out.getContext().get("TEST-KEY-INT"));
-			}
-		}
+		assertNotNull(wire);
+		Message out = serializationTester.deserialize(wire);
+
+		assertFalse(out.isBinary());
+		assertEquals(testString, out.asString());
+		assertTrue(out.getContext().containsKey("TEST-KEY-STRING"));
+		assertEquals("TEST-VALUE", out.getContext().get("TEST-KEY-STRING"));
+		assertTrue(out.getContext().containsKey("TEST-KEY-INT"));
+		assertEquals(1, out.getContext().get("TEST-KEY-INT"));
 	}
 
 	@Test
 	public void testSerializeWithNumber() throws Exception {
 		// NB: This test logs a serialization-wire that can be added to the array `characterWires` when there are change to the class structure, to protect a version against breakage by future changes.
 		Long source = 12345L;
-		try (Message in = Message.asMessage(source)) {
-			in.getContext().put("TEST-KEY-STRING", "TEST-VALUE");
-			in.getContext().put("TEST-KEY-INT", 1);
-			byte[] wire = serializationTester.serialize(in);
-			log.debug("Current characterWire: [{}]", () -> Hex.encodeHexString(wire));
+		Message in = Message.asMessage(source);
+		in.getContext().put("TEST-KEY-STRING", "TEST-VALUE");
+		in.getContext().put("TEST-KEY-INT", 1);
+		byte[] wire = serializationTester.serialize(in);
+		log.debug("Current characterWire: [{}]", () -> Hex.encodeHexString(wire));
 
-			assertNotNull(wire);
-			try (Message out = serializationTester.deserialize(wire)) {
-				assertTrue(out.isBinary());
-				assertEquals("12345", out.asString());
-				assertEquals(5L, out.size()); // For Number, derived from length of "asString"
-				assertTrue(out.getContext().containsKey("TEST-KEY-STRING"));
-				assertEquals("TEST-VALUE", out.getContext().get("TEST-KEY-STRING"));
-				assertTrue(out.getContext().containsKey("TEST-KEY-INT"));
-				assertEquals(1, out.getContext().get("TEST-KEY-INT"));
-			}
-		}
+		assertNotNull(wire);
+		Message out = serializationTester.deserialize(wire);
+		assertTrue(out.isBinary());
+		assertEquals("12345", out.asString());
+		assertEquals(5L, out.size()); // For Number, derived from length of "asString"
+		assertTrue(out.getContext().containsKey("TEST-KEY-STRING"));
+		assertEquals("TEST-VALUE", out.getContext().get("TEST-KEY-STRING"));
+		assertTrue(out.getContext().containsKey("TEST-KEY-INT"));
+		assertEquals(1, out.getContext().get("TEST-KEY-INT"));
 	}
 
 	@Test
 	public void testSerializeWithBoolean() throws Exception {
 		// NB: This test logs a serialization-wire that can be added to the array `characterWires` when there are change to the class structure, to protect a version against breakage by future changes.
 		Boolean source = Boolean.FALSE;
-		try (Message in = Message.asMessage(source)) {
-			in.getContext().put("TEST-KEY-STRING", "TEST-VALUE");
-			in.getContext().put("TEST-KEY-INT", 1);
-			byte[] wire = serializationTester.serialize(in);
-			log.debug("Current characterWire: [{}]", () -> Hex.encodeHexString(wire));
+		Message in = Message.asMessage(source);
+		in.getContext().put("TEST-KEY-STRING", "TEST-VALUE");
+		in.getContext().put("TEST-KEY-INT", 1);
+		byte[] wire = serializationTester.serialize(in);
+		log.debug("Current characterWire: [{}]", () -> Hex.encodeHexString(wire));
 
-			assertNotNull(wire);
-			try (Message out = serializationTester.deserialize(wire)) {
-				assertTrue(out.isBinary());
-				assertEquals("false", out.asString());
-				assertEquals(5L, out.size()); // For Boolean, derived from the length of "asString"
-				assertTrue(out.getContext().containsKey("TEST-KEY-STRING"));
-				assertEquals("TEST-VALUE", out.getContext().get("TEST-KEY-STRING"));
-				assertTrue(out.getContext().containsKey("TEST-KEY-INT"));
-				assertEquals(1, out.getContext().get("TEST-KEY-INT"));
-			}
-		}
+		assertNotNull(wire);
+		Message out = serializationTester.deserialize(wire);
+		assertTrue(out.isBinary());
+		assertEquals("false", out.asString());
+		assertEquals(5L, out.size()); // For Boolean, derived from the length of "asString"
+		assertTrue(out.getContext().containsKey("TEST-KEY-STRING"));
+		assertEquals("TEST-VALUE", out.getContext().get("TEST-KEY-STRING"));
+		assertTrue(out.getContext().containsKey("TEST-KEY-INT"));
+		assertEquals(1, out.getContext().get("TEST-KEY-INT"));
 	}
 
 	@Test
 	public void testSerializeWithByteArray() throws Exception {
 		// NB: This test logs a serialization-wire that can be added to the array `binaryWires` when there are change to the class structure, to protect a version against breakage by future changes.
 		byte[] source = testString.getBytes(StandardCharsets.UTF_8);
-		try (Message in = new Message(source)) {
-			in.getContext().withCharset(StandardCharsets.UTF_8);
-			in.getContext().put("TEST-KEY-STRING", "TEST-VALUE");
-			in.getContext().put("TEST-KEY-INT", 1);
+		Message in = new Message(source);
+		in.getContext().withCharset(StandardCharsets.UTF_8);
+		in.getContext().put("TEST-KEY-STRING", "TEST-VALUE");
+		in.getContext().put("TEST-KEY-INT", 1);
 
-			byte[] wire = serializationTester.serialize(in);
-			log.debug("Current binaryWire: [{}]", () -> Hex.encodeHexString(wire));
+		byte[] wire = serializationTester.serialize(in);
+		log.debug("Current binaryWire: [{}]", () -> Hex.encodeHexString(wire));
 
-			assertNotNull(wire);
-			try (Message out = serializationTester.deserialize(wire)) {
+		assertNotNull(wire);
+		Message out = serializationTester.deserialize(wire);
 
-				assertTrue(out.isBinary());
-				assertEquals(testString, out.asString());
-				assertTrue(out.getContext().containsKey("TEST-KEY-STRING"));
-				assertEquals("TEST-VALUE", out.getContext().get("TEST-KEY-STRING"));
-				assertTrue(out.getContext().containsKey("TEST-KEY-INT"));
-				assertEquals(1, out.getContext().get("TEST-KEY-INT"));
-				assertEquals("UTF-8", out.getContext().get(MessageContext.METADATA_CHARSET));
-			}
-		}
+		assertTrue(out.isBinary());
+		assertEquals(testString, out.asString());
+		assertTrue(out.getContext().containsKey("TEST-KEY-STRING"));
+		assertEquals("TEST-VALUE", out.getContext().get("TEST-KEY-STRING"));
+		assertTrue(out.getContext().containsKey("TEST-KEY-INT"));
+		assertEquals(1, out.getContext().get("TEST-KEY-INT"));
+		assertEquals("UTF-8", out.getContext().get(MessageContext.METADATA_CHARSET));
 	}
 
 	@Test
 	public void testSerializeWithReader() throws Exception {
-		Reader source = new StringReader(testString);
-		try (Message in = new Message(source)) {
+		try (Reader source = new StringReader(testString)) {
+			Message in = new Message(source);
 			byte[] wire = serializationTester.serialize(in);
 
 			assertNotNull(wire);
@@ -765,15 +749,13 @@ public class MessageTest {
 
 			assertFalse(out.isBinary());
 			assertEquals(testString, out.asString());
-			out.close();
 		}
-		source.close();
 	}
 
 	@Test
 	public void testSerializeWithInputStream() throws Exception {
-		InputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8));
-		try (Message in = new Message(source)) {
+		try (InputStream source = new ByteArrayInputStream(testString.getBytes(StandardCharsets.UTF_8))) {
+			Message in = new Message(source);
 			byte[] wire = serializationTester.serialize(in);
 
 			assertNotNull(wire);
@@ -781,7 +763,6 @@ public class MessageTest {
 
 			assertTrue(out.isBinary());
 			assertEquals(testString, out.asString());
-			out.close();
 		}
 	}
 
@@ -797,8 +778,6 @@ public class MessageTest {
 
 		assertTrue(out.isBinary());
 		assertEquals(testString, out.asString());
-		out.close();
-		in.close();
 	}
 
 	@Test
@@ -814,8 +793,6 @@ public class MessageTest {
 
 		assertTrue(out.isBinary());
 		assertEquals(testString, out.asString());
-		out.close();
-		in.close();
 	}
 
 	@Test
@@ -830,7 +807,6 @@ public class MessageTest {
 
 		assertFalse(out.isBinary());
 		assertEquals(testString, out.asString());
-		out.close();
 	}
 
 	@Test
@@ -846,7 +822,6 @@ public class MessageTest {
 		assertTrue(out.isBinary());
 		assertEquals(StandardCharsets.UTF_8.name(), out.getCharset());
 		assertEquals(testString, out.asString());
-		out.close();
 	}
 
 	@Test
@@ -861,7 +836,6 @@ public class MessageTest {
 
 		assertFalse(out.isBinary());
 		assertEquals(testString, out.asString());
-		out.close();
 	}
 
 	@Test
@@ -877,7 +851,6 @@ public class MessageTest {
 		assertTrue(out.isBinary());
 		assertEquals(StandardCharsets.UTF_8.name(), out.getCharset());
 		assertEquals(testString, out.asString());
-		out.close();
 	}
 
 	@Test
@@ -891,7 +864,6 @@ public class MessageTest {
 
 			assertFalse(out.isBinary(), label);
 			assertEquals(testString, out.asString(), label);
-			out.close();
 		}
 	}
 
@@ -907,7 +879,6 @@ public class MessageTest {
 			assertTrue(out.isBinary(), label);
 			assertEquals(StandardCharsets.UTF_8.name(), out.getCharset(), label);
 			assertEquals(testString, out.asString(), label);
-			out.close();
 		}
 	}
 
@@ -916,14 +887,12 @@ public class MessageTest {
 	public void testMessageSizeString() {
 		Message message = new Message("string");
 		assertEquals(6, message.size(), "size differs or could not be determined");
-		message.close();
 	}
 
 	@Test
 	public void testMessageSizeByteArray() {
 		Message message = new Message("string".getBytes());
 		assertEquals(6, message.size(), "size differs or could not be determined");
-		message.close();
 	}
 
 	@Test
@@ -932,8 +901,8 @@ public class MessageTest {
 		assertNotNull(url, "cannot find testfile");
 
 		File file = new File(url.toURI());
-		try (FileInputStream fis = new FileInputStream(file);
-			 Message message = new Message(fis)) {
+		try (FileInputStream fis = new FileInputStream(file)) {
+			Message message = new Message(fis);
 			assertEquals(33, message.size(), "size differs or could not be determined");
 		}
 	}
@@ -944,9 +913,9 @@ public class MessageTest {
 		assertNotNull(url, "cannot find testfile");
 
 		File file = new File(url.toURI());
-		try (Message message = new FileMessage(file)) {
-			assertEquals(33, message.size(), "size differs or could not be determined");
-		}
+		Message message = new FileMessage(file);
+		assertEquals(33, message.size(), "size differs or could not be determined");
+
 	}
 
 	@Test
@@ -954,16 +923,14 @@ public class MessageTest {
 		URL url = this.getClass().getResource("/file.xml");
 		assertNotNull(url, "cannot find testfile");
 
-		try (Message message = new UrlMessage(url)) {
-			assertEquals(-1, message.size(), "size differs or could not be determined");
-		}
+		Message message = new UrlMessage(url);
+		assertEquals(-1, message.size(), "size differs or could not be determined");
 	}
 
 	@Test
 	public void testNullMessageSize() {
-		try (Message message = Message.nullMessage()) {
-			assertEquals(0, message.size());
-		}
+		Message message = Message.nullMessage();
+		assertEquals(0, message.size());
 	}
 
 	@Test
@@ -971,26 +938,23 @@ public class MessageTest {
 		URL url = new URL("http://www.file.xml");
 		assertNotNull(url, "cannot find testfile");
 
-		try (Message message = new UrlMessage(url)) {
-			assertEquals(-1L, message.size());
-		}
+		Message message = new UrlMessage(url);
+		assertEquals(-1L, message.size());
 	}
 
 	@Test
 	public void testMessageSizeReader() throws IOException {
-		try (Message message = new Message(new StringReader("string"))) {
-			assertEquals(6L, message.size(), "size differs or could not be determined");
-			assertDoesNotThrow(() -> message.asString());
-			assertEquals(6L, message.size(), "size differs or could not be determined");
-		}
+		Message message = new Message(new StringReader("string"));
+		assertEquals(6L, message.size(), "size differs or could not be determined");
+		assertDoesNotThrow(() -> message.asString());
+		assertEquals(6L, message.size(), "size differs or could not be determined");
 	}
 
 	@Test
 	public void testMessageIsEmpty() {
-		try (Message message = Message.nullMessage()) {
-			assertTrue(message.isEmpty());
-			assertTrue(Message.isEmpty(message));
-		}
+		Message message = Message.nullMessage();
+		assertTrue(message.isEmpty());
+		assertTrue(Message.isEmpty(message));
 	}
 
 	@Test
@@ -1006,10 +970,8 @@ public class MessageTest {
 
 		assertEquals(utf8Input, binaryMessage.asString()); //Default must be used
 
-		try (Message characterMessage = new Message(utf8Input)) {
-			assertEquals(utf8Input, characterMessage.asString("ISO-8859-1")); //This should not be used as there is no binary conversion
-		}
-		binaryMessage.close();
+		Message characterMessage = new Message(utf8Input);
+		assertEquals(utf8Input, characterMessage.asString("ISO-8859-1")); //This should not be used as there is no binary conversion
 	}
 
 	@Test
@@ -1020,7 +982,6 @@ public class MessageTest {
 
 		String stringResult = message.asString("ISO-8859-ik-besta-niet"); //use MessageContext charset
 		assertEquals(utf8Input, stringResult);
-		message.close();
 	}
 
 	@Test
@@ -1028,10 +989,9 @@ public class MessageTest {
 		URL isoInputFile = TestFileUtils.getTestFileURL("/Util/MessageUtils/iso-8859-1.txt");
 		assertNotNull(isoInputFile, "unable to find isoInputFile");
 
-		try (Message message = new UrlMessage(isoInputFile)) { //repeatable stream, detect charset
-			String stringResult = message.asString("auto"); //detect when reading
-			assertEquals(StreamUtil.streamToString(isoInputFile.openStream(), "ISO-8859-1"), stringResult);
-		}
+		Message message = new UrlMessage(isoInputFile); //repeatable stream, detect charset
+		String stringResult = message.asString("auto"); //detect when reading
+		assertEquals(StreamUtil.streamToString(isoInputFile.openStream(), "ISO-8859-1"), stringResult);
 	}
 
 	@Test
@@ -1060,8 +1020,6 @@ public class MessageTest {
 
 		// getCharset()==AUTO && defaultDecodingCharset==null ==> decodingCharset = UTF-8
 		assertEquals(StandardCharsets.UTF_8.name(), messageAutoCharset.computeDecodingCharset(null));
-		messageNullCharset.close();
-		messageAutoCharset.close();
 	}
 
 	@Test
@@ -1083,7 +1041,6 @@ public class MessageTest {
 			message.asString(); //calls asReader();
 			message.asString("auto"); //calls asReader();
 			message.asString(); //calls asReader();
-			message.close();
 			int i = 0;
 			for (String logLine : appender.getLogLines()) {
 				if (logLine.contains("unable to detect charset for message")) {
@@ -1092,7 +1049,6 @@ public class MessageTest {
 			}
 			assertEquals(1, i, "charset should be determined only once");
 		}
-		message.close();
 	}
 
 	@Test
@@ -1142,7 +1098,6 @@ public class MessageTest {
 
 		// Assert
 		assertEquals(text, content);
-		msg.close();
 	}
 
 	@Test
@@ -1157,7 +1112,6 @@ public class MessageTest {
 
 		// Assert
 		assertEquals(text, content);
-		msg.close();
 	}
 
 	@Test
@@ -1172,7 +1126,6 @@ public class MessageTest {
 		Message message = (Message) msg;
 		assertEquals("text", message.asString());
 		assertEquals(4, content.length);
-		message.close();
 	}
 
 	@Test
@@ -1188,6 +1141,5 @@ public class MessageTest {
 		MessageWrapper<Message> messageWrapper = (MessageWrapper) wrapper;
 		assertEquals("text", messageWrapper.getMessage().asString());
 		assertEquals(4, content.length);
-		msg.close();
 	}
 }

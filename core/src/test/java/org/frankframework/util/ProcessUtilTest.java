@@ -24,9 +24,7 @@ public class ProcessUtilTest {
 		}
 
 		Message result = ProcessUtil.executeCommand(command, 2);
-		try (result) {
-			assertEquals("test", result.asString().trim());
-		}
+		assertEquals("test", result.asString().trim());
 	}
 
 	@Test

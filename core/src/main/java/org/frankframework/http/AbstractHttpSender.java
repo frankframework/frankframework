@@ -456,8 +456,8 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 
 		if (isXhtml() && !Message.isEmpty(result)) {
 			Message xhtml;
-			try (Message m = result) {
-				xhtml = XmlUtils.toXhtml(m);
+			try {
+				xhtml = XmlUtils.toXhtml(result);
 			} catch (IOException e) {
 				throw new SenderException("error reading http response as String", e);
 			}

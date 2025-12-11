@@ -81,9 +81,8 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 			}
 			Message message = xml.asMessage();
 			ParameterValueList pvl = paramList.getValues(message, session);
-			try (Message transformedMessage = transformerPool.transform(message, pvl)) {
-				return transformedMessage.asString();
-			}
+			Message transformedMessage = transformerPool.transform(message, pvl);
+			return transformedMessage.asString();
 		}
 		return xml.asXmlString();
 	}

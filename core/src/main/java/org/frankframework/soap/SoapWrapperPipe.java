@@ -203,9 +203,8 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 				}
 				String soapHeader = null;
 				if (soapHeaderTp != null) {
-					try (Message soapHeaderMsg = soapHeaderTp.transform(payload, parameterValueList)) {
-						soapHeader = soapHeaderMsg.asString();
-					}
+					Message soapHeaderMsg = soapHeaderTp.transform(payload, parameterValueList);
+					soapHeader = soapHeaderMsg.asString();
 				} else {
 					if (StringUtils.isNotEmpty(getSoapHeaderSessionKey())) {
 						soapHeader = session.getString(getSoapHeaderSessionKey());

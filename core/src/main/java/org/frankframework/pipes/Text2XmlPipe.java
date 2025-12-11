@@ -136,9 +136,8 @@ public class Text2XmlPipe extends FixedForwardPipe {
 			}
 
 		} : new EncapsulatingReader(message.asReader(), prefix, suffix);
-		try (Message encapsulatedMessage = new Message(encapsulatingReader)) {
-			XmlUtils.parseXml(encapsulatedMessage.asInputSource(), handler);
-		}
+		Message encapsulatedMessage = new Message(encapsulatingReader);
+		XmlUtils.parseXml(encapsulatedMessage.asInputSource(), handler);
 	}
 
 	/**

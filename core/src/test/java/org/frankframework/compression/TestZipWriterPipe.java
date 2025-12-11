@@ -305,7 +305,6 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 
 		// Assert file
 		assertEquals(zipFileLocation, result.getContext().get(MessageContext.METADATA_LOCATION));
-		result.close();
 		assertTrue(Files.exists(zipFile));
 		Files.delete(zipFile);
 	}

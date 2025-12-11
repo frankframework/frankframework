@@ -337,7 +337,6 @@ public class MessageUtilsTest {
 		Message message = (Message) msg;
 		assertEquals("text", message.asString());
 		assertEquals("text", content);
-		message.close();
 	}
 
 	@Test
@@ -353,7 +352,6 @@ public class MessageUtilsTest {
 		MessageWrapper<Message> messageWrapper = (MessageWrapper) wrapper;
 		assertEquals("text", messageWrapper.getMessage().asString());
 		assertEquals("text", content);
-		msg.close();
 	}
 
 	@Test

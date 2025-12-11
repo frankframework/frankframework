@@ -295,7 +295,7 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 					}
 					try (PipeLineSession pipeLineSession = new PipeLineSession()) {
 						pipeLineSession.put(PipeLineSession.CORRELATION_ID_KEY, replyCid);
-						getSender().sendMessageOrThrow(plr.getResult(), pipeLineSession).close();
+						getSender().sendMessageOrThrow(plr.getResult(), pipeLineSession);
 					}
 				}
 			}

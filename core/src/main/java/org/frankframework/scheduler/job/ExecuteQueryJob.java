@@ -59,9 +59,8 @@ public class ExecuteQueryJob extends AbstractJobDef {
 		try(PipeLineSession session = new PipeLineSession()) {
 			qs.start();
 
-			try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), session)) {
-				log.info("result [{}]", result);
-			}
+			Message result = qs.sendMessageOrThrow(Message.nullMessage(), session);
+			log.info("result [{}]", result);
 		} catch (LifecycleException | SenderException e) {
 			throw new JobExecutionException("unable to execute query [" + getQuery() + "]", e);
 		} finally {

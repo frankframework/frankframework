@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URL;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.Message;
@@ -20,7 +19,6 @@ import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestFileUtils;
-import org.frankframework.util.CloseUtils;
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 @WithMockUser(roles = { "IbisTester" })
@@ -31,11 +29,6 @@ public class TestBrowseJdbcTable extends BusTestBase {
 	public void setup() {
 		URL url = TestFileUtils.getTestFileURL("/Management/BrowseJdbcTable/request.xml");
 		inputXmlMessage = new UrlMessage(url);
-	}
-
-	@AfterEach
-	public void teardown() {
-		CloseUtils.closeSilently(inputXmlMessage);
 	}
 
 	@Test
