@@ -306,4 +306,20 @@ public class NumberParameterTest {
 		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
 
 	}
+
+	@Test
+	public void testXpath() throws Exception {
+		NumberParameter p = new NumberParameter();
+		p.setName("integer");
+		p.setXpathExpression("/root");
+		p.configure();
+
+		Message input = new Message("<root>123</root>");
+		PipeLineSession session = new PipeLineSession();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Object result = p.getValue(alreadyResolvedParameters, input, session, false);
+		Integer integer = assertInstanceOf(Integer.class, result);
+		assertEquals(123, integer);
+	}
 }

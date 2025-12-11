@@ -747,7 +747,32 @@ public class Message implements Serializable, Closeable {
 		if (object instanceof RawMessageWrapper) {
 			throw new IllegalArgumentException("Raw message extraction / wrapping should be done via Listener.");
 		}
-		return new Message(new MessageContext(), object);
+
+		// Only allow the following types
+		if (isSupportedType(object)) {
+			return new Message(new MessageContext(), object);
+		}
+		throw new IllegalArgumentException("request object type ["+object.getClass().getSimpleName()+"] not compatible with Message");
+	}
+
+	public static boolean isSupportedType(Object request) {
+		return request instanceof byte[] ||
+				request instanceof Number ||
+				request instanceof Boolean ||
+				request instanceof String ||
+				request instanceof Date ||
+				request instanceof TemporalAccessor ||
+				request instanceof ThrowingSupplier ||
+				request instanceof Node ||
+				request instanceof SerializableFileReference ||
+				request instanceof Reader ||
+				request instanceof InputStream ||
+				request instanceof File ||
+				request instanceof Path ||
+				request instanceof Source ||
+				request instanceof URL ||
+				request instanceof InputSource ||
+				request instanceof Number;
 	}
 
 	/**

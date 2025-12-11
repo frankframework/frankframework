@@ -41,6 +41,7 @@ import jakarta.annotation.Nullable;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
+import org.springframework.http.MediaType;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -70,6 +71,7 @@ import org.frankframework.json.JsonUtil;
 import org.frankframework.pipes.PutSystemDateInSession;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
+import org.frankframework.stream.MessageContext;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.EnumUtils;
@@ -119,7 +121,7 @@ import org.frankframework.util.XmlUtils;
  */
 @SuppressWarnings("removal")
 @Log4j2
-public abstract class AbstractParameter implements IConfigurable, IWithParameters, IParameter {
+public abstract class AbstractParameter<T> implements IConfigurable, IWithParameters, IParameter {
 	public static final String CONTEXT_KEY_WILDCARD = "*";
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -147,11 +149,12 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	private @Getter String defaultValue = null;
 	private @Getter String defaultValueMethods = "defaultValue";
 	private @Getter String value = null;
-	private @Getter int minLength = -1;
 	private @Getter int maxLength = -1;
 	private @Getter boolean hidden = false;
 	private @Getter boolean removeNamespaces=false;
 	private @Getter int xsltVersion = 0; // set to 0 for auto-detect.
+
+	private @Getter OutputType xpathResultType = OutputType.TEXT;
 
 	private TransformerPool transformerPool = null;
 	private TransformerPool tpDynamicSessionKey = null;
@@ -196,13 +199,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		}
 		paramList.configure();
 		if (StringUtils.isNotEmpty(getXpathExpression()) || StringUtils.isNotEmpty(styleSheetName)) {
-			OutputType outputType = getType() == ParameterType.XML
-					|| getType() == ParameterType.NODE
-					|| getType() == ParameterType.DOMDOC ? OutputType.XML : OutputType.TEXT;
-
-			boolean includeXmlDeclaration = false;
-
-			transformerPool = TransformerPool.configureTransformer0(this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), outputType, includeXmlDeclaration, paramList, getXsltVersion());
+			transformerPool = TransformerPool.configureTransformer0(this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getXpathResultType(), false, paramList, getXsltVersion());
 		} else {
 			if (StringUtils.isEmpty(getPattern()) && !paramList.isEmpty()) {
 				throw new ConfigurationException("Parameter [" + getName() + "] can only have parameters itself if a styleSheetName, xpathExpression or pattern is specified");
@@ -371,9 +368,9 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 						case DOMDOC:
 							return transformToDocument(source, pvl);
 						default:
-							String transformResult = transformerPool.transformToString(source, pvl.getValueMap());
+							String transformResult = transformerPool.transformToString(source, pvl.getValueMap()); // TODO No longer has to be a String
 							if (StringUtils.isNotEmpty(transformResult)) {
-								result = transformResult;
+								result = new Message(transformResult, new MessageContext().withMimeType(MediaType.APPLICATION_XML));
 							}
 					}
 				}
@@ -404,11 +401,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			}
 			if (input != null && !(input instanceof Message m && m.isEmpty())) {
 				try {
-					Message jsonResult = JsonUtil.evaluateJsonPath(jsonPath, input);
-					// Sigh, this breaks ParameterTests.
-					// If an appropriate Parameter type is used, this wouldn't happen as they have `requiresTypeConversion` enabled.
-					// I've created #10090 to figure out how we can optimize this...
-					result = jsonResult.asObject();
+					result = JsonUtil.evaluateJsonPath(jsonPath, input);
 				} catch (JsonPathNotFoundException e) {
 					log.debug("Parameter [{}] jsonpath exception, cannot find path in input [{}]:", jsonPathExpression, input, e);
 				} catch (JsonException e) {
@@ -483,21 +476,18 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			}
 		}
 
-		if (getMinLength() >= 0 || getMaxLength() >= 0) {
+		if (getMaxLength() >= 0) {
 			result = applyMinAndMaxLengths(result);
 		}
 
 		if(result != null && getType().requiresTypeConversion) {
 			try {
-				if (result instanceof Message message1) {
-					return getValueAsType(message1, namespaceAware);
-				} else {
-					try (Message message1 = Message.asMessage(result)) {
-						return getValueAsType(message1, namespaceAware);
-					}
-				}
+				Message message1 = Message.asMessage(result);
+				return getValueAsType(message1, namespaceAware);
+			} catch(IllegalArgumentException e) {
+				return result; // oh no, we cannot convert to message! Return raw value.
 			} catch(IOException e) {
-				throw new ParameterException(getName(), "Could not convert parameter ["+getName()+"] to String", e);
+				throw new ParameterException(getName(), "Could not convert parameter ["+getName()+"] to type ["+getType()+"]", e);
 			}
 		}
 
@@ -615,11 +605,6 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	}
 
 	private String applyMinAndMaxLengths(String stringResult) {
-		if (getMinLength() >= 0 && !(this instanceof NumberParameter) && stringResult.length() < getMinLength()) {
-			log.debug("Padding parameter [{}] because length [{}] falls short of minLength [{}]", this::getName, stringResult::length, this::getMinLength);
-			return StringUtils.rightPad(stringResult, getMinLength());
-		}
-
 		if (getMaxLength() >= 0 && stringResult.length() > getMaxLength()) { // Still trims length regardless of type
 			log.debug("Trimming parameter [{}] because length [{}] exceeds maxLength [{}]", this::getName, stringResult::length, this::getMaxLength);
 			return stringResult.substring(0, getMaxLength());
@@ -629,14 +614,7 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	}
 
 	/** Converts raw data to configured parameter type */
-	@SuppressWarnings({ "deprecation", "java:S1172", "java:S1130" }) // Ignore unused parameter, unthrown parameters because overrides do throw or use it
-	protected Object getValueAsType(@Nonnull Message request, boolean namespaceAware) throws ParameterException, IOException {
-		Object result = request.asObject();
-
-		log.debug("final result [{}][{}]", ()->result != null ? result.getClass().getName() : null, ()-> result);
-
-		return result;
-	}
+	protected abstract T getValueAsType(@Nonnull Message request, boolean namespaceAware) throws ParameterException, IOException;
 
 	private String formatPattern(ParameterValueList alreadyResolvedParameters, PipeLineSession session) throws ParameterException {
 		int findNextFrom = 0;
@@ -1031,15 +1009,8 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	}
 
 	/**
-	 * If set (>=0) and the length of the value of the parameter falls short of this minimum length, the value is padded
-	 * @ff.default -1
-	 */
-	public void setMinLength(int i) {
-		minLength = i;
-	}
-
-	/**
-	 * If set (>=0) and the length of the value of the parameter exceeds this maximum length, the length is trimmed to this maximum length
+	 * If set (>=0) and the length of the value of the parameter exceeds this maximum length, the length is trimmed to this maximum length.
+	 * This only works for character (input) data.
 	 * @ff.default -1
 	 */
 	public void setMaxLength(int i) {
@@ -1079,5 +1050,9 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 
 			return new ParameterPatternSubstitution(formatName, formatType, formatString);
 		}
+	}
+
+	protected void setXpathResult(OutputType outputType) {
+		this.xpathResultType = outputType;
 	}
 }
