@@ -79,11 +79,14 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  *
  * @see <a href="https://github.com/DelineaXPM/tss-sdk-java">tss-sdk-java</a> for the reference java implementation
  * @see <a href="https://updates.thycotic.net/secretserver/restapiguide/">Delinea API documentation</a>
+ *
+ * @ff.info Please note that referenced secrets need to be numeric, since they reference the internal Delinea secret ID.
  */
 @Log4j2
 public class DelineaCredentialFactory implements ISecretProvider {
 
 	private static final String BASE_KEY = "credentialFactory.delinea.";
+
 	// Leave empty to not use autocomment
 	static final String USE_AUTO_COMMENT_VALUE = BASE_KEY + "autocomment.value";
 	static final String TENANT_KEY = BASE_KEY + "tenant";
