@@ -1,5 +1,6 @@
 package org.frankframework.parameters;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
+import org.frankframework.util.TimeProvider;
 
 public class NumberParameterTest {
 
@@ -321,5 +323,43 @@ public class NumberParameterTest {
 		Object result = p.getValue(alreadyResolvedParameters, input, session, false);
 		Integer integer = assertInstanceOf(Integer.class, result);
 		assertEquals(123, integer);
+	}
+
+	@Test
+	public void testPatternFixedDateWithUnixTimestamp() throws Exception {
+		TimeProvider.setTime(1747401948_000L);
+		NumberParameter p = new NumberParameter();
+		p.setType(ParameterType.NUMBER);
+		try (PipeLineSession session = new PipeLineSession()) {
+			p.setName("unixTimestamp");
+			p.setPattern("{now,millis,#}");
+			p.configure();
+
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+			Long millis = assertDoesNotThrow(() -> Long.parseLong(result.toString()));
+			assertEquals(1747401948_000L, millis);
+		}
+	}
+
+	@Test
+	public void testPatternFixedDateWithUnixTimestampNoHashInFormat() throws Exception {
+		TimeProvider.setTime(1747401948_000L);
+		NumberParameter p = new NumberParameter();
+		p.setType(ParameterType.NUMBER);
+		try (PipeLineSession session = new PipeLineSession()) {
+			p.setName("unixTimestamp");
+			p.setPattern("{now,millis}");
+			p.configure();
+
+			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+			Message message = new Message("fakeMessage");
+
+			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+			Long millis = assertDoesNotThrow(() -> Long.parseLong(result.toString()));
+			assertEquals(1747401948_000L, millis);
+		}
 	}
 }

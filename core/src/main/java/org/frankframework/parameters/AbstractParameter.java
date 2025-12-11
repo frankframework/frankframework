@@ -42,6 +42,7 @@ import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
+import org.springframework.util.MimeType;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -206,10 +207,10 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 			}
 		}
 		if (StringUtils.isNotEmpty(getSessionKeyXPath())) {
-			tpDynamicSessionKey = TransformerPool.configureTransformer(this, getNamespaceDefs(), getSessionKeyXPath(), null, OutputType.TEXT,false,null);
+			tpDynamicSessionKey = TransformerPool.configureTransformer(this, getNamespaceDefs(), getSessionKeyXPath(), null, OutputType.TEXT, false, null);
 		}
 		if (getType() == null) {
-			log.info("parameter [{} has no type. Setting the type to [{}]", this::getType, ()->ParameterType.STRING);
+			log.info("parameter [{}] has no type. Setting the type to [{}]", this::getName, ()->ParameterType.STRING);
 			setType(ParameterType.STRING);
 		}
 		jsonPath = JsonUtil.compileJsonPath(jsonPathExpression);
@@ -368,9 +369,10 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 						case DOMDOC:
 							return transformToDocument(source, pvl);
 						default:
-							String transformResult = transformerPool.transformToString(source, pvl.getValueMap()); // TODO No longer has to be a String
+							String transformResult = transformerPool.transformToString(source, pvl.getValueMap());
 							if (StringUtils.isNotEmpty(transformResult)) {
-								result = new Message(transformResult, new MessageContext().withMimeType(MediaType.APPLICATION_XML));
+								MimeType mimeType = (xpathResultType == OutputType.XML) ? MediaType.APPLICATION_XML : MediaType.TEXT_PLAIN;
+								result = new Message(transformResult, new MessageContext().withMimeType(mimeType));
 							}
 					}
 				}
