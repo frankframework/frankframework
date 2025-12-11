@@ -15,7 +15,6 @@
 */
 package org.frankframework.util;
 
-import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -29,7 +28,7 @@ import org.springframework.util.MimeTypeUtils;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 
-public class MessageDataSource implements DataSource, Closeable {
+public class MessageDataSource implements DataSource {
 	private final Message message;
 	private final String name;
 	private String contentType;
@@ -98,10 +97,5 @@ public class MessageDataSource implements DataSource, Closeable {
 	@Override
 	public OutputStream getOutputStream() throws IOException {
 		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void close() throws IOException {
-		// No-op
 	}
 }

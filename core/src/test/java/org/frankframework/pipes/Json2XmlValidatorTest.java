@@ -1119,13 +1119,12 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		String input = TestFileUtils.getTestFile("/Validation/Json2Xml/DeepSearch/" + testCase + "/Test-Input.json");
 
 		// Act
-		try (Message message = Message.asMessage(input);
-			 PipeRunResult result = pipe.doPipe(message, session)) {
+		Message message = Message.asMessage(input);
+		PipeRunResult result = pipe.doPipe(message, session);
 
-			// Assert
-			String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/DeepSearch/" + testCase + "/ExpectedOutput.xml");
-			assertXmlEquals(expectedResult, result.getResult().asString());
-		}
+		// Assert
+		String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/DeepSearch/" + testCase + "/ExpectedOutput.xml");
+		assertXmlEquals(expectedResult, result.getResult().asString());
 	}
 
 	@Test
@@ -1147,13 +1146,12 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		String input = TestFileUtils.getTestFile("/Validation/Json2Xml/DeepSearch/" + testCase + "/Test-Input.json");
 
 		// Act
-		try (Message message = Message.asMessage(input);
-			 PipeRunResult result = pipe.doPipe(message, session)) {
+		Message message = Message.asMessage(input);
+		PipeRunResult result = pipe.doPipe(message, session);
 
-			// Assert
-			String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/DeepSearch/" + testCase + "/ExpectedOutput.xml");
-			assertXmlEquals(expectedResult, result.getResult().asString());
-		}
+		// Assert
+		String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/DeepSearch/" + testCase + "/ExpectedOutput.xml");
+		assertXmlEquals(expectedResult, result.getResult().asString());
 	}
 
 	@Test
@@ -1173,12 +1171,11 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		String input = TestFileUtils.getTestFile("/Validation/Json2Xml/WildcardElements/Wildcard-Input.xml");
 
 		// Act
-		try (Message message = Message.asMessage(input);
-			 PipeRunResult result = pipe.doPipe(message, session)) {
+		Message message = Message.asMessage(input);
+		PipeRunResult result = pipe.doPipe(message, session);
 
-			// Assert
-			String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/WildcardElements/ExpectedOutput.json");
-			assertEqualsIgnoreWhitespaces(expectedResult, result.getResult().asString());
-		}
+		// Assert
+		String expectedResult = TestFileUtils.getTestFile("/Validation/Json2Xml/WildcardElements/ExpectedOutput.json");
+		assertEqualsIgnoreWhitespaces(expectedResult, result.getResult().asString());
 	}
 }

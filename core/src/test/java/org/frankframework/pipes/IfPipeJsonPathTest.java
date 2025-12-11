@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.io.StringReader;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -16,7 +15,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.stream.Message;
-import org.frankframework.util.CloseUtils;
 
 public class IfPipeJsonPathTest extends PipeTestBase<IfPipe> {
 
@@ -55,14 +53,6 @@ public class IfPipeJsonPathTest extends PipeTestBase<IfPipe> {
 			}
 			""";
 	private PipeRunResult pipeRunResult;
-
-	@Override
-	@AfterEach
-	public void tearDown() {
-		CloseUtils.closeSilently(pipeRunResult);
-
-		super.tearDown();
-	}
 
 	@Override
 	public IfPipe createPipe() throws ConfigurationException {

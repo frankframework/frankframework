@@ -59,11 +59,9 @@ public abstract class FileSystemPipeTest<FSP extends AbstractFileSystemPipe<F, F
 	@Override
 	@AfterEach
 	public void tearDown() {
-		if (fileSystemPipe!=null) {
+		if (fileSystemPipe != null) {
 			fileSystemPipe.stop();
 		}
-		CloseUtils.closeSilently(prr);
-
 		super.tearDown();
 	}
 

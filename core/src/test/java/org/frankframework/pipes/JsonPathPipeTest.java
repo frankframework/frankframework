@@ -47,7 +47,7 @@ class JsonPathPipeTest {
 
 	@AfterEach
 	void tearDown() {
-		CloseUtils.closeSilently(session, result, input);
+		CloseUtils.closeSilently(session);
 	}
 
 	static Stream<Arguments> doPipe() {

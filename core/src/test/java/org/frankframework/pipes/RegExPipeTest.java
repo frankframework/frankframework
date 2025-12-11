@@ -4,23 +4,15 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeRunResult;
-import org.frankframework.util.CloseUtils;
 
 public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 
 	private PipeRunResult pipeRunResult;
-
-	@Override
-	@AfterEach
-	public void tearDown() {
-		CloseUtils.closeSilently(pipeRunResult);
-	}
 
 	@Override
 	public RegExPipe createPipe() throws ConfigurationException {

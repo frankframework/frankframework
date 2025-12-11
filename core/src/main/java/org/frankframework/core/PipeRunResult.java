@@ -41,7 +41,7 @@ import org.frankframework.stream.Message;
  * @see AbstractPipe#doPipe
  * @see AbstractPipe#findForward
  */
-public class PipeRunResult implements AutoCloseable {
+public class PipeRunResult {
 
 	private @Getter @Setter PipeForward pipeForward;
 	private Message result;
@@ -87,10 +87,5 @@ public class PipeRunResult implements AutoCloseable {
 
 	public boolean isSuccessful() {
 		return PipeForward.SUCCESS_FORWARD_NAME.equalsIgnoreCase(getPipeForward().getName());
-	}
-
-	@Override
-	public void close() throws Exception {
-		// No-op
 	}
 }
