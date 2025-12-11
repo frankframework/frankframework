@@ -25,6 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.util.MimeType;
@@ -183,7 +184,8 @@ public class DataSonnetUtil {
 			this.message = message.asString();
 		}
 
-		private static MediaType convertSpringToDataSonnetMediaType(MimeType springMime) {
+		@Nonnull
+		private static MediaType convertSpringToDataSonnetMediaType(@Nullable MimeType springMime) {
 			if(springMime != null) {
 				try {
 					return MediaType.parseMediaType(springMime.toString());
@@ -194,6 +196,7 @@ public class DataSonnetUtil {
 			return MediaTypes.TEXT_PLAIN;
 		}
 
+		@Nullable
 		private static MimeType getSpringMimeType(Message message, boolean computeMimeType) {
 			MimeType mimeType = message.getContext().getMimeType();
 			if (mimeType != null) {
@@ -202,7 +205,7 @@ public class DataSonnetUtil {
 
 			if(computeMimeType) {
 				MimeType computedType = MessageUtils.computeMimeType(message);
-				if(!"octet-stream".equals(computedType.getSubtype())) {
+				if(computedType != null && !"octet-stream".equals(computedType.getSubtype())) {
 					return computedType;
 				}
 			}

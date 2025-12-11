@@ -244,4 +244,21 @@ public class DataSonnetPipeTest extends PipeTestBase<DataSonnetPipe> {
 				<param-one><xml key="value"><a></a><b>c</b></xml></param-one>
 				</root>""".replaceAll("\n", ""), result.asString());
 	}
+
+	@Test
+	public void callSenderEmptyParamAndComputeMimeType() throws Exception {
+		pipe.setStyleSheetName("/Pipes/DataSonnet/one-param.jsonnet");
+		pipe.addParameter(ParameterBuilder.create("foo", "")); // empty param value, b/c computeMimeType=true should not throw exceptions
+		configureAndStartPipe();
+		Message input = new Message("{\"foo\":456}");
+		input.getContext().withMimeType(MediaType.APPLICATION_JSON);
+
+		// Act
+		Message result = doPipe(input).getResult();
+
+		// Assert
+		assertEquals(MediaType.APPLICATION_JSON, result.getContext().getMimeType());
+		assertEquals("""
+				{"greetings":{"foo":456},"param-one":""}""", result.asString());
+	}
 }
