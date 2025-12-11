@@ -18,7 +18,6 @@ import org.testcontainers.utility.DockerImageName;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.SenderException;
-import org.frankframework.core.SenderResult;
 import org.frankframework.jdbc.datasource.ResourceObjectLocator;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.SenderTestBase;
@@ -89,14 +88,14 @@ public class MqttSenderTest extends SenderTestBase<MqttSender> {
 		sender.start();
 
 		// Test that sending succeeds first time
-		SenderResult result = assertDoesNotThrow(() -> sender.sendMessage(new Message("dummy"), session));
+		assertDoesNotThrow(() -> sender.sendMessage(new Message("dummy"), session));
 
 		// Stop and Restart the sender
 		sender.stop();
 		sender.start();
 
 		// Test that sending succeeds first time
-		result = assertDoesNotThrow(() -> sender.sendMessage(new Message("dummy"), session));
+		assertDoesNotThrow(() -> sender.sendMessage(new Message("dummy"), session));
 	}
 
 	@Test
@@ -106,7 +105,7 @@ public class MqttSenderTest extends SenderTestBase<MqttSender> {
 		assertDoesNotThrow(() -> sender.configure());
 		sender.start();
 
-		SenderResult result = assertDoesNotThrow(() -> sender.sendMessage(new Message("dummy"), session));
+		assertDoesNotThrow(() -> sender.sendMessage(new Message("dummy"), session));
 	}
 
 	@Test
@@ -121,7 +120,7 @@ public class MqttSenderTest extends SenderTestBase<MqttSender> {
 
 		session.put("topicKey", "dummyTopic");
 
-		SenderResult result = assertDoesNotThrow(() -> sender.sendMessage(new Message("dummy"), session));
+		assertDoesNotThrow(() -> sender.sendMessage(new Message("dummy"), session));
 	}
 
 	@Test
@@ -158,8 +157,7 @@ public class MqttSenderTest extends SenderTestBase<MqttSender> {
 		assertDoesNotThrow(sender2::configure);
 		sender2.start();
 
-		SenderResult result1 = assertDoesNotThrow(() -> sender1.sendMessage(new Message("dummy"), session));
-
-		SenderResult result2 = assertDoesNotThrow(() -> sender2.sendMessage(new Message("dummy"), session));
+		assertDoesNotThrow(() -> sender1.sendMessage(new Message("dummy"), session));
+		assertDoesNotThrow(() -> sender2.sendMessage(new Message("dummy"), session));
 	}
 }
