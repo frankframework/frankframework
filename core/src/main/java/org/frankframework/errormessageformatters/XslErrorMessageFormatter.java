@@ -98,8 +98,7 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter implements I
 
 		Message result = super.format(errorMessage, t, location, originalMessage, session);
 		try {
-			ParameterValueList parameterValueList = getParameterValues(errorMessage, session);
-			return transformerPool.transform(result, parameterValueList);
+			return transformerPool.transform(result, getParameterValues(errorMessage, session));
 		} catch (Exception tfe) {
 			log.error("could not transform [{}] using stylesheet [{}]", result, getStyleSheetName(), tfe);
 		}

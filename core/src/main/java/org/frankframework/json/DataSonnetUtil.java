@@ -114,8 +114,7 @@ public class DataSonnetUtil {
 					.orElseThrow(() -> new IllegalArgumentException("no value provided"));
 
 			try {
-				Message input = Message.asMessage(arg);
-				Message result = sender.sendMessageOrThrow(input, session);
+				Message result = sender.sendMessageOrThrow(Message.asMessage(arg), session);
 				return new Val.Str(result.asString());
 			} catch (Exception e) {
 				throw new IllegalStateException(e);

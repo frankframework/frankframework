@@ -318,8 +318,7 @@ public abstract class AmqpSenderTest {
 		// Act
 		for (String messageText : messagesToSend) {
 			new Thread(() -> {
-				try (PipeLineSession localSession = new PipeLineSession();
-				) {
+				try (PipeLineSession localSession = new PipeLineSession()) {
 					Message message = new Message(messageText);
 
 					// Wait until all threads have started

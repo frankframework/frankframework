@@ -32,6 +32,7 @@ import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.StreamUtil;
 
+@SuppressWarnings("removal")
 public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 
 	@Override
@@ -62,7 +63,7 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 	}
 
 	@Test
-	void testStreamMissingFilenameParameter() throws Exception {
+	void testStreamMissingFilenameParameter() {
 		pipe.setBackwardsCompatibility(true);
 		pipe.setAction(Action.STREAM);
 		assertThrows(ConfigurationException.class, this::configureAndStartPipe);

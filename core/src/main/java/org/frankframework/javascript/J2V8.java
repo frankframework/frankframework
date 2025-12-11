@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2024 WeAreFrank!
+   Copyright 2019-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -117,8 +117,7 @@ public class J2V8 implements JavascriptEngine<V8> {
 			@Override
 			public Object invoke(V8Object receiver, V8Array parameters) {
 				try {
-					Message msg = Message.asMessage(parameters.get(0));
-					return sender.sendMessageOrThrow(msg, session).asString();
+					return sender.sendMessageOrThrow(Message.asMessage(parameters.get(0)), session).asString();
 				} catch (Exception e) {
 					throw new IllegalStateException(e);
 				}

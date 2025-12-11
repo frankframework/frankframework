@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -202,9 +202,8 @@ public class CompressPipe extends FixedForwardPipe {
 		}
 	}
 
-	private String getZipEntryName(String input, PipeLineSession session) throws ParameterException, IOException {
-		Message pvlInput = new Message(input);
-		ParameterValueList pvl = getParameterList().getValues(pvlInput, session);
+	private String getZipEntryName(String input, PipeLineSession session) throws ParameterException {
+		ParameterValueList pvl = getParameterList().getValues(new Message(input), session);
 		String value = ParameterValueList.getValue(pvl, "zipEntryPattern", (String) null);
 		if (value != null) {
 			return value;

@@ -194,6 +194,7 @@ class JsonPathPipeTest {
 		pipe.configure();
 
 		Message input = Message.asMessage(TEST_INPUT);
+
 		// Act
 		Message output = pipe.doPipe(input, session).getResult();
 

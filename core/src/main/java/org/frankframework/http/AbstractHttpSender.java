@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2024 WeAreFrank!
+   Copyright 2017-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -455,23 +455,23 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 		}
 
 		if (isXhtml() && !Message.isEmpty(result)) {
-			Message xhtml;
+			Message xhtmlResult;
 			try {
-				xhtml = XmlUtils.toXhtml(result);
+				xhtmlResult = XmlUtils.toXhtml(result);
 			} catch (IOException e) {
 				throw new SenderException("error reading http response as String", e);
 			}
 
-			if (transformerPool != null && !xhtml.isEmpty()) {
-				log.debug("transforming result [{}]", xhtml);
+			if (transformerPool != null && !xhtmlResult.isEmpty()) {
+				log.debug("transforming result [{}]", xhtmlResult);
 				try {
-					xhtml = transformerPool.transform(xhtml);
+					xhtmlResult = transformerPool.transform(xhtmlResult);
 				} catch (Exception e) {
 					throw new SenderException("Exception on transforming input", e);
 				}
 			}
 
-			result = xhtml;
+			result = xhtmlResult;
 		}
 
 		if (result == null) {

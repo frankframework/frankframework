@@ -85,7 +85,7 @@ public class JavaListenerTest {
 		return listener;
 	}
 
-	<M> Adapter setupAdapter() throws Exception {
+	Adapter setupAdapter() throws Exception {
 		Adapter adapter = configuration.createBean(Adapter.class);
 		adapter.setName("ReceiverTestAdapterName");
 
