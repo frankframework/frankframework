@@ -85,7 +85,7 @@ public class JavaListenerTest {
 		return listener;
 	}
 
-	<M> Adapter setupAdapter() throws Exception {
+	Adapter setupAdapter() throws Exception {
 		Adapter adapter = configuration.createBean(Adapter.class);
 		adapter.setName("ReceiverTestAdapterName");
 
@@ -159,7 +159,6 @@ public class JavaListenerTest {
 		assertTrue(result.requiresStream(), "Result message should be a stream");
 		assertTrue(result.isRequestOfType(SerializableFileReference.class), "Result message should be of type SerializableFileReference");
 		assertEquals(rawTestMessage, result.asString());
-		testMessage.close();
 	}
 
 	@Test
@@ -182,7 +181,6 @@ public class JavaListenerTest {
 		assertTrue(result.requiresStream(), "Result message should be a stream");
 		assertTrue(result.isRequestOfType(SerializableFileReference.class), "Result message should be of type SerializableFileReference");
 		assertEquals(rawTestMessage, result.asString());
-		result.close();
 	}
 
 	@Test
@@ -207,7 +205,6 @@ public class JavaListenerTest {
 		// Act / Assert 2 - OnError.CLOSE
 		assertThrows(ListenerException.class, () -> listener.processRequest(testMessage, session));
 		assertSame(RunState.STOPPED, receiver.getRunState(), "Receiver should be in state STOPPED");
-		testMessage.close();
 	}
 
 	@Test
@@ -230,8 +227,6 @@ public class JavaListenerTest {
 		String resultString = result.asString();
 		assertTrue(resultString.contains("FAILED PIPE"), "Result message should contain string 'FAILED PIPE'");
 		assertTrue(resultString.startsWith("<errorMessage"), "Result message should start with string '<errorMessage'");
-		result.close();
-		testMessage.close();
 	}
 
 	@Test
@@ -253,7 +248,6 @@ public class JavaListenerTest {
 			() -> assertTrue(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should contain key [this-doesnt-exist]"),
 			() -> assertNull(session.get("this-doesnt-exist"), "Key not in return from service should have value [NULL]")
 		);
-		testMessage.close();
 	}
 
 	@Test
@@ -276,7 +270,6 @@ public class JavaListenerTest {
 				() -> assertEquals("return-value", session.get("copy-this")),
 				() -> assertFalse(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should not contain key [this-doesnt-exist]")
 		);
-		testMessage.close();
 	}
 
 	@Test

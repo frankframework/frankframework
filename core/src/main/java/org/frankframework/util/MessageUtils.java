@@ -444,10 +444,7 @@ public class MessageUtils {
 		if (object instanceof MessageWrapper<?> wrapper) {
 			return wrapper.getMessage().asString();
 		}
-		// In other cases, message can be closed directly after converting to String.
-		try (Message message = Message.asMessage(object)) {
-			return message.asString();
-		}
+		return Message.asMessage(object).asString();
 	}
 
 	/**

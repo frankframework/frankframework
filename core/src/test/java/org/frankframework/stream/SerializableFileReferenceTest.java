@@ -1,5 +1,5 @@
 /*
-   Copyright 2023-2024 WeAreFrank!
+   Copyright 2023-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -219,9 +219,7 @@ public class SerializableFileReferenceTest {
 		assertEquals(StreamUtil.AUTO_DETECT_CHARSET, copy.getContext().get(MessageContext.METADATA_CHARSET));
 
 		assertEquals(testDataEnriched, copy.asString()); // Computes the Charset
-		try (copy) {
-			assertEquals("UTF-8", copy.getContext().get(MessageContext.METADATA_CHARSET));
-		}
+		assertEquals("UTF-8", copy.getContext().get(MessageContext.METADATA_CHARSET));
 	}
 
 	@Test
@@ -389,8 +387,6 @@ public class SerializableFileReferenceTest {
 		// Assert
 		String result = message2.asString();
 		assertEquals(testDataEnriched, result);
-		message2.close();
-		message.close();
 	}
 
 	@Test

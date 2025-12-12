@@ -47,7 +47,7 @@ class JsonPathPipeTest {
 
 	@AfterEach
 	void tearDown() {
-		CloseUtils.closeSilently(session, result, input);
+		CloseUtils.closeSilently(session);
 	}
 
 	static Stream<Arguments> doPipe() {
@@ -193,13 +193,13 @@ class JsonPathPipeTest {
 		pipe.setJsonPathExpression(jsonPath);
 		pipe.configure();
 
-		try (Message input = Message.asMessage(TEST_INPUT)) {
-			// Act
-			Message output = pipe.doPipe(input, session).getResult();
+		Message input = Message.asMessage(TEST_INPUT);
 
-			// Assert
-			assertEquals(result, output.asString());
-			assertEquals(mimetype, output.getContext().getMimeType());
-		}
+		// Act
+		Message output = pipe.doPipe(input, session).getResult();
+
+		// Assert
+		assertEquals(result, output.asString());
+		assertEquals(mimetype, output.getContext().getMimeType());
 	}
 }

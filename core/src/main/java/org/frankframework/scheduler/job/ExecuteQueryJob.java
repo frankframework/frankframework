@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 - 2024 WeAreFrank!
+   Copyright 2021 - 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -59,9 +59,8 @@ public class ExecuteQueryJob extends AbstractJobDef {
 		try(PipeLineSession session = new PipeLineSession()) {
 			qs.start();
 
-			try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), session)) {
-				log.info("result [{}]", result);
-			}
+			Message result = qs.sendMessageOrThrow(Message.nullMessage(), session);
+			log.info("result [{}]", result);
 		} catch (LifecycleException | SenderException e) {
 			throw new JobExecutionException("unable to execute query [" + getQuery() + "]", e);
 		} finally {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2022-2024 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -136,9 +136,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 			}
 
 		} : new EncapsulatingReader(message.asReader(), prefix, suffix);
-		try (Message encapsulatedMessage = new Message(encapsulatingReader)) {
-			XmlUtils.parseXml(encapsulatedMessage.asInputSource(), handler);
-		}
+		XmlUtils.parseXml(new Message(encapsulatingReader).asInputSource(), handler);
 	}
 
 	/**

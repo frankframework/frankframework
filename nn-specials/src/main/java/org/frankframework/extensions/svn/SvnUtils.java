@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Nationale-Nederlanden
+   Copyright 2015 Nationale-Nederlanden, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -65,8 +65,8 @@ public class SvnUtils {
 			httpSender.setMethodType(HttpMethod.HEAD);
 			httpSender.configure();
 			httpSender.start();
-			try (PipeLineSession session = new PipeLineSession();
-				Message result = httpSender.sendMessageOrThrow(Message.nullMessage(), session)) {
+			try (PipeLineSession session = new PipeLineSession()) {
+				Message result = httpSender.sendMessageOrThrow(Message.nullMessage(), session);
 				return result.asString();
 			}
 		} finally {
@@ -92,8 +92,8 @@ public class SvnUtils {
 					+ "<S:limit>1</S:limit>" + "<S:path>" + path + "</S:path>"
 					+ "</S:log-report>";
 
-			try (PipeLineSession session = new PipeLineSession();
-				Message result = httpSender.sendMessageOrThrow(new Message(logReportRequest), session)) {
+			try (PipeLineSession session = new PipeLineSession()) {
+				Message result = httpSender.sendMessageOrThrow(new Message(logReportRequest), session);
 				return result.asString();
 			}
 		} finally {

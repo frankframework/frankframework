@@ -1,5 +1,5 @@
 /*
-Copyright 2020 WeAreFrank!
+Copyright 2020, 2025 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -41,9 +41,7 @@ public class QueryOutputToListOfMaps extends AbstractQueryOutputTransformer {
 	}
 
 	public List<Map<String, String>> parseString(String message) throws IOException, SAXException, NullPointerException {
-		try (Message closeable = new Message(message)) {
-			return parseMessage(closeable);
-		}
+		return parseMessage(Message.asMessage(message));
 	}
 
 	public List<Map<String, String>> parseMessage(Message message) throws IOException, SAXException, NullPointerException {

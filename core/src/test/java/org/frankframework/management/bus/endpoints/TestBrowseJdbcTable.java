@@ -1,11 +1,11 @@
 package org.frankframework.management.bus.endpoints;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.net.URL;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.messaging.Message;
@@ -20,7 +20,6 @@ import org.frankframework.stream.UrlMessage;
 import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.SpringRootInitializer;
 import org.frankframework.testutil.TestFileUtils;
-import org.frankframework.util.CloseUtils;
 
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 @WithMockUser(roles = { "IbisTester" })
@@ -33,23 +32,14 @@ public class TestBrowseJdbcTable extends BusTestBase {
 		inputXmlMessage = new UrlMessage(url);
 	}
 
-	@AfterEach
-	public void teardown() {
-		CloseUtils.closeSilently(inputXmlMessage);
-	}
-
 	@Test
 	public void testBrowseTableWithoutTablename() {
 		mockDirectQuerySenderResult("BrowseTable QuerySender", inputXmlMessage);
 
 		MessageBuilder<String> request = createRequestMessage("NONE", BusTopic.JDBC, BusAction.FIND);
-		try {
-			callSyncGateway(request);
-		} catch (Exception e) {
-			assertTrue(e.getCause() instanceof BusException);
-			BusException be = (BusException) e.getCause();
-			assertEquals("Access to table [null] not allowed", be.getMessage());
-		}
+		Exception e = assertThrows(Exception.class, () -> callSyncGateway(request));
+		BusException be = assertInstanceOf(BusException.class, e.getCause());
+		assertEquals("Access to table [null] not allowed", be.getMessage());
 	}
 
 	@Test
@@ -107,13 +97,10 @@ public class TestBrowseJdbcTable extends BusTestBase {
 		request.setHeader("table", "testTable");
 		request.setHeader("minRow", 10);
 		request.setHeader("maxRow", 1);
-		try {
-			callSyncGateway(request);
-		} catch (Exception e) {
-			assertTrue(e.getCause() instanceof BusException);
-			BusException be = (BusException) e.getCause();
-			assertEquals("Rownum max must be greater than or equal to Rownum min", be.getMessage());
-		}
+
+		Exception e = assertThrows(Exception.class, () -> callSyncGateway(request));
+		BusException be = assertInstanceOf(BusException.class, e.getCause());
+		assertEquals("Rownum max must be greater than or equal to Rownum min", be.getMessage());
 	}
 
 	@Test
@@ -124,12 +111,9 @@ public class TestBrowseJdbcTable extends BusTestBase {
 		request.setHeader("table", "testTable");
 		request.setHeader("minRow", 1);
 		request.setHeader("maxRow", 101);
-		try {
-			callSyncGateway(request);
-		} catch (Exception e) {
-			assertTrue(e.getCause() instanceof BusException);
-			BusException be = (BusException) e.getCause();
-			assertEquals("Difference between Rownum max and Rownum min must be less than hundred", be.getMessage());
-		}
+
+		Exception e = assertThrows(Exception.class, () -> callSyncGateway(request));
+		BusException be = assertInstanceOf(BusException.class, e.getCause());
+		assertEquals("Difference between Rownum max and Rownum min must be less than hundred", be.getMessage());
 	}
 }

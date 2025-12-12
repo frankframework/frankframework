@@ -123,9 +123,8 @@ class JmsSenderTest {
 		BytesMessage bytesMessage = (BytesMessage) jmsMessage;
 		byte[] data = new byte[(int) bytesMessage.getBodyLength()];
 		bytesMessage.readBytes(data);
-		try (Message result = new Message(data)) {
-			assertEquals(message.asString(), result.asString());
-		}
+		Message result = new Message(data);
+		assertEquals(message.asString(), result.asString());
 	}
 
 	@Test

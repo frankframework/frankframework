@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -21,19 +20,13 @@ import org.frankframework.parameters.ParameterType;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.XmlParameterBuilder;
-import org.frankframework.util.CloseUtils;
 
+@SuppressWarnings("removal")
 public class XmlIfTest extends PipeTestBase<XmlIf> {
 
 	private final String pipeForwardThen = "then";
 	private final String pipeForwardElse = "else";
 	private PipeRunResult pipeRunResult;
-
-	@Override
-	@AfterEach
-	public void tearDown() {
-		CloseUtils.closeSilently(pipeRunResult);
-	}
 
 	@Override
 	public XmlIf createPipe() throws ConfigurationException {

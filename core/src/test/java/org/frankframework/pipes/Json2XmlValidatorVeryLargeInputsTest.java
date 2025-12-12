@@ -99,7 +99,8 @@ public class Json2XmlValidatorVeryLargeInputsTest extends PipeTestBase<Json2XmlV
 
 	private void runTestAndAssert(DocumentFormat inputFormat, DocumentFormat outputFormat, long minDataSize, Message input) throws Exception {
 		// Act
-		try (PipeRunResult prr = pipe.doPipe(input, session)) {
+		try {
+			PipeRunResult prr = pipe.doPipe(input, session);
 			Message result = prr.getResult();
 			System.err.println("Output size: " + result.size() + "; input = " + inputFormat + "; output = " + outputFormat);
 

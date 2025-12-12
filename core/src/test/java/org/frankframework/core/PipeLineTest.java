@@ -288,9 +288,7 @@ public class PipeLineTest {
 		session.put("k3", "v3");
 
 		// Act // Assert
-		try (Message message = Message.nullMessage()) {
-			assertDoesNotThrow(() -> adapter.processMessageWithExceptions("m1", message, session));
-		}
+		assertDoesNotThrow(() -> adapter.processMessageWithExceptions("m1", Message.nullMessage(), session));
 	}
 
 	@Test
@@ -302,12 +300,10 @@ public class PipeLineTest {
 		session.put("k1", "v1");
 
 		// Act // Assert
-		try (Message message = Message.nullMessage()) {
-			ListenerException e = assertThrows(ListenerException.class, () -> adapter.processMessageWithExceptions("m1", message, session));
+		ListenerException e = assertThrows(ListenerException.class, () -> adapter.processMessageWithExceptions("m1", Message.nullMessage(), session));
 
-			// Assert
-			assertEquals("Adapter [Adapter] called without expected session keys [k2, k3]", e.getMessage());
-		}
+		// Assert
+		assertEquals("Adapter [Adapter] called without expected session keys [k2, k3]", e.getMessage());
 	}
 
 	private @Nonnull Adapter buildTestAdapter() throws ConfigurationException {

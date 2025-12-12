@@ -81,7 +81,7 @@ public class CredentialFactory {
 	}
 
 	/**
-	 * 
+	 *
 	 * @return true if we've found one or more factories
 	 */
 	private boolean loadFactoryClasses() {

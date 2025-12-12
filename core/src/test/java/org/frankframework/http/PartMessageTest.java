@@ -52,10 +52,9 @@ public class PartMessageTest {
 	public void testCharset() throws Exception {
 		TestPart testPart = new TestPart("application/pdf; charset=UTF-8");
 
-		try (PartMessage partMessage = new PartMessage(testPart)) {
-			assertEquals("UTF-8", partMessage.getCharset());
-			assertEquals(MimeType.valueOf("application/pdf; charset=UTF-8"), partMessage.getContext().get(MessageContext.METADATA_MIMETYPE));
-		}
+		PartMessage partMessage = new PartMessage(testPart);
+		assertEquals("UTF-8", partMessage.getCharset());
+		assertEquals(MimeType.valueOf("application/pdf; charset=UTF-8"), partMessage.getContext().get(MessageContext.METADATA_MIMETYPE));
 	}
 
 	@Test
@@ -63,10 +62,9 @@ public class PartMessageTest {
 
 		TestPart testPart = new TestPart("application/pdf; charset=application/pdf");
 
-		try (PartMessage partMessage = new PartMessage(testPart)) {
-			assertNull(partMessage.getCharset());
-			assertEquals(MimeType.valueOf("application/pdf"), partMessage.getContext().get(MessageContext.METADATA_MIMETYPE));
-		}
+		PartMessage partMessage = new PartMessage(testPart);
+		assertNull(partMessage.getCharset());
+		assertEquals(MimeType.valueOf("application/pdf"), partMessage.getContext().get(MessageContext.METADATA_MIMETYPE));
 	}
 
 	private static class TestPart extends MimeBodyPart {

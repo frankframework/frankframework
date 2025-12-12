@@ -8,8 +8,6 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 import java.io.FilterInputStream;
 import java.io.IOException;
@@ -98,9 +96,8 @@ public class NamespaceUriProviderTest {
 	@Test
 	public void testFindNamespaceAndCallServiceClient() throws Exception {
 		Message pipelineResult;
-		try (Message plr = getFile("VrijeBerichten_PipelineResult.xml")) {
-			pipelineResult = spy(new Message(new FilterInputStream(plr.asInputStream()) {}));
-		}
+		Message plr = getFile("VrijeBerichten_PipelineResult.xml");
+		pipelineResult = spy(new Message(new FilterInputStream(plr.asInputStream()) {}));
 
 		WebServiceListener listener = new WebServiceListener();
 		IMessageHandler<Message> handler = mock(IMessageHandler.class);
@@ -126,8 +123,6 @@ public class NamespaceUriProviderTest {
 		SOAPMessage request = createMessage("VrijeBerichten_PipelineRequest.xml", true);
 		SOAPMessage message = provider.invoke(request);
 
-		verify(pipelineResult, times(0)).close();
-
 		String result = XmlUtils.nodeToString(message.getSOAPPart());
 		String expected = getFile("VrijeBerichten_PipelineResult.xml").asString();
 		MatchUtils.assertXmlEquals(expected, result);
@@ -136,9 +131,8 @@ public class NamespaceUriProviderTest {
 	@Test
 	public void testFindSoap11ActionAndCallServiceClient() throws Exception {
 		Message pipelineResult;
-		try (Message plr = getFile("soapmsg1_1.xml")) {
-			pipelineResult = spy(new Message(new FilterInputStream(plr.asInputStream()) {}));
-		}
+		Message plr = getFile("soapmsg1_1.xml");
+		pipelineResult = spy(new Message(new FilterInputStream(plr.asInputStream()) {}));
 
 		WebServiceListener listener = new WebServiceListener();
 		IMessageHandler<Message> handler = mock(IMessageHandler.class);
@@ -166,8 +160,6 @@ public class NamespaceUriProviderTest {
 		webServiceContext.getMessageContext().put("Content-Type", "text/xml; action=\"ignored\"");
 		SOAPMessage message = provider.invoke(request);
 
-		verify(pipelineResult, times(0)).close();
-
 		String result = XmlUtils.nodeToString(message.getSOAPPart());
 		String expected = getFile("soapmsg1_1.xml").asString();
 		MatchUtils.assertXmlEquals(expected, result);
@@ -176,9 +168,8 @@ public class NamespaceUriProviderTest {
 	@Test
 	public void testFindSoap12ActionAndCallServiceClient() throws Exception {
 		Message pipelineResult;
-		try (Message plr = getFile("soapmsg1_2.xml")) {
-			pipelineResult = spy(new Message(new FilterInputStream(plr.asInputStream()) {}));
-		}
+		Message plr = getFile("soapmsg1_2.xml");
+		pipelineResult = spy(new Message(new FilterInputStream(plr.asInputStream()) {}));
 
 		WebServiceListener listener = new WebServiceListener();
 		IMessageHandler<Message> handler = mock(IMessageHandler.class);
@@ -206,8 +197,6 @@ public class NamespaceUriProviderTest {
 		webServiceContext.getMessageContext().put("Content-Type",
 				"application/soap+xml;charset=UTF-8;action=\"http://www.egem.nl/StUF/sector/zkn/0310\"");
 		SOAPMessage message = provider.invoke(request);
-
-		verify(pipelineResult, times(0)).close();
 
 		String result = XmlUtils.nodeToString(message.getSOAPPart());
 		String expected = getFile("soapmsg1_2.xml").asString();

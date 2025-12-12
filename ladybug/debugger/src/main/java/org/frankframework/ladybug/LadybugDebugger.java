@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -149,7 +149,10 @@ public class LadybugDebugger implements ApplicationContextAware, ApplicationList
 						inRerun.add(correlationId);
 					}
 
-					try (Message inputMessage = new Message(checkpoint.getMessageWithResolvedVariables(reportRunner))) {
+					try {
+						// Create message from checkpoint / reportRunner as first thing or something may have changed, and we do not get the right input message
+						Message inputMessage = new Message(checkpoint.getMessageWithResolvedVariables(reportRunner));
+
 						// Try with resource will make sure pipeLineSession is closed and all (possibly opened)
 						// streams are also closed and the generated report will not remain in progress
 						try (PipeLineSession pipeLineSession = new PipeLineSession()) {
