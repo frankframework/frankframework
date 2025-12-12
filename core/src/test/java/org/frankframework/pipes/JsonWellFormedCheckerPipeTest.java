@@ -1,7 +1,6 @@
 package org.frankframework.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.util.Arrays;
 import java.util.Collection;
@@ -46,7 +45,6 @@ public class JsonWellFormedCheckerPipeTest extends PipeTestBase<JsonWellFormedCh
 		try (Message inputMessage = new Message(input)) {
 			PipeRunResult pipeRunResult = doPipe(pipe, inputMessage, session);
 			assertEquals(forward, pipeRunResult.getPipeForward().getName());
-			assertFalse(inputMessage.isClosed(), "pipe may close the reader but not the input (with is the output) message");
 		}
 	}
 

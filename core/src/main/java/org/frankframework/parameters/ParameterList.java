@@ -169,9 +169,6 @@ public class ParameterList implements Iterable<IParameter> {
 		if (parameters == null) {
 			return result;
 		}
-		if (inputValueRequiredForResolution && message != null) {
-			message.assertNotClosed();
-		}
 
 		for (IParameter param : parameters) {
 			// if a parameter has sessionKey="*", then a list is generated with a synthetic parameter referring to

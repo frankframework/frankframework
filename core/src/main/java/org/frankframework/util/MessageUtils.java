@@ -270,7 +270,7 @@ public class MessageUtils {
 		return mimeType;
 	}
 
-	public static boolean isMimeType(Message message, MimeType compareTo) {
+	public static boolean isMimeType(@Nonnull Message message, @Nullable MimeType compareTo) {
 		MessageContext context = message.getContext();
 		MimeType mimeType = (MimeType) context.get(MessageContext.METADATA_MIMETYPE);
 		return mimeType != null && mimeType.includes(compareTo);
@@ -281,7 +281,8 @@ public class MessageUtils {
 	 * <p>
 	 * NOTE: This is a resource intensive operation, the first 64k is being read and stored in memory.
 	 */
-	public static MimeType computeMimeType(Message message) {
+	@Nullable
+	public static MimeType computeMimeType(@Nullable Message message) {
 		return computeMimeType(message, null);
 	}
 
@@ -295,7 +296,8 @@ public class MessageUtils {
 	 * </p>
 	 * @ff.note This might be a resource intensive operation, the first kilobytes of the message are potentially being read and stored in memory.
 	 */
-	public static MimeType computeMimeType(Message message, String filename) {
+	@Nullable
+	public static MimeType computeMimeType(@Nullable Message message, String filename) {
 		if(Message.isEmpty(message)) {
 			return null;
 		}
@@ -437,7 +439,6 @@ public class MessageUtils {
 			return string;
 		}
 		if (object instanceof Message message) {
-			message.assertNotClosed();
 			return message.asString();
 		}
 		if (object instanceof MessageWrapper<?> wrapper) {

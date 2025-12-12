@@ -35,6 +35,7 @@ import org.frankframework.stream.SerializableFileReference;
 import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.MessageTestUtils.MessageType;
 import org.frankframework.util.TimeProvider;
+import org.frankframework.util.UUIDUtil;
 
 /**
  * Lots of bugs tests, focus on getMessage(String)
@@ -44,7 +45,7 @@ public class PipeLineSessionTest {
 	private PipeLineSession session;
 
 	@BeforeEach
-	public void setUp() throws Exception {
+	public void setUp() {
 		session = new PipeLineSession();
 
 		Map<String, Object> map = new HashMap<>();
@@ -265,43 +266,6 @@ public class PipeLineSessionTest {
 		assertEquals(correlationId, session.getCorrelationId());
 	}
 
-	@Test
-	public void testMessageClosing() {
-		// Arrange
-		Message m1 = new Message("123");
-		session.put("key1", m1);
-		Message m2 = Message.asMessage(123);
-		session.put("key2", m2);
-		Message m3 = Message.asMessage(true);
-		session.put("key3", m3);
-		Message m4 = Message.asMessage(TimeProvider.nowAsDate());
-		session.put("key4", m4);
-		Message m5 = Message.asMessage(TimeProvider.now());
-		session.put("key5", m5);
-		Message m6 = Message.asMessage(TimeProvider.nowAsZonedDateTime());
-		session.put("key6", m6);
-		Message m7 = Message.asMessage("123".getBytes());
-		session.put("key7", m7);
-		Message m8 = Message.asMessage(new StringReader("123"));
-		session.put("key8", m8);
-		Message m9 = Message.asMessage(new ByteArrayInputStream("123".getBytes()));
-		session.put("key9", m9);
-
-		// Act
-		session.close();
-
-		// Assert
-		assertFalse(m1.isClosed());
-		assertFalse(m2.isClosed());
-		assertFalse(m3.isClosed());
-		assertFalse(m4.isClosed());
-		assertFalse(m5.isClosed());
-		assertFalse(m6.isClosed());
-		assertFalse(m7.isClosed());
-		assertFalse(m8.isClosed());
-		assertFalse(m9.isClosed());
-	}
-
 	/**
 	 * Method: mergeToParentSession(String keys, Map<String,Object> from, Map<String,Object>
 	 * to)
@@ -355,6 +319,7 @@ public class PipeLineSessionTest {
 		for(int i = 1; i <= 10; i++) {
 			AutoCloseable closeable = mock(AutoCloseable.class);
 			try (PipeLineSession sub = new PipeLineSession()) {
+				sub.put(PipeLineSession.MESSAGE_ID_KEY, "my-mid");
 				sub.put("a", Message.asMessage(parent.getMessage("a").asString()));
 				Message bMessage = Message.asMessage(parent.getMessage("b").asString());
 				sub.put("b", bMessage);
@@ -383,8 +348,10 @@ public class PipeLineSessionTest {
 						// Overwrite values
 						child.put("c", i);
 						child.put("d", j);
+						child.put(PipeLineSession.MESSAGE_ID_KEY, UUIDUtil.createRandomUUID());
+						child.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, UUIDUtil.createRandomUUID());
 
-						child.mergeToParentSession("a,b,  c  ,d", sub);
+						child.mergeToParentSession("a,b,,  c  ,;mid;originalMessage;d", sub);
 					}
 
 					assertEquals(1, sub.getCloseables().size()); // <<< Keeps growing without the change!
@@ -394,6 +361,8 @@ public class PipeLineSessionTest {
 
 				assertEquals(10, sub.getInteger("a"));
 				assertEquals(10, sub.getInteger("d"));
+				assertEquals("my-mid", sub.get(PipeLineSession.MESSAGE_ID_KEY));
+				assertEquals("2", sub.getString(PipeLineSession.ORIGINAL_MESSAGE_KEY));
 
 				sub.mergeToParentSession("b,c", parent);
 			}
@@ -417,6 +386,8 @@ public class PipeLineSessionTest {
 		// Arrange
 		PipeLineSession from = new PipeLineSession();
 		PipeLineSession to = new PipeLineSession();
+		to.put(PipeLineSession.MESSAGE_ID_KEY, "my-parent-mid");
+		to.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, "my-original-message");
 		Message message = new Message("a message");
 		Message messageOfCloseable = Message.asMessage(SerializableFileReference.of("a message is closeable", StandardCharsets.UTF_8.name()));
 		BufferedReader closeable1 = new BufferedReader(new StringReader("a closeable"));
@@ -427,6 +398,8 @@ public class PipeLineSessionTest {
 		from.put("d", closeable1);
 		from.put("__e", closeable2);
 		from.put("f", messageOfCloseable);
+		from.put(PipeLineSession.MESSAGE_ID_KEY, "my-child-mid");
+		from.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, "my-child-message");
 
 		// Act
 		from.mergeToParentSession(keysToCopy, to);
@@ -434,6 +407,16 @@ public class PipeLineSessionTest {
 		from.close();
 
 		// Assert
+
+		assertEquals("my-parent-mid", to.get(PipeLineSession.MESSAGE_ID_KEY));
+		assertEquals("my-original-message", to.get(PipeLineSession.ORIGINAL_MESSAGE_KEY));
+
+		// Remove the above keys from both "to" and "from" and then check that they are otherwise equal
+		from.remove(PipeLineSession.MESSAGE_ID_KEY);
+		from.remove(PipeLineSession.ORIGINAL_MESSAGE_KEY);
+		to.remove(PipeLineSession.MESSAGE_ID_KEY);
+		to.remove(PipeLineSession.ORIGINAL_MESSAGE_KEY);
+
 		assertEquals(from,to);
 
 		assertFalse(to.getCloseables().contains(message));
@@ -443,17 +426,6 @@ public class PipeLineSessionTest {
 		assertFalse(((Message) to.get("c")).isNull());
 		assertEquals("a message", ((Message) to.get("c")).asString());
 		assertEquals("a closeable", ((BufferedReader) to.get("d")).readLine());
-
-		// Act
-		to.close();
-
-		// Assert
-		assertFalse(((Message) to.get("c")).isNull()); // String message are no longer closed
-		assertFalse(((Message) to.get("c")).isClosed()); // String message are no longer closed
-		assertFalse(((Message) to.get("__e")).isNull());
-		assertFalse(((Message) to.get("__e")).isClosed());
-		assertFalse(((Message) to.get("f")).isNull());
-		assertFalse(((Message) to.get("f")).isClosed());
 	}
 
 	@ParameterizedTest
@@ -514,8 +486,6 @@ public class PipeLineSessionTest {
 		assertEquals(15, to.get("a"));
 		assertNull(to.get("c"));
 
-		assertFalse(message1.isClosed());
-		assertFalse(message2.isClosed());
 		assertEquals("m2", message2.asString());
 	}
 

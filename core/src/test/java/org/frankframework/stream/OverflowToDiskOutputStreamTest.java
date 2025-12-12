@@ -20,6 +20,7 @@ import org.junit.jupiter.api.io.TempDir;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 
+@SuppressWarnings("deprecation")
 public class OverflowToDiskOutputStreamTest {
 
 	private @TempDir Path tmpDir;
@@ -42,11 +43,10 @@ public class OverflowToDiskOutputStreamTest {
 		assertNull(location, "there should not be a file location, the file should be in memory");
 
 		assertEquals(testString+"00", msg.asString(), "contents of Message differs from the file");
-		msg.close();
 	}
 
 	@Test
-	public void testWritingToDisk() throws IOException {
+	public void testWritingToDisk() throws Exception {
 		String testString = "longer-then-10-characters";
 		OverflowToDiskOutputStream oos = new OverflowToDiskOutputStream(10, tmpDir);
 		oos.write(testString.getBytes());
@@ -64,13 +64,14 @@ public class OverflowToDiskOutputStreamTest {
 		String location = (String) message.getContext().get(MessageContext.METADATA_LOCATION);
 		assertEquals(files.get(0).toString(), location, "the file location is incorrect");
 
-		message.close();
+		AutoCloseable requestObject = assertInstanceOf(AutoCloseable.class, message.asObject());
+		requestObject.close();
 		assertFalse(Files.exists(files.get(0)), "File should be removed after message is closed");
 	}
 
 	@ParameterizedTest
 	@ValueSource(ints = {27, 28, 50})
-	public void testMultipleWritesToDisk(int bufferSize) throws IOException {
+	public void testMultipleWritesToDisk(int bufferSize) throws Exception {
 		String testString = "abcdefghijklmnopqrstuvwxyz";
 		OverflowToDiskOutputStream oos = new OverflowToDiskOutputStream(bufferSize, tmpDir);
 		oos.write(testString.getBytes());
@@ -92,12 +93,13 @@ public class OverflowToDiskOutputStreamTest {
 		String location = (String) message.getContext().get(MessageContext.METADATA_LOCATION);
 		assertEquals(files.get(0).toString(), location, "the file location is incorrect");
 
-		message.close();
+		AutoCloseable requestObject = assertInstanceOf(AutoCloseable.class, message.asObject());
+		requestObject.close();
 		assertFalse(Files.exists(files.get(0)), "File should be removed after message is closed");
 	}
 
 	@Test
-	public void testSameBufferSizeAsContentLength() throws IOException {
+	public void testSameBufferSizeAsContentLength() throws Exception {
 		String testString = "abcdefghijklmnopqrstuvwxyz";
 		OverflowToDiskOutputStream oos = new OverflowToDiskOutputStream(testString.length(), tmpDir);
 		oos.write(testString.getBytes());
@@ -117,13 +119,14 @@ public class OverflowToDiskOutputStreamTest {
 		String location = (String) message.getContext().get(MessageContext.METADATA_LOCATION);
 		assertEquals(files.get(0).toString(), location, "the file location is incorrect");
 
-		message.close();
+		AutoCloseable requestObject = assertInstanceOf(AutoCloseable.class, message.asObject());
+		requestObject.close();
 		assertFalse(Files.exists(files.get(0)), "File should be removed after message is closed");
 	}
 
 	@ParameterizedTest
 	@ValueSource(ints = {0, -1, -23156786})
-	public void testBufferSizeLessThenOne(int bufferSize) throws IOException {
+	public void testBufferSizeLessThenOne(int bufferSize) throws Exception {
 		OverflowToDiskOutputStream oos = new OverflowToDiskOutputStream(bufferSize, tmpDir);
 		oos.write(48);
 		oos.flush(); //shouldn't do anything
@@ -143,12 +146,13 @@ public class OverflowToDiskOutputStreamTest {
 		String location = (String) message.getContext().get(MessageContext.METADATA_LOCATION);
 		assertEquals(files.get(0).toString(), location, "the file location is incorrect");
 
-		message.close();
+		AutoCloseable requestObject = assertInstanceOf(AutoCloseable.class, message.asObject());
+		requestObject.close();
 		assertFalse(Files.exists(files.get(0)), "File should be removed after message is closed");
 	}
 
 	@Test
-	public void testLargeFile() throws IOException {
+	public void testLargeFile() throws Exception {
 		OverflowToDiskOutputStream oos = new OverflowToDiskOutputStream(5_000_000, tmpDir);
 		ByteArrayOutputStream boas = new ByteArrayOutputStream();
 
@@ -183,7 +187,8 @@ public class OverflowToDiskOutputStreamTest {
 		byte[] content = message.asByteArray();
 		assertArrayEquals(boas.toByteArray(), content);
 
-		message.close();
+		AutoCloseable requestObject = assertInstanceOf(AutoCloseable.class, message.asObject());
+		requestObject.close();
 		assertFalse(Files.exists(files.get(0)), "File should be removed after message is closed");
 	}
 }

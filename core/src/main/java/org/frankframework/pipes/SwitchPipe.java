@@ -156,7 +156,7 @@ public class SwitchPipe extends AbstractPipe {
 		}
 		MimeType mimeType = MessageUtils.computeMimeType(message);
 
-		if (mimeType.isCompatibleWith(MediaType.TEXT_PLAIN)) {
+		if (mimeType != null && mimeType.isCompatibleWith(MediaType.TEXT_PLAIN)) {
 			try {
 				// Use the message-text itself as forward if the message is plaintext which would never parse correctly as XML or JSON
 				return message.asString();
@@ -165,7 +165,7 @@ public class SwitchPipe extends AbstractPipe {
 			}
 		}
 
-		if (jsonPath != null && mimeType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
+		if (jsonPath != null && mimeType != null && mimeType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
 			// If the message is not JSON, don't try to evaluate it here. User may have also
 			// set an xpath or stylesheet to transform, or the XML root element may be used.
 			try {

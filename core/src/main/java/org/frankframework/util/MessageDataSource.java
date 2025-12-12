@@ -102,6 +102,6 @@ public class MessageDataSource implements DataSource, Closeable {
 
 	@Override
 	public void close() throws IOException {
-		message.close();
+		// No-op
 	}
 }

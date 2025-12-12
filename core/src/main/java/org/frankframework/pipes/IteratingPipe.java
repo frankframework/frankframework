@@ -288,7 +288,6 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 			if (msgTransformerPool != null) {
 				Message transformedMessage = transformMessage(message);
 				log.debug("iteration [{}] transformed item [{}] into [{}]", totalItems, message, transformedMessage);
-				message.close();
 				message = transformedMessage;
 			} else {
 				log.debug("iteration [{}] item [{}]", totalItems, message);
@@ -330,9 +329,6 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 							resultMessage = sender.sendMessageOrThrow(message, childSession);
 						}
 						itemResult = resultMessage.asString();
-						if (resultMessage != message) {
-							resultMessage.close();
-						}
 						senderStatistics.record((double) System.currentTimeMillis() - senderStartTime);
 						if (getBlockSize()>0 && ++itemsInBlock >= getBlockSize()) {
 							endBlock();
