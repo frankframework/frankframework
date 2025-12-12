@@ -25,14 +25,17 @@ import java.util.Properties;
 
 import jakarta.annotation.Nullable;
 
+import org.apache.commons.lang3.StringUtils;
+
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.parameters.AbstractParameter;
 import org.frankframework.parameters.IParameter;
-import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.stream.FileMessage;
+import org.frankframework.util.ClassUtils;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.MessageUtils;
@@ -104,15 +107,14 @@ public class LarvaActionUtils {
 				throw new IllegalArgumentException("Property '" + PARAM_KEY + i + " doesn't have a value or pattern");
 			} else {
 				try {
-					Parameter parameter = new Parameter();
+					ParameterType paramType = StringUtils.isBlank(type) ? ParameterType.STRING : EnumUtils.parse(ParameterType.class, type);
+					IParameter parameter = ClassUtils.newInstance(paramType.getTypeClass());
+
 					parameter.setName(name);
-					if (type != null) {
-						parameter.setType(EnumUtils.parse(ParameterType.class, type));
-					}
 					if (value != null) {
 						if (value instanceof String string) {
 							parameter.setValue(string);
-							parameter.setPattern(pattern);
+							((AbstractParameter<?>)parameter).setPattern(pattern);
 						} else {
 							parameter.setSessionKey(name);
 							session.put(name, value);
@@ -121,7 +123,7 @@ public class LarvaActionUtils {
 
 					parameter.configure();
 					result.put(name, parameter);
-				} catch (ConfigurationException e) {
+				} catch (ReflectiveOperationException | SecurityException | ConfigurationException e) {
 					throw new IllegalArgumentException("Parameter '" + name + "' could not be configured");
 				}
 			}

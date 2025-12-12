@@ -3,8 +3,11 @@ package org.frankframework.pipes;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -22,6 +25,7 @@ import org.frankframework.stream.Message;
  * @author <Sina Sen>
  */
 
+@SuppressWarnings("removal")
 public class ExceptionPipeTest extends PipeTestBase<ExceptionPipe> {
 
 	@Override
@@ -62,7 +66,7 @@ public class ExceptionPipeTest extends PipeTestBase<ExceptionPipe> {
 	}
 
 	@Test
-	public void throwsExceptionWithParameters() throws ConfigurationException {
+	public void throwsExceptionWithParameters() throws ConfigurationException, IOException {
 		pipe.setThrowException(true);
 
 		pipe.addParameter(new Parameter("p1", "v1"));
@@ -76,11 +80,16 @@ public class ExceptionPipeTest extends PipeTestBase<ExceptionPipe> {
 		assertFalse(e.getParameters().isEmpty());
 		assertTrue(e.getParameters().containsKey("p1"));
 		assertTrue(e.getParameters().containsKey("p2"));
-		assertEquals("v1",  e.getParameters().get("p1"));
-		assertEquals("v2",  e.getParameters().get("p2"));
+		assertEquals("v1", assertMessageAndToString(e.getParameters().get("p1")));
+		assertEquals("v2", assertMessageAndToString(e.getParameters().get("p2")));
 		assertTrue(session.containsKey("p1"));
 		assertTrue(session.containsKey("p2"));
-		assertEquals("v1",  session.get("p1"));
-		assertEquals("v2",  session.get("p2"));
+		assertEquals("v1", assertMessageAndToString(session.get("p1")));
+		assertEquals("v2", assertMessageAndToString(session.get("p2")));
+	}
+
+	private String assertMessageAndToString(Object object) throws IOException {
+		Message message = assertInstanceOf(Message.class, object);
+		return message.asString();
 	}
 }

@@ -40,6 +40,10 @@ public class ParameterBuilder extends Parameter {
 	}
 
 	public ParameterBuilder withType(ParameterType type) {
+		if (type != ParameterType.BINARY && type != ParameterType.CHARACTER) {
+			throw new IllegalArgumentException("use the correct parameter type in your test!");
+		}
+
 		setType(type);
 		return this;
 	}
