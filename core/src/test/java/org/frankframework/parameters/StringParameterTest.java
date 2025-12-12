@@ -4,32 +4,17 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.parallel.Isolated;
 import org.springframework.http.MediaType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
-import org.frankframework.util.TimeProvider;
 import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlUtils;
 
 public class StringParameterTest {
-
-	@AfterEach
-	void tearDown() {
-		TimeProvider.resetClock();
-	}
-
-	private Transformer createTransformer() throws TransformerConfigurationException {
-		return XmlUtils.getTransformerFactory().newTransformer();
-	}
 
 	@Test
 	public void testParameterXPathToValue() throws Exception {

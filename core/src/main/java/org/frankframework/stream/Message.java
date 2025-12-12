@@ -749,7 +749,6 @@ public class Message implements Serializable {
 
 	public static boolean isSupportedType(Object request) {
 		return request instanceof byte[] ||
-				request instanceof Number ||
 				request instanceof Boolean ||
 				request instanceof String ||
 				request instanceof Date ||

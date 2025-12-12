@@ -79,7 +79,7 @@ public class Parameter extends AbstractParameter<Message> {
 	@Override
 	protected Message getValueAsType(Message request, boolean namespaceAware) throws ParameterException, IOException {
 		if (getMinLength() >= 0 || getMaxLength() >= 0) {
-			return applyMinAndMaxLengths(request);
+			return applyMinLength(request);
 		}
 
 		return request;
@@ -99,10 +99,10 @@ public class Parameter extends AbstractParameter<Message> {
 	}
 
 	// Someday this will probably belong in a StringParameter...
-	private Message applyMinAndMaxLengths(final Message request) {
+	private Message applyMinLength(final Message request) {
 		if (request.isRequestOfType(String.class)) { // Used by getMinLength and getMaxLength
 			try {
-				return new Message(applyMinAndMaxLengths(request.asString())); // WARNING this removes the MessageContext
+				return new Message(applyMinLength(request.asString())); // WARNING this removes the MessageContext
 			} catch (IOException e) {
 				// Already checked for String, so this should never happen
 			}
@@ -114,15 +114,10 @@ public class Parameter extends AbstractParameter<Message> {
 	}
 
 	// Maybe we want to create a StringParameter someday which might use this method?
-	private String applyMinAndMaxLengths(String stringResult) {
+	private String applyMinLength(String stringResult) {
 		if (getMinLength() >= 0 && stringResult.length() < getMinLength()) {
 			log.debug("Padding parameter [{}] because length [{}] falls short of minLength [{}]", this::getName, stringResult::length, this::getMinLength);
 			return StringUtils.rightPad(stringResult, getMinLength());
-		}
-
-		if (getMaxLength() >= 0 && stringResult.length() > getMaxLength()) { // Still trims length regardless of type
-			log.debug("Trimming parameter [{}] because length [{}] exceeds maxLength [{}]", this::getName, stringResult::length, this::getMaxLength);
-			return stringResult.substring(0, getMaxLength());
 		}
 
 		return stringResult;

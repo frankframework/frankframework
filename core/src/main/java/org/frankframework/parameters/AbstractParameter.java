@@ -479,7 +479,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 		}
 
 		if (getMaxLength() >= 0) {
-			result = applyMinAndMaxLengths(result);
+			result = applyMaxLength(result);
 		}
 
 		if(result != null && getType().requiresTypeConversion) {
@@ -589,24 +589,24 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 		return input;
 	}
 
-	private Object applyMinAndMaxLengths(final Object request) {
+	private Object applyMaxLength(final Object request) {
 		if (request instanceof Message msg && msg.isRequestOfType(String.class)) { // Used by getMinLength and getMaxLength
 			try {
-				return applyMinAndMaxLengths(msg.asString()); // WARNING this removes the MessageContext
+				return applyMaxLength(msg.asString()); // WARNING this removes the MessageContext
 			} catch (IOException e) {
 				// Already checked for String, so this should never happen
 			}
 		}
 
 		if (request instanceof String str) {
-			return applyMinAndMaxLengths(str);
+			return applyMaxLength(str);
 		}
 
 		// All other types
 		return request;
 	}
 
-	private String applyMinAndMaxLengths(String stringResult) {
+	private String applyMaxLength(String stringResult) {
 		if (getMaxLength() >= 0 && stringResult.length() > getMaxLength()) { // Still trims length regardless of type
 			log.debug("Trimming parameter [{}] because length [{}] exceeds maxLength [{}]", this::getName, stringResult::length, this::getMaxLength);
 			return stringResult.substring(0, getMaxLength());
