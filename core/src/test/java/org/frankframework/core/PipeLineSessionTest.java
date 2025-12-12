@@ -331,8 +331,8 @@ public class PipeLineSessionTest {
 
 				for(int j = 1; j <= 10; j++) {
 
-					AutoCloseable streamMessage = spy(MessageTestUtils.getMessage(MessageType.BINARY));
-					AutoCloseable closeMe = spy(Message.asMessage(""+j));
+					Message streamMessage = spy(MessageTestUtils.getMessage(MessageType.BINARY));
+					Message closeMe = spy(Message.asMessage(""+j));
 					sub.put("d", closeMe);
 					try (PipeLineSession child = new PipeLineSession(sub)) {
 						assertEquals(j, sub.getInteger("d"));
@@ -342,7 +342,6 @@ public class PipeLineSessionTest {
 						child.put("a", valueAsMessage); // Should be a string-value Message
 						child.put("b", Message.asMessage(sub.getMessage("b").asString()));
 
-						child.scheduleCloseOnSessionExit(streamMessage);
 						child.put("d", streamMessage);
 
 						// Overwrite values
@@ -355,7 +354,6 @@ public class PipeLineSessionTest {
 					}
 
 					assertEquals(1, sub.getCloseables().size()); // <<< Keeps growing without the change!
-					verify(streamMessage, times(0)).close();
 					assertEquals(j, sub.getInteger("d")); // Only 1 `d`, with the correct value.
 				}
 

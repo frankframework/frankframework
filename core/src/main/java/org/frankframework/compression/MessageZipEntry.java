@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,19 +21,18 @@ import java.io.OutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
-import org.frankframework.util.LogUtil;
 import org.frankframework.util.MessageUtils;
 import org.frankframework.util.StreamUtil;
 
 /**
  * Message will be closed after it's been read.
  */
+@Log4j2
 public class MessageZipEntry extends ZipEntry {
-	private final Logger log = LogUtil.getLogger(MessageZipEntry.class);
 	private final Message message;
 
 	public MessageZipEntry(Message message) {
@@ -82,7 +81,7 @@ public class MessageZipEntry extends ZipEntry {
 	 * Note: this consumes the {@link Message}.
 	 */
 	public void writeTo(OutputStream outputStream) throws IOException {
-		try (message; InputStream is = message.asInputStream()) {
+		try (InputStream is = message.asInputStream()) {
 			StreamUtil.streamToStream(is, outputStream);
 		}
 	}

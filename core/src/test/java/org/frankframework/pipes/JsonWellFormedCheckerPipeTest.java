@@ -42,10 +42,9 @@ public class JsonWellFormedCheckerPipeTest extends PipeTestBase<JsonWellFormedCh
 		pipe.configure();
 		pipe.start();
 
-		try (Message inputMessage = new Message(input)) {
-			PipeRunResult pipeRunResult = doPipe(pipe, inputMessage, session);
-			assertEquals(forward, pipeRunResult.getPipeForward().getName());
-		}
+		Message inputMessage = new Message(input);
+		PipeRunResult pipeRunResult = doPipe(pipe, inputMessage, session);
+		assertEquals(forward, pipeRunResult.getPipeForward().getName());
 	}
 
 	public void initJsonWellFormedCheckerTestData(String input, String forward) {

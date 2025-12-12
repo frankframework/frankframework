@@ -217,7 +217,9 @@ public class ReplacerPipeTest extends PipeTestBase<ReplacerPipe> {
 		session.put("prefix.value.suffix", "ignore me");
 		System.setProperty("prefix.value.suffix", "replacedPropertyValue");
 
-		try (Message message = new Message("dummy")) {
+		try {
+			Message message = new Message("dummy");
+
 			// Correctly chain the pipe processors
 			CorePipeLineProcessor pipeLineProcessor = new CorePipeLineProcessor();
 			InputOutputPipeProcessor inputOutputPipeProcessor = new InputOutputPipeProcessor();

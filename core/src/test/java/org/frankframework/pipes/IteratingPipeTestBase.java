@@ -101,7 +101,6 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = prr.getResult().asString();
-		prr.getResult().close();
 
 		assertEquals(expected, actual);
 	}

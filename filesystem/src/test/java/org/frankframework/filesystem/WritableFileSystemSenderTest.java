@@ -19,7 +19,6 @@ import org.frankframework.filesystem.FileSystemActor.FileSystemAction;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
-import org.frankframework.util.CloseUtils;
 import org.frankframework.util.StreamUtil;
 
 public abstract class WritableFileSystemSenderTest<FSS extends AbstractFileSystemSender<F, FS>, F, FS extends IBasicFileSystem<F>> extends FileSystemSenderTest<FSS, F, FS> {
@@ -74,7 +73,6 @@ public abstract class WritableFileSystemSenderTest<FSS extends AbstractFileSyste
 
 		Message input = new Message(folder + "/" + filename);
 		senderResult = fileSystemSender.sendMessage(input, session);
-		CloseUtils.closeSilently(input);
 		if (!senderResult.isSuccess()) {
 			return senderResult;
 		}
@@ -223,7 +221,6 @@ public abstract class WritableFileSystemSenderTest<FSS extends AbstractFileSyste
 
 		Message input = new Message("dummyText");
 		senderResult = fileSystemSender.sendMessage(input, session);
-		CloseUtils.closeSilently(input);
 		if (!senderResult.isSuccess()) {
 			return senderResult;
 		}

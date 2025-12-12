@@ -44,7 +44,6 @@ class JMSFacadeTest {
 
 	@AfterEach
 	void tearDown() {
-		message.close();
 		jmsFacade.stop();
 	}
 

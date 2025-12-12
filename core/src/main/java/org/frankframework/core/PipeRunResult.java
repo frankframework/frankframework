@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022-2023, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ import org.frankframework.stream.Message;
  * @see AbstractPipe#doPipe
  * @see AbstractPipe#findForward
  */
-public class PipeRunResult implements AutoCloseable {
+public class PipeRunResult {
 
 	private @Getter @Setter PipeForward pipeForward;
 	private Message result;
@@ -87,10 +87,5 @@ public class PipeRunResult implements AutoCloseable {
 
 	public boolean isSuccessful() {
 		return PipeForward.SUCCESS_FORWARD_NAME.equalsIgnoreCase(getPipeForward().getName());
-	}
-
-	@Override
-	public void close() throws Exception {
-		// No-op
 	}
 }

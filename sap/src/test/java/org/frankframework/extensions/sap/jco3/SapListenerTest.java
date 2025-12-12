@@ -99,9 +99,8 @@ public class SapListenerTest {
 		doReturn("function-name").when(function).getName();
 		RawMessageWrapper<JCoFunction> inputMessage = new RawMessageWrapper<>(function);
 
-		try (Message outputMessage = listener.extractMessage(inputMessage, Map.of())) {
-			assertEquals("<request function=\"function-name\"></request>", outputMessage.asString());
-		}
+		Message outputMessage = listener.extractMessage(inputMessage, Map.of());
+		assertEquals("<request function=\"function-name\"></request>", outputMessage.asString());
 	}
 
 	@Test

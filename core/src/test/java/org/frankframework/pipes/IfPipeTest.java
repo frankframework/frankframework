@@ -11,7 +11,6 @@ import java.io.StringReader;
 import java.util.stream.Stream;
 
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -25,7 +24,6 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.json.JsonException;
 import org.frankframework.stream.Message;
-import org.frankframework.util.CloseUtils;
 
 /**
  * Contains generic {@link IfPipe} scenarios to test
@@ -37,14 +35,6 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 	private static final String TEST_JSON_INPUT = "{test: ''}";
 
 	private PipeRunResult pipeRunResult;
-
-	@Override
-	@AfterEach
-	public void tearDown() {
-		CloseUtils.closeSilently(pipeRunResult);
-
-		super.tearDown();
-	}
 
 	@Override
 	public IfPipe createPipe() throws ConfigurationException {

@@ -75,7 +75,8 @@ public class DataSonnetErrorMessageFormatter extends ErrorMessageFormatter imple
 
 	@Override
 	public @Nonnull Message format(@Nullable String errorMessage, @Nullable Throwable t, @Nullable HasName location, @Nullable Message originalMessage, @Nonnull PipeLineSession session) {
-		try (Message defaultMessage = super.format(errorMessage, t, location, originalMessage, session)) {
+		try {
+			Message defaultMessage = super.format(errorMessage, t, location, originalMessage, session);
 			return DataSonnetUtil.transform(mapper, defaultMessage, parameters.getValues(originalMessage, session), outputType);
 		} catch (IOException e) {
 			throw new FormatterException("Cannot format error message", e);

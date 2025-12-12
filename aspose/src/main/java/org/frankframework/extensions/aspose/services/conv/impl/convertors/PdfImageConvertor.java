@@ -151,7 +151,8 @@ public class PdfImageConvertor extends AbstractConvertor {
 				}
 
 				Image pdfImage = new Image();
-				try (Message imgMessage = messageBuilder.build(); InputStream is = imgMessage.asInputStream()) {
+				Message imgMessage = messageBuilder.build();
+				try (InputStream is = imgMessage.asInputStream()) {
 					pdfImage.setImageStream(is);
 					page.getParagraphs().add(pdfImage);
 				}

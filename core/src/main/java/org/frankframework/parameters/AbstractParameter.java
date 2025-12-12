@@ -489,13 +489,8 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 
 		if(result != null && getType().requiresTypeConversion) {
 			try {
-				if (result instanceof Message message1) {
-					return getValueAsType(message1, namespaceAware);
-				} else {
-					try (Message message1 = Message.asMessage(result)) {
-						return getValueAsType(message1, namespaceAware);
-					}
-				}
+				Message message1 = Message.asMessage(result);
+				return getValueAsType(message1, namespaceAware);
 			} catch(IOException e) {
 				throw new ParameterException(getName(), "Could not convert parameter ["+getName()+"] to String", e);
 			}

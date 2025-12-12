@@ -39,8 +39,6 @@ class ObfuscatePipeTest extends PipeTestBase<ObfuscatePipe> {
 
 		// The actual generated string differs. The length doesn't
 		assertEquals(110, messageContent.length());
-		message.close();
-		in.close();
 
 		assertEquals(PLAIN_TEXT, ObfuscationEngine.decrypt(messageContent));
 	}

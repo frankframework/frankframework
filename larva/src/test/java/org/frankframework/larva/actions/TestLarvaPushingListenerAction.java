@@ -41,6 +41,6 @@ public class TestLarvaPushingListenerAction {
 		assertEquals(output, readResult.asString());
 		assertEquals(outputMessage, readResult); // technically (in this case) the outputMessage is the readResult.
 
-		CloseUtils.closeSilently(action, readResult);
+		CloseUtils.closeSilently(action);
 	}
 }

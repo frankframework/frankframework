@@ -185,10 +185,9 @@ class ErrorMessageFormatterTest {
 	@Test
 	public void testLongOriginalMessage() throws IOException {
 		Reader reader = LargeStructuredMockData.getLargeJsonDataReader(Message.MESSAGE_MAX_IN_MEMORY + 2000);
-		try (Message message = new Message(reader)) {
-			String result = formatter.getMessageAsString(message, null);
-			assertTrue(result.endsWith(" ...(2331 characters remaining)"));
-			assertEquals(Message.MESSAGE_MAX_IN_MEMORY + 1, result.length());
-		}
+		Message message = new Message(reader);
+		String result = formatter.getMessageAsString(message, null);
+		assertTrue(result.endsWith(" ...(2331 characters remaining)"));
+		assertEquals(Message.MESSAGE_MAX_IN_MEMORY + 1, result.length());
 	}
 }

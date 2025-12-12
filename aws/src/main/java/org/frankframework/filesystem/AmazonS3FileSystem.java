@@ -274,25 +274,24 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 			}
 		}
 
-		try (Message message = messageBuilder.build()) {
-			PutObjectRequest.Builder por = PutObjectRequest.builder()
-					.bucket(f.getBucketName())
-					.key(f.getKey())
-					.contentEncoding("UTF-8")
-					.storageClass(storageClass.getStorageClass());
+		Message message = messageBuilder.build();
+		PutObjectRequest.Builder por = PutObjectRequest.builder()
+				.bucket(f.getBucketName())
+				.key(f.getKey())
+				.contentEncoding("UTF-8")
+				.storageClass(storageClass.getStorageClass());
 
-			String fileName = f.hasName() ? f.getName() : null;
-			MimeType mimeType = MessageUtils.computeMimeType(message, fileName);
-			if (mimeType != null) {
-				por.contentType("%s/%s".formatted(mimeType.getType(), mimeType.getSubtype()));
-			}
-
-			addMetadata(por, customFileAttributes);
-
-			RequestBody requestBody = (Message.isEmpty(message)) ? RequestBody.empty() : RequestBody.fromInputStream(message.asInputStream(), message.size());
-
-			s3Client.putObject(por.build(), requestBody);
+		String fileName = f.hasName() ? f.getName() : null;
+		MimeType mimeType = MessageUtils.computeMimeType(message, fileName);
+		if (mimeType != null) {
+			por.contentType("%s/%s".formatted(mimeType.getType(), mimeType.getSubtype()));
 		}
+
+		addMetadata(por, customFileAttributes);
+
+		RequestBody requestBody = (Message.isEmpty(message)) ? RequestBody.empty() : RequestBody.fromInputStream(message.asInputStream(), message.size());
+
+		s3Client.putObject(por.build(), requestBody);
 	}
 
 	private void addMetadata(PutObjectRequest.Builder por, Map<String, String> userMetadata) {

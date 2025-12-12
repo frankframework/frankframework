@@ -88,7 +88,7 @@ import org.frankframework.util.Misc;
  * ]
  * }</pre>
  * results in {@code [{"number":"1"},{"number":"2"},{"number":"3"},{"number":"4"}]}.
- * 
+ *
  * </p>
  *
  * @ff.parameters All parameters are added to the {@code .jsonnet} stylesheet. Parameter names must be unique.

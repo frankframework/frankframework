@@ -314,7 +314,6 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 
 			String stringResult = result.asString();
 			TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
-			result.close();
 		}
 		waitForActionToFinish();
 
@@ -348,7 +347,6 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		ParameterValueList pvl = parameters.getValues(message, session);
 		Message result = actor.doAction(message, pvl, session);
 		TestAssertions.assertXpathValueEquals(filename, result.asString(), "file/@name");
-		result.close();
 
 		assertTrue(_fileExists(folderName, filename), "Expected the file [" + filename + "] to be present");
 		assertTrue(fileSystem.folderExists(folderName), "existing folder is not seen"); // we just checked the file, the folder should be there...
@@ -360,7 +358,6 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		actor.open();
 		Message result2 = actor.doAction(new Message(folderName), null, session);
 		TestAssertions.assertXpathValueEquals(filename, result2.asString(), "directory/file/@name");
-		result2.close();
 	}
 
 	@Test
@@ -449,7 +446,6 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 			String resultStr = result.asString();
 
 			TestAssertions.assertXpathValueEquals(filename, resultStr, "file/@name");
-			result.close();
 		}
 		String actualContents = readFile(null, filename);
 
@@ -487,7 +483,6 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 			String resultStr = result.asString();
 
 			TestAssertions.assertXpathValueEquals(filename, resultStr, "file/@name");
-			result.close();
 		}
 
 		int lastSavedBackup = numOfWrites < numOfBackups ? numOfWrites : numOfBackups;

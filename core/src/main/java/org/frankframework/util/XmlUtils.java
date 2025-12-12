@@ -153,6 +153,10 @@ public class XmlUtils {
 		REPAIR_NAMESPACES_OUTPUT_FACTORY.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, Boolean.TRUE);
 	}
 
+	private XmlUtils() {
+		// Private no-op constructor to hide implicit public constructor
+	}
+
 	/**
 	 * Parses a string to a Date using XML Schema dateTime data type (GDate)
 	 */
@@ -1132,9 +1136,7 @@ public class XmlUtils {
 	}
 
 	public static boolean isWellFormed(String input, String root) {
-		try (Message message = new Message(input)) {
-		return isWellFormed(message, root);
-		}
+		return isWellFormed(new Message(input), root);
 	}
 
 	public static boolean isWellFormed(Message input, String root) {

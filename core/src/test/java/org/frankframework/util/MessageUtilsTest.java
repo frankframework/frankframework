@@ -161,38 +161,35 @@ public class MessageUtilsTest {
 		URL url = TestFileUtils.getTestFileURL("/file.xml");
 		assertNotNull(url);
 		Message message = new UrlMessage(url);
-		try (MessageDataSource ds = new MessageDataSource(message)) {
-			assertEquals("file.xml", ds.getName(), "filename should be the same");
-			assertEquals("application/xml", ds.getContentType(),"content-type should be the same"); //determined from file extension
-			assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "contents should be the same");
-			assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "should be able to read the content twice");
-		}
+		MessageDataSource ds = new MessageDataSource(message);
+		assertEquals("file.xml", ds.getName(), "filename should be the same");
+		assertEquals("application/xml", ds.getContentType(),"content-type should be the same"); //determined from file extension
+		assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "contents should be the same");
+		assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "should be able to read the content twice");
 	}
 
 	@Test
 	public void testMessageDataSourceFromStringDataWithoutXmlDeclaration() throws Exception {
 		URL url = TestFileUtils.getTestFileURL("/file.xml");
 		assertNotNull(url);
-		try (Message message = new UrlMessage(url)) {
-			MessageDataSource ds = new MessageDataSource(new Message(message.asString()));
-			assertNull(ds.getName(), "filename is unknown");
-			assertEquals("application/xml", ds.getContentType(), "content-type cannot be determined");
-			assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "contents should be the same");
-			assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "should be able to read the content twice");
-		}
+		Message message = new UrlMessage(url);
+		MessageDataSource ds = new MessageDataSource(new Message(message.asString()));
+		assertNull(ds.getName(), "filename is unknown");
+		assertEquals("application/xml", ds.getContentType(), "content-type cannot be determined");
+		assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "contents should be the same");
+		assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "should be able to read the content twice");
 	}
 
 	@Test
 	public void testMessageDataSourceFromStringDataWithXmlDeclaration() throws Exception {
 		URL url = TestFileUtils.getTestFileURL("/log4j4ibis.xml");
 		assertNotNull(url);
-		try (Message message = new UrlMessage(url)) {
-			MessageDataSource ds = new MessageDataSource(new Message(message.asString()));
-			assertNull(ds.getName(), "filename is unknown");
-			assertEquals("application/xml", ds.getContentType(), "content-type cannot be determined");
-			assertEquals(StreamUtil.streamToString(ds.getInputStream()), StreamUtil.streamToString(url.openStream()), "contents should be the same");
-			assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "should be able to read the content twice");
-		}
+		Message message = new UrlMessage(url);
+		MessageDataSource ds = new MessageDataSource(new Message(message.asString()));
+		assertNull(ds.getName(), "filename is unknown");
+		assertEquals("application/xml", ds.getContentType(), "content-type cannot be determined");
+		assertEquals(StreamUtil.streamToString(ds.getInputStream()), StreamUtil.streamToString(url.openStream()), "contents should be the same");
+		assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "should be able to read the content twice");
 	}
 
 	@Test
@@ -340,7 +337,6 @@ public class MessageUtilsTest {
 		Message message = (Message) msg;
 		assertEquals("text", message.asString());
 		assertEquals("text", content);
-		message.close();
 	}
 
 	@Test
@@ -356,7 +352,6 @@ public class MessageUtilsTest {
 		MessageWrapper<Message> messageWrapper = (MessageWrapper) wrapper;
 		assertEquals("text", messageWrapper.getMessage().asString());
 		assertEquals("text", content);
-		msg.close();
 	}
 
 	@Test

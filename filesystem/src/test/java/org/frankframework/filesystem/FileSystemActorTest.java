@@ -57,7 +57,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 	@Override
 	@AfterEach
 	public void tearDown() {
-		CloseUtils.closeSilently(result, fileSystem);
+		CloseUtils.closeSilently(fileSystem);
 
 		super.tearDown();
 	}
@@ -210,7 +210,6 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 //		}
 
 		assertFileCountEquals(result, expectedNumberOfFiles);
-		message.close();
 	}
 
 	@Test
@@ -1056,9 +1055,6 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		ParameterValueList pvl = null;
 		FileSystemException e = assertThrows(FileSystemException.class, () -> actor.doAction(message, pvl, session));
 		assertThat(e.getMessage(), containsString("unable to process [RMDIR] action for File [testDirectory]: Cannot remove folder"));
-
-		// Clean up
-		message.close();
 	}
 
 	@Test
@@ -1084,8 +1080,6 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		// test
 		assertEquals(id, result.asString(), "result of sender should be name of deleted file");
 		assertFalse(actual, "Expected file [" + filename + "] " + "not to be present");
-
-		message.close();
 	}
 
 	@Test
@@ -1113,7 +1107,6 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		assertEquals(id, result.asString(), "result of sender should be name of deleted file");
 		assertFalse(actual, "Expected file [" + filename + "] " + "not to be present");
 		assertFalse(_folderExists(folder), "Expected parent folder not to be present");
-		message.close();
 	}
 
 	@Test
@@ -1142,7 +1135,6 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 		assertFalse(_fileExists(filename), "Expected file [" + filename + "] " + "not to be present in the root");
 		assertTrue(_folderExists(folder), "Expected parent folder to be present");
 		assertTrue(_folderExists(folder + "/innerFolder1"), "Expected file in parent folder to be present");
-		message.close();
 	}
 
 	@Test
