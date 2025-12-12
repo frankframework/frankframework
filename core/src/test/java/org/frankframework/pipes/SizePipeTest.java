@@ -17,11 +17,6 @@ public class SizePipeTest extends PipeTestBase<SizePipe>{
 		return new SizePipe();
 	}
 
-	/**
-	 *
-	 * Method: doPipe(Object input, PipeLineSession session)
-	 *
-	 */
 	@Test
 	void testDoPipeSuccess() throws Exception {
 		PipeRunResult res = doPipe("abcsd");

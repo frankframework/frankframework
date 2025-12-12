@@ -11,6 +11,8 @@ import java.io.FileNotFoundException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
+import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -113,16 +115,13 @@ public class FileUtilsTest {
 	void testGetFilesWithWildcard() throws Exception {
 		String directory = getFile(null).getPath();
 		File[] files = FileUtils.getFiles(directory, "file*", null, 5);
-		assertEquals(2, files.length); // Check if there are 2 files persent
+		List<String> fileNames = Stream.of(files)
+				.map(File::getName)
+				.toList();
 
-		int containsBothFiles = 0; // Stupid way to check file names ... sigh
-		for(File file : files) {
-			if("file.txt".equals(file.getName()) || "fileToAppend.txt".equals(file.getName())) {
-				containsBothFiles++;
-			}
-		}
-
-		assertEquals(2, containsBothFiles);
+		assertEquals(2, files.length, "directory: " + directory); // Check if there are 2 files present
+		assertTrue(fileNames.contains("file.txt"));
+		assertTrue(fileNames.contains("fileToAppend.txt"));
 	}
 
 	@Test
