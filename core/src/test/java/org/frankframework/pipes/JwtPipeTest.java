@@ -29,6 +29,7 @@ import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunException;
+import org.frankframework.parameters.NumberParameter;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.util.TimeProvider;
 
@@ -226,7 +227,7 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 		pipe.addParameter(new Parameter("iss", "CleanBreath"));
 		pipe.addParameter(new Parameter("Sugar", "Free"));
 
-		Parameter paramFromSession = new Parameter();
+		NumberParameter paramFromSession = new NumberParameter();
 		paramFromSession.setName("amt");
 		paramFromSession.setSessionKey("amt");
 		session.put("amt", 50);

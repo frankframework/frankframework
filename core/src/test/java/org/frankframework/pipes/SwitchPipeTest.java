@@ -15,6 +15,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterType;
+import org.frankframework.parameters.XmlParameter;
 import org.frankframework.processors.CorePipeLineProcessor;
 import org.frankframework.processors.CorePipeProcessor;
 import org.frankframework.processors.InputOutputPipeProcessor;
@@ -179,7 +180,7 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 		pipe.addForward(new PipeForward("2","Path2"));
 
 		Message input=MessageTestUtils.getMessage("/SwitchPipe/in.xml");
-		Parameter inputParameter = new Parameter();
+		XmlParameter inputParameter = new XmlParameter();
 		inputParameter.setName("source");
 		inputParameter.setXpathExpression("/soap:Envelope/soap:Body/case:SetRequest/case:CaseData/case:CASE_ID");
 		inputParameter.setNamespaceDefs("soap=http://schemas.xmlsoap.org/soap/envelope/,case=http://www.ing.com/nl/pcretail/ts/migrationcasedata_01");
