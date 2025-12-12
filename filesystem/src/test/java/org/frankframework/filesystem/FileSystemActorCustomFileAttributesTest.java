@@ -15,7 +15,6 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
-import org.frankframework.util.CloseUtils;
 
 public abstract class FileSystemActorCustomFileAttributesTest<F, S extends IWritableFileSystem<F>> extends WritableFileSystemActorTest<F, S> {
 
@@ -24,7 +23,6 @@ public abstract class FileSystemActorCustomFileAttributesTest<F, S extends IWrit
 	@Override
 	@AfterEach
 	public void tearDown()  {
-		CloseUtils.closeSilently(input, result);
 		result = null;
 		super.tearDown();
 	}

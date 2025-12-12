@@ -62,7 +62,6 @@ public class TestIteratingBasePipe extends IteratingPipeTestBase<IteratingTestPi
 
 		PipeRunResult prr = doPipe(pipe, input, session);
 		String actual = prr.getResult().asString();
-		prr.getResult().close();
 
 		String expected = TestFileUtils.getTestFile("/IteratingPipe/HundredLines.xml");
 		assertEquals(expected, actual);

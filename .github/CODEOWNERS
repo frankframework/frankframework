@@ -2,3 +2,4 @@
 pom.xml					@frankframework/maintainers
 docker/**/Dockerfile	@frankframework/maintainers
 package.json			@frankframework/maintainers
+pnpm-lock.yaml			@frankframework/maintainers

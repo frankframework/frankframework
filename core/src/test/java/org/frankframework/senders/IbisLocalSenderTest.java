@@ -208,9 +208,8 @@ class IbisLocalSenderTest {
 		// Arrange
 		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient(isolated);
 
-		try (PipeLineSession session = new PipeLineSession();
-			 Message message = new Message("my-parameter1")) {
-
+		try (PipeLineSession session = new PipeLineSession()) {
+			Message message = new Message("my-parameter1");
 			session.put("my-parameter1", "parameter1-value");
 			session.put("my-parameter2", new Message("parameter2-value"));
 			session.put("session-message", message);
@@ -241,9 +240,8 @@ class IbisLocalSenderTest {
 		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient(false);
 		sender.setReturnedSessionKeys(null);
 
-		try (PipeLineSession session = new PipeLineSession();
-			 Message message = new Message("my-parameter1")) {
-
+		try (PipeLineSession session = new PipeLineSession()) {
+			Message message = new Message("my-parameter1");
 			session.put("my-parameter1", "parameter1-value");
 
 			// Act
@@ -273,9 +271,8 @@ class IbisLocalSenderTest {
 		sender.addParameter(parameter);
 		sender.configure();
 
-		try (PipeLineSession session = new PipeLineSession();
-			 Message message = new Message("mid")) {
-
+		try (PipeLineSession session = new PipeLineSession()) {
+			Message message = new Message("mid");
 			String originalMid = "original-main-adapter-mid";
 			session.put(PipeLineSession.MESSAGE_ID_KEY, originalMid);
 			session.put("my-parameter1", "parameter1-value");
@@ -301,9 +298,8 @@ class IbisLocalSenderTest {
 		// Arrange
 		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient(false);
 
-		try (PipeLineSession session = new PipeLineSession();
-			 Message message = new Message("my-parameter1")) {
-
+		try (PipeLineSession session = new PipeLineSession()) {
+			Message message = new Message("my-parameter1");
 			session.put(PipeLineSession.EXIT_STATE_CONTEXT_KEY, PipeLine.ExitState.ERROR);
 			session.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, "400");
 
@@ -324,8 +320,8 @@ class IbisLocalSenderTest {
 			throw new ListenerException("TEST");
 		}));
 
-		try (PipeLineSession session = new PipeLineSession();
-			 Message message = new Message("MESSAGE")) {
+		try (PipeLineSession session = new PipeLineSession()) {
+			Message message = new Message("MESSAGE");
 
 			// Act / Assert
 			assertThrows(SenderException.class, () -> sender.sendMessage(message, session));
@@ -346,8 +342,8 @@ class IbisLocalSenderTest {
 			throw new ListenerException("TEST");
 		}));
 
-		try (PipeLineSession session = new PipeLineSession();
-			 Message message = new Message("MESSAGE")) {
+		try (PipeLineSession session = new PipeLineSession()) {
+			Message message = new Message("MESSAGE");
 
 			// Act / Assert
 			assertThrows(SenderException.class, () -> sender.sendMessage(message, session));
@@ -362,8 +358,8 @@ class IbisLocalSenderTest {
 		//noinspection removal
 		sender.setServiceName("invalid");
 
-		try (PipeLineSession session = new PipeLineSession();
-			 Message message = new Message("MESSAGE")) {
+		try (PipeLineSession session = new PipeLineSession()) {
+			Message message = new Message("MESSAGE");
 
 			// Act / Assert
 			assertThrows(SenderException.class, () -> sender.sendMessage(message, session));
@@ -378,8 +374,8 @@ class IbisLocalSenderTest {
 		//noinspection removal
 		sender.setServiceName("invalid");
 
-		try (PipeLineSession session = new PipeLineSession();
-			 Message message = new Message("MESSAGE")) {
+		try (PipeLineSession session = new PipeLineSession()) {
+			Message message = new Message("MESSAGE");
 
 			// Act / Assert
 			SenderResult result = sender.sendMessage(message, session);
@@ -413,16 +409,15 @@ class IbisLocalSenderTest {
 		iteratorPipe.start();
 
 		// Act
-		try (PipeLineSession session = new PipeLineSession();
-			 Message message = new Message("""
+		try (PipeLineSession session = new PipeLineSession()) {
+			session.put("my-session-key", null);
+			Message message = new Message("""
 					<root>
 					  <sub>
 					  	<data/>
 					  </sub>
 					</root>
-					""")) {
-			session.put("my-session-key", null);
-
+					""");
 			PipeRunResult pipeRunResult = iteratorPipe.doPipe(message, session);
 
 			// Assert
@@ -476,16 +471,15 @@ class IbisLocalSenderTest {
 		iteratorPipe.start();
 
 		// Act
-		try (PipeLineSession session = new PipeLineSession();
-			 Message message = new Message("""
+		try (PipeLineSession session = new PipeLineSession()) {
+			session.put("my-session-key", null);
+			Message message = new Message("""
 					<root>
 					  <sub>
 					  	<data/>
 					  </sub>
 					</root>
-					""")) {
-			session.put("my-session-key", null);
-
+					""");
 			PipeRunException pre = assertThrows(PipeRunException.class, () -> iteratorPipe.doPipe(message, session));
 
 			// Assert

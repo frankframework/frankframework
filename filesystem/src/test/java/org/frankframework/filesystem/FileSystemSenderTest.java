@@ -21,7 +21,6 @@ import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.ParameterBuilder;
-import org.frankframework.util.CloseUtils;
 import org.frankframework.util.UUIDUtil;
 
 public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<F, FS>, F, FS extends IBasicFileSystem<F>> extends HelperedFileSystemTestBase {
@@ -45,9 +44,6 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 	@Override
 	@AfterEach
 	public void tearDown() {
-		if (senderResult != null) {
-			CloseUtils.closeSilently(senderResult.getResult());
-		}
 		try {
 			if (fileSystemSender != null) {
 				fileSystemSender.stop();
@@ -55,7 +51,6 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 		} catch (LifecycleException e) {
 			log.warn("Failed to close fileSystemSender", e);
 		}
-		CloseUtils.closeSilently(result);
 		super.tearDown();
 	}
 

@@ -3,11 +3,9 @@ package org.frankframework.senders;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.apache.logging.log4j.Level;
-import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -24,11 +22,6 @@ class LogSenderTest extends SenderTestBase<LogSender> {
 	@Override
 	public LogSender createSender() {
 		return new LogSender();
-	}
-
-	@AfterAll
-	static void cleanup() throws IOException {
-		message.close();
 	}
 
 	@ParameterizedTest

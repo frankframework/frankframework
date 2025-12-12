@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -149,10 +149,7 @@ public class GraalJS implements JavascriptEngine<ScriptEngine> {
 		}
 		context.getBindings(LANGUAGE_ID).putMember(sender.getName(), (JavaCallback) s -> {
 			try {
-				Message msg = Message.asMessage(s[0]);
-				try (Message message = sender.sendMessageOrThrow(msg, session)) {
-					return message.asString();
-				}
+				return sender.sendMessageOrThrow(Message.asMessage(s[0]), session).asString();
 			} catch (Exception e) {
 				throw new IllegalStateException(e);
 			}

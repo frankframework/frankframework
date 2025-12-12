@@ -21,8 +21,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 import java.io.ByteArrayInputStream;
 import java.io.FilterInputStream;
@@ -360,9 +358,8 @@ public class SoapProviderTest {
 		SOAPMessage request = createMessage("VrijeBerichten_PipelineRequest.xml", false, true);
 
 		Message pipelineResult;
-		try (Message plr = getFile("VrijeBerichten_PipelineResult.xml")) {
-			pipelineResult = spy(new Message(new FilterInputStream(plr.asInputStream()) {}));
-		}
+		Message plr = getFile("VrijeBerichten_PipelineResult.xml");
+		pipelineResult = spy(new Message(new FilterInputStream(plr.asInputStream()) {}));
 		Message attachmentMessage = spy(new Message(new FilterInputStream(new ByteArrayInputStream(ATTACHMENT2_CONTENT.getBytes())) {}));
 
 		PushingListenerAdapter listener = new PushingListenerAdapter() {
@@ -387,9 +384,6 @@ public class SoapProviderTest {
 		SOAPMessage message = messageProvider.invoke(request);
 
 		assertAttachmentInReceivedMessage(message);
-
-		verify(pipelineResult, times(0)).close();
-		verify(attachmentMessage, times(0)).close(); // Should, but does not, call SourceClosingDataHandler.writeTo() ..?
 
 		String result = XmlUtils.nodeToString(message.getSOAPPart());
 		String expected = getFile("VrijeBerichten_PipelineResult.xml").asString();

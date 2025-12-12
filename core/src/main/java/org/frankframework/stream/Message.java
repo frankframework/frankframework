@@ -18,7 +18,6 @@ package org.frankframework.stream;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.Closeable;
 import java.io.EOFException;
 import java.io.File;
 import java.io.IOException;
@@ -86,7 +85,7 @@ import org.frankframework.util.XmlUtils;
  *     wrapped in a {@code synchronized} block that synchronizes on the message instance.
  * </p>
  */
-public class Message implements Serializable, Closeable {
+public class Message implements Serializable {
 	public static final long MESSAGE_SIZE_UNKNOWN = -1L;
 	public static final long MESSAGE_MAX_IN_MEMORY_DEFAULT = 5120L * 1024L;
 	public static final String MESSAGE_MAX_IN_MEMORY_PROPERTY = "message.max.memory.size";
@@ -103,7 +102,6 @@ public class Message implements Serializable, Closeable {
 	private boolean failedToDetermineCharset = false;
 
 	private Message(final @Nonnull MessageContext context, final @Nullable Object request, final @Nullable Class<?> requestClass) {
-		//noinspection ConditionCoveredByFurtherCondition -- in future Message is perhaps no longer AutoCloseable and then we need this check again
 		if (request instanceof Message || (request instanceof AutoCloseable && !(request instanceof SerializableFileReference))) {
 			// this code could be reached when this constructor was public and the actual type of the parameter was not known at compile time.
 			// e.g. new Message(pipeRunResult.getResult());
@@ -143,12 +141,11 @@ public class Message implements Serializable, Closeable {
 	public Message(Reader request, @Nonnull MessageContext context) throws IOException {
 		this.context = context;
 		this.requestClass = ClassUtils.nameOf(request);
-		try (Message message = MessageUtils.fromReader(request)) {
-			copyFromTemporaryMessage(message);
-			if (this.context.containsKey(MessageContext.METADATA_CHARSET)) {
-				// Ensure charset is now always UTF-8 because that's what it is after converting from stream
-				this.context.withCharset(StandardCharsets.UTF_8);
-			}
+		Message temporaryMessage = MessageUtils.fromReader(request);
+		copyFromTemporaryMessage(temporaryMessage);
+		if (this.context.containsKey(MessageContext.METADATA_CHARSET)) {
+			// Ensure charset is now always UTF-8 because that's what it is after converting from stream
+			this.context.withCharset(StandardCharsets.UTF_8);
 		}
 	}
 
@@ -185,19 +182,19 @@ public class Message implements Serializable, Closeable {
 	protected Message(@Nonnull InputStream request, @Nonnull MessageContext context, Class<?> requestClass) throws IOException {
 		this.context = context;
 		this.requestClass = ClassUtils.nameOf(requestClass);
-		try (Message message = MessageUtils.fromInputStream(request)) {
-			copyFromTemporaryMessage(message);
-		}
+		Message temporaryMessage = MessageUtils.fromInputStream(request);
+		copyFromTemporaryMessage(temporaryMessage);
+
 	}
 
-	private void copyFromTemporaryMessage(Message message) {
-		this.request = message.request;
-		message.request = null; // Prevent potential temp files being closed
+	private void copyFromTemporaryMessage(Message temporaryMessage) {
+		this.request = temporaryMessage.request;
+		temporaryMessage.request = null; // Prevent potential temp files being closed
 		// Copy all keys except the name, so we do not overwrite the original name (if given) with a potential temporary-file name.
-		message.context.getAll().keySet()
+		temporaryMessage.context.getAll().keySet()
 				.stream()
 				.filter(key -> !key.equals(MessageContext.METADATA_NAME))
-				.forEachOrdered(key -> this.context.put(key, message.context.get(key)));
+				.forEachOrdered(key -> this.context.put(key, temporaryMessage.context.get(key)));
 	}
 
 	public Message(InputStream request) throws IOException {
@@ -391,11 +388,6 @@ public class Message implements Serializable, Closeable {
 	 */
 	public boolean requiresStream() {
 		return request instanceof ThrowingSupplier || request instanceof SerializableFileReference;
-	}
-
-	@Override
-	public void close() {
-		// No-op, preserve method for backwards compatibility
 	}
 
 	/**

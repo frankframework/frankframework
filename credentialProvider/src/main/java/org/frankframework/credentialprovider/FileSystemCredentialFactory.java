@@ -39,6 +39,8 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  *
  * <p>By default, the default values {@code username} and {@code password} are used for these files.</p>
  *
+ * @ff.info Please note that file system specific limitations and permissions apply when using this CredentialFactory. See <a
+ * href="https://en.wikipedia.org/wiki/Filename#Comparison_of_filename_limitations">Comparison of filename limitations</a> for more information.
  * @ff.info It's required to set the property {@value FileSystemCredentialFactory#FILESYSTEM_ROOT_PROPERTY} to the directory you wish to read credentials from.
  *
  */

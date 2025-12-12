@@ -17,7 +17,6 @@ import jakarta.json.JsonObjectBuilder;
 
 import org.hamcrest.core.StringContains;
 import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -36,7 +35,6 @@ import org.frankframework.mongodb.MongoDbSender.MongoAction;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.senders.SenderTestBase;
 import org.frankframework.stream.Message;
-import org.frankframework.util.CloseUtils;
 
 @Log4j2
 @Testcontainers(disabledWithoutDocker = true)
@@ -51,13 +49,6 @@ public class MongoDbSenderTest extends SenderTestBase<MongoDbSender> {
 	private final String database = "testdb";
 	private final String collection = "Students";
 	private Message result;
-
-	@AfterEach
-	@Override
-	public void tearDown() {
-		CloseUtils.closeSilently(result);
-		super.tearDown();
-	}
 
 	@BeforeAll
 	static void beforeAll() {

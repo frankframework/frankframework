@@ -296,8 +296,8 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 			val.validate("""
 				<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:impl="http://test.example.com">
 					<s:Header/>
-					<s:Body>               
-					
+					<s:Body>
+
 					</s:Body>
 				</s:Envelope>\
 				""", session)
@@ -320,8 +320,8 @@ public class WsdlXmlValidatorTest extends PipeTestBase<WsdlXmlValidator> {
 		val.validate("""
 				<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" xmlns:impl="http://test.example.com">
 					<s:Header/>
-					<s:Body>               
-					
+					<s:Body>
+
 					</s:Body>
 				</s:Envelope>\
 				""", session);

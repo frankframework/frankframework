@@ -55,7 +55,7 @@ class FrankListenerTest {
 
 	@AfterEach
 	void tearDown() {
-		CloseUtils.closeSilently(message, session, configuration);
+		CloseUtils.closeSilently(session, configuration);
 		listener.stop();
 	}
 

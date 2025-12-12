@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2022 WeAreFrank!
+   Copyright 2021-2022, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -132,10 +132,8 @@ public class CleanupDatabaseJob extends AbstractJobDef {
 				qs.configure();
 				qs.start();
 
-				int numberOfRowsAffected;
-				try (Message result = qs.sendMessageOrThrow(Message.nullMessage(), session)) {
-					numberOfRowsAffected = Integer.parseInt(Objects.requireNonNull(result.asString()));
-				}
+				Message result = qs.sendMessageOrThrow(Message.nullMessage(), session);
+				int numberOfRowsAffected = Integer.parseInt(Objects.requireNonNull(result.asString()));
 				if (numberOfRowsAffected > 0) {
 					getMessageKeeper().add("deleted [" + numberOfRowsAffected + "] row(s) from [IBISLOCK] table. It implies that there have been process(es) that finished unexpectedly or failed to complete. Please investigate the log files!", MessageKeeperLevel.WARN);
 				}
@@ -184,8 +182,8 @@ public class CleanupDatabaseJob extends AbstractJobDef {
 				boolean deletedAllRecords = false;
 				while (!deletedAllRecords) {
 					int numberOfRowsAffected;
-					try(PipeLineSession session = new PipeLineSession();
-							Message result = qs.sendMessageOrThrow(Message.nullMessage(), session)) {
+					try (PipeLineSession session = new PipeLineSession()) {
+						Message result = qs.sendMessageOrThrow(Message.nullMessage(), session);
 						String resultString = result.asString();
 						log.info("deleted [{}] rows", resultString);
 						if (!NumberUtils.isDigits(resultString)) {

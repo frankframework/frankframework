@@ -63,8 +63,6 @@ public abstract class FileSystemActorRolloverTest<F,S extends IWritableFileSyste
 			String stringResult = result.asString();
 
 			TestAssertions.assertXpathValueEquals(filename, stringResult, "file/@name");
-
-			result.close();
 		}
 
 		for (int i=1; i<=numOfWrites-1; i++) {

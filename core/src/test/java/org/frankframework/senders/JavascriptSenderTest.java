@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -39,14 +38,6 @@ class JavascriptSenderTest extends SenderTestBase<JavascriptSender> {
 	@Override
 	public JavascriptSender createSender() {
 		return new JavascriptSender();
-	}
-
-	@AfterEach
-	void tearDownCloseMessage() throws Exception {
-		super.tearDown();
-		if (dummyInput != null) {
-			dummyInput.close();
-		}
 	}
 
 	// Test without a given jsFunctionName. Will call the javascript function main as default

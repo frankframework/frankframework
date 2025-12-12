@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.util.stream.Stream;
 
 import org.hamcrest.Matchers;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -23,19 +22,10 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.XmlParameterBuilder;
-import org.frankframework.util.CloseUtils;
 
 public class IfPipeXpathTest extends PipeTestBase<IfPipe> {
 
 	private PipeRunResult pipeRunResult;
-
-	@Override
-	@AfterEach
-	public void tearDown() {
-		CloseUtils.closeSilently(pipeRunResult);
-
-		super.tearDown();
-	}
 
 	@Override
 	public IfPipe createPipe() throws ConfigurationException {
