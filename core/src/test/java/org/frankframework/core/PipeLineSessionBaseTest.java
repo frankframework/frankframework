@@ -4,8 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.logging.log4j.Logger;
@@ -75,8 +77,7 @@ public class PipeLineSessionBaseTest {
 		assertFalse(session.get("string4", true));
 		assertTrue(session.get("string5", true));
 
-		assertFalse(session.get("object1", true));
-		assertFalse(session.get("object1", false));
+		assertThrows(IOException.class, () -> session.get("object1", true));
 	}
 
 	@Test
@@ -89,7 +90,7 @@ public class PipeLineSessionBaseTest {
 		assertEquals("", session.get("string3", "not empty"));
 		assertEquals("null", session.get("string4", "null"));
 		assertEquals("null", session.get("string4", "not null"));
-    	assertNull(session.get("string5", null));
+		assertNull(session.get("string5", null));
 		assertEquals("", session.get("string5", ""));
 	}
 
@@ -137,7 +138,7 @@ public class PipeLineSessionBaseTest {
 	@Test
 	public void testObject() {
 		assertEquals(TEST_OBJECT, session.get("object1"));
-		assertEquals(TEST_OBJECT.toString(), session.get("object1", "dummy"));
+		assertThrows(IOException.class, () -> session.get("object1", "dummy"));
 	}
 
 
