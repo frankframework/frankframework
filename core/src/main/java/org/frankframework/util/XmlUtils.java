@@ -153,6 +153,10 @@ public class XmlUtils {
 		REPAIR_NAMESPACES_OUTPUT_FACTORY.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, Boolean.TRUE);
 	}
 
+	private XmlUtils() {
+		// Private no-op constructor to hide implicit public constructor
+	}
+
 	/**
 	 * Parses a string to a Date using XML Schema dateTime data type (GDate)
 	 */
