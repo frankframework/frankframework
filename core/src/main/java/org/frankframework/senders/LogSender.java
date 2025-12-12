@@ -81,7 +81,7 @@ public class LogSender extends AbstractSenderWithParameters {
 		if (pvl != null) {
 			for (ParameterValue param : pvl) {
 				if(!LOG_LEVEL_ATTRIBUTE_NAME.equals(param.getName())) {
-					logger.log(level, "parameter [{}] value [{}]", param.getName(), param.getValue());
+					logger.log(level, "parameter [{}] value [{}]", param.getName(), param.asStringValue());
 				}
 			}
 		}

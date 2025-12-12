@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2024 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,15 @@
 */
 package org.frankframework.align;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.stream.Message;
+import org.frankframework.util.XmlUtils;
 
 @Log4j2
 public class SubstitutionNode<V> {
@@ -27,9 +31,24 @@ public class SubstitutionNode<V> {
 	private V value;
 
 	public void registerSubstitutes(Map<String,V> substitutes) {
-		for(Entry<String,V> entry:substitutes.entrySet()) {
-			registerSubstitute(entry.getKey(), entry.getValue());
+		for (Entry<String, V> entry : substitutes.entrySet()) {
+			registerSubstitute(entry.getKey(), cleanseValue(entry.getValue()));
 		}
+	}
+
+	/**
+	 * @see XmlUtils#sanitizeValue(String, Object)
+	 */
+	@SuppressWarnings("unchecked")
+	private V cleanseValue(V value) {
+		if (value instanceof Message message) {
+			try {
+				return (V) message.asString();
+			} catch (IOException e) {
+				throw new IllegalArgumentException("unable to convert substitution value to String");
+			}
+		}
+		return value;
 	}
 
 	public void registerSubstitute(String path, V value) {

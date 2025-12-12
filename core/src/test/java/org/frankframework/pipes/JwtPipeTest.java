@@ -29,7 +29,10 @@ import com.nimbusds.jwt.proc.DefaultJWTProcessor;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeRunException;
+import org.frankframework.parameters.NumberParameter;
 import org.frankframework.parameters.Parameter;
+import org.frankframework.stream.Message;
+import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.util.TimeProvider;
 
 public class JwtPipeTest extends PipeTestBase<JwtPipe> {
@@ -223,13 +226,14 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 		pipe.setSharedSecret(DUMMY_SECRET);
 		pipe.setExpirationTime(60);
 		pipe.addParameter(new Parameter("sub", "Smint"));
-		pipe.addParameter(new Parameter("iss", "CleanBreath"));
+		pipe.addParameter(ParameterBuilder.create().withName("iss").withSessionKey("iss"));
 		pipe.addParameter(new Parameter("Sugar", "Free"));
 
-		Parameter paramFromSession = new Parameter();
+		NumberParameter paramFromSession = new NumberParameter();
 		paramFromSession.setName("amt");
 		paramFromSession.setSessionKey("amt");
 		session.put("amt", 50);
+		session.put("iss", new Message("CleanBreath"));
 		pipe.addParameter(paramFromSession);
 
 		configureAndStartPipe();
