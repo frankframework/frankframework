@@ -114,12 +114,13 @@ public class FileUtilsTest {
 	@Test
 	void testGetFilesWithWildcard() throws Exception {
 		String directory = getFile(null).getPath();
-		File[] files = FileUtils.getFiles(directory, "file*", null, 5);
+
+		File[] files = FileUtils.getFiles(directory, "file*", null, 0);
 		List<String> fileNames = Stream.of(files)
 				.map(File::getName)
 				.toList();
 
-		assertEquals(2, files.length, "directory: " + directory); // Check if there are 2 files present
+		assertEquals(2, files.length, "found" + Stream.of(getFile(null).list()).toList()); // Check if there are 2 files present
 		assertTrue(fileNames.contains("file.txt"));
 		assertTrue(fileNames.contains("fileToAppend.txt"));
 	}
