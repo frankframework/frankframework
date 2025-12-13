@@ -1,0 +1,27 @@
+<ZKN:heeftAlsInitiator StUF:entiteittype="ZAKBTRINI" StUF:verwerkingssoort="T" xmlns:StUF="http://www.egem.nl/StUF/StUF0301" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:BG="http://www.egem.nl/StUF/sector/bg/0310" xmlns:ZKN="http://www.egem.nl/StUF/sector/zkn/0310">
+    <ZKN:gerelateerde>
+        <ZKN:nietNatuurlijkPersoon StUF:entiteittype="NNP" StUF:verwerkingssoort="T">
+            <BG:inn.nnpId>823288444</BG:inn.nnpId>
+            <BG:authentiek StUF:metagegeven="true">N</BG:authentiek>
+            <BG:statutaireNaam>Gemeente Súdwest-Fryslân</BG:statutaireNaam>
+            <!--<BG:inn.rechtsvorm
+            xsi:nil="true" StUF:noValue="geenWaarde"/>-->
+            <BG:inn.rechtsvorm>Eenmanszaak</BG:inn.rechtsvorm>
+            <BG:bezoekadres>
+                <BG:aoa.identificatie>0091200000046730</BG:aoa.identificatie>
+                <BG:authentiek StUF:metagegeven="true">J</BG:authentiek>
+                <BG:wpl.woonplaatsNaam>Sneek</BG:wpl.woonplaatsNaam>
+                <BG:gor.openbareRuimteNaam>Marktstraat</BG:gor.openbareRuimteNaam>
+                <BG:gor.straatnaam>Marktstraat</BG:gor.straatnaam>
+                <BG:aoa.postcode>8601CR</BG:aoa.postcode>
+                <BG:aoa.huisnummer>15</BG:aoa.huisnummer>
+                <BG:aoa.huisletter xsi:nil="true" StUF:noValue="geenWaarde" />
+                <BG:aoa.huisnummertoevoeging />
+                <BG:inp.locatiebeschrijving xsi:nil="true" StUF:noValue="geenWaarde" />
+            </BG:bezoekadres>
+        </ZKN:nietNatuurlijkPersoon>
+    </ZKN:gerelateerde>
+    <StUF:extraElementen>
+        <StUF:extraElement naam="kvkNummer" />
+    </StUF:extraElementen>
+</ZKN:heeftAlsInitiator>
