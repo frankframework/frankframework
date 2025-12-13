@@ -179,11 +179,12 @@ public class SwitchPipeTest extends PipeTestBase<SwitchPipe> {
 		pipe.addForward(new PipeForward("2","Path2"));
 
 		Message input=MessageTestUtils.getMessage("/SwitchPipe/in.xml");
-		Parameter inputParameter = new Parameter();
-		inputParameter.setName("source");
+
+		XmlParameterBuilder inputParameter = XmlParameterBuilder.create()
+				.withName("source")
+				.withType(ParameterType.DOMDOC);
 		inputParameter.setXpathExpression("/soap:Envelope/soap:Body/case:SetRequest/case:CaseData/case:CASE_ID");
 		inputParameter.setNamespaceDefs("soap=http://schemas.xmlsoap.org/soap/envelope/,case=http://www.ing.com/nl/pcretail/ts/migrationcasedata_01");
-		inputParameter.setType(ParameterType.DOMDOC);
 		pipe.addParameter(inputParameter);
 		pipe.setXpathExpression("$source");
 		pipe.setNamespaceDefs("soap=http://schemas.xmlsoap.org/soap/envelope/,case=http://www.ing.com/nl/pcretail/ts/migrationcasedata_01");
