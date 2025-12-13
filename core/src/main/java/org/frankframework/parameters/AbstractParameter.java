@@ -153,6 +153,8 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	private @Getter boolean removeNamespaces=false;
 	private @Getter int xsltVersion = 0; // set to 0 for auto-detect.
 
+	private @Getter OutputType xpathResultType = OutputType.TEXT;
+
 	private TransformerPool transformerPool = null;
 	private TransformerPool tpDynamicSessionKey = null;
 	protected @Nonnull ParameterList paramList = new ParameterList();
@@ -196,23 +198,17 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 		}
 		paramList.configure();
 		if (StringUtils.isNotEmpty(getXpathExpression()) || StringUtils.isNotEmpty(styleSheetName)) {
-			OutputType outputType = getType() == ParameterType.XML
-					|| getType() == ParameterType.NODE
-					|| getType() == ParameterType.DOMDOC ? OutputType.XML : OutputType.TEXT;
-
-			boolean includeXmlDeclaration = false;
-
-			transformerPool = TransformerPool.configureTransformer0(this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), outputType, includeXmlDeclaration, paramList, getXsltVersion());
+			transformerPool = TransformerPool.configureTransformer0(this, getNamespaceDefs(), getXpathExpression(), getStyleSheetName(), getXpathResultType(), false, paramList, getXsltVersion());
 		} else {
 			if (StringUtils.isEmpty(getPattern()) && !paramList.isEmpty()) {
 				throw new ConfigurationException("Parameter [" + getName() + "] can only have parameters itself if a styleSheetName, xpathExpression or pattern is specified");
 			}
 		}
 		if (StringUtils.isNotEmpty(getSessionKeyXPath())) {
-			tpDynamicSessionKey = TransformerPool.configureTransformer(this, getNamespaceDefs(), getSessionKeyXPath(), null, OutputType.TEXT,false,null);
+			tpDynamicSessionKey = TransformerPool.configureTransformer(this, getNamespaceDefs(), getSessionKeyXPath(), null, OutputType.TEXT, false, null);
 		}
 		if (getType() == null) {
-			log.info("parameter [{} has no type. Setting the type to [{}]", this::getType, ()->ParameterType.STRING);
+			log.info("parameter [{}] has no type. Setting the type to [{}]", this::getName, ()->ParameterType.STRING);
 			setType(ParameterType.STRING);
 		}
 		jsonPath = JsonUtil.compileJsonPath(jsonPathExpression);
@@ -491,8 +487,10 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 			try {
 				Message message1 = Message.asMessage(result);
 				return getValueAsType(message1, namespaceAware);
+			} catch(IllegalArgumentException e) {
+				return result; // oh no, we cannot convert to message! Return raw value.
 			} catch(IOException e) {
-				throw new ParameterException(getName(), "Could not convert parameter ["+getName()+"] to String", e);
+				throw new ParameterException(getName(), "Could not convert parameter ["+getName()+"] to type ["+getType()+"]", e);
 			}
 		}
 
@@ -1034,7 +1032,8 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 	}
 
 	/**
-	 * If set (>=0) and the length of the value of the parameter exceeds this maximum length, the length is trimmed to this maximum length
+	 * If set (>=0) and the length of the value of the parameter exceeds this maximum length, the length is trimmed to this maximum length.
+	 * This only works for character (input) data.
 	 * @ff.default -1
 	 */
 	public void setMaxLength(int i) {
@@ -1074,5 +1073,9 @@ public abstract class AbstractParameter implements IConfigurable, IWithParameter
 
 			return new ParameterPatternSubstitution(formatName, formatType, formatString);
 		}
+	}
+
+	protected void setXpathResult(OutputType outputType) {
+		this.xpathResultType = outputType;
 	}
 }
