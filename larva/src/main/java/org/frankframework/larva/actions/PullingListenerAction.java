@@ -42,12 +42,12 @@ public class PullingListenerAction extends AbstractLarvaAction<IPullingListener>
 	}
 
 	@Override
-	public void executeWrite(Message fileContent, String correlationId, Map<String, Object> parameters) throws ListenerException {
+	public void executeWrite(Message fileContent, String correlationId, Properties stepParameters) throws ListenerException {
 		throw new ListenerException("no write step for pulling listener [" + peek() + "]");
 	}
 
 	@Override
-	public Message executeRead(Properties properties) throws ListenerException {
+	public Message executeRead(Properties stepParameters) throws ListenerException {
 		Map<String, Object> threadContext = null;
 		IPullingListener pullingListener = peek();
 		TimeoutGuard tg = new TimeoutGuard((int)getTimeoutMillis() + 5_000, "Larva PullingListenerAction");

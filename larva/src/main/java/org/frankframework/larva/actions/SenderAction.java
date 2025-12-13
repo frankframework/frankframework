@@ -15,7 +15,6 @@
 */
 package org.frankframework.larva.actions;
 
-import java.util.Map;
 import java.util.Properties;
 
 import org.springframework.security.core.context.SecurityContext;
@@ -51,7 +50,7 @@ public class SenderAction extends AbstractLarvaAction<ISender> {
 	}
 
 	@Override
-	public void executeWrite(Message fileContent, String correlationId, Map<String, Object> parameters) {
+	public void executeWrite(Message fileContent, String correlationId, Properties stepParameters) {
 		if (this.senderThread != null || inputMessage != null) {
 			throw new IllegalStateException("Sender already called, do read before doing another write");
 		}
@@ -73,7 +72,7 @@ public class SenderAction extends AbstractLarvaAction<ISender> {
 	}
 
 	@Override
-	public Message executeRead(Properties properties) throws SenderException, TimeoutException {
+	public Message executeRead(Properties stepParameters) throws SenderException, TimeoutException {
 		if (shouldExecuteSenderInLarvaThread()) { // QuerySender & DelaySender should not be executed in async thread, so execute here when reading
 			try {
 				Message input = Message.asMessage(inputMessage); // Uses the provided message or NULL

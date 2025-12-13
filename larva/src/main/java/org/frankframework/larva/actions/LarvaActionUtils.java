@@ -173,7 +173,11 @@ public class LarvaActionUtils {
 		if (value == null) {
 			String filename = properties.getProperty(PARAM_KEY + i + VALUEFILE_ABSOLUTEPATH_KEY);
 			if (filename != null) {
-				value = new FileMessage(new File(filename));
+				File file = new File(filename);
+				if (!file.exists()) {
+					throw new IllegalArgumentException("file ["+filename+"] not found");
+				}
+				value = new FileMessage(file);
 			} else {
 				String inputStreamFilename = properties.getProperty(PARAM_KEY + i + ".valuefileinputstream.absolutepath");
 				if (inputStreamFilename != null) {
