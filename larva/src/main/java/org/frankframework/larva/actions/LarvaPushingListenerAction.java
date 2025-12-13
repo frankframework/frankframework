@@ -15,7 +15,6 @@
 */
 package org.frankframework.larva.actions;
 
-import java.util.Map;
 import java.util.Properties;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -74,7 +73,7 @@ public class LarvaPushingListenerAction extends AbstractLarvaAction<IPushingList
 	}
 
 	@Override
-	public void executeWrite(Message fileContent, String correlationId, Map<String, Object> parameters) {
+	public void executeWrite(Message fileContent, String correlationId, Properties stepParameters) {
 		PipeLineSession context;
 		if (listenerMessage != null) { // Reuse the context from the previous message
 			context = listenerMessage.getContext();
@@ -87,7 +86,7 @@ public class LarvaPushingListenerAction extends AbstractLarvaAction<IPushingList
 
 	@Override
 	@SuppressWarnings("java:S1117")
-	public Message executeRead(Properties properties) throws TimeoutException {
+	public Message executeRead(Properties stepParameters) throws TimeoutException {
 		ListenerMessage listenerMessage = listenerMessageHandler.getRequestMessageWithDefaultTimeout();
 		this.listenerMessage = listenerMessage;
 		return listenerMessage.getMessage();

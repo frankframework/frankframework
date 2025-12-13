@@ -34,18 +34,20 @@ public class LarvaAction extends AbstractLarvaAction<IConfigurable> {
 	}
 
 	@Override
-	public void executeWrite(Message fileContent, String correlationId, Map<String, Object> parameters) throws TimeoutException, SenderException, ListenerException {
+	public void executeWrite(Message fileContent, String correlationId, Properties stepParameters) throws TimeoutException, SenderException, ListenerException {
 		if (peek() instanceof FileSender fileSender) {
 			fileSender.sendMessage(fileContent);
 		} else if (peek() instanceof XsltProviderListener xsltProviderListener) {
-			xsltProviderListener.processRequest(fileContent, parameters);
+			Map<String, Object> xsltParameters = LarvaActionUtils.createParametersMapFromParamProperties(stepParameters);
+
+			xsltProviderListener.processRequest(fileContent, xsltParameters);
 		} else {
 			throw new SenderException("could not perform write step for action [" + peek() + "]");
 		}
 	}
 
 	@Override
-	public Message executeRead(Properties properties) throws SenderException, TimeoutException, ListenerException {
+	public Message executeRead(Properties stepParameters) throws SenderException, TimeoutException, ListenerException {
 		if (peek() instanceof FileSender fileSender) {
 			return fileSender.getMessage();
 		}
