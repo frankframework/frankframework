@@ -74,7 +74,7 @@ import org.frankframework.util.Misc;
  * }</pre>
  * </p>
  * <p>
- * This pipe can also call senders using their names as functions in the jsonnet file. For example:
+ * This pipe can also call senders using their names as functions in the JSonnet file. For example:
  * <pre>{@code
  * <DataSonnetPipe>
  *     <EchoSender name="myFunction" />
@@ -183,6 +183,12 @@ public class DataSonnetPipe extends FixedForwardPipe {
 		setOutputFileFormat(outputType);
 	}
 
+	@Deprecated // replaced by setSender, to allow for multiple senders in XSD. Method must be present, as it is used by Digester
+	public final void setSender(ISender sender) {
+		addSender(sender);
+	}
+
+	/** One or more specifications of senders. Can be called from the JSonnet file using {@code sender.'name-here'(input)}. */
 	public void addSender(ISender sender) {
 		senderList.add(sender);
 	}
