@@ -831,6 +831,18 @@
     <xs:attribute name="elementRole" type="xs:string" fixed="sharedResources" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:complexType>
+  <xs:element name="PipelinePart">
+    <xs:annotation>
+      <xs:documentation>Wrapper element to help create reusable parts of a pipeline</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:group ref="PipeElementGroup" minOccurs="0" maxOccurs="unbounded" />
+      </xs:sequence>
+      <xs:attribute ref="active" />
+      <xs:anyAttribute namespace="##other" processContents="skip" />
+    </xs:complexType>
+  </xs:element>
   <xs:group name="ListenerElementGroup">
     <xs:choice>
       <xs:element name="Listener">
@@ -10401,6 +10413,7 @@
         </xs:complexType>
       </xs:element>
       <xs:group ref="PipeElementGroupBase" />
+      <xs:element name="Include" minOccurs="0" maxOccurs="unbounded" type="IncludeType" />
     </xs:choice>
   </xs:group>
   <xs:group name="ChildElementGroup">

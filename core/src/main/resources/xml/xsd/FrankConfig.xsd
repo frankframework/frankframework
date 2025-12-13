@@ -1157,6 +1157,18 @@
     <xs:attribute name="elementRole" type="xs:string" fixed="sharedResources" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:complexType>
+  <xs:element name="PipelinePart">
+    <xs:annotation>
+      <xs:documentation>Wrapper element to help create reusable parts of a pipeline</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:group ref="PipeElementGroup" minOccurs="0" maxOccurs="unbounded" />
+      </xs:sequence>
+      <xs:attribute ref="active" />
+      <xs:anyAttribute namespace="##other" processContents="skip" />
+    </xs:complexType>
+  </xs:element>
   <xs:complexType name="ConfigurationType">
     <xs:group ref="ConfigurationDeclaredChildGroup" />
     <xs:attributeGroup ref="ConfigurationDeclaredAttributeGroup" />
@@ -7344,6 +7356,7 @@
         </xs:complexType>
       </xs:element>
       <xs:group ref="PipeElementGroupBase" />
+      <xs:element name="Include" minOccurs="0" maxOccurs="unbounded" type="IncludeType" />
     </xs:choice>
   </xs:group>
   <xs:group name="ListenerElementGroup_2">
@@ -7907,7 +7920,7 @@
  that is followed when the called adapter exits with the mentioned exit. This does not work if the code is for example &lt;code&gt;c2&lt;/code&gt;.
  &lt;/p&gt;
  &lt;p&gt;
- A FrankSender makes a call to either an Adapter or an external program by setting the #scope. By default the scope is &lt;code&gt;ADAPTER&lt;/code&gt;.
+ A FrankSender makes a call to either an Adapter or an external program by setting the #scope. By default, the scope is &lt;code&gt;ADAPTER&lt;/code&gt;.
  &lt;/p&gt;
  &lt;p/&gt;
 
@@ -7953,7 +7966,7 @@
  &lt;ul&gt;
      &lt;li&gt;Implement the interface &lt;code&gt;nl.nn.adapterframework.dispatcher.RequestProcessor&lt;/code&gt; from the IbisServiceDispatcher library&lt;/li&gt;
      &lt;li&gt;Register the instance with the &lt;code&gt;nl.nn.adapterframework.dispatcher.DispatcherManager&lt;/code&gt; obtained via the &lt;code&gt;nl.nn.adapterframework.dispatcher.DispatcherManagerFactory&lt;/code&gt;&lt;/li&gt;
-     &lt;li&gt;See the implementation code of the &lt;code&gt;JavaListener&lt;/code&gt; in the Frank!Framework for an example&lt;/li&gt;
+     &lt;li&gt;See the implementation code of the org.frankframework.receivers.JavaListener in the Frank!Framework for an example&lt;/li&gt;
  &lt;/ul&gt;
  &lt;/p&gt;
  &lt;p&gt;
