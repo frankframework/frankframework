@@ -30,12 +30,13 @@ import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.stream.Message;
 
 @Log4j2
-public class NumberParameter extends AbstractParameter {
+public class NumberParameter extends AbstractParameter<Number> {
 
 	private @Getter String decimalSeparator = null;
 	private @Getter String groupingSeparator = null;
@@ -43,6 +44,8 @@ public class NumberParameter extends AbstractParameter {
 	private @Getter String maxInclusiveString = null;
 	private Number minInclusive;
 	private Number maxInclusive;
+
+	private @Getter int minLength = -1;
 
 	private final @Getter DecimalFormatSymbols decimalFormatSymbols = new DecimalFormatSymbols();
 
@@ -105,7 +108,7 @@ public class NumberParameter extends AbstractParameter {
 
 		// This turns the result type into a String
 		if (getMinLength() >= 0 && (result+"").length() < getMinLength()) {
-			log.debug("Adding leading zeros to parameter [{}]", this::getName);
+			log.warn("adding leading zeros to number parameter [{}] removes parameter type!", this::getName);
 			result = StringUtils.leftPad(result+"", getMinLength(), '0');
 		}
 
@@ -165,5 +168,15 @@ public class NumberParameter extends AbstractParameter {
 	/** Used in combination with type <code>number</code>; if set and the value of the parameter falls short of this minimum value, this minimum value is taken */
 	public void setMinInclusive(String string) {
 		minInclusiveString = string;
+	}
+
+	/**
+	 * If set (>=0) and the length of the value of the parameter falls short of this minimum length, the value is padded
+	 * @ff.default -1
+	 */
+	@Deprecated
+	@ConfigurationWarning("This changes the return type to a String.")
+	public void setMinLength(int i) {
+		minLength = i;
 	}
 }

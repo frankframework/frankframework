@@ -21,6 +21,7 @@ import java.io.IOException;
 import jakarta.annotation.Nonnull;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -31,21 +32,24 @@ import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.XmlException;
 import org.frankframework.util.XmlUtils;
+import org.frankframework.util.TransformerPool.OutputType;
 
 @Log4j2
-public class XmlParameter extends AbstractParameter {
+public class XmlParameter extends AbstractParameter<Node> {
 	private XmlType xmlType;
 
 	public XmlParameter() {
 		setXmlType(XmlType.DOMDOC);
+		setXpathResult(OutputType.XML);
 	}
 
 	public enum XmlType {
 		NODE, DOMDOC
 	}
 
+	// This returns a Node (even though the return type may be a DOM Document.)
 	@Override
-	protected Object getValueAsType(@Nonnull Message request, boolean namespaceAware) throws ParameterException {
+	protected Node getValueAsType(@Nonnull Message request, boolean namespaceAware) throws ParameterException {
 		boolean isTypeNode = XmlType.NODE.equals(xmlType);
 
 		if (isTypeNode) {

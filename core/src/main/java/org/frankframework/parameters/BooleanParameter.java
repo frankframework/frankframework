@@ -32,7 +32,7 @@ import org.frankframework.stream.Message;
  *
  */
 @Log4j2
-public class BooleanParameter extends AbstractParameter {
+public class BooleanParameter extends AbstractParameter<Boolean> {
 
 	public BooleanParameter() {
 		setType(ParameterType.BOOLEAN);
