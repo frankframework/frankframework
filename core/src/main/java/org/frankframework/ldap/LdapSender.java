@@ -15,7 +15,6 @@
 */
 package org.frankframework.ldap;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -45,7 +44,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
-import lombok.Lombok;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
@@ -63,6 +61,7 @@ import org.frankframework.doc.EnumLabel;
 import org.frankframework.jndi.JndiBase;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
+import org.frankframework.parameters.ParameterValue;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.XmlBuilder;
@@ -858,22 +857,8 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	public String performOperation(Message message, PipeLineSession session) throws SenderException, ParameterException {
 		Map<String, String> paramValueMap = null;
 		String entryName = null;
-		paramValueMap = paramList.getValues(message, session)
-				.getValueMap()
-				.entrySet()
-				.stream()
-				.collect(Collectors.toMap(
-						Map.Entry::getKey, e -> {
-							if (e.getValue() instanceof Message m) {
-								try {
-									return m.asString();
-								} catch (IOException ex) {
-									throw Lombok.sneakyThrow(new SenderException("unable to read parameter [" + e.getKey() + "]", ex));
-								}
-							}
-							return (String) e.getValue();
-						}
-				));
+		paramValueMap = paramList.getValues(message, session).stream()
+				.collect(Collectors.toMap(ParameterValue::getName, ParameterValue::asStringValue));
 
 		entryName = paramValueMap.get(ENTRYNAME);
 		if (log.isDebugEnabled()) log.debug("entryName=[{}]", entryName);

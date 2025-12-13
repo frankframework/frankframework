@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.frankframework.parameters;
 import lombok.Getter;
 
 import org.frankframework.doc.Default;
+import org.frankframework.util.TransformerPool.OutputType;
 
 /**
  * Placeholder class to allow legacy configuration notations <code>&lt;param type='number' /&gt;</code> in the new Frank!Config XSD.
@@ -57,5 +58,18 @@ public class Parameter extends AbstractParameter {
 	public void setType(ParameterType type) {
 		this.type = type;
 		super.setType(type);
+	}
+
+	/**
+	 * Only valid for xPathExpression.
+	 * If outputType is {@link OutputType#XML} then the resulting stylesheet will use the {@code copy-of} method instead of {@code value-of}.
+	 * This results in an xml-string including the XML tags, if you want the contents of the element (as scalar value), use TEXT.
+	 * </p>
+	 * This field controls how to read the input and does not determine the output.
+	 * @ff.default TEXT
+	 */
+	@Override
+	public void setXpathResult(OutputType outputType) {
+		super.setXpathResult(outputType);
 	}
 }

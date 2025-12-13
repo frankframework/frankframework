@@ -11,7 +11,7 @@ import org.frankframework.pipes.UUIDGeneratorPipe.Type;
 
 public class UUIDGeneratorPipeTest extends PipeTestBase<UUIDGeneratorPipe> {
 
-	private final Object input = new Object();
+	private final String input = "unused";
 
 	@Override
 	public UUIDGeneratorPipe createPipe() {

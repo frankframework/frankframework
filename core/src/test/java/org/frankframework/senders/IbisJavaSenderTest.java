@@ -20,6 +20,7 @@ import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
+import org.frankframework.util.MessageUtils;
 
 public class IbisJavaSenderTest {
 
@@ -37,7 +38,7 @@ public class IbisJavaSenderTest {
 		ibisJavaSender = new IbisJavaSender();
 
 		DispatcherManagerFactory.getDispatcherManager().register(ECHO_SERVICE, ((correlationId, message, requestContext) -> message));
-		DispatcherManagerFactory.getDispatcherManager().register(VALUE_FROM_CONTEXT_SERVICE, ((correlationId, message, requestContext) -> requestContext.get(message).toString()));
+		DispatcherManagerFactory.getDispatcherManager().register(VALUE_FROM_CONTEXT_SERVICE, ((correlationId, message, requestContext) -> MessageUtils.asString(requestContext.get(message))));
 	}
 
 	@AfterEach
@@ -96,7 +97,7 @@ public class IbisJavaSenderTest {
 		// Assert
 		assertEquals("MESSAGE", result.getResult().asString());
 		assertTrue(pipeLineSession.containsKey("my-parameter"), "After request the pipeline-session should contain key [my-parameter]");
-		assertEquals("parameter-value", pipeLineSession.get("my-parameter"));
+		assertEquals("parameter-value", pipeLineSession.get("my-parameter", null));
 		assertTrue(pipeLineSession.containsKey("this-doesnt-exist"), "After request the pipeline-session should not contain key [this-doesnt-exist]");
 		assertNull(pipeLineSession.get("this-doesnt-exist"), "Key not in return from service should have value [NULL]");
 	}
