@@ -69,7 +69,7 @@ public class Parameter extends AbstractParameter<Message> {
 		this.type = type;
 
 		if (type == ParameterType.XML) {
-			ConfigurationWarnings.add(this, log, "use attribute outputType with value [XML] instead");
+			ConfigurationWarnings.add(this, log, "use attribute xpathResult with value [XML] instead");
 			setXpathResult(OutputType.XML);
 		}
 
@@ -87,7 +87,7 @@ public class Parameter extends AbstractParameter<Message> {
 
 	/**
 	 * Only valid for xPathExpression.
-	 * If outputType is {@link OutputType#XML} then the resulting stylesheet will use the {@code copy-of} method instead of {@code value-of}.
+	 * If xpathResult is {@link OutputType#XML} then the resulting stylesheet will use the {@code copy-of} method instead of {@code value-of}.
 	 * This results in an xml-string including the XML tags, if you want the contents of the element (as scalar value), use TEXT.
 	 * </p>
 	 * This field controls how to read the input and does not determine the output.

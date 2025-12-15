@@ -27,7 +27,7 @@ public enum ParameterType {
 	STRING(true),
 
 	/** Renders an xml-nodeset as an xml-string (in combination with xslt or xpath). This will include the xml tags */
-	@ConfigurationWarning("ParameterType XML is deprecated, use StringParameter with outputType=XML instead")
+	@ConfigurationWarning("ParameterType XML is deprecated, use Parameter with xpathResult=XML instead")
 	@Deprecated(since = "9.4.0", forRemoval = true)
 	XML(true),
 
