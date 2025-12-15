@@ -72,8 +72,8 @@ public abstract class CmisHttpSender extends AbstractHttpSender {
 				HttpPost httpPost = new HttpPost(uri);
 
 				// send data
-				if (pvl.get("writer") != null) {
-					Output writer = (Output) pvl.get("writer").getValue();
+				if (session.get("writer") != null) {
+					Output writer = (Output) session.get("writer");
 					ByteArrayOutputStream out = new ByteArrayOutputStream();
 
 					Object clientCompression = pvl.get(SessionParameter.CLIENT_COMPRESSION);
@@ -96,8 +96,8 @@ public abstract class CmisHttpSender extends AbstractHttpSender {
 				HttpPut httpPut = new HttpPut(uri);
 
 				// send data
-				if (pvl.get("writer") != null) {
-					Output writer = (Output) pvl.get("writer").getValue();
+				if (session.get("writer") != null) {
+					Output writer = (Output) session.get("writer");
 					ByteArrayOutputStream out = new ByteArrayOutputStream();
 
 					Object clientCompression = pvl.get(SessionParameter.CLIENT_COMPRESSION);

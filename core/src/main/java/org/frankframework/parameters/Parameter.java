@@ -15,9 +15,17 @@
 */
 package org.frankframework.parameters;
 
-import lombok.Getter;
+import java.io.IOException;
 
+import org.apache.commons.lang3.StringUtils;
+
+import lombok.Getter;
+import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.configuration.ConfigurationWarnings;
+import org.frankframework.core.ParameterException;
 import org.frankframework.doc.Default;
+import org.frankframework.stream.Message;
 import org.frankframework.util.TransformerPool.OutputType;
 
 /**
@@ -28,14 +36,16 @@ import org.frankframework.util.TransformerPool.OutputType;
  *
  * @author Niels Meijer
  */
-// Should never be instantiated directly. See {@link ParameterFactory} and {@link ParameterType} for more information.
-// To be deprecated(since = "8.2.0")
-public class Parameter extends AbstractParameter {
+// See {@link ParameterFactory} and {@link ParameterType} for more information.
+@Log4j2
+public class Parameter extends AbstractParameter<Message> {
+
+	private @Getter int minLength = -1;
 
 	private @Getter ParameterType type;
 
 	public Parameter() {
-		//throw new NotImplementedException(); // will be replaced by appropriate executor class in ParameterFactory, based on function
+		// Default constructor
 	}
 
 	/** utility constructor, useful for unit testing */
@@ -57,12 +67,27 @@ public class Parameter extends AbstractParameter {
 	/** The target data type of the parameter, related to the database or XSLT stylesheet to which the parameter is applied. */
 	public void setType(ParameterType type) {
 		this.type = type;
+
+		if (type == ParameterType.XML) {
+			ConfigurationWarnings.add(this, log, "use attribute xpathResult with value [XML] instead");
+			setXpathResult(OutputType.XML);
+		}
+
 		super.setType(type);
+	}
+
+	@Override
+	protected Message getValueAsType(Message request, boolean namespaceAware) throws ParameterException, IOException {
+		if (getMinLength() >= 0 || getMaxLength() >= 0) {
+			return applyMinLength(request);
+		}
+
+		return request;
 	}
 
 	/**
 	 * Only valid for xPathExpression.
-	 * If outputType is {@link OutputType#XML} then the resulting stylesheet will use the {@code copy-of} method instead of {@code value-of}.
+	 * If xpathResult is {@link OutputType#XML} then the resulting stylesheet will use the {@code copy-of} method instead of {@code value-of}.
 	 * This results in an xml-string including the XML tags, if you want the contents of the element (as scalar value), use TEXT.
 	 * </p>
 	 * This field controls how to read the input and does not determine the output.
@@ -71,5 +96,39 @@ public class Parameter extends AbstractParameter {
 	@Override
 	public void setXpathResult(OutputType outputType) {
 		super.setXpathResult(outputType);
+	}
+
+	// Someday this will probably belong in a StringParameter...
+	private Message applyMinLength(final Message request) {
+		if (request.isRequestOfType(String.class)) { // Used by getMinLength and getMaxLength
+			try {
+				return new Message(applyMinLength(request.asString())); // WARNING this removes the MessageContext
+			} catch (IOException e) {
+				// Already checked for String, so this should never happen
+			}
+		}
+
+		// All other types
+		log.warn("not applying min or max length. Parameter type does not apply");
+		return request;
+	}
+
+	// Maybe we want to create a StringParameter someday which might use this method?
+	private String applyMinLength(String stringResult) {
+		if (getMinLength() >= 0 && stringResult.length() < getMinLength()) {
+			log.debug("Padding parameter [{}] because length [{}] falls short of minLength [{}]", this::getName, stringResult::length, this::getMinLength);
+			return StringUtils.rightPad(stringResult, getMinLength());
+		}
+
+		return stringResult;
+	}
+
+	/**
+	 * If set (>=0) and the length of the value of the parameter falls short of this minimum length, the value is padded.
+	 * This only works for character (input) data.
+	 * @ff.default -1
+	 */
+	public void setMinLength(int i) {
+		minLength = i;
 	}
 }

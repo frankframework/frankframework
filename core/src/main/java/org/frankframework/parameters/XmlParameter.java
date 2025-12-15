@@ -35,7 +35,7 @@ import org.frankframework.util.XmlUtils;
 import org.frankframework.util.TransformerPool.OutputType;
 
 @Log4j2
-public class XmlParameter extends AbstractParameter {
+public class XmlParameter extends AbstractParameter<Node> {
 	private XmlType xmlType;
 
 	public XmlParameter() {

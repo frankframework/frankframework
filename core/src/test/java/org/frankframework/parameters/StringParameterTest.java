@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 import org.junit.jupiter.api.Test;
+import org.springframework.http.MediaType;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -53,8 +54,9 @@ public class StringParameterTest {
 
 		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
 
-		String msg = assertInstanceOf(String.class, result);
-		assertEquals("<root>value</root>", msg);
+		Message msg = assertInstanceOf(Message.class, result);
+		assertEquals("<root>value</root>", msg.asString());
+		assertEquals(MediaType.APPLICATION_XML, msg.getContext().getMimeType());
 	}
 
 	@Test
@@ -75,8 +77,9 @@ public class StringParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
-		String msg = assertInstanceOf(String.class, result);
-		assertEquals("<root>value</root>", msg);
+		Message msg = assertInstanceOf(Message.class, result);
+		assertEquals("<root>value</root>", msg.asString());
+		assertEquals(MediaType.APPLICATION_XML, msg.getContext().getMimeType());
 	}
 
 	@Test
@@ -91,8 +94,8 @@ public class StringParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		String msg = assertInstanceOf(String.class, result);
-		assertEquals("abcde", msg);
+		Message msg = assertInstanceOf(Message.class, result);
+		assertEquals("abcde", msg.asString());
 	}
 
 	@Test
@@ -107,8 +110,8 @@ public class StringParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		String msg = assertInstanceOf(String.class, result);
-		assertEquals("abcde", msg);
+		Message msg = assertInstanceOf(Message.class, result);
+		assertEquals("abcde", msg.asString());
 	}
 
 	@Test
@@ -123,8 +126,8 @@ public class StringParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		String msg = assertInstanceOf(String.class, result);
-		assertEquals("abcdefghijklmnop", msg);
+		Message msg = assertInstanceOf(Message.class, result);
+		assertEquals("abcdefghijklmnop", msg.asString());
 	}
 
 	@Test
@@ -139,8 +142,8 @@ public class StringParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		String msg = assertInstanceOf(String.class, result);
-		assertEquals("abcde          ", msg);
+		Message msg = assertInstanceOf(Message.class, result);
+		assertEquals("abcde          ", msg.asString());
 	}
 
 	@Test
@@ -156,8 +159,8 @@ public class StringParameterTest {
 		Message message = new Message("fakeMessage");
 
 		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		String msg = assertInstanceOf(String.class, result);
-		assertEquals("abcdefg", msg);
+		Message msg = assertInstanceOf(Message.class, result);
+		assertEquals("abcdefg", msg.asString());
 	}
 
 	@Test
@@ -176,8 +179,8 @@ public class StringParameterTest {
 
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
 
-			String msg = assertInstanceOf(String.class, result);
-			assertEquals("abcdefg", msg);
+			Message msg = assertInstanceOf(Message.class, result);
+			assertEquals("abcdefg", msg.asString());
 		}
 	}
 
@@ -197,8 +200,8 @@ public class StringParameterTest {
 
 			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
 
-			byte[] resultMsg = assertInstanceOf(byte[].class, result);
-			assertEquals("abcdefghijklmnop", new String(resultMsg));
+			Message resultMsg = assertInstanceOf(Message.class, result);
+			assertEquals("abcdefghijklmnop", resultMsg.asString());
 		}
 	}
 }

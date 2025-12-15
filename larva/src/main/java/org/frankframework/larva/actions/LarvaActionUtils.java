@@ -31,7 +31,6 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.parameters.AbstractParameter;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterType;
 import org.frankframework.stream.FileMessage;
@@ -114,7 +113,7 @@ public class LarvaActionUtils {
 					if (value != null) {
 						if (value instanceof String string) {
 							parameter.setValue(string);
-							((AbstractParameter)parameter).setPattern(pattern);
+							parameter.setPattern(pattern);
 						} else {
 							parameter.setSessionKey(name);
 							session.put(name, value);
