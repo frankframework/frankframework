@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2021, 2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -62,9 +62,11 @@ import org.frankframework.util.XmlBuilder;
 public class LdapFindGroupMembershipsPipe extends AbstractLdapQueryPipe implements ICacheEnabled<String,Set<String>> {
 
 	private @Getter boolean recursiveSearch = true;
+	private @Getter int maxRecursion = 5;
+	private @Getter String recursionFilter = "";
 
-	private LdapClient ldapClient;
-	private ICache<String, Set<String>> cache;
+    private LdapClient ldapClient;
+    private ICache<String, Set<String>> cache;
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -132,13 +134,12 @@ public class LdapFindGroupMembershipsPipe extends AbstractLdapQueryPipe implemen
 	}
 
 	public Set<String> searchRecursivelyViaAttributes(String searchedDN) throws NamingException {
-		return ldapClient.searchRecursivelyViaAttributes(searchedDN, getBaseDN(), "memberOf");
+		return ldapClient.searchRecursivelyViaAttributes(searchedDN, getBaseDN(), "memberOf", maxRecursion, recursionFilter);
 	}
 
 	public Set<String> searchObjectForMultiValuedAttribute(String searchedDN) throws NamingException {
 		return ldapClient.searchObjectForMultiValuedAttribute(searchedDN, getBaseDN(), "memberOf");
 	}
-
 
 	@Override
 	public void setCache(ICache<String, Set<String>> cache) {
@@ -156,5 +157,21 @@ public class LdapFindGroupMembershipsPipe extends AbstractLdapQueryPipe implemen
 	public void setRecursiveSearch(boolean b) {
 		recursiveSearch = b;
 	}
+
+	/**
+	 * Max recursion search depth. Set to {@literal 0} to have no limit on recursion-depth for recursive search.
+	 *
+	 * @ff.default 5
+	 */
+    public void setMaxRecursion(int i) {
+        maxRecursion = i;
+    }
+
+	/**
+	 * Recursion filter. If set, only search recursively into groups whose name equals or contains as substring the recursionFilter.
+	 */
+    public void setRecursionFilter(String r){
+        recursionFilter = r;
+    }
 
 }
