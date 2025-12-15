@@ -88,7 +88,7 @@ public class FileUtils {
 		// resolve the parameters
 		ParameterValueList pvl = pl.getValues(null, session);
 
-		return pvl.get("__filename").getValue().toString();
+		return pvl.get("__filename").asStringValue();
 	}
 
 	public static String getFilename(ParameterList definedParameters, PipeLineSession session, File originalFile, String filenamePattern) throws ParameterException {

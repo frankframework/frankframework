@@ -251,7 +251,7 @@ class IbisLocalSenderTest {
 			assertAll(
 				() -> assertEquals("parameter1-value", result.getResult().asString()),
 				() -> assertTrue(session.containsKey("my-parameter1"), "After request the pipeline-session should contain key [my-parameter1]"),
-				() -> assertEquals("parameter1-value", session.get("my-parameter1")),
+				() -> assertEquals("parameter1-value", session.get("my-parameter1", null)),
 				() -> assertFalse(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should not contain key [this-doesnt-exist]"),
 				() -> assertTrue(session.containsKey("key-not-configured-for-copy"), "Session should contain key 'key-not-configured-for-copy' b/c all keys should be copied")
 			);
@@ -286,7 +286,7 @@ class IbisLocalSenderTest {
 				() -> assertNotEquals(originalMid, result.getResult().asString()),
 				() -> assertEquals(originalMid, session.get(PipeLineSession.MESSAGE_ID_KEY)),
 				() -> assertTrue(session.containsKey("my-parameter1"), "After request the pipeline-session should contain key [my-parameter1]"),
-				() -> assertEquals("parameter1-value", session.get("my-parameter1")),
+				() -> assertEquals("parameter1-value", session.get("my-parameter1", null)),
 				() -> assertFalse(session.containsKey("this-doesnt-exist"), "After request the pipeline-session should not contain key [this-doesnt-exist]"),
 				() -> assertTrue(session.containsKey("key-not-configured-for-copy"), "Session should contain key 'key-not-configured-for-copy' b/c all keys should be copied")
 			);
@@ -578,6 +578,7 @@ class IbisLocalSenderTest {
 			session.put("key-not-configured-for-copy", "dummy-value");
 			session.put("key-to-copy", "dummy-value");
 			session.put(PipeLineSession.ORIGINAL_MESSAGE_KEY, message);
+			session.put(PipeLineSession.EXIT_CODE_CONTEXT_KEY, session.getInteger(PipeLineSession.EXIT_CODE_CONTEXT_KEY));
 			try {
 				return session.getMessage(message.asString());
 			} catch (IOException e) {

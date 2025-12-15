@@ -17,6 +17,7 @@ package org.frankframework.pipes;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
@@ -45,6 +46,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.Category;
 import org.frankframework.parameters.ParameterList;
+import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
@@ -102,8 +104,8 @@ public class JwtPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Builder claimsSetBuilder = new JWTClaimsSet.Builder();
 
-		Map<String, Object> parameterMap = getParameterValueMap(message, session);
-		Object sharedSecretParam = parameterMap.remove(SHARED_SECRET_PARAMETER_NAME); //Remove the SharedKey, else it will be added as a JWT Claim
+		Map<String, Object> parameterMap = getSanitizedParameterValueMap(message, session);
+		Object sharedSecretParam = parameterMap.remove(SHARED_SECRET_PARAMETER_NAME); // Remove the SharedKey, else it will be added as a JWT Claim
 		parameterMap.forEach(claimsSetBuilder::claim);
 
 		if (expirationTime > 0) {
@@ -135,7 +137,7 @@ public class JwtPipe extends FixedForwardPipe {
 		return globalSigner;
 	}
 
-	private @Nonnull Map<String, Object> getParameterValueMap(Message message, PipeLineSession session) throws PipeRunException {
+	private @Nonnull Map<String, Object> getSanitizedParameterValueMap(Message message, PipeLineSession session) throws PipeRunException {
 		ParameterList parameterList = getParameterList();
 		ParameterValueList pvl;
 		try {
@@ -143,7 +145,19 @@ public class JwtPipe extends FixedForwardPipe {
 		} catch (ParameterException e) {
 			throw new PipeRunException(this, "unable to resolve parameters", e);
 		}
-		return pvl.getValueMap();
+		Map<String, Object> sanitized = new HashMap<>();
+		for (ParameterValue pv : pvl) {
+			if (pv.getValue() instanceof Message msg) {
+				try {
+					sanitized.put(pv.getName(), msg.asString());
+				} catch (IOException e) {
+					throw new PipeRunException(this, "unable to read parameter value", e);
+				}
+			} else {
+				sanitized.put(pv.getName(), pv.getValue());
+			}
+		}
+		return sanitized;
 	}
 
 	private @Nonnull String createAndSignJwtToken(@Nonnull JWSSigner signer, @Nonnull JWTClaimsSet claims) throws PipeRunException {

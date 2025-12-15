@@ -2,40 +2,36 @@ package org.frankframework.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.ArrayList;
+import java.io.StringReader;
 
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.PipeRunResult;
+import org.frankframework.stream.Message;
+import org.frankframework.util.XmlUtils;
 
-/**
-* SizePipe Tester.
-*
-* @author <Sina Sen>
-*/
 public class SizePipeTest extends PipeTestBase<SizePipe>{
-
-
-	/**
-	 *
-	 * Method: doPipe(Object input, PipeLineSession session)
-	 *
-	 */
-	@Test
-	void testDoPipeSuccess() throws Exception {
-		PipeRunResult res = doPipe(pipe, "abcsd", session);
-		assertEquals("5", res.getResult().asString());
-	}
-
-	@Test
-	void testDoPipeFail() throws Exception {
-		ArrayList<String> arr = new ArrayList<>();
-		PipeRunResult res = doPipe(pipe, arr, session);
-		assertEquals("-1", res.getResult().asString());
-	}
 
 	@Override
 	public SizePipe createPipe() {
 		return new SizePipe();
+	}
+
+	@Test
+	void testDoPipeSuccess() throws Exception {
+		PipeRunResult res = doPipe("abcsd");
+		assertEquals("5", res.getResult().asString());
+	}
+
+	@Test
+	void testNullMessage() throws Exception {
+		PipeRunResult res = doPipe(Message.nullMessage());
+		assertEquals("0", res.getResult().asString());
+	}
+
+	@Test
+	void testDomDocumentMessage() throws Exception {
+		PipeRunResult res = doPipe(new Message(XmlUtils.buildDomDocument(new StringReader("<root/>"))));
+		assertEquals("-1", res.getResult().asString());
 	}
 }

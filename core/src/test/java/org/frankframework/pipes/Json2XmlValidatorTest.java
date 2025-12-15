@@ -34,6 +34,7 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.UrlMessage;
+import org.frankframework.testutil.NumberParameterBuilder;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
 
@@ -755,6 +756,29 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 
 		String input    = "{  }";
 		String expected = TestFileUtils.getTestFile("/Align/Options/singleValueInArray.xml");
+
+		PipeRunResult prr = doPipe(pipe, input,session);
+
+		String actualXml = prr.getResult().asString();
+
+		assertXmlEquals("converted XML does not match", expected, actualXml, true);
+	}
+
+	@Test
+	public void testSingleValueInArrayNumberParam() throws Exception {
+		pipe.setName("testMultivaluedParameters");
+		pipe.setSchema("/Align/Options/options.xsd");
+		pipe.setRoot("Options");
+		pipe.setThrowException(true);
+
+		pipe.addParameter(NumberParameterBuilder.create("intArray", 44));
+
+		pipe.configure();
+		pipe.start();
+
+		String input    = "{  }";
+		String expected = TestFileUtils.getTestFile("/Align/Options/singleValueInArray.xml");
+
 
 		PipeRunResult prr = doPipe(pipe, input,session);
 
