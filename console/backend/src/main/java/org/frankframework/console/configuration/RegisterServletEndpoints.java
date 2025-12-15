@@ -22,6 +22,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
 
 import org.frankframework.console.ConsoleFrontend;
@@ -50,7 +51,9 @@ public class RegisterServletEndpoints implements ApplicationContextAware {
 		servletConfiguration.setLoadOnStartup(1);
 		servletConfiguration.loadProperties();
 
-		ServletRegistration<DispatcherServlet> servlet = new ServletRegistration<>(DispatcherServlet.class, servletConfiguration);
+		DispatcherServlet ds = new DispatcherServlet((WebApplicationContext) applicationContext);
+		ds.setDetectAllHandlerMappings(false);
+		ServletRegistration<DispatcherServlet> servlet = new ServletRegistration<>(ds, servletConfiguration);
 		servlet.setMultipartConfig(new MultipartConfigElement(""));
 		servlet.setAsyncSupported(true);
 		return servlet;

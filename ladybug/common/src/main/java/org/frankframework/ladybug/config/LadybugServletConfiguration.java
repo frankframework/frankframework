@@ -15,13 +15,16 @@
 */
 package org.frankframework.ladybug.config;
 
+import jakarta.servlet.MultipartConfigElement;
+
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.context.WebApplicationContext;
+import org.springframework.web.servlet.DispatcherServlet;
 import org.wearefrank.ladybug.web.FrontendServlet;
-import org.wearefrank.ladybug.web.jaxrs.ApiServlet;
 
 import org.frankframework.condition.ConditionalOnAppConstants;
 import org.frankframework.lifecycle.DynamicRegistration;
@@ -41,16 +44,25 @@ public class LadybugServletConfiguration implements ApplicationContextAware {
 	}
 
 	@Bean
-	public ServletRegistration<ApiServlet> ladybugApiServletBean() {
+	public ServletRegistration<DispatcherServlet> backendServletBean() {
 		ServletConfiguration servletConfiguration = SpringUtils.createBean(applicationContext);
-		servletConfiguration.setUrlMapping("/iaf" + ApiServlet.getDefaultMapping());
+		servletConfiguration.setName("Ladybug-Backend");
+		servletConfiguration.setUrlMapping("/iaf/ladybug/api/*");
 		servletConfiguration.setSecurityRoles(DynamicRegistration.ALL_IBIS_USER_ROLES);
-		ApiServlet.getDefaultInitParameters().forEach(servletConfiguration::addInitParameter);
-		servletConfiguration.setName("Ladybug-ApiServlet");
 		servletConfiguration.setLoadOnStartup(0);
 		servletConfiguration.loadProperties();
 
-		return new ServletRegistration<>(ApiServlet.class, servletConfiguration);
+		DispatcherServlet ds = new DispatcherServlet((WebApplicationContext) applicationContext);
+		ds.setDetectAllHandlerMappings(false);
+		ServletRegistration<DispatcherServlet> servlet = new ServletRegistration<>(ds, servletConfiguration);
+		servlet.setMultipartConfig(new MultipartConfigElement(""));
+		servlet.setAsyncSupported(true);
+		return servlet;
+	}
+
+	private DispatcherServlet createDispatcherServlet() {
+		DispatcherServlet servlet = new DispatcherServlet((WebApplicationContext) applicationContext);
+		return servlet;
 	}
 
 	@Bean
@@ -58,7 +70,7 @@ public class LadybugServletConfiguration implements ApplicationContextAware {
 		ServletConfiguration servletConfiguration = SpringUtils.createBean(applicationContext);
 		servletConfiguration.setUrlMapping("/iaf" + FrontendServlet.getDefaultMapping());
 		servletConfiguration.setSecurityRoles(DynamicRegistration.ALL_IBIS_USER_ROLES);
-		servletConfiguration.setName("Ladybug-FrontendServlet");
+		servletConfiguration.setName("Ladybug-Frontend");
 		servletConfiguration.setLoadOnStartup(0);
 		servletConfiguration.loadProperties();
 

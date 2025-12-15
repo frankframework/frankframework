@@ -51,11 +51,19 @@ public class ServletRegistration<T extends HttpServlet> extends ServletRegistrat
 		this.servletConfiguration = config;
 	}
 
+	public ServletRegistration(T servlet, ServletConfiguration config) {
+		this.servletClass = null;
+		this.servletConfiguration = config;
+		super.setServlet(servlet);
+	}
+
 	@Override
 	public void afterPropertiesSet() {
 		authenticator = applicationContext.getBean(IAuthenticator.class); // Cannot use Autowired here, as it needs to look in the local BeanFactory first.
 
-		T servlet = SpringUtils.createBean(applicationContext, servletClass);
+		if (servletClass != null) {
+			super.setServlet(SpringUtils.createBean(applicationContext, servletClass));
+		}
 		log.info("registering servlet [{}]", servletConfiguration::getName);
 
 		Map<String, String> initParams = servletConfiguration.getInitParameters();
@@ -68,7 +76,6 @@ public class ServletRegistration<T extends HttpServlet> extends ServletRegistrat
 		addUrlMappings(servletConfiguration.getUrlMapping());
 		setEnabled(servletConfiguration.isEnabled());
 		setLoadOnStartup(servletConfiguration.getLoadOnStartup());
-		super.setServlet(servlet);
 
 		log.info("created servlet {} with endpoint {} using authenticator {}", this::getServletName, this::getUrlMappings, () -> ClassUtils.classNameOf(authenticator));
 	}
