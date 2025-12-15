@@ -332,7 +332,7 @@ public class ScenarioRunner {
 	private int executeActionReadStep(Scenario scenario, Step step, LarvaScenarioAction scenarioAction, String fileName, Message expected) {
 		String actionName = step.getActionTarget();
 		try {
-			Message message = scenarioAction.executeRead(step.getStepParameters()); // cannot close this message because of FrankSender (JSON scenario02)
+			Message message = scenarioAction.executeRead(step.getStepParameters());
 			if (message == null) {
 				if (StringUtils.isEmpty(fileName)) {
 					return LarvaTool.RESULT_OK;
