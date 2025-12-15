@@ -986,6 +986,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 	 * When combining a date or time <code>pattern</code> like {now} or {fixeddate} with a DATE, TIME, DATETIME or TIMESTAMP <code>type</code>, the effective value of the attribute
 	 * <code>formatString</code> must match the effective value of the formatString in the <code>pattern</code>.
 	 */
+	@Override
 	public void setPattern(String string) {
 		pattern = string;
 	}

@@ -55,7 +55,6 @@ import org.frankframework.util.MessageUtils;
 import org.frankframework.util.TimeProvider;
 import org.frankframework.util.XmlUtils;
 
-@SuppressWarnings("removal")
 @Isolated("Tests manipulate current time, so should not be run concurrently with other tests")
 public class ParameterTest {
 

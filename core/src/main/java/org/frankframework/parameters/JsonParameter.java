@@ -31,7 +31,7 @@ import org.frankframework.util.XmlException;
  * If the derived value of the parameter was neither XML nor JSON format then a JSON will be constructed that looks like
  * {@code {"paramName":value}}. (The value will be quoted if it was not a number or boolean value).
  */
-public class JsonParameter extends Parameter {
+public class JsonParameter extends AbstractParameter<Message> {
 
 	public JsonParameter() {
 		setType(ParameterType.JSON);
