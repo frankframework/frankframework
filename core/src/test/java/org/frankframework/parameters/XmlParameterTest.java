@@ -21,10 +21,10 @@ import org.w3c.dom.Node;
 
 import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLine;
+import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
-import org.frankframework.core.PipeLine.ExitState;
 import org.frankframework.parameters.XmlParameter.XmlType;
 import org.frankframework.pipes.PutInSessionPipe;
 import org.frankframework.processors.CorePipeLineProcessor;
