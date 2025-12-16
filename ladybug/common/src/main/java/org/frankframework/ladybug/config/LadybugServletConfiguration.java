@@ -44,7 +44,7 @@ public class LadybugServletConfiguration implements ApplicationContextAware {
 	}
 
 	@Bean
-	public ServletRegistration<DispatcherServlet> backendServletBean() {
+	public ServletRegistration<DispatcherServlet> ladybugApiServletBean() {
 		ServletConfiguration servletConfiguration = SpringUtils.createBean(applicationContext);
 		servletConfiguration.setName("Ladybug-Backend");
 		servletConfiguration.setUrlMapping("/iaf/ladybug/api/*");

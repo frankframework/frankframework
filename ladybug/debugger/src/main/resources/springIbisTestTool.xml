@@ -16,7 +16,7 @@
 	<!-- enable (AppConstants) properties -->
 	<context:property-placeholder/>
 
-	<bean id="ladybugHandlerMapping" class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" />
+	<bean id="handlerMapping" class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" />
 	<bean id="integrationConversionService" class="org.springframework.core.convert.support.DefaultConversionService" />
 
 	<!-- disables the spring boot auto-configure 'wire all filters automatically' magic -->
