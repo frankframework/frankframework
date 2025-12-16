@@ -1,5 +1,6 @@
 package org.frankframework.pipes;
 
+import static org.frankframework.testutil.MatchUtils.assertJsonEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -14,7 +15,6 @@ import org.frankframework.parameters.JsonParameter;
 import org.frankframework.senders.EchoSender;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.DateParameterBuilder;
-import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.NumberParameterBuilder;
 import org.frankframework.testutil.ParameterBuilder;
 
@@ -142,13 +142,51 @@ public class DataSonnetPipeTest extends PipeTestBase<DataSonnetPipe> {
 
 		// Assert
 		assertEquals(MediaType.APPLICATION_JSON, result.getContext().getMimeType());
-		MatchUtils.assertJsonEquals("""
+		assertJsonEquals("""
 				[
 					{"string":"101","boolean":"true","number":"1"},
 					{"string":"102","boolean":"true","number":"2"},
 					{"string":"103","boolean":"true","number":"3"},
 					{"string":"104","boolean":"true","number":"4"}
 				]""", result.asString());
+	}
+
+	@Test
+	public void callSenderObjArg() throws Exception {
+		// Arrange
+		pipe.setStyleSheetName("/Pipes/DataSonnet/call-sender-one-arg-simple.jsonnet");
+
+		EchoSender sender = new EchoSender();
+		sender.setName("testName");
+		pipe.addSender(sender);
+
+		configureAndStartPipe();
+
+		String inputJson = """
+				{
+				  "n1": 10,
+				  "s1": "string data",
+				  "obj1": {
+				    "n2": 2,
+				    "s2": "string from nested object"
+				  }
+				}
+				""";
+		Message input = new Message(inputJson);
+		input.getContext().withMimeType(MediaType.APPLICATION_JSON);
+
+		// Act
+		Message result = doPipe(input).getResult();
+
+		// Assert
+		assertEquals(MediaType.APPLICATION_JSON, result.getContext().getMimeType());
+		String expectedResult = """
+				{
+				  "senderCall": %s
+				}
+				""".formatted(inputJson);
+
+		assertJsonEquals(expectedResult, result.asString());
 	}
 
 	@Test

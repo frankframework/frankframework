@@ -36,13 +36,20 @@ import com.datasonnet.document.Document;
 import com.datasonnet.document.MediaType;
 import com.datasonnet.document.MediaTypes;
 import com.datasonnet.header.Header;
+import com.datasonnet.jsonnet.EvalScope;
+import com.datasonnet.jsonnet.Expr;
+import com.datasonnet.jsonnet.FileScope;
+import com.datasonnet.jsonnet.Path;
 import com.datasonnet.jsonnet.Val;
 import com.datasonnet.jsonnet.Val.Func;
 import com.datasonnet.jsonnet.Val.Obj;
+import com.datasonnet.jsonnet.ValScope;
 import com.datasonnet.spi.DataFormatService;
 import com.datasonnet.spi.Library;
 
 import lombok.extern.log4j.Log4j2;
+import scala.Option;
+import ujson.Value;
 
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
@@ -130,9 +137,73 @@ public class DataSonnetUtil {
 				return String.valueOf((long) number.value());
 			} else if (value instanceof Val.Str stringValue) {
 				return stringValue.value();
+			} else if (value instanceof Val.Obj objectValue) {
+				String someResult = com.datasonnet.jsonnet.Materializer.stringify(value, new DummyEvaluator());
+
+				String someToString = objectValue.toString();
+
+				return someResult;
 			} else {
 				throw new IllegalArgumentException("currently only supports numbers, booleans and string inputs, got: " + value.getClass());
 			}
+		}
+	}
+
+	private static class DummyEvaluator implements EvalScope {
+
+		@Override
+		public void com$datasonnet$jsonnet$EvalScope$_setter_$emptyMaterializeFileScope_$eq(FileScope x$1) {
+
+		}
+
+		@Override
+		public void com$datasonnet$jsonnet$EvalScope$_setter_$preserveOrder_$eq(boolean x$1) {
+
+		}
+
+		@Override
+		public void com$datasonnet$jsonnet$EvalScope$_setter_$defaultValue_$eq(Value x$1) {
+
+		}
+
+		@Override
+		public Val visitExpr(Expr expr, ValScope scope, FileScope fileScope) {
+			return null;
+		}
+
+		@Override
+		public Value materialize(Val v) {
+			return null;
+		}
+
+		@Override
+		public FileScope emptyMaterializeFileScope() {
+			return null;
+		}
+
+		@Override
+		public boolean preserveOrder() {
+			return false;
+		}
+
+		@Override
+		public Value defaultValue() {
+			return null;
+		}
+
+		@Override
+		public scala.collection.immutable.Map<String, Value> extVars() {
+			return null;
+		}
+
+		@Override
+		public Option<String> loadCachedSource(Path p) {
+			return null;
+		}
+
+		@Override
+		public Path wd() {
+			return null;
 		}
 	}
 
