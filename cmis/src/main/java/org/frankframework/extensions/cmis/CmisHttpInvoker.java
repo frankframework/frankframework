@@ -130,17 +130,13 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 				sender.setIgnoreCertificateExpiredException(isIgnoreCertificateExpiredException);
 			}
 
-			//Add parameters
-			Parameter parameter = new Parameter();
-			parameter.setName("writer");
-			parameter.setSessionKey("writer");
-			sender.addParameter(parameter);
+			// Add parameters
 			Parameter urlParam = new Parameter();
 			urlParam.setName("url");
 			urlParam.setSessionKey("url");
 			sender.addParameter(urlParam);
 
-			// timeouts
+			// Timeouts
 			int timeout = session.get(SessionParameter.READ_TIMEOUT, -1);
 			if (timeout >= 0) {
 				sender.setTimeout(timeout);

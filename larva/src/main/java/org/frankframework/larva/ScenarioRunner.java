@@ -38,7 +38,6 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.TimeoutException;
 import org.frankframework.larva.actions.LarvaActionFactory;
-import org.frankframework.larva.actions.LarvaActionUtils;
 import org.frankframework.larva.actions.LarvaScenarioAction;
 import org.frankframework.larva.actions.LarvaScenarioContext;
 import org.frankframework.larva.output.TestExecutionObserver;
@@ -306,14 +305,7 @@ public class ScenarioRunner {
 		if (executeRead) {
 			return executeActionReadStep(scenario, step, scenarioAction, fileName, fileContent);
 		} else {
-			// TODO: Perhaps we can use these parameters as a general mechanism to provide parameter values to senders, or populate a PipeLineSession? (see https://github.com/frankframework/frankframework/issues/5967)
-			Map<String, Object> xsltParameters;
-			if (actionIsXsltProviderListener) {
-				xsltParameters = LarvaActionUtils.createParametersMapFromParamProperties(step.getStepParameters());
-			} else {
-				xsltParameters = null;
-			}
-			return executeActionWriteStep(scenario, step, scenarioAction, fileContent, correlationId, xsltParameters);
+			return executeActionWriteStep(scenario, step, scenarioAction, fileContent, correlationId);
 		}
 	}
 
@@ -322,10 +314,10 @@ public class ScenarioRunner {
 		return "org.frankframework.larva.XsltProviderListener".equals(actionFactoryClassname);
 	}
 
-	private int executeActionWriteStep(Scenario scenario, Step step, LarvaScenarioAction scenarioAction, Message fileContent, String correlationId, Map<String, Object> xsltParameters) {
+	private int executeActionWriteStep(Scenario scenario, Step step, LarvaScenarioAction scenarioAction, Message fileContent, String correlationId) {
 		String actionName = step.getActionTarget();
 		try {
-			scenarioAction.executeWrite(fileContent, correlationId, xsltParameters);
+			scenarioAction.executeWrite(fileContent, correlationId, step.getStepParameters());
 			testExecutionObserver.stepMessage(scenario, step, "Successfully wrote message to '" + actionName + "':", larvaTool.messageToString(fileContent));
 			log.debug("Successfully wrote message to '{}'", actionName);
 			return LarvaTool.RESULT_OK;
@@ -340,7 +332,7 @@ public class ScenarioRunner {
 	private int executeActionReadStep(Scenario scenario, Step step, LarvaScenarioAction scenarioAction, String fileName, Message expected) {
 		String actionName = step.getActionTarget();
 		try {
-			Message message = scenarioAction.executeRead(scenario.getProperties()); // cannot close this message because of FrankSender (JSON scenario02)
+			Message message = scenarioAction.executeRead(step.getStepParameters());
 			if (message == null) {
 				if (StringUtils.isEmpty(fileName)) {
 					return LarvaTool.RESULT_OK;

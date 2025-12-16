@@ -68,11 +68,13 @@ import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.lifecycle.events.AdapterMessageEvent;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
+import org.frankframework.parameters.ParameterValue;
 import org.frankframework.processors.PipeProcessor;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.statistics.FrankMeterType;
 import org.frankframework.statistics.MetricsInitializer;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.UrlMessage;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.ClassUtils;
@@ -522,7 +524,11 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 	private Message loadMessageFromClasspathResource(final String stubFileName) {
 		Message result;
 		try {
-			result = new Message(StreamUtil.resourceToString(ClassLoaderUtils.getResourceURL(this, stubFileName), Misc.LINE_SEPARATOR));
+			URL filename = ClassLoaderUtils.getResourceURL(this, stubFileName);
+			if (filename == null) {
+				throw new PipeRunException(this, "unable to find [" + stubFileName + "]");
+			}
+			result = new UrlMessage(filename);
 		} catch (Throwable e) {
 			throw new PipeRunException(this, "got exception loading result from stub [" + stubFileName + "]", e);
 		}
@@ -531,13 +537,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 
 	private Optional<String> getStubFilename(final Message input, final PipeLineSession session) throws PipeRunException {
 		ParameterList pl = getParameterList();
-		Map<String, Object> params;
 		try {
-			params = pl.getValues(input, session).getValueMap();
+			ParameterValue pv = pl.getValues(input, session).get(STUBFILENAME);
+			return pv != null ? Optional.ofNullable(pv.asStringValue()) : Optional.empty();
 		} catch (ParameterException e1) {
 			throw new PipeRunException(this, "got exception evaluating parameters", e1);
 		}
-		return !params.isEmpty() ? Optional.ofNullable((String) params.get(STUBFILENAME)) : Optional.empty();
 	}
 
 	private PipeRunResult preProcessInput(Message input, PipeLineSession session) throws PipeRunException {

@@ -46,6 +46,28 @@ public class DateParameterTest {
 		TimeProvider.resetClock();
 	}
 
+	@Test
+	public void testMaxLength() throws ConfigurationException, ParameterException {
+		String input = "2022-01-23 12:01:02.003";
+
+		DateParameter parameter = new DateParameter();
+		parameter.setName("InputMessage");
+		parameter.setValue(input);
+		parameter.setFormatType(DateFormatType.DATE);
+		parameter.setMaxLength(10);
+		parameter.configure();
+
+		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
+		Message message = new Message("fakeMessage");
+
+		Object result = parameter.getValue(alreadyResolvedParameters, message, null, true);
+
+		assertInstanceOf(Date.class, result);
+		assertEquals("2022-01-23 00:00:00.000", DateFormatUtils.format((Date) result));
+
+		assertFalse(parameter.requiresInputValueForResolution());
+	}
+
 	protected void testFromStringToDateType(String input, String expected, DateFormatType type) throws ConfigurationException, ParameterException {
 		DateParameter parameter = new DateParameter();
 		parameter.setName("InputMessage");

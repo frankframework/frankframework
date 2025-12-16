@@ -21,6 +21,7 @@ import org.frankframework.senders.EchoSender;
 import org.frankframework.soap.SoapWrapperPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.MessageTestUtils;
+import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestFileUtils;
 
 public class MessageSendingPipeTest extends PipeTestBase<MessageSendingPipe> {
@@ -119,5 +120,29 @@ public class MessageSendingPipeTest extends PipeTestBase<MessageSendingPipe> {
 		PipeRunResult prr = doPipe(input);
 		Assertions.assertEquals("success", prr.getPipeForward().getName());
 		assertXmlEquals("response converted", expected, prr.getResult().asString(),true);
+	}
+
+	@Test
+	public void testStubFileAsAttribute() throws Exception {
+		pipe.setStubFilename("file.xml");
+		pipe.setPipeProcessor(new CorePipeProcessor());
+		configureAndStartPipe();
+
+		PipeRunResult prr = doPipe(Message.nullMessage());
+		Assertions.assertEquals("success", prr.getPipeForward().getName());
+		Assertions.assertEquals("<file>in root of classpath</file>", prr.getResult().asString());
+	}
+
+	@Test
+	public void testStubFileAsParameter() throws Exception {
+		pipe.setStubFilename("test1.xml"); // unused but should resolve to a file... sigh.
+		pipe.addParameter(ParameterBuilder.create().withName("stubFilename").withSessionKey("stubstub"));
+		session.put("stubstub", new Message("file.xml"));
+		pipe.setPipeProcessor(new CorePipeProcessor());
+		configureAndStartPipe();
+
+		PipeRunResult prr = doPipe(Message.nullMessage());
+		Assertions.assertEquals("success", prr.getPipeForward().getName());
+		Assertions.assertEquals("<file>in root of classpath</file>", prr.getResult().asString());
 	}
 }

@@ -45,6 +45,8 @@ public interface IParameter extends IConfigurable, FrankElement, NameAware {
 	 */
 	void setSessionKey(String sessionKey);
 
+	void setPattern(String string);
+
 	String getSessionKey();
 
 	/** The value of the parameter, or the base for transformation using xpathExpression or stylesheet, or formatting. */
