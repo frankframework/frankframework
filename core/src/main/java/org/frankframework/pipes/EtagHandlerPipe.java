@@ -17,6 +17,8 @@ package org.frankframework.pipes;
 
 import java.io.IOException;
 
+import jakarta.annotation.Nonnull;
+
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -78,6 +80,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 		cache = ApiCacheManager.getInstance();
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (message==null) {

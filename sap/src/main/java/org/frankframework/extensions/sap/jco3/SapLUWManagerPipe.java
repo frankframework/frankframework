@@ -15,6 +15,8 @@
 */
 package org.frankframework.extensions.sap.jco3;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.sap.conn.jco.JCoException;
@@ -96,6 +98,7 @@ public class SapLUWManagerPipe extends FixedForwardPipe {
 		sapSystem.closeSystem();
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (getAction().equalsIgnoreCase(ACTION_BEGIN)) {

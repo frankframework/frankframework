@@ -15,6 +15,8 @@
 */
 package org.frankframework.pipes;
 
+import jakarta.annotation.Nonnull;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -32,6 +34,7 @@ public class DelayPipe extends FixedForwardPipe {
 
 	private long delayTime=5000;
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe (Message message, PipeLineSession session) throws PipeRunException {
 		try {

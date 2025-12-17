@@ -100,6 +100,7 @@ public class JwtPipe extends FixedForwardPipe {
 		}
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Builder claimsSetBuilder = new JWTClaimsSet.Builder();

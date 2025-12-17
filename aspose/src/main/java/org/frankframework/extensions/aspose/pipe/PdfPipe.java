@@ -21,6 +21,8 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
 
@@ -129,6 +131,7 @@ public class PdfPipe extends FixedForwardPipe {
 		cisConversionService = new CisConversionServiceImpl(configuration);
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
 		// message should always be available.

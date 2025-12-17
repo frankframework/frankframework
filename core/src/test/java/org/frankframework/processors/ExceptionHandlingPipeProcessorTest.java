@@ -223,6 +223,7 @@ public class ExceptionHandlingPipeProcessorTest extends PipeProcessorTestBase {
 
 	private static class ThrowExceptionPipe extends AbstractPipe {
 
+		@Nonnull
 		@Override
 		public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 			try {

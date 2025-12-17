@@ -17,6 +17,8 @@ package org.frankframework.pipes;
 
 import java.io.IOException;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 
@@ -65,6 +67,7 @@ public class EscapePipe extends FixedForwardPipe {
 		}
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String input;

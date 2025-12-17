@@ -21,6 +21,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -86,6 +88,7 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 	 *
 	 * @see IPipe#doPipe(Message, PipeLineSession)
 	 */
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
 		if (input==null) {

@@ -30,7 +30,9 @@ import org.frankframework.stream.Message;
  */
 public interface PipeProcessor {
 
+	@Nonnull
 	PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException;
+	@Nonnull
 	PipeRunResult validate(@Nonnull PipeLine pipeLine, @Nonnull IValidator validator, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException;
 
 }

@@ -15,6 +15,8 @@
 */
 package org.frankframework.core;
 
+import jakarta.annotation.Nonnull;
+
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
@@ -31,6 +33,7 @@ import org.frankframework.stream.Message;
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.VALIDATOR)
 public interface IValidator extends IPipe {
 
+	@Nonnull
 	PipeRunResult validate(Message message, PipeLineSession session, String messageRoot) throws PipeRunException;
 
 	/** The functional name of this pipe, is not required when used as a Validator */

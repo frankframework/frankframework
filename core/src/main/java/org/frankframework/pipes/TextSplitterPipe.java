@@ -16,6 +16,8 @@
 package org.frankframework.pipes;
 
 
+import jakarta.annotation.Nonnull;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -34,6 +36,7 @@ public class TextSplitterPipe extends FixedForwardPipe {
 	private int maxBlockLength=160;
 	private boolean softSplit = false;
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (Message.isNull(message) || message.isEmpty()) {

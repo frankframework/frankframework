@@ -18,6 +18,8 @@ package org.frankframework.extensions.aspose.pipe;
 import java.io.IOException;
 import java.io.InputStream;
 
+import jakarta.annotation.Nonnull;
+
 import com.aspose.pdf.Document;
 import com.aspose.pdf.exceptions.InvalidPasswordException;
 
@@ -40,6 +42,7 @@ import org.frankframework.stream.Message;
 public class AmountOfPagesPipe extends FixedForwardPipe {
 	private String charset = null;
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
 		int result = 0;

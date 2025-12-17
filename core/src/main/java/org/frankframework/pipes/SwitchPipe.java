@@ -18,6 +18,8 @@ package org.frankframework.pipes;
 import java.io.IOException;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
@@ -126,6 +128,7 @@ public class SwitchPipe extends AbstractPipe {
 	 * `weblogic.xerces` the transformer gets corrupt, on an exception the configuration is done again, so that the
 	 * transformer is re-initialized.
 	 */
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String forward = getForwardName(message, session);

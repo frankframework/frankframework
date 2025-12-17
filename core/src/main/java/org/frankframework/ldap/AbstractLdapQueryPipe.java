@@ -15,6 +15,8 @@
  */
 package org.frankframework.ldap;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -76,6 +78,7 @@ public abstract class AbstractLdapQueryPipe extends FixedForwardPipe {
 		}
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (exceptionForward != null) {

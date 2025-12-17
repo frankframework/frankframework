@@ -18,6 +18,8 @@ package org.frankframework.cache;
 import java.io.IOException;
 import java.io.Serializable;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import net.sf.ehcache.Cache;
@@ -54,6 +56,7 @@ public class RemoveCacheKeyPipe extends FixedForwardPipe {
 		ibisCacheManager = IbisCacheManager.getInstance();
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {

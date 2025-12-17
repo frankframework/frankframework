@@ -17,6 +17,8 @@ package org.frankframework.pipes;
 
 import java.io.IOException;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.ConfigurationWarning;
@@ -45,6 +47,7 @@ import org.frankframework.stream.Message;
 public class XmlIf extends IfPipe {
 	private String regex = null;
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (transformationNeeded()) {

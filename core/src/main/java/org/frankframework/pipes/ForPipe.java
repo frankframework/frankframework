@@ -18,6 +18,8 @@ package org.frankframework.pipes;
 
 import java.util.Optional;
 
+import jakarta.annotation.Nonnull;
+
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -92,6 +94,7 @@ public class ForPipe extends AbstractPipe {
 		}
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Integer stopAtValue = determineStopAtValue(message, session);

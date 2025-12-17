@@ -18,6 +18,8 @@ package org.frankframework.pipes;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import jakarta.annotation.Nonnull;
+
 import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.Adapter;
@@ -48,6 +50,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 		}
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String result = null;

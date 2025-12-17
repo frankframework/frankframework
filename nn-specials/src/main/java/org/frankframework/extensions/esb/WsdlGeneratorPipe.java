@@ -28,6 +28,7 @@ import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
@@ -65,6 +66,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 	private @Getter @Setter String filenameSessionKey = "fileName";
 	private @Getter @Setter String propertiesFileName = "wsdl.properties";
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Message fileInSession = session.getMessage(getSessionKey());

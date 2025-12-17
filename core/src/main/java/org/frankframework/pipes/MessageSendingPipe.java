@@ -325,6 +325,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		propagateName();
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(@Nonnull Message input, @Nonnull PipeLineSession session) throws PipeRunException {
 		Message originalMessage = null;

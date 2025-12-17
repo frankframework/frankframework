@@ -25,6 +25,8 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 
@@ -131,6 +133,7 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 	}
 
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {

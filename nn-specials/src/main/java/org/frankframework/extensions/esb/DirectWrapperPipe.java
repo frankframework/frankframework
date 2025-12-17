@@ -15,6 +15,8 @@
  */
 package org.frankframework.extensions.esb;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.core.ParameterException;
@@ -39,6 +41,7 @@ public class DirectWrapperPipe extends FixedForwardPipe {
 	protected static final String CMHVERSION = "cmhVersion";
 	protected static final String ADDOUTPUTNAMESPACE = "addOutputNamespace";
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		ParameterValueList pvl;

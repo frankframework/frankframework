@@ -18,6 +18,8 @@ package org.frankframework.pipes;
 import java.io.IOException;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -62,6 +64,7 @@ public class ExceptionPipe extends AbstractPipe {
 		}
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		ParameterValueList pvl;

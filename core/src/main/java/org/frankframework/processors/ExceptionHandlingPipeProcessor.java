@@ -33,6 +33,7 @@ import org.frankframework.stream.Message;
 @Log4j2
 public class ExceptionHandlingPipeProcessor extends AbstractPipeProcessor {
 
+	@Nonnull
 	@Override
 	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		try {

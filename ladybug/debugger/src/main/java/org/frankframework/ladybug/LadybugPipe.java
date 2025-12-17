@@ -23,6 +23,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
@@ -88,6 +90,7 @@ public class LadybugPipe extends FixedForwardPipe {
 		reportNameComparator = new ReportNameComparator();
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		XmlBuilder results = new XmlBuilder("Results");

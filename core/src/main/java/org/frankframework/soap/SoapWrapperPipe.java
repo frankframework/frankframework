@@ -19,6 +19,8 @@ import java.io.IOException;
 
 import javax.xml.transform.TransformerException;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
@@ -185,6 +187,7 @@ public class SoapWrapperPipe extends FixedForwardPipe implements IWrapperPipe {
 		}
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Message result;

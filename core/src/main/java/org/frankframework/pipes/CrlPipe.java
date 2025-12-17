@@ -25,6 +25,8 @@ import java.security.cert.X509CRL;
 import java.security.cert.X509CRLEntry;
 import java.security.cert.X509Certificate;
 
+import jakarta.annotation.Nonnull;
+
 import lombok.Getter;
 
 import org.frankframework.core.PipeLineSession;
@@ -74,6 +76,7 @@ import org.frankframework.util.XmlBuilder;
 public class CrlPipe extends FixedForwardPipe {
 	private @Getter String issuerSessionKey;
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		X509CRL crl;

@@ -18,6 +18,7 @@ package org.frankframework.pipes;
 import java.io.IOException;
 import java.io.Reader;
 
+import jakarta.annotation.Nonnull;
 import jakarta.json.Json;
 import jakarta.json.JsonException;
 import jakarta.json.JsonReader;
@@ -41,6 +42,7 @@ import org.frankframework.stream.Message;
 @EnterpriseIntegrationPattern(Type.VALIDATOR)
 public class JsonWellFormedCheckerPipe extends FixedForwardPipe {
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (Message.isEmpty(message)) {

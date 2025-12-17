@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -78,6 +80,7 @@ public class ZipWriterPipe extends AbstractCollectorPipe<ZipWriter, MessageZipEn
 		return new ZipWriter(includeFileHeaders, filename);
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
 		if(backwardsCompatibility) {

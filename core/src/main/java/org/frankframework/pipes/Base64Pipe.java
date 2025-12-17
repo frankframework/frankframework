@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.StringUtils;
 
@@ -79,6 +81,7 @@ public class Base64Pipe extends FixedForwardPipe {
 		lineSeparatorArray = separator.getBytes();
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		boolean directionEncode = getDirection() == Direction.ENCODE;// TRUE encode - FALSE decode

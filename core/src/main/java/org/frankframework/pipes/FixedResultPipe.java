@@ -20,6 +20,8 @@ import java.net.URL;
 
 import javax.xml.transform.TransformerException;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
@@ -268,6 +270,7 @@ public class FixedResultPipe extends FixedForwardPipe {
 		}
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Message resultMessage = null;

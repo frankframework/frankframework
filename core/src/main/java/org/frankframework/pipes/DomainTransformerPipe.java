@@ -21,6 +21,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.StringTokenizer;
 
+import jakarta.annotation.Nonnull;
+
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -102,6 +104,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		}
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message invoer, PipeLineSession session) throws PipeRunException {
 		StringBuilder builder = new StringBuilder();

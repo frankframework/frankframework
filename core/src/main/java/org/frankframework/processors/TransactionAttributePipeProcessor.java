@@ -44,6 +44,7 @@ public class TransactionAttributePipeProcessor extends AbstractPipeProcessor {
 
 	private @Getter @Setter PlatformTransactionManager txManager;
 
+	@Nonnull
 	@Override
 	protected PipeRunResult processPipe(@Nonnull PipeLine pipeline, @Nonnull IPipe pipe, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		TransactionDefinition txDef;

@@ -15,6 +15,7 @@
 */
 package org.frankframework.collection;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
@@ -75,6 +76,7 @@ public abstract class AbstractCollectorPipe<C extends ICollector<P>, P> extends 
 		}
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
 		try {

@@ -30,6 +30,8 @@ import java.util.Objects;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
 
@@ -156,6 +158,7 @@ public class UnzipPipe extends FixedForwardPipe {
 		}
 
 	}
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try (InputStream in = getInputStream(message, session)) {

@@ -18,6 +18,7 @@ package org.frankframework.core;
 import java.util.Collection;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.springframework.context.Lifecycle;
@@ -59,6 +60,7 @@ public interface IPipe extends IConfigurable, IForwardTarget, FrankElement, Name
 	 * to be handled by the caller of this object.
 	 * Implementations must either consume the message, or pass it on to the next Pipe in the PipeRunResult.
 	 */
+	@Nonnull
 	PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException;
 
 	/**

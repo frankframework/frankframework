@@ -15,6 +15,8 @@
 */
 package org.frankframework.pipes;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import com.jayway.jsonpath.JsonPath;
@@ -99,6 +101,7 @@ public class JsonPathPipe extends FixedForwardPipe {
 		jsonPath = JsonUtil.compileJsonPath(jsonPathExpression);
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
