@@ -1,6 +1,6 @@
 package org.frankframework.ldap;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.frankframework.testutil.MatchUtils.assertXmlEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.spy;
@@ -23,8 +23,7 @@ public class LdapFindGroupMembershipsPipeTest extends PipeTestBase<LdapFindGroup
 
 	@Override
 	public LdapFindGroupMembershipsPipe createPipe() throws ConfigurationException {
-		var pipe = spy(new LdapFindGroupMembershipsPipe());
-		return pipe;
+		return spy(new LdapFindGroupMembershipsPipe());
 	}
 
 	@Test
@@ -38,18 +37,21 @@ public class LdapFindGroupMembershipsPipeTest extends PipeTestBase<LdapFindGroup
 
 		pipe.setLdapProviderURL("url");
 		pipe.setRecursiveSearch(true);
+		pipe.setMaxRecursion(3);
+		pipe.setRecursionFilter("dummy");
 
 		PipeRunResult result = pipe.doPipeWithException(new Message("searchedDN"), new PipeLineSession());
 
-		final String expectedResult = "<ldap>\n" +
-				"\t<entryName>searchedDN</entryName>\n" +
-				"\t<attributes>\n" +
-				"\t\t<attribute attrID=\"memberOf\">item1</attribute>\n" +
-				"\t\t<attribute attrID=\"memberOf\">item2</attribute>\n" +
-				"\t\t<attribute attrID=\"memberOf\">item3</attribute>\n" +
-				"\t</attributes>\n" +
-				"</ldap>";
-		assertEquals(expectedResult, result.getResult().asString());
+		final String expectedResult = """
+				<ldap>
+					<entryName>searchedDN</entryName>
+					<attributes>
+						<attribute attrID="memberOf">item1</attribute>
+						<attribute attrID="memberOf">item2</attribute>
+						<attribute attrID="memberOf">item3</attribute>
+					</attributes>
+				</ldap>""";
+		assertXmlEquals(expectedResult, result.getResult().asString());
 	}
 
 }
