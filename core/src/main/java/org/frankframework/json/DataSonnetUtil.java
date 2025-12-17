@@ -37,15 +37,18 @@ import com.datasonnet.document.MediaType;
 import com.datasonnet.document.MediaTypes;
 import com.datasonnet.header.Header;
 import com.datasonnet.jsonnet.EvalScope;
+import com.datasonnet.jsonnet.Materializer;
 import com.datasonnet.jsonnet.Val;
 import com.datasonnet.jsonnet.Val.Func;
 import com.datasonnet.jsonnet.Val.Obj;
 import com.datasonnet.spi.DataFormatService;
 import com.datasonnet.spi.Library;
+import com.datasonnet.spi.ujsonUtils;
 import com.datasonnet.wrap.DataSonnetPath;
 import com.datasonnet.wrap.NoFileEvaluator;
 
 import lombok.extern.log4j.Log4j2;
+import ujson.Value;
 
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
@@ -119,10 +122,15 @@ public class DataSonnetUtil {
 			try {
 				Message result = sender.sendMessageOrThrow(Message.asMessage(arg), session);
 				MimeType mimeType = MessageUtils.computeMimeType(result);
-				if (mimeType != null && mimeType.isCompatibleWith(org.springframework.http.MediaType.APPLICATION_JSON)) {
-					// TODO: parse JSON to Val instance
-					// ?? What to do with a Value to make it a Val?? Value parsed = ujsonUtils.parse(result.asString());
-					log.warn("Cannot yet translate JSON result to DataSonnet compatible formats, returning as String. Use ds.read(...) in your jsonnet file");
+				if (mimeType != null) {
+					if (mimeType.isCompatibleWith(org.springframework.http.MediaType.APPLICATION_JSON)) {
+						Value parsed = ujsonUtils.parse(result.asString());
+						Val val = Materializer.reverse(parsed);
+						log.debug("Converted sender result from String to JSonnet Val type [{}]", val);
+						return val;
+					} else if (!mimeType.isCompatibleWith(org.springframework.http.MediaType.TEXT_PLAIN) && !mimeType.isCompatibleWith(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM)) {
+						log.warn("Cannot yet translate sender-result to a DataSonnet compatible format, returning as String. Try to parse the result with ds.read(..., \"{}/{}\") in your jsonnet file", mimeType.getType(), mimeType.getSubtype());
+					}
 				}
 				return new Val.Str(result.asString());
 			} catch (Exception e) {

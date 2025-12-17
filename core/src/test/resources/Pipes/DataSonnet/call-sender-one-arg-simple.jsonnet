@@ -1,3 +1,3 @@
 {
-	"senderCall": ds.read(sender.testName(payload), "application/json")
+	"senderCall": sender.testName(payload)
 }

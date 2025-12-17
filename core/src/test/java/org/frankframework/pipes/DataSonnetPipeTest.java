@@ -191,6 +191,39 @@ public class DataSonnetPipeTest extends PipeTestBase<DataSonnetPipe> {
 	}
 
 	@Test
+	public void callSenderArrayArg() throws Exception {
+		// Arrange
+		pipe.setStyleSheetName("/Pipes/DataSonnet/call-sender-one-arg-simple.jsonnet");
+
+		EchoSender sender = new EchoSender();
+		sender.setName("testName");
+		pipe.addSender(sender);
+
+		configureAndStartPipe();
+
+		String inputJson = """
+				[
+					1, 2, 3
+				]
+				""";
+		Message input = new Message(inputJson);
+		input.getContext().withMimeType(MediaType.APPLICATION_JSON);
+
+		// Act
+		Message result = doPipe(input).getResult();
+
+		// Assert
+		assertEquals(MediaType.APPLICATION_JSON, result.getContext().getMimeType());
+		String expectedResult = """
+				{
+				  "senderCall": %s
+				}
+				""".formatted(inputJson);
+
+		TestAssertions.assertJsonEquals(expectedResult, result.asString());
+	}
+
+	@Test
 	public void callSenderTwoArgs() throws Exception {
 		pipe.setStyleSheetName("/Pipes/DataSonnet/call-sender-two-args.jsonnet");
 
