@@ -122,6 +122,11 @@ public class DataSonnetUtil {
 
 			try {
 				Message result = sender.sendMessageOrThrow(Message.asMessage(arg), session);
+				MimeType mimeType = MessageUtils.computeMimeType(result);
+				if (mimeType != null && mimeType.isCompatibleWith(org.springframework.http.MediaType.APPLICATION_JSON)) {
+					// TODO: parse JSON to Val instance
+					log.warn("Cannot yet translate JSON result to DataSonnet compatible formats, returning as String");
+				}
 				return new Val.Str(result.asString());
 			} catch (Exception e) {
 				throw new IllegalStateException(e);
@@ -137,14 +142,10 @@ public class DataSonnetUtil {
 				return String.valueOf((long) number.value());
 			} else if (value instanceof Val.Str stringValue) {
 				return stringValue.value();
-			} else if (value instanceof Val.Obj objectValue) {
-				String someResult = com.datasonnet.jsonnet.Materializer.stringify(value, new DummyEvaluator());
-
-				String someToString = objectValue.toString();
-
-				return someResult;
 			} else {
-				throw new IllegalArgumentException("currently only supports numbers, booleans and string inputs, got: " + value.getClass());
+				String someResult = com.datasonnet.jsonnet.Materializer.stringify(value, new DummyEvaluator());
+				log.debug("Function parameter type [{}] converted to JSON [{}]", value.getClass().getName(), someResult);
+				return someResult;
 			}
 		}
 	}

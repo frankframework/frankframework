@@ -17,6 +17,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.DateParameterBuilder;
 import org.frankframework.testutil.NumberParameterBuilder;
 import org.frankframework.testutil.ParameterBuilder;
+import org.frankframework.testutil.TestAssertions;
 
 public class DataSonnetPipeTest extends PipeTestBase<DataSonnetPipe> {
 
@@ -186,7 +187,7 @@ public class DataSonnetPipeTest extends PipeTestBase<DataSonnetPipe> {
 				}
 				""".formatted(inputJson);
 
-		assertJsonEquals(expectedResult, result.asString());
+		TestAssertions.assertJsonEquals(expectedResult, result.asString());
 	}
 
 	@Test
