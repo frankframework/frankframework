@@ -16,6 +16,12 @@
 			<groupId>org.wearefrank</groupId>
 			<artifactId>ladybug-backend-springmvc</artifactId>
 			<version>${ladybug.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>com.sun.activation</groupId>
+					<artifactId>jakarta.activation</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>

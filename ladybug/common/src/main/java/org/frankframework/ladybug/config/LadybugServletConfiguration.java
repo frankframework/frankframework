@@ -47,7 +47,7 @@ public class LadybugServletConfiguration implements ApplicationContextAware {
 	@Bean
 	public RequestMappingHandlerMapping handlerMapping() {
 		RequestMappingHandlerMapping handlerMapping = new RequestMappingHandlerMapping();
-		handlerMapping.setUseTrailingSlashMatch(true);
+		handlerMapping.setUseTrailingSlashMatch(true); // See wearefrank/ladybug #610
 		return handlerMapping;
 	}
 
@@ -65,11 +65,6 @@ public class LadybugServletConfiguration implements ApplicationContextAware {
 		ServletRegistration<DispatcherServlet> servlet = new ServletRegistration<>(ds, servletConfiguration);
 		servlet.setMultipartConfig(new MultipartConfigElement(""));
 		servlet.setAsyncSupported(true);
-		return servlet;
-	}
-
-	private DispatcherServlet createDispatcherServlet() {
-		DispatcherServlet servlet = new DispatcherServlet((WebApplicationContext) applicationContext);
 		return servlet;
 	}
 
