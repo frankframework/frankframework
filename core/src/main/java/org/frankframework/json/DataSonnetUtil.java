@@ -125,7 +125,8 @@ public class DataSonnetUtil {
 				MimeType mimeType = MessageUtils.computeMimeType(result);
 				if (mimeType != null && mimeType.isCompatibleWith(org.springframework.http.MediaType.APPLICATION_JSON)) {
 					// TODO: parse JSON to Val instance
-					log.warn("Cannot yet translate JSON result to DataSonnet compatible formats, returning as String");
+					// ?? What to do with a Value to make it a Val?? Value parsed = ujsonUtils.parse(result.asString());
+					log.warn("Cannot yet translate JSON result to DataSonnet compatible formats, returning as String. Use ds.read(...) in your jsonnet file");
 				}
 				return new Val.Str(result.asString());
 			} catch (Exception e) {
@@ -144,7 +145,7 @@ public class DataSonnetUtil {
 				return stringValue.value();
 			} else {
 				String someResult = com.datasonnet.jsonnet.Materializer.stringify(value, new DummyEvaluator());
-				log.debug("Function parameter type [{}] converted to JSON [{}]", value.getClass().getName(), someResult);
+				log.debug("Function parameter type [{}] converted to JSON String [{}]", value.getClass().getName(), someResult);
 				return someResult;
 			}
 		}
@@ -184,7 +185,7 @@ public class DataSonnetUtil {
 
 		@Override
 		public boolean preserveOrder() {
-			return false;
+			return true;
 		}
 
 		@Override
