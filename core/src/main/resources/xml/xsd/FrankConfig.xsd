@@ -844,7 +844,8 @@
     </xs:attribute>
     <xs:attribute name="empty" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>If using RestListener and set to &lt;code&gt;true&lt;/code&gt;, this removes the output and shows a blank page, the output is still logged in the ladybug testtool Default: &lt;code&gt;false&lt;/code&gt;</xs:documentation>
+        <xs:documentation>When set to &lt;code&gt;true&lt;/code&gt;, this removes the output, the output is still logged in the Ladybug.
+ Metadata may still propagate to the caller, such as the &lt;code&gt;exitCode&lt;/code&gt;. Default: &lt;code&gt;false&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="skipWrapping" type="frankBoolean">
@@ -1157,6 +1158,18 @@
     <xs:attribute name="elementRole" type="xs:string" fixed="sharedResources" use="prohibited" />
     <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:complexType>
+  <xs:element name="PipelinePart">
+    <xs:annotation>
+      <xs:documentation>Wrapper element to help create reusable parts of a pipeline</xs:documentation>
+    </xs:annotation>
+    <xs:complexType>
+      <xs:sequence>
+        <xs:group ref="PipeElementGroup" minOccurs="0" maxOccurs="unbounded" />
+      </xs:sequence>
+      <xs:attribute ref="active" />
+      <xs:anyAttribute namespace="##other" processContents="skip" />
+    </xs:complexType>
+  </xs:element>
   <xs:complexType name="ConfigurationType">
     <xs:group ref="ConfigurationDeclaredChildGroup" />
     <xs:attributeGroup ref="ConfigurationDeclaredAttributeGroup" />
@@ -1447,14 +1460,10 @@
         <xs:documentation>If set &lt;code&gt;true&lt;/code&gt; pattern elements that cannot be resolved to a parameter or sessionKey are silently resolved to an empty string</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="minLength" type="frankInt">
-      <xs:annotation>
-        <xs:documentation>If set (&gt;=0) and the length of the value of the parameter falls short of this minimum length, the value is padded Default: -1</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
     <xs:attribute name="maxLength" type="frankInt">
       <xs:annotation>
-        <xs:documentation>If set (&gt;=0) and the length of the value of the parameter exceeds this maximum length, the length is trimmed to this maximum length Default: -1</xs:documentation>
+        <xs:documentation>If set (&gt;=0) and the length of the value of the parameter exceeds this maximum length, the length is trimmed to this maximum length.
+ This only works for character (input) data. Default: -1</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="hidden" type="frankBoolean">
@@ -1549,6 +1558,24 @@
       <xs:simpleType>
         <xs:union memberTypes="ParameterTypeAttributeValuesType variableRef" />
       </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="xpathResult">
+      <xs:annotation>
+        <xs:documentation>Only valid for xPathExpression.
+ If xpathResult is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
+ This results in an xml-string including the XML tags, if you want the contents of the element (as scalar value), use TEXT.
+ &lt;/p&gt;
+ This field controls how to read the input and does not determine the output. Default: TEXT</xs:documentation>
+      </xs:annotation>
+      <xs:simpleType>
+        <xs:union memberTypes="OutputTypeAttributeValuesType variableRef" />
+      </xs:simpleType>
+    </xs:attribute>
+    <xs:attribute name="minLength" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>If set (&gt;=0) and the length of the value of the parameter falls short of this minimum length, the value is padded.
+ This only works for character (input) data. Default: -1</xs:documentation>
+      </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="ParameterCumulativeAttributeGroup">
@@ -5279,13 +5306,7 @@
         <xs:documentation>Set a DataSonnet stylesheet to transform the default JSON error message to a custom format.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="computeMimeType" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Computes the mimetype when it is unknown. It requires more computation but improves
- mapping results. Default: true</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="outputType">
+    <xs:attribute name="outputFileFormat">
       <xs:annotation>
         <xs:documentation>Output file format. DataSonnet is semi-capable of converting the converted JSON to a different format. Default: JSON</xs:documentation>
       </xs:annotation>
@@ -5666,7 +5687,7 @@
     <xs:attribute ref="schemaSessionKey" />
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+        <xs:documentation>The functional name of this pipe, is not required when used as a Validator</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attributeGroup ref="FixedForwardPipeDeclaredAttributeGroup" />
@@ -5698,7 +5719,7 @@
   <xs:attributeGroup name="SoapValidatorDeclaredAttributeGroup">
     <xs:attribute name="soapBody" type="xs:string">
       <xs:annotation>
-        <xs:documentation>Name of the child element of the SOAP body, or a comma separated list of names to choose from (only one is allowed) (wsdl generator will use the first element) (use empty value to allow an empty soap body, for example to allow element x and an empty soap body use: x,)</xs:documentation>
+        <xs:documentation>Name of the child element of the SOAP body, or a comma separated list of names to choose from (only one is allowed) (WSDL generator will use the first element) (use empty value to allow an empty SOAP body, for example to allow element x and an empty SOAP body use: x,)</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="outputSoapBody" />
@@ -5735,7 +5756,7 @@
     <xs:attribute ref="schemaSessionKey" />
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+        <xs:documentation>The functional name of this pipe, is not required when used as a Validator</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attributeGroup ref="FixedForwardPipeDeclaredAttributeGroup" />
@@ -5908,7 +5929,7 @@
     <xs:attribute ref="schemaSessionKey" />
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+        <xs:documentation>The functional name of this pipe, is not required when used as a Validator</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attributeGroup ref="FixedForwardPipeDeclaredAttributeGroup" />
@@ -5946,7 +5967,7 @@
     </xs:attribute>
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+        <xs:documentation>The functional name of this pipe, is not required when used as a Validator</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -6101,7 +6122,7 @@
     </xs:attribute>
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+        <xs:documentation>The functional name of this pipe, is not required when used as a Validator</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -6712,7 +6733,7 @@
     </xs:attribute>
     <xs:attribute name="name" type="xs:string">
       <xs:annotation>
-        <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
+        <xs:documentation>The functional name of this pipe, is not required when used as a Wrapper</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -7344,6 +7365,7 @@
         </xs:complexType>
       </xs:element>
       <xs:group ref="PipeElementGroupBase" />
+      <xs:element name="Include" minOccurs="0" maxOccurs="unbounded" type="IncludeType" />
     </xs:choice>
   </xs:group>
   <xs:group name="ListenerElementGroup_2">
@@ -7907,7 +7929,7 @@
  that is followed when the called adapter exits with the mentioned exit. This does not work if the code is for example &lt;code&gt;c2&lt;/code&gt;.
  &lt;/p&gt;
  &lt;p&gt;
- A FrankSender makes a call to either an Adapter or an external program by setting the #scope. By default the scope is &lt;code&gt;ADAPTER&lt;/code&gt;.
+ A FrankSender makes a call to either an Adapter or an external program by setting the #scope. By default, the scope is &lt;code&gt;ADAPTER&lt;/code&gt;.
  &lt;/p&gt;
  &lt;p/&gt;
 
@@ -7953,7 +7975,7 @@
  &lt;ul&gt;
      &lt;li&gt;Implement the interface &lt;code&gt;nl.nn.adapterframework.dispatcher.RequestProcessor&lt;/code&gt; from the IbisServiceDispatcher library&lt;/li&gt;
      &lt;li&gt;Register the instance with the &lt;code&gt;nl.nn.adapterframework.dispatcher.DispatcherManager&lt;/code&gt; obtained via the &lt;code&gt;nl.nn.adapterframework.dispatcher.DispatcherManagerFactory&lt;/code&gt;&lt;/li&gt;
-     &lt;li&gt;See the implementation code of the &lt;code&gt;JavaListener&lt;/code&gt; in the Frank!Framework for an example&lt;/li&gt;
+     &lt;li&gt;See the implementation code of the org.frankframework.receivers.JavaListener in the Frank!Framework for an example&lt;/li&gt;
  &lt;/ul&gt;
  &lt;/p&gt;
  &lt;p&gt;
@@ -8298,7 +8320,18 @@
  &lt;/p&gt;
  &lt;p&gt;
  Failure to ensure the output is a string may mean the result will look like &lt;code&gt;[Object object]&lt;/code&gt;.
- &lt;/p&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;J2V8 is not compatible with ARM based environments.&lt;/p&gt;&lt;br&gt;&lt;b&gt;WARNING&lt;/b&gt;&lt;p&gt;The default Javascript runtime has been changed from J2V8 to GraalJS.&lt;/p&gt;</xs:documentation>
+ &lt;/p&gt;
+ &lt;p&gt;
+ It is possible to call another process via a sender in this &lt;code&gt;JavascriptSender&lt;/code&gt;. The name of the sender will be the 'function' name
+ which you can invoke in the js file. For example: *
+ &lt;pre&gt;&lt;code&gt;&amp;lt;JavascriptSender&amp;gt;
+     &amp;lt;EchoSender name=&amp;quot;myFunction&amp;quot; /&amp;gt;
+ &amp;lt;/JavascriptSender&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+ and
+ &lt;pre&gt;&lt;code&gt;function main() {
+    return myFunction(&amp;quot;echo me&amp;quot;);
+ }&lt;/code&gt;&lt;/pre&gt;
+ Will trigger the inner-sender with data: 'echo me'.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;J2V8 is not compatible with ARM based environments.&lt;/p&gt;&lt;br&gt;&lt;b&gt;WARNING&lt;/b&gt;&lt;p&gt;The default Javascript runtime has been changed from J2V8 to GraalJS.&lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
           <xs:complexContent>
@@ -9733,22 +9766,14 @@
     </xs:attribute>
     <xs:attribute name="blobSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>For querytype 'updateBlob': key of session variable that contains the data (String or InputStream) to be loaded to the BLOB. When empty, the input of the pipe, which then must be a String, is used.
- For querytype 'select': key of session variable that contains the OutputStream, Writer or Filename to write the BLOB to</xs:documentation>
+        <xs:documentation>For querytype 'updateBlob': key of session variable that contains the data (String or InputStream) to be loaded to the BLOB. When empty, the input of the pipe is used.
+ For querytype 'select': key of session variable that contains the OutputStream, Writer or Filename to write the BLOB to.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="blobsCompressed" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>controls whether blobdata is stored compressed in the database Default: true</xs:documentation>
+        <xs:documentation>Controls whether blobdata is stored compressed in the database. Default: true</xs:documentation>
       </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="blobBase64Direction">
-      <xs:annotation>
-        <xs:documentation>controls whether the streamed blobdata will need to be base64 &lt;code&gt;encode&lt;/code&gt; or &lt;code&gt;decode&lt;/code&gt; or not.</xs:documentation>
-      </xs:annotation>
-      <xs:simpleType>
-        <xs:union memberTypes="DirectionAttributeValuesType_6 variableRef" />
-      </xs:simpleType>
     </xs:attribute>
     <xs:attribute name="blobSmartGet" type="frankBoolean">
       <xs:annotation>
@@ -10269,10 +10294,104 @@
  &lt;code&gt;PATCH&lt;/code&gt; if &lt;code&gt;postType=RAW&lt;/code&gt;. This used to be the default behaviour in framework version 7.7 and earlier Default: for methodType=&lt;code&gt;GET&lt;/code&gt;: &lt;code&gt;false&lt;/code&gt;,&lt;br/&gt;for methodTypes &lt;code&gt;POST&lt;/code&gt;, &lt;code&gt;PUT&lt;/code&gt;, &lt;code&gt;PATCH&lt;/code&gt;: &lt;code&gt;true&lt;/code&gt;</xs:documentation>
       </xs:annotation>
     </xs:attribute>
+    <xs:attribute name="contentType" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Content-Type (superset of mimetype + charset) of the request, for &lt;code&gt;POST&lt;/code&gt;, &lt;code&gt;PUT&lt;/code&gt; and &lt;code&gt;PATCH&lt;/code&gt; methods. Default: text/html, when postType=&lt;code&gt;RAW&lt;/code&gt;, else auto-determined</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="HttpSenderCumulativeAttributeGroup">
     <xs:attributeGroup ref="HttpSenderDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractHttpSenderCumulativeAttributeGroup" />
+    <xs:attribute ref="url" />
+    <xs:attribute ref="urlParam" />
+    <xs:attribute ref="methodType" />
+    <xs:attribute ref="charSet" />
+    <xs:attribute ref="headersParams" />
+    <xs:attribute ref="parametersToSkipWhenEmpty" />
+    <xs:attribute ref="xhtml" />
+    <xs:attribute name="styleSheetName" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>(Only used when xHtml=&lt;code&gt;true&lt;/code&gt;) stylesheet to apply to the HTML response</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="resultStatusCodeSessionKey" />
+    <xs:attribute ref="sharedResourceRef" />
+    <xs:attribute name="name" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>The functional name of the object.</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="timeout" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Timeout in ms of obtaining a connection/result. Default: 10000</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="maxConnections" />
+    <xs:attribute ref="maxExecuteRetries" />
+    <xs:attribute name="authAlias" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Authentication alias used for authentication to the host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="username" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Username used for authentication to the host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="password" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Password used for authentication to the host</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="tokenEndpoint" />
+    <xs:attribute ref="tokenExpiry" />
+    <xs:attribute ref="clientAlias" />
+    <xs:attribute name="clientId" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Client_id used in authentication to &lt;code&gt;tokenEndpoint&lt;/code&gt;</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute ref="clientSecret" />
+    <xs:attribute ref="scope" />
+    <xs:attribute ref="oauthAuthenticationMethod" />
+    <xs:attribute ref="samlNameId" />
+    <xs:attribute ref="samlIssuer" />
+    <xs:attribute ref="samlAudience" />
+    <xs:attribute ref="samlAssertionExpiry" />
+    <xs:attribute ref="proxyHost" />
+    <xs:attribute ref="proxyPort" />
+    <xs:attribute ref="proxyAuthAlias" />
+    <xs:attribute ref="proxyUsername" />
+    <xs:attribute ref="proxyPassword" />
+    <xs:attribute ref="proxyRealm" />
+    <xs:attribute ref="prefillProxyAuthCache" />
+    <xs:attribute ref="disableCookies" />
+    <xs:attribute ref="keystore" />
+    <xs:attribute ref="keystoreType" />
+    <xs:attribute ref="keystoreAuthAlias" />
+    <xs:attribute ref="keystorePassword" />
+    <xs:attribute ref="keyManagerAlgorithm" />
+    <xs:attribute ref="keystoreAlias" />
+    <xs:attribute ref="keystoreAliasAuthAlias" />
+    <xs:attribute ref="keystoreAliasPassword" />
+    <xs:attribute ref="truststore" />
+    <xs:attribute ref="truststoreAuthAlias" />
+    <xs:attribute ref="truststorePassword" />
+    <xs:attribute ref="truststoreType" />
+    <xs:attribute ref="trustManagerAlgorithm" />
+    <xs:attribute ref="verifyHostname" />
+    <xs:attribute ref="allowSelfSignedCertificates" />
+    <xs:attribute ref="ignoreCertificateExpiredException" />
+    <xs:attribute ref="followRedirects" />
+    <xs:attribute ref="ignoreRedirects" />
+    <xs:attribute ref="staleChecking" />
+    <xs:attribute ref="staleTimeout" />
+    <xs:attribute ref="connectionTimeToLive" />
+    <xs:attribute ref="connectionIdleTimeout" />
+    <xs:attribute ref="protocol" />
+    <xs:attribute ref="supportedCipherSuites" />
+    <xs:attribute ref="active" />
+    <xs:anyAttribute namespace="##other" processContents="skip" />
   </xs:attributeGroup>
   <xs:group name="AbstractHttpSenderDeclaredChildGroup">
     <xs:sequence>
@@ -12232,7 +12351,6 @@
     <xs:attributeGroup ref="HttpSenderDeclaredAttributeGroup" />
     <xs:attribute ref="url" />
     <xs:attribute ref="urlParam" />
-    <xs:attribute ref="contentType" />
     <xs:attribute ref="charSet" />
     <xs:attribute ref="headersParams" />
     <xs:attribute ref="parametersToSkipWhenEmpty" />
@@ -12862,13 +12980,14 @@
     </xs:attribute>
     <xs:attribute name="blobsCompressed" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>controls whether blobdata is stored compressed in the database Default: true</xs:documentation>
+        <xs:documentation>Controls whether blobdata is stored compressed in the database. Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="blobCharset" type="xs:string">
       <xs:annotation>
         <xs:documentation>Charset that is used to read and write BLOBs. This assumes the blob contains character data.
- If blobCharset and blobSmartGet are not set, BLOBs are returned as bytes. Before version 7.6, blobs were base64 encoded after being read to accommodate for the fact that senders need to return a String. This is no longer the case</xs:documentation>
+ If blobCharset and blobSmartGet are not set, BLOBs are returned as bytes. Before version 7.6, blobs were base64 encoded after being
+ read to accommodate for the fact that senders need to return a String. This is no longer the case.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -13424,6 +13543,19 @@
    &amp;quot;uid&amp;quot;: &amp;quot;123&amp;quot;,
    &amp;quot;uname&amp;quot;: &amp;quot;DataSonnet&amp;quot;
  }&lt;/code&gt;&lt;/pre&gt;
+ &lt;/p&gt;
+ &lt;p&gt;
+ This pipe can also call senders using their names as functions in the JSonnet file. For example:
+ &lt;pre&gt;&lt;code&gt;&amp;lt;DataSonnetPipe&amp;gt;
+     &amp;lt;EchoSender name=&amp;quot;myFunction&amp;quot; /&amp;gt;
+ &amp;lt;/DataSonnetPipe&amp;gt;&lt;/code&gt;&lt;/pre&gt;
+ &lt;pre&gt;&lt;code&gt;[
+   {
+     &amp;quot;number&amp;quot;: sender.myFunction(x)
+   } for x in [ 1, 2, 3, 4 ]
+ ]&lt;/code&gt;&lt;/pre&gt;
+ results in &lt;code&gt;[{&amp;quot;number&amp;quot;:&amp;quot;1&amp;quot;},{&amp;quot;number&amp;quot;:&amp;quot;2&amp;quot;},{&amp;quot;number&amp;quot;:&amp;quot;3&amp;quot;},{&amp;quot;number&amp;quot;:&amp;quot;4&amp;quot;}]&lt;/code&gt;.
+
  &lt;/p&gt;</xs:documentation>
         </xs:annotation>
         <xs:complexType>
@@ -15531,7 +15663,10 @@
     </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
-        <xs:documentation>Only valid for xpathexpression Default: text</xs:documentation>
+        <xs:documentation>Only valid for xPathExpression.
+ If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
+ &lt;/p&gt;
+ This field controls how to iterate over the input and does not determine the pipe's output. Default: text</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="OutputTypeAttributeValuesType variableRef" />
@@ -15610,7 +15745,7 @@
     </xs:attribute>
     <xs:attribute name="blobsCompressed" type="frankBoolean">
       <xs:annotation>
-        <xs:documentation>controls whether blobdata is stored compressed in the database Default: true</xs:documentation>
+        <xs:documentation>Controls whether blobdata is stored compressed in the database. Default: true</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -15685,7 +15820,10 @@
     </xs:attribute>
     <xs:attribute name="outputType">
       <xs:annotation>
-        <xs:documentation>Only valid for xpathexpression Default: text</xs:documentation>
+        <xs:documentation>Only valid for xPathExpression.
+ If outputType is OutputType#XML then the resulting stylesheet will use the &lt;code&gt;copy-of&lt;/code&gt; method instead of &lt;code&gt;value-of&lt;/code&gt;.
+ &lt;/p&gt;
+ This field controls how to iterate over the input and does not determine the pipe's output. Default: text</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="OutputTypeAttributeValuesType variableRef" />
@@ -15870,28 +16008,34 @@
     <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="DataSonnetPipeType">
-    <xs:group ref="AbstractPipeDeclaredChildGroup" />
+    <xs:group ref="DataSonnetPipeCumulativeChildGroup" />
     <xs:attributeGroup ref="DataSonnetPipeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.DataSonnetPipe" use="prohibited" />
   </xs:complexType>
+  <xs:group name="DataSonnetPipeDeclaredChildGroup">
+    <xs:sequence>
+      <xs:group ref="SenderElementGroup_2" minOccurs="0" maxOccurs="unbounded" />
+    </xs:sequence>
+  </xs:group>
+  <xs:group name="DataSonnetPipeCumulativeChildGroup">
+    <xs:sequence>
+      <xs:group ref="DataSonnetPipeDeclaredChildGroup" />
+      <xs:group ref="AbstractPipeDeclaredChildGroup" />
+    </xs:sequence>
+  </xs:group>
   <xs:attributeGroup name="DataSonnetPipeDeclaredAttributeGroup">
     <xs:attribute name="styleSheetName" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>Location of the stylesheet to apply to the input message.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute name="outputType">
+    <xs:attribute name="outputFileFormat">
       <xs:annotation>
-        <xs:documentation>Output file format. DataSonnet is semi-capable of converting the converted JSON to a different format. Default: JSON</xs:documentation>
+        <xs:documentation>DataSonnet is semi-capable of converting the converted JSON to a different format. Default: JSON</xs:documentation>
       </xs:annotation>
       <xs:simpleType>
         <xs:union memberTypes="DataSonnetOutputTypeAttributeValuesType variableRef" />
       </xs:simpleType>
-    </xs:attribute>
-    <xs:attribute name="computeMimeType" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>Computes the mimetype when it is unknown. It requires more computation.</xs:documentation>
-      </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
   <xs:attributeGroup name="DataSonnetPipeCumulativeAttributeGroup">
@@ -19881,11 +20025,6 @@
  if there are child nodes, only the contents are returned, use &lt;code&gt;XML&lt;/code&gt; if the xml tags are required</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
-      <xs:enumeration value="XML">
-        <xs:annotation>
-          <xs:documentation>Renders an xml-nodeset as an xml-string (in combination with xslt or xpath). This will include the xml tags</xs:documentation>
-        </xs:annotation>
-      </xs:enumeration>
       <xs:enumeration value="DOMDOC">
         <xs:annotation>
           <xs:documentation>Renders XML as a DOM document; similar to &lt;code&gt;node&lt;/code&gt;
@@ -19971,6 +20110,12 @@
  &lt;code&gt;{&amp;quot;paramName&amp;quot;:value}&lt;/code&gt;. (The value will be quoted if it was not a number or boolean value).</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="OutputTypeAttributeValuesType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="TEXT" />
+      <xs:enumeration value="XML" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="XmlTypeAttributeValuesType">
@@ -20406,6 +20551,7 @@
       <xs:enumeration value="CSV" />
       <xs:enumeration value="XML" />
       <xs:enumeration value="YAML" />
+      <xs:enumeration value="TXT" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="LockTypeAttributeValuesType">
@@ -20483,12 +20629,6 @@
       <xs:enumeration value="SUCCESS" />
       <xs:enumeration value="ERROR" />
       <xs:enumeration value="REJECTED" />
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="OutputTypeAttributeValuesType">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="TEXT" />
-      <xs:enumeration value="XML" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="S3StorageClassAttributeValuesType">
@@ -20690,12 +20830,6 @@
           <xs:documentation>For queries that return no data</xs:documentation>
         </xs:annotation>
       </xs:enumeration>
-    </xs:restriction>
-  </xs:simpleType>
-  <xs:simpleType name="DirectionAttributeValuesType_6">
-    <xs:restriction base="xs:string">
-      <xs:enumeration value="ENCODE" />
-      <xs:enumeration value="DECODE" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="ScopeAttributeValuesType">
@@ -20959,6 +21093,12 @@
     <xs:restriction base="xs:string">
       <xs:enumeration value="MESSAGEID" />
       <xs:enumeration value="CORRELATIONID" />
+    </xs:restriction>
+  </xs:simpleType>
+  <xs:simpleType name="DirectionAttributeValuesType_6">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="ENCODE" />
+      <xs:enumeration value="DECODE" />
     </xs:restriction>
   </xs:simpleType>
   <xs:simpleType name="FileFormatAttributeValuesType">
@@ -21621,7 +21761,7 @@
   </xs:attribute>
   <xs:attribute name="getInputFromFixedValue" type="xs:string">
     <xs:annotation>
-      <xs:documentation>If set, this fixed value is taken as input, instead of regular input</xs:documentation>
+      <xs:documentation>If set, this fixed value is taken as input, instead of regular input. The input may &lt;i&gt;not&lt;/i&gt; be empty.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="emptyInputReplacement" type="xs:string">
@@ -21938,11 +22078,6 @@
       <xs:union memberTypes="HttpMethodAttributeValuesType_2 variableRef" />
     </xs:simpleType>
   </xs:attribute>
-  <xs:attribute name="contentType" type="xs:string">
-    <xs:annotation>
-      <xs:documentation>Content-Type (superset of mimetype + charset) of the request, for &lt;code&gt;POST&lt;/code&gt;, &lt;code&gt;PUT&lt;/code&gt; and &lt;code&gt;PATCH&lt;/code&gt; methods Default: text/html, when postType=&lt;code&gt;RAW&lt;/code&gt;</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
   <xs:attribute name="charSet" type="xs:string">
     <xs:annotation>
       <xs:documentation>Charset of the request. Typically only used on &lt;code&gt;PUT&lt;/code&gt; and &lt;code&gt;POST&lt;/code&gt; requests. Default: UTF-8</xs:documentation>
@@ -22204,6 +22339,11 @@
     <xs:annotation>
       <xs:documentation>Allows you to choose which CipherSuites are used when connecting to an endpoint. Works in tandem with &lt;code&gt;protocol&lt;/code&gt; as the provided Suite may not be valid for the provided Protocol
  See the Java Security Standard Algorithm Names Specification for all available options. Note that these may differ depending on the JRE you're using.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="contentType" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Content-Type (superset of mimetype + charset) of the request, for &lt;code&gt;POST&lt;/code&gt;, &lt;code&gt;PUT&lt;/code&gt; and &lt;code&gt;PATCH&lt;/code&gt; methods. Default: auto-determined</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="debugInput" type="frankBoolean">

@@ -30,9 +30,9 @@ import org.frankframework.core.ParameterException;
 import org.frankframework.stream.Message;
 import org.frankframework.util.DomBuilderException;
 import org.frankframework.util.EnumUtils;
+import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.util.XmlException;
 import org.frankframework.util.XmlUtils;
-import org.frankframework.util.TransformerPool.OutputType;
 
 @Log4j2
 public class XmlParameter extends AbstractParameter<Node> {

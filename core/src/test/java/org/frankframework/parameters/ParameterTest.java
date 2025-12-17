@@ -313,7 +313,7 @@ public class ParameterTest {
 		siblingParameter.configure();
 		alreadyResolvedParameters.add(new ParameterValue(siblingParameter, siblingParameter.getValue(alreadyResolvedParameters, null, session, false)));
 
-		assertEquals("param [fakeParameterValue] sessionKey [fakeSessionVariable] username [fakeUsername] password [fakePassword]", 
+		assertEquals("param [fakeParameterValue] sessionKey [fakeSessionVariable] username [fakeUsername] password [fakePassword]",
 				getValue(p.getValue(alreadyResolvedParameters, null, session, false)));
 
 		assertFalse(p.requiresInputValueForResolution());
