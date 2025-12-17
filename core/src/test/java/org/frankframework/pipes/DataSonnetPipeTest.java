@@ -1,5 +1,6 @@
 package org.frankframework.pipes;
 
+import static org.frankframework.testutil.MatchUtils.assertJsonEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -8,15 +9,19 @@ import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
+import org.frankframework.core.SenderException;
+import org.frankframework.core.SenderResult;
+import org.frankframework.core.TimeoutException;
 import org.frankframework.json.DataSonnetOutputType;
 import org.frankframework.parameters.JsonParameter;
 import org.frankframework.senders.EchoSender;
 import org.frankframework.stream.Message;
 import org.frankframework.testutil.DateParameterBuilder;
-import org.frankframework.testutil.MatchUtils;
 import org.frankframework.testutil.NumberParameterBuilder;
 import org.frankframework.testutil.ParameterBuilder;
+import org.frankframework.testutil.TestAssertions;
 
 public class DataSonnetPipeTest extends PipeTestBase<DataSonnetPipe> {
 
@@ -125,7 +130,33 @@ public class DataSonnetPipeTest extends PipeTestBase<DataSonnetPipe> {
 	}
 
 	@Test
-	public void callSenderOneArg() throws Exception {
+	public void callSender() throws Exception {
+		pipe.setStyleSheetName("/Pipes/DataSonnet/call-sender-one-arg.jsonnet");
+
+		EchoSender sender = new EchoSender();
+		sender.setName("testName");
+		pipe.addSender(sender);
+
+		configureAndStartPipe();
+
+		Message input = new Message("2X");
+
+		// Act
+		Message result = doPipe(input).getResult();
+
+		// Assert
+		assertEquals(MediaType.APPLICATION_JSON, result.getContext().getMimeType());
+		assertJsonEquals("""
+				[
+					{"string":"2X1","boolean":true,"number":1},
+					{"string":"2X2","boolean":true,"number":2},
+					{"string":"2X3","boolean":true,"number":3},
+					{"string":"2X4","boolean":true,"number":4}
+				]""", result.asString());
+	}
+
+	@Test
+	public void callSenderJsonInput() throws Exception {
 		pipe.setStyleSheetName("/Pipes/DataSonnet/call-sender-one-arg.jsonnet");
 
 		EchoSender sender = new EchoSender();
@@ -142,13 +173,117 @@ public class DataSonnetPipeTest extends PipeTestBase<DataSonnetPipe> {
 
 		// Assert
 		assertEquals(MediaType.APPLICATION_JSON, result.getContext().getMimeType());
-		MatchUtils.assertJsonEquals("""
+		assertJsonEquals("""
 				[
-					{"string":"101","boolean":"true","number":"1"},
-					{"string":"102","boolean":"true","number":"2"},
-					{"string":"103","boolean":"true","number":"3"},
-					{"string":"104","boolean":"true","number":"4"}
+					{"string":101,"boolean":true,"number":1},
+					{"string":102,"boolean":true,"number":2},
+					{"string":103,"boolean":true,"number":3},
+					{"string":104,"boolean":true,"number":4}
 				]""", result.asString());
+	}
+
+	@Test
+	public void dataSonnetMap() throws Exception {
+		pipe.setStyleSheetName("/Pipes/DataSonnet/ds-map.jsonnet");
+
+		EchoSender sender = new EchoSender() {
+			@Override
+			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+				assertEquals(MediaType.APPLICATION_JSON, message.getContext().getMimeType());
+				return super.sendMessage(message, session);
+			}
+		};
+		sender.setName("testName");
+		pipe.addSender(sender);
+
+		configureAndStartPipe();
+
+		Message input = new Message("""
+			[
+				{"string":101,"boolean":true,"number":1},
+				{"string":102,"boolean":true,"number":2},
+				{"string":103,"boolean":true,"number":3},
+				{"string":104,"boolean":true,"number":4}
+			]""");
+		input.getContext().withMimeType(MediaType.APPLICATION_JSON);
+
+		// Act
+		Message result = doPipe(input).getResult();
+
+		// Assert
+		assertEquals(MediaType.APPLICATION_JSON, result.getContext().getMimeType());
+		assertJsonEquals(input.asString(), result.asString());
+	}
+
+	@Test
+	public void callSenderObjArg() throws Exception {
+		// Arrange
+		pipe.setStyleSheetName("/Pipes/DataSonnet/call-sender-one-arg-simple.jsonnet");
+
+		EchoSender sender = new EchoSender();
+		sender.setName("testName");
+		pipe.addSender(sender);
+
+		configureAndStartPipe();
+
+		String inputJson = """
+				{
+				  "n1": 10,
+				  "s1": "string data",
+				  "obj1": {
+				    "n2": 2,
+				    "s2": "string from nested object"
+				  }
+				}
+				""";
+		Message input = new Message(inputJson);
+		input.getContext().withMimeType(MediaType.APPLICATION_JSON);
+
+		// Act
+		Message result = doPipe(input).getResult();
+
+		// Assert
+		assertEquals(MediaType.APPLICATION_JSON, result.getContext().getMimeType());
+		String expectedResult = """
+				{
+				  "senderCall": %s
+				}
+				""".formatted(inputJson);
+
+		TestAssertions.assertJsonEquals(expectedResult, result.asString());
+	}
+
+	@Test
+	public void callSenderArrayArg() throws Exception {
+		// Arrange
+		pipe.setStyleSheetName("/Pipes/DataSonnet/call-sender-one-arg-simple.jsonnet");
+
+		EchoSender sender = new EchoSender();
+		sender.setName("testName");
+		pipe.addSender(sender);
+
+		configureAndStartPipe();
+
+		String inputJson = """
+				[
+					1, 2, 3
+				]
+				""";
+		Message input = new Message(inputJson);
+		input.getContext().withMimeType(MediaType.APPLICATION_JSON);
+
+		// Act
+		Message result = doPipe(input).getResult();
+
+		// Assert
+		assertEquals(MediaType.APPLICATION_JSON, result.getContext().getMimeType());
+		String expectedResult = """
+				{
+				  "senderCall": %s
+				}
+				""".formatted(inputJson);
+
+		TestAssertions.assertJsonEquals(expectedResult, result.asString());
 	}
 
 	@Test

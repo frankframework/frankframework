@@ -36,13 +36,19 @@ import com.datasonnet.document.Document;
 import com.datasonnet.document.MediaType;
 import com.datasonnet.document.MediaTypes;
 import com.datasonnet.header.Header;
+import com.datasonnet.jsonnet.EvalScope;
+import com.datasonnet.jsonnet.Materializer;
 import com.datasonnet.jsonnet.Val;
 import com.datasonnet.jsonnet.Val.Func;
 import com.datasonnet.jsonnet.Val.Obj;
 import com.datasonnet.spi.DataFormatService;
 import com.datasonnet.spi.Library;
+import com.datasonnet.spi.ujsonUtils;
+import com.datasonnet.wrap.DataSonnetPath;
+import com.datasonnet.wrap.NoFileEvaluator;
 
 import lombok.extern.log4j.Log4j2;
+import ujson.Value;
 
 import org.frankframework.core.ISender;
 import org.frankframework.core.PipeLineSession;
@@ -52,13 +58,22 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageContext;
 import org.frankframework.util.MessageUtils;
 
 @Log4j2
 public class DataSonnetUtil {
 
+	private static final EvalScope EVAL_SCOPE_SINGLETON = new DummyEvaluator();
+
 	private DataSonnetUtil() {
 		// Private constructor to prevent instance creations
+	}
+
+	private static class DummyEvaluator extends NoFileEvaluator implements EvalScope {
+		public DummyEvaluator() {
+			super("{}", DataSonnetPath.apply("/"), null, null, true, null);
+		}
 	}
 
 	/**
@@ -108,31 +123,54 @@ public class DataSonnetUtil {
 		}
 
 		private Val sendMessage(List<Val> inputArgs, ISender sender) {
-			String arg = inputArgs.stream()
-					.map(this::convertToString)
+			Message arg = inputArgs.stream()
+					.map(this::toMessage)
 					.findFirst()
 					.orElseThrow(() -> new IllegalArgumentException("no value provided"));
 
 			try {
-				Message result = sender.sendMessageOrThrow(Message.asMessage(arg), session);
-				return new Val.Str(result.asString());
+				Message result = sender.sendMessageOrThrow(arg, session);
+				return messageToVal(result);
 			} catch (Exception e) {
 				throw new IllegalStateException(e);
 			}
 		}
 
-		private String convertToString(Val value) {
+		private Message toMessage(Val value) {
 			if (value == Val.bool(true)) {
-				return "true";
+				return Message.asMessage(true);
 			} else if (value == Val.bool(false)) {
-				return "false";
+				return Message.asMessage(false);
 			} else if (value instanceof Val.Num number) {
-				return String.valueOf((long) number.value());
+				return Message.asMessage((long) number.value());
 			} else if (value instanceof Val.Str stringValue) {
-				return stringValue.value();
+				return new Message(stringValue.value());
 			} else {
-				throw new IllegalArgumentException("currently only supports numbers, booleans and string inputs, got: " + value.getClass());
+				String val = Materializer.stringify(value, EVAL_SCOPE_SINGLETON);
+				log.debug("function parameter type [{}] converted to JSON String [{}]", () -> value.getClass().getName(), () -> val);
+				return new Message(val, new MessageContext().withMimeType(org.springframework.http.MediaType.APPLICATION_JSON));
 			}
+		}
+
+		private Val messageToVal(Message result) throws IOException {
+			@SuppressWarnings("deprecation")
+			Object value = result.asObject();
+			if (value instanceof Boolean bool) {
+				return Val.bool(bool);
+			} else if (value instanceof Number) {
+				return new Val.Num(Long.parseLong(""+value));
+			}
+
+			MimeType mimeType = MessageUtils.computeMimeType(result);
+			if (mimeType != null && mimeType.isCompatibleWith(org.springframework.http.MediaType.APPLICATION_JSON)) {
+				Value parsed = ujsonUtils.parse(result.asString());
+				Val val = Materializer.reverse(parsed);
+				log.debug("converted sender result from [{}] to JSonnet Val type [{}]", () -> value.getClass().getName(), () -> val);
+				return val;
+			}
+
+			log.debug("cannot yet translate sender-result to a DataSonnet compatible format, returning as String");
+			return new Val.Str(result.asString());
 		}
 	}
 

@@ -1,0 +1,1 @@
+ds.map(payload default [], function(obj) sender["testName"](obj)) default []
