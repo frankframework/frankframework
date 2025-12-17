@@ -16,8 +16,6 @@
 	<!-- enable (AppConstants) properties -->
 	<context:property-placeholder/>
 
-	<bean id="handlerMapping" class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping" />
-
 	<!-- disables the spring boot auto-configure 'wire all filters automatically' magic -->
 	<bean class="org.springframework.boot.web.servlet.FilterRegistrationBean">
 		<property name="filter" ref="springSecurityFilterChain" />

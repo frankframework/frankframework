@@ -24,6 +24,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.wearefrank.ladybug.web.FrontendServlet;
 
 import org.frankframework.condition.ConditionalOnAppConstants;
@@ -41,6 +42,13 @@ public class LadybugServletConfiguration implements ApplicationContextAware {
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 		SecuritySettings.setupDefaultSecuritySettings(applicationContext.getEnvironment());
+	}
+
+	@Bean
+	public RequestMappingHandlerMapping handlerMapping() {
+		RequestMappingHandlerMapping handlerMapping = new RequestMappingHandlerMapping();
+		handlerMapping.setUseTrailingSlashMatch(true);
+		return handlerMapping;
 	}
 
 	@Bean
