@@ -58,13 +58,22 @@ import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageContext;
 import org.frankframework.util.MessageUtils;
 
 @Log4j2
 public class DataSonnetUtil {
 
+	private static final EvalScope EVAL_SCOPE_SINGLETON = new DummyEvaluator();
+
 	private DataSonnetUtil() {
 		// Private constructor to prevent instance creations
+	}
+
+	private static class DummyEvaluator extends NoFileEvaluator implements EvalScope {
+		public DummyEvaluator() {
+			super("{}", DataSonnetPath.apply("/"), null, null, true, null);
+		}
 	}
 
 	/**
@@ -114,50 +123,54 @@ public class DataSonnetUtil {
 		}
 
 		private Val sendMessage(List<Val> inputArgs, ISender sender) {
-			String arg = inputArgs.stream()
-					.map(this::convertToString)
+			Message arg = inputArgs.stream()
+					.map(this::toMessage)
 					.findFirst()
 					.orElseThrow(() -> new IllegalArgumentException("no value provided"));
 
 			try {
-				Message result = sender.sendMessageOrThrow(Message.asMessage(arg), session);
-				MimeType mimeType = MessageUtils.computeMimeType(result);
-				if (mimeType != null) {
-					if (mimeType.isCompatibleWith(org.springframework.http.MediaType.APPLICATION_JSON)) {
-						Value parsed = ujsonUtils.parse(result.asString());
-						Val val = Materializer.reverse(parsed);
-						log.debug("Converted sender result from String to JSonnet Val type [{}]", val);
-						return val;
-					} else if (!mimeType.isCompatibleWith(org.springframework.http.MediaType.TEXT_PLAIN) && !mimeType.isCompatibleWith(org.springframework.http.MediaType.APPLICATION_OCTET_STREAM)) {
-						log.warn("Cannot yet translate sender-result to a DataSonnet compatible format, returning as String. Try to parse the result with ds.read(..., \"{}/{}\") in your jsonnet file", mimeType.getType(), mimeType.getSubtype());
-					}
-				}
-				return new Val.Str(result.asString());
+				Message result = sender.sendMessageOrThrow(arg, session);
+				return messageToVal(result);
 			} catch (Exception e) {
 				throw new IllegalStateException(e);
 			}
 		}
 
-		private String convertToString(Val value) {
+		private Message toMessage(Val value) {
 			if (value == Val.bool(true)) {
-				return "true";
+				return Message.asMessage(true);
 			} else if (value == Val.bool(false)) {
-				return "false";
+				return Message.asMessage(false);
 			} else if (value instanceof Val.Num number) {
-				return String.valueOf((long) number.value());
+				return Message.asMessage((long) number.value());
 			} else if (value instanceof Val.Str stringValue) {
-				return stringValue.value();
+				return new Message(stringValue.value());
 			} else {
-				String someResult = com.datasonnet.jsonnet.Materializer.stringify(value, new DummyEvaluator());
-				log.debug("Function parameter type [{}] converted to JSON String [{}]", value.getClass().getName(), someResult);
-				return someResult;
+				String val = Materializer.stringify(value, EVAL_SCOPE_SINGLETON);
+				log.debug("function parameter type [{}] converted to JSON String [{}]", () -> value.getClass().getName(), () -> val);
+				return new Message(val, new MessageContext().withMimeType(org.springframework.http.MediaType.APPLICATION_JSON));
 			}
 		}
-	}
 
-	private static class DummyEvaluator extends NoFileEvaluator implements EvalScope {
-		public DummyEvaluator() {
-			super("{}", DataSonnetPath.apply("/"), null, null, true, null);
+		private Val messageToVal(Message result) throws IOException {
+			@SuppressWarnings("deprecation")
+			Object value = result.asObject();
+			if (value instanceof Boolean bool) {
+				return Val.bool(bool);
+			} else if (value instanceof Number) {
+				return new Val.Num(Long.parseLong(""+value));
+			}
+
+			MimeType mimeType = MessageUtils.computeMimeType(result);
+			if (mimeType != null && mimeType.isCompatibleWith(org.springframework.http.MediaType.APPLICATION_JSON)) {
+				Value parsed = ujsonUtils.parse(result.asString());
+				Val val = Materializer.reverse(parsed);
+				log.debug("converted sender result from [{}] to JSonnet Val type [{}]", () -> value.getClass().getName(), () -> val);
+				return val;
+			}
+
+			log.debug("cannot yet translate sender-result to a DataSonnet compatible format, returning as String");
+			return new Val.Str(result.asString());
 		}
 	}
 
