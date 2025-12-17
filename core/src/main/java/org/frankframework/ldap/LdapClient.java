@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020, 2024 WeAreFrank!
+   Copyright 2019, 2020, 2024-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import java.io.Reader;
 import java.net.URL;
 import java.security.cert.CertPathValidatorException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Hashtable;
 import java.util.Iterator;
@@ -43,6 +45,10 @@ import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 
 import org.frankframework.cache.ICache;
@@ -91,9 +97,6 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 
     private static final String DEFAULT_INITIAL_CONTEXT_FACTORY_NAME = "com.sun.jndi.ldap.LdapCtxFactory";
     public static final String JNDI_AUTH_ALIAS_KEY = "jndiAuthAlias";
-//    private String ATTRIBUTE_CACHE_JNDI_NAME_KEY = "attributeCache.jndiName";
-//    private String ATTRIBUTE_CACHE_TIME_TO_LIVE_KEY = "attributeCache.timeToLive";
-//    private int ATTRIBUTE_CACHE_TIME_TO_LIVE_DEFAULT = 3600;
     private static final String LDAP_PROPS_DEFAULT_FILENAME = "Ldap.properties";
     private static final String LDAP_PROPS_FILENAME_KEY = "ldap.props.file";
     private static final String LDAP_CONNECTION_POOL_TIMEOUT_DEFAULT = "600000"; // milliseconds that an idle connection may remain in the pool without being closed and removed
@@ -109,7 +112,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
     	{"com.sun.jndi.ldap.connect.pool.timeout", LDAP_CONNECTION_POOL_TIMEOUT_DEFAULT}
     };
 
-	private Hashtable<String,Object> jndiEnv=null;
+	private Map<String,Object> jndiEnv=null;
 	private ICache<String,Set<String>> attributeCache=null;
 
     static{
@@ -129,13 +132,11 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
     public LdapClient(Map<String,Object> options) {
     	super();
     	jndiEnv=getJndiEnv(options.entrySet());
-//    	initCache((String)options.get(ATTRIBUTE_CACHE_JNDI_NAME_KEY),(String)options.get(ATTRIBUTE_CACHE_TIME_TO_LIVE_KEY));
     }
 
     public LdapClient(Properties options) {
     	super();
     	jndiEnv=getJndiEnv(options.entrySet());
-//    	initCache((String)options.get(ATTRIBUTE_CACHE_JNDI_NAME_KEY),(String)options.get(ATTRIBUTE_CACHE_TIME_TO_LIVE_KEY));
     }
 
 
@@ -168,12 +169,12 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 	}
 
 	@SuppressWarnings("unchecked")
-	protected Hashtable<String,Object> getJndiEnv(@SuppressWarnings("rawtypes") Set optionSet) {
-		Hashtable<String,Object> jndiEnv = new Hashtable<>();
+	protected Map<String,Object> getJndiEnv(@SuppressWarnings("rawtypes") Set optionSet) {
+		Map<String,Object> jndiEnv = new HashMap<>();
 
 		//jndiEnv.put("com.sun.jndi.ldap.trace.ber", System.err);//ldap response in log for debug purposes
 		jndiEnv.put(Context.INITIAL_CONTEXT_FACTORY, DEFAULT_INITIAL_CONTEXT_FACTORY_NAME);
-		for(Entry<String,Object> entry:(Set<Entry<String,Object>>)optionSet) {
+		for (Entry<String,Object> entry: (Set<Entry<String,Object>>)optionSet) {
 			if (entry.getKey().equals(JNDI_AUTH_ALIAS_KEY)) {
 				CredentialFactory jndiCf = new CredentialFactory((String)entry.getValue());
 				if (jndiCf.getUsername()!=null)
@@ -186,9 +187,9 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 		}
 
 		if (log.isDebugEnabled()) {
-			for(String key:jndiEnv.keySet()) {
-				String value=(String)jndiEnv.get(key);
-				log.debug("jndiEnv [{}] = [{}]", key, key.equals(Context.SECURITY_CREDENTIALS) ? "********" : value);
+			for (Map.Entry<String, Object> entry: jndiEnv.entrySet()) {
+				String key = entry.getKey();
+				log.debug("jndiEnv [{}] = [{}]", key, key.equals(Context.SECURITY_CREDENTIALS) ? "********" : entry.getValue());
 			}
 		}
 		return jndiEnv;
@@ -208,7 +209,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
      */
     public DirContext getContext() throws NamingException {
     	try {
-    		return new InitialDirContext(jndiEnv);
+    		return new InitialDirContext(new Hashtable<>(jndiEnv));
     	} catch (NamingException ne) {
     		for (Throwable cause=ne; cause!=null; cause=cause.getCause()) {
     			if (cause instanceof CertPathValidatorException cpve) {
@@ -219,15 +220,15 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
     	}
     }
 
-    private String arrayToString(String[] values, String separator) {
+	/**
+	 * Return string representation of array, surrounded by square brackets.
+	 */
+	@Nonnull
+    private String arrayToString(@Nullable String[] values) {
     	if (values==null || values.length==0) {
-    		return "";
+    		return "[]";
     	}
-    	String result=values[0];
-    	for (int i=1;i<values.length; i++) {
-    		result+=separator+values[i];
-    	}
-    	return result;
+		return Arrays.toString(values);
     }
 
     public NamingEnumeration<SearchResult> search(DirContext context, String searchDN, String filter, String returnedAttribute, int scope) throws NamingException {
@@ -236,13 +237,13 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
     }
 
     public NamingEnumeration<SearchResult> search(DirContext context, String searchDN, String filter, Set<String> returnedAttributes, int scope) throws NamingException {
-     	String[] returnedAttributesArr=returnedAttributes==null?null:returnedAttributes.toArray(new String[returnedAttributes.size()]);
+     	String[] returnedAttributesArr=returnedAttributes==null?null:returnedAttributes.toArray(new String[0]);
  		return search(context,searchDN, filter, returnedAttributesArr, scope);
     }
 
     public NamingEnumeration<SearchResult> search(DirContext context, String searchDN, String filter, String[] returnedAttributes, int scope) throws NamingException {
     	if (log.isDebugEnabled())
-			log.debug("searchDN [{}] filter [{}] no params returnedAttributes [{}]", searchDN, filter, arrayToString(returnedAttributes, ","));
+			log.debug("searchDN [{}] filter [{}] no params returnedAttributes {}", searchDN, filter, arrayToString(returnedAttributes));
 		SearchControls sc = new SearchControls();
 		sc.setSearchScope(scope);
 		if (returnedAttributes!=null) {
@@ -273,7 +274,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 		return context.search(searchDN, filter, params, sc);
     }
 
-    public Set<String> searchRecursivelyViaAttributes(String uid, String baseDn, String attribute) throws NamingException {
+    public Set<String> searchRecursivelyViaAttributes(String uid, String baseDn, String attribute, int maxNestingLevel, String recursionFilter) throws NamingException {
 		Set<String> results;
 		Set<String> searched = new LinkedHashSet<>();
 
@@ -284,21 +285,28 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 			results=searchObjectForMultiValuedAttribute(context, uid, baseDn, attribute);
 			Set<String> toBeSearched = new LinkedHashSet<>(results);
 			while (!toBeSearched.isEmpty()) {
-		       	Set<String> searchingNow=toBeSearched;
-		       	toBeSearched=new LinkedHashSet<>();
+		       	Set<String> searchingNow = toBeSearched;
+		       	toBeSearched = new LinkedHashSet<>();
 		       	nestingLevel++;
+
+				if (nestingLevel == maxNestingLevel) {
+					break;
+				}
+
 				if (log.isDebugEnabled()) log.debug("secondary lookup of memberships of [{}] nestingLevel [{}]", uid, nestingLevel);
-				for (String target:searchingNow) {
+				for (String target: searchingNow) {
 					if (log.isDebugEnabled())
 						log.debug("secondary lookup of memberships of [{}] nestingLevel [{}], now searching [{}]", uid, nestingLevel, target);
 					searched.add(target);
-					Set<String> secondaryResults=searchObjectForMultiValuedAttributeWithCache(context, target, baseDn, attribute, true);
-					for(String secondaryResult:secondaryResults) {
+					Set<String> secondaryResults = searchObjectForMultiValuedAttributeWithCache(context, target, baseDn, attribute, true);
+					for (String secondaryResult: secondaryResults) {
 			    		if (!results.contains(secondaryResult)) {
 			    			if (log.isDebugEnabled()) log.debug("nestingLevel [{}] found secondary membership [{}]", nestingLevel, secondaryResult);
 			    			results.add(secondaryResult);
 			    			if (!searched.contains(secondaryResult) &&
-			    				!searchingNow.contains(secondaryResult)) {
+			    				!searchingNow.contains(secondaryResult) &&
+								(StringUtils.isBlank(recursionFilter) || secondaryResult.contains(recursionFilter))
+							) {
 			    				toBeSearched.add(secondaryResult);
 			    			}
 			    		}
