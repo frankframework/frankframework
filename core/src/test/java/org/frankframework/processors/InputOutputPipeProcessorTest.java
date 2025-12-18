@@ -463,4 +463,22 @@ public class InputOutputPipeProcessorTest {
 		assertEquals(INPUT_MESSAGE_TEXT, prr.getResult().asString());
 		assertFalse(pipeExecuted.get(), "Pipe executed but should not have been");
 	}
+
+	@Test
+	public void testPreserveInput() throws Exception {
+		// Arrange
+		pipe.setGetInputFromFixedValue("dummy");
+		pipe.setPreserveInput(true);
+		pipe.configure();
+		pipe.start();
+
+		Message input = new Message(INPUT_MESSAGE_TEXT);
+
+		// Act
+		PipeRunResult prr = processor.processPipe(pipeLine, pipe, input, session);
+
+		// Assert
+		assertEquals(INPUT_MESSAGE_TEXT, prr.getResult().asString());
+		assertTrue(pipeExecuted.get(), "Pipe should have been executed but isn't");
+	}
 }
