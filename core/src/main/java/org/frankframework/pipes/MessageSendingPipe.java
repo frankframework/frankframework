@@ -418,7 +418,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 					String retry = retryTp.transformToString(sendResult.getResult());
 					if ("true".equalsIgnoreCase(retry)) {
 						if (retriesLeft >= 1) {
-							retryInterval = increaseRetryIntervalAndWait(session, retryInterval, "xpathRetry result ["+retry+"], retries left [" + retriesLeft + "]");
+							retryInterval = increaseRetryIntervalAndWait(retryInterval, "xpathRetry result ["+retry+"], retries left [" + retriesLeft + "]");
 						}
 					} else {
 						replyIsValid = true;
@@ -428,13 +428,13 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 				}
 			} catch (TimeoutException toe) {
 				if (retriesLeft >= 1) {
-					retryInterval = increaseRetryIntervalAndWait(session, retryInterval, "timeout occurred, retries left [" + retriesLeft + "]");
+					retryInterval = increaseRetryIntervalAndWait(retryInterval, "timeout occurred, retries left [" + retriesLeft + "]");
 				} else {
 					throw toe;
 				}
 			} catch (SenderException se) {
 				if (retriesLeft >= 1) {
-					retryInterval = increaseRetryIntervalAndWait(session, retryInterval, "exception ["+se.getMessage()+"] occurred, retries left [" + retriesLeft + "]");
+					retryInterval = increaseRetryIntervalAndWait(retryInterval, "exception ["+se.getMessage()+"] occurred, retries left [" + retriesLeft + "]");
 				} else {
 					throw se;
 				}
@@ -551,9 +551,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		if (inputWrapper != null) {
 			log.debug("wrapping input");
 			PipeRunResult wrapResult = pipeProcessor.processPipe(getPipeLine(), inputWrapper, input, session);
-			if (wrapResult == null) {
-				throw new PipeRunException(inputWrapper, "retrieved null result from inputWrapper");
-			}
 			if (!wrapResult.isSuccessful()) {
 				return wrapResult;
 			}
@@ -565,9 +562,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		if (inputValidator != null) {
 			log.debug("validating input");
 			PipeRunResult validationResult = pipeProcessor.processPipe(getPipeLine(), inputValidator, input, session);
-			if (validationResult == null) {
-				throw new PipeRunException(inputValidator, "retrieved null result from inputValidator");
-			}
 			if (!validationResult.isSuccessful()) {
 				return validationResult;
 			}
@@ -586,21 +580,16 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 			log.debug("validating response");
 			PipeRunResult validationResult;
 			validationResult = pipeProcessor.processPipe(getPipeLine(), outputValidator, output, session);
-			if (validationResult!=null) {
-				if (!validationResult.isSuccessful()) {
-					return validationResult;
-				}
-				output = validationResult.getResult();
+			if (!validationResult.isSuccessful()) {
+				return validationResult;
 			}
+			output = validationResult.getResult();
 			log.debug("response after validating [{}]", validationResult::getResult);
 		}
 
 		if (outputWrapper != null) {
 			log.debug("wrapping response");
 			PipeRunResult wrapResult = pipeProcessor.processPipe(getPipeLine(), outputWrapper, output, session);
-			if (wrapResult == null) {
-				throw new PipeRunException(outputWrapper, "retrieved null result from outputWrapper");
-			}
 			if (!wrapResult.isSuccessful()) {
 				return wrapResult;
 			}
@@ -716,14 +705,12 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		if (adapter == null) {
 			return;
 		}
-		if (getPresumedTimeOutInterval() > 0 && !ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader())) {
-			if (!PRESUMED_TIMEOUT_FORWARD.equals(exitState)) {
-				adapter.setLastExitState(getName(), System.currentTimeMillis(), exitState);
-			}
+		if (getPresumedTimeOutInterval() > 0 && !ConfigurationUtils.isConfigurationStubbed(getConfigurationClassLoader()) && !PRESUMED_TIMEOUT_FORWARD.equals(exitState)) {
+			adapter.setLastExitState(getName(), System.currentTimeMillis(), exitState);
 		}
 	}
 
-	public int increaseRetryIntervalAndWait(PipeLineSession session, int retryInterval, String description) throws InterruptedException {
+	public int increaseRetryIntervalAndWait(int retryInterval, String description) throws InterruptedException {
 		long currentInterval;
 		synchronized (this) {
 			if (retryInterval < getRetryMinInterval()) {
