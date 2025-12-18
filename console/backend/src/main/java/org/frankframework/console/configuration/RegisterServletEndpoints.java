@@ -52,7 +52,6 @@ public class RegisterServletEndpoints implements ApplicationContextAware {
 		servletConfiguration.loadProperties();
 
 		DispatcherServlet ds = new DispatcherServlet((WebApplicationContext) applicationContext);
-		ds.setDetectAllHandlerMappings(false);
 		ServletRegistration<DispatcherServlet> servlet = new ServletRegistration<>(ds, servletConfiguration);
 		servlet.setMultipartConfig(new MultipartConfigElement(""));
 		servlet.setAsyncSupported(true);
