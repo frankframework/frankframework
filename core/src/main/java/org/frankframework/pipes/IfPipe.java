@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
@@ -208,6 +209,7 @@ public class IfPipe extends AbstractPipe {
 		return xpath;
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		SupportedMediaType mediaType = getSupportedMediaType(message);

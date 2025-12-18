@@ -18,6 +18,8 @@ package org.frankframework.pipes;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
+
 import com.datasonnet.MapperBuilder;
 import com.datasonnet.document.Document;
 
@@ -131,6 +133,7 @@ public class DataSonnetPipe extends FixedForwardPipe {
 		senderList.forEach(ISender::stop);
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		ParameterValueList pvl = getParameters(message, session);

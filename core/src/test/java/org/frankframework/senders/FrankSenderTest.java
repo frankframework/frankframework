@@ -524,6 +524,7 @@ class FrankSenderTest {
 		configuration = new TestConfiguration(false);
 		Semaphore semaphore = new Semaphore(0);
 		IPipe pipe = new AbstractPipe() {
+			@Nonnull
 			@Override
 			public PipeRunResult doPipe(Message message, PipeLineSession session) {
 				semaphore.release();

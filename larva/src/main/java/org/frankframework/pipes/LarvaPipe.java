@@ -17,6 +17,8 @@ package org.frankframework.pipes;
 
 import java.io.StringWriter;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
@@ -79,6 +81,7 @@ public class LarvaPipe extends FixedForwardPipe {
 		}
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) {
 		ApplicationContext applicationContext = getAdapter().getConfiguration().getApplicationContext();

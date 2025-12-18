@@ -20,6 +20,8 @@ import java.io.IOException;
 
 import javax.xml.transform.TransformerConfigurationException;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -172,6 +174,7 @@ public class FxfWrapperPipe extends EsbSoapWrapperPipe {
 		}
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (getDirection()==Direction.WRAP) {

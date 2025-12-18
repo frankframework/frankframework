@@ -15,6 +15,8 @@
 */
 package org.frankframework.pipes;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -55,6 +57,7 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 		}
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 

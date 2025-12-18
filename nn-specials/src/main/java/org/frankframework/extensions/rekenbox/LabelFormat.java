@@ -17,6 +17,8 @@ package org.frankframework.extensions.rekenbox;
 
 import javax.xml.parsers.DocumentBuilder;
 
+import jakarta.annotation.Nonnull;
+
 import org.w3c.dom.Document;
 import org.xml.sax.XMLReader;
 import org.xml.sax.helpers.XMLReaderFactory;
@@ -77,6 +79,7 @@ public class LabelFormat extends FixedForwardPipe {
 	private String direction=null;
 	private static final String DIRECTION_XML2LABEL = "Xml2Label";
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {

@@ -15,6 +15,8 @@
  */
 package org.frankframework.pipes;
 
+import jakarta.annotation.Nonnull;
+
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -37,6 +39,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 	private boolean throwException = true;
 	private int timeout = 30;
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		ParameterValueList pvl;

@@ -15,6 +15,8 @@
 */
 package org.frankframework.pipes;
 
+import jakarta.annotation.Nonnull;
+
 import lombok.Getter;
 
 import org.frankframework.core.PipeLineSession;
@@ -43,6 +45,7 @@ public class UUIDGeneratorPipe extends FixedForwardPipe {
 		NUMERIC
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 

@@ -119,6 +119,7 @@ public class AdapterHideRegexTest {
 
 	private static @Nonnull IPipe createLoggingPipe(String name, String hideRegex, boolean doThrowException) {
 		IPipe pipe = new FixedForwardPipe() {
+			@Nonnull
 			@Override
 			public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 				// Should be hidden in context of main adapter, may be visible when logged from receiver logs

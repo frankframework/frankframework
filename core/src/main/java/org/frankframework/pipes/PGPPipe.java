@@ -18,6 +18,8 @@ package org.frankframework.pipes;
 import java.io.OutputStream;
 import java.security.Security;
 
+import jakarta.annotation.Nonnull;
+
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -124,6 +126,7 @@ public class PGPPipe extends FixedForwardPipe {
 		pgpAction.configure();
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {

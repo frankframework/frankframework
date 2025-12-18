@@ -15,6 +15,8 @@
 */
 package org.frankframework.pipes;
 
+import jakarta.annotation.Nonnull;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
@@ -71,6 +73,7 @@ public class CompareIntegerPipe extends AbstractPipe {
 		}
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		ParameterValueList pvl;

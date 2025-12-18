@@ -18,6 +18,8 @@ package org.frankframework.pipes;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.ThreadContext;
 
@@ -58,6 +60,7 @@ public class LogContextPipe extends FixedForwardPipe {
 	 */
 	private @Getter @Setter boolean continueOnError;
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (!getParameterList().isEmpty()) {

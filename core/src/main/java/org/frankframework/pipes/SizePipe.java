@@ -15,6 +15,8 @@
 */
 package org.frankframework.pipes;
 
+import jakarta.annotation.Nonnull;
+
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -35,6 +37,7 @@ public class SizePipe extends FixedForwardPipe {
 	/**
 	 * @see IPipe#doPipe(Message, PipeLineSession)
 	 */
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {

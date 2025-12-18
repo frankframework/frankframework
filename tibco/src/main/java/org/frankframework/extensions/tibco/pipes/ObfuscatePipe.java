@@ -17,6 +17,8 @@ package org.frankframework.extensions.tibco.pipes;
 
 import java.io.IOException;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -51,6 +53,7 @@ public class ObfuscatePipe extends FixedForwardPipe {
 		}
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String input;

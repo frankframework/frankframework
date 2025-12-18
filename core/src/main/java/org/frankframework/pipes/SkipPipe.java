@@ -15,6 +15,8 @@
 */
 package org.frankframework.pipes;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.core.PipeLineSession;
@@ -35,6 +37,7 @@ public class SkipPipe extends FixedForwardPipe {
 	private int skip = 0;
 	private int length = -1;
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {

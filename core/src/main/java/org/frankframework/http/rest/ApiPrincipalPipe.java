@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.rmi.server.UID;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.annotation.ServletSecurity;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
@@ -64,6 +65,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 		cache = ApiCacheManager.getInstance();
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (message==null) {

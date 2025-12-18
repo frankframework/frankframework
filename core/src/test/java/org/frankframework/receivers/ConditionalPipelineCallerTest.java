@@ -8,6 +8,8 @@ import static org.mockito.Mockito.spy;
 
 import java.io.StringReader;
 
+import jakarta.annotation.Nonnull;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -90,6 +92,7 @@ public class ConditionalPipelineCallerTest {
 		pl.setPipeLineProcessor(pipeLineProcessor);
 
 		EchoPipe pipe = new EchoPipe() {
+			@Nonnull
 			@Override
 			public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 				session.put(SESSION_VALUE_ECHO_PIPE_CALLED, "true");

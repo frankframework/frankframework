@@ -17,6 +17,8 @@ package org.frankframework.pipes;
 
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
+
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
@@ -29,6 +31,7 @@ import org.frankframework.util.XmlUtils;
  */
 public class XmlParsersPipe extends FixedForwardPipe {
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Map<String, String> xmlInfo = XmlUtils.getVersionInfo();

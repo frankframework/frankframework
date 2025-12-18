@@ -18,6 +18,8 @@ package org.frankframework.pipes;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -115,6 +117,7 @@ import org.frankframework.util.XmlUtils;
 @EnterpriseIntegrationPattern(Type.TRANSLATOR)
 public class BytesOutputPipe extends FixedForwardPipe {
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {

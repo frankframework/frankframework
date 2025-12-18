@@ -25,6 +25,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -277,6 +279,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 	 *
 	 * @see IPipe#doPipe(Message, PipeLineSession)
 	 */
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
 		String streamId = getStreamId(input, session);

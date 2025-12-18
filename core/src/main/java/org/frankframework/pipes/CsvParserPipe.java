@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.Map.Entry;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -98,6 +100,7 @@ public class CsvParserPipe extends FixedForwardPipe {
 		format = builder.build();
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {

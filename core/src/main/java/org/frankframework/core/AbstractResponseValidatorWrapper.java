@@ -17,6 +17,7 @@ package org.frankframework.core;
 
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.springframework.context.ApplicationContext;
@@ -50,13 +51,14 @@ public abstract class AbstractResponseValidatorWrapper<V extends AbstractValidat
 		// Do not configure, also do not (re)configure owner
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		return owner.doPipe(message, session, true, null);
 	}
 
 	@Override
-	public PipeRunResult validate(Message message, PipeLineSession session, String messageRoot) throws PipeRunException {
+	public @Nonnull PipeRunResult validate(Message message, PipeLineSession session, String messageRoot) throws PipeRunException {
 		return owner.doPipe(message, session, true, messageRoot);
 	}
 

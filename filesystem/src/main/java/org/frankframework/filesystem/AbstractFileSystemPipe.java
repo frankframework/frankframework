@@ -18,7 +18,6 @@ package org.frankframework.filesystem;
 import java.util.List;
 
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 
 import lombok.Getter;
 
@@ -99,8 +98,8 @@ public abstract class AbstractFileSystemPipe<F, FS extends IBasicFileSystem<F>> 
 		}
 	}
 
+	@Nonnull
 	@Override
-	@Nullable
 	public PipeRunResult doPipe(@Nonnull Message message, @Nonnull PipeLineSession session) throws PipeRunException {
 		ParameterList paramList = getParameterList();
 		ParameterValueList pvl;

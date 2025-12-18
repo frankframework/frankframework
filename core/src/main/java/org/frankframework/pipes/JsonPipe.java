@@ -20,6 +20,7 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import jakarta.annotation.Nonnull;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonException;
@@ -98,6 +99,7 @@ public class JsonPipe extends FixedForwardPipe {
 		}
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 

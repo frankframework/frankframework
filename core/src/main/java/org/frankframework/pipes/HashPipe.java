@@ -23,6 +23,8 @@ import java.security.NoSuchAlgorithmException;
 
 import javax.crypto.spec.SecretKeySpec;
 
+import jakarta.annotation.Nonnull;
+
 import lombok.Getter;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -103,6 +105,7 @@ public class HashPipe extends FixedForwardPipe {
 		}
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {

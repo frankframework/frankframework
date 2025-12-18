@@ -15,6 +15,8 @@
  */
 package org.frankframework.pipes;
 
+import jakarta.annotation.Nonnull;
+
 import io.micrometer.core.instrument.DistributionSummary;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -58,6 +60,7 @@ public class CounterSwitchPipe extends FixedForwardPipe {
 		}
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String forward = "";

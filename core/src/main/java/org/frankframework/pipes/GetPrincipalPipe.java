@@ -17,6 +17,8 @@ package org.frankframework.pipes;
 
 import java.security.Principal;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -54,6 +56,7 @@ public class GetPrincipalPipe extends FixedForwardPipe {
 		}
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException{
 		Principal principal=session.getSecurityHandler().getPrincipal();

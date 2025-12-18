@@ -17,6 +17,8 @@ package org.frankframework.pipes;
 
 import java.io.IOException;
 
+import jakarta.annotation.Nonnull;
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IValidator;
 import org.frankframework.core.PipeForward;
@@ -47,13 +49,14 @@ public class XmlWellFormedCheckerPipe extends FixedForwardPipe implements IValid
 		registerEvent(ValidationResult.VALID.getEvent());
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		return validate(message, session, getRoot());
 	}
 
 	@Override
-	public PipeRunResult validate(Message message, PipeLineSession session, String messageRoot) throws PipeRunException {
+	public @Nonnull PipeRunResult validate(Message message, PipeLineSession session, String messageRoot) throws PipeRunException {
 		String input;
 		try {
 			input = message.asString();

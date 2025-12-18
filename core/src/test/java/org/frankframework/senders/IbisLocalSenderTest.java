@@ -18,6 +18,8 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
+import jakarta.annotation.Nonnull;
+
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -624,6 +626,7 @@ class IbisLocalSenderTest {
 			this.asyncCompletionSemaphore = asyncCompletionSemaphore;
 		}
 
+		@Nonnull
 		@Override
 		public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 			try {

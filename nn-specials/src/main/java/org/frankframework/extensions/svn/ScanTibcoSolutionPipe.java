@@ -26,6 +26,8 @@ import java.util.Vector;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -54,6 +56,7 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 	private String url;
 	private int level = 0;
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		StringWriter stringWriter = new StringWriter();

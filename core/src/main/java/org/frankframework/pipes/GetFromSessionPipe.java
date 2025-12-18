@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import org.frankframework.core.PipeLineSession;
@@ -44,6 +46,7 @@ public class GetFromSessionPipe extends FixedForwardPipe {
 	private String sessionKey;
 	private ParameterType type = null;
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String key = getSessionKey();

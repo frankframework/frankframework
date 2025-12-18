@@ -71,6 +71,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 	 */
 	// Message should not be nullable?
 	// Should the skipPipe be handled before getInputFrom?
+	@Nonnull
 	@Override
 	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nonnull final Message inputMessage, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		Message originalMessage = inputMessage;
@@ -236,6 +237,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 		}
 	}
 
+	@Nonnull
 	@Override
 	@SuppressWarnings("java:S1185") // method needs to be overridden to enable AOP for debugger
 	public PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException {

@@ -243,6 +243,7 @@ public class PipeLineTest {
 	}
 
 	private static class NonFixedForwardPipe extends AbstractPipe {
+		@Nonnull
 		@Override
 		public PipeRunResult doPipe(Message message, PipeLineSession session) {
 			return new PipeRunResult(findForward(PipeForward.SUCCESS_FORWARD_NAME), message);

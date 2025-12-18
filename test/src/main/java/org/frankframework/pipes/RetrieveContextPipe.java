@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map.Entry;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.logging.log4j.ThreadContext;
 import org.xml.sax.SAXException;
 
@@ -34,6 +36,7 @@ import org.frankframework.stream.MessageBuilder;
 
 public class RetrieveContextPipe extends FixedForwardPipe {
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {

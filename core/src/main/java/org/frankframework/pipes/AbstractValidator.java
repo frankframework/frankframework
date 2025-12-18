@@ -17,6 +17,8 @@ package org.frankframework.pipes;
 
 import java.util.function.Supplier;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.Getter;
@@ -67,13 +69,14 @@ public abstract class AbstractValidator extends FixedForwardPipe implements IDua
 		registerEvent(ValidationResult.VALID.getEvent());
 	}
 
+	@Nonnull
 	@Override
 	public final PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		return doPipe(message, session, false, null);
 	}
 
 	@Override
-	public PipeRunResult validate(Message message, PipeLineSession session, String messageRoot) throws PipeRunException {
+	public @Nonnull PipeRunResult validate(Message message, PipeLineSession session, String messageRoot) throws PipeRunException {
 		return doPipe(message, session, false, messageRoot);
 	}
 

@@ -46,6 +46,7 @@ public class LargeBlockTesterPipe extends FixedForwardPipe {
 		CONSUME
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Message result;

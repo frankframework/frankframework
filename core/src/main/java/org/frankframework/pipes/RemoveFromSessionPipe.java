@@ -18,6 +18,8 @@ package org.frankframework.pipes;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 
 import lombok.SneakyThrows;
@@ -45,6 +47,7 @@ public class RemoveFromSessionPipe extends FixedForwardPipe {
 		super.setPreserveInput(true);
 	}
 
+	@Nonnull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String result;
