@@ -28,6 +28,7 @@ import org.xml.sax.SAXException;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.IPipe;
+import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -85,9 +86,15 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 			message = new Message(pipe.getEmptyInputReplacement());
 		}
 
-		if (pipe instanceof FixedForwardPipe ffPipe && ffPipe.skipPipe(message, pipeLineSession)) {
-			log.info("skipped pipe processing for adapter [{}] pipe [{}]", pipeLine::getAdapter, pipe::getName);
-			return new PipeRunResult(ffPipe.getSuccessForward(), originalMessage);
+		if (pipe.skipPipe(message, pipeLineSession)) {
+			PipeForward successForward;
+			if (pipe instanceof FixedForwardPipe ffp) {
+				successForward = ffp.getSuccessForward();
+			} else {
+				successForward = pipe.findForward(PipeForward.SUCCESS_FORWARD_NAME);
+			}
+			log.info("skipped pipe processing for adapter [{}] pipe [{}], next pipe: [{}]", pipeLine::getAdapter, pipe::getName, successForward::getName);
+			return new PipeRunResult(successForward, originalMessage);
 		}
 
 		// Do the actual pipe processing.
