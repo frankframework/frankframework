@@ -11,6 +11,7 @@ RUN set -eux && \
 	mkdir -p /opt/frank/secrets && \
 	mkdir -p /opt/frank/configurations && \
 	mkdir -p /opt/frank/drivers && \
+	mkdir -p /opt/frank/provided && \
 	mkdir -p /opt/frank/plugins && \
 	mkdir -p /opt/frank/testtool && \
 	mkdir -p /opt/frank/testtool-ext && \
@@ -29,8 +30,14 @@ COPY --chown=tomcat src/scripts/ /scripts/
 RUN cat /scripts/catalinaAdditional.properties >> /usr/local/tomcat/conf/catalina.properties  && \
     rm -f /scripts/catalinaAdditional.properties
 
-# Copy JDBC and JMS drivers
-COPY --chown=tomcat target/dependencies/*.jar /opt/frank/drivers/
+# Copy h2 database driver
+COPY --chown=tomcat target/dependencies/h2.jar /opt/frank/drivers/
+
+# copy additional needed libraries to provided folder
+COPY --chown=tomcat target/dependencies/credentialprovider-fatjar.jar /opt/frank/provided/
+COPY --chown=tomcat target/dependencies/jakarta*.jar /opt/frank/provided/
+COPY --chown=tomcat target/dependencies/log4j*.jar /opt/frank/provided/
+COPY --chown=tomcat target/dependencies/slf4j-api.jar /opt/frank/provided/
 
 # Copy webapp war
 COPY --chown=tomcat target/dependencies/war/ /usr/local/tomcat/webapps/ROOT/
