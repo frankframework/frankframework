@@ -58,14 +58,14 @@ public class InputOutputPipeProcessorTest {
 		PipeProcessor chain = new PipeProcessor() {
 			@Nonnull
 			@Override
-			public @Nonnull PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException {
+			public PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException {
 				pipeExecuted.set(true);
 				return pipe.doPipe(message, pipeLineSession);
 			}
 
 			@Nonnull
 			@Override
-			public @Nonnull PipeRunResult validate(@Nonnull PipeLine pipeLine, @Nonnull IValidator validator, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
+			public PipeRunResult validate(@Nonnull PipeLine pipeLine, @Nonnull IValidator validator, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
 				pipeExecuted.set(true);
 				return validator.validate(message, pipeLineSession, messageRoot);
 			}
