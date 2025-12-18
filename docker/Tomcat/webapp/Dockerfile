@@ -11,7 +11,6 @@ RUN set -eux && \
 	mkdir -p /opt/frank/secrets && \
 	mkdir -p /opt/frank/configurations && \
 	mkdir -p /opt/frank/drivers && \
-	mkdir -p /opt/frank/provided && \
 	mkdir -p /opt/frank/plugins && \
 	mkdir -p /opt/frank/testtool && \
 	mkdir -p /opt/frank/testtool-ext && \
@@ -34,10 +33,10 @@ RUN cat /scripts/catalinaAdditional.properties >> /usr/local/tomcat/conf/catalin
 COPY --chown=tomcat target/dependencies/h2.jar /opt/frank/drivers/
 
 # copy additional needed libraries to provided folder
-COPY --chown=tomcat target/dependencies/credentialprovider-fatjar.jar /opt/frank/provided/
-COPY --chown=tomcat target/dependencies/jakarta*.jar /opt/frank/provided/
-COPY --chown=tomcat target/dependencies/log4j*.jar /opt/frank/provided/
-COPY --chown=tomcat target/dependencies/slf4j-api.jar /opt/frank/provided/
+COPY --chown=tomcat target/dependencies/credentialprovider-fatjar.jar /usr/local/tomcat/lib/
+COPY --chown=tomcat target/dependencies/jakarta*.jar /usr/local/tomcat/lib/
+COPY --chown=tomcat target/dependencies/log4j*.jar /usr/local/tomcat/lib/
+COPY --chown=tomcat target/dependencies/slf4j-api.jar /usr/local/tomcat/lib/
 
 # Copy webapp war
 COPY --chown=tomcat target/dependencies/war/ /usr/local/tomcat/webapps/ROOT/

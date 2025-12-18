@@ -161,7 +161,8 @@ More information on credentials can be found in the [Frank!Framework Manual](htt
 ### Drivers
 
 Please provide the necessary JDBC and JMS drivers for your database and JMS provider. You can mount the driver JARs to the `/opt/frank/drivers` directory in the container.
-This allows you to use your own drivers without having to rebuild the image. By default, we only provide the H2 JDBC driver in the image.
+This allows you to use your own drivers without having to rebuild the image. By default, we only provide the H2 JDBC driver in the image to have a sensible default available. 
+But still, we recommend providing your own database driver for production use.
 
 ### Non-root
 
