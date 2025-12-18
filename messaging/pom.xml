@@ -35,7 +35,7 @@
 		<dependency>
 			<groupId>org.messaginghub</groupId>
 			<artifactId>pooled-jms</artifactId>
-			<version>3.1.7</version>
+			<version>3.1.8</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.paho</groupId>
@@ -57,7 +57,7 @@
 		<dependency>
 			<groupId>com.ibm.mq</groupId>
 			<artifactId>com.ibm.mq.allclient</artifactId>
-			<version>9.4.4.0</version>
+			<version>9.4.4.1</version>
 			<scope>provided</scope>
 			<exclusions>
 				<exclusion>
