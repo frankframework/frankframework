@@ -36,4 +36,18 @@
 			</XsltPipe>
 		</Pipeline>
 	</Adapter>
+
+	<Adapter name="ReplaceInputFromMissingSessionKey">
+		<Receiver>
+			<JavaListener name="ibis4test-ReplaceInputFromMissingSessionKey" serviceName="ibis4test-ReplaceInputFromMissingSessionKey" />
+		</Receiver>
+		<Pipeline>
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS"/>
+			</Exits>
+
+			<PutInSessionPipe name="PutValueInSession" sessionKey="requestKey" value="&lt;abc/&gt;" />
+			<EchoPipe name="TestMissingKeyInputReplacement" emptyInputReplacement="" getInputFromSessionKey="missingKey"/>
+		</Pipeline>
+	</Adapter>
 </Module>
