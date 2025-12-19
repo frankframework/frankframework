@@ -34,7 +34,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.functional.ThrowingFunction;
-import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.stream.MessageContext;
@@ -143,20 +142,13 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 		// The order of these two methods has been changed to make it backwards compatible.
 		if (StringUtils.isNotEmpty(pipe.getGetInputFromFixedValue())) {
 			log.debug("replacing input with fixed value [{}]", pipe::getGetInputFromFixedValue);
-			Message newMessage = new Message(pipe.getGetInputFromFixedValue());
-			return newMessage;
+			return new Message(pipe.getGetInputFromFixedValue());
 		}
 
 		if (StringUtils.isNotEmpty(pipe.getGetInputFromSessionKey())) {
 			log.debug("replacing input with contents of sessionKey [{}]", pipe::getGetInputFromSessionKey);
 			if (!pipeLineSession.containsKey(pipe.getGetInputFromSessionKey()) && StringUtils.isEmpty(pipe.getEmptyInputReplacement())) {
-				boolean throwOnMissingSessionKey;
-				if (pipe instanceof FixedForwardPipe ffp) {
-					throwOnMissingSessionKey = !ffp.getGetInputFromSessionKey().equals(ffp.getOnlyIfSessionKey());
-				} else {
-					throwOnMissingSessionKey = true;
-				}
-
+				boolean throwOnMissingSessionKey = !pipe.getGetInputFromSessionKey().equals(pipe.getOnlyIfSessionKey());
 				if (throwOnMissingSessionKey) {
 					throw new PipeRunException(pipe, "getInputFromSessionKey [" + pipe.getGetInputFromSessionKey() + "] is not present in session");
 				}
