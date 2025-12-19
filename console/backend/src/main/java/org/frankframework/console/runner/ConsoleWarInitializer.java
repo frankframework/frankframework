@@ -24,14 +24,18 @@ import jakarta.servlet.ServletException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.beans.BeansException;
 import org.springframework.boot.Banner.Mode;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.context.event.ApplicationFailedEvent;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.ApplicationContextException;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -41,6 +45,7 @@ import org.springframework.security.web.context.AbstractSecurityWebApplicationIn
 import org.springframework.web.context.WebApplicationContext;
 
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.lifecycle.servlets.SecuritySettings;
 
@@ -112,6 +117,7 @@ public class ConsoleWarInitializer extends SpringBootServletInitializer {
 		propertySources.remove(StandardEnvironment.SYSTEM_ENVIRONMENT_PROPERTY_SOURCE_NAME);
 		application.setEnvironment(environment);
 		application.setSources(set);
+		application.addListeners(new FailedInitializationMonitor());
 
 		// This will be exposed on the <context-path>/api/openapi/v3 url
 		System.setProperty("springdoc.api-docs.path", "/openapi/v3");
@@ -120,5 +126,30 @@ public class ConsoleWarInitializer extends SpringBootServletInitializer {
 		SecuritySettings.setupDefaultSecuritySettings(environment);
 
 		return super.run(application);
+	}
+
+	/**
+	 * When the application fails to start up, trigger a shutdown and log the exception.
+	 */
+	@Log4j2
+	private static class FailedInitializationMonitor implements ApplicationListener<ApplicationFailedEvent> {
+
+		@Override
+		public void onApplicationEvent(ApplicationFailedEvent event) {
+			if (event.getException() != null) {
+				log.fatal("unable to start application", event.getException());
+				APPLICATION_LOG.fatal("unable to start application: {}", () -> getRootCause(event.getException()).getMessage());
+			}
+
+			System.exit(1); // Terminate the JVM
+		}
+
+		private Throwable getRootCause(Throwable t) {
+			if (t instanceof BeansException || t instanceof ApplicationContextException) {
+				return (t.getCause() != null) ? getRootCause(t.getCause()) : t;
+			}
+			return t;
+		}
+
 	}
 }
