@@ -158,16 +158,16 @@ public class DatabaseTestEnvironment implements AutoCloseable {
 		return startTransaction(getTxDef(transactionAttribute,  timeout));
 	}
 
-	protected TransactionStatus startTransaction(final TransactionDefinition txDef) {
+	protected TransactionStatus startTransaction(@Nonnull final TransactionDefinition txDef) {
 		TransactionStatus tx = getTxManager().getTransaction(txDef);
 		registerForCleanup(tx);
 		return tx;
 	}
 
-	private void registerForCleanup(final TransactionStatus tx) {
+	private void registerForCleanup(@Nonnull final TransactionStatus tx) {
 		transactionsToClose.add(tx);
 	}
-	private void completeTxSafely(final TransactionStatus tx) {
+	private void completeTxSafely(@Nonnull final TransactionStatus tx) {
 		if (!tx.isCompleted()) {
 			try {
 				getTxManager().rollback(tx);
