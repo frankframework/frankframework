@@ -268,7 +268,7 @@ public class XmlQuerySender extends DirectQuerySender {
 			String query = queryBuilder.toString();
 			PreparedStatement statement = getStatement(connection, query, QueryType.SELECT);
 			setBlobSmartGet(true);
-			return executeSelectQuery(statement,null,null);
+			return executeSelectQuery(statement);
 		} catch (SQLException e) {
 			throw new SenderException("got exception executing a SELECT SQL command ["+ queryBuilder +"]", e);
 		}
@@ -327,14 +327,14 @@ public class XmlQuerySender extends DirectQuerySender {
 			PreparedStatement statement = getStatement(connection, query, QueryType.OTHER);
 			setBlobSmartGet(true);
 			if (StringUtils.isNotEmpty(type) && "select".equalsIgnoreCase(type)) {
-				return executeSelectQuery(statement,null,null).getResult();
+				return executeSelectQuery(statement).getResult();
 			} else if (StringUtils.isNotEmpty(type) && "ddl".equalsIgnoreCase(type)) {
 				//TODO: Strip SQL comments, everything between -- and newline
 				StringBuilder result = new StringBuilder();
 				for (String q : StringUtil.split(query, ";")) {
 					statement = getStatement(connection, q, QueryType.OTHER);
 					if (q.trim().toLowerCase().startsWith("select")) {
-						result.append(executeSelectQuery(statement,null,null).getResult().asString());
+						result.append(executeSelectQuery(statement).getResult().asString());
 					} else {
 						result.append(executeOtherQuery(connection, statement, q, null, null, null, null, null).asString());
 					}

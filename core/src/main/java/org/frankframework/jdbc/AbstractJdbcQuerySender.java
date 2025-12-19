@@ -20,6 +20,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.Reader;
 import java.io.Writer;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -59,6 +61,7 @@ import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
+import org.frankframework.pipes.AbstractPipe;
 import org.frankframework.pipes.Base64Pipe;
 import org.frankframework.pipes.Base64Pipe.Direction;
 import org.frankframework.stream.Message;
@@ -121,7 +124,6 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	// blobCharset can be set to "UTF-8", or set blobBase64Direction to 'encode'.
 	// By default, BLOBs are no longer read as strings
 	private @Getter String blobCharset = null;
-	private @Getter boolean closeOutputstreamOnExit=true;
 	private @Getter Base64Pipe.Direction blobBase64Direction=null;
 	private @Getter String streamCharset = null;
 	private @Getter boolean blobsCompressed=true;
@@ -313,22 +315,13 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 		}
 	}
 
-	@SuppressWarnings("deprecation")
 	protected SenderResult executeStatementSet(@Nonnull QueryExecutionContext queryExecutionContext, @Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		try {
 			PreparedStatement statement=queryExecutionContext.getStatement();
 			JdbcUtil.applyParameters(getDbmsSupport(), statement, queryExecutionContext.getParameterList(), message, session);
 			switch(queryExecutionContext.getQueryType()) {
 				case SELECT:
-					Object blobSessionVar = null;
-					Object clobSessionVar = null;
-					if (StringUtils.isNotEmpty(getBlobSessionKey())) {
-						blobSessionVar = session.getMessage(getBlobSessionKey()).asObject();
-					}
-					if (StringUtils.isNotEmpty(getClobSessionKey())) {
-						clobSessionVar = session.getMessage(getClobSessionKey()).asObject();
-					}
-					return executeSelectQuery(statement,blobSessionVar,clobSessionVar);
+					return executeSelectQuery(statement, legacyBlobOrClobFilename(session));
 				case UPDATEBLOB:
 					if (StringUtils.isNotEmpty(getBlobSessionKey())) {
 						return new SenderResult(executeUpdateBlobQuery(statement, session.getMessage(getBlobSessionKey())));
@@ -364,6 +357,25 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 		} finally {
 			closeStatementSet(queryExecutionContext);
 		}
+	}
+
+	@Nullable
+	private Path legacyBlobOrClobFilename(PipeLineSession session) throws IOException {
+		if (StringUtils.isNotEmpty(getBlobSessionKey())) {
+			Message blobSessionValue = session.getMessage(getBlobSessionKey());
+			if (blobSessionValue.isRequestOfType(String.class)) {
+				return Paths.get(blobSessionValue.asString());
+			}
+			throw new IllegalStateException("blobSessionKey is not of type [String]");
+		}
+		if (StringUtils.isNotEmpty(getClobSessionKey())) {
+			Message blobSessionValue = session.getMessage(getClobSessionKey());
+			if (blobSessionValue.isRequestOfType(String.class)) {
+				return Paths.get(blobSessionValue.asString());
+			}
+			throw new IllegalStateException("clobSessionKey is not of type [String]");
+		}
+		return null;
 	}
 
 	protected String adjustQueryAndParameterListForNamedParameters(ParameterList parameterList, String query) {
@@ -422,10 +434,10 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	}
 
 	protected Message getResult(ResultSet resultset) throws JdbcException, SQLException, IOException {
-		return getResult(resultset,null,null);
+		return getResult(resultset, null);
 	}
 
-	protected Message getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar) throws JdbcException, SQLException, IOException {
+	private Message getResult(ResultSet resultset, @Nullable Path blobOrClobFilename) throws JdbcException, SQLException, IOException {
 		if (isScalar()) {
 			String result=null;
 			if (resultset.next()) {
@@ -435,27 +447,15 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 					log.warn("has set scalar=true but the resultset contains [{}] columns. Consider optimizing the query.", numberOfColumns);
 				}
 				if (getDbmsSupport().isBlobType(rsmeta, 1)) {
-					if (blobSessionVar!=null) {
-						JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), blobSessionVar, isCloseOutputstreamOnExit());
-						return Message.nullMessage();
-					}
-					if (!isBlobSmartGet()) {
-						MessageBuilder messageBuilder = new MessageBuilder();
-						if (StringUtils.isNotEmpty(getBlobCharset())) {
-							JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), messageBuilder.asWriter(), isCloseOutputstreamOnExit());
-						} else {
-							JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, null, isBlobsCompressed(), getBlobBase64Direction(), messageBuilder.asOutputStream(), isCloseOutputstreamOnExit());
-						}
+					if (!isBlobSmartGet() || blobOrClobFilename != null) {
+						MessageBuilder messageBuilder = (blobOrClobFilename == null) ? new MessageBuilder() : new MessageBuilder(blobOrClobFilename);
+						JdbcUtil.streamBlob(getDbmsSupport(), resultset, 1, getBlobCharset(), isBlobsCompressed(), getBlobBase64Direction(), messageBuilder);
 						return messageBuilder.build();
 					}
 				}
 				if (getDbmsSupport().isClobType(rsmeta, 1)) {
-					if (clobSessionVar!=null) {
-						JdbcUtil.streamClob(getDbmsSupport(), resultset, 1, clobSessionVar, isCloseOutputstreamOnExit());
-						return Message.nullMessage();
-					}
-					MessageBuilder messageBuilder = new MessageBuilder();
-					JdbcUtil.streamClob(getDbmsSupport(), resultset, 1, messageBuilder.asWriter(), isCloseOutputstreamOnExit());
+					MessageBuilder messageBuilder = (blobOrClobFilename == null) ? new MessageBuilder() : new MessageBuilder(blobOrClobFilename);
+					JdbcUtil.streamClob(getDbmsSupport(), resultset, 1, messageBuilder);
 					return messageBuilder.build();
 				}
 				result = JdbcUtil.getValue(getDbmsSupport(), resultset, 1, rsmeta, getBlobCharset(), isBlobsCompressed(), getNullValue(), isTrimSpaces(), isBlobSmartGet(), getBlobBase64Direction() == Direction.ENCODE);
@@ -513,10 +513,10 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	private BlobOutputStream getBlobOutputStream(PreparedStatement statement, int blobColumn, boolean compressBlob) throws SQLException, JdbcException {
 		log.debug("executing an update BLOB command");
 		ResultSet rs = statement.executeQuery();
-		XmlBuilder result=new XmlBuilder("result");
-		JdbcUtil.warningsToXml(statement.getWarnings(),result);
+		XmlBuilder result = new XmlBuilder("result");
+		JdbcUtil.warningsToXml(statement.getWarnings(), result);
 		rs.next();
-		Object blobUpdateHandle=getDbmsSupport().getBlobHandle(rs, blobColumn);
+		Object blobUpdateHandle = getDbmsSupport().getBlobHandle(rs, blobColumn);
 		OutputStream dbmsOutputStream = JdbcUtil.getBlobOutputStream(getDbmsSupport(), blobUpdateHandle, rs, blobColumn, compressBlob);
 		return new BlobOutputStream(getDbmsSupport(), blobUpdateHandle, blobColumn, dbmsOutputStream, rs, result);
 	}
@@ -531,7 +531,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 						contents = new Message(contents.asReader(getStreamCharset()));
 					}
 					InputStream inputStream = contents.asInputStream(getBlobCharset());
-					StreamUtil.streamToStream(inputStream,blobOutputStream);
+					StreamUtil.streamToStream(inputStream, blobOutputStream);
 				}
 			} finally {
 				if (blobOutputStream!=null) {
@@ -575,7 +575,11 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 		return clobWriter.getWarnings().asMessage();
 	}
 
-	protected SenderResult executeSelectQuery(PreparedStatement statement, Object blobSessionVar, Object clobSessionVar) throws SenderException{
+	protected SenderResult executeSelectQuery(PreparedStatement statement) throws SenderException {
+		return executeSelectQuery(statement, null);
+	}
+
+	private SenderResult executeSelectQuery(PreparedStatement statement, @Nullable Path blobOrClobFilename) throws SenderException {
 		try {
 			if (getMaxRows()>0) {
 				statement.setMaxRows(getMaxRows()+ ( getStartRow()>1 ? getStartRow()-1 : 0));
@@ -587,7 +591,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 					resultset.absolute(getStartRow()-1);
 					log.debug("Index set at position: {}", resultset.getRow());
 				}
-				return new SenderResult(getResult(resultset, blobSessionVar, clobSessionVar));
+				return new SenderResult(getResult(resultset, blobOrClobFilename));
 			}
 		} catch (SQLException|JdbcException|IOException e) {
 			throw new SenderException("got exception executing a SELECT SQL command", e );
@@ -949,10 +953,16 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	}
 
 	/**
-	 * For querytype 'updateBlob': key of session variable that contains the data (String or InputStream) to be loaded to the BLOB. When empty, the input of the pipe is used.
-	 * For querytype 'select': key of session variable that contains the OutputStream, Writer or Filename to write the BLOB to.
+	 * For querytype 'updateBlob': key of session variable that contains the data to be written to the SQL BLOB. When empty, the input of the pipe is used.
+	 * For querytype 'select': key of session variable that contains the Filename to write the SQL BLOB to.
+	 * <br />
+	 * When {@link #setScalar(boolean) scalar} is true, the default Sender result is the blob.
+	 * The same result can be achieved by using {@link AbstractPipe#setStoreResultInSessionKey(String) storeResultInSessionKey}.
+	 * <br/>
+	 * You no longer need to use a filename handle.
 	 */
-	// TODO To be replaced with the default 'storeResultInSessionKey' and 'getInputFromSessionKey'.
+	@Deprecated(since = "9.4")
+	@ConfigurationWarning("scalar=true in combination with storeResultInSessionKey gives you the BLOB as sender result. You no longer need to use a filename handle.")
 	public void setBlobSessionKey(String string) {
 		blobSessionKey = string;
 	}
@@ -982,7 +992,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	 * read to accommodate for the fact that senders need to return a String. This is no longer the case.
 	 */
 	@Deprecated(since = "9.3.0", forRemoval = true)
-	@ConfigurationWarning("BlobCharset property will be removed in a future version. ")
+	@ConfigurationWarning("BlobCharset property will be removed in a future version.")
 	public void setBlobCharset(String string) {
 		if (StringUtils.isEmpty(string)) {
 			ConfigurationWarnings.add(this, log, "setting blobCharset to empty string does not trigger base64 encoding anymore, BLOBs are returned as byte arrays. If base64 encoding is really necessary, use blobBase64Direction=encode.");
@@ -1008,21 +1018,19 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	}
 
 	/**
-	 * For querytype 'updateClob': key of session variable that contains the CLOB (String or InputStream) to be loaded to the CLOB. When empty, the input of the pipe, which then must be a String, is used.
-	 * For querytype 'select': key of session variable that contains the OutputStream, Writer or Filename to write the CLOB to
+	 * For querytype 'updateClob': key of session variable that contains the CLOB to be loaded to the SQL CLOB. When empty, the input of the pipe is used.
+	 * For querytype 'select': key of session variable that contains the Filename to write the SQL CLOB to.
+	 * <br />
+	 * When {@link #setScalar(boolean) scalar} is true, the default Sender result is the clob.
+	 * The same result can be achieved by using {@link AbstractPipe#setStoreResultInSessionKey(String) storeResultInSessionKey}.
+	 * <br/>
+	 * You no longer need to use a filename handle.
 	 */
+	@Deprecated(since = "9.4")
+	@ConfigurationWarning("scalar=true in combination with storeResultInSessionKey gives you the CLOB as sender result. You no longer need to use a filename handle.")
 	public void setClobSessionKey(String string) {
 		clobSessionKey = string;
 	}
-
-	/**
-	 * When set to <code>false</code>, the Outputstream is not closed after BLOB or CLOB has been written to it
-	 * @ff.default true
-	 */
-	public void setCloseOutputstreamOnExit(boolean b) {
-		closeOutputstreamOnExit = b;
-	}
-
 
 	/** Charset used when reading a stream (that is e.g. going to be written to a BLOB or CLOB). When empty, the stream is copied directly to the BLOB, without conversion */
 	public void setStreamCharset(String string) {

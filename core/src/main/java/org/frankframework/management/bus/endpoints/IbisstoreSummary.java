@@ -175,7 +175,7 @@ class IbisstoreSummaryQuerySender extends DirectQuerySender {
 	}
 
 	@Override
-	protected org.frankframework.stream.Message getResult(ResultSet resultset, Object blobSessionVar, Object clobSessionVar) throws SQLException {
+	protected org.frankframework.stream.Message getResult(ResultSet resultset) throws SQLException {
 		JsonArrayBuilder types = Json.createArrayBuilder();
 		String previousType=null;
 		JsonObjectBuilder typeBuilder=null;
