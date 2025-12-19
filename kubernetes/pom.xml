@@ -51,6 +51,13 @@
 			<artifactId>log4j-core</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>credentialprovider</artifactId>
+			<version>${revision}</version>
+			<type>test-jar</type>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 	<build>

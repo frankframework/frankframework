@@ -153,6 +153,10 @@ public class DelineaCredentialFactory implements ISecretProvider {
 
 	@Override
 	public ISecret getSecret(@Nonnull CredentialAlias alias) throws NoSuchElementException {
+		if (alias.getName() != null && !StringUtils.isNumeric(alias.getName())) {
+			log.warn("Delinea secret aliases must be numeric, as they reference the internal Delinea secret ID. Supplied alias: {}", alias.getName());
+		}
+
 		// Make sure to always get a live copy of the secret
 		DelineaSecretDto secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), aliasToRetrieve -> delineaClient.getSecret(aliasToRetrieve, delineaClientSettings.autoCommentValue()));
 

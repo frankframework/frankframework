@@ -3,6 +3,7 @@ package org.frankframework.credentialprovider.delinea;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -13,12 +14,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
 
+import org.apache.logging.log4j.Level;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.credentialprovider.CredentialAlias;
 import org.frankframework.credentialprovider.ISecret;
+import org.frankframework.credentialprovider.TestAppender;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
 class DelineaCredentialFactoryTest {
@@ -86,6 +89,20 @@ class DelineaCredentialFactoryTest {
 		CredentialAlias alias = CredentialAlias.parse("16");
 		assertThrows(NoSuchElementException.class, () -> credentialFactory.hasSecret(alias));
 		assertThrows(NoSuchElementException.class, () -> credentialFactory.getSecret(alias));
+	}
+
+	@Test
+	void testInvalidStartAndEndCharactersLogWarnings() throws Exception {
+		TestAppender.setRootLogLevel(Level.WARN);
+		try (TestAppender appender = TestAppender.newBuilder().build()) {
+
+			CredentialAlias illegalChars = CredentialAlias.parse("doesNotContainOnlyNumbers");
+
+			// Call getSecret to trigger logging, expect an exception
+			assertThrows(NoSuchElementException.class, () -> credentialFactory.getSecret(illegalChars));
+
+			assertTrue(appender.contains("must be numeric"));
+		}
 	}
 
 	static DelineaSecretDto createSecret(int id, int folderId, String username, String password) {

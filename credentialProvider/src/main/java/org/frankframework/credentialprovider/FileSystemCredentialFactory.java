@@ -70,6 +70,7 @@ public class FileSystemCredentialFactory implements ISecretProvider {
 
 	@Override
 	public ISecret getSecret(@Nonnull CredentialAlias alias) throws NoSuchElementException {
+		// No additional checks needed here, since this has been done already by constructing a CredentialAlias
 		return new FileSystemSecret(alias, root);
 	}
 

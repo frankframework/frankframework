@@ -26,7 +26,8 @@ import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
-import lombok.extern.java.Log;
+import io.micrometer.common.util.StringUtils;
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.credentialprovider.util.Cache;
 import org.frankframework.credentialprovider.util.CredentialConstants;
@@ -68,7 +69,7 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  * and must start and end with an alphanumeric character
  * @ff.info The credentials are cached for 60 seconds, to prevent unnecessary calls to the Kubernetes API.
  */
-@Log
+@Log4j2
 public class KubernetesCredentialFactory implements ISecretProvider {
 
 	private static final String K8_USERNAME = "credentialFactory.kubernetes.username";
@@ -88,6 +89,7 @@ public class KubernetesCredentialFactory implements ISecretProvider {
 	public void initialize() {
 		CredentialConstants appConstants = CredentialConstants.getInstance();
 		log.info("initializing KubernetesCredentialFactory");
+
 		if (client == null) { // For testing purposes
 			client = new KubernetesClientBuilder().build();
 		}
@@ -123,6 +125,10 @@ public class KubernetesCredentialFactory implements ISecretProvider {
 
 	@Override
 	public ISecret getSecret(@Nonnull CredentialAlias alias) throws NoSuchElementException {
+		if (!isAliasNameValid(alias)) {
+			log.warn("Kubernetes must start and end with an alphanumeric character. Given alias: {}", alias.getName());
+		}
+
 		Secret secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), this::getSecret);
 
 		if (secret == null) {
@@ -130,6 +136,19 @@ public class KubernetesCredentialFactory implements ISecretProvider {
 		}
 
 		return new KubernetesSecret(alias, secret);
+	}
+
+	private boolean isAliasNameValid(CredentialAlias alias) {
+		if (alias == null || StringUtils.isEmpty(alias.getName())) {
+			return false;
+		}
+
+		// Allowed characters are already validated by CredentialAlias constructor. What we need to check is if the alias starts and ends with an alphanumeric character.
+		String name = alias.getName();
+		char firstChar = name.charAt(0);
+		char lastChar = name.charAt(name.length() - 1);
+
+		return Character.isLetterOrDigit(firstChar) && Character.isLetterOrDigit(lastChar);
 	}
 
 	@Override
@@ -147,7 +166,7 @@ public class KubernetesCredentialFactory implements ISecretProvider {
 	protected synchronized List<Secret> getSecretsFromKubernetes() {
 		List<Secret> secrets = client.secrets().inNamespace(namespace).list().getItems();
 		if (secrets.isEmpty()) {
-			log.warning("no secrets found in namespace: " + namespace);
+			log.warn("no secrets found in namespace: {}", namespace);
 		}
 
 		return secrets;
