@@ -110,7 +110,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 
 	private boolean sizeStatistics = AppConstants.getInstance(configurationClassLoader).getBoolean("statistics.size", true);
 	private @Getter Locker locker;
-	private @Getter String emptyInputReplacement=null;
+	private @Getter String emptyInputReplacement = null;
 	private @Getter boolean writeToSecLog = false;
 	private @Getter String secLogSessionKeys = null;
 	private @Getter String logIntermediaryResults = null;

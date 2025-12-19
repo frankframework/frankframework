@@ -80,7 +80,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 		Message message = getInputFrom(pipe, inputMessage, pipeLineSession);
 
 		// If the input is empty and the pipe has a replacement value, replace the input with the (fixed) value.
-		if (Message.isEmpty(message) && StringUtils.isNotEmpty(pipe.getEmptyInputReplacement())) {
+		if (Message.isEmpty(message) && pipe.getEmptyInputReplacement() != null) {
 			log.debug("replacing empty input with fixed value [{}]", pipe::getEmptyInputReplacement);
 			message = new Message(pipe.getEmptyInputReplacement());
 		}
@@ -147,7 +147,7 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 
 		if (StringUtils.isNotEmpty(pipe.getGetInputFromSessionKey())) {
 			log.debug("replacing input with contents of sessionKey [{}]", pipe::getGetInputFromSessionKey);
-			if (!pipeLineSession.containsKey(pipe.getGetInputFromSessionKey()) && StringUtils.isEmpty(pipe.getEmptyInputReplacement())) {
+			if (!pipeLineSession.containsKey(pipe.getGetInputFromSessionKey()) && pipe.getEmptyInputReplacement() == null) {
 				boolean throwOnMissingSessionKey = !pipe.getGetInputFromSessionKey().equals(pipe.getOnlyIfSessionKey());
 				if (throwOnMissingSessionKey) {
 					throw new PipeRunException(pipe, "getInputFromSessionKey [" + pipe.getGetInputFromSessionKey() + "] is not present in session");

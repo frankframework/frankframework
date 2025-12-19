@@ -1,38 +1,53 @@
-<module>
-	<adapter name="ReplaceInputAndPreserve" description="Test the functioning of the attributes getInputFromSessionKey, getInputFromFixedValue, preserveInput and storeResultInSessionKey">
-		<receiver>
-			<listener className="org.frankframework.receivers.JavaListener" serviceName="ibis4test-ReplaceInputAndPreserve" />
-		</receiver>
-		<pipeline>
-			<exits>
-				<exit name="EXIT" state="success" />
-			</exits>
-			<pipe name="SwitchAction" className="org.frankframework.pipes.SwitchPipe" xpathExpression="request/@action" />
+<Module xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:noNamespaceSchemaLocation="https://schemas.frankframework.org/FrankConfig.xsd">
+	<Adapter name="ReplaceInputAndPreserve" description="Test the functioning of the attributes getInputFromSessionKey, getInputFromFixedValue, preserveInput and storeResultInSessionKey">
+		<Receiver>
+			<JavaListener name="ibis4test-ReplaceInputAndPreserve" serviceName="ibis4test-ReplaceInputAndPreserve" />
+		</Receiver>
+		<Pipeline>
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS" />
+			</Exits>
+			<SwitchPipe name="SwitchAction" xpathExpression="request/@action" />
 			<!-- getFromPreserveAndStore-Pipe -->
-			<pipe name="getFromPreserveAndStore-Pipe" className="org.frankframework.pipes.PutInSessionPipe" sessionKey="requestKey" value="&lt;abc/&gt;" />
-			<pipe name="getFromPreserveAndStore-Pipe2" className="org.frankframework.pipes.XsltPipe" styleSheetName="/Parameters/WrapInput.xslt"
+			<PutInSessionPipe name="getFromPreserveAndStore-Pipe" sessionKey="requestKey" value="&lt;abc/&gt;" />
+			<XsltPipe name="getFromPreserveAndStore-Pipe2" styleSheetName="/Parameters/WrapInput.xslt"
                   preserveInput="true" getInputFromSessionKey="requestKey" storeResultInSessionKey="storedResultKey" /> <!-- preserve input to restore it later, replace original input with fixed value, store wrapped result, return original input -->
-			<pipe name="getFromPreserveAndStore-Pipe4" className="org.frankframework.pipes.XsltPipe" styleSheetName="/Parameters/ShowParam.xslt" >
-				<param name="param1" sessionKey="requestKey" />      <!--  fixed value -->
-				<param name="param2" sessionKey="storedResultKey" /> <!--  wrapped fixed value -->
-				<param name="param3" />                              <!--  result of pipe, that is preserved original message -->
-				<forward name="success" path="EXIT" />
-			</pipe>
+			<XsltPipe name="getFromPreserveAndStore-Pipe4" styleSheetName="/Parameters/ShowParam.xslt" >
+				<Param name="param1" sessionKey="requestKey" />      <!--  fixed value -->
+				<Param name="param2" sessionKey="storedResultKey" /> <!--  wrapped fixed value -->
+				<Param name="param3" />                              <!--  result of pipe, that is preserved original message -->
+				<Forward name="success" path="EXIT" />
+			</XsltPipe>
 
 			<!-- getFromPreserveAndStore-SenderWrapper -->
-			<pipe name="getFromPreserveAndStore-SenderWrapper" className="org.frankframework.pipes.PutInSessionPipe" sessionKey="requestKey" value="&lt;abc/&gt;" />
-			<pipe name="getFromPreserveAndStore-SenderWrapper2">
+			<PutInSessionPipe name="getFromPreserveAndStore-SenderWrapper" sessionKey="requestKey" value="&lt;abc/&gt;" />
+			<SenderPipe name="getFromPreserveAndStore-SenderWrapper2">
 				 <!-- preserve input to restore it later, replace original input with fixed value, store wrapped result, return original input -->
-				<sender className="org.frankframework.senders.SenderSeries" getInputFromSessionKey="requestKey" preserveInput="true" storeResultInSessionKey="storedResultKey">
-					<sender className="org.frankframework.senders.XsltSender" styleSheetName="/Parameters/WrapInput.xslt" />
-				</sender>
-			</pipe>
-			<pipe name="getFromPreserveAndStore-SenderWrapper4" className="org.frankframework.pipes.XsltPipe" styleSheetName="/Parameters/ShowParam.xslt" >
-				<param name="param1" sessionKey="requestKey" />      <!--  fixed value -->
-				<param name="param2" sessionKey="storedResultKey" /> <!--  wrapped fixed value -->
-				<param name="param3" />                              <!--  result of pipe, that is preserved original message -->
-				<forward name="success" path="EXIT" />
-			</pipe>
-		</pipeline>
-	</adapter>
-</module>
+				<SenderSeriesSender getInputFromSessionKey="requestKey" preserveInput="true" storeResultInSessionKey="storedResultKey">
+					<XsltSender styleSheetName="/Parameters/WrapInput.xslt" />
+				</SenderSeriesSender>
+			</SenderPipe>
+			<XsltPipe name="getFromPreserveAndStore-SenderWrapper4" styleSheetName="/Parameters/ShowParam.xslt" >
+				<Param name="param1" sessionKey="requestKey" />      <!--  fixed value -->
+				<Param name="param2" sessionKey="storedResultKey" /> <!--  wrapped fixed value -->
+				<Param name="param3" />                              <!--  result of pipe, that is preserved original message -->
+				<Forward name="success" path="EXIT" />
+			</XsltPipe>
+		</Pipeline>
+	</Adapter>
+
+	<Adapter name="ReplaceInputFromMissingSessionKey">
+		<Receiver>
+			<JavaListener name="ibis4test-ReplaceInputFromMissingSessionKey" serviceName="ibis4test-ReplaceInputFromMissingSessionKey" />
+		</Receiver>
+		<Pipeline>
+			<Exits>
+				<Exit name="EXIT" state="SUCCESS"/>
+			</Exits>
+
+			<PutInSessionPipe name="PutValueInSession" sessionKey="requestKey" value="&lt;abc/&gt;" />
+			<EchoPipe name="TestMissingKeyInputReplacement" emptyInputReplacement="" getInputFromSessionKey="missingKey"/>
+		</Pipeline>
+	</Adapter>
+</Module>
