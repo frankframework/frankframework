@@ -126,7 +126,7 @@ public class KubernetesCredentialFactory implements ISecretProvider {
 	@Override
 	public ISecret getSecret(@Nonnull CredentialAlias alias) throws NoSuchElementException {
 		if (!isAliasNameValid(alias)) {
-			log.warn("Kubernetes must start and end with an alphanumeric character. Given alias: {}", alias.getName());
+			log.warn("A Kubernetes alias must start and end with an alphanumeric character. Given alias: {}", alias.getName());
 		}
 
 		Secret secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), this::getSecret);
