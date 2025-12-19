@@ -309,4 +309,79 @@ public abstract class AbstractResponseValidatorWrapper<V extends AbstractValidat
 	public String getLogIntermediaryResults() {
 		return owner.getLogIntermediaryResults();
 	}
+
+	@Override
+	public boolean skipPipe(Message input, PipeLineSession session) throws PipeRunException {
+		return owner.skipPipe(input, session);
+	}
+
+	@Override
+	public void setSkipOnEmptyInput(boolean b) {
+		owner.setSkipOnEmptyInput(b);
+	}
+
+	@Override
+	public void setIfParam(String string) {
+		owner.setIfParam(string);
+	}
+
+	@Override
+	public void setIfValue(String string) {
+		owner.setIfValue(string);
+	}
+
+	@Override
+	public void setOnlyIfSessionKey(String onlyIfSessionKey) {
+		owner.setOnlyIfSessionKey(onlyIfSessionKey);
+	}
+
+	@Override
+	public void setOnlyIfValue(String onlyIfValue) {
+		owner.setOnlyIfValue(onlyIfValue);
+	}
+
+	@Override
+	public void setUnlessSessionKey(String unlessSessionKey) {
+		owner.setUnlessSessionKey(unlessSessionKey);
+	}
+
+	@Override
+	public void setUnlessValue(String unlessValue) {
+		owner.setUnlessValue(unlessValue);
+	}
+
+	@Override
+	public boolean isSkipOnEmptyInput() {
+		return owner.isSkipOnEmptyInput();
+	}
+
+	@Override
+	public String getIfParam() {
+		return owner.getIfParam();
+	}
+
+	@Override
+	public String getIfValue() {
+		return owner.getIfValue();
+	}
+
+	@Override
+	public String getOnlyIfSessionKey() {
+		return owner.getOnlyIfSessionKey();
+	}
+
+	@Override
+	public String getOnlyIfValue() {
+		return owner.getOnlyIfValue();
+	}
+
+	@Override
+	public String getUnlessSessionKey() {
+		return owner.getUnlessSessionKey();
+	}
+
+	@Override
+	public String getUnlessValue() {
+		return owner.getUnlessValue();
+	}
 }

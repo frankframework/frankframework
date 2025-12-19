@@ -27,6 +27,7 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Mandatory;
+import org.frankframework.processors.InputOutputPipeProcessor;
 import org.frankframework.stream.Message;
 import org.frankframework.util.Locker;
 
@@ -208,4 +209,37 @@ public interface IPipe extends IConfigurable, IForwardTarget, FrankElement, Name
 	/** when set, the value in AppConstants is overwritten (for this pipe only) */
 	void setLogIntermediaryResults(String string);
 	String getLogIntermediaryResults();
+
+	/**
+	 * Called by {@link InputOutputPipeProcessor} to check if the pipe needs to be skipped.
+	 */
+	boolean skipPipe(Message input, PipeLineSession session) throws PipeRunException;
+
+	void setSkipOnEmptyInput(boolean b);
+
+	void setIfParam(String string);
+
+	void setIfValue(String string);
+
+	void setOnlyIfSessionKey(String onlyIfSessionKey);
+
+	void setOnlyIfValue(String onlyIfValue);
+
+	void setUnlessSessionKey(String unlessSessionKey);
+
+	void setUnlessValue(String unlessValue);
+
+	boolean isSkipOnEmptyInput();
+
+	String getIfParam();
+
+	String getIfValue();
+
+	String getOnlyIfSessionKey();
+
+	String getOnlyIfValue();
+
+	String getUnlessSessionKey();
+
+	String getUnlessValue();
 }

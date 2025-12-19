@@ -15,6 +15,7 @@
 */
 package org.frankframework.pipes;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -36,10 +37,12 @@ import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IPipe;
 import org.frankframework.core.IWithParameters;
+import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineExit;
 import org.frankframework.core.PipeLineSession;
+import org.frankframework.core.PipeRunException;
 import org.frankframework.core.TransactionAttributes;
 import org.frankframework.doc.Forward;
 import org.frankframework.doc.Mandatory;
@@ -47,9 +50,11 @@ import org.frankframework.monitoring.EventPublisher;
 import org.frankframework.monitoring.EventThrowing;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
+import org.frankframework.processors.InputOutputPipeProcessor;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.Locker;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.SpringUtils;
 
 /**
@@ -118,6 +123,14 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	private @Setter EventPublisher eventPublisher=null;
 
 	private @Getter @Setter PipeLine pipeLine;
+	private @Getter boolean skipOnEmptyInput = false;
+	private @Getter String ifParam = null;
+	private @Getter String ifValue = null;
+	private @Getter String onlyIfSessionKey;
+	private @Getter String onlyIfValue;
+	private @Getter String unlessSessionKey;
+	private @Getter String unlessValue;
+	private IParameter ifParameter = null;
 
 	/**
 	 * <code>configure()</code> is called after the {@link PipeLine Pipeline} is registered
@@ -154,6 +167,13 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 
 		if (getLocker() != null) {
 			getLocker().configure();
+		}
+
+		if (StringUtils.isNotEmpty(getIfParam())) {
+			ifParameter = getParameterList().findParameter(getIfParam());
+			if (ifParameter==null) {
+				ConfigurationWarnings.add(this, log, "ifParam ["+getIfParam()+"] not found");
+			}
 		}
 	}
 
@@ -458,5 +478,92 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	@Override
 	public void setHideRegex(String hideRegex) {
 		this.hideRegex = hideRegex;
+	}
+
+
+	/**
+	 * Called by {@link InputOutputPipeProcessor} to check if the pipe needs to be skipped.
+	 */
+	@Override
+	public boolean skipPipe(Message input, PipeLineSession session) throws PipeRunException {
+		if (isSkipOnEmptyInput() && Message.isEmpty(input)) {
+			log.debug("skip pipe processing: empty input");
+			return true;
+		}
+		if (StringUtils.isNotEmpty(getOnlyIfSessionKey())) {
+			Object onlyIfActualValue = session.get(getOnlyIfSessionKey());
+			if (onlyIfActualValue==null || StringUtils.isNotEmpty(getOnlyIfValue()) && !getOnlyIfValue().equals(onlyIfActualValue)) {
+				log.debug("skip pipe processing: onlyIfSessionKey [{}] value [{}] not found or not equal to value [{}]", getOnlyIfSessionKey(), onlyIfActualValue, getOnlyIfValue());
+				return true;
+			}
+		}
+		if (StringUtils.isNotEmpty(getUnlessSessionKey())) {
+			Object unlessActualValue = session.get(getUnlessSessionKey());
+			if (unlessActualValue!=null && (StringUtils.isEmpty(getUnlessValue()) || getUnlessValue().equals(unlessActualValue))) {
+				log.debug("skip pipe processing: unlessSessionKey [{}] value [{}] not found or equal to value [{}]", getUnlessSessionKey(), unlessActualValue, getUnlessValue());
+				return true;
+			}
+		}
+		try {
+			if (ifParameter != null) {
+				Object paramValue = ifParameter.getValue(null, input, session, true);
+				if (getIfValue() == null) {
+					boolean paramValueIsNotNull = paramValue != null;
+					log.debug("skip pipe processing: ifValue not set and ifParameter value [{}] not null", paramValue);
+					return paramValueIsNotNull;
+				}
+
+				boolean ifValueNotEqualToIfParam = !getIfValue().equalsIgnoreCase(MessageUtils.asString(paramValue));
+				log.debug("skip pipe processing: ifValue value [{}] not equal to ifParameter value [{}]", getIfValue(), paramValue);
+				return ifValueNotEqualToIfParam;
+			}
+		} catch (ParameterException | IOException e) {
+			throw new PipeRunException(this, "Cannot evaluate ifParam", e);
+		}
+		return false;
+	}
+	/**
+	 * If {@code true}, the processing continues directly at the forward of this pipe, without executing the pipe itself, if the input is empty.
+	 * @ff.default false
+	 */
+	@Override
+	public void setSkipOnEmptyInput(boolean b) {
+		skipOnEmptyInput = b;
+	}
+
+	/** If set, this pipe is only executed when the value of the parameter with the name <code>ifParam</code> equals <code>ifValue</code>. Otherwise, this pipe is skipped. */
+	@Override
+	public void setIfParam(String string) {
+		ifParam = string;
+	}
+
+	/** See {@code ifParam} */
+	@Override
+	public void setIfValue(String string) {
+		ifValue = string;
+	}
+
+	/** Key of the session variable to check if the action must be executed. The pipe is only executed if the session variable exists and is not null. */
+	@Override
+	public void setOnlyIfSessionKey(String onlyIfSessionKey) {
+		this.onlyIfSessionKey = onlyIfSessionKey;
+	}
+
+	/** Value of session variable 'onlyIfSessionKey' to check if the action must be executed. The pipe is only executed if the session variable has the specified value. */
+	@Override
+	public void setOnlyIfValue(String onlyIfValue) {
+		this.onlyIfValue = onlyIfValue;
+	}
+
+	/** Key of the session variable to check if the action must be executed. The pipe is not executed if the session variable exists and is not null. */
+	@Override
+	public void setUnlessSessionKey(String unlessSessionKey) {
+		this.unlessSessionKey = unlessSessionKey;
+	}
+
+	/** Value of session variable 'unlessSessionKey' to check if the action must be executed. The pipe is not executed if the session variable has the specified value. */
+	@Override
+	public void setUnlessValue(String unlessValue) {
+		this.unlessValue = unlessValue;
 	}
 }
