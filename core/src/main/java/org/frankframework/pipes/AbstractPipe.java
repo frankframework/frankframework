@@ -361,11 +361,6 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	}
 
 	@Override
-	public boolean consumesSessionVariable(String sessionKey) {
-		return sessionKey.equals(getInputFromSessionKey) || parameterList.consumesSessionVariable(sessionKey);
-	}
-
-	@Override
 	@Mandatory
 	public void setName(String name) {
 		this.name=name;
