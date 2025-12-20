@@ -90,7 +90,7 @@
 		<spring.version>6.2.15</spring.version>
 		<spring-security.version>6.5.7</spring-security.version>
 		<spring-integration.version>6.5.5</spring-integration.version>
-		<spring.boot.version>3.5.8</spring.boot.version>
+		<spring.boot.version>3.5.9</spring.boot.version>
 		<tomcat.version>10.1.50</tomcat.version>
 		<bouncycastle.version>1.83</bouncycastle.version>
 
