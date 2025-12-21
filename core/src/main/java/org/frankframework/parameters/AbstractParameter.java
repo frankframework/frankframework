@@ -272,7 +272,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 	 * Determines the raw value, used by {@link ParameterValueList}.
 	 */
 	@Override // should be package private imo
-	@SuppressWarnings({ "deprecation", "resource" })
+	@SuppressWarnings("deprecation")
 	public Object getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		Object result = null;
 		log.debug("Calculating value for Parameter [{}]", this::getName);

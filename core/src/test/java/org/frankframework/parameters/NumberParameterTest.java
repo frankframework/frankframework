@@ -230,10 +230,9 @@ public class NumberParameterTest {
 		p.setValue("a");
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		assertThrows(ParameterException.class, () -> p.getValue(alreadyResolvedParameters, message, null, false));
+		assertThrows(ParameterException.class, () -> p.getValue(message, null));
 	}
 
 	@Test

@@ -93,7 +93,7 @@ public class NumberParameter extends AbstractParameter<Number> {
 
 	@Override
 	public Object getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
-		Object result = super.getValueImpl(alreadyResolvedParameters, message, session, namespaceAware);
+		Object result = super.getValue(alreadyResolvedParameters, message, session, namespaceAware);
 
 		if (result instanceof Number number) {
 			if (getMinInclusiveString() != null && number.floatValue() < minInclusive.floatValue()) {
