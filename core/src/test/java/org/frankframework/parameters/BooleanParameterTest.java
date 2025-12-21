@@ -22,12 +22,11 @@ public class BooleanParameterTest {
 		p.setValue("1");
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertInstanceOf(Boolean.class, result);
-		assertFalse((Boolean) result);
+		ParameterValue result = p.getValue(message, null);
+		assertInstanceOf(Boolean.class, result.getValue());
+		assertFalse((Boolean) result.getValue());
 	}
 
 	@ParameterizedTest
@@ -38,12 +37,11 @@ public class BooleanParameterTest {
 		p.setValue(bool);
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertInstanceOf(Boolean.class, result);
-		assertTrue((Boolean) result);
+		ParameterValue result = p.getValue(message, null);
+		assertInstanceOf(Boolean.class, result.getValue());
+		assertTrue((Boolean) result.getValue());
 	}
 
 	@ParameterizedTest
@@ -54,12 +52,11 @@ public class BooleanParameterTest {
 		p.setValue(bool);
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertInstanceOf(Boolean.class, result);
-		assertFalse((Boolean) result);
+		ParameterValue result = p.getValue(message, null);
+		assertInstanceOf(Boolean.class, result.getValue());
+		assertFalse((Boolean) result.getValue());
 	}
 
 	@ParameterizedTest
@@ -70,14 +67,13 @@ public class BooleanParameterTest {
 		p.setSessionKey("poeh");
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = Message.asMessage(true);
 
 		PipeLineSession session = new PipeLineSession();
 		session.put("poeh", bool);
-		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertInstanceOf(Boolean.class, result);
-		assertTrue((Boolean) result);
+		ParameterValue result = p.getValue(message, session);
+		assertInstanceOf(Boolean.class, result.getValue());
+		assertTrue((Boolean) result.getValue());
 
 		assertFalse(p.requiresInputValueForResolution());
 		assertTrue(p.consumesSessionVariable("poeh"));
@@ -91,14 +87,13 @@ public class BooleanParameterTest {
 		p.setSessionKey("poeh");
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = Message.asMessage(true);
 
 		PipeLineSession session = new PipeLineSession();
 		session.put("poeh", bool);
-		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
-		assertInstanceOf(Boolean.class, result);
-		assertFalse((Boolean) result);
+		ParameterValue result = p.getValue(message, session);
+		assertInstanceOf(Boolean.class, result.getValue());
+		assertFalse((Boolean) result.getValue());
 
 		assertFalse(p.requiresInputValueForResolution());
 		assertTrue(p.consumesSessionVariable("poeh"));
@@ -114,9 +109,8 @@ public class BooleanParameterTest {
 		Message input = new Message("<root>true</root>");
 		PipeLineSession session = new PipeLineSession();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
-		Object result = p.getValue(alreadyResolvedParameters, input, session, false);
-		Boolean bool = assertInstanceOf(Boolean.class, result);
+		ParameterValue result = p.getValue(input, session);
+		Boolean bool = assertInstanceOf(Boolean.class, result.getValue());
 		assertTrue(bool);
 	}
 
@@ -128,11 +122,10 @@ public class BooleanParameterTest {
 		parameter.setXpathExpression("/root");
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message input = new Message("<root>trueaaaaaa</root>");
 
-		Object result = parameter.getValue(alreadyResolvedParameters, input, null, true);
-		Boolean bool = assertInstanceOf(Boolean.class, result);
+		ParameterValue result = parameter.getValue(input, null);
+		Boolean bool = assertInstanceOf(Boolean.class, result.getValue());
 		assertTrue(bool);
 	}
 
@@ -144,11 +137,10 @@ public class BooleanParameterTest {
 		parameter.setXpathExpression("/root");
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message input = new Message("<root>false</root>");
 
-		Object result = parameter.getValue(alreadyResolvedParameters, input, null, true);
-		Boolean bool = assertInstanceOf(Boolean.class, result);
+		ParameterValue result = parameter.getValue(input, null);
+		Boolean bool = assertInstanceOf(Boolean.class, result.getValue());
 		assertFalse(bool);
 	}
 

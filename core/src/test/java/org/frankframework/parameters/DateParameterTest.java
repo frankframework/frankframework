@@ -57,10 +57,9 @@ public class DateParameterTest {
 		parameter.setMaxLength(10);
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = parameter.getValue(alreadyResolvedParameters, message, null, true);
+		Object result = parameter.getValue(message, null).getValue();
 
 		assertInstanceOf(Date.class, result);
 		assertEquals("2022-01-23 00:00:00.000", DateFormatUtils.format((Date) result));
@@ -75,10 +74,9 @@ public class DateParameterTest {
 		parameter.setFormatType(type);
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = parameter.getValue(alreadyResolvedParameters, message, null, true);
+		Object result = parameter.getValue(message, null).getValue();
 
 		assertInstanceOf(Date.class, result);
 		assertEquals(expected, DateFormatUtils.format((Date) result));
@@ -125,10 +123,9 @@ public class DateParameterTest {
 		parameter.setFormatType(DateFormatType.XMLDATETIME);
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = parameter.getValue(alreadyResolvedParameters, message, null, true);
+		Object result = parameter.getValue(message, null).getValue();
 
 		assertInstanceOf(Date.class, result);
 		assertEquals(expected, DateFormatUtils.format((Date) result));
@@ -147,10 +144,9 @@ public class DateParameterTest {
 		parameter.setFormatType(DateFormatType.XMLDATETIME);
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = parameter.getValue(alreadyResolvedParameters, message, null, true);
+		Object result = parameter.getValue(message, null).getValue();
 
 		assertInstanceOf(Date.class, result);
 		assertEquals(expected, DateFormatUtils.format((Date) result));
@@ -171,10 +167,9 @@ public class DateParameterTest {
 		parameter.setFormatType(DateFormatType.XMLDATETIME);
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+		Object result = parameter.getValue(message, session).getValue();
 		assertInstanceOf(Date.class, result);
 
 		assertEquals(date, result);
@@ -203,10 +198,9 @@ public class DateParameterTest {
 			p.setFormatType(DateFormatType.DATE);
 			p.configure();
 
-			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
 
-			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
+			Object result = p.getValue(message, session).getValue(); // Should return PutSystemDateInSession.FIXEDDATETIME
 			Date resultDate = assertInstanceOf(Date.class, result);
 			SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
 			String formattedDate = sdf.format(resultDate);
@@ -225,10 +219,9 @@ public class DateParameterTest {
 		session.put("fixedDate", "1995-01-23");
 		session.put("stub4testtool.fixeddate", "1996-02-24");
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+		Object result = p.getValue(message, session).getValue();
 		Date resultDate = assertInstanceOf(Date.class, result);
 		SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
 		String formattedDate = sdf.format(resultDate);
@@ -247,12 +240,11 @@ public class DateParameterTest {
 		PipeLineSession session = new PipeLineSession();
 		session.put("stub4testtool.fixeddate", "1996-02-24");
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		System.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+		Object result = p.getValue(message, session).getValue();
 		Date resultDate = assertInstanceOf(Date.class, result);
 		SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
 		String formattedDate = sdf.format(resultDate);
@@ -270,13 +262,12 @@ public class DateParameterTest {
 		Date date = TimeProvider.nowAsDate();
 		session.put("stub4testtool.fixeddate", date);
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
 		System.setProperty(ConfigurationUtils.STUB4TESTTOOL_CONFIGURATION_KEY, "true");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
-		Date resultDate = assertInstanceOf(Date.class, result);
+		ParameterValue result = p.getValue(message, session);
+		Date resultDate = assertInstanceOf(Date.class, result.getValue());
 		SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
 		String formattedDate = sdf.format(resultDate);
 		String formattedExpected = sdf.format(date);
@@ -294,10 +285,9 @@ public class DateParameterTest {
 		SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
 		session.put("fixedDate", sdf.parse("1995-01-23"));
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+		Object result = p.getValue(message, session).getValue();
 		Date resultDate = assertInstanceOf(Date.class, result);
 		String formattedDate = sdf.format(resultDate);
 		assertEquals("1995-01-23", formattedDate);
@@ -313,10 +303,9 @@ public class DateParameterTest {
 			p.setFormatType(DateFormatType.DATE);
 			p.configure();
 
-			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
 
-			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
+			Object result = p.getValue(message, session).getValue(); // Should return PutSystemDateInSession.FIXEDDATETIME
 			Date resultDate = assertInstanceOf(Date.class, result);
 			SimpleDateFormat sdf = new SimpleDateFormat(TYPE_DATE_PATTERN);
 			String formattedDate = sdf.format(resultDate);
@@ -337,10 +326,9 @@ public class DateParameterTest {
 			p.setFormatString("yyyy-MM-dd'T'HH:mm:ss");
 			p.configure();
 
-			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
 
-			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
+			Object result = p.getValue(message, session).getValue(); // Should return PutSystemDateInSession.FIXEDDATETIME
 			assertInstanceOf(Date.class, result);
 
 			SimpleDateFormat sdf = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
@@ -359,10 +347,9 @@ public class DateParameterTest {
 			p.setFormatType(DateFormatType.DATETIME);
 			p.configure();
 
-			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
 
-			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
+			Object result = p.getValue(message, session).getValue(); // Should return PutSystemDateInSession.FIXEDDATETIME
 			assertInstanceOf(Date.class, result);
 
 			SimpleDateFormat sdf = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
@@ -382,10 +369,9 @@ public class DateParameterTest {
 			p.setFormatType(DateFormatType.TIMESTAMP);
 			p.configure();
 
-			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
 
-			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
+			Object result = p.getValue(message, session).getValue(); // Should return PutSystemDateInSession.FIXEDDATETIME
 			assertInstanceOf(Date.class, result);
 
 			SimpleDateFormat sdf = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
@@ -404,14 +390,13 @@ public class DateParameterTest {
 			p.setFormatType(DateFormatType.TIMESTAMP);
 			p.configure();
 
-			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
 
-			Object result = p.getValue(alreadyResolvedParameters, message, session, false); // Should return PutSystemDateInSession.FIXEDDATETIME
-			assertInstanceOf(Date.class, result);
+			ParameterValue result = p.getValue(message, session); // Should return PutSystemDateInSession.FIXEDDATETIME
+			Date date = assertInstanceOf(Date.class, result.getValue());
 
 			SimpleDateFormat sdf = new SimpleDateFormat(DateFormatUtils.FORMAT_FULL_GENERIC);
-			assertEquals(expectedDate, sdf.format(result));
+			assertEquals(expectedDate, sdf.format(date));
 		}
 	}
 
@@ -424,10 +409,9 @@ public class DateParameterTest {
 			p.setFormatType(DateParameter.DateFormatType.UNIX);
 			p.configure();
 
-			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
 
-			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+			Object result = p.getValue(message, session).getValue();
 			Date resultDate = assertInstanceOf(Date.class, result);
 			assertEquals(1747401948_000L, resultDate.getTime());
 		}
@@ -446,10 +430,9 @@ public class DateParameterTest {
 			TimeProvider.setClock(Clock.systemUTC());
 			TimeZone.setDefault(TimeZone.getTimeZone("Z"));
 
-			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
 
-			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+			Object result = p.getValue(message, session).getValue();
 			Date resultDate = assertInstanceOf(Date.class, result);
 			assertEquals(1747401948_000L, resultDate.getTime());
 		}
@@ -465,10 +448,9 @@ public class DateParameterTest {
 			p.setFormatType(DateFormatType.UNIX);
 			p.configure();
 
-			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
 
-			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+			Object result = p.getValue(message, session).getValue();
 			Date resultDate = assertInstanceOf(Date.class, result);
 			assertEquals(1747401948_000L, resultDate.getTime());
 		}
@@ -483,10 +465,9 @@ public class DateParameterTest {
 			p.setPattern("{now,millis}");
 			p.configure();
 
-			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
 
-			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+			Object result = p.getValue(message, session).getValue();
 			Date resultDate = assertInstanceOf(Date.class, result);
 			assertEquals(1747401948_000L, resultDate.getTime());
 		}
@@ -504,10 +485,9 @@ public class DateParameterTest {
 		parameter.setSessionKey("originalMessage");
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+		Object result = parameter.getValue(message, session).getValue();
 
 		assertInstanceOf(Date.class, result);
 		assertEquals(date, result);
@@ -524,12 +504,11 @@ public class DateParameterTest {
 		parameter.setPattern("{now}"); // Now no longer necessary to specify "time" as part of the pattern when type is TIME.
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 		PipeLineSession session = new PipeLineSession();
 
 		// Act
-		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+		Object result = parameter.getValue(message, session).getValue();
 
 		// Assert
 		Date resultDate = assertInstanceOf(Date.class, result);
@@ -559,12 +538,11 @@ public class DateParameterTest {
 
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 		PipeLineSession session = new PipeLineSession();
 
 		// Act
-		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+		Object result = parameter.getValue(message, session).getValue();
 
 		// Assert
 		Date resultDate = assertInstanceOf(Date.class, result);
@@ -590,15 +568,15 @@ public class DateParameterTest {
 		DateParameter parameter = new DateParameter();
 		parameter.setName("time");
 		parameter.setFormatType(DateFormatType.TIME);
-		parameter.setPattern("{now,time,HH:mm:ss}"); // Specifying "time" in the pattern used to be required for TIME parameters now it is optional. A formatString if specified has to be this format for TIME parameters, cannot exclude the seconds (yet).
+		parameter.setPattern("{now,time,HH:mm:ss}"); // Specifying "time" in the pattern used to be required for TIME parameters now it is optional. A
+													 // formatString if specified has to be this format for TIME parameters, cannot exclude the seconds (yet).
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 		PipeLineSession session = new PipeLineSession();
 
 		// Act
-		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+		Object result = parameter.getValue(message, session).getValue();
 
 		// Assert
 		Date resultDate = assertInstanceOf(Date.class, result);
@@ -625,15 +603,15 @@ public class DateParameterTest {
 		DateParameter parameter = new DateParameter();
 		parameter.setName("time");
 		parameter.setFormatType(DateFormatType.TIME);
-		parameter.setPattern("{now,time,HH:mm}"); // Does not work if you do not specify 'time' in the pattern. If you specify a format, it HAS to be this format.
+		parameter.setPattern("{now,time,HH:mm}"); // Does not work if you do not specify 'time' in the pattern. If you specify a format, it HAS to be this
+													 // format.
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 		PipeLineSession session = new PipeLineSession();
 
 		// Act
-		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+		Object result = parameter.getValue(message, session).getValue();
 
 		// Assert
 		Date resultDate = assertInstanceOf(Date.class, result);
@@ -662,12 +640,11 @@ public class DateParameterTest {
 		parameter.setPattern("{now}"); // Specifying just 'date' here does not work. Not consistent with DateFormatType.TIME
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 		PipeLineSession session = new PipeLineSession();
 
 		// Act
-		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+		Object result = parameter.getValue(message, session).getValue();
 
 		// Assert
 		Date resultDate = assertInstanceOf(Date.class, result);
@@ -696,12 +673,11 @@ public class DateParameterTest {
 		parameter.setPattern("{now,date,yyyy-MM-dd}"); // Specifying full date format makes it work, but it HAS to be this format
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 		PipeLineSession session = new PipeLineSession();
 
 		// Act
-		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+		Object result = parameter.getValue(message, session).getValue();
 
 		// Assert
 		Date resultDate = assertInstanceOf(Date.class, result);

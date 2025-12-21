@@ -92,7 +92,7 @@ public class NumberParameter extends AbstractParameter<Number> {
 	}
 
 	@Override
-	public ParameterValue getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
+	public Object getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		Object result = super.getValueImpl(alreadyResolvedParameters, message, session, namespaceAware);
 
 		if (result instanceof Number number) {
@@ -112,7 +112,7 @@ public class NumberParameter extends AbstractParameter<Number> {
 			result = StringUtils.leftPad(result+"", getMinLength(), '0');
 		}
 
-		return new ParameterValue(this, result);
+		return result;
 	}
 
 	@Override

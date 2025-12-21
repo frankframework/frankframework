@@ -78,13 +78,6 @@ public class ParameterValue {
 	}
 
 	/**
-	 * Sets value for the IParameter
-	 */
-	public void setValue(Object value) {
-		this.value = value;
-	}
-
-	/**
 	 * @param defaultValue returned if value is null
 	 * @return convert the value to a boolean
 	 */

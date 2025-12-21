@@ -261,15 +261,19 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 	}
 
 	/**
-	 * determines the raw value
+	 * Determines the raw value
 	 */
 	@Override
-	public ParameterValue getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
-		return new ParameterValue(this, getValueImpl(alreadyResolvedParameters, message, session, namespaceAware));
+	public ParameterValue getValue(Message message, PipeLineSession session) throws ParameterException {
+		return new ParameterValue(this, getValue(null, message, session, false));
 	}
 
+	/**
+	 * Determines the raw value, used by {@link ParameterValueList}.
+	 */
+	@Override // should be package private imo
 	@SuppressWarnings({ "deprecation", "resource" })
-	protected final Object getValueImpl(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
+	public Object getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		Object result = null;
 		log.debug("Calculating value for Parameter [{}]", this::getName);
 		if (!configured) {
@@ -723,9 +727,11 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 
 	private @Nonnull Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, PipeLineSession session, ParameterPatternSubstitution substitutionPattern) throws ParameterException {
 
-		ParameterValue paramValue = alreadyResolvedParameters.get(substitutionPattern.name);
-		if (paramValue != null && paramValue.getValue() != null) {
-			return paramValue.getValue();
+		if (alreadyResolvedParameters != null) {
+			ParameterValue paramValue = alreadyResolvedParameters.get(substitutionPattern.name);
+			if (paramValue != null && paramValue.getValue() != null) {
+				return paramValue.getValue();
+			}
 		}
 
 		if (session.containsKey(substitutionPattern.name)) {
