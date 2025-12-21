@@ -92,8 +92,8 @@ public class NumberParameter extends AbstractParameter<Number> {
 	}
 
 	@Override
-	public Object getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
-		Object result = super.getValue(alreadyResolvedParameters, message, session, namespaceAware);
+	public ParameterValue getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
+		Object result = super.getValueImpl(alreadyResolvedParameters, message, session, namespaceAware);
 
 		if (result instanceof Number number) {
 			if (getMinInclusiveString() != null && number.floatValue() < minInclusive.floatValue()) {
@@ -112,7 +112,7 @@ public class NumberParameter extends AbstractParameter<Number> {
 			result = StringUtils.leftPad(result+"", getMinLength(), '0');
 		}
 
-		return result;
+		return new ParameterValue(this, result);
 	}
 
 	@Override

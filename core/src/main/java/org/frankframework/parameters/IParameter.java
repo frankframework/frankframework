@@ -54,7 +54,7 @@ public interface IParameter extends IConfigurable, FrankElement, NameAware {
 
 	String getValue();
 
-	Object getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException;
+	ParameterValue getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException;
 
 	boolean isHidden();
 

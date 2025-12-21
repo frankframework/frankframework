@@ -263,9 +263,13 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 	/**
 	 * determines the raw value
 	 */
-	@SuppressWarnings({ "deprecation", "resource" })
 	@Override
-	public Object getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
+	public ParameterValue getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
+		return new ParameterValue(this, getValueImpl(alreadyResolvedParameters, message, session, namespaceAware));
+	}
+
+	@SuppressWarnings({ "deprecation", "resource" })
+	protected final Object getValueImpl(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		Object result = null;
 		log.debug("Calculating value for Parameter [{}]", this::getName);
 		if (!configured) {
