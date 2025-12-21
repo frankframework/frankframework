@@ -84,12 +84,6 @@ public class IncreaseIntegerPipe extends FixedForwardPipe {
 		return new PipeRunResult(getSuccessForward(), message);
 	}
 
-	@Override
-	public boolean consumesSessionVariable(String sessionKey) {
-		return super.consumesSessionVariable(sessionKey) || sessionKey.equals(getSessionKey());
-	}
-
-
 	/** Reference to the session variable whose value is to be increased.
 	 * @ff.mandatory
 	 */

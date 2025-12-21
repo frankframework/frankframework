@@ -106,12 +106,6 @@ public interface IPipe extends IConfigurable, IForwardTarget, FrankElement, Name
 	void stop();
 
 	/**
-	 * returns <code>true</code> if the pipe or one of its children use the named session variable.
-	 * Callers can use this to determine if a message needs to be preserved.
-	 */
-	boolean consumesSessionVariable(String sessionKey);
-
-	/**
 	 * Allowing pipe to register things at Configuration time.
 	 * Must be set before calling configure()
 	 */

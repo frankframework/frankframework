@@ -218,11 +218,6 @@ public class CompareStringPipe extends AbstractPipe {
 		return null;
 	}
 
-	@Override
-	public boolean consumesSessionVariable(String sessionKey) {
-		return super.consumesSessionVariable(sessionKey);
-	}
-
 	public boolean isXml() {
 		return xml;
 	}

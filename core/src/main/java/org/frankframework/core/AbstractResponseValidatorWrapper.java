@@ -116,11 +116,6 @@ public abstract class AbstractResponseValidatorWrapper<V extends AbstractValidat
 	}
 
 	@Override
-	public boolean consumesSessionVariable(String sessionKey) {
-		return owner.consumesSessionVariable(sessionKey);
-	}
-
-	@Override
 	public void setPipeLine(PipeLine pipeline) {
 		owner.setPipeLine(pipeline);
 	}
