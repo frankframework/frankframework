@@ -98,6 +98,11 @@
 			<version>${rabbitmq.jms.version}</version>
 			<scope>runtime</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.fusesource.hawtbuf</groupId>
+			<artifactId>hawtbuf</artifactId>
+			<version>1.11</version>
+		</dependency>
 	</dependencies>
 
 	<build>
