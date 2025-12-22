@@ -507,7 +507,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 			if (ifParameter != null) {
 				ParameterValue paramValue = ifParameter.getValue(input, session);
 				if (getIfValue() == null) {
-					boolean paramValueIsNotNull = paramValue != null;
+					boolean paramValueIsNotNull = paramValue.getValue() != null;
 					log.debug("skip pipe processing: ifValue not set and ifParameter value [{}] not null", paramValue::getValue);
 					return paramValueIsNotNull;
 				}
