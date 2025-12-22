@@ -49,5 +49,4 @@ public class KubernetesSecret extends org.frankframework.credentialprovider.Secr
 		}
 		return new String(Base64.getDecoder().decode(foundKey));
 	}
-
 }

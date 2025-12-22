@@ -22,7 +22,7 @@ import jakarta.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
 
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.java.Log;
 
 import org.frankframework.credentialprovider.CredentialAlias;
 import org.frankframework.credentialprovider.ISecret;
@@ -82,7 +82,7 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  *
  * @ff.info Please note that referenced secrets need to be numeric, since they reference the internal Delinea secret ID.
  */
-@Log4j2
+@Log
 public class DelineaCredentialFactory implements ISecretProvider {
 
 	private static final String BASE_KEY = "credentialFactory.delinea.";
@@ -153,6 +153,10 @@ public class DelineaCredentialFactory implements ISecretProvider {
 
 	@Override
 	public ISecret getSecret(@Nonnull CredentialAlias alias) throws NoSuchElementException {
+		if (alias.getName() != null && !StringUtils.isNumeric(alias.getName())) {
+			log.warning("Delinea secret aliases must be numeric, as they reference the internal Delinea secret ID. Supplied alias: %s".formatted(alias.getName()));
+		}
+
 		// Make sure to always get a live copy of the secret
 		DelineaSecretDto secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), aliasToRetrieve -> delineaClient.getSecret(aliasToRetrieve, delineaClientSettings.autoCommentValue()));
 

@@ -14,6 +14,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -136,5 +138,23 @@ class KubernetesSecretFactoryTest {
 
 		ObjectMeta objectMeta = new ObjectMeta().toBuilder().withName(alias).build();
 		return new Secret().toBuilder().withMetadata(objectMeta).withData(usernamePasswordMap).build();
+	}
+
+	@Test
+	void testInvalidStartAndEndCharactersLogWarnings() {
+		Logger rootLogger = Logger.getLogger("");
+		rootLogger.setLevel(Level.WARNING);
+
+		TestLogHandler handler = new TestLogHandler();
+		rootLogger.addHandler(handler);
+
+		CredentialAlias illegalChars = CredentialAlias.parse("-invalidAlias-");
+
+		// Call getSecret to trigger logging, expect an exception
+		assertThrows(NoSuchElementException.class, () -> credentialFactory.getSecret(illegalChars));
+
+		assertTrue(handler.contains("must start and end with an alphanumeric"));
+
+		rootLogger.removeHandler(handler);
 	}
 }

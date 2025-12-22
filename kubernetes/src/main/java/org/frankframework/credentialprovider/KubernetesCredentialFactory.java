@@ -22,6 +22,8 @@ import java.util.Optional;
 
 import jakarta.annotation.Nonnull;
 
+import org.apache.commons.lang3.StringUtils;
+
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -88,6 +90,7 @@ public class KubernetesCredentialFactory implements ISecretProvider {
 	public void initialize() {
 		CredentialConstants appConstants = CredentialConstants.getInstance();
 		log.info("initializing KubernetesCredentialFactory");
+
 		if (client == null) { // For testing purposes
 			client = new KubernetesClientBuilder().build();
 		}
@@ -123,6 +126,10 @@ public class KubernetesCredentialFactory implements ISecretProvider {
 
 	@Override
 	public ISecret getSecret(@Nonnull CredentialAlias alias) throws NoSuchElementException {
+		if (!isAliasNameValid(alias)) {
+			log.warning("A Kubernetes alias must start and end with an alphanumeric character. Given alias: " + alias.getName());
+		}
+
 		Secret secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), this::getSecret);
 
 		if (secret == null) {
@@ -130,6 +137,19 @@ public class KubernetesCredentialFactory implements ISecretProvider {
 		}
 
 		return new KubernetesSecret(alias, secret);
+	}
+
+	private boolean isAliasNameValid(CredentialAlias alias) {
+		if (alias == null || StringUtils.isEmpty(alias.getName())) {
+			return false;
+		}
+
+		// Allowed characters are already validated by CredentialAlias constructor. What we need to check is if the alias starts and ends with an alphanumeric character.
+		String name = alias.getName();
+		char firstChar = name.charAt(0);
+		char lastChar = name.charAt(name.length() - 1);
+
+		return Character.isLetterOrDigit(firstChar) && Character.isLetterOrDigit(lastChar);
 	}
 
 	@Override
