@@ -204,7 +204,7 @@ public class ParameterList implements Iterable<IParameter> {
 		}
 	}
 
-	public ParameterValue getValue(ParameterValueList alreadyResolvedParameters, @Nonnull IParameter p, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
+	private ParameterValue getValue(ParameterValueList alreadyResolvedParameters, @Nonnull IParameter p, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		return new ParameterValue(p, p.getValue(alreadyResolvedParameters, message, session, namespaceAware));
 	}
 

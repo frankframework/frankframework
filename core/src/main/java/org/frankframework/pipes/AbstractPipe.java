@@ -15,7 +15,6 @@
 */
 package org.frankframework.pipes;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -50,11 +49,11 @@ import org.frankframework.monitoring.EventPublisher;
 import org.frankframework.monitoring.EventThrowing;
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
+import org.frankframework.parameters.ParameterValue;
 import org.frankframework.processors.InputOutputPipeProcessor;
 import org.frankframework.stream.Message;
 import org.frankframework.util.AppConstants;
 import org.frankframework.util.Locker;
-import org.frankframework.util.MessageUtils;
 import org.frankframework.util.SpringUtils;
 
 /**
@@ -501,18 +500,18 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		}
 		try {
 			if (ifParameter != null) {
-				Object paramValue = ifParameter.getValue(null, input, session, true);
+				ParameterValue paramValue = ifParameter.getValue(input, session);
 				if (getIfValue() == null) {
-					boolean paramValueIsNotNull = paramValue != null;
-					log.debug("skip pipe processing: ifValue not set and ifParameter value [{}] not null", paramValue);
+					boolean paramValueIsNotNull = paramValue.getValue() != null;
+					log.debug("skip pipe processing: ifValue not set and ifParameter value [{}] not null", paramValue::getValue);
 					return paramValueIsNotNull;
 				}
 
-				boolean ifValueNotEqualToIfParam = !getIfValue().equalsIgnoreCase(MessageUtils.asString(paramValue));
-				log.debug("skip pipe processing: ifValue value [{}] not equal to ifParameter value [{}]", getIfValue(), paramValue);
+				boolean ifValueNotEqualToIfParam = !getIfValue().equalsIgnoreCase(paramValue.asStringValue());
+				log.debug("skip pipe processing: ifValue value [{}] not equal to ifParameter value [{}]", () -> getIfValue(), paramValue::getValue);
 				return ifValueNotEqualToIfParam;
 			}
-		} catch (ParameterException | IOException e) {
+		} catch (ParameterException e) {
 			throw new PipeRunException(this, "Cannot evaluate ifParam", e);
 		}
 		return false;

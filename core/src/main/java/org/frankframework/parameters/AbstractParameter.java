@@ -261,10 +261,18 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 	}
 
 	/**
-	 * determines the raw value
+	 * Determines the raw value
 	 */
-	@SuppressWarnings({ "deprecation", "resource" })
 	@Override
+	public ParameterValue getValue(Message message, PipeLineSession session) throws ParameterException {
+		return new ParameterValue(this, getValue(null, message, session, false));
+	}
+
+	/**
+	 * Determines the raw value, used by {@link ParameterValueList}.
+	 */
+	@Override // should be package private imo
+	@SuppressWarnings("deprecation")
 	public Object getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		Object result = null;
 		log.debug("Calculating value for Parameter [{}]", this::getName);
@@ -719,9 +727,11 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 
 	private @Nonnull Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, PipeLineSession session, ParameterPatternSubstitution substitutionPattern) throws ParameterException {
 
-		ParameterValue paramValue = alreadyResolvedParameters.get(substitutionPattern.name);
-		if (paramValue != null && paramValue.getValue() != null) {
-			return paramValue.getValue();
+		if (alreadyResolvedParameters != null) {
+			ParameterValue paramValue = alreadyResolvedParameters.get(substitutionPattern.name);
+			if (paramValue != null && paramValue.getValue() != null) {
+				return paramValue.getValue();
+			}
 		}
 
 		if (session.containsKey(substitutionPattern.name)) {

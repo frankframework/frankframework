@@ -24,10 +24,9 @@ public class NumberParameterTest {
 		p.setMinLength(10);
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		Object result = p.getValue(message, null).getValue();
 		assertInstanceOf(String.class, result);
 		assertEquals("0000000008", (String) result);
 	}
@@ -40,10 +39,9 @@ public class NumberParameterTest {
 		p.setMaxLength(5);
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		Object result = p.getValue(message, null).getValue();
 		assertInstanceOf(Integer.class, result);
 		assertEquals(8, result);
 	}
@@ -56,10 +54,9 @@ public class NumberParameterTest {
 		p.setMaxLength(5);
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		Object result = p.getValue(message, null).getValue();
 		assertInstanceOf(Integer.class, result);
 		assertEquals(0, result);
 	}
@@ -72,10 +69,9 @@ public class NumberParameterTest {
 		p.setMaxLength(5);
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		Object result = p.getValue(message, null).getValue();
 		assertInstanceOf(Integer.class, result);
 		assertEquals(81, result);
 	}
@@ -88,10 +84,9 @@ public class NumberParameterTest {
 		p.setMinLength(2);
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		Object result = p.getValue(message, null).getValue();
 		assertInstanceOf(Integer.class, result);
 		assertEquals(8_000, result);
 	}
@@ -105,10 +100,9 @@ public class NumberParameterTest {
 		p.setMinInclusive("5");
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		Object result = p.getValue(message, null).getValue();
 		assertInstanceOf(String.class, result);
 		assertEquals("0000000005", (String) result);
 	}
@@ -122,10 +116,9 @@ public class NumberParameterTest {
 		p.setMaxInclusive("5");
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		Object result = p.getValue(message, null).getValue();
 		assertInstanceOf(String.class, result);
 		assertEquals("0000000005", (String) result);
 
@@ -141,10 +134,9 @@ public class NumberParameterTest {
 		p.setMaxInclusive("5");
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		Object result = p.getValue(message, null).getValue();
 		assertInstanceOf(String.class, result);
 		assertEquals("0000000003", (String) result);
 	}
@@ -158,10 +150,9 @@ public class NumberParameterTest {
 		p.setMinInclusive("3");
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		Object result = p.getValue(message, null).getValue();
 		assertInstanceOf(String.class, result);
 		assertEquals("0000000005", (String) result);
 	}
@@ -176,10 +167,9 @@ public class NumberParameterTest {
 		p.setMinInclusive("3");
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		Object result = p.getValue(message, null).getValue();
 		assertInstanceOf(String.class, result);
 		assertEquals("00000005.8", (String) result);
 	}
@@ -194,10 +184,9 @@ public class NumberParameterTest {
 		p.setMaxInclusive("6");
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		Object result = p.getValue(message, null).getValue();
 		assertInstanceOf(Double.class, result);
 		assertEquals(5.6, result);
 	}
@@ -211,10 +200,9 @@ public class NumberParameterTest {
 		p.setValue("5,6.00");
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		Object result = p.getValue(message, null).getValue();
 		assertInstanceOf(Long.class, result);
 		assertEquals(56L, result);
 	}
@@ -228,10 +216,9 @@ public class NumberParameterTest {
 		p.setValue("5.000,00");
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		Object result = p.getValue(message, null).getValue();
 		assertInstanceOf(Long.class, result);
 		assertEquals(5000L, result);
 	}
@@ -243,10 +230,9 @@ public class NumberParameterTest {
 		p.setValue("a");
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		assertThrows(ParameterException.class, () -> p.getValue(alreadyResolvedParameters, message, null, false));
+		assertThrows(ParameterException.class, () -> p.getValue(message, null));
 	}
 
 	@Test
@@ -266,10 +252,9 @@ public class NumberParameterTest {
 		p.setType(type);
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
+		Object result = p.getValue(message, null).getValue();
 		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
 
 		PipeLineSession session = new PipeLineSession();
@@ -280,31 +265,31 @@ public class NumberParameterTest {
 		p.setType(type);
 		p.configure();
 
-		result = p.getValue(alreadyResolvedParameters, message, session, false);
+		result = p.getValue(message, session).getValue();
 		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
 
 		session = new PipeLineSession();
 		session.put("sessionkey", "8");
 
-		result = p.getValue(alreadyResolvedParameters, message, session, false);
+		result = p.getValue(message, session).getValue();
 		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
 
 		session = new PipeLineSession();
 		session.put("sessionkey", Message.asMessage(8));
 
-		result = p.getValue(alreadyResolvedParameters, message, session, false);
+		result = p.getValue(message, session).getValue();
 		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
 
 		session = new PipeLineSession();
 		session.put("sessionkey", "8".getBytes());
 
-		result = p.getValue(alreadyResolvedParameters, message, session, false);
+		result = p.getValue(message, session).getValue();
 		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
 
 		session = new PipeLineSession();
 		session.put("sessionkey", new Message("8".getBytes()));
 
-		result = p.getValue(alreadyResolvedParameters, message, session, false);
+		result = p.getValue(message, session).getValue();
 		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
 
 	}
@@ -319,9 +304,8 @@ public class NumberParameterTest {
 		Message input = new Message("<root>123</root>");
 		PipeLineSession session = new PipeLineSession();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
-		Object result = p.getValue(alreadyResolvedParameters, input, session, false);
-		Integer integer = assertInstanceOf(Integer.class, result);
+		ParameterValue result = p.getValue(input, session);
+		Integer integer = assertInstanceOf(Integer.class, result.getValue());
 		assertEquals(123, integer);
 	}
 
@@ -335,10 +319,9 @@ public class NumberParameterTest {
 			p.setPattern("{now,millis,#}");
 			p.configure();
 
-			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
 
-			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+			Object result = p.getValue(message, session).getValue();
 			Long millis = assertDoesNotThrow(() -> Long.parseLong(result.toString()));
 			assertEquals(1747401948_000L, millis);
 		}
@@ -354,10 +337,9 @@ public class NumberParameterTest {
 			p.setPattern("{now,millis}");
 			p.configure();
 
-			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
 
-			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+			Object result = p.getValue(message, session).getValue();
 			Long millis = assertDoesNotThrow(() -> Long.parseLong(result.toString()));
 			assertEquals(1747401948_000L, millis);
 		}

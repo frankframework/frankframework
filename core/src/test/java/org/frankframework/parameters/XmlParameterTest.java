@@ -75,10 +75,9 @@ public class XmlParameterTest {
 		inputMessage.setRemoveNamespaces(removeNamespaces);
 		inputMessage.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = inputMessage.getValue(alreadyResolvedParameters, message, session, false);
+		Object result = inputMessage.getValue(message, session).getValue();
 		assertTrue(c.isAssignableFrom(result.getClass()), c + " is expected type but was: " + result.getClass());
 	}
 
@@ -96,14 +95,13 @@ public class XmlParameterTest {
 		parameter.setType(ParameterType.NODE);
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
-		assertThat(result, instanceOf(Node.class));
-		assertThat(result, not(instanceOf(Document.class)));
+		ParameterValue result = parameter.getValue(message, session);
+		Node node = assertInstanceOf(Node.class, result.getValue());
+		assertThat(node, not(instanceOf(Document.class)));
 
-		String contents = XmlUtils.transformXml(createTransformer(), new DOMSource((Node) result));
+		String contents = XmlUtils.transformXml(createTransformer(), new DOMSource(node));
 		assertEquals(expectedResultContents, contents);
 	}
 
@@ -121,13 +119,12 @@ public class XmlParameterTest {
 		parameter.setType(ParameterType.DOMDOC);
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
-		assertInstanceOf(Document.class, result);
+		ParameterValue result = parameter.getValue(message, session);
+		Document domDoc = assertInstanceOf(Document.class, result.getValue());
 
-		String contents = XmlUtils.transformXml(createTransformer(), new DOMSource((Document) result));
+		String contents = XmlUtils.transformXml(createTransformer(), new DOMSource(domDoc));
 		assertEquals(expectedResultContents, contents);
 	}
 
@@ -143,13 +140,12 @@ public class XmlParameterTest {
 		parameter.setType(ParameterType.DOMDOC);
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
-		assertThat(result, instanceOf(Document.class));
+		ParameterValue result = parameter.getValue(message, session);
+		Document domDoc = assertInstanceOf(Document.class, result.getValue());
 
-		String contents = XmlUtils.transformXml(createTransformer(), new DOMSource((Document) result));
+		String contents = XmlUtils.transformXml(createTransformer(), new DOMSource(domDoc));
 		assertEquals(expectedResultContents, contents);
 	}
 
@@ -165,14 +161,13 @@ public class XmlParameterTest {
 		parameter.setType(ParameterType.NODE);
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
-		assertThat(result, instanceOf(Node.class));
-		assertThat(result, not(instanceOf(Document.class)));
+		ParameterValue result = parameter.getValue(message, session);
+		Node node = assertInstanceOf(Node.class, result.getValue());
+		assertThat(node, not(instanceOf(Document.class)));
 
-		String contents = XmlUtils.transformXml(createTransformer(), new DOMSource((Node) result));
+		String contents = XmlUtils.transformXml(createTransformer(), new DOMSource(node));
 		assertEquals(expectedResultContents, contents);
 	}
 
@@ -190,11 +185,10 @@ public class XmlParameterTest {
 		parameter.setXpathExpression("*");
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
-		Document domDoc = assertInstanceOf(Document.class, result);
+		ParameterValue result = parameter.getValue(message, session);
+		Document domDoc = assertInstanceOf(Document.class, result.getValue());
 
 		String contents = XmlUtils.transformXml(createTransformer(), new DOMSource(domDoc));
 		assertEquals(expectedResultContents, contents);
@@ -214,15 +208,14 @@ public class XmlParameterTest {
 		parameter.setSessionKey("originalMessage");
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
+		ParameterValue result = parameter.getValue(message, session);
 
-		assertInstanceOf(Node.class, result);
-		assertThat(result, not(instanceOf(Document.class)));
+		Node nodeResult = assertInstanceOf(Node.class, result.getValue());
+		assertThat(nodeResult, not(instanceOf(Document.class)));
 
-		String contents = XmlUtils.transformXml(createTransformer(), new DOMSource((Node) result));
+		String contents = XmlUtils.transformXml(createTransformer(), new DOMSource(nodeResult));
 		assertEquals(expectedResultContents, contents);
 
 		assertFalse(parameter.requiresInputValueForResolution());
@@ -244,14 +237,13 @@ public class XmlParameterTest {
 		parameter.setXpathExpression("*");
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
-		assertThat(result, instanceOf(Node.class));
-		assertThat(result, not(instanceOf(Document.class)));
+		ParameterValue result = parameter.getValue(message, session);
+		Node node = assertInstanceOf(Node.class, result.getValue());
+		assertThat(node, not(instanceOf(Document.class)));
 
-		String contents = XmlUtils.transformXml(createTransformer(), new DOMSource((Node) result));
+		String contents = XmlUtils.transformXml(createTransformer(), new DOMSource(node));
 		assertEquals(expectedResultContents, contents);
 	}
 
