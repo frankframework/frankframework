@@ -31,41 +31,6 @@
 			<classifier>fatjar</classifier>
 		</dependency>
 		<dependency>
-			<groupId>${oracle.driver.groupid}</groupId>
-			<artifactId>ojdbc${oracle.driver.jdkversion}</artifactId>
-			<version>${oracle.driver.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.h2database</groupId>
-			<artifactId>h2</artifactId>
-			<version>${h2.driver.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.microsoft.sqlserver</groupId>
-			<artifactId>mssql-jdbc</artifactId>
-			<version>${mssql.driver.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.mysql</groupId>
-			<artifactId>mysql-connector-j</artifactId>
-			<version>${mysql.driver.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.mariadb.jdbc</groupId>
-			<artifactId>mariadb-java-client</artifactId>
-			<version>${mariadb.driver.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<version>${postgresql.driver.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>com.ibm.db2</groupId>
-			<artifactId>jcc</artifactId>
-			<version>${db2.driver.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>jakarta.management.j2ee</groupId>
 			<artifactId>jakarta.management.j2ee-api</artifactId>
 			<version>1.1.4</version>
@@ -81,17 +46,6 @@
 			<scope>compile</scope>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>artemis-jakarta-client-all</artifactId>
-			<version>${artemis.driver.version}</version>
-		</dependency>
-		<!-- required for ActiveMQ classic-->
-		<dependency>
-			<groupId>org.apache.activemq</groupId>
-			<artifactId>activemq-client</artifactId>
-			<version>${activemq.driver.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>org.apache.logging.log4j</groupId>
 			<artifactId>log4j-slf4j2-impl</artifactId>
 		</dependency>
@@ -104,26 +58,9 @@
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.fusesource.hawtbuf</groupId>
-			<artifactId>hawtbuf</artifactId>
-			<version>1.11</version>
-		</dependency>
-		<dependency>
 			<groupId>org.frankframework</groupId>
 			<artifactId>frankframework-webapp</artifactId>
 			<type>war</type>
-		</dependency>
-		<dependency>
-			<groupId>com.rabbitmq</groupId>
-			<artifactId>amqp-client</artifactId>
-			<version>${rabbitmq.driver.version}</version>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>com.rabbitmq.jms</groupId>
-			<artifactId>rabbitmq-jms</artifactId>
-			<version>${rabbitmq.jms.version}</version>
-			<scope>runtime</scope>
 		</dependency>
 	</dependencies>
 
@@ -146,6 +83,7 @@
 							<overWriteSnapshots>true</overWriteSnapshots>
 							<excludeTransitive>true</excludeTransitive>
 							<stripVersion>true</stripVersion>
+							<excludeGroupIds>org.frankframework</excludeGroupIds>
 						</configuration>
 					</execution>
 					<execution>
