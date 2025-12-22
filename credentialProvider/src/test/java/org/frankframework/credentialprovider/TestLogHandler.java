@@ -16,10 +16,12 @@ public class TestLogHandler extends Handler {
 
 	@Override
 	public void flush() {
+		// do nothing
 	}
 
 	@Override
 	public void close() throws SecurityException {
+		// do nothing
 	}
 
 	public boolean contains(String s) {
