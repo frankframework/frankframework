@@ -17,6 +17,8 @@ package org.frankframework.components;
 
 import java.util.jar.Manifest;
 
+import org.apache.commons.lang3.StringUtils;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -39,6 +41,10 @@ public class ModuleInformation {
 
 		this.groupId = manifest.getMainAttributes().getValue("groupId");
 		this.artifactId = manifest.getMainAttributes().getValue("artifactId");
+
+		if (StringUtils.isAnyEmpty(artifactId, title, version)) {
+			throw new IllegalStateException("invalid Manifest.md file");
+		}
 	}
 
 	@Override

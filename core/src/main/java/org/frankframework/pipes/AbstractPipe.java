@@ -106,11 +106,10 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	private @Getter String elementToMoveSessionKey = null;
 	private @Getter String elementToMoveChain = null;
 	private @Getter boolean removeCompactMsgNamespaces = true;
-	private @Getter boolean restoreMovedElements=false;
+	private @Getter boolean restoreMovedElements = false;
 
 	private boolean sizeStatistics = AppConstants.getInstance(configurationClassLoader).getBoolean("statistics.size", true);
 	private @Getter Locker locker;
-	private @Getter String emptyInputReplacement = null;
 	private @Getter boolean writeToSecLog = false;
 	private @Getter String secLogSessionKeys = null;
 	private @Getter String logIntermediaryResults = null;
@@ -123,6 +122,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	private @Setter EventPublisher eventPublisher=null;
 
 	private @Getter @Setter PipeLine pipeLine;
+	private @Getter String emptyInputReplacement = null;
 	private @Getter boolean skipOnEmptyInput = false;
 	private @Getter String ifParam = null;
 	private @Getter String ifValue = null;
@@ -517,6 +517,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 		}
 		return false;
 	}
+
 	/**
 	 * If {@code true}, the processing continues directly at the forward of this pipe, without executing the pipe itself, if the input is empty.
 	 * @ff.default false

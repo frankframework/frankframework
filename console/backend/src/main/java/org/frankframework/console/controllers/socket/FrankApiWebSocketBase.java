@@ -45,6 +45,7 @@ import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.console.util.ResponseUtils;
+import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.bus.OutboundGateway.ClusterMember;
 import org.frankframework.management.gateway.HazelcastOutboundGateway;
@@ -93,14 +94,18 @@ public class FrankApiWebSocketBase implements InitializingBean, ApplicationListe
 		final Message<?> response;
 		try {
 			response = gateway.sendSyncMessage(builder.build(target));
-		} catch (Exception e) { // BusException
-			log.error("exception while sending synchronous bus request", e);
+		} catch (BusException e) {
+			// The message is already logged (warn level) by the BusException
+			log.debug("no response while sending synchronous bus request to [{}]: {}", builder::getTopic, e::getMessage);
+			return null;
+		} catch (Exception e) {
+			log.error("exception while sending synchronous bus request to [{}]", builder.getTopic(), e);
 			return null;
 		}
 
 		String stringResponse = ResponseUtils.parseAsString(response);
 		if (stringResponse == null) {
-			throw new IllegalStateException("no response found");
+			throw new IllegalStateException("no response payload found");
 		}
 
 		String cacheTopic = customTopic != null ? customTopic : builder.getTopic().name();
