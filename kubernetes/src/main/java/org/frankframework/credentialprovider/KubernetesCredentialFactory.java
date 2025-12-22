@@ -27,7 +27,7 @@ import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
 import io.micrometer.common.util.StringUtils;
-import lombok.extern.log4j.Log4j2;
+import lombok.extern.java.Log;
 
 import org.frankframework.credentialprovider.util.Cache;
 import org.frankframework.credentialprovider.util.CredentialConstants;
@@ -69,7 +69,7 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
  * and must start and end with an alphanumeric character
  * @ff.info The credentials are cached for 60 seconds, to prevent unnecessary calls to the Kubernetes API.
  */
-@Log4j2
+@Log
 public class KubernetesCredentialFactory implements ISecretProvider {
 
 	private static final String K8_USERNAME = "credentialFactory.kubernetes.username";
@@ -126,7 +126,7 @@ public class KubernetesCredentialFactory implements ISecretProvider {
 	@Override
 	public ISecret getSecret(@Nonnull CredentialAlias alias) throws NoSuchElementException {
 		if (!isAliasNameValid(alias)) {
-			log.warn("A Kubernetes alias must start and end with an alphanumeric character. Given alias: {}", alias.getName());
+			log.warning("A Kubernetes alias must start and end with an alphanumeric character. Given alias: " + alias.getName());
 		}
 
 		Secret secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), this::getSecret);
@@ -166,7 +166,7 @@ public class KubernetesCredentialFactory implements ISecretProvider {
 	protected synchronized List<Secret> getSecretsFromKubernetes() {
 		List<Secret> secrets = client.secrets().inNamespace(namespace).list().getItems();
 		if (secrets.isEmpty()) {
-			log.warn("no secrets found in namespace: {}", namespace);
+			log.warning("no secrets found in namespace: " + namespace);
 		}
 
 		return secrets;
