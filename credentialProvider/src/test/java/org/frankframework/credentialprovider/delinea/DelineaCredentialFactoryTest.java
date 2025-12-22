@@ -13,15 +13,16 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
-import org.apache.logging.log4j.Level;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.credentialprovider.CredentialAlias;
 import org.frankframework.credentialprovider.ISecret;
-import org.frankframework.credentialprovider.TestAppender;
+import org.frankframework.credentialprovider.TestLogHandler;
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
 class DelineaCredentialFactoryTest {
@@ -92,17 +93,21 @@ class DelineaCredentialFactoryTest {
 	}
 
 	@Test
-	void testInvalidStartAndEndCharactersLogWarnings() throws Exception {
-		TestAppender.setRootLogLevel(Level.WARN);
-		try (TestAppender appender = TestAppender.newBuilder().build()) {
+	void testInvalidStartAndEndCharactersLogWarnings() {
+		Logger rootLogger = Logger.getLogger("");
+		rootLogger.setLevel(Level.WARNING);
 
-			CredentialAlias illegalChars = CredentialAlias.parse("doesNotContainOnlyNumbers");
+		TestLogHandler handler = new TestLogHandler();
+		rootLogger.addHandler(handler);
 
-			// Call getSecret to trigger logging, expect an exception
-			assertThrows(NoSuchElementException.class, () -> credentialFactory.getSecret(illegalChars));
+		CredentialAlias illegalChars = CredentialAlias.parse("doesNotContainOnlyNumbers");
 
-			assertTrue(appender.contains("must be numeric"));
-		}
+		// Call getSecret to trigger logging, expect an exception
+		assertThrows(NoSuchElementException.class, () -> credentialFactory.getSecret(illegalChars));
+
+		assertTrue(handler.contains("must be numeric"));
+
+		rootLogger.removeHandler(handler);
 	}
 
 	static DelineaSecretDto createSecret(int id, int folderId, String username, String password) {
@@ -111,4 +116,5 @@ class DelineaCredentialFactoryTest {
 
 		return new DelineaSecretDto(id, folderId, "", true, List.of(usernameField, passwordField));
 	}
+
 }

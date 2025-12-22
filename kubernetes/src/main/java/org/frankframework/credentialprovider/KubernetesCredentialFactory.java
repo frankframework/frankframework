@@ -22,11 +22,12 @@ import java.util.Optional;
 
 import jakarta.annotation.Nonnull;
 
+import org.apache.commons.lang3.StringUtils;
+
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
-import io.micrometer.common.util.StringUtils;
 import lombok.extern.java.Log;
 
 import org.frankframework.credentialprovider.util.Cache;
