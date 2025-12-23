@@ -31,6 +31,11 @@
 			<classifier>fatjar</classifier>
 		</dependency>
 		<dependency>
+			<groupId>com.h2database</groupId>
+			<artifactId>h2</artifactId>
+			<version>${h2.driver.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>jakarta.management.j2ee</groupId>
 			<artifactId>jakarta.management.j2ee-api</artifactId>
 			<version>1.1.4</version>
@@ -83,7 +88,6 @@
 							<overWriteSnapshots>true</overWriteSnapshots>
 							<excludeTransitive>true</excludeTransitive>
 							<stripVersion>true</stripVersion>
-							<excludeGroupIds>org.frankframework</excludeGroupIds>
 						</configuration>
 					</execution>
 					<execution>
