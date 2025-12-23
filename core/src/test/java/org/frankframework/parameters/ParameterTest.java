@@ -39,6 +39,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
+import org.springframework.http.MediaType;
 import org.w3c.dom.Document;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -630,6 +631,23 @@ public class ParameterTest {
 		assertEquals("3", getValue(p.getValue(alreadyResolvedParameters, input, session, false)));
 
 		assertFalse(p.requiresInputValueForResolution());
+	}
+
+	@Test
+	public void testContextKeyJsonPathNullResult() throws Exception {
+		PipeLineSession session = new PipeLineSession();
+		session.put("data", new Message("{\"org_id\": null}", new MessageContext().withMimeType(MediaType.APPLICATION_JSON)));
+
+		Parameter p = new Parameter();
+		p.setName("dummy");
+		p.setSessionKey("data");
+		p.setJsonPathExpression("$.org_id");
+		p.configure();
+
+		Message input = new Message("fakeMessage");
+
+		ParameterValue pv = p.getValue(input, session);
+		assertNull(pv.getValue());
 	}
 
 	@Test
