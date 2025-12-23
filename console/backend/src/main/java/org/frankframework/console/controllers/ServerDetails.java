@@ -93,7 +93,8 @@ public class ServerDetails {
 
 		ResponseEntity<?> response = frankApiService.callSyncGateway(RequestMessageBuilder.create(BusTopic.HEALTH));
 		if (response.getStatusCode().is5xxServerError() && !strictMode) {
-			return ResponseEntity.ok("{\"status\":\"ok\"}");
+			// Return original data (with error messages) but with a 200 OK status code.
+			return ResponseEntity.ok(response.getBody());
 		}
 		return response;
 	}

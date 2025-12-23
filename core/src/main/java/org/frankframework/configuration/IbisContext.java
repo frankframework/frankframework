@@ -378,6 +378,7 @@ public class IbisContext extends IbisApplicationContext {
 
 			LOG.info("configured configuration [{}] successfully", currentConfigurationName);
 		} catch (ConfigurationException e) {
+			configuration.setConfigurationException(e);
 			log("exception loading configuration ["+currentConfigurationName+"]", MessageEventLevel.ERROR, e);
 		} finally {
 			Thread.currentThread().setContextClassLoader(originalClassLoader);
