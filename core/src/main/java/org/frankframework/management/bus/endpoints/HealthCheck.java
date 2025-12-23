@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 - 2024 WeAreFrank!
+   Copyright 2022-2025 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package org.frankframework.management.bus.endpoints;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
@@ -78,6 +79,16 @@ public class HealthCheck extends BusEndpointBase {
 				} else {
 					errors.add("configuration["+config.getName()+"] is in state["+state+"]");
 				}
+			} else {
+				boolean receiversInStateExceptionStarting = config.getRegisteredAdapters().stream()
+						.map(adapter -> adapter.getReceivers())
+						.flatMap(Collection::stream)
+						.filter(receiver -> receiver.getRunState() == RunState.EXCEPTION_STARTING)
+						.count() > 0;
+
+				if (receiversInStateExceptionStarting) {
+					errors.add("configuration["+config.getName()+"] is in state[WARNING]");
+				}
 			}
 		}
 
@@ -107,7 +118,7 @@ public class HealthCheck extends BusEndpointBase {
 		List<String> errors = new ArrayList<>();
 
 		for (Adapter adapter : configuration.getRegisteredAdapters()) {
-			RunState state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
+			RunState state = adapter.getRunState(); // Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
 			if(state==RunState.STARTED) {
 				for (Receiver<?> receiver: adapter.getReceivers()) {
@@ -154,7 +165,7 @@ public class HealthCheck extends BusEndpointBase {
 		Map<String, Object> response = new HashMap<>();
 		List<String> errors = new ArrayList<>();
 
-		RunState state = adapter.getRunState(); //Let's not make it difficult for ourselves and only use STARTED/ERROR enums
+		RunState state = adapter.getRunState(); // Let's not make it difficult for ourselves and only use STARTED/ERROR enums
 
 		if(state==RunState.STARTED) {
 			for (Receiver<?> receiver: adapter.getReceivers()) {

@@ -19,9 +19,11 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -514,7 +516,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 */
 	protected void addErrorMessageToMessageKeeper(String msg, Throwable t) {
 		log.error("Adapter [{}] {}", name, msg, t);
-		if (!(t instanceof IbisException)) {
+		if (!(t instanceof IbisException) && !(t instanceof LifecycleException)) {
 			msg += " (" + t.getClass().getName() + ")";
 		}
 		this.publishEvent(new AdapterMessageEvent(this, msg, t));
@@ -703,7 +705,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		return null;
 	}
 
-	public @Nonnull Iterable<Receiver<?>> getReceivers() {
+	public @Nonnull List<Receiver<?>> getReceivers() {
 		return receivers;
 	}
 
@@ -994,23 +996,25 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		// not a problem for now but something we should look into in the future...
 		CompletableFuture.runAsync(super::start, taskExecutor) // Start all smart-lifecycles
 				.thenRun(runnable) // Then start the adapter it self
-				.whenComplete((e,t) -> handleException(t)); // The exception from the previous stage, if any, will propagate further.
+				.whenComplete(this::handleException); // The exception from the previous stage, if any, will propagate further.
 	}
 
-	private void handleException(Throwable t) {
+	private <T> T handleException(T result, Throwable t) {
 		if (t == null) {
-			return;
+			return result;
 		}
-		if (t instanceof ExecutionException ee) {
-			handleException(ee);
-			return;
+		if (t instanceof CompletionException ee) {
+			return handleException(result, ee.getCause());
+		} else if (t instanceof ExecutionException ee) {
+			return handleException(result, ee.getCause());
 		} else if (t instanceof ApplicationContextException ace) {
-			handleException(ace);
-			return;
+			return handleException(result, ace.getCause());
 		}
 
 		runState.setRunState(RunState.ERROR);
-		addErrorMessageToMessageKeeper(t.getMessage(), t);
+		addErrorMessageToMessageKeeper("caught error", t);
+
+		return result;
 	}
 
 	@Override
@@ -1114,7 +1118,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		};
 
 		CompletableFuture.runAsync(runnable, taskExecutor) // Stop asynchronous from other adapters
-				.handle((e, t) -> { handleException(t); return e; }) // The exception from the previous stage, if any, will NOT propagate further.
+				.handle(this::handleException) // The exception from the previous stage, if any, will NOT propagate further.
 				.thenRun(super::stop) // Stop other LifeCycle aware beans
 				.thenRun(callback); // Call the callback 'CountDownLatch' to confirm we've stopped
 	}
