@@ -351,6 +351,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 				}
 			}
 
+		// TODO Once IPipe implements ConfigurableLifecycle we should directly throw ConfigurationException here.
 		} catch (Throwable t) {
 			ConfigurationException e = new ConfigurationException("Exception configuring "+ ClassUtils.nameOf(pipe),t);
 			adapter.publishEvent(new AdapterMessageEvent(adapter, pipe, "unable to initialize", e));
@@ -480,6 +481,9 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 				log.debug("starting {}", type);
 				pipe.start();
 				log.debug("successfully started {}", type);
+			} catch (Exception t) {
+				adapter.publishEvent(new AdapterMessageEvent(adapter, pipe, "was unable to start", t));
+				throw t;
 			}
 		}
 	}
@@ -527,6 +531,9 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 				log.debug("stopping {}", type);
 				pipe.stop();
 				log.debug("successfully stopped {}", type);
+			} catch (Exception t) {
+				adapter.publishEvent(new AdapterMessageEvent(adapter, pipe, "was unable to stop", t));
+				throw t;
 			}
 		}
 	}

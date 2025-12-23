@@ -95,7 +95,6 @@ import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.ProcessState;
 import org.frankframework.core.RequestReplyListener;
 import org.frankframework.core.SenderException;
-import org.frankframework.core.TimeoutException;
 import org.frankframework.core.TransactionAttribute;
 import org.frankframework.core.TransactionAttributes;
 import org.frankframework.doc.Category;
@@ -104,6 +103,7 @@ import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Protected;
 import org.frankframework.jdbc.MessageStoreListener;
 import org.frankframework.jta.SpringTxManagerProxy;
+import org.frankframework.lifecycle.LifecycleException;
 import org.frankframework.lifecycle.events.AdapterMessageEvent;
 import org.frankframework.lifecycle.events.MessageEventLevel;
 import org.frankframework.logging.IbisMaskingLayout;
@@ -437,38 +437,6 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		this.applicationContext = context;
 	}
 
-	protected void openAllResources() throws ListenerException, TimeoutException {
-		// on exit resources must be in a state that runstate is or can be set to 'STARTED'
-		TimeoutGuard timeoutGuard = new TimeoutGuard(getStartTimeout(), "starting receiver ["+getName()+"]");
-		try {
-			try {
-				if (getSender()!=null) {
-					getSender().start();
-				}
-
-				if (getErrorStorage()!=null) {
-					getErrorStorage().start();
-				}
-
-				if (getMessageLog()!=null) {
-					getMessageLog().start();
-				}
-			} catch (Exception e) {
-				throw new ListenerException(e);
-			}
-			getListener().start();
-		} finally {
-			if (timeoutGuard.cancel()) {
-				throw new TimeoutException("timeout exceeded while starting receiver");
-			}
-		}
-		if (getListener() instanceof IPullingListener) {
-			// start all threads. Also sets runstate=STARTED
-			listenerContainer.start();
-		}
-		throwEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
-	}
-
 	/**
 	 * must lead to a 'closeAllResources()' and runstate must be 'STOPPING'
 	 * if IPushingListener -> call closeAllResources()
@@ -519,7 +487,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			}
 		} finally {
 			if (timeoutGuard.cancel()) {
-				if(!isInRunState(RunState.EXCEPTION_STARTING)) { //Don't change the RunState when failed to start
+				if(!isInRunState(RunState.EXCEPTION_STARTING)) { // Don't change the RunState when failed to start
 					runState.setRunState(RunState.EXCEPTION_STOPPING);
 				}
 				// I want extra logging for the call-stack from where the timed-out request to stop came from.
@@ -532,7 +500,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				if (isInRunState(RunState.STOPPING) || isInRunState(RunState.EXCEPTION_STOPPING)) {
 					runState.setRunState(RunState.STOPPED);
 				}
-				if(!isInRunState(RunState.EXCEPTION_STARTING)) { //Don't change the RunState when failed to start
+				if(!isInRunState(RunState.EXCEPTION_STARTING)) { // Don't change the RunState when failed to start
 					throwEvent(RCV_SHUTDOWN_MONITOR_EVENT);
 					resetBackoffDelay();
 
@@ -804,6 +772,38 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			runState.setRunState(RunState.EXCEPTION_STARTING);
 			closeAllResources(); // Close potential dangling resources, don't change state here..
 		}
+	}
+
+	private void openAllResources() {
+		// on exit resources must be in a state that runstate is or can be set to 'STARTED'
+		TimeoutGuard timeoutGuard = new TimeoutGuard(getStartTimeout(), "starting receiver ["+getName()+"]");
+		try {
+			try {
+				if (getSender()!=null) {
+					getSender().start();
+				}
+
+				if (getErrorStorage()!=null) {
+					getErrorStorage().start();
+				}
+
+				if (getMessageLog()!=null) {
+					getMessageLog().start();
+				}
+			} catch (Exception e) {
+				throw new LifecycleException(e);
+			}
+			getListener().start();
+		} finally {
+			if (timeoutGuard.cancel()) {
+				throw new LifecycleException("timeout of ["+getStartTimeout()+"] seconds exceeded while starting receiver");
+			}
+		}
+		if (getListener() instanceof IPullingListener) {
+			// start all threads. Also sets runstate=STARTED
+			listenerContainer.start();
+		}
+		throwEvent(RCV_STARTED_RUNNING_MONITOR_EVENT);
 	}
 
 	// After successfully closing all resources the state should be set to stopped

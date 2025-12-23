@@ -487,7 +487,7 @@ export class AppService {
   }
 
   getServerHealth(): Observable<string> {
-    return this.http.get(`${this.absoluteApiPath}server/health`, {
+    return this.http.get(`${this.absoluteApiPath}server/health?strict=false`, {
       responseType: 'text',
     });
   }

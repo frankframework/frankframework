@@ -181,7 +181,7 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 				for (LifecycleGroup lifecycleGroup : phases.values()) {
 					lifecycleGroup.configure();
 				}
-			} catch (ConfigurationException e) {
+			} catch (Throwable e) {
 				stop(); // Stop all lifecycles
 				throw e;
 			}
