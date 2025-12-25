@@ -93,8 +93,8 @@ importers:
         specifier: ^1.6.1
         version: 1.6.1
       sweetalert2:
-        specifier: ^11.26.10
-        version: 11.26.10
+        specifier: ^11.26.17
+        version: 11.26.17
       tinycon:
         specifier: 0.6.8
         version: 0.6.8
@@ -205,7 +205,7 @@ importers:
   console/frontend/src/main/frontend/cypress:
     devDependencies:
       cypress:
-        specifier: ^15.8.0
+        specifier: ^15.8.1
         version: 15.8.1
       cypress-multi-reporters:
         specifier: ^2.0.5
@@ -3958,8 +3958,8 @@ packages:
     resolution: {integrity: sha512-ot0WnXS9fgdkgIcePe6RHNk1WA8+muPa6cSjeR3V8K27q9BB1rTE3R1p7Hv0z1ZyAc8s6Vvv8DIyWf681MAt0w==}
     engines: {node: '>= 0.4'}
 
-  sweetalert2@11.26.10:
-    resolution: {integrity: sha512-l/aaL9WWbumBOaMvcs4aCKzyQwkQCplSmSGpJD7FuRcSDWZyr2OEDmtcSPj2/w3N2TC2xw48Vg5cL6IkUJnPlQ==}
+  sweetalert2@11.26.17:
+    resolution: {integrity: sha512-kkaySn1IRfwNlf9AkZVqDmBINDWw9NRR6Ij0O5dBRBOD1+mbtZJWxxR9/pA90nce9E5tIIkJ7SWij4rMWXtA1g==}
 
   synckit@0.11.11:
     resolution: {integrity: sha512-MeQTA1r0litLUf0Rp/iisCaL8761lKAZHaimlbGK4j0HysC4PLfqygQj9srcs0m2RdtDYnF8UuYyKpbjHYp7Jw==}
@@ -8449,7 +8449,7 @@ snapshots:
 
   supports-preserve-symlinks-flag@1.0.0: {}
 
-  sweetalert2@11.26.10: {}
+  sweetalert2@11.26.17: {}
 
   synckit@0.11.11:
     dependencies:
