@@ -19,6 +19,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -86,7 +87,8 @@ abstract class ServletAuthenticatorTest<T extends AbstractServletAuthenticator> 
 		};
 		AuthenticationManagerBuilder authMgrBuilder = new AuthenticationManagerBuilder(objectPostProcessor);
 		authMgrBuilder.authenticationProvider(new AllAuthenticatedProvider());
-		Map<Class<?>, Object> sharedObjects = Map.of(ApplicationContext.class, applicationContext);
+		Map<Class<?>, Object> sharedObjects = Map.of(ApplicationContext.class, applicationContext,
+				PathPatternRequestMatcher.Builder.class, PathPatternRequestMatcher.withDefaults());
 		return spy(new HttpSecurity(objectPostProcessor, authMgrBuilder, sharedObjects));
 	}
 }
