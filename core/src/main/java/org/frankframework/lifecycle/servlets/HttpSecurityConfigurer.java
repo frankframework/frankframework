@@ -80,7 +80,7 @@ public class HttpSecurityConfigurer implements WebSecurityConfigurer<WebSecurity
 	}
 
 	@Override
-	public void configure(WebSecurity webSecurity) throws Exception {
+	public void configure(WebSecurity webSecurity) {
 		ConfigurableListableBeanFactory factory = (ConfigurableListableBeanFactory) this.beanFactory;
 		Map<String, SecurityFilterChain> filters = factory.getBeansOfType(SecurityFilterChain.class);
 		webSecurity.debug(log.isTraceEnabled());

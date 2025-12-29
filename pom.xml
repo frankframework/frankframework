@@ -148,19 +148,19 @@
 				<scope>import</scope>
 			</dependency>
 
-			<dependency>
-				<groupId>io.netty</groupId>
-				<artifactId>netty-bom</artifactId>
-				<version>4.2.9.Final</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-
 			<!-- Explicitly define Spring dependencies, to avoid version conflicts with Spring Security (https://www.baeldung.com/spring-security-with-maven) -->
 			<dependency>
 				<groupId>org.springframework.security</groupId>
 				<artifactId>spring-security-bom</artifactId>
 				<version>${spring-security.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>io.netty</groupId>
+				<artifactId>netty-bom</artifactId>
+				<version>4.2.9.Final</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -527,6 +527,12 @@
 			<!-- Spring Boot context loaders -->
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot</artifactId>
+				<version>${spring.boot.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter</artifactId>
 				<version>${spring.boot.version}</version>
 				<exclusions>
@@ -547,6 +553,11 @@
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-security</artifactId>
+				<version>${spring.boot.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-autoconfigure</artifactId>
 				<version>${spring.boot.version}</version>
 			</dependency>
 
@@ -630,6 +641,12 @@
 				<groupId>org.apache.tomcat.embed</groupId>
 				<artifactId>tomcat-embed-el</artifactId>
 				<version>${tomcat.version}</version>
+				<scope>provided</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-tomcat</artifactId>
+				<version>${spring.boot.version}</version>
 				<scope>provided</scope>
 			</dependency>
 			<dependency>
