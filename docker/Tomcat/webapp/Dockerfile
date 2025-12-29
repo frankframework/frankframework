@@ -29,8 +29,15 @@ COPY --chown=tomcat src/scripts/ /scripts/
 RUN cat /scripts/catalinaAdditional.properties >> /usr/local/tomcat/conf/catalina.properties  && \
     rm -f /scripts/catalinaAdditional.properties
 
-# Copy JDBC and JMS drivers
-COPY --chown=tomcat target/dependencies/*.jar /opt/frank/drivers/
+# copy h2 driver to drivers folder
+COPY --chown=tomcat target/dependencies/h2.jar /opt/frank/drivers/
+
+# copy additional needed libraries to tomcat/lib folder
+COPY --chown=tomcat target/dependencies/credentialprovider-fatjar.jar /usr/local/tomcat/lib/
+COPY --chown=tomcat target/dependencies/frankframework-kubernetes-fatjar.jar /usr/local/tomcat/lib/
+COPY --chown=tomcat target/dependencies/jakarta*.jar /usr/local/tomcat/lib/
+COPY --chown=tomcat target/dependencies/log4j*.jar /usr/local/tomcat/lib/
+COPY --chown=tomcat target/dependencies/slf4j-api.jar /usr/local/tomcat/lib/
 
 # Copy webapp war
 COPY --chown=tomcat target/dependencies/war/ /usr/local/tomcat/webapps/ROOT/
