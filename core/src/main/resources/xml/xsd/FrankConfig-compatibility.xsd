@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Compatibility XSD, internal use only! -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.4.0-SNAPSHOT">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.4.0">
   <xs:element name="Configuration" type="ConfigurationType" />
   <xs:complexType name="ConfigurationType">
     <xs:sequence>
@@ -2846,8 +2846,13 @@
     </xs:attribute>
     <xs:attribute name="blobSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>For querytype 'updateBlob': key of session variable that contains the data (String or InputStream) to be loaded to the BLOB. When empty, the input of the pipe is used.
- For querytype 'select': key of session variable that contains the OutputStream, Writer or Filename to write the BLOB to.</xs:documentation>
+        <xs:documentation>For querytype 'updateBlob': key of session variable that contains the data to be written to the SQL BLOB. When empty, the input of the pipe is used.
+ For querytype 'select': key of session variable that contains the Filename to write the SQL BLOB to.
+ &lt;br/&gt;
+ When scalar is true, the default Sender result is the blob.
+ The same result can be achieved by using storeResultInSessionKey.
+ &lt;br/&gt;
+ You no longer need to use a filename handle.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
     <xs:attribute name="blobsCompressed" type="frankBoolean">
@@ -2884,11 +2889,15 @@
     </xs:attribute>
     <xs:attribute name="clobSessionKey" type="xs:string">
       <xs:annotation>
-        <xs:documentation>For querytype 'updateClob': key of session variable that contains the CLOB (String or InputStream) to be loaded to the CLOB. When empty, the input of the pipe, which then must be a String, is used.
- For querytype 'select': key of session variable that contains the OutputStream, Writer or Filename to write the CLOB to</xs:documentation>
+        <xs:documentation>For querytype 'updateClob': key of session variable that contains the CLOB to be loaded to the SQL CLOB. When empty, the input of the pipe is used.
+ For querytype 'select': key of session variable that contains the Filename to write the SQL CLOB to.
+ &lt;br/&gt;
+ When scalar is true, the default Sender result is the clob.
+ The same result can be achieved by using storeResultInSessionKey.
+ &lt;br/&gt;
+ You no longer need to use a filename handle.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attribute ref="closeOutputstreamOnExit" />
     <xs:attribute ref="streamCharset" />
     <xs:attribute name="avoidLocking" type="frankBoolean">
       <xs:annotation>
@@ -5852,7 +5861,6 @@
       </xs:annotation>
     </xs:attribute>
     <xs:attribute ref="synchronous" />
-    <xs:attribute ref="closeOutputstreamOnExit" />
     <xs:attribute ref="streamCharset" />
     <xs:attribute ref="prettyPrint" />
     <xs:attribute ref="outputFormat" />
@@ -9362,6 +9370,13 @@
     <xs:attribute ref="secLogSessionKeys" />
     <xs:attribute ref="logIntermediaryResults" />
     <xs:attribute ref="hideRegex" />
+    <xs:attribute ref="skipOnEmptyInput" />
+    <xs:attribute ref="ifParam" />
+    <xs:attribute ref="ifValue" />
+    <xs:attribute ref="onlyIfSessionKey" />
+    <xs:attribute ref="onlyIfValue" />
+    <xs:attribute ref="unlessSessionKey" />
+    <xs:attribute ref="unlessValue" />
   </xs:attributeGroup>
   <xs:attributeGroup name="AbstractPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="AbstractPipeDeclaredAttributeGroup" />
@@ -9447,7 +9462,6 @@
         <xs:documentation>The functional name of this pipe, is not required when used as a Validator</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attributeGroup ref="FixedForwardPipeDeclaredAttributeGroup" />
     <xs:attribute ref="getInputFromSessionKey" />
     <xs:attribute ref="getInputFromFixedValue" />
     <xs:attribute ref="emptyInputReplacement" />
@@ -9466,6 +9480,13 @@
     <xs:attribute ref="secLogSessionKeys" />
     <xs:attribute ref="logIntermediaryResults" />
     <xs:attribute ref="hideRegex" />
+    <xs:attribute ref="skipOnEmptyInput" />
+    <xs:attribute ref="ifParam" />
+    <xs:attribute ref="ifValue" />
+    <xs:attribute ref="onlyIfSessionKey" />
+    <xs:attribute ref="onlyIfValue" />
+    <xs:attribute ref="unlessSessionKey" />
+    <xs:attribute ref="unlessValue" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="SoapValidatorType">
@@ -9522,7 +9543,6 @@
         <xs:documentation>The functional name of this pipe, is not required when used as a Validator</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attributeGroup ref="FixedForwardPipeDeclaredAttributeGroup" />
     <xs:attribute ref="getInputFromSessionKey" />
     <xs:attribute ref="getInputFromFixedValue" />
     <xs:attribute ref="emptyInputReplacement" />
@@ -9541,6 +9561,13 @@
     <xs:attribute ref="secLogSessionKeys" />
     <xs:attribute ref="logIntermediaryResults" />
     <xs:attribute ref="hideRegex" />
+    <xs:attribute ref="skipOnEmptyInput" />
+    <xs:attribute ref="ifParam" />
+    <xs:attribute ref="ifValue" />
+    <xs:attribute ref="onlyIfSessionKey" />
+    <xs:attribute ref="onlyIfValue" />
+    <xs:attribute ref="unlessSessionKey" />
+    <xs:attribute ref="unlessValue" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="Json2XmlValidatorType">
@@ -9707,7 +9734,6 @@
         <xs:documentation>The functional name of this pipe, is not required when used as a Validator</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attributeGroup ref="FixedForwardPipeDeclaredAttributeGroup" />
     <xs:attribute ref="getInputFromSessionKey" />
     <xs:attribute ref="getInputFromFixedValue" />
     <xs:attribute ref="emptyInputReplacement" />
@@ -9726,6 +9752,13 @@
     <xs:attribute ref="secLogSessionKeys" />
     <xs:attribute ref="logIntermediaryResults" />
     <xs:attribute ref="hideRegex" />
+    <xs:attribute ref="skipOnEmptyInput" />
+    <xs:attribute ref="ifParam" />
+    <xs:attribute ref="ifValue" />
+    <xs:attribute ref="onlyIfSessionKey" />
+    <xs:attribute ref="onlyIfValue" />
+    <xs:attribute ref="unlessSessionKey" />
+    <xs:attribute ref="unlessValue" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:attributeGroup name="AbstractValidatorDeclaredAttributeGroup">
@@ -9749,7 +9782,6 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="AbstractValidatorCumulativeAttributeGroup">
     <xs:attributeGroup ref="AbstractValidatorDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeDeclaredAttributeGroup" />
     <xs:attribute ref="getInputFromSessionKey" />
     <xs:attribute ref="getInputFromFixedValue" />
     <xs:attribute ref="emptyInputReplacement" />
@@ -9768,48 +9800,14 @@
     <xs:attribute ref="secLogSessionKeys" />
     <xs:attribute ref="logIntermediaryResults" />
     <xs:attribute ref="hideRegex" />
+    <xs:attribute ref="skipOnEmptyInput" />
+    <xs:attribute ref="ifParam" />
+    <xs:attribute ref="ifValue" />
+    <xs:attribute ref="onlyIfSessionKey" />
+    <xs:attribute ref="onlyIfValue" />
+    <xs:attribute ref="unlessSessionKey" />
+    <xs:attribute ref="unlessValue" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
-  </xs:attributeGroup>
-  <xs:attributeGroup name="FixedForwardPipeDeclaredAttributeGroup">
-    <xs:attribute name="skipOnEmptyInput" type="frankBoolean">
-      <xs:annotation>
-        <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the processing continues directly at the forward of this pipe, without executing the pipe itself, if the input is empty. Default: false</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="ifParam" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>If set, this pipe is only executed when the value of the parameter with the name &lt;code&gt;ifParam&lt;/code&gt; equals &lt;code&gt;ifValue&lt;/code&gt;. Otherwise, this pipe is skipped.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="ifValue" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>See &lt;code&gt;ifParam&lt;/code&gt;</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="onlyIfSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Key of the session variable to check if the action must be executed. The pipe is only executed if the session variable exists and is not null.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="onlyIfValue" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Value of session variable 'onlyIfSessionKey' to check if the action must be executed. The pipe is only executed if the session variable has the specified value.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="unlessSessionKey" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Key of the session variable to check if the action must be executed. The pipe is not executed if the session variable exists and is not null.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-    <xs:attribute name="unlessValue" type="xs:string">
-      <xs:annotation>
-        <xs:documentation>Value of session variable 'unlessSessionKey' to check if the action must be executed. The pipe is not executed if the session variable has the specified value.</xs:documentation>
-      </xs:annotation>
-    </xs:attribute>
-  </xs:attributeGroup>
-  <xs:attributeGroup name="FixedForwardPipeCumulativeAttributeGroup">
-    <xs:attributeGroup ref="FixedForwardPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="EsbSoapValidatorType">
     <xs:sequence>
@@ -9920,7 +9918,6 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="XmlWellFormedCheckerPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="XmlWellFormedCheckerPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeDeclaredAttributeGroup" />
     <xs:attribute ref="getInputFromSessionKey" />
     <xs:attribute ref="getInputFromFixedValue" />
     <xs:attribute ref="emptyInputReplacement" />
@@ -9939,6 +9936,13 @@
     <xs:attribute ref="secLogSessionKeys" />
     <xs:attribute ref="logIntermediaryResults" />
     <xs:attribute ref="hideRegex" />
+    <xs:attribute ref="skipOnEmptyInput" />
+    <xs:attribute ref="ifParam" />
+    <xs:attribute ref="ifValue" />
+    <xs:attribute ref="onlyIfSessionKey" />
+    <xs:attribute ref="onlyIfValue" />
+    <xs:attribute ref="unlessSessionKey" />
+    <xs:attribute ref="unlessValue" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:group name="OutputValidatorElementGroup">
@@ -10250,7 +10254,6 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="SoapWrapperPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="SoapWrapperPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeDeclaredAttributeGroup" />
     <xs:attribute ref="getInputFromSessionKey" />
     <xs:attribute ref="getInputFromFixedValue" />
     <xs:attribute ref="emptyInputReplacement" />
@@ -10269,6 +10272,13 @@
     <xs:attribute ref="secLogSessionKeys" />
     <xs:attribute ref="logIntermediaryResults" />
     <xs:attribute ref="hideRegex" />
+    <xs:attribute ref="skipOnEmptyInput" />
+    <xs:attribute ref="ifParam" />
+    <xs:attribute ref="ifValue" />
+    <xs:attribute ref="onlyIfSessionKey" />
+    <xs:attribute ref="onlyIfValue" />
+    <xs:attribute ref="unlessSessionKey" />
+    <xs:attribute ref="unlessValue" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="BisWrapperPipeType">
@@ -12333,7 +12343,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="Adios2XmlPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="Adios2XmlPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="AmountOfPagesPipeType">
     <xs:sequence>
@@ -12354,7 +12364,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="AmountOfPagesPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="AmountOfPagesPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="ApiPrincipalPipeType">
     <xs:sequence>
@@ -12371,7 +12381,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="ApiPrincipalPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="ApiPrincipalPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="ApiStreamPipeType">
     <xs:sequence>
@@ -12446,7 +12456,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="StreamPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="StreamPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="AsyncSenderWithListenerPipeType">
     <xs:sequence>
@@ -12651,7 +12661,6 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="MessageSendingPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="MessageSendingPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeDeclaredAttributeGroup" />
     <xs:attribute name="name" type="xs:string" use="required">
       <xs:annotation>
         <xs:documentation>The functional name of this pipe. It can be referenced by the &lt;code&gt;path&lt;/code&gt; attribute of a PipeForward.</xs:documentation>
@@ -12674,6 +12683,13 @@
     <xs:attribute ref="writeToSecLog" />
     <xs:attribute ref="secLogSessionKeys" />
     <xs:attribute ref="logIntermediaryResults" />
+    <xs:attribute ref="skipOnEmptyInput" />
+    <xs:attribute ref="ifParam" />
+    <xs:attribute ref="ifValue" />
+    <xs:attribute ref="onlyIfSessionKey" />
+    <xs:attribute ref="onlyIfValue" />
+    <xs:attribute ref="unlessSessionKey" />
+    <xs:attribute ref="unlessValue" />
     <xs:attributeGroup ref="TransactionAttributesDeclaredAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="Base64PipeType">
@@ -12712,7 +12728,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="Base64PipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="Base64PipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="BatchBlobTransformerPipeType">
     <xs:group ref="StreamTransformerPipePluralConfigChildGroup" />
@@ -12770,7 +12786,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="StreamTransformerPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="StreamTransformerPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:attributeGroup name="BatchTransformerPipeBaseDeclaredAttributeGroup">
     <xs:attribute name="query" type="xs:string" use="required">
@@ -13063,7 +13079,7 @@
         <xs:group ref="AbstractPipeDeclaredChildGroup" />
       </xs:choice>
     </xs:sequence>
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.BytesOutputPipe" />
   </xs:complexType>
   <xs:complexType name="ChecksumPipeType">
@@ -13133,7 +13149,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="HashPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="HashPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="ClobLineIteratingPipeType">
     <xs:sequence>
@@ -13221,7 +13237,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="CompressPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="CompressPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="CounterSwitchPipeType">
     <xs:sequence>
@@ -13241,7 +13257,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="CounterSwitchPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="CounterSwitchPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="CredentialCheckingPipeType">
     <xs:sequence>
@@ -13261,7 +13277,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="CredentialCheckingPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="CredentialCheckingPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="CrlPipeType">
     <xs:sequence>
@@ -13281,7 +13297,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="CrlPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="CrlPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="CsvParserPipeType">
     <xs:sequence>
@@ -13336,7 +13352,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="CsvParserPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="CsvParserPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="DataSonnetPipeType">
     <xs:sequence>
@@ -13380,7 +13396,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="DataSonnetPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="DataSonnetPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="DelayPipeType">
     <xs:sequence>
@@ -13400,7 +13416,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="DelayPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="DelayPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="DirectWrapperPipeType">
     <xs:sequence>
@@ -13408,7 +13424,7 @@
         <xs:group ref="AbstractPipeDeclaredChildGroup" />
       </xs:choice>
     </xs:sequence>
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.extensions.esb.DirectWrapperPipe" />
   </xs:complexType>
   <xs:complexType name="DomainTransformerPipeType">
@@ -13445,7 +13461,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="DomainTransformerPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="DomainTransformerPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="EchoPipeType">
     <xs:sequence>
@@ -13453,7 +13469,7 @@
         <xs:group ref="AbstractPipeDeclaredChildGroup" />
       </xs:choice>
     </xs:sequence>
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.EchoPipe" />
   </xs:complexType>
   <xs:complexType name="EscapePipeType">
@@ -13489,7 +13505,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="EscapePipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="EscapePipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="EtagHandlerPipeType">
     <xs:sequence>
@@ -13511,7 +13527,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="EtagHandlerPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="EtagHandlerPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="ExceptionPipeType">
     <xs:sequence>
@@ -13588,7 +13604,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="FixedResultPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="FixedResultPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="ForEachAttachmentPipeType">
     <xs:sequence>
@@ -13709,7 +13725,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="GetFromSessionPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="GetFromSessionPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="GetPrincipalPipeType">
     <xs:sequence>
@@ -13729,7 +13745,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="GetPrincipalPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="GetPrincipalPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="GetTibcoQueuesType">
     <xs:sequence>
@@ -13796,7 +13812,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="TimeoutGuardPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="TimeoutGuardPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="IfPipeType">
     <xs:sequence>
@@ -13865,7 +13881,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="IncreaseIntegerPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="IncreaseIntegerPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="IsUserInRolePipeType">
     <xs:sequence>
@@ -13885,7 +13901,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="IsUserInRolePipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="IsUserInRolePipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="IsXmlPipeType">
     <xs:sequence>
@@ -13931,7 +13947,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="JsonPathPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="JsonPathPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="JsonPipeType">
     <xs:sequence>
@@ -13971,7 +13987,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="JsonPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="JsonPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="JsonWellFormedCheckerPipeType">
     <xs:sequence>
@@ -13979,7 +13995,7 @@
         <xs:group ref="AbstractPipeDeclaredChildGroup" />
       </xs:choice>
     </xs:sequence>
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.JsonWellFormedCheckerPipe" />
   </xs:complexType>
   <xs:complexType name="JsonXsltPipeType">
@@ -14069,7 +14085,7 @@
         <xs:documentation>If set to &lt;code&gt;2&lt;/code&gt; or &lt;code&gt;3&lt;/code&gt; a Saxon (net.sf.saxon) xslt processor 2.0 or 3.0 respectively will be used, otherwise xslt processor 1.0 (org.apache.xalan). &lt;code&gt;0&lt;/code&gt; will auto-detect Default: 0</xs:documentation>
       </xs:annotation>
     </xs:attribute>
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="XsltPipeType">
     <xs:sequence>
@@ -14154,7 +14170,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="XsltPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="XsltPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="JwtPipeType">
     <xs:sequence>
@@ -14184,7 +14200,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="JwtPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="JwtPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="LabelFormatType">
     <xs:sequence>
@@ -14209,7 +14225,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="LabelFormatCumulativeAttributeGroup">
     <xs:attributeGroup ref="LabelFormatDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="LadybugPipeType">
     <xs:sequence>
@@ -14252,7 +14268,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="LadybugPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="LadybugPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="LarvaPipeType">
     <xs:sequence>
@@ -14300,7 +14316,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="LarvaPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="LarvaPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="LdapFindGroupMembershipsPipeType">
     <xs:sequence>
@@ -14326,6 +14342,16 @@
     <xs:attribute name="recursiveSearch" type="frankBoolean">
       <xs:annotation>
         <xs:documentation>when &lt;code&gt;true&lt;/code&gt;, the memberOf attribute is also searched in all the found members Default: true</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="maxRecursion" type="frankInt">
+      <xs:annotation>
+        <xs:documentation>Max recursion search depth. Set to &lt;pre&gt;0&lt;/pre&gt; to have no limit on recursion-depth for recursive search. Default: 5</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute name="recursionFilter" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Recursion filter. If set, only search recursively into groups whose name equals or contains as substring the recursionFilter.</xs:documentation>
       </xs:annotation>
     </xs:attribute>
   </xs:attributeGroup>
@@ -14383,7 +14409,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="AbstractLdapQueryPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="AbstractLdapQueryPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="LdapFindMemberPipeType">
     <xs:sequence>
@@ -14540,7 +14566,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="AbstractFileSystemPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="AbstractFileSystemPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="LogContextPipeType">
     <xs:sequence>
@@ -14565,7 +14591,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="LogContextPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="LogContextPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="MailSenderPipeType">
     <xs:sequence>
@@ -14597,7 +14623,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="ObfuscatePipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="ObfuscatePipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="PGPPipeType">
     <xs:sequence>
@@ -14648,7 +14674,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="PGPPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="PGPPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="PasswordGeneratorPipeType">
     <xs:sequence>
@@ -14708,7 +14734,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="PasswordGeneratorPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="PasswordGeneratorPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="PasswordHashPipeType">
     <xs:sequence>
@@ -14730,7 +14756,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="PasswordHashPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="PasswordHashPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="PdfPipeType">
     <xs:sequence>
@@ -14819,7 +14845,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="PdfPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="PdfPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="PutInSessionPipeType">
     <xs:sequence>
@@ -14844,7 +14870,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="PutInSessionPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="PutInSessionPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="PutSystemDateInSessionType">
     <xs:sequence>
@@ -14893,7 +14919,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="PutSystemDateInSessionCumulativeAttributeGroup">
     <xs:attributeGroup ref="PutSystemDateInSessionDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="RegExPipeType">
     <xs:sequence>
@@ -14989,7 +15015,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="RekenBoxCallerPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="RekenBoxCallerPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="RemoveCacheKeyPipeType">
     <xs:sequence>
@@ -15037,7 +15063,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="RemoveCacheKeyPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="RemoveCacheKeyPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="RemoveFromSessionPipeType">
     <xs:sequence>
@@ -15057,7 +15083,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="RemoveFromSessionPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="RemoveFromSessionPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="ReplacerPipeType">
     <xs:sequence>
@@ -15123,7 +15149,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="ReplacerPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="ReplacerPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="ResultSetIteratingPipeType">
     <xs:sequence>
@@ -15295,7 +15321,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="SapLUWManagerPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="SapLUWManagerPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="ScanTibcoSolutionPipeType">
     <xs:sequence>
@@ -15312,7 +15338,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="ScanTibcoSolutionPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="ScanTibcoSolutionPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="SendTibcoMessageType">
     <xs:sequence>
@@ -15481,7 +15507,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="SignaturePipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="SignaturePipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="SizePipeType">
     <xs:sequence>
@@ -15489,7 +15515,7 @@
         <xs:group ref="AbstractPipeDeclaredChildGroup" />
       </xs:choice>
     </xs:sequence>
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
     <xs:attribute name="className" type="xs:string" fixed="org.frankframework.pipes.SizePipe" />
   </xs:complexType>
   <xs:complexType name="SkipPipeType">
@@ -15515,7 +15541,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="SkipPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="SkipPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="StreamLineIteratorPipeType">
     <xs:sequence>
@@ -15630,7 +15656,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="Text2XmlPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="Text2XmlPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="TextSplitterPipeType">
     <xs:sequence>
@@ -15655,7 +15681,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="TextSplitterPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="TextSplitterPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="UUIDGeneratorPipeType">
     <xs:sequence>
@@ -15678,7 +15704,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="UUIDGeneratorPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="UUIDGeneratorPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="UnzipPipeType">
     <xs:sequence>
@@ -15745,7 +15771,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="UnzipPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="UnzipPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="WsdlGeneratorPipeType">
     <xs:sequence>
@@ -15765,7 +15791,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="WsdlGeneratorPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="WsdlGeneratorPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="XQueryPipeType">
     <xs:sequence>
@@ -15790,7 +15816,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="XQueryPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="XQueryPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:complexType name="XmlIfType">
     <xs:sequence>
@@ -15964,7 +15990,7 @@
   </xs:attributeGroup>
   <xs:attributeGroup name="AbstractCollectorPipeCumulativeAttributeGroup">
     <xs:attributeGroup ref="AbstractCollectorPipeDeclaredAttributeGroup" />
-    <xs:attributeGroup ref="FixedForwardPipeCumulativeAttributeGroup" />
+    <xs:attributeGroup ref="AbstractPipeCumulativeAttributeGroup" />
   </xs:attributeGroup>
   <xs:group name="JobElementGroup">
     <xs:choice>
@@ -17533,11 +17559,6 @@
       <xs:documentation>When &lt;code&gt;true&lt;/code&gt;, the result of sendMessage is the reply of the request. Default: true</xs:documentation>
     </xs:annotation>
   </xs:attribute>
-  <xs:attribute name="closeOutputstreamOnExit" type="frankBoolean">
-    <xs:annotation>
-      <xs:documentation>When set to &lt;code&gt;false&lt;/code&gt;, the Outputstream is not closed after BLOB or CLOB has been written to it Default: true</xs:documentation>
-    </xs:annotation>
-  </xs:attribute>
   <xs:attribute name="streamCharset" type="xs:string">
     <xs:annotation>
       <xs:documentation>Charset used when reading a stream (that is e.g. going to be written to a BLOB or CLOB). When empty, the stream is copied directly to the BLOB, without conversion</xs:documentation>
@@ -18227,6 +18248,41 @@
  so a &lt;code&gt;hideRegex&lt;/code&gt; set on one pipe affects all pipes in the pipeline (and multiple values in different pipes are combined into a single regex).
  The regular expressions are matched against part of the log lines. See int)
  with &lt;code&gt;mode = 0&lt;/code&gt; for how regular expressions are matched and replaced.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="skipOnEmptyInput" type="frankBoolean">
+    <xs:annotation>
+      <xs:documentation>If &lt;code&gt;true&lt;/code&gt;, the processing continues directly at the forward of this pipe, without executing the pipe itself, if the input is empty. Default: false</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="ifParam" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>If set, this pipe is only executed when the value of the parameter with the name &lt;code&gt;ifParam&lt;/code&gt; equals &lt;code&gt;ifValue&lt;/code&gt;. Otherwise, this pipe is skipped.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="ifValue" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>See &lt;code&gt;ifParam&lt;/code&gt;</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="onlyIfSessionKey" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Key of the session variable to check if the action must be executed. The pipe is only executed if the session variable exists and is not null.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="onlyIfValue" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Value of session variable 'onlyIfSessionKey' to check if the action must be executed. The pipe is only executed if the session variable has the specified value.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="unlessSessionKey" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Key of the session variable to check if the action must be executed. The pipe is not executed if the session variable exists and is not null.</xs:documentation>
+    </xs:annotation>
+  </xs:attribute>
+  <xs:attribute name="unlessValue" type="xs:string">
+    <xs:annotation>
+      <xs:documentation>Value of session variable 'unlessSessionKey' to check if the action must be executed. The pipe is not executed if the session variable has the specified value.</xs:documentation>
     </xs:annotation>
   </xs:attribute>
   <xs:attribute name="outputSoapBody" type="xs:string">
