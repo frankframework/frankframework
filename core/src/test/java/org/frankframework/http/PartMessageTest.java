@@ -23,6 +23,7 @@ import org.springframework.util.MimeType;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.Parameter;
+import org.frankframework.parameters.ParameterValue;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
@@ -105,12 +106,11 @@ public class PartMessageTest {
 		TestPart testPart = new TestPart(TestFileUtils.getTestFileURL("/file.xml"));
 		session.put(sessionKey, new PartMessage(testPart));
 
-		ParameterValueList pvl = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object value = p.getValue(pvl, message, session, false);
-		assertInstanceOf(Message.class, value);
-		assertEquals("<file>in root of classpath</file>", ((Message)value).asString());
+		ParameterValue value = p.getValue(message, session);
+		Message result = assertInstanceOf(Message.class, value.getValue());
+		assertEquals("<file>in root of classpath</file>", result.asString());
 	}
 
 	@Test

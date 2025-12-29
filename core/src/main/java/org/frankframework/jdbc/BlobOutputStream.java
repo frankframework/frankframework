@@ -53,12 +53,13 @@ public class BlobOutputStream extends FilterOutputStream {
 	@Override
 	public void close() throws IOException {
 		if (open) {
-			open=false;
+			open = false;
 			try {
 				super.close();
 				dbmsSupport.updateBlob(resultSet, blobColumn, blobUpdateHandle);
 				resultSet.updateRow();
-				JdbcUtil.warningsToXml(resultSet.getWarnings(),warnings);
+
+				JdbcUtil.warningsToXml(resultSet.getWarnings(), warnings);
 			} catch (JdbcException | SQLException e) {
 				throw new IOException("cannot write BLOB",e);
 			} finally {

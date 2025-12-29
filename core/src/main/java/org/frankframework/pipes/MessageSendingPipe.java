@@ -799,11 +799,6 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		return statisticsMap.computeIfAbsent(name, ignored -> configurationMetrics.createSubDistributionSummary(this, name, FrankMeterType.PIPE_DURATION));
 	}
 
-	@Override
-	public boolean consumesSessionVariable(String sessionKey) {
-		return super.consumesSessionVariable(sessionKey) || getSender().consumesSessionVariable(sessionKey);
-	}
-
 
 
 	/**

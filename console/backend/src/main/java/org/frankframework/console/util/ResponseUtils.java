@@ -18,6 +18,7 @@ package org.frankframework.console.util;
 import java.io.IOException;
 import java.io.InputStream;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.springframework.http.ContentDisposition;
@@ -109,6 +110,7 @@ public class ResponseUtils {
 		return convertPayload(message.getPayload());
 	}
 
+	@Nonnull
 	public static String convertPayload(Object payload) {
 		if (payload instanceof String string) {
 			return string;

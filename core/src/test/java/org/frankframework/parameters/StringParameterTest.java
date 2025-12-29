@@ -24,11 +24,11 @@ public class StringParameterTest {
 		p.setXpathExpression("/dummy");
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		assertEquals("a", Message.asMessage(result).asString());
+		ParameterValue result = p.getValue(message, null);
+		Message msg = assertInstanceOf(Message.class, result.getValue());
+		assertEquals("a", msg.asString());
 
 		assertFalse(p.requiresInputValueForResolution());
 	}
@@ -49,12 +49,10 @@ public class StringParameterTest {
 		parameter.setXpathResult(OutputType.XML);
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
-
-		Message msg = assertInstanceOf(Message.class, result);
+		ParameterValue result = parameter.getValue(message, session);
+		Message msg = assertInstanceOf(Message.class, result.getValue());
 		assertEquals("<root>value</root>", msg.asString());
 		assertEquals(MediaType.APPLICATION_XML, msg.getContext().getMimeType());
 	}
@@ -73,11 +71,10 @@ public class StringParameterTest {
 		parameter.setXpathResult(OutputType.XML);
 		parameter.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = parameter.getValue(alreadyResolvedParameters, message, session, true);
-		Message msg = assertInstanceOf(Message.class, result);
+		ParameterValue result = parameter.getValue(message, session);
+		Message msg = assertInstanceOf(Message.class, result.getValue());
 		assertEquals("<root>value</root>", msg.asString());
 		assertEquals(MediaType.APPLICATION_XML, msg.getContext().getMimeType());
 	}
@@ -90,11 +87,10 @@ public class StringParameterTest {
 		p.setMaxLength(5);
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		Message msg = assertInstanceOf(Message.class, result);
+		ParameterValue result = p.getValue(message, null);
+		Message msg = assertInstanceOf(Message.class, result.getValue());
 		assertEquals("abcde", msg.asString());
 	}
 
@@ -106,11 +102,10 @@ public class StringParameterTest {
 		p.setMaxLength(12);
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		Message msg = assertInstanceOf(Message.class, result);
+		ParameterValue result = p.getValue(message, null);
+		Message msg = assertInstanceOf(Message.class, result.getValue());
 		assertEquals("abcde", msg.asString());
 	}
 
@@ -122,11 +117,10 @@ public class StringParameterTest {
 		p.setMinLength(12);
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		Message msg = assertInstanceOf(Message.class, result);
+		ParameterValue result = p.getValue(message, null);
+		Message msg = assertInstanceOf(Message.class, result.getValue());
 		assertEquals("abcdefghijklmnop", msg.asString());
 	}
 
@@ -138,11 +132,10 @@ public class StringParameterTest {
 		p.setMinLength(15);
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		Message msg = assertInstanceOf(Message.class, result);
+		ParameterValue result = p.getValue(message, null);
+		Message msg = assertInstanceOf(Message.class, result.getValue());
 		assertEquals("abcde          ", msg.asString());
 	}
 
@@ -155,11 +148,10 @@ public class StringParameterTest {
 		p.setMaxLength(10);
 		p.configure();
 
-		ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 		Message message = new Message("fakeMessage");
 
-		Object result = p.getValue(alreadyResolvedParameters, message, null, false);
-		Message msg = assertInstanceOf(Message.class, result);
+		ParameterValue result = p.getValue(message, null);
+		Message msg = assertInstanceOf(Message.class, result.getValue());
 		assertEquals("abcdefg", msg.asString());
 	}
 
@@ -174,12 +166,11 @@ public class StringParameterTest {
 		try (PipeLineSession session = new PipeLineSession()) {
 			session.put("testkey", new Message("abcdefg"));
 
-			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
 
-			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+			ParameterValue result = p.getValue(message, session);
 
-			Message msg = assertInstanceOf(Message.class, result);
+			Message msg = assertInstanceOf(Message.class, result.getValue());
 			assertEquals("abcdefg", msg.asString());
 		}
 	}
@@ -195,12 +186,11 @@ public class StringParameterTest {
 		try (PipeLineSession session = new PipeLineSession()) {
 			session.put("testkey", new Message("abcdefghijklmnop").asByteArray());
 
-			ParameterValueList alreadyResolvedParameters = new ParameterValueList();
 			Message message = new Message("fakeMessage");
 
-			Object result = p.getValue(alreadyResolvedParameters, message, session, false);
+			ParameterValue result = p.getValue(message, session);
 
-			Message resultMsg = assertInstanceOf(Message.class, result);
+			Message resultMsg = assertInstanceOf(Message.class, result.getValue());
 			assertEquals("abcdefghijklmnop", resultMsg.asString());
 		}
 	}

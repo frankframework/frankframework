@@ -174,6 +174,8 @@ public class JsonUtil {
 			Message result =  new Message(getSingleValueJsonPathResult(obj));
 			result.getContext().withMimeType(MediaType.TEXT_PLAIN).withCharset(StandardCharsets.UTF_8);
 			return result;
+		} else if (obj == null) {
+			return Message.nullMessage();
 		} else {
 			throw new UnsupportedOperationException(obj.getClass().getName() + " can not be converted to JSON");
 		}

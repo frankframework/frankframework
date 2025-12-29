@@ -26,9 +26,10 @@ best practices and perform security testing before releasing your application.
 
 | Version | Supported                  | Security Fixes*          | Minimal JRE | Released         |
 | ------- | -------------------------- | ------------------------ | ----------- | ---------------- |
-| latest  | :white_check_mark:         |:white_check_mark:        | Java SE 17  |                  |
-| 9.3.x   | :white_check_mark:         |:white_check_mark:        | Java SE 17  | Oct 13, 2025     |
-| 9.2.x   | :x:                        |:eight_pointed_black_star:| Java SE 17  | Jul 9, 2025      |
+| latest  | :white_check_mark:         |:white_check_mark:        | Java SE 21  |                  |
+| 9.4.x   | :white_check_mark:         |:white_check_mark:        | Java SE 17  | Dec 29, 2025     |
+| 9.3.x   | :white_check_mark:         |:eight_pointed_black_star:| Java SE 17  | Oct 13, 2025     |
+| 9.2.x   | :x:                        |:x:                       | Java SE 17  | Jul 9, 2025      |
 | 9.1.x   | :x:                        |:x:                       | Java SE 17  | Apr 10, 2025     |
 | 9.0.x   | :white_check_mark:         |:white_check_mark:        | Java SE 17  | Jan 06, 2025     |
 | Older   | :x:                        |:x:                       |             |                  |
@@ -37,7 +38,9 @@ best practices and perform security testing before releasing your application.
 
 :white_check_mark: Actively supported version, includes performance improvements, bugfixes and CVE updates  
 :x: No longer supported, please upgrade to stay secure  
-:eight_pointed_black_star: Only major CVE's and bugs will be patched  
+:eight_pointed_black_star: Only major CVE's and bugs will be patched
+
+See https://insights.frankframework.org/ for a visual representation of our versions and lifecycles.
 
 
 \*) Features will only be added to the latest version. Bug fixes and security updates will happen in the last major and minor versions.  

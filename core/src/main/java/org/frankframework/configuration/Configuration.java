@@ -235,6 +235,8 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 			state = RunState.STOPPED;
 			publishEvent(new ConfigurationMessageEvent(this, "aborted starting; " + e.getMessage()));
 			applicationLog.info("Configuration [{}] was not able to startup", this::getNameWithOptionalVersion);
+
+			configurationException = e;
 			throw e;
 		}
 		configured = true;

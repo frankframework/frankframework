@@ -12,7 +12,7 @@
 				<Exit name="EXIT" state="SUCCESS" />
 			</Exits>
 
-			<Pipe className="org.frankframework.plugin.ReadFromLocalClassPath" name="plugin" />
+			<Pipe className="org.frankframework.pipes.IbisMetricsPipe" name="java-file-from-config" />
 		</Pipeline>
 	</Adapter>
 
@@ -26,9 +26,7 @@
 			</Exits>
 
 			<!-- custom pipe of sender (in plugin) -->
-			<Pipe name="plugin1" plugin="demo-plugin" className="org.frankframework.plugin.ReadFromLocalClassPath" />
-
-			<PipelinePart name="plugin2" plugin="demo-plugin" ref="demo-test-part" />
+			<CompositePipe name="plugin1" plugin="demo-plugin" ref="demo-test-part" />
 		</Pipeline>
 	</Adapter>
 </Configuration>

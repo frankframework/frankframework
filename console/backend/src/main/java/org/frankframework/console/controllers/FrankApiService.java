@@ -38,6 +38,7 @@ import org.frankframework.console.configuration.DeprecationInterceptor;
 import org.frankframework.console.controllers.socket.MessageCacheStore;
 import org.frankframework.console.util.RequestMessageBuilder;
 import org.frankframework.console.util.ResponseUtils;
+import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.OutboundGateway;
 import org.frankframework.management.gateway.HazelcastOutboundGateway;
 import org.frankframework.management.gateway.events.ClusterMemberEvent;
@@ -76,9 +77,10 @@ public class FrankApiService implements ApplicationContextAware, InitializingBea
 
 	@Nonnull
 	protected Message<?> sendSyncMessage(RequestMessageBuilder input) {
-		Message<?> message = getGateway().sendSyncMessage(input.build(getMemberTarget()));
-		if (message == null) {
-			StringBuilder errorMessage = new StringBuilder("did not receive a reply while sending message to topic [" + input.getTopic() + "]");
+		try {
+			return getGateway().sendSyncMessage(input.build(getMemberTarget()));
+		} catch (BusException e) {
+			StringBuilder errorMessage = new StringBuilder("Error while sending message to topic [" + input.getTopic() + "]");
 			if (input.getAction() != null) {
 				errorMessage.append(" with action [");
 				errorMessage.append(input.getAction());
@@ -86,7 +88,6 @@ public class FrankApiService implements ApplicationContextAware, InitializingBea
 			}
 			throw new ApiException(errorMessage.toString());
 		}
-		return message;
 	}
 
 	public ResponseEntity<?> callSyncGateway(RequestMessageBuilder input) throws ApiException {

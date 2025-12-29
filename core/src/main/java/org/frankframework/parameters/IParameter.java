@@ -54,6 +54,10 @@ public interface IParameter extends IConfigurable, FrankElement, NameAware {
 
 	String getValue();
 
+	/** The value of the parameter, not namespace aware. */
+	ParameterValue getValue(Message message, PipeLineSession session) throws ParameterException;
+
+	/** Internal method. Should not be called directly. */
 	Object getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException;
 
 	boolean isHidden();

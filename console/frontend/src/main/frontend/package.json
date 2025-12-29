@@ -51,7 +51,7 @@
     "pace-js": "1.2.4",
     "rxjs": "~7.8.2",
     "sockjs-client": "^1.6.1",
-    "sweetalert2": "^11.26.3",
+    "sweetalert2": "^11.26.17",
     "tinycon": "0.6.8",
     "tslib": "^2.8.1",
     "ws": "^8.18.3",
@@ -66,16 +66,16 @@
     "@angular/cli": "^20.3.13",
     "@angular/compiler-cli": "^20.3.15",
     "@cypress/schematic": "^3.0.0",
-    "@eslint/js": "^9.39.1",
+    "@eslint/js": "^9.39.2",
     "@types/jasmine": "~4.6.5",
     "@types/lodash": "^4.17.21",
     "@types/markdown-it": "^14.1.2",
     "@types/sockjs-client": "^1.5.4",
     "@types/tinycon": "^0.6.7",
-    "@typescript-eslint/eslint-plugin": "^8.49.0",
-    "@typescript-eslint/parser": "^8.49.0",
+    "@typescript-eslint/eslint-plugin": "^8.50.1",
+    "@typescript-eslint/parser": "^8.50.1",
     "angular-eslint": "^20.7.0",
-    "eslint": "^9.39.1",
+    "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
     "eslint-plugin-sonarjs": "^3.0.5",
@@ -88,7 +88,7 @@
     "karma-jasmine-html-reporter": "~2.1.0",
     "prettier": "^3.7.4",
     "typescript": "~5.9.3",
-    "typescript-eslint": "^8.49.0"
+    "typescript-eslint": "^8.50.1"
   },
   "packageManager": "pnpm@10.24.0+sha512.01ff8ae71b4419903b65c60fb2dc9d34cf8bb6e06d03bde112ef38f7a34d6904c424ba66bea5cdcf12890230bf39f9580473140ed9c946fef328b6e5238a345a"
 }

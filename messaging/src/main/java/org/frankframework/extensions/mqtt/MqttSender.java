@@ -94,8 +94,7 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 			IParameter topicParameter = getParameterList().findParameter(TOPIC_PARAMETER_NAME);
 
 			if (topicParameter != null) {
-				Message topicObj = Message.asMessage(topicParameter.getValue(null, message, session, false));
-				topic = topicObj.asString();
+				topic = topicParameter.getValue(message, session).asStringValue();
 			}
 
 			if (topic == null) {

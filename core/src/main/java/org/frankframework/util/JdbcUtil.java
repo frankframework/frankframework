@@ -17,13 +17,10 @@ package org.frankframework.util;
 
 import java.io.ByteArrayInputStream;
 import java.io.EOFException;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.io.Writer;
 import java.sql.Connection;
@@ -45,11 +42,10 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipException;
 
-import jakarta.servlet.http.HttpServletResponse;
+import jakarta.annotation.Nonnull;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Base64InputStream;
-import org.apache.commons.lang3.StringUtils;
 import org.xml.sax.SAXException;
 
 import lombok.extern.log4j.Log4j2;
@@ -70,6 +66,7 @@ import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.pipes.Base64Pipe.Direction;
 import org.frankframework.receivers.MessageWrapper;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageBuilder;
 import org.frankframework.xml.SaxElementBuilder;
 
 /**
@@ -285,90 +282,43 @@ public class JdbcUtil {
 		return StreamUtil.getCharsetDetectingInputStreamReader(blobInputStream, charset);
 	}
 
-	public static void streamBlob(final IDbmsSupport dbmsSupport, final ResultSet rs, int columnIndex, String charset, boolean blobIsCompressed, Direction blobBase64Direction, Object target, boolean close) throws JdbcException, SQLException, IOException {
+	public static void streamBlob(final IDbmsSupport dbmsSupport, final ResultSet rs, int columnIndex, String charset, boolean blobIsCompressed, Direction blobBase64Direction, MessageBuilder msgBuilder) throws JdbcException, SQLException, IOException {
 		try (InputStream blobInputStream = getBlobInputStream(dbmsSupport, rs, columnIndex, blobIsCompressed)) {
-			streamBlob(blobInputStream, charset, blobBase64Direction, target, close);
+			streamBlob(blobInputStream, charset, blobBase64Direction, msgBuilder);
 		}
 	}
 
 	// This should not have a charset nor base64 argument...
-	private static void streamBlob(final InputStream blobInputStream, String charset, Direction blobBase64Direction, Object target, boolean close) throws JdbcException, IOException {
-		if (target == null) {
-			throw new JdbcException("cannot stream Blob to null object");
-		}
-		OutputStream outputStream = getOutputStream(target);
-		if (outputStream != null) {
-			if (blobBase64Direction == Direction.DECODE) {
-				Base64InputStream base64DecodedStream = new Base64InputStream(blobInputStream);
-				StreamUtil.copyStream(base64DecodedStream, outputStream, 50000);
-			} else if (blobBase64Direction == Direction.ENCODE) {
-				// Though technically not required, we're setting the line length to 76.
-				InputStream base64EncodedStream = Base64InputStream.builder()
-						.setInputStream(blobInputStream)
-						.setEncode(true)
-						.setBaseNCodec(Base64.builder().setLineLength(76).get())
-						.get();
-				StreamUtil.copyStream(base64EncodedStream, outputStream, 50000);
-			} else {
-				StreamUtil.copyStream(blobInputStream, outputStream, 50000);
-			}
-
-			if (close) {
-				outputStream.close();
-			}
-			return;
-		}
-		Writer writer = getWriter(target);
-		if (writer != null) {
-			Reader reader = JdbcUtil.getBlobReader(blobInputStream, charset);
-			StreamUtil.copyReaderToWriter(reader, writer, 50000);
-			if (close) {
-				writer.close();
-			}
-			return;
-		}
-		throw new IOException("cannot stream Blob to [" + target.getClass().getName() + "]");
-	}
-
-	@Deprecated
-	private static Writer getWriter(Object target) throws IOException {
-		if (target instanceof HttpServletResponse response) {
-			return response.getWriter();
-		}
-		if (target instanceof Writer writer) {
-			return writer;
-		}
-
-		return null;
-	}
-
-	public static void streamClob(final IDbmsSupport dbmsSupport, ResultSet rs, int column, Object target, boolean close) throws DbmsException, SQLException, IOException {
-		if (target == null) {
-			throw new NullPointerException("cannot stream Clob to null object");
-		}
-		Writer writer = getWriter(target);
-		if (writer != null) {
-			try (Reader reader = dbmsSupport.getClobReader(rs, column)) {
-				StreamUtil.copyReaderToWriter(reader, writer, 50000);
-			}
-			if (close) {
-				writer.close();
-			}
-			return;
-		}
-		OutputStream outputStream = getOutputStream(target);
-		if (outputStream != null) {
-			try (Reader reader = dbmsSupport.getClobReader(rs, column)) {
-				try (Writer streamWriter = new OutputStreamWriter(outputStream, StreamUtil.DEFAULT_CHARSET)) {
-					StreamUtil.copyReaderToWriter(reader, streamWriter, 50000);
+	private static void streamBlob(final InputStream blobInputStream, String charset, Direction blobBase64Direction, @Nonnull MessageBuilder msgBuilder) throws IOException {
+		if (charset == null) {
+			try (OutputStream outputStream = msgBuilder.asOutputStream()) {
+				if (blobBase64Direction == Direction.DECODE) {
+					Base64InputStream base64DecodedStream = new Base64InputStream(blobInputStream);
+					StreamUtil.copyStream(base64DecodedStream, outputStream, 50000);
+				} else if (blobBase64Direction == Direction.ENCODE) {
+					// Though technically not required, we're setting the line length to 76.
+					InputStream base64EncodedStream = Base64InputStream.builder()
+							.setInputStream(blobInputStream)
+							.setEncode(true)
+							.setBaseNCodec(Base64.builder().setLineLength(76).get())
+							.get();
+					StreamUtil.copyStream(base64EncodedStream, outputStream, 50000);
+				} else {
+					StreamUtil.copyStream(blobInputStream, outputStream, 50000);
 				}
 			}
-			if (close) {
-				outputStream.close();
+		} else {
+			try (Writer writer = msgBuilder.asWriter()) {
+				Reader reader = JdbcUtil.getBlobReader(blobInputStream, charset);
+				StreamUtil.copyReaderToWriter(reader, writer, 50000);
 			}
-			return;
 		}
-		throw new IOException("cannot stream Clob to [" + target.getClass().getName() + "]");
+	}
+
+	public static void streamClob(final IDbmsSupport dbmsSupport, ResultSet rs, int column, @Nonnull MessageBuilder target) throws DbmsException, SQLException, IOException {
+		try (Writer writer = target.asWriter(); Reader reader = dbmsSupport.getClobReader(rs, column)) {
+			StreamUtil.copyReaderToWriter(reader, writer, 50000);
+		}
 	}
 
 	public static String getBlobAsString(final IDbmsSupport dbmsSupport, final ResultSet rs, int column, String charset, boolean blobIsCompressed, boolean blobSmartGet, boolean encodeBlobBase64) throws IOException, JdbcException, SQLException {
@@ -718,34 +668,6 @@ public class JdbcUtil {
 				return true;
 			default:
 				return false;
-		}
-	}
-
-	@Deprecated
-	private static OutputStream getOutputStream(Object target) throws IOException {
-		if (target instanceof OutputStream stream) {
-			return stream;
-		}
-		if (target instanceof String string) {
-			return getFileOutputStream(string);
-		}
-		if (target instanceof Message message && message.isRequestOfType(String.class)) {
-			return getFileOutputStream(message.asString());
-		}
-		return null;
-	}
-
-	@Deprecated
-	private static OutputStream getFileOutputStream(String filename) throws IOException {
-		if (StringUtils.isEmpty(filename)) {
-			throw new IOException("target string cannot be empty but must contain a filename");
-		}
-		try {
-			return new FileOutputStream(filename);
-		} catch (FileNotFoundException e) {
-			FileNotFoundException fnfe = new FileNotFoundException("cannot create file [" + filename + "]");
-			fnfe.initCause(e);
-			throw fnfe;
 		}
 	}
 

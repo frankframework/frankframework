@@ -28,12 +28,12 @@ import org.xml.sax.SAXException;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.IPipe;
+import org.frankframework.core.PipeForward;
 import org.frankframework.core.PipeLine;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.functional.ThrowingFunction;
-import org.frankframework.pipes.FixedForwardPipe;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageBuilder;
 import org.frankframework.stream.MessageContext;
@@ -80,14 +80,15 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 		Message message = getInputFrom(pipe, inputMessage, pipeLineSession);
 
 		// If the input is empty and the pipe has a replacement value, replace the input with the (fixed) value.
-		if (Message.isEmpty(message) && StringUtils.isNotEmpty(pipe.getEmptyInputReplacement())) {
+		if (Message.isEmpty(message) && pipe.getEmptyInputReplacement() != null) {
 			log.debug("replacing empty input with fixed value [{}]", pipe::getEmptyInputReplacement);
 			message = new Message(pipe.getEmptyInputReplacement());
 		}
 
-		if (pipe instanceof FixedForwardPipe ffPipe && ffPipe.skipPipe(message, pipeLineSession)) {
-			log.info("skipped pipe processing for adapter [{}] pipe [{}]", pipeLine::getAdapter, pipe::getName);
-			return new PipeRunResult(ffPipe.getSuccessForward(), originalMessage);
+		if (pipe.skipPipe(message, pipeLineSession)) {
+			PipeForward successForward = pipe.findForward(PipeForward.SUCCESS_FORWARD_NAME);
+			log.info("skipped pipe processing for adapter [{}] pipe [{}], next pipe: [{}]", pipeLine::getAdapter, pipe::getName, successForward::getName);
+			return new PipeRunResult(successForward, originalMessage);
 		}
 
 		// Do the actual pipe processing.
@@ -141,20 +142,13 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 		// The order of these two methods has been changed to make it backwards compatible.
 		if (StringUtils.isNotEmpty(pipe.getGetInputFromFixedValue())) {
 			log.debug("replacing input with fixed value [{}]", pipe::getGetInputFromFixedValue);
-			Message newMessage = new Message(pipe.getGetInputFromFixedValue());
-			return newMessage;
+			return new Message(pipe.getGetInputFromFixedValue());
 		}
 
 		if (StringUtils.isNotEmpty(pipe.getGetInputFromSessionKey())) {
 			log.debug("replacing input with contents of sessionKey [{}]", pipe::getGetInputFromSessionKey);
-			if (!pipeLineSession.containsKey(pipe.getGetInputFromSessionKey()) && StringUtils.isEmpty(pipe.getEmptyInputReplacement())) {
-				boolean throwOnMissingSessionKey;
-				if (pipe instanceof FixedForwardPipe ffp) {
-					throwOnMissingSessionKey = !ffp.getGetInputFromSessionKey().equals(ffp.getOnlyIfSessionKey());
-				} else {
-					throwOnMissingSessionKey = true;
-				}
-
+			if (!pipeLineSession.containsKey(pipe.getGetInputFromSessionKey()) && pipe.getEmptyInputReplacement() == null) {
+				boolean throwOnMissingSessionKey = !pipe.getGetInputFromSessionKey().equals(pipe.getOnlyIfSessionKey());
 				if (throwOnMissingSessionKey) {
 					throw new PipeRunException(pipe, "getInputFromSessionKey [" + pipe.getGetInputFromSessionKey() + "] is not present in session");
 				}

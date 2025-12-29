@@ -86,11 +86,17 @@ public class ServerDetails {
 
 	@PermitAll
 	@GetMapping(value = "/health", produces = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> getFrankHealth() {
+	public ResponseEntity<?> getFrankHealth(@RequestParam(value = "strict", required = false, defaultValue = "true") boolean strictMode) {
 		if (frankApiService.hasNoAvailableWorker()) {
 			return ApiException.formatExceptionResponse("No cluster members available", HttpStatusCode.valueOf(503));
 		}
-		return frankApiService.callSyncGateway(RequestMessageBuilder.create(BusTopic.HEALTH));
+
+		ResponseEntity<?> response = frankApiService.callSyncGateway(RequestMessageBuilder.create(BusTopic.HEALTH));
+		if (response.getStatusCode().is5xxServerError() && !strictMode) {
+			// Return original data (with error messages) but with a 200 OK status code.
+			return ResponseEntity.ok(response.getBody());
+		}
+		return response;
 	}
 
 	private Map<String, Object> getUnavailableServerInformation() {
