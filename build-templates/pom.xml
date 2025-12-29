@@ -51,7 +51,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.build.timestamp.format>yyyy-MM-dd HH:mm</maven.build.timestamp.format>
 
-		<revision>9.4.0-SNAPSHOT</revision>
+		<revision>10.0.0-SNAPSHOT</revision>
 		<framework.version>${project.version}</framework.version>
 		<framework.version.range>[${framework.version},)</framework.version.range>
 
