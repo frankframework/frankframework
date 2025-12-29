@@ -15,7 +15,6 @@
 */
 package org.frankframework.ladybug.config;
 
-import jakarta.servlet.MultipartConfigElement;
 
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -47,7 +46,8 @@ public class LadybugServletConfiguration implements ApplicationContextAware {
 	@Bean
 	public RequestMappingHandlerMapping handlerMapping() {
 		RequestMappingHandlerMapping handlerMapping = new RequestMappingHandlerMapping();
-		handlerMapping.setUseTrailingSlashMatch(true); // See wearefrank/ladybug #610
+		// TODO
+		//  handlerMapping.setUseTrailingSlashMatch(true); // See wearefrank/ladybug #610
 		return handlerMapping;
 	}
 
@@ -63,8 +63,8 @@ public class LadybugServletConfiguration implements ApplicationContextAware {
 		DispatcherServlet ds = new DispatcherServlet((WebApplicationContext) applicationContext);
 		ds.setDetectAllHandlerMappings(false);
 		ServletRegistration<DispatcherServlet> servlet = new ServletRegistration<>(ds, servletConfiguration);
-		servlet.setMultipartConfig(new MultipartConfigElement(""));
-		servlet.setAsyncSupported(true);
+//		servlet.setMultipartConfig(new MultipartConfigElement(""));
+//		servlet.setAsyncSupported(true);
 		return servlet;
 	}
 

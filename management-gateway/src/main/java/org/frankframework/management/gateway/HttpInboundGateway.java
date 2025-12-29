@@ -58,7 +58,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.AuthorizationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.util.StreamUtils;
 import org.springframework.web.context.ServletContextAware;
 import org.springframework.web.context.support.HttpRequestHandlerServlet;
@@ -212,7 +212,7 @@ public class HttpInboundGateway implements WebSecurityConfigurer<WebSecurity>, S
 			// Apply defaults to disable bloated filters, see DefaultSecurityFilterChain.getFilters for the actual list.
 			http.headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)); // Allow same origin iframe request
 			http.csrf(AbstractHttpConfigurer::disable);
-			http.securityMatcher(new AntPathRequestMatcher(httpPath));
+			http.securityMatcher(PathPatternRequestMatcher.pathPattern(httpPath));
 			http.formLogin(AbstractHttpConfigurer::disable); // Disable the form login filter
 			http.anonymous(AbstractHttpConfigurer::disable); // Disable the default anonymous filter
 			http.logout(AbstractHttpConfigurer::disable); // Disable the logout endpoint on every filter

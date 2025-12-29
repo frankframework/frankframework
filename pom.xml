@@ -87,10 +87,10 @@
 
 		<jackson.version>2.20.1</jackson.version>
 		<cxf.version>4.1.4</cxf.version>
-		<spring.version>6.2.15</spring.version>
-		<spring-security.version>6.5.7</spring-security.version>
-		<spring-integration.version>6.5.5</spring-integration.version>
-		<spring.boot.version>3.5.9</spring.boot.version>
+		<spring.version>7.0.2</spring.version>
+		<spring-security.version>7.0.2</spring-security.version>
+		<spring-integration.version>7.0.1</spring-integration.version>
+		<spring.boot.version>4.0.1</spring.boot.version>
 		<tomcat.version>10.1.50</tomcat.version>
 		<bouncycastle.version>1.83</bouncycastle.version>
 
@@ -547,6 +547,11 @@
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-security</artifactId>
+				<version>${spring.boot.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-starter-webmvc</artifactId>
 				<version>${spring.boot.version}</version>
 			</dependency>
 
