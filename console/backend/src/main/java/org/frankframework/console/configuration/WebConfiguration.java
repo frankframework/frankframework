@@ -15,8 +15,6 @@
 */
 package org.frankframework.console.configuration;
 
-import java.util.List;
-import java.util.Optional;
 
 import org.springframework.boot.convert.ApplicationConversionService;
 import org.springframework.context.EnvironmentAware;
@@ -24,16 +22,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.format.FormatterRegistry;
-import org.springframework.http.converter.FormHttpMessageConverter;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverters;
+import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import tools.jackson.databind.DeserializationFeature;
+import tools.jackson.databind.SerializationFeature;
+import tools.jackson.databind.json.JsonMapper;
+
 import org.frankframework.management.bus.LocalGateway;
 import org.frankframework.management.bus.OutboundGatewayFactory;
-import org.frankframework.management.gateway.InputStreamHttpMessageConverter;
 
 /**
  * This class is found by the `FrankFrameworkApiContext.xml` file, is loaded after the xml has been loaded/wired.
@@ -45,15 +45,13 @@ public class WebConfiguration implements WebMvcConfigurer, EnvironmentAware {
 	private String gatewayClassName;
 
 	@Override
-	public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
-		Optional<HttpMessageConverter<?>> converterFound = converters.stream().filter(AbstractJackson2HttpMessageConverter.class::isInstance).findFirst();
-		if (converterFound.isPresent()) {
-			AbstractJackson2HttpMessageConverter converter = (AbstractJackson2HttpMessageConverter) converterFound.get();
-			converter.setPrettyPrint(true);
-		}
+	public void configureMessageConverters(HttpMessageConverters.ServerBuilder builder) {
+		JsonMapper jsonMapper = JsonMapper.builder()
+				.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false) // allow null value for boolean
+				.configure(SerializationFeature.INDENT_OUTPUT, true) // pretty print
+				.build();
 
-		converters.add(new InputStreamHttpMessageConverter());
-		converters.add(new FormHttpMessageConverter());
+		builder.withJsonConverter(new JacksonJsonHttpMessageConverter(jsonMapper));
 	}
 
 	@Override

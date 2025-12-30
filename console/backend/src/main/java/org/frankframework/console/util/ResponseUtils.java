@@ -36,7 +36,6 @@ import org.frankframework.management.bus.message.EmptyMessage;
 import org.frankframework.management.bus.message.MessageBase;
 import org.frankframework.util.StreamUtil;
 
-
 @NoArgsConstructor(access = lombok.AccessLevel.PRIVATE)
 public class ResponseUtils {
 
