@@ -14,11 +14,12 @@ import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.config.annotation.ObjectPostProcessor;
+import org.springframework.security.config.ObjectPostProcessor;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.junit.jupiter.SpringJUnitConfig;
@@ -77,7 +78,6 @@ abstract class ServletAuthenticatorTest<T extends AbstractServletAuthenticator> 
 
 	protected abstract T createAuthenticator();
 
-	@SuppressWarnings({ "deprecation", "removal" })
 	private HttpSecurity createHttpSecurity() {
 		ObjectPostProcessor<Object> objectPostProcessor = new ObjectPostProcessor<>() {
 			@Override
@@ -87,7 +87,8 @@ abstract class ServletAuthenticatorTest<T extends AbstractServletAuthenticator> 
 		};
 		AuthenticationManagerBuilder authMgrBuilder = new AuthenticationManagerBuilder(objectPostProcessor);
 		authMgrBuilder.authenticationProvider(new AllAuthenticatedProvider());
-		Map<Class<?>, Object> sharedObjects = Map.of(ApplicationContext.class, applicationContext);
+		Map<Class<?>, Object> sharedObjects = Map.of(ApplicationContext.class, applicationContext,
+				PathPatternRequestMatcher.Builder.class, PathPatternRequestMatcher.withDefaults());
 		return spy(new HttpSecurity(objectPostProcessor, authMgrBuilder, sharedObjects));
 	}
 }

@@ -24,7 +24,6 @@ import org.springframework.util.MimeType;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.parameters.Parameter;
 import org.frankframework.parameters.ParameterValue;
-import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.stream.MessageContext;
 import org.frankframework.stream.MessageTest;

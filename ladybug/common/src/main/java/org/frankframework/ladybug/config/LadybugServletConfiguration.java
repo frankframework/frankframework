@@ -46,9 +46,7 @@ public class LadybugServletConfiguration implements ApplicationContextAware {
 
 	@Bean
 	public RequestMappingHandlerMapping handlerMapping() {
-		RequestMappingHandlerMapping handlerMapping = new RequestMappingHandlerMapping();
-		handlerMapping.setUseTrailingSlashMatch(true); // See wearefrank/ladybug #610
-		return handlerMapping;
+		return new RequestMappingHandlerMapping();
 	}
 
 	@Bean

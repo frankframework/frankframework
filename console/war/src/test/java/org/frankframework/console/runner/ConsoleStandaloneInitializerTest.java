@@ -7,8 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
@@ -47,7 +46,8 @@ class ConsoleStandaloneInitializerTest {
 		// Make sure to use the right context and port for the Tomcat server
 		TomcatServletWebServerFactory tomcat = applicationContext.getBean("tomcat", TomcatServletWebServerFactory.class);
 		String baseUrl = String.format("http://localhost:%d/%s/iaf/api/", tomcat.getPort(), tomcat.getContextPath());
-		RestTemplate restTemplate = new RestTemplateBuilder().errorHandler(ignoreErrorHandler()).build();
+		RestTemplate restTemplate = new RestTemplate();
+		restTemplate.setErrorHandler(ignoreErrorHandler());
 
 		ResponseEntity<String> response = restTemplate.getForEntity(baseUrl + "server/health", String.class);
 		assertTrue(response.getStatusCode().isSameCodeAs(HttpStatusCode.valueOf(503)), "Expected 503 when no cluster members are available");
