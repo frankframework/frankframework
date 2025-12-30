@@ -60,7 +60,7 @@ class IafTestInitializerTest {
 		ResponseEntity<String> viewResponse = restTemplate.getForEntity(baseUrl + "testtool/views", String.class);
 		assertTrue(viewResponse.getStatusCode().is2xxSuccessful(), "testtool/views should return 2xx status");
 
-		ResponseEntity<String> variablesResponse = restTemplate.getForEntity(baseUrl + "report/variables/", String.class);
+		ResponseEntity<String> variablesResponse = restTemplate.getForEntity(baseUrl + "report/variables", String.class);
 		assertTrue(variablesResponse.getStatusCode().is2xxSuccessful(), "report/variables should return 2xx status");
 	}
 }
