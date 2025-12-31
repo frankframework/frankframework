@@ -29,6 +29,9 @@ import org.frankframework.management.bus.message.StringMessage;
 @ContextConfiguration(classes = {WebTestConfiguration.class, TransactionalStorage.class})
 public class TransactionalStorageTest extends FrankApiTestBase {
 
+	// asserts pretty printing with the spacing before array values
+	private static final String EXPECTED_EXCEPTION_CONTENT = "[ \"Test Exception\", \"Test Exception\", \"Test Exception\" ]";
+
 	@Test
 	public void testDecodeBase64() {
 		assertAll(
@@ -133,7 +136,7 @@ public class TransactionalStorageTest extends FrankApiTestBase {
 						.part(new MockPart("messageIds", "1,2,3".getBytes())))
 				.andExpect(MockMvcResultMatchers.status().isAccepted())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.content().string("[ \"Test Exception\", \"Test Exception\", \"Test Exception\" ]"));
+				.andExpect(MockMvcResultMatchers.content().string(EXPECTED_EXCEPTION_CONTENT));
 	}
 
 	@Test
@@ -187,6 +190,6 @@ public class TransactionalStorageTest extends FrankApiTestBase {
 						.part(new MockPart("messageIds", "1,2,3".getBytes())))
 				.andExpect(MockMvcResultMatchers.status().isAccepted())
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
-				.andExpect(MockMvcResultMatchers.content().string("[ \"Test Exception\", \"Test Exception\", \"Test Exception\" ]"));
+				.andExpect(MockMvcResultMatchers.content().string(EXPECTED_EXCEPTION_CONTENT));
 	}
 }
