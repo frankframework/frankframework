@@ -19,6 +19,9 @@ COPY --chown=tomcat target/scenarios/ /opt/frank/testtool/
 # Copy context.xml
 COPY --chown=tomcat target/context.xml /usr/local/tomcat/conf/Catalina/localhost/iaf-test.xml
 
+# Copy database and JMS drivers
+COPY --chown=tomcat target/dependencies/*.jar /opt/frank/drivers
+
 # Change context path to iaf-test
 RUN mv /usr/local/tomcat/webapps/ROOT /usr/local/tomcat/webapps/iaf-test
 

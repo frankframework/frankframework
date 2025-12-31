@@ -1400,27 +1400,31 @@ public class TesterContext implements Context {
 	}
 
 	@Override
-	public boolean isParallelAnnotationScanning() {
-		return false;
-	}
-
-	@Override
-	public boolean getParallelAnnotationScanning() {
-		return isParallelAnnotationScanning();
-	}
-
-
-	@Override
 	public void setParallelAnnotationScanning(boolean parallelAnnotationScanning) {
 	}
 
 	@Override
-	public boolean getUseBloomFilterForArchives() {
+	public ClassLoader bind(ClassLoader originalClassLoader) {
+		return null;
+	}
+
+	@Override
+	public void unbind(ClassLoader originalClassLoader) {
+		// NO OP
+	}
+
+	@Override
+	public boolean getMetadataComplete() {
 		return false;
 	}
 
 	@Override
-	public void setUseBloomFilterForArchives(boolean useBloomFilterForArchives) {
+	public void setMetadataComplete(boolean metadataComplete) {
+		// NO OP
 	}
 
+	@Override
+	public boolean getParallelAnnotationScanning() {
+		return false;
+	}
 }
