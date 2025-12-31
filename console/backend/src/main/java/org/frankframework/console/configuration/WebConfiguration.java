@@ -22,6 +22,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.env.Environment;
 import org.springframework.format.FormatterRegistry;
+import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverters;
 import org.springframework.http.converter.json.JacksonJsonHttpMessageConverter;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
@@ -34,6 +35,7 @@ import tools.jackson.databind.json.JsonMapper;
 
 import org.frankframework.management.bus.LocalGateway;
 import org.frankframework.management.bus.OutboundGatewayFactory;
+import org.frankframework.management.gateway.InputStreamHttpMessageConverter;
 
 /**
  * This class is found by the `FrankFrameworkApiContext.xml` file, is loaded after the xml has been loaded/wired.
@@ -52,6 +54,9 @@ public class WebConfiguration implements WebMvcConfigurer, EnvironmentAware {
 				.build();
 
 		builder.withJsonConverter(new JacksonJsonHttpMessageConverter(jsonMapper));
+
+		builder.addCustomConverter(new InputStreamHttpMessageConverter());
+		builder.addCustomConverter(new FormHttpMessageConverter());
 	}
 
 	@Override
