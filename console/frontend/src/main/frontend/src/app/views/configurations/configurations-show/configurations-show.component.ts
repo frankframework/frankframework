@@ -74,7 +74,6 @@ export class ConfigurationsShowComponent implements OnInit, OnDestroy {
       this.fragment = undefined; //unset hash anchor
     }
     this.getConfiguration();
-    this.updateQueryParams();
   }
 
   updateQueryParams(): void {
@@ -82,11 +81,9 @@ export class ConfigurationsShowComponent implements OnInit, OnDestroy {
       relativeTo: this.route,
       queryParams: {
         loaded: this.loadedConfiguration ? null : 'false',
-        adapter: this.selectedAdapter,
       },
       queryParamsHandling: 'merge',
       fragment: this.fragment,
-      replaceUrl: true,
     });
   }
 
