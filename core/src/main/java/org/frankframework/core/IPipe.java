@@ -24,7 +24,6 @@ import jakarta.annotation.Nullable;
 import org.springframework.context.Lifecycle;
 
 import org.frankframework.configuration.ConfigurationException;
-import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.doc.FrankDocGroup;
 import org.frankframework.doc.FrankDocGroupValue;
 import org.frankframework.doc.Mandatory;
@@ -131,11 +130,7 @@ public interface IPipe extends IConfigurable, IForwardTarget, FrankElement, Name
 	 *
 	 * @deprecated Use {@literal #setDefaultValue(string)} instead.
 	 */
-	@Deprecated
-	@ConfigurationWarning("Attribute has been renamed to 'defaultValue'")
-	default void setEmptyInputReplacement(String string) {
-		setDefaultValue(string);
-	}
+	void setEmptyInputReplacement(String string);
 
 	/**
 	 * If set and the input is empty, this fixed value is taken as the default input. The {@code defaultValue} itself may be set to an empty value, for example

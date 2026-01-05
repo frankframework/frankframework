@@ -32,6 +32,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IPipe;
@@ -560,5 +561,12 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	@Override
 	public void setUnlessValue(String unlessValue) {
 		this.unlessValue = unlessValue;
+	}
+
+	@Deprecated
+	@ConfigurationWarning("Attribute has been renamed to 'defaultValue'")
+	@Override
+	public void setEmptyInputReplacement(String string) {
+		setDefaultValue(string);
 	}
 }
