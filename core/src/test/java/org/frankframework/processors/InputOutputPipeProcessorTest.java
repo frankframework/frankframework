@@ -246,7 +246,7 @@ public class InputOutputPipeProcessorTest {
 		// Arrange
 		pipe.setOnlyIfSessionKey("this-key-is-there");
 		pipe.setGetInputFromSessionKey("this-key-isnt-there");
-		pipe.setEmptyInputReplacement("");
+		pipe.setDefaultValue("");
 		pipe.configure();
 		pipe.start();
 
@@ -332,7 +332,7 @@ public class InputOutputPipeProcessorTest {
 		String expectedValue = "empty input replacement";
 
 		pipe.setSkipOnEmptyInput(true);
-		pipe.setEmptyInputReplacement(expectedValue);
+		pipe.setDefaultValue(expectedValue);
 		pipe.configure();
 		pipe.start();
 
@@ -451,7 +451,7 @@ public class InputOutputPipeProcessorTest {
 		// Arrange
 		pipe.setSkipOnEmptyInput(true);
 		pipe.setGetInputFromFixedValue(fixedValue);
-		pipe.setEmptyInputReplacement("tralala");
+		pipe.setDefaultValue("tralala");
 		pipe.configure();
 		pipe.start();
 

@@ -121,7 +121,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	private @Setter EventPublisher eventPublisher=null;
 
 	private @Getter @Setter PipeLine pipeLine;
-	private @Getter String emptyInputReplacement = null;
+	private @Getter String defaultValue = null;
 	private @Getter boolean skipOnEmptyInput = false;
 	private @Getter String ifParam = null;
 	private @Getter String ifValue = null;
@@ -376,8 +376,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	}
 
 	@Override
-	public void setEmptyInputReplacement(String string) {
-		emptyInputReplacement = string;
+	public void setDefaultValue(String string) {
+		defaultValue = string;
 	}
 
 	@Override

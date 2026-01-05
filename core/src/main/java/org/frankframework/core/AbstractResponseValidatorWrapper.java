@@ -141,13 +141,13 @@ public abstract class AbstractResponseValidatorWrapper<V extends AbstractValidat
 	}
 
 	@Override
-	public void setEmptyInputReplacement(String string) {
-		owner.setEmptyInputReplacement(string);
+	public void setDefaultValue(String string) {
+		owner.setDefaultValue(string);
 	}
 
 	@Override
-	public String getEmptyInputReplacement() {
-		return owner.getEmptyInputReplacement();
+	public String getDefaultValue() {
+		return owner.getDefaultValue();
 	}
 
 	@Override
