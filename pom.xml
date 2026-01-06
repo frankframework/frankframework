@@ -590,12 +590,11 @@
 				<version>3.0.0</version>
 			</dependency>
 
-			<!-- Because we use Spring-JCL we don't want Commons Logging. -->
+			<!-- Spring-jcl has been deprecated, included commons-logging -->
 			<dependency>
 				<groupId>commons-logging</groupId>
 				<artifactId>commons-logging</artifactId>
 				<version>1.3.5</version>
-				<scope>provided</scope>
 			</dependency>
 
 			<!-- API's are to compile, implementations should be provided by the application server -->
