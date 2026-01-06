@@ -32,6 +32,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
+import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.Adapter;
 import org.frankframework.core.IPipe;
@@ -121,7 +122,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	private @Setter EventPublisher eventPublisher=null;
 
 	private @Getter @Setter PipeLine pipeLine;
-	private @Getter String emptyInputReplacement = null;
+	private @Getter String defaultValue = null;
 	private @Getter boolean skipOnEmptyInput = false;
 	private @Getter String ifParam = null;
 	private @Getter String ifValue = null;
@@ -366,18 +367,18 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	}
 
 	@Override
-	public void setGetInputFromSessionKey(String string) {
-		getInputFromSessionKey = string;
+	public void setGetInputFromSessionKey(String getInputFromSessionKey) {
+		this.getInputFromSessionKey = getInputFromSessionKey;
 	}
 
 	@Override
-	public void setGetInputFromFixedValue(String string) {
-		getInputFromFixedValue = string;
+	public void setGetInputFromFixedValue(String getInputFromFixedValue) {
+		this.getInputFromFixedValue = getInputFromFixedValue;
 	}
 
 	@Override
-	public void setEmptyInputReplacement(String string) {
-		emptyInputReplacement = string;
+	public void setDefaultValue(String defaultValue) {
+		this.defaultValue = defaultValue;
 	}
 
 	@Override
@@ -390,8 +391,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	 * The pipe result is still written as the output message as usual.
 	 */
 	@Override
-	public void setStoreResultInSessionKey(String string) {
-		storeResultInSessionKey = string;
+	public void setStoreResultInSessionKey(String storeResultInSessionKey) {
+		this.storeResultInSessionKey = storeResultInSessionKey;
 	}
 
 	/**
@@ -405,23 +406,23 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	}
 
 	@Override
-	public void setChompCharSize(String string) {
-		chompCharSize = string;
+	public void setChompCharSize(String chompCharSize) {
+		this.chompCharSize = chompCharSize;
 	}
 
 	@Override
-	public void setElementToMove(String string) {
-		elementToMove = string;
+	public void setElementToMove(String elementToMove) {
+		this.elementToMove = elementToMove;
 	}
 
 	@Override
-	public void setElementToMoveSessionKey(String string) {
-		elementToMoveSessionKey = string;
+	public void setElementToMoveSessionKey(String elementToMoveSessionKey) {
+		this.elementToMoveSessionKey = elementToMoveSessionKey;
 	}
 
 	@Override
-	public void setElementToMoveChain(String string) {
-		elementToMoveChain = string;
+	public void setElementToMoveChain(String elementToMoveChain) {
+		this.elementToMoveChain = elementToMoveChain;
 	}
 
 	@Override
@@ -430,8 +431,8 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	}
 
 	@Override
-	public void setRemoveCompactMsgNamespaces(boolean b) {
-		removeCompactMsgNamespaces = b;
+	public void setRemoveCompactMsgNamespaces(boolean removeCompactMsgNamespaces) {
+		this.removeCompactMsgNamespaces = removeCompactMsgNamespaces;
 	}
 
 	@Override
@@ -454,19 +455,19 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 
 	/** If {@code true}, a record is written to the security log when the pipe has finished successfully. */
 	@Override
-	public void setWriteToSecLog(boolean b) {
-		writeToSecLog = b;
+	public void setWriteToSecLog(boolean writeToSecLog) {
+		this.writeToSecLog = writeToSecLog;
 	}
 
 	/** (only used when {@code writeToSecLog} is {@code true}) comma separated list of keys of session variables that is appended to the security log record */
 	@Override
-	public void setSecLogSessionKeys(String string) {
-		secLogSessionKeys = string;
+	public void setSecLogSessionKeys(String secLogSessionKeys) {
+		this.secLogSessionKeys = secLogSessionKeys;
 	}
 
 	@Override
-	public void setLogIntermediaryResults(String string) {
-		logIntermediaryResults = string;
+	public void setLogIntermediaryResults(String logIntermediaryResults) {
+		this.logIntermediaryResults = logIntermediaryResults;
 	}
 
 	@Override
@@ -508,7 +509,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 				}
 
 				boolean ifValueNotEqualToIfParam = !getIfValue().equalsIgnoreCase(paramValue.asStringValue());
-				log.debug("skip pipe processing: ifValue value [{}] not equal to ifParameter value [{}]", () -> getIfValue(), paramValue::getValue);
+				log.debug("skip pipe processing: ifValue value [{}] not equal to ifParameter value [{}]", this::getIfValue, paramValue::getValue);
 				return ifValueNotEqualToIfParam;
 			}
 		} catch (ParameterException e) {
@@ -522,20 +523,20 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	 * @ff.default false
 	 */
 	@Override
-	public void setSkipOnEmptyInput(boolean b) {
-		skipOnEmptyInput = b;
+	public void setSkipOnEmptyInput(boolean skipOnEmptyInput) {
+		this.skipOnEmptyInput = skipOnEmptyInput;
 	}
 
 	/** If set, this pipe is only executed when the value of the parameter with the name <code>ifParam</code> equals <code>ifValue</code>. Otherwise, this pipe is skipped. */
 	@Override
-	public void setIfParam(String string) {
-		ifParam = string;
+	public void setIfParam(String ifParam) {
+		this.ifParam = ifParam;
 	}
 
 	/** See {@code ifParam} */
 	@Override
-	public void setIfValue(String string) {
-		ifValue = string;
+	public void setIfValue(String ifValue) {
+		this.ifValue = ifValue;
 	}
 
 	/** Key of the session variable to check if the action must be executed. The pipe is only executed if the session variable exists and is not null. */
@@ -560,5 +561,12 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	@Override
 	public void setUnlessValue(String unlessValue) {
 		this.unlessValue = unlessValue;
+	}
+
+	@Deprecated
+	@ConfigurationWarning("Attribute has been renamed to 'defaultValue'")
+	@Override
+	public void setEmptyInputReplacement(String emptyInputReplacement) {
+		setDefaultValue(emptyInputReplacement);
 	}
 }

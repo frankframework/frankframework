@@ -111,7 +111,12 @@ public interface IPipe extends IConfigurable, IForwardTarget, FrankElement, Name
 	 */
 	void setPipeLine(PipeLine pipeline);
 
-	/** If set, input is taken from this session key, instead of regular input */
+	/**
+	 * If set, input is taken from this session key, instead of regular input. If the session-key does not exist or is empty, then the input will
+	 * instead be taken from the {@code defaultValue}.
+	 * If there is no {@code defaultValue} and the session-key is missing, then pipe that is not a {@link org.frankframework.pipes.FixedForwardPipe} will
+	 * throw an exception that the session-key is missing.
+	 */
 	void setGetInputFromSessionKey(String string);
 	String getGetInputFromSessionKey();
 
@@ -119,9 +124,20 @@ public interface IPipe extends IConfigurable, IForwardTarget, FrankElement, Name
 	void setGetInputFromFixedValue(String string);
 	String getGetInputFromFixedValue();
 
-	/** If set and the input is empty, this fixed value is taken as input */
+	/**
+	 * If set and the input is empty, this fixed value is taken as the default input. May itself be set to an empty value, to use an empty value
+	 * as fallback for a missing {@code getInputFromSessionKey}.
+	 *
+	 * @deprecated Use {@literal #setDefaultValue(string)} instead.
+	 */
 	void setEmptyInputReplacement(String string);
-	String getEmptyInputReplacement();
+
+	/**
+	 * If set and the input is empty, this fixed value is taken as the default input. The {@code defaultValue} itself may be set to an empty value, for example
+	 * to use an empty value as fallback for a missing session-key configured with {@code getInputFromSessionKey}.
+	 */
+	void setDefaultValue(String string);
+	String getDefaultValue();
 
 	/** If set <code>true</code>, the result of the pipe is replaced with the original input (i.e. the input before configured replacements of <code>getInputFromSessionKey</code>, <code>getInputFromFixedValue</code> or <code>emptyInputReplacement</code>) */
 	void setPreserveInput(boolean preserveInput);

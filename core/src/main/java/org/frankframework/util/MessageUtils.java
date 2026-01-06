@@ -428,7 +428,7 @@ public class MessageUtils {
 	}
 
 	/**
-	 * Convert an object to a string. Does not close object when it is of type Message or MessageWrapper.
+	 * Convert an object to a string.
 	 */
 	@Deprecated
 	public static @Nullable String asString(@Nullable Object object) throws IOException {
