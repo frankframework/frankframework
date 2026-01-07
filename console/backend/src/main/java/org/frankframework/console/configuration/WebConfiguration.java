@@ -30,6 +30,7 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.json.JsonMapper;
 
@@ -49,6 +50,10 @@ public class WebConfiguration implements WebMvcConfigurer, EnvironmentAware {
 	@Override
 	public void configureMessageConverters(HttpMessageConverters.ServerBuilder builder) {
 		JsonMapper jsonMapper = JsonMapper.builder()
+				.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+				.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+				.configure(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT, true)
+				.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true)
 				.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false) // allow null value for boolean
 				.configure(SerializationFeature.INDENT_OUTPUT, true) // pretty print
 				.build();
