@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.junit.jupiter.api.AfterEach;
@@ -72,11 +73,13 @@ public abstract class FrankApiTestBase {
 
 	protected <T, U> Message<U> mockResponseMessage(Message<T> in, Supplier<U> payload, int status, @Nullable MediaType mediaType){
 		return new Message<>() {
+			@Nonnull
 			@Override
 			public U getPayload() {
 				return payload.get();
 			}
 
+			@Nonnull
 			@Override
 			public MessageHeaders getHeaders() {
 				Map<String, Object> headers = new HashMap<>(in.getHeaders());

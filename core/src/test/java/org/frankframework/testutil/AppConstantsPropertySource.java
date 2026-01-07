@@ -2,6 +2,8 @@ package org.frankframework.testutil;
 
 import java.util.Properties;
 
+import jakarta.annotation.Nonnull;
+
 import org.springframework.beans.factory.BeanClassLoaderAware;
 
 import org.frankframework.lifecycle.AbstractPropertySourcePostProcessor;
@@ -16,7 +18,7 @@ public class AppConstantsPropertySource extends AbstractPropertySourcePostProces
 	}
 
 	@Override
-	public void setBeanClassLoader(ClassLoader classLoader) {
+	public void setBeanClassLoader(@Nonnull ClassLoader classLoader) {
 		this.classLoader = classLoader;
 	}
 

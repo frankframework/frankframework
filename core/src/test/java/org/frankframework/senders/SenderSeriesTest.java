@@ -119,8 +119,9 @@ public class SenderSeriesTest extends SenderTestBase<SenderSeries> {
 			shortname = name.substring(6);
 		}
 
+		@Nonnull
 		@Override
-		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
+		public SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 			try {
 				String input = message.asString() + "," + shortname;
 				return new SenderResult(input);

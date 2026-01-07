@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2024-2025 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.io.FilenameUtils;
@@ -287,8 +288,9 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	 *
 	 * {@inheritDoc}
 	 */
+	@Nonnull
 	@Override
-	public Class<?> publicDefineClass(String name, byte[] b, @Nullable ProtectionDomain protectionDomain) {
+	public Class<?> publicDefineClass(@Nonnull String name, @Nonnull byte[] b, @Nullable ProtectionDomain protectionDomain) {
 		return super.defineClass(name, b, 0, b.length, protectionDomain);
 	}
 

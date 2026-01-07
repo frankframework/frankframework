@@ -205,6 +205,7 @@ public class TestAnnotationUtils {
 		});
 
 		BeanNameGenerator beanNameGenerator = new AnnotationBeanNameGenerator() {
+			@Nonnull
 			@Override
 			protected String buildDefaultBeanName(@Nonnull BeanDefinition definition) {
 				String beanClassName = definition.getBeanClassName();

@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package org.frankframework.management.gateway;
 import java.io.IOException;
 import java.io.InputStream;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.NotImplementedException;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
@@ -34,17 +36,18 @@ public class InputStreamHttpMessageConverter extends AbstractHttpMessageConverte
 	}
 
 	@Override
-	protected boolean supports(Class<?> clazz) {
+	protected boolean supports(@Nonnull Class<?> clazz) {
 		return InputStream.class.isAssignableFrom(clazz);
 	}
 
+	@Nonnull
 	@Override
-	protected InputStream readInternal(Class<? extends InputStream> clazz, HttpInputMessage inputMessage) throws HttpMessageNotReadableException {
+	protected InputStream readInternal(@Nonnull Class<? extends InputStream> clazz, @Nonnull HttpInputMessage inputMessage) throws HttpMessageNotReadableException {
 		throw new NotImplementedException("messages should not be read directly as InputStream");
 	}
 
 	@Override
-	protected void writeInternal(InputStream is, HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
+	protected void writeInternal(@Nonnull InputStream is, @Nonnull HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
 		StreamUtils.copy(is, outputMessage.getBody());
 	}
 }

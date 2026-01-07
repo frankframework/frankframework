@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 package org.frankframework.lifecycle;
 
 import java.util.stream.Stream;
+
+import jakarta.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
@@ -37,7 +39,7 @@ import lombok.extern.log4j.Log4j2;
 public class LogPropertiesConfigurer implements PriorityOrdered, EnvironmentAware {
 
 	private Environment environment;
-	private LoggerContext context = LoggerContext.getContext(false);
+	private final LoggerContext context = LoggerContext.getContext(false);
 	private static final String LOGGER_PROPERTY_PREFIX = "logging.level.";
 
 	@Override
@@ -46,7 +48,7 @@ public class LogPropertiesConfigurer implements PriorityOrdered, EnvironmentAwar
 	}
 
 	@Override
-	public void setEnvironment(Environment environment) {
+	public void setEnvironment(@Nonnull Environment environment) {
 		if (environment instanceof AbstractEnvironment abstractEnv) {
 			this.environment = environment;
 

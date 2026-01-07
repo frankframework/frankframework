@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden
+   Copyright 2017 Nationale-Nederlanden, 2020, 2023, 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package org.frankframework.scheduler;
 
 import javax.sql.DataSource;
 
+import jakarta.annotation.Nonnull;
+
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
@@ -30,11 +32,11 @@ import org.springframework.transaction.PlatformTransactionManager;
 public class SchedulerFactoryBean extends org.springframework.scheduling.quartz.SchedulerFactoryBean {
 
 	@Override
-	public void setDataSource(DataSource dataSource) {
+	public void setDataSource(@Nonnull DataSource dataSource) {
 		// Make sure this isn't autowired by Spring
 	}
 	@Override
-	public void setTransactionManager(PlatformTransactionManager transactionManager) {
+	public void setTransactionManager(@Nonnull PlatformTransactionManager transactionManager) {
 		// Make sure this isn't autowired by Spring
 	}
 }

@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.MultipartConfigElement;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletRegistration;
@@ -50,13 +51,14 @@ public class ServletManagerTest {
 	@BeforeAll
 	public static void prepare() throws Exception {
 		ServletContext context = new MockServletContext() {
-			private Map<String, Dynamic> dynamic = new HashMap<>();
+			private final Map<String, Dynamic> dynamic = new HashMap<>();
+			@Nonnull
 			@Override
-			public Dynamic addServlet(String servletName, jakarta.servlet.Servlet servlet) {
+			public Dynamic addServlet(@Nonnull String servletName, @Nonnull jakarta.servlet.Servlet servlet) {
 				return dynamic.compute(servletName, (k,v) -> new DynamicServletRegistration(servletName, servlet));
 			}
 			@Override
-			public ServletRegistration getServletRegistration(String servletName) {
+			public ServletRegistration getServletRegistration(@Nonnull String servletName) {
 				return dynamic.get(servletName);
 			}
 		};
@@ -245,11 +247,11 @@ public class ServletManagerTest {
 	private static class DynamicServletRegistration implements ServletRegistration.Dynamic {
 		private @Getter @Setter int loadOnStartup = 0;
 		private @Getter @Setter boolean asyncSupported;
-		private @Getter String name;
-		private @Getter Map<String, String> initParameters = new HashMap<>();
-		private @Getter Set<String> mappings = new TreeSet<>();
-		private @Getter String runAsRole = null;
-		private @Getter DummyServletImpl servlet;
+		private final @Getter String name;
+		private final @Getter Map<String, String> initParameters = new HashMap<>();
+		private final @Getter Set<String> mappings = new TreeSet<>();
+		private final @Getter String runAsRole = null;
+		private final @Getter DummyServletImpl servlet;
 		private @Getter ServletSecurityElement servletSecurity;
 
 		public DynamicServletRegistration(String servletName, jakarta.servlet.Servlet servlet) {

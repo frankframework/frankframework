@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.Servlet;
 
 import org.junit.jupiter.api.Test;
@@ -65,6 +66,7 @@ public class TestAttributesAndDestinationType {
 		scanner.addExcludeFilter(new AnnotationTypeFilter(SessionScope.class));
 
 		BeanNameGenerator beanNameGenerator = new AnnotationBeanNameGenerator() {
+			@Nonnull
 			@Override
 			protected String buildDefaultBeanName(BeanDefinition definition) {
 				String beanClassName = definition.getBeanClassName();

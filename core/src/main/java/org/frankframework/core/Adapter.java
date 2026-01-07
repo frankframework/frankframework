@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013-2019 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -348,7 +348,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	}
 
 	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) {
+	public void setApplicationContext(@Nonnull ApplicationContext applicationContext) {
 		if (!(applicationContext instanceof Configuration config)) {
 			throw new IllegalStateException();
 		}
@@ -383,7 +383,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * Enables the {@link Autowired} annotation and {@link ConfigurationAware} objects.
 	 */
 	@Override
-	protected void registerBeanPostProcessors(ConfigurableListableBeanFactory beanFactory) {
+	protected void registerBeanPostProcessors(@Nonnull ConfigurableListableBeanFactory beanFactory) {
 		super.registerBeanPostProcessors(beanFactory);
 
 		// Append @Autowired PostProcessor to allow automatic type-based Spring wiring.
@@ -523,7 +523,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	}
 
 	@Override
-	public void publishEvent(ApplicationEvent event) {
+	public void publishEvent(@Nonnull ApplicationEvent event) {
 		if (event instanceof ContextStartedEvent) {
 			statsUpSince = System.currentTimeMillis(); // Update the adapter uptime.
 			publishEvent(new AdapterMessageEvent(this, "up and running"));

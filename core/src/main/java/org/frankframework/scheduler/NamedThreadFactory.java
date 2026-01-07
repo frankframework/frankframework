@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2025 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package org.frankframework.scheduler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import jakarta.annotation.Nonnull;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -28,7 +30,7 @@ public class NamedThreadFactory implements ThreadFactory {
 	private final AtomicInteger threadCount = new AtomicInteger();
 
 	@Override
-	public Thread newThread(Runnable runnable) {
+	public Thread newThread(@Nonnull Runnable runnable) {
 		String threadName = getThreadName(runnable);
 		Thread thread = new Thread(threadGroup, runnable, threadName);
 		thread.setPriority(threadPriority);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2024-2025 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,6 +27,8 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+
+import jakarta.annotation.Nonnull;
 
 import org.apache.logging.log4j.LogManager;
 
@@ -143,7 +145,7 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 	}
 
 	@Override
-	public void write(byte[] b, int off, int len) throws IOException {
+	public void write(@Nonnull byte[] b, int off, int len) throws IOException {
 		if(closed) throw new IllegalStateException("stream already closed");
 
 		// Buffer has already been flushed

@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2024 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ import java.time.Duration;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 
+import jakarta.annotation.Nonnull;
+
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.cumulative.CumulativeDistributionSummary;
 import io.micrometer.core.instrument.distribution.CountAtBucket;
@@ -26,7 +28,6 @@ import io.micrometer.core.instrument.distribution.DistributionStatisticConfig;
 import io.micrometer.core.instrument.distribution.HistogramSnapshot;
 
 public class LocalDistributionSummary extends CumulativeDistributionSummary {
-	private static final CountAtBucket[] EMPTY_HISTOGRAM = new CountAtBucket[0];
 	private final AtomicLong min;
 	private final LongAdder sumOfSquares;
 	private final AtomicLong first;
@@ -112,9 +113,10 @@ public class LocalDistributionSummary extends CumulativeDistributionSummary {
 	 * @return Cumulative histogram buckets.
 	 */
 	private CountAtBucket[] histogramCounts() {
-		return histogram == null ? EMPTY_HISTOGRAM : histogram.takeSnapshot(0, 0, 0).histogramCounts();
+		return histogram.takeSnapshot(0, 0, 0).histogramCounts();
 	}
 
+	@Nonnull
 	@Override
 	public HistogramSnapshot takeSnapshot() {
 		HistogramSnapshot snapshot = super.takeSnapshot();

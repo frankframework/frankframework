@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
 import jakarta.mail.BodyPart;
 import jakarta.mail.internet.MimeMultipart;
 import jakarta.servlet.ServletOutputStream;
@@ -83,12 +84,12 @@ public class MtomResponseWrapper extends HttpServletResponseWrapper {
 		}
 
 		@Override
-		public void write(int b) throws IOException {
+		public void write(int b) {
 			bufferStream.write(b);
 		}
 
 		@Override
-		public void write(byte[] b, int off, int len) throws IOException {
+		public void write(@Nonnull byte[] b, int off, int len) {
 			bufferStream.write(b, off, len);
 		}
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.jms.Destination;
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
@@ -193,7 +194,7 @@ public class PullingJmsListener extends AbstractJmsListener implements IPullingL
      * Retrieves messages from queue or other channel, but does no processing on it.
      */
 	@Override
-	public RawMessageWrapper<Message> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException {
+	public @Nullable RawMessageWrapper<Message> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 		return getRawMessageFromDestination(null, threadContext);
 	}
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2021, 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -56,14 +56,11 @@ public class ScanningDirectoryClassLoader extends DirectoryClassLoader {
 
 	private void createTaskExecutor() {
 		String threadName = this.toString();
-		ThreadFactory namedThreadFactory = new ThreadFactory() {
-			@Override
-			public Thread newThread(Runnable runnable) {
-				Thread thread = new Thread(runnable);
-				thread.setName(threadName);
-				thread.setDaemon(false);
-				return thread;
-			}
+		ThreadFactory namedThreadFactory = runnable -> {
+			Thread thread = new Thread(runnable);
+			thread.setName(threadName);
+			thread.setDaemon(false);
+			return thread;
 		};
 		executor = new ScheduledThreadPoolExecutor(1, namedThreadFactory);
 		executor.setRemoveOnCancelPolicy(true);

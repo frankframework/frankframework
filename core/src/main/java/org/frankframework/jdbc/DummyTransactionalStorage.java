@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2015 Nationale-Nederlanden, 2020-2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package org.frankframework.jdbc;
 import java.io.Serializable;
 import java.util.Date;
 
+import jakarta.annotation.Nonnull;
+
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.SenderException;
 
@@ -32,9 +34,10 @@ import org.frankframework.core.SenderException;
 @ConfigurationWarning("It is no longer necessary to use the DummyTransactionalStorage")
 public class DummyTransactionalStorage<S extends Serializable> extends JdbcTransactionalStorage<S> {
 
+	@Nonnull
 	@Override
 	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException {
-		return null;
+		return null; // TODO: Breaks the contract but hey this class is deprecated for removal, should remove ASAP.
 	}
 
 }

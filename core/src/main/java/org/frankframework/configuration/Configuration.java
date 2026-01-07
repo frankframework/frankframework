@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -163,7 +163,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	 * Enables the {@link Autowired} annotation and {@link ConfigurationAware} objects.
 	 */
 	@Override
-	protected void registerBeanPostProcessors(ConfigurableListableBeanFactory beanFactory) {
+	protected void registerBeanPostProcessors(@Nonnull ConfigurableListableBeanFactory beanFactory) {
 		super.registerBeanPostProcessors(beanFactory);
 
 		// Append @Autowired PostProcessor to allow automatic type-based Spring wiring.
@@ -276,7 +276,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	// Capture ContextClosedEvent which is published during AbstractApplicationContext#doClose()
 	// This event will be published before the actual context is closed.
 	@Override
-	public void publishEvent(ApplicationEvent event) {
+	public void publishEvent(@Nonnull ApplicationEvent event) {
 		if (event instanceof ContextClosedEvent) {
 			applicationLog.info("Configuration [{}] closed", this::getNameWithOptionalVersion);
 			publishEvent(new ConfigurationMessageEvent(this, "closed"));
@@ -561,7 +561,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	 */
 	@Override
 	@Protected
-	public void setBeanName(String name) {
+	public void setBeanName(@Nonnull String name) {
 		super.setBeanName(name);
 		setDisplayName("ConfigurationContext [" + name + "]");
 	}

@@ -73,9 +73,10 @@ public class MonitorManager extends ConfigurableApplicationContext implements Ap
 	}
 
 	// We do not want all listeners to be initialized upon context startup. Hence listeners implementing LazyLoadingEventListener will be excluded from the beanType[].
+	@Nonnull
 	@Override
-	public String[] getBeanNamesForType(Class<?> type, boolean includeNonSingletons, boolean allowEagerInit) {
-		if(type.isAssignableFrom(ApplicationListener.class)) {
+	public String[] getBeanNamesForType(@Nullable Class<?> type, boolean includeNonSingletons, boolean allowEagerInit) {
+		if(type != null && type.isAssignableFrom(ApplicationListener.class)) {
 			List<String> blacklist = Arrays.asList(super.getBeanNamesForType(LazyLoadingEventListener.class, includeNonSingletons, allowEagerInit));
 			List<String> beanNames = Arrays.asList(super.getBeanNamesForType(type, includeNonSingletons, allowEagerInit));
 			log.debug("removing LazyLoadingEventListeners {} from Spring auto-magic event-based initialization", blacklist);
@@ -90,7 +91,7 @@ public class MonitorManager extends ConfigurableApplicationContext implements Ap
 	 * Does not send events to the parent context (if any).
 	 */
 	@Override
-	public void onApplicationEvent(MonitorEvent event) {
+	public void onApplicationEvent(@Nonnull MonitorEvent event) {
 		if (event instanceof RegisterMonitorEvent monitorEvent) {
 			registerEvent(monitorEvent);
 		} else {
@@ -99,14 +100,14 @@ public class MonitorManager extends ConfigurableApplicationContext implements Ap
 		}
 	}
 
-	private void registerEvent(RegisterMonitorEvent registerEvent) {
+	private void registerEvent(@Nonnull RegisterMonitorEvent registerEvent) {
 		EventThrowing eventThrowing = registerEvent.getSource();
 		String eventCode = registerEvent.getEventCode();
 
 		Adapter adapter = eventThrowing.getAdapter();
 		log.trace("registerEvent [{}] for adapter [{}] object [{}]", () -> eventCode, adapter::getId, eventThrowing::getEventSourceName);
 
-		if(adapter == null || StringUtils.isEmpty(adapter.getName())) {
+		if(StringUtils.isEmpty(adapter.getName())) {
 			throw new IllegalStateException("adapter ["+adapter+"] has no (usable) name");
 		}
 
@@ -122,9 +123,7 @@ public class MonitorManager extends ConfigurableApplicationContext implements Ap
 
 	public XmlBuilder toXml() {
 		XmlBuilder configXml = new XmlBuilder("monitoring");
-		for (String name : getDestinations().keySet()) {
-			IMonitorDestination ma = getDestination(name);
-
+		for (IMonitorDestination ma: getDestinations().values()) {
 			XmlBuilder destinationXml = new XmlBuilder("destination");
 			destinationXml.addAttribute("name", ma.getName());
 			destinationXml.addAttribute("className", ma.getClass().getName());
@@ -132,8 +131,7 @@ public class MonitorManager extends ConfigurableApplicationContext implements Ap
 			configXml.addSubElement(ma.toXml());
 		}
 
-		for (String name : getMonitors().keySet()) {
-			Monitor monitor = getMonitor(name);
+		for (Monitor monitor : getMonitors().values()) {
 			configXml.addSubElement(monitor.toXml());
 		}
 

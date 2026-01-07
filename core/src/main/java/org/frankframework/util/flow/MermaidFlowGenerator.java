@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2024 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 
 import javax.xml.transform.TransformerException;
+
+import jakarta.annotation.Nonnull;
 
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -186,8 +188,9 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 		scanner.addExcludeFilter(new AnnotationTypeFilter(Protected.class)); //Exclude protected FrankElements
 
 		BeanNameGenerator beanNameGenerator = new AnnotationBeanNameGenerator() {
+			@Nonnull
 			@Override
-			protected String buildDefaultBeanName(BeanDefinition definition) {
+			protected String buildDefaultBeanName(@Nonnull BeanDefinition definition) {
 				String beanClassName = definition.getBeanClassName();
 				Assert.state(beanClassName != null, "No bean class name set");
 				return beanClassName;

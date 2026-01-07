@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -106,8 +106,9 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 			super(HttpMethod.POST);
 		}
 
+		@Nonnull
 		@Override
-		public HttpMethod getValue(EvaluationContext context, Object rootObject) throws EvaluationException {
+		public HttpMethod getValue(@Nonnull EvaluationContext context, @Nonnull Object rootObject) throws EvaluationException {
 			if(rootObject instanceof Message<?> message && "NONE".equals(message.getPayload())) {
 				return HttpMethod.GET;
 			}
@@ -118,8 +119,9 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 	/**
 	 * Add authentication JWT, see {@link JwtKeyGenerator}.
 	 */
+	@Nonnull
 	@Override
-	protected HttpHeaders mapHeaders(Message<?> message) {
+	protected HttpHeaders mapHeaders(@Nonnull Message<?> message) {
 		HttpHeaders headers = super.mapHeaders(message);
 
 		headers.add("Authentication", "Bearer " + jwtGenerator.create());
@@ -129,7 +131,7 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 	@Override
 	@Nonnull
 	@SuppressWarnings("rawtypes")
-	public Message handleRequestMessage(Message<?> requestMessage) {
+	public Message handleRequestMessage(@Nonnull Message<?> requestMessage) {
 		Object response = super.handleRequestMessage(requestMessage);
 
 		if(response instanceof Message message) {
@@ -151,7 +153,7 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 	 * The conversion from String to binary may use the wrong encoding.
 	 */
 	@Override
-	protected Object evaluateTypeFromExpression(Message<?> requestMessage, Expression expression, String property) {
+	protected Object evaluateTypeFromExpression(@Nonnull Message<?> requestMessage, Expression expression, @Nonnull String property) {
 		if("expectedResponseType".equals(property)) {
 			return byte[].class;
 		}

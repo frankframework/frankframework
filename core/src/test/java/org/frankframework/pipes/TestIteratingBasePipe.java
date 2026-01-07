@@ -2,10 +2,13 @@ package org.frankframework.pipes;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.Map;
+
+import jakarta.annotation.Nonnull;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
@@ -86,8 +89,9 @@ public class TestIteratingBasePipe extends IteratingPipeTestBase<IteratingTestPi
 			this.buffer = buffer;
 		}
 
+		@Nonnull
 		@Override
-		public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException {
+		public SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
 			sleep();
 
 			Integer index = session.getInteger("index");
@@ -96,11 +100,12 @@ public class TestIteratingBasePipe extends IteratingPipeTestBase<IteratingTestPi
 			}
 			try {
 				String msg = message.asString();
+				assertNotNull(msg, "Message contents should not have been NULL");
 				String number = msg.substring(0, msg.indexOf(" ="));
 				assertEquals(""+index, number);
 
 				String result = "["+msg+"]";
-				buffer.append(result + "\n"); // has to be in 1 concatenated string else newlines will be added asynchronously
+				buffer.append(result).append("\n"); // has to be in 1 concatenated string else newlines will be added asynchronously
 
 				return new SenderResult(result);
 			} catch (IOException e) {

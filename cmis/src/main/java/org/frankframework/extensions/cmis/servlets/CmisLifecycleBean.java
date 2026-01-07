@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden
+   Copyright 2019 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.frankframework.extensions.cmis.servlets;
 
 import java.util.HashMap;
 
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.ServletContext;
 
 import org.apache.chemistry.opencmis.commons.server.CmisServiceFactory;
@@ -45,7 +46,7 @@ public class CmisLifecycleBean implements ServletContextAware, InitializingBean,
 	private CmisServiceFactory factory;
 
 	@Override
-	public void setServletContext(ServletContext servletContext) {
+	public void setServletContext(@Nonnull ServletContext servletContext) {
 		this.servletContext = servletContext;
 	}
 

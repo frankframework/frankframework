@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
    limitations under the License.
 */
 package org.frankframework.lifecycle;
+
+import jakarta.annotation.Nonnull;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,7 +35,7 @@ public class ServletRegisteringPostProcessor implements BeanPostProcessor, Appli
 	private ServletManager servletManager;
 
 	@Override
-	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+	public Object postProcessAfterInitialization(@Nonnull Object bean, @Nonnull String beanName) throws BeansException {
 		if(bean instanceof Servlet servlet) {
 			ServletConfiguration config = SpringUtils.createBean(applicationContext);
 			config.fromServlet(servlet);

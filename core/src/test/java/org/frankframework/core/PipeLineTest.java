@@ -309,6 +309,7 @@ public class PipeLineTest {
 
 	private @Nonnull Adapter buildTestAdapter() throws ConfigurationException {
 		Adapter adapter = new Adapter() {
+			@Nonnull
 			@Override
 			public RunState getRunState() {
 				return RunState.STARTED;

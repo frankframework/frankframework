@@ -1,5 +1,5 @@
 /*
-   Copyright 2024-2025 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
    limitations under the License.
 */
 package org.frankframework.senders;
+
+import jakarta.annotation.Nonnull;
 
 import lombok.Setter;
 
@@ -70,7 +72,7 @@ public class ReconnectSenderWrapper extends AbstractSenderWrapper {
 	}
 
 	@Override
-	public SenderResult doSendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult doSendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		sender.start();
 		session.scheduleCloseOnSessionExit(new AutoCloseableSenderWrapper(sender));
 		return sender.sendMessage(message, session);

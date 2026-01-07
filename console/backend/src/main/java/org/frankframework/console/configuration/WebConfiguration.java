@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package org.frankframework.console.configuration;
 
 import java.util.List;
 import java.util.Optional;
+
+import jakarta.annotation.Nonnull;
 
 import org.springframework.boot.convert.ApplicationConversionService;
 import org.springframework.context.EnvironmentAware;
@@ -57,7 +59,7 @@ public class WebConfiguration implements WebMvcConfigurer, EnvironmentAware {
 	}
 
 	@Override
-	public void addFormatters(FormatterRegistry registry) {
+	public void addFormatters(@Nonnull FormatterRegistry registry) {
 		ApplicationConversionService.configure(registry);
 	}
 

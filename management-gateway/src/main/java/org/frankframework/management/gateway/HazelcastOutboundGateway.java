@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -67,7 +67,7 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 	private JwtKeyGenerator jwtGenerator;
 
 	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+	public void setApplicationContext(@Nonnull ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 	}
 
@@ -146,6 +146,7 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 		return null;
 	}
 
+	@Nonnull
 	@Override
 	public List<ClusterMember> getMembers() {
 		Set<Member> members = hzInstance.getCluster().getMembers();

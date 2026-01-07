@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package org.frankframework.credentialprovider.delinea;
 
 import java.util.Collections;
 import java.util.List;
+
+import jakarta.annotation.Nonnull;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -69,6 +71,7 @@ public record DelineaSecretDto(
 			return Collections.unmodifiableList(fields); // Return an unmodifiable view
 		}
 
+		@Nonnull
 		@Override
 		public String toString() {
 			return String.format("DelineaSecret { id: %d, folderId: %d, name: %s}",

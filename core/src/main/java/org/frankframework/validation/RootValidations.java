@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2025 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package org.frankframework.validation;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
+
+import jakarta.annotation.Nonnull;
 
 import org.apache.logging.log4j.Logger;
 
@@ -55,6 +57,7 @@ public class RootValidations implements Iterable<RootValidation> {
 		add(new RootValidation(rootElement));
 	}
 
+	@Nonnull
 	@Override
 	public Iterator<RootValidation> iterator() {
 		return rootValidations.iterator();

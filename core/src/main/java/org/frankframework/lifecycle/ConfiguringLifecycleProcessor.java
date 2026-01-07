@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2025 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -144,6 +144,7 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 	/**
 	 * Override so we can filter on {@link ManagableLifecycle} beans.
 	 */
+	@Nonnull
 	@Override
 	protected Map<String, Lifecycle> getLifecycleBeans() {
 		if (onlySmartAutostartAndNormalLifeLycleBeans.get()) {

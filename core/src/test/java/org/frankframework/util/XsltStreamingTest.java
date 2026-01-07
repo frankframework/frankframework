@@ -13,6 +13,8 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.sax.SAXResult;
 import javax.xml.transform.stream.StreamSource;
 
+import jakarta.annotation.Nonnull;
+
 import org.junit.jupiter.api.Test;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
@@ -101,7 +103,7 @@ public class XsltStreamingTest {
 		}
 
 		@Override
-		public int read(byte[] buf, int off, int len) throws IOException {
+		public int read(@Nonnull byte[] buf, int off, int len) throws IOException {
 			if (len>blocksize) {
 				len=blocksize;
 			}

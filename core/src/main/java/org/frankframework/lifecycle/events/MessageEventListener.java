@@ -1,5 +1,5 @@
 /*
-Copyright 2021 WeAreFrank!
+Copyright 2021-2026 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -18,11 +18,14 @@ package org.frankframework.lifecycle.events;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
+
 import org.springframework.context.ApplicationListener;
 
 import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.util.MessageKeeper;
 import org.frankframework.util.MessageKeeperMessage;
+
 public class MessageEventListener implements ApplicationListener<MessageEvent<?>> {
 	private static final int MESSAGEKEEPER_SIZE = 10;
 
@@ -62,7 +65,7 @@ public class MessageEventListener implements ApplicationListener<MessageEvent<?>
 	}
 
 	@Override
-	public void onApplicationEvent(MessageEvent<?> event) {
+	public void onApplicationEvent(@Nonnull MessageEvent<?> event) {
 		MessageKeeperMessage messageKeeperMessage = MessageKeeperMessage.fromEvent(event);
 
 		if(event instanceof ConfigurationMessageEvent messageEvent) {

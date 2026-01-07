@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021-2025 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import jakarta.annotation.Nonnull;
 
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -86,7 +88,7 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 	private final Set<String> destinations = new HashSet<>();
 
 	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) {
+	public void setApplicationContext(@Nonnull ApplicationContext applicationContext) {
 		if (!(applicationContext instanceof MonitorManager manager)) {
 			throw new IllegalStateException("ApplicationContext is not a MonitorManager");
 		}

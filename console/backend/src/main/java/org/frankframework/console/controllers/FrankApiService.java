@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -59,7 +59,7 @@ public class FrankApiService implements ApplicationContextAware, InitializingBea
 	}
 
 	@Override
-	public void onApplicationEvent(ClusterMemberEvent event) {
+	public void onApplicationEvent(@Nonnull ClusterMemberEvent event) {
 		afterPropertiesSet();
 	}
 
@@ -80,13 +80,7 @@ public class FrankApiService implements ApplicationContextAware, InitializingBea
 		try {
 			return getGateway().sendSyncMessage(input.build(getMemberTarget()));
 		} catch (BusException e) {
-			StringBuilder errorMessage = new StringBuilder("Error while sending message to topic [" + input.getTopic() + "]");
-			if (input.getAction() != null) {
-				errorMessage.append(" with action [");
-				errorMessage.append(input.getAction());
-				errorMessage.append("]");
-			}
-			throw new ApiException(errorMessage.toString());
+			throw new ApiException("Error while sending message to topic [%s] with action [%s]".formatted(input.getTopic(), input.getAction()));
 		}
 	}
 
@@ -122,7 +116,7 @@ public class FrankApiService implements ApplicationContextAware, InitializingBea
 	}
 
 	@Override
-	public final void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+	public final void setApplicationContext(@Nonnull ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 	}
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package org.frankframework.ladybug.config;
 
 import java.util.List;
 import java.util.Optional;
+
+import jakarta.annotation.Nonnull;
 
 import org.springframework.boot.convert.ApplicationConversionService;
 import org.springframework.context.annotation.Bean;
@@ -48,7 +50,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
 	}
 
 	@Override
-	public void addFormatters(FormatterRegistry registry) {
+	public void addFormatters(@Nonnull FormatterRegistry registry) {
 		ApplicationConversionService.configure(registry);
 	}
 

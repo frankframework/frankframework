@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
 */
 package org.frankframework.lifecycle;
 
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletContextListener;
@@ -52,7 +53,7 @@ public class FrankEnvironmentInitializer implements WebApplicationInitializer {
 	private static final Logger APPLICATION_LOG = LogUtil.getLogger("APPLICATION");
 
 	@Override
-	public void onStartup(ServletContext servletContext) {
+	public void onStartup(@Nonnull ServletContext servletContext) {
 		ContextLoader contextLoader = new NonServletContextContextLoader();
 
 		try {
@@ -100,7 +101,7 @@ public class FrankEnvironmentInitializer implements WebApplicationInitializer {
 		}
 
 		@Override
-		protected void customizeContext(ServletContext sc, ConfigurableWebApplicationContext wac) {
+		protected void customizeContext(@Nonnull ServletContext sc, ConfigurableWebApplicationContext wac) {
 			// Spring AutoConfigure loves to initialize a `<NONE>` resource.
 			// Even though the `ConfigLocation` was already set... Thanks I suppose?
 			wac.setConfigLocations(SpringContextScope.ENVIRONMENT.getContextFile());

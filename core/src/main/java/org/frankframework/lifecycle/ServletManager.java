@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2020 Nationale-Nederlanden, 2021-2023 WeAreFrank!
+   Copyright 2019-2020 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.HttpConstraintElement;
 import jakarta.servlet.HttpMethodConstraintElement;
 import jakarta.servlet.ServletContext;
@@ -110,7 +111,7 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 	@Override
 	@Autowired
 	@Lazy
-	public void setServletContext(ServletContext servletContext) {
+	public void setServletContext(@Nonnull ServletContext servletContext) {
 		this.servletContext = servletContext;
 	}
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
 */
 package org.frankframework.metrics;
 
+import jakarta.annotation.Nonnull;
+
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleConfig;
 
@@ -26,6 +28,7 @@ import io.micrometer.core.instrument.simple.SimpleConfig;
 public class LocalRegistryConfigurator extends AbstractMetricsRegistryConfigurator<SimpleConfig> {
 
 	private class Config extends AbstractMeterRegistryConfig implements SimpleConfig {
+		@Nonnull
 		@Override
 		public String prefix() {
 			return "local";
