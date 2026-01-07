@@ -25,6 +25,7 @@ import org.apache.commons.lang3.Strings;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -166,6 +167,7 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 		Map<String, Object> userInfo = RestClient.create()
 				.get()
 				.uri(userInfoUri)
+				.accept(MediaType.APPLICATION_JSON)
 				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
 				.retrieve()
 				.body(new ParameterizedTypeReference<>() {});

@@ -22,13 +22,14 @@ import org.springframework.web.client.RestTemplate;
 import org.frankframework.util.AppConstants;
 
 /**
- * Tests whether bearer only request authentication works with Keycloak and the application.
+ * Tests whether bearer only request authentication works with Keycloak and the application. This test looks a lot like the other one, but
+ * this one uses the userinfo endpoint to obtain user details, instead of relying solely on the JWT token.
  *
  * @author erik.van.dongen
  * @see "https://github.com/dasniko/testcontainers-keycloak"
  */
 @Tag("integration")
-public class KeycloakBearerOnlyAuthenticatorIntegrationTest extends KeycloakBearerOnlyBase{
+public class KeycloakBearerOnlyAuthenticatorUserinfoIntegrationTest extends KeycloakBearerOnlyBase{
 
 	/**
 	 * Since we don't use @SpringBootApplication, we can't use @SpringBootTest here and need to manually configure the application
@@ -40,6 +41,7 @@ public class KeycloakBearerOnlyAuthenticatorIntegrationTest extends KeycloakBear
 		System.setProperty("application.security.console.authentication.issuerUri", "http://localhost:%s/realms/test".formatted(keycloak.getHttpPort()));
 		System.setProperty("application.security.console.authentication.userNameAttributeName", "preferred_username");
 		System.setProperty("application.security.console.authentication.authoritiesClaimName", "realm_access.roles");
+		System.setProperty("application.security.console.authentication.userInfoUri", "http://localhost:%s/realms/test/protocol/openid-connect/userinfo?scope=openid".formatted(keycloak.getHttpPort()));
 
 		SpringApplication springApplication = IafTestInitializer.configureApplication();
 
@@ -56,6 +58,7 @@ public class KeycloakBearerOnlyAuthenticatorIntegrationTest extends KeycloakBear
 		System.clearProperty("application.security.console.authentication.issuerUri");
 		System.clearProperty("application.security.console.authentication.userNameAttributeName");
 		System.clearProperty("application.security.console.authentication.authoritiesClaimName");
+		System.clearProperty("application.security.console.authentication.userInfoUri");
 
 		// Make sure to clear the app constants as well
 		AppConstants.removeInstance();
