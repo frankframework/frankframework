@@ -248,4 +248,18 @@ class CompactSaxHandlerTest {
 		assertEquals(2, session.size());
 		assertEquals(testOutputFile, xmlWriter.toString());
 	}
+
+	// Proof that it's not possible to (re)move a nodeset
+	@Test
+	void testElementToMoveNodeset() throws IOException, SAXException {
+		// Arrange
+		handler.setRemoveCompactMsgNamespaces(false);
+		handler.setElementToMoveChain("edcLk01");
+
+		// Act
+		XmlUtils.parseXml(defaultInputMessage.asInputSource(), handler);
+
+		// Assert
+		assertEquals(defaultInputMessage.asString().trim(), xmlWriter.toString());
+	}
 }
