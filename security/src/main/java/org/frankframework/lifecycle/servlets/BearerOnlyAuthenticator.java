@@ -16,11 +16,14 @@
 package org.frankframework.lifecycle.servlets;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -29,8 +32,8 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoders;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.client.RestClient;
 
 import lombok.Setter;
 
@@ -61,6 +64,13 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 
 	@Setter
 	private String jwkSetUri;
+
+	/**
+	 * If set, use this URI to obtain user info from the IdP with the access token.
+	 * This is optional, as all required user info might already be present in the JWT token
+	 */
+	@Setter
+	private String userInfoUri;
 
 	/**
 	 * The claim name in the JWT token that contains the preferred username of the user.
@@ -113,37 +123,39 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 
 	/**
 	 * <p>Determines the converter to use for extracting authorities from the JWT token.</p>
-	 * <ul>
-	 *   <li>If the authoritiesClaimName contains a dot, we assume it is a nested claim (e.g. "realm_access.roles") and use our custom mapper below</li>
-	 *   <li>Otherwise, we use the {@link JwtGrantedAuthoritiesConverter} with the given authoritiesClaimName and a default role prefix</li>
-	 * </ul>
 	 *
 	 * @return the converter to use for extracting authorities from the JWT token
 	 */
 	Converter<Jwt, Collection<GrantedAuthority>> getJwtCollectionConverter() {
-		if (StringUtils.contains(authoritiesClaimName, ".")) {
-			String[] split = authoritiesClaimName.split("\\.");
+		return jwt -> getListOfRoles(jwt).stream()
+					.map(role -> new SimpleGrantedAuthority(DEFAULT_ROLE_PREFIX + role))
+					.collect(Collectors.toList());
+	}
 
-			return jwt -> {
-				// Potential NPE!
-				Map<String, Collection<String>> realmAccess = jwt.getClaim(split[0]);
-				Collection<String> roles = realmAccess.get(split[1]);
-
-				return roles.stream()
-						.map(role -> new SimpleGrantedAuthority(DEFAULT_ROLE_PREFIX + role))
-						.collect(Collectors.toList());
-			};
+	/**
+	 * <ul>
+	 *   <li>If the userInfoUri is set, we obtain the user info from the IdP using the access token and extract the roles from there</li>
+	 *   <li>Otherwise, we get the roles from the given jwt</li>
+	 * </ul>
+	 */
+	private List<String> getListOfRoles(Jwt jwt) {
+		if (StringUtils.isNotBlank(userInfoUri)) {
+			return getRolesFromUserInfoUri(jwt.getTokenValue());
 		}
 
-		JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+		// get roles from given jwt
+		return AuthorityMapperUtil.getRolesFromUserInfo(jwt, authoritiesClaimName).stream().toList();
+	}
 
-		if (StringUtils.isNotBlank(authoritiesClaimName)) {
-			grantedAuthoritiesConverter.setAuthoritiesClaimName(authoritiesClaimName);
-		}
+	private List<String> getRolesFromUserInfoUri(String accessToken) {
+		Map<String, Object> userInfo = RestClient.create()
+				.get()
+				.uri(userInfoUri)
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+				.retrieve()
+				.body(new ParameterizedTypeReference<>() {});
 
-		grantedAuthoritiesConverter.setAuthorityPrefix(DEFAULT_ROLE_PREFIX);
-
-		return grantedAuthoritiesConverter;
+		return AuthorityMapperUtil.getRolesFromAttributesMap(userInfo, authoritiesClaimName);
 	}
 
 	private JwtDecoder getJwtDecoder() {
