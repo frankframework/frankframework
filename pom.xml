@@ -74,8 +74,8 @@
 	<properties>
 		<revision>10.0.0-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.target>17</maven.compiler.target>
-		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>21</maven.compiler.target>
+		<maven.compiler.source>21</maven.compiler.source>
 		<maven.compiler.proc>full</maven.compiler.proc>
 		<log4j2.version>2.25.3</log4j2.version>
 
