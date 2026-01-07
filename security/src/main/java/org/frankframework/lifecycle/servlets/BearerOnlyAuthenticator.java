@@ -21,6 +21,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpHeaders;
@@ -32,6 +33,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoders;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.client.RestClient;
 
@@ -127,6 +129,19 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 	 * @return the converter to use for extracting authorities from the JWT token
 	 */
 	Converter<Jwt, Collection<GrantedAuthority>> getJwtCollectionConverter() {
+		// use default converter when no nested claim is used and no userInfoUri is set
+		if (!Strings.CS.contains(authoritiesClaimName, ".") && StringUtils.isBlank(userInfoUri)) {
+			JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
+
+			if (StringUtils.isNotBlank(authoritiesClaimName)) {
+				grantedAuthoritiesConverter.setAuthoritiesClaimName(authoritiesClaimName);
+			}
+
+			grantedAuthoritiesConverter.setAuthorityPrefix(DEFAULT_ROLE_PREFIX);
+
+			return grantedAuthoritiesConverter;
+		}
+
 		return jwt -> getListOfRoles(jwt).stream()
 					.map(role -> new SimpleGrantedAuthority(DEFAULT_ROLE_PREFIX + role))
 					.collect(Collectors.toList());
@@ -147,7 +162,7 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 		return AuthorityMapperUtil.getRolesFromUserInfo(jwt, authoritiesClaimName).stream().toList();
 	}
 
-	private List<String> getRolesFromUserInfoUri(String accessToken) {
+	List<String> getRolesFromUserInfoUri(String accessToken) {
 		Map<String, Object> userInfo = RestClient.create()
 				.get()
 				.uri(userInfoUri)
