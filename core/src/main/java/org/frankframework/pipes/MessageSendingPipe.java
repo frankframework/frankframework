@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015-2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2015-2019 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -315,17 +315,14 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		getPipeLine().configure(pipe);
 	}
 
+	/**
+	 * Called from {@link #configure()}.
+	 */
 	protected void propagateName() {
 		ISender sender=getSender();
 		if (sender!=null && StringUtils.isEmpty(sender.getName())) {
 			sender.setName(getName() + "-sender");
 		}
-	}
-
-	@Override
-	public void setName(String name) {
-		super.setName(name);
-		propagateName();
 	}
 
 	/**
