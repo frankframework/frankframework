@@ -49,6 +49,7 @@ public class AsyncSenderWithListenerPipeTest extends PipeTestBase<AsyncSenderWit
 	}
 
 	private static class CorrelatedListener implements ICorrelatedPullingListener<String> {
+		private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
 		private @Setter @Getter ApplicationContext applicationContext;
 		private @Setter @Getter String name;
