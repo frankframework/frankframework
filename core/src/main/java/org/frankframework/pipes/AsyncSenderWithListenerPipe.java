@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -111,7 +111,7 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 	protected void propagateName() {
 		super.propagateName();
 
-		if (StringUtils.isEmpty(listener.getName())) {
+		if (listener != null && StringUtils.isEmpty(listener.getName())) {
 			listener.setName(getName() + "-replylistener");
 		}
 	}
