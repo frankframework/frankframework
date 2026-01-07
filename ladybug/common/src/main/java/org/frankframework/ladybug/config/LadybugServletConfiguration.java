@@ -1,5 +1,5 @@
 /*
-   Copyright 2024-2025 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,11 +44,10 @@ public class LadybugServletConfiguration implements ApplicationContextAware {
 		SecuritySettings.setupDefaultSecuritySettings(applicationContext.getEnvironment());
 	}
 
+	// DO NOT REMOVE!
 	@Bean
 	public RequestMappingHandlerMapping handlerMapping() {
-		RequestMappingHandlerMapping handlerMapping = new RequestMappingHandlerMapping();
-		handlerMapping.setUseTrailingSlashMatch(true); // See wearefrank/ladybug #610
-		return handlerMapping;
+		return new RequestMappingHandlerMapping();
 	}
 
 	@Bean
@@ -62,9 +61,11 @@ public class LadybugServletConfiguration implements ApplicationContextAware {
 
 		DispatcherServlet ds = new DispatcherServlet((WebApplicationContext) applicationContext);
 		ds.setDetectAllHandlerMappings(false);
+
 		ServletRegistration<DispatcherServlet> servlet = new ServletRegistration<>(ds, servletConfiguration);
 		servlet.setMultipartConfig(new MultipartConfigElement(""));
 		servlet.setAsyncSupported(true);
+
 		return servlet;
 	}
 
