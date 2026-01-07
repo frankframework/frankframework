@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2024 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -80,7 +80,7 @@ public class HttpSecurityConfigurer implements WebSecurityConfigurer<WebSecurity
 	}
 
 	@Override
-	public void configure(WebSecurity webSecurity) throws Exception {
+	public void configure(WebSecurity webSecurity) {
 		ConfigurableListableBeanFactory factory = (ConfigurableListableBeanFactory) this.beanFactory;
 		Map<String, SecurityFilterChain> filters = factory.getBeansOfType(SecurityFilterChain.class);
 		webSecurity.debug(log.isTraceEnabled());
