@@ -1,5 +1,5 @@
 /*
-   Copyright 2023-2025 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,9 +19,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
-import jakarta.servlet.ServletException;
 
 import org.apache.tomcat.websocket.server.WsContextListener;
 import org.springframework.boot.SpringApplication;
@@ -43,7 +43,7 @@ public class ConsoleStandaloneInitializer {
 	public static class WsSciWrapper implements ServletContextInitializer {
 
 		@Override
-		public void onStartup(ServletContext servletContext) throws ServletException {
+		public void onStartup(@Nonnull ServletContext servletContext) {
 			WsContextListener sc = new WsContextListener();
 			sc.contextInitialized(new ServletContextEvent(servletContext));
 		}

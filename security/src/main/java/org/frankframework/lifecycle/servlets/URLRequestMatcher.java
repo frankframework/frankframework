@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.frankframework.lifecycle.servlets;
 import java.util.HashSet;
 import java.util.Set;
 
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
@@ -53,7 +54,7 @@ public class URLRequestMatcher implements RequestMatcher {
 	}
 
 	@Override
-	public boolean matches(HttpServletRequest request) {
+	public boolean matches(@Nonnull HttpServletRequest request) {
 		String path = getRequestPath(request);
 
 		if (absoluteEndpoints.contains(path)) { // absolute match
@@ -71,7 +72,7 @@ public class URLRequestMatcher implements RequestMatcher {
 		return false;
 	}
 
-	private String getRequestPath(HttpServletRequest request) {
+	private String getRequestPath(@Nonnull HttpServletRequest request) {
 		String url = request.getServletPath();
 		String pathInfo = request.getPathInfo();
 		if (pathInfo != null) {

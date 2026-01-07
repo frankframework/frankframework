@@ -105,7 +105,7 @@ public class HttpInboundGateway implements WebSecurityConfigurer<WebSecurity>, S
 
 	private static class HttpMessagingGateway extends HttpRequestHandlingMessagingGateway {
 		@Override
-		protected void setStatusCodeIfNeeded(ServerHttpResponse response, HttpEntity<?> httpEntity) {
+		protected void setStatusCodeIfNeeded(ServerHttpResponse response, @Nonnull HttpEntity<?> httpEntity) {
 			response.setStatusCode(HttpStatus.NOT_ACCEPTABLE);
 			try {
 				StreamUtils.copy(NOT_AVAILABLE, response.getBody());

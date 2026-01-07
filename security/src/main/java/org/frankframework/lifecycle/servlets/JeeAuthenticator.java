@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package org.frankframework.lifecycle.servlets;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import jakarta.annotation.Nonnull;
 
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
@@ -126,6 +128,7 @@ public class JeeAuthenticator extends AbstractServletAuthenticator {
 
 		private final Set<String> mappableAttributes = new HashSet<>();
 
+		@Nonnull
 		@Override
 		public Set<String> getMappableAttributes() {
 			return mappableAttributes;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2024-2025 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ public class IafTestInitializer {
 
 	public static class ApplicationInitializerWrapper implements ServletContextInitializer {
 		@Override
-		public void onStartup(ServletContext servletContext) throws ServletException {
+		public void onStartup(@Nonnull ServletContext servletContext) throws ServletException {
 			FrankApplicationInitializer init = new FrankApplicationInitializer();
 			init.onStartup(servletContext);
 			LogManager.getLogger("APPLICATION").info("Started Frank!Application");
@@ -65,7 +65,7 @@ public class IafTestInitializer {
 
 	public static class LadybugInitializerWrapper implements ServletContextInitializer {
 		@Override
-		public void onStartup(ServletContext servletContext) throws ServletException {
+		public void onStartup(@Nonnull ServletContext servletContext) throws ServletException {
 			System.setProperty("ladybug.jdbc.datasource", "");
 			LadybugWarInitializer init = new LadybugWarInitializer();
 			init.onStartup(servletContext);
@@ -75,7 +75,7 @@ public class IafTestInitializer {
 
 	public static class ConsoleInitializerWrapper implements ServletContextInitializer {
 		@Override
-		public void onStartup(ServletContext servletContext) throws ServletException {
+		public void onStartup(@Nonnull ServletContext servletContext) throws ServletException {
 			ConsoleWarInitializer init = new ConsoleWarInitializer();
 			init.onStartup(servletContext);
 			LogManager.getLogger("APPLICATION").info("Started Console");
@@ -86,7 +86,7 @@ public class IafTestInitializer {
 	public static class WsSciWrapper implements ServletContextInitializer {
 
 		@Override
-		public void onStartup(ServletContext servletContext) {
+		public void onStartup(@Nonnull ServletContext servletContext) {
 			WsContextListener sc = new WsContextListener();
 			sc.contextInitialized(new ServletContextEvent(servletContext));
 		}

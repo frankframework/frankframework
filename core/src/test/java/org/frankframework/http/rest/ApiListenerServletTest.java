@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+Copyright 2019 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -2216,7 +2216,7 @@ public class ApiListenerServletTest {
 		}
 
 		@Override
-		public void addHeader(@Nonnull String name, String value) {
+		public void addHeader(@Nullable String name, String value) {
 			assertResponseNotAccessed();
 			super.addHeader(name, value);
 			if ("Content-Type".equalsIgnoreCase(name)) {
@@ -2225,7 +2225,7 @@ public class ApiListenerServletTest {
 		}
 
 		@Override
-		public void setHeader(@Nonnull String name, String value) {
+		public void setHeader(@Nullable String name, String value) {
 			assertResponseNotAccessed();
 			super.setHeader(name, value);
 			if ("Content-Type".equalsIgnoreCase(name)) {

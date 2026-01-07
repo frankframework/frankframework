@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package org.frankframework.lifecycle.servlets;
 
 import java.io.IOException;
 
-import jakarta.servlet.ServletException;
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -48,7 +48,7 @@ public class SealedAuthenticator extends AbstractServletAuthenticator {
 	private static class Http401EntryPoint implements AuthenticationEntryPoint {
 
 		@Override
-		public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
+		public void commence(@Nonnull HttpServletRequest request, @Nonnull HttpServletResponse response, @Nonnull AuthenticationException authException) throws IOException {
 			// Block all requests
 			response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Access Denied, configure an authenticator to enable web access.");
 		}

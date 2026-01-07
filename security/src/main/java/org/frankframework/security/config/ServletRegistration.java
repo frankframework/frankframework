@@ -18,6 +18,7 @@ package org.frankframework.security.config;
 import java.util.List;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.HttpConstraintElement;
 import jakarta.servlet.ServletRegistration.Dynamic;
 import jakarta.servlet.ServletSecurityElement;
@@ -81,7 +82,7 @@ public class ServletRegistration<T extends HttpServlet> extends ServletRegistrat
 	}
 
 	@Override
-	protected void configure(Dynamic registration) {
+	protected void configure(@Nonnull Dynamic registration) {
 		if(authenticator instanceof JeeAuthenticator) {
 			registration.setServletSecurity(getServletSecurity());
 		}

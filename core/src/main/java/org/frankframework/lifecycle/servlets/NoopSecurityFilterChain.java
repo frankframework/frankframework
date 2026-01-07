@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ package org.frankframework.lifecycle.servlets;
 import java.util.Collections;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.Filter;
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -40,10 +41,11 @@ import org.springframework.web.filter.DelegatingFilterProxy;
 public class NoopSecurityFilterChain implements SecurityFilterChain {
 
 	@Override
-	public boolean matches(HttpServletRequest request) {
+	public boolean matches(@Nonnull HttpServletRequest request) {
 		return false;
 	}
 
+	@Nonnull
 	@Override
 	public List<Filter> getFilters() {
 		return Collections.emptyList();
