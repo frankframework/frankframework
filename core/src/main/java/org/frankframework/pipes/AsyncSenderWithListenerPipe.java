@@ -82,6 +82,10 @@ public class AsyncSenderWithListenerPipe<M> extends MessageSendingPipe {
 			throw new ConfigurationException("Using a listener is mandatory");
 		}
 
+		if (getSender() == null) {
+			throw new ConfigurationException("Using a sender is mandatory");
+		}
+
 		if (getSender().isSynchronous()) {
 			throw new ConfigurationException("cannot have listener with synchronous sender");
 		}
