@@ -1,5 +1,5 @@
 /*
-   Copyright 2023-2024 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,12 +24,15 @@ import jakarta.servlet.ServletException;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.springframework.beans.BeansException;
 import org.springframework.boot.Banner.Mode;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.event.ApplicationFailedEvent;
+import org.springframework.boot.logging.LoggingSystem;
+import org.springframework.boot.logging.log4j2.Log4J2LoggingSystem;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.ApplicationContext;
@@ -86,6 +89,8 @@ public class ConsoleWarInitializer extends SpringBootServletInitializer {
 		APPLICATION_LOG.debug("Starting Frank!Framework Console");
 		final long start = System.currentTimeMillis();
 
+		disableSpringBootLogging();
+
 		try {
 			super.onStartup(servletContext);
 			APPLICATION_LOG.fatal("Started Frank!Framework Console in {} ms", () -> (System.currentTimeMillis() - start));
@@ -93,6 +98,17 @@ public class ConsoleWarInitializer extends SpringBootServletInitializer {
 			APPLICATION_LOG.fatal("Unable to start Frank!Framework Console", e);
 			throw e;
 		}
+	}
+
+	/**
+	 * Disable the Spring-Boot LoggingSystem.
+	 * Spring programmatically adds Console appenders and configures it's format regardless of what we configure.
+	 * 
+	 * See {@link Log4J2LoggingSystem#initialize(org.springframework.boot.logging.LoggingInitializationContext, String, org.springframework.boot.logging.LogFile)}.
+	 */
+	private void disableSpringBootLogging() {
+		LoggerContext logContext = LoggerContext.getContext(false);
+		logContext.setExternalContext(LoggingSystem.class.getName());
 	}
 
 	@Override

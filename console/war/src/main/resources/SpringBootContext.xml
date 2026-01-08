@@ -9,7 +9,7 @@
 
 	<context:property-placeholder location="classpath:application.properties,classpath:testtool.properties"/>
 
-	<bean id="tomcat" class="org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory">
+	<bean id="tomcat" class="org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory">
 		<property name="port" value="${server.port}"/>
 	</bean>
 

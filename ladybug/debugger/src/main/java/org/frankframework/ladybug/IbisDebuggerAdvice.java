@@ -182,7 +182,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 				pipeLineSession, correlationId, message,
 				pipe.getGetInputFromSessionKey(),
 				pipe.getGetInputFromFixedValue(),
-				pipe.getEmptyInputReplacement());
+				pipe.getDefaultValue());
 		Object[] args = proceedingJoinPoint.getArgs();
 		args[2] = result;
 		return (PipeRunResult) proceedingJoinPoint.proceed(args); // the PipeRunResult contains the original result, before replacing via preserveInput
@@ -477,7 +477,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		return reportGenerator.parameterResolvedTo(parameter, getCorrelationId(session), result); // session is null in afterMessageProcessed()
 	}
 
-	private Message debugGetInputFrom(PipeLineSession pipeLineSession, String correlationId, Message input, String inputFromSessionKey, String inputFromFixedValue, String emptyInputReplacement) {
+	private Message debugGetInputFrom(PipeLineSession pipeLineSession, String correlationId, Message input, String inputFromSessionKey, String inputFromFixedValue, String defaultValue) {
 		Message result;
 		if (StringUtils.isNotEmpty(inputFromFixedValue)) {
 			result =  Message.asMessage(reportGenerator.getInputFromFixedValue(correlationId, inputFromFixedValue));
@@ -487,8 +487,8 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			result = input;
 		}
 
-		if (StringUtils.isNotEmpty(emptyInputReplacement) && Message.isEmpty(result)) {
-			return Message.asMessage(reportGenerator.getEmptyInputReplacement(correlationId, emptyInputReplacement));
+		if (StringUtils.isNotEmpty(defaultValue) && Message.isEmpty(result)) {
+			return Message.asMessage(reportGenerator.getDefaultValue(correlationId, defaultValue));
 		}
 		return result;
 	}

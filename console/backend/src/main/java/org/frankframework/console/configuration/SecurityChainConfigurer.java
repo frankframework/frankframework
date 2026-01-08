@@ -1,5 +1,5 @@
 /*
-   Copyright 2023-2025 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.expression.WebExpressionAuthorizationManager;
 import org.springframework.security.web.authentication.logout.LogoutSuccessHandler;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.servlet.util.matcher.PathPatternRequestMatcher;
 
 import lombok.Setter;
 
@@ -110,12 +110,12 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 		// If the authenticator is NoOpAuthenticator, we can skip the authorization manager.
 		if (StringUtils.isNotEmpty(healthCheckEndpointExpression) && !(authenticator instanceof NoOpAuthenticator)) {
 			http.authorizeHttpRequests(authorize -> authorize
-					.requestMatchers(new AntPathRequestMatcher("/**/health"))
+					.requestMatchers(PathPatternRequestMatcher.pathPattern("/**/health"))
 					.access(new WebExpressionAuthorizationManager(healthCheckEndpointExpression))
 			);
 		} else { // When NoOpAuthenticator or healthCheckEndpointExpression is empty, you should be able to see the health endpoints.
 			http.authorizeHttpRequests(authorize -> authorize
-					.requestMatchers(new AntPathRequestMatcher("/**/health"))
+					.requestMatchers(PathPatternRequestMatcher.pathPattern("/**/health"))
 					.permitAll()
 			);
 		}

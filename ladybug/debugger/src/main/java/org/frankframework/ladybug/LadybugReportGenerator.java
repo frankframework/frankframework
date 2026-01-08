@@ -181,8 +181,8 @@ public class LadybugReportGenerator implements InitializingBean {
 		return testTool.inputpoint(correlationId, null, "GetInputFromFixedValue", fixedValue);
 	}
 
-	public Object getEmptyInputReplacement(String correlationId, Object replacementValue) {
-		return testTool.inputpoint(correlationId, null, "getEmptyInputReplacement", replacementValue);
+	public Object getDefaultValue(String correlationId, Object replacementValue) {
+		return testTool.inputpoint(correlationId, null, "getDefaultValue", replacementValue);
 	}
 
 	public Object parameterResolvedTo(IParameter parameter, String correlationId, Object value) {

@@ -111,7 +111,7 @@ public abstract class AbstractResponseValidatorWrapper<V extends AbstractValidat
 	}
 
 	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) {
+	public void setApplicationContext(@Nonnull ApplicationContext applicationContext) {
 		// Can ignore this as it's not set through Spring
 	}
 
@@ -140,14 +140,20 @@ public abstract class AbstractResponseValidatorWrapper<V extends AbstractValidat
 		return owner.getGetInputFromFixedValue();
 	}
 
+	@SuppressWarnings("deprecation")
 	@Override
 	public void setEmptyInputReplacement(String string) {
 		owner.setEmptyInputReplacement(string);
 	}
 
 	@Override
-	public String getEmptyInputReplacement() {
-		return owner.getEmptyInputReplacement();
+	public void setDefaultValue(String string) {
+		owner.setDefaultValue(string);
+	}
+
+	@Override
+	public String getDefaultValue() {
+		return owner.getDefaultValue();
 	}
 
 	@Override
