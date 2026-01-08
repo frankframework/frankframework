@@ -339,8 +339,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			return obj.toString();
 		} else if (obj instanceof Message message) {
 			return message.asString();
-		} else if (obj instanceof Enum<?>) {
-			return obj.toString();
+		} else if (obj instanceof Enum<?> enumObj) {
+			return enumObj.name();
 		} else {
 			if (!Message.isSupportedType(obj)) {
 				throw new IOException("incompatible type ["+obj.getClass().getSimpleName()+"] cannot be converted to String");
