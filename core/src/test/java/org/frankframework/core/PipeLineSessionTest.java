@@ -76,6 +76,8 @@ public class PipeLineSessionTest {
 		session.put("key10", map);
 		session.put("key11", 123L);
 		session.put("key11b", "456");
+
+		session.put("enum", PipeLine.ExitState.SUCCESS);
 	}
 
 	@Test
@@ -155,6 +157,7 @@ public class PipeLineSessionTest {
 		String message3 = session.getString("key3");
 		String message4 = session.getString("key4");
 		String message5 = session.getString("doesnt-exist");
+		String enumValue = session.getString("enum");
 
 		assertEquals("test1", message1);
 		assertEquals("test2", message2);
@@ -162,6 +165,8 @@ public class PipeLineSessionTest {
 		assertEquals("test4", message4);
 		assertNull(message5, "If key does not exist, result string should be NULL");
 		assertFalse(((Message) session.get("key2")).isNull(), "SessionKey 'key2' stored in Message should not be closed after reading value");
+
+		assertEquals("SUCCESS", enumValue);
 	}
 
 	@Test
