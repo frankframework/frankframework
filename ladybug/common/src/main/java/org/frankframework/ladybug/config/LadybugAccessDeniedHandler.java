@@ -1,7 +1,6 @@
 package org.frankframework.ladybug.config;
 
 import jakarta.servlet.http.HttpServletRequest;
-
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.LogManager;
@@ -17,6 +16,11 @@ public class LadybugAccessDeniedHandler implements AccessDeniedHandler {
 	private final HandlerExceptionResolver resolver;
 
 	public LadybugAccessDeniedHandler(HandlerExceptionResolver resolver) {
+		if (resolver == null) {
+			APPLICATION_LOG.error("Creating LadybugAccessDeniedHandler with null HandlerExceptionResolver");
+		} else {
+			APPLICATION_LOG.error("Creating LadybugAccessDeniedHandler with non-null HandlerExceptionResolver");
+		}
 		this.resolver = resolver;
 	}
 
