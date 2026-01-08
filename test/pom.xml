@@ -68,11 +68,6 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-tomcat</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-loader</artifactId>
 		</dependency>
 		<dependency>
@@ -129,6 +124,11 @@
 			<groupId>org.frankframework</groupId>
 			<artifactId>frankframework-batch</artifactId>
 			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-tomcat</artifactId>
+			<scope>test</scope>
 		</dependency>
 
 		<!-- Test Scoped Dependencies -->
