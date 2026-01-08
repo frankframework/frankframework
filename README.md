@@ -24,7 +24,7 @@ The application may be managed and monitored through a web interface or REST API
 See it in action: https://frank2example.frankframework.org
 
 ## Running the Frank-Framework 
-The Frank!Framework can run on any java runtime version 17 and up, either as a standalone Spring Boot application or as a WAR file deployed inside an application server.
+The Frank!Framework can run on any java runtime version 21 and up, either as a standalone Spring Boot application or as a WAR file deployed inside an application server.
 
 ### Application Server Support
 The Frank!Framework can be deployed as a WAR file in any application server supporting WAR file deployment. In our CI we test every PR and Release against Tomcat, Wildfly and JBoss, all these application servers are supported by us for use in production environments.
