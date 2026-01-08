@@ -1,8 +1,12 @@
 package org.frankframework.lifecycle.servlets;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doReturn;
+import static org.mockito.Mockito.spy;
 
 import java.time.Instant;
 import java.util.Collection;
@@ -84,6 +88,23 @@ public class BearerOnlyAuthenticatorTest extends ServletAuthenticatorTest<Bearer
 		Collection<GrantedAuthority> convert = jwtCollectionConverter.convert(jwt);
 
 		assertNotNull(convert, "Converted authorities should not be null");
+	}
+
+	@Test
+	void testJwtCollectionConverterWithUserInfoUriMocked() {
+		authenticator.setUserInfoUri("http://localhost:8080/realms/myrealm/protocol/openid-connect/userinfo");
+
+		BearerOnlyAuthenticator spy = spy(authenticator);
+		doReturn(List.of("role_from_userinfo")).when(spy).getRolesFromUserInfoUri(anyString());
+
+		Converter<Jwt, Collection<GrantedAuthority>> jwtCollectionConverter = spy.getJwtCollectionConverter();
+
+		Jwt jwt = jwt().build();
+
+		Collection<GrantedAuthority> convert = jwtCollectionConverter.convert(jwt);
+
+		assertNotNull(convert, "Converted authorities should not be null when userInfoUri is used");
+		assertEquals(1, convert.size());
 	}
 
 	public static Jwt.Builder jwt() {

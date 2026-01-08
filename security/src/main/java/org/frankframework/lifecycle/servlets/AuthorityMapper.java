@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,11 +29,9 @@ import java.util.Properties;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
-import org.springframework.security.oauth2.core.oidc.OidcUserInfo;
 import org.springframework.security.oauth2.core.oidc.user.OidcUserAuthority;
 import org.springframework.security.oauth2.core.user.OAuth2UserAuthority;
 
@@ -117,53 +115,11 @@ public class AuthorityMapper implements GrantedAuthoritiesMapper {
 	 */
 	private List<String> getValuesFromToken(GrantedAuthority authority) {
 		if (authority instanceof OidcUserAuthority oidcUserAuthority) {
-			return getRolesFromUserInfo(oidcUserAuthority.getUserInfo()).stream().toList();
+			return AuthorityMapperUtil.getRolesFromUserInfo(oidcUserAuthority.getUserInfo(), authoritiesClaimName).stream().toList();
 		} else if (authority instanceof OAuth2UserAuthority oAuth2UserAuthority) {
-			return getKeyValues(oAuth2UserAuthority.getAttributes());
+			return AuthorityMapperUtil.getRolesFromAttributesMap(oAuth2UserAuthority.getAttributes(), authoritiesClaimName);
 		}
 
 		return List.of();
-	}
-
-	/**
-	 * Get roles from OidcUserInfo based on the authoritiesClaimName. Please note that {@code OAuth2Authenticator.configure()} makes sure that a maximum
-	 * of only one (1) '.' is allowed in the authoritiesClaimName.
-	 */
-	private Collection<String> getRolesFromUserInfo(OidcUserInfo userInfo) {
-		// use a normal get if the key does not contain a '.'
-		if (!Strings.CS.contains(authoritiesClaimName, ".")) {
-			return userInfo.getClaim(authoritiesClaimName);
-		} else {
-			String[] keyParts = authoritiesClaimName.split("\\.");
-
-			// get first part of the key
-			Map<String, Collection<String>> realmAccess = userInfo.getClaim(keyParts[0]);
-
-			// get second part of the key
-			return realmAccess.get(keyParts[1]);
-		}
-	}
-
-	/**
-	 * Get roles from OAuth2UserAuthority userAttributes based on the authoritiesClaimName. Please note that {@code OAuth2Authenticator.configure()} makes
-	 * sure that a maximum of only one (1) '.' is allowed in the authoritiesClaimName.
-	 */
-	private List<String> getKeyValues(Map<String, Object> userAttributes) {
-		if (userAttributes == null || userAttributes.isEmpty()) {
-			return List.of();
-		}
-
-		// use a normal get if the key does not contain a '.'
-		if (!Strings.CS.contains(authoritiesClaimName, ".")) {
-			return (List<String>) userAttributes.get(authoritiesClaimName);
-		} else {
-			String[] keyParts = authoritiesClaimName.split("\\.");
-
-			// get the first part of the key
-			Map<String, Collection<String>> realmAccess = (Map<String, Collection<String>>) userAttributes.get(keyParts[0]);
-
-			// get second part of the key
-			return (List<String>) realmAccess.get(keyParts[1]);
-		}
 	}
 }
