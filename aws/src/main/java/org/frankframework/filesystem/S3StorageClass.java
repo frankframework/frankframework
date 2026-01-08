@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ public enum S3StorageClass {
 	private final @Getter @Nonnull StorageClass storageClass;
 
 
-	S3StorageClass(StorageClass storageClass) {
+	S3StorageClass(@Nonnull StorageClass storageClass) {
 		this.storageClass = storageClass;
 	}
 }

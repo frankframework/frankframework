@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -306,7 +306,7 @@ public class LadybugDebugger implements ApplicationContextAware, ApplicationList
 	}
 
 	@Override
-	public void onApplicationEvent(DebuggerStatusChangedEvent event) {
+	public void onApplicationEvent(@Nonnull DebuggerStatusChangedEvent event) {
 		if (testtool != null && event.getSource() != this) {
 			log.debug("received DebuggerStatusChangedEvent [{}]", event);
 			testtool.setReportGeneratorEnabled(event.isEnabled());

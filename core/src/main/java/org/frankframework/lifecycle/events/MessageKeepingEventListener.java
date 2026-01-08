@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
    limitations under the License.
 */
 package org.frankframework.lifecycle.events;
+
+import jakarta.annotation.Nonnull;
 
 import org.springframework.context.ApplicationListener;
 
@@ -35,7 +37,7 @@ public class MessageKeepingEventListener implements ApplicationListener<AdapterM
 	}
 
 	@Override
-	public void onApplicationEvent(AdapterMessageEvent event) {
+	public void onApplicationEvent(@Nonnull AdapterMessageEvent event) {
 		MessageKeeperMessage messageKeeperMessage = MessageKeeperMessage.fromEvent(event);
 		messages.add(messageKeeperMessage);
 	}

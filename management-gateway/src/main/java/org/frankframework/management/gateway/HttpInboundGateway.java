@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 - 2024 WeAreFrank!
+   Copyright 2023 - 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.Filter;
 import jakarta.servlet.HttpConstraintElement;
 import jakarta.servlet.ServletContext;
@@ -104,7 +105,7 @@ public class HttpInboundGateway implements WebSecurityConfigurer<WebSecurity>, S
 
 	private static class HttpMessagingGateway extends HttpRequestHandlingMessagingGateway {
 		@Override
-		protected void setStatusCodeIfNeeded(ServerHttpResponse response, HttpEntity<?> httpEntity) {
+		protected void setStatusCodeIfNeeded(ServerHttpResponse response, @Nonnull HttpEntity<?> httpEntity) {
 			response.setStatusCode(HttpStatus.NOT_ACCEPTABLE);
 			try {
 				StreamUtils.copy(NOT_AVAILABLE, response.getBody());
@@ -185,6 +186,7 @@ public class HttpInboundGateway implements WebSecurityConfigurer<WebSecurity>, S
 		return messageConverters;
 	}
 
+	@Nonnull
 	@Override
 	public IntegrationPatternType getIntegrationPatternType() {
 		return IntegrationPatternType.inbound_gateway;

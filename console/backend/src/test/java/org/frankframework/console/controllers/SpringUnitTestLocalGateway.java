@@ -3,6 +3,8 @@ package org.frankframework.console.controllers;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
+
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
@@ -18,9 +20,11 @@ import org.frankframework.util.JacksonUtils;
  */
 public class SpringUnitTestLocalGateway implements OutboundGateway {
 
+	@Nonnull
 	@Override
 	public <I, O> Message<O> sendSyncMessage(Message<I> in) {
 		return new Message<>() {
+			@Nonnull
 			@SuppressWarnings("unchecked")
 			@Override
 			public O getPayload() {
@@ -31,6 +35,7 @@ public class SpringUnitTestLocalGateway implements OutboundGateway {
 				return (O) JacksonUtils.convertToJson(messageResponse);
 			}
 
+			@Nonnull
 			@Override
 			public MessageHeaders getHeaders() {
 				Map<String, Object> headers = new HashMap<>(in.getHeaders());

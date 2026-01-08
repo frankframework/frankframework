@@ -17,6 +17,7 @@ package org.frankframework.lifecycle.servlets;
 
 import java.util.function.Supplier;
 
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -30,7 +31,7 @@ public class SpaCsrfTokenRequestHandler extends CsrfTokenRequestAttributeHandler
 	private final CsrfTokenRequestHandler delegate = new XorCsrfTokenRequestAttributeHandler();
 
 	@Override
-	public void handle(HttpServletRequest request, HttpServletResponse response, Supplier<CsrfToken> csrfToken) {
+	public void handle(@Nonnull HttpServletRequest request, @Nonnull HttpServletResponse response, @Nonnull Supplier<CsrfToken> csrfToken) {
 		/*
 		 * Always use XorCsrfTokenRequestAttributeHandler to provide BREACH protection of
 		 * the CsrfToken when it is rendered in the response body.

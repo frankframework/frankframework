@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.frankframework.core;
 import java.util.Map;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.frankframework.receivers.RawMessageWrapper;
 
@@ -53,6 +54,7 @@ public interface IPullingListener<M> extends IListener<M> {
 	 * Implementations of this method should therefore be thread-safe, or <code>synchronized</code>.
 	 * <p>Any thread-specific properties should be stored in and retrieved from the threadContext.
 	 */
+	@Nullable
 	RawMessageWrapper<M> getRawMessage(@Nonnull Map<String,Object> threadContext) throws ListenerException;
 
 }

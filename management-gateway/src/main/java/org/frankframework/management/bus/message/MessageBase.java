@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package org.frankframework.management.bus.message;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import jakarta.annotation.Nonnull;
 
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
@@ -65,11 +67,13 @@ public class MessageBase<T> implements Message<T> {
 		headers.put(BusMessageUtils.HEADER_PREFIX+key, value);
 	}
 
+	@Nonnull
 	@Override
 	public T getPayload() {
 		return payload;
 	}
 
+	@Nonnull
 	@Override
 	public MessageHeaders getHeaders() {
 		if(messageHeaders == null) {

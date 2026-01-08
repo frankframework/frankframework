@@ -1,5 +1,5 @@
 /*
-   Copyright 2024-2025 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@ public class FrankApiWebSocketBase implements InitializingBean, ApplicationListe
 	}
 
 	@Override
-	public void onApplicationEvent(ClusterMemberEvent event) {
+	public void onApplicationEvent(@Nonnull ClusterMemberEvent event) {
 		afterPropertiesSet();
 	}
 

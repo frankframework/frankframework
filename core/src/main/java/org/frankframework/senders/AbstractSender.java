@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2016, 2018 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
    limitations under the License.
 */
 package org.frankframework.senders;
+
+import jakarta.annotation.Nonnull;
 
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.ApplicationContext;
@@ -63,7 +65,7 @@ public abstract class AbstractSender implements ISender, Lifecycle {
 	 * final method to ensure nobody overrides this...
 	 */
 	@Override
-	public final void setApplicationContext(ApplicationContext applicationContext) {
+	public final void setApplicationContext(@Nonnull ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
 	}
 

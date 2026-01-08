@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2018-2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2016, 2018-2020 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,6 +35,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -210,7 +211,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	}
 
 	@Override
-	public RawMessageWrapper<M> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException {
+	public @Nullable RawMessageWrapper<M> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 		if (isConnectionsArePooled()) {
 			try (Connection c = getConnection()) {
 				return getRawMessage(c, threadContext);

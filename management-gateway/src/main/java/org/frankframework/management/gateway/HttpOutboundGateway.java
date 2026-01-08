@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,7 +22,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.integration.IntegrationPatternType;
 import org.springframework.messaging.Message;
 
 import lombok.Setter;
@@ -53,17 +52,12 @@ public class HttpOutboundGateway implements InitializingBean, ApplicationContext
 	@SuppressWarnings("unchecked")
 	@Nonnull
 	public <I, O> Message<O> sendSyncMessage(Message<I> in) {
-		return (Message<O>) handler.handleRequestMessage(in);
+		return handler.handleRequestMessage(in);
 	}
 
 	// I in, no reply
 	@Override
 	public <I> void sendAsyncMessage(Message<I> in) {
 		handler.handleRequestMessage(in);
-	}
-
-	@Override
-	public IntegrationPatternType getIntegrationPatternType() {
-		return IntegrationPatternType.outbound_gateway;
 	}
 }

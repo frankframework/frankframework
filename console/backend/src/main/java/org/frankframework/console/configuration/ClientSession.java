@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2019-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -45,7 +45,7 @@ public class ClientSession implements InitializingBean {
 	@Nullable
 	private @Getter UUID memberTarget;
 
-	public void setMemberTarget(UUID id) {
+	public void setMemberTarget(@Nullable UUID id) {
 		this.memberTarget = id;
 	}
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.frankframework.extensions.cmis.mtom;
 import java.io.IOException;
 import java.util.EnumSet;
 
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -63,7 +64,7 @@ public class MtomFilter implements Filter, InitializingBean, ServletContextAware
 	}
 
 	@Override
-	public void setServletContext(ServletContext servletContext) {
+	public void setServletContext(@Nonnull ServletContext servletContext) {
 		this.servletContext = servletContext;
 	}
 

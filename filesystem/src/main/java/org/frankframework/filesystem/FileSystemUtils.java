@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2024 WeAreFrank!
+   Copyright 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -235,6 +235,7 @@ public class FileSystemUtils {
 				}
 			}
 
+			@Nonnull
 			@Override
 			public Iterator<F> iterator() {
 				return iterable.iterator();
@@ -263,6 +264,7 @@ public class FileSystemUtils {
 				}
 			}
 
+			@Nonnull
 			@Override
 			public Iterator<F> iterator() {
 				return iterator == null ? Collections.emptyIterator() : iterator;

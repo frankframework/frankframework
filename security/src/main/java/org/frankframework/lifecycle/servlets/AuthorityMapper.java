@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -79,6 +81,7 @@ public class AuthorityMapper implements GrantedAuthoritiesMapper {
 		this.authoritiesClaimName = authoritiesClaimName;
 	}
 
+	@Nonnull
 	@Override
 	public Collection<? extends GrantedAuthority> mapAuthorities(Collection<? extends GrantedAuthority> authorities) {
 		List<GrantedAuthority> mappedAuthorities = new ArrayList<>();

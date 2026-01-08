@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2024 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,6 +23,7 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
@@ -92,6 +93,7 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 		return destinationName;
 	}
 
+	@Nonnull
 	@Override
 	public Connection getConnection() throws SQLException {
 		Connection conn = super.getConnection();

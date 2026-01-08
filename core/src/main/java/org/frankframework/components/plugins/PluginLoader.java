@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.frankframework.components.plugins;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
@@ -54,12 +55,12 @@ public class PluginLoader implements InitializingBean, SmartLifecycle, Applicati
 	}
 
 	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) {
+	public void setApplicationContext(@Nonnull ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
 	}
 
 	@Nullable
-	public PluginWrapper findPlugin(String pluginName) {
+	public PluginWrapper findPlugin(@Nonnull String pluginName) {
 		if (pluginManager == null) {
 			return null;
 		}

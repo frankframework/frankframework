@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -39,7 +40,7 @@ public class SlowPullingListener extends SlowListenerBase implements IPullingLis
 	}
 
 	@Override
-	public RawMessageWrapper<String> getRawMessage(@Nonnull Map<String, Object> threadContext) {
+	public @Nullable RawMessageWrapper<String> getRawMessage(@Nonnull Map<String, Object> threadContext) {
 		return null;
 	}
 }

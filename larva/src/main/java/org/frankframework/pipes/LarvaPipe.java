@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2020 Nationale-Nederlanden, 2022-2023 WeAreFrank!
+   Copyright 2018, 2020 Nationale-Nederlanden, 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -165,7 +165,7 @@ class LogWriter extends StringWriter {
 	private boolean writeToSystemOut;
 
 	@Override
-	public void write(String str) {
+	public void write(@Nonnull String str) {
 		if (writeToLog) {
 			// Normal logger
 			log.debug(str);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2024 WeAreFrank!
+   Copyright 2022-2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
 */
 package org.frankframework.metrics;
 
+import jakarta.annotation.Nonnull;
+
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.statsd.StatsdConfig;
@@ -28,6 +30,7 @@ public class StatsDRegistryConfigurator extends AbstractMetricsRegistryConfigura
 	private static final String FLAVOR_PROPERTY = "flavor";
 
 	private class Config extends AbstractMeterRegistryConfig implements StatsdConfig {
+		@Nonnull
 		@Override
 		public StatsdFlavor flavor() {
 			return EnumUtils.parse(StatsdFlavor.class, getProperty(FLAVOR_PROPERTY));

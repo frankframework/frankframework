@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 
@@ -58,8 +59,9 @@ public class LadybugWarInitializer extends SpringBootServletInitializer {
 		// NO OP required for Spring Boot. Used when running an Annotation Based config, which we are not, see setSources(...) in run(SpringApplication).
 	}
 
+	@Nonnull
 	@Override
-	protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
+	protected SpringApplicationBuilder configure(@Nonnull SpringApplicationBuilder builder) {
 		builder.sources(WarConfiguration.class);
 		setRegisterErrorPageFilter(false);
 
@@ -69,7 +71,7 @@ public class LadybugWarInitializer extends SpringBootServletInitializer {
 
 	// Purely here for some debug info
 	@Override
-	public void onStartup(ServletContext servletContext) throws ServletException {
+	public void onStartup(@Nonnull ServletContext servletContext) throws ServletException {
 		APPLICATION_LOG.debug("Starting Ladybug TestTool");
 		final long start = System.currentTimeMillis();
 

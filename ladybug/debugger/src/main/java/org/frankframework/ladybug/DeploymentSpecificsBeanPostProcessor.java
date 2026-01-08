@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2024 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
    limitations under the License.
 */
 package org.frankframework.ladybug;
+
+import jakarta.annotation.Nonnull;
 
 import org.apache.logging.log4j.core.util.OptionConverter;
 import org.springframework.beans.BeansException;
@@ -34,7 +36,7 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor {
 	private final AppConstants appConstants = AppConstants.getInstance();
 
 	@Override
-	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+	public Object postProcessBeforeInitialization(@Nonnull Object bean, @Nonnull String beanName) throws BeansException {
 		if (bean instanceof DatabaseStorage databaseStorage) {
 			String maxStorageSize = appConstants.getProperty("ibistesttool.maxStorageSize");
 			if (maxStorageSize != null) {
@@ -87,7 +89,7 @@ public class DeploymentSpecificsBeanPostProcessor implements BeanPostProcessor {
 	}
 
 	@Override
-	public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+	public Object postProcessAfterInitialization(@Nonnull Object bean, @Nonnull String beanName) throws BeansException {
 		return bean;
 	}
 }

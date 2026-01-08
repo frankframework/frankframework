@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2023, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package org.frankframework.logging;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+
+import jakarta.annotation.Nonnull;
 
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.Configuration;
@@ -43,7 +45,7 @@ public final class IbisThrowablePatternConverter extends ThrowablePatternConvert
 	}
 
 	@Override
-	public void format(final LogEvent event, final StringBuilder buffer) {
+	public void format(final LogEvent event, @Nonnull final StringBuilder buffer) {
 		final Throwable throwable = event.getThrown();
 		if (throwable != null) {
 			throwablePrinter(throwable, buffer, 0);
@@ -69,7 +71,7 @@ public final class IbisThrowablePatternConverter extends ThrowablePatternConvert
 			buffer.append(Strings.LINE_SEPARATOR);
 		}
 		if (commonElementCount != 0) {
-			buffer.append("\t ... " + commonElementCount + " more" + Strings.LINE_SEPARATOR);
+			buffer.append("\t ... ").append(commonElementCount).append(" more").append(Strings.LINE_SEPARATOR);
 		}
 		if (throwable.getCause() != null) {
 			buffer.append(CAUSED_BY);

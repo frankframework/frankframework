@@ -16,6 +16,8 @@
 package org.frankframework.console.configuration;
 
 
+import jakarta.annotation.Nonnull;
+
 import org.springframework.boot.convert.ApplicationConversionService;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.context.annotation.Bean;
@@ -65,7 +67,7 @@ public class WebConfiguration implements WebMvcConfigurer, EnvironmentAware {
 	}
 
 	@Override
-	public void addFormatters(FormatterRegistry registry) {
+	public void addFormatters(@Nonnull FormatterRegistry registry) {
 		ApplicationConversionService.configure(registry);
 	}
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,8 @@ package org.frankframework.util;
 import java.io.FilterReader;
 import java.io.IOException;
 import java.io.Reader;
+
+import jakarta.annotation.Nonnull;
 
 /**
  * Reader that encapsulates a file within a prefix and a postfix.
@@ -77,7 +79,7 @@ public class EncapsulatingReader extends FilterReader {
 	}
 
 	@Override
-	public int read(char[] cbuf, int off, int len) throws IOException {
+	public int read(@Nonnull char[] cbuf, int off, int len) throws IOException {
 		int charsRead=0;
 		if (!readPrefix) {
 			while (position<prefix.length() && charsRead<len) {

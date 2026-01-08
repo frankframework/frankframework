@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
    limitations under the License.
 */
 package org.frankframework.metrics;
+
+import jakarta.annotation.Nonnull;
 
 import org.apache.logging.log4j.Logger;
 
@@ -71,7 +73,7 @@ public abstract class AbstractMetricsRegistryConfigurator<C extends MeterRegistr
 
 	protected abstract class AbstractMeterRegistryConfig implements MeterRegistryConfig {
 		@Override
-		public String get(String s) {
+		public String get(@Nonnull String s) {
 			return getProperty(s);
 		}
 

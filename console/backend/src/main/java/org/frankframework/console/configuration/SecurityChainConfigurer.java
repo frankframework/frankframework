@@ -15,6 +15,8 @@
 */
 package org.frankframework.console.configuration;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -131,7 +133,7 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 	private static class RedirectToServletRoot implements LogoutSuccessHandler {
 		// force a 401 status to clear any www-authenticate cache.
 		@Override
-		public void onLogoutSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) {
+		public void onLogoutSuccess(@Nonnull HttpServletRequest request, @Nonnull HttpServletResponse response, @Nullable Authentication authentication) {
 			response.setStatus(HttpStatus.UNAUTHORIZED.value());
 			response.setHeader("Location", determineTargetUrl(request));
 		}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2024-2025 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -64,7 +64,7 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 	 * This Class is created via the Configuration context. This is also the first element to populate.
 	 */
 	@Override
-	public void setApplicationContext(ApplicationContext ac) {
+	public void setApplicationContext(@Nonnull ApplicationContext ac) {
 		applicationContext.push(ac); // Should be the first item on the stack, stack should never be empty.
 		elementBeans.push(new BeanRuleWrapper(null, ac));
 	}

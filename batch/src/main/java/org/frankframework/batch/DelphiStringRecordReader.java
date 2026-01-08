@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
+
+import jakarta.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
@@ -64,7 +66,7 @@ public class DelphiStringRecordReader extends Reader {
 	/*
 	 * Fill buffer if empty, then copy characters as required.
 	 */
-	public int read(char[] cbuf, int off, int len) throws IOException {
+	public int read(@Nonnull char[] cbuf, int off, int len) throws IOException {
 		if (buffer==null || bufferPos>=bufferLen) {
 			fillBuffer();
 		}

@@ -1,9 +1,9 @@
 package org.frankframework.testutil.junit;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
+
+import jakarta.annotation.Nonnull;
 
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.provider.Arguments;
@@ -18,17 +18,16 @@ import org.frankframework.testutil.TransactionManagerType;
  */
 public class DatasourceArgumentProvider implements ArgumentsProvider {
 
+	@Nonnull
 	@Override
-	public final Stream<? extends Arguments> provideArguments(ExtensionContext context) throws Exception {
+	public final Stream<? extends Arguments> provideArguments(ExtensionContext context) {
 		if(context.getTestClass().isEmpty()) {
 			throw new IllegalStateException("test class not found");
 		}
 
-		List<Arguments> args = new ArrayList<>();
 		TransactionManagerType type = getTransactionManagerType();
 		List<String> availableDataSources = type.getAvailableDataSources();
-		args.addAll(availableDataSources.stream().map(dsName -> Arguments.of(type, dsName)).collect(Collectors.toList()));
-		return args.stream();
+		return availableDataSources.stream().map(dsName -> Arguments.of(type, dsName));
 	}
 
 	protected TransactionManagerType getTransactionManagerType() {

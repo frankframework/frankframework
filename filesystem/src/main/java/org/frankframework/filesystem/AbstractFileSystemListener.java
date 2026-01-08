@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2025 WeAreFrank!
+   Copyright 2019-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -254,7 +254,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 	}
 
 	@Override
-	public synchronized RawMessageWrapper<F> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException {
+	public synchronized @Nullable RawMessageWrapper<F> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException {
 		log.trace("Get Raw Message");
 		FS fileSystem = getFileSystem();
 		log.trace("Getting raw message from FS {}", () -> fileSystem.getClass().getSimpleName());

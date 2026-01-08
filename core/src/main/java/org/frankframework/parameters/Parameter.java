@@ -1,5 +1,5 @@
 /*
-   Copyright 2024-2025 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 package org.frankframework.parameters;
 
 import java.io.IOException;
+
+import jakarta.annotation.Nonnull;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -77,7 +79,7 @@ public class Parameter extends AbstractParameter<Message> {
 	}
 
 	@Override
-	protected Message getValueAsType(Message request, boolean namespaceAware) throws ParameterException, IOException {
+	protected Message getValueAsType(@Nonnull Message request, boolean namespaceAware) throws ParameterException, IOException {
 		if (getMinLength() >= 0 || getMaxLength() >= 0) {
 			return applyMinLength(request);
 		}

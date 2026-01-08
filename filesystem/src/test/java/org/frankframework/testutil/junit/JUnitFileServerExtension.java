@@ -6,6 +6,8 @@ import static org.junit.platform.commons.util.ReflectionUtils.makeAccessible;
 import java.lang.reflect.Field;
 import java.util.function.Predicate;
 
+import jakarta.annotation.Nonnull;
+
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.ExtensionConfigurationException;
@@ -25,7 +27,7 @@ public class JUnitFileServerExtension implements BeforeAllCallback, BeforeEachCa
 	 * with {@link LocalFileSystemMock @MockFileSystem}.
 	 */
 	@Override
-	public void beforeAll(ExtensionContext context) {
+	public void beforeAll(@Nonnull ExtensionContext context) {
 		injectStaticFields(context, context.getRequiredTestClass());
 	}
 

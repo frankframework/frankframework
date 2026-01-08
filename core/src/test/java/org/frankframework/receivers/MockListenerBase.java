@@ -56,7 +56,7 @@ public abstract class MockListenerBase implements IListener<String> {
 	}
 
 	@Override
-	public Message extractMessage(RawMessageWrapper<String> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+	public Message extractMessage(@Nonnull RawMessageWrapper<String> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
 		String text = rawMessage.getRawMessage();
 		if("extractMessageException".equals(text)) {
 			throw new ListenerException(text);

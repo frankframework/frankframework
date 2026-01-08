@@ -1,5 +1,5 @@
 /*
-   Copyright 2020 Nationale-Nederlanden
+   Copyright 2020 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
    limitations under the License.
 */
 package org.frankframework.lifecycle;
+
+import jakarta.annotation.Nonnull;
 
 import org.apache.cxf.Bus;
 import org.apache.cxf.bus.spring.SpringBus;
@@ -54,7 +56,7 @@ public class NamespaceUriProviderBean implements ApplicationContextAware, Initia
 	private EndpointImpl namespaceRouter = null;
 
 	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+	public void setApplicationContext(@Nonnull ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 	}
 

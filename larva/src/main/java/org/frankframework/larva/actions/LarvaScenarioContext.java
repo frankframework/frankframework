@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
    limitations under the License.
  */
 package org.frankframework.larva.actions;
+
+import jakarta.annotation.Nonnull;
 
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -63,7 +65,7 @@ public class LarvaScenarioContext extends ConfigurableApplicationContext {
 	 * Disables SSL capabilities by default on beans that implement {@link HasTruststore}.
 	 */
 	@Override
-	protected void registerBeanPostProcessors(ConfigurableListableBeanFactory beanFactory) {
+	protected void registerBeanPostProcessors(@Nonnull ConfigurableListableBeanFactory beanFactory) {
 		super.registerBeanPostProcessors(beanFactory);
 
 		// Append @Autowired PostProcessor to allow automatic type-based Spring wiring.
@@ -74,7 +76,7 @@ public class LarvaScenarioContext extends ConfigurableApplicationContext {
 
 		beanFactory.addBeanPostProcessor(new BeanPostProcessor() {
 			@Override
-			public Object postProcessAfterInitialization(Object bean, String beanName) throws BeansException {
+			public Object postProcessAfterInitialization(@Nonnull Object bean, @Nonnull String beanName) throws BeansException {
 				if (bean instanceof NameAware object) { // Set the name for log purposes
 					object.setName("Larva " + beanName);
 				}

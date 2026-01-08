@@ -5,6 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import jakarta.annotation.Nonnull;
+
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
 
@@ -187,8 +189,9 @@ public class DataSonnetPipeTest extends PipeTestBase<DataSonnetPipe> {
 		pipe.setStyleSheetName("/Pipes/DataSonnet/ds-map.jsonnet");
 
 		EchoSender sender = new EchoSender() {
+			@Nonnull
 			@Override
-			public SenderResult sendMessage(Message message, PipeLineSession session) throws SenderException, TimeoutException {
+			public SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 				assertEquals(MediaType.APPLICATION_JSON, message.getContext().getMimeType());
 				return super.sendMessage(message, session);
 			}

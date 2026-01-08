@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -113,7 +113,7 @@ public class MessageBrowsingUtilTest {
 		}
 
 		@Override
-		public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		public void setApplicationContext(@Nonnull ApplicationContext applicationContext) throws BeansException {
 			// No-op
 		}
 

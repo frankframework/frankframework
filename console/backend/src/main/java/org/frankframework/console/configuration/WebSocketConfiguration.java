@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -14,6 +14,8 @@
    limitations under the License.
 */
 package org.frankframework.console.configuration;
+
+import jakarta.annotation.Nonnull;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
@@ -41,7 +43,7 @@ public class WebSocketConfiguration implements WebSocketMessageBrokerConfigurer 
 
 	// localhost has been added to allowed origins so WebSockets can be used during local development on a `Node.js` server.
 	@Override
-	public void registerStompEndpoints(StompEndpointRegistry registry) {
+	public void registerStompEndpoints(@Nonnull StompEndpointRegistry registry) {
 		if(!enforceCORS && !"*".equals(allowedCorsOrigins)) {
 			log.warn("CORS origin was set to [{}] but CORS is not enforced, disable CORS for WebSockets completely", allowedCorsOrigins);
 			allowedCorsOrigins = "*";

@@ -18,6 +18,8 @@ package org.frankframework.console.runner;
 import java.util.HashSet;
 import java.util.Set;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.servlet.Filter;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
@@ -85,7 +87,7 @@ public class ConsoleWarInitializer extends SpringBootServletInitializer {
 
 	// Purely here for some debug info
 	@Override
-	public void onStartup(ServletContext servletContext) throws ServletException {
+	public void onStartup(@Nonnull ServletContext servletContext) throws ServletException {
 		APPLICATION_LOG.debug("Starting Frank!Framework Console");
 		final long start = System.currentTimeMillis();
 
@@ -111,16 +113,18 @@ public class ConsoleWarInitializer extends SpringBootServletInitializer {
 		logContext.setExternalContext(LoggingSystem.class.getName());
 	}
 
+	@Nonnull
 	@Override
-	protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
+	protected SpringApplicationBuilder configure(@Nonnull SpringApplicationBuilder builder) {
 		builder.sources(WarConfiguration.class);
 		setRegisterErrorPageFilter(false);
 		builder.bannerMode(Mode.OFF);
 		return super.configure(builder);
 	}
 
+	@Nullable
 	@Override
-	protected WebApplicationContext run(SpringApplication application) {
+	protected WebApplicationContext run(@Nonnull SpringApplication application) {
 		Set<String> set = new HashSet<>();
 		set.add("FrankConsoleContext.xml");
 		application.setWebApplicationType(WebApplicationType.NONE);

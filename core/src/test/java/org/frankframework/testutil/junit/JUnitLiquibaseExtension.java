@@ -12,6 +12,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import jakarta.annotation.Nonnull;
+
 import org.junit.jupiter.api.extension.AfterTestExecutionCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
@@ -80,7 +82,7 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 	}
 
 	@SuppressWarnings("unchecked")
-	private List<WithLiquibase> getAnnotations(ExtensionContext context) {
+	private List<WithLiquibase> getAnnotations(@Nonnull ExtensionContext context) {
 		return getStore(context).get(LIQUIBASE_CONFIGURATIONS, List.class);
 	}
 
@@ -106,7 +108,7 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 	}
 
 	@Override
-	public void beforeTestExecution(ExtensionContext context) throws Exception {
+	public void beforeTestExecution(@Nonnull ExtensionContext context) throws Exception {
 		List<WithLiquibase> annotations = getAnnotations(context);
 		if(annotations.isEmpty()) {
 			return;
@@ -135,7 +137,7 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 
 	/** Runs directly after a test, before the test-teardown or any other afterEach annotations. */
 	@Override
-	public void afterTestExecution(ExtensionContext context) throws Exception {
+	public void afterTestExecution(@Nonnull ExtensionContext context) throws Exception {
 		List<WithLiquibase> annotations = getAnnotations(context);
 		if(annotations.isEmpty()) {
 			return;

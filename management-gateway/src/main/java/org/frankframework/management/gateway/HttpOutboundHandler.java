@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.EvaluationContext;
@@ -106,8 +107,9 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 			super(HttpMethod.POST);
 		}
 
+		@Nonnull
 		@Override
-		public HttpMethod getValue(EvaluationContext context, Object rootObject) throws EvaluationException {
+		public HttpMethod getValue(@Nonnull EvaluationContext context, @Nullable Object rootObject) throws EvaluationException {
 			if(rootObject instanceof Message<?> message && "NONE".equals(message.getPayload())) {
 				return HttpMethod.GET;
 			}
@@ -118,8 +120,9 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 	/**
 	 * Add authentication JWT, see {@link JwtKeyGenerator}.
 	 */
+	@Nonnull
 	@Override
-	protected HttpHeaders mapHeaders(Message<?> message) {
+	protected HttpHeaders mapHeaders(@Nonnull Message<?> message) {
 		HttpHeaders headers = super.mapHeaders(message);
 
 		headers.add("Authentication", "Bearer " + jwtGenerator.create());
@@ -129,7 +132,7 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 	@Override
 	@Nonnull
 	@SuppressWarnings("rawtypes")
-	public Message handleRequestMessage(Message<?> requestMessage) {
+	public Message handleRequestMessage(@Nonnull Message<?> requestMessage) {
 		Object response = super.handleRequestMessage(requestMessage);
 
 		if(response instanceof Message message) {
@@ -141,8 +144,9 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 		throw new BusException("unknown response type ["+(response != null ? response.getClass().getCanonicalName() : "null")+"]");
 	}
 
+	@Nullable
 	@Override
-	protected Object resolveErrorChannel(MessageHeaders requestHeaders) {
+	protected Object resolveErrorChannel(@Nonnull MessageHeaders requestHeaders) {
 		return getOutputChannel();
 	}
 
@@ -150,8 +154,9 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 	 * Always convert to a binary response, JAX-RS may convert this to characters if needed.
 	 * The conversion from String to binary may use the wrong encoding.
 	 */
+	@Nonnull
 	@Override
-	protected Object evaluateTypeFromExpression(Message<?> requestMessage, Expression expression, String property) {
+	protected Object evaluateTypeFromExpression(@Nonnull Message<?> requestMessage, Expression expression, @Nonnull String property) {
 		if("expectedResponseType".equals(property)) {
 			return byte[].class;
 		}

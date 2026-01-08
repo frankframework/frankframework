@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -60,7 +60,7 @@ public class LargeBlockTesterPipe extends FixedForwardPipe {
 					long bytesLeftToServe = bytesToServe;
 
 					@Override
-					public int read(byte[] buf, int off, int len) throws IOException {
+					public int read(@Nonnull byte[] buf, int off, int len) throws IOException {
 						if (bytesLeftToServe <= 0L) {
 							return -1;
 						}

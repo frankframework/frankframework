@@ -4,6 +4,9 @@ import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -32,7 +35,8 @@ public class QuerySenderPostProcessor implements BeanPostProcessor, ApplicationC
 	private static final Map<String, Message> fixedDirectSenderMocks = new HashMap<>();
 
 	@Override
-	public Object postProcessBeforeInitialization(Object bean, String beanName) throws BeansException {
+	@Nullable
+	public Object postProcessBeforeInitialization(Object bean, @Nonnull String beanName) throws BeansException {
 		if(FixedQuerySender.class.getCanonicalName().equals(bean.getClass().getCanonicalName())) {
 			FixedQuerySenderMock qs = createMock(FixedQuerySenderMock.class);
 			qs.addMockedQueries(fixedQuerySenderMocks);

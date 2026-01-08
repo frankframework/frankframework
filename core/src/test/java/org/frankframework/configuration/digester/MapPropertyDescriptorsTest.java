@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.Servlet;
 
 import org.apache.logging.log4j.Logger;
@@ -61,8 +62,9 @@ public class MapPropertyDescriptorsTest {
 		scanner.addExcludeFilter(new AnnotationTypeFilter(Configuration.class));
 
 		BeanNameGenerator beanNameGenerator = new AnnotationBeanNameGenerator() {
+			@Nonnull
 			@Override
-			protected String buildDefaultBeanName(BeanDefinition definition) {
+			protected String buildDefaultBeanName(@Nonnull BeanDefinition definition) {
 				String beanClassName = definition.getBeanClassName();
 				Assert.state(beanClassName != null, "No bean class name set");
 				return beanClassName;

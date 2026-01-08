@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.Consumer;
@@ -194,7 +195,7 @@ public class KafkaListener extends AbstractKafkaFacade implements IPullingListen
 	}
 
 	@Override
-	public RawMessageWrapper<ConsumerRecord<String, byte[]>> getRawMessage(@Nonnull Map<String, Object> threadContext) {
+	public @Nullable RawMessageWrapper<ConsumerRecord<String, byte[]>> getRawMessage(@Nonnull Map<String, Object> threadContext) {
 		lock.lock();
 		try {
 			if (!waiting.hasNext()) waiting = consumer.poll(pollDuration).iterator();

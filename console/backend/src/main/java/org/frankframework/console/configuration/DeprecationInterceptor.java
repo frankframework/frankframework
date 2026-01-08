@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package org.frankframework.console.configuration;
 
 import java.lang.reflect.Method;
 
+import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
@@ -43,7 +44,7 @@ public class DeprecationInterceptor implements HandlerInterceptor, EnvironmentAw
 	private boolean allowDeprecatedEndpoints = false;
 
 	@Override
-	public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+	public boolean preHandle(@Nonnull HttpServletRequest request, @Nonnull HttpServletResponse response, @Nonnull Object handler) throws Exception {
 		if(handler instanceof HandlerMethod handlerMethod) {
 			Method method = handlerMethod.getMethod();
 

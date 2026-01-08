@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -75,7 +75,7 @@ public class SenderSeries extends AbstractSenderWrapper {
 	}
 
 	@Override
-	public SenderResult doSendMessage(final Message input, PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult doSendMessage(@Nonnull final Message input, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
 		String correlationID = session.getCorrelationId();
 		long t1 = System.currentTimeMillis();
 

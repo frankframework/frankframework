@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2022-2025 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -133,7 +133,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 		}
 		Reader encapsulatingReader = isReplaceNonXmlChars() ? new EncapsulatingReader(message.asReader(), prefix, suffix) {
 			@Override
-			public int read(char[] cbuf, int off, int len) throws IOException {
+			public int read(@Nonnull char[] cbuf, int off, int len) throws IOException {
 				int lenRead = super.read(cbuf, off, len);
 				return XmlEncodingUtils.replaceNonPrintableCharacters(cbuf, off, lenRead);
 			}

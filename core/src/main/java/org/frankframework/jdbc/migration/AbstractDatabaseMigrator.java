@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2025 WeAreFrank!
+   Copyright 2017-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -130,7 +130,7 @@ public abstract class AbstractDatabaseMigrator implements ConfigurableLifecycle,
 	}
 
 	@Override
-	public final void setApplicationContext(ApplicationContext applicationContext) {
+	public final void setApplicationContext(@Nonnull ApplicationContext applicationContext) {
 		if(!(applicationContext instanceof Configuration)) {
 			throw new IllegalStateException("context not instanceof configuration");
 		}

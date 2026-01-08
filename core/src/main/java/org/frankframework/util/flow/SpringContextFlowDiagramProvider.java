@@ -1,5 +1,5 @@
 /*
-   Copyright 2024-2025 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 package org.frankframework.util.flow;
 
 import java.io.IOException;
+
+import jakarta.annotation.Nonnull;
 
 import org.springframework.beans.factory.NamedBean;
 import org.springframework.context.ApplicationContext;
@@ -91,10 +93,11 @@ public class SpringContextFlowDiagramProvider implements ConfigurableLifecycle, 
 	/**
 	 * Returns `AdapterFlowGenerator` or `AdapterFlowGenerator`.
 	 */
+	@Nonnull
 	@Override
 	public String getBeanName() {
 		if (applicationContext == null) {
-			return null;
+			return "UnknownTypeFlowGenerator";
 		}
 
 		return "%sFlowGenerator".formatted(applicationContext.getClass().getSimpleName());
