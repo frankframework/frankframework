@@ -30,13 +30,22 @@ import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletException;
 
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.tomcat.websocket.server.WsContextListener;
+import org.springframework.beans.BeansException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
+import org.springframework.boot.context.event.ApplicationFailedEvent;
+import org.springframework.boot.logging.LoggingSystem;
+import org.springframework.boot.logging.log4j2.Log4J2LoggingSystem;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.console.runner.ConsoleWarInitializer;
 import org.frankframework.ladybug.runner.LadybugWarInitializer;
@@ -106,6 +115,42 @@ public class IafTestInitializer {
 	}
 
 	/**
+	 * Disable the Spring-Boot LoggingSystem.
+	 * Spring programmatically adds Console appenders and configures it's format regardless of what we configure.
+	 *
+	 * See {@link Log4J2LoggingSystem#initialize(org.springframework.boot.logging.LoggingInitializationContext, String, org.springframework.boot.logging.LogFile)}.
+	 */
+	private static void disableSpringBootLogging() {
+		LoggerContext logContext = LoggerContext.getContext(false);
+		logContext.setExternalContext(LoggingSystem.class.getName());
+	}
+
+	/**
+	 * When the application fails to start up, trigger a shutdown and log the exception.
+	 */
+	@Log4j2
+	private static class FailedInitializationMonitor implements ApplicationListener<ApplicationFailedEvent> {
+
+		@Override
+		public void onApplicationEvent(ApplicationFailedEvent event) {
+			if (event.getException() != null) {
+				log.fatal("unable to start application", event.getException());
+				LogUtil.getLogger("APPLICATION").fatal("unable to start application: {}", () -> getRootCause(event.getException()).getMessage());
+			}
+
+			System.exit(1); // Terminate the JVM
+		}
+
+		private Throwable getRootCause(Throwable t) {
+			if (t instanceof BeansException || t instanceof ApplicationContextException) {
+				return (t.getCause() != null) ? getRootCause(t.getCause()) : t;
+			}
+			return t;
+		}
+
+	}
+
+	/**
 	 * Configure the Frank!Framework application, with options.
 	 *
 	 * @param appServerCustom Customization option for the AppServer, as used by standard in the framework. Supported in IAF-Test: {@code null}, or {@code "NARAYANA"}.
@@ -140,6 +185,8 @@ public class IafTestInitializer {
 			System.setProperty("log.dir", foundLogDir);
 			LogUtil.getLogger("APPLICATION").info("set log.dir to [{}]", foundLogDir);
 		}
+
+		disableSpringBootLogging();
 
 		// Find and configure the configurations
 		LogUtil.getLogger("APPLICATION").info("using project.dir [{}]", projectDir);
