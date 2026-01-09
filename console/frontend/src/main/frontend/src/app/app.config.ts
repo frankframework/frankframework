@@ -1,4 +1,4 @@
-import { ApplicationConfig } from '@angular/core';
+import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, TitleStrategy, withHashLocation, withRouterConfig } from '@angular/router';
 import { routes } from './app.routes';
 import { provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
@@ -8,6 +8,7 @@ import { provideCharts, withDefaultRegisterables } from 'ng2-charts';
 
 export const appConfig: ApplicationConfig = {
   providers: [
+    provideZoneChangeDetection(),
     provideRouter(
       routes,
       withHashLocation(),
