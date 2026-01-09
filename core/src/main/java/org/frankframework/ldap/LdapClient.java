@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020, 2024-2025 WeAreFrank!
+   Copyright 2019, 2020, 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -45,11 +45,10 @@ import javax.naming.directory.InitialDirContext;
 import javax.naming.directory.SearchControls;
 import javax.naming.directory.SearchResult;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.cache.ICache;
 import org.frankframework.cache.ICacheEnabled;
@@ -223,7 +222,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 	/**
 	 * Return string representation of array, surrounded by square brackets.
 	 */
-	@Nonnull
+	@NonNull
     private String arrayToString(@Nullable String[] values) {
     	if (values==null || values.length==0) {
     		return "[]";

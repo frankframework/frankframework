@@ -20,8 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.integration.IntegrationPattern;
 import org.springframework.integration.IntegrationPatternType;
 import org.springframework.messaging.Message;
@@ -31,13 +30,13 @@ import lombok.Setter;
 
 public interface OutboundGateway extends IntegrationPattern {
 
-	@Nonnull
+	@NonNull
 	@Override
 	default IntegrationPatternType getIntegrationPatternType() {
 		return IntegrationPatternType.outbound_gateway;
 	}
 
-	@Nonnull
+	@NonNull
 	default List<ClusterMember> getMembers() {
 		return Collections.emptyList();
 	}
@@ -59,7 +58,7 @@ public interface OutboundGateway extends IntegrationPattern {
 	 * @param in Message to send
 	 * @return Response message
 	 */
-	@Nonnull
+	@NonNull
 	<I, O> Message<O> sendSyncMessage(Message<I> in);
 
 	/**

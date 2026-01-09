@@ -18,7 +18,6 @@ package org.frankframework.jms;
 import java.util.HashMap;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
 import jakarta.jms.Connection;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.ConnectionMetaData;
@@ -26,6 +25,7 @@ import jakarta.jms.JMSException;
 import jakarta.jms.XAConnectionFactory;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.jms.connection.TransactionAwareConnectionFactoryProxy;
 
 import lombok.extern.log4j.Log4j2;
@@ -66,7 +66,7 @@ public class TransactionalMetadataAwareConnectionFactoryProxy extends Transactio
 		metadata = databaseMetadata;
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public Connection createConnection() throws JMSException {
 		Connection conn = super.createConnection();
@@ -89,12 +89,12 @@ public class TransactionalMetadataAwareConnectionFactoryProxy extends Transactio
 	/**
 	 * Attempt to find the most outer factory and return the reflectionToString result.
 	 */
-	@Nonnull
+	@NonNull
 	private String reflectionToString() {
 		return JmsPoolUtil.reflectionToString(getTargetConnectionFactory());
 	}
 
-	@Nonnull
+	@NonNull
 	public String getInfo() {
 		StringBuilder info = new StringBuilder();
 

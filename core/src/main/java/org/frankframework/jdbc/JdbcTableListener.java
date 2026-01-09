@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,9 +27,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 
@@ -143,8 +142,8 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	/**
 	 * Get a set of all column names of the table. If the table cannot be found in the database schema, then the result will be an empty set.
 	 */
-	@Nonnull
-	private Set<String> getTableColumnNames(@Nonnull Connection conn, @Nonnull String table) throws SQLException, DbmsException {
+	@NonNull
+	private Set<String> getTableColumnNames(@NonNull Connection conn, @NonNull String table) throws SQLException, DbmsException {
 		Set<String> columnNames = new HashSet<>();
 		try (ResultSet columns = getDbmsSupport().getTableColumns(conn, table)) {
 			while (columns.next()) {
@@ -159,7 +158,7 @@ public class JdbcTableListener<M> extends JdbcListener<M> implements IProvidesMe
 	 * may potentially override this method to add more fields that the subclass defines.
 	 * The returned map must be modifiable.
 	 */
-	@Nonnull
+	@NonNull
 	protected Map<String, String> getConfiguredColumnNames() {
 		// Some of these fields might be NULL. Map.of() constructor doesn't allow NULL values so we need a roundabout way to define the full map.
 		String[][] columnNames = {{"keyField", getKeyField()}, {"statusField", getStatusField()}, {"messageField", getMessageField()},

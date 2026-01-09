@@ -17,10 +17,9 @@ package org.frankframework.pipes;
 
 import java.io.StringWriter;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 
 import lombok.AllArgsConstructor;
@@ -81,7 +80,7 @@ public class LarvaPipe extends FixedForwardPipe {
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) {
 		ApplicationContext applicationContext = getAdapter().getConfiguration().getApplicationContext();
@@ -165,7 +164,7 @@ class LogWriter extends StringWriter {
 	private boolean writeToSystemOut;
 
 	@Override
-	public void write(@Nonnull String str) {
+	public void write(@NonNull String str) {
 		if (writeToLog) {
 			// Normal logger
 			log.debug(str);

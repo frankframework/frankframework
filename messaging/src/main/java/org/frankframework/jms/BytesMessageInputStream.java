@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,9 +18,10 @@ package org.frankframework.jms;
 import java.io.IOException;
 import java.io.InputStream;
 
-import jakarta.annotation.Nonnull;
 import jakarta.jms.BytesMessage;
 import jakarta.jms.JMSException;
+
+import org.jspecify.annotations.NonNull;
 
 public class BytesMessageInputStream extends InputStream {
 
@@ -46,7 +47,7 @@ public class BytesMessageInputStream extends InputStream {
 	}
 
 	@Override
-	public int read(@Nonnull byte[] b) throws IOException {
+	public int read(@NonNull byte[] b) throws IOException {
 		try {
 			return bytesMsg.readBytes(b);
 		} catch (JMSException e) {
@@ -55,7 +56,7 @@ public class BytesMessageInputStream extends InputStream {
 	}
 
 	@Override
-	public int read(@Nonnull byte[] b, int off, int len) throws IOException {
+	public int read(@NonNull byte[] b, int off, int len) throws IOException {
 		try {
 			// If we try filling the whole array from start, then we do not need to read data into
 			// a temp array and copy it.

@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,10 +23,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
 import jakarta.servlet.annotation.ServletSecurity.TransportGuarantee;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.Environment;
@@ -83,7 +83,7 @@ public class ServletConfiguration implements InitializingBean, EnvironmentAware 
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	public List<String> getSecurityRoles() {
 		return securityRoles;
 	}

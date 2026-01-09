@@ -1,5 +1,5 @@
 /*
-   Copyright 2024-2025 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,11 +18,10 @@ package org.frankframework.jdbc.datasource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.tomcat.dbcp.dbcp2.managed.ManagedDataSource;
 import org.apache.tomcat.dbcp.pool2.impl.GenericObjectPool;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.datasource.DelegatingDataSource;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.jta.JtaTransactionManager;
@@ -56,7 +55,7 @@ public class JdbcPoolUtil {
 		return info.toString();
 	}
 
-	static void addPoolMetadata(@Nonnull GenericObjectPool<?> pool, @Nonnull StringBuilder info) {
+	static void addPoolMetadata(@NonNull GenericObjectPool<?> pool, @NonNull StringBuilder info) {
 		info.append("DBCP2 Pool Info: ");
 		info.append("maxIdle [").append(pool.getMaxIdle()).append(CLOSE);
 		info.append("minIdle [").append(pool.getMinIdle()).append(CLOSE);

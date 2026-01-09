@@ -1,7 +1,6 @@
 package org.frankframework.testutil;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ConfigurableApplicationContext;
 
@@ -20,7 +19,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 public class SpringRootInitializer implements ApplicationContextInitializer<ConfigurableApplicationContext> {
 
 	@Override
-	public void initialize(@Nonnull ConfigurableApplicationContext applicationContext) {
+	public void initialize(@NonNull ConfigurableApplicationContext applicationContext) {
 		// Empty method, nothing to initialize
 	}
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2025 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,12 +15,12 @@
 */
 package org.frankframework.jta.narayana;
 
-import jakarta.annotation.Nonnull;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.XAConnectionFactory;
 
 import org.jboss.narayana.jta.jms.ConnectionFactoryProxy;
 import org.jboss.narayana.jta.jms.TransactionHelper;
+import org.jspecify.annotations.NonNull;
 import org.messaginghub.pooled.jms.JmsPoolConnectionFactory;
 import org.messaginghub.pooled.jms.JmsPoolXAConnectionFactory;
 
@@ -43,9 +43,9 @@ public class NarayanaConnectionFactoryFactory extends JmsConnectionFactoryFactor
 	private @Getter @Setter int maxSessions = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connection.maxSessions", 500);
 	private @Getter @Setter int sessionWaitTimeout = AppConstants.getInstance().getInt("transactionmanager.narayana.jms.connections.sessionWaitTimeout", 15);
 
-	@Nonnull
+	@NonNull
 	@Override
-	protected ConnectionFactory augmentConnectionFactory(@Nonnull ConnectionFactory connectionFactory, @Nonnull String connectionFactoryName) {
+	protected ConnectionFactory augmentConnectionFactory(@NonNull ConnectionFactory connectionFactory, @NonNull String connectionFactoryName) {
 		if (connectionFactory instanceof XAConnectionFactory factory) {
 			XAResourceRecoveryHelper recoveryHelper = new JmsXAResourceRecoveryHelper(factory, connectionFactoryName);
 			this.transactionManager.registerXAResourceRecoveryHelper(recoveryHelper);

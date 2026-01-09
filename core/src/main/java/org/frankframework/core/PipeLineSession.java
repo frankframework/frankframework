@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021-2025 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,13 +29,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -94,7 +93,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 *
 	 * @param t {@link Map} or PipeLineSession from which to copy session variables into the new session. Should not be null!
 	 */
-	public PipeLineSession(@Nonnull Map<String, Object> t) {
+	public PipeLineSession(@NonNull Map<String, Object> t) {
 		super(t);
 		createCloseAction();
 	}
@@ -234,7 +233,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * @return The value associated with the key encapsulated in a {@link Message} object.
 	 *         If the key does not exist or the value is null, a null message is returned.
 	 */
-	@Nonnull
+	@NonNull
 	public Message getMessage(String key) {
 		Object obj = get(key);
 		if (obj instanceof Message message) {
@@ -278,7 +277,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * Convenience method to set required parameters from listeners. Will not update messageId and correlationId when NULL.
 	 * Sets the current date-time as TS-Received.
 	 */
-	public static void updateListenerParameters(@Nonnull Map<String, Object> map, @Nullable String messageId, @Nullable String correlationId) {
+	public static void updateListenerParameters(@NonNull Map<String, Object> map, @Nullable String messageId, @Nullable String correlationId) {
 		updateListenerParameters(map, messageId, correlationId, TimeProvider.now(), null);
 	}
 
@@ -286,7 +285,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * Convenience method to set required parameters from listeners. Will not update messageId and
 	 * correlationId when NULL. Will use current date-time for TS-Received if null.
 	 */
-	public static void updateListenerParameters(@Nonnull Map<String, Object> map, @Nullable String messageId, @Nullable String correlationId, @Nullable Instant tsReceived, @Nullable Instant tsSent) {
+	public static void updateListenerParameters(@NonNull Map<String, Object> map, @Nullable String messageId, @Nullable String correlationId, @Nullable Instant tsReceived, @Nullable Instant tsSent) {
 		if (messageId != null) {
 			map.put(MESSAGE_ID_KEY, messageId);
 		}
@@ -307,7 +306,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		put(SECURITY_HANDLER_KEY, handler);
 	}
 
-	public @Nonnull ISecurityHandler getSecurityHandler() throws NotImplementedException {
+	public @NonNull ISecurityHandler getSecurityHandler() throws NotImplementedException {
 		if (securityHandler == null) {
 			securityHandler = (ISecurityHandler) get(SECURITY_HANDLER_KEY);
 			if (securityHandler == null) {
@@ -329,7 +328,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 */
 	@Nullable
 	@SneakyThrows(IOException.class)
-	public String getString(@Nonnull String key) {
+	public String getString(@NonNull String key) {
 		Object obj = get(key);
 		if (obj == null) {
 			return null;
@@ -359,7 +358,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * @return String
 	 */
 	@Nullable
-	public String get(@Nonnull String key, @Nullable String defaultValue) {
+	public String get(@NonNull String key, @Nullable String defaultValue) {
 		String ob = this.getString(key);
 
 		if (ob == null) return defaultValue;

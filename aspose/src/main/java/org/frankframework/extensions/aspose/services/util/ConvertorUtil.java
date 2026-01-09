@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Integration Partners
+   Copyright 2019 Integration Partners, 2020, 2021, 2023, 2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,9 @@
 */
 package org.frankframework.extensions.aspose.services.util;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * @author <a href="mailto:gerard_van_der_hoorn@deltalloyd.nl">Gerard van der
@@ -62,7 +61,7 @@ public class ConvertorUtil {
 	 * @param argFilename
 	 * @param extension (without the period).
 	 */
-	public static String createTidyFilename(@Nullable String argFilename, @Nonnull String extension) {
+	public static String createTidyFilename(@Nullable String argFilename, @NonNull String extension) {
 		String extensionWithDelim = extension.startsWith(EXTENSION_DELIMITER) ? extension : EXTENSION_DELIMITER + extension;
 		String filename = createTidyNameWithoutExtension(argFilename);
 		if (!filename.endsWith(extensionWithDelim)) {

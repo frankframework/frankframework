@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2025 WeAreFrank!
+   Copyright 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -44,10 +44,9 @@ import java.util.regex.Pattern;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.util.ClassLoaderUtils;
 import org.frankframework.util.CredentialFactory;
@@ -240,7 +239,7 @@ public class CorePkiUtil {
 	 * @param duration Date after which Certificates should be classified as 'due to expire'.
 	 * @return A list with aliases of {@link Certificate Certificates}.
 	 */
-	@Nonnull
+	@NonNull
 	public static List<String> getExpiringCertificates(KeyStore keystore, TemporalAmount duration) throws EncryptionException {
 		List<String> certificates = new ArrayList<>();
 		Instant dateAfterWhichCertsAreExpired = TimeProvider.now().plus(duration);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2017 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013-2017 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,10 +32,9 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.stream.Stream;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -160,7 +159,7 @@ public class ClassUtils {
 	/**
 	 * Returns the ClassName or BeanName of the object without the package name AND includes a [name] suffix for a {@link HasName} bean.
 	 */
-	@Nonnull
+	@NonNull
 	public static String nameOf(Object o) {
 		String head = null;
 		if (isClassPresent("org.springframework.beans.factory.NamedBean")) {
@@ -187,7 +186,7 @@ public class ClassUtils {
 	/**
 	 * Returns the ClassName of the object (without package name), like {@link #nameOf(Object)}, but without [name] suffix for a {@link HasName}.
 	 */
-	@Nonnull
+	@NonNull
 	public static String classNameOf(Object o) {
 		if (o == null) {
 			return "<null>";

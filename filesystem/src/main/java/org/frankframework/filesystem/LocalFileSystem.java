@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2025 WeAreFrank!
+   Copyright 2019-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,11 +37,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import com.ibm.icu.text.CharsetDetector;
 import com.ibm.icu.text.CharsetMatch;
@@ -167,7 +166,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		}
 	}
 
-	private static void addCustomFileAttributes(@Nonnull Path file, @Nonnull Map<String, String> customFileAttributes) throws IOException {
+	private static void addCustomFileAttributes(@NonNull Path file, @NonNull Map<String, String> customFileAttributes) throws IOException {
 		if (customFileAttributes.isEmpty()) {
 			return;
 		}
@@ -198,15 +197,15 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		}
 	}
 
-	private static UserDefinedFileAttributeView getUserDefinedAttributes(@Nonnull Path file) {
+	private static UserDefinedFileAttributeView getUserDefinedAttributes(@NonNull Path file) {
 		return Files.getFileAttributeView(file, UserDefinedFileAttributeView.class);
 	}
 
-	private static boolean hasAttribute(@Nonnull UserDefinedFileAttributeView userDefinedAttributes, String attributeName) throws IOException {
+	private static boolean hasAttribute(@NonNull UserDefinedFileAttributeView userDefinedAttributes, String attributeName) throws IOException {
 		return userDefinedAttributes.list().stream().anyMatch(attributeName::equals);
 	}
 
-	private @Nonnull String readAttribute(@Nonnull Path file, @Nonnull UserDefinedFileAttributeView userDefinedAttributes, @Nonnull String attributeName) throws IOException {
+	private @NonNull String readAttribute(@NonNull Path file, @NonNull UserDefinedFileAttributeView userDefinedAttributes, @NonNull String attributeName) throws IOException {
 		ByteBuffer bfr = ByteBuffer.allocate(userDefinedAttributes.size(attributeName));
 		userDefinedAttributes.read(attributeName, bfr);
 		return readAttributeValue(file, attributeName, bfr);
@@ -424,7 +423,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		}
 	}
 
-	private @Nonnull String readAttributeValue(@Nonnull Path file, @Nonnull String name, @Nonnull Object attributeValue) {
+	private @NonNull String readAttributeValue(@NonNull Path file, @NonNull String name, @NonNull Object attributeValue) {
 		try {
 			if (attributeValue instanceof byte[] bytes) {
 				return bytesToString(bytes);
@@ -439,8 +438,8 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 		}
 	}
 
-	@Nonnull
-	private static String bytesToString(@Nonnull byte[] bytes) {
+	@NonNull
+	private static String bytesToString(@NonNull byte[] bytes) {
 		CharsetDetector detector = new CharsetDetector();
 		detector.setText(bytes);
 		CharsetMatch match = detector.detect();
@@ -456,7 +455,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 
 	@Nullable
 	@Override
-	public String getCustomFileAttribute(@Nonnull Path file, @Nonnull String name) throws FileSystemException {
+	public String getCustomFileAttribute(@NonNull Path file, @NonNull String name) throws FileSystemException {
 		Map<String, Object> additionalFileProperties = getAdditionalFileProperties(file);
 		if (additionalFileProperties == null) return null;
 		return Objects.toString(additionalFileProperties.get(name), null);

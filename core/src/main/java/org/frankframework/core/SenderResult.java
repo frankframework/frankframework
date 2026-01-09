@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,8 @@
 */
 package org.frankframework.core;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -39,15 +38,15 @@ public class SenderResult {
 		this(new Message(result));
 	}
 
-	public SenderResult(@Nonnull Message result) {
+	public SenderResult(@NonNull Message result) {
 		this(true, result, null, null);
 	}
 
-	public SenderResult(@Nonnull Message result, String errorMessage) {
+	public SenderResult(@NonNull Message result, String errorMessage) {
 		this(StringUtils.isEmpty(errorMessage), result, errorMessage, null);
 	}
 
-	public SenderResult(boolean success, @Nonnull Message result, String errorMessage, String forwardName) {
+	public SenderResult(boolean success, @NonNull Message result, String errorMessage, String forwardName) {
 		this.success = success;
 		this.forwardName = forwardName;
 		this.result = result;

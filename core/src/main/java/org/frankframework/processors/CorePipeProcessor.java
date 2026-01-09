@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
 */
 package org.frankframework.processors;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.core.IPipe;
 import org.frankframework.core.IValidator;
@@ -32,12 +32,12 @@ import org.frankframework.stream.Message;
 public class CorePipeProcessor implements PipeProcessor {
 
 	@Override
-	public @Nonnull PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException {
+	public @NonNull PipeRunResult processPipe(@NonNull PipeLine pipeLine, @NonNull IPipe pipe, @Nullable Message message, @NonNull PipeLineSession pipeLineSession) throws PipeRunException {
 		return pipe.doPipe(message, pipeLineSession);
 	}
 
 	@Override
-	public @Nonnull PipeRunResult validate(@Nonnull PipeLine pipeLine, @Nonnull IValidator validator, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
+	public @NonNull PipeRunResult validate(@NonNull PipeLine pipeLine, @NonNull IValidator validator, @Nullable Message message, @NonNull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
 		return validator.validate(message, pipeLineSession, messageRoot);
 	}
 }

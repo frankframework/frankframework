@@ -18,7 +18,7 @@ package org.frankframework.jdbc;
 import java.io.Serializable;
 import java.util.Date;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.SenderException;
@@ -34,7 +34,7 @@ import org.frankframework.core.SenderException;
 @ConfigurationWarning("It is no longer necessary to use the DummyTransactionalStorage")
 public class DummyTransactionalStorage<S extends Serializable> extends JdbcTransactionalStorage<S> {
 
-	@Nonnull
+	@NonNull
 	@Override
 	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException {
 		return null; // TODO: Breaks the contract but hey this class is deprecated for removal, should remove ASAP.

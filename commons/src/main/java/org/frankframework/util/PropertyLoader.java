@@ -1,5 +1,5 @@
 /*
-   Copyright 2023-2025 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,11 +27,10 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Properties;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -158,9 +157,9 @@ public class PropertyLoader extends Properties {
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	@SuppressWarnings("unchecked")
-	public <T extends Enum<T>> T getOrDefault(@Nonnull String key, @Nonnull T dfault) {
+	public <T extends Enum<T>> T getOrDefault(@NonNull String key, @NonNull T dfault) {
 		String value = getProperty(key);
 		if (value == null) {
 			return dfault;
@@ -175,8 +174,8 @@ public class PropertyLoader extends Properties {
 	 * @param key the key of the property value to retrieve
 	 * @return a list of string values associated with the specified key, or an empty list if the resolved property is null
 	 */
-	@Nonnull
-	public List<String> getListProperty(@Nonnull String key) {
+	@NonNull
+	public List<String> getListProperty(@NonNull String key) {
 		return getListProperty(key, null);
 	}
 
@@ -190,8 +189,8 @@ public class PropertyLoader extends Properties {
 	 * @return a list of string values associated with the specified key, or the default list if the resolved property is null.
 	 * 		If the defaults is also null, then returns an empty list.
 	 */
-	@Nonnull
-	public List<String> getListProperty(@Nonnull String key, @Nullable String defaults) {
+	@NonNull
+	public List<String> getListProperty(@NonNull String key, @Nullable String defaults) {
 		String list = getResolvedProperty(key);
 		if (list != null) {
 			return StringUtil.split(list);

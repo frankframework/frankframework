@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021, 2022-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,9 +18,8 @@ package org.frankframework.extensions.sap.jco3;
 import java.io.IOException;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import com.sap.conn.idoc.IDocDocument;
 import com.sap.conn.idoc.IDocDocumentIterator;
@@ -170,7 +169,7 @@ public abstract class SapListenerImpl<M> extends SapFunctionFacade implements IS
 	 * M == ALWAYS JCoFunction
 	 */
 	@Override
-	public Message extractMessage(@Nonnull RawMessageWrapper<M> rawMessageWrapper, @Nonnull Map<String,Object> context) {
+	public Message extractMessage(@NonNull RawMessageWrapper<M> rawMessageWrapper, @NonNull Map<String,Object> context) {
 		if(rawMessageWrapper.getRawMessage() instanceof JCoFunction jcoFunction) {
 			return functionCall2message(jcoFunction);
 		}

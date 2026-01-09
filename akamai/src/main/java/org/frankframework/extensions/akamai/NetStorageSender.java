@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2017-2019 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,12 +22,12 @@ import java.net.URISyntaxException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 
-import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.client.utils.URIBuilder;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 
@@ -149,7 +149,7 @@ public class NetStorageSender extends AbstractHttpSender {
 	 * @return full path to use as endpoint
 	 */
 	@Override
-	protected URI getURI(@Nonnull String path) throws URISyntaxException {
+	protected URI getURI(@NonNull String path) throws URISyntaxException {
 		if (!path.startsWith(PATH_SEPARATOR)) path = PATH_SEPARATOR + path;
 		String url = getUrl() + getCpCode();
 
@@ -165,7 +165,7 @@ public class NetStorageSender extends AbstractHttpSender {
 	}
 
 	@Override
-	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 
 		// The input of this sender is the path where to send or retrieve info from.
 		String path;
@@ -183,7 +183,7 @@ public class NetStorageSender extends AbstractHttpSender {
 	}
 
 	@Override
-	public HttpRequestBase getMethod(URI uri, Message message, @Nonnull ParameterValueList parameters, PipeLineSession session) throws SenderException {
+	public HttpRequestBase getMethod(URI uri, Message message, @NonNull ParameterValueList parameters, PipeLineSession session) throws SenderException {
 		NetStorageRequest request = new NetStorageRequest(uri, getAction());
 		request.setVersion(actionVersion);
 		request.setHashAlgorithm(hashAlgorithm);

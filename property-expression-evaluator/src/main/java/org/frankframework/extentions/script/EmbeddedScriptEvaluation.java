@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,8 +25,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.collections4.map.CompositeMap;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlContext;
@@ -36,6 +34,7 @@ import org.apache.commons.jexl3.JexlScript;
 import org.apache.commons.jexl3.introspection.JexlPermissions;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.jspecify.annotations.NonNull;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -182,7 +181,7 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	private static JexlContext createScriptContext(Map<String, Object> props1, Map<String, Object> props2) {
 		// Create basic context
 		CompositeMap<String, Object> contextMap = createContextMap(props1, props2);
@@ -199,23 +198,23 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 		return context;
 	}
 
-	private static void addClasses(@Nonnull JexlContext context, Class<?>... classes) {
+	private static void addClasses(@NonNull JexlContext context, Class<?>... classes) {
 		for (Class<?> clazz : classes) {
 			addClass(context, clazz);
 		}
 	}
 
-	private static void tryAddClassesDynamically(@Nonnull JexlContext context, @Nonnull String... classNames) {
+	private static void tryAddClassesDynamically(@NonNull JexlContext context, @NonNull String... classNames) {
 		for (String className : classNames) {
 			tryAddClassDynamically(context, className);
 		}
 	}
 
-	private static void addClass(@Nonnull JexlContext context, @Nonnull Class<?> clazz) {
+	private static void addClass(@NonNull JexlContext context, @NonNull Class<?> clazz) {
 		context.set(clazz.getSimpleName(), clazz);
 	}
 
-	private static void tryAddClassDynamically(@Nonnull JexlContext context, @Nonnull String className) {
+	private static void tryAddClassDynamically(@NonNull JexlContext context, @NonNull String className) {
 		try {
 			Class<?> cls = EmbeddedScriptEvaluation.class.getClassLoader().loadClass(className);
 			context.set(cls.getSimpleName(), cls);
@@ -225,7 +224,7 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 	}
 
 	@SuppressWarnings("unchecked")
-	@Nonnull
+	@NonNull
 	private static CompositeMap<String, Object> createContextMap(Map<String, Object> props1, Map<String, Object> props2) {
 		Map<String, Object> contextCustomValues = new HashMap<>();
 		CompositeMap.MapMutator<String, Object> mutator = new BackingMapMutator(contextCustomValues);
@@ -245,7 +244,7 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 
 		private final transient Map<String, Object> contextCustomValues;
 
-		public BackingMapMutator(@Nonnull Map<String, Object> contextCustomValues) {
+		public BackingMapMutator(@NonNull Map<String, Object> contextCustomValues) {
 			this.contextCustomValues = contextCustomValues;
 		}
 

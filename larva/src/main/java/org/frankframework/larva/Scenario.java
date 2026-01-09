@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,7 +27,7 @@ import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 
@@ -70,19 +70,19 @@ public class Scenario {
 		return "true".equalsIgnoreCase(value) || "!false".equalsIgnoreCase(value);
 	}
 
-	public void addWarning(@Nonnull String warning) {
+	public void addWarning(@NonNull String warning) {
 		messages.add(new LarvaMessage(LarvaLogLevel.WARNING, warning));
 	}
 
-	public void addError(@Nonnull String error) {
+	public void addError(@NonNull String error) {
 		messages.add(new LarvaMessage(LarvaLogLevel.ERROR, error));
 	}
 
-	public void addError(@Nonnull String error, @Nonnull Exception e) {
+	public void addError(@NonNull String error, @NonNull Exception e) {
 		messages.add(new LarvaMessage(LarvaLogLevel.ERROR, error, e));
 	}
 
-	public void addMessages(@Nonnull Collection<LarvaMessage> messages) {
+	public void addMessages(@NonNull Collection<LarvaMessage> messages) {
 		this.messages.addAll(messages);
 	}
 

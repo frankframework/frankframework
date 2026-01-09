@@ -9,8 +9,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.sql.DataSource;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.junit.platform.commons.JUnitException;
 import org.junit.platform.commons.util.ExceptionUtils;
 import org.springframework.jdbc.datasource.DelegatingDataSource;
@@ -112,7 +111,7 @@ public class DatabaseTestEnvironment implements AutoCloseable {
 	}
 
 	/** Populates all database related fields that are normally wired through Spring */
-	public void autowire(@Nonnull Object bean) {
+	public void autowire(@NonNull Object bean) {
 		configuration.autowireByName(bean);
 		if(bean instanceof JdbcFacade facade) {
 			facade.setDatasourceName(getDataSourceName());
@@ -158,16 +157,16 @@ public class DatabaseTestEnvironment implements AutoCloseable {
 		return startTransaction(getTxDef(transactionAttribute,  timeout));
 	}
 
-	protected TransactionStatus startTransaction(@Nonnull final TransactionDefinition txDef) {
+	protected TransactionStatus startTransaction(@NonNull final TransactionDefinition txDef) {
 		TransactionStatus tx = getTxManager().getTransaction(txDef);
 		registerForCleanup(tx);
 		return tx;
 	}
 
-	private void registerForCleanup(@Nonnull final TransactionStatus tx) {
+	private void registerForCleanup(@NonNull final TransactionStatus tx) {
 		transactionsToClose.add(tx);
 	}
-	private void completeTxSafely(@Nonnull final TransactionStatus tx) {
+	private void completeTxSafely(@NonNull final TransactionStatus tx) {
 		if (!tx.isCompleted()) {
 			try {
 				getTxManager().rollback(tx);

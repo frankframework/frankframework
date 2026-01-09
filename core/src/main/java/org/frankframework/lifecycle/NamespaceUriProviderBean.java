@@ -15,12 +15,11 @@
 */
 package org.frankframework.lifecycle;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.cxf.Bus;
 import org.apache.cxf.bus.spring.SpringBus;
 import org.apache.cxf.jaxws.EndpointImpl;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
@@ -56,7 +55,7 @@ public class NamespaceUriProviderBean implements ApplicationContextAware, Initia
 	private EndpointImpl namespaceRouter = null;
 
 	@Override
-	public void setApplicationContext(@Nonnull ApplicationContext applicationContext) throws BeansException {
+	public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 	}
 

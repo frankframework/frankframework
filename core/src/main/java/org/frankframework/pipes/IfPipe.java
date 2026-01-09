@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,10 +19,9 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 
@@ -209,7 +208,7 @@ public class IfPipe extends AbstractPipe {
 		return xpath;
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		SupportedMediaType mediaType = getSupportedMediaType(message);

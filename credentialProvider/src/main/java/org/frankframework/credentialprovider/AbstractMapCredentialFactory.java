@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 Nationale-Nederlanden, 2021-2025 WeAreFrank!
+   Copyright 2021 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,9 +27,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.credentialprovider.util.CredentialConstants;
 import org.frankframework.util.ClassUtils;
@@ -72,7 +71,7 @@ public abstract class AbstractMapCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public boolean hasSecret(@Nonnull CredentialAlias alias) {
+	public boolean hasSecret(@NonNull CredentialAlias alias) {
 		try {
 			return getSecret(alias) != null;
 		} catch (NoSuchElementException e) {
@@ -81,7 +80,7 @@ public abstract class AbstractMapCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public ISecret getSecret(@Nonnull CredentialAlias alias) throws NoSuchElementException {
+	public ISecret getSecret(@NonNull CredentialAlias alias) throws NoSuchElementException {
 		return new MapSecret(alias, aliases);
 	}
 

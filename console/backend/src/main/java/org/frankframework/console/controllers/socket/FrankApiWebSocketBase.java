@@ -20,12 +20,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.json.Json;
 import jakarta.json.JsonMergePatch;
 import jakarta.json.JsonValue;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -78,7 +78,7 @@ public class FrankApiWebSocketBase implements InitializingBean, ApplicationListe
 	}
 
 	@Override
-	public void onApplicationEvent(@Nonnull ClusterMemberEvent event) {
+	public void onApplicationEvent(@NonNull ClusterMemberEvent event) {
 		afterPropertiesSet();
 	}
 
@@ -118,13 +118,13 @@ public class FrankApiWebSocketBase implements InitializingBean, ApplicationListe
 
 	/** we can assume that all messages stored in the cache are JSON messages */
 	@Nullable
-	private String convertMessageToDiff(@Nullable UUID uuid, String topic, @Nonnull String latestJsonMessage) {
+	private String convertMessageToDiff(@Nullable UUID uuid, String topic, @NonNull String latestJsonMessage) {
 		String cachedJsonMessage = messageCacheStore.getAndUpdate(uuid, topic, latestJsonMessage);
 		return findJsonDiff(cachedJsonMessage, latestJsonMessage);
 	}
 
 	@Nullable
-	private String findJsonDiff(@Nonnull String cachedJsonMessage, @Nonnull String latestJsonMessage) {
+	private String findJsonDiff(@NonNull String cachedJsonMessage, @NonNull String latestJsonMessage) {
 		if ("{}".equals(cachedJsonMessage)) return latestJsonMessage;
 
 		try {

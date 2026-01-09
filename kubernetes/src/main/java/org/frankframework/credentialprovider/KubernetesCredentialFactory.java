@@ -1,5 +1,5 @@
 /*
-   Copyright 2024-2025 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,9 +20,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.Config;
@@ -116,7 +115,7 @@ public class KubernetesCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public boolean hasSecret(@Nonnull CredentialAlias alias) {
+	public boolean hasSecret(@NonNull CredentialAlias alias) {
 		try {
 			return getSecret(alias) != null;
 		} catch (NoSuchElementException e) {
@@ -125,7 +124,7 @@ public class KubernetesCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public ISecret getSecret(@Nonnull CredentialAlias alias) throws NoSuchElementException {
+	public ISecret getSecret(@NonNull CredentialAlias alias) throws NoSuchElementException {
 		if (!isAliasNameValid(alias)) {
 			log.warning("A Kubernetes alias must start and end with an alphanumeric character. Given alias: " + alias.getName());
 		}

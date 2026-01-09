@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 Integration Partners
+   Copyright 2019, 2020 Integration Partners, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,8 @@
  */
 package org.frankframework.ldap;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 
@@ -78,7 +77,7 @@ public abstract class AbstractLdapQueryPipe extends FixedForwardPipe {
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (exceptionForward != null) {

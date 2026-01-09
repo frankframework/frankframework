@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2024-2025 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,9 +29,8 @@ import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.parsers.ParserConfigurationException;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
@@ -264,7 +263,7 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 	}
 
 	@Override
-	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
 
 		Element queryElement = null;
 		try {

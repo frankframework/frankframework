@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,11 +22,10 @@ import java.util.List;
 import javax.xml.transform.SourceLocator;
 import javax.xml.transform.TransformerException;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.SAXParseException;
 
 import org.frankframework.util.ClassUtils;
@@ -57,7 +56,7 @@ public class IbisException extends Exception {
 		super(cause);
 	}
 
-	public static String getExceptionSpecificDetails(@Nonnull Throwable t) {
+	public static String getExceptionSpecificDetails(@NonNull Throwable t) {
 		final String className = t.getClass().getCanonicalName();
 		switch (className) {
 			case "jakarta.mail.internet.AddressException": {

@@ -20,12 +20,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
@@ -108,7 +107,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	}
 
 	@Override
-	public void setApplicationContext(@Nonnull ApplicationContext applicationContext) throws BeansException {
+	public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
 		setParent(applicationContext);
 	}
 
@@ -163,7 +162,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	 * Enables the {@link Autowired} annotation and {@link ConfigurationAware} objects.
 	 */
 	@Override
-	protected void registerBeanPostProcessors(@Nonnull ConfigurableListableBeanFactory beanFactory) {
+	protected void registerBeanPostProcessors(@NonNull ConfigurableListableBeanFactory beanFactory) {
 		super.registerBeanPostProcessors(beanFactory);
 
 		// Append @Autowired PostProcessor to allow automatic type-based Spring wiring.
@@ -276,7 +275,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	// Capture ContextClosedEvent which is published during AbstractApplicationContext#doClose()
 	// This event will be published before the actual context is closed.
 	@Override
-	public void publishEvent(@Nonnull ApplicationEvent event) {
+	public void publishEvent(@NonNull ApplicationEvent event) {
 		if (event instanceof ContextClosedEvent) {
 			applicationLog.info("Configuration [{}] closed", this::getNameWithOptionalVersion);
 			publishEvent(new ConfigurationMessageEvent(this, "closed"));
@@ -333,7 +332,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 		return getAdapters().get(name);
 	}
 
-	@Nonnull
+	@NonNull
 	public List<Adapter> getRegisteredAdapters() {
 		if (!isActive()) {
 			return Collections.emptyList();
@@ -561,7 +560,7 @@ public class Configuration extends ClassPathXmlApplicationContext implements Con
 	 */
 	@Override
 	@Protected
-	public void setBeanName(@Nonnull String name) {
+	public void setBeanName(@NonNull String name) {
 		super.setBeanName(name);
 		setDisplayName("ConfigurationContext [" + name + "]");
 	}

@@ -15,9 +15,8 @@
 */
 package org.frankframework.management.gateway;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -50,7 +49,7 @@ public class HttpOutboundGateway implements InitializingBean, ApplicationContext
 	// I in, O out
 	@Override
 	@SuppressWarnings("unchecked")
-	@Nonnull
+	@NonNull
 	public <I, O> Message<O> sendSyncMessage(Message<I> in) {
 		return handler.handleRequestMessage(in);
 	}

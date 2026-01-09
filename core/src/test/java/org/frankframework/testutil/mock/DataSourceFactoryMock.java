@@ -8,10 +8,9 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.tomcat.dbcp.dbcp2.PoolableConnectionFactory;
 import org.apache.tomcat.dbcp.pool2.impl.GenericObjectPool;
+import org.jspecify.annotations.NonNull;
 import org.mockito.Mockito;
 
 import org.frankframework.jdbc.IDataSourceFactory;
@@ -27,13 +26,13 @@ public class DataSourceFactoryMock implements IDataSourceFactory {
 		objects.put(IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME, new TransactionalDbmsSupportAwareDataSourceProxy(ds));
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public DataSource getDataSource(String dataSourceName) {
 		return getDataSource(dataSourceName, null);
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public DataSource getDataSource(String dataSourceName, Properties jndiEnvironment) {
 		DataSource dataSource = objects.get(dataSourceName);
@@ -43,7 +42,7 @@ public class DataSourceFactoryMock implements IDataSourceFactory {
 		return dataSource;
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public List<String> getDataSourceNames() {
 		return new ArrayList<>(objects.keySet());

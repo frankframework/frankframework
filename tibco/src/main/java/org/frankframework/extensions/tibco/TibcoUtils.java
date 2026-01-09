@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2017 Nationale-Nederlanden
+   Copyright 2013, 2016, 2017 Nationale-Nederlanden, 2018, 2020-2021, 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@ package org.frankframework.extensions.tibco;
 import java.util.Enumeration;
 import java.util.Map;
 
-import jakarta.annotation.Nullable;
 import jakarta.jms.Connection;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.JMSException;
@@ -30,6 +29,7 @@ import jakarta.jms.Session;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 
 import com.tibco.tibjms.admin.ServerInfo;
 import com.tibco.tibjms.admin.TibjmsAdmin;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2024 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 */
 package org.frankframework.core;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
@@ -29,6 +29,6 @@ import org.frankframework.parameters.ParameterList;
 public interface IWithParameters {
 
 	void addParameter(IParameter p);
-	@Nonnull ParameterList getParameterList(); // used by debugger, to show resolved values of parameters
+	@NonNull ParameterList getParameterList(); // used by debugger, to show resolved values of parameters
 
 }

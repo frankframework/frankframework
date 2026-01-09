@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013-2019 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,11 +17,10 @@ package org.frankframework.http;
 
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
@@ -90,7 +89,7 @@ public class PushingListenerAdapter implements RequestReplyListener, IPushingLis
 	}
 
 	@Override
-	public Message extractMessage(@Nonnull RawMessageWrapper<Message> rawMessage, @Nonnull Map<String, Object> context) {
+	public Message extractMessage(@NonNull RawMessageWrapper<Message> rawMessage, @NonNull Map<String, Object> context) {
 		return rawMessage.getRawMessage();
 	}
 

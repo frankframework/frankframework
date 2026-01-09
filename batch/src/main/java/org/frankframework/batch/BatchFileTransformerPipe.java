@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2022 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,9 +21,8 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 
@@ -88,7 +87,7 @@ public class BatchFileTransformerPipe extends StreamTransformerPipe {
 	 *
 	 * @see IPipe#doPipe(Message, PipeLineSession)
 	 */
-	@Nonnull
+	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
 		if (input==null) {

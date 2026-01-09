@@ -18,10 +18,10 @@ package org.frankframework.lifecycle.servlets;
 import java.util.HashSet;
 import java.util.Set;
 
-import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import lombok.extern.log4j.Log4j2;
@@ -54,7 +54,7 @@ public class URLRequestMatcher implements RequestMatcher {
 	}
 
 	@Override
-	public boolean matches(@Nonnull HttpServletRequest request) {
+	public boolean matches(@NonNull HttpServletRequest request) {
 		String path = getRequestPath(request);
 
 		if (absoluteEndpoints.contains(path)) { // absolute match
@@ -72,7 +72,7 @@ public class URLRequestMatcher implements RequestMatcher {
 		return false;
 	}
 
-	private String getRequestPath(@Nonnull HttpServletRequest request) {
+	private String getRequestPath(@NonNull HttpServletRequest request) {
 		String url = request.getServletPath();
 		String pathInfo = request.getPathInfo();
 		if (pathInfo != null) {

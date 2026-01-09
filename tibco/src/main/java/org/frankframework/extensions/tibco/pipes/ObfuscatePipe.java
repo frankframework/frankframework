@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,9 +17,8 @@ package org.frankframework.extensions.tibco.pipes;
 
 import java.io.IOException;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 
@@ -53,7 +52,7 @@ public class ObfuscatePipe extends FixedForwardPipe {
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String input;

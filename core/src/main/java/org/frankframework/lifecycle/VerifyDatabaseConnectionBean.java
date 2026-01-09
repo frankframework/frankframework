@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 - 2024 WeAreFrank!
+   Copyright 2023 - 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,9 +19,8 @@ import java.sql.Connection;
 
 import javax.sql.DataSource;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.InitializingBean;
@@ -98,7 +97,7 @@ public class VerifyDatabaseConnectionBean implements ApplicationContextAware, In
 		}
 	}
 
-	private @Nonnull PlatformTransactionManager getTransactionManager() {
+	private @NonNull PlatformTransactionManager getTransactionManager() {
 		try {
 			final PlatformTransactionManager txManager = applicationContext.getBean("txManager", PlatformTransactionManager.class);
 
@@ -112,7 +111,7 @@ public class VerifyDatabaseConnectionBean implements ApplicationContextAware, In
 		}
 	}
 
-	private @Nonnull DataSource getDefaultDataSource() {
+	private @NonNull DataSource getDefaultDataSource() {
 		try {
 			IDataSourceFactory dsf = applicationContext.getBean("dataSourceFactory", IDataSourceFactory.class);
 			DataSource dataSource = dsf.getDataSource(defaultDatasource);

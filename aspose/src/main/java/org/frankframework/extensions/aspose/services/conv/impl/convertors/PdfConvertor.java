@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021-2022 WeAreFrank!
+   Copyright 2019, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,8 +20,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.MediaType;
 
 import com.aspose.pdf.Document;
@@ -70,7 +69,7 @@ public class PdfConvertor extends AbstractConvertor {
 		result.setNumberOfPages(getNumberOfPages(result.getPdfResultFile()));
 	}
 
-	@Nonnull
+	@NonNull
 	private static LoadOptions getLoadOptions(final MediaType mediaType) throws ReflectiveOperationException, SecurityException {
 		return ClassUtils.newInstance(MEDIA_TYPE_LOAD_FORMAT_MAPPING.get(mediaType));
 	}

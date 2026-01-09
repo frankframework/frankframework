@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2023 WeAreFrank!
+   Copyright 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,12 +23,12 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
 import jakarta.jms.BytesMessage;
 import jakarta.jms.JMSException;
 import jakarta.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.jms.JmsSender;
@@ -97,9 +97,8 @@ public class IMSSender extends MQSender {
 		super.configure();
 	}
 
-	@Nonnull
 	@Override
-	public jakarta.jms.Message createMessage(Session session, String correlationID, Message message, MessageClass messageClass) throws JMSException {
+	public jakarta.jms.@NonNull Message createMessage(Session session, String correlationID, Message message, MessageClass messageClass) throws JMSException {
 		BytesMessage bytesMessage;
 		bytesMessage = session.createBytesMessage();
 

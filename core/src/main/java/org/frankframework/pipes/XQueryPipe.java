@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020-2021 WeAreFrank!
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,9 +28,8 @@ import javax.xml.xquery.XQException;
 import javax.xml.xquery.XQPreparedExpression;
 import javax.xml.xquery.XQResultSequence;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import com.saxonica.xqj.SaxonXQDataSource;
 
@@ -95,7 +94,7 @@ public class XQueryPipe extends FixedForwardPipe {
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (message==null) {

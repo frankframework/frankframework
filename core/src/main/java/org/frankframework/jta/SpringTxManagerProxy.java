@@ -15,9 +15,8 @@
 */
 package org.frankframework.jta;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -57,14 +56,14 @@ public class SpringTxManagerProxy implements IThreadConnectableTransactionManage
 	}
 
 	@Override
-	@Nonnull
+	@NonNull
 	public TransactionStatus getTransaction(TransactionDefinition txDef) throws TransactionException {
 		log.trace("getting transaction definition [{}]", txDef);
 		return getRealTxManager().getTransaction(txDef);
 	}
 
 	@Override
-	public void commit(@Nonnull TransactionStatus txStatus) throws TransactionException {
+	public void commit(@NonNull TransactionStatus txStatus) throws TransactionException {
 		if (log.isTraceEnabled()) {
 			if (txStatus.isRollbackOnly())
 				log.trace("<TX> Executing rollback from tx.commit. TransactionStatus: [{}], Stacktrace:", txStatus, new Exception("<TX> Rollback from commit"));
@@ -75,7 +74,7 @@ public class SpringTxManagerProxy implements IThreadConnectableTransactionManage
 	}
 
 	@Override
-	public void rollback(@Nonnull TransactionStatus txStatus) throws TransactionException {
+	public void rollback(@NonNull TransactionStatus txStatus) throws TransactionException {
 		log.trace("rolling back transaction [{}]", txStatus);
 		getRealTxManager().rollback(txStatus);
 	}

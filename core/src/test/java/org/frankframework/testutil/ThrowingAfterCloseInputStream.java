@@ -3,7 +3,7 @@ package org.frankframework.testutil;
 import java.io.IOException;
 import java.io.InputStream;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * For some streams, "close()" is a no-op (for instance, ByteArrayInputStream, which a lot of tests use). We want to
@@ -31,13 +31,13 @@ public class ThrowingAfterCloseInputStream extends InputStream {
 	}
 
 	@Override
-	public int read(@Nonnull byte[] b) throws IOException {
+	public int read(@NonNull byte[] b) throws IOException {
 		assertNotClosed();
 		return delegate.read(b);
 	}
 
 	@Override
-	public int read(@Nonnull byte[] b, int off, int len) throws IOException {
+	public int read(@NonNull byte[] b, int off, int len) throws IOException {
 		assertNotClosed();
 		return delegate.read(b, off, len);
 	}

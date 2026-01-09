@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2021, 2024 WeAreFrank!
+   Copyright 2017-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,10 +20,11 @@ import java.io.IOException;
 import java.rmi.server.UID;
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
 import jakarta.servlet.annotation.ServletSecurity;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
+
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeForward;
@@ -65,7 +66,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 		cache = ApiCacheManager.getInstance();
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (message==null) {

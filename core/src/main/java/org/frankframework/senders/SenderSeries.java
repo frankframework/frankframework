@@ -20,7 +20,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
@@ -75,7 +75,7 @@ public class SenderSeries extends AbstractSenderWrapper {
 	}
 
 	@Override
-	public SenderResult doSendMessage(@Nonnull final Message input, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult doSendMessage(@NonNull final Message input, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 		String correlationID = session.getCorrelationId();
 		long t1 = System.currentTimeMillis();
 
@@ -128,7 +128,7 @@ public class SenderSeries extends AbstractSenderWrapper {
 		setSynchronous(sender.isSynchronous()); // set synchronous to isSynchronous of the last Sender added
 	}
 
-	protected @Nonnull DistributionSummary getStatisticsKeeper(ISender sender) {
+	protected @NonNull DistributionSummary getStatisticsKeeper(ISender sender) {
 		return statisticsMap.computeIfAbsent(sender, ignored -> configurationMetrics.createSubDistributionSummary(this, sender, FrankMeterType.PIPE_DURATION));
 	}
 

@@ -15,8 +15,7 @@
 */
 package org.frankframework.monitoring;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
 
@@ -34,7 +33,7 @@ public class EventPublisher implements ApplicationEventPublisherAware {
 	private ApplicationEventPublisher applicationEventPublisher;
 
 	@Override
-	public void setApplicationEventPublisher(@Nonnull ApplicationEventPublisher applicationEventPublisher) {
+	public void setApplicationEventPublisher(@NonNull ApplicationEventPublisher applicationEventPublisher) {
 		this.applicationEventPublisher = applicationEventPublisher;
 	}
 

@@ -117,7 +117,7 @@ final String x = (condition) ? "value" : null;
 	You can use Java `Optional` to indicate that the return value of a method can be `null`.
 	Optional should not be used for parameters.
 	When working with streams and extracting methods to integrate in the streams, working with Optional return values makes code easier to understand. Refactoring existing code might not be that easy. 
-	If you do not use `Optional` then it is a good idea to annotate your methods with `@Nonnull`
+	If you do not use `Optional` then it is a good idea to annotate your methods with `@NonNull`
 	and companions.
 	One good scenario for using `Optional` is for avoiding re-assigning variables which could
 	otherwise be `final` in a scenario like this:

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2016, 2019 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
 */
 package org.frankframework.pipes;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.InitializingBean;
 
 import lombok.Getter;
@@ -84,7 +83,7 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 		super.stop();
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
 		if (Message.isEmpty(input)) {
@@ -101,7 +100,7 @@ public class XsltPipe extends FixedForwardPipe implements InitializingBean {
 	}
 
 	@Override
-	public @Nonnull ParameterList getParameterList() {
+	public @NonNull ParameterList getParameterList() {
 		return sender.getParameterList();
 	}
 

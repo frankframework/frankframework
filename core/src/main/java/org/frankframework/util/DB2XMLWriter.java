@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,10 +24,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -89,18 +88,18 @@ public class DB2XMLWriter {
 	/**
 	 * Retrieve the Resultset as a well-formed XML string
 	 */
-	public String getXML(@Nonnull IDbmsSupport dbmsSupport, @Nullable ResultSet rs) {
+	public String getXML(@NonNull IDbmsSupport dbmsSupport, @Nullable ResultSet rs) {
 		return getXML(dbmsSupport, rs, Integer.MAX_VALUE);
 	}
 
 	/**
 	 * Retrieve the Resultset as a well-formed XML string
 	 */
-	public String getXML(@Nonnull IDbmsSupport dbmsSupport, @Nullable ResultSet rs, int maxRows) {
+	public String getXML(@NonNull IDbmsSupport dbmsSupport, @Nullable ResultSet rs, int maxRows) {
 		return getXML(dbmsSupport, rs, maxRows, true);
 	}
 
-	public String getXML(@Nonnull IDbmsSupport dbmsSupport, @Nullable ResultSet rs, int maxRows, boolean includeFieldDefinition) {
+	public String getXML(@NonNull IDbmsSupport dbmsSupport, @Nullable ResultSet rs, int maxRows, boolean includeFieldDefinition) {
 		try {
 			XmlWriter xmlWriter = new XmlWriter();
 			getXML(dbmsSupport, rs, maxRows, includeFieldDefinition, xmlWriter, true);
@@ -111,7 +110,7 @@ public class DB2XMLWriter {
 		}
 	}
 
-	public void getXML(@Nonnull IDbmsSupport dbmsSupport, @Nullable ResultSet rs, int maxRows, boolean includeFieldDefinition, ContentHandler handler, boolean prettyPrint) throws SAXException {
+	public void getXML(@NonNull IDbmsSupport dbmsSupport, @Nullable ResultSet rs, int maxRows, boolean includeFieldDefinition, ContentHandler handler, boolean prettyPrint) throws SAXException {
 		// If a negative value is passed, retrieve all rows of each result set
 		if (maxRows < 0) {
 			maxRows = Integer.MAX_VALUE;
@@ -133,7 +132,7 @@ public class DB2XMLWriter {
 		}
 	}
 
-	public String getXML(@Nonnull IDbmsSupport dbmsSupport, @Nonnull CallableStatement callableStatement, boolean alsoGetResultSets, @Nonnull Map<Integer, IParameter> outputParameters, int maxRows, boolean includeFieldDefinition) {
+	public String getXML(@NonNull IDbmsSupport dbmsSupport, @NonNull CallableStatement callableStatement, boolean alsoGetResultSets, @NonNull Map<Integer, IParameter> outputParameters, int maxRows, boolean includeFieldDefinition) {
 		try {
 			XmlWriter xmlWriter = new XmlWriter();
 			getXML(dbmsSupport, callableStatement, alsoGetResultSets, outputParameters, maxRows, includeFieldDefinition, xmlWriter, true);
@@ -154,7 +153,7 @@ public class DB2XMLWriter {
 		errorElement.endElement();
 	}
 
-	public void getXML(@Nonnull IDbmsSupport dbmsSupport, @Nonnull CallableStatement callableStatement, boolean alsoGetResultSets, @Nonnull Map<Integer, IParameter> outputParameters, int maxRows, boolean includeFieldDefinition, @Nonnull ContentHandler handler, boolean prettyPrint) throws SAXException {
+	public void getXML(@NonNull IDbmsSupport dbmsSupport, @NonNull CallableStatement callableStatement, boolean alsoGetResultSets, @NonNull Map<Integer, IParameter> outputParameters, int maxRows, boolean includeFieldDefinition, @NonNull ContentHandler handler, boolean prettyPrint) throws SAXException {
 		// If a negative value is passed, retrieve all rows of each result set
 		if (maxRows < 0) {
 			maxRows = Integer.MAX_VALUE;
@@ -174,7 +173,7 @@ public class DB2XMLWriter {
 		}
 	}
 
-	private void processOutputParameters(@Nonnull IDbmsSupport dbmsSupport, @Nonnull CallableStatement callableStatement, @Nonnull Map<Integer, IParameter> outputParameters, int maxRows, boolean includeFieldDefinition, @Nonnull SaxElementBuilder parent) throws SAXException {
+	private void processOutputParameters(@NonNull IDbmsSupport dbmsSupport, @NonNull CallableStatement callableStatement, @NonNull Map<Integer, IParameter> outputParameters, int maxRows, boolean includeFieldDefinition, @NonNull SaxElementBuilder parent) throws SAXException {
 		if (outputParameters.isEmpty()) {
 			return;
 		}
@@ -216,7 +215,7 @@ public class DB2XMLWriter {
 		}
 	}
 
-	private void processStatementResults(@Nonnull IDbmsSupport dbmsSupport, @Nonnull Statement statement, int maxRows, boolean includeFieldDefinition, @Nonnull SaxElementBuilder parent) throws SAXException {
+	private void processStatementResults(@NonNull IDbmsSupport dbmsSupport, @NonNull Statement statement, int maxRows, boolean includeFieldDefinition, @NonNull SaxElementBuilder parent) throws SAXException {
 		int resultNr = 1;
 		try {
 			do {

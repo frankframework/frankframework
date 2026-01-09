@@ -17,8 +17,8 @@ package org.frankframework.core;
 
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.receivers.RawMessageWrapper;
 
@@ -38,7 +38,7 @@ public interface IPullingListener<M> extends IListener<M> {
 	 * @return the threadContext for this thread. The threadContext is a Map in which
 	 * thread-specific data can be stored. May not be {@code null}, must be a mutable map type.
 	 */
-	@Nonnull
+	@NonNull
 	Map<String,Object> openThread() throws ListenerException;
 
 	/**
@@ -46,7 +46,7 @@ public interface IPullingListener<M> extends IListener<M> {
 	 * Called once for each thread that listens for messages, just before
 	 * {@link #stop()} is called.
 	 */
-	void closeThread(@Nonnull Map<String,Object> threadContext) throws ListenerException;
+	void closeThread(@NonNull Map<String,Object> threadContext) throws ListenerException;
 
 	/**
 	 * Retrieves messages from queue or other channel, but does no processing on it.
@@ -55,6 +55,6 @@ public interface IPullingListener<M> extends IListener<M> {
 	 * <p>Any thread-specific properties should be stored in and retrieved from the threadContext.
 	 */
 	@Nullable
-	RawMessageWrapper<M> getRawMessage(@Nonnull Map<String,Object> threadContext) throws ListenerException;
+	RawMessageWrapper<M> getRawMessage(@NonNull Map<String,Object> threadContext) throws ListenerException;
 
 }

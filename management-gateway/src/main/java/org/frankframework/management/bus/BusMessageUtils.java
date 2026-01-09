@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,12 +18,11 @@ package org.frankframework.management.bus;
 import java.util.Collection;
 import java.util.Collections;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.security.core.Authentication;
@@ -120,7 +119,7 @@ public class BusMessageUtils {
 		return null;
 	}
 
-	@Nonnull
+	@NonNull
 	public static Collection<? extends GrantedAuthority> getAuthorities() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if(authentication != null) {

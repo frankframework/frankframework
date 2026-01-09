@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,11 +24,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.xml.transform.Transformer;
 
-import jakarta.annotation.Nonnull;
 import jakarta.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.springframework.messaging.Message;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -165,7 +165,7 @@ public class TestPipeline extends BusEndpointBase {
 	 * Parses SessionKeys from the sessionKeys header.
 	 * Format: [{"index":1,"key":"test","value":"123"}]
 	 */
-	@Nonnull
+	@NonNull
 	protected Map<String, String> getSessionKeysFromHeader(String sessionKeys) {
 		Map<String, String> context = new HashMap<>();
 		try {
@@ -182,7 +182,7 @@ public class TestPipeline extends BusEndpointBase {
 	/**
 	 * Parses the 'ibiscontext' processing instruction defined in the input
 	 */
-	@Nonnull
+	@NonNull
 	protected Map<String, String> getSessionKeysFromPayload(String input) {
 		String str = findProcessingInstructions(input);
 		if(StringUtils.isEmpty(str)) {

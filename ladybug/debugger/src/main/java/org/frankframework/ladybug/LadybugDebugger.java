@@ -20,9 +20,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -104,7 +103,7 @@ public class LadybugDebugger implements ApplicationContextAware, ApplicationList
 	}
 
 	/** Best effort attempt to locate the adapter. */
-	@Nonnull
+	@NonNull
 	private Adapter getRegisteredAdapter(String name) {
 		int i = name.indexOf('/');
 		if (i > 0) {
@@ -306,7 +305,7 @@ public class LadybugDebugger implements ApplicationContextAware, ApplicationList
 	}
 
 	@Override
-	public void onApplicationEvent(@Nonnull DebuggerStatusChangedEvent event) {
+	public void onApplicationEvent(@NonNull DebuggerStatusChangedEvent event) {
 		if (testtool != null && event.getSource() != this) {
 			log.debug("received DebuggerStatusChangedEvent [{}]", event);
 			testtool.setReportGeneratorEnabled(event.isEnabled());

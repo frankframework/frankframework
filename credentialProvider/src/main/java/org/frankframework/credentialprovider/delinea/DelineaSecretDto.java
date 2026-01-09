@@ -18,7 +18,7 @@ package org.frankframework.credentialprovider.delinea;
 import java.util.Collections;
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -71,7 +71,7 @@ public record DelineaSecretDto(
 			return Collections.unmodifiableList(fields); // Return an unmodifiable view
 		}
 
-		@Nonnull
+		@NonNull
 		@Override
 		public String toString() {
 			return String.format("DelineaSecret { id: %d, folderId: %d, name: %s}",

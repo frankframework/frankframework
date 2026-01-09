@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013, 2019 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,8 @@
 */
 package org.frankframework.extensions.sap.jco3;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import com.sap.conn.jco.JCoDestination;
 import com.sap.conn.jco.JCoFunction;
@@ -98,7 +97,7 @@ public abstract class SapSenderImpl extends SapSenderBase implements ISapSender 
 	}
 
 	@Override
-	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
 		String tid;
 		try {
 			ParameterValueList pvl = paramList.getValues(message, session);
