@@ -347,10 +347,9 @@ public class IbisTester {
 			startTime = System.currentTimeMillis();
 			ScenarioRunner scenarioRunner = new ScenarioRunner(
 					scenariosRootDir, scenario);
-			ExecutorService service = Executors.newSingleThreadExecutor();
-			Future<String> future = service.submit(scenarioRunner);
-			long timeout = 60;
-			try {
+			try (ExecutorService service = Executors.newSingleThreadExecutor()) {
+				Future<String> future = service.submit(scenarioRunner);
+				long timeout = 60;
 				try {
 					resultString = future.get(timeout, TimeUnit.SECONDS);
 				} catch (TimeoutException e) {
@@ -358,8 +357,6 @@ public class IbisTester {
 				} catch (Exception e) {
 					debug(scenarioInfo + " got error, retries left [" + count + "]");
 				}
-			} finally {
-				service.shutdown();
 			}
 		}
 
