@@ -54,6 +54,7 @@
 		</dependency>
 
 		<!-- Test scoped and provided dependencies -->
+		<!-- Provided dependencies will be added to the executable (Spring) WAR -->
 		<dependency>
 			<groupId>org.junit.jupiter</groupId>
 			<artifactId>junit-jupiter</artifactId>
@@ -75,17 +76,16 @@
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-logging</artifactId>
 		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-tomcat</artifactId>
+			<scope>compile</scope>
+		</dependency>
 		<dependency>
 			<groupId>jakarta.servlet</groupId>
 			<artifactId>jakarta.servlet-api</artifactId>
 			<scope>provided</scope>
-		</dependency>
-
-		<!-- provided dependencies will be added to the executable (Spring) WAR -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-tomcat</artifactId>
-			<scope>test</scope>
 		</dependency>
 
 		<dependency>
