@@ -26,9 +26,6 @@ import java.util.Queue;
 
 import jakarta.annotation.Nonnull;
 
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -47,7 +44,7 @@ import org.frankframework.util.XmlBuilder;
  *
  */
 @Log4j2
-public class Trigger implements ITrigger, ApplicationContextAware {
+public class Trigger implements ITrigger {
 	// The element names, which can be used as a Trigger.
 	private static final String ALARM_NAME = "AlarmTrigger";
 	private static final String CLEARING_NAME = "ClearingTrigger";
@@ -56,7 +53,6 @@ public class Trigger implements ITrigger, ApplicationContextAware {
 	private @Getter @Setter Severity severity;
 	private @Getter @Setter SourceFiltering sourceFiltering = SourceFiltering.NONE;
 	private @Getter @Setter TriggerType triggerType = TriggerType.ALARM;
-	private @Setter ApplicationContext applicationContext;
 
 	private final List<String> eventCodes = new ArrayList<>();
 	private final Map<String, AdapterFilter> adapterFilters = new LinkedHashMap<>();

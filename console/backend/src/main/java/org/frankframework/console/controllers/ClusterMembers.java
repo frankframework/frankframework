@@ -129,7 +129,7 @@ public class ClusterMembers implements ApplicationListener<ClusterMemberEvent> {
 	private void setMemberTarget(String id) {
 		List<ClusterMember> members = outboundGateway.getMembers();
 		UUID uuid = UUID.fromString(id);
-		members.stream()
+		var unused = members.stream()
 				.filter(m -> "worker".equals(m.getType()))
 				.filter(m -> uuid.equals(m.getId()))
 				.findAny()

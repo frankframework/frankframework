@@ -125,7 +125,7 @@ public class Scenario {
 				.toList();
 
 		// Validate that there are no duplicate step numbers
-		steps.stream()
+		var unused = steps.stream()
 				.mapToInt(Step::getIndex)
 				.reduce(-1, (lastStepNr, stepNr) -> {
 					if (lastStepNr == stepNr) {

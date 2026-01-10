@@ -78,7 +78,7 @@ public class GraphvizEngine {
 			defaultOptions = Options.create().format(format);
 			if (log.isDebugEnabled()) log.debug("Setting Graphviz options to [{}]", defaultOptions);
 		} catch (IllegalArgumentException e) {
-			throw new IllegalArgumentException("unknown format[" + FILE_FORMAT + "], must be one of " + Format.values());
+			throw new IllegalArgumentException("unknown format[" + FILE_FORMAT + "], must be one of " + Arrays.toString(Format.values()));
 		}
 
 		// Create the GraphvizEngine, make sure it can find and load the required libraries
