@@ -60,7 +60,7 @@ public abstract class IdocSenderImpl extends SapSenderBase {
 	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 		String tid;
 		try {
-			ParameterValueList pvl = null;
+			ParameterValueList pvl;
 			pvl = paramList.getValues(message, session);
 			SapSystemImpl sapSystem = getSystem(pvl);
 

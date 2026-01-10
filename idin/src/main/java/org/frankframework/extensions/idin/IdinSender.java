@@ -265,7 +265,7 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 	@Override
 	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
 
-		Element queryElement = null;
+		Element queryElement;
 		try {
 			if (XmlUtils.isWellFormed(message.asString(), "idin")) {
 				queryElement = XmlUtils.buildElement(message.asString());
