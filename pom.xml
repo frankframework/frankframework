@@ -765,10 +765,13 @@
 						<target>${maven.compiler.target}</target>
 						<compilerArgs>
 							<arg>-parameters</arg>
-							<arg>-XDcompilePolicy=simple</arg> <!-- Flag required for ErrorProne -->
-							<arg>-XDaddTypeAnnotationsToSymbol=true</arg> <!-- Flag required for ErrorProne icm JDK21 compiler -->
-							<arg>--should-stop=ifError=FLOW</arg> <!-- Flag required for ErrorProne -->
-							<arg>-Xplugin:ErrorProne -Xep:BanJNDI:WARN -Xep:EqualsHashCode:WARN -Xep:GetClassOnClass:WARN -XepAllErrorsAsWarnings</arg>
+							<arg>-XDcompilePolicy=simple</arg>
+							<!-- Flag required for ErrorProne -->
+							<arg>-XDaddTypeAnnotationsToSymbol=true</arg>
+							<!-- Flag required for ErrorProne icm JDK21 compiler -->
+							<arg>--should-stop=ifError=FLOW</arg>
+							<!-- Flag required for ErrorProne -->
+							<arg>-Xplugin:ErrorProne -Xep:BanJNDI:WARN -Xep:EqualsHashCode:WARN -Xep:GetClassOnClass:WARN</arg>
 						</compilerArgs>
 						<annotationProcessorPaths>
 							<path>
@@ -776,6 +779,7 @@
 								<artifactId>error_prone_core</artifactId>
 								<version>${error-prone.version}</version>
 							</path>
+							<!-- Because Error Prone needs to be added explicitly we now also need to explicitly add other annotation processors here -->
 							<path>
 								<groupId>org.projectlombok</groupId>
 								<artifactId>lombok</artifactId>

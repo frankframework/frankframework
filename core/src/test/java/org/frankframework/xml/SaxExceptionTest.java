@@ -239,7 +239,7 @@ public class SaxExceptionTest {
 	}
 
 	public Locator createLocator() {
-		Locator locator = new Locator() {
+		return new Locator() {
 
 			@Override
 			public int getColumnNumber() {
@@ -261,7 +261,6 @@ public class SaxExceptionTest {
 				return SYSTEM_ID;
 			}
 		};
-		return locator;
 	}
 
 	public void catchAndRethrow() throws IOException {
@@ -275,6 +274,6 @@ public class SaxExceptionTest {
 	@SuppressWarnings("null")
 	public void throwNullPointer() {
 		String testString=null;
-		testString.toString();
+		var unused = testString.toString();
 	}
 }
