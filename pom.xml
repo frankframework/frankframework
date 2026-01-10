@@ -79,7 +79,6 @@
 		<maven.compiler.proc>full</maven.compiler.proc>
 		<lombok.version>1.18.42</lombok.version>
 		<lombok.plugin.version>1.18.20.0</lombok.plugin.version>
-		<error-prone.version>2.46.0</error-prone.version>
 		<log4j2.version>2.25.3</log4j2.version>
 
 		<sonar.organization>frank-framework</sonar.organization>
@@ -771,13 +770,18 @@
 							<!-- Flag required for ErrorProne icm JDK21 compiler -->
 							<arg>--should-stop=ifError=FLOW</arg>
 							<!-- Flag required for ErrorProne -->
-							<arg>-Xplugin:ErrorProne -Xep:BanJNDI:WARN -Xep:EqualsHashCode:WARN -Xep:GetClassOnClass:WARN</arg>
+							<arg>-Xplugin:ErrorProne -XepOpt:NullAway:AnnotatedPackages=org.frankframework -Xep:BanJNDI:WARN -Xep:EqualsHashCode:WARN -Xep:GetClassOnClass:WARN</arg>
 						</compilerArgs>
 						<annotationProcessorPaths>
 							<path>
 								<groupId>com.google.errorprone</groupId>
 								<artifactId>error_prone_core</artifactId>
-								<version>${error-prone.version}</version>
+								<version>2.46.0</version>
+							</path>
+							<path>
+								<groupId>com.uber.nullaway</groupId>
+								<artifactId>nullaway</artifactId>
+								<version>0.12.15</version>
 							</path>
 							<!-- Because Error Prone needs to be added explicitly we now also need to explicitly add other annotation processors here -->
 							<path>
