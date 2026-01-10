@@ -1,6 +1,7 @@
 describe('Configurations page', () => {
   beforeEach(() => {
     cy.visit('/#/configurations');
+    cy.wait(200); // wait for monaco editor to be loaded
   });
 
   it('should have monaco-editor loaded in with readonly', () => {
@@ -10,7 +11,7 @@ describe('Configurations page', () => {
   it('should highlight line on clicking line number', () => {
     cy.get('[data-cy="configurations__editor"] .cdr.monaco-editor__line--highlighted').should('not.exist');
 
-    cy.get('[data-cy="configurations__editor"] .line-numbers').first().click();
+    cy.get('[data-cy="configurations__editor"] .line-numbers:not(.monaco-editor-background)').first().click();
     cy.get('[data-cy="configurations__editor"] .cdr.monaco-editor__line--highlighted').should('exist');
     cy.url().should('contain', '#L1');
 
