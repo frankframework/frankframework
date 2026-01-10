@@ -223,7 +223,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 	 * Return string representation of array, surrounded by square brackets.
 	 */
 	@NonNull
-    private String arrayToString(@Nullable String[] values) {
+    private String arrayToString(String @Nullable [] values) {
     	if (values==null || values.length==0) {
     		return "[]";
     	}
@@ -241,8 +241,9 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
     }
 
     public NamingEnumeration<SearchResult> search(DirContext context, String searchDN, String filter, String[] returnedAttributes, int scope) throws NamingException {
-    	if (log.isDebugEnabled())
+    	if (log.isDebugEnabled()) {
 			log.debug("searchDN [{}] filter [{}] no params returnedAttributes {}", searchDN, filter, arrayToString(returnedAttributes));
+		}
 		SearchControls sc = new SearchControls();
 		sc.setSearchScope(scope);
 		if (returnedAttributes!=null) {
