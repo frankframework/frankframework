@@ -243,6 +243,11 @@ This guide assumes that you are using IntelliJ Ultimate, because application ser
   After doing this, make sure to reload the Maven project to add the extra dependencies from this profile to your project classpath.
 - You may need to install / enable the Lombok plugin if it is not already installed / enabled, so that IntelliJ will properly understand the code with all the Lombok annotations in it. 
   If the plugin is installed you may get a notification from IntelliJ when the project is built that annotation processing needs to be enabled in the project for Lombok to work, enable this.
+- This project uses Error Prone and NullAway in the Maven build.
+  You can add Error Prone to the IntelliJ build with the "Error Prone Compiler" plugin.
+  After installing this plugin, you should go to IntelliJ Settings | Build, Execution, Deployment | Compiler | Java Compiler and set the Java Compiler to "Javac with Error Prone", and set the compiler-options to the Error Prone flags from the POM file:
+  `-XepOpt:NullAway:AnnotatedPackages=org.frankframework -Xep:InvalidBlockTag:OFF -Xep:BanJNDI:WARN -Xep:EqualsHashCode:WARN -Xep:GetClassOnClass:WARN`
+  This may however give you Internal Compiler Errors from the build, in which case you have to switch back to the regular Javac compiler.
 - Download the latest version of Tomcat 11.0 from https://tomcat.apache.org/download-11.cgi and unzip it anywhere you like. (On Windows, make sure to extract it on a folder which can be edited by non-admin users), 
   or install it via `brew` (on macOS) or `sdkman`.
   Make sure that all scripts are executable, for instance: `chmod a+x ~/.sdkman/candidates/tomcat/current/bin/*.sh`
