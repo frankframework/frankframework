@@ -25,8 +25,8 @@ best practices and perform security testing before releasing your application.
 ## Supported Versions
 
 | Version | Supported                  | Security Fixes*          | Minimal JRE | Released         |
-| ------- | -------------------------- | ------------------------ | ----------- | ---------------- |
-| latest  | :white_check_mark:         |:white_check_mark:        | Java SE 21  |                  |
+| ------- | -------------------------- | ------------------------ |-------------| ---------------- |
+| latest  | :white_check_mark:         |:white_check_mark:        | Java SE 25  |                  |
 | 9.4.x   | :white_check_mark:         |:white_check_mark:        | Java SE 17  | Dec 29, 2025     |
 | 9.3.x   | :white_check_mark:         |:eight_pointed_black_star:| Java SE 17  | Oct 13, 2025     |
 | 9.2.x   | :x:                        |:x:                       | Java SE 17  | Jul 9, 2025      |
@@ -66,4 +66,3 @@ In these images, dependencies are updated by dependabot in github. Since we can'
 * update server versions (like DBMS's) when the client version was successfully updated in the frank framework (eg: when mysql-driver is updated to x.y, we can update mysql-server to x.y as well)
 * determine the 'stable' versions before each frank framework release for the ci-images
 * update patch versions when available
-
