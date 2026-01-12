@@ -3,7 +3,7 @@ import { TabListComponent } from './tab-list.component';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Adapter, AppService, Configuration } from '../../app.service';
 import { NgClass } from '@angular/common';
-import { Subscription } from 'rxjs';
+import { first, Subscription } from 'rxjs';
 import { toObservable } from '@angular/core/rxjs-interop';
 
 @Component({
@@ -21,7 +21,7 @@ export class ConfigurationTabListComponent extends TabListComponent implements O
   private readonly router: Router = inject(Router);
   private readonly appService: AppService = inject(AppService);
   private adapters$ = toObservable(this.appService.adapters);
-  private adaptersSubscription: Subscription | null = null;
+  private subscriptions: Subscription | null = null;
   private configurationsList: string[] = [];
 
   @Input({ required: true })
@@ -32,9 +32,9 @@ export class ConfigurationTabListComponent extends TabListComponent implements O
   }
 
   ngOnInit(): void {
-    this.adaptersSubscription = this.adapters$.subscribe((adapters) => this.processTabList(adapters));
+    this.subscriptions = this.adapters$.subscribe((adapters) => this.processTabList(adapters));
 
-    this.route.queryParamMap.subscribe((parameters) => {
+    const queryParameterSub = this.route.queryParamMap.subscribe((parameters) => {
       const tab = parameters.get(this.queryParamName);
       if (tab == this.selectedTab) {
         return;
@@ -47,9 +47,12 @@ export class ConfigurationTabListComponent extends TabListComponent implements O
         this.setSelectedTab(this.tabsList[0]);
       }
     });
+    this.subscriptions.add(queryParameterSub);
 
-    const tab = this.appService.selectedConfigurationTab();
-    if (tab !== null) this.changeTab(tab);
+    this.route.fragment.pipe(first()).subscribe((fragment) => {
+      const tab = this.appService.selectedConfigurationTab();
+      if (tab !== null) this.changeTabWithFragment(tab, fragment);
+    });
   }
 
   ngOnChanges(): void {
@@ -57,16 +60,21 @@ export class ConfigurationTabListComponent extends TabListComponent implements O
   }
 
   ngOnDestroy(): void {
-    this.adaptersSubscription?.unsubscribe();
+    this.subscriptions?.unsubscribe();
   }
 
   protected override changeTab(tab: string): void {
+    this.changeTabWithFragment(tab, null);
+  }
+
+  private changeTabWithFragment(tab: string, fragment: string | null): void {
     this.appService.selectedConfigurationTab.set(tab);
     const queryParameters = tab === this._allTabName ? { [this.queryParamName]: null } : { [this.queryParamName]: tab };
     this.router.navigate([], {
       relativeTo: this.route,
       queryParams: queryParameters,
       queryParamsHandling: 'merge',
+      fragment: fragment ?? undefined,
       replaceUrl: true,
     });
   }

@@ -2,6 +2,12 @@
   "name": "ff-frontend-template-e2e",
   "version": "0.0.0",
   "private": true,
+  "scripts": {
+    "postinstall": "cypress install",
+    "cypress:open": "cypress open",
+    "cypress:run": "cypress run",
+    "cypress:ci": "cypress run --config baseUrl=http://localhost:8080/iaf-test/iaf/gui"
+  },
   "devDependencies": {
     "cypress": "^15.8.1",
     "cypress-multi-reporters": "^2.0.5",
