@@ -22,7 +22,9 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer;
 import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
 import org.springframework.security.oauth2.client.InMemoryOAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClientService;
@@ -30,6 +32,8 @@ import org.springframework.security.oauth2.client.registration.ClientRegistratio
 import org.springframework.security.oauth2.client.registration.ClientRegistration.Builder;
 import org.springframework.security.oauth2.client.registration.ClientRegistrationRepository;
 import org.springframework.security.oauth2.client.registration.InMemoryClientRegistrationRepository;
+import org.springframework.security.oauth2.client.web.DefaultOAuth2AuthorizationRequestResolver;
+import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestCustomizers;
 import org.springframework.security.oauth2.client.web.OAuth2AuthorizationRequestRedirectFilter;
 import org.springframework.security.oauth2.client.web.OAuth2LoginAuthenticationFilter;
 import org.springframework.security.oauth2.core.AuthorizationGrantType;
@@ -202,6 +206,16 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	@Mandatory
 	private @Setter String provider;
 
+	/**
+	 * Whether to use PKCE (Proof Key for Code Exchange) for the OAuth2 authorization code flow.
+	 * <p>
+	 * PKCE enhances security by requiring a code verifier and code challenge during the authorization process.
+	 * See <a href="https://oauth.net/2/pkce/">OAuth 2.0 PKCE</a> for more information.
+	 * </p>
+	 * <p>Please note that IdP's support {@code plain} or {@code S256}. We use {@code S256} since that's the secure option.</p>
+	 */
+	private @Setter boolean usePkce = false;
+
 	private ClientRegistrationRepository clientRepository;
 	private String servletPath;
 
@@ -238,11 +252,29 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 				.clientRegistrationRepository(clientRepository) // Explicitly set, but can also be implicitly implied.
 				.authorizedClientService(clientService)
 				.failureUrl(servletPath + "/oauth2/failure/")
-				.authorizationEndpoint(endpoint -> endpoint.baseUri(servletPath + OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI))
+				.authorizationEndpoint(this::getOauth2LoginConfigurer)
 				.userInfoEndpoint(endpoint -> endpoint.userAuthoritiesMapper(authorityMapper))
 				.loginProcessingUrl(servletPath + "/oauth2/code/*"));
 
 		return http.build();
+	}
+
+	/**
+	 * Gets the OAuth2LoginConfigurer with optional PKCE support.
+	 */
+	private OAuth2LoginConfigurer<HttpSecurity>.@NonNull AuthorizationEndpointConfig getOauth2LoginConfigurer(OAuth2LoginConfigurer<HttpSecurity>.AuthorizationEndpointConfig endpoint) {
+		String authorizationRequestBaseUri = servletPath + OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
+		endpoint.baseUri(authorizationRequestBaseUri);
+
+		if (usePkce) {
+			log.info("enabling PKCE support for OAuth2 authentication. Make sure your IdP client is configured to use PKCE s256 proof keys.");
+			DefaultOAuth2AuthorizationRequestResolver resolver = new DefaultOAuth2AuthorizationRequestResolver(clientRepository, authorizationRequestBaseUri);
+			resolver.setAuthorizationRequestCustomizer(OAuth2AuthorizationRequestCustomizers.withPkce());
+
+			endpoint.authorizationRequestResolver(resolver);
+		}
+
+		return endpoint;
 	}
 
 	private void configure() throws FileNotFoundException {
@@ -328,6 +360,7 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 
 	public Builder createCustomBuilder(String name, String registrationId) {
 		ClientRegistration.Builder builder = ClientRegistration.withRegistrationId(registrationId);
+
 		builder.clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC);
 		builder.authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE);
 
