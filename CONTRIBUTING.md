@@ -92,6 +92,13 @@ The Frank!Framework community has introduced [Project Lombok](https://projectlom
 * With Lombok, you do not have to code getters and setters anymore. You can generate them by putting annotations `@Getter` and `@Setter` on the backing field. This is very useful. But please do NOT put the `@Getter` or `@Setter` on a non-private class. This makes fewer lines of code, but there is a drawback. You cannot see the call hierarchy anymore of a getter or a setter. When you put the annotations on the method level, you can still see the call hierarchy: right-click the `@Getter` or `@Setter` and select "Open Call Hierarchy" in Eclipse.
 * For the sake of readability, please put the `@Getter` or `@Setter` annotations inside the variable declaration: "`private @Getter @Setter MyType myField`".
 
+The project uses the Error Prone checker with the NullAway plugin, and JSpecify annotations for nullability.
+Please pay attention to the warnings they generate in the Maven output if you do not have an integration with these tools in your IDE.
+For more information on these tools, you can check their documentation at:
+- [Error Prone](https://errorprone.info/index)
+- [NullAway](https://github.com/uber/NullAway)
+- [JSpecify](https://jspecify.dev/docs/applying/)
+
 See our [Additional Coding Guidelines](AdditionalCodingGuidelines.md) for code examples to help create more readable, testable and maintainable code.
 
 ## Testing
