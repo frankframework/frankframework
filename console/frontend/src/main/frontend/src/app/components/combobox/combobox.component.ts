@@ -2,7 +2,6 @@ import {
   Component,
   ElementRef,
   EventEmitter,
-  HostListener,
   Input,
   OnChanges,
   OnInit,
@@ -23,6 +22,12 @@ export type Option = {
   imports: [NgClass, FormsModule],
   templateUrl: './combobox.component.html',
   styleUrl: './combobox.component.scss',
+  host: {
+    '(keydown.enter)': 'onEnter($event)',
+    '(keydown.escape)': 'onEscape()',
+    '(keydown.arrowUp)': 'onArrowUp()',
+    '(keydown.arrowDown)': 'onArrowDown()',
+  },
 })
 export class ComboboxComponent implements OnInit, OnChanges {
   @Input({ required: true }) options!: Option[];
@@ -42,25 +47,21 @@ export class ComboboxComponent implements OnInit, OnChanges {
   protected listShown = false;
   protected showError = false;
 
-  @HostListener('keydown.enter', ['$event'])
-  protected onEnter(event: KeyboardEvent): void {
+  protected onEnter(event: Event): void {
     event.preventDefault();
     this.selectItem(this.selectedIndex);
     this.hideListDisplay();
   }
 
-  @HostListener('keydown.escape')
   protected onEscape(): void {
     this.clearSelectedItem();
     this.hideListDisplay();
   }
 
-  @HostListener('keydown.arrowUp')
   protected onArrowUp(): void {
     this.selectPrevious();
   }
 
-  @HostListener('keydown.arrowDown')
   protected onArrowDown(): void {
     this.selectNext();
   }
