@@ -14,6 +14,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import com.jayway.jsonpath.InvalidJsonException;
@@ -248,6 +249,38 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 		expectedMessage += (isJson) ? "application/json" : "application/xml";
 
 		assertThat(e.getMessage(), Matchers.containsString(expectedMessage));
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+			"/root, $.root, XML",
+			", $.root, JSON",
+			", , TEXT",
+			"/root, , XML"
+	})
+	void testDefaultMediaType(String xpathExpression, String jsonPathExpression, IfPipe.SupportedMediaType expectedMediaType) throws ConfigurationException {
+		// Arrange
+		pipe.setXpathExpression(xpathExpression);
+		pipe.setJsonPathExpression(jsonPathExpression);
+
+		// Act
+		configureAndStartPipe();
+
+		// Assert
+		assertEquals(expectedMediaType, pipe.getDefaultMediaType());
+	}
+
+	@Test
+	void testDefaultMediaTypeNotOverriddenWhenConfigured() throws ConfigurationException {
+		// Arrange
+		pipe.setJsonPathExpression("$.root");
+		pipe.setDefaultMediaType(IfPipe.SupportedMediaType.TEXT);
+
+		// Act
+		configureAndStartPipe();
+
+		// Assert
+		assertEquals(IfPipe.SupportedMediaType.TEXT, pipe.getDefaultMediaType());
 	}
 
 	private static Message getJsonMessage() {

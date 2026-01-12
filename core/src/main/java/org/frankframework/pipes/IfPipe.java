@@ -156,11 +156,13 @@ public class IfPipe extends AbstractPipe {
 
 	private @Getter int xsltVersion = XmlUtils.DEFAULT_XSLT_VERSION;
 
-	private SupportedMediaType defaultMediaType = SupportedMediaType.XML;
+	private @Getter SupportedMediaType defaultMediaType = null;
 
 	public enum SupportedMediaType {
 		XML(MediaType.APPLICATION_XML),
-		JSON(MediaType.APPLICATION_JSON);
+		JSON(MediaType.APPLICATION_JSON),
+		TEXT(MediaType.TEXT_PLAIN)
+		;
 
 		final MediaType mediaType;
 
@@ -187,6 +189,16 @@ public class IfPipe extends AbstractPipe {
 			);
 		}
 		jsonPath = JsonUtil.compileJsonPath(jsonPathExpression);
+
+		if (defaultMediaType == null) {
+			if (jsonPath != null && transformerPool == null) {
+				defaultMediaType = SupportedMediaType.JSON;
+			} else if (transformerPool != null) {
+				defaultMediaType = SupportedMediaType.XML;
+			} else {
+				defaultMediaType = SupportedMediaType.TEXT;
+			}
+		}
 	}
 
 	/**
@@ -391,8 +403,10 @@ public class IfPipe extends AbstractPipe {
 	}
 
 	/**
-	 * @param defaultMediaType The default media type to use when the media type of the message could not be determined.
-	 * @ff.default DefaultMediaType.XML
+	 * @param defaultMediaType The default media type to use when the media type of the message could not be determined. Should
+	 *                         be one of {@literal XML}, {@literal JSON} or {@literal TEXT}.
+	 * @ff.default {@literal JSON} if only a {@literal jsonPathExpression} is set, {@literal XML} if an
+	 * {@literal xpathExpression} is set, or {@literal TEXT} if neither are set.
 	 */
 	public void setDefaultMediaType(SupportedMediaType defaultMediaType) {
 		this.defaultMediaType = defaultMediaType;
