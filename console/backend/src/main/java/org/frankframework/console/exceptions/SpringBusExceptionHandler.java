@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.console.configuration;
+package org.frankframework.console.exceptions;
 
 import java.util.function.Function;
 
@@ -37,7 +37,11 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.console.ApiException;
 import org.frankframework.management.bus.BusException;
 
-@RestControllerAdvice
+/**
+ * This ExceptionHandler catches {@link MessageHandlingException Spring Integration related exceptions}
+ * as well as the {@link BusException} thrown by the Frank!Framework.
+ */
+@RestControllerAdvice("org.frankframework.console")
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Log4j2
 public class SpringBusExceptionHandler {
