@@ -25,6 +25,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.json.JsonException;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageContext;
 
 /**
  * Contains generic {@link IfPipe} scenarios to test
@@ -281,6 +282,31 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 
 		// Assert
 		assertEquals(IfPipe.SupportedMediaType.TEXT, pipe.getDefaultMediaType());
+	}
+
+	@Test
+	void testXmlSubTypes() throws ConfigurationException, PipeRunException {
+		// Arrange
+		pipe.setXpathExpression("/feed/title");
+		pipe.setExpressionValue("Feed Name");
+		pipe.addForward(new PipeForward("then", "match"));
+		pipe.addForward(new PipeForward("else", "nomatch"));
+
+		configureAndStartPipe();
+
+		Message input = new Message("""
+				<feed>
+					<title>Feed Name</title>
+				</feed>
+				""", new MessageContext().withMimeType("application/atom+xml")
+		);
+
+
+		// Act
+		PipeRunResult result = pipe.doPipe(input, session);
+
+		// Assert
+		assertEquals("then", result.getPipeForward().getName());
 	}
 
 	private static Message getJsonMessage() {

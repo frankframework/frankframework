@@ -77,7 +77,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 
 		// but will fail because "test" is not valid xml (SaxParseException wrapped in PipeRunException)
 		PipeRunException e = assertThrows(PipeRunException.class, () -> doPipe(pipe, "test", session));
-		assertThat(e.getMessage(), Matchers.endsWith("Content is not allowed in prolog."));
+		assertThat(e.getMessage(), Matchers.endsWith("Incorrect pathExpression provided for given mediaType text/plain"));
 	}
 
 	@Test

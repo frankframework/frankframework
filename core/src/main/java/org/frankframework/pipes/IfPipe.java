@@ -159,15 +159,21 @@ public class IfPipe extends AbstractPipe {
 	private @Getter SupportedMediaType defaultMediaType = null;
 
 	public enum SupportedMediaType {
-		XML(MediaType.APPLICATION_XML),
+		XML(MediaType.APPLICATION_XML, new MediaType("application", "*+xml")),
 		JSON(MediaType.APPLICATION_JSON),
-		TEXT(MediaType.TEXT_PLAIN)
+		TEXT(MediaType.TEXT_PLAIN, new MediaType("text", "*"))
 		;
 
 		final MediaType mediaType;
+		final MediaType compatibleTypes;
 
 		SupportedMediaType(MediaType mediaType) {
 			this.mediaType = mediaType;
+			this.compatibleTypes = mediaType;
+		}
+		SupportedMediaType(MediaType mediaType, MediaType compatibleTypes) {
+			this.mediaType = mediaType;
+			this.compatibleTypes = compatibleTypes;
 		}
 
 		@Override
@@ -244,7 +250,7 @@ public class IfPipe extends AbstractPipe {
 
 		// check if computedType is one of the supported types, or else use the defaultMediaType
 		return Arrays.stream(SupportedMediaType.values())
-				.filter(supportedType -> supportedType.mediaType.equalsTypeAndSubtype(computedType))
+				.filter(supportedType -> supportedType.compatibleTypes.isCompatibleWith(computedType))
 				.findFirst()
 				.orElse(defaultMediaType);
 	}
