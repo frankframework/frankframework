@@ -15,7 +15,7 @@
 */
 package org.frankframework.metrics;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.MeterRegistry;
@@ -30,7 +30,7 @@ public class StatsDRegistryConfigurator extends AbstractMetricsRegistryConfigura
 	private static final String FLAVOR_PROPERTY = "flavor";
 
 	private class Config extends AbstractMeterRegistryConfig implements StatsdConfig {
-		@Nonnull
+		@NonNull
 		@Override
 		public StatsdFlavor flavor() {
 			return EnumUtils.parse(StatsdFlavor.class, getProperty(FLAVOR_PROPERTY));

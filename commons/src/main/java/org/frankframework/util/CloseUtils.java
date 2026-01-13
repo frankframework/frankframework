@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,11 +20,10 @@ import java.io.OutputStream;
 import java.io.Reader;
 import java.util.Collection;
 
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.io.input.CloseShieldInputStream;
 import org.apache.commons.io.input.CloseShieldReader;
 import org.apache.commons.io.output.CloseShieldOutputStream;
+import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 

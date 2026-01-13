@@ -1,5 +1,5 @@
 /*
-Copyright 2017-2025 WeAreFrank!
+Copyright 2017-2026 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,9 +25,10 @@ import java.util.Optional;
 import java.util.SortedMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.json.JsonObject;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -69,7 +70,7 @@ public class ApiServiceDispatcher {
 	 * @param uri URI for which to find matching {@link ApiDispatchConfig} instances.
 	 * @return List of {@link ApiDispatchConfig} instances matching the start of this request URI. (Nonnull, may be empty).
 	 */
-	@Nonnull
+	@NonNull
 	public List<ApiDispatchConfig> findAllMatchingConfigsForUri(String uri) {
 		return findMatchingConfigsForUri(uri, false);
 	}
@@ -83,7 +84,7 @@ public class ApiServiceDispatcher {
 	 * @return The {@link ApiDispatchConfig} from which to generate an OpenAPI spec.
 	 */
 	@Nullable
-	public ApiDispatchConfig findExactMatchingConfigForUri(@Nonnull String uri) {
+	public ApiDispatchConfig findExactMatchingConfigForUri(@NonNull String uri) {
 		List<ApiDispatchConfig> configs = findMatchingConfigsForUri(uri, true);
 		return configs.stream()
 				.filter(cfg -> !cfg.getUriPattern().endsWith("/**"))
@@ -125,7 +126,7 @@ public class ApiServiceDispatcher {
 	 * @return The best matching {@link ApiDispatchConfig}, or {@code null}.
 	 */
 	@Nullable
-	public ApiDispatchConfig findConfigForRequest(@Nonnull ApiListener.HttpMethod method, @Nonnull String requestUri) {
+	public ApiDispatchConfig findConfigForRequest(ApiListener.@NonNull HttpMethod method, @NonNull String requestUri) {
 		List<ApiDispatchConfig> configs = findMatchingConfigsForUri(requestUri, true);
 		return configs.stream()
 				.max(Comparator.comparingInt(cfg -> scoreRequestMethodMatch(method, cfg) + scoreUriPattern(cfg.getUriPattern())))
@@ -177,7 +178,7 @@ public class ApiServiceDispatcher {
 	 * @param uriPattern A pattern of a URI containing wildcards
 	 * @return Numerical score calculated for the URI based on the rules above.
 	 */
-	public static int scoreUriPattern(@Nonnull String uriPattern) {
+	public static int scoreUriPattern(@NonNull String uriPattern) {
 		int startValue = uriPattern.endsWith("/**") ? -10 : 0;
 		return uriPattern.chars()
 				.reduce(startValue, (cnt, chr) -> switch ((char) chr) {
@@ -187,8 +188,8 @@ public class ApiServiceDispatcher {
 				});
 	}
 
-	@Nonnull
-	private List<ApiDispatchConfig> findMatchingConfigsForUri(@Nonnull String uri, boolean matchFullPattern) {
+	@NonNull
+	private List<ApiDispatchConfig> findMatchingConfigsForUri(@NonNull String uri, boolean matchFullPattern) {
 		List<ApiDispatchConfig> results = new ArrayList<>();
 
 		String[] uriSegments = uri.split("/");

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2016 Nationale-Nederlanden, 2021-2022 WeAreFrank!
+   Copyright 2013-2016 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,9 +19,8 @@ import java.io.IOException;
 
 import javax.xml.transform.TransformerException;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
@@ -86,7 +85,7 @@ public class FixedResultSender extends AbstractSenderWithParameters {
 	}
 
 	@Override
-	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 		String result=returnString;
 		ParameterValueList pvl;
 		try {

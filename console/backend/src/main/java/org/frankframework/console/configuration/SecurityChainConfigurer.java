@@ -15,14 +15,14 @@
 */
 package org.frankframework.console.configuration;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
@@ -133,7 +133,7 @@ public class SecurityChainConfigurer implements ApplicationContextAware, Environ
 	private static class RedirectToServletRoot implements LogoutSuccessHandler {
 		// force a 401 status to clear any www-authenticate cache.
 		@Override
-		public void onLogoutSuccess(@Nonnull HttpServletRequest request, @Nonnull HttpServletResponse response, @Nullable Authentication authentication) {
+		public void onLogoutSuccess(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @Nullable Authentication authentication) {
 			response.setStatus(HttpStatus.UNAUTHORIZED.value());
 			response.setHeader("Location", determineTargetUrl(request));
 		}

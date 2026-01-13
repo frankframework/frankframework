@@ -24,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import jakarta.annotation.Nonnull;
 import jakarta.servlet.HttpConstraintElement;
 import jakarta.servlet.HttpMethodConstraintElement;
 import jakarta.servlet.ServletContext;
@@ -38,6 +37,7 @@ import jakarta.servlet.annotation.ServletSecurity.TransportGuarantee;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -111,7 +111,7 @@ public class ServletManager implements ApplicationContextAware, InitializingBean
 	@Override
 	@Autowired
 	@Lazy
-	public void setServletContext(@Nonnull ServletContext servletContext) {
+	public void setServletContext(@NonNull ServletContext servletContext) {
 		this.servletContext = servletContext;
 	}
 

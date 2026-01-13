@@ -18,9 +18,8 @@ package org.frankframework.management.gateway;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.expression.EvaluationContext;
 import org.springframework.expression.EvaluationException;
@@ -107,9 +106,9 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 			super(HttpMethod.POST);
 		}
 
-		@Nonnull
+		@NonNull
 		@Override
-		public HttpMethod getValue(@Nonnull EvaluationContext context, @Nullable Object rootObject) throws EvaluationException {
+		public HttpMethod getValue(@NonNull EvaluationContext context, @Nullable Object rootObject) throws EvaluationException {
 			if(rootObject instanceof Message<?> message && "NONE".equals(message.getPayload())) {
 				return HttpMethod.GET;
 			}
@@ -120,9 +119,9 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 	/**
 	 * Add authentication JWT, see {@link JwtKeyGenerator}.
 	 */
-	@Nonnull
+	@NonNull
 	@Override
-	protected HttpHeaders mapHeaders(@Nonnull Message<?> message) {
+	protected HttpHeaders mapHeaders(@NonNull Message<?> message) {
 		HttpHeaders headers = super.mapHeaders(message);
 
 		headers.add("Authentication", "Bearer " + jwtGenerator.create());
@@ -130,9 +129,9 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 	}
 
 	@Override
-	@Nonnull
+	@NonNull
 	@SuppressWarnings("rawtypes")
-	public Message handleRequestMessage(@Nonnull Message<?> requestMessage) {
+	public Message handleRequestMessage(@NonNull Message<?> requestMessage) {
 		Object response = super.handleRequestMessage(requestMessage);
 
 		if(response instanceof Message message) {
@@ -146,7 +145,7 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 
 	@Nullable
 	@Override
-	protected Object resolveErrorChannel(@Nonnull MessageHeaders requestHeaders) {
+	protected Object resolveErrorChannel(@NonNull MessageHeaders requestHeaders) {
 		return getOutputChannel();
 	}
 
@@ -154,9 +153,9 @@ public class HttpOutboundHandler extends HttpRequestExecutingMessageHandler {
 	 * Always convert to a binary response, JAX-RS may convert this to characters if needed.
 	 * The conversion from String to binary may use the wrong encoding.
 	 */
-	@Nonnull
+	@NonNull
 	@Override
-	protected Object evaluateTypeFromExpression(@Nonnull Message<?> requestMessage, Expression expression, @Nonnull String property) {
+	protected Object evaluateTypeFromExpression(@NonNull Message<?> requestMessage, Expression expression, @NonNull String property) {
 		if("expectedResponseType".equals(property)) {
 			return byte[].class;
 		}

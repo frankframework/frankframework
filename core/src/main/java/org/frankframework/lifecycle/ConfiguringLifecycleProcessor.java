@@ -23,10 +23,9 @@ import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.logging.log4j.CloseableThreadContext;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.Lifecycle;
 import org.springframework.context.support.DefaultLifecycleProcessor;
@@ -144,7 +143,7 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 	/**
 	 * Override so we can filter on {@link ManagableLifecycle} beans.
 	 */
-	@Nonnull
+	@NonNull
 	@Override
 	protected Map<String, Lifecycle> getLifecycleBeans() {
 		if (onlySmartAutostartAndNormalLifeLycleBeans.get()) {
@@ -245,8 +244,8 @@ public class ConfiguringLifecycleProcessor extends DefaultLifecycleProcessor imp
 			log.debug("successfully configured bean [{}]", () -> ClassUtils.nameOf(member));
 		}
 
-		@Nonnull
-		private static ConfigurationException addException(@Nullable final ConfigurationException originalEx, @Nonnull final ConfigurationException newEx) {
+		@NonNull
+		private static ConfigurationException addException(@Nullable final ConfigurationException originalEx, @NonNull final ConfigurationException newEx) {
 			if (originalEx == null) {
 				return newEx;
 			}

@@ -24,11 +24,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 import org.xml.sax.SAXException;
 
@@ -137,8 +136,8 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 
 	protected abstract FS createFileSystem();
 
-	public AbstractFileSystemListener() {
-		fileSystem=createFileSystem();
+	protected AbstractFileSystemListener() {
+		fileSystem = createFileSystem();
 	}
 
 	@Override
@@ -229,14 +228,14 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public Map<String,Object> openThread() {
 		return new HashMap<>();
 	}
 
 	@Override
-	public void closeThread(@Nonnull Map<String, Object> threadContext) {
+	public void closeThread(@NonNull Map<String, Object> threadContext) {
 		// nothing special here
 	}
 
@@ -254,7 +253,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 	}
 
 	@Override
-	public synchronized @Nullable RawMessageWrapper<F> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException {
+	public synchronized @Nullable RawMessageWrapper<F> getRawMessage(@NonNull Map<String, Object> threadContext) throws ListenerException {
 		log.trace("Get Raw Message");
 		FS fileSystem = getFileSystem();
 		log.trace("Getting raw message from FS {}", () -> fileSystem.getClass().getSimpleName());
@@ -325,7 +324,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 	 * Returns the filename, or the contents
 	 */
 	@Override
-	public Message extractMessage(@Nonnull RawMessageWrapper<F> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+	public Message extractMessage(@NonNull RawMessageWrapper<F> rawMessage, @NonNull Map<String, Object> context) throws ListenerException {
 		log.debug("Extract message from raw message");
 		try {
 			F file = rawMessage.getRawMessage();
@@ -342,7 +341,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 		}
 	}
 
-	public @Nonnull Map<String, Object> extractMessageProperties(@Nonnull F rawMessage, @Nullable String originalFilename) throws ListenerException {
+	public @NonNull Map<String, Object> extractMessageProperties(@NonNull F rawMessage, @Nullable String originalFilename) throws ListenerException {
 		Map<String, Object> messageProperties = new HashMap<>();
 		FS fs = getFileSystem();
 		String filename = fs.getName(rawMessage);
@@ -369,7 +368,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 		}
 	}
 
-	private String deriveMessageId(@Nonnull F rawMessage, @Nullable String originalFilename, Map<String, Object> attributes) throws FileSystemException {
+	private String deriveMessageId(@NonNull F rawMessage, @Nullable String originalFilename, Map<String, Object> attributes) throws FileSystemException {
 		String messageId = null;
 		if (StringUtils.isNotEmpty(getMessageIdPropertyKey())) {
 			if (attributes != null) {
@@ -430,7 +429,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	@SuppressWarnings("unchecked")
 	private F renameFileWithTimeStamp(RawMessageWrapper<F> message, ProcessState toState, F movedFile) throws FileSystemException {
 
@@ -461,7 +460,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 		return FileSystemUtils.renameFile((IWritableFileSystem<F>) getFileSystem(), movedFile, renamedFile, false, 0);
 	}
 
-	@Nonnull
+	@NonNull
 	private String getFormatFileModificationDate(F movedFile) throws FileSystemException {
 		return DateFormatUtils.format(getFileSystem().getModificationTime(movedFile), DateFormatUtils.FULL_ISO_TIMESTAMP_NO_TZ_FORMATTER);
 	}

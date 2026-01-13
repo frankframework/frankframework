@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2023 WeAreFrank!
+   Copyright 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,9 +24,8 @@ import java.util.Date;
 
 import javax.sql.DataSource;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -119,7 +118,7 @@ public abstract class AbstractJdbcMessageBrowser<M> extends JdbcFacade implement
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	protected DataSource getDatasource() throws JdbcException {
 		return datasource!=null ? datasource : super.getDatasource();

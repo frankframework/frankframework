@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,10 +28,9 @@ import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -66,7 +65,7 @@ public class WsdlGeneratorPipe extends FixedForwardPipe {
 	private @Getter @Setter String filenameSessionKey = "fileName";
 	private @Getter @Setter String propertiesFileName = "wsdl.properties";
 
-	@Nonnull
+	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Message fileInSession = session.getMessage(getSessionKey());

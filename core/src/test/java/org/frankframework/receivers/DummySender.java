@@ -1,7 +1,6 @@
 package org.frankframework.receivers;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
@@ -42,7 +41,7 @@ public class DummySender implements ICorrelatedSender {
 	}
 
 	@Override
-	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 		return new SenderResult(message);
 	}
 }

@@ -11,8 +11,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeEachCallback;
 import org.junit.jupiter.api.extension.Extension;
@@ -43,13 +42,13 @@ class DatabaseTestInvocationContext implements TestTemplateInvocationContext {
 		this.arguments = arguments;
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public List<Extension> getAdditionalExtensions() {
 		return singletonList(new DatabaseTestParameterResolver(testMethod, arguments));
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public String getDisplayName(int invocationIndex) {
 		return Arrays.stream(arguments).map(Objects::toString).collect(Collectors.joining(" - "));
@@ -103,7 +102,7 @@ class DatabaseTestInvocationContext implements TestTemplateInvocationContext {
 		}
 
 		@Override
-		public void afterEach(@Nonnull ExtensionContext context) {
+		public void afterEach(@NonNull ExtensionContext context) {
 			XaDataSourceModifier.removeFactory();
 			if(cleanupAfterUse) {
 				log.info("cleanup TransactionManager after executing test");
@@ -138,22 +137,22 @@ class DatabaseTestInvocationContext implements TestTemplateInvocationContext {
 		}
 
 		@Override
-		public boolean supportsParameter(ParameterContext parameterContext, @Nonnull ExtensionContext extensionContext) throws ParameterResolutionException {
+		public boolean supportsParameter(ParameterContext parameterContext, @NonNull ExtensionContext extensionContext) throws ParameterResolutionException {
 			Parameter p = parameterContext.getParameter();
 			return p.getType().isAssignableFrom(DatabaseTestEnvironment.class);
 		}
 
 		@Override
-		public Object resolveParameter(@Nonnull ParameterContext parameterContext, @Nonnull ExtensionContext extensionContext) throws ParameterResolutionException {
+		public Object resolveParameter(@NonNull ParameterContext parameterContext, @NonNull ExtensionContext extensionContext) throws ParameterResolutionException {
 			return dte;
 		}
 	}
 
-	private static ExtensionContext.Store getStore(@Nonnull ExtensionContext context) {
+	private static ExtensionContext.Store getStore(@NonNull ExtensionContext context) {
 		return context.getStore(Namespace.create(DatabaseTestEnvironment.class, context.getRequiredTestMethod()));
 	}
 
-	static DatabaseTestEnvironment getDatabaseTestEnvironment(@Nonnull ExtensionContext context) {
+	static DatabaseTestEnvironment getDatabaseTestEnvironment(@NonNull ExtensionContext context) {
 		return getStore(context).get(JUnitDatabaseExtension.DB_INSTANCE, DatabaseTestEnvironment.class);
 	}
 }

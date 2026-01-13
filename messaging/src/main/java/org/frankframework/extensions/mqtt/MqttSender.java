@@ -1,5 +1,5 @@
 /*
-   Copyright 2017, 2022 WeAreFrank!
+   Copyright 2017, 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,9 +16,8 @@
 
 package org.frankframework.extensions.mqtt;
 
-import jakarta.annotation.Nonnull;
-
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.jspecify.annotations.NonNull;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -50,7 +49,7 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 
 	private static final String TOPIC_PARAMETER_NAME = "topic";
 
-	protected @Nonnull ParameterList paramList = new ParameterList();
+	protected @NonNull ParameterList paramList = new ParameterList();
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -83,12 +82,12 @@ public class MqttSender extends MqttFacade implements ISenderWithParameters {
 	}
 
 	@Override
-	public @Nonnull ParameterList getParameterList() {
+	public @NonNull ParameterList getParameterList() {
 		return paramList;
 	}
 
 	@Override
-	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 		try {
 			String topic = getTopic();
 			IParameter topicParameter = getParameterList().findParameter(TOPIC_PARAMETER_NAME);

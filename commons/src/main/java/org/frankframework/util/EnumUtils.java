@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.doc.DocumentedEnum;
 

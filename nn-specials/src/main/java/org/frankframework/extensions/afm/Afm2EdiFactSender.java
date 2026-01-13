@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,9 +17,8 @@ package org.frankframework.extensions.afm;
 
 import java.text.DecimalFormat;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -77,7 +76,7 @@ public class Afm2EdiFactSender implements ISender {
 	}
 
 	@Override
-	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
 		try {
 			return new SenderResult(execute(message.asString()));
 		} catch (Exception e) {

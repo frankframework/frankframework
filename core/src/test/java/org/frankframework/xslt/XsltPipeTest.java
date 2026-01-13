@@ -3,6 +3,10 @@ package org.frankframework.xslt;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -14,8 +18,14 @@ import org.frankframework.pipes.XsltPipe;
 import org.frankframework.processors.CorePipeProcessor;
 import org.frankframework.processors.InputOutputPipeProcessor;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageContext;
+import org.frankframework.stream.UrlMessage;
+import org.frankframework.testutil.MatchUtils;
+import org.frankframework.testutil.MessageTestUtils;
 import org.frankframework.testutil.TestFileUtils;
 import org.frankframework.testutil.XmlParameterBuilder;
+import org.frankframework.util.ClassLoaderUtils;
+import org.frankframework.util.MessageUtils;
 import org.frankframework.util.TransformerPool.OutputType;
 
 public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
@@ -181,5 +191,30 @@ public class XsltPipeTest extends XsltErrorTestBase<XsltPipe> {
 
 		String expected = TestFileUtils.getTestFile("/Xslt/3934/expected.xml");
 		assertEquals(expected, result.getResult().asString());
+	}
+
+	// When reading the result the new charset needs to be known, else it will use UTF-8 and thus muck up the characters.
+	@Test
+	public void testOutputEncoding() throws Exception {
+		pipe.setStyleSheetName("/Xslt/ISO-8859-1/output-encoding.xsl");
+		pipe.configure();
+		pipe.start();
+		URL url = ClassLoaderUtils.getResourceURL("/Xslt/ISO-8859-1/iso-8859-1.xml");
+		Message message = new UrlMessage(url, StandardCharsets.ISO_8859_1.displayName());
+		URL resultUrl = ClassLoaderUtils.getResourceURL("/Xslt/ISO-8859-1/utf-8.xml");
+		assertNotNull(resultUrl);
+		String expected = new UrlMessage(resultUrl).asString();
+
+		// Act
+		PipeRunResult result = doPipe(message);
+		assertNotNull(result);
+		MessageUtils.computeDecodingCharset(result.getResult()); // Everything breaks if this method is not called!
+
+		// Assert
+		String resultString = result.getResult().asString();
+		assertTrue(resultString.contains("<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>"));
+		MatchUtils.assertXmlEquals(expected, resultString.replaceAll("ISO-8859-1", "UTF-8"));
+
+		assertEquals("ISO-8859-1", result.getResult().getCharset());
 	}
 }

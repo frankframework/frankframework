@@ -68,11 +68,11 @@ class RekenboxLineReader extends BufferedReader {
 		eos = false;
 
 		if(havePushback()) {
-			char c = (char) getPushback();
+			int c = getPushback();
 			if(c == -1) {
 				return null;
 			}
-			str.append(c);
+			str.append((char)c);
 		}
 
 		while(true) {

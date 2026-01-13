@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021-2025 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,10 +19,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 
@@ -81,7 +80,7 @@ public class Base64Pipe extends FixedForwardPipe {
 		lineSeparatorArray = separator.getBytes();
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		boolean directionEncode = getDirection() == Direction.ENCODE;// TRUE encode - FALSE decode

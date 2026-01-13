@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,10 +29,9 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -197,7 +196,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	 * @param query The query that is configured
 	 * @return Output-parameters indexed by position in the query parameter-list.
 	 */
-	private Map<Integer, IParameter> buildOutputParameterMap(@Nonnull ParameterList parameterList, String query) {
+	private Map<Integer, IParameter> buildOutputParameterMap(@NonNull ParameterList parameterList, String query) {
 		Pattern queryParamPattern = Pattern.compile("\\?(\\{\\w+\\})?");
 		Matcher parameterMatcher = queryParamPattern.matcher(query);
 		List<String> queryParameterNames = new ArrayList<>();
@@ -251,7 +250,7 @@ public class StoredProcedureQuerySender extends FixedQuerySender {
 	}
 
 	@Override
-	protected Message executeOtherQuery(@Nonnull Connection connection, @Nonnull PreparedStatement statement, @Nonnull String query, @Nullable String resultQuery, @Nullable PreparedStatement resStmt, @Nullable Message message, @Nullable PipeLineSession session, @Nullable ParameterList parameterList) throws SenderException {
+	protected Message executeOtherQuery(@NonNull Connection connection, @NonNull PreparedStatement statement, @NonNull String query, @Nullable String resultQuery, @Nullable PreparedStatement resStmt, @Nullable Message message, @Nullable PipeLineSession session, @Nullable ParameterList parameterList) throws SenderException {
 		try {
 			CallableStatement callableStatement = (CallableStatement) statement;
 			callableStatement.setQueryTimeout(getTimeout());

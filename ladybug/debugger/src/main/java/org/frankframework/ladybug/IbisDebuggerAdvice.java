@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2018-2020 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,10 +20,9 @@ import java.io.Writer;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.FatalBeanException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -315,7 +314,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			private long written;
 
 			@Override
-			public void write(@Nonnull char[] buffer, int offset, int length) throws IOException {
+			public void write(@NonNull char[] buffer, int offset, int length) throws IOException {
 				if (written <= maxSize) {
 					writer.write(buffer, offset, length);
 					written += length;
@@ -534,7 +533,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 	}
 
 	@Override
-	public void onApplicationEvent(@Nonnull DebuggerStatusChangedEvent event) {
+	public void onApplicationEvent(@NonNull DebuggerStatusChangedEvent event) {
 		log.debug("received DebuggerStatusChangedEvent [{}]", event);
 		setEnabled(event.isEnabled());
 	}

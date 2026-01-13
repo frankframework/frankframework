@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import java.util.List;
 import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
 
-import jakarta.annotation.Nonnull;
 import jakarta.jms.Destination;
 import jakarta.jms.JMSException;
 import jakarta.jms.MessageConsumer;
@@ -34,6 +33,7 @@ import jakarta.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.jspecify.annotations.NonNull;
 import org.xml.sax.SAXException;
 
 import io.micrometer.core.instrument.DistributionSummary;
@@ -89,7 +89,7 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 	private @Getter String destinationParam = null;
 	private @Setter MetricsInitializer configurationMetrics;
 
-	protected @Nonnull ParameterList paramList = new ParameterList();
+	protected @NonNull ParameterList paramList = new ParameterList();
 	private SoapWrapper soapWrapper = null;
 	private String responseHeaders = null;
 	private final @Getter List<String> responseHeadersList = new ArrayList<>();
@@ -166,16 +166,16 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 	}
 
 	@Override
-	public @Nonnull ParameterList getParameterList() {
+	public @NonNull ParameterList getParameterList() {
 		return paramList;
 	}
 
 	@Override
-	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 		return new SenderResult(sendMessage(message, session, null));
 	}
 
-	public @Nonnull Message sendMessage(@Nonnull Message message, @Nonnull PipeLineSession pipeLineSession, String soapHeader) throws SenderException, TimeoutException {
+	public @NonNull Message sendMessage(@NonNull Message message, @NonNull PipeLineSession pipeLineSession, String soapHeader) throws SenderException, TimeoutException {
 		Session jmsSession = null;
 		MessageProducer messageProducer = null;
 

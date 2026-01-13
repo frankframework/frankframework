@@ -28,12 +28,11 @@ import java.util.function.Supplier;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.SAXException;
 
 import lombok.Lombok;
@@ -217,7 +216,7 @@ public class FileSystemUtils {
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	public static <F> DirectoryStream<F> getDirectoryStream(Iterable<F> iterable) {
 
 		return new DirectoryStream<>() {
@@ -235,7 +234,7 @@ public class FileSystemUtils {
 				}
 			}
 
-			@Nonnull
+			@NonNull
 			@Override
 			public Iterator<F> iterator() {
 				return iterable.iterator();
@@ -244,12 +243,12 @@ public class FileSystemUtils {
 		};
 	}
 
-	@Nonnull
+	@NonNull
 	public static <F> DirectoryStream<F> getDirectoryStream(@Nullable Iterator<F> iterator) {
 		return getDirectoryStream(iterator, null);
 	}
 
-	@Nonnull
+	@NonNull
 	public static <F> DirectoryStream<F> getDirectoryStream(@Nullable Iterator<F> iterator, @Nullable Supplier<IOException> onClose) {
 
 		return new DirectoryStream<>() {
@@ -264,7 +263,7 @@ public class FileSystemUtils {
 				}
 			}
 
-			@Nonnull
+			@NonNull
 			@Override
 			public Iterator<F> iterator() {
 				return iterator == null ? Collections.emptyIterator() : iterator;
@@ -298,8 +297,8 @@ public class FileSystemUtils {
 		}
 	}
 
-	@Nonnull
-	public static <F> Stream<F> getFilteredStream(IBasicFileSystem<F> fileSystem, String folder, String wildCard, String excludeWildCard, @Nonnull TypeFilter typeFilter) throws FileSystemException {
+	@NonNull
+	public static <F> Stream<F> getFilteredStream(IBasicFileSystem<F> fileSystem, String folder, String wildCard, String excludeWildCard, @NonNull TypeFilter typeFilter) throws FileSystemException {
 		DirectoryStream<F> ds = fileSystem.list(folder, typeFilter);
 		if (ds == null) {
 			return Stream.empty();

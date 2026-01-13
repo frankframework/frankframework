@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
 */
 package org.frankframework.core;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.lifecycle.ConfigurableLifecycle;
 
@@ -26,7 +26,7 @@ public interface CanUseSharedResource<T> extends FrankElement, ConfigurableLifec
 
 	/** Retrieve the shared resource from Spring */
 	@SuppressWarnings("unchecked")
-	default @Nonnull T getSharedResource(String sharedResourceName) {
+	default @NonNull T getSharedResource(String sharedResourceName) {
 		String beanName = SharedResource.SHARED_RESOURCE_PREFIX + sharedResourceName;
 		if(getApplicationContext().containsBean(beanName)) {
 			SharedResource<?> container = getApplicationContext().getBean(beanName, SharedResource.class);

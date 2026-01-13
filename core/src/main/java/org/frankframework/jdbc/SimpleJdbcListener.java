@@ -23,10 +23,9 @@ import java.sql.Statement;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IPullingListener;
@@ -85,19 +84,19 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public Map<String,Object> openThread() throws ListenerException {
 		return new LinkedHashMap<>();
 	}
 
 	@Override
-	public void closeThread(@Nonnull Map<String, Object> threadContext) throws ListenerException {
+	public void closeThread(@NonNull Map<String, Object> threadContext) throws ListenerException {
 		// No-op
 	}
 
 	@Override
-	public @Nullable RawMessageWrapper<String> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException {
+	public @Nullable RawMessageWrapper<String> getRawMessage(@NonNull Map<String, Object> threadContext) throws ListenerException {
 		if (isConnectionsArePooled()) {
 			try (Connection c = getConnection()) {
 				return getRawMessage(c, threadContext);
@@ -131,7 +130,7 @@ public class SimpleJdbcListener extends JdbcFacade implements IPullingListener<S
 	}
 
 	@Override
-	public Message extractMessage(@Nonnull RawMessageWrapper<String> rawMessage, @Nonnull Map<String,Object> context) {
+	public Message extractMessage(@NonNull RawMessageWrapper<String> rawMessage, @NonNull Map<String,Object> context) {
 		return new Message(rawMessage.getRawMessage());
 	}
 

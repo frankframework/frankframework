@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2024 WeAreFrank!
+   Copyright 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,9 +25,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.Configuration;
@@ -37,6 +34,8 @@ import org.apache.logging.log4j.core.layout.AbstractStringLayout;
 import org.apache.logging.log4j.message.Message;
 import org.apache.logging.log4j.message.SimpleMessage;
 import org.apache.logging.log4j.util.StackLocatorUtil;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.threading.ThreadConnector;
 import org.frankframework.util.StringUtil;
@@ -231,7 +230,7 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 		return Collections.unmodifiableCollection(stack);
 	}
 
-	@Nonnull
+	@NonNull
 	private static Deque<Pattern> getOrCreateThreadLocalReplace() {
 		Deque<Pattern> stack = threadLocalReplace.get();
 		if (stack == null) {
@@ -240,7 +239,7 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 		return stack;
 	}
 
-	@Nonnull
+	@NonNull
 	private static Deque<Pattern> createThreadLocalReplace() {
 		Deque<Pattern> stack = new ArrayDeque<>();
 		threadLocalReplace.set(stack);
@@ -263,7 +262,7 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 	 * @param pattern Pattern used to find strings in loglines that need to be hidden.
 	 * @return {@link HideRegexContext} that can be closed to remove above pattern from the stack again.
 	 */
-	@Nonnull
+	@NonNull
 	public static HideRegexContext pushToThreadLocalReplace(@Nullable Pattern pattern) {
 		if (pattern == null) {
 			return () -> {

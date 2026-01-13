@@ -56,6 +56,8 @@
 			com.sun.istack.NotNull,
 			com.unboundid.util.Nullable,
 			com.unboundid.util.NotNull,
+			jakarta.annotation.Nonnull,
+			jakarta.annotation.Nullable,
 			" />
 		</module>
 		<module name="IllegalImport">

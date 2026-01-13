@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2021-2025 WeAreFrank!
+   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,11 +35,10 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMResult;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
@@ -159,7 +158,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 
 	private TransformerPool transformerPool = null;
 	private TransformerPool tpDynamicSessionKey = null;
-	protected @Nonnull ParameterList paramList = new ParameterList();
+	protected @NonNull ParameterList paramList = new ParameterList();
 	private boolean configured = false;
 	private CredentialFactory cf;
 
@@ -186,7 +185,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 	}
 
 	@Override
-	public @Nonnull ParameterList getParameterList() {
+	public @NonNull ParameterList getParameterList() {
 		return paramList;
 	}
 
@@ -624,7 +623,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 	}
 
 	/** Converts raw data to configured parameter type */
-	protected abstract T getValueAsType(@Nonnull Message request, boolean namespaceAware) throws ParameterException, IOException;
+	protected abstract T getValueAsType(@NonNull Message request, boolean namespaceAware) throws ParameterException, IOException;
 
 	private String formatPattern(ParameterValueList alreadyResolvedParameters, PipeLineSession session) throws ParameterException {
 		int findNextFrom = 0;
@@ -725,7 +724,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 		return "," + substitution.formatType + "," + substitution.formatString;
 	}
 
-	private @Nonnull Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, PipeLineSession session, ParameterPatternSubstitution substitutionPattern) throws ParameterException {
+	private @NonNull Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, PipeLineSession session, ParameterPatternSubstitution substitutionPattern) throws ParameterException {
 
 		if (alreadyResolvedParameters != null) {
 			ParameterValue paramValue = alreadyResolvedParameters.get(substitutionPattern.name);

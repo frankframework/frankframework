@@ -19,11 +19,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import jakarta.annotation.Nonnull;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 
 import org.apache.tomcat.websocket.server.WsContextListener;
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.context.event.ApplicationFailedEvent;
@@ -43,7 +43,7 @@ public class ConsoleStandaloneInitializer {
 	public static class WsSciWrapper implements ServletContextInitializer {
 
 		@Override
-		public void onStartup(@Nonnull ServletContext servletContext) {
+		public void onStartup(@NonNull ServletContext servletContext) {
 			WsContextListener sc = new WsContextListener();
 			sc.contextInitialized(new ServletContextEvent(servletContext));
 		}

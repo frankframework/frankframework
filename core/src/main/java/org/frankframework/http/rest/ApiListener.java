@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2025 WeAreFrank!
+   Copyright 2017-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,10 +22,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.MimeType;
 
@@ -134,7 +133,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	private @Getter String headerParams = null;
 	private @Getter String contentDispositionHeaderSessionKey;
 	private @Getter String charset = null;
-	private @Getter @Nonnull Set<String> allowedParameterSet = Set.of();
+	private @Getter @NonNull Set<String> allowedParameterSet = Set.of();
 	private @Getter Boolean allowAllParams = null;
 
 	// for jwt validation
@@ -351,7 +350,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		return produces.accepts(acceptHeader);
 	}
 
-	public boolean isParameterAllowed(@Nonnull String parameterName) {
+	public boolean isParameterAllowed(@NonNull String parameterName) {
 		if (allowedParameterSet.isEmpty() && isAllowAllParams()) {
 			return !RESERVED_NAMES.contains(parameterName);
 		}
@@ -407,7 +406,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 *
 	 * @ff.default ANY
 	 */
-	public void setConsumes(@Nonnull MediaTypes value) {
+	public void setConsumes(@NonNull MediaTypes value) {
 		this.consumes = value;
 	}
 
@@ -417,7 +416,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 	 *
 	 * @ff.default ANY
 	 */
-	public void setProduces(@Nonnull MediaTypes value) {
+	public void setProduces(@NonNull MediaTypes value) {
 		this.produces = value;
 	}
 

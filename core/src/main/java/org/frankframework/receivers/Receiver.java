@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013-2018 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -36,14 +36,13 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Pattern;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.ThreadContext;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -419,7 +418,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	/**
 	 * sends a error message to the log and to the messagekeeper of the adapter
 	 */
-	protected void error(@Nonnull String msg, @Nullable Throwable t) {
+	protected void error(@NonNull String msg, @Nullable Throwable t) {
 		if (adapter != null) {
 			adapter.publishEvent(new AdapterMessageEvent(adapter, this, msg, t));
 		} else {
@@ -428,7 +427,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	}
 
 	@Override
-	public final void setApplicationContext(@Nonnull ApplicationContext context) {
+	public final void setApplicationContext(@NonNull ApplicationContext context) {
 		if (!(context instanceof Adapter adapter)) {
 			throw new IllegalArgumentException("ApplicationContext must always be of type Adapter");
 		}
@@ -1032,7 +1031,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * </p>
 	 */
 	@Override
-	public Message processRequest(IPushingListener<M> origin, @Nonnull MessageWrapper<M> messageWrapper, @Nonnull PipeLineSession session) throws ListenerException {
+	public Message processRequest(IPushingListener<M> origin, @NonNull MessageWrapper<M> messageWrapper, @NonNull PipeLineSession session) throws ListenerException {
 		Objects.requireNonNull(session, "Session can not be null");
 		try (final CloseableThreadContext.Instance ignored = getLoggingContext(getListener(), session)) {
 			if (origin!=getListener()) {
@@ -1068,7 +1067,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * The method assumes that a transaction has been started where necessary.
 	 */
 	@Override
-	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, @Nonnull PipeLineSession session, boolean retryStatusAlreadyChecked) throws ListenerException {
+	public void processRawMessage(IListener<M> origin, RawMessageWrapper<M> rawMessage, @NonNull PipeLineSession session, boolean retryStatusAlreadyChecked) throws ListenerException {
 		if (origin!=getListener()) {
 			throw new ListenerException("Listener requested ["+origin.getName()+"] is not my Listener");
 		}
@@ -1081,7 +1080,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * <br/>
 	 * The method assumes that a transaction has been started where necessary.
 	 */
-	private void processRawMessage(RawMessageWrapper<M> rawMessageWrapper, @Nonnull PipeLineSession session, boolean manualRetry,
+	private void processRawMessage(RawMessageWrapper<M> rawMessageWrapper, @NonNull PipeLineSession session, boolean manualRetry,
 								   boolean retryStatusAlreadyChecked) throws ListenerException {
 		if (rawMessageWrapper == null) {
 			log.debug("{} Received null message, returning directly", this::getLogPrefix);
@@ -1121,7 +1120,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		ThreadContext.clearAll();
 	}
 
-	private CloseableThreadContext.Instance getLoggingContext(@Nonnull IListener<M> listener, @Nonnull PipeLineSession session) {
+	private CloseableThreadContext.Instance getLoggingContext(@NonNull IListener<M> listener, @NonNull PipeLineSession session) {
 		CloseableThreadContext.Instance result = LogUtil.getThreadContext(adapter, session.getMessageId(), session);
 		result.put(LogUtil.MDC_LISTENER_KEY, listener.getName());
 		result.put(THREAD_CONTEXT_KEY_TYPE, ClassUtils.classNameOf(listener));
@@ -1569,7 +1568,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 *
 	 * @param rawMessageWrapper The raw message for which to set the receiveCount.
 	 */
-	protected synchronized @Nonnull ProcessStatusCacheItem updateMessageReceiveCount(@Nonnull RawMessageWrapper<M> rawMessageWrapper) {
+	protected synchronized @NonNull ProcessStatusCacheItem updateMessageReceiveCount(@NonNull RawMessageWrapper<M> rawMessageWrapper) {
 		String messageId = Objects.requireNonNull(rawMessageWrapper.getId(), () -> "Message must have an ID! No ID for raw message [" + rawMessageWrapper + "]");
 		// We need to know here if a result was previously cached, otherwise we cannot reliably maintain the receiveCount for listeners that don't know the deliveryCount.
 		final ProcessStatusCacheItem prci = processStatusCache.computeIfAbsent(messageId, key -> {
@@ -1588,7 +1587,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	}
 
 	@SuppressWarnings("synthetic-access")
-	private synchronized @Nonnull ProcessStatusCacheItem cacheProcessResult(@Nonnull RawMessageWrapper<M> rawMessageWrapper, @Nullable String statusMessage, @Nonnull Instant receivedDate) {
+	private synchronized @NonNull ProcessStatusCacheItem cacheProcessResult(@NonNull RawMessageWrapper<M> rawMessageWrapper, @Nullable String statusMessage, @NonNull Instant receivedDate) {
 		final ProcessStatusCacheItem prci = getCachedProcessStatus(rawMessageWrapper);
 		if (prci.receiveCount == 1) {
 			// Set the receiveDate only on first processing of message, to the original receiveDate.
@@ -1603,7 +1602,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		return prci;
 	}
 
-	private synchronized @Nonnull ProcessStatusCacheItem getCachedProcessStatus(@Nonnull RawMessageWrapper<M> rawMessageWrapper) {
+	private synchronized @NonNull ProcessStatusCacheItem getCachedProcessStatus(@NonNull RawMessageWrapper<M> rawMessageWrapper) {
 		// We should have already put an item in the cache at this point, but if the cache is small (or 0-sized) we may not have access to it anymore so we need to create one here.
 		return processStatusCache.computeIfAbsent(rawMessageWrapper.getId(), k -> {
 					log.debug("{} recreating cached process status for messageId [{}]", this::getLogPrefix, rawMessageWrapper::getId);
@@ -1619,7 +1618,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		);
 	}
 
-	public @Nullable String getCachedErrorMessage(@Nonnull RawMessageWrapper<M> rawMessageWrapper) {
+	public @Nullable String getCachedErrorMessage(@NonNull RawMessageWrapper<M> rawMessageWrapper) {
 		return getCachedProcessStatus(rawMessageWrapper).comments;
 	}
 
@@ -1642,7 +1641,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 	 * @param messageWrapper Message for which to check delivery count
 	 * @return {@code true} if message should no longer be retried, {@code false} if it should.
 	 */
-	protected boolean isDeliveryRetryLimitExceededAfterMessageProcessed(@Nonnull final RawMessageWrapper<M> messageWrapper) {
+	protected boolean isDeliveryRetryLimitExceededAfterMessageProcessed(@NonNull final RawMessageWrapper<M> messageWrapper) {
 		if (getMaxRetries() < 0) {
 			log.debug("{} Receiver has no retry limit so message will be retried", this::getLogPrefix);
 			return false;
@@ -1689,7 +1688,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		return true;
 	}
 
-	private void resetProblematicHistory(@Nonnull RawMessageWrapper<M> rawMessageWrapper) {
+	private void resetProblematicHistory(@NonNull RawMessageWrapper<M> rawMessageWrapper) {
 		getCachedProcessStatus(rawMessageWrapper).receiveCount = 0;
 	}
 

@@ -16,13 +16,12 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.hamcrest.core.StringContains;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
@@ -145,7 +144,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		}
 
 		@Override
-		public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+		public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 			callCounter++;
 			if (sc!=null) sc.mark("out");
 			try {
@@ -1141,7 +1140,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		}
 
 		@Override
-		public int read(@Nonnull byte[] buf, int off, int len) throws IOException {
+		public int read(@NonNull byte[] buf, int off, int len) throws IOException {
 			int l=super.read(buf, off, Math.min(len, blockSize));
 			if (l<0) {
 				print("{EOF}");

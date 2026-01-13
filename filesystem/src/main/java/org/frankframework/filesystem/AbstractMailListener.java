@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022-2024 WeAreFrank!
+   Copyright 2020, 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,9 +18,8 @@ package org.frankframework.filesystem;
 import java.io.IOException;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
@@ -79,7 +78,7 @@ public abstract class AbstractMailListener<M, A, S extends IMailFileSystem<M,A>>
 	}
 
 	@Override
-	public Message extractMessage(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+	public Message extractMessage(@NonNull RawMessageWrapper<M> rawMessage, @NonNull Map<String, Object> context) throws ListenerException {
 		return switch (getMessageType().name()) {
 			case "MIME" -> {
 				try {

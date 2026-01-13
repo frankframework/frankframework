@@ -19,8 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.BeanInstantiationException;
 import org.springframework.beans.factory.BeanCreationException;
 import org.springframework.beans.factory.NoSuchBeanDefinitionException;
@@ -128,7 +127,7 @@ public class JeeAuthenticator extends AbstractServletAuthenticator {
 
 		private final Set<String> mappableAttributes = new HashSet<>();
 
-		@Nonnull
+		@NonNull
 		@Override
 		public Set<String> getMappableAttributes() {
 			return mappableAttributes;

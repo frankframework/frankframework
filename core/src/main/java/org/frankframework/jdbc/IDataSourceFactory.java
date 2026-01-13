@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,8 +21,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.jndi.JndiLocatorSupport;
 
 import org.frankframework.util.AppConstants;
@@ -38,7 +37,7 @@ public interface IDataSourceFactory {
 	 * @throws NoSuchElementException if the DataSource cannot be found in any of the configured sources
 	 * @throws IllegalStateException if the DataSource cannot be created
 	 */
-	@Nonnull
+	@NonNull
 	default DataSource getDataSource(String dataSourceName) throws IllegalStateException, NoSuchElementException {
 		return getDataSource(dataSourceName, null);
 	}
@@ -51,12 +50,12 @@ public interface IDataSourceFactory {
 	 * @throws NoSuchElementException if the DataSource cannot be found in any of the configured sources
 	 * @throws IllegalStateException if the DataSource cannot be created
 	 */
-	@Nonnull
+	@NonNull
 	DataSource getDataSource(String dataSourceName, Properties jndiEnvironment) throws IllegalStateException, NoSuchElementException;
 
 	/**
 	 * Return all known/registered DataSources
 	 */
-	@Nonnull
+	@NonNull
 	List<String> getDataSourceNames();
 }

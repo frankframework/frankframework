@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 - 2024 WeAreFrank!
+   Copyright 2023 - 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,8 +22,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Arrays;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -31,6 +29,8 @@ import jakarta.servlet.http.HttpServletResponse;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.env.Environment;
@@ -130,7 +130,7 @@ public class ConsoleFrontend extends HttpServlet implements EnvironmentAware, In
 		}
 	}
 
-	private @Nullable URL findResource(@Nonnull String path) {
+	private @Nullable URL findResource(@NonNull String path) {
 		// Basic validations: block protocol references, non-rooted paths
 		if (path.contains(":") || !path.startsWith("/")) {
 			log.warn("path [{}] may not contain a protocol or port and must start with slash", path);

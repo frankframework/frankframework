@@ -1,5 +1,5 @@
 /*
-   Copyright 2023-2025 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,11 +31,10 @@ import java.util.jar.JarInputStream;
 import java.util.jar.Manifest;
 import java.util.zip.ZipInputStream;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public class Environment {
 
@@ -95,7 +94,7 @@ public class Environment {
 	 * @param module name of the module to fetch the version
 	 * @return module version or null if not found
 	 */
-	public static @Nullable String getModuleVersion(@Nonnull String module) {
+	public static @Nullable String getModuleVersion(@NonNull String module) {
 		ClassLoader classLoader = Environment.class.getClassLoader();
 		URL pomProperties = classLoader.getResource(FRANKFRAMEWORK_NAMESPACE + module + "/pom.properties");
 
@@ -114,8 +113,8 @@ public class Environment {
 		}
 	}
 
-	@Nonnull
-	public static Manifest getManifest(@Nonnull URL jarFileLocation) throws IOException {
+	@NonNull
+	public static Manifest getManifest(@NonNull URL jarFileLocation) throws IOException {
 		try (JarInputStream jarInputStream = new JarInputStream(jarFileLocation.openStream())) {
 			Manifest manifest = jarInputStream.getManifest();
 			if (manifest == null) {
@@ -135,8 +134,8 @@ public class Environment {
 	 * Ideally the Manifest file is always generated via Maven (or any other build tool) but it could be manipulated in the CI.
 	 * This fallback mechanism works (obviously) only when it's a local file, which it should be regardless.
 	 */
-	@Nonnull
-	private static Manifest getManifestFromFile(@Nonnull URL jarFileLocation) throws IOException {
+	@NonNull
+	private static Manifest getManifestFromFile(@NonNull URL jarFileLocation) throws IOException {
 		String cleanPath = extractPath(jarFileLocation);
 		try (JarFile jarFile = new JarFile(cleanPath)) {
 			Manifest manifest = jarFile.getManifest();

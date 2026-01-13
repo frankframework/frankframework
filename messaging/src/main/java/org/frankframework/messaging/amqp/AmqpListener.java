@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,13 +18,12 @@ package org.frankframework.messaging.amqp;
 import java.util.Map;
 import java.util.Objects;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.qpid.protonj2.client.DeliveryMode;
 import org.apache.qpid.protonj2.client.Message;
 import org.apache.qpid.protonj2.client.exceptions.ClientException;
 import org.apache.qpid.protonj2.types.messaging.Header;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 
@@ -151,7 +150,7 @@ public class AmqpListener implements IPushingListener<Message<?>>, IThreadCountC
 
 	@Override
 	public org.frankframework.stream.Message extractMessage(
-			@Nonnull RawMessageWrapper<Message<?>> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+			@NonNull RawMessageWrapper<Message<?>> rawMessage, @NonNull Map<String, Object> context) throws ListenerException {
 		try {
 			return Amqp1Helper.convertAmqpMessageToFFMessage(rawMessage.getRawMessage());
 		} catch (Exception e) {

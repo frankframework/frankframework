@@ -17,9 +17,8 @@ package org.frankframework.parameters;
 
 import java.io.IOException;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -79,7 +78,7 @@ public class Parameter extends AbstractParameter<Message> {
 	}
 
 	@Override
-	protected Message getValueAsType(@Nonnull Message request, boolean namespaceAware) throws ParameterException, IOException {
+	protected Message getValueAsType(@NonNull Message request, boolean namespaceAware) throws ParameterException, IOException {
 		if (getMinLength() >= 0 || getMaxLength() >= 0) {
 			return applyMinLength(request);
 		}

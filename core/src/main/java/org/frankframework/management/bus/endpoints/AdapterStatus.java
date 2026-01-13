@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2024 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,11 +31,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.messaging.Message;
 
 import lombok.extern.log4j.Log4j2;
@@ -147,7 +147,7 @@ public class AdapterStatus extends BusEndpointBase {
 	}
 
 	@Nullable
-	private Map<String, Object> addCertificateInfo(@Nonnull HasKeystore s) {
+	private Map<String, Object> addCertificateInfo(@NonNull HasKeystore s) {
 		String certificate = s.getKeystore();
 		if (certificate == null || StringUtils.isEmpty(certificate))
 			return null;
@@ -199,7 +199,7 @@ public class AdapterStatus extends BusEndpointBase {
 	}
 
 	@Nullable
-	private ArrayList<Object> mapAdapterPipes(@Nonnull Adapter adapter) {
+	private ArrayList<Object> mapAdapterPipes(@NonNull Adapter adapter) {
 		if(!adapter.isConfigured())
 			return null;
 		PipeLine pipeline = adapter.getPipeLine();

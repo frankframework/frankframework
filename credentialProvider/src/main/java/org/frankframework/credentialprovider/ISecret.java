@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2025 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package org.frankframework.credentialprovider;
 
 import java.io.IOException;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public interface ISecret {
 
@@ -26,5 +26,5 @@ public interface ISecret {
 	 * Returns NULL when it cannot find the field
 	 */
 	@Nullable
-	String getField(@Nonnull String fieldname) throws IOException;
+	String getField(@NonNull String fieldname) throws IOException;
 }

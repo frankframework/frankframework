@@ -6,8 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.scheduling.concurrent.ConcurrentTaskExecutor;
 
@@ -75,7 +74,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 
 	protected class ElementRenderer extends EchoSender {
 		@Override
-		public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
+		public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
 			return resultCollector(message);
 		}
 	}
@@ -84,7 +83,7 @@ public abstract class IteratingPipeTestBase<P extends IteratingPipe<String>> ext
 	protected class SlowRenderer extends AbstractSenderWithParameters {
 		@Override
 		@SuppressWarnings("java:S2925")
-		public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
+		public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
 			int random = (int) (Math.random() * 20);
 			try {
 				Thread.sleep(random);

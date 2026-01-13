@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017-2018 Nationale-Nederlanden, 2020-2022, 2024-2026 WeAreFrank!
+   Copyright 2013, 2017-2018 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,9 +22,8 @@ import java.util.Map;
 import java.util.concurrent.Phaser;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.util.ConcurrencyThrottleSupport;
@@ -71,7 +70,7 @@ public class ParallelSenders extends SenderSeries {
 	}
 
 	@Override
-	public SenderResult doSendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
+	public SenderResult doSendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
 		Map<ISender, ParallelSenderExecutor> executorMap = new LinkedHashMap<>();
 		Phaser senderGuard = new Phaser(((List<ISender>) getSenders()).size() + 1); // Itself and all senders
 		for (ISender sender : getSenders()) {

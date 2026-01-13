@@ -17,8 +17,7 @@ package org.frankframework.util.flow;
 
 import java.io.IOException;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.NamedBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -93,7 +92,7 @@ public class SpringContextFlowDiagramProvider implements ConfigurableLifecycle, 
 	/**
 	 * Returns `AdapterFlowGenerator` or `AdapterFlowGenerator`.
 	 */
-	@Nonnull
+	@NonNull
 	@Override
 	public String getBeanName() {
 		if (applicationContext == null) {

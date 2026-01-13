@@ -28,6 +28,7 @@ import org.frankframework.util.AppConstants;
  * @see "https://github.com/dasniko/testcontainers-keycloak"
  */
 @Tag("integration")
+@DisabledWithoutDocker
 public class KeycloakBearerOnlyAuthenticatorIntegrationTest extends KeycloakBearerOnlyBase{
 
 	/**

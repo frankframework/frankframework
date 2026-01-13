@@ -8,9 +8,8 @@ import java.time.Instant;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.PipeForward;
@@ -156,7 +155,7 @@ public class ExceptionHandlingPipeProcessorTest extends PipeProcessorTestBase {
 		);
 	}
 
-	@Nonnull
+	@NonNull
 	private static String applyIgnores(Message result) throws IOException {
 		String messageText = result.asString();
 		if (StringUtils.isEmpty(messageText)) {
@@ -223,7 +222,7 @@ public class ExceptionHandlingPipeProcessorTest extends PipeProcessorTestBase {
 
 	private static class ThrowExceptionPipe extends AbstractPipe {
 
-		@Nonnull
+		@NonNull
 		@Override
 		public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 			try {

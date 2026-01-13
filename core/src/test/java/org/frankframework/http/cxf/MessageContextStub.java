@@ -5,8 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import jakarta.annotation.Nonnull;
 import jakarta.xml.ws.handler.MessageContext;
+
+import org.jspecify.annotations.NonNull;
 
 public class MessageContextStub implements MessageContext{
 
@@ -51,7 +52,7 @@ public class MessageContextStub implements MessageContext{
 	}
 
 	@Override
-	public void putAll(@Nonnull Map<? extends String, ? extends Object> m) {
+	public void putAll(@NonNull Map<? extends String, ? extends Object> m) {
 		map.putAll(m);
 	}
 
@@ -60,19 +61,19 @@ public class MessageContextStub implements MessageContext{
 		map.clear();
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public Set<String> keySet() {
 		return map.keySet();
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public Collection<Object> values() {
 		return map.values();
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public Set<Entry<String, Object>> entrySet() {
 		return map.entrySet();

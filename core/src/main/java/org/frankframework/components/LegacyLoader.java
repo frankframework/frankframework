@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -134,7 +134,7 @@ public class LegacyLoader {
 			moduleInformation.setGroupId("org.frankframework");
 		}
 
-		@Nonnull
+		@NonNull
 		@Override
 		public ModuleInformation getModuleInformation() {
 			return moduleInformation;

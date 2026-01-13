@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2025 WeAreFrank!
+   Copyright 2019-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -39,10 +39,9 @@ import static org.mockito.Mockito.when;
 
 import java.util.Date;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -418,7 +417,7 @@ public abstract class WritableFileSystemListenerTest<F, S extends IWritableFileS
 		assertFalse(_fileExists(processedFolder, fileNameWithTimeStamp), "Destination must not exist in processed folder");
 	}
 
-	@Nonnull
+	@NonNull
 	private static <F> String getUpdatedFilename(String originalFilename, RawMessageWrapper<F> fileMessage) {
 		String extension = FilenameUtils.getExtension(originalFilename);
 		String baseName = FilenameUtils.getBaseName(originalFilename);

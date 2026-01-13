@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,8 @@
 */
 package org.frankframework.collection;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -53,7 +52,7 @@ public abstract class AbstractCollectorSender<C extends ICollector<P>, P> extend
 		}
 	}
 
-	protected @Nonnull Collection<C, P> getCollection(PipeLineSession session) throws CollectionException {
+	protected @NonNull Collection<C, P> getCollection(PipeLineSession session) throws CollectionException {
 		@SuppressWarnings({ "unchecked", "rawtypes" })
 		Collection<C, P> collection = (Collection) session.get(getCollectionName());
 		if (collection == null) {
@@ -63,7 +62,7 @@ public abstract class AbstractCollectorSender<C extends ICollector<P>, P> extend
 	}
 
 	@Override
-	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 		try {
 			Collection<C, P> collection = getCollection(session);
 			collection.add(message, session, getParameterValueList(message, session));

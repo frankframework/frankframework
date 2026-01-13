@@ -3,8 +3,7 @@ package org.frankframework.collection;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.PipeLineSession;
@@ -17,7 +16,7 @@ class CollectionSenderTest extends SenderTestBase<AbstractCollectorSender<TestCo
 	@Override
 	public AbstractCollectorSender<TestCollector, TestCollectorPart> createSender() {
 		return new AbstractCollectorSender<>() {
-			@Nonnull
+			@NonNull
 			@Override
 			protected Collection<TestCollector, TestCollectorPart> getCollection(PipeLineSession session) {
 				return new Collection<>(collector);

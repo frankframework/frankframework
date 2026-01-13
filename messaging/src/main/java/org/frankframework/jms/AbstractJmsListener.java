@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,12 +22,12 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
 import jakarta.jms.Destination;
 import jakarta.jms.JMSException;
 import jakarta.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -86,7 +86,7 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 
 	private SoapWrapper soapWrapper = null;
 
-	private final @Nonnull ParameterList paramList = new ParameterList();
+	private final @NonNull ParameterList paramList = new ParameterList();
 
 	@Override
 	public void configure() throws ConfigurationException {
@@ -209,7 +209,7 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 	 * @return String  input {@link Message} for adapter.
 	 */
 	@Override
-	public Message extractMessage(@Nonnull RawMessageWrapper<jakarta.jms.Message> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+	public Message extractMessage(@NonNull RawMessageWrapper<jakarta.jms.Message> rawMessage, @NonNull Map<String, Object> context) throws ListenerException {
 		try {
 			return extractMessage(rawMessage.getRawMessage(), context, isSoap(), getSoapHeaderSessionKey(), soapWrapper);
 		} catch (Exception e) {
@@ -362,7 +362,7 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 	 * return the Parameters
 	 */
 	@Override
-	public @Nonnull ParameterList getParameterList() {
+	public @NonNull ParameterList getParameterList() {
 		return paramList;
 	}
 

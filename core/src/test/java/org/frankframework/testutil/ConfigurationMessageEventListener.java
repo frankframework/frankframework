@@ -3,8 +3,7 @@ package org.frankframework.testutil;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationListener;
 
 import org.frankframework.lifecycle.events.ConfigurationMessageEvent;
@@ -14,7 +13,7 @@ public class ConfigurationMessageEventListener implements ApplicationListener<Co
 	private final List<MessageKeeperMessage> configurationMessages = new ArrayList<>();
 
 	@Override
-	public void onApplicationEvent(@Nonnull ConfigurationMessageEvent event) {
+	public void onApplicationEvent(@NonNull ConfigurationMessageEvent event) {
 		MessageKeeperMessage messageKeeperMessage = MessageKeeperMessage.fromEvent(event);
 		configurationMessages.add(messageKeeperMessage);
 	}

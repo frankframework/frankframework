@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 WeAreFrank!
+ * Copyright 2025-2026 WeAreFrank!
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.CertificateException;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.annotation.Value;
 
@@ -43,7 +42,7 @@ public class JwtGeneratorFactoryBean implements FactoryBean<AbstractJwtKeyGenera
 
 	private AbstractJwtKeyGenerator jwtKeyGenerator;
 
-	@Nonnull
+	@NonNull
 	@Override
 	public AbstractJwtKeyGenerator getObject() {
 		if (jwtKeyGenerator == null) {

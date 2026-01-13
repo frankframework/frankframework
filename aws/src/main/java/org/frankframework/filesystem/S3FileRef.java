@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,11 +19,10 @@ import java.time.Instant;
 import java.util.HashMap;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -51,7 +50,7 @@ public class S3FileRef {
 	private static final String FILE_DELIMITER = "/";
 	public static final String BUCKET_OBJECT_SEPARATOR = "|";
 
-	@Nonnull // may be empty but not null
+	@NonNull // may be empty but not null
 	private final String name;
 	@Nullable
 	private final String folder;
@@ -63,7 +62,7 @@ public class S3FileRef {
 	@Nullable
 	private @Getter @Setter String bucketName;
 
-	@Nonnull // may be empty
+	@NonNull // may be empty
 	private final Map<String, String> userMetadata = new HashMap<>();
 
 	/** Strip folder prefix of filename if present. May not be changed after creation */
@@ -82,7 +81,7 @@ public class S3FileRef {
 		this.folder = StringUtils.isNotEmpty(folderWithoutEndSeparator) ? folderWithoutEndSeparator + FILE_DELIMITER : null;
 	}
 
-	private String extractBucketIfAny(@Nonnull String key) {
+	private String extractBucketIfAny(@NonNull String key) {
 		int separatorPos = key.indexOf(BUCKET_OBJECT_SEPARATOR);
 		if (separatorPos < 0) {
 			return key;
@@ -131,7 +130,7 @@ public class S3FileRef {
 		return StringUtils.isNotEmpty(name);
 	}
 
-	@Nonnull
+	@NonNull
 	public Map<String, String> getUserMetadata() {
 		return userMetadata;
 	}

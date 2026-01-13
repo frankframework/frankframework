@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021, 2024 WeAreFrank!
+   Copyright 2019, 2021-2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package org.frankframework.filesystem;
 import java.util.Arrays;
 import java.util.Iterator;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
@@ -45,7 +45,7 @@ public class FileSystemSenderWithAttachments<F, A, FS extends IMailFileSystem<F,
 	}
 
 	@Override
-	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 		if (getAction() != FileSystemActor.FileSystemAction.LISTATTACHMENTS) {
 			return super.sendMessage(message, session);
 		} else {

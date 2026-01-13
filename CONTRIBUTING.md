@@ -92,6 +92,13 @@ The Frank!Framework community has introduced [Project Lombok](https://projectlom
 * With Lombok, you do not have to code getters and setters anymore. You can generate them by putting annotations `@Getter` and `@Setter` on the backing field. This is very useful. But please do NOT put the `@Getter` or `@Setter` on a non-private class. This makes fewer lines of code, but there is a drawback. You cannot see the call hierarchy anymore of a getter or a setter. When you put the annotations on the method level, you can still see the call hierarchy: right-click the `@Getter` or `@Setter` and select "Open Call Hierarchy" in Eclipse.
 * For the sake of readability, please put the `@Getter` or `@Setter` annotations inside the variable declaration: "`private @Getter @Setter MyType myField`".
 
+The project uses the Error Prone checker with the NullAway plugin, and JSpecify annotations for nullability.
+Please pay attention to the warnings they generate in the Maven output if you do not have an integration with these tools in your IDE.
+For more information on these tools, you can check their documentation at:
+- [Error Prone](https://errorprone.info/index)
+- [NullAway](https://github.com/uber/NullAway)
+- [JSpecify](https://jspecify.dev/docs/applying/)
+
 See our [Additional Coding Guidelines](AdditionalCodingGuidelines.md) for code examples to help create more readable, testable and maintainable code.
 
 ## Testing
@@ -243,6 +250,11 @@ This guide assumes that you are using IntelliJ Ultimate, because application ser
   After doing this, make sure to reload the Maven project to add the extra dependencies from this profile to your project classpath.
 - You may need to install / enable the Lombok plugin if it is not already installed / enabled, so that IntelliJ will properly understand the code with all the Lombok annotations in it. 
   If the plugin is installed you may get a notification from IntelliJ when the project is built that annotation processing needs to be enabled in the project for Lombok to work, enable this.
+- This project uses Error Prone and NullAway in the Maven build.
+  You can add Error Prone to the IntelliJ build with the "Error Prone Compiler" plugin.
+  After installing this plugin, you should go to IntelliJ Settings | Build, Execution, Deployment | Compiler | Java Compiler and set the Java Compiler to "Javac with Error Prone", and set the compiler-options to the Error Prone flags from the POM file:
+  `-XepOpt:NullAway:AnnotatedPackages=org.frankframework -Xep:InvalidBlockTag:OFF -Xep:BanJNDI:WARN -Xep:EqualsHashCode:WARN -Xep:GetClassOnClass:WARN`
+  This may however give you Internal Compiler Errors from the build, in which case you have to switch back to the regular Javac compiler.
 - Download the latest version of Tomcat 11.0 from https://tomcat.apache.org/download-11.cgi and unzip it anywhere you like. (On Windows, make sure to extract it on a folder which can be edited by non-admin users), 
   or install it via `brew` (on macOS) or `sdkman`.
   Make sure that all scripts are executable, for instance: `chmod a+x ~/.sdkman/candidates/tomcat/current/bin/*.sh`

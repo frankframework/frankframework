@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,9 +22,6 @@ import java.nio.charset.Charset;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
 import org.apache.qpid.protonj2.client.Connection;
@@ -43,6 +40,8 @@ import org.apache.qpid.protonj2.client.StreamTracker;
 import org.apache.qpid.protonj2.client.Tracker;
 import org.apache.qpid.protonj2.client.exceptions.ClientException;
 import org.apache.qpid.protonj2.types.messaging.Header;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.MimeType;
 
 import lombok.Setter;
@@ -212,9 +211,9 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		return connectionName;
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
-	public SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 		SenderResult senderResult;
 		if (messageProtocol == MessageProtocol.FF) {
 			senderResult = sendFireForget(message);
@@ -224,12 +223,12 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		return senderResult;
 	}
 
-	private @Nonnull SenderResult sendFireForget(@Nonnull Message message) throws SenderException, TimeoutException {
+	private @NonNull SenderResult sendFireForget(@NonNull Message message) throws SenderException, TimeoutException {
 		Object messageId = doSend(message, null);
 		return new SenderResult(Message.asMessage(messageId));
 	}
 
-	private @Nonnull SenderResult sendRequestResponse(@Nonnull Message message) throws SenderException {
+	private @NonNull SenderResult sendRequestResponse(@NonNull Message message) throws SenderException {
 
 		// It seems that dynamic receivers cannot be streaming?
 		try (Receiver responseReceiver = StringUtils.isEmpty(replyAddress) ? session.openDynamicReceiver() : session.openReceiver(replyAddress)) {
@@ -246,7 +245,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		}
 	}
 
-	private static @Nonnull Message convertAndAcceptDelivery(@Nonnull Delivery delivery) throws ClientException, IOException {
+	private static @NonNull Message convertAndAcceptDelivery(@NonNull Delivery delivery) throws ClientException, IOException {
 		try {
 			Message responseMessage = Amqp1Helper.convertAmqpMessageToFFMessage(delivery.message());
 			delivery.accept();
@@ -265,7 +264,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	 * @throws SenderException If there was an exception sending the message
 	 * @throws TimeoutException If there was a timeout waiting for the message to be accepted by the broker.
 	 */
-	private Object doSend(@Nonnull Message message, @Nullable String replyAddress) throws SenderException, TimeoutException {
+	private Object doSend(@NonNull Message message, @Nullable String replyAddress) throws SenderException, TimeoutException {
 		if (streamingMessages) {
 			return sendStreamingMessage(message, replyAddress);
 		} else {
@@ -281,7 +280,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	 * @throws SenderException If there was an exception sending the message
 	 * @throws TimeoutException If there was a timeout waiting for the message to be accepted by the broker.
 	 */
-	private Object sendObjectMessage(@Nonnull Message message, @Nullable String replyAddress) throws SenderException, TimeoutException {
+	private Object sendObjectMessage(@NonNull Message message, @Nullable String replyAddress) throws SenderException, TimeoutException {
 		org.apache.qpid.protonj2.client.Message<?> amqpMessage;
 		try {
 			if (isCreateBinaryMessage(message)) {
@@ -308,7 +307,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		}
 	}
 
-	private boolean isCreateBinaryMessage(@Nonnull Message message) {
+	private boolean isCreateBinaryMessage(@NonNull Message message) {
 		return switch (messageType) {
 			case AUTO -> message.isBinary();
 			case BINARY -> true;
@@ -316,7 +315,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		};
 	}
 
-	private void applyMessageOptions(@Nonnull org.apache.qpid.protonj2.client.Message<?> amqpMessage, @Nullable String replyAddress) throws ClientException {
+	private void applyMessageOptions(org.apache.qpid.protonj2.client.@NonNull Message<?> amqpMessage, @Nullable String replyAddress) throws ClientException {
 		amqpMessage.durable(durable);
 		amqpMessage.timeToLive(timeToLive);
 		if (replyAddress != null) {
@@ -324,7 +323,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 		}
 	}
 
-	private static void applyMessageMetaData(@Nonnull Message message, org.apache.qpid.protonj2.client.Message<?> amqpMessage) throws ClientException, IOException {
+	private static void applyMessageMetaData(@NonNull Message message, org.apache.qpid.protonj2.client.Message<?> amqpMessage) throws ClientException, IOException {
 		MimeType mimeType = MessageUtils.computeMimeType(message);
 		if (mimeType != null) {
 			amqpMessage.contentType(mimeType.toString());
@@ -345,7 +344,7 @@ public class AmqpSender extends AbstractSenderWithParameters implements ISenderW
 	 * @throws SenderException If there was an exception sending the message
 	 * @throws TimeoutException If there was a timeout waiting for the message to be accepted by the broker.
 	 */
-	private Object sendStreamingMessage(@Nonnull Message message, @Nullable String replyAddress) throws SenderException, TimeoutException {
+	private Object sendStreamingMessage(@NonNull Message message, @Nullable String replyAddress) throws SenderException, TimeoutException {
 		try {
 			StreamSenderMessage streamSenderMessage = streamSender.beginMessage();
 			applyMessageMetaData(message, streamSenderMessage);

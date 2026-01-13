@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,10 +21,9 @@ import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -80,7 +79,7 @@ public class RequestUtils {
 		return null;
 	}
 
-	@Nonnull
+	@NonNull
 	public static <T> T resolveRequiredProperty(String key, T multiFormProperty, T defaultValue) throws ApiException {
 		if (multiFormProperty != null) {
 			return multiFormProperty;

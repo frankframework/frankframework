@@ -16,11 +16,10 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -160,7 +159,7 @@ class StringUtilTest {
 		// Arrange
 		Collection<Object> c = new ArrayList<>() {
 			@Override
-			@Nonnull
+			@NonNull
 			public Iterator<Object> iterator() {
 				final Iterator<Object> delegate = super.iterator();
 				return new Iterator<>() {

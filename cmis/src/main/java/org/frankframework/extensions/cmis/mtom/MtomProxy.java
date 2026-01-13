@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021, 2025-2026 WeAreFrank!
+   Copyright 2019-2021, 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,11 +19,11 @@ import java.io.IOException;
 import java.io.Serial;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -98,7 +98,7 @@ public class MtomProxy extends AbstractHttpServlet implements InitializingBean, 
 	}
 
 	@Override
-	public void setApplicationContext(@Nonnull ApplicationContext applicationContext) throws BeansException {
+	public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 	}
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2025 WeAreFrank!
+   Copyright 2019-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,11 +27,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
@@ -172,7 +171,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 
 	}
 
-	public void configure(@Nonnull S fileSystem, @Nonnull ParameterList parameterList, @Nonnull FrankElement owner) throws ConfigurationException {
+	public void configure(@NonNull S fileSystem, @NonNull ParameterList parameterList, @NonNull FrankElement owner) throws ConfigurationException {
 		this.owner=owner;
 		this.fileSystem=fileSystem;
 		this.parameterList=parameterList;
@@ -244,7 +243,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		actionRequiresAtLeastOneOfTwoParametersOrAttribute(owner, parameterList, action2, FileSystemAction.FORWARD, PARAMETER_DESTINATION, null, "destination", getDestination());
 	}
 
-	protected void actionRequiresAtLeastOneOfTwoParametersOrAttribute(@Nonnull HasName owner, @Nonnull ParameterList parameterList, FileSystemAction configuredAction, FileSystemAction action, String parameter1, String parameter2, String attributeName, String attributeValue) throws ConfigurationException {
+	protected void actionRequiresAtLeastOneOfTwoParametersOrAttribute(@NonNull HasName owner, @NonNull ParameterList parameterList, FileSystemAction configuredAction, FileSystemAction action, String parameter1, String parameter2, String attributeName, String attributeValue) throws ConfigurationException {
 		if (configuredAction == action) {
 			boolean parameter1Set = parameterList.hasParameter(parameter1);
 			boolean parameter2Set = parameterList.hasParameter(parameter2);
@@ -299,11 +298,11 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 		throw new FileSystemException("no destination specified");
 	}
 
-	private F getFile(@Nonnull Message input, ParameterValueList pvl) throws FileSystemException {
+	private F getFile(@NonNull Message input, ParameterValueList pvl) throws FileSystemException {
 		return fileSystem.toFile(determineFilename(input, pvl));
 	}
 
-	private F getFileAndCreateFolder(@Nonnull Message input, ParameterValueList pvl) throws FileSystemException {
+	private F getFileAndCreateFolder(@NonNull Message input, ParameterValueList pvl) throws FileSystemException {
 		final String filenameWithFolder = determineFilename(input, pvl);
 		String folder = FilenameUtils.getFullPathNoEndSeparator(filenameWithFolder);
 
@@ -362,7 +361,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public Message doAction(@Nonnull Message input, ParameterValueList pvl, @Nonnull PipeLineSession session) throws FileSystemException {
+	public Message doAction(@NonNull Message input, ParameterValueList pvl, @NonNull PipeLineSession session) throws FileSystemException {
 		FileSystemAction action = null;
 		try {
 			action = getAction(pvl);
@@ -479,7 +478,7 @@ public class FileSystemActor<F, S extends IBasicFileSystem<F>> {
 	}
 
 	@SuppressWarnings("unchecked") // Casts to the required FileSystem type
-	private Message createFile(@Nonnull Message input, ParameterValueList pvl, InputStream contents) throws FileSystemException, IOException {
+	private Message createFile(@NonNull Message input, ParameterValueList pvl, InputStream contents) throws FileSystemException, IOException {
 		F file = getFileAndCreateFolder(input, pvl);
 		if (fileSystem.exists(file)) {
 			FileSystemUtils.prepareDestination((IWritableFileSystem<F>)fileSystem, file, isOverwrite(), getNumberOfBackups(), FileSystemAction.WRITE);
