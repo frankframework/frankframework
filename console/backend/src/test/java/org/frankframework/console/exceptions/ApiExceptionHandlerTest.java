@@ -30,7 +30,7 @@ public class ApiExceptionHandlerTest extends FrankApiTestBase {
 		return Stream.of(
 				Arguments.of("/test/apiexception", ApiException.class, HttpStatus.INTERNAL_SERVER_ERROR.value()),
 				Arguments.of("/test/mapping-not-found-exception", NoHandlerFoundException.class, HttpStatus.NOT_FOUND.value()),
-				Arguments.of("/test/servletexception", ServletException.class, HttpStatus.INTERNAL_SERVER_ERROR.value()),
+				Arguments.of("/test/servletexception", ServletException.class, HttpStatus.BAD_REQUEST.value()),
 				Arguments.of("/test/methodnotsupportedexception", HttpRequestMethodNotSupportedException.class, HttpStatus.METHOD_NOT_ALLOWED.value())
 		);
 	}

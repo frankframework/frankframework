@@ -89,7 +89,7 @@ public class SpringMvcExceptionHandler {
 			BindException.class
 	})
 	protected final ResponseEntity<Object> handleExceptionLowLevel(Exception ex) {
-		return handleSpringException(ex, HttpStatus.INTERNAL_SERVER_ERROR, null);
+		return handleSpringException(ex, HttpStatus.BAD_REQUEST, null);
 	}
 
 	/** When a {@link RestController} cannot be found, Spring MVC throws this Exception. */
