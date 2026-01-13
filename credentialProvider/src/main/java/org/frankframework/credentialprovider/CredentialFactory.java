@@ -48,8 +48,8 @@ public class CredentialFactory {
 	public static final String DEFAULT_PASSWORD_FIELD = "password";
 
 	protected final List<ISecretProvider> delegates = new ArrayList<>();
-	protected static final boolean ALLOW_DEFAULT_PASSWORD = CredentialConstants.getInstance().getBoolean("credentialFactory.allowDefaultPassword", true);
-	private static final boolean ALLOW_FALLBACK = CredentialConstants.getInstance().getBoolean("credentialFactory.allowFallbackProvider", true);
+	protected static boolean ALLOW_DEFAULT_PASSWORD = CredentialConstants.getInstance().getBoolean("credentialFactory.allowDefaultPassword", true);
+	private static boolean ALLOW_FALLBACK = CredentialConstants.getInstance().getBoolean("credentialFactory.allowFallbackProvider", true);
 
 	private static @Nullable CredentialFactory self;
 
