@@ -15,8 +15,6 @@
 */
 package org.frankframework.console.exceptions;
 
-import org.springframework.core.Ordered;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -28,7 +26,6 @@ import org.frankframework.console.ApiException;
  * The exceptions are similar to an ErrorResponseException as they contain HTTP headers and a body.
  */
 @RestControllerAdvice("org.frankframework.console")
-@Order(Ordered.HIGHEST_PRECEDENCE+1000)
 public class ApiExceptionHandler {
 
 	@ExceptionHandler(ApiException.class)

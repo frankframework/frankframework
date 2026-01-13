@@ -33,21 +33,15 @@ import org.springframework.validation.BindException;
 import org.springframework.validation.method.MethodValidationException;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.ErrorResponseException;
-import org.springframework.web.HttpMediaTypeNotAcceptableException;
-import org.springframework.web.HttpMediaTypeNotSupportedException;
-import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
-import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -55,10 +49,13 @@ import org.frankframework.console.ApiException;
 
 /**
  * Taken partially from {@link ResponseEntityExceptionHandler#handleException(Exception, WebRequest)}.
- * This ExceptionHandler catches Spring {@link ErrorResponse HTTP related} MVC exceptions.
+ * This ExceptionHandler catches Spring {@link ErrorResponse HTTP related} MVC exceptions,
  * as well as IO related exceptions.
+ * 
+ * Catch all Spring web exceptions (such as subclasses of {@link ServletException}), even when they are not thrown from our own sources.
+ * We need to prioritize this so our handler is used before Spring's own ExceptionHandler.
  */
-@RestControllerAdvice("org.frankframework.console")
+@RestControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE+100)
 @Log4j2
 public class SpringMvcExceptionHandler {
@@ -67,23 +64,18 @@ public class SpringMvcExceptionHandler {
 	 * These Exceptions all implement {@link ErrorResponse} so they come pre-configured with a status-code and headers.
 	 */
 	@ExceptionHandler({
-			HttpRequestMethodNotSupportedException.class,
-			HttpMediaTypeNotSupportedException.class,
-			HttpMediaTypeNotAcceptableException.class,
-			ServletRequestBindingException.class,
-			MissingServletRequestPartException.class,
 			MethodArgumentNotValidException.class,
-			NoResourceFoundException.class,
 			AsyncRequestTimeoutException.class,
 			ErrorResponseException.class,
-			MaxUploadSizeExceededException.class
+			MaxUploadSizeExceededException.class,
+			ServletException.class
 	})
 	protected final ResponseEntity<Object> handleException(Exception ex) {
 		if (ex instanceof ErrorResponse errorResponseEx) {
 			return handleSpringException(ex, errorResponseEx.getStatusCode(), errorResponseEx.getHeaders());
 		}
 
-		// Although this should never be called, leave it here as fallback.
+		// Could be a subclass of ServletException
 		return handleExceptionLowLevel(ex);
 	}
 

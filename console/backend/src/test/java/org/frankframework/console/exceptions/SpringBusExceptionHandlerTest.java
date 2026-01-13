@@ -1,4 +1,4 @@
-package org.frankframework.console.controllers;
+package org.frankframework.console.exceptions;
 
 import static org.frankframework.console.util.MatchUtils.assertJsonEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;

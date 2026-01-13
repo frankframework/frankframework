@@ -24,6 +24,7 @@ import org.frankframework.console.ApiException;
 
 /**
  * This ExceptionHandler catches all remaining {@link Exception exceptions} and formats them.
+ * We only handle raw Exceptions that are thrown from our own packages.
  */
 @RestControllerAdvice("org.frankframework.console")
 public class FallbackExceptionHandler {

@@ -39,8 +39,11 @@ import org.frankframework.management.bus.BusException;
 /**
  * This ExceptionHandler catches {@link MessageHandlingException Spring Integration related exceptions}
  * as well as the {@link BusException} thrown by the Frank!Framework.
+ * 
+ * Catch all {@link MessageHandlingException} even when they are not thrown from our own sources.
+ * We need to prioritize this so our handler is used before Spring's own ExceptionHandler.
  */
-@RestControllerAdvice("org.frankframework.console")
+@RestControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Log4j2
 public class SpringBusExceptionHandler {
