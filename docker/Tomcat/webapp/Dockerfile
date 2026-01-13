@@ -27,9 +27,9 @@ USER tomcat
 # Copy environment configuration
 COPY --chown=tomcat src/scripts/ /scripts/
 
-RUN cat /scripts/loggingAdditional.properties >> ${CATALINA_HOME}/conf/logging.properties && \
-    cat /scripts/catalinaAdditional.properties >> ${CATALINA_HOME}/conf/catalina.properties  && \
-    rm -f /scripts/*Additional.properties
+RUN cat "/scripts/loggingAdditional.properties" >> "${CATALINA_HOME}/conf/logging.properties" && \
+    cat "/scripts/catalinaAdditional.properties" >> "${CATALINA_HOME}/conf/catalina.properties" && \
+    rm -f "/scripts/"*Additional.properties
 
 # copy h2 driver to drivers folder
 COPY --chown=tomcat target/dependencies/h2.jar /opt/frank/drivers/
