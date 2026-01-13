@@ -409,8 +409,7 @@ public class IfPipe extends AbstractPipe {
 	}
 
 	/**
-	 * @param defaultMediaType The default media type to use when the media type of the message could not be determined. Should
-	 *                         be one of {@literal XML}, {@literal JSON} or {@literal TEXT}.
+	 * @param defaultMediaType The default media type to use when the media type of the message could not be determined.
 	 * @ff.default {@literal JSON} if only a {@literal jsonPathExpression} is set, {@literal XML} if an
 	 * {@literal xpathExpression} is set, or {@literal TEXT} if neither are set.
 	 */
