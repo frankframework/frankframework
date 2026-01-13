@@ -15,8 +15,10 @@
 */
 package org.frankframework.console.exceptions;
 
-import jakarta.annotation.Nullable;
 
+import jakarta.servlet.ServletException;
+
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.ConversionNotSupportedException;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.core.Ordered;

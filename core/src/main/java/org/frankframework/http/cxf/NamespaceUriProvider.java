@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2025 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,6 @@ package org.frankframework.http.cxf;
 
 import java.util.Iterator;
 
-import jakarta.annotation.Nullable;
 import jakarta.xml.soap.SOAPBody;
 import jakarta.xml.soap.SOAPException;
 import jakarta.xml.soap.SOAPMessage;
@@ -26,6 +25,7 @@ import jakarta.xml.ws.ServiceMode;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.cxf.binding.soap.SoapBindingConstants;
+import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Node;
 
 import lombok.extern.log4j.Log4j2;

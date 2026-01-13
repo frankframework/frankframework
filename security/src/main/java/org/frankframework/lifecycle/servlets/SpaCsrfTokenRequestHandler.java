@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@ package org.frankframework.lifecycle.servlets;
 
 import java.util.function.Supplier;
 
-import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.web.csrf.CsrfToken;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
@@ -31,7 +31,7 @@ public class SpaCsrfTokenRequestHandler extends CsrfTokenRequestAttributeHandler
 	private final CsrfTokenRequestHandler delegate = new XorCsrfTokenRequestAttributeHandler();
 
 	@Override
-	public void handle(@Nonnull HttpServletRequest request, @Nonnull HttpServletResponse response, @Nonnull Supplier<CsrfToken> csrfToken) {
+	public void handle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Supplier<CsrfToken> csrfToken) {
 		/*
 		 * Always use XorCsrfTokenRequestAttributeHandler to provide BREACH protection of
 		 * the CsrfToken when it is rendered in the response body.

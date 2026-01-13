@@ -8,8 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -119,9 +118,9 @@ public class SenderSeriesTest extends SenderTestBase<SenderSeries> {
 			shortname = name.substring(6);
 		}
 
-		@Nonnull
+		@NonNull
 		@Override
-		public SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
+		public SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
 			try {
 				String input = message.asString() + "," + shortname;
 				return new SenderResult(input);
@@ -133,14 +132,14 @@ public class SenderSeriesTest extends SenderTestBase<SenderSeries> {
 
 	private static class ErrorReturningSender extends AbstractSender {
 		@Override
-		public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
+		public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
 			return new SenderResult(false, message, "fakeError", "fakeError");
 		}
 	}
 
 	private static class ExceptionThrowingSender extends AbstractSender {
 		@Override
-		public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
+		public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
 			throw new SenderException("fakeException");
 		}
 	}

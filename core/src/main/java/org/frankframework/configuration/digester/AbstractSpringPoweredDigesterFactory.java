@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021-2025 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,9 +18,8 @@ package org.frankframework.configuration.digester;
 import java.util.HashMap;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 import org.xml.sax.Attributes;
 
@@ -153,7 +152,7 @@ public abstract class AbstractSpringPoweredDigesterFactory implements IDigesterF
 		return createBeanFromClassName(applicationContext, className);
 	}
 
-	@Nonnull
+	@NonNull
 	private Object createBeanFromClassName(ApplicationContext applicationContext, String className) throws ClassNotFoundException {
 		if(applicationContext == null) {
 			throw new IllegalStateException("No ApplicationContext found, unable to initialize class [" + className + "]");
@@ -170,7 +169,7 @@ public abstract class AbstractSpringPoweredDigesterFactory implements IDigesterF
 		return createBeanAndAutoWire(applicationContext, className);
 	}
 
-	@Nonnull
+	@NonNull
 	private Object createBeanAndAutoWire(ApplicationContext applicationContext, String className) throws ClassNotFoundException {
 		ClassLoader classLoader = applicationContext.getClassLoader();
 		Class<?> beanClass = Class.forName(className, true, classLoader);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,10 +22,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import jakarta.annotation.Nonnull;
 import jakarta.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -405,7 +405,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 
 	}
 
-	@Nonnull
+	@NonNull
 	private Map<ProcessState, ProcessStateDTO> getTargetProcessStateInfo(Set<ProcessState> targetProcessStates) {
 		if(targetProcessStates == null) {
 			return Collections.emptyMap();

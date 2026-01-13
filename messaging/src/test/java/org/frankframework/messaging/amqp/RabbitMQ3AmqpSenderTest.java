@@ -2,8 +2,7 @@ package org.frankframework.messaging.amqp;
 
 import java.io.IOException;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Disabled;
 import org.testcontainers.containers.Container.ExecResult;
@@ -22,19 +21,19 @@ class RabbitMQ3AmqpSenderTest extends AmqpSenderTest {
 	@Container
 	private static final RabbitMQContainer rabbitMQContainer = new RabbitMQContainer(RABBIT_MQ_DOCKER_TAG);
 
-	@Nonnull
+	@NonNull
 	@Override
 	protected String getResourceName() {
 		return "RabbitMQ";
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	protected Integer getAmqpPort() {
 		return rabbitMQContainer.getAmqpPort();
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	protected String getHost() {
 		return rabbitMQContainer.getHost();

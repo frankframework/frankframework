@@ -17,8 +17,7 @@ package org.frankframework.console.exceptions;
 
 import java.util.function.Function;
 
-import jakarta.annotation.Nullable;
-
+import org.jspecify.annotations.Nullable;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;

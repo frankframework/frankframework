@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2022-2024 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
 */
 package org.frankframework.jms;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.jms.Connection;
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
@@ -24,6 +22,8 @@ import jakarta.jms.MessageConsumer;
 import jakarta.jms.Session;
 
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.jms.connection.JmsResourceHolder;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
 import org.springframework.transaction.TransactionStatus;
@@ -45,7 +45,7 @@ public class IbisMessageListenerContainer extends DefaultMessageListenerContaine
 	private CredentialFactory credentialFactory;
 
 	@Override
-	@Nonnull
+	@NonNull
 	protected Connection createConnection() throws JMSException {
 		Connection conn;
 		if (credentialFactory!=null) {
@@ -58,8 +58,8 @@ public class IbisMessageListenerContainer extends DefaultMessageListenerContaine
 	}
 
 	@Override
-	@Nonnull
-	protected Session createSession(@Nonnull Connection conn) throws JMSException {
+	@NonNull
+	protected Session createSession(@NonNull Connection conn) throws JMSException {
 		Session session = super.createSession(conn);
 		if (log.isTraceEnabled())
 			log.trace("createSession() - ackMode[{}] connection[{}] session[{}]", getSessionAcknowledgeMode(), conn, session);
@@ -67,7 +67,7 @@ public class IbisMessageListenerContainer extends DefaultMessageListenerContaine
 	}
 
 	@Override
-	protected Connection getConnection(@Nonnull JmsResourceHolder holder) {
+	protected Connection getConnection(@NonNull JmsResourceHolder holder) {
 		Connection conn = super.getConnection(holder);
 		if (log.isTraceEnabled())
 			log.trace("getConnection() - jmsResourceHolder[{}] connection[{}]", holder, conn == null ? "null" : conn.toString());
@@ -75,7 +75,7 @@ public class IbisMessageListenerContainer extends DefaultMessageListenerContaine
 	}
 
 	@Override
-	protected Session getSession(@Nonnull JmsResourceHolder holder) {
+	protected Session getSession(@NonNull JmsResourceHolder holder) {
 		Session session = super.getSession(holder);
 		if (log.isTraceEnabled())
 			log.trace("getSession() - ackMode[{}] jmsResourceHolder[{}] session[{}]", getSessionAcknowledgeMode(), holder, session == null ? "null" : session.toString());
@@ -83,7 +83,7 @@ public class IbisMessageListenerContainer extends DefaultMessageListenerContaine
 	}
 
 	@Override
-	@Nonnull
+	@NonNull
 	protected Connection createSharedConnection() throws JMSException {
 		Connection conn = super.createSharedConnection();
 		if (log.isTraceEnabled())
@@ -92,14 +92,14 @@ public class IbisMessageListenerContainer extends DefaultMessageListenerContaine
 	}
 
 	@Override
-	protected boolean receiveAndExecute(@Nonnull Object asyncMessageListenerInvoker, @Nullable Session session, @Nullable MessageConsumer consumer) throws JMSException {
+	protected boolean receiveAndExecute(@NonNull Object asyncMessageListenerInvoker, @Nullable Session session, @Nullable MessageConsumer consumer) throws JMSException {
 		if (log.isTraceEnabled())
 			log.trace("receiveAndExecute() - destination[{}] clientId[{}] session[{}]", getDestinationName(), getClientId(), session);
 		return super.receiveAndExecute(asyncMessageListenerInvoker, session, consumer);
 	}
 
 	@Override
-	protected boolean doReceiveAndExecute(@Nonnull Object invoker, @Nullable Session session, @Nullable MessageConsumer consumer, @Nullable TransactionStatus txStatus) throws JMSException {
+	protected boolean doReceiveAndExecute(@NonNull Object invoker, @Nullable Session session, @Nullable MessageConsumer consumer, @Nullable TransactionStatus txStatus) throws JMSException {
 		if (log.isTraceEnabled())
 			log.trace("doReceiveAndExecute() - destination[{}] clientId[{}] session[{}]", getDestinationName(), getClientId(), session);
 		try {
@@ -112,7 +112,7 @@ public class IbisMessageListenerContainer extends DefaultMessageListenerContaine
 	}
 
 	@Override
-	protected void commitIfNecessary(@Nonnull Session session, @Nullable Message message) throws JMSException {
+	protected void commitIfNecessary(@NonNull Session session, @Nullable Message message) throws JMSException {
 		if (message!=null && !session.getTransacted() && getMessageListener() instanceof SpringJmsConnector springJmsConnector) {
 			JmsListener listener = (JmsListener)springJmsConnector.getListener();
 			if (listener.getAcknowledgeMode() == JMSFacade.AcknowledgeMode.CLIENT_ACKNOWLEDGE) {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,10 +26,9 @@ import java.util.zip.Checksum;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Hex;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.pipes.HashPipe;
 

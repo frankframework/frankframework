@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,10 +24,9 @@ import java.nio.file.Files;
 import java.time.Duration;
 import java.util.Properties;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.io.FilenameUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 
 import org.frankframework.stream.FileMessage;
@@ -90,7 +89,7 @@ public class LarvaUtil {
 		return new File(realPath).getParent();
 	}
 
-	protected static @Nonnull Properties readProperties(LarvaTool larvaTool, File propertyFile) {
+	protected static @NonNull Properties readProperties(LarvaTool larvaTool, File propertyFile) {
 		Properties properties = new Properties();
 		try (InputStream in = Files.newInputStream(propertyFile.toPath()); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(in)) {
 			properties.load(reader);
@@ -100,7 +99,7 @@ public class LarvaUtil {
 		return properties;
 	}
 
-	public static @Nonnull Message readFile(@Nonnull String fileName) {
+	public static @NonNull Message readFile(@NonNull String fileName) {
 		Message message = new FileMessage(new File(fileName));
 
 		final String name = fileName.toLowerCase();
@@ -116,7 +115,7 @@ public class LarvaUtil {
 	}
 
 	// Ideally people don't use this...
-	private static String getEncoding(@Nonnull String fileName) {
+	private static String getEncoding(@NonNull String fileName) {
 		if (fileName.endsWith(".utf8") || fileName.endsWith(".utf-8")) {
 			return "UTF-8";
 		} else if (fileName.endsWith(".iso-8859-1")) {

@@ -10,9 +10,8 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.util.concurrent.TimeUnit;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -245,8 +244,8 @@ public class StatusRecordingTransactionManagerImplementationTest extends StatusR
 		fs1.stop();
 	}
 
-	@Nonnull
-	private DirectQuerySender buildQuerySender(@Nonnull String datasourceName, @Nonnull String name) throws ConfigurationException {
+	@NonNull
+	private DirectQuerySender buildQuerySender(@NonNull String datasourceName, @NonNull String name) throws ConfigurationException {
 		DirectQuerySender qs = new DirectQuerySender();
 		configuration.autowireByName(qs);
 		qs.setName(name);

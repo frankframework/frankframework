@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2025 WeAreFrank!
+   Copyright 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -38,9 +38,8 @@ import java.util.regex.Pattern;
 
 import javax.imageio.ImageIO;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.io.FileUtils;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
@@ -164,7 +163,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		FileUtils.copyFile(new File(convertedFilePath), targetResourceFile);
 	}
 
-	@Nonnull
+	@NonNull
 	private static PDFUtil createPdfUtil(CompareMode compareMode) throws IOException {
 		PDFUtil pdfUtil = new PDFUtil();
 		// Remove Aspose evaluation copy information

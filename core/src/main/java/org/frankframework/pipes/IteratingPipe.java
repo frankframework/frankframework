@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,9 +26,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.core.task.TaskExecutor;
 import org.xml.sax.SAXException;
 
@@ -497,7 +496,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 		return it.next();
 	}
 
-	protected @Nonnull DistributionSummary getStatisticsKeeper(String name) {
+	protected @NonNull DistributionSummary getStatisticsKeeper(String name) {
 		return statisticsMap.computeIfAbsent(name, ignored -> configurationMetrics.createSubDistributionSummary(this, name, FrankMeterType.PIPE_DURATION));
 	}
 

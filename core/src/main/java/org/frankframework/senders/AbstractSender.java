@@ -15,9 +15,8 @@
 */
 package org.frankframework.senders;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.Lifecycle;
 
@@ -65,7 +64,7 @@ public abstract class AbstractSender implements ISender, Lifecycle {
 	 * final method to ensure nobody overrides this...
 	 */
 	@Override
-	public final void setApplicationContext(@Nonnull ApplicationContext applicationContext) {
+	public final void setApplicationContext(@NonNull ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
 	}
 

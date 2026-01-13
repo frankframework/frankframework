@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,9 +19,8 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.WeakHashMap;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -33,17 +32,17 @@ public class MessageCacheStore {
 
 	private final WeakHashMap<UUID, HashMap<String, String>> memberCache = new WeakHashMap<>();
 
-	public void put(@Nullable UUID uuid, @Nonnull String topic, @Nonnull String message) {
+	public void put(@Nullable UUID uuid, @NonNull String topic, @NonNull String message) {
 		getCache(uuid).put(topic, message);
 	}
 
 	@Nullable
-	public String get(@Nullable UUID uuid, @Nonnull String topic) {
+	public String get(@Nullable UUID uuid, @NonNull String topic) {
 		return getCache(uuid).get(topic);
 	}
 
-	@Nonnull
-	public String getAndUpdate(@Nullable UUID uuid, @Nonnull String topic, @Nonnull String latestJsonMessage) {
+	@NonNull
+	public String getAndUpdate(@Nullable UUID uuid, @NonNull String topic, @NonNull String latestJsonMessage) {
 		String cachedMessage = getCache(uuid).put(topic, latestJsonMessage);
 		if(cachedMessage == null) {
 			return "{}";
@@ -56,7 +55,7 @@ public class MessageCacheStore {
 		memberCache.clear();
 	}
 
-	@Nonnull
+	@NonNull
 	private HashMap<String, String> getCache(@Nullable UUID uuid) {
 		UUID key = uuid == null ? LOCAL_UUID : uuid;
 		return memberCache.computeIfAbsent(key, t -> new HashMap<>());

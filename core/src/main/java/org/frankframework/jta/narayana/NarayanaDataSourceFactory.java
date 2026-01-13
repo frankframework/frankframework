@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2025 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,14 +20,13 @@ import static java.util.Objects.requireNonNull;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.tomcat.dbcp.dbcp2.PoolableConnection;
 import org.apache.tomcat.dbcp.dbcp2.PoolableConnectionFactory;
 import org.apache.tomcat.dbcp.dbcp2.managed.DataSourceXAConnectionFactory;
 import org.apache.tomcat.dbcp.dbcp2.managed.PoolableManagedConnectionFactory;
 import org.apache.tomcat.dbcp.dbcp2.managed.XAConnectionFactory;
 import org.apache.tomcat.dbcp.pool2.impl.GenericObjectPool;
+import org.jspecify.annotations.NonNull;
 
 import com.arjuna.ats.jta.recovery.XAResourceRecoveryHelper;
 
@@ -55,7 +54,7 @@ public class NarayanaDataSourceFactory extends AbstractXADataSourceFactory {
 		testQuery = appConstants.getString("transactionmanager.narayana.jdbc.connection.testQuery", testQuery);
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	protected DataSource createXADataSource(XADataSource xaDataSource, String dataSourceName) {
 		XAResourceRecoveryHelper recoveryHelper = new DataSourceXAResourceRecoveryHelper(xaDataSource, dataSourceName);

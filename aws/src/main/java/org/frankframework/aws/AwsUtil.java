@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
 */
 package org.frankframework.aws;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.NoArgsConstructor;
 import software.amazon.awssdk.auth.credentials.AwsCredentials;
@@ -36,7 +36,7 @@ public class AwsUtil {
 	 * @param cf credential factory
 	 * @return chain of credential providers
 	 */
-	public static @Nonnull AwsCredentialsProvider createCredentialProviderChain(@Nullable CredentialFactory cf) {
+	public static @NonNull AwsCredentialsProvider createCredentialProviderChain(@Nullable CredentialFactory cf) {
 		AwsCredentialsProviderChain.Builder chain = AwsCredentialsProviderChain.builder();
 		if (cf != null) {
 			chain.addCredentialsProvider(StaticCredentialsProvider.create(getAwsCredentials(cf)));

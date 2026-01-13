@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2025 WeAreFrank!
+   Copyright 2013-2014 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
 */
 package org.frankframework.errormessageformatters;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.core.HasName;
 import org.frankframework.core.IErrorMessageFormatter;
@@ -39,7 +39,7 @@ public class Y01ErrorMessageFormatter implements IErrorMessageFormatter {
 	private final String applicationVersion = AppConstants.getInstance().getProperty("application.version");
 
 	@Override
-	public @Nonnull Message format(@Nullable String message, @Nullable Throwable t, @Nullable HasName location, @Nullable Message originalMessage, @Nonnull PipeLineSession session) {
+	public @NonNull Message format(@Nullable String message, @Nullable Throwable t, @Nullable HasName location, @Nullable Message originalMessage, @NonNull PipeLineSession session) {
 		String result= "<ServiceResponse>\n" +
 				"   <ResponseEnvelope>\n" +
 				"       <serviceType>ING_RES1006</serviceType>\n" +

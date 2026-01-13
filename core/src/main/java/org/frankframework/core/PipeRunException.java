@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2022-2023, 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package org.frankframework.core;
 
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 
@@ -43,7 +43,7 @@ public class PipeRunException extends IbisException {
 		this(pipe, msg, Map.of(), e);
 	}
 
-	public PipeRunException(@Nullable IPipe pipe, @Nullable String msg, @Nonnull Map<String, Object> parameters, @Nullable Throwable e) {
+	public PipeRunException(@Nullable IPipe pipe, @Nullable String msg, @NonNull Map<String, Object> parameters, @Nullable Throwable e) {
 		super(StringUtil.concatStrings(pipe != null ? "Pipe [" + pipe.getName() + "]" : null, " ", msg), e);
 		this.pipeInError = pipe;
 		this.parameters = parameters;

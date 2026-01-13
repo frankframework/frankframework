@@ -1,5 +1,5 @@
 /*
-   Copyright 2002-2025 the original author or authors, 2025 WeAreFrank!.
+   Copyright 2002-2025 the original author or authors, 2025-2026 WeAreFrank!.
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,8 +24,6 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.function.Supplier;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
@@ -34,6 +32,8 @@ import jakarta.servlet.http.HttpServletRequestWrapper;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpServletResponseWrapper;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.ServerHttpRequest;
 import org.springframework.http.server.ServletServerHttpRequest;
@@ -99,7 +99,7 @@ public class CustomizedForwardedHeaderFilter extends OncePerRequestFilter {
 	}
 
 	@Override
-	protected boolean shouldNotFilter(@Nonnull HttpServletRequest request) {
+	protected boolean shouldNotFilter(@NonNull HttpServletRequest request) {
 		for (String headerName : FORWARDED_HEADER_NAMES) {
 			if (request.getHeader(headerName) != null) {
 				return false;
@@ -119,8 +119,8 @@ public class CustomizedForwardedHeaderFilter extends OncePerRequestFilter {
 	}
 
 	@Override
-	protected void doFilterInternal(@Nonnull HttpServletRequest request, @Nonnull HttpServletResponse response,
-									@Nonnull FilterChain filterChain) throws ServletException, IOException {
+	protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
+									@NonNull FilterChain filterChain) throws ServletException, IOException {
 
 		HttpServletRequest wrappedRequest;
 		HttpServletResponse wrappedResponse;
@@ -148,8 +148,8 @@ public class CustomizedForwardedHeaderFilter extends OncePerRequestFilter {
 	}
 
 	@Override
-	protected void doFilterNestedErrorDispatch(@Nonnull HttpServletRequest request, @Nonnull HttpServletResponse response,
-											   @Nonnull FilterChain filterChain) throws ServletException, IOException {
+	protected void doFilterNestedErrorDispatch(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
+											   @NonNull FilterChain filterChain) throws ServletException, IOException {
 
 		doFilterInternal(request, response, filterChain);
 	}

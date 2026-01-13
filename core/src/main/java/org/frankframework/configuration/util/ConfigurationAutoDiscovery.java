@@ -32,10 +32,9 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -95,14 +94,14 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 	}
 
 	@Override
-	public void setApplicationContext(@Nonnull ApplicationContext applicationContext) {
+	public void setApplicationContext(@NonNull ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
 	}
 
 	/**
 	 * @return A map with all configurations to load (KEY = ConfigurationName, VALUE = ClassLoaderType)
 	 */
-	@Nonnull
+	@NonNull
 	public Map<String, Class<? extends IConfigurationClassLoader>> scan(boolean includeExplicitlyDefinedConfigurations) {
 		configurations.clear();
 
@@ -129,8 +128,8 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 		return sort(configurations);
 	}
 
-	@Nonnull
-	private Map<String, Class<? extends IConfigurationClassLoader>> scanDirectory(@Nonnull Path configDir) throws IOException {
+	@NonNull
+	private Map<String, Class<? extends IConfigurationClassLoader>> scanDirectory(@NonNull Path configDir) throws IOException {
 		log.info("scanning directory [{}] for configurations", configDir);
 
 		Map<String, Class<? extends IConfigurationClassLoader>> directoryConfigurations = new LinkedHashMap<>();
@@ -156,8 +155,8 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 		return directoryConfigurations;
 	}
 
-	@Nonnull
-	private Map<String, Class<? extends IConfigurationClassLoader>> scanDatabase(@Nonnull String dataSourceName) throws DbmsException, SQLException {
+	@NonNull
+	private Map<String, Class<? extends IConfigurationClassLoader>> scanDatabase(@NonNull String dataSourceName) throws DbmsException, SQLException {
 		log.info("scanning database [{}] for configurations", dataSourceName);
 
 		Map<String, Class<? extends IConfigurationClassLoader>> databaseConfigurations = new LinkedHashMap<>();
@@ -218,8 +217,8 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 		}
 	}
 
-	@Nonnull
-	private static List<String> retrieveDirectoryConfigNames(@Nonnull Path directory) throws IOException {
+	@NonNull
+	private static List<String> retrieveDirectoryConfigNames(@NonNull Path directory) throws IOException {
 		List<String> configurationNames = new ArrayList<>();
 
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory, Files::isDirectory)) {
@@ -232,8 +231,8 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 		return configurationNames;
 	}
 
-	@Nonnull
-	private static List<String> retrieveJarFileConfigNames(@Nonnull Path directory) throws IOException {
+	@NonNull
+	private static List<String> retrieveJarFileConfigNames(@NonNull Path directory) throws IOException {
 		List<String> configurationNames = new ArrayList<>();
 
 		try (DirectoryStream<Path> stream = Files.newDirectoryStream(directory, JarFileClassLoader::isJarFile)) {
@@ -249,8 +248,8 @@ public class ConfigurationAutoDiscovery implements ApplicationContextAware {
 		return configurationNames;
 	}
 
-	@Nonnull
-	private List<String> retrieveConfigNamesFromDatabase(@Nonnull String dataSourceName) throws SQLException, DbmsException {
+	@NonNull
+	private List<String> retrieveConfigNamesFromDatabase(@NonNull String dataSourceName) throws SQLException, DbmsException {
 		IDataSourceFactory dsFactory = applicationContext.getBean("dataSourceFactory", IDataSourceFactory.class);
 		DataSource dataSource = dsFactory.getDataSource(dataSourceName);
 

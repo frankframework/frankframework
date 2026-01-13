@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 - 2024 WeAreFrank!
+   Copyright 2021 - 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,11 +25,10 @@ import java.util.NoSuchElementException;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.Strings;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -75,8 +74,8 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	 * Allows the originally created object to be mutated to another object. Useful to generate an object from a filled DTO.
 	 */
 	@SuppressWarnings({ "java:S1172", "unchecked" })
-	@Nonnull
-	protected O augment(@Nonnull P object, @Nonnull String objectName) {
+	@NonNull
+	protected O augment(@NonNull P object, @NonNull String objectName) {
 		return (O) object;
 	}
 
@@ -90,8 +89,8 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	 * @throws NoSuchElementException when the object cannot be found
 	 * @throws IllegalStateException when an object definition can be found, but the object instance cannot be created
 	 */
-	@Nonnull
-	protected final O get(@Nonnull String name, @Nullable Properties environment) throws NoSuchElementException, IllegalStateException {
+	@NonNull
+	protected final O get(@NonNull String name, @Nullable Properties environment) throws NoSuchElementException, IllegalStateException {
 		String nameWithResourcePrefix = Strings.CS.prependIfMissing(name, resourcePrefix + "/");
 		return objects.computeIfAbsent(nameWithResourcePrefix, k -> compute(k, environment));
 	}
@@ -100,8 +99,8 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	 * Add and augment an Object to this factory so it can be used without the need of a lookup.
 	 * Should only be called during jUnit Tests or when registering an Object through Spring. Never through a lookup.
 	 */
-	@Nonnull
-	public O add(@Nonnull P object, @Nonnull String name) {
+	@NonNull
+	public O add(@NonNull P object, @NonNull String name) {
 		return objects.computeIfAbsent(name, k -> augment(object, name));
 	}
 
@@ -114,8 +113,8 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	 * @throws NoSuchElementException If no object definition can be found
 	 * @throws IllegalStateException If the instance cannot be created
 	 */
-	@Nonnull
-	private O compute(@Nonnull String name, @Nullable Properties environment) throws NoSuchElementException, IllegalStateException {
+	@NonNull
+	private O compute(@NonNull String name, @Nullable Properties environment) throws NoSuchElementException, IllegalStateException {
 		for(IObjectLocator objectLocator : objectLocators) {
 			try {
 				P object = objectLocator.lookup(name, environment, lookupClass);
@@ -137,14 +136,14 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	protected List<String> getObjectNames() {
 		List<String> names = new ArrayList<>(objects.keySet());
 		names.sort(Comparator.naturalOrder()); // AlphaNumeric order
 		return Collections.unmodifiableList(names);
 	}
 
-	@Nonnull
+	@NonNull
 	public List<ObjectInfo> getObjectInfo() {
 		return getObjectNames().stream().map(this::toObjectInfo).toList();
 	}
@@ -152,7 +151,7 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 	/**
 	 * Mapping from <O> to a information object, used for logging and console actions.
 	 */
-	@Nonnull
+	@NonNull
 	protected ObjectInfo toObjectInfo(String name) {
 		Object obj = get(name, null);
 		return new ObjectInfo(name, StringUtil.reflectionToString(obj), null);
@@ -160,7 +159,7 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 
 	public record ObjectInfo (String name, String info, String connectionPoolProperties) {
 		@Override
-		@Nonnull
+		@NonNull
 		public String toString() {
 			return "Resource [%s] %s, POOL: %s".formatted(name, info, connectionPoolProperties);
 		}
@@ -192,7 +191,7 @@ public abstract class ObjectFactory<O, P> implements InitializingBean, Disposabl
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	private static Exception wrapException(Exception masterException, String message, Exception cause) {
 		if (masterException == null) {
 			return new Exception(message, cause);

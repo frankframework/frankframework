@@ -1,5 +1,5 @@
 /*
-   Copyright 2024-2025 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 */
 package org.frankframework.processors;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.core.IPipe;
 import org.frankframework.core.PipeLine;
@@ -34,10 +34,10 @@ import org.frankframework.stream.MessageContext;
  */
 public class TrackPreviousPipeInMetadataProcessor extends AbstractPipeProcessor {
 
-	@Nonnull
+	@NonNull
 	@Override
-	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession,
-										@Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@NonNull PipeLine pipeLine, @NonNull IPipe pipe, @NonNull Message message, @NonNull PipeLineSession pipeLineSession,
+										@NonNull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 
 		PipeRunResult pipeRunResult = chain.apply(message);
 		pipeRunResult.getResult().getContext().put(MessageContext.CONTEXT_PREVIOUS_PIPE, pipe.getName());

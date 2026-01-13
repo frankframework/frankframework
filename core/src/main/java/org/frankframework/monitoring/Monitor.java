@@ -22,8 +22,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.context.ApplicationContext;
@@ -88,7 +87,7 @@ public class Monitor implements ConfigurableLifecycle, NameAware, DisposableBean
 	private final Set<String> destinations = new HashSet<>();
 
 	@Override
-	public void setApplicationContext(@Nonnull ApplicationContext applicationContext) {
+	public void setApplicationContext(@NonNull ApplicationContext applicationContext) {
 		if (!(applicationContext instanceof MonitorManager manager)) {
 			throw new IllegalStateException("ApplicationContext is not a MonitorManager");
 		}

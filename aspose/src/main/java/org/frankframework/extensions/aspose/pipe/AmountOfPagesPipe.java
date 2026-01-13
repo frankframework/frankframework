@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2024 WeAreFrank!
+   Copyright 2019-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package org.frankframework.extensions.aspose.pipe;
 import java.io.IOException;
 import java.io.InputStream;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import com.aspose.pdf.Document;
 import com.aspose.pdf.exceptions.InvalidPasswordException;
@@ -42,7 +42,7 @@ import org.frankframework.stream.Message;
 public class AmountOfPagesPipe extends FixedForwardPipe {
 	private String charset = null;
 
-	@Nonnull
+	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
 		int result = 0;

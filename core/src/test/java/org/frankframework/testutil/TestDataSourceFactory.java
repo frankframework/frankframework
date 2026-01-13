@@ -4,7 +4,7 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.jdbc.datasource.DataSourceFactory;
 import org.frankframework.testutil.FindAvailableDataSources.TestDatasource;
@@ -14,9 +14,9 @@ import org.frankframework.testutil.FindAvailableDataSources.TestDatasource;
  */
 public class TestDataSourceFactory extends DataSourceFactory {
 
-	@Nonnull
+	@NonNull
 	@Override
-	public DataSource getDataSource(@Nonnull String jndiName, Properties jndiEnvironment) {
+	public DataSource getDataSource(@NonNull String jndiName, Properties jndiEnvironment) {
 		String enrichedDataSourceName = TestDatasource.valueOf(jndiName).getDataSourceName();
 		return super.getDataSource(enrichedDataSourceName, jndiEnvironment);
 	}
@@ -24,7 +24,7 @@ public class TestDataSourceFactory extends DataSourceFactory {
 	/**
 	 * In getDataSource we add the prefix {@value FindAvailableDataSources#JDBC_RESOURCE_PREFIX}, here we chomp it off again.
 	 */
-	@Nonnull
+	@NonNull
 	@Override
 	protected ObjectInfo toObjectInfo(String name) {
 		if (name.startsWith(FindAvailableDataSources.JDBC_RESOURCE_PREFIX)) {

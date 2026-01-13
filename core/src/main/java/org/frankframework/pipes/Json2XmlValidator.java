@@ -1,5 +1,5 @@
 /*
-   Copyright 2017, 2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2017, 2018 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,13 +23,13 @@ import java.util.Optional;
 
 import javax.xml.validation.ValidatorHandler;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.json.Json;
 import jakarta.json.JsonStructure;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.xs.XSModel;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeTypeUtils;
 import org.xml.sax.ContentHandler;
@@ -208,7 +208,7 @@ public class Json2XmlValidator extends XmlValidator {
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	private Message determineJsonInputMessage(Message input, PipeLineSession session, boolean responseMode, DocumentFormat inputFormat) {
 		Message messageToValidate;
 		if (inputFormat == null) {

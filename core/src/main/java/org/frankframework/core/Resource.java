@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021, 2024 WeAreFrank!
+   Copyright 2019-2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,11 +21,10 @@ import java.net.URL;
 
 import javax.xml.transform.Source;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.xerces.xni.parser.XMLInputSource;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -50,17 +49,17 @@ public abstract class Resource implements IScopeProvider {
 	}
 
 	@Nullable
-	public static Resource getResource(@Nonnull String resource) {
+	public static Resource getResource(@NonNull String resource) {
 		return getResource(null, resource);
 	}
 
 	@Nullable
-	public static Resource getResource(@Nullable IScopeProvider scopeProvider, @Nonnull String resource) {
+	public static Resource getResource(@Nullable IScopeProvider scopeProvider, @NonNull String resource) {
 		return getResource(scopeProvider, resource, null);
 	}
 
 	@Nullable
-	public static Resource getResource(@Nullable IScopeProvider scopeProvider, @Nonnull String resource, String allowedProtocols) {
+	public static Resource getResource(@Nullable IScopeProvider scopeProvider, @NonNull String resource, String allowedProtocols) {
 		if(scopeProvider == null) {
 			scopeProvider = new GlobalScopeProvider(); // if no scope has been provided, assume to use the default 'global' scope.
 		}

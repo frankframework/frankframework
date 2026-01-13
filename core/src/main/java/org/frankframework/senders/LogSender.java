@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2022-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,11 +17,10 @@ package org.frankframework.senders;
 
 import java.io.IOException;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 
@@ -69,7 +68,7 @@ public class LogSender extends AbstractSenderWithParameters {
 	}
 
 	@Override
-	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 		ParameterValueList pvl = getParameterValueList(message, session);
 		String calculatedLevel = getParameterOverriddenAttributeValue(pvl, LOG_LEVEL_ATTRIBUTE_NAME, logLevel);
 		Level level = Level.toLevel(calculatedLevel, defaultLogLevel);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2024-2025 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,11 +20,10 @@ import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.Objects;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import lombok.Getter;
@@ -365,7 +364,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	}
 
 	@Override
-	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 		ParameterValueList pvl = getParameterValueList(message, session);
 		Scope actualScope = determineActualScope(pvl);
 		String actualTarget = determineActualTarget(pvl);
@@ -497,7 +496,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 		};
 	}
 
-	protected @Nonnull ServiceClient getFrankListener(@Nonnull String target) throws SenderException {
+	protected @NonNull ServiceClient getFrankListener(@NonNull String target) throws SenderException {
 		String fullFrankListenerName = getFullFrankListenerName(target);
 		ServiceClient result = FrankListener.getListener(fullFrankListenerName);
 		if (result == null) {
@@ -506,7 +505,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 		return result;
 	}
 
-	private @Nonnull String getFullFrankListenerName(@Nonnull String target) {
+	private @NonNull String getFullFrankListenerName(@NonNull String target) {
 		int configNameSeparator = target.indexOf(CONFIG_NAME_SEPARATOR);
 		if (configuration == null || configNameSeparator > 0) {
 			return target;
@@ -517,7 +516,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	protected Adapter findAdapter(String target) throws SenderException {
 		Configuration actualConfiguration;
 		String adapterName;

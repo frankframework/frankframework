@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2024 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,9 +19,8 @@ import java.util.Map;
 
 import javax.xml.transform.TransformerConfigurationException;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.w3c.dom.Element;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -112,7 +111,7 @@ public class BisJmsSender extends JmsSender {
 	}
 
 	@Override
-	public @Nonnull SenderResult sendMessage(@Nonnull Message input, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message input, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 		String messageHeader;
 		try {
 			messageHeader = bisUtils.prepareMessageHeader(null, isMessageHeaderInSoapBody(), (String) session.get(getConversationIdSessionKey()), (String) session.get(getExternalRefToMessageIdSessionKey()));

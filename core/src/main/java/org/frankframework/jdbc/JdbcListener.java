@@ -34,10 +34,9 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 import lombok.Lombok;
@@ -86,7 +85,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	private @Getter String messageIdField;
 	private @Getter String correlationIdField;
 	private @Getter String additionalFields;
-	private @Getter @Nonnull List<String> additionalFieldsList = List.of();
+	private @Getter @NonNull List<String> additionalFieldsList = List.of();
 	private @Getter MessageFieldType messageFieldType=MessageFieldType.STRING;
 	private @Getter String sqlDialect = AppConstants.getInstance().getString("jdbc.sqlDialect", null);
 
@@ -174,14 +173,14 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public Map<String,Object> openThread() throws ListenerException {
 		return new HashMap<>();
 	}
 
 	@Override
-	public void closeThread(@Nonnull Map<String, Object> threadContext) throws ListenerException {
+	public void closeThread(@NonNull Map<String, Object> threadContext) throws ListenerException {
 		// nothing special
 	}
 
@@ -211,7 +210,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	}
 
 	@Override
-	public @Nullable RawMessageWrapper<M> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException {
+	public @Nullable RawMessageWrapper<M> getRawMessage(@NonNull Map<String, Object> threadContext) throws ListenerException {
 		if (isConnectionsArePooled()) {
 			try (Connection c = getConnection()) {
 				return getRawMessage(c, threadContext);
@@ -359,7 +358,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	}
 
 	@Override
-	public Message extractMessage(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+	public Message extractMessage(@NonNull RawMessageWrapper<M> rawMessage, @NonNull Map<String, Object> context) throws ListenerException {
 		addAdditionalQueryFieldsToSession(rawMessage, context);
 		if (rawMessage.getRawMessage() instanceof MessageWrapper<?> messageWrapper) {
 			return messageWrapper.getMessage();
@@ -368,7 +367,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 	}
 
 	@SuppressWarnings("unchecked")
-	protected void addAdditionalQueryFieldsToSession(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String, Object> context) {
+	protected void addAdditionalQueryFieldsToSession(@NonNull RawMessageWrapper<M> rawMessage, @NonNull Map<String, Object> context) {
 		if (rawMessage.getContext().containsKey(ADDITIONAL_QUERY_FIELDS_KEY)) {
 			context.putAll((Map<String, String>) rawMessage.getContext().get(ADDITIONAL_QUERY_FIELDS_KEY));
 		}

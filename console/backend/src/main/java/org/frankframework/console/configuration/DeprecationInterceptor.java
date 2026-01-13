@@ -17,12 +17,12 @@ package org.frankframework.console.configuration;
 
 import java.lang.reflect.Method;
 
-import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
@@ -44,7 +44,7 @@ public class DeprecationInterceptor implements HandlerInterceptor, EnvironmentAw
 	private boolean allowDeprecatedEndpoints = false;
 
 	@Override
-	public boolean preHandle(@Nonnull HttpServletRequest request, @Nonnull HttpServletResponse response, @Nonnull Object handler) throws Exception {
+	public boolean preHandle(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull Object handler) throws Exception {
 		if(handler instanceof HandlerMethod handlerMethod) {
 			Method method = handlerMethod.getMethod();
 

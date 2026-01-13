@@ -17,8 +17,7 @@ package org.frankframework.lifecycle;
 
 import java.util.Properties;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.config.BeanFactoryPostProcessor;
 import org.springframework.beans.factory.config.ConfigurableListableBeanFactory;
@@ -41,7 +40,7 @@ public abstract class AbstractPropertySourcePostProcessor implements BeanFactory
 	private ConfigurableEnvironment environment;
 
 	@Override
-	public void setEnvironment(@Nonnull Environment environment) {
+	public void setEnvironment(@NonNull Environment environment) {
 		this.environment = (ConfigurableEnvironment) environment;
 	}
 
@@ -74,7 +73,7 @@ public abstract class AbstractPropertySourcePostProcessor implements BeanFactory
 	}
 
 	@Override
-	public void postProcessBeanFactory(@Nonnull ConfigurableListableBeanFactory beanFactory) throws BeansException {
+	public void postProcessBeanFactory(@NonNull ConfigurableListableBeanFactory beanFactory) throws BeansException {
 		MutablePropertySources propertySources = environment.getPropertySources();
 
 		Properties customProperties = getCustomProperties();

@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,9 +18,8 @@ package org.frankframework.credentialprovider.delinea;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import lombok.extern.java.Log;
 
@@ -142,7 +141,7 @@ public class DelineaCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public boolean hasSecret(@Nonnull CredentialAlias alias) {
+	public boolean hasSecret(@NonNull CredentialAlias alias) {
 		return getSecret(alias) != null;
 	}
 
@@ -152,7 +151,7 @@ public class DelineaCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public ISecret getSecret(@Nonnull CredentialAlias alias) throws NoSuchElementException {
+	public ISecret getSecret(@NonNull CredentialAlias alias) throws NoSuchElementException {
 		if (alias.getName() != null && !StringUtils.isNumeric(alias.getName())) {
 			log.warning("Delinea secret aliases must be numeric, as they reference the internal Delinea secret ID. Supplied alias: %s".formatted(alias.getName()));
 		}

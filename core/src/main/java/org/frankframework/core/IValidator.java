@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022, 2024 WeAreFrank!
+   Copyright 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 */
 package org.frankframework.core;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.FrankDocGroup;
@@ -33,7 +33,7 @@ import org.frankframework.stream.Message;
 @EnterpriseIntegrationPattern(EnterpriseIntegrationPattern.Type.VALIDATOR)
 public interface IValidator extends IPipe {
 
-	@Nonnull
+	@NonNull
 	PipeRunResult validate(Message message, PipeLineSession session, String messageRoot) throws PipeRunException;
 
 	/** The functional name of this pipe, is not required when used as a Validator */

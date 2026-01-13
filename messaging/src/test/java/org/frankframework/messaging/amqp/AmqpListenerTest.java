@@ -14,9 +14,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.qpid.protonj2.client.DeliveryMode;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -73,7 +72,7 @@ abstract class AmqpListenerTest {
 		this.listener = createAmqpListener();
 	}
 
-	@Nonnull
+	@NonNull
 	private AmqpListener createAmqpListener() throws ListenerException {
 		AmqpListener amqpListener = new AmqpListener();
 		amqpListener.setConnectionName(getResourceName());
@@ -111,11 +110,11 @@ abstract class AmqpListenerTest {
 		return connectionFactory;
 	}
 
-	protected abstract @Nonnull String getResourceName();
+	protected abstract @NonNull String getResourceName();
 
-	protected abstract @Nonnull Integer getAmqpPort();
+	protected abstract @NonNull Integer getAmqpPort();
 
-	protected abstract @Nonnull String getHost();
+	protected abstract @NonNull String getHost();
 
 	@AfterEach
 	void tearDown() {

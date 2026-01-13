@@ -13,8 +13,7 @@ import static org.mockito.Mockito.verify;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.core.PipeLineSession;
@@ -104,7 +103,7 @@ public class LockerPipeProcessorTest extends PipeProcessorTestBase {
 
 	private static class ThrowExceptionPipe extends AbstractPipe {
 
-		@Nonnull
+		@NonNull
 		@Override
 		public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 			throw new PipeRunException(this, "this operation should not be called");

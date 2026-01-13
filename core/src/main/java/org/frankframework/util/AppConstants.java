@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 - 2019 Nationale-Nederlanden, 2020 - 2023 WeAreFrank!
+   Copyright 2013, 2016 - 2019 Nationale-Nederlanden, 2020 - 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,13 +19,12 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.lifecycle.servlets.ApplicationServerConfigurer;
 
@@ -194,7 +193,7 @@ public final class AppConstants extends PropertyLoader {
 	 * @param value the value corresponding to {@code key}.
 	 * @return Previous value, or null
 	 */
-	public static @Nullable Boolean setGlobalProperty(@Nonnull String key, boolean value) {
+	public static @Nullable Boolean setGlobalProperty(@NonNull String key, boolean value) {
 		String retval = setGlobalProperty(key, "" + value);
 		if (retval == null) {
 			return null;
@@ -210,7 +209,7 @@ public final class AppConstants extends PropertyLoader {
 	 * @param value the value corresponding to {@code key}.
 	 * @return Previous value, or null
 	 */
-	public static synchronized @Nullable String setGlobalProperty(@Nonnull String key, @Nonnull String value) {
+	public static synchronized @Nullable String setGlobalProperty(@NonNull String key, @NonNull String value) {
 		// Copying global app-constant values to all instances is a bit of a hack but there's not much else we can do
 		for (AppConstants localAppConstants : appConstantsMap.values()) {
 			localAppConstants.setProperty(key, value);
@@ -225,7 +224,7 @@ public final class AppConstants extends PropertyLoader {
 	 * @param key the key to be removed
 	 * @return The value associated with the key, or null
 	 */
-	public static synchronized @Nullable String clearGlobalProperty(@Nonnull String key) {
+	public static synchronized @Nullable String clearGlobalProperty(@NonNull String key) {
 		for (AppConstants localAppConstants : appConstantsMap.values()) {
 			localAppConstants.remove(key);
 		}

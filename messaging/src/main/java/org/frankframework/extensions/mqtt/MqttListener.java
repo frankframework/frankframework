@@ -1,5 +1,5 @@
 /*
-   Copyright 2017, 2020, 2023 WeAreFrank!
+   Copyright 2017, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,13 +17,12 @@ package org.frankframework.extensions.mqtt;
 
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
 import org.eclipse.paho.client.mqttv3.MqttCallbackExtended;
 import org.eclipse.paho.client.mqttv3.MqttException;
 import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.jspecify.annotations.NonNull;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -170,7 +169,7 @@ public class MqttListener extends MqttFacade implements ReceiverAware<MqttMessag
 	}
 
 	@Override
-	public Message extractMessage(@Nonnull RawMessageWrapper<MqttMessage> rawMessage, @Nonnull Map<String, Object> context) {
+	public Message extractMessage(@NonNull RawMessageWrapper<MqttMessage> rawMessage, @NonNull Map<String, Object> context) {
 		return new Message(rawMessage.getRawMessage().getPayload(), getCharset());
 	}
 

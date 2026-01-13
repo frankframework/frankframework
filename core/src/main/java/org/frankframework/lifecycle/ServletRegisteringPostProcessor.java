@@ -15,8 +15,7 @@
 */
 package org.frankframework.lifecycle;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.config.BeanPostProcessor;
@@ -35,7 +34,7 @@ public class ServletRegisteringPostProcessor implements BeanPostProcessor, Appli
 	private ServletManager servletManager;
 
 	@Override
-	public Object postProcessAfterInitialization(@Nonnull Object bean, @Nonnull String beanName) throws BeansException {
+	public Object postProcessAfterInitialization(@NonNull Object bean, @NonNull String beanName) throws BeansException {
 		if(bean instanceof Servlet servlet) {
 			ServletConfiguration config = SpringUtils.createBean(applicationContext);
 			config.fromServlet(servlet);

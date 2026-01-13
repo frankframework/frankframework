@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,10 +18,9 @@ package org.frankframework.processors;
 import java.io.IOException;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -71,9 +70,9 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 	 */
 	// Message should not be nullable?
 	// Should the skipPipe be handled before getInputFrom?
-	@Nonnull
+	@NonNull
 	@Override
-	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nonnull final Message inputMessage, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@NonNull PipeLine pipeLine, @NonNull IPipe pipe, @NonNull final Message inputMessage, @NonNull PipeLineSession pipeLineSession, @NonNull ThrowingFunction<Message, PipeRunResult,PipeRunException> chain) throws PipeRunException {
 		Message originalMessage = inputMessage;
 
 		// Get the input message for the pipe to be processed, does not return null.
@@ -137,8 +136,8 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 	 * Handles getInputFrom -SessionKey and -FixedValue.
 	 * Registers the original message to be closed, as we're not using it.
 	 */
-	@Nonnull
-	private Message getInputFrom(@Nonnull final IPipe pipe, @Nonnull final Message message, @Nonnull final PipeLineSession pipeLineSession) throws PipeRunException {
+	@NonNull
+	private Message getInputFrom(@NonNull final IPipe pipe, @NonNull final Message message, @NonNull final PipeLineSession pipeLineSession) throws PipeRunException {
 		// The order of these two methods has been changed to make it backwards compatible.
 		if (StringUtils.isNotEmpty(pipe.getGetInputFromFixedValue())) {
 			log.debug("replacing input with fixed value [{}]", pipe::getGetInputFromFixedValue);
@@ -226,10 +225,10 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	@SuppressWarnings("java:S1185") // method needs to be overridden to enable AOP for debugger
-	public PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException {
+	public PipeRunResult processPipe(@NonNull PipeLine pipeLine, @NonNull IPipe pipe, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws PipeRunException {
 		return super.processPipe(pipeLine, pipe, message, pipeLineSession);
 	}
 

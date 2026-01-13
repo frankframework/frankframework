@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,9 +21,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
@@ -169,12 +168,12 @@ public class JavaListener<M> implements RequestReplyListener, IPushingListener<M
 
 	// ### ServiceClient
 	@Override
-	public Message processRequest(Message message, @Nonnull PipeLineSession session) throws ListenerException {
+	public Message processRequest(Message message, @NonNull PipeLineSession session) throws ListenerException {
 		MessageWrapper<M> messageWrapper = new MessageWrapper<>(message, session.getMessageId(), session.getCorrelationId());
 		return processRequest(messageWrapper, session);
 	}
 
-	private Message processRequest(@Nonnull MessageWrapper<M> messageWrapper, @Nonnull PipeLineSession parentSession) throws ListenerException {
+	private Message processRequest(@NonNull MessageWrapper<M> messageWrapper, @NonNull PipeLineSession parentSession) throws ListenerException {
 		if (!isOpen()) {
 			throw new ListenerException("JavaListener [" + getName() + "] is not opened");
 		}
@@ -232,7 +231,7 @@ public class JavaListener<M> implements RequestReplyListener, IPushingListener<M
 	}
 
 	@Override
-	public Message extractMessage(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+	public Message extractMessage(@NonNull RawMessageWrapper<M> rawMessage, @NonNull Map<String, Object> context) throws ListenerException {
 		return Message.asMessage(rawMessage.getRawMessage());
 	}
 

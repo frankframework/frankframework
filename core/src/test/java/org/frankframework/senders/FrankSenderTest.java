@@ -18,8 +18,7 @@ import static org.mockito.Mockito.when;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -524,7 +523,7 @@ class FrankSenderTest {
 		configuration = new TestConfiguration(false);
 		Semaphore semaphore = new Semaphore(0);
 		IPipe pipe = new AbstractPipe() {
-			@Nonnull
+			@NonNull
 			@Override
 			public PipeRunResult doPipe(Message message, PipeLineSession session) {
 				semaphore.release();
@@ -590,7 +589,7 @@ class FrankSenderTest {
 		}
 	}
 
-	private @Nonnull FrankSender createFrankSender(FrankSender.Scope scope, boolean callSync, IPipe pipe) throws ConfigurationException, ListenerException {
+	private @NonNull FrankSender createFrankSender(FrankSender.Scope scope, boolean callSync, IPipe pipe) throws ConfigurationException, ListenerException {
 		FrankSender sender = configuration.createBean();
 		sender.setTarget(TARGET_SERVICE_NAME);
 		sender.setScope(scope);

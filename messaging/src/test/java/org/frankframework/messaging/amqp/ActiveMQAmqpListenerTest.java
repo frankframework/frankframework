@@ -1,7 +1,6 @@
 package org.frankframework.messaging.amqp;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.testcontainers.activemq.ActiveMQContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -13,19 +12,19 @@ public class ActiveMQAmqpListenerTest extends AmqpListenerTest {
 	@Container
 	private static final ActiveMQContainer container = new ActiveMQContainer(ACTIVEMQ_TAG);
 
-	@Nonnull
+	@NonNull
 	@Override
 	protected String getResourceName() {
 		return "ActiveMQ";
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	protected Integer getAmqpPort() {
 		return container.getMappedPort(5672);
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	protected String getHost() {
 		return "localhost";

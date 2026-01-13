@@ -17,11 +17,10 @@ package org.frankframework.lifecycle;
 
 import java.util.stream.Stream;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.EnvironmentAware;
 import org.springframework.core.Ordered;
 import org.springframework.core.PriorityOrdered;
@@ -48,7 +47,7 @@ public class LogPropertiesConfigurer implements PriorityOrdered, EnvironmentAwar
 	}
 
 	@Override
-	public void setEnvironment(@Nonnull Environment environment) {
+	public void setEnvironment(@NonNull Environment environment) {
 		if (environment instanceof AbstractEnvironment abstractEnv) {
 			this.environment = environment;
 
