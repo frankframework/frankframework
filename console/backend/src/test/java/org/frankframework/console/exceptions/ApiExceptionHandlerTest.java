@@ -1,4 +1,4 @@
-package org.frankframework.console.controllers;
+package org.frankframework.console.exceptions;
 
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
@@ -19,6 +19,9 @@ import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 
 import org.frankframework.console.ApiException;
+import org.frankframework.console.controllers.FrankApiTestBase;
+import org.frankframework.console.controllers.TestController;
+import org.frankframework.console.controllers.WebTestConfiguration;
 
 @ContextConfiguration(classes = {WebTestConfiguration.class, TestController.class})
 public class ApiExceptionHandlerTest extends FrankApiTestBase {
@@ -26,7 +29,7 @@ public class ApiExceptionHandlerTest extends FrankApiTestBase {
 	private static Stream<Arguments> urlAndExpectedExceptionStream() {
 		return Stream.of(
 				Arguments.of("/test/apiexception", ApiException.class, HttpStatus.INTERNAL_SERVER_ERROR.value()),
-				Arguments.of("/test/apiexceptionasdfasdf", NoHandlerFoundException.class, HttpStatus.NOT_FOUND.value()),
+				Arguments.of("/test/mapping-not-found-exception", NoHandlerFoundException.class, HttpStatus.NOT_FOUND.value()),
 				Arguments.of("/test/servletexception", ServletException.class, HttpStatus.BAD_REQUEST.value()),
 				Arguments.of("/test/methodnotsupportedexception", HttpRequestMethodNotSupportedException.class, HttpStatus.METHOD_NOT_ALLOWED.value())
 		);
@@ -34,13 +37,14 @@ public class ApiExceptionHandlerTest extends FrankApiTestBase {
 
 	@ParameterizedTest
 	@MethodSource("urlAndExpectedExceptionStream")
-	public void test(String url, Class expectedException, int expectedStatus) throws Exception {
+	public <T extends Exception> void test(String url, Class<T> expectedException, int expectedStatus) throws Exception {
 
 		MvcResult mockResult = mockMvc.perform(MockMvcRequestBuilders.get(url))
 				.andExpect(MockMvcResultMatchers.content().contentType(MediaType.APPLICATION_JSON))
 				.andExpect(MockMvcResultMatchers.status().is(expectedStatus))
 				.andReturn();
 
+		mockResult.getResolvedException().printStackTrace();
 		assertInstanceOf(expectedException, mockResult.getResolvedException());
 	}
 }

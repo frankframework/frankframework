@@ -13,7 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.console.configuration;
+package org.frankframework.console.exceptions;
 
 import java.util.function.Function;
 
@@ -36,6 +36,13 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.console.ApiException;
 import org.frankframework.management.bus.BusException;
 
+/**
+ * This ExceptionHandler catches {@link MessageHandlingException Spring Integration related exceptions}
+ * as well as the {@link BusException} thrown by the Frank!Framework.
+ * 
+ * Catch all {@link MessageHandlingException} even when they are not thrown from our own sources.
+ * We need to prioritize this so our handler is used before Spring's own ExceptionHandler.
+ */
 @RestControllerAdvice
 @Order(Ordered.HIGHEST_PRECEDENCE)
 @Log4j2
