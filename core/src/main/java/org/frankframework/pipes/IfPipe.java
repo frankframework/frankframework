@@ -155,16 +155,24 @@ public class IfPipe extends AbstractPipe {
 
 	private @Getter int xsltVersion = XmlUtils.DEFAULT_XSLT_VERSION;
 
-	private SupportedMediaType defaultMediaType = SupportedMediaType.XML;
+	private @Getter SupportedMediaType defaultMediaType = null;
 
 	public enum SupportedMediaType {
-		XML(MediaType.APPLICATION_XML),
-		JSON(MediaType.APPLICATION_JSON);
+		XML(MediaType.APPLICATION_XML, new MediaType("application", "*+xml")),
+		JSON(MediaType.APPLICATION_JSON),
+		TEXT(MediaType.TEXT_PLAIN, new MediaType("text", "*"))
+		;
 
 		final MediaType mediaType;
+		final MediaType compatibleTypes;
 
 		SupportedMediaType(MediaType mediaType) {
 			this.mediaType = mediaType;
+			this.compatibleTypes = mediaType;
+		}
+		SupportedMediaType(MediaType mediaType, MediaType compatibleTypes) {
+			this.mediaType = mediaType;
+			this.compatibleTypes = compatibleTypes;
 		}
 
 		@Override
@@ -186,6 +194,16 @@ public class IfPipe extends AbstractPipe {
 			);
 		}
 		jsonPath = JsonUtil.compileJsonPath(jsonPathExpression);
+
+		if (defaultMediaType == null) {
+			if (jsonPath != null && transformerPool == null) {
+				defaultMediaType = SupportedMediaType.JSON;
+			} else if (transformerPool != null) {
+				defaultMediaType = SupportedMediaType.XML;
+			} else {
+				defaultMediaType = SupportedMediaType.TEXT;
+			}
+		}
 	}
 
 	/**
@@ -231,7 +249,7 @@ public class IfPipe extends AbstractPipe {
 
 		// check if computedType is one of the supported types, or else use the defaultMediaType
 		return Arrays.stream(SupportedMediaType.values())
-				.filter(supportedType -> supportedType.mediaType.equalsTypeAndSubtype(computedType))
+				.filter(supportedType -> supportedType.compatibleTypes.isCompatibleWith(computedType))
 				.findFirst()
 				.orElse(defaultMediaType);
 	}
@@ -391,7 +409,8 @@ public class IfPipe extends AbstractPipe {
 
 	/**
 	 * @param defaultMediaType The default media type to use when the media type of the message could not be determined.
-	 * @ff.default DefaultMediaType.XML
+	 * @ff.default {@literal JSON} if only a {@literal jsonPathExpression} is set, {@literal XML} if an
+	 * {@literal xpathExpression} is set, or {@literal TEXT} if neither are set.
 	 */
 	public void setDefaultMediaType(SupportedMediaType defaultMediaType) {
 		this.defaultMediaType = defaultMediaType;
