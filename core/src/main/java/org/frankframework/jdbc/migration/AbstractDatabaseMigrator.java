@@ -56,7 +56,6 @@ public abstract class AbstractDatabaseMigrator implements ConfigurableLifecycle,
 	protected Logger log = LogUtil.getLogger(this);
 	private @Setter IDataSourceFactory dataSourceFactory = null;
 	private @Getter Configuration configuration;
-	private @Setter String defaultDatasourceName = IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME;
 	private @Getter String name;
 	private @Getter ClassLoader configurationClassLoader = null;
 	private @Setter String datasourceName;

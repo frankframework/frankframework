@@ -73,7 +73,7 @@ public class BusResponseTypesTest {
 		json.add("key", "value");
 		JsonMessage message = new JsonMessage(json.build());
 
-		assertEquals("{\"key\":\"value\"}", message.getPayload().replaceAll("\s", "").replaceAll("\n", ""));
+		assertEquals("{\"key\":\"value\"}", message.getPayload().replace(" ", "").replace("\n", ""));
 		assertEquals("application/json", BusMessageUtils.getHeader(message, MessageBase.MIMETYPE_KEY));
 		assertEquals(200, BusMessageUtils.getIntHeader(message, MessageBase.STATUS_KEY, 0));
 	}

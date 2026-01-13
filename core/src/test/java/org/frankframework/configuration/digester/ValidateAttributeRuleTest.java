@@ -612,23 +612,27 @@ public class ValidateAttributeRuleTest {
 		private @Getter @Setter int testInteger = 1234;
 		private @Getter @Setter long testLong = 0L;
 		private @Getter @Setter boolean testBoolean = false;
-		private @Setter String testStringWithoutGetter = "string";
-		private @Setter int testIntegerWithoutGetter = 0;
-		private @Setter boolean testBooleanWithoutGetter = false;
+		private @Setter @SuppressWarnings("unused") String testStringWithoutGetter = "string";
+		private @Setter @SuppressWarnings("unused")int testIntegerWithoutGetter = 0;
+		private @Setter @SuppressWarnings("unused")boolean testBooleanWithoutGetter = false;
 		private @Getter String testUnsafeAttributeWithDefault = "default";
 
+		@SuppressWarnings("unused")
 		public void setEnumWithDifferentName(TestEnum testEnum) {
 			this.testEnum = testEnum;
 		}
 
+		@SuppressWarnings("unused")
 		public void setEnumVarArgs(TestEnum... testEnum) {
 			this.testEnum = testEnum[0];
 		}
 
+		@SuppressWarnings("unused")
 		public void setIntegerVarArgs(Integer... integerVarArgs) {
 			testInteger = integerVarArgs[0] + integerVarArgs[1];
 		}
 
+		@SuppressWarnings("unused")
 		@ConfigurationWarning("my test warning")
 		public void setConfigWarningString(String str) {
 			configWarningString = str;

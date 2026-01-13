@@ -136,8 +136,8 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 
 	protected abstract FS createFileSystem();
 
-	public AbstractFileSystemListener() {
-		fileSystem=createFileSystem();
+	protected AbstractFileSystemListener() {
+		fileSystem = createFileSystem();
 	}
 
 	@Override

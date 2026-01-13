@@ -77,6 +77,8 @@
 		<maven.compiler.target>21</maven.compiler.target>
 		<maven.compiler.source>21</maven.compiler.source>
 		<maven.compiler.proc>full</maven.compiler.proc>
+		<lombok.version>1.18.42</lombok.version>
+		<lombok.plugin.version>1.18.20.0</lombok.plugin.version>
 		<log4j2.version>2.25.3</log4j2.version>
 
 		<sonar.organization>frank-framework</sonar.organization>
@@ -768,7 +770,32 @@
 						<target>${maven.compiler.target}</target>
 						<compilerArgs>
 							<arg>-parameters</arg>
+							<!-- Flag required for ErrorProne icm JDK21 compiler -->
+							<arg>-XDaddTypeAnnotationsToSymbol=true</arg>
+							<!-- Flags required for ErrorProne -->
+							<arg>-XDcompilePolicy=simple</arg>
+							<arg>--should-stop=ifError=FLOW</arg>
+							<!-- Flags to enable ErrorProne, and options for ErrorProne. Should be given in the same arg parameter otherwise it doesn't seem to work. -->
+							<arg>-Xplugin:ErrorProne -XepOpt:NullAway:AnnotatedPackages=org.frankframework -Xep:InvalidBlockTag:OFF -Xep:BanJNDI:WARN -Xep:EqualsHashCode:WARN -Xep:GetClassOnClass:WARN</arg>
 						</compilerArgs>
+						<annotationProcessorPaths>
+							<path>
+								<groupId>com.google.errorprone</groupId>
+								<artifactId>error_prone_core</artifactId>
+								<version>2.46.0</version>
+							</path>
+							<path>
+								<groupId>com.uber.nullaway</groupId>
+								<artifactId>nullaway</artifactId>
+								<version>0.12.15</version>
+							</path>
+							<!-- Because Error Prone needs to be added explicitly we now also need to explicitly add other annotation processors here -->
+							<path>
+								<groupId>org.projectlombok</groupId>
+								<artifactId>lombok</artifactId>
+								<version>${lombok.version}</version>
+							</path>
+						</annotationProcessorPaths>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -863,13 +890,13 @@
 				<plugin>
 					<groupId>org.projectlombok</groupId>
 					<artifactId>lombok-maven-plugin</artifactId>
-					<version>1.18.20.0</version>
+					<version>${lombok.plugin.version}</version>
 					<dependencies>
 						<!-- This specified version of Lombok can be removed when the lombok-maven-plugin is updated >= 1.18.30 -->
 						<dependency>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
-							<version>1.18.42</version>
+							<version>${lombok.version}</version>
 						</dependency>
 					</dependencies>
 					<executions>

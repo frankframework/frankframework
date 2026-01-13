@@ -428,7 +428,7 @@ public class DateParameterTest {
 
 			// Change the system timezone to see if that affects how the date is resolved
 			TimeProvider.setClock(Clock.systemUTC());
-			TimeZone.setDefault(TimeZone.getTimeZone("Z"));
+			TimeZone.setDefault(TimeZone.getTimeZone("GMT"));
 
 			Message message = new Message("fakeMessage");
 

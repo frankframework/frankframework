@@ -12,7 +12,6 @@ import org.frankframework.stream.Message;
 
 public class MockPushingListener extends MockListenerBase implements IPushingListener<String>, IKnowsDeliveryCount<String> {
 	private @Setter IMessageHandler<String> handler;
-	private @Setter IbisExceptionListener exceptionListener;
 	private @Setter int mockedDeliveryCount;
 
 	@Override
@@ -21,6 +20,11 @@ public class MockPushingListener extends MockListenerBase implements IPushingLis
 			MessageWrapper<String> raw = wrapRawMessage(text, session);
 			handler.processRequest(this, raw, session);
 		}
+	}
+
+	@Override
+	public void setExceptionListener(IbisExceptionListener listener) {
+		// No-op for this class
 	}
 
 	@Override
