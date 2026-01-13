@@ -2,7 +2,7 @@ package org.frankframework.monitoring;
 
 import java.io.IOException;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -21,7 +21,7 @@ class MessageCapturingEchoSender extends EchoSender {
 
 	@Override
 	@SneakyThrows(IOException.class)
-	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 		inputMessage = message;
 		inputSession = session;
 		sessionOriginalMessageValue = session.getMessage(PipeLineSession.ORIGINAL_MESSAGE_KEY).asString();

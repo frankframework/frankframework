@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2018-2020 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.GZIPOutputStream;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.chemistry.opencmis.client.bindings.spi.http.Output;
 import org.apache.chemistry.opencmis.client.bindings.spi.http.Response;
 import org.apache.chemistry.opencmis.commons.SessionParameter;
@@ -39,6 +37,7 @@ import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.BufferedHttpEntity;
 import org.apache.http.entity.ByteArrayEntity;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -54,7 +53,7 @@ import org.frankframework.stream.Message;
 public abstract class CmisHttpSender extends AbstractHttpSender {
 
 	@Override
-	public HttpRequestBase getMethod(URI uri, Message message, @Nonnull ParameterValueList pvl, PipeLineSession session) throws SenderException {
+	public HttpRequestBase getMethod(URI uri, Message message, @NonNull ParameterValueList pvl, PipeLineSession session) throws SenderException {
 		HttpRequestBase method = null;
 
 		HttpMethod methodType = (HttpMethod) session.get("method");

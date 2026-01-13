@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,8 +20,7 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 
 import lombok.extern.log4j.Log4j2;
@@ -58,7 +57,7 @@ public class LarvaActionFactory {
 		this.defaultTimeout = larvaTool.getLarvaConfig().getTimeout();
 	}
 
-	public @Nonnull Map<String, LarvaScenarioAction> createLarvaActions(Scenario scenario, ApplicationContext applicationContext, String correlationId) {
+	public @NonNull Map<String, LarvaScenarioAction> createLarvaActions(Scenario scenario, ApplicationContext applicationContext, String correlationId) {
 		Map<String, LarvaScenarioAction> larvaActions = new HashMap<>();
 		debugMessage("Get all action names");
 

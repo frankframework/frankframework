@@ -2,8 +2,7 @@ package org.frankframework.core;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -45,7 +44,7 @@ class AdapterTest {
 		}
 	}
 
-	private @Nonnull EchoPipe buildTestPipe(@Nonnull PipeLine pipeLine) throws ConfigurationException {
+	private @NonNull EchoPipe buildTestPipe(@NonNull PipeLine pipeLine) throws ConfigurationException {
 		EchoPipe pipe = new EchoPipe();
 		pipe.setName("Pipe" + ++pipeNr);
 		pipeLine.addPipe(pipe);

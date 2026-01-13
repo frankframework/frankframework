@@ -21,13 +21,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import jakarta.annotation.Nonnull;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.Banner.Mode;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
@@ -59,9 +59,9 @@ public class LadybugWarInitializer extends SpringBootServletInitializer {
 		// NO OP required for Spring Boot. Used when running an Annotation Based config, which we are not, see setSources(...) in run(SpringApplication).
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
-	protected SpringApplicationBuilder configure(@Nonnull SpringApplicationBuilder builder) {
+	protected SpringApplicationBuilder configure(@NonNull SpringApplicationBuilder builder) {
 		builder.sources(WarConfiguration.class);
 		setRegisterErrorPageFilter(false);
 
@@ -71,7 +71,7 @@ public class LadybugWarInitializer extends SpringBootServletInitializer {
 
 	// Purely here for some debug info
 	@Override
-	public void onStartup(@Nonnull ServletContext servletContext) throws ServletException {
+	public void onStartup(@NonNull ServletContext servletContext) throws ServletException {
 		APPLICATION_LOG.debug("Starting Ladybug TestTool");
 		final long start = System.currentTimeMillis();
 

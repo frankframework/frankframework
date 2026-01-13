@@ -18,8 +18,7 @@ package org.frankframework.console.controllers;
 import java.util.List;
 import java.util.UUID;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -59,7 +58,7 @@ public class FrankApiService implements ApplicationContextAware, InitializingBea
 	}
 
 	@Override
-	public void onApplicationEvent(@Nonnull ClusterMemberEvent event) {
+	public void onApplicationEvent(@NonNull ClusterMemberEvent event) {
 		afterPropertiesSet();
 	}
 
@@ -75,7 +74,7 @@ public class FrankApiService implements ApplicationContextAware, InitializingBea
 				.toList();
 	}
 
-	@Nonnull
+	@NonNull
 	protected Message<?> sendSyncMessage(RequestMessageBuilder input) {
 		try {
 			return getGateway().sendSyncMessage(input.build(getMemberTarget()));
@@ -116,7 +115,7 @@ public class FrankApiService implements ApplicationContextAware, InitializingBea
 	}
 
 	@Override
-	public final void setApplicationContext(@Nonnull ApplicationContext applicationContext) throws BeansException {
+	public final void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 	}
 

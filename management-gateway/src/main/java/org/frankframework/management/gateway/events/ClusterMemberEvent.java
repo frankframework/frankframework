@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
 */
 package org.frankframework.management.gateway.events;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
@@ -33,7 +32,7 @@ public class ClusterMemberEvent extends AbstractGatewayEvent {
 	private @Getter final EventType type;
 	private @Getter final ClusterMember member;
 
-	public ClusterMemberEvent(@Nonnull ApplicationContext source, @Nonnull EventType type, @Nonnull ClusterMember member) {
+	public ClusterMemberEvent(@NonNull ApplicationContext source, @NonNull EventType type, @NonNull ClusterMember member) {
 		super(source);
 		this.type = type;
 		this.member = member;

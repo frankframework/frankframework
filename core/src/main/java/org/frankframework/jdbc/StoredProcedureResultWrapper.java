@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -42,7 +42,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.parameters.IParameter;
@@ -50,10 +50,10 @@ import org.frankframework.util.JdbcUtil;
 
 public class StoredProcedureResultWrapper implements ResultSet {
 
-	@Nonnull private final IDbmsSupport dbmsSupport;
-	@Nonnull private final CallableStatement delegate;
-	@Nonnull private final ParameterMetaData parameterMetaData;
-	@Nonnull private final List<Map.Entry<Integer, IParameter>> parameterPositions;
+	@NonNull private final IDbmsSupport dbmsSupport;
+	@NonNull private final CallableStatement delegate;
+	@NonNull private final ParameterMetaData parameterMetaData;
+	@NonNull private final List<Map.Entry<Integer, IParameter>> parameterPositions;
 
 	private static final UnsupportedOperationException CANNOT_UPDATE_RESULTS_EXCEPTION = new UnsupportedOperationException("Cannot update results from Callable Statement");
 
@@ -67,8 +67,8 @@ public class StoredProcedureResultWrapper implements ResultSet {
 	 * @param parameterPositions The position of each output-parameter in the overal list of stored procedure parameters
 	 */
 	public StoredProcedureResultWrapper(
-			@Nonnull IDbmsSupport dbmsSupport,
-			@Nonnull CallableStatement delegate, @Nonnull ParameterMetaData parameterMetaData, @Nonnull Map<Integer, IParameter> parameterPositions) {
+			@NonNull IDbmsSupport dbmsSupport,
+			@NonNull CallableStatement delegate, @NonNull ParameterMetaData parameterMetaData, @NonNull Map<Integer, IParameter> parameterPositions) {
 		this.dbmsSupport = dbmsSupport;
 		this.delegate = delegate;
 		this.parameterMetaData = parameterMetaData;

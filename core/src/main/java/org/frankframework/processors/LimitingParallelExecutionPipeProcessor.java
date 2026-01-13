@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2025 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package org.frankframework.processors;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import io.micrometer.core.instrument.DistributionSummary;
 import lombok.extern.log4j.Log4j2;
@@ -41,9 +41,9 @@ public class LimitingParallelExecutionPipeProcessor extends AbstractPipeProcesso
 
 	private final Map<IPipe, ResourceLimiter> pipeThreadCounts = new ConcurrentHashMap<>();
 
-	@Nonnull
+	@NonNull
 	@Override
-	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@NonNull PipeLine pipeLine, @NonNull IPipe pipe, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
 		ResourceLimiter threadCountLimiter = getThreadLimiter(pipe);
 		if (threadCountLimiter == null) { // no restrictions on the maximum number of threads
 			return chain.apply(message);
@@ -72,13 +72,13 @@ public class LimitingParallelExecutionPipeProcessor extends AbstractPipeProcesso
 
 	@Override
 	@SuppressWarnings("java:S1185") // method needs to be overridden to enable AOP for debugger
-	public @Nonnull PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException {
+	public @NonNull PipeRunResult processPipe(@NonNull PipeLine pipeLine, @NonNull IPipe pipe, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws PipeRunException {
 		return super.processPipe(pipeLine, pipe, message, pipeLineSession);
 	}
 
 	@Override
 	@SuppressWarnings("java:S1185") // method needs to be overridden to enable AOP for debugger
-	public @Nonnull PipeRunResult validate(@Nonnull PipeLine pipeLine, @Nonnull IValidator validator, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
+	public @NonNull PipeRunResult validate(@NonNull PipeLine pipeLine, @NonNull IValidator validator, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
 		return super.validate(pipeLine, validator, message, pipeLineSession, messageRoot);
 	}
 

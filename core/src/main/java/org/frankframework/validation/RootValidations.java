@@ -19,9 +19,8 @@ import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.core.HasApplicationContext;
 import org.frankframework.util.LogUtil;
@@ -57,7 +56,7 @@ public class RootValidations implements Iterable<RootValidation> {
 		add(new RootValidation(rootElement));
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public Iterator<RootValidation> iterator() {
 		return rootValidations.iterator();

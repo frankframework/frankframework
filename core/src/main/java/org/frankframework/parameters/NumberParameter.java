@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,9 +22,8 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 import java.text.ParseException;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -116,7 +115,7 @@ public class NumberParameter extends AbstractParameter<Number> {
 	}
 
 	@Override
-	protected Number getValueAsType(@Nonnull Message request, boolean namespaceAware) throws ParameterException, IOException {
+	protected Number getValueAsType(@NonNull Message request, boolean namespaceAware) throws ParameterException, IOException {
 		if(getType() == ParameterType.NUMBER) {
 			if (request.asObject() instanceof Number number) {
 				return number;

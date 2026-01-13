@@ -1,5 +1,5 @@
 /*
-   Copyright 2014-2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2014-2019 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -45,8 +45,6 @@ import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.zip.ZipInputStream;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.json.JsonException;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
@@ -58,6 +56,8 @@ import org.apache.commons.lang3.Strings;
 import org.apache.commons.text.StringEscapeUtils;
 import org.custommonkey.xmlunit.Diff;
 import org.custommonkey.xmlunit.XMLUnit;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
@@ -184,11 +184,11 @@ public class LarvaTool {
 		return testRunStatus;
 	}
 
-	public @Nonnull TestRunStatus createTestRunStatus() {
+	public @NonNull TestRunStatus createTestRunStatus() {
 		return new TestRunStatus(larvaConfig, this);
 	}
 
-	public @Nonnull ScenarioRunner createScenarioRunner(TestExecutionObserver testExecutionObserver, TestRunStatus testRunStatus) {
+	public @NonNull ScenarioRunner createScenarioRunner(TestExecutionObserver testExecutionObserver, TestRunStatus testRunStatus) {
 		return new ScenarioRunner(this, testExecutionObserver, testRunStatus);
 	}
 

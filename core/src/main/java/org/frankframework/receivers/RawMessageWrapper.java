@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,8 +18,8 @@ package org.frankframework.receivers;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 
@@ -41,7 +41,7 @@ public class RawMessageWrapper<M> {
 	 *
 	 * @param rawMessage The raw message data.
 	 */
-	public RawMessageWrapper(@Nonnull M rawMessage) {
+	public RawMessageWrapper(@NonNull M rawMessage) {
 		this(rawMessage, null, null);
 	}
 
@@ -54,7 +54,7 @@ public class RawMessageWrapper<M> {
 	 * @param correlationId The Correlation ID of the message. May be null. If not null, will be copied to the
 	 *                       message context with the key {@link PipeLineSession#CORRELATION_ID_KEY}.
 	 */
-	public RawMessageWrapper(@Nonnull M rawMessage, @Nullable String id, @Nullable String correlationId) {
+	public RawMessageWrapper(@NonNull M rawMessage, @Nullable String id, @Nullable String correlationId) {
 		this.rawMessage = rawMessage;
 		this.id = id;
 		this.correlationId = correlationId;
@@ -71,7 +71,7 @@ public class RawMessageWrapper<M> {
 	 * @param context Context for the message. If containing the keys {@link PipeLineSession#MESSAGE_ID_KEY} and / or
 	 *                {@link PipeLineSession#CORRELATION_ID_KEY}, these will be copied to their respective fields.
 	 */
-	public RawMessageWrapper(M rawMessage, @Nonnull Map<String, Object> context) {
+	public RawMessageWrapper(M rawMessage, @NonNull Map<String, Object> context) {
 		this(rawMessage);
 		this.context.putAll(context);
 		this.id = (String) context.get(PipeLineSession.MESSAGE_ID_KEY);

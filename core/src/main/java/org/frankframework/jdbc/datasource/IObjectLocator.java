@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package org.frankframework.jdbc.datasource;
 
 import java.util.Properties;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public interface IObjectLocator {
 
@@ -28,6 +28,6 @@ public interface IObjectLocator {
 	 * shot.
 	 */
 	@Nullable
-	public <O> O lookup(@Nonnull String name, @Nullable Properties environment, @Nullable Class<O> lookupClass) throws Exception;
+	public <O> O lookup(@NonNull String name, @Nullable Properties environment, @Nullable Class<O> lookupClass) throws Exception;
 
 }

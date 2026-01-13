@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.Date;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * This class provides a way to get current time, but also control time in unit tests.
@@ -79,7 +79,7 @@ public class TimeProvider {
 	 *
 	 * @param clock {@link Clock} to use.
 	 */
-	public static void setClock(@Nonnull Clock clock) {
+	public static void setClock(@NonNull Clock clock) {
 		TimeProvider.clock = clock;
 	}
 

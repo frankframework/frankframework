@@ -6,7 +6,7 @@ import java.io.InputStream;
 import java.io.Reader;
 import java.nio.charset.Charset;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Test utility class to produce large amounts of valid structured data (such as JSON or XML) from fixed blocks: opening block for start of document,
@@ -62,7 +62,7 @@ public class LargeStructuredMockData {
 	 * @param minDataToProduce Minimum number of characters to produce from the Reader.
 	 * @return Custom Reader producing JSON data.
 	 */
-	@Nonnull
+	@NonNull
 	public static Reader getLargeJsonDataReader(long minDataToProduce) {
 		return new LargeStructuredMockDataReader(
 				minDataToProduce, // Larger than array can be
@@ -77,7 +77,7 @@ public class LargeStructuredMockData {
 	 * @param minDataToProduce Minimum number of characters to produce from the Reader.
 	 * @return Custom Reader producing XML data.
 	 */
-	@Nonnull
+	@NonNull
 	public static Reader getLargeXmlDataReader(long minDataToProduce) {
 		return new LargeStructuredMockDataReader(
 				minDataToProduce, // Larger than array can be
@@ -92,7 +92,7 @@ public class LargeStructuredMockData {
 	 * @param minDataToProduce Minimum number of bytes to produce from the InputStream.
 	 * @return Custom InputStream producing JSON data.
 	 */
-	@Nonnull
+	@NonNull
 	public static InputStream getLargeJsonDataInputStream(long minDataToProduce, Charset charset) {
 		return new LargeStructuredMockDataInputStream(
 				minDataToProduce, charset,
@@ -107,7 +107,7 @@ public class LargeStructuredMockData {
 	 * @param minDataToProduce Minimum number of bytes to produce from the InputStream.
 	 * @return Custom InputStream producing XML data.
 	 */
-	@Nonnull
+	@NonNull
 	public static InputStream getLargeXmlDataInputStream(long minDataToProduce, Charset charset) {
 		return new LargeStructuredMockDataInputStream(
 				minDataToProduce, charset,
@@ -138,7 +138,7 @@ public class LargeStructuredMockData {
 		}
 
 		@Override
-		public int read(@Nonnull char[] cbuf, int off, int len) throws IOException {
+		public int read(@NonNull char[] cbuf, int off, int len) throws IOException {
 			if (isClosed) {
 				throw new EOFException("Reader is closed");
 			}
@@ -204,7 +204,7 @@ public class LargeStructuredMockData {
 		}
 
 		@Override
-		public int read(@Nonnull byte[] buf, int off, int len) throws IOException {
+		public int read(@NonNull byte[] buf, int off, int len) throws IOException {
 			if (isClosed) {
 				throw new EOFException("Reader is closed");
 			}

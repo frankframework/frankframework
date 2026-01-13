@@ -17,9 +17,8 @@ package org.frankframework.lifecycle.events;
 
 import java.io.Serial;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.event.ApplicationContextEvent;
 
@@ -35,7 +34,7 @@ public abstract class MessageEvent<T extends ApplicationContext> extends Applica
 	private final @Getter String message;
 	private final @Getter MessageEventLevel level;
 
-	@Nonnull
+	@NonNull
 	@Override
 	@SuppressWarnings("unchecked")
 	public T getSource() {

@@ -27,9 +27,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -40,6 +37,8 @@ import org.apache.kafka.clients.consumer.OffsetResetStrategy;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.ByteArrayDeserializer;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -150,7 +149,7 @@ public class KafkaListener extends AbstractKafkaFacade implements IPullingListen
 	}
 
 	@Override
-	public Message extractMessage(@Nonnull RawMessageWrapper<ConsumerRecord<String, byte[]>> wrappedMessage, @Nonnull Map<String, Object> threadContext) {
+	public Message extractMessage(@NonNull RawMessageWrapper<ConsumerRecord<String, byte[]>> wrappedMessage, @NonNull Map<String, Object> threadContext) {
 		Map<String, String> headers = new HashMap<>();
 		ConsumerRecord<String, byte[]> rawMessage = wrappedMessage.getRawMessage();
 		rawMessage.headers().forEach(header -> {
@@ -183,19 +182,19 @@ public class KafkaListener extends AbstractKafkaFacade implements IPullingListen
 		return "TOPICS(" + topics + ") on (" + getBootstrapServers() + ")";
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public Map<String, Object> openThread() {
 		return new HashMap<>();
 	}
 
 	@Override
-	public void closeThread(@Nonnull Map<String, Object> threadContext) {
+	public void closeThread(@NonNull Map<String, Object> threadContext) {
 		// nothing.
 	}
 
 	@Override
-	public @Nullable RawMessageWrapper<ConsumerRecord<String, byte[]>> getRawMessage(@Nonnull Map<String, Object> threadContext) {
+	public @Nullable RawMessageWrapper<ConsumerRecord<String, byte[]>> getRawMessage(@NonNull Map<String, Object> threadContext) {
 		lock.lock();
 		try {
 			if (!waiting.hasNext()) waiting = consumer.poll(pollDuration).iterator();

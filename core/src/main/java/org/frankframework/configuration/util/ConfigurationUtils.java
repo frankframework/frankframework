@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,10 +33,9 @@ import java.util.Properties;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
@@ -467,7 +466,7 @@ public class ConfigurationUtils {
 		return false;
 	}
 
-	@Nonnull
+	@NonNull
 	public static Path getConfigurationDirectory() throws IOException {
 		String configDir = AppConstants.getInstance().getProperty("configurations.directory");
 		if (StringUtils.isBlank(configDir)) {

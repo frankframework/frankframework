@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2025 WeAreFrank!
+   Copyright 2018-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,12 +31,11 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.MimeType;
 
 import lombok.Getter;
@@ -615,7 +614,7 @@ public class AmazonS3FileSystem extends AbstractFileSystem<S3FileRef> implements
 
 	@Nullable
 	@Override
-	public String getCustomFileAttribute(@Nonnull S3FileRef file, @Nonnull String name) {
+	public String getCustomFileAttribute(@NonNull S3FileRef file, @NonNull String name) {
 		return Objects.toString(getAdditionalFileProperties(file).get(name), null);
 	}
 

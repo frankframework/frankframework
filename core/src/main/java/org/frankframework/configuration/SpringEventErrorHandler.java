@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2021-2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
 */
 package org.frankframework.configuration;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.util.ErrorHandler;
 
 import lombok.extern.log4j.Log4j2;
@@ -28,7 +27,7 @@ import lombok.extern.log4j.Log4j2;
 public class SpringEventErrorHandler implements ErrorHandler {
 
 	@Override
-	public void handleError(@Nonnull Throwable t) {
+	public void handleError(@NonNull Throwable t) {
 		log.warn("Error handling event", t);
 	}
 }

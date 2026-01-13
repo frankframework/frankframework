@@ -16,10 +16,9 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -407,14 +406,14 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 		return "Mock!";
 	}
 
-	@Nonnull
-	public Map<String, String> getCustomAttributes(@Nonnull M file) {
+	@NonNull
+	public Map<String, String> getCustomAttributes(@NonNull M file) {
 		return file.getCustomAttributes();
 	}
 
 	@Nullable
 	@Override
-	public String getCustomFileAttribute(@Nonnull M file, @Nonnull String name) {
+	public String getCustomFileAttribute(@NonNull M file, @NonNull String name) {
 		return getCustomAttributes(file).get(name);
 	}
 

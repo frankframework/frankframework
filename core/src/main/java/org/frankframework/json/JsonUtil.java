@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.json.Json;
 import jakarta.json.JsonReader;
 import jakarta.json.JsonStructure;
@@ -33,6 +31,8 @@ import jakarta.json.JsonWriterFactory;
 import jakarta.json.stream.JsonGenerator;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 
 import com.jayway.jsonpath.Configuration;
@@ -94,7 +94,7 @@ public class JsonUtil {
 	 * @return Single scalar value from the message, an empty string if the value could not be reduced to a scalar, or {@code null} if there was no result.
 	 * @throws JsonException If an exception occurred evaluating the expression a {@link JsonException} is thrown.
 	 */
-	public static @Nullable String evaluateJsonPathToSingleValue(@Nonnull JsonPath jsonPath, Message message) throws JsonException {
+	public static @Nullable String evaluateJsonPathToSingleValue(@NonNull JsonPath jsonPath, Message message) throws JsonException {
 		if (Message.isNull(message)) {
 			return null;
 		}
@@ -120,7 +120,7 @@ public class JsonUtil {
 	 * If the result is not an array and not a scalar value, then return an empty string. Do not return NULL
 	 * when a result was found.
 	 */
-	private static @Nullable String getSingleValueJsonPathResult(@Nonnull Object jsonPathResult) {
+	private static @Nullable String getSingleValueJsonPathResult(@NonNull Object jsonPathResult) {
 		if (jsonPathResult instanceof String string) {
 			return string;
 		}
@@ -144,7 +144,7 @@ public class JsonUtil {
 		return "";
 	}
 
-	public static @Nonnull Message evaluateJsonPath(@Nonnull JsonPath jsonPath, @Nonnull Object input) throws JsonException {
+	public static @NonNull Message evaluateJsonPath(@NonNull JsonPath jsonPath, @NonNull Object input) throws JsonException {
 		try {
 			Message inputMessage = MessageUtils.convertToJsonMessage(input);
 			Object result = jsonPath.read(inputMessage.asInputStream());

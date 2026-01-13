@@ -15,8 +15,7 @@
 */
 package org.frankframework.configuration;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.aop.config.AopConfigUtils;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -29,7 +28,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistryPostProce
 public class AopProxyBeanFactoryPostProcessor implements BeanDefinitionRegistryPostProcessor {
 
 	@Override
-	public void postProcessBeanDefinitionRegistry(@Nonnull BeanDefinitionRegistry registry) throws BeansException {
+	public void postProcessBeanDefinitionRegistry(@NonNull BeanDefinitionRegistry registry) throws BeansException {
 		AopConfigUtils.registerAspectJAnnotationAutoProxyCreatorIfNecessary(registry);
 		AopConfigUtils.forceAutoProxyCreatorToUseClassProxying(registry);
 	}

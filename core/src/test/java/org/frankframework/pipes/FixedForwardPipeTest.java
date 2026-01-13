@@ -4,8 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -19,7 +18,7 @@ public class FixedForwardPipeTest extends PipeTestBase<FixedForwardPipe> {
 	@Override
 	public FixedForwardPipe createPipe() throws ConfigurationException {
 		return new FixedForwardPipe() {
-			@Nonnull
+			@NonNull
 			@Override
 			public PipeRunResult doPipe(Message message, PipeLineSession session) {
 				return null;

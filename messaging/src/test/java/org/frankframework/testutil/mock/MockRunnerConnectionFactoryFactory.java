@@ -7,11 +7,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.JMSException;
 import jakarta.jms.MessageListener;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import com.mockrunner.jms.ConfigurationManager;
 import com.mockrunner.jms.DestinationManager;
@@ -40,19 +41,19 @@ public class MockRunnerConnectionFactoryFactory implements IConnectionFactoryFac
 		connectionFactory = MOCK_FACTORY.getMockQueueConnectionFactory();
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
-	public ConnectionFactory getConnectionFactory(@Nonnull String connectionFactoryName) {
+	public ConnectionFactory getConnectionFactory(@NonNull String connectionFactoryName) {
 		return connectionFactory;
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
-	public ConnectionFactory getConnectionFactory(@Nonnull String connectionFactoryName, @Nullable Properties jndiEnvironment) {
+	public ConnectionFactory getConnectionFactory(@NonNull String connectionFactoryName, @Nullable Properties jndiEnvironment) {
 		return connectionFactory;
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public List<String> getConnectionFactoryNames() {
 		return Collections.singletonList(MOCK_CONNECTION_FACTORY_NAME);

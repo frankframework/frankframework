@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017-2020 Nationale-Nederlanden, 2020, 2022, 2025 WeAreFrank!
+   Copyright 2013, 2017-2020 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,10 +18,9 @@ package org.frankframework.http;
 import java.io.IOException;
 import java.net.URI;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 
@@ -100,7 +99,7 @@ public class WebServiceSender extends HttpSender {
 	}
 
 	@Override
-	protected HttpRequestBase getMethod(URI uri, Message message, @Nonnull ParameterValueList parameters, PipeLineSession session) throws SenderException {
+	protected HttpRequestBase getMethod(URI uri, Message message, @NonNull ParameterValueList parameters, PipeLineSession session) throws SenderException {
 
 		String serviceNamespaceURI;
 		if (serviceNamespaceURIParameter!=null) {

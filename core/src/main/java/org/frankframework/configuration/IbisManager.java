@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013-2019 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,11 +19,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.Assert;
@@ -225,7 +224,7 @@ public class IbisManager implements ApplicationContextAware {
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	private Adapter getAdapterByName(String configurationName, String adapterName) {
 		Assert.notNull(configurationName, "no configurationName provided");
 		Configuration configuration = getConfiguration(configurationName);

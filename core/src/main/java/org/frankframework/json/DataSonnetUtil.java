@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,10 +24,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.MimeType;
 
 import com.datasonnet.Mapper;
@@ -86,7 +85,7 @@ public class DataSonnetUtil {
 		private final List<ISender> senders;
 		private final PipeLineSession session;
 
-		public DataSonnetToSenderConnector(@Nonnull List<ISender> senders, @Nonnull PipeLineSession session) {
+		public DataSonnetToSenderConnector(@NonNull List<ISender> senders, @NonNull PipeLineSession session) {
 			this.senders = senders;
 
 			if (senders.stream().anyMatch(s -> StringUtils.isBlank(s.getName()))) {
@@ -223,7 +222,7 @@ public class DataSonnetUtil {
 			this.message = message.asString();
 		}
 
-		@Nonnull
+		@NonNull
 		private static MediaType convertSpringToDataSonnetMediaType(@Nullable MimeType springMime) {
 			if(springMime != null) {
 				try {

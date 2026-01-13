@@ -8,8 +8,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.IOException;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.task.SimpleAsyncTaskExecutor;
 import org.springframework.core.task.TaskExecutor;
@@ -89,9 +88,9 @@ public class TestIteratingBasePipe extends IteratingPipeTestBase<IteratingTestPi
 			this.buffer = buffer;
 		}
 
-		@Nonnull
+		@NonNull
 		@Override
-		public SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
+		public SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
 			sleep();
 
 			Integer index = session.getInteger("index");

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,9 +18,8 @@ package org.frankframework.jdbc;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.jspecify.annotations.NonNull;
 
 import io.micrometer.core.instrument.DistributionSummary;
 import lombok.Getter;
@@ -54,7 +53,7 @@ public abstract class AbstractJdbcSender<H> extends JdbcFacade implements IBlock
 	@Getter private int timeout = 0;
 
 	protected Connection connection=null;
-	protected @Nonnull ParameterList paramList = new ParameterList();
+	protected @NonNull ParameterList paramList = new ParameterList();
 
 	public AbstractJdbcSender() {
 		super();
@@ -66,7 +65,7 @@ public abstract class AbstractJdbcSender<H> extends JdbcFacade implements IBlock
 	}
 
 	@Override
-	public @Nonnull ParameterList getParameterList() {
+	public @NonNull ParameterList getParameterList() {
 		return paramList;
 	}
 
@@ -127,7 +126,7 @@ public abstract class AbstractJdbcSender<H> extends JdbcFacade implements IBlock
 	}
 
 	@Override
-	public final @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+	public final @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 		H blockHandle = openBlock(session);
 		try {
 			return sendMessage(blockHandle, message, session);

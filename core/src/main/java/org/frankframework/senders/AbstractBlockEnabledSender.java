@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022 WeAreFrank!
+   Copyright 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,7 @@
 */
 package org.frankframework.senders;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.core.IBlockEnabledSender;
 import org.frankframework.core.PipeLineSession;
@@ -27,7 +27,7 @@ import org.frankframework.stream.Message;
 public abstract class AbstractBlockEnabledSender<H> extends AbstractSenderWithParameters implements IBlockEnabledSender<H> {
 
 	@Override
-	public final @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+	public final @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 		H blockHandle = openBlock(session);
 		try {
 			return sendMessage(blockHandle, message, session);

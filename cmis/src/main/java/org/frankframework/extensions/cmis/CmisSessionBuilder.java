@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2022, 2024 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2022-2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,9 +20,6 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.chemistry.opencmis.client.SessionParameterMap;
 import org.apache.chemistry.opencmis.client.api.Session;
 import org.apache.chemistry.opencmis.client.bindings.CmisBindingFactory;
@@ -32,6 +29,8 @@ import org.apache.chemistry.opencmis.commons.enums.BindingType;
 import org.apache.chemistry.opencmis.commons.enums.DateTimeFormat;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.core.IScopeProvider;
 import org.frankframework.encryption.KeystoreType;
@@ -122,7 +121,7 @@ public class CmisSessionBuilder {
 	 * @return a {@link Session} connected to the CMIS repository
 	 * @throws CmisSessionException when the CmisSessionBuilder fails to connect to cmis repository
 	 */
-	public CloseableCmisSession build(@Nullable String userName, @Nullable String password, @Nonnull Map<String, String> headers) throws CmisSessionException {
+	public CloseableCmisSession build(@Nullable String userName, @Nullable String password, @NonNull Map<String, String> headers) throws CmisSessionException {
 		if (StringUtils.isEmpty(url) && overrideEntryPointWSDL == null) {
 			throw new CmisSessionException("no url configured");
 		}

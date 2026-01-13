@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,8 +24,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.qpid.protonj2.client.Connection;
 import org.apache.qpid.protonj2.client.Delivery;
@@ -37,6 +35,7 @@ import org.apache.qpid.protonj2.client.SenderOptions;
 import org.apache.qpid.protonj2.client.Session;
 import org.apache.qpid.protonj2.client.SessionOptions;
 import org.apache.qpid.protonj2.client.exceptions.ClientException;
+import org.jspecify.annotations.NonNull;
 import org.springframework.core.task.TaskExecutor;
 
 import lombok.Getter;
@@ -80,7 +79,7 @@ public class AmqpListenerContainer {
 	 * @param connectionName
 	 * @throws LifecycleException
 	 */
-	public void openConnection(@Nonnull String connectionName) throws LifecycleException {
+	public void openConnection(@NonNull String connectionName) throws LifecycleException {
 		if (this.connectionName != null) {
 			throw new IllegalStateException("connectionName is already set");
 		}
@@ -106,7 +105,7 @@ public class AmqpListenerContainer {
 	 *
 	 * @param amqpListener
 	 */
-	public void openListener(@Nonnull AmqpListener amqpListener) {
+	public void openListener(@NonNull AmqpListener amqpListener) {
 		if (this.connectionName == null) {
 			throw new IllegalStateException("connection for the AmqpListenerContainer is not yet open");
 		}

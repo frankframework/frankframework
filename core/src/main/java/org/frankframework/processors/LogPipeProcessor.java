@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,9 @@
 */
 package org.frankframework.processors;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
+import org.jspecify.annotations.NonNull;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -43,9 +42,9 @@ import org.frankframework.util.LogUtil;
 public class LogPipeProcessor extends AbstractPipeProcessor {
 	private static final boolean LOG_INTERMEDIARY_RESULTS = AppConstants.getInstance().getBoolean("log.logIntermediaryResults", true);
 
-	@Nonnull
+	@NonNull
 	@Override
-	protected PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession, @Nonnull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
+	protected PipeRunResult processPipe(@NonNull PipeLine pipeLine, @NonNull IPipe pipe, @NonNull Message message, @NonNull PipeLineSession pipeLineSession, @NonNull ThrowingFunction<Message, PipeRunResult, PipeRunException> chain) throws PipeRunException {
 		if (log.isDebugEnabled() && logIntermediaryResults(pipe)) {
 			log.debug("pipeline process is about to call pipe [{}] current result [{}]", pipe::getName, message::toString);
 		} else {

@@ -11,8 +11,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.parallel.Isolated;
@@ -28,19 +27,19 @@ public class CorePkiUtilTest {
 		TimeProvider.resetClock();
 	}
 
-	@Nonnull
+	@NonNull
 	private static ZonedDateTime getTimeBeforeCertificateExpiryCheckWindow() {
 		// NB: Test-certificate expires on 2025-06-08, expiry-check window is 31 days
 		return ZonedDateTime.of(2025, 4, 15, 10, 0, 0, 0, ZoneId.systemDefault());
 	}
 
-	@Nonnull
+	@NonNull
 	private static ZonedDateTime getTimeWhenCertificateSoonToExpire() {
 		// NB: Test-certificate expires on 2025-06-08, expiry-check window is 31 days
 		return ZonedDateTime.of(2025, 6, 1, 10, 0, 0, 0, ZoneId.systemDefault());
 	}
 
-	@Nonnull
+	@NonNull
 	private static ZonedDateTime getTimeAfterCertificateExpiryDate() {
 		// NB: Test-certificate expires on 2025-06-08
 		return ZonedDateTime.of(2025, 6, 15, 10, 0, 0, 0, ZoneId.systemDefault());

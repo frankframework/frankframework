@@ -1,5 +1,5 @@
 /*
-   Copyright 2022, 2024 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,9 +19,8 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map.Entry;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.logging.log4j.ThreadContext;
+import org.jspecify.annotations.NonNull;
 import org.xml.sax.SAXException;
 
 import org.frankframework.core.ParameterException;
@@ -36,7 +35,7 @@ import org.frankframework.stream.MessageBuilder;
 
 public class RetrieveContextPipe extends FixedForwardPipe {
 
-	@Nonnull
+	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {

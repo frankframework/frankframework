@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,9 +19,8 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import com.hazelcast.config.Config;
 import com.hazelcast.core.HazelcastInstance;
@@ -90,7 +89,7 @@ public class HazelcastConfig {
 	/**
 	 * Type such as console, worker or flow
 	 */
-	static HazelcastInstance newHazelcastInstance(@Nonnull InstanceType type, @Nonnull Map<String, String> attributes) {
+	static HazelcastInstance newHazelcastInstance(@NonNull InstanceType type, @NonNull Map<String, String> attributes) {
 		Objects.requireNonNull(attributes);
 
 		Config config = HazelcastConfig.createHazelcastConfig();

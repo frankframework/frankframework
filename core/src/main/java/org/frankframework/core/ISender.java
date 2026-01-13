@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,8 @@
 */
 package org.frankframework.core;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.FrankDocGroup;
@@ -67,9 +66,9 @@ public interface ISender extends IConfigurable, FrankElement, NameAware {
 	 * Multiple objects may try to call this method at the same time, from different threads.
 	 * Implementations of this method should therefore be thread-safe, or <code>synchronized</code>.
 	 */
-	@Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException;
+	@NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException;
 
-	default @Nonnull Message sendMessageOrThrow(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+	default @NonNull Message sendMessageOrThrow(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 		SenderResult senderResult = sendMessage(message, session);
 		Message result = senderResult.getResult();
 

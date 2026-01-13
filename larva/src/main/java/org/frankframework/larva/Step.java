@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.util.Properties;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 
@@ -92,7 +92,7 @@ public class Step implements Comparable<Step> {
 		return  action.toLowerCase().contains("write");
 	}
 
-	@Nonnull
+	@NonNull
 	public Message getStepMessage(AppConstants appConstants) throws IOException {
 		if (isInline() || isIgnore()) {
 			return new Message(value);
@@ -113,7 +113,7 @@ public class Step implements Comparable<Step> {
 	}
 
 	@Override
-	public int compareTo(@Nonnull Step o) {
+	public int compareTo(@NonNull Step o) {
 		return Integer.compare(index, o.index);
 	}
 

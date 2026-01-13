@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,8 +17,7 @@ package org.frankframework.condition;
 
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
@@ -26,7 +25,7 @@ import org.springframework.core.type.AnnotatedTypeMetadata;
 public class AppConstantCondition implements Condition {
 
 	@Override
-	public boolean matches(@Nonnull ConditionContext context, AnnotatedTypeMetadata metadata) {
+	public boolean matches(@NonNull ConditionContext context, AnnotatedTypeMetadata metadata) {
 		Map<String, Object> attributes = metadata.getAnnotationAttributes(ConditionalOnAppConstants.class.getName());
 		if (attributes == null)
 			return false;

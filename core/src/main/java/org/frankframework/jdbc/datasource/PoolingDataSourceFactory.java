@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,14 +22,13 @@ import javax.sql.CommonDataSource;
 import javax.sql.ConnectionPoolDataSource;
 import javax.sql.DataSource;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tomcat.dbcp.dbcp2.ConnectionFactory;
 import org.apache.tomcat.dbcp.dbcp2.DataSourceConnectionFactory;
 import org.apache.tomcat.dbcp.dbcp2.PoolableConnection;
 import org.apache.tomcat.dbcp.dbcp2.PoolableConnectionFactory;
 import org.apache.tomcat.dbcp.pool2.impl.GenericObjectPool;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -62,9 +61,9 @@ public class PoolingDataSourceFactory extends DataSourceFactory {
 		testQuery = appConstants.getString("transactionmanager.jdbc.connection.testQuery", testQuery);
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
-	protected DataSource augmentDatasource(@Nonnull CommonDataSource dataSource, @Nonnull String dataSourceName) {
+	protected DataSource augmentDatasource(@NonNull CommonDataSource dataSource, @NonNull String dataSourceName) {
 		if(maxPoolSize > 1) {
 			log.info("Creating connection pool for datasource [{}]", dataSourceName);
 			return createPool((DataSource)dataSource, dataSourceName);
@@ -73,14 +72,14 @@ public class PoolingDataSourceFactory extends DataSourceFactory {
 		return (DataSource) dataSource;
 	}
 
-	public static boolean isPooledDataSource(@Nonnull CommonDataSource dataSource) {
+	public static boolean isPooledDataSource(@NonNull CommonDataSource dataSource) {
 		return dataSource instanceof ConnectionPoolDataSource
 				|| dataSource.getClass().getName().startsWith("org.apache.tomcat")
 				;
 	}
 
-	@Nonnull
-	protected DataSource createPool(@Nonnull DataSource dataSource, @Nonnull String dataSourceName) {
+	@NonNull
+	protected DataSource createPool(@NonNull DataSource dataSource, @NonNull String dataSourceName) {
 		if (isPooledDataSource(dataSource)) {
 			log.warn("DataSource [{}] already implements pooling. Will not be wrapped with DBCP2 pool. Frank!Framework connection pooling configuration is ignored, configure pooling properties in the JNDI Resource to avoid issues.", dataSourceName);
 			return dataSource;
@@ -94,8 +93,8 @@ public class PoolingDataSourceFactory extends DataSourceFactory {
 		return ds;
 	}
 
-	@Nonnull
-	protected GenericObjectPool<PoolableConnection> createConnectionPool(@Nonnull PoolableConnectionFactory poolableConnectionFactory) {
+	@NonNull
+	protected GenericObjectPool<PoolableConnection> createConnectionPool(@NonNull PoolableConnectionFactory poolableConnectionFactory) {
 		poolableConnectionFactory.setAutoCommitOnReturn(false);
 		poolableConnectionFactory.setDefaultTransactionIsolation(Connection.TRANSACTION_READ_COMMITTED);
 		if (maxLifeTime > 0) {

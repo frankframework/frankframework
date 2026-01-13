@@ -17,8 +17,7 @@ package org.frankframework.scheduler;
 
 import javax.sql.DataSource;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
@@ -32,11 +31,11 @@ import org.springframework.transaction.PlatformTransactionManager;
 public class SchedulerFactoryBean extends org.springframework.scheduling.quartz.SchedulerFactoryBean {
 
 	@Override
-	public void setDataSource(@Nonnull DataSource dataSource) {
+	public void setDataSource(@NonNull DataSource dataSource) {
 		// Make sure this isn't autowired by Spring
 	}
 	@Override
-	public void setTransactionManager(@Nonnull PlatformTransactionManager transactionManager) {
+	public void setTransactionManager(@NonNull PlatformTransactionManager transactionManager) {
 		// Make sure this isn't autowired by Spring
 	}
 }

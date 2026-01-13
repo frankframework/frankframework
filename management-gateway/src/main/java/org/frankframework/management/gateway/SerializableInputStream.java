@@ -24,10 +24,9 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.util.CloseUtils;
 
@@ -150,14 +149,14 @@ public class SerializableInputStream extends InputStream implements Externalizab
 	}
 
 	@Override
-	public int read(@Nonnull byte[] b) throws IOException {
+	public int read(@NonNull byte[] b) throws IOException {
 		checkIfDelegateExists();
 
 		return delegate.read(b);
 	}
 
 	@Override
-	public int read(@Nonnull byte[] b, int off, int len) throws IOException {
+	public int read(@NonNull byte[] b, int off, int len) throws IOException {
 		checkIfDelegateExists();
 
 		return delegate.read(b, off, len);

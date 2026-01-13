@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,9 +20,8 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.zip.ZipOutputStream;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.MediaType;
 
 import lombok.extern.log4j.Log4j2;
@@ -47,7 +46,7 @@ public class ZipWriter implements ICollector<MessageZipEntry> {
 	private final boolean includeFileHeaders;
 	private final String zipLocation;
 
-	static void validateParametersForAction(@Nonnull Action action, @Nonnull ParameterList parameterList) throws ConfigurationException {
+	static void validateParametersForAction(@NonNull Action action, @NonNull ParameterList parameterList) throws ConfigurationException {
 		switch (action) {
 			case OPEN:
 				break;

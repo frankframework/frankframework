@@ -1,5 +1,5 @@
 /*
-   Copyright 2023-2025 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,9 +18,8 @@ package org.frankframework.console.util;
 import java.io.IOException;
 import java.io.InputStream;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -109,7 +108,7 @@ public class ResponseUtils {
 		return convertPayload(message.getPayload());
 	}
 
-	@Nonnull
+	@NonNull
 	public static String convertPayload(Object payload) {
 		if (payload instanceof String string) {
 			return string;

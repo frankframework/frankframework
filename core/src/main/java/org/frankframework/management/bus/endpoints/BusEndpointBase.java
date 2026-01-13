@@ -15,11 +15,10 @@
 */
 package org.frankframework.management.bus.endpoints;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -45,7 +44,7 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 	private IbisManager ibisManager;
 
 	@Override
-	public final void setApplicationContext(@Nonnull ApplicationContext ac) {
+	public final void setApplicationContext(@NonNull ApplicationContext ac) {
 		this.applicationContext = ac;
 	}
 
@@ -85,7 +84,7 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 		secLog.info(logMessage);
 	}
 
-	@Nonnull
+	@NonNull
 	protected MimeType getMediaTypeFromName(String name) {
 		String ext = FilenameUtils.getExtension(name);
 		switch (ext) {
@@ -98,7 +97,7 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	protected Configuration getConfigurationByName(String configurationName) {
 		if(StringUtils.isEmpty(configurationName)) {
 			throw new BusException("no configuration name specified");
@@ -110,7 +109,7 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 		return configuration;
 	}
 
-	@Nonnull
+	@NonNull
 	protected Adapter getAdapterByName(String configurationName, String adapterName) {
 		if(StringUtils.isEmpty(adapterName)) {
 			throw new BusException("no adapter name specified");
@@ -139,7 +138,7 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 		return adapter;
 	}
 
-	@Nonnull
+	@NonNull
 	protected Receiver<?> getReceiverByName(Adapter adapter, String receiverName) {
 		Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 		if(receiver == null) {
@@ -148,7 +147,7 @@ public class BusEndpointBase implements ApplicationContextAware, InitializingBea
 		return receiver;
 	}
 
-	@Nonnull
+	@NonNull
 	protected IPipe getPipeByName(Adapter adapter, String pipeName) {
 		IPipe pipe = adapter.getPipeLine().getPipe(pipeName);
 		if(pipe == null) {
