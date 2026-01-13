@@ -13,8 +13,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.sql.DataSource;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.mockito.Mockito;
 import org.mockito.stubbing.Answer;
 
@@ -63,7 +62,7 @@ public class FixedQuerySenderMock extends FixedQuerySender {
 		return super.getConnection();
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	protected DataSource getDatasource() throws JdbcException {
 		ResultSet mock = mocks.get(getQuery());

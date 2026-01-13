@@ -1,5 +1,5 @@
 /*
-   Copyright 2024-2025 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,9 +17,8 @@ package org.frankframework.core;
 
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
@@ -51,14 +50,14 @@ public abstract class AbstractResponseValidatorWrapper<V extends AbstractValidat
 		// Do not configure, also do not (re)configure owner
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		return owner.doPipe(message, session, true, null);
 	}
 
 	@Override
-	public @Nonnull PipeRunResult validate(Message message, PipeLineSession session, String messageRoot) throws PipeRunException {
+	public @NonNull PipeRunResult validate(Message message, PipeLineSession session, String messageRoot) throws PipeRunException {
 		return owner.doPipe(message, session, true, messageRoot);
 	}
 
@@ -111,7 +110,7 @@ public abstract class AbstractResponseValidatorWrapper<V extends AbstractValidat
 	}
 
 	@Override
-	public void setApplicationContext(@Nonnull ApplicationContext applicationContext) {
+	public void setApplicationContext(@NonNull ApplicationContext applicationContext) {
 		// Can ignore this as it's not set through Spring
 	}
 

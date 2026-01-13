@@ -17,7 +17,7 @@ package org.frankframework.metrics;
 
 import java.time.Duration;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import io.micrometer.core.instrument.DistributionSummary;
 import io.micrometer.core.instrument.Meter.Id;
@@ -39,9 +39,9 @@ public class PrometheusRegistryConfigurator extends AbstractMetricsRegistryConfi
 	protected MeterRegistry createRegistry(PrometheusConfig config) {
 		return new PrometheusMeterRegistry(config) {
 
-			@Nonnull
+			@NonNull
 			@Override
-			public DistributionSummary newDistributionSummary(@Nonnull Id id, @Nonnull DistributionStatisticConfig config, double scale) {
+			public DistributionSummary newDistributionSummary(@NonNull Id id, @NonNull DistributionStatisticConfig config, double scale) {
 				return super.newDistributionSummary(id, overrideDefaults(config), scale);
 			}
 		};

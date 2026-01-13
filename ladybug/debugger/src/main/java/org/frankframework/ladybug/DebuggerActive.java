@@ -15,9 +15,8 @@
 */
 package org.frankframework.ladybug;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.context.ApplicationEventPublisherAware;
@@ -38,7 +37,7 @@ public class DebuggerActive implements ApplicationEventPublisherAware, Initializ
 	private ApplicationEventPublisher applicationEventPublisher;
 
 	@Override
-	public void setApplicationEventPublisher(@Nonnull ApplicationEventPublisher applicationEventPublisher) {
+	public void setApplicationEventPublisher(@NonNull ApplicationEventPublisher applicationEventPublisher) {
 		this.applicationEventPublisher = applicationEventPublisher;
 	}
 

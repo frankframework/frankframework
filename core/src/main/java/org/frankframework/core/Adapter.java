@@ -28,15 +28,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor;
@@ -348,7 +347,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	}
 
 	@Override
-	public void setApplicationContext(@Nonnull ApplicationContext applicationContext) {
+	public void setApplicationContext(@NonNull ApplicationContext applicationContext) {
 		if (!(applicationContext instanceof Configuration config)) {
 			throw new IllegalStateException();
 		}
@@ -383,7 +382,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * Enables the {@link Autowired} annotation and {@link ConfigurationAware} objects.
 	 */
 	@Override
-	protected void registerBeanPostProcessors(@Nonnull ConfigurableListableBeanFactory beanFactory) {
+	protected void registerBeanPostProcessors(@NonNull ConfigurableListableBeanFactory beanFactory) {
 		super.registerBeanPostProcessors(beanFactory);
 
 		// Append @Autowired PostProcessor to allow automatic type-based Spring wiring.
@@ -471,7 +470,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		isConfigured = true; // Only if there are no errors mark the adapter as `isConfigured`!
 	}
 
-	@Nonnull
+	@NonNull
 	protected final String computeCombinedHideRegex() {
 		if (getPipeLine() == null) {
 			return "";
@@ -523,7 +522,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	}
 
 	@Override
-	public void publishEvent(@Nonnull ApplicationEvent event) {
+	public void publishEvent(@NonNull ApplicationEvent event) {
 		if (event instanceof ContextStartedEvent) {
 			statsUpSince = System.currentTimeMillis(); // Update the adapter uptime.
 			publishEvent(new AdapterMessageEvent(this, "up and running"));
@@ -610,7 +609,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		}
 	}
 
-	public @Nonnull Message formatErrorMessage(@Nullable String errorMessage, @Nullable Throwable t, @Nullable Message originalMessage, @Nonnull PipeLineSession session, @Nullable HasName objectInError) {
+	public @NonNull Message formatErrorMessage(@Nullable String errorMessage, @Nullable Throwable t, @Nullable Message originalMessage, @NonNull PipeLineSession session, @Nullable HasName objectInError) {
 		if (Message.isFormattedErrorMessage(originalMessage)) {
 			return originalMessage;
 		}
@@ -705,12 +704,12 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 		return null;
 	}
 
-	public @Nonnull List<Receiver<?>> getReceivers() {
+	public @NonNull List<Receiver<?>> getReceivers() {
 		return receivers;
 	}
 
 	@Override
-	public @Nonnull RunState getRunState() {
+	public @NonNull RunState getRunState() {
 		RunState state = runState.getRunState();
 		log.trace("Adapter [{}] runstate: [{}]", name, state);
 		return state;
@@ -721,7 +720,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * Creation date: (19-02-2003 12:16:53)
 	 * @return String  Date
 	 */
-	public @Nonnull Date getStatsUpSinceDate() {
+	public @NonNull Date getStatsUpSinceDate() {
 		return new Date(statsUpSince);
 	}
 
@@ -1037,7 +1036,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	 * @see PipeLine#stop
 	 */
 	@Override
-	public void stop(@Nonnull Runnable callback) {
+	public void stop(@NonNull Runnable callback) {
 		Objects.requireNonNull(callback, "callback may not be null");
 
 		log.info("Stopping Adapter named [{}] with {} receivers", this::getName, receivers::size);
@@ -1134,7 +1133,7 @@ public class Adapter extends GenericApplicationContext implements ManagableLifec
 	}
 
 	@Override
-	public @Nonnull String toString() {
+	public @NonNull String toString() {
 		StringBuilder sb = new StringBuilder(super.toString());
 		sb.append(" [receivers=");
 		for (Receiver<?> receiver: receivers) {

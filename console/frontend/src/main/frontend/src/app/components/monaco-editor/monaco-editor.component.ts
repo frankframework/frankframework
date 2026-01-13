@@ -179,14 +179,8 @@ export class MonacoEditorComponent implements AfterViewInit, OnChanges, OnDestro
   private initializeMouseEvents(): void {
     this.editor?.onMouseDown((event) => {
       const element = event.target.element;
-      switch (element?.className) {
-        case 'line-numbers': {
-          this.handleLineNumberClick(+(element.textContent || 0));
-          break;
-        }
-        default: {
-          return;
-        }
+      if (element?.className.includes('line-numbers')) {
+        this.handleLineNumberClick(+(element.textContent || 0));
       }
     });
   }

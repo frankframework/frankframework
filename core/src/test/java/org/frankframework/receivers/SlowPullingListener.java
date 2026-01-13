@@ -18,8 +18,8 @@ package org.frankframework.receivers;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -28,19 +28,19 @@ import org.frankframework.core.IPullingListener;
 @Log4j2
 public class SlowPullingListener extends SlowListenerBase implements IPullingListener<String> {
 
-	@Nonnull
+	@NonNull
 	@Override
 	public Map<String, Object> openThread() {
 		return new LinkedHashMap<>();
 	}
 
 	@Override
-	public void closeThread(@Nonnull Map<String, Object> threadContext) {
+	public void closeThread(@NonNull Map<String, Object> threadContext) {
 		log.debug("closeThread called in slow pulling listener");
 	}
 
 	@Override
-	public @Nullable RawMessageWrapper<String> getRawMessage(@Nonnull Map<String, Object> threadContext) {
+	public @Nullable RawMessageWrapper<String> getRawMessage(@NonNull Map<String, Object> threadContext) {
 		return null;
 	}
 }

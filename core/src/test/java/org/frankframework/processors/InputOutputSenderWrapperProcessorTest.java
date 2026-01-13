@@ -5,8 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -34,7 +33,7 @@ public class InputOutputSenderWrapperProcessorTest {
 		sender = configuration.createBean();
 		sender.addSender(new AbstractSender() {
 			@Override
-			public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
+			public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
 				try {
 					return new SenderResult("Sender 1: [" + message.asString() + "]");
 				} catch (IOException e) {
@@ -44,7 +43,7 @@ public class InputOutputSenderWrapperProcessorTest {
 		});
 		sender.addSender(new AbstractSender() {
 			@Override
-			public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException {
+			public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException {
 				try {
 					secondSenderOutput = "Sender 2: [" + message.asString() + "]";
 					return new SenderResult(secondSenderOutput);

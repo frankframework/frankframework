@@ -1,5 +1,5 @@
 /*
-   Copyright 2024-2025 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,10 +23,9 @@ import java.util.Objects;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentSkipListMap;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.InitializingBean;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.TypeDescription;
@@ -66,7 +65,7 @@ public class ResourceObjectLocator implements IObjectLocator, InitializingBean {
 		getResources("jms");
 	}
 
-	@Nonnull
+	@NonNull
 	private FrankResources getResources(String prefix) {
 		return parsedFrankResources.computeIfAbsent(prefix, this::parseResourcesForPrefix);
 	}
@@ -74,7 +73,7 @@ public class ResourceObjectLocator implements IObjectLocator, InitializingBean {
 	/**
 	 * Reads the resource file, skips all root elements except for the given prefix.
 	 */
-	@Nonnull
+	@NonNull
 	private FrankResources parseResourcesForPrefix(String prefix) {
 		try(InputStream is = resourceUrl.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
 			Representer represent = new Representer(new DumperOptions());
@@ -109,7 +108,7 @@ public class ResourceObjectLocator implements IObjectLocator, InitializingBean {
 	@Override
 	@Nullable
 	@SuppressWarnings("unchecked")
-	public <O> O lookup(@Nonnull String name, @Nullable Properties environment, @Nullable Class<O> lookupClass) throws Exception {
+	public <O> O lookup(@NonNull String name, @Nullable Properties environment, @Nullable Class<O> lookupClass) throws Exception {
 		if (resourceUrl == null) {
 			log.debug("resource locator is not configured, skip lookup");
 			return null;

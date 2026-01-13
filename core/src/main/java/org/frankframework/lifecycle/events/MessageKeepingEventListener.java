@@ -15,8 +15,7 @@
 */
 package org.frankframework.lifecycle.events;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationListener;
 
 import lombok.Getter;
@@ -37,7 +36,7 @@ public class MessageKeepingEventListener implements ApplicationListener<AdapterM
 	}
 
 	@Override
-	public void onApplicationEvent(@Nonnull AdapterMessageEvent event) {
+	public void onApplicationEvent(@NonNull AdapterMessageEvent event) {
 		MessageKeeperMessage messageKeeperMessage = MessageKeeperMessage.fromEvent(event);
 		messages.add(messageKeeperMessage);
 	}

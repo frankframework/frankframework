@@ -19,10 +19,10 @@ package org.frankframework.lifecycle.servlets;
 import java.util.Collections;
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
 import jakarta.servlet.Filter;
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.config.annotation.web.WebSecurityConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.filter.DelegatingFilterProxy;
@@ -41,11 +41,11 @@ import org.springframework.web.filter.DelegatingFilterProxy;
 public class NoopSecurityFilterChain implements SecurityFilterChain {
 
 	@Override
-	public boolean matches(@Nonnull HttpServletRequest request) {
+	public boolean matches(@NonNull HttpServletRequest request) {
 		return false;
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public List<Filter> getFilters() {
 		return Collections.emptyList();

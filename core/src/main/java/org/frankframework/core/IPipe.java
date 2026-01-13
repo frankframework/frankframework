@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,9 +18,8 @@ package org.frankframework.core;
 import java.util.Collection;
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.Lifecycle;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -61,7 +60,7 @@ public interface IPipe extends IConfigurable, IForwardTarget, FrankElement, Name
 	 * to be handled by the caller of this object.
 	 * Implementations must either consume the message, or pass it on to the next Pipe in the PipeRunResult.
 	 */
-	@Nonnull
+	@NonNull
 	PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException;
 
 	/**

@@ -1,5 +1,5 @@
 /*
- * Copyright 2025 WeAreFrank!
+ * Copyright 2025-2026 WeAreFrank!
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,8 +20,7 @@ import java.security.GeneralSecurityException;
 import java.util.Date;
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.authentication.AuthenticationServiceException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -49,7 +48,7 @@ public abstract class AbstractJwtKeyGenerator {
 
 	abstract JWSSigner getSigner() throws GeneralSecurityException;
 
-	public @Nonnull String create() {
+	public @NonNull String create() {
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		if (authentication == null) {
 			throw new AuthenticationServiceException("no Authentication object found in SecurityContext");
@@ -59,7 +58,7 @@ public abstract class AbstractJwtKeyGenerator {
 		return createJwtToken(claims);
 	}
 
-	private @Nonnull JWTClaimsSet createClaimsSet(Authentication authentication) {
+	private @NonNull JWTClaimsSet createClaimsSet(Authentication authentication) {
 		try {
 			JWTClaimsSet.Builder builder = new JWTClaimsSet.Builder()
 					.subject(getPrincipalName(authentication))
@@ -89,7 +88,7 @@ public abstract class AbstractJwtKeyGenerator {
 		// Optional: overridden in subclasses
 	}
 
-	protected @Nonnull String createJwtToken(@Nonnull JWTClaimsSet claims) {
+	protected @NonNull String createJwtToken(@NonNull JWTClaimsSet claims) {
 		SignedJWT signedJWT = new SignedJWT(jwtHeader, claims);
 		try {
 			signedJWT.sign(getSigner());

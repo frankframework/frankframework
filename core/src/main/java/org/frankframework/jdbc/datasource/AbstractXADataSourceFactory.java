@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,13 +19,13 @@ import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 public abstract class AbstractXADataSourceFactory extends PoolingDataSourceFactory {
 
-	@Nonnull
+	@NonNull
 	@Override
-	protected final DataSource augmentDatasource(@Nonnull CommonDataSource dataSource, @Nonnull String dataSourceName) {
+	protected final DataSource augmentDatasource(@NonNull CommonDataSource dataSource, @NonNull String dataSourceName) {
 		if (dataSource instanceof XADataSource xaDataSource) {
 			log.info("DataSource [{}] is XA enabled, registering with a Transaction Manager", dataSourceName);
 			return createXADataSource(xaDataSource, dataSourceName);
@@ -39,6 +39,6 @@ public abstract class AbstractXADataSourceFactory extends PoolingDataSourceFacto
 		return (DataSource) dataSource;
 	}
 
-	@Nonnull
+	@NonNull
 	protected abstract DataSource createXADataSource(XADataSource xaDataSource, String dataSourceName);
 }

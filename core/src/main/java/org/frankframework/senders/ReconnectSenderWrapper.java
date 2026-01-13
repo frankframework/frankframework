@@ -15,7 +15,7 @@
 */
 package org.frankframework.senders;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Setter;
 
@@ -72,7 +72,7 @@ public class ReconnectSenderWrapper extends AbstractSenderWrapper {
 	}
 
 	@Override
-	public SenderResult doSendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+	public SenderResult doSendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 		sender.start();
 		session.scheduleCloseOnSessionExit(new AutoCloseableSenderWrapper(sender));
 		return sender.sendMessage(message, session);

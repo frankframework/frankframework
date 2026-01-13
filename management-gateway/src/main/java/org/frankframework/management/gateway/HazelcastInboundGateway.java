@@ -1,5 +1,5 @@
 /*
-   Copyright 2024-2025 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,10 +20,9 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.UUID;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.logging.log4j.CloseableThreadContext;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.integration.gateway.MessagingGatewaySupport;
@@ -124,7 +123,7 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 	 * @param incomingMessage The Spring Integration message to send the RequestChannel
 	 * @param tempReplyChannel The optional Hazelcast response queue name
 	 */
-	private void processMessage(@Nonnull Message<?> incomingMessage, @Nullable String tempReplyChannel) {
+	private void processMessage(@NonNull Message<?> incomingMessage, @Nullable String tempReplyChannel) {
 		MessageHeaders headers = incomingMessage.getHeaders();
 		try {
 			propagateAuthenticationContext(headers);
@@ -153,7 +152,7 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 	 * @param response the (serializable) response message, may be an {@link ErrorMessage}.
 	 * @param tempReplyChannel the {@link IQueue Hazelcast queue} name.
 	 */
-	private void handleResponse(Message<?> response, @Nonnull final String tempReplyChannel) {
+	private void handleResponse(Message<?> response, @NonNull final String tempReplyChannel) {
 		MessageHeaders headers = response.getHeaders();
 
 		if (response instanceof ErrorMessage errMsg) {
@@ -175,7 +174,7 @@ public class HazelcastInboundGateway extends MessagingGatewaySupport {
 	 * Register the auth object in the current {@link SecurityContext} so Spring-Security can apply JSR250 authentication.
 	 * @param headers Request MessageHeaders which should contain the {@link Authentication} object.
 	 */
-	private void propagateAuthenticationContext(@Nonnull MessageHeaders headers) throws IOException {
+	private void propagateAuthenticationContext(@NonNull MessageHeaders headers) throws IOException {
 		Object auth = headers.get(HazelcastConfig.AUTHENTICATION_HEADER_KEY);
 		Authentication authentication = createAuthenticationToken(auth);
 

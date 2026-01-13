@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -30,10 +30,10 @@ import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import jakarta.annotation.Nonnull;
 import jakarta.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.MediaType;
 import org.springframework.messaging.Message;
 
@@ -255,7 +255,7 @@ public class ConfigManagement extends BusEndpointBase {
 		}
 	}
 
-	private List<ConfigurationDTO> getConfigsFromDatabase(String configurationName, @Nonnull final String dataSourceName) {
+	private List<ConfigurationDTO> getConfigsFromDatabase(String configurationName, @NonNull final String dataSourceName) {
 		List<ConfigurationDTO> configurations = new ArrayList<>();
 
 		FixedQuerySender qs = createBean(FixedQuerySender.class);

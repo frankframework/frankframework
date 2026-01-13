@@ -19,9 +19,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.Reader;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 import org.xml.sax.ext.LexicalHandler;
@@ -64,7 +63,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		if (Message.isNull(message)) {
@@ -133,7 +132,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 		}
 		Reader encapsulatingReader = isReplaceNonXmlChars() ? new EncapsulatingReader(message.asReader(), prefix, suffix) {
 			@Override
-			public int read(@Nonnull char[] cbuf, int off, int len) throws IOException {
+			public int read(@NonNull char[] cbuf, int off, int len) throws IOException {
 				int lenRead = super.read(cbuf, off, len);
 				return XmlEncodingUtils.replaceNonPrintableCharacters(cbuf, off, lenRead);
 			}

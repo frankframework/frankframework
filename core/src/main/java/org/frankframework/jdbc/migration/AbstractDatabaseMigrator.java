@@ -22,9 +22,8 @@ import java.util.NoSuchElementException;
 
 import javax.sql.DataSource;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -85,7 +84,7 @@ public abstract class AbstractDatabaseMigrator implements ConfigurableLifecycle,
 		return ((AbstractClassLoader) configurationClassLoader).getResource(path, false);
 	}
 
-	@Nonnull
+	@NonNull
 	protected final DataSource lookupMigratorDatasource() throws SQLException {
 		try {
 			log.debug("looking up Datasource [{}] for JdbcMigrator [{}]", getDatasourceName(), getName());
@@ -129,7 +128,7 @@ public abstract class AbstractDatabaseMigrator implements ConfigurableLifecycle,
 	}
 
 	@Override
-	public final void setApplicationContext(@Nonnull ApplicationContext applicationContext) {
+	public final void setApplicationContext(@NonNull ApplicationContext applicationContext) {
 		if(!(applicationContext instanceof Configuration)) {
 			throw new IllegalStateException("context not instanceof configuration");
 		}

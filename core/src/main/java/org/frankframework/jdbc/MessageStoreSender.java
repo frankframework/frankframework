@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Nationale-Nederlanden, 2021, 2022, 2023 WeAreFrank!
+   Copyright 2015 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,9 +19,8 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 
@@ -74,7 +73,7 @@ import org.frankframework.util.TimeProvider;
 public class MessageStoreSender extends JdbcTransactionalStorage<Serializable> implements ISenderWithParameters {
 	public static final String PARAM_MESSAGEID = "messageId";
 
-	private final @Nonnull ParameterList paramList = new ParameterList();
+	private final @NonNull ParameterList paramList = new ParameterList();
 	private @Getter String sessionKeys = null;
 
 	public MessageStoreSender() {
@@ -102,12 +101,12 @@ public class MessageStoreSender extends JdbcTransactionalStorage<Serializable> i
 	}
 
 	@Override
-	public @Nonnull ParameterList getParameterList() {
+	public @NonNull ParameterList getParameterList() {
 		return paramList;
 	}
 
 	@Override
-	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 		// the messageId to be inserted in the messageStore defaults to the messageId of the session
 		String messageId = session.getMessageId();
 		String correlationID = session.getCorrelationId();

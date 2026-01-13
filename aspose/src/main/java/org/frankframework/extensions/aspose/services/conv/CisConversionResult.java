@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2021-2022 WeAreFrank!
+   Copyright 2019, 2021-2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,8 +20,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.MediaType;
 
 import lombok.Getter;
@@ -112,7 +111,7 @@ public class CisConversionResult {
 		return createFailureResult(conversionOption, mediaTypeReceived, filename, msg.toString(), null);
 	}
 
-	@Nonnull
+	@NonNull
 	public List<CisConversionResult> getAttachments() {
 		return Collections.unmodifiableList(attachments);
 	}

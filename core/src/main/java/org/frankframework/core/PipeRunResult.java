@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022-2023, 2025 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,8 @@
 */
 package org.frankframework.core;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.builder.ToStringBuilder;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -72,7 +71,7 @@ public class PipeRunResult {
 		this.result = result;
 	}
 
-	@Nonnull
+	@NonNull
 	public Message getResult() {
 		if (result == null) {
 			return Message.nullMessage();

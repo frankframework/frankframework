@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,12 +28,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 import org.springframework.util.InvalidMimeTypeException;
 import org.springframework.util.LinkedCaseInsensitiveMap;
@@ -76,7 +75,7 @@ public class MessageContext implements Serializable {
 		withAllFrom(base);
 	}
 
-	public MessageContext(@Nonnull MessageContext base) {
+	public MessageContext(@NonNull MessageContext base) {
 		this(base.data);
 	}
 
@@ -96,7 +95,7 @@ public class MessageContext implements Serializable {
 	/**
 	 * Put key in the message context. If the key already exists, it is overwritten with this value. If the value is NULL then the key is removed.
 	 */
-	public void put(@Nonnull String key, @Nullable Serializable value) {
+	public void put(@NonNull String key, @Nullable Serializable value) {
 		if (value != null) {
 			data.put(key, value);
 		} else {
@@ -104,11 +103,11 @@ public class MessageContext implements Serializable {
 		}
 	}
 
-	Serializable remove(@Nonnull String key) {
+	Serializable remove(@NonNull String key) {
 		return data.remove(key);
 	}
 
-	public Serializable get(@Nonnull String key) {
+	public Serializable get(@NonNull String key) {
 		return data.get(key);
 	}
 
@@ -116,7 +115,7 @@ public class MessageContext implements Serializable {
 		return Collections.unmodifiableMap(data);
 	}
 
-	public boolean containsKey(@Nonnull String key) {
+	public boolean containsKey(@NonNull String key) {
 		return data.containsKey(key);
 	}
 
@@ -145,7 +144,7 @@ public class MessageContext implements Serializable {
 		}
 		return this;
 	}
-	public MessageContext withMimeType(@Nonnull String mimeType) {
+	public MessageContext withMimeType(@NonNull String mimeType) {
 		try {
 			withMimeType(MimeType.valueOf(mimeType));
 		} catch (InvalidMimeTypeException imte) {
@@ -163,7 +162,7 @@ public class MessageContext implements Serializable {
 		return this;
 	}
 
-	public MessageContext withMimeType(@Nonnull MimeType mimeType) {
+	public MessageContext withMimeType(@NonNull MimeType mimeType) {
 		if (MediaType.APPLICATION_JSON.equalsTypeAndSubtype(mimeType) && mimeType.getCharset() != null) {
 			// Strip the charset when JSON, see: https://www.rfc-editor.org/rfc/rfc8259
 			remove(METADATA_CHARSET);
@@ -214,13 +213,13 @@ public class MessageContext implements Serializable {
 		put(METADATA_LOCATION, location);
 		return this;
 	}
-	public MessageContext with(@Nonnull String name, @Nullable Serializable value) {
+	public MessageContext with(@NonNull String name, @Nullable Serializable value) {
 		put(name, value);
 		return this;
 	}
 
 	@Serial
-	private void writeObject(@Nonnull ObjectOutputStream out) throws IOException {
+	private void writeObject(@NonNull ObjectOutputStream out) throws IOException {
 		// If in future we need to make incompatible changes we can keep reading old version by selecting on version-nr
 		out.writeLong(CUSTOM_SERIALIZATION_VERSION);
 		out.writeObject(data);
@@ -228,7 +227,7 @@ public class MessageContext implements Serializable {
 
 	@Serial
 	@SuppressWarnings("unchecked")
-	private void readObject(@Nonnull ObjectInputStream in) throws IOException, ClassNotFoundException {
+	private void readObject(@NonNull ObjectInputStream in) throws IOException, ClassNotFoundException {
 		in.readLong(); // Custom serialization version; only version 1 yet so value can be ignored for now.
 		data = (Map<String, Serializable>) in.readObject();
 	}

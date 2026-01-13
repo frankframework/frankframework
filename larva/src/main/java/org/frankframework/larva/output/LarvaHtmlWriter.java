@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import java.io.StringWriter;
 import java.io.Writer;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.larva.LarvaHtmlConfig;
 import org.frankframework.larva.LarvaLogLevel;
@@ -47,7 +47,7 @@ public class LarvaHtmlWriter extends LarvaWriter {
 		super(larvaHtmlConfig, out);
 	}
 
-	public void writeHtml(@Nullable LarvaLogLevel logLevel, @Nonnull String html, boolean scroll) {
+	public void writeHtml(@Nullable LarvaLogLevel logLevel, @NonNull String html, boolean scroll) {
 		super.doWriteMessage(logLevel, false, html + "\n");
 		if (scroll && ((LarvaHtmlConfig)getLarvaConfig()).isAutoScroll()) {
 			super.doWriteMessage(null, false, "<script type=\"text/javascript\"><!--\nscrollToBottom();\n--></script>\n");
@@ -55,22 +55,22 @@ public class LarvaHtmlWriter extends LarvaWriter {
 	}
 
 	@Override
-	protected void doWriteMessage(@Nullable LarvaLogLevel logLevel, boolean isLogMessage, @Nonnull String message) {
+	protected void doWriteMessage(@Nullable LarvaLogLevel logLevel, boolean isLogMessage, @NonNull String message) {
 		super.doWriteMessage(logLevel, isLogMessage, encodeForHtml(message) + "<br/>");
 	}
 
-	@Nonnull
-	public static String encodeForHtml(@Nonnull String message) {
+	@NonNull
+	public static String encodeForHtml(@NonNull String message) {
 		return XmlEncodingUtils.encodeChars(XmlEncodingUtils.replaceNonValidXmlCharacters(message));
 	}
 
 	@Override
-	public void errorMessage(@Nonnull String message) {
+	public void errorMessage(@NonNull String message) {
 		writeHtml(LarvaLogLevel.ERROR, "<h1 class='error'>" + encodeForHtml(message) + "</h1>", true);
 	}
 
 	@Override
-	public void errorMessage(@Nonnull String message, @Nonnull Throwable t) {
+	public void errorMessage(@NonNull String message, @NonNull Throwable t) {
 		errorMessage(message);
 		writeHtml(LarvaLogLevel.ERROR, "<ol>", false);
 		writeExceptionMessagesRecursive(t);

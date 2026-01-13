@@ -12,9 +12,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,16 +55,16 @@ public class InputOutputPipeProcessorTest {
 
 		processor = new InputOutputPipeProcessor();
 		PipeProcessor chain = new PipeProcessor() {
-			@Nonnull
+			@NonNull
 			@Override
-			public PipeRunResult processPipe(@Nonnull PipeLine pipeLine, @Nonnull IPipe pipe, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException {
+			public PipeRunResult processPipe(@NonNull PipeLine pipeLine, @NonNull IPipe pipe, @Nullable Message message, @NonNull PipeLineSession pipeLineSession) throws PipeRunException {
 				pipeExecuted.set(true);
 				return pipe.doPipe(message, pipeLineSession);
 			}
 
-			@Nonnull
+			@NonNull
 			@Override
-			public PipeRunResult validate(@Nonnull PipeLine pipeLine, @Nonnull IValidator validator, @Nullable Message message, @Nonnull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
+			public PipeRunResult validate(@NonNull PipeLine pipeLine, @NonNull IValidator validator, @Nullable Message message, @NonNull PipeLineSession pipeLineSession, String messageRoot) throws PipeRunException {
 				pipeExecuted.set(true);
 				return validator.validate(message, pipeLineSession, messageRoot);
 			}

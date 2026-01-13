@@ -7,8 +7,7 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.io.IOException;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
@@ -104,7 +103,7 @@ class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
 		private @Getter Message promiseResult = null;
 
 		@Override
-		public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) {
+		public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) {
 			promiseResult = message;
 			return new SenderResult(Message.nullMessage());
 		}

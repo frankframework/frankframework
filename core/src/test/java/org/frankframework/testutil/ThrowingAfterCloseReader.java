@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.CharBuffer;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * For some readers, "close()" is a no-op (for instance, StringReader, which a lot of tests use). We want to
@@ -26,7 +26,7 @@ public class ThrowingAfterCloseReader extends Reader {
 	}
 
 	@Override
-	public int read(@Nonnull final CharBuffer target) throws IOException {
+	public int read(@NonNull final CharBuffer target) throws IOException {
 		assertNotClosed();
 		return delegate.read(target);
 	}
@@ -38,7 +38,7 @@ public class ThrowingAfterCloseReader extends Reader {
 	}
 
 	@Override
-	public int read(@Nonnull final char[] cbuf) throws IOException {
+	public int read(@NonNull final char[] cbuf) throws IOException {
 		assertNotClosed();
 		return delegate.read(cbuf);
 	}
@@ -73,7 +73,7 @@ public class ThrowingAfterCloseReader extends Reader {
 	}
 
 	@Override
-	public int read(@Nonnull final char[] cbuf, final int off, final int len) throws IOException {
+	public int read(@NonNull final char[] cbuf, final int off, final int len) throws IOException {
 		assertNotClosed();
 		return delegate.read(cbuf, off, len);
 	}

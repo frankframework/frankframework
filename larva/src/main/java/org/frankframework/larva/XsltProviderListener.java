@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 - 2023 WeAreFrank!
+   Copyright 2021 - 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,9 +20,8 @@ import java.util.Map;
 
 import javax.xml.transform.TransformerException;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 import org.xml.sax.SAXException;
 
@@ -76,7 +75,7 @@ public class XsltProviderListener implements IConfigurable, AutoCloseable, Frank
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	protected IScopeProvider findScope() throws ConfigurationException {
 		IScopeProvider config = null;
 		if (applicationContext.containsBean("ibisManager")) {

@@ -19,11 +19,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -64,7 +63,7 @@ public abstract class AbstractApplicationWarnings implements ApplicationContextA
 	}
 
 	@Override
-	public final void setApplicationContext(@Nonnull ApplicationContext applicationContext) {
+	public final void setApplicationContext(@NonNull ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
 	}
 	protected final ApplicationContext getApplicationContext() {
@@ -75,13 +74,13 @@ public abstract class AbstractApplicationWarnings implements ApplicationContextA
 		return appConstants;
 	}
 
-	@Nonnull
+	@NonNull
 	public final List<String> getWarnings() {
 		return Collections.unmodifiableList(warnings);
 	}
 
-	@Nonnull
-	private String prefixLogMessage(@Nullable Object source, @Nonnull String message) {
+	@NonNull
+	private String prefixLogMessage(@Nullable Object source, @NonNull String message) {
 		String msg = "";
 		if (source != null) {
 			msg = ClassUtils.nameOf(source) + " ";
@@ -92,14 +91,14 @@ public abstract class AbstractApplicationWarnings implements ApplicationContextA
 	/**
 	 * Add a warning with Object Class + Name prefix
 	 */
-	public void add(@Nullable Object source, @Nonnull Logger log, @Nonnull String message) {
+	public void add(@Nullable Object source, @NonNull Logger log, @NonNull String message) {
 		add(source, log, message, null);
 	}
 
 	/**
 	 * Add a warning with Object Class + Name prefix and log the exception stack
 	 */
-	public void add(@Nullable Object source, @Nonnull Logger log, @Nonnull String message, @Nullable Throwable t) {
+	public void add(@Nullable Object source, @NonNull Logger log, @NonNull String message, @Nullable Throwable t) {
 		doAdd(source, log, message, t);
 	}
 
@@ -107,15 +106,15 @@ public abstract class AbstractApplicationWarnings implements ApplicationContextA
 		doAdd(log, prefixLogMessage(source, message), t);
 	}
 
-	protected void doAdd(@Nullable Object source, @Nonnull Logger log, @Nonnull String message, @Nullable String hint) {
+	protected void doAdd(@Nullable Object source, @NonNull Logger log, @NonNull String message, @Nullable String hint) {
 		doAdd(log, prefixLogMessage(source, message), hint, null);
 	}
 
-	protected void doAdd(@Nonnull Logger log, @Nonnull String message, @Nullable Throwable t) {
+	protected void doAdd(@NonNull Logger log, @NonNull String message, @Nullable Throwable t) {
 		doAdd(log, message, null, t);
 	}
 
-	private void doAdd(@Nonnull Logger log, @Nonnull String message, @Nullable String postfixLogMessage, @Nullable Throwable t) {
+	private void doAdd(@NonNull Logger log, @NonNull String message, @Nullable String postfixLogMessage, @Nullable Throwable t) {
 		String logMessage = StringUtils.isEmpty(postfixLogMessage) ? message : message + postfixLogMessage;
 		if (t == null) {
 			log.warn(logMessage);

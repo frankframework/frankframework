@@ -25,11 +25,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObjectBuilder;
 import jakarta.json.JsonStructure;
+
+import org.jspecify.annotations.NonNull;
 
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.Counter;
@@ -69,9 +70,9 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 		super(config, Clock.SYSTEM);
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
-	protected DistributionSummary newDistributionSummary(@Nonnull Id id, @Nonnull DistributionStatisticConfig config, double scale) {
+	protected DistributionSummary newDistributionSummary(@NonNull Id id, @NonNull DistributionStatisticConfig config, double scale) {
 		DistributionSummary summary = new LocalDistributionSummary(id, clock, config, scale);
 
 		HistogramGauges.registerWithCommonFormat(summary, this);
@@ -355,7 +356,7 @@ public class LocalStatisticsRegistry extends SimpleMeterRegistry {
 		return threadsStats;
 	}
 
-	private static @Nonnull String extractNameFromTag(Meter meter, String groupByTagName) {
+	private static @NonNull String extractNameFromTag(Meter meter, String groupByTagName) {
 		String name = meter.getId().getTag(groupByTagName);
 		if(name != null) {
 			return name;

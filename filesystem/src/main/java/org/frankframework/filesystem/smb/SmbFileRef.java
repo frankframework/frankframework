@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,10 @@
 */
 package org.frankframework.filesystem.smb;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import com.hierynomus.msfscc.fileinformation.FileAllInformation;
 
@@ -27,14 +26,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 public class SmbFileRef {
-	private @Nonnull @Getter String filename;
+	private @NonNull @Getter String filename;
 	private @Nullable @Getter String folder;
 	private @Nullable @Getter @Setter FileAllInformation attributes = null;
 
 	/**
 	 * Create a new file reference, strips the folder of the filename when present
 	 */
-	public SmbFileRef(@Nonnull String path) {
+	public SmbFileRef(@NonNull String path) {
 		setName(path);
 	}
 
@@ -42,7 +41,7 @@ public class SmbFileRef {
 	 * @param name A canonical name might be provided, strip the path when present and only use the actual file name.
 	 * @param folder The directory the file. This always has precedence over the canonical path provided by the name.
 	 */
-	public SmbFileRef(@Nonnull String name, @Nullable String folder) {
+	public SmbFileRef(@NonNull String name, @Nullable String folder) {
 		setName(name);
 		setFolder(folder);
 	}

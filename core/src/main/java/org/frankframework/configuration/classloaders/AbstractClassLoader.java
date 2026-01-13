@@ -24,12 +24,11 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.cglib.core.ReflectUtils;
 import org.springframework.core.SmartClassLoader;
 
@@ -288,9 +287,9 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	 *
 	 * {@inheritDoc}
 	 */
-	@Nonnull
+	@NonNull
 	@Override
-	public Class<?> publicDefineClass(@Nonnull String name, @Nonnull byte[] b, @Nullable ProtectionDomain protectionDomain) {
+	public Class<?> publicDefineClass(@NonNull String name, @NonNull byte[] b, @Nullable ProtectionDomain protectionDomain) {
 		return super.defineClass(name, b, 0, b.length, protectionDomain);
 	}
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2025 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import java.io.File;
 import java.io.Serial;
 import java.nio.charset.Charset;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public class FileMessage extends Message {
 
@@ -37,7 +37,7 @@ public class FileMessage extends Message {
 	 * Potential conversions to other types should be delegated to Message.
 	 * </p>
 	 */
-	public FileMessage(@Nonnull File file, @Nullable Charset charset) {
+	public FileMessage(@NonNull File file, @Nullable Charset charset) {
 		super(new SerializableFileReference(file.toPath(), false), new MessageContext().withCharset(charset).withModificationTime(file.lastModified())
 				.withSize(file.length())
 				.withName(file.getName())

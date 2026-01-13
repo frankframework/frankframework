@@ -22,11 +22,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -67,7 +66,7 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 	private JwtKeyGenerator jwtGenerator;
 
 	@Override
-	public void setApplicationContext(@Nonnull ApplicationContext applicationContext) throws BeansException {
+	public void setApplicationContext(@NonNull ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
 	}
 
@@ -97,7 +96,7 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 	}
 
 	@Override
-	@Nonnull
+	@NonNull
 	public <I, O> Message<O> sendSyncMessage(Message<I> in) {
 		String tempReplyChannelName = "__tmp." + NUMBER_GENERATOR.nextAlphanumeric(32);
 		long receiveTimeout = receiveTimeout(in);
@@ -146,7 +145,7 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 		return null;
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public List<ClusterMember> getMembers() {
 		Set<Member> members = hzInstance.getCluster().getMembers();
@@ -173,7 +172,7 @@ public class HazelcastOutboundGateway implements InitializingBean, ApplicationCo
 		return cm;
 	}
 
-	private @Nonnull String getAuthentication() {
+	private @NonNull String getAuthentication() {
 		return jwtGenerator.create();
 	}
 

@@ -207,6 +207,12 @@
 				<scope>import</scope>
 			</dependency>
 
+			<dependency>
+				<groupId>org.jspecify</groupId>
+				<artifactId>jspecify</artifactId>
+				<version>1.0.0</version>
+			</dependency>
+
 			<!-- Lock transient dependency versions to fix CVE's -->
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>

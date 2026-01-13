@@ -28,9 +28,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.logging.log4j.LogManager;
+import org.jspecify.annotations.NonNull;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -145,7 +144,7 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 	}
 
 	@Override
-	public void write(@Nonnull byte[] b, int off, int len) throws IOException {
+	public void write(@NonNull byte[] b, int off, int len) throws IOException {
 		if(closed) throw new IllegalStateException("stream already closed");
 
 		// Buffer has already been flushed

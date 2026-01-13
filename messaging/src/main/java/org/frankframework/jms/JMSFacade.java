@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2015, 2018 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,7 +26,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.naming.NamingException;
 import javax.xml.transform.TransformerException;
 
-import jakarta.annotation.Nonnull;
 import jakarta.jms.BytesMessage;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.Destination;
@@ -46,6 +45,7 @@ import jakarta.jms.TopicSession;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.util.Supplier;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -368,34 +368,27 @@ public class JMSFacade extends JndiBase implements ConfigurableLifecycle, FrankE
 		return started;
 	}
 
-	@Nonnull
-	public jakarta.jms.Message createMessage(Session session, String correlationID, Message message) throws JMSException, IOException {
+	public jakarta.jms.@NonNull Message createMessage(Session session, String correlationID, Message message) throws JMSException, IOException {
 		return createMessage(session, correlationID, message, messageClassDefault);
 	}
 
-	@Nonnull
-	public jakarta.jms.Message createMessage(Session session, String correlationID, Message message, MessageClass messageClass) throws JMSException, IOException {
-		switch (messageClass) {
-			case TEXT:
-				return createTextMessage(session, correlationID, message);
-			case BYTES:
-				return createBytesMessage(session, correlationID, message);
-			case AUTO:
-				return message.isBinary() ? createBytesMessage(session, correlationID, message) : createTextMessage(session, correlationID, message);
-			default:
-				throw new IllegalArgumentException("Unsupported messageClass value: [" + messageClass + "]");
-		}
+	public jakarta.jms.@NonNull Message createMessage(Session session, String correlationID, Message message, MessageClass messageClass) throws JMSException, IOException {
+		return switch (messageClass) {
+			case TEXT -> createTextMessage(session, correlationID, message);
+			case BYTES -> createBytesMessage(session, correlationID, message);
+			case AUTO -> message.isBinary() ? createBytesMessage(session, correlationID, message) : createTextMessage(session, correlationID, message);
+			default -> throw new IllegalArgumentException("Unsupported messageClass value: [" + messageClass + "]");
+		};
 	}
 
-	@Nonnull
-	protected jakarta.jms.Message createBytesMessage(final Session session, final String correlationID, final Message message) throws JMSException, IOException {
+	protected jakarta.jms.@NonNull Message createBytesMessage(final Session session, final String correlationID, final Message message) throws JMSException, IOException {
 		BytesMessage bytesMessage = session.createBytesMessage();
 		setMessageCorrelationID(bytesMessage, correlationID);
 		bytesMessage.writeBytes(message.asByteArray());
 		return bytesMessage;
 	}
 
-	@Nonnull
+	@NonNull
 	protected TextMessage createTextMessage(final Session session, final String correlationID, final Message message) throws JMSException, IOException {
 		TextMessage textMessage = session.createTextMessage();
 		setMessageCorrelationID(textMessage, correlationID);

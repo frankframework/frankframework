@@ -18,7 +18,7 @@ package org.frankframework.scheduler;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -30,7 +30,7 @@ public class NamedThreadFactory implements ThreadFactory {
 	private final AtomicInteger threadCount = new AtomicInteger();
 
 	@Override
-	public Thread newThread(@Nonnull Runnable runnable) {
+	public Thread newThread(@NonNull Runnable runnable) {
 		String threadName = getThreadName(runnable);
 		Thread thread = new Thread(threadGroup, runnable, threadName);
 		thread.setPriority(threadPriority);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2021, 2023, 2025 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,10 +18,9 @@ package org.frankframework.batch;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
@@ -58,7 +57,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	private final List<InputField> inputFields = new ArrayList<>();
 	private final List<Integer> recordIdentifyingFields = new ArrayList<>();
 
-	protected @Getter @Nonnull ParameterList paramList = new ParameterList();
+	protected @Getter @NonNull ParameterList paramList = new ParameterList();
 
 	private @Getter int recordLength=-1;
 
@@ -249,7 +248,7 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 	}
 
 	@Override
-	public @Nonnull ParameterList getParameterList() {
+	public @NonNull ParameterList getParameterList() {
 		return paramList;
 	}
 

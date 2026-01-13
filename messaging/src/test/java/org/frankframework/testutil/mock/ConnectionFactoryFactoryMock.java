@@ -17,8 +17,6 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.jms.Connection;
 import jakarta.jms.ConnectionFactory;
 import jakarta.jms.ConnectionMetaData;
@@ -32,6 +30,8 @@ import jakarta.jms.QueueBrowser;
 import jakarta.jms.Session;
 import jakarta.jms.TextMessage;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.mockito.Mockito;
 
 import lombok.Getter;
@@ -83,13 +83,13 @@ public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 		return handler;
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
-	public ConnectionFactory getConnectionFactory(@Nonnull String connectionFactoryName, @Nullable Properties jndiEnvironment) {
+	public ConnectionFactory getConnectionFactory(@NonNull String connectionFactoryName, @Nullable Properties jndiEnvironment) {
 		return objects.get(connectionFactoryName);
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public List<String> getConnectionFactoryNames() {
 		return new ArrayList<>(objects.keySet());

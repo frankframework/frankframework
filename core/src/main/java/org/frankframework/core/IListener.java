@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2023, 2024 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package org.frankframework.core;
 
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
@@ -59,7 +59,7 @@ public interface IListener<M> extends IConfigurable, FrankElement, NameAware {
 	 * @return input {@link Message} for adapter.
 	 *
 	 */
-	Message extractMessage(@Nonnull RawMessageWrapper<M> rawMessage, @Nonnull Map<String,Object> context) throws ListenerException;
+	Message extractMessage(@NonNull RawMessageWrapper<M> rawMessage, @NonNull Map<String,Object> context) throws ListenerException;
 
 	/**
 	 * Called to perform actions (like committing or sending a reply) after a message has been processed by the

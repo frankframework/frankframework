@@ -1,10 +1,13 @@
-import { Component, HostListener, inject, OnDestroy, OnInit } from '@angular/core';
+import { Component, inject, OnDestroy, OnInit } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AppService } from 'src/app/app.service';
 import { HttpClient } from '@angular/common/http';
 
 @Component({
   template: '',
+  host: {
+    '(window:resize)': 'calcTopBarHeight()',
+  }
 })
 export abstract class BaseIframeComponent implements OnInit, OnDestroy {
   protected url = '';
@@ -19,7 +22,6 @@ export abstract class BaseIframeComponent implements OnInit, OnDestroy {
 
   private topBarHeightPx = 99;
 
-  @HostListener('window:resize', ['$event'])
   calcTopBarHeight(): void {
     const topinfobarHeight = document.querySelector('app-pages-topinfobar')?.getBoundingClientRect().height ?? 0;
     const topnavbarHeight = document.querySelector('app-pages-topnavbar')?.getBoundingClientRect().height ?? 0;

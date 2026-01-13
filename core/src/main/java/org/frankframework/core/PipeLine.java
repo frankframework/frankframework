@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,11 +27,10 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 
 import io.micrometer.core.instrument.DistributionSummary;
@@ -159,7 +158,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	}
 
 	@Override
-	public final void setApplicationContext(@Nonnull ApplicationContext context) {
+	public final void setApplicationContext(@NonNull ApplicationContext context) {
 		if (context instanceof Adapter contextAdapter) {
 			this.adapter = contextAdapter;
 		} else {
@@ -303,7 +302,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	}
 
 	@Nullable
-	private ConfigurationException configureSpecialPipe(@Nonnull final IPipe pipe, @Nonnull final String name, @Nullable final ConfigurationException configurationException) throws ConfigurationException {
+	private ConfigurationException configureSpecialPipe(@NonNull final IPipe pipe, @NonNull final String name, @Nullable final ConfigurationException configurationException) throws ConfigurationException {
 		PipeForward pf = new PipeForward();
 		pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 		pipe.addForward(pf);
@@ -317,8 +316,8 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 		return configurationException;
 	}
 
-	@Nonnull
-	private static ConfigurationException suppressException(@Nullable final ConfigurationException configurationException, @Nonnull final ConfigurationException e) {
+	@NonNull
+	private static ConfigurationException suppressException(@Nullable final ConfigurationException configurationException, @NonNull final ConfigurationException e) {
 		if (configurationException == null) {
 			return e;
 		} else {
@@ -377,16 +376,16 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	/*
 	 * All pipe related statistics
 	 */
-	public @Nonnull DistributionSummary getPipeStatistics(IPipe pipe) {
+	public @NonNull DistributionSummary getPipeStatistics(IPipe pipe) {
 		return pipeStatistics.computeIfAbsent(pipe.getName(), name -> configurationMetrics.createDistributionSummary(pipe, FrankMeterType.PIPE_DURATION));
 	}
-	public @Nonnull DistributionSummary getPipeWaitStatistics(IPipe pipe){
+	public @NonNull DistributionSummary getPipeWaitStatistics(IPipe pipe){
 		return pipeWaitStatistics.computeIfAbsent(pipe.getName(), name -> configurationMetrics.createDistributionSummary(pipe, FrankMeterType.PIPE_WAIT_TIME));
 	}
-	public @Nonnull DistributionSummary getPipeSizeInStatistics(IPipe pipe) {
+	public @NonNull DistributionSummary getPipeSizeInStatistics(IPipe pipe) {
 		return pipeSizeStats.computeIfAbsent(pipe.getName() + " (in)", name -> configurationMetrics.createDistributionSummary(pipe, FrankMeterType.PIPE_SIZE_IN));
 	}
-	public @Nonnull DistributionSummary getPipeSizeOutStatistics(IPipe pipe) {
+	public @NonNull DistributionSummary getPipeSizeOutStatistics(IPipe pipe) {
 		return pipeSizeStats.computeIfAbsent(pipe.getName() + " (out)", name -> configurationMetrics.createDistributionSummary(pipe, FrankMeterType.PIPE_SIZE_OUT));
 	}
 
@@ -402,7 +401,7 @@ public class PipeLine extends TransactionAttributes implements ICacheEnabled<Str
 	 * @return the result of the processing.
 	 * @throws PipeRunException when something went wrong in the pipes.
 	 */
-	public PipeLineResult process(@Nonnull String messageId, @Nonnull Message message, @Nonnull PipeLineSession pipeLineSession) throws PipeRunException {
+	public PipeLineResult process(@NonNull String messageId, @NonNull Message message, @NonNull PipeLineSession pipeLineSession) throws PipeRunException {
 		if (transformNullMessage != null && message.isEmpty()) {
 			message = transformNullMessage;
 		}

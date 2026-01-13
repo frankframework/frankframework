@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020, 2022-2024 WeAreFrank!
+   Copyright 2019, 2020, 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,13 +23,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 
 import org.apache.commons.codec.binary.Base64InputStream;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
@@ -106,7 +106,7 @@ public abstract class AbstractMailSender extends AbstractSenderWithParameters {
 	}
 
 	@Override
-	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 		MailSessionBase mailSession;
 		try {
 			mailSession = extract(message, session);
@@ -132,7 +132,7 @@ public abstract class AbstractMailSender extends AbstractSenderWithParameters {
 		return mailSession;
 	}
 
-	private @Nonnull Collection<MailAttachmentStream> retrieveAttachmentsFromParamList(@Nullable ParameterValue pv, @Nonnull PipeLineSession session) throws SenderException, ParameterException {
+	private @NonNull Collection<MailAttachmentStream> retrieveAttachmentsFromParamList(@Nullable ParameterValue pv, @NonNull PipeLineSession session) throws SenderException, ParameterException {
 		if (pv == null) {
 			return Collections.emptyList();
 		}
@@ -141,7 +141,7 @@ public abstract class AbstractMailSender extends AbstractSenderWithParameters {
 		return attachments;
 	}
 
-	private @Nonnull Collection<EMail> retrieveRecipientsFromParameterList(ParameterValue pv)
+	private @NonNull Collection<EMail> retrieveRecipientsFromParameterList(ParameterValue pv)
 			throws ParameterException, SenderException {
 		if (pv == null) {
 			return Collections.emptyList();
@@ -237,7 +237,7 @@ public abstract class AbstractMailSender extends AbstractSenderWithParameters {
 		return mail;
 	}
 
-	private @Nonnull List<EMail> retrieveRecipients(@Nonnull Collection<Node> recipientsNode) throws SenderException {
+	private @NonNull List<EMail> retrieveRecipients(@NonNull Collection<Node> recipientsNode) throws SenderException {
 		if (recipientsNode.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -258,7 +258,7 @@ public abstract class AbstractMailSender extends AbstractSenderWithParameters {
 		return recipients;
 	}
 
-	private @Nonnull Collection<MailAttachmentStream> retrieveAttachments(@Nonnull Collection<Node> attachmentsNode, @Nonnull PipeLineSession session) throws SenderException {
+	private @NonNull Collection<MailAttachmentStream> retrieveAttachments(@NonNull Collection<Node> attachmentsNode, @NonNull PipeLineSession session) throws SenderException {
 		if (attachmentsNode.isEmpty()) {
 			return Collections.emptyList();
 		}

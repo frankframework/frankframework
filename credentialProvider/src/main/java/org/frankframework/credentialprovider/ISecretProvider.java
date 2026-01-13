@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2025 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,7 +18,7 @@ package org.frankframework.credentialprovider;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * <p>Interface for a CredentialFactory. A CredentialFactory is responsible for providing credentials to the framework.</p>
@@ -35,9 +35,9 @@ public interface ISecretProvider {
 	@SuppressWarnings("java:S112")
 	void initialize() throws Exception;
 
-	boolean hasSecret(@Nonnull CredentialAlias alias);
+	boolean hasSecret(@NonNull CredentialAlias alias);
 
-	ISecret getSecret(@Nonnull CredentialAlias alias) throws NoSuchElementException;
+	ISecret getSecret(@NonNull CredentialAlias alias) throws NoSuchElementException;
 
 	/**
 	 * return a list of all configured aliases, or null if such a list cannot be provided.

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -101,7 +101,7 @@ public class Trigger implements ITrigger {
 	}
 
 	@Override
-	public void onApplicationEvent(@Nonnull FireMonitorEvent event) {
+	public void onApplicationEvent(@NonNull FireMonitorEvent event) {
 		if(configured && eventCodes.contains(event.getEventCode())) {
 			evaluateEvent(event);
 		}

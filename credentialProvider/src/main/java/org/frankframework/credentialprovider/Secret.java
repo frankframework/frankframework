@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2025 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,13 +15,13 @@
 */
 package org.frankframework.credentialprovider;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 public abstract class Secret implements ISecret {
 
 	private final CredentialAlias alias;
 
-	protected Secret(@Nonnull CredentialAlias alias) {
+	protected Secret(@NonNull CredentialAlias alias) {
 		this.alias = alias;
 	}
 

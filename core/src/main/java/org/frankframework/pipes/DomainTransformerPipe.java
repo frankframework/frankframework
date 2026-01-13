@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018, 2020 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2013, 2018, 2020 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.StringTokenizer;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 
@@ -104,7 +104,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message invoer, PipeLineSession session) throws PipeRunException {
 		StringBuilder builder = new StringBuilder();

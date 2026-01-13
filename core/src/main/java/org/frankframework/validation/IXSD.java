@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.core.IScopeProvider;
 
@@ -36,7 +36,7 @@ public interface IXSD extends Schema, Comparable<IXSD> {
 	List<String> getRootTags();
 	Set<String> getImportedNamespaces();
 
-	@Nonnull
+	@NonNull
 	String asString() throws IOException;
 
 	@Nullable

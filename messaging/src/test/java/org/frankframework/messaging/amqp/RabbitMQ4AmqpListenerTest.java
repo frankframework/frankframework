@@ -1,7 +1,6 @@
 package org.frankframework.messaging.amqp;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.testcontainers.containers.RabbitMQContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
@@ -20,19 +19,19 @@ class RabbitMQ4AmqpListenerTest extends AmqpListenerTest {
 //			.withAdminPassword("admin")
 			;
 
-	@Nonnull
+	@NonNull
 	@Override
 	protected String getResourceName() {
 		return "RabbitMQ";
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	protected Integer getAmqpPort() {
 		return rabbitMQContainer.getAmqpPort();
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	protected String getHost() {
 		return rabbitMQContainer.getHost();

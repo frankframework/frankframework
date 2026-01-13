@@ -23,7 +23,7 @@ import java.io.Reader;
 import java.nio.charset.Charset;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Setter;
 
@@ -46,7 +46,7 @@ public class LargeBlockTesterPipe extends FixedForwardPipe {
 		CONSUME
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Message result;
@@ -60,7 +60,7 @@ public class LargeBlockTesterPipe extends FixedForwardPipe {
 					long bytesLeftToServe = bytesToServe;
 
 					@Override
-					public int read(@Nonnull byte[] buf, int off, int len) throws IOException {
+					public int read(@NonNull byte[] buf, int off, int len) throws IOException {
 						if (bytesLeftToServe <= 0L) {
 							return -1;
 						}
@@ -143,7 +143,7 @@ public class LargeBlockTesterPipe extends FixedForwardPipe {
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	@Nonnull
+	@NonNull
 	private byte[] buildDataBuffer() {
 		final String filler;
 		StringBuilder fillerTmp = new StringBuilder();

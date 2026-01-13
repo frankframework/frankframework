@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.parameters.IParameter;
 import org.frankframework.parameters.ParameterList;
@@ -76,7 +76,7 @@ public interface ISupportsCustomFileAttributes<F> {
 	 * @param pvl {@link ParameterValueList} containing inputs to apply as user-defined file metadata
 	 * @return a Map with the custom file attributes
 	 */
-	default Map<String, String> getCustomFileAttributes(@Nonnull ParameterValueList pvl) {
+	default Map<String, String> getCustomFileAttributes(@NonNull ParameterValueList pvl) {
 		return pvl.stream()
 				.filter(pv -> pv.getName().startsWith(FILE_ATTRIBUTE_PARAM_PREFIX))
 				.collect(Collectors.toMap(parameterValue -> parameterValue.getName().substring(FILE_ATTRIBUTE_PARAM_PREFIX.length()), ParameterValue::asStringValue));
@@ -118,5 +118,5 @@ public interface ISupportsCustomFileAttributes<F> {
 	 * @param name Name of the extended attribute to get. Must not be {@code null}.
 	 * @return Value of the extended attribute or {@code null} if the attribute does not exist.
 	 */
-	@Nullable String getCustomFileAttribute(@Nonnull F file, @Nonnull String name) throws FileSystemException;
+	@Nullable String getCustomFileAttribute(@NonNull F file, @NonNull String name) throws FileSystemException;
 }

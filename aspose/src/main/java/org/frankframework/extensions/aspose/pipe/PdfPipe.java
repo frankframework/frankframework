@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 - 2024 WeAreFrank!
+   Copyright 2019 - 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,10 +21,9 @@ import java.net.URL;
 import java.nio.file.Path;
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.mutable.MutableInt;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 
@@ -131,7 +130,7 @@ public class PdfPipe extends FixedForwardPipe {
 		cisConversionService = new CisConversionServiceImpl(configuration);
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message input, PipeLineSession session) throws PipeRunException {
 		// message should always be available.

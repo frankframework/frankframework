@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2025 WeAreFrank!
+   Copyright 2017-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
 import jakarta.json.Json;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonWriter;
@@ -42,6 +41,7 @@ import org.apache.http.HttpEntity;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.ThreadContext;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpHeaders;
 import org.springframework.util.InvalidMimeTypeException;
 import org.springframework.util.MimeType;
@@ -635,7 +635,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	private Map<String, Object> extractRequestParams(HttpServletRequest request, ApiListener listener) {
 		if (listener.getAllowedParameterSet().isEmpty() && !listener.isAllowAllParams()) {
 			return Map.of();
@@ -688,7 +688,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 		return headersXml.asXmlString();
 	}
 
-	private static @Nonnull MimeType determineContentType(PipeLineSession messageContext, ApiListener listener, Message result) {
+	private static @NonNull MimeType determineContentType(PipeLineSession messageContext, ApiListener listener, Message result) {
 		if(listener.getProduces() == MediaTypes.ANY) {
 			String contentType = messageContext.getString("contentType");
 			if(StringUtils.isNotEmpty(contentType)) {
