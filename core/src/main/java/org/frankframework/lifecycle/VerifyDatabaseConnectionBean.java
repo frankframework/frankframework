@@ -54,22 +54,23 @@ public class VerifyDatabaseConnectionBean implements ApplicationContextAware, In
 
 	private final Logger log = LogUtil.getLogger(this);
 	private final String defaultDatasource = AppConstants.getInstance().getProperty(IDataSourceFactory.DEFAULT_DATASOURCE_NAME_PROPERTY);
-	private final boolean requiresDatabase = AppConstants.getInstance().getBoolean("jdbc.required", true);
+	private boolean requiresDatabase = AppConstants.getInstance().getBoolean("jdbc.required", true);
 	private @Setter ApplicationContext applicationContext;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		if(requiresDatabase) {
-			DataSource dataSource = getDefaultDataSource(); //Defined before getTransactionManager to verify we at least have a 'working' DataSource.
+			// Defined before getTransactionManager to verify we at least have a 'working' DataSource.
+			DataSource dataSource = getDefaultDataSource();
 
-			//Try to create a new transaction to check if there is a connection to the database
+			// Try to create a new transaction to check if there is a connection to the database
 			PlatformTransactionManager transactionManager = getTransactionManager();
 			TransactionStatus status = transactionManager.getTransaction(new DefaultTransactionDefinition());
 
 			// Check if the default datasource supports XA transactions when we use a JTA Transaction Manager
 			checkTxManagerAndDataSource(transactionManager, dataSource);
 
-			//We have a DataSource and a TransactionManager, now lets see if we can use them :)
+			// We have a DataSource and a TransactionManager, now lets see if we can use them :)
 			try (Connection connection = dataSource.getConnection()) {
 				if(!connection.isValid(5)) {
 					throw new CannotGetJdbcConnectionException("Database was unable to validate the connection within 5 seconds");
@@ -118,7 +119,15 @@ public class VerifyDatabaseConnectionBean implements ApplicationContextAware, In
 			log.info("found default datasource [{}]", dataSource);
 			return dataSource;
 		} catch (BeanCreationException | BeanInstantiationException | NoSuchBeanDefinitionException e) {
-			throw new IllegalStateException("no DataSourceFactory found or configured", e);
+			log.fatal("JMS requires a database to be present, else you can influence this by setting property [jdbc.required=false]");
+			throw new IllegalStateException("no DataSource found or configured", e);
 		}
+	}
+
+	/**
+	 * Defaults to property {@code jdbc.required}.
+	 */
+	public void setRequiresDatabase(boolean requiresDatabase) {
+		this.requiresDatabase = requiresDatabase;
 	}
 }

@@ -152,6 +152,11 @@
 			<AppenderRef ref="ladybug"/>
 		</Logger>
 
+		<!-- LOG all ERRORS and FATAL warnings to the application-log appender -->
+		<Logger name="org.frankframework" additivity="true" level="ERROR">
+			<AppenderRef ref="application-log-appender"/>
+		</Logger>
+
 		<!-- This is an example of a custom logger that prints all log messages of the IbisContext class to sysout -->
 		<!-- Logger name="org.frankframework.configuration.IbisContext" level="ERROR" additivity="true">
 			<AppenderRef ref="stdout"/>
