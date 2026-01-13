@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013-2019 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,10 +26,9 @@ import java.util.Set;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.validation.ValidatorHandler;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.xml.sax.ContentHandler;
@@ -137,7 +136,7 @@ public class ConfigurationDigester implements ApplicationContextAware {
 		}
 	}
 
-	public @Nonnull Digester getDigester(Configuration configuration) throws ConfigurationException {
+	public @NonNull Digester getDigester(Configuration configuration) throws ConfigurationException {
 		Digester digester = SpringUtils.createBean(configuration);
 		try {
 

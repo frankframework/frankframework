@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@ package org.frankframework.parameters;
 
 import java.io.IOException;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 
@@ -49,7 +48,7 @@ public class XmlParameter extends AbstractParameter<Node> {
 
 	// This returns a Node (even though the return type may be a DOM Document.)
 	@Override
-	protected Node getValueAsType(@Nonnull Message request, boolean namespaceAware) throws ParameterException {
+	protected Node getValueAsType(@NonNull Message request, boolean namespaceAware) throws ParameterException {
 		boolean isTypeNode = XmlType.NODE.equals(xmlType);
 
 		if (isTypeNode) {

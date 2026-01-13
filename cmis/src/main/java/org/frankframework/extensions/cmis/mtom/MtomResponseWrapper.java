@@ -23,7 +23,6 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
 import jakarta.mail.BodyPart;
 import jakarta.mail.internet.MimeMultipart;
 import jakarta.servlet.ServletOutputStream;
@@ -40,6 +39,7 @@ import org.apache.http.entity.mime.FormBodyPartBuilder;
 import org.apache.http.entity.mime.content.InputStreamBody;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.springframework.mock.web.DelegatingServletOutputStream;
 
 import org.frankframework.http.InputStreamDataSource;
@@ -89,7 +89,7 @@ public class MtomResponseWrapper extends HttpServletResponseWrapper {
 		}
 
 		@Override
-		public void write(@Nonnull byte[] b, int off, int len) {
+		public void write(@NonNull byte[] b, int off, int len) {
 			bufferStream.write(b, off, len);
 		}
 

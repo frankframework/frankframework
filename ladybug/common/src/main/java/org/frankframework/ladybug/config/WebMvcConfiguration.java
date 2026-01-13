@@ -18,8 +18,7 @@ package org.frankframework.ladybug.config;
 import java.util.List;
 import java.util.Optional;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.convert.ApplicationConversionService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -50,7 +49,7 @@ public class WebMvcConfiguration implements WebMvcConfigurer {
 	}
 
 	@Override
-	public void addFormatters(@Nonnull FormatterRegistry registry) {
+	public void addFormatters(@NonNull FormatterRegistry registry) {
 		ApplicationConversionService.configure(registry);
 	}
 

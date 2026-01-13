@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2024 WeAreFrank!
+   Copyright 2017-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,14 +22,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.annotation.Nullable;
-
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.StatusLine;
 import org.apache.http.impl.io.EmptyInputStream;
 import org.apache.http.util.EntityUtils;
+import org.jspecify.annotations.Nullable;
 import org.springframework.util.MimeType;
 
 import org.frankframework.stream.Message;

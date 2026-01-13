@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2016-2019 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -69,8 +69,6 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.xml.soap.MessageFactory;
 import jakarta.xml.soap.SOAPException;
 
@@ -83,6 +81,8 @@ import org.htmlcleaner.CleanerProperties;
 import org.htmlcleaner.HtmlCleaner;
 import org.htmlcleaner.SimpleXmlSerializer;
 import org.htmlcleaner.TagNode;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -472,8 +472,8 @@ public class XmlUtils {
 	 * @param xPathExpression The XPath Expression to evaluate
 	 * @return An XSLT stylesheet generated to evaluate the XPath Expression
 	 */
-	@Nonnull
-	public static String createXPathEvaluatorSource(@Nonnull String xPathExpression) {
+	@NonNull
+	public static String createXPathEvaluatorSource(@NonNull String xPathExpression) {
 		return createXPathEvaluatorSource(null, xPathExpression, TransformerPool.OutputType.TEXT);
 	}
 
@@ -487,8 +487,8 @@ public class XmlUtils {
 	 * @param outputMethod Type of output as per {@link TransformerPool.OutputType}.
 	 * @return An XSLT stylesheet generated to evaluate the XPath Expression
 	 */
-	@Nonnull
-	public static String createXPathEvaluatorSource(@Nullable String namespaceDefs, @Nonnull String xPathExpression, @Nonnull TransformerPool.OutputType outputMethod) {
+	@NonNull
+	public static String createXPathEvaluatorSource(@Nullable String namespaceDefs, @NonNull String xPathExpression, TransformerPool.@NonNull OutputType outputMethod) {
 		return createXPathEvaluatorSource(namespaceDefs, xPathExpression, outputMethod, false, true);
 	}
 
@@ -505,8 +505,8 @@ public class XmlUtils {
 	 * @param stripSpace If true then strip spaces in the output.
 	 * @return An XSLT stylesheet generated to evaluate the XPath Expression
 	 */
-	@Nonnull
-	public static String createXPathEvaluatorSource(@Nullable String namespaceDefs, @Nonnull String xPathExpression, @Nonnull TransformerPool.OutputType outputMethod, boolean includeXmlDeclaration, boolean stripSpace) {
+	@NonNull
+	public static String createXPathEvaluatorSource(@Nullable String namespaceDefs, @NonNull String xPathExpression, TransformerPool.@NonNull OutputType outputMethod, boolean includeXmlDeclaration, boolean stripSpace) {
 		return createXPathEvaluatorSource(namespaceDefs, xPathExpression, outputMethod, includeXmlDeclaration, null, stripSpace, false, null, DEFAULT_XSLT_VERSION);
 	}
 
@@ -526,8 +526,8 @@ public class XmlUtils {
 	 * @param xsltVersion Version of XSLT for which to generate the stylesheet. Can be 0, 1, or 2. If 0, then {@link #DEFAULT_XSLT_VERSION} is used.
 	 * @return An XSLT stylesheet generated to evaluate the XPath Expression
 	 */
-	@Nonnull
-	public static String createXPathEvaluatorSource(@Nullable String namespaceDefs, @Nonnull String xPathExpression, @Nonnull TransformerPool.OutputType outputMethod, boolean includeXmlDeclaration, @Nullable ParameterList params, boolean stripSpace, boolean ignoreNamespaces, String separator, int xsltVersion) {
+	@NonNull
+	public static String createXPathEvaluatorSource(@Nullable String namespaceDefs, @NonNull String xPathExpression, TransformerPool.@NonNull OutputType outputMethod, boolean includeXmlDeclaration, @Nullable ParameterList params, boolean stripSpace, boolean ignoreNamespaces, String separator, int xsltVersion) {
 		String namespaceClause = getNamespaceClause(namespaceDefs);
 
 		final String copyMethod;
@@ -557,8 +557,8 @@ public class XmlUtils {
 	 * @param xsltVersion Version of XSLT for which to generate the stylesheet. Can be 0, 1, or 2. If 0, then {@link #DEFAULT_XSLT_VERSION} is used.
 	 * @return An XSLT stylesheet generated to evaluate the XPath Expression
 	 */
-	@Nonnull
-	public static String createXPathEvaluatorSource(@Nonnull UnaryOperator<String> xpathContainerSupplier, @Nonnull String xPathExpression, @Nonnull TransformerPool.OutputType outputMethod, boolean includeXmlDeclaration, @Nullable ParameterList params, boolean stripSpace, boolean ignoreNamespaces, int xsltVersion) {
+	@NonNull
+	public static String createXPathEvaluatorSource(@NonNull UnaryOperator<String> xpathContainerSupplier, @NonNull String xPathExpression, TransformerPool.@NonNull OutputType outputMethod, boolean includeXmlDeclaration, @Nullable ParameterList params, boolean stripSpace, boolean ignoreNamespaces, int xsltVersion) {
 		if (StringUtils.isEmpty(xPathExpression)) {
 			throw new IllegalArgumentException("XPathExpression must be filled");
 		}
@@ -1433,7 +1433,7 @@ public class XmlUtils {
 				&& Objects.equals(attribute1.getValue(), attribute2.getValue());
 	}
 
-	public static @Nonnull Collection<String> evaluateXPathNodeSet(String input, String xpathExpr) throws XmlException {
+	public static @NonNull Collection<String> evaluateXPathNodeSet(String input, String xpathExpr) throws XmlException {
 		String msg = XmlUtils.removeNamespaces(input);
 
 		try {
@@ -1478,7 +1478,7 @@ public class XmlUtils {
 		}
 	}
 
-	public static @Nonnull Map<String, String> evaluateXPathNodeSet(String input, String xpathExpr, String keyElement, String valueElement) throws XmlException {
+	public static @NonNull Map<String, String> evaluateXPathNodeSet(String input, String xpathExpr, String keyElement, String valueElement) throws XmlException {
 		String msg = XmlUtils.removeNamespaces(input);
 
 		Map<String, String> m = new HashMap<>();
@@ -1503,7 +1503,7 @@ public class XmlUtils {
 		return m;
 	}
 
-	public static @Nonnull Message toXhtml(Message message) throws IOException {
+	public static @NonNull Message toXhtml(Message message) throws IOException {
 		if (!Message.isEmpty(message)) {
 			String messageCharset = message.getCharset();
 			String xhtmlString = message.peek(HTML_MAX_PREAMBLE_SIZE);

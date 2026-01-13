@@ -1,9 +1,10 @@
 package org.frankframework.senders.mail;
 
-import jakarta.annotation.Nonnull;
 import jakarta.mail.Provider;
 import jakarta.mail.Provider.Type;
 import jakarta.mail.Session;
+
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -34,7 +35,7 @@ public class MailSenderTest extends MailSenderTestBase<MailSender> {
 			}
 
 			@Override
-			public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+			public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 				super.sendMessage(message, session);
 				session.put("mailSession", mailSession);
 				String messageID = session.getMessageId();

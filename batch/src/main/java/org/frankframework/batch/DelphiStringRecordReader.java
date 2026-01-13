@@ -20,10 +20,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.util.LogUtil;
@@ -66,7 +65,7 @@ public class DelphiStringRecordReader extends Reader {
 	/*
 	 * Fill buffer if empty, then copy characters as required.
 	 */
-	public int read(@Nonnull char[] cbuf, int off, int len) throws IOException {
+	public int read(@NonNull char[] cbuf, int off, int len) throws IOException {
 		if (buffer==null || bufferPos>=bufferLen) {
 			fillBuffer();
 		}

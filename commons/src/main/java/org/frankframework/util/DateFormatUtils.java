@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,8 +32,8 @@ import java.util.Date;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Utilities for formatting and parsing dates.
@@ -115,7 +115,7 @@ public class DateFormatUtils {
 		return format(TimeProvider.now(), buildFormatter(format));
 	}
 
-	public static String now(@Nonnull DateTimeFormatter formatter) {
+	public static String now(@NonNull DateTimeFormatter formatter) {
 		return format(TimeProvider.now(), formatter);
 	}
 
@@ -128,20 +128,20 @@ public class DateFormatUtils {
 		return format(date, FULL_GENERIC_FORMATTER);
 	}
 
-	public static String format(@Nonnull Instant instant) {
+	public static String format(@NonNull Instant instant) {
 		return format(instant, FULL_GENERIC_FORMATTER);
 	}
 
-	public static String format(long date, @Nonnull DateTimeFormatter formatter) {
+	public static String format(long date, @NonNull DateTimeFormatter formatter) {
 		return format(Instant.ofEpochMilli(date), formatter);
 	}
 
 	@Deprecated
-	public static String format(Date date, @Nonnull DateTimeFormatter formatter) {
+	public static String format(Date date, @NonNull DateTimeFormatter formatter) {
 		return format(date.toInstant(), formatter);
 	}
 
-	public static String format(@Nonnull Instant instant, @Nonnull DateTimeFormatter formatter) {
+	public static String format(@NonNull Instant instant, @NonNull DateTimeFormatter formatter) {
 		return formatter.format(instant);
 	}
 
@@ -152,7 +152,7 @@ public class DateFormatUtils {
 		return GENERIC_DATETIME_FORMATTER.format(TimeProvider.now());
 	}
 
-	public static Instant parseToInstant(String dateString, @Nonnull DateTimeFormatter parser) throws DateTimeParseException {
+	public static Instant parseToInstant(String dateString, @NonNull DateTimeFormatter parser) throws DateTimeParseException {
 		TemporalAccessor temporalAccessor = parser.parse(dateString);
 		if (temporalAccessor.isSupported(ChronoField.INSTANT_SECONDS)) {
 			return Instant.from(temporalAccessor);
@@ -170,7 +170,7 @@ public class DateFormatUtils {
 		return parser.parse(dateString, TemporalQueries.localDate());
 	}
 
-	public static LocalDate parseToLocalDate(String dateString, @Nonnull DateTimeFormatter parser) throws DateTimeParseException {
+	public static LocalDate parseToLocalDate(String dateString, @NonNull DateTimeFormatter parser) throws DateTimeParseException {
 		return parser.parse(dateString, TemporalQueries.localDate());
 	}
 
@@ -178,13 +178,13 @@ public class DateFormatUtils {
 	 * Parses a string to a Date using CalendarParser
 	 */
 	@Deprecated
-	@Nonnull
-	public static Date parseAnyDate(@Nonnull String dateInAnyFormat) throws DateTimeParseException, IllegalArgumentException {
+	@NonNull
+	public static Date parseAnyDate(@NonNull String dateInAnyFormat) throws DateTimeParseException, IllegalArgumentException {
 		return Date.from(parseGenericDate(dateInAnyFormat));
 	}
 
-	@Nonnull
-	public static Instant parseGenericDate(@Nonnull String dateString) throws DateTimeParseException, IllegalArgumentException {
+	@NonNull
+	public static Instant parseGenericDate(@NonNull String dateString) throws DateTimeParseException, IllegalArgumentException {
 		// Date parsing based on: https://stackoverflow.com/a/3390252/3588231
 		// An alternative would have been this library: https://github.com/sisyphsu/dateparser
 		// But I prefer the clarity of having more direct control and using standard Java APIs.

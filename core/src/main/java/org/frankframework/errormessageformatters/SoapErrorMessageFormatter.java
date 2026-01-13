@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
 */
 package org.frankframework.errormessageformatters;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -38,7 +38,7 @@ import org.frankframework.stream.Message;
 public class SoapErrorMessageFormatter extends ErrorMessageFormatter {
 
 	@Override
-	public @Nonnull Message format(@Nullable String errorMessage, @Nullable Throwable t, @Nullable HasName location, @Nullable Message originalMessage, @Nonnull PipeLineSession session) {
+	public @NonNull Message format(@Nullable String errorMessage, @Nullable Throwable t, @Nullable HasName location, @Nullable Message originalMessage, @NonNull PipeLineSession session) {
 
 		try {
 			return SoapWrapper.getInstance().createSoapFaultMessage(getErrorMessage(errorMessage, t));
@@ -50,7 +50,7 @@ public class SoapErrorMessageFormatter extends ErrorMessageFormatter {
 
 	@Override
 	@Protected
-	public void setMessageFormat(@Nonnull DocumentFormat messageFormat) {
+	public void setMessageFormat(@NonNull DocumentFormat messageFormat) {
 		throw new UnsupportedOperationException("Not supported for this type");
 	}
 }

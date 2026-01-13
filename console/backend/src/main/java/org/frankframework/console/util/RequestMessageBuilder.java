@@ -1,5 +1,5 @@
 /*
-   Copyright 2024-2025 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,12 +21,11 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
@@ -42,19 +41,19 @@ import org.frankframework.util.JacksonUtils;
 public class RequestMessageBuilder {
 	private final Map<String, Object> customHeaders = new HashMap<>();
 
-	private final @Getter @Nonnull BusTopic topic;
-	private final @Getter @Nonnull BusAction action;
+	private final @Getter @NonNull BusTopic topic;
+	private final @Getter @NonNull BusAction action;
 
 	private static final String DEFAULT_PAYLOAD = "NONE";
 	private Object payload = DEFAULT_PAYLOAD;
 
 	private static final Logger SEC_LOG = LogManager.getLogger("SEC");
 
-	public RequestMessageBuilder(@Nonnull BusTopic topic) {
+	public RequestMessageBuilder(@NonNull BusTopic topic) {
 		this(topic, BusAction.GET);
 	}
 
-	public RequestMessageBuilder(@Nonnull BusTopic topic, @Nonnull BusAction action) {
+	public RequestMessageBuilder(@NonNull BusTopic topic, @NonNull BusAction action) {
 		this.topic = topic;
 		this.action = action;
 	}
@@ -95,11 +94,11 @@ public class RequestMessageBuilder {
 		return this;
 	}
 
-	public static RequestMessageBuilder create(@Nonnull BusTopic topic) {
+	public static RequestMessageBuilder create(@NonNull BusTopic topic) {
 		return new RequestMessageBuilder(topic);
 	}
 
-	public static RequestMessageBuilder create(@Nonnull BusTopic topic, @Nonnull BusAction action) {
+	public static RequestMessageBuilder create(@NonNull BusTopic topic, @NonNull BusAction action) {
 		return new RequestMessageBuilder(topic, action);
 	}
 

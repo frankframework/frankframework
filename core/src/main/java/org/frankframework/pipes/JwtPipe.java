@@ -1,5 +1,5 @@
 /*
-   Copyright 2023-2024 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,9 +21,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.JOSEObjectType;
@@ -100,7 +99,7 @@ public class JwtPipe extends FixedForwardPipe {
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Builder claimsSetBuilder = new JWTClaimsSet.Builder();
@@ -138,7 +137,7 @@ public class JwtPipe extends FixedForwardPipe {
 		return globalSigner;
 	}
 
-	private @Nonnull Map<String, Object> getSanitizedParameterValueMap(Message message, PipeLineSession session) throws PipeRunException {
+	private @NonNull Map<String, Object> getSanitizedParameterValueMap(Message message, PipeLineSession session) throws PipeRunException {
 		ParameterList parameterList = getParameterList();
 		ParameterValueList pvl;
 		try {
@@ -161,7 +160,7 @@ public class JwtPipe extends FixedForwardPipe {
 		return sanitized;
 	}
 
-	private @Nonnull String createAndSignJwtToken(@Nonnull JWSSigner signer, @Nonnull JWTClaimsSet claims) throws PipeRunException {
+	private @NonNull String createAndSignJwtToken(@NonNull JWSSigner signer, @NonNull JWTClaimsSet claims) throws PipeRunException {
 		SignedJWT signedJWT = new SignedJWT(jwtHeader, claims);
 
 		try {

@@ -37,15 +37,14 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.pool2.BasePooledObjectFactory;
 import org.apache.commons.pool2.ObjectPool;
 import org.apache.commons.pool2.PooledObject;
 import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.apache.commons.pool2.impl.SoftReferenceObjectPool;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
@@ -101,7 +100,7 @@ public class TransformerPool {
 		}
 	}
 
-	private TransformerPool(@Nonnull Source source, @Nullable String sysId, int xsltVersion, @Nonnull Source configSource, @Nullable IScopeProvider scopeProvider) throws TransformerConfigurationException {
+	private TransformerPool(@NonNull Source source, @Nullable String sysId, int xsltVersion, @NonNull Source configSource, @Nullable IScopeProvider scopeProvider) throws TransformerConfigurationException {
 		super();
 		this.configSource = configSource;
 		try {
@@ -135,11 +134,11 @@ public class TransformerPool {
 		releaseTransformer(t);
 	}
 
-	private TransformerPool(@Nonnull Resource resource, int xsltVersion) throws TransformerConfigurationException, IOException, SAXException {
+	private TransformerPool(@NonNull Resource resource, int xsltVersion) throws TransformerConfigurationException, IOException, SAXException {
 		this(resource.asSource(),resource.getSystemId(),xsltVersion,resource.asSource(), resource);
 	}
 
-	private TransformerPool(@Nonnull String xsltString, @Nullable String sysId, int xsltVersion, @Nullable IScopeProvider scopeProvider) throws TransformerConfigurationException {
+	private TransformerPool(@NonNull String xsltString, @Nullable String sysId, int xsltVersion, @Nullable IScopeProvider scopeProvider) throws TransformerConfigurationException {
 		this(new StreamSource(new StringReader(xsltString)), sysId, xsltVersion,new StreamSource(new StringReader(xsltString)), scopeProvider);
 	}
 
@@ -154,7 +153,7 @@ public class TransformerPool {
 	 * @return A TransformerPool instance for the input stylesheet.
 	 * @throws TransformerConfigurationException
 	 */
-	public static TransformerPool getInstance(@Nonnull String xsltString, int xsltVersion, @Nullable IScopeProvider scopeProvider) throws TransformerConfigurationException {
+	public static TransformerPool getInstance(@NonNull String xsltString, int xsltVersion, @Nullable IScopeProvider scopeProvider) throws TransformerConfigurationException {
 		return new TransformerPool(xsltString, null, xsltVersion, scopeProvider);
 	}
 
@@ -163,7 +162,7 @@ public class TransformerPool {
 	 * Utility pools should never use configuration classloaders, instead always read from the classpath!
 	 * Utility pools should always be cached statically for re-use. The caller-code is responsible for this.
 	 */
-	public static TransformerPool getUtilityInstance(@Nonnull String xsltString, int xsltVersion) throws TransformerConfigurationException {
+	public static TransformerPool getUtilityInstance(@NonNull String xsltString, int xsltVersion) throws TransformerConfigurationException {
 		return new TransformerPool(xsltString, null, xsltVersion, null) {
 			@Override
 			public void close() {
@@ -181,7 +180,7 @@ public class TransformerPool {
 	 * @throws TransformerConfigurationException Thrown if there was an exception creating the TransformerPool or parsing the XSLT stylesheet
 	 * @throws IOException Thrown if the resource cannot be loaded
 	 */
-	public static TransformerPool getInstance(@Nonnull Resource resource) throws TransformerConfigurationException, IOException {
+	public static TransformerPool getInstance(@NonNull Resource resource) throws TransformerConfigurationException, IOException {
 		return getInstance(resource, 0);
 	}
 
@@ -197,7 +196,7 @@ public class TransformerPool {
 	 * @throws TransformerConfigurationException Thrown if there was an exception creating the TransformerPool or parsing the XSLT stylesheet
 	 * @throws IOException Thrown if the resource cannot be loaded
 	 */
-	public static TransformerPool getInstance(@Nonnull Resource resource, int xsltVersion) throws TransformerConfigurationException, IOException {
+	public static TransformerPool getInstance(@NonNull Resource resource, int xsltVersion) throws TransformerConfigurationException, IOException {
 		try {
 			return new TransformerPool(resource, xsltVersion);
 		} catch (SAXException e) {
@@ -205,7 +204,7 @@ public class TransformerPool {
 		}
 	}
 
-	private void initTransformerPool(@Nonnull Source source, @Nullable String sysId) throws TransformerConfigurationException {
+	private void initTransformerPool(@NonNull Source source, @Nullable String sysId) throws TransformerConfigurationException {
 		if (StringUtils.isNotEmpty(sysId)) {
 			source.setSystemId(sysId);
 			log.debug("setting systemId to [{}]", sysId);
@@ -233,20 +232,20 @@ public class TransformerPool {
 	}
 
 	@Nullable
-	public static TransformerPool configureTransformer(@Nullable FrankElement scopeProvider, @Nullable String namespaceDefs, @Nullable String xPathExpression, @Nullable String styleSheetName, @Nonnull OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params, boolean mandatory) throws ConfigurationException {
+	public static TransformerPool configureTransformer(@Nullable FrankElement scopeProvider, @Nullable String namespaceDefs, @Nullable String xPathExpression, @Nullable String styleSheetName, @NonNull OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params, boolean mandatory) throws ConfigurationException {
 		if (mandatory || StringUtils.isNotEmpty(xPathExpression) || StringUtils.isNotEmpty(styleSheetName)) {
 			return configureTransformer(scopeProvider,namespaceDefs,xPathExpression,styleSheetName,outputType, includeXmlDeclaration, params);
 		}
 		return null;
 	}
 
-	@Nonnull
+	@NonNull
 	public static TransformerPool configureTransformer(@Nullable FrankElement scopeProvider, @Nullable String namespaceDefs, @Nullable String xPathExpression, @Nullable String styleSheetName, @Nullable OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params) throws ConfigurationException {
 		return configureTransformer0(scopeProvider,namespaceDefs,xPathExpression,styleSheetName,outputType,includeXmlDeclaration,params,0);
 	}
 
-	@Nonnull
-	public static TransformerPool configureTransformer0(@Nullable FrankElement scopeProvider, @Nullable String namespaceDefs, @Nullable String xPathExpression, @Nullable String styleSheetName, @Nonnull OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params, int xsltVersion) throws ConfigurationException {
+	@NonNull
+	public static TransformerPool configureTransformer0(@Nullable FrankElement scopeProvider, @Nullable String namespaceDefs, @Nullable String xPathExpression, @Nullable String styleSheetName, @NonNull OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params, int xsltVersion) throws ConfigurationException {
 		if (StringUtils.isNotEmpty(xPathExpression)) {
 			if (StringUtils.isNotEmpty(styleSheetName)) {
 				throw new ConfigurationException("cannot have both an xpathExpression and a styleSheetName specified");
@@ -266,7 +265,7 @@ public class TransformerPool {
 		throw new ConfigurationException("either xpathExpression or styleSheetName must be specified");
 	}
 
-	@Nonnull
+	@NonNull
 	public static TransformerPool configureStyleSheetTransformer(@Nullable FrankElement scopeProvider, @Nullable String styleSheetName, int xsltVersion) throws ConfigurationException {
 		if (StringUtils.isEmpty(styleSheetName)) {
 			throw new ConfigurationException("either xpathExpression or styleSheetName must be specified");
@@ -299,23 +298,23 @@ public class TransformerPool {
 		return result;
 	}
 
-	@Nonnull
-	public static TransformerPool getXPathTransformerPool(@Nonnull String xpathExpression, int xsltVersion) throws TransformerConfigurationException {
+	@NonNull
+	public static TransformerPool getXPathTransformerPool(@NonNull String xpathExpression, int xsltVersion) throws TransformerConfigurationException {
 		return getXPathTransformerPool(null, xpathExpression, OutputType.TEXT, false, null, xsltVersion);
 	}
 
-	@Nonnull
-	public static TransformerPool getXPathTransformerPool(@Nullable String namespaceDefs, @Nonnull String xpathExpression, @Nonnull OutputType outputMethod) throws TransformerConfigurationException {
+	@NonNull
+	public static TransformerPool getXPathTransformerPool(@Nullable String namespaceDefs, @NonNull String xpathExpression, @NonNull OutputType outputMethod) throws TransformerConfigurationException {
 		return getXPathTransformerPool(namespaceDefs, xpathExpression, outputMethod, false, null, XmlUtils.DEFAULT_XSLT_VERSION);
 	}
 
-	@Nonnull
-	public static TransformerPool getXPathTransformerPool(@Nullable String namespaceDefs, @Nonnull String xPathExpression, @Nonnull OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params) throws TransformerConfigurationException {
+	@NonNull
+	public static TransformerPool getXPathTransformerPool(@Nullable String namespaceDefs, @NonNull String xPathExpression, @NonNull OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params) throws TransformerConfigurationException {
 		return getXPathTransformerPool(namespaceDefs, xPathExpression, outputType, includeXmlDeclaration, params, XmlUtils.DEFAULT_XSLT_VERSION);
 	}
 
-	@Nonnull
-	public static TransformerPool getXPathTransformerPool(@Nullable String namespaceDefs, @Nonnull String xPathExpression, @Nonnull OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params, int xsltVersion) throws TransformerConfigurationException {
+	@NonNull
+	public static TransformerPool getXPathTransformerPool(@Nullable String namespaceDefs, @NonNull String xPathExpression, @NonNull OutputType outputType, boolean includeXmlDeclaration, @Nullable ParameterList params, int xsltVersion) throws TransformerConfigurationException {
 		String xslt = XmlUtils.createXPathEvaluatorSource(namespaceDefs,xPathExpression, outputType, includeXmlDeclaration, params, true, StringUtils.isEmpty(namespaceDefs), null, xsltVersion);
 		log.debug("xpath [{}] resulted in xslt [{}]", xPathExpression, xslt);
 
@@ -357,7 +356,7 @@ public class TransformerPool {
 		tFactory.setURIResolver(null);
 	}
 
-	protected @Nonnull Transformer getTransformer() throws TransformerConfigurationException {
+	protected @NonNull Transformer getTransformer() throws TransformerConfigurationException {
 		if(pool == null) {
 			throw new IllegalStateException("TransformerPool does not exist, did you forget to call open()?");
 		}
@@ -440,22 +439,22 @@ public class TransformerPool {
 		return out.toString();
 	}
 
-	public String transformToString(@Nonnull Message input) throws TransformerException, IOException, SAXException {
+	public String transformToString(@NonNull Message input) throws TransformerException, IOException, SAXException {
 		return transformToString(input.asSource(), null);
 	}
 
-	public @Nonnull Message transform(@Nonnull Message message) throws IOException, TransformerException, SAXException {
+	public @NonNull Message transform(@NonNull Message message) throws IOException, TransformerException, SAXException {
 		return transform(message, (Map<String, Object>) null);
 	}
 
-	public @Nonnull Message transform(@Nonnull Message message, @Nullable ParameterValueList pvl) throws IOException, TransformerException, SAXException {
+	public @NonNull Message transform(@NonNull Message message, @Nullable ParameterValueList pvl) throws IOException, TransformerException, SAXException {
 		return transform(message, pvl != null ? pvl.getValueMap() : null);
 	}
 
 	/**
 	 * Transforms Frank messages.
 	 */
-	public @Nonnull Message transform(@Nonnull Message m, @Nullable Map<String, Object> parameterMap) throws IOException, TransformerException, SAXException {
+	public @NonNull Message transform(@NonNull Message m, @Nullable Map<String, Object> parameterMap) throws IOException, TransformerException, SAXException {
 		if (m.isEmpty()) {
 			return Message.nullMessage();
 		}
@@ -494,7 +493,7 @@ public class TransformerPool {
 	/*
 	 * Should ideally only be used internally, however there is one use outside this class.
 	 */
-	public void transform(@Nonnull Source s, @Nonnull Result r, Map<String,Object> parameters) throws TransformerException, IOException {
+	public void transform(@NonNull Source s, @NonNull Result r, Map<String,Object> parameters) throws TransformerException, IOException {
 		Exception exceptionToThrow;
 		Transformer transformer = getTransformer();
 		try {
@@ -540,15 +539,15 @@ public class TransformerPool {
 		return handler;
 	}
 
-	public TransformerFilter getTransformerFilter(@Nonnull ContentHandler handler) throws TransformerConfigurationException {
+	public TransformerFilter getTransformerFilter(@NonNull ContentHandler handler) throws TransformerConfigurationException {
 		return getTransformerFilter(handler, false, false);
 	}
 
-	public TransformerFilter getTransformerFilter(@Nonnull ContentHandler handler, boolean removeNamespacesFromInput, boolean handleLexicalEvents) throws TransformerConfigurationException {
+	public TransformerFilter getTransformerFilter(@NonNull ContentHandler handler, boolean removeNamespacesFromInput, boolean handleLexicalEvents) throws TransformerConfigurationException {
 		return new TransformerFilter(getTransformerHandler(), handler, removeNamespacesFromInput, handleLexicalEvents);
 	}
 
-	public TransformerFilter getTransformerFilter(@Nonnull ThreadConnector<?> threadConnector, @Nonnull ContentHandler handler) throws TransformerConfigurationException {
+	public TransformerFilter getTransformerFilter(@NonNull ThreadConnector<?> threadConnector, @NonNull ContentHandler handler) throws TransformerConfigurationException {
 		return new TransformerFilter(getTransformerHandler(), new ThreadConnectingFilter(threadConnector, handler), false, false);
 	}
 
@@ -566,7 +565,7 @@ public class TransformerPool {
 	}
 
 	// protected because of tests, not even package private methods should access this...
-	protected @Nonnull Map<String, String> getConfigMap() throws TransformerException, IOException {
+	protected @NonNull Map<String, String> getConfigMap() throws TransformerException, IOException {
 		// Due to lazy-loading of the config-map this can happen in multiple threads simultaneously. Hence we synchronize here, the config-source seems a logical choice that doesn't lock too much.
 		synchronized (configSource) {
 			if (configMap == null) {

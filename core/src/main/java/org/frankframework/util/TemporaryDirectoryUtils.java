@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,9 +21,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -40,7 +39,7 @@ public class TemporaryDirectoryUtils {
 	 * If the ${ibis.tmpdir} is relative it will turn it into an absolute path.
 	 * @return The absolute path of ${ibis.tmpdir} or IllegalStateException if it cannot be resolved.
 	 */
-	private static @Nonnull String computeTempDirectory() {
+	private static @NonNull String computeTempDirectory() {
 		String directory = AppConstants.getInstance().getProperty("ibis.tmpdir");
 
 		if (StringUtils.isNotEmpty(directory)) {
@@ -72,7 +71,7 @@ public class TemporaryDirectoryUtils {
 	 * If the ${ibis.tmpdir} is relative it will turn it into an absolute path.
 	 * @return The absolute path of ${ibis.tmpdir} or IllegalStateException if it cannot be resolved.
 	 */
-	public static @Nonnull Path getTempDirectory() {
+	public static @NonNull Path getTempDirectory() {
 		return FRANK_TEMP_DIR;
 	}
 

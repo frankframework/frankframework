@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,8 +25,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.collections4.map.CompositeMap;
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlContext;
@@ -36,6 +34,7 @@ import org.apache.commons.jexl3.JexlScript;
 import org.apache.commons.jexl3.introspection.JexlPermissions;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -149,7 +148,7 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 	}
 
 	@Override
-	public Optional<String> resolve(String key, Map<?, ?> props1, Map<?, ?> props2, Set<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) {
+	public Optional<String> resolve(String key, Map<?, ?> props1, @Nullable Map<?, ?> props2, @Nullable Set<String> propsToHide, @Nullable String delimStart, @Nullable String delimStop, boolean resolveWithPropertyName) {
 		// Don't retry keys which already gave an exception once
 		if (invalidExpressions.contains(key) || !key.startsWith(EXPRESSION_START_TOKEN)) {
 			return Optional.empty();
@@ -182,8 +181,7 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 		}
 	}
 
-	@Nonnull
-	private static JexlContext createScriptContext(Map<String, Object> props1, Map<String, Object> props2) {
+	private static JexlContext createScriptContext(Map<String, Object> props1, @Nullable Map<String, Object> props2) {
 		// Create basic context
 		CompositeMap<String, Object> contextMap = createContextMap(props1, props2);
 		JexlContext context = new FrankScriptContext(contextMap);
@@ -199,23 +197,23 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 		return context;
 	}
 
-	private static void addClasses(@Nonnull JexlContext context, Class<?>... classes) {
+	private static void addClasses(JexlContext context, Class<?>... classes) {
 		for (Class<?> clazz : classes) {
 			addClass(context, clazz);
 		}
 	}
 
-	private static void tryAddClassesDynamically(@Nonnull JexlContext context, @Nonnull String... classNames) {
+	private static void tryAddClassesDynamically(JexlContext context, String... classNames) {
 		for (String className : classNames) {
 			tryAddClassDynamically(context, className);
 		}
 	}
 
-	private static void addClass(@Nonnull JexlContext context, @Nonnull Class<?> clazz) {
+	private static void addClass(JexlContext context, Class<?> clazz) {
 		context.set(clazz.getSimpleName(), clazz);
 	}
 
-	private static void tryAddClassDynamically(@Nonnull JexlContext context, @Nonnull String className) {
+	private static void tryAddClassDynamically(JexlContext context, String className) {
 		try {
 			Class<?> cls = EmbeddedScriptEvaluation.class.getClassLoader().loadClass(className);
 			context.set(cls.getSimpleName(), cls);
@@ -225,8 +223,7 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 	}
 
 	@SuppressWarnings("unchecked")
-	@Nonnull
-	private static CompositeMap<String, Object> createContextMap(Map<String, Object> props1, Map<String, Object> props2) {
+	private static CompositeMap<String, Object> createContextMap(Map<String, Object> props1, @Nullable Map<String, Object> props2) {
 		Map<String, Object> contextCustomValues = new HashMap<>();
 		CompositeMap.MapMutator<String, Object> mutator = new BackingMapMutator(contextCustomValues);
 
@@ -245,7 +242,7 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 
 		private final transient Map<String, Object> contextCustomValues;
 
-		public BackingMapMutator(@Nonnull Map<String, Object> contextCustomValues) {
+		public BackingMapMutator(Map<String, Object> contextCustomValues) {
 			this.contextCustomValues = contextCustomValues;
 		}
 

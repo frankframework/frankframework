@@ -41,14 +41,13 @@ import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
 import org.custommonkey.xmlunit.Diff;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.InputSource;
 
 import com.google.common.collect.Streams;
@@ -246,7 +245,7 @@ public abstract class AbstractXSD implements IXSD {
 	}
 
 	@Override
-	public int compareTo(@Nonnull IXSD other) { // CompareTo is required for WSDL generation
+	public int compareTo(@NonNull IXSD other) { // CompareTo is required for WSDL generation
 		if (this == other) return 0;
 		if (namespace != null && other.getNamespace() != null) {
 			int c = namespace.compareTo(other.getNamespace());
@@ -260,7 +259,7 @@ public abstract class AbstractXSD implements IXSD {
 	}
 
 	@Override
-	public int compareToByContents(@Nonnull IXSD other) {
+	public int compareToByContents(@NonNull IXSD other) {
 		Integer cachedResult = compareByContentsCache.get(System.identityHashCode(other));
 		if (cachedResult != null) {
 			return cachedResult;
@@ -282,7 +281,7 @@ public abstract class AbstractXSD implements IXSD {
 	}
 
 	@Override
-	public @Nonnull String asString() throws IOException {
+	public @NonNull String asString() throws IOException {
 		return StreamUtil.readerToString(getReader(), "\n", false);
 	}
 

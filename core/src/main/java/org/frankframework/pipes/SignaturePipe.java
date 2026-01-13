@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022, 2025 WeAreFrank!
+   Copyright 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,10 +25,9 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.security.SignatureException;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 
@@ -133,7 +132,7 @@ public class SignaturePipe extends FixedForwardPipe implements HasKeystore {
 	}
 
 
-	@Nonnull
+	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {

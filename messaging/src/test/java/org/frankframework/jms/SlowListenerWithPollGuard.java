@@ -7,9 +7,9 @@ import java.util.Map;
 import java.util.Timer;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import jakarta.annotation.Nonnull;
 import jakarta.jms.Message;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 import org.springframework.jms.listener.DefaultMessageListenerContainer;
 
@@ -132,7 +132,7 @@ public class SlowListenerWithPollGuard implements IPushingListener<Message>, IPo
 	}
 
 	@Override
-	public org.frankframework.stream.Message extractMessage(@Nonnull RawMessageWrapper<Message> rawMessage, @Nonnull Map<String, Object> context) {
+	public org.frankframework.stream.Message extractMessage(@NonNull RawMessageWrapper<Message> rawMessage, @NonNull Map<String, Object> context) {
 		return org.frankframework.stream.Message.asMessage(rawMessage.getRawMessage());
 	}
 }

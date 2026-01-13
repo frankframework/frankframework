@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2024-2025 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import jakarta.annotation.Nonnull;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonObject;
@@ -37,6 +36,7 @@ import org.bson.codecs.Encoder;
 import org.bson.codecs.EncoderContext;
 import org.bson.json.JsonMode;
 import org.bson.json.JsonWriterSettings;
+import org.jspecify.annotations.NonNull;
 import org.xml.sax.SAXException;
 
 import com.mongodb.client.FindIterable;
@@ -157,7 +157,7 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 		super.start();
 	}
 
-	@Nonnull
+	@NonNull
 	private MongoClientFactory getClientFactory() {
 		if (clientFactory == null) {
 			clientFactory = mongoClientFactoryFactory.getMongoClientFactory(getDatasourceName());
@@ -179,8 +179,8 @@ public class MongoDbSender extends AbstractSenderWithParameters implements HasPh
 	}
 
 	@Override
-	@Nonnull
-	public SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+	@NonNull
+	public SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 		MongoAction mongoAction = getAction();
 		try {
 			MessageBuilder messageBuilder = new MessageBuilder();

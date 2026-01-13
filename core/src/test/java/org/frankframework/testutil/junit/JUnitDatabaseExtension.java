@@ -6,8 +6,7 @@ import static org.junit.platform.commons.util.AnnotationUtils.isAnnotated;
 import java.lang.reflect.Method;
 import java.util.stream.Stream;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.api.extension.ExtensionContext.Namespace;
 import org.junit.jupiter.api.extension.TestTemplateInvocationContext;
@@ -43,9 +42,9 @@ public class JUnitDatabaseExtension implements TestTemplateInvocationContextProv
 		return true;
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
-	public Stream<TestTemplateInvocationContext> provideTestTemplateInvocationContexts(@Nonnull ExtensionContext context) {
+	public Stream<TestTemplateInvocationContext> provideTestTemplateInvocationContexts(@NonNull ExtensionContext context) {
 		Method templateMethod = context.getRequiredTestMethod();
 
 		return findRepeatableAnnotations(templateMethod, ArgumentsSource.class)
@@ -58,7 +57,7 @@ public class JUnitDatabaseExtension implements TestTemplateInvocationContextProv
 				.map(arguments -> new DatabaseTestInvocationContext(templateMethod, arguments));
 	}
 
-	protected static Stream<? extends Arguments> arguments(@Nonnull ArgumentsProvider provider, ExtensionContext context) {
+	protected static Stream<? extends Arguments> arguments(@NonNull ArgumentsProvider provider, ExtensionContext context) {
 		try {
 			return provider.provideArguments(context);
 		} catch (Exception e) {

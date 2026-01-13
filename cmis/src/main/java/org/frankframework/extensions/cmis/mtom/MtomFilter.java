@@ -18,7 +18,6 @@ package org.frankframework.extensions.cmis.mtom;
 import java.io.IOException;
 import java.util.EnumSet;
 
-import jakarta.annotation.Nonnull;
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -29,6 +28,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletRequest;
 import jakarta.servlet.ServletResponse;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.web.context.ServletContextAware;
@@ -64,7 +64,7 @@ public class MtomFilter implements Filter, InitializingBean, ServletContextAware
 	}
 
 	@Override
-	public void setServletContext(@Nonnull ServletContext servletContext) {
+	public void setServletContext(@NonNull ServletContext servletContext) {
 		this.servletContext = servletContext;
 	}
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@ package org.frankframework.messaging.amqp;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -37,11 +36,11 @@ public class AmqpListenerContainerManager implements ApplicationContextAware {
 
 	private final Map<String, AmqpListenerContainer> listenerContainers = new ConcurrentHashMap<>();
 
-	public void openListener(@Nonnull AmqpListener amqpListener) {
+	public void openListener(@NonNull AmqpListener amqpListener) {
 		getListenerContainer(amqpListener).openListener(amqpListener);
 	}
 
-	public void closeListener(@Nonnull AmqpListener amqpListener) {
+	public void closeListener(@NonNull AmqpListener amqpListener) {
 		synchronized (listenerContainers) {
 			if (!listenerContainers.containsKey(amqpListener.getConnectionName())) {
 				return;
@@ -53,7 +52,7 @@ public class AmqpListenerContainerManager implements ApplicationContextAware {
 		}
 	}
 
-	private @Nonnull AmqpListenerContainer getListenerContainer(@Nonnull AmqpListener listener) {
+	private @NonNull AmqpListenerContainer getListenerContainer(@NonNull AmqpListener listener) {
 		String connectionName = listener.getConnectionName();
 		return listenerContainers.computeIfAbsent(connectionName, key -> {
 			AmqpListenerContainer listenerContainer = SpringUtils.createBean(applicationContext);

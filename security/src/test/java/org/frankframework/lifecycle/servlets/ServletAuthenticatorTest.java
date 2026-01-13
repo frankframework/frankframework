@@ -7,8 +7,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -52,12 +51,12 @@ abstract class ServletAuthenticatorTest<T extends AbstractServletAuthenticator> 
 
 	private static class AllAuthenticatedProvider implements AuthenticationProvider {
 		@Override
-		public Authentication authenticate(@Nonnull Authentication authentication) throws AuthenticationException {
+		public Authentication authenticate(@NonNull Authentication authentication) throws AuthenticationException {
 			return authentication;
 		}
 
 		@Override
-		public boolean supports(@Nonnull Class<?> authentication) {
+		public boolean supports(@NonNull Class<?> authentication) {
 			return true;
 		}
 	}

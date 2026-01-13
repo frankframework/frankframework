@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2018 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013-2018 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -39,10 +39,9 @@ import java.util.Set;
 import java.util.zip.DeflaterOutputStream;
 import java.util.zip.ZipException;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 
@@ -522,7 +521,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	protected String storeMessageInDatabase(Connection conn, String messageId, String correlationId, Timestamp receivedDateTime, String comments, String label, S message) throws IOException, SQLException, JdbcException, SenderException {
 		IDbmsSupport dbmsSupport = getDbmsSupport();
 		if (isOnlyStoreWhenMessageIdUnique()) {
@@ -645,7 +644,7 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	}
 
 	@Override
-	@Nonnull
+	@NonNull
 	public String storeMessage(String messageId, String correlationId, Date receivedDate, String comments, String label, S message) throws SenderException {
 		if (messageId == null) {
 			throw new SenderException("messageId cannot be null");
@@ -684,8 +683,8 @@ public class JdbcTransactionalStorage<S extends Serializable> extends JdbcTableM
 	 * @return the value of the primary key for the inserted record
 	 * @throws SenderException if there is an error storing the message
 	 */
-	@Nonnull
-	public String storeMessage(@Nonnull Connection conn, @Nonnull String messageId, @Nonnull String correlationId, @Nonnull Date receivedDate, @Nullable String comments, @Nullable String label, @Nonnull S message) throws SenderException {
+	@NonNull
+	public String storeMessage(@NonNull Connection conn, @NonNull String messageId, @NonNull String correlationId, @NonNull Date receivedDate, @Nullable String comments, @Nullable String label, @NonNull S message) throws SenderException {
 		try {
 			final Timestamp receivedDateTime = new Timestamp(receivedDate.getTime());
 			final String storedMessageId = StringUtils.truncate(messageId, MAXIDLEN);

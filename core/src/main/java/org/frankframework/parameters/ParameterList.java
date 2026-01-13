@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021-2025 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,10 +25,9 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -157,14 +156,14 @@ public class ParameterList implements Iterable<IParameter> {
 		return false;
 	}
 
-	public @Nonnull ParameterValueList getValues(Message message, PipeLineSession session) throws ParameterException {
+	public @NonNull ParameterValueList getValues(Message message, PipeLineSession session) throws ParameterException {
 		return getValues(message, session, true);
 	}
 
 	/**
 	 * Returns a List of <link>ParameterValue<link> objects
 	 */
-	public @Nonnull ParameterValueList getValues(Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
+	public @NonNull ParameterValueList getValues(Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		ParameterValueList result = new ParameterValueList();
 		if (parameters == null) {
 			return result;
@@ -204,7 +203,7 @@ public class ParameterList implements Iterable<IParameter> {
 		}
 	}
 
-	private ParameterValue getValue(ParameterValueList alreadyResolvedParameters, @Nonnull IParameter p, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
+	private ParameterValue getValue(ParameterValueList alreadyResolvedParameters, @NonNull IParameter p, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		return new ParameterValue(p, p.getValue(alreadyResolvedParameters, message, session, namespaceAware));
 	}
 
@@ -227,7 +226,7 @@ public class ParameterList implements Iterable<IParameter> {
 		return parameters.isEmpty();
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public Iterator<IParameter> iterator() {
 		if (parameters == null) {
@@ -249,7 +248,7 @@ public class ParameterList implements Iterable<IParameter> {
 		return Iterable.super.spliterator();
 	}
 
-	public @Nonnull Stream<IParameter> stream() {
+	public @NonNull Stream<IParameter> stream() {
 		if (parameters == null) {
 			return Stream.empty();
 		}
@@ -267,7 +266,7 @@ public class ParameterList implements Iterable<IParameter> {
 	 * Get a list of all parameter names in this ParameterList. Names do not need to be unique unless {@link #setNamesMustBeUnique(boolean)} has been set
 	 * to {@code true}, they will appear multiple times in the list if they are present multiple times in the ParameterList.
 	 */
-	public @Nonnull List<String> getParameterNames() {
+	public @NonNull List<String> getParameterNames() {
 		if (parameters == null) {
 			return List.of();
 		}

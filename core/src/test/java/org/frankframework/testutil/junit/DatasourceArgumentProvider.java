@@ -3,8 +3,7 @@ package org.frankframework.testutil.junit;
 import java.util.List;
 import java.util.stream.Stream;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.extension.ExtensionContext;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.ArgumentsProvider;
@@ -18,7 +17,7 @@ import org.frankframework.testutil.TransactionManagerType;
  */
 public class DatasourceArgumentProvider implements ArgumentsProvider {
 
-	@Nonnull
+	@NonNull
 	@Override
 	public final Stream<? extends Arguments> provideArguments(ExtensionContext context) {
 		if(context.getTestClass().isEmpty()) {

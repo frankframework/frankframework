@@ -2,8 +2,7 @@ package org.frankframework.console.runner;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -66,7 +65,7 @@ class ConsoleStandaloneInitializerTest {
 	private ResponseErrorHandler ignoreErrorHandler() {
 		return new DefaultResponseErrorHandler() {
 			@Override
-			protected boolean hasError(@Nonnull HttpStatusCode statusCode) {
+			protected boolean hasError(@NonNull HttpStatusCode statusCode) {
 				return false;
 			}
 		};

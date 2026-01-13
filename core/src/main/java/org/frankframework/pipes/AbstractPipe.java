@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,10 +22,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
@@ -117,7 +116,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 
 	private final List<PipeForward> registeredForwards = new ArrayList<>();
 	private final Map<String, PipeForward> cachedForwards = new HashMap<>(); // cachedForwards combines configuredForwards with cache of looked up pipeline forwards
-	private final @Nonnull ParameterList parameterList = new ParameterList();
+	private final @NonNull ParameterList parameterList = new ParameterList();
 	protected boolean parameterNamesMustBeUnique;
 	private @Setter EventPublisher eventPublisher=null;
 
@@ -205,7 +204,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	/**
 	 * Hierarchical list of forwards that may be present on this {@link AbstractPipe pipe}.
 	 */
-	@Nonnull
+	@NonNull
 	private List<String> getAllowedForwards() {
 		Class<?> clazz = getClass();
 
@@ -223,7 +222,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	 * The method has been made {@code final} to ensure nobody overrides this.
 	 */
 	@Override
-	public final void setApplicationContext(@Nonnull ApplicationContext applicationContext) {
+	public final void setApplicationContext(@NonNull ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
 	}
 
@@ -259,7 +258,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	 * Returns the parameters.
 	 */
 	@Override
-	public @Nonnull ParameterList getParameterList() {
+	public @NonNull ParameterList getParameterList() {
 		return parameterList;
 	}
 
@@ -328,7 +327,7 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 	}
 
 	@Override
-	@Nonnull
+	@NonNull
 	public List<PipeForward> getRegisteredForwards() {
 		return registeredForwards;
 	}

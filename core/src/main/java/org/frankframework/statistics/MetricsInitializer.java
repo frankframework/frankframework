@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,11 +20,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.Supplier;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
@@ -84,7 +83,7 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 		sizeSLO = appConstants.getListProperty("Statistics.size.boundaries"); // 100000,1000000
 	}
 
-	public Counter createCounter(@Nonnull FrankElement frankElement, @Nonnull FrankMeterType type) {
+	public Counter createCounter(@NonNull FrankElement frankElement, @NonNull FrankMeterType type) {
 		return createCounter(type, getTags(frankElement, frankElement.getName(), null));
 	}
 
@@ -92,23 +91,23 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 		return StringUtils.isNotEmpty(namedObject.getName()) ? namedObject.getName() : ClassUtils.nameOf(namedObject);
 	}
 
-	public Timer.ResourceSample createTimerResource(@Nonnull FrankElement frankElement, @Nonnull FrankMeterType type, String... tags) {
+	public Timer.ResourceSample createTimerResource(@NonNull FrankElement frankElement, @NonNull FrankMeterType type, String... tags) {
 		return Timer.resource(meterRegistry, type.getMeterName())
 				.tags(tags)
 				.tags(getTags(frankElement, findName(frankElement), null));
 	}
 
 	/** This DistributionSummary is suffixed under a pipe */
-	public DistributionSummary createSubDistributionSummary(@Nonnull FrankElement parentFrankElement, @Nonnull HasName subFrankElement, @Nonnull FrankMeterType type) {
+	public DistributionSummary createSubDistributionSummary(@NonNull FrankElement parentFrankElement, @NonNull HasName subFrankElement, @NonNull FrankMeterType type) {
 		return createSubDistributionSummary(parentFrankElement, findName(subFrankElement), type);
 	}
 
-	public DistributionSummary createSubDistributionSummary(@Nonnull FrankElement parentFrankElement, @Nonnull String subFrankElement, @Nonnull FrankMeterType type) {
+	public DistributionSummary createSubDistributionSummary(@NonNull FrankElement parentFrankElement, @NonNull String subFrankElement, @NonNull FrankMeterType type) {
 		List<Tag> tags = getTags(parentFrankElement, String.format(PARENT_CHILD_NAME_FORMAT, findName(parentFrankElement), subFrankElement), null);
 		return createDistributionSummary(type, tags);
 	}
 
-	public DistributionSummary createDistributionSummary(@Nonnull FrankElement frankElement, @Nonnull FrankMeterType type) {
+	public DistributionSummary createDistributionSummary(@NonNull FrankElement frankElement, @NonNull FrankMeterType type) {
 		List<Tag> tags = getTags(frankElement, findName(frankElement), null);
 		return createDistributionSummary(type, tags);
 	}
@@ -118,25 +117,25 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 		return createDistributionSummary(type, tags);
 	}
 
-	public Gauge createGauge(@Nonnull FrankElement frankElement, @Nonnull FrankMeterType type, Supplier<Number> numberSupplier) {
+	public Gauge createGauge(@NonNull FrankElement frankElement, @NonNull FrankMeterType type, Supplier<Number> numberSupplier) {
 		return createGauge(type, getTags(frankElement, frankElement.getName(), null), numberSupplier);
 	}
 
-	private Counter createCounter(@Nonnull FrankMeterType type, List<Tag> tags) {
+	private Counter createCounter(@NonNull FrankMeterType type, List<Tag> tags) {
 		if(type.getMeterType() != Type.COUNTER) {
 			throw new IllegalStateException("MeterType ["+type+"] must be of type [Counter]");
 		}
 		return Counter.builder(type.getMeterName()).tags(tags).baseUnit(type.getBaseUnit()).register(meterRegistry);
 	}
 
-	private Gauge createGauge(@Nonnull FrankMeterType type, List<Tag> tags, Supplier<Number> numberSupplier) {
+	private Gauge createGauge(@NonNull FrankMeterType type, List<Tag> tags, Supplier<Number> numberSupplier) {
 		if(type.getMeterType() != Type.GAUGE) {
 			throw new IllegalStateException("MeterType ["+type+"] must be of type [Gauge]");
 		}
 		return Gauge.builder(type.getMeterName(), numberSupplier).tags(tags).baseUnit(type.getBaseUnit()).register(meterRegistry);
 	}
 
-	private DistributionSummary createDistributionSummary(@Nonnull FrankMeterType type, List<Tag> tags) {
+	private DistributionSummary createDistributionSummary(@NonNull FrankMeterType type, List<Tag> tags) {
 		if(type.getMeterType() != Type.DISTRIBUTION_SUMMARY) {
 			throw new IllegalStateException("MeterType ["+type+"] must be of type [DistributionSummary]");
 		}
@@ -162,7 +161,7 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 		return builder.register(meterRegistry);
 	}
 
-	private List<Tag> getTags(@Nonnull FrankElement frankElement, @Nonnull String name, @Nullable List<Tag> extraTags) {
+	private List<Tag> getTags(@NonNull FrankElement frankElement, @NonNull String name, @Nullable List<Tag> extraTags) {
 		List<Tag> tags = new ArrayList<>(5);
 		Adapter adapter = getAdapter(frankElement);
 		if(adapter != null) {
@@ -182,7 +181,7 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 	}
 
 	@Nullable
-	private Configuration getConfiguration(@Nonnull FrankElement frankElement) {
+	private Configuration getConfiguration(@NonNull FrankElement frankElement) {
 		ApplicationContext ac = frankElement.getApplicationContext();
 		if (ac instanceof Configuration config) {
 			return config;
@@ -192,7 +191,7 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 		return null; //TODO throw new IllegalStateException("No ConfigurationContext found");
 	}
 
-	private Adapter getAdapter(@Nonnull FrankElement frankElement) {
+	private Adapter getAdapter(@NonNull FrankElement frankElement) {
 		if (frankElement instanceof Adapter adapter) {
 			return adapter;
 		}
@@ -204,7 +203,7 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 		return null;
 	}
 
-	private String getElementType(@Nonnull FrankElement frankElement) {
+	private String getElementType(@NonNull FrankElement frankElement) {
 		if (frankElement instanceof Receiver) {
 			return "receiver";
 		} else if (frankElement instanceof PipeLine) {

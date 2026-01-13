@@ -15,9 +15,8 @@
 */
 package org.frankframework.metrics;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.composite.CompositeMeterRegistry;
@@ -73,7 +72,7 @@ public abstract class AbstractMetricsRegistryConfigurator<C extends MeterRegistr
 
 	protected abstract class AbstractMeterRegistryConfig implements MeterRegistryConfig {
 		@Override
-		public String get(@Nonnull String s) {
+		public String get(@NonNull String s) {
 			return getProperty(s);
 		}
 

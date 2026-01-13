@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,8 +28,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -40,6 +38,7 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.util.EntityUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpStatus;
 
 import com.microsoft.aad.msal4j.ClientCredentialFactory;
@@ -268,7 +267,7 @@ public class MsalClientAdapter extends AbstractHttpSender implements IHttpClient
 	}
 
 	@Override
-	protected HttpRequestBase getMethod(URI uri, Message message, @Nonnull ParameterValueList parameters, PipeLineSession session) throws SenderException {
+	protected HttpRequestBase getMethod(URI uri, Message message, @NonNull ParameterValueList parameters, PipeLineSession session) throws SenderException {
 		HttpMethod httpMethod = EnumUtils.parse(HttpMethod.class, (String) session.get(METHOD_SESSION_KEY));
 		@SuppressWarnings("unchecked")
 		Map<String, String> headers = (Map<String, String>) session.get(REQUEST_HEADERS_SESSION_KEY);

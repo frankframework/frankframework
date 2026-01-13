@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,9 +29,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
@@ -43,6 +40,8 @@ import org.apache.logging.log4j.core.config.plugins.Plugin;
 import org.apache.logging.log4j.core.lookup.AbstractLookup;
 import org.apache.logging.log4j.core.lookup.StrLookup;
 import org.apache.logging.log4j.status.StatusLogger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.util.StringResolver;
 
@@ -112,7 +111,7 @@ public class FrankPropertyLookupProvider extends AbstractLookup {
 		return value;
 	}
 
-	@Nonnull
+	@NonNull
 	protected static Properties computeProperties() throws IOException {
 		Properties log4jProperties = getParseProperties(LOG4J_PROPS_FILE);
 		if(log4jProperties == null) {

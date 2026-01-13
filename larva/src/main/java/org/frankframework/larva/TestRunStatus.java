@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,10 +24,9 @@ import java.util.Properties;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -158,7 +157,7 @@ public class TestRunStatus {
 		allScenarios = scenarioLoader.readScenarioFiles(larvaConfig.getActiveScenariosDirectory());
 	}
 
-	public List<Scenario> getScenariosToRun(@Nonnull String execute) {
+	public List<Scenario> getScenariosToRun(@NonNull String execute) {
 
 		List<Scenario> scenarios;
 		if (execute.endsWith(".properties")) {

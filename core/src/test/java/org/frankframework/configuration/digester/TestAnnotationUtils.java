@@ -13,9 +13,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.ClassUtils;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
@@ -205,9 +204,9 @@ public class TestAnnotationUtils {
 		});
 
 		BeanNameGenerator beanNameGenerator = new AnnotationBeanNameGenerator() {
-			@Nonnull
+			@NonNull
 			@Override
-			protected String buildDefaultBeanName(@Nonnull BeanDefinition definition) {
+			protected String buildDefaultBeanName(@NonNull BeanDefinition definition) {
 				String beanClassName = definition.getBeanClassName();
 				Assert.state(beanClassName != null, "No bean class name set");
 				return beanClassName;

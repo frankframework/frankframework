@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,8 +21,8 @@ import java.util.Properties;
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.jdbc.IDataSourceFactory;
 
@@ -37,13 +37,13 @@ public class NonTransactionalDataSourceFactory extends ObjectFactory<DataSource,
 		super(CommonDataSource.class, "jdbc", "DataSources");
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
-	public DataSource getDataSource(@Nonnull String dataSourceName, @Nullable Properties environment) {
+	public DataSource getDataSource(@NonNull String dataSourceName, @Nullable Properties environment) {
 		return get(dataSourceName, environment);
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public List<String> getDataSourceNames() {
 		return getObjectNames();

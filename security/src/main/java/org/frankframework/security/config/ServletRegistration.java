@@ -1,5 +1,5 @@
 /*
-   Copyright 2023-2025 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,12 +18,12 @@ package org.frankframework.security.config;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
 import jakarta.servlet.HttpConstraintElement;
 import jakarta.servlet.ServletRegistration.Dynamic;
 import jakarta.servlet.ServletSecurityElement;
 import jakarta.servlet.http.HttpServlet;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.context.ApplicationContext;
@@ -82,7 +82,7 @@ public class ServletRegistration<T extends HttpServlet> extends ServletRegistrat
 	}
 
 	@Override
-	protected void configure(@Nonnull Dynamic registration) {
+	protected void configure(@NonNull Dynamic registration) {
 		if(authenticator instanceof JeeAuthenticator) {
 			registration.setServletSecurity(getServletSecurity());
 		}

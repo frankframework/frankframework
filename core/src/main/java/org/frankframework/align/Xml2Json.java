@@ -1,5 +1,5 @@
 /*
-   Copyright 2017 Nationale-Nederlanden, 2020, 2024 WeAreFrank!
+   Copyright 2017,2018 Nationale-Nederlanden, 2020, 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ import java.util.List;
 
 import javax.xml.validation.ValidatorHandler;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.xs.XSAttributeDeclaration;
@@ -33,6 +31,7 @@ import org.apache.xerces.xs.XSComplexTypeDefinition;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSWildcard;
+import org.jspecify.annotations.NonNull;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.XMLFilterImpl;
@@ -135,7 +134,7 @@ public class Xml2Json extends XMLFilterImpl {
 		}
 	}
 
-	private XSSimpleTypeDefinition findAttributeTypeDefinition(@Nonnull List<XSAttributeUse> attributeUses, String namespace, String name) {
+	private XSSimpleTypeDefinition findAttributeTypeDefinition(@NonNull List<XSAttributeUse> attributeUses, String namespace, String name) {
 		for (XSAttributeUse attributeUse : attributeUses) {
 			XSAttributeDeclaration attributeDeclaration=attributeUse.getAttrDeclaration();
 			String attUseName = attributeDeclaration.getName();

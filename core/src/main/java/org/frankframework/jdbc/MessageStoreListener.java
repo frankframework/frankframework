@@ -1,5 +1,5 @@
 /*
-   Copyright 2015-2017 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2015-2017 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,12 +24,11 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 
@@ -132,7 +131,7 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	protected Map<String, String> getConfiguredColumnNames() {
 		Map<String, String> configuredColumnNames = super.getConfiguredColumnNames();
@@ -184,7 +183,7 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 	}
 
 	@Override
-	public Message extractMessage(@Nonnull RawMessageWrapper<Serializable> rawMessageWrapper, @Nonnull Map<String, Object> context) throws ListenerException {
+	public Message extractMessage(@NonNull RawMessageWrapper<Serializable> rawMessageWrapper, @NonNull Map<String, Object> context) throws ListenerException {
 		// If sessionKeys were set to be stored with message by the MessageStoreSender, they'll be in the context of
 		// the (Raw)MessageWrapper.
 		// If not, then the RawMessageWrapper context still contains some info we want to retain, such as MID, CID and Storage Key.
@@ -208,7 +207,7 @@ public class MessageStoreListener extends JdbcTableListener<Serializable> {
 		return Message.asMessage(rawMessage);
 	}
 
-	private Message convertFromCsv(@Nonnull String messageData, Map<String, Object> threadContext) throws ListenerException {
+	private Message convertFromCsv(@NonNull String messageData, Map<String, Object> threadContext) throws ListenerException {
 		Message message;
 		try(CSVParser parser = CSVParser.parse(messageData, CSVFormat.DEFAULT)) {
 			CSVRecord csvRecord = parser.getRecords().get(0);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2016-2018 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,10 +19,9 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -213,7 +212,7 @@ public class IbisLocalSender extends AbstractSenderWithParameters implements Has
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	private String getActualServiceName(PipeLineSession session) throws SenderException {
 		if (isJavaListener()) {
 			String actualJavaListenerName;
@@ -237,7 +236,7 @@ public class IbisLocalSender extends AbstractSenderWithParameters implements Has
 	}
 
 	@Override
-	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 		SenderResult result;
 		try (PipeLineSession subAdapterSession = new PipeLineSession()) {
 			subAdapterSession.put(PipeLineSession.MANUAL_RETRY_KEY, session.get(PipeLineSession.MANUAL_RETRY_KEY, false));

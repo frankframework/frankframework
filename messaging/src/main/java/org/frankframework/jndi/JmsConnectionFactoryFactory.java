@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2025 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,9 +18,10 @@ package org.frankframework.jndi;
 import java.util.List;
 import java.util.Properties;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.jms.ConnectionFactory;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.jdbc.datasource.ObjectFactory;
 import org.frankframework.jms.IConnectionFactoryFactory;
@@ -41,32 +42,32 @@ public class JmsConnectionFactoryFactory extends ObjectFactory<ConnectionFactory
 	 * See {@link #augment(ConnectionFactory, String)}.
 	 */
 	@SuppressWarnings("java:S1172")
-	@Nonnull
-	protected ConnectionFactory augmentConnectionFactory(@Nonnull ConnectionFactory cf, @Nonnull String objectName) {
+	@NonNull
+	protected ConnectionFactory augmentConnectionFactory(@NonNull ConnectionFactory cf, @NonNull String objectName) {
 		return cf;
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
-	protected final ConnectionFactory augment(@Nonnull ConnectionFactory connectionFactory, @Nonnull String objectName) {
+	protected final ConnectionFactory augment(@NonNull ConnectionFactory connectionFactory, @NonNull String objectName) {
 		return new TransactionalMetadataAwareConnectionFactoryProxy(augmentConnectionFactory(connectionFactory, objectName));
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
-	public ConnectionFactory getConnectionFactory(@Nonnull String connectionFactoryName, @Nullable Properties environment) {
+	public ConnectionFactory getConnectionFactory(@NonNull String connectionFactoryName, @Nullable Properties environment) {
 		return get(connectionFactoryName, environment);
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public List<String> getConnectionFactoryNames() {
 		return getObjectNames();
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
-	protected ObjectInfo toObjectInfo(@Nonnull String name) {
+	protected ObjectInfo toObjectInfo(@NonNull String name) {
 		ConnectionFactory cf = getConnectionFactory(name);
 		if (cf instanceof TransactionalMetadataAwareConnectionFactoryProxy mcf) {
 			return new ObjectInfo(name, mcf.getInfo(), mcf.getPoolInfo());

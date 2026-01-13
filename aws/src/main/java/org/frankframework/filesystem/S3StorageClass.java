@@ -15,7 +15,7 @@
 */
 package org.frankframework.filesystem;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 import software.amazon.awssdk.services.s3.model.StorageClass;
@@ -55,10 +55,10 @@ public enum S3StorageClass {
 	UNKNOWN_TO_SDK_VERSION(StorageClass.UNKNOWN_TO_SDK_VERSION);
 
 
-	private final @Getter @Nonnull StorageClass storageClass;
+	private final @Getter @NonNull StorageClass storageClass;
 
 
-	S3StorageClass(@Nonnull StorageClass storageClass) {
+	S3StorageClass(@NonNull StorageClass storageClass) {
 		this.storageClass = storageClass;
 	}
 }

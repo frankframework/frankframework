@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2016-2020 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,8 +20,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URLEncoder;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.mail.BodyPart;
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMultipart;
@@ -37,6 +35,8 @@ import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.methods.HttpRequestBase;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 import org.w3c.dom.Element;
@@ -112,7 +112,7 @@ public class HttpSender extends AbstractHttpSender {
 	}
 
 	@Override
-	protected HttpRequestBase getMethod(URI url, Message message, @Nonnull ParameterValueList parameters, PipeLineSession session) throws SenderException {
+	protected HttpRequestBase getMethod(URI url, Message message, @NonNull ParameterValueList parameters, PipeLineSession session) throws SenderException {
 		if (isEncodeMessages() && !Message.isEmpty(message)) {
 			try {
 				message = new Message(URLEncoder.encode(message.asString(), getCharSet()));
@@ -127,7 +127,7 @@ public class HttpSender extends AbstractHttpSender {
 	/**
 	 * Returns HttpRequestBase, with (optional) RAW or as BINARY content
 	 */
-	protected HttpRequestBase createRequestMethod(URI uri, Message message, @Nonnull ParameterValueList parameters, PipeLineSession session) throws SenderException {
+	protected HttpRequestBase createRequestMethod(URI uri, Message message, @NonNull ParameterValueList parameters, PipeLineSession session) throws SenderException {
 		try {
 			boolean queryParametersAppended = false;
 			StringBuilder relativePath = new StringBuilder(uri.getRawPath());
@@ -226,14 +226,14 @@ public class HttpSender extends AbstractHttpSender {
 	/**
 	 * return the first part as Message and put the other parts as InputStream in the PipeLineSession
 	 */
-	private static Message handleMultipartResponse(@Nonnull HttpResponseHandler httpHandler, @Nonnull PipeLineSession session) throws IOException {
+	private static Message handleMultipartResponse(@NonNull HttpResponseHandler httpHandler, @NonNull PipeLineSession session) throws IOException {
 		return handleMultipartResponse(httpHandler.getMimeType(), httpHandler.getResponse(), session);
 	}
 
 	/**
 	 * return the first part as Message and put the other parts as InputStream in the PipeLineSession
 	 */
-	private static Message handleMultipartResponse(@Nullable MimeType mimeType, @Nonnull InputStream inputStream, @Nonnull PipeLineSession session) throws IOException {
+	private static Message handleMultipartResponse(@Nullable MimeType mimeType, @NonNull InputStream inputStream, @NonNull PipeLineSession session) throws IOException {
 		Message result = null;
 		try {
 			InputStreamDataSource dataSource = new InputStreamDataSource(mimeType != null ? mimeType.toString() : MediaType.APPLICATION_OCTET_STREAM_VALUE, inputStream); // The entire InputStream will be read here!

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2025 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,10 +20,9 @@ import java.util.Properties;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -61,7 +60,7 @@ public class JndiObjectLocator implements IObjectLocator, ApplicationContextAwar
 	 */
 	@Override
 	@Nullable
-	public <O> O lookup(@Nonnull String jndiName, @Nullable Properties jndiEnvironment, @Nullable Class<O> lookupClass) throws NamingException {
+	public <O> O lookup(@NonNull String jndiName, @Nullable Properties jndiEnvironment, @Nullable Class<O> lookupClass) throws NamingException {
 		String prefixedJndiName = getPrefixedJndiName(jndiName);
 		JndiTemplate locator = getJndiTemplate(jndiEnvironment);
 		try {

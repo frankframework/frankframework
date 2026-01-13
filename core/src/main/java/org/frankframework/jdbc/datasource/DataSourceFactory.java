@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 - 2025 WeAreFrank!
+   Copyright 2021 - 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,8 +18,7 @@ package org.frankframework.jdbc.datasource;
 import javax.sql.CommonDataSource;
 import javax.sql.DataSource;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 import org.frankframework.util.StringUtil;
@@ -44,13 +43,13 @@ public class DataSourceFactory extends NonTransactionalDataSourceFactory {
 	 * Ensure that the outermost DataSource proxy/wrapper in the chain is the {@link TransactionAwareDataSourceProxy}.
 	 * Otherwise the {@link TransactionAwareDataSourceProxy} will NOT work!
 	 */
-	@Nonnull
+	@NonNull
 	@Override
-	protected final DataSource augment(@Nonnull CommonDataSource dataSource, @Nonnull String dataSourceName) {
+	protected final DataSource augment(@NonNull CommonDataSource dataSource, @NonNull String dataSourceName) {
 		return new TransactionalDbmsSupportAwareDataSourceProxy(augmentDatasource(dataSource, dataSourceName));
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	protected ObjectInfo toObjectInfo(String name) {
 		DataSource datasource = getDataSource(name);

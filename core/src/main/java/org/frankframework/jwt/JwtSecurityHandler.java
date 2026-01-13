@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2023-2024 WeAreFrank!
+   Copyright 2021, 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,11 +23,10 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 
@@ -85,7 +84,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		}
 	}
 
-	void validateRequiredClaims(@Nonnull String requiredClaims) throws AuthorizationException {
+	void validateRequiredClaims(@NonNull String requiredClaims) throws AuthorizationException {
 		List<String> missingClaims = StringUtil.splitToStream(requiredClaims)
 				.filter(claim -> !claimsSet.containsKey(claim))
 				.toList();
@@ -95,7 +94,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		}
 	}
 
-	void validateExactMatchClaims(@Nonnull String exactMatchClaims) throws AuthorizationException {
+	void validateExactMatchClaims(@NonNull String exactMatchClaims) throws AuthorizationException {
 		Optional<Map.Entry<String, String>> nonMatchingClaim = splitClaims(exactMatchClaims)
 				.filter(entry -> !entry.getValue().equals(getClaimAsString(entry.getKey())))
 				.findFirst();
@@ -107,7 +106,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		}
 	}
 
-	void validateAnyMatchClaims(@Nonnull String anyMatchClaims) throws AuthorizationException {
+	void validateAnyMatchClaims(@NonNull String anyMatchClaims) throws AuthorizationException {
 		Map<String, Set<String>> allowedValuesByClaim = splitClaims(anyMatchClaims)
 				.collect(Collectors.groupingBy(Map.Entry::getKey, Collectors.mapping(Map.Entry::getValue, Collectors.toSet())));
 		boolean matchesOneOf = allowedValuesByClaim
@@ -120,7 +119,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	private String getClaimAsString(String claim) {
 		Object value = claimsSet.get(claim);
 		if (value == null) {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2021 WeAreFrank!
+   Copyright 2019-2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,10 +24,9 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import com.aspose.pdf.Document;
 import com.aspose.pdf.FileSpecification;
@@ -133,8 +132,8 @@ public class PdfAttachmentUtil {
 		return result;
 	}
 
-	@Nonnull
-	private Document getPdfDocument(@Nonnull String filePath) {
+	@NonNull
+	private Document getPdfDocument(@NonNull String filePath) {
 		if (pdfDocument == null) {
 			// Open the base pdf.
 			pdfDocument = new Document(filePath);
@@ -147,8 +146,8 @@ public class PdfAttachmentUtil {
 		return pdfDocument;
 	}
 
-	@Nonnull
-	public static Message combineFiles(@Nonnull Message parent, @Nonnull Message attachment, String fileNameToAttach, String charset) throws IOException {
+	@NonNull
+	public static Message combineFiles(@NonNull Message parent, @NonNull Message attachment, String fileNameToAttach, String charset) throws IOException {
 		try (Document pdfDoc = new Document(parent.asInputStream(charset))) {
 			pdfDoc.setPageMode(PageMode.UseAttachments);
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021-2025 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,10 +23,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.support.DefaultListableBeanFactory;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ApplicationEventMulticaster;
@@ -73,7 +72,7 @@ public class MonitorManager extends ConfigurableApplicationContext implements Ap
 	}
 
 	// We do not want all listeners to be initialized upon context startup. Hence listeners implementing LazyLoadingEventListener will be excluded from the beanType[].
-	@Nonnull
+	@NonNull
 	@Override
 	public String[] getBeanNamesForType(@Nullable Class<?> type, boolean includeNonSingletons, boolean allowEagerInit) {
 		if(type != null && type.isAssignableFrom(ApplicationListener.class)) {
@@ -91,7 +90,7 @@ public class MonitorManager extends ConfigurableApplicationContext implements Ap
 	 * Does not send events to the parent context (if any).
 	 */
 	@Override
-	public void onApplicationEvent(@Nonnull MonitorEvent event) {
+	public void onApplicationEvent(@NonNull MonitorEvent event) {
 		if (event instanceof RegisterMonitorEvent monitorEvent) {
 			registerEvent(monitorEvent);
 		} else {
@@ -100,7 +99,7 @@ public class MonitorManager extends ConfigurableApplicationContext implements Ap
 		}
 	}
 
-	private void registerEvent(@Nonnull RegisterMonitorEvent registerEvent) {
+	private void registerEvent(@NonNull RegisterMonitorEvent registerEvent) {
 		EventThrowing eventThrowing = registerEvent.getSource();
 		String eventCode = registerEvent.getEventCode();
 
@@ -176,7 +175,7 @@ public class MonitorManager extends ConfigurableApplicationContext implements Ap
 	}
 
 	// Monitors may not be added nor removed directly
-	@Nonnull
+	@NonNull
 	public final Map<String, Monitor> getMonitors() {
 		Map<String, Monitor> adapters = getBeansOfType(Monitor.class);
 		return Collections.unmodifiableMap(adapters);
@@ -198,7 +197,7 @@ public class MonitorManager extends ConfigurableApplicationContext implements Ap
 	public IMonitorDestination getDestination(String name) {
 		return getDestinations().get(name);
 	}
-	@Nonnull
+	@NonNull
 	public final Map<String, IMonitorDestination> getDestinations() {
 		Map<String, IMonitorDestination> adapters = getBeansOfType(IMonitorDestination.class);
 		return Collections.unmodifiableMap(adapters);
