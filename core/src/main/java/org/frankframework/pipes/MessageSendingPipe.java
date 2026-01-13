@@ -24,11 +24,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import javax.xml.transform.TransformerException;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.CloseableThreadContext;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.xml.sax.SAXException;
 
 import io.micrometer.core.instrument.DistributionSummary;
@@ -296,7 +295,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		registerEvent(PIPE_EXCEPTION_MONITOR_EVENT);
 	}
 
-	private void configureElement(@Nonnull final IPipe pipe) throws ConfigurationException {
+	private void configureElement(@NonNull final IPipe pipe) throws ConfigurationException {
 		PipeForward pf = new PipeForward();
 		pf.setName(PipeForward.SUCCESS_FORWARD_NAME);
 		pipe.addForward(pf);
@@ -322,9 +321,9 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
-	public PipeRunResult doPipe(@Nonnull Message input, @Nonnull PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message input, @NonNull PipeLineSession session) throws PipeRunException {
 		Message originalMessage = null;
 		PipeForward forward = getSuccessForward();
 
@@ -792,7 +791,7 @@ public class MessageSendingPipe extends FixedForwardPipe implements HasSender {
 		return super.sizeStatisticsEnabled();
 	}
 
-	private @Nonnull DistributionSummary getPipeSubStatistics(String name) {
+	private @NonNull DistributionSummary getPipeSubStatistics(String name) {
 		return statisticsMap.computeIfAbsent(name, ignored -> configurationMetrics.createSubDistributionSummary(this, name, FrankMeterType.PIPE_DURATION));
 	}
 

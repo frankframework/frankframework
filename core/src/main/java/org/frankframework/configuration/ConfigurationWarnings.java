@@ -1,5 +1,5 @@
 /*
-Copyright 2021-2025 WeAreFrank!
+Copyright 2021-2026 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,11 +15,10 @@ limitations under the License.
 */
 package org.frankframework.configuration;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 
 import org.frankframework.core.Adapter;
@@ -36,21 +35,21 @@ public class ConfigurationWarnings extends AbstractApplicationWarnings {
 	/**
 	 * Add a ConfigurationWarning.
 	 */
-	public static void add(@Nonnull HasApplicationContext source, @Nonnull String message) {
+	public static void add(@NonNull HasApplicationContext source, @NonNull String message) {
 		add(source, LogManager.getLogger(source.getClass()), message, (Throwable) null);
 	}
 
 	/**
 	 * Add a ConfigurationWarning.
 	 */
-	public static void add(@Nullable HasApplicationContext source, @Nonnull Logger log, @Nonnull String message) {
+	public static void add(@Nullable HasApplicationContext source, @NonNull Logger log, @NonNull String message) {
 		add(source, log, message, (Throwable) null);
 	}
 
 	/**
 	 * Add a ConfigurationWarning (optionally with NameAware prefix) and log the exception stack
 	 */
-	public static void add(@Nullable HasApplicationContext source, @Nonnull Logger log, @Nonnull String message, @Nullable Throwable t) {
+	public static void add(@Nullable HasApplicationContext source, @NonNull Logger log, @NonNull String message, @Nullable Throwable t) {
 		ConfigurationWarnings instance = getInstance(source);
 		if(instance != null) {
 			instance.doAdd(source, log, message, t);
@@ -62,14 +61,14 @@ public class ConfigurationWarnings extends AbstractApplicationWarnings {
 	/**
 	 * Add a (globally-)suppressible ConfigurationWarning (optionally with NameAware prefix).
 	 */
-	public static void add(@Nullable HasApplicationContext source, @Nonnull Logger log, @Nonnull String message, @Nonnull SuppressKeys suppressionKey) {
+	public static void add(@Nullable HasApplicationContext source, @NonNull Logger log, @NonNull String message, @NonNull SuppressKeys suppressionKey) {
 		add(source, log, message, suppressionKey, null);
 	}
 
 	/**
 	 * Add a suppressible ConfigurationWarning (optionally with NameAware prefix).
 	 */
-	public static void add(@Nullable HasApplicationContext source, @Nonnull Logger log, @Nonnull String message, @Nonnull SuppressKeys suppressionKey, @Nullable Adapter adapter) {
+	public static void add(@Nullable HasApplicationContext source, @NonNull Logger log, @NonNull String message, @NonNull SuppressKeys suppressionKey, @Nullable Adapter adapter) {
 		ConfigurationWarnings instance = getInstance(source); // We could call two statics, this prevents a double getInstance(..) lookup.
 		if(instance != null) {
 			instance.add((Object) source, log, message, suppressionKey, adapter);
@@ -96,11 +95,11 @@ public class ConfigurationWarnings extends AbstractApplicationWarnings {
 		return applicationContext.getBean("configurationWarnings", ConfigurationWarnings.class);
 	}
 
-	private boolean doIsSuppressed(@Nonnull SuppressKeys key, @Nullable Adapter adapter) {
+	private boolean doIsSuppressed(@NonNull SuppressKeys key, @Nullable Adapter adapter) {
 		return isSuppressed(key) || adapter != null && getAppConstants().getBoolean(key.getKey() + "." + adapter.getName(), false); // or warning is suppressed for this adapter only.
 	}
 
-	public boolean isSuppressed(@Nonnull SuppressKeys key) {
+	public boolean isSuppressed(@NonNull SuppressKeys key) {
 		if(key == SuppressKeys.SQL_INJECTION_SUPPRESS_KEY) {
 			return "true".equals(System.getProperty(SuppressKeys.SQL_INJECTION_SUPPRESS_KEY.getKey()));
 		}
@@ -108,7 +107,7 @@ public class ConfigurationWarnings extends AbstractApplicationWarnings {
 		return key.isAllowGlobalSuppression() && getAppConstants().getBoolean(key.getKey(), false); // warning is suppressed globally, for all adapters
 	}
 
-	public static boolean isSuppressed(@Nonnull SuppressKeys key, @Nullable Adapter adapter) {
+	public static boolean isSuppressed(@NonNull SuppressKeys key, @Nullable Adapter adapter) {
 		ConfigurationWarnings instance = getInstance(adapter);
 		if(instance == null) {
 			throw new IllegalArgumentException("ConfigurationWarnings not initialized");
@@ -117,7 +116,7 @@ public class ConfigurationWarnings extends AbstractApplicationWarnings {
 		return instance.doIsSuppressed(key, adapter);
 	}
 
-	public void add(@Nullable Object source, @Nonnull Logger log, String message, @Nonnull SuppressKeys suppressionKey, @Nullable Adapter adapter) {
+	public void add(@Nullable Object source, @NonNull Logger log, String message, @NonNull SuppressKeys suppressionKey, @Nullable Adapter adapter) {
 		if(!doIsSuppressed(suppressionKey, adapter)) {
 			// provide suppression hint as info
 			String hint = null;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,12 +23,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.jar.Manifest;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.maven.artifact.versioning.InvalidVersionSpecificationException;
 import org.apache.maven.artifact.versioning.VersionRange;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -51,7 +50,7 @@ public class ComponentInfo {
 	private final List<String> classpath;
 	private final VersionRange frameworkVersion;
 
-	protected ComponentInfo(@Nonnull String name, @Nonnull String version, @Nullable Instant timestamp) {
+	protected ComponentInfo(@NonNull String name, @NonNull String version, @Nullable Instant timestamp) {
 		this.name = name;
 		this.version = version;
 		this.timestamp = timestamp;
@@ -66,7 +65,7 @@ public class ComponentInfo {
 		this.frameworkVersion = null;
 	}
 
-	protected ComponentInfo(@Nonnull Manifest manifest) {
+	protected ComponentInfo(@NonNull Manifest manifest) {
 		this.name = manifest.getMainAttributes().getValue("Implementation-Title");
 		this.version = manifest.getMainAttributes().getValue("Implementation-Version");
 

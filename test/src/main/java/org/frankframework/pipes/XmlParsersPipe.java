@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package org.frankframework.pipes;
 
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
@@ -31,7 +31,7 @@ import org.frankframework.util.XmlUtils;
  */
 public class XmlParsersPipe extends FixedForwardPipe {
 
-	@Nonnull
+	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		Map<String, String> xmlInfo = XmlUtils.getVersionInfo();

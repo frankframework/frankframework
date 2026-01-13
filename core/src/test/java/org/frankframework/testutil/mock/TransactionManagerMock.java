@@ -6,8 +6,7 @@ import static org.mockito.Mockito.mock;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionException;
@@ -18,7 +17,7 @@ import lombok.Getter;
 public class TransactionManagerMock implements PlatformTransactionManager {
 	private static Queue<TransactionStatus> items = new ConcurrentLinkedQueue<>();
 
-	@Nonnull
+	@NonNull
 	@Override
 	public TransactionStatus getTransaction(TransactionDefinition definition) throws TransactionException {
 		TransactionStatus status = DummyTransactionStatus.newMock();
@@ -27,7 +26,7 @@ public class TransactionManagerMock implements PlatformTransactionManager {
 	}
 
 	@Override
-	public void commit(@Nonnull TransactionStatus status) throws TransactionException {
+	public void commit(@NonNull TransactionStatus status) throws TransactionException {
 		if (status instanceof DummyTransactionStatus transactionStatus) {
 			transactionStatus.completed = true;
 		}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,9 +20,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.wearefrank.ladybug.TestTool;
@@ -78,7 +77,7 @@ public class LadybugReportGenerator implements InitializingBean {
 		return testTool.startpoint(correlationId, pipeLine.getClass().getName(), getName(pipeLine), input, extractMessageContext(input));
 	}
 
-	@Nonnull
+	@NonNull
 	private Map<String, Object> extractMessageContext(Object input) {
 		if (input instanceof Message message) {
 			return message.getContext().entrySet()

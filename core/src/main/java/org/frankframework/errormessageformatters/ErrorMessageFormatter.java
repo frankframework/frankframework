@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,11 +21,10 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
@@ -121,7 +120,7 @@ import org.frankframework.util.XmlEncodingUtils;
 public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProvider {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 
-	private @Getter @Nonnull DocumentFormat messageFormat = DocumentFormat.XML;
+	private @Getter @NonNull DocumentFormat messageFormat = DocumentFormat.XML;
 
 	/**
 	 * Format the available parameters into an XML or JSON message.
@@ -129,7 +128,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 	 * Override this method in subclasses to obtain the required behaviour.
 	 */
 	@Override
-	public @Nonnull Message format(@Nullable String errorMessage, @Nullable Throwable t, @Nullable HasName location, @Nullable Message originalMessage, @Nonnull PipeLineSession session) {
+	public @NonNull Message format(@Nullable String errorMessage, @Nullable Throwable t, @Nullable HasName location, @Nullable Message originalMessage, @NonNull PipeLineSession session) {
 
 		errorMessage = getErrorMessage(errorMessage, t);
 		String details;
@@ -191,7 +190,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		}
 	}
 
-	private void addOriginalMessageObject(@Nullable Message originalMessage, @Nonnull PipeLineSession session, @Nonnull ObjectBuilder errorObject, @Nullable String messageId) throws SAXException {
+	private void addOriginalMessageObject(@Nullable Message originalMessage, @NonNull PipeLineSession session, @NonNull ObjectBuilder errorObject, @Nullable String messageId) throws SAXException {
 		INodeBuilder originalMessageNode = errorObject.addField(PipeLineSession.ORIGINAL_MESSAGE_KEY);
 		ObjectBuilder originalMessageObject = originalMessageNode.startObject();
 
@@ -209,7 +208,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		originalMessageObject.close();
 	}
 
-	private void addParams(@Nonnull Map<String, Object> exceptionParams, @Nonnull ObjectBuilder errorObject) throws SAXException, IOException {
+	private void addParams(@NonNull Map<String, Object> exceptionParams, @NonNull ObjectBuilder errorObject) throws SAXException, IOException {
 		if (!exceptionParams.isEmpty()) {
 			// Sort the entries in the map by key, basically because it makes testing easier.
 			Collection<Map.Entry<String, Object>> entries = exceptionParams.entrySet()
@@ -253,7 +252,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 		}
 	}
 
-	private static void addLocation(@Nullable HasName location, @Nonnull ObjectBuilder errorObject) throws SAXException {
+	private static void addLocation(@Nullable HasName location, @NonNull ObjectBuilder errorObject) throws SAXException {
 		if (location != null) {
 			ObjectBuilder locationObject = errorObject.addObjectField("location");
 			locationObject.addAttribute("class", location.getClass().getName());
@@ -277,7 +276,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 	/**
 	 * Extract parameters from (nested) PipeRunException, or empty map.
 	 */
-	private static @Nonnull Map<String, Object> getPipeRunExceptionParams(@Nullable Throwable t) {
+	private static @NonNull Map<String, Object> getPipeRunExceptionParams(@Nullable Throwable t) {
 		PipeRunException pre = extractPipeRunException(t);
 		if (pre == null) {
 			return Map.of();
@@ -341,7 +340,7 @@ public class ErrorMessageFormatter implements IErrorMessageFormatter, IScopeProv
 	 * @ff.default XML
 	 * @since 9.2
 	 */
-	public void setMessageFormat(@Nonnull DocumentFormat messageFormat) {
+	public void setMessageFormat(@NonNull DocumentFormat messageFormat) {
 		this.messageFormat = messageFormat;
 	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2024-2025 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package org.frankframework.jdbc.datasource;
 
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Setter;
 
@@ -26,7 +26,7 @@ public class FrankResources {
 
 	private @Setter List<FrankResource> resources;
 
-	public @Nullable FrankResource findResource(@Nonnull String name) {
+	public @Nullable FrankResource findResource(@NonNull String name) {
 		if (resources == null) {
 			return null; // No matching resources found.
 		}

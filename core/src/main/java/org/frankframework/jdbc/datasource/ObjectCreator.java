@@ -1,5 +1,5 @@
 /*
-   Copyright 2024-2025 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,10 +21,9 @@ import java.util.Properties;
 
 import javax.sql.DataSource;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import org.frankframework.util.ClassUtils;
@@ -33,9 +32,9 @@ import org.frankframework.util.StringUtil;
 
 public class ObjectCreator {
 
-	@Nonnull
+	@NonNull
 	@SuppressWarnings("unchecked")
-	public <O> O instantiateResource(@Nonnull FrankResource resource, @Nullable Properties environment, @Nonnull Class<O> lookupClass) throws ClassNotFoundException {
+	public <O> O instantiateResource(@NonNull FrankResource resource, @Nullable Properties environment, @NonNull Class<O> lookupClass) throws ClassNotFoundException {
 		String url = resource.getUrl();
 		if(StringUtils.isEmpty(url)) {
 			throw new IllegalStateException("field url is required");
@@ -59,8 +58,8 @@ public class ObjectCreator {
 	/**
 	 * Ensure that the driver is loaded, else the DriverManagerDataSource can not load it.
 	 */
-	@Nonnull
-	private DataSource loadDataSourceThroughDriver(@Nonnull Class<?> clazz, @Nonnull FrankResource resource, @Nonnull Properties properties) {
+	@NonNull
+	private DataSource loadDataSourceThroughDriver(@NonNull Class<?> clazz, @NonNull FrankResource resource, @NonNull Properties properties) {
 		DriverManagerDataSource dmds = new DriverManagerDataSource(resource.getUrl(), properties);
 		dmds.setDriverClassName(clazz.getCanonicalName()); // Initialize the JDBC Driver
 
@@ -75,8 +74,8 @@ public class ObjectCreator {
 	/**
 	 * Creates the class and populates available fields
 	 */
-	@Nonnull
-	private <O> O createInstance(@Nonnull Class<O> clazz, @Nonnull String url, @Nonnull Properties properties) {
+	@NonNull
+	private <O> O createInstance(@NonNull Class<O> clazz, @NonNull String url, @NonNull Properties properties) {
 		try {
 			O instance = clazz.getDeclaredConstructor().newInstance();
 
@@ -103,8 +102,8 @@ public class ObjectCreator {
 	/**
 	 * Combines the optional (supplied) environment, provided driver properties and resolved credentials.
 	 */
-	@Nonnull
-	private Properties getConnectionProperties(@Nonnull FrankResource resource, @Nullable Properties environment) {
+	@NonNull
+	private Properties getConnectionProperties(@NonNull FrankResource resource, @Nullable Properties environment) {
 		Properties mergedProps = new Properties();
 		if(environment != null) {
 			mergedProps.putAll(environment);

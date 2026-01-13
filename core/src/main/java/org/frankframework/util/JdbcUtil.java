@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2014, 2017-2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2014, 2017-2020 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -42,10 +42,9 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.InflaterInputStream;
 import java.util.zip.ZipException;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.binary.Base64InputStream;
+import org.jspecify.annotations.NonNull;
 import org.xml.sax.SAXException;
 
 import lombok.extern.log4j.Log4j2;
@@ -289,7 +288,7 @@ public class JdbcUtil {
 	}
 
 	// This should not have a charset nor base64 argument...
-	private static void streamBlob(final InputStream blobInputStream, String charset, Direction blobBase64Direction, @Nonnull MessageBuilder msgBuilder) throws IOException {
+	private static void streamBlob(final InputStream blobInputStream, String charset, Direction blobBase64Direction, @NonNull MessageBuilder msgBuilder) throws IOException {
 		if (charset == null) {
 			try (OutputStream outputStream = msgBuilder.asOutputStream()) {
 				if (blobBase64Direction == Direction.DECODE) {
@@ -315,7 +314,7 @@ public class JdbcUtil {
 		}
 	}
 
-	public static void streamClob(final IDbmsSupport dbmsSupport, ResultSet rs, int column, @Nonnull MessageBuilder target) throws DbmsException, SQLException, IOException {
+	public static void streamClob(final IDbmsSupport dbmsSupport, ResultSet rs, int column, @NonNull MessageBuilder target) throws DbmsException, SQLException, IOException {
 		try (Writer writer = target.asWriter(); Reader reader = dbmsSupport.getClobReader(rs, column)) {
 			StreamUtil.copyReaderToWriter(reader, writer, 50000);
 		}

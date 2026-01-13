@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,10 +19,10 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.jms.ConnectionFactory;
 
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.jndi.JndiLocatorSupport;
 
 public interface IConnectionFactoryFactory {
@@ -33,8 +33,8 @@ public interface IConnectionFactoryFactory {
 	 * @throws NoSuchElementException if the DataSource cannot be found in any of the configured sources
 	 * @throws IllegalStateException if the DataSource cannot be created
 	 */
-	@Nonnull
-	default ConnectionFactory getConnectionFactory(@Nonnull String connectionFactoryName) throws IllegalStateException, NoSuchElementException {
+	@NonNull
+	default ConnectionFactory getConnectionFactory(@NonNull String connectionFactoryName) throws IllegalStateException, NoSuchElementException {
 		return getConnectionFactory(connectionFactoryName, null);
 	}
 
@@ -46,13 +46,13 @@ public interface IConnectionFactoryFactory {
 	 * @throws NoSuchElementException if the DataSource cannot be found in any of the configured sources
 	 * @throws IllegalStateException if the DataSource cannot be created
 	 */
-	@Nonnull
-	ConnectionFactory getConnectionFactory(@Nonnull String connectionFactoryName, @Nullable Properties jndiEnvironment) throws IllegalStateException, NoSuchElementException;
+	@NonNull
+	ConnectionFactory getConnectionFactory(@NonNull String connectionFactoryName, @Nullable Properties jndiEnvironment) throws IllegalStateException, NoSuchElementException;
 
 	/**
 	 * Return all known/registered ConnectionFactories
 	 */
-	@Nonnull
+	@NonNull
 	List<String> getConnectionFactoryNames();
 
 }

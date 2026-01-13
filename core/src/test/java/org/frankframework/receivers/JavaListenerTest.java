@@ -17,9 +17,9 @@ import java.io.StringReader;
 import java.nio.charset.Charset;
 import java.util.HashMap;
 
-import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletRequest;
 
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -100,7 +100,7 @@ public class JavaListenerTest {
 		pl.setPipeLineProcessor(pipeLineProcessor);
 
 		EchoPipe pipe = new EchoPipe() {
-			@Nonnull
+			@NonNull
 			@Override
 			public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 				session.put("key-not-configured-for-copy", "dummy");

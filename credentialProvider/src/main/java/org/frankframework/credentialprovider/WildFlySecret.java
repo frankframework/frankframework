@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,9 +18,8 @@ package org.frankframework.credentialprovider;
 import java.io.IOException;
 import java.util.NoSuchElementException;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.credential.store.CredentialStore;
 import org.wildfly.security.credential.store.CredentialStoreException;
@@ -51,7 +50,7 @@ public class WildFlySecret extends Secret {
 	}
 
 	@Override
-	public String getField(@Nonnull String fieldname) throws IOException {
+	public String getField(@NonNull String fieldname) throws IOException {
 		String key = StringUtils.isBlank(fieldname) || "password".equals(fieldname) ? getAlias() : "%s/%s".formatted(getAlias(), fieldname);
 		try {
 			if (cs.exists(key, PasswordCredential.class)) {

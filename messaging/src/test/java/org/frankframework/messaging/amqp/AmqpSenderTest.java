@@ -15,9 +15,6 @@ import java.util.concurrent.Phaser;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.IntStream;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.qpid.protonj2.client.Connection;
 import org.apache.qpid.protonj2.client.Delivery;
 import org.apache.qpid.protonj2.client.DeliveryMode;
@@ -27,6 +24,8 @@ import org.apache.qpid.protonj2.client.Sender;
 import org.apache.qpid.protonj2.client.Session;
 import org.apache.qpid.protonj2.client.SessionOptions;
 import org.apache.qpid.protonj2.client.exceptions.ClientException;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -84,11 +83,11 @@ public abstract class AmqpSenderTest {
 		return connectionFactory;
 	}
 
-	protected abstract @Nonnull String getResourceName();
+	protected abstract @NonNull String getResourceName();
 
-	protected abstract @Nonnull Integer getAmqpPort();
+	protected abstract @NonNull Integer getAmqpPort();
 
-	protected abstract @Nonnull String getHost();
+	protected abstract @NonNull String getHost();
 
 	@AfterEach
 	void tearDown() {
@@ -196,7 +195,7 @@ public abstract class AmqpSenderTest {
 		assertEquals(testData, rr);
 	}
 
-	protected @Nonnull CompletableFuture<Message> startBackgroundRRReceiver(String rrQueue, String replyToSend) {
+	protected @NonNull CompletableFuture<Message> startBackgroundRRReceiver(String rrQueue, String replyToSend) {
 
 		// Start a RR - receiver in the background to receive a message and send a reply
 		CompletableFuture<Message> future = new CompletableFuture<>();
@@ -274,7 +273,7 @@ public abstract class AmqpSenderTest {
 		assertAll(resultAssertions);
 	}
 
-	protected @Nonnull CompletableFuture<Message> startBackgroundFFReceiver(Phaser syncPoint, int receiverNr, AddressType addressType, String receiverAddress) {
+	protected @NonNull CompletableFuture<Message> startBackgroundFFReceiver(Phaser syncPoint, int receiverNr, AddressType addressType, String receiverAddress) {
 		CompletableFuture<Message> future = new CompletableFuture<>();
 
 		return future.completeAsync(() -> {
@@ -362,11 +361,11 @@ public abstract class AmqpSenderTest {
 		assertIterableEquals(messagesToSend, resultMessages);
 	}
 
-	protected @Nullable Message getMessage(@Nonnull String address, @Nonnull AddressType addressType) throws ClientException, IOException {
+	protected @Nullable Message getMessage(@NonNull String address, @NonNull AddressType addressType) throws ClientException, IOException {
 		return Amqp1Helper.getMessage(factory, getResourceName(), address, addressType);
 	}
 
-	protected @Nullable Message getStreamingMessage(String address, @Nonnull AddressType addressType) throws ClientException, IOException {
+	protected @Nullable Message getStreamingMessage(String address, @NonNull AddressType addressType) throws ClientException, IOException {
 		return Amqp1Helper.getStreamingMessage(factory, getResourceName(), address, addressType);
 	}
 }

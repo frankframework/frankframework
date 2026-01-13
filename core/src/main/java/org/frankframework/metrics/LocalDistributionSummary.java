@@ -19,7 +19,7 @@ import java.time.Duration;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.LongAdder;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import io.micrometer.core.instrument.Clock;
 import io.micrometer.core.instrument.cumulative.CumulativeDistributionSummary;
@@ -116,7 +116,7 @@ public class LocalDistributionSummary extends CumulativeDistributionSummary {
 		return histogram.takeSnapshot(0, 0, 0).histogramCounts();
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public HistogramSnapshot takeSnapshot() {
 		HistogramSnapshot snapshot = super.takeSnapshot();

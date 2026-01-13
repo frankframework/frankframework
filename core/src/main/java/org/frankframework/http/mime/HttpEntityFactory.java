@@ -1,5 +1,5 @@
 /*
-   Copyright 2024-2025 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,8 +27,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpEntity;
 import org.apache.http.NameValuePair;
@@ -39,6 +37,7 @@ import org.apache.http.entity.mime.FormBodyPart;
 import org.apache.http.entity.mime.FormBodyPartBuilder;
 import org.apache.http.entity.mime.MIME;
 import org.apache.http.message.BasicNameValuePair;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 import org.w3c.dom.Element;
@@ -161,7 +160,7 @@ public class HttpEntityFactory {
 	}
 
 
-	@Nonnull
+	@NonNull
 	public HttpEntity create(Message message, ParameterValueList parameters, PipeLineSession session) throws IOException {
 		return switch (entityType) {
 			case RAW -> createEntityForRawMessage(message, parameters);
@@ -171,7 +170,7 @@ public class HttpEntityFactory {
 		};
 	}
 
-	@Nonnull
+	@NonNull
 	private HttpEntity createEntityForRawMessage(Message message, ParameterValueList parameters) throws IOException {
 		if (parameters == null || parameters.stream().noneMatch(p -> parametersToUse.contains(p.getDefinition().getName()))) {
 			return new HttpMessageEntity(message, computeContentType(message));
@@ -216,7 +215,7 @@ public class HttpEntityFactory {
 	 *
 	 * @see <a href="https://www.rfc-editor.org/rfc/rfc3986#section-3.4">RFC 3986 section 3.4 Query</a>
 	 */
-	@Nonnull
+	@NonNull
 	private HttpEntity createUrlEncodedFormEntity(Message message, ParameterValueList parameters) throws IOException {
 		List<NameValuePair> requestFormElements = new ArrayList<>();
 

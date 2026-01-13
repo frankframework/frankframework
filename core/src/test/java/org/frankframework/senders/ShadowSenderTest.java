@@ -12,8 +12,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Collection;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -70,7 +69,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 		private @Getter @Setter Message result;
 
 		@Override
-		public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+		public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 			result = message;
 			return super.sendMessage(message, session);
 		}
@@ -79,7 +78,7 @@ public class ShadowSenderTest extends ParallelSendersTest {
 	private ISender createOriginalSender() {
 		EchoSender originalSender = new EchoSender() {
 			@Override
-			public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+			public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 				return new SenderResult(ORIGINAL_SENDER_RESULT);
 			}
 		};

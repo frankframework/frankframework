@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2023, 2026 WeAreFrank!
+   Copyright 2021, 2023, 2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,8 +18,6 @@ package org.frankframework.logging;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.logging.log4j.core.LogEvent;
 import org.apache.logging.log4j.core.config.Configuration;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
@@ -29,6 +27,7 @@ import org.apache.logging.log4j.core.pattern.ConverterKeys;
 import org.apache.logging.log4j.core.pattern.PatternConverter;
 import org.apache.logging.log4j.core.pattern.ThrowablePatternConverter;
 import org.apache.logging.log4j.util.Strings;
+import org.jspecify.annotations.NonNull;
 
 @Plugin(name = "IbisThrowablePatternConverter", category = PatternConverter.CATEGORY)
 @ConverterKeys({ "iEx", "iThrowable" })
@@ -45,7 +44,7 @@ public final class IbisThrowablePatternConverter extends ThrowablePatternConvert
 	}
 
 	@Override
-	public void format(final LogEvent event, @Nonnull final StringBuilder buffer) {
+	public void format(final LogEvent event, @NonNull final StringBuilder buffer) {
 		final Throwable throwable = event.getThrown();
 		if (throwable != null) {
 			throwablePrinter(throwable, buffer, 0);

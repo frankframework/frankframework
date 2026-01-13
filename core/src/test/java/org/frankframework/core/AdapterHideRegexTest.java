@@ -19,8 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -117,9 +116,9 @@ public class AdapterHideRegexTest {
 		return adapter;
 	}
 
-	private static @Nonnull IPipe createLoggingPipe(String name, String hideRegex, boolean doThrowException) {
+	private static @NonNull IPipe createLoggingPipe(String name, String hideRegex, boolean doThrowException) {
 		IPipe pipe = new FixedForwardPipe() {
-			@Nonnull
+			@NonNull
 			@Override
 			public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 				// Should be hidden in context of main adapter, may be visible when logged from receiver logs
@@ -181,7 +180,7 @@ public class AdapterHideRegexTest {
 		return listener;
 	}
 
-	private @Nonnull Adapter setupBasicAdapter(PipeLine.ExitState exitState, boolean doThrowException) throws ConfigurationException {
+	private @NonNull Adapter setupBasicAdapter(PipeLine.ExitState exitState, boolean doThrowException) throws ConfigurationException {
 		IPipe pipe = createLoggingPipe("echo", MAIN_ADAPTER_SECRET, doThrowException);
 		Receiver<?> receiver = mock(Receiver.class);
 		when(receiver.getRunState()).thenReturn(RunState.STOPPED);

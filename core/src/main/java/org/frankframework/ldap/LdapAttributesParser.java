@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,9 +23,8 @@ import javax.naming.directory.Attributes;
 import javax.naming.directory.BasicAttribute;
 import javax.naming.directory.BasicAttributes;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.XMLFilterImpl;
 
@@ -50,7 +49,7 @@ public class LdapAttributesParser {
 		private @Getter @Nullable Attributes attributes;
 		private @Nullable Attribute lastAttribute;
 
-		void addAttribute(@Nonnull String name) {
+		void addAttribute(@NonNull String name) {
 			if (attributes == null) {
 				attributes = new BasicAttributes();
 			}
@@ -58,7 +57,7 @@ public class LdapAttributesParser {
 			attributes.put(lastAttribute);
 		}
 
-		void addValue(@Nonnull String value) {
+		void addValue(@NonNull String value) {
 			if (lastAttribute == null) {
 				throw new IllegalStateException("No attribute found");
 			}
@@ -76,7 +75,7 @@ public class LdapAttributesParser {
 	private static class AttributeXmlParser extends XMLFilterImpl {
 		private final AttributeBuilder attributeBuilder;
 		private boolean readingAttributeValue = false;
-		private final @Nonnull StringBuilder attributeValue = new StringBuilder();
+		private final @NonNull StringBuilder attributeValue = new StringBuilder();
 
 		private AttributeXmlParser(AttributeBuilder attributeBuilder) {
 			this.attributeBuilder = attributeBuilder;

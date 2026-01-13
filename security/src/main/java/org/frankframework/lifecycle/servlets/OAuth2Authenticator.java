@@ -1,5 +1,5 @@
 /*
-   Copyright 2023-2025 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,11 +18,9 @@ package org.frankframework.lifecycle.servlets;
 import java.io.FileNotFoundException;
 import java.net.URL;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.oauth2.client.OAuth2LoginConfigurer;
 import org.springframework.security.config.oauth2.client.CommonOAuth2Provider;
@@ -316,7 +314,7 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 		return clientRepository;
 	}
 
-	protected ClientRegistration getRegistration(@Nonnull String provider, @Nonnull ICredentials credentials) {
+	protected ClientRegistration getRegistration(@NonNull String provider, @NonNull ICredentials credentials) {
 		ClientRegistration.Builder builder = switch (provider.toLowerCase()) {
 			case "google", "github", "facebook", "okta" -> {
 				CommonOAuth2Provider commonProvider = EnumUtils.parse(CommonOAuth2Provider.class, provider);
@@ -338,7 +336,7 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	 * @param appId the Azure ClientID
 	 * See https://login.microsoftonline.com/%s/.well-known/openid-configuration
 	 */
-	private ClientRegistration.Builder createAzureBuilder(@Nonnull String appId) {
+	private ClientRegistration.Builder createAzureBuilder(@NonNull String appId) {
 		if (StringUtils.isBlank(tenantId)) throw new IllegalStateException("when using Azure provider the tenantId property is required");
 
 		ClientRegistration.Builder builder = ClientRegistration.withRegistrationId("azure");
@@ -405,7 +403,7 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	 * When a base URL has been set, use that instead!
 	 * </p>
 	 */
-	@Nonnull
+	@NonNull
 	private String computeRedirectUri() {
 		String determinedBaseUrl = determineBaseUrl();
 

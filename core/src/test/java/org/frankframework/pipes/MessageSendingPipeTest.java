@@ -5,8 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 
 import java.io.IOException;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -32,7 +31,7 @@ public class MessageSendingPipeTest extends PipeTestBase<MessageSendingPipe> {
 		result.setSender(new EchoSender() {
 
 			@Override
-			public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+			public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 				try {
 					return new SenderResult("{ \"input\": \""+message.asString()+"\"}");
 				} catch (IOException e) {

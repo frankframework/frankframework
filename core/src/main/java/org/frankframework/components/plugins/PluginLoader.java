@@ -18,10 +18,9 @@ package org.frankframework.components.plugins;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.pf4j.PluginManager;
 import org.pf4j.PluginState;
 import org.pf4j.PluginWrapper;
@@ -55,12 +54,12 @@ public class PluginLoader implements InitializingBean, SmartLifecycle, Applicati
 	}
 
 	@Override
-	public void setApplicationContext(@Nonnull ApplicationContext applicationContext) {
+	public void setApplicationContext(@NonNull ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
 	}
 
 	@Nullable
-	public PluginWrapper findPlugin(@Nonnull String pluginName) {
+	public PluginWrapper findPlugin(@NonNull String pluginName) {
 		if (pluginManager == null) {
 			return null;
 		}

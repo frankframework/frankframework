@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,12 +28,11 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Functions to read and write from one stream to another.
@@ -205,7 +204,7 @@ public class StreamUtil {
 		return totalCharsCopied;
 	}
 
-	public static void streamToStream(@Nullable InputStream input, @Nonnull OutputStream output) throws IOException {
+	public static void streamToStream(@Nullable InputStream input, @NonNull OutputStream output) throws IOException {
 		streamToStream(input, output, null);
 	}
 

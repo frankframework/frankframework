@@ -20,7 +20,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
 import jakarta.servlet.Filter;
 import jakarta.servlet.HttpConstraintElement;
 import jakarta.servlet.ServletContext;
@@ -28,6 +27,7 @@ import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.ServletSecurityElement;
 import jakarta.servlet.annotation.ServletSecurity.TransportGuarantee;
 
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.BeanFactoryAware;
 import org.springframework.beans.factory.InitializingBean;
@@ -105,7 +105,7 @@ public class HttpInboundGateway implements WebSecurityConfigurer<WebSecurity>, S
 
 	private static class HttpMessagingGateway extends HttpRequestHandlingMessagingGateway {
 		@Override
-		protected void setStatusCodeIfNeeded(ServerHttpResponse response, @Nonnull HttpEntity<?> httpEntity) {
+		protected void setStatusCodeIfNeeded(ServerHttpResponse response, @NonNull HttpEntity<?> httpEntity) {
 			response.setStatusCode(HttpStatus.NOT_ACCEPTABLE);
 			try {
 				StreamUtils.copy(NOT_AVAILABLE, response.getBody());
@@ -186,7 +186,7 @@ public class HttpInboundGateway implements WebSecurityConfigurer<WebSecurity>, S
 		return messageConverters;
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public IntegrationPatternType getIntegrationPatternType() {
 		return IntegrationPatternType.inbound_gateway;

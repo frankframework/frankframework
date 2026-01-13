@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.lifecycle.SpringContextScope;
 import org.frankframework.util.Environment;
@@ -42,7 +42,7 @@ public interface Module {
 	/**
 	 * Retrieves the module information based on the MANIFEST.MF file.
 	 */
-	@Nonnull
+	@NonNull
 	default ModuleInformation getModuleInformation() throws IOException {
 		URL jarFileLocation = this.getClass().getProtectionDomain().getCodeSource().getLocation();
 		return new ModuleInformation(Environment.getManifest(jarFileLocation));

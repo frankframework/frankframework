@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 Nationale-Nederlanden, 2022-2025 WeAreFrank!
+   Copyright 2021 Nationale-Nederlanden, 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,10 +24,9 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.logging.Level;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.extern.java.Log;
 
@@ -168,7 +167,7 @@ public class CredentialFactory {
 	 * Entrypoint. Attempts to find the credential for the specified alias.
 	 * When none is found, uses the default (provided) fallback user/pass combination.
 	 */
-	@Nonnull
+	@NonNull
 	public static ICredentials getCredentials(@Nullable String rawAlias, @Nullable String defaultUsername, @Nullable String defaultPassword) throws NoSuchElementException {
 		final CredentialAlias alias = CredentialAlias.parse(rawAlias);
 		List<ISecretProvider> credentialFactoryDelegates = getInstance().delegates;
@@ -248,7 +247,7 @@ public class CredentialFactory {
 	 * String split method, includes the characters to split on.
 	 * When the input is abc@def, the output will be a list ['abc', '@', 'def'].
 	 */
-	private static List<String> splitWithSeparators(@Nonnull String str, @Nonnull String charsToSplitOn) {
+	private static List<String> splitWithSeparators(@NonNull String str, @NonNull String charsToSplitOn) {
 		final char[] c = str.toCharArray();
 		final List<String> list = new ArrayList<>();
 		int tokenStart = 0;

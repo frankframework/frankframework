@@ -17,12 +17,12 @@ package org.frankframework.extensions.cmis.servlets;
 
 import java.util.HashMap;
 
-import jakarta.annotation.Nonnull;
 import jakarta.servlet.ServletContext;
 
 import org.apache.chemistry.opencmis.commons.server.CmisServiceFactory;
 import org.apache.chemistry.opencmis.server.impl.CmisRepositoryContextListener;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.web.context.ServletContextAware;
@@ -46,7 +46,7 @@ public class CmisLifecycleBean implements ServletContextAware, InitializingBean,
 	private CmisServiceFactory factory;
 
 	@Override
-	public void setServletContext(@Nonnull ServletContext servletContext) {
+	public void setServletContext(@NonNull ServletContext servletContext) {
 		this.servletContext = servletContext;
 	}
 

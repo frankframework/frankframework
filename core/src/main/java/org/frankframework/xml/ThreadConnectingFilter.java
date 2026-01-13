@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020, 2025 WeAreFrank!
+   Copyright 2019-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,7 @@
 */
 package org.frankframework.xml;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.SAXException;
 
@@ -24,9 +23,9 @@ import org.frankframework.threading.ThreadConnector;
 
 public class ThreadConnectingFilter extends AbstractExceptionCatchingFilter {
 
-	private final @Nonnull ThreadConnector<?> threadConnector;
+	private final @NonNull ThreadConnector<?> threadConnector;
 
-	public ThreadConnectingFilter(@Nonnull ThreadConnector<?> threadConnector, @Nonnull ContentHandler handler) {
+	public ThreadConnectingFilter(@NonNull ThreadConnector<?> threadConnector, @NonNull ContentHandler handler) {
 		super(handler);
 		this.threadConnector = threadConnector;
 	}

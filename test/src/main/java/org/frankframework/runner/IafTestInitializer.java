@@ -23,8 +23,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletException;
@@ -32,6 +30,8 @@ import jakarta.servlet.ServletException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.tomcat.websocket.server.WsContextListener;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeansException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
@@ -65,7 +65,7 @@ public class IafTestInitializer {
 
 	public static class ApplicationInitializerWrapper implements ServletContextInitializer {
 		@Override
-		public void onStartup(@Nonnull ServletContext servletContext) throws ServletException {
+		public void onStartup(@NonNull ServletContext servletContext) throws ServletException {
 			FrankApplicationInitializer init = new FrankApplicationInitializer();
 			init.onStartup(servletContext);
 			LogManager.getLogger("APPLICATION").info("Started Frank!Application");
@@ -74,7 +74,7 @@ public class IafTestInitializer {
 
 	public static class LadybugInitializerWrapper implements ServletContextInitializer {
 		@Override
-		public void onStartup(@Nonnull ServletContext servletContext) throws ServletException {
+		public void onStartup(@NonNull ServletContext servletContext) throws ServletException {
 			System.setProperty("ladybug.jdbc.datasource", "");
 			LadybugWarInitializer init = new LadybugWarInitializer();
 			init.onStartup(servletContext);
@@ -84,7 +84,7 @@ public class IafTestInitializer {
 
 	public static class ConsoleInitializerWrapper implements ServletContextInitializer {
 		@Override
-		public void onStartup(@Nonnull ServletContext servletContext) throws ServletException {
+		public void onStartup(@NonNull ServletContext servletContext) throws ServletException {
 			ConsoleWarInitializer init = new ConsoleWarInitializer();
 			init.onStartup(servletContext);
 			LogManager.getLogger("APPLICATION").info("Started Console");
@@ -95,7 +95,7 @@ public class IafTestInitializer {
 	public static class WsSciWrapper implements ServletContextInitializer {
 
 		@Override
-		public void onStartup(@Nonnull ServletContext servletContext) {
+		public void onStartup(@NonNull ServletContext servletContext) {
 			WsContextListener sc = new WsContextListener();
 			sc.contextInitialized(new ServletContextEvent(servletContext));
 		}
@@ -243,7 +243,7 @@ public class IafTestInitializer {
 	 * Find the iaf-test module directory
 	 * NOTE: Since we still need to determine the log.dir, we may not log anything here!
 	 */
-	@Nonnull
+	@NonNull
 	public static Path getProjectDir() throws IOException {
 		Path runFromDir = Path.of(System.getProperty("user.dir")).toAbsolutePath();
 		return validateIfEclipseOrIntelliJ(runFromDir);
@@ -269,7 +269,7 @@ public class IafTestInitializer {
 	 * IntelliJ runs from the project root directory.
 	 * NOTE: Since we still need to determine the log.dir, we may not log anything here!
 	 */
-	private static @Nonnull Path validateIfEclipseOrIntelliJ(Path runFromDir) throws IOException {
+	private static @NonNull Path validateIfEclipseOrIntelliJ(Path runFromDir) throws IOException {
 		if(Files.exists(runFromDir.resolve(".github"))) { // this folder exists in the project ROOT directory
 			Path module = runFromDir.resolve("test");
 			if(Files.exists(module)) {

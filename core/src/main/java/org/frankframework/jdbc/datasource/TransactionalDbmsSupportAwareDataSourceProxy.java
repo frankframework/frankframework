@@ -23,9 +23,8 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.datasource.TransactionAwareDataSourceProxy;
 
 import lombok.extern.log4j.Log4j2;
@@ -93,7 +92,7 @@ public class TransactionalDbmsSupportAwareDataSourceProxy extends TransactionAwa
 		return destinationName;
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public Connection getConnection() throws SQLException {
 		Connection conn = super.getConnection();

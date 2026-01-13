@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,9 +21,8 @@ import java.time.Instant;
 import java.util.TimerTask;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Setter;
 
@@ -103,7 +102,7 @@ public class PollGuard extends TimerTask {
 		adapter.publishEvent(new AdapterMessageEvent(adapter, springJmsConnector.getReceiver(), message, level));
 	}
 
-	private void error(String message, @Nonnull Throwable t) {
+	private void error(String message, @NonNull Throwable t) {
 		log.error(() -> "%s%s".formatted(springJmsConnector.getLogPrefix(), message), t);
 		Adapter adapter = springJmsConnector.getReceiver().getAdapter();
 		adapter.publishEvent(new AdapterMessageEvent(adapter, message, t));

@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2025 WeAreFrank!
+   Copyright 2017-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,9 @@
 */
 package org.frankframework.extensions.mqtt;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
@@ -127,7 +126,7 @@ public abstract class MqttFacade implements HasPhysicalDestination, IConfigurabl
 		this.resourceName = resourceName;
 	}
 
-	@Nonnull
+	@NonNull
 	protected MqttClientFactory getClientFactory() {
 		if (clientFactory == null) {
 			clientFactory = mqttClientFactoryFactory.getClientFactory(resourceName);

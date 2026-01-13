@@ -10,9 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
-
 import org.hamcrest.core.StringEndsWith;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -243,7 +242,7 @@ public class PipeLineTest {
 	}
 
 	private static class NonFixedForwardPipe extends AbstractPipe {
-		@Nonnull
+		@NonNull
 		@Override
 		public PipeRunResult doPipe(Message message, PipeLineSession session) {
 			return new PipeRunResult(findForward(PipeForward.SUCCESS_FORWARD_NAME), message);
@@ -307,9 +306,9 @@ public class PipeLineTest {
 		assertEquals("Adapter [Adapter] called without expected session keys [k2, k3]", e.getMessage());
 	}
 
-	private @Nonnull Adapter buildTestAdapter() throws ConfigurationException {
+	private @NonNull Adapter buildTestAdapter() throws ConfigurationException {
 		Adapter adapter = new Adapter() {
-			@Nonnull
+			@NonNull
 			@Override
 			public RunState getRunState() {
 				return RunState.STARTED;
@@ -336,7 +335,7 @@ public class PipeLineTest {
 		adapter.setPipeLine(pipeLine);
 	}
 
-	private @Nonnull EchoPipe buildTestPipe(@Nonnull PipeLine pipeLine) throws ConfigurationException {
+	private @NonNull EchoPipe buildTestPipe(@NonNull PipeLine pipeLine) throws ConfigurationException {
 		EchoPipe pipe = new EchoPipe();
 		pipe.setName("Pipe" + ++pipeNr);
 		pipeLine.addPipe(pipe);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2024 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,8 @@
 */
 package org.frankframework.management.bus;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.integration.gateway.MessagingGatewaySupport;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
@@ -46,7 +45,7 @@ public class LocalGateway extends MessagingGatewaySupport implements OutboundGat
 
 	@Override
 	@SuppressWarnings("unchecked")
-	@Nonnull
+	@NonNull
 	public <I, O> Message<O> sendSyncMessage(Message<I> requestMessage) {
 		Message<O> replyMessage = (Message<O>) super.sendAndReceiveMessage(requestMessage);
 		if (replyMessage != null) {

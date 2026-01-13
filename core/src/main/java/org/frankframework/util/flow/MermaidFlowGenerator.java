@@ -27,8 +27,7 @@ import java.util.Map;
 
 import javax.xml.transform.TransformerException;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.beans.factory.config.BeanDefinition;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.BeanNameGenerator;
@@ -188,9 +187,9 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 		scanner.addExcludeFilter(new AnnotationTypeFilter(Protected.class)); //Exclude protected FrankElements
 
 		BeanNameGenerator beanNameGenerator = new AnnotationBeanNameGenerator() {
-			@Nonnull
+			@NonNull
 			@Override
-			protected String buildDefaultBeanName(@Nonnull BeanDefinition definition) {
+			protected String buildDefaultBeanName(@NonNull BeanDefinition definition) {
 				String beanClassName = definition.getBeanClassName();
 				Assert.state(beanClassName != null, "No bean class name set");
 				return beanClassName;

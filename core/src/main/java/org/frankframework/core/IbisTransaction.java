@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,11 +15,11 @@
 */
 package org.frankframework.core;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.transaction.TransactionManager;
 
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.TransactionDefinition;
 import org.springframework.transaction.TransactionStatus;
@@ -39,11 +39,11 @@ import org.frankframework.util.UUIDUtil;
 public class IbisTransaction {
 	protected final Logger log = LogUtil.getLogger(this);
 
-	@Nonnull
+	@NonNull
 	private final PlatformTransactionManager txManager;
-	@Nonnull
+	@NonNull
 	private final TransactionStatus txStatus;
-	@Nonnull
+	@NonNull
 	private final String object;
 
 	private final boolean txClientIsActive;
@@ -55,7 +55,7 @@ public class IbisTransaction {
 	private final String txName;
 	private final boolean txIsNew;
 
-	public IbisTransaction(@Nonnull PlatformTransactionManager txManager, @Nonnull TransactionDefinition txDef, @Nonnull String descriptionOfOwner) {
+	public IbisTransaction(@NonNull PlatformTransactionManager txManager, @NonNull TransactionDefinition txDef, @NonNull String descriptionOfOwner) {
 		this.txManager = txManager;
 		this.object = descriptionOfOwner;
 
@@ -80,7 +80,7 @@ public class IbisTransaction {
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	private String getRealTransactionManagerName() {
 		if (txManager instanceof SpringTxManagerProxy springTxMgr) {
 			PlatformTransactionManager platformTxMgr = springTxMgr.getRealTxManager();

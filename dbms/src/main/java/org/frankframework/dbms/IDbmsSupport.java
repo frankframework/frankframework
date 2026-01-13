@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ import java.sql.SQLType;
 import java.util.Date;
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Interface to define DBMS specific SQL implementations.
@@ -148,8 +148,8 @@ public interface IDbmsSupport {
 
 	String getSchema(Connection conn) throws DbmsException;
 
-	@Nonnull
-	String convertQuery(@Nonnull String query, @Nonnull String sqlDialectFrom) throws DbmsException;
+	@NonNull
+	String convertQuery(@NonNull String query, @NonNull String sqlDialectFrom) throws DbmsException;
 
 	ResultSet getTableColumns(Connection conn, String tableName) throws DbmsException;
 

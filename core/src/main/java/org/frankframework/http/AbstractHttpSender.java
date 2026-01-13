@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2025 WeAreFrank!
+   Copyright 2017-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,7 +31,6 @@ import java.util.Set;
 
 import javax.xml.transform.TransformerConfigurationException;
 
-import jakarta.annotation.Nonnull;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
@@ -40,6 +39,7 @@ import org.apache.http.MethodNotSupportedException;
 import org.apache.http.StatusLine;
 import org.apache.http.client.methods.HttpRequestBase;
 import org.apache.http.entity.ContentType;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -139,7 +139,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 	protected Set<String> headerParamsSet=new LinkedHashSet<>();
 	protected Set<String> parametersToSkipWhenEmptySet=new HashSet<>();
 
-	protected @Nonnull ParameterList paramList = new ParameterList();
+	protected @NonNull ParameterList paramList = new ParameterList();
 
 	@Override
 	public void addParameter(IParameter p) {
@@ -150,7 +150,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 	 * return the Parameters
 	 */
 	@Override
-	public @Nonnull ParameterList getParameterList() {
+	public @NonNull ParameterList getParameterList() {
 		return paramList;
 	}
 
@@ -327,7 +327,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 	 * @return a {@link HttpRequestBase HttpRequest} object
 	 * @throws SenderException
 	 */
-	protected abstract HttpRequestBase getMethod(URI uri, Message message, @Nonnull ParameterValueList parameters, PipeLineSession session) throws SenderException;
+	protected abstract HttpRequestBase getMethod(URI uri, Message message, @NonNull ParameterValueList parameters, PipeLineSession session) throws SenderException;
 
 	/**
 	 * Custom implementation to extract the response and format it to a String result. <br/>
@@ -354,7 +354,7 @@ public abstract class AbstractHttpSender extends AbstractHttpSession implements 
 	}
 
 	@Override
-	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 		ParameterValueList pvl;
 		try {
 			pvl = paramList.getValues(message, session);

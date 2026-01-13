@@ -1,5 +1,5 @@
 /*
-   Copyright 2017,2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2017,2018 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,8 +34,6 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.validation.ValidatorHandler;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.json.Json;
 import jakarta.json.JsonArray;
 import jakarta.json.JsonArrayBuilder;
@@ -62,6 +60,8 @@ import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSWildcard;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.Attributes;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
@@ -96,7 +96,7 @@ public class Json2Xml extends XmlAligner {
 	private final boolean insertElementContainerElements;
 	private final boolean strictSyntax;
 	private final Map<String, String> prefixMap = new HashMap<>();
-	private @Nonnull SubstitutionProvider<?> sp = new OverridesMap<>();
+	private @NonNull SubstitutionProvider<?> sp = new OverridesMap<>();
 	private @Getter @Setter boolean readAttributes=true;
 	private static final String ATTRIBUTE_PREFIX = "@";
 	private static final String MIXED_CONTENT_LABEL = "#text";
@@ -230,7 +230,7 @@ public class Json2Xml extends XmlAligner {
 		return result;
 	}
 
-	private @Nonnull Map<String, String> getAttributes(XSElementDeclaration elementDeclaration, JsonValue node) throws SAXException {
+	private @NonNull Map<String, String> getAttributes(XSElementDeclaration elementDeclaration, JsonValue node) throws SAXException {
 		if (!readAttributes) {
 			return Map.of();
 		}
@@ -275,7 +275,7 @@ public class Json2Xml extends XmlAligner {
 		return allChildNames.contains(childName);
 	}
 
-	private @Nonnull Set<String> getAllNodeChildNames(JsonValue node) throws SAXException {
+	private @NonNull Set<String> getAllNodeChildNames(JsonValue node) throws SAXException {
 		if (log.isTraceEnabled())
 			log.trace("node isParentOfSingleMultipleOccurringChildElement [{}] [{}][{}]", isParentOfSingleMultipleOccurringChildElement(), node.getClass()
 					.getName(), node);
@@ -460,7 +460,7 @@ public class Json2Xml extends XmlAligner {
 	 * @param declaredChildParticles          Names of child-nodes to keep in the copy
 	 * @return Copy of the JSON node.
 	 */
-	private @Nonnull JsonValue filterNodeChildren(String originalNodeName, JsonValue node, List<XSParticle> declaredChildParticles, Set<String> notAllowedChildren) {
+	private @NonNull JsonValue filterNodeChildren(String originalNodeName, JsonValue node, List<XSParticle> declaredChildParticles, Set<String> notAllowedChildren) {
 		if (node instanceof JsonArray jsonArray) {
 			return copyJsonArray(originalNodeName, jsonArray, declaredChildParticles, notAllowedChildren);
 		} else if (node instanceof JsonObject jsonObject) {
@@ -595,7 +595,7 @@ public class Json2Xml extends XmlAligner {
 		return result;
 	}
 
-	private @Nonnull Set<String> getUnprocessedChildElementNames(JsonValue node, Set<String> processedChildren) throws SAXException {
+	private @NonNull Set<String> getUnprocessedChildElementNames(JsonValue node, Set<String> processedChildren) throws SAXException {
 		Set<String> unProcessedChildren = getAllNodeChildNames(node);
 		if (!unProcessedChildren.isEmpty()) {
 			unProcessedChildren.removeAll(processedChildren);
@@ -685,7 +685,7 @@ public class Json2Xml extends XmlAligner {
 		}
 	}
 
-	private @Nonnull AttributesImpl collectElementAttributes(XSElementDeclaration elementDeclaration, JsonValue node, String name) throws SAXException {
+	private @NonNull AttributesImpl collectElementAttributes(XSElementDeclaration elementDeclaration, JsonValue node, String name) throws SAXException {
 		AttributesImpl attributes = new AttributesImpl();
 		Map<String,String> nodeAttributes = getAttributes(elementDeclaration, node);
 		log.trace("node [{}] search for attributeDeclaration", name);
@@ -725,14 +725,14 @@ public class Json2Xml extends XmlAligner {
 		return attributes;
 	}
 
-	private @Nonnull Set<String> doHandleElement(XSElementDeclaration elementDeclaration, JsonValue node, String elementNamespace, String name, String qname, Attributes attributes) throws SAXException {
+	private @NonNull Set<String> doHandleElement(XSElementDeclaration elementDeclaration, JsonValue node, String elementNamespace, String name, String qname, Attributes attributes) throws SAXException {
 		validatorHandler.startElement(elementNamespace, name, qname, attributes);
 		Set<String> result = handleElementContents(elementDeclaration, node);
 		validatorHandler.endElement(elementNamespace, name, qname);
 		return result;
 	}
 
-	private @Nonnull Set<String> handleComplexTypedElement(final XSElementDeclaration elementDeclaration, final JsonValue node) throws SAXException {
+	private @NonNull Set<String> handleComplexTypedElement(final XSElementDeclaration elementDeclaration, final JsonValue node) throws SAXException {
 		final String name = elementDeclaration.getName();
 		log.trace("ToXml.handleComplexTypedElement() search for best path for available children of element [{}]", name);
 		final List<XSParticle> childParticles = getBestChildElementPath(elementDeclaration, node, false);
@@ -833,7 +833,7 @@ public class Json2Xml extends XmlAligner {
 		return true;
 	}
 
-	public @Nonnull List<XSParticle> getBestChildElementPath(XSElementDeclaration elementDeclaration, JsonValue node, boolean silent) throws SAXException {
+	public @NonNull List<XSParticle> getBestChildElementPath(XSElementDeclaration elementDeclaration, JsonValue node, boolean silent) throws SAXException {
 		XSTypeDefinition typeDefinition = elementDeclaration.getTypeDefinition();
 		if (typeDefinition == null) {
 			log.warn("getBestChildElementPath typeDefinition is null");

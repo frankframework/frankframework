@@ -1,8 +1,7 @@
 package org.frankframework.pipes;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
@@ -13,7 +12,7 @@ import org.frankframework.stream.Message;
 
 public class ParameterValueTestPipe extends FixedForwardPipe {
 
-	@Nonnull
+	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		ParameterValueList pvl;

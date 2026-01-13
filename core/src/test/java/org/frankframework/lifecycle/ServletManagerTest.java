@@ -14,8 +14,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import jakarta.annotation.Nonnull;
 import jakarta.servlet.MultipartConfigElement;
+import jakarta.servlet.Servlet;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletRegistration;
 import jakarta.servlet.ServletRegistration.Dynamic;
@@ -25,6 +25,7 @@ import jakarta.servlet.http.HttpServlet;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.hamcrest.CoreMatchers;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -52,13 +53,13 @@ public class ServletManagerTest {
 	public static void prepare() throws Exception {
 		ServletContext context = new MockServletContext() {
 			private final Map<String, Dynamic> dynamic = new HashMap<>();
-			@Nonnull
+			@NonNull
 			@Override
-			public Dynamic addServlet(@Nonnull String servletName, @Nonnull jakarta.servlet.Servlet servlet) {
+			public Dynamic addServlet(@NonNull String servletName, @NonNull Servlet servlet) {
 				return dynamic.compute(servletName, (k,v) -> new DynamicServletRegistration(servletName, servlet));
 			}
 			@Override
-			public ServletRegistration getServletRegistration(@Nonnull String servletName) {
+			public ServletRegistration getServletRegistration(@NonNull String servletName) {
 				return dynamic.get(servletName);
 			}
 		};

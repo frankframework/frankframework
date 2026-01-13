@@ -19,7 +19,7 @@ import java.io.FilterReader;
 import java.io.IOException;
 import java.io.Reader;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 /**
  * Reader that encapsulates a file within a prefix and a postfix.
@@ -79,7 +79,7 @@ public class EncapsulatingReader extends FilterReader {
 	}
 
 	@Override
-	public int read(@Nonnull char[] cbuf, int off, int len) throws IOException {
+	public int read(@NonNull char[] cbuf, int off, int len) throws IOException {
 		int charsRead=0;
 		if (!readPrefix) {
 			while (position<prefix.length() && charsRead<len) {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2013, 2016, 2020 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,8 +15,8 @@
 */
 package org.frankframework.pipes;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 
@@ -49,7 +49,7 @@ public abstract class FixedForwardPipe extends AbstractPipe {
 		}
 	}
 
-	protected @Nullable String getParameterValue(@Nonnull ParameterValueList pvl, String parameterName) {
+	protected @Nullable String getParameterValue(@NonNull ParameterValueList pvl, String parameterName) {
 		ParameterValue pv = pvl.findParameterValue(parameterName);
 		if(pv != null) {
 			return pv.asStringValue(null);
