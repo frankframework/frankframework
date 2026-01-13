@@ -51,7 +51,7 @@ import org.frankframework.console.ApiException;
  * Taken partially from {@link ResponseEntityExceptionHandler#handleException(Exception, WebRequest)}.
  * This ExceptionHandler catches Spring {@link ErrorResponse HTTP related} MVC exceptions,
  * as well as IO related exceptions.
- * 
+ *
  * Catch all Spring web exceptions (such as subclasses of {@link ServletException}), even when they are not thrown from our own sources.
  * We need to prioritize this so our handler is used before Spring's own ExceptionHandler.
  */

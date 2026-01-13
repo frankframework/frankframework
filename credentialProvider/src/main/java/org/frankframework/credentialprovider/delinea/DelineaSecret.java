@@ -15,7 +15,8 @@
 */
 package org.frankframework.credentialprovider.delinea;
 
-import org.jspecify.annotations.NonNull;
+
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.credentialprovider.CredentialAlias;
 import org.frankframework.credentialprovider.Secret;
@@ -38,7 +39,8 @@ public class DelineaSecret extends Secret {
 	}
 
 	@Override
-	public String getField(@NonNull String slugName) {
+	@Nullable
+	public String getField(@Nullable String slugName) {
 		return secret.fields().stream()
 				.filter(field -> field.slug().equals(slugName))
 				.map(DelineaSecretDto.Field::value)

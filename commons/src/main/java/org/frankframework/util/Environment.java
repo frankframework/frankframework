@@ -34,8 +34,10 @@ import java.util.zip.ZipInputStream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class Environment {
 
 	private Environment() {
@@ -65,7 +67,6 @@ public class Environment {
 	 * {@link System#getProperty(String, String)}. The {@link SecurityException} if thrown, is hidden.
 	 *
 	 * @param property The property to search for.
-	 * @param def      The default value to return, may be {@code null}.
 	 * @return the string value of the system property, or the default value if
 	 * 		there is no property with that property.
 	 * 		May return {@code null} if the default value was {@code null}.

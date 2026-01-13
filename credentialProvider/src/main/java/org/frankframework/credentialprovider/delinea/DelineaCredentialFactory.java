@@ -17,9 +17,11 @@ package org.frankframework.credentialprovider.delinea;
 
 import java.util.Collection;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.extern.java.Log;
 
@@ -102,15 +104,15 @@ public class DelineaCredentialFactory implements ISecretProvider {
 
 	private final Cache<String, DelineaSecretDto, NoSuchElementException> configuredAliases = new Cache<>(CACHE_DURATION_MILLIS);
 
-	private DelineaClientSettings delineaClientSettings;
+	private @Nullable DelineaClientSettings delineaClientSettings;
 
-	private DelineaClient delineaClient;
+	private @Nullable DelineaClient delineaClient;
 
 	@Override
 	public void initialize() {
 		log.info("initializing DelineaCredentialFactory");
 
-		readConfiguration();
+		this.delineaClientSettings = readConfiguration();
 
 		if ((StringUtils.isEmpty(delineaClientSettings.apiRootUrlTemplate()) || StringUtils.isEmpty(delineaClientSettings.tokenUrlTemplate()))
 				&& (StringUtils.isEmpty(delineaClientSettings.apiRootUrl()) || StringUtils.isEmpty(delineaClientSettings.oauthTokenUrl()))
@@ -124,10 +126,10 @@ public class DelineaCredentialFactory implements ISecretProvider {
 		}
 	}
 
-	private void readConfiguration() {
+	private DelineaClientSettings readConfiguration() {
 		CredentialConstants appConstants = CredentialConstants.getInstance();
 
-		this.delineaClientSettings = new DelineaClientSettings(
+		return new DelineaClientSettings(
 				appConstants.get(TENANT_KEY),
 				appConstants.get(API_ROOT_URL_KEY),
 				appConstants.get(API_ROOT_URL_TEMPLATE_KEY),
@@ -157,7 +159,8 @@ public class DelineaCredentialFactory implements ISecretProvider {
 		}
 
 		// Make sure to always get a live copy of the secret
-		DelineaSecretDto secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), aliasToRetrieve -> delineaClient.getSecret(aliasToRetrieve, delineaClientSettings.autoCommentValue()));
+		DelineaSecretDto secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), aliasToRetrieve ->
+				Objects.requireNonNull(delineaClient).getSecret(aliasToRetrieve, Objects.requireNonNull(delineaClientSettings).autoCommentValue()));
 
 		if (secret == null) {
 			throw new NoSuchElementException();
@@ -166,7 +169,7 @@ public class DelineaCredentialFactory implements ISecretProvider {
 		return new DelineaSecret(alias, secret);
 	}
 
-	void setDelineaClient(DelineaClient delineaClient) {
+	void setDelineaClient(@NonNull DelineaClient delineaClient) {
 		this.delineaClient = delineaClient;
 	}
 }

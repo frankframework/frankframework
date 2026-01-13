@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,19 +16,20 @@
 package org.frankframework.credentialprovider.delinea;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Contains the settings for the SecretServer configuration.
  */
-public record DelineaClientSettings(String tenant,
-		String apiRootUrl,
-		String apiRootUrlTemplate,
-		String tokenUrlTemplate,
-		String oauthTokenUrl,
-		String oauthUsername,
-		String oauthPassword,
-		String tld,
-		String autoCommentValue) {
+public record DelineaClientSettings(@Nullable String tenant,
+		@Nullable String apiRootUrl,
+		@Nullable String apiRootUrlTemplate,
+		@Nullable String tokenUrlTemplate,
+		@Nullable String oauthTokenUrl,
+		@Nullable String oauthUsername,
+		@Nullable String oauthPassword,
+		@Nullable String tld,
+		@Nullable String autoCommentValue) {
 	private static final String DEFAULT_TLD = "com";
 
 	private static final String DEFAULT_ROOT_URL_TEMPLATE = "https://%s.secretservercloud.%s/api";

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 Nationale-Nederlanden, 2021-2025 WeAreFrank!
+   Copyright 2021 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.frankframework.credentialprovider;
 import java.util.NoSuchElementException;
 
 import org.apache.tomcat.util.IntrospectionUtils.PropertySource;
+import org.jspecify.annotations.Nullable;
 
 import lombok.extern.java.Log;
 
@@ -41,6 +42,7 @@ public class CredentialProvidingPropertySource implements PropertySource {
 	public static final String DEFAULT_MARKER = ":";
 
 	@Override
+	@Nullable
 	public String getProperty(String key) {
 		String[] keyAndDefault = key.split(DEFAULT_MARKER);
 

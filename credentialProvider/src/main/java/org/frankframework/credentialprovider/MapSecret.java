@@ -23,6 +23,7 @@ import java.util.Properties;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public class MapSecret extends Secret {
 
@@ -47,7 +48,7 @@ public class MapSecret extends Secret {
 	}
 
 	@Override
-	public String getField(@NonNull String fieldName) throws IOException {
+	public String getField(@Nullable String fieldName) throws IOException {
 		if (secret.size() == 1) {
 			// no field
 			if(StringUtils.isBlank(fieldName)) {

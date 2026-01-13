@@ -30,6 +30,7 @@ import java.util.Properties;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
@@ -39,6 +40,7 @@ import lombok.extern.log4j.Log4j2;
  * When getting a property, if the value contains any string substitution expressions these are first evaluated. See {@link StringResolver}
  * for more information on the format.
  */
+@NullMarked
 @Log4j2
 public class PropertyLoader extends Properties {
 
@@ -77,6 +79,7 @@ public class PropertyLoader extends Properties {
 	 * @param key The key to search for.
 	 * @return the string value of the system property, or NULL if there is no property with that key.
 	 */
+	@Nullable
 	private static String getSystemProperty(String key) {
 		try {
 			String result = System.getenv().get(key);
@@ -100,11 +103,13 @@ public class PropertyLoader extends Properties {
 	}
 
 	@Override
+	@Nullable
 	public synchronized String get(Object key) {
 		return getResolvedProperty((String) key);
 	}
 
 	@Override
+	@Nullable
 	public String getProperty(String key) {
 		return getResolvedProperty(key);
 	}
@@ -129,6 +134,7 @@ public class PropertyLoader extends Properties {
 	 *
 	 * @see StringResolver
 	 */
+	@Nullable
 	protected final String getResolvedProperty(String key) {
 		String value = getSystemProperty(key); // first try system properties
 		if (value == null) {

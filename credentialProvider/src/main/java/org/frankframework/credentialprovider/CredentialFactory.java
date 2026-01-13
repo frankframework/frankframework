@@ -48,10 +48,10 @@ public class CredentialFactory {
 	public static final String DEFAULT_PASSWORD_FIELD = "password";
 
 	protected final List<ISecretProvider> delegates = new ArrayList<>();
-	protected static boolean ALLOW_DEFAULT_PASSWORD = CredentialConstants.getInstance().getBoolean("credentialFactory.allowDefaultPassword", true);
-	private static boolean ALLOW_FALLBACK = CredentialConstants.getInstance().getBoolean("credentialFactory.allowFallbackProvider", true);
+	protected static final boolean ALLOW_DEFAULT_PASSWORD = CredentialConstants.getInstance().getBoolean("credentialFactory.allowDefaultPassword", true);
+	private static final boolean ALLOW_FALLBACK = CredentialConstants.getInstance().getBoolean("credentialFactory.allowFallbackProvider", true);
 
-	private static CredentialFactory self;
+	private static @Nullable CredentialFactory self;
 
 	public static synchronized CredentialFactory getInstance() {
 		if (self == null) {
@@ -105,7 +105,7 @@ public class CredentialFactory {
 		self = null;
 	}
 
-	private boolean tryFactories(final String factoryClassNames) {
+	private boolean tryFactories(final @Nullable String factoryClassNames) {
 		if (StringUtils.isBlank(factoryClassNames)) {
 			return false;
 		}
@@ -221,7 +221,8 @@ public class CredentialFactory {
 		return new Credential(alias.getName(), username, password);
 	}
 
-	private static String substitute(String input, ISecret secret) throws IOException {
+	@Nullable
+	private static String substitute(@Nullable String input, ISecret secret) throws IOException {
 		if (StringUtils.isBlank(input) || StringUtils.containsNone(input, CredentialAlias.SEPARATOR_CHARACTERS)) {
 			return secret.getField(input);
 		}

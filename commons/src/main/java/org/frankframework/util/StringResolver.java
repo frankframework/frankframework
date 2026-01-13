@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2014 Nationale-Nederlanden, 2020 - 2023 WeAreFrank!
+   Copyright 2013, 2014 Nationale-Nederlanden, 2020 - 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package org.frankframework.util;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.ServiceLoader;
@@ -25,6 +26,8 @@ import java.util.Set;
 
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Provide functionality to resolve ${property.key} to the value of the map/property key. If Maps passed to the various substitution methods are
@@ -43,6 +46,7 @@ import org.apache.commons.lang3.StringUtils;
  *
  * @author Johan Verrips
  */
+@NullMarked
 public class StringResolver {
 
 	private StringResolver() {
@@ -58,7 +62,7 @@ public class StringResolver {
 	 */
 	private static final ServiceLoader<AdditionalStringResolver> serviceLoader = ServiceLoader.load(AdditionalStringResolver.class);
 	private static final String VALUE_SEPARATOR = ":-";
-	private static Collection<AdditionalStringResolver> additionalStringResolvers = null;
+	private static @Nullable Collection<AdditionalStringResolver> additionalStringResolvers = null;
 
 	/**
 	 * Do variable substitution on a string to resolve ${test.xx} to the value of the
@@ -80,13 +84,13 @@ public class StringResolver {
 	 *
 	 * @param val         Value in which to provide string substitutions
 	 * @param props1      First property object in which to find substitutions
-	 * @param props2      Second property object in which to find substitutions
+	 * @param props2      Second property object in which to find substitutions, may by {@code null}
 	 * @param propsToHide Optional collection of property names to hide from the output. If not null, then
 	 *                    all credentials will also be hidden, in addition to properties named in the collection.
 	 * @return Input string with all property reference patterns resolved to either a property value, or empty.
 	 * @throws IllegalArgumentException if there were invalid input arguments.
 	 */
-	public static String substVars(String val, Map<?, ?> props1, Map<?, ?> props2, Set<String> propsToHide) throws IllegalArgumentException {
+	public static String substVars(String val, Map<?, ?> props1, @Nullable Map<?, ?> props2, @Nullable Set<String> propsToHide) throws IllegalArgumentException {
 		return substVars(val, props1, props2, propsToHide, DELIM_START, DELIM_STOP, false);
 	}
 
@@ -142,7 +146,7 @@ public class StringResolver {
 	 *
 	 * @param val                     Value in which to provide string substitutions
 	 * @param props1                  First property object in which to find substitutions
-	 * @param props2                  Second property object in which to find substitutions
+	 * @param props2                  Second property object in which to find substitutions, may by {@code null}
 	 * @param propsToHide             Optional collection of property names to hide from the output. If not null, then
 	 *                                all credentials will also be hidden, in addition to properties named in the collection.
 	 * @param delimStart              Start of substitution pattern delimiter
@@ -152,7 +156,7 @@ public class StringResolver {
 	 * @return Input string with all property reference patterns resolved to either a property value, or empty.
 	 * @throws IllegalArgumentException if there were invalid input arguments.
 	 */
-	public static String substVars(String val, Map<?, ?> props1, Map<?, ?> props2, Set<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) throws IllegalArgumentException {
+	public static String substVars(String val, Map<?, ?> props1, @Nullable Map<?, ?> props2, @Nullable Set<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) throws IllegalArgumentException {
 		if (delimStart.equals(delimStop)) {
 			throw new IllegalArgumentException("Start and End delimiters of substitution variables cannot be the same: both are '" +
 					delimStart + "'");
@@ -175,7 +179,7 @@ public class StringResolver {
 		}
 	}
 
-	private static String extractNextKey(String val, Map<?, ?> props1, Map<?, ?> props2, SubstitutionContext ctx) {
+	private static String extractNextKey(String val, Map<?, ?> props1, @Nullable Map<?, ?> props2, SubstitutionContext ctx) {
 		String key = val.substring(ctx.pointer, ctx.tail);
 		ctx.propertyComposer = key;
 		if (key.contains(ctx.delimStart)) {
@@ -229,7 +233,7 @@ public class StringResolver {
 		ctx.pointer = val.indexOf(ctx.delimStart, ctx.head); // index delimiter
 	}
 
-	private static void appendReplacement(StringBuilder sb, String key, Map<?, ?> props1, Map<?, ?> props2, String expression, SubstitutionContext ctx) {
+	private static void appendReplacement(StringBuilder sb, String key, Map<?, ?> props1, @Nullable Map<?, ?> props2, String expression, SubstitutionContext ctx) {
 		Optional<String> replacement = resolveReplacement(key, props1, props2, ctx);
 
 		if (ctx.resolveWithPropertyName) {
@@ -239,7 +243,7 @@ public class StringResolver {
 		if (replacement.isPresent()) {
 			String replacementValue;
 			if (ctx.propsToHide != null && ctx.propsToHide.contains(key)) {
-				replacementValue = StringUtil.hide(replacement.get());
+				replacementValue = Objects.requireNonNull(StringUtil.hide(replacement.get()));
 			} else {
 				replacementValue = replacement.get();
 			}
@@ -264,14 +268,14 @@ public class StringResolver {
 		}
 	}
 
-	private static Optional<String> resolveReplacement(String key, Map<?, ?> props1, Map<?, ?> props2, SubstitutionContext ctx) {
+	private static Optional<String> resolveReplacement(String key, Map<?, ?> props1, @Nullable Map<?, ?> props2, SubstitutionContext ctx) {
 		return Environment.getSystemProperty(key)
 				.or(() -> findInAdditionalResolvers(key, props1, props2, ctx))
 				.or(() -> getReplacementFromProps(key, props1))
 				.or(() -> getReplacementFromProps(key, props2));
 	}
 
-	private static Optional<String> findInAdditionalResolvers(String key, Map<?, ?> props1, Map<?, ?> props2, SubstitutionContext ctx) {
+	private static Optional<String> findInAdditionalResolvers(String key, Map<?, ?> props1, @Nullable Map<?, ?> props2, SubstitutionContext ctx) {
 		return getAdditionalStringResolvers().stream()
 				.map(resolver -> resolver.resolve(key, props1, props2, ctx.propsToHide, ctx.delimStart, ctx.delimStop, ctx.resolveWithPropertyName))
 				.filter(Optional::isPresent)
@@ -279,7 +283,7 @@ public class StringResolver {
 				.orElse(Optional.empty());
 	}
 
-	private static Optional<String> getReplacementFromProps(String key, Map<?, ?> props) {
+	private static Optional<String> getReplacementFromProps(String key, @Nullable Map<?, ?> props) {
 		if (props == null) {
 			return Optional.empty();
 		} else if (props instanceof Properties properties) {
@@ -337,11 +341,11 @@ public class StringResolver {
 	 *
 	 * @param val    Value in which to provide string substitutions
 	 * @param props1 First property object in which to find substitutions
-	 * @param props2 Second property object in which to find substitutions
+	 * @param props2 Second property object in which to find substitutions, may by {@code null}
 	 * @return Input string with all property reference patterns resolved to either a property value, or empty.
 	 * @throws IllegalArgumentException if there were invalid input arguments.
 	 */
-	public static String substVars(String val, Map<?, ?> props1, Map<?, ?> props2) throws IllegalArgumentException {
+	public static String substVars(String val, Map<?, ?> props1, @Nullable Map<?, ?> props2) throws IllegalArgumentException {
 		return substVars(val, props1, props2, null);
 	}
 
@@ -419,13 +423,13 @@ public class StringResolver {
 	 *
 	 * @param val                     Value in which to provide string substitutions
 	 * @param props1                  First property object in which to find substitutions
-	 * @param props2                  Second property object in which to find substitutions
+	 * @param props2                  Second property object in which to find substitutions, may by {@code null}
 	 * @param resolveWithPropertyName Flag indicating if property names should also be part of the output, for debugging of
 	 *                                configurations.
 	 * @return Input string with all property reference patterns resolved to either a property value, or empty.
 	 * @throws IllegalArgumentException if there were invalid input arguments.
 	 */
-	public static String substVars(String val, Map<?, ?> props1, Map<?, ?> props2, boolean resolveWithPropertyName) throws IllegalArgumentException {
+	public static String substVars(String val, Map<?, ?> props1, @Nullable Map<?, ?> props2, boolean resolveWithPropertyName) throws IllegalArgumentException {
 		return substVars(val, props1, props2, null, DELIM_START, DELIM_STOP, resolveWithPropertyName);
 	}
 
@@ -514,18 +518,18 @@ public class StringResolver {
 	}
 
 	private static class SubstitutionContext {
-		final Set<String> propsToHide;
+		final @Nullable Set<String> propsToHide;
 		final String delimStart;
 		final String delimStop;
 		final boolean resolveWithPropertyName;
-		String providedDefaultValue = null;
+		@Nullable String providedDefaultValue = null;
 		boolean containsDefault = false;
 		int head = 0;
 		int pointer;
 		int tail;
 		String propertyComposer = "";
 
-		private SubstitutionContext(Set<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) {
+		private SubstitutionContext(@Nullable Set<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) {
 			this.propsToHide = propsToHide;
 			this.delimStart = delimStart;
 			this.delimStop = delimStop;

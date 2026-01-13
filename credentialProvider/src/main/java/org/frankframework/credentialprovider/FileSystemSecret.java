@@ -21,7 +21,7 @@ import java.nio.file.Path;
 import java.util.NoSuchElementException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public class FileSystemSecret extends Secret {
 
@@ -41,14 +41,15 @@ public class FileSystemSecret extends Secret {
 	}
 
 	@Override
-	public String getField(@NonNull String fieldname) throws IOException {
+	@Nullable
+	public String getField(@Nullable String fieldname) throws IOException {
 		if (StringUtils.isNotBlank(fieldname) && Files.isRegularFile(aliasPath)) {
 			throw new NoSuchElementException("cannot obtain field from secret [" + this + "]");
 		}
 
 		Path field = StringUtils.isBlank(fieldname) ? aliasPath : aliasPath.resolve(fieldname);
 		if (Files.exists(field)) {
-			return Files.readAllLines(field).get(0);
+			return Files.readAllLines(field).getFirst();
 		}
 
 		return null;

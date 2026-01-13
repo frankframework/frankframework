@@ -43,9 +43,6 @@ public abstract class AbstractMapCredentialFactory implements ISecretProvider {
 		CredentialConstants appConstants = CredentialConstants.getInstance();
 
 		aliases = getCredentialMap(appConstants);
-		if (aliases == null) {
-			throw new IllegalArgumentException(this.getClass().getName()+" cannot get alias map");
-		}
 	}
 
 	protected abstract Map<String,String> getCredentialMap(CredentialConstants appConstants) throws IOException;

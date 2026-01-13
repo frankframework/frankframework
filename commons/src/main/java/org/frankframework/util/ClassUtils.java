@@ -29,11 +29,13 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
@@ -45,6 +47,7 @@ import org.frankframework.core.HasName;
  *
  * @author Johan Verrips
  */
+@NullMarked
 @Log4j2
 public class ClassUtils {
 
@@ -180,7 +183,7 @@ public class ClassUtils {
 			}
 		}
 
-		return StringUtil.concatStrings(head, " ", tail);
+		return Objects.requireNonNull(StringUtil.concatStrings(head, " ", tail));
 	}
 
 	/**
@@ -246,7 +249,7 @@ public class ClassUtils {
 
 		try {// Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
 			Object castValue = parseValueToSet(method, valueToSet);
-			log.trace("trying to set method [{}] with value [{}] of type [{}] on [{}]", method::getName, () -> valueToSet, () -> castValue.getClass()
+			log.trace("trying to set method [{}] with value [{}] of type [{}] on [{}]", method::getName, () -> valueToSet, () -> castValue == null ? "<null value>" : castValue.getClass()
 					.getCanonicalName(), () -> ClassUtils.nameOf(clazz));
 
 			method.invoke(clazz, castValue);
@@ -255,6 +258,7 @@ public class ClassUtils {
 		}
 	}
 
+	@Nullable
 	private static Object parseValueToSet(Method method, String value) throws IllegalArgumentException {
 		Class<?> setterArgumentClass = method.getParameters()[0].getType();
 
@@ -358,6 +362,7 @@ public class ClassUtils {
 		return getterMtd.invoke(o, (Object[]) null);
 	}
 
+	@Nullable
 	public static Object getDeclaredFieldValue(Object o, Class<?> c, String name) throws IllegalArgumentException, SecurityException, NoSuchFieldException {
 		Field f = c.getDeclaredField(name);
 		try {
@@ -369,6 +374,7 @@ public class ClassUtils {
 		}
 	}
 
+	@Nullable
 	public static Object getDeclaredFieldValue(Object o, String name) throws IllegalArgumentException, SecurityException, NoSuchFieldException {
 		return getDeclaredFieldValue(o, o.getClass(), name);
 	}
@@ -396,7 +402,7 @@ public class ClassUtils {
 		return infoList;
 	}
 
-	public static Map<String, Object> getClassInfo(Class<?> clazz, ClassLoader classLoader) {
+	public static Map<String, Object> getClassInfo(@Nullable Class<?> clazz, ClassLoader classLoader) {
 		Map<String, Object> result = new LinkedHashMap<>();
 		String classLoaderName = classLoader != null ? classLoader.toString() : "<system classloader>";
 		result.put("classLoader", classLoaderName);

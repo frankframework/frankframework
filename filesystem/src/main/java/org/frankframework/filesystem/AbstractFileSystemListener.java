@@ -118,7 +118,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 	private @Getter int numberOfBackups=0;
 	private @Getter boolean fileTimeSensitive=false;
 	private @Getter IMessageType messageType = MessageType.PATH;
-	private @Getter String messageIdPropertyKey = null;
+	private @Nullable @Getter String messageIdPropertyKey = null;
 	private @Getter String storeMetadataInSessionKey;
 
 	private @Getter boolean disableMessageBrowsers = false;

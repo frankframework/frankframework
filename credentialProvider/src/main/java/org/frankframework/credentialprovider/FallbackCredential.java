@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,12 +15,14 @@
 */
 package org.frankframework.credentialprovider;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * When no credential is found in any of the CredentialProviders, this may be used.
  */
 public class FallbackCredential extends Credential {
 
-	public FallbackCredential(String alias, String username, String password) {
+	public FallbackCredential(@Nullable String alias, @Nullable String username, @Nullable String password) {
 		super(alias, username, password);
 	}
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.jspecify.annotations.Nullable;
+
 public class Cache<K,V,E extends Exception> {
 
 	private final Map<K, CacheEntry<V>> delegate;
@@ -29,6 +31,7 @@ public class Cache<K,V,E extends Exception> {
 		delegate = new ConcurrentHashMap<>();
 	}
 
+	@Nullable
 	public V computeIfAbsentOrExpired(K key, ThrowingFunction<K,V,E> valueSupplier) throws E {
 		CacheEntry<V> entry = delegate.computeIfAbsent(key, k -> new CacheEntry<>());
 		synchronized (entry) {

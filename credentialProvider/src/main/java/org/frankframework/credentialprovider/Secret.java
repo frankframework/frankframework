@@ -15,13 +15,11 @@
 */
 package org.frankframework.credentialprovider;
 
-import org.jspecify.annotations.NonNull;
-
 public abstract class Secret implements ISecret {
 
 	private final CredentialAlias alias;
 
-	protected Secret(@NonNull CredentialAlias alias) {
+	protected Secret(CredentialAlias alias) {
 		this.alias = alias;
 	}
 

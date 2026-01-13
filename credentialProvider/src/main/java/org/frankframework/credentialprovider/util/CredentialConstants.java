@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 package org.frankframework.credentialprovider.util;
 
 
+import org.jspecify.annotations.Nullable;
+
 import org.frankframework.util.PropertyLoader;
 
 /**
@@ -29,7 +31,7 @@ import org.frankframework.util.PropertyLoader;
 public final class CredentialConstants extends PropertyLoader {
 
 	private static final String APP_CONSTANTS_PROPERTIES_FILE = "credentialprovider.properties";
-	private static CredentialConstants instance = null;
+	private static @Nullable CredentialConstants instance = null;
 
 	private CredentialConstants() {
 		super(CredentialConstants.class.getClassLoader(), APP_CONSTANTS_PROPERTIES_FILE);

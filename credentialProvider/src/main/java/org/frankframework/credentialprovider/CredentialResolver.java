@@ -1,5 +1,5 @@
 /*
-   Copyright 2023-2025 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,6 +21,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.util.AdditionalStringResolver;
 import org.frankframework.util.Environment;
@@ -46,10 +48,10 @@ public class CredentialResolver implements AdditionalStringResolver {
 
 	public static final String CREDENTIAL_EXPANSION_ALLOWING_PROPERTY="authAliases.expansion.allowed"; // refers to a comma separated list of aliases for which credential expansion is allowed
 
-	private static Set<String> authAliasesAllowedToExpand=null;
+	private static @Nullable Set<String> authAliasesAllowedToExpand=null;
 
 	@Override
-	public Optional<String> resolve(String key, Map<?, ?> props1, Map<?, ?> props2, Set<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) {
+	public Optional<String> resolve(String key, Map<?, ?> props1, @Nullable Map<?, ?> props2, @Nullable Set<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) {
 		if (!key.startsWith(CREDENTIAL_PREFIX)) {
 			return Optional.empty();
 		}
@@ -71,11 +73,11 @@ public class CredentialResolver implements AdditionalStringResolver {
 		} else {
 			replacement = "!!not allowed to expand credential of authAlias ["+key+"]!!";
 		}
-		return Optional.of(mustHideCredential ? StringUtil.hide(replacement) : replacement);
+		return Optional.ofNullable(mustHideCredential ? StringUtil.hide(replacement) : replacement);
 	}
 
 	private static boolean mayExpandAuthAlias(String aliasName, Map<?, ?> props1) {
-		if (authAliasesAllowedToExpand==null) {
+		if (authAliasesAllowedToExpand == null) {
 			Optional<String> optional = Environment.getSystemProperty(CREDENTIAL_EXPANSION_ALLOWING_PROPERTY);
 			if (optional.isEmpty()) {
 				authAliasesAllowedToExpand = Collections.emptySet();
