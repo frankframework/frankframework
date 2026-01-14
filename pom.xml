@@ -770,8 +770,6 @@
 						<target>${maven.compiler.target}</target>
 						<compilerArgs>
 							<arg>-parameters</arg>
-							<!-- Flag required for ErrorProne icm JDK21 compiler -->
-							<arg>-XDaddTypeAnnotationsToSymbol=true</arg>
 							<!-- Flags required for ErrorProne -->
 							<arg>-XDcompilePolicy=simple</arg>
 							<arg>--should-stop=ifError=FLOW</arg>
