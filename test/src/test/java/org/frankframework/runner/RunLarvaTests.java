@@ -21,6 +21,7 @@ import jakarta.servlet.ServletContext;
 import org.apache.activemq.artemis.core.config.Configuration;
 import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
 import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -144,6 +145,7 @@ public class RunLarvaTests {
 		// However work is underway to fix this in an upcoming release, probably before we are ready to release F!F 10.0 and move to JDK25.
 		log.info("Starting in-memory Artemis message broker");
 		String jmsDataDir = IafTestInitializer.getLogDir(IafTestInitializer.getProjectDir()) + "/ArtemisMQ";
+		FileUtils.deleteDirectory(new File(jmsDataDir));
 
 		Configuration artemisJmsConfig = new ConfigurationImpl();
 		artemisJmsConfig.addAcceptorConfiguration("in-vm", "vm://0")
