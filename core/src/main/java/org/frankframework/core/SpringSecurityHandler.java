@@ -17,8 +17,6 @@ package org.frankframework.core;
 
 import java.io.Serializable;
 import java.security.Principal;
-import java.util.Collection;
-import java.util.Collections;
 
 import org.apache.commons.lang3.NotImplementedException;
 import org.jspecify.annotations.NullMarked;
@@ -27,6 +25,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import lombok.extern.log4j.Log4j2;
+
 /**
  * ISecurityHandler implementation that uses Spring Security's SecurityContextHolder to retrieve the user information. Since the application is fully
  * based on spring and spring security, the SecurityContextHolder should always be filled for urls where security is enabled.
@@ -34,6 +34,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
  * @author evandongen
  */
 @NullMarked
+@Log4j2
 public class SpringSecurityHandler implements ISecurityHandler, Serializable {
 	private final @Nullable Authentication authentication;
 
@@ -43,15 +44,17 @@ public class SpringSecurityHandler implements ISecurityHandler, Serializable {
 
 	@Override
 	public boolean isUserInRole(String role) throws NotImplementedException {
-		return getAuthorities().stream()
+		if (authentication == null) {
+			log.info("no authentication object found");
+			return false;
+		}
+
+		log.info("validating if user [{}] contains role [{}]", authentication::getPrincipal, () -> role);
+		return authentication.getAuthorities().stream()
 				.map(GrantedAuthority::getAuthority)
 				.filter(authority -> authority != null && authority.startsWith("ROLE_"))
 				.map(authority -> authority.substring(5))
 				.anyMatch(authority -> authority.equalsIgnoreCase(role));
-	}
-
-	Collection<? extends GrantedAuthority> getAuthorities() {
-		return authentication != null ? authentication.getAuthorities() : Collections.emptySet();
 	}
 
 	@Override
