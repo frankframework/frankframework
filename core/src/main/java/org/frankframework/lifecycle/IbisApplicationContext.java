@@ -99,7 +99,7 @@ public class IbisApplicationContext implements Closeable {
 			applicationContext.refresh();
 		} catch (BeansException be) {
 			state = BootState.ERROR;
-			APPLICATION_LOG.fatal("Unable to initialize IbisApplicationContext", be);
+			APPLICATION_LOG.fatal("Unable to initialize IbisApplicationContext");
 			throw be;
 		}
 
