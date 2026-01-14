@@ -28,7 +28,6 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.LogManager;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -75,7 +74,7 @@ public class StringUtil {
 	 * @return the concatenated string, or NULL of both {@code part1} and {@code part2} were {@literal null}.
 	 */
 	@Nullable
-	public static String concatStrings(@Nullable String part1, @NonNull String separator, @Nullable String part2) {
+	public static String concatStrings(@Nullable String part1, String separator, @Nullable String part2) {
 		return concat(separator, part1, part2);
 	}
 
@@ -88,7 +87,7 @@ public class StringUtil {
 	 * @return Concatenation of all parts with separator, or {@literal null}.
 	 */
 	@Nullable
-	public static String concat(@NonNull String separator, @Nullable String... parts) {
+	public static String concat(String separator, @Nullable String... parts) {
 		int i = 0;
 		while (i < parts.length && StringUtils.isEmpty(parts[i])) {
 			i++;
@@ -176,8 +175,7 @@ public class StringUtil {
 	/**
 	 * @see #hideAll(String, String, int)
 	 */
-	@NonNull
-	public static String hideAll(@NonNull String inputString, @NonNull String regex) {
+	public static String hideAll(String inputString, String regex) {
 		return hideAll(inputString, regex, 0);
 	}
 
@@ -186,8 +184,7 @@ public class StringUtil {
 	 * If mode is set to 1, then the first half of the string gets hidden.
 	 * Else, all of it.
 	 */
-	@NonNull
-	public static String hideAll(@NonNull String inputString, @NonNull String regex, int mode) {
+	public static String hideAll(String inputString, String regex, int mode) {
 		return hideAll(inputString, Pattern.compile(regex), mode);
 	}
 
@@ -196,8 +193,7 @@ public class StringUtil {
 	 * If mode is set to 1, then the first half of the string gets hidden.
 	 * Else, all of it.
 	 */
-	@NonNull
-	public static String hideAll(@NonNull String inputString, @NonNull Pattern regex, int mode) {
+	public static String hideAll(String inputString, Pattern regex, int mode) {
 		StringBuilder result = new StringBuilder();
 		Matcher matcher = regex.matcher(inputString);
 		int previous = 0;
@@ -226,7 +222,7 @@ public class StringUtil {
 	 *     int regexCount = StringUtil.countRegex(s, regex); // regexCount gives out 4
 	 * </pre>
 	 */
-	public static int countRegex(@NonNull String string, @NonNull String regex) {
+	public static int countRegex(String string, String regex) {
 		Pattern pattern = Pattern.compile(regex);
 		Matcher matcher = pattern.matcher(string);
 		int count = 0;
@@ -239,8 +235,7 @@ public class StringUtil {
 	/**
 	 * Turns the first Char into lower case.
 	 */
-	@NonNull
-	public static String lcFirst(@NonNull String input) {
+	public static String lcFirst(String input) {
 		char[] c = input.toCharArray();
 		c[0] = Character.toLowerCase(c[0]);
 		return new String(c);
@@ -249,14 +244,12 @@ public class StringUtil {
 	/**
 	 * Turns the first Char into upper case.
 	 */
-	@NonNull
-	public static String ucFirst(@NonNull String input) {
+	public static String ucFirst(String input) {
 		char[] c = input.toCharArray();
 		c[0] = Character.toUpperCase(c[0]);
 		return new String(c);
 	}
 
-	@NonNull
 	public static String safeCollectionToString(@Nullable Collection<?> collection) {
 		if (collection == null) {
 			return "";
@@ -280,7 +273,6 @@ public class StringUtil {
 	 * @param input the string to split, can be {@literal null}.
 	 * @return a (modifiable) {@link List} of strings. An empty list if the input was {@literal null}.
 	 */
-	@NonNull
 	@SuppressWarnings("java:S6204") // Returns a modifiable list
 	public static List<String> split(@Nullable String input) {
 		return splitToStream(input)
@@ -294,7 +286,6 @@ public class StringUtil {
 	 * @param input the string to split, can be {@literal null}.
 	 * @return a {@link Stream} of strings. An empty stream if the input was {@literal null}.
 	 */
-	@NonNull
 	public static Stream<String> splitToStream(@Nullable final String input) {
 		if (input == null) {
 			return Stream.empty();
@@ -311,9 +302,8 @@ public class StringUtil {
 	 * @param delim the delimiters to split the string by
 	 * @return a (modifiable) {@link List} of strings. An empty list if the input was {@literal null}.
 	 */
-	@NonNull
 	@SuppressWarnings("java:S6204") // Returns a modifiable list
-	public static List<String> split(@Nullable String input, @NonNull String delim) {
+	public static List<String> split(@Nullable String input, String delim) {
 		return splitToStream(input, delim)
 				.collect(Collectors.toList());
 	}
@@ -326,8 +316,7 @@ public class StringUtil {
 	 * @param delim the delimiters to split the string by. Each character in the string is a potential delimiter, so if you want to split strings by for instance a space, {@code ,} or {@code ;} then pass {@code " ,;"}.
 	 * @return a Stream of strings. An empty stream if the input was {@literal null}.
 	 */
-	@NonNull
-	public static Stream<String> splitToStream(@Nullable final String input, @NonNull final String delim) {
+	public static Stream<String> splitToStream(@Nullable final String input, final String delim) {
 		if (DEFAULT_STRING_SPLIT_DELIMITER.equals(delim)) {
 			// This version of the method uses a pre-compiled pattern, instead of compiling on every invocation.
 			return splitToStream(input);
@@ -347,7 +336,6 @@ public class StringUtil {
 	 *
 	 * @see org.apache.commons.lang3.builder.ToStringBuilder#reflectionToString
 	 */
-	@NonNull
 	public static String reflectionToString(@Nullable Object object) {
 		if (object == null) {
 			return "<null>";

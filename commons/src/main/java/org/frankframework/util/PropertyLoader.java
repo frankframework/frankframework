@@ -29,7 +29,6 @@ import java.util.Properties;
 
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -58,7 +57,7 @@ public class PropertyLoader extends Properties {
 		this(PropertyLoader.class.getClassLoader(), propertiesFile);
 	}
 
-	public PropertyLoader(ClassLoader classLoader, String propertiesFile) {
+	public PropertyLoader(@Nullable ClassLoader classLoader, String propertiesFile) {
 		super();
 		rootPropertyFile = propertiesFile;
 
@@ -163,9 +162,8 @@ public class PropertyLoader extends Properties {
 		}
 	}
 
-	@NonNull
 	@SuppressWarnings("unchecked")
-	public <T extends Enum<T>> T getOrDefault(@NonNull String key, @NonNull T dfault) {
+	public <T extends Enum<T>> T getOrDefault(String key, T dfault) {
 		String value = getProperty(key);
 		if (value == null) {
 			return dfault;
@@ -180,8 +178,7 @@ public class PropertyLoader extends Properties {
 	 * @param key the key of the property value to retrieve
 	 * @return a list of string values associated with the specified key, or an empty list if the resolved property is null
 	 */
-	@NonNull
-	public List<String> getListProperty(@NonNull String key) {
+	public List<String> getListProperty(String key) {
 		return getListProperty(key, null);
 	}
 
@@ -195,8 +192,7 @@ public class PropertyLoader extends Properties {
 	 * @return a list of string values associated with the specified key, or the default list if the resolved property is null.
 	 * 		If the defaults is also null, then returns an empty list.
 	 */
-	@NonNull
-	public List<String> getListProperty(@NonNull String key, @Nullable String defaults) {
+	public List<String> getListProperty(String key, @Nullable String defaults) {
 		String list = getResolvedProperty(key);
 		if (list != null) {
 			return StringUtil.split(list);
@@ -228,7 +224,7 @@ public class PropertyLoader extends Properties {
 	 * which will cause both files to be loaded in the listed order.
 	 * </p>
 	 */
-	protected synchronized void load(final ClassLoader classLoader, final String filename) {
+	protected synchronized void load(@Nullable final ClassLoader classLoader, final String filename) {
 		if (StringUtils.isEmpty(filename)) {
 			throw new IllegalStateException("file to load properties from cannot be null");
 		}
@@ -271,7 +267,8 @@ public class PropertyLoader extends Properties {
 	 * @param dfault the default value
 	 * @return String
 	 */
-	public String getString(String key, String dfault) {
+	@Nullable
+	public String getString(String key, @Nullable String dfault) {
 		String ob = this.getResolvedProperty(key);
 
 		if (ob == null) return dfault;
