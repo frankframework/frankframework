@@ -13,6 +13,14 @@
 				<Pattern>%d{yyyy-MM-dd HH:mm:ss,SSS} - %m%n%xEx{short}</Pattern>
 			</Layout>
 		</Appender>
+		<Appender name="log-all-errors-to-application-log" type="Routing">
+			<Filters>
+				<ThresholdFilter level="ERROR" onMatch="ACCEPT" />
+			</Filters>
+			<Routes>
+				<Route ref="application-log-appender" />
+			</Routes>
+		</Appender>
 		<Appender name="leak-log-appender" createOnDemand="true" type="RollingFile" fileName="${ff:log.dir}/${ff:instance.name.lc}-leaks.log" filePattern="${ff:log.dir}/${ff:instance.name.lc}-leaks.log.%i">
 			<Layout type="PatternLayout" pattern="%d{yyyy-MM-dd HH:mm:ss,SSS} [%t] %m%n%xEx"/>
 			<Policies>
@@ -192,6 +200,9 @@
 
 		<Root level="${ff:log.level}">
 			<AppenderRef ref="file"/>
+
+			<!-- LOG all ERRORS and FATAL warnings to the application-log appender -->
+			<AppenderRef ref="log-all-errors-to-application-log" />
 		</Root>
 	</Loggers>
 </log4j2:Configuration>

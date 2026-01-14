@@ -1,6 +1,7 @@
 package org.frankframework.credentialprovider;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
@@ -58,6 +59,7 @@ public class PropertyFileCredentialFactoryTest {
 		CredentialAlias alias = CredentialAlias.parse("unknown");
 
 		assertThrows(NoSuchElementException.class, () -> credentialFactory.getSecret(alias));
+		assertFalse(credentialFactory.hasSecret(alias));
 	}
 
 	@Test
