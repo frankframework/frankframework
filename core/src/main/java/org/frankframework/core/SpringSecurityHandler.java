@@ -55,7 +55,7 @@ public class SpringSecurityHandler implements ISecurityHandler, Serializable {
 	}
 
 	@Override
-	public Principal getPrincipal() throws NotImplementedException {
+	public @Nullable Principal getPrincipal() throws NotImplementedException {
 		return authentication;
 	}
 }
