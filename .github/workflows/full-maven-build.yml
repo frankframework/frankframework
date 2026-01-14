@@ -4,6 +4,7 @@
 name: Java CI with Maven
 
 env:
+  JDK_VERSION: 25
   PROFILES: frankframework,codecoverage,ci
   IS_DEPENDENCY_BOT: ${{ github.actor == 'dependabot[bot]' || github.actor == 'renovate[bot]' }}
   # Don't allow credentials on forks, secrets are not available when using forks or dependency bots
@@ -46,11 +47,6 @@ jobs:
   build-maven-artifacts:
     name: Build and Test Maven Artifacts on JDK
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/frankframework/build/jdk25:latest
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
     - name: Checkout repository
@@ -72,6 +68,12 @@ jobs:
           ~/.m2/repository
           ~/.sonar/cache
         key: maven-build-cache
+
+    - name: Set up JDK ${{ env.JDK_VERSION }}
+      uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5
+      with:
+        distribution: 'temurin'
+        java-version: ${{ env.JDK_VERSION }}
 
     - name: Install pnpm
       uses: pnpm/action-setup@41ff72655975bd51cab0327fa583b6e92b6d3061 # v4
@@ -119,7 +121,7 @@ jobs:
         JAVA_OPTS: "-Xms1G -XX:+UseParallelGC"
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # SonarCloud
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }} # SonarCloud
-      run: ./mvnw -s ~/.m2/settings.xml -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}} -Dsonar.projectKey=ibissource_iaf
+      run: ./mvnw -B -V -T1 ${{env.MAVEN_GOALS}} -P${{env.PROFILES}} -Dsonar.projectKey=ibissource_iaf
 
     - name: Upload coverage to Codecov
       uses: codecov/codecov-action@671740ac38dd9b0130fbe1cec585b89eea48d3de # v5
