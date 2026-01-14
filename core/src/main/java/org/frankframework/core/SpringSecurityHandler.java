@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,14 @@
 */
 package org.frankframework.core;
 
+import java.io.Serializable;
 import java.security.Principal;
 import java.util.Collection;
+import java.util.Collections;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -29,8 +33,9 @@ import org.springframework.security.core.context.SecurityContextHolder;
  *
  * @author evandongen
  */
-public class SpringSecurityHandler implements ISecurityHandler {
-	private final Authentication authentication;
+@NullMarked
+public class SpringSecurityHandler implements ISecurityHandler, Serializable {
+	private final @Nullable Authentication authentication;
 
 	public SpringSecurityHandler() {
 		this.authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -40,13 +45,13 @@ public class SpringSecurityHandler implements ISecurityHandler {
 	public boolean isUserInRole(String role) throws NotImplementedException {
 		return getAuthorities().stream()
 				.map(GrantedAuthority::getAuthority)
-				.filter(authority -> authority.startsWith("ROLE_"))
+				.filter(authority -> authority != null && authority.startsWith("ROLE_"))
 				.map(authority -> authority.substring(5))
 				.anyMatch(authority -> authority.equalsIgnoreCase(role));
 	}
 
 	Collection<? extends GrantedAuthority> getAuthorities() {
-		return authentication.getAuthorities();
+		return authentication != null ? authentication.getAuthorities() : Collections.emptySet();
 	}
 
 	@Override
