@@ -18,6 +18,8 @@ package org.frankframework.core;
 import java.security.Principal;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 /**
  * Defines behaviour that can be used to assert identity of callers of a pipeline.
@@ -25,8 +27,9 @@ import org.apache.commons.lang3.NotImplementedException;
  * @author Gerrit van Brakel
  * @since 4.3
  */
+@NullMarked
 public interface ISecurityHandler {
 	boolean isUserInRole(String role) throws NotImplementedException;
 
-	Principal getPrincipal() throws NotImplementedException;
+	@Nullable Principal getPrincipal() throws NotImplementedException;
 }

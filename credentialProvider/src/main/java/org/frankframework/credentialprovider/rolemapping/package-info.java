@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2026 WeAreFrank!
+   Copyright 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,17 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.credentialprovider;
+@NullMarked
+package org.frankframework.credentialprovider.rolemapping;
 
-import java.io.IOException;
-
-import org.jspecify.annotations.Nullable;
-
-public interface ISecret {
-
-	/**
-	 * Returns NULL when it cannot find the field
-	 */
-	@Nullable
-	String getField(@Nullable String fieldname) throws IOException;
-}
+import org.jspecify.annotations.NullMarked;

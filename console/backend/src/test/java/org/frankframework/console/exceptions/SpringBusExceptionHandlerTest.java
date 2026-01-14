@@ -17,7 +17,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.AuthenticationCredentialsNotFoundException;
 import org.springframework.web.client.HttpClientErrorException;
 
-import org.frankframework.console.exceptions.SpringBusExceptionHandler;
 import org.frankframework.core.IbisException;
 import org.frankframework.management.bus.BusException;
 import org.frankframework.util.JacksonUtils;

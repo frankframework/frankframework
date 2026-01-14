@@ -1,6 +1,8 @@
 package org.frankframework.credentialprovider.delinea;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -68,8 +70,8 @@ class DelineaCredentialFactoryTest {
 		Collection<String> configuredAliases = credentialFactory.getConfiguredAliases();
 		assertEquals(0, configuredAliases.size());
 
-		credentialFactory.hasSecret(CredentialAlias.parse("1"));
-		credentialFactory.getSecret(CredentialAlias.parse("2"));
+		assertTrue(credentialFactory.hasSecret(CredentialAlias.parse("1")));
+		assertDoesNotThrow(() -> credentialFactory.getSecret(CredentialAlias.parse("2")));
 
 		// Expect a list of 2 secrets after hasCredentials and getCredentials calls
 		configuredAliases = credentialFactory.getConfiguredAliases();
@@ -88,7 +90,8 @@ class DelineaCredentialFactoryTest {
 	@Test
 	void testGetNonExistingSecret() {
 		CredentialAlias alias = CredentialAlias.parse("16");
-		assertThrows(NoSuchElementException.class, () -> credentialFactory.hasSecret(alias));
+		assertNotNull(alias);
+		assertFalse(credentialFactory.hasSecret(alias), "Should not have secret with alias 15");
 		assertThrows(NoSuchElementException.class, () -> credentialFactory.getSecret(alias));
 	}
 

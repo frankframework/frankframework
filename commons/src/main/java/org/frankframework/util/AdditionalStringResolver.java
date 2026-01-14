@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 /**
  * Interface to be implemented by framework-classes that provide extra property-resolving sources, such as credentials, which cannot be directly included of the
  * {@link StringResolver} methods.
@@ -34,6 +37,7 @@ import java.util.Set;
  * Log4j2 uses StringResolver during instantiation.
  * </p>
  */
+@NullMarked
 public interface AdditionalStringResolver {
 
 	/**
@@ -45,7 +49,7 @@ public interface AdditionalStringResolver {
 	 *
 	 * @param key                     Key to look up
 	 * @param props1                  First property map in which to look up values
-	 * @param props2                  Second property map in which to look up values
+	 * @param props2                  Second property map in which to look up values, may be {@code null}
 	 * @param propsToHide             List of properties to hide. If {@code null}, then no hiding of properties should be done.
 	 *                                If not {@code null}, any properties whose name is in the collection will be hidden by
 	 *                                the caller but the implementation may make its own decision on hiding property values.
@@ -58,5 +62,5 @@ public interface AdditionalStringResolver {
 	 * 		returned, the {@link StringResolver} will then continue to try resolving the {@code key}. If any non-empty {@link Optional} is returned,
 	 * 		the {@link StringResolver} will use the value of that as value for the {@code key} and not look for other resolutions for the key.
 	 */
-	Optional<String> resolve(String key, Map<?, ?> props1, Map<?, ?> props2, Set<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName);
+	Optional<String> resolve(String key, Map<?, ?> props1, @Nullable Map<?, ?> props2, @Nullable Set<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName);
 }

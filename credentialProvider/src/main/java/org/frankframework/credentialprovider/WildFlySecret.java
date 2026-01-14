@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.util.NoSuchElementException;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.wildfly.security.credential.PasswordCredential;
 import org.wildfly.security.credential.store.CredentialStore;
 import org.wildfly.security.credential.store.CredentialStoreException;
@@ -50,7 +50,8 @@ public class WildFlySecret extends Secret {
 	}
 
 	@Override
-	public String getField(@NonNull String fieldname) throws IOException {
+	@Nullable
+	public String getField(@Nullable String fieldname) throws IOException {
 		String key = StringUtils.isBlank(fieldname) || "password".equals(fieldname) ? getAlias() : "%s/%s".formatted(getAlias(), fieldname);
 		try {
 			if (cs.exists(key, PasswordCredential.class)) {

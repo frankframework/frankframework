@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2023, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,9 @@
 */
 package org.frankframework.credentialprovider.util;
 
+import org.jspecify.annotations.Nullable;
+
 @FunctionalInterface
 public interface ThrowingFunction<T, R, E extends Exception> {
-	R apply(T param) throws E;
+	@Nullable R apply(T param) throws E;
 }

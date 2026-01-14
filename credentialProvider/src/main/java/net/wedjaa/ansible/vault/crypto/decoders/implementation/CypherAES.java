@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 - Fabio "MrWHO" Torchetti
+ * Copyright 2016 - Fabio "MrWHO" Torchetti, 2024, 2026 WeAreFrank!
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,35 +19,42 @@ package net.wedjaa.ansible.vault.crypto.decoders.implementation;
 import java.io.IOException;
 import java.io.OutputStream;
 
+import org.jspecify.annotations.NullMarked;
+
 import net.wedjaa.ansible.vault.crypto.data.VaultInfo;
 import net.wedjaa.ansible.vault.crypto.decoders.inter.CypherInterface;
 
+@NullMarked
 public class CypherAES implements CypherInterface
 {
+	public static final String CYPHER_ID = "AES";
 
-    public final static String CYPHER_ID = "AES";
-
-    public void decrypt(OutputStream decodedStream, byte[] data, String password) throws IOException
+    @Override
+	public void decrypt(OutputStream decodedStream, byte[] data, String password) throws IOException
     {
         throw new IOException(CYPHER_ID + " is not implemented.");
     }
 
-    public byte[] decrypt(byte[] data, String password) throws IOException
+    @Override
+	public byte[] decrypt(byte[] data, String password) throws IOException
     {
         throw new IOException(CYPHER_ID + " is not implemented.");
     }
 
-    public void encrypt(OutputStream encodedStream, byte[] data, String password) throws IOException
+    @Override
+	public void encrypt(OutputStream encodedStream, byte[] data, String password) throws IOException
     {
         throw new IOException(CYPHER_ID + " is not implemented.");
     }
 
-    public byte[] encrypt(byte[] data, String password) throws IOException
+    @Override
+	public byte[] encrypt(byte[] data, String password) throws IOException
     {
         throw new IOException(CYPHER_ID + " is not implemented.");
     }
 
-    public String infoLine()
+    @Override
+	public String infoLine()
     {
         return VaultInfo.vaultInfoForCypher(CYPHER_ID);
     }

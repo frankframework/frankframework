@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,8 +20,10 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import org.apache.commons.lang3.builder.ToStringStyle;
+import org.jspecify.annotations.NullMarked;
 
 /**
  * Similar to the {@link ToStringStyle#SHORT_PREFIX_STYLE} which excludes
@@ -29,6 +31,7 @@ import org.apache.commons.lang3.builder.ToStringStyle;
  *
  * @author Niels Meijer
  */
+@NullMarked
 class FieldNameSensitiveToStringStyle extends ToStringStyle {
 	private static final List<String> PROTECTED_FIELDS = Arrays.asList("password", "secret", "token");
 
@@ -71,7 +74,7 @@ class FieldNameSensitiveToStringStyle extends ToStringStyle {
 
 	private String hideValue(Object value) {
 		if (value instanceof String string) {
-			return StringUtil.hide(string);
+			return Objects.requireNonNull(StringUtil.hide(string), "StringUtil.hide should not return null for non-null input");
 		} else {
 			return "***hidden***";
 		}

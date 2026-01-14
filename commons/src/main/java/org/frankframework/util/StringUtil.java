@@ -18,6 +18,7 @@ package org.frankframework.util;
 import java.util.Collection;
 import java.util.ConcurrentModificationException;
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -28,8 +29,10 @@ import org.apache.commons.lang3.builder.ReflectionToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.apache.logging.log4j.LogManager;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
+@NullMarked
 public class StringUtil {
 
 	public static final ToStringStyle OMIT_PASSWORD_FIELDS_STYLE = new FieldNameSensitiveToStringStyle();
@@ -85,7 +88,7 @@ public class StringUtil {
 	 * @return Concatenation of all parts with separator, or {@literal null}.
 	 */
 	@Nullable
-	public static String concat(@NonNull String separator, String... parts) {
+	public static String concat(@NonNull String separator, @Nullable String... parts) {
 		int i = 0;
 		while (i < parts.length && StringUtils.isEmpty(parts[i])) {
 			i++;
@@ -93,7 +96,7 @@ public class StringUtil {
 		if (i >= parts.length) {
 			return null;
 		}
-		StringBuilder result = new StringBuilder(parts[i]);
+		StringBuilder result = new StringBuilder(Objects.requireNonNull(parts[i], "Shouldn't be null because of earlier loop"));
 		while (++i < parts.length) {
 			if (StringUtils.isNotEmpty(parts[i])) {
 				result.append(separator).append(parts[i]);

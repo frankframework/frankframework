@@ -27,6 +27,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 
@@ -49,7 +50,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 
 	// JWTClaimNames#AUDIENCE claim may be a String or List<String>. Others are either a String or Long (epoch date)
 	@Override
-	public boolean isUserInRole(String role) {
+	public boolean isUserInRole(@NonNull String role) {
 		Object claim = claimsSet.get(roleClaim);
 
 		if (claim instanceof String) {
@@ -63,6 +64,7 @@ public class JwtSecurityHandler implements ISecurityHandler {
 	}
 
 	@Override
+	@Nullable
 	public Principal getPrincipal() {
 		return () -> (String) claimsSet.get(principalNameClaim);
 	}

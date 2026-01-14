@@ -18,11 +18,13 @@ package org.frankframework.credentialprovider;
 import java.util.Base64;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import io.fabric8.kubernetes.api.model.Secret;
 import lombok.extern.java.Log;
 
+@NullMarked
 @Log
 public class KubernetesSecret extends org.frankframework.credentialprovider.Secret {
 
@@ -40,7 +42,7 @@ public class KubernetesSecret extends org.frankframework.credentialprovider.Secr
 	}
 
 	@Override
-	public String getField(@NonNull String key) {
+	public String getField(@Nullable String key) {
 		String foundKey = secret.getData().get(key);
 		if (StringUtils.isEmpty(foundKey)) {
 			log.info("no value found for alias [%s] field [%s]".formatted(getAlias(), key));

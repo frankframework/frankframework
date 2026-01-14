@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,9 +22,12 @@ import java.io.UnsupportedEncodingException;
 import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
+@NullMarked
 @Log4j2
 public class XmlEncodingUtils {
 	public static final char REPLACE_NON_XML_CHAR = 0x00BF; // Inverted question mark.
@@ -36,6 +39,7 @@ public class XmlEncodingUtils {
 	/**
 	 * See {@link #encodeChars(String, boolean)}.
 	 */
+	@Nullable
 	public static String encodeChars(String string) {
 		return encodeChars(string, false);
 	}
@@ -44,6 +48,7 @@ public class XmlEncodingUtils {
 	 * Translates special characters to XML equivalents like <b>&gt;</b> and <b>&amp;</b>. Please note that non-valid XML chars are not changed,
 	 * hence you might want to use {@link #replaceNonValidXmlCharacters(String)} or {@link #stripNonValidXmlCharacters(String, boolean)} too.
 	 */
+	@Nullable
 	public static String encodeChars(String string, boolean escapeNewLines) {
 		if (string == null) {
 			return null;
@@ -54,6 +59,7 @@ public class XmlEncodingUtils {
 		return encodeChars(characters, 0, length, escapeNewLines);
 	}
 
+	@Nullable
 	public static String encodeCharsAndReplaceNonValidXmlCharacters(String string) {
 		return encodeChars(replaceNonValidXmlCharacters(string));
 	}
@@ -120,6 +126,7 @@ public class XmlEncodingUtils {
 	 * Conversion of special xml signs. Please note that non-valid xml chars are not changed, hence you might want to use
 	 * {@link #replaceNonValidXmlCharacters(String)} or {@link #stripNonValidXmlCharacters(String, boolean)} too.
 	 **/
+	@Nullable
 	private static String escapeChar(char c, boolean escapeNewLines) {
 		return switch (c) {
 			case ('<') -> "&lt;";
@@ -196,10 +203,12 @@ public class XmlEncodingUtils {
 	 * Replaces non-unicode-characters by '0x00BF' (inverted question mark)
 	 * appended with #, the character number and ;.
 	 */
+	@Nullable
 	public static String replaceNonValidXmlCharacters(String string) {
 		return replaceNonValidXmlCharacters(string, REPLACE_NON_XML_CHAR, true, true);
 	}
 
+	@Nullable
 	public static String replaceNonValidXmlCharacters(String string, char to, boolean appendCharNum, boolean allowUnicodeSupplementaryCharacters) {
 		if (string == null) {
 			return null;
@@ -261,6 +270,7 @@ public class XmlEncodingUtils {
 	/**
 	 * Reads binary XML data and uses the XML declaration encoding to turn it into character data.
 	 */
+	@Nullable
 	public static String readXml(InputStream inputStream, String defaultCharset) throws IOException {
 		BOMInputStream bOMInputStream = new BOMInputStream(inputStream, ByteOrderMark.UTF_8, ByteOrderMark.UTF_16LE, ByteOrderMark.UTF_16BE);
 		ByteOrderMark bom = bOMInputStream.getBOM();
@@ -268,11 +278,12 @@ public class XmlEncodingUtils {
 		return readXml(StreamUtil.streamToBytes(bOMInputStream), charsetName);
 	}
 
+	@Nullable
 	public static String readXml(byte[] source, String defaultEncoding) throws UnsupportedEncodingException {
 		String charset = StringUtils.isEmpty(defaultEncoding) ? StreamUtil.DEFAULT_INPUT_STREAM_ENCODING : defaultEncoding;
 		int length = source.length;
 
-		String firstPart = new String(source, 0, length < 100 ? length : 100, charset);
+		String firstPart = new String(source, 0, Math.min(length, 100), charset);
 		if (StringUtils.isEmpty(firstPart)) {
 			return null;
 		}

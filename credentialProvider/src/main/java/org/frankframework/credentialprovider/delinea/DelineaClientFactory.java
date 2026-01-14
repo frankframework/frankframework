@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import static org.springframework.web.util.UriComponentsBuilder.fromUriString;
 import java.util.List;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.InterceptingClientHttpRequestFactory;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
@@ -80,6 +81,7 @@ public class DelineaClientFactory {
 		return delineaClient;
 	}
 
+	@Nullable
 	AccessGrant getAccessGrant() {
 		final MultiValueMap<String, String> request = new LinkedMultiValueMap<>();
 

@@ -6,11 +6,14 @@ import java.util.HashMap;
 import java.util.NoSuchElementException;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @SuppressWarnings("serial")
+@NullMarked
 public class MockCredentialFactory extends HashMap<String, ISecret> implements ISecretProvider {
 
 	private static MockCredentialFactory instance;
@@ -63,7 +66,7 @@ public class MockCredentialFactory extends HashMap<String, ISecret> implements I
 		private final String password;
 
 		@Override
-		public String getField(@NonNull String fieldname) throws IOException {
+		public String getField(@Nullable String fieldname) throws IOException {
 			if ("username".equals(fieldname) && username != null) {
 				return username;
 			}

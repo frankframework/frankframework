@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,31 +15,36 @@
 */
 package org.frankframework.credentialprovider;
 
+import org.jspecify.annotations.Nullable;
+
 /**
  * Default credential object
  */
 public class Credential implements ICredentials {
-	private final String alias;
-	private final String username;
-	private final String password;
+	private final @Nullable String alias;
+	private final @Nullable String username;
+	private final @Nullable String password;
 
-	public Credential(String alias, String username, String password) {
+	public Credential(@Nullable String alias, @Nullable String username, @Nullable String password) {
 		this.alias = alias;
 		this.username = username;
 		this.password = password;
 	}
 
 	@Override
+	@Nullable
 	public String getAlias() {
 		return alias;
 	}
 
 	@Override
+	@Nullable
 	public String getUsername() {
 		return username;
 	}
 
 	@Override
+	@Nullable
 	public String getPassword() {
 		return password;
 	}

@@ -27,6 +27,7 @@ import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.wildfly.security.credential.store.CredentialStore;
 import org.wildfly.security.credential.store.CredentialStoreException;
 
@@ -53,7 +54,7 @@ public class WildFlyCredentialFactory implements ISecretProvider {
 
 	private String credentialStore = "CS";
 
-	private CredentialStore cs = null;
+	private @Nullable CredentialStore cs = null;
 
 	@Override
 	public void initialize() {

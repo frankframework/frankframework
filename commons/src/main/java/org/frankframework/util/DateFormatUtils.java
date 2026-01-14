@@ -33,11 +33,13 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
  * Utilities for formatting and parsing dates.
  */
+@NullMarked
 public class DateFormatUtils {
 	public static final String FORMAT_FULL_ISO = "yyyy-MM-dd'T'HH:mm:sszzz";
 	public static final String FORMAT_FULL_ISO_TIMESTAMP_NO_TZ = "yyyy-MM-dd'T'HH:mm:ss.SSS";
@@ -120,6 +122,7 @@ public class DateFormatUtils {
 	}
 
 	@Deprecated
+	@Nullable
 	public static String format(Date date) {
 		return date == null ? null : format(date.toInstant());
 	}

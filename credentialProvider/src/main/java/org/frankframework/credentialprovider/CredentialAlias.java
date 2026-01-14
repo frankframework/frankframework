@@ -38,7 +38,7 @@ public class CredentialAlias {
 	private static final String USERNAME_SUFFIX = "usernameSuffix";
 	private static final String PASSWORD_SUFFIX = "passwordSuffix";
 
-	public static final String ALIAS_PREFIX;
+	public static final @Nullable String ALIAS_PREFIX;
 	public static final String DEFAULT_USERNAME_FIELD;
 	public static final String DEFAULT_PASSWORD_FIELD;
 
@@ -133,7 +133,7 @@ public class CredentialAlias {
 	}
 
 	@Nullable
-	public static CredentialAlias parse(String rawAlias) {
+	public static CredentialAlias parse(@Nullable String rawAlias) {
 		if (StringUtils.isBlank(rawAlias)) {
 			log.info("raw alias is empty, returning null");
 			return null;

@@ -32,6 +32,7 @@ import org.apache.commons.io.ByteOrderMark;
 import org.apache.commons.io.input.BOMInputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
 /**
@@ -40,6 +41,7 @@ import org.jspecify.annotations.Nullable;
  *
  * @author Gerrit van Brakel
  */
+@NullMarked
 public class StreamUtil {
 	public static final Charset DEFAULT_CHARSET = StandardCharsets.UTF_8;
 	public static final String DEFAULT_INPUT_STREAM_ENCODING = DEFAULT_CHARSET.displayName();
@@ -225,7 +227,7 @@ public class StreamUtil {
 	 *
 	 * @throws IOException exception to be thrown if an I/O exception occurs
 	 */
-	public static void streamToStream(InputStream input, OutputStream output, byte[] eof) throws IOException {
+	public static void streamToStream(@Nullable InputStream input, OutputStream output, byte @Nullable[] eof) throws IOException {
 		if (input == null) {
 			return;
 		}
@@ -285,11 +287,11 @@ public class StreamUtil {
 	 *
 	 * @param xmlEncode if set to true, applies XML encodings to the content of the reader
 	 */
-	public static String readerToString(Reader reader, String endOfLineString, boolean xmlEncode) throws IOException {
+	public static String readerToString(Reader reader, @Nullable String endOfLineString, boolean xmlEncode) throws IOException {
 		return readerToString(reader, endOfLineString, xmlEncode, 0);
 	}
 
-	public static String readerToString(Reader reader, String endOfLineString, boolean xmlEncode, int initialCapacity) throws IOException {
+	public static String readerToString(Reader reader, @Nullable String endOfLineString, boolean xmlEncode, int initialCapacity) throws IOException {
 		StringBuilder sb = new StringBuilder(initialCapacity > 0 ? initialCapacity + 32 : 8192);
 		int curChar = -1;
 		int prevChar = -1;
@@ -338,14 +340,14 @@ public class StreamUtil {
 	/**
 	 * @see #streamToString(InputStream, String, String, boolean)
 	 */
-	public static String streamToString(InputStream stream, String endOfLineString, boolean xmlEncode) throws IOException {
+	public static String streamToString(InputStream stream, @Nullable String endOfLineString, boolean xmlEncode) throws IOException {
 		return streamToString(stream, endOfLineString, DEFAULT_INPUT_STREAM_ENCODING, xmlEncode);
 	}
 
 	/**
 	 * @see #readerToString(Reader, String, boolean)
 	 */
-	public static String streamToString(InputStream stream, String endOfLineString, String streamEncoding, boolean xmlEncode) throws IOException {
+	public static String streamToString(InputStream stream, @Nullable String endOfLineString, String streamEncoding, boolean xmlEncode) throws IOException {
 		return readerToString(getCharsetDetectingInputStreamReader(stream, streamEncoding), endOfLineString, xmlEncode);
 	}
 
@@ -359,14 +361,14 @@ public class StreamUtil {
 	/**
 	 * @see StreamUtil#streamToString(InputStream, String, boolean)
 	 */
-	public static String resourceToString(URL resource, String endOfLineString) throws IOException {
+	public static String resourceToString(URL resource, @Nullable String endOfLineString) throws IOException {
 		return resourceToString(resource, endOfLineString, false);
 	}
 
 	/**
 	 * @see StreamUtil#streamToString(InputStream, String, boolean)
 	 */
-	public static String resourceToString(URL resource, String endOfLineString, boolean xmlEncode) throws IOException {
+	public static String resourceToString(URL resource, @Nullable String endOfLineString, boolean xmlEncode) throws IOException {
 		InputStream stream = resource.openStream();
 		return streamToString(stream, endOfLineString, xmlEncode);
 	}

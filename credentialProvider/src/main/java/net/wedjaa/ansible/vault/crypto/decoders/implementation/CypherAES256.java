@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 - Fabio "MrWHO" Torchetti
+ * Copyright 2016 - Fabio "MrWHO" Torchetti, 2023-2026 WeAreFrank!
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package net.wedjaa.ansible.vault.crypto.decoders.implementation;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import javax.crypto.Cipher;
@@ -27,27 +28,28 @@ import javax.crypto.spec.SecretKeySpec;
 
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
+import org.jspecify.annotations.NullMarked;
 
 import net.wedjaa.ansible.vault.crypto.data.Util;
 import net.wedjaa.ansible.vault.crypto.data.VaultContent;
 import net.wedjaa.ansible.vault.crypto.data.VaultInfo;
 import net.wedjaa.ansible.vault.crypto.decoders.inter.CypherInterface;
 
+@NullMarked
 public class CypherAES256 implements CypherInterface
 {
 	private static final Log logger = LogFactory.getLog(CypherAES256.class);
 
-    public final static String CYPHER_ID = "AES256";
-    public final static int AES_KEYLEN = 256;
-    public final static String CHAR_ENCODING = "UTF-8";
-    public final static String KEYGEN_ALGO = "HmacSHA256";
-    public final static String CYPHER_KEY_ALGO = "AES";
+	public static final String CYPHER_ID = "AES256";
+	public static final int AES_KEYLEN = 256;
+	public static final String KEYGEN_ALGO = "HmacSHA256";
+	public static final String CYPHER_KEY_ALGO = "AES";
     public static final String CYPHER_ALGO = "AES/CTR/NoPadding";
 
     private static final int SALT_LENGTH = 32;
-    public final static int KEYLEN = 32;
-    public final static int IVLEN = 16;
-    public final static int ITERATIONS = 10000;
+	public static final int KEYLEN = 32;
+	public static final int IVLEN = 16;
+	public static final int ITERATIONS = 10000;
 
     private boolean hasValidAESProvider()
     {
@@ -238,7 +240,7 @@ public class CypherAES256 implements CypherInterface
             decrypted = decryptAES(cypher, cypherKey, iv);
 
             if( logger.isDebugEnabled() ) {
-            	logger.debug("Decoded: %s".formatted(new String(decrypted, CHAR_ENCODING)));
+            	logger.debug("Decoded: %s".formatted(new String(decrypted, StandardCharsets.UTF_8)));
             }
         }
         else
