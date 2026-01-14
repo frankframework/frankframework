@@ -43,6 +43,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.util.CleanerProvider;
 import org.frankframework.util.CloseUtils;
 import org.frankframework.util.DateFormatUtils;
+import org.frankframework.util.SpringUtils;
 import org.frankframework.util.StringUtil;
 import org.frankframework.util.TimeProvider;
 
@@ -74,8 +75,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	public static final String HTTP_METHOD_KEY 	   = "HttpMethod";
 
 	public static final String API_PRINCIPAL_KEY   = "apiPrincipal";
-	public static final String EXIT_STATE_CONTEXT_KEY="exitState";
-	public static final String EXIT_CODE_CONTEXT_KEY="exitCode";
+	public static final String EXIT_STATE_CONTEXT_KEY= SYSTEM_MANAGED_RESOURCE_PREFIX + "exitState";
+	public static final String EXIT_CODE_CONTEXT_KEY= "exitCode";
 
 	private transient @Nullable ISecurityHandler securityHandler = null;
 	private transient Cleaner.@Nullable Cleanable cleanable;
@@ -171,6 +172,9 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	public Object put(String key, @Nullable Object value) {
 		if (shouldCloseSessionResource(key, value)) {
 			closeables.add((AutoCloseable) value);
+		}
+		if (value instanceof Enum<?> enumValue && !key.startsWith(SYSTEM_MANAGED_RESOURCE_PREFIX)) {
+			super.put(key, enumValue.name());
 		}
 		return super.put(key, value);
 	}
@@ -319,6 +323,38 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			}
 		}
 		return securityHandler;
+	}
+
+	@SafeVarargs
+	@Nullable
+	public final <T> T getAsType(String key, T... reified) {
+		Object obj = get(key);
+		if (obj == null) {
+			return null;
+		}
+		Class<T> type = SpringUtils.getClassOf(reified);
+		if (!type.isInstance(obj)) {
+			throw new IllegalArgumentException("Value for key [%s] is of type [%s], not an instance of requested type [%s]".formatted(key, obj.getClass().getName(), type.getName()));
+		}
+		//noinspection unchecked
+		return (T)obj;
+	}
+
+	@SafeVarargs
+	@Nullable
+	public final <T> T removeIfType(String key, T... reified) {
+		if (!containsKey(key)) {
+			return null;
+		}
+		T value;
+		try {
+			// First get the value, so that if it is not the right class we do not remove the value.
+			value = getAsType(key, reified);
+		} catch (IllegalArgumentException e) {
+			return null;
+		}
+		remove(key);
+		return value;
 	}
 
 	/**
