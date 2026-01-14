@@ -75,7 +75,7 @@
 		<revision>10.0.0-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.target>21</maven.compiler.target>
-		<maven.compiler.source>21</maven.compiler.source>
+		<maven.compiler.source>25</maven.compiler.source>
 		<maven.compiler.proc>full</maven.compiler.proc>
 		<lombok.version>1.18.42</lombok.version>
 		<lombok.plugin.version>1.18.20.0</lombok.plugin.version>
@@ -770,8 +770,6 @@
 						<target>${maven.compiler.target}</target>
 						<compilerArgs>
 							<arg>-parameters</arg>
-							<!-- Flag required for ErrorProne icm JDK21 compiler -->
-							<arg>-XDaddTypeAnnotationsToSymbol=true</arg>
 							<!-- Flags required for ErrorProne -->
 							<arg>-XDcompilePolicy=simple</arg>
 							<arg>--should-stop=ifError=FLOW</arg>

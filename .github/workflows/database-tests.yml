@@ -63,7 +63,7 @@ jobs:
     name: Database Tests
     runs-on: ubuntu-latest
     container:
-      image: ghcr.io/frankframework/build/jdk21:latest
+      image: ghcr.io/frankframework/build/jdk25:latest
       credentials:
         username: ${{ github.actor }}
         password: ${{ secrets.GITHUB_TOKEN }}
