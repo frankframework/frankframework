@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2023, 2026 WeAreFrank!
+   Copyright 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,11 +13,7 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.credentialprovider.util;
+@NullMarked
+package org.frankframework.credentialprovider.rolemapping;
 
-import org.jspecify.annotations.Nullable;
-
-@FunctionalInterface
-public interface ThrowingFunction<T, R, E extends Exception> {
-	@Nullable R apply(T param) throws E;
-}
+import org.jspecify.annotations.NullMarked;

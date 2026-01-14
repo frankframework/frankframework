@@ -47,7 +47,7 @@ public class DelineaClient extends RestTemplate {
 	 * @return the {@link DelineaSecretDto} object
 	 */
 	@Nullable
-	public DelineaSecretDto getSecret(String id, String autoCommentValue) {
+	public DelineaSecretDto getSecret(String id, @Nullable String autoCommentValue) {
 		// it is possible to create a new view comment before getting the secret details. Enabled when autoCommentValue is not empty.
 		// see: https://updates.thycotic.net/secretserver/restapiguide/TokenAuth/#tag/SecretAccessRequests/operation/SecretAccessRequestsService_CreateViewComment
 		if (StringUtils.isNotBlank(autoCommentValue)) {

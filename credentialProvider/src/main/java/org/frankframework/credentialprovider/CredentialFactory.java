@@ -25,7 +25,6 @@ import java.util.NoSuchElementException;
 import java.util.logging.Level;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import lombok.extern.java.Log;
@@ -64,7 +63,7 @@ public class CredentialFactory {
 		this(ALLOW_FALLBACK);
 	}
 
-	// Create a non static instance, for testing purposes only
+	// Create a non-static instance, for testing purposes only
 	protected CredentialFactory(boolean allowFallbackProvider) {
 		// Attempt to load the provided CredentialProviders
 		if (!loadFactoryClasses()) {
@@ -167,7 +166,6 @@ public class CredentialFactory {
 	 * Entrypoint. Attempts to find the credential for the specified alias.
 	 * When none is found, uses the default (provided) fallback user/pass combination.
 	 */
-	@NonNull
 	public static ICredentials getCredentials(@Nullable String rawAlias, @Nullable String defaultUsername, @Nullable String defaultPassword) throws NoSuchElementException {
 		final CredentialAlias alias = CredentialAlias.parse(rawAlias);
 		List<ISecretProvider> credentialFactoryDelegates = getInstance().delegates;
@@ -248,7 +246,7 @@ public class CredentialFactory {
 	 * String split method, includes the characters to split on.
 	 * When the input is abc@def, the output will be a list ['abc', '@', 'def'].
 	 */
-	private static List<String> splitWithSeparators(@NonNull String str, @NonNull String charsToSplitOn) {
+	private static List<String> splitWithSeparators(String str, String charsToSplitOn) {
 		final char[] c = str.toCharArray();
 		final List<String> list = new ArrayList<>();
 		int tokenStart = 0;

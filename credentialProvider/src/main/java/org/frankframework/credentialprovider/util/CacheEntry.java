@@ -39,7 +39,7 @@ public class CacheEntry<V> {
 		return value;
 	}
 
-	public void update(V value, int timeToLiveMillis) {
+	public void update(@Nullable V value, int timeToLiveMillis) {
 		this.value = value;
 		expiry = System.currentTimeMillis()+timeToLiveMillis;
 	}

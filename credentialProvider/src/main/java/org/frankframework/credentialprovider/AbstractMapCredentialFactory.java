@@ -85,7 +85,7 @@ public abstract class AbstractMapCredentialFactory implements ISecretProvider {
 	public Set<String> getConfiguredAliases() {
 		Set<String> aliasNames = new LinkedHashSet<>();
 		for (String rawName: aliases.keySet()) {
-			String name = StringUtil.split(rawName, "/").get(0);
+			String name = StringUtil.split(rawName, "/").getFirst();
 			aliasNames.add(name);
 		}
 		return aliasNames;

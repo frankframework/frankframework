@@ -20,7 +20,6 @@ import java.util.NoSuchElementException;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import lombok.extern.java.Log;
@@ -143,8 +142,13 @@ public class DelineaCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public boolean hasSecret(@NonNull CredentialAlias alias) {
-		return getSecret(alias) != null;
+	public boolean hasSecret(CredentialAlias alias) {
+		try {
+			getSecret(alias);
+			return true;
+		} catch (NoSuchElementException e) {
+			return false;
+		}
 	}
 
 	@Override
@@ -153,8 +157,8 @@ public class DelineaCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public ISecret getSecret(@NonNull CredentialAlias alias) throws NoSuchElementException {
-		if (alias.getName() != null && !StringUtils.isNumeric(alias.getName())) {
+	public ISecret getSecret(CredentialAlias alias) throws NoSuchElementException {
+		if (!StringUtils.isNumeric(alias.getName())) {
 			log.warning("Delinea secret aliases must be numeric, as they reference the internal Delinea secret ID. Supplied alias: %s".formatted(alias.getName()));
 		}
 
@@ -169,7 +173,7 @@ public class DelineaCredentialFactory implements ISecretProvider {
 		return new DelineaSecret(alias, secret);
 	}
 
-	void setDelineaClient(@NonNull DelineaClient delineaClient) {
+	void setDelineaClient(DelineaClient delineaClient) {
 		this.delineaClient = delineaClient;
 	}
 }
