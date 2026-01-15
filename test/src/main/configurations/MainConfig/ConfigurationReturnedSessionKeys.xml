@@ -54,7 +54,6 @@
 				<param name="reasonCode" sessionKey="reasonCode"/>
 				<param name="dataStream" sessionKey="dataStream"/>
 				<param name="localValue" sessionKey="localValue"/>
-				<param name="exitState" sessionKey="exitState"/>
 				<param name="forward" value="success"/>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -63,7 +62,6 @@
 				<param name="reasonCode" sessionKey="reasonCode"/>
 				<param name="dataStream" sessionKey="dataStream"/>
 				<param name="localValue" sessionKey="localValue"/>
-				<param name="exitState" sessionKey="exitState"/>
 				<param name="forward" value="400"/>
 				<forward name="success" path="EXIT" />
 			</pipe>
@@ -72,7 +70,6 @@
 				<param name="reasonCode" sessionKey="reasonCode"/>
 				<param name="dataStream" sessionKey="dataStream"/>
 				<param name="localValue" sessionKey="localValue"/>
-				<param name="exitState" sessionKey="exitState"/>
 				<param name="forward" value="exception"/>
 				<forward name="success" path="EXIT" />
 			</pipe>
