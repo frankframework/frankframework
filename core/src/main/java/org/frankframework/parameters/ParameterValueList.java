@@ -110,7 +110,7 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		Map<String, ParameterValue> paramValuesMap = getParameterValueMap();
 
 		// convert map with parameterValue to map with value
-		Map<String, Object> result = new LinkedHashMap<>(paramValuesMap.size());
+		Map<String, Object> result = LinkedHashMap.newLinkedHashMap(paramValuesMap.size());
 		for (ParameterValue pv : paramValuesMap.values()) {
 			result.put(pv.getDefinition().getName(), pv.getValue());
 		}

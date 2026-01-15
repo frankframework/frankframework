@@ -45,7 +45,7 @@ import javax.xml.transform.dom.DOMSource;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
@@ -84,6 +84,7 @@ import org.frankframework.util.XmlUtils;
  *     wrapped in a {@code synchronized} block that synchronizes on the message instance.
  * </p>
  */
+@NullMarked
 public class Message implements Serializable {
 	public static final long MESSAGE_SIZE_UNKNOWN = -1L;
 	public static final long MESSAGE_MAX_IN_MEMORY_DEFAULT = 5120L * 1024L;
@@ -95,12 +96,12 @@ public class Message implements Serializable {
 	private static final @Serial long serialVersionUID = 437863352486501445L;
 
 	private @Nullable Object request;
-	private @Getter @NonNull String requestClass;
+	private @Getter String requestClass;
 
-	private @Getter @NonNull MessageContext context;
+	private @Getter MessageContext context;
 	private boolean failedToDetermineCharset = false;
 
-	private Message(final @NonNull MessageContext context, final @Nullable Object request, final @Nullable Class<?> requestClass) {
+	private Message(final MessageContext context, final @Nullable Object request, final @Nullable Class<?> requestClass) {
 		if (request instanceof Message || (request instanceof AutoCloseable && !(request instanceof SerializableFileReference))) {
 			// this code could be reached when this constructor was public and the actual type of the parameter was not known at compile time.
 			// e.g. new Message(pipeRunResult.getResult());
@@ -113,11 +114,11 @@ public class Message implements Serializable {
 		this.requestClass = requestClass != null ? ClassUtils.nameOf(requestClass) : ClassUtils.nameOf(request);
 	}
 
-	private Message(@NonNull MessageContext context, Object request) {
+	private Message(MessageContext context, @Nullable Object request) {
 		this(context, request, request != null ? request.getClass() : null);
 	}
 
-	public Message(String request, @NonNull MessageContext context) {
+	public Message(String request, MessageContext context) {
 		this(context, request);
 	}
 
@@ -129,7 +130,7 @@ public class Message implements Serializable {
 		this(new MessageContext(charset), request);
 	}
 
-	public Message(byte[] request, @NonNull MessageContext context) {
+	public Message(byte[] request, MessageContext context) {
 		this(context, request);
 	}
 
@@ -137,7 +138,7 @@ public class Message implements Serializable {
 		this(new MessageContext(), request);
 	}
 
-	public Message(Reader request, @NonNull MessageContext context) throws IOException {
+	public Message(Reader request, MessageContext context) throws IOException {
 		this.context = context;
 		this.requestClass = ClassUtils.nameOf(request);
 		Message temporaryMessage = MessageUtils.fromReader(request);
@@ -155,7 +156,7 @@ public class Message implements Serializable {
 	/**
 	 * Constructor for Message using InputStream supplier. It is assumed the InputStream can be supplied multiple times.
 	 */
-	protected Message(ThrowingSupplier<InputStream, Exception> request, @NonNull MessageContext context, Class<?> requestClass) {
+	protected Message(ThrowingSupplier<InputStream, Exception> request, MessageContext context, Class<?> requestClass) {
 		this(context, request, requestClass);
 	}
 
@@ -166,19 +167,19 @@ public class Message implements Serializable {
 	 * @param context      {@link MessageContext}
 	 * @param requestClass {@link Class} of the original request from which the {@link SerializableFileReference} request was created
 	 */
-	protected Message(@NonNull SerializableFileReference request, @NonNull MessageContext context, Class<?> requestClass) {
+	protected Message(SerializableFileReference request, MessageContext context, Class<?> requestClass) {
 		this(context, request, requestClass);
 	}
 
-	public Message(@NonNull InputStream request, String charset) throws IOException {
+	public Message(InputStream request, String charset) throws IOException {
 		this(request, new MessageContext(charset));
 	}
 
-	public Message(@NonNull InputStream request, @NonNull MessageContext context) throws IOException {
+	public Message(InputStream request, MessageContext context) throws IOException {
 		this(request, context, request.getClass());
 	}
 
-	protected Message(@NonNull InputStream request, @NonNull MessageContext context, Class<?> requestClass) throws IOException {
+	protected Message(InputStream request, MessageContext context, Class<?> requestClass) throws IOException {
 		this.context = context;
 		this.requestClass = ClassUtils.nameOf(requestClass);
 		Message temporaryMessage = MessageUtils.fromInputStream(request);
@@ -200,7 +201,7 @@ public class Message implements Serializable {
 		this(request, new MessageContext());
 	}
 
-	public Message(Node request, @NonNull MessageContext context) {
+	public Message(Node request, MessageContext context) {
 		this(context, request);
 	}
 
@@ -208,17 +209,14 @@ public class Message implements Serializable {
 		this(new MessageContext(), request);
 	}
 
-	@NonNull
 	public static Message nullMessage() {
 		return nullMessage(new MessageContext());
 	}
 
-	@NonNull
-	public static Message nullMessage(@NonNull MessageContext context) {
+	public static Message nullMessage(MessageContext context) {
 		return new Message(context, null, null);
 	}
 
-	@NonNull
 	public MessageContext copyContext() {
 		return new MessageContext(getContext());
 	}
@@ -242,8 +240,7 @@ public class Message implements Serializable {
 	 *
 	 * @param defaultDecodingCharset The 'I know better' Charset, only used when no Charset is provided when the Message was created.
 	 */
-	@NonNull
-	protected String computeDecodingCharset(String defaultDecodingCharset) throws IOException {
+	protected String computeDecodingCharset(@Nullable String defaultDecodingCharset) throws IOException {
 		String providedCharset = getCharset();
 
 		if (StringUtils.isEmpty(providedCharset)) {
@@ -272,8 +269,7 @@ public class Message implements Serializable {
 		return providedCharset;
 	}
 
-	@NonNull
-	private String getEncodingCharset(String defaultEncodingCharset) {
+	private String getEncodingCharset(@Nullable String defaultEncodingCharset) {
 		if (StringUtils.isEmpty(defaultEncodingCharset)) {
 			defaultEncodingCharset = StreamUtil.DEFAULT_INPUT_STREAM_ENCODING;
 		}
@@ -420,7 +416,7 @@ public class Message implements Serializable {
 			LOG.debug("returning InputStream {} as Reader", this::getObjectId);
 			InputStream inputStream = asInputStream();
 			try {
-				return StreamUtil.getCharsetDetectingInputStreamReader(inputStream, readerCharset);
+				return StreamUtil.getCharsetDetectingInputStreamReader(Objects.requireNonNull(inputStream), readerCharset);
 			} catch (IOException e) {
 				CloseUtils.closeSilently(inputStream);
 				throw e;
@@ -477,7 +473,7 @@ public class Message implements Serializable {
 			}
 			if (request instanceof Node) {
 				LOG.debug("returning Node {} as InputStream", this::getObjectId);
-				return new ByteArrayInputStream(asByteArray());
+				return new ByteArrayInputStream(Objects.requireNonNull(asByteArray()));
 			}
 			String charset = getEncodingCharset(defaultEncodingCharset);
 			LOG.debug("returning String {} as InputStream", this::getObjectId);
@@ -489,7 +485,6 @@ public class Message implements Serializable {
 		}
 	}
 
-	@NonNull
 	public synchronized String peek(int readLimit) throws IOException {
 		try (Reader r = asReader()) {
 			if (r == null) {
@@ -551,8 +546,7 @@ public class Message implements Serializable {
 	 * Return the request object as a byte array. This may have the side effect of preserving the input as byte array.
 	 * This operation is not thread-safe.
 	 */
-	@Nullable
-	public byte[] asByteArray() throws IOException {
+	public byte @Nullable[] asByteArray() throws IOException {
 		return asByteArray(null);
 	}
 
@@ -560,8 +554,7 @@ public class Message implements Serializable {
 	 * Return the request object as a byte array. This may have the side effect of preserving the input as byte array.
 	 * This operation is not thread-safe.
 	 */
-	@Nullable
-	public byte[] asByteArray(@Nullable String defaultEncodingCharset) throws IOException {
+	public byte @Nullable[] asByteArray(@Nullable String defaultEncodingCharset) throws IOException {
 		if (request == null) {
 			return null;
 		}
@@ -582,10 +575,10 @@ public class Message implements Serializable {
 		}
 		if (request instanceof ThrowingSupplier || request instanceof SerializableFileReference) {
 			LOG.debug("returning InputStream {} from supplier", this::getObjectId);
-			return StreamUtil.streamToBytes(asInputStream());
+			return StreamUtil.streamToBytes(Objects.requireNonNull(asInputStream()));
 		}
 		// save the generated byte array as the request before returning it, unless it's too big
-		byte[] result = StreamUtil.streamToBytes(asInputStream(charset));
+		byte[] result = StreamUtil.streamToBytes(Objects.requireNonNull(asInputStream(charset)));
 		if (result.length < MESSAGE_MAX_IN_MEMORY) {
 			request = result;
 		}
@@ -629,7 +622,7 @@ public class Message implements Serializable {
 
 		// save the generated String as the request before returning it
 		// Specify initial capacity a little larger than file-size just as extra safeguard we do not re-allocate buffer.
-		String result = StreamUtil.readerToString(asReader(decodingCharset), null, false, (int) size() + 32);
+		String result = StreamUtil.readerToString(Objects.requireNonNull(asReader(decodingCharset)), null, false, (int) size() + 32);
 		if (!(request instanceof SerializableFileReference) && !isBinary() && result.length() < MESSAGE_MAX_IN_MEMORY) {
 			if (request instanceof AutoCloseable closeable) {
 				try {
@@ -713,40 +706,41 @@ public class Message implements Serializable {
 	 * @return a Message of the correct type for the given object
 	 */
 	@SneakyThrows(IOException.class)
-	public static Message asMessage(Object object) {
-		if (object == null) {
-			return nullMessage();
+	public static Message asMessage(@Nullable Object object) {
+		switch (object) {
+			case null -> {
+				return nullMessage();
+			}
+			case Message message -> {
+				return message;
+			}
+			case Reader reader -> {
+				return MessageUtils.fromReader(reader);
+			}
+			case InputStream stream -> {
+				return MessageUtils.fromInputStream(stream);
+			}
+			case URL rL -> {
+				return new UrlMessage(rL);
+			}
+			case File file -> {
+				return new FileMessage(file);
+			}
+			case Path path -> {
+				return new PathMessage(path);
+			}
+			case RawMessageWrapper<?> ignored -> throw new IllegalArgumentException("Raw message extraction / wrapping should be done via Listener.");
+			default -> {
+				// Only allow the following types
+				if (isSupportedType(object)) {
+					return new Message(new MessageContext(), object);
+				}
+				throw new IllegalArgumentException("request object type ["+object.getClass().getSimpleName()+"] not compatible with Message");
+			}
 		}
-		if (object instanceof Message message) {
-			return message;
-		}
-		if (object instanceof Reader reader) {
-			return MessageUtils.fromReader(reader);
-		}
-		if (object instanceof InputStream stream) {
-			return MessageUtils.fromInputStream(stream);
-		}
-		if (object instanceof URL rL) {
-			return new UrlMessage(rL);
-		}
-		if (object instanceof File file) {
-			return new FileMessage(file);
-		}
-		if (object instanceof Path path) {
-			return new PathMessage(path);
-		}
-		if (object instanceof RawMessageWrapper) {
-			throw new IllegalArgumentException("Raw message extraction / wrapping should be done via Listener.");
-		}
-
-		// Only allow the following types
-		if (isSupportedType(object)) {
-			return new Message(new MessageContext(), object);
-		}
-		throw new IllegalArgumentException("request object type ["+object.getClass().getSimpleName()+"] not compatible with Message");
 	}
 
-	public static boolean isSupportedType(Object request) {
+	public static boolean isSupportedType(@Nullable Object request) {
 		return request instanceof byte[] ||
 				request instanceof Boolean ||
 				request instanceof String ||
@@ -771,7 +765,7 @@ public class Message implements Serializable {
 	 * @param message Message to check. Can be {@code null}.
 	 * @return Returns {@code true} if the message is {@code null}, otherwise the result of {@link Message#isEmpty()}.
 	 */
-	public static boolean isEmpty(Message message) {
+	public static boolean isEmpty(@Nullable Message message) {
 		return message == null || message.isEmpty();
 	}
 
@@ -806,7 +800,7 @@ public class Message implements Serializable {
 		}
 	}
 
-	private static boolean checkIfReaderHasData(Reader r) throws IOException {
+	private static boolean checkIfReaderHasData(@Nullable Reader r) throws IOException {
 		if (r == null) {
 			return false;
 		}
@@ -817,7 +811,7 @@ public class Message implements Serializable {
 		}
 	}
 
-	private static boolean checkIfStreamHasData(InputStream is) throws IOException {
+	private static boolean checkIfStreamHasData(@Nullable InputStream is) throws IOException {
 		if (is == null) {
 			return false;
 		}
@@ -863,12 +857,12 @@ public class Message implements Serializable {
 			Object requestClassFromStream = stream.readObject();
 			if (requestClassFromStream != null) {
 				if (requestClassFromStream instanceof Class<?> class1) {
-					this.requestClass = class1.getTypeName();
+					requestClass = class1.getTypeName();
 				} else {
-					this.requestClass = requestClassFromStream.toString();
+					requestClass = requestClassFromStream.toString();
 				}
 			} else {
-				this.requestClass = ClassUtils.nameOf(request);
+				requestClass = ClassUtils.nameOf(request);
 			}
 		} catch (Exception e) {
 			requestClass = ClassUtils.nameOf(request);
@@ -929,7 +923,6 @@ public class Message implements Serializable {
 	 * @return A new Message object that is a copy of this Message.
 	 * @throws IOException If an I/O error occurs during the copying process.
 	 */
-	@NonNull
 	public Message copyMessage() throws IOException {
 		if (!(request instanceof SerializableFileReference)) {
 			return new Message(copyContext(), request);
@@ -943,7 +936,7 @@ public class Message implements Serializable {
 		return new Message(copyContext(), newRef);
 	}
 
-	public static boolean isFormattedErrorMessage(Message message) {
+	public static boolean isFormattedErrorMessage(@Nullable Message message) {
 		return (message != null && Boolean.TRUE.equals(message.getContext().get(MessageContext.IS_ERROR_MESSAGE)));
 	}
 }

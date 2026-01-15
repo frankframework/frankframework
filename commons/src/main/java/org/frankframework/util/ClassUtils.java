@@ -34,7 +34,6 @@ import java.util.Properties;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -162,8 +161,7 @@ public class ClassUtils {
 	/**
 	 * Returns the ClassName or BeanName of the object without the package name AND includes a [name] suffix for a {@link HasName} bean.
 	 */
-	@NonNull
-	public static String nameOf(Object o) {
+	public static String nameOf(@Nullable Object o) {
 		String head = null;
 		if (isClassPresent("org.springframework.beans.factory.NamedBean")) {
 			// Must be a separate statement because of this optional class
@@ -189,8 +187,7 @@ public class ClassUtils {
 	/**
 	 * Returns the ClassName of the object (without package name), like {@link #nameOf(Object)}, but without [name] suffix for a {@link HasName}.
 	 */
-	@NonNull
-	public static String classNameOf(Object o) {
+	public static String classNameOf(@Nullable Object o) {
 		if (o == null) {
 			return "<null>";
 		}
@@ -247,7 +244,7 @@ public class ClassUtils {
 			throw new IllegalStateException("method must start with [set] and may only contain [1] parameter");
 		}
 
-		try {// Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
+		try { // Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
 			Object castValue = parseValueToSet(method, valueToSet);
 			log.trace("trying to set method [{}] with value [{}] of type [{}] on [{}]", method::getName, () -> valueToSet, () -> castValue == null ? "<null value>" : castValue.getClass()
 					.getCanonicalName(), () -> ClassUtils.nameOf(clazz));
@@ -285,7 +282,7 @@ public class ClassUtils {
 	}
 
 	@Nullable
-	private static Object convertToTypeRawTyped(Class<?> type, String value) throws IllegalArgumentException {
+	private static Object convertToTypeRawTyped(Class<?> type, @Nullable String value) throws IllegalArgumentException {
 		if (value == null) {
 			return null;
 		}
@@ -402,7 +399,7 @@ public class ClassUtils {
 		return infoList;
 	}
 
-	public static Map<String, Object> getClassInfo(@Nullable Class<?> clazz, ClassLoader classLoader) {
+	public static Map<String, Object> getClassInfo(@Nullable Class<?> clazz, @Nullable ClassLoader classLoader) {
 		Map<String, Object> result = new LinkedHashMap<>();
 		String classLoaderName = classLoader != null ? classLoader.toString() : "<system classloader>";
 		result.put("classLoader", classLoaderName);

@@ -432,19 +432,14 @@ public class MessageUtils {
 	 */
 	@Deprecated
 	public static @Nullable String asString(@Nullable Object object) throws IOException {
-		if (object == null) {
-			return null;
-		}
-		if (object instanceof String string) {
-			return string;
-		}
-		if (object instanceof Message message) {
-			return message.asString();
-		}
-		if (object instanceof MessageWrapper<?> wrapper) {
-			return wrapper.getMessage().asString();
-		}
-		return Message.asMessage(object).asString();
+		return switch (object) {
+			case null -> null;
+			case String string -> string;
+			case Enum<?> enumObj -> enumObj.name();
+			case Message message -> message.asString();
+			case MessageWrapper<?> wrapper -> wrapper.getMessage().asString();
+			default -> Message.asMessage(object).asString();
+		};
 	}
 
 	/**
