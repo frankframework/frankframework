@@ -111,13 +111,7 @@ public class Message implements Serializable {
 		}
 
 		this.context = context;
-		if (requestClass != null) {
-			this.requestClass = ClassUtils.nameOf(requestClass);
-		} else if (request != null) {
-			this.requestClass = ClassUtils.nameOf(request);
-		} else {
-			this.requestClass = "<no request>";
-		}
+		this.requestClass = requestClass != null ? ClassUtils.nameOf(requestClass) : ClassUtils.nameOf(request);
 	}
 
 	private Message(MessageContext context, @Nullable Object request) {
@@ -868,13 +862,11 @@ public class Message implements Serializable {
 				} else {
 					requestClass = requestClassFromStream.toString();
 				}
-			} else if (request != null){
-				this.requestClass = ClassUtils.nameOf(request);
 			} else {
 				requestClass = ClassUtils.nameOf(request);
 			}
 		} catch (Exception e) {
-			requestClass = request != null ? ClassUtils.nameOf(request) : "<no request>";
+			requestClass = ClassUtils.nameOf(request);
 			LOG.warn("Could not read requestClass, using ClassUtils.nameOf(request) [{}], ({}): {}", () -> requestClass, () -> ClassUtils.nameOf(e), e::getMessage);
 		}
 		MessageContext contextFromStream;

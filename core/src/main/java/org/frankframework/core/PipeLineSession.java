@@ -325,6 +325,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		return securityHandler;
 	}
 
+	@SuppressWarnings({ "unchecked", "deprecation" })
 	@SafeVarargs
 	@Nullable
 	public final <T> T getAsType(String key, T... reified) {
@@ -333,11 +334,14 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			return null;
 		}
 		Class<T> type = SpringUtils.getClassOf(reified);
-		if (!type.isInstance(obj)) {
+		if (Message.class.isAssignableFrom(type)) {
+			return (T) Message.asMessage(obj);
+		}
+		Object realValue = obj instanceof Message message ? message.asObject() : obj;
+		if (!type.isInstance(realValue)) {
 			throw new IllegalArgumentException("Value for key [%s] is of type [%s], not an instance of requested type [%s]".formatted(key, obj.getClass().getName(), type.getName()));
 		}
-		//noinspection unchecked
-		return (T)obj;
+		return (T)realValue;
 	}
 
 	@SafeVarargs
