@@ -18,6 +18,7 @@ package org.frankframework.management.security;
 import static org.frankframework.management.security.JwtKeyGenerator.JWT_DEFAULT_SIGNING_ALGORITHM;
 
 import java.io.IOException;
+import java.net.URI;
 import java.net.URL;
 import java.text.ParseException;
 
@@ -132,7 +133,7 @@ public class JwtSecurityFilter implements Filter, InitializingBean { // Should w
 			throw new IllegalStateException("no JWKS endpoint specified");
 		}
 
-		URL url = new URL(jwksEndpoint);
+		URL url = new URI(jwksEndpoint).toURL();
 		JWKSource<SecurityContext> keySource = JWKSourceBuilder.create(url).cacheForever().build();
 		jwtProcessor = new DefaultJWTProcessor<>();
 		JWSKeySelector<SecurityContext> keySelector = new JWSVerificationKeySelector<>(JWT_DEFAULT_SIGNING_ALGORITHM, keySource);

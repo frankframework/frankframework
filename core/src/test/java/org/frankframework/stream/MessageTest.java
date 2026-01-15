@@ -35,6 +35,7 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.NoSuchFileException;
@@ -413,7 +414,7 @@ public class MessageTest {
 	@Test
 	public void testUnknownURL() throws Exception {
 		String unknownFile = "xxx.bestaat.niet.txt";
-		URL source = new URL("file:" + unknownFile);
+		URL source = new URI("file:" + unknownFile).toURL();
 		adapter = new UrlMessage(source);
 		Exception exception = assertThrows(Exception.class, adapter::asInputStream);
 		assertThat(exception.getMessage(), containsString(unknownFile));
@@ -935,7 +936,7 @@ public class MessageTest {
 
 	@Test
 	public void testMessageSizeExternalURL() throws Exception {
-		URL url = new URL("http://www.file.xml");
+		URL url = new URI("http://www.file.xml").toURL();
 		assertNotNull(url, "cannot find testfile");
 
 		Message message = new UrlMessage(url);

@@ -23,6 +23,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.CodeSource;
 import java.util.ArrayList;
@@ -91,7 +93,7 @@ public class ClassUtils {
 			if (resource.contains(":")) {
 				String escapedURL = resource.replace(" ", "%20");
 				log.trace("attempt to look up resource natively [{}]", escapedURL);
-				return new URL(escapedURL);
+				return new URI(escapedURL).toURL();
 			} else {
 				// no URL -> treat as file path
 				File file = new File(resource);
@@ -100,7 +102,7 @@ public class ClassUtils {
 					return file.toURI().toURL();
 				}
 			}
-		} catch (MalformedURLException e) {
+		} catch (MalformedURLException | URISyntaxException e) {
 			FileNotFoundException fnfe = new FileNotFoundException("Resource location [" + resource + "] is neither a URL not a well-formed file path");
 			fnfe.initCause(e);
 			throw fnfe;

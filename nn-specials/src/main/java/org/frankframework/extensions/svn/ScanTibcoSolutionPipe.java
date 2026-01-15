@@ -18,6 +18,7 @@ package org.frankframework.extensions.svn;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.URI;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Map;
@@ -261,8 +262,8 @@ public class ScanTibcoSolutionPipe extends FixedForwardPipe {
 						for (String itn : c2) {
 							String wsdl;
 							try {
-								URL url = new URL(urlString);
-								URL wsdlUrl = new URL(url, itn);
+								URI uri = new URI(urlString);
+								URI wsdlUrl = uri.resolve(itn);
 								wsdl = getHtml(wsdlUrl.toString());
 							} catch (Exception e) {
 								error(
