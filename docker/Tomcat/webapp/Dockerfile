@@ -2,6 +2,11 @@ FROM tomcat:11.0.15-jre25
 ARG GID=2000
 ARG UID=2000
 
+# Install curl for healthcheck
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends curl && \
+    rm -rf /var/lib/apt/lists/*
+
 # Secure files (CIS-DI-0008)
 RUN chmod -R 751 /usr/bin /usr/sbin
 
