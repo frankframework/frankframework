@@ -15,8 +15,6 @@
 */
 package org.frankframework.lifecycle.servlets;
 
-import static org.frankframework.lifecycle.servlets.AbstractServletAuthenticator.DEFAULT_ROLE_PREFIX;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -106,7 +104,6 @@ public class AuthorityMapper implements GrantedAuthoritiesMapper {
 				.filter(OAuth2UserAuthority.class::isInstance) // OidcUserAuthority extends OAuth2UserAuthority
 				.map(this::getValuesFromToken)
 				.flatMap(Collection::stream)
-				.map(role -> DEFAULT_ROLE_PREFIX + role)
 				.toList();
 	}
 
