@@ -24,9 +24,6 @@
 			<pipelineResult>
 				<xsl:value-of select="." />
 			</pipelineResult>
-			<exitState>
-				<xsl:value-of select="$exitState" />
-			</exitState>
 			<forward>
 				<xsl:value-of select="$forward" />
 			</forward>

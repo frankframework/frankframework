@@ -4,6 +4,5 @@
   <dataStream>SessionKey value from inputStream</dataStream>
   <localValue>LocalValueParent</localValue>
   <pipelineResult>PipeLine result from inputStream</pipelineResult>
-  <exitState>SUCCESS</exitState>
   <forward>success</forward>
 </reply>
