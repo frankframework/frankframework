@@ -74,8 +74,8 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	public static final String HTTP_METHOD_KEY 	   = "HttpMethod";
 
 	public static final String API_PRINCIPAL_KEY   = "apiPrincipal";
-	public static final String EXIT_STATE_CONTEXT_KEY="exitState";
-	public static final String EXIT_CODE_CONTEXT_KEY="exitCode";
+	public static final String EXIT_STATE_CONTEXT_KEY= SYSTEM_MANAGED_RESOURCE_PREFIX + "exitState";
+	public static final String EXIT_CODE_CONTEXT_KEY= "exitCode";
 
 	private transient @Nullable ISecurityHandler securityHandler = null;
 	private transient Cleaner.@Nullable Cleanable cleanable;
@@ -171,6 +171,9 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	public Object put(String key, @Nullable Object value) {
 		if (shouldCloseSessionResource(key, value)) {
 			closeables.add((AutoCloseable) value);
+		}
+		if (value instanceof Enum<?> enumValue && !key.startsWith(SYSTEM_MANAGED_RESOURCE_PREFIX)) {
+			super.put(key, enumValue.name());
 		}
 		return super.put(key, value);
 	}
