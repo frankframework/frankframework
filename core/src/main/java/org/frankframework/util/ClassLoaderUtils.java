@@ -16,6 +16,8 @@
 package org.frankframework.util;
 
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -125,8 +127,8 @@ public class ClassLoaderUtils {
 
 		String escapedURL = resource.replace(" ", "%20");
 		try {
-			return new URL(escapedURL);
-		} catch(MalformedURLException e) {
+			return new URI(escapedURL).toURL();
+		} catch(MalformedURLException | URISyntaxException e) {
 			log.debug("Could not find resource [{}] as URL [{}]: {}", resource, escapedURL, e.getMessage());
 			return null;
 		}
