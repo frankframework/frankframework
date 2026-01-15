@@ -274,13 +274,13 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 	@SuppressWarnings("deprecation")
 	@Nullable
 	public Object getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
-		@Nullable Object result = null;
+		Object result = null;
 		log.debug("Calculating value for Parameter [{}]", this::getName);
 		if (!configured) {
 			throw new ParameterException(getName(), "Parameter ["+getName()+"] not configured");
 		}
 
-		@Nullable String requestedSessionKey;
+		String requestedSessionKey;
 		if (tpDynamicSessionKey != null) {
 			try {
 				requestedSessionKey = tpDynamicSessionKey.transformToString(message);
