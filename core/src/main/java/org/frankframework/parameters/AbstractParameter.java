@@ -124,7 +124,7 @@ import org.frankframework.util.XmlUtils;
 public abstract class AbstractParameter<T> implements IConfigurable, IWithParameters, IParameter {
 	public static final String CONTEXT_KEY_WILDCARD = "*";
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-	private @Nullable@Getter @Setter ApplicationContext applicationContext;
+	private @Nullable @Getter @Setter ApplicationContext applicationContext;
 
 	public static final String FIXEDUID ="0a1b234c--56de7fa8_9012345678b_-9cd0";
 	public static final String FIXEDHOSTNAME ="MYHOST000012345";
