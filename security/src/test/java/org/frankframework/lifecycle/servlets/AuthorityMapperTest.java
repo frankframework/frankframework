@@ -79,8 +79,8 @@ public class AuthorityMapperTest {
 		URL roleMappingFile = AuthorityMapperTest.class.getResource("/oauth-role-mapping.properties");
 		Properties properties = new Properties();
 
-		// This is replaced in the role-mapping file to map to ROLE_IbisAdmin
-		properties.setProperty("otherProperty", "ROLE_IbisAdmin");
+		// This is replaced in the role-mapping file to map to IbisAdmin
+		properties.setProperty("otherProperty", "IbisAdmin");
 
 		AuthorityMapper mapper = new AuthorityMapper(roleMappingFile, ALL_USER_ROLES, properties, authoritiesClaimName);
 
@@ -111,7 +111,7 @@ public class AuthorityMapperTest {
 		Properties properties = new Properties();
 
 		// This is replaced in the role-mapping file to map to ROLE_IbisAdmin
-		properties.setProperty("otherProperty", "ROLE_IbisAdmin");
+		properties.setProperty("otherProperty", "IbisAdmin");
 
 		AuthorityMapper mapper = new AuthorityMapper(roleMappingFile, ALL_USER_ROLES, properties, authoritiesClaimName);
 
