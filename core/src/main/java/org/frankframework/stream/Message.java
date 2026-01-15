@@ -742,6 +742,7 @@ public class Message implements Serializable {
 
 	public static boolean isSupportedType(@Nullable Object request) {
 		return request instanceof byte[] ||
+				request instanceof Enum ||
 				request instanceof Boolean ||
 				request instanceof String ||
 				request instanceof Date ||
