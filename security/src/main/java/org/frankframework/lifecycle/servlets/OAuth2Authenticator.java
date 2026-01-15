@@ -374,7 +374,6 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 		return builder;
 	}
 
-
 	/**
 	 * Absolute base URL starts eg. `http(s)://{host}:{port}/` or is NULL (relative).
 	 */
