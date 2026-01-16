@@ -22,12 +22,15 @@ import java.util.Map;
 import org.apache.commons.lang3.Strings;
 import org.springframework.security.oauth2.core.ClaimAccessor;
 
+import lombok.extern.log4j.Log4j2;
+
 /**
  * Utility class for mapping authorities from user info or attributes map.
  *
  * @see BearerOnlyAuthenticator
  * @see AuthorityMapper
  */
+@Log4j2
 public class AuthorityMapperUtil {
 	private AuthorityMapperUtil() {
 		// utility class
@@ -38,6 +41,8 @@ public class AuthorityMapperUtil {
 	 * of only one (1) '.' is allowed in the authoritiesClaimName.
 	 */
 	static Collection<String> getRolesFromUserInfo(ClaimAccessor userInfo, String authoritiesClaimName) {
+		log.debug("Fetching user roles from userInfo with authoritiesClaimName [{}]", authoritiesClaimName);
+
 		// use a normal get if the key does not contain a '.'
 		if (!Strings.CS.contains(authoritiesClaimName, ".")) {
 			return userInfo.getClaim(authoritiesClaimName);
@@ -48,7 +53,11 @@ public class AuthorityMapperUtil {
 			Map<String, Collection<String>> realmAccess = userInfo.getClaim(keyParts[0]);
 
 			// get second part of the key
-			return realmAccess.get(keyParts[1]);
+			Collection<String> strings = realmAccess.get(keyParts[1]);
+
+			log.debug("Fetched user roles from userInfo: {}", strings);
+
+			return strings;
 		}
 	}
 
@@ -61,6 +70,8 @@ public class AuthorityMapperUtil {
 			return List.of();
 		}
 
+		log.debug("Fetching user roles from userAttributes with authoritiesClaimName [{}]", authoritiesClaimName);
+
 		// use a normal get if the key does not contain a '.'
 		if (!Strings.CS.contains(authoritiesClaimName, ".")) {
 			return (List<String>) userAttributes.get(authoritiesClaimName);
@@ -71,7 +82,11 @@ public class AuthorityMapperUtil {
 			Map<String, Collection<String>> realmAccess = (Map<String, Collection<String>>) userAttributes.get(keyParts[0]);
 
 			// get second part of the key
-			return (List<String>) realmAccess.get(keyParts[1]);
+			List<String> strings = (List<String>) realmAccess.get(keyParts[1]);
+
+			log.debug("Fetched user roles from userAttributes: {}", strings);
+
+			return strings;
 		}
 	}
 }

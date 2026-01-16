@@ -42,7 +42,7 @@ import org.frankframework.util.StringResolver;
 
 @Log4j2
 public class AuthorityMapper implements GrantedAuthoritiesMapper {
-	private final Map<GrantedAuthority, String> roleToAuthorityMapping = new HashMap<>();
+	private final Map<GrantedAuthority, String> authorityToRoleMapping = new HashMap<>();
 
 	private String authoritiesClaimName;
 
@@ -65,7 +65,7 @@ public class AuthorityMapper implements GrantedAuthoritiesMapper {
 			String resolvedValue = StringResolver.substVars(value, properties);
 			if (StringUtils.isNotEmpty(resolvedValue)) {
 				GrantedAuthority grantedAuthority = new SimpleGrantedAuthority("ROLE_" + role);
-				roleToAuthorityMapping.put(grantedAuthority, resolvedValue);
+				authorityToRoleMapping.put(grantedAuthority, resolvedValue);
 				log.info("mapped role [{}] to [{}]", resolvedValue, grantedAuthority);
 			}
 		}
@@ -84,11 +84,18 @@ public class AuthorityMapper implements GrantedAuthoritiesMapper {
 	@Override
 	public Collection<? extends GrantedAuthority> mapAuthorities(Collection<? extends GrantedAuthority> authorities) {
 		List<GrantedAuthority> mappedAuthorities = new ArrayList<>();
-		List<String> canonicalRoleNames = authorities.stream().map(GrantedAuthority::getAuthority).toList();
+		List<String> canonicalRoleNames = authorities.stream()
+				.map(GrantedAuthority::getAuthority)
+				.toList();
 		List<String> userRoles = getUserRolesFrom(authorities);
 
-		roleToAuthorityMapping.forEach((authority, key) -> {
-			if (canonicalRoleNames.contains(key) || userRoles.contains(key)) {
+		log.debug("Canonical role names from granted authorities: {}", () -> canonicalRoleNames);
+		log.debug("User roles from token claims: {}", () -> userRoles);
+
+		authorityToRoleMapping.forEach((authority, role) -> {
+			if (canonicalRoleNames.contains(role) || userRoles.contains(role)) {
+				log.debug("Found granted authority [{}] for role [{}]", authority::getAuthority, () -> role);
+
 				mappedAuthorities.add(authority);
 			}
 		});
@@ -98,6 +105,7 @@ public class AuthorityMapper implements GrantedAuthoritiesMapper {
 
 	private List<String> getUserRolesFrom(Collection<? extends GrantedAuthority> authorities) {
 		if (StringUtils.isBlank(authoritiesClaimName)) {
+			log.debug("No authoritiesClaimName configured, skipping user roles from token");
 			return List.of();
 		}
 
