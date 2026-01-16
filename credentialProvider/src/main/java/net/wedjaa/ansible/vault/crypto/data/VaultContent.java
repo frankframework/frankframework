@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 - Fabio "MrWHO" Torchetti
+ * Copyright 2016 - Fabio "MrWHO" Torchetti, 2024-2026 WeAreFrank!
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,14 +17,15 @@
 package net.wedjaa.ansible.vault.crypto.data;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 
 import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
+import org.jspecify.annotations.NullMarked;
 
+@NullMarked
 public class VaultContent {
 	private static final Log logger = LogFactory.getLog(VaultContent.class);
-
-	private final static String CHAR_ENCODING = "UTF-8";
 
 	private final byte[] salt;
 	private final byte[] hmac;
@@ -32,9 +33,9 @@ public class VaultContent {
 
 	public VaultContent(byte[] encryptedVault) throws IOException {
 		byte[][] vaultContents = splitData(encryptedVault);
-		salt = Util.unhex(new String(vaultContents[0], CHAR_ENCODING));
-		hmac = Util.unhex(new String(vaultContents[1], CHAR_ENCODING));
-		data = Util.unhex(new String(vaultContents[2], CHAR_ENCODING));
+		salt = Util.unhex(new String(vaultContents[0], StandardCharsets.UTF_8));
+		hmac = Util.unhex(new String(vaultContents[1], StandardCharsets.UTF_8));
+		data = Util.unhex(new String(vaultContents[2], StandardCharsets.UTF_8));
 	}
 
 	public VaultContent(byte[] salt, byte[] hmac, byte[] data) {
@@ -47,6 +48,7 @@ public class VaultContent {
 		return toString().getBytes();
 	}
 
+	@Override
 	public String toString() {
 		if (logger.isDebugEnabled()) {
 			logger.debug("Salt: %d - HMAC: %d - Data: %d - TargetLen: %d".formatted(salt.length, hmac.length,
@@ -85,7 +87,7 @@ public class VaultContent {
 
 		int idx = 0;
 		int saltLen = 0;
-		while (encodedData[idx] != '\n' && idx < encodedData.length) {
+		while (idx < encodedData.length && encodedData[idx] != '\n') {
 			saltLen++;
 			idx++;
 		}
@@ -97,7 +99,7 @@ public class VaultContent {
 		result[0] = saltLen;
 
 		int hmacLen = 0;
-		while (encodedData[idx] != '\n' && idx < encodedData.length) {
+		while (idx < encodedData.length && encodedData[idx] != '\n') {
 			hmacLen++;
 			idx++;
 		}

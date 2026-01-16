@@ -23,20 +23,29 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletContextEvent;
 import jakarta.servlet.ServletException;
 
 import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.core.LoggerContext;
 import org.apache.tomcat.websocket.server.WsContextListener;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
+import org.springframework.beans.BeansException;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.WebApplicationType;
+import org.springframework.boot.context.event.ApplicationFailedEvent;
+import org.springframework.boot.logging.LoggingSystem;
+import org.springframework.boot.logging.log4j2.Log4J2LoggingSystem;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
+import org.springframework.context.ApplicationContextException;
 import org.springframework.context.ApplicationContextInitializer;
+import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.core.env.PropertiesPropertySource;
+
+import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.console.runner.ConsoleWarInitializer;
 import org.frankframework.ladybug.runner.LadybugWarInitializer;
@@ -56,7 +65,7 @@ public class IafTestInitializer {
 
 	public static class ApplicationInitializerWrapper implements ServletContextInitializer {
 		@Override
-		public void onStartup(@Nonnull ServletContext servletContext) throws ServletException {
+		public void onStartup(@NonNull ServletContext servletContext) throws ServletException {
 			FrankApplicationInitializer init = new FrankApplicationInitializer();
 			init.onStartup(servletContext);
 			LogManager.getLogger("APPLICATION").info("Started Frank!Application");
@@ -65,7 +74,7 @@ public class IafTestInitializer {
 
 	public static class LadybugInitializerWrapper implements ServletContextInitializer {
 		@Override
-		public void onStartup(@Nonnull ServletContext servletContext) throws ServletException {
+		public void onStartup(@NonNull ServletContext servletContext) throws ServletException {
 			System.setProperty("ladybug.jdbc.datasource", "");
 			LadybugWarInitializer init = new LadybugWarInitializer();
 			init.onStartup(servletContext);
@@ -75,7 +84,7 @@ public class IafTestInitializer {
 
 	public static class ConsoleInitializerWrapper implements ServletContextInitializer {
 		@Override
-		public void onStartup(@Nonnull ServletContext servletContext) throws ServletException {
+		public void onStartup(@NonNull ServletContext servletContext) throws ServletException {
 			ConsoleWarInitializer init = new ConsoleWarInitializer();
 			init.onStartup(servletContext);
 			LogManager.getLogger("APPLICATION").info("Started Console");
@@ -86,7 +95,7 @@ public class IafTestInitializer {
 	public static class WsSciWrapper implements ServletContextInitializer {
 
 		@Override
-		public void onStartup(@Nonnull ServletContext servletContext) {
+		public void onStartup(@NonNull ServletContext servletContext) {
 			WsContextListener sc = new WsContextListener();
 			sc.contextInitialized(new ServletContextEvent(servletContext));
 		}
@@ -103,6 +112,42 @@ public class IafTestInitializer {
 	public static void main(String[] args) throws IOException {
 		SpringApplication app = configureApplication();
 		app.run(args);
+	}
+
+	/**
+	 * Disable the Spring-Boot LoggingSystem.
+	 * Spring programmatically adds Console appenders and configures it's format regardless of what we configure.
+	 *
+	 * See {@link Log4J2LoggingSystem#initialize(org.springframework.boot.logging.LoggingInitializationContext, String, org.springframework.boot.logging.LogFile)}.
+	 */
+	private static void disableSpringBootLogging() {
+		LoggerContext logContext = LoggerContext.getContext(false);
+		logContext.setExternalContext(LoggingSystem.class.getName());
+	}
+
+	/**
+	 * When the application fails to start up, trigger a shutdown and log the exception.
+	 */
+	@Log4j2
+	private static class FailedInitializationMonitor implements ApplicationListener<ApplicationFailedEvent> {
+
+		@Override
+		public void onApplicationEvent(ApplicationFailedEvent event) {
+			if (event.getException() != null) {
+				log.fatal("unable to start application", event.getException());
+				LogUtil.getLogger("APPLICATION").fatal("unable to start application: {}", () -> getRootCause(event.getException()).getMessage());
+			}
+
+			System.exit(1); // Terminate the JVM
+		}
+
+		private Throwable getRootCause(Throwable t) {
+			if (t instanceof BeansException || t instanceof ApplicationContextException) {
+				return (t.getCause() != null) ? getRootCause(t.getCause()) : t;
+			}
+			return t;
+		}
+
 	}
 
 	/**
@@ -140,6 +185,8 @@ public class IafTestInitializer {
 			System.setProperty("log.dir", foundLogDir);
 			LogUtil.getLogger("APPLICATION").info("set log.dir to [{}]", foundLogDir);
 		}
+
+		disableSpringBootLogging();
 
 		// Find and configure the configurations
 		LogUtil.getLogger("APPLICATION").info("using project.dir [{}]", projectDir);
@@ -196,7 +243,7 @@ public class IafTestInitializer {
 	 * Find the iaf-test module directory
 	 * NOTE: Since we still need to determine the log.dir, we may not log anything here!
 	 */
-	@Nonnull
+	@NonNull
 	public static Path getProjectDir() throws IOException {
 		Path runFromDir = Path.of(System.getProperty("user.dir")).toAbsolutePath();
 		return validateIfEclipseOrIntelliJ(runFromDir);
@@ -222,7 +269,7 @@ public class IafTestInitializer {
 	 * IntelliJ runs from the project root directory.
 	 * NOTE: Since we still need to determine the log.dir, we may not log anything here!
 	 */
-	private static @Nonnull Path validateIfEclipseOrIntelliJ(Path runFromDir) throws IOException {
+	private static @NonNull Path validateIfEclipseOrIntelliJ(Path runFromDir) throws IOException {
 		if(Files.exists(runFromDir.resolve(".github"))) { // this folder exists in the project ROOT directory
 			Path module = runFromDir.resolve("test");
 			if(Files.exists(module)) {

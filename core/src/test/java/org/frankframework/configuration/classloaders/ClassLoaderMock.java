@@ -17,6 +17,8 @@ package org.frankframework.configuration.classloaders;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -75,9 +77,9 @@ public class ClassLoaderMock extends ClassLoader {
 	private void addFile(Map<String, URL> map, String file, boolean retrieveFromParent) {
 		if(!retrieveFromParent) {
 			try {
-				map.put(file, new URL("file:"+ROOTDIR+file));
+				map.put(file, new URI("file:"+ROOTDIR+file).toURL());
 			}
-			catch (MalformedURLException e) {
+			catch (MalformedURLException | URISyntaxException e) {
 				e.printStackTrace();
 			}
 		} else {

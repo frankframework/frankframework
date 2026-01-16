@@ -1,5 +1,5 @@
 ARG REGISTRY=private.docker.nexus.frankframework.org
-ARG JBOSS_VARIANT=eap8-openjdk17-runtime-openshift-rhel8-prebuild
+ARG JBOSS_VARIANT=eap81-openjdk21-runtime-openshift-rhel9-prebuild
 ARG JBOSS_VERSION=1.0.0.GA
 FROM ${REGISTRY}/jboss-eap-8/${JBOSS_VARIANT}:${JBOSS_VERSION}
 

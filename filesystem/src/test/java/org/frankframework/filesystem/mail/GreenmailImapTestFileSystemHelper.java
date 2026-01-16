@@ -2,7 +2,6 @@ package org.frankframework.filesystem.mail;
 
 import java.io.InputStream;
 
-import jakarta.annotation.Nonnull;
 import jakarta.mail.Address;
 import jakarta.mail.Flags;
 import jakarta.mail.Folder;
@@ -17,6 +16,7 @@ import jakarta.mail.search.SubjectTerm;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.text.StringEscapeUtils;
 import org.eclipse.angus.mail.imap.IMAPFolder;
+import org.jspecify.annotations.NonNull;
 
 import com.icegreen.greenmail.junit5.GreenMailExtension;
 
@@ -111,7 +111,7 @@ public class GreenmailImapTestFileSystemHelper implements IFileSystemTestHelper 
 	}
 
 	// the tests in FileSystemTestBase assume that the input folder is used
-	private @Nonnull String getFolderToUse(String folderName) {
+	private @NonNull String getFolderToUse(String folderName) {
 		return StringUtils.isNotBlank(folderName) ? folderName : baseFolder;
 	}
 

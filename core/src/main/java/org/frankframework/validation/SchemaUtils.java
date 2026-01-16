@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2015 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -45,11 +45,10 @@ import javax.xml.stream.events.Namespace;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 
 import com.google.common.collect.Streams;
 
@@ -151,7 +150,7 @@ public class SchemaUtils {
 	 * grouping them by namespace in a map.
 	 *
 	 */
-	public static void mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(@Nonnull IScopeProvider scopeProvider, @Nonnull Map<String, Set<IXSD>> xsdsGroupedByNamespace, @Nonnull XMLStreamWriter xmlStreamWriter) throws IOException, ConfigurationException {
+	public static void mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(@NonNull IScopeProvider scopeProvider, @NonNull Map<String, Set<IXSD>> xsdsGroupedByNamespace, @NonNull XMLStreamWriter xmlStreamWriter) throws IOException, ConfigurationException {
 		// iterate over the namespaces
 		for (Map.Entry<String, Set<IXSD>> entry: xsdsGroupedByNamespace.entrySet()) {
 			String namespace = entry.getKey();
@@ -169,7 +168,7 @@ public class SchemaUtils {
 	 *
 	 * @return merged XSDs
 	 */
-	public static @Nonnull Set<IXSD> mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(IScopeProvider scopeProvider, Map<String, Set<IXSD>> xsdsGroupedByNamespace) throws XMLStreamException, IOException, ConfigurationException {
+	public static @NonNull Set<IXSD> mergeXsdsGroupedByNamespaceToSchemasWithoutIncludes(IScopeProvider scopeProvider, Map<String, Set<IXSD>> xsdsGroupedByNamespace) throws XMLStreamException, IOException, ConfigurationException {
 		Set<IXSD> resultXsds = new LinkedHashSet<>();
 		// iterate over the namespaces
 		for (Map.Entry<String, Set<IXSD>> entry: xsdsGroupedByNamespace.entrySet()) {
@@ -297,7 +296,7 @@ public class SchemaUtils {
 		}
 	}
 
-	private static @Nonnull Reader createXsdReader(@Nonnull IXSD xsd) throws IOException {
+	private static @NonNull Reader createXsdReader(@NonNull IXSD xsd) throws IOException {
 		Reader reader = xsd.getReader();
 		if (reader == null) {
 			throw new IllegalArgumentException(xsd + " not found");
@@ -313,7 +312,7 @@ public class SchemaUtils {
 	 * @throws IOException When reading or writing fails
 	 * @throws ConfigurationException When there was an exception in the XML
 	 */
-	public static void writeStandaloneXsd(final @Nonnull IXSD xsd, @Nonnull XMLStreamWriter xmlStreamWriter) throws IOException, ConfigurationException {
+	public static void writeStandaloneXsd(final @NonNull IXSD xsd, @NonNull XMLStreamWriter xmlStreamWriter) throws IOException, ConfigurationException {
 		final Map<String, String> namespacesToCorrect = new HashMap<>();
 		final NamespaceCorrectingXMLStreamWriter namespaceCorrectingXMLStreamWriter = new NamespaceCorrectingXMLStreamWriter(xmlStreamWriter, namespacesToCorrect);
 		final XMLStreamEventWriter streamEventWriter = new XMLStreamEventWriter(namespaceCorrectingXMLStreamWriter);
@@ -353,7 +352,7 @@ public class SchemaUtils {
 		}
 	}
 
-	private static XMLEvent fixupImportStartElement(@Nonnull IXSD xsd, @Nonnull StartElement startElement) {
+	private static XMLEvent fixupImportStartElement(@NonNull IXSD xsd, @NonNull StartElement startElement) {
 		Attribute schemaLocation = startElement.getAttributeByName(SCHEMALOCATION);
 		if (schemaLocation == null) {
 			return startElement;
@@ -438,14 +437,14 @@ public class SchemaUtils {
 			}
 		}
 
-		@Nonnull
+		@NonNull
 		private static String formatAsError(Map.Entry<String, List<AttributeWrapper<Namespace>>> entry) {
 			return "Prefix [%s] defined in multiple files with different namespaces: [%n%s%n]".formatted(
 					entry.getKey(), formatListAsError(entry.getValue())
 			);
 		}
 
-		@Nonnull
+		@NonNull
 		private static String formatListAsError(List<AttributeWrapper<Namespace>> namespaces) {
 			return namespaces.stream()
 					.map(w -> "    Namespace: [%s], Imported from XSD: [%s]".formatted(w.attribute.getNamespaceURI(), w.sourceXsd))
@@ -485,7 +484,7 @@ public class SchemaUtils {
 	 * @throws IOException Thrown when there was an exception reading or writing the XSD
 	 * @throws ConfigurationException Thrown when there is an XML parsing or writing error
 	 */
-	private static String collectImportsAndSchemaRootAttributes(final @Nonnull IXSD xsd, @Nonnull AttributeSet rootAttributes, @Nonnull NamespaceSet rootNamespaceAttributes, @Nonnull Set<StartElementWrapper> imports) throws IOException, ConfigurationException {
+	private static String collectImportsAndSchemaRootAttributes(final @NonNull IXSD xsd, @NonNull AttributeSet rootAttributes, @NonNull NamespaceSet rootNamespaceAttributes, @NonNull Set<StartElementWrapper> imports) throws IOException, ConfigurationException {
 		XMLEvent event = null;
 		String xsdPrefix = null;
 		try (Reader reader = createXsdReader(xsd)) {
@@ -512,7 +511,7 @@ public class SchemaUtils {
 		}
 	}
 
-	private static StartElement stripSchemaLocation(@Nonnull StartElement startElement) {
+	private static StartElement stripSchemaLocation(@NonNull StartElement startElement) {
 		Attribute schemaLocation = startElement.getAttributeByName(SCHEMALOCATION);
 		if (schemaLocation == null) {
 			return startElement;
@@ -543,7 +542,7 @@ public class SchemaUtils {
 	 * @param xsd               The XSD to write to the {@link XMLStreamEventWriter}.
 	 * @param streamEventWriter The {@link XMLStreamEventWriter} to which the merged XSD is written.
 	 */
-	private static void xsdToXmlStreamWriter(final @Nonnull IXSD xsd, @Nonnull XMLStreamEventWriter streamEventWriter) throws IOException, ConfigurationException {
+	private static void xsdToXmlStreamWriter(final @NonNull IXSD xsd, @NonNull XMLStreamEventWriter streamEventWriter) throws IOException, ConfigurationException {
 		XMLEvent event = null;
 		try (Reader reader = createXsdReader(xsd)) {
 			XMLEventReader er = XmlUtils.INPUT_FACTORY.createXMLEventReader(reader);
@@ -581,14 +580,14 @@ public class SchemaUtils {
 		}
 	}
 
-	private static void writeImports(@Nonnull Set<StartElementWrapper> imports, XMLStreamEventWriter streamEventWriter) throws XMLStreamException {
+	private static void writeImports(@NonNull Set<StartElementWrapper> imports, XMLStreamEventWriter streamEventWriter) throws XMLStreamException {
 		for (StartElementWrapper xsdImport : imports) {
 			streamEventWriter.add(xsdImport.startElement);
 			streamEventWriter.add(XmlUtils.EVENT_FACTORY.createEndElement(xsdImport.startElement.getName(), xsdImport.startElement.getNamespaces()));
 		}
 	}
 
-	private static void writeXsdRootStartElement(@Nonnull IXSD xsd, @Nonnull String xsdPrefix, @Nonnull AttributeSet rootAttributes, @Nonnull NamespaceSet rootNamespaceAttributes, XMLStreamEventWriter streamEventWriter, Map<String, String> namespacesToCorrect) throws XMLStreamException {
+	private static void writeXsdRootStartElement(@NonNull IXSD xsd, @NonNull String xsdPrefix, @NonNull AttributeSet rootAttributes, @NonNull NamespaceSet rootNamespaceAttributes, XMLStreamEventWriter streamEventWriter, Map<String, String> namespacesToCorrect) throws XMLStreamException {
 		StartElement startElement = XmlUtils.EVENT_FACTORY.createStartElement(
 				xsdPrefix,
 				SCHEMA.getNamespaceURI(),
@@ -598,7 +597,7 @@ public class SchemaUtils {
 		streamEventWriter.add(fixupSchemaStartEvent(xsd, startElement, namespacesToCorrect));
 	}
 
-	private static void writeXsdRootEndElement(@Nonnull String xsdPrefix, @Nonnull NamespaceSet rootNamespaceAttributes, XMLStreamEventWriter streamEventWriter) throws XMLStreamException {
+	private static void writeXsdRootEndElement(@NonNull String xsdPrefix, @NonNull NamespaceSet rootNamespaceAttributes, XMLStreamEventWriter streamEventWriter) throws XMLStreamException {
 		EndElement endElement = XmlUtils.EVENT_FACTORY.createEndElement(
 				xsdPrefix,
 				SCHEMA.getNamespaceURI(),
@@ -608,7 +607,7 @@ public class SchemaUtils {
 		streamEventWriter.add(endElement);
 	}
 
-	private static @Nonnull XMLEvent fixupSchemaStartEvent(@Nonnull IXSD xsd, @Nonnull StartElement originalStartElement, @Nonnull Map<String, String> namespacesToCorrect) {
+	private static @NonNull XMLEvent fixupSchemaStartEvent(@NonNull IXSD xsd, @NonNull StartElement originalStartElement, @NonNull Map<String, String> namespacesToCorrect) {
 		// Don't modify the reserved namespace http://www.w3.org/XML/1998/namespace which is by definition bound to the prefix xml (see http://www.w3.org/TR/xml-names/#ns-decl).
 		if (!xsd.isAddNamespaceToSchema() || "http://www.w3.org/XML/1998/namespace".equals(xsd.getNamespace())) {
 			return originalStartElement;

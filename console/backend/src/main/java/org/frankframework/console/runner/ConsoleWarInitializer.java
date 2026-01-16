@@ -18,8 +18,6 @@ package org.frankframework.console.runner;
 import java.util.HashSet;
 import java.util.Set;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.servlet.Filter;
 import jakarta.servlet.ServletContext;
 import jakarta.servlet.ServletException;
@@ -27,6 +25,8 @@ import jakarta.servlet.ServletException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.LoggerContext;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.BeansException;
 import org.springframework.boot.Banner.Mode;
 import org.springframework.boot.SpringApplication;
@@ -87,7 +87,7 @@ public class ConsoleWarInitializer extends SpringBootServletInitializer {
 
 	// Purely here for some debug info
 	@Override
-	public void onStartup(@Nonnull ServletContext servletContext) throws ServletException {
+	public void onStartup(@NonNull ServletContext servletContext) throws ServletException {
 		APPLICATION_LOG.debug("Starting Frank!Framework Console");
 		final long start = System.currentTimeMillis();
 
@@ -105,7 +105,7 @@ public class ConsoleWarInitializer extends SpringBootServletInitializer {
 	/**
 	 * Disable the Spring-Boot LoggingSystem.
 	 * Spring programmatically adds Console appenders and configures it's format regardless of what we configure.
-	 * 
+	 *
 	 * See {@link Log4J2LoggingSystem#initialize(org.springframework.boot.logging.LoggingInitializationContext, String, org.springframework.boot.logging.LogFile)}.
 	 */
 	private void disableSpringBootLogging() {
@@ -113,9 +113,9 @@ public class ConsoleWarInitializer extends SpringBootServletInitializer {
 		logContext.setExternalContext(LoggingSystem.class.getName());
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
-	protected SpringApplicationBuilder configure(@Nonnull SpringApplicationBuilder builder) {
+	protected SpringApplicationBuilder configure(@NonNull SpringApplicationBuilder builder) {
 		builder.sources(WarConfiguration.class);
 		setRegisterErrorPageFilter(false);
 		builder.bannerMode(Mode.OFF);
@@ -124,7 +124,7 @@ public class ConsoleWarInitializer extends SpringBootServletInitializer {
 
 	@Nullable
 	@Override
-	protected WebApplicationContext run(@Nonnull SpringApplication application) {
+	protected WebApplicationContext run(@NonNull SpringApplication application) {
 		Set<String> set = new HashSet<>();
 		set.add("FrankConsoleContext.xml");
 		application.setWebApplicationType(WebApplicationType.NONE);

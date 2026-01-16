@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,10 +15,9 @@
 */
 package org.frankframework.errormessageformatters;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -58,7 +57,7 @@ import org.frankframework.util.TransformerPool.OutputType;
 @Log4j2
 public class XslErrorMessageFormatter extends ErrorMessageFormatter implements IWithParameters, IConfigurable {
 
-	protected @Nonnull ParameterList paramList = new ParameterList();
+	protected @NonNull ParameterList paramList = new ParameterList();
 
 	private @Getter String styleSheetName;
 	private @Getter String xpathExpression;
@@ -94,7 +93,7 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter implements I
 	}
 
 	@Override
-	public @Nonnull Message format(@Nullable String errorMessage, @Nullable Throwable t, @Nullable HasName location, @Nullable Message originalMessage, @Nonnull PipeLineSession session) {
+	public @NonNull Message format(@Nullable String errorMessage, @Nullable Throwable t, @Nullable HasName location, @Nullable Message originalMessage, @NonNull PipeLineSession session) {
 
 		Message result = super.format(errorMessage, t, location, originalMessage, session);
 		try {
@@ -121,7 +120,7 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter implements I
 	}
 
 	@Override
-	public @Nonnull ParameterList getParameterList() {
+	public @NonNull ParameterList getParameterList() {
 		return paramList;
 	}
 
@@ -150,7 +149,7 @@ public class XslErrorMessageFormatter extends ErrorMessageFormatter implements I
 
 	@Override
 	@Protected
-	public void setMessageFormat(@Nonnull DocumentFormat messageFormat) {
+	public void setMessageFormat(@NonNull DocumentFormat messageFormat) {
 		throw new UnsupportedOperationException("Not supported for this type");
 	}
 }

@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,8 +17,7 @@ package org.frankframework.receivers;
 
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
@@ -51,7 +50,7 @@ public abstract class SlowListenerBase implements IListener<String> {
 	}
 
 	@Override
-	public Message extractMessage(@Nonnull RawMessageWrapper<String> rawMessage, @Nonnull Map<String, Object> context) {
+	public Message extractMessage(@NonNull RawMessageWrapper<String> rawMessage, @NonNull Map<String, Object> context) {
 		return Message.asMessage(rawMessage.getRawMessage());
 	}
 

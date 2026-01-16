@@ -15,8 +15,6 @@
 */
 package org.frankframework.lifecycle.servlets;
 
-import static org.frankframework.lifecycle.servlets.AbstractServletAuthenticator.DEFAULT_ROLE_PREFIX;
-
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
@@ -28,9 +26,8 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
@@ -81,7 +78,7 @@ public class AuthorityMapper implements GrantedAuthoritiesMapper {
 		this.authoritiesClaimName = authoritiesClaimName;
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public Collection<? extends GrantedAuthority> mapAuthorities(Collection<? extends GrantedAuthority> authorities) {
 		List<GrantedAuthority> mappedAuthorities = new ArrayList<>();
@@ -107,7 +104,6 @@ public class AuthorityMapper implements GrantedAuthoritiesMapper {
 				.filter(OAuth2UserAuthority.class::isInstance) // OidcUserAuthority extends OAuth2UserAuthority
 				.map(this::getValuesFromToken)
 				.flatMap(Collection::stream)
-				.map(role -> DEFAULT_ROLE_PREFIX + role)
 				.toList();
 	}
 

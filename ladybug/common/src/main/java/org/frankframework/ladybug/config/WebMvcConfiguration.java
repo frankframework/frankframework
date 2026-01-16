@@ -15,21 +15,22 @@
 */
 package org.frankframework.ladybug.config;
 
-import java.util.List;
-import java.util.Optional;
-
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.boot.convert.ApplicationConversionService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.format.FormatterRegistry;
 import org.springframework.http.converter.FormHttpMessageConverter;
-import org.springframework.http.converter.HttpMessageConverter;
-import org.springframework.http.converter.json.AbstractJackson2HttpMessageConverter;
+import org.springframework.http.converter.HttpMessageConverters;
+import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
 import org.springframework.web.multipart.support.StandardServletMultipartResolver;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.json.JsonMapper;
 
 /**
  * This class is found by the `springIbisTestTool.xml` file, is loaded after the xml has been loaded/wired.
@@ -39,18 +40,22 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebMvcConfiguration implements WebMvcConfigurer {
 
 	@Override
-	public void extendMessageConverters(List<HttpMessageConverter<?>> converters) {
-		Optional<HttpMessageConverter<?>> converterFound = converters.stream().filter(AbstractJackson2HttpMessageConverter.class::isInstance).findFirst();
-		if (converterFound.isPresent()) {
-			AbstractJackson2HttpMessageConverter converter = (AbstractJackson2HttpMessageConverter) converterFound.get();
-			converter.setPrettyPrint(true);
-		}
+	public void configureMessageConverters(HttpMessageConverters.ServerBuilder builder) {
+		JsonMapper jsonMapper = JsonMapper.builder()
+				.enable(MapperFeature.ACCEPT_CASE_INSENSITIVE_ENUMS)
+				.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+				.configure(DeserializationFeature.ACCEPT_EMPTY_ARRAY_AS_NULL_OBJECT, true)
+				.configure(DeserializationFeature.READ_UNKNOWN_ENUM_VALUES_AS_NULL, true)
+				.configure(DeserializationFeature.FAIL_ON_NULL_FOR_PRIMITIVES, false) // allow null value for boolean
+				.configure(SerializationFeature.INDENT_OUTPUT, true) // pretty print
+				.build();
 
-		converters.add(new FormHttpMessageConverter());
+		builder.withJsonConverter(new MappingJackson2HttpMessageConverter(jsonMapper));
+		builder.addCustomConverter(new FormHttpMessageConverter());
 	}
 
 	@Override
-	public void addFormatters(@Nonnull FormatterRegistry registry) {
+	public void addFormatters(@NonNull FormatterRegistry registry) {
 		ApplicationConversionService.configure(registry);
 	}
 

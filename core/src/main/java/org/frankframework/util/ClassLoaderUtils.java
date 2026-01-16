@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2023 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,17 +16,18 @@
 package org.frankframework.util;
 
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.configuration.IbisContext;
 import org.frankframework.configuration.classloaders.IConfigurationClassLoader;
@@ -60,7 +61,7 @@ public class ClassLoaderUtils {
 	 *
 	 * @see IbisContext#init()
 	 */
-	public static URL getResourceURL(@Nullable IScopeProvider scopeProvider, @Nonnull String resource) {
+	public static URL getResourceURL(@Nullable IScopeProvider scopeProvider, @NonNull String resource) {
 		return getResourceURL(scopeProvider, resource, null);
 	}
 
@@ -71,7 +72,7 @@ public class ClassLoaderUtils {
 	 * @return URL of the resource or null if it can't be not found
 	 */
 	@Nullable
-	public static URL getResourceURL(@Nullable IScopeProvider scopeProvider, @Nonnull String resource, @Nullable String allowedProtocols) {
+	public static URL getResourceURL(@Nullable IScopeProvider scopeProvider, @NonNull String resource, @Nullable String allowedProtocols) {
 		ClassLoader classLoader;
 		if(scopeProvider == null) { // Used by ClassPath resources
 			classLoader = Thread.currentThread().getContextClassLoader();
@@ -126,19 +127,19 @@ public class ClassLoaderUtils {
 
 		String escapedURL = resource.replace(" ", "%20");
 		try {
-			return new URL(escapedURL);
-		} catch(MalformedURLException e) {
+			return new URI(escapedURL).toURL();
+		} catch(MalformedURLException | URISyntaxException e) {
 			log.debug("Could not find resource [{}] as URL [{}]: {}", resource, escapedURL, e.getMessage());
 			return null;
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	public static List<String> getAllowedProtocols() {
 		return toList(DEFAULT_ALLOWED_PROTOCOLS);
 	}
 
-	@Nonnull
+	@NonNull
 	private static List<String> toList(@Nullable String protocolList) {
 		if(StringUtils.isBlank(protocolList)) {
 			return Collections.emptyList();

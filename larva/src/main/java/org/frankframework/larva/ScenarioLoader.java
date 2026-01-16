@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,12 +27,11 @@ import java.util.Properties;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.collections4.map.LRUMap;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -63,7 +62,7 @@ public class ScenarioLoader {
 	}
 
 
-	public @Nonnull Map<Scenario.ID, Scenario> readScenarioFiles(@Nonnull String scenariosDirectory) {
+	public @NonNull Map<Scenario.ID, Scenario> readScenarioFiles(@NonNull String scenariosDirectory) {
 		long start = System.currentTimeMillis();
 		try {
 			// Suffix with file-separator for getting the right length for stripping down scenario names.
@@ -127,14 +126,14 @@ public class ScenarioLoader {
 	 * @param appConstants {@link AppConstants} to be used for resolving propertes in scenarios
 	 * @return The properties read from the scenario file.
 	 */
-	public @Nonnull RawScenarioData readScenarioProperties(@Nonnull File scenarioFile, @Nonnull AppConstants appConstants) throws IOException {
+	public @NonNull RawScenarioData readScenarioProperties(@NonNull File scenarioFile, @NonNull AppConstants appConstants) throws IOException {
 		RawScenarioData scenarioData = readScenarioProperties(scenarioFile, appConstants, true);
 		String scenarioDirectory = scenarioFile.getParentFile().getAbsolutePath();
 		addAbsolutePathProperties(scenarioDirectory, scenarioData.properties);
 		return scenarioData;
 	}
 
-	private @Nonnull RawScenarioData readScenarioProperties(@Nonnull File scenarioFile, @Nullable AppConstants appConstants, boolean root) throws IOException {
+	private @NonNull RawScenarioData readScenarioProperties(@NonNull File scenarioFile, @Nullable AppConstants appConstants, boolean root) throws IOException {
 		// Only cache included files since they are most likely to be frequently read. Root files would just pollute the cache.
 		if (!root && scenarioFileCache.containsKey(scenarioFile)) {
 			return scenarioFileCache.get(scenarioFile);
@@ -154,7 +153,7 @@ public class ScenarioLoader {
 		return scenarioData;
 	}
 
-	private void addIncludedProperties(@Nonnull File scenarioFile, @Nonnull Properties properties, @Nonnull String directory, List<LarvaMessage> messages) throws IOException {
+	private void addIncludedProperties(@NonNull File scenarioFile, @NonNull Properties properties, @NonNull String directory, List<LarvaMessage> messages) throws IOException {
 		List<String> includedFiles = properties.stringPropertyNames().stream()
 				.filter(name -> INCLUDE_PROPERTY_RE.matcher(name).matches())
 				.sorted()
@@ -170,7 +169,7 @@ public class ScenarioLoader {
 		}
 	}
 
-	private void putAllIfAbsent(@Nonnull File scenarioFile, @Nonnull File includeFile, @Nonnull Properties properties, @Nonnull Properties otherProperties, List<LarvaMessage> messages) {
+	private void putAllIfAbsent(@NonNull File scenarioFile, @NonNull File includeFile, @NonNull Properties properties, @NonNull Properties otherProperties, List<LarvaMessage> messages) {
 		otherProperties.forEach( (key, value) -> {
 			if (!properties.containsKey(key)) {
 				properties.put(key, value);
@@ -197,7 +196,7 @@ public class ScenarioLoader {
 		return StringUtils.removeStart(f.getAbsolutePath(), larvaTool.getActiveScenariosDirectory());
 	}
 
-	private static void addAbsolutePathProperties(@Nonnull String propertiesDirectory, @Nonnull Properties properties) {
+	private static void addAbsolutePathProperties(@NonNull String propertiesDirectory, @NonNull Properties properties) {
 		for (String property : properties.stringPropertyNames()) {
 			if ("configurations.directory".equalsIgnoreCase(property))
 				continue;
@@ -216,7 +215,7 @@ public class ScenarioLoader {
 		}
 	}
 
-	private static void fixLegacyClassnames(@Nonnull Properties properties) {
+	private static void fixLegacyClassnames(@NonNull Properties properties) {
 		Map<Object, Object> collected = properties.entrySet().stream()
 				.map(ScenarioLoader::rewriteClassName)
 				.collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
@@ -236,5 +235,5 @@ public class ScenarioLoader {
 		return Map.entry(propertyName, newClassName);
 	}
 
-	public record RawScenarioData(@Nonnull PropertyLoader properties, @Nonnull List<LarvaMessage> messages) {}
+	public record RawScenarioData(@NonNull PropertyLoader properties, @NonNull List<LarvaMessage> messages) {}
 }

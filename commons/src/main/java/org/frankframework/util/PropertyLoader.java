@@ -1,5 +1,5 @@
 /*
-   Copyright 2023-2025 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,11 +27,10 @@ import java.util.List;
 import java.util.MissingResourceException;
 import java.util.Properties;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -40,6 +39,7 @@ import lombok.extern.log4j.Log4j2;
  * When getting a property, if the value contains any string substitution expressions these are first evaluated. See {@link StringResolver}
  * for more information on the format.
  */
+@NullMarked
 @Log4j2
 public class PropertyLoader extends Properties {
 
@@ -57,7 +57,7 @@ public class PropertyLoader extends Properties {
 		this(PropertyLoader.class.getClassLoader(), propertiesFile);
 	}
 
-	public PropertyLoader(ClassLoader classLoader, String propertiesFile) {
+	public PropertyLoader(@Nullable ClassLoader classLoader, String propertiesFile) {
 		super();
 		rootPropertyFile = propertiesFile;
 
@@ -78,6 +78,7 @@ public class PropertyLoader extends Properties {
 	 * @param key The key to search for.
 	 * @return the string value of the system property, or NULL if there is no property with that key.
 	 */
+	@Nullable
 	private static String getSystemProperty(String key) {
 		try {
 			String result = System.getenv().get(key);
@@ -101,11 +102,13 @@ public class PropertyLoader extends Properties {
 	}
 
 	@Override
+	@Nullable
 	public synchronized String get(Object key) {
 		return getResolvedProperty((String) key);
 	}
 
 	@Override
+	@Nullable
 	public String getProperty(String key) {
 		return getResolvedProperty(key);
 	}
@@ -130,6 +133,7 @@ public class PropertyLoader extends Properties {
 	 *
 	 * @see StringResolver
 	 */
+	@Nullable
 	protected final String getResolvedProperty(String key) {
 		String value = getSystemProperty(key); // first try system properties
 		if (value == null) {
@@ -158,9 +162,8 @@ public class PropertyLoader extends Properties {
 		}
 	}
 
-	@Nonnull
 	@SuppressWarnings("unchecked")
-	public <T extends Enum<T>> T getOrDefault(@Nonnull String key, @Nonnull T dfault) {
+	public <T extends Enum<T>> T getOrDefault(String key, T dfault) {
 		String value = getProperty(key);
 		if (value == null) {
 			return dfault;
@@ -175,8 +178,7 @@ public class PropertyLoader extends Properties {
 	 * @param key the key of the property value to retrieve
 	 * @return a list of string values associated with the specified key, or an empty list if the resolved property is null
 	 */
-	@Nonnull
-	public List<String> getListProperty(@Nonnull String key) {
+	public List<String> getListProperty(String key) {
 		return getListProperty(key, null);
 	}
 
@@ -190,8 +192,7 @@ public class PropertyLoader extends Properties {
 	 * @return a list of string values associated with the specified key, or the default list if the resolved property is null.
 	 * 		If the defaults is also null, then returns an empty list.
 	 */
-	@Nonnull
-	public List<String> getListProperty(@Nonnull String key, @Nullable String defaults) {
+	public List<String> getListProperty(String key, @Nullable String defaults) {
 		String list = getResolvedProperty(key);
 		if (list != null) {
 			return StringUtil.split(list);
@@ -223,7 +224,7 @@ public class PropertyLoader extends Properties {
 	 * which will cause both files to be loaded in the listed order.
 	 * </p>
 	 */
-	protected synchronized void load(final ClassLoader classLoader, final String filename) {
+	protected synchronized void load(@Nullable final ClassLoader classLoader, final String filename) {
 		if (StringUtils.isEmpty(filename)) {
 			throw new IllegalStateException("file to load properties from cannot be null");
 		}
@@ -266,7 +267,8 @@ public class PropertyLoader extends Properties {
 	 * @param dfault the default value
 	 * @return String
 	 */
-	public String getString(String key, String dfault) {
+	@Nullable
+	public String getString(String key, @Nullable String dfault) {
 		String ob = this.getResolvedProperty(key);
 
 		if (ob == null) return dfault;

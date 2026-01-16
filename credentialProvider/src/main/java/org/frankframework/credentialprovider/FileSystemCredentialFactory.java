@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2025 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,9 +23,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
@@ -64,12 +63,12 @@ public class FileSystemCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public boolean hasSecret(@Nonnull CredentialAlias alias) {
+	public boolean hasSecret(@NonNull CredentialAlias alias) {
 		return Files.exists(root.resolve(alias.getName()));
 	}
 
 	@Override
-	public ISecret getSecret(@Nonnull CredentialAlias alias) throws NoSuchElementException {
+	public ISecret getSecret(@NonNull CredentialAlias alias) throws NoSuchElementException {
 		// No additional checks needed here, since this has been done already by constructing a CredentialAlias
 		return new FileSystemSecret(alias, root);
 	}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,13 +21,13 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.wildfly.security.credential.store.CredentialStore;
 import org.wildfly.security.credential.store.CredentialStoreException;
 
@@ -54,7 +54,7 @@ public class WildFlyCredentialFactory implements ISecretProvider {
 
 	private String credentialStore = "CS";
 
-	private CredentialStore cs = null;
+	private @Nullable CredentialStore cs = null;
 
 	@Override
 	public void initialize() {
@@ -67,7 +67,7 @@ public class WildFlyCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public ISecret getSecret(@Nonnull CredentialAlias alias) throws NoSuchElementException {
+	public ISecret getSecret(@NonNull CredentialAlias alias) throws NoSuchElementException {
 		CredentialStore store = getCredentialStore(credentialStore);
 		if (store == null) {
 			throw new NoSuchElementException("CredentialStore [" + credentialStore + "] not found");
@@ -76,7 +76,7 @@ public class WildFlyCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public boolean hasSecret(@Nonnull CredentialAlias alias) {
+	public boolean hasSecret(@NonNull CredentialAlias alias) {
 		try {
 			return getSecret(alias) != null;
 

@@ -18,8 +18,7 @@ package org.frankframework.management.bus.message;
 import java.util.HashMap;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.util.MimeType;
@@ -67,13 +66,13 @@ public class MessageBase<T> implements Message<T> {
 		headers.put(BusMessageUtils.HEADER_PREFIX+key, value);
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public T getPayload() {
 		return payload;
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public MessageHeaders getHeaders() {
 		if(messageHeaders == null) {

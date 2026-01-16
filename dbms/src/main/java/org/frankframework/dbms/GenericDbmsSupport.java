@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2015, 2018, 2019 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,12 +33,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.util.DateFormatUtils;
 import org.frankframework.util.StringUtil;
@@ -473,7 +472,7 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Nullable
-	protected ISqlTranslator getSqlTranslator(@Nonnull String sqlDialectFrom) throws DbmsException {
+	protected ISqlTranslator getSqlTranslator(@NonNull String sqlDialectFrom) throws DbmsException {
 		String translatorKey = sqlDialectFrom + "->" + getDbmsName();
 		if (!sqlTranslators.containsKey(translatorKey)) {
 			try {
@@ -495,8 +494,8 @@ public class GenericDbmsSupport implements IDbmsSupport {
 	}
 
 	@Override
-	@Nonnull
-	public String convertQuery(@Nonnull String query, @Nonnull String sqlDialectFrom) throws DbmsException {
+	@NonNull
+	public String convertQuery(@NonNull String query, @NonNull String sqlDialectFrom) throws DbmsException {
 		if (!isQueryConversionRequired(sqlDialectFrom)) {
 			return query;
 		}

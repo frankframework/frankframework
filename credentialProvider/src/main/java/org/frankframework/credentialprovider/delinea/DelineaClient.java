@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 import org.springframework.web.client.RestTemplate;
 
 /**
@@ -45,7 +46,8 @@ public class DelineaClient extends RestTemplate {
 	 * @param autoCommentValue - the auto comment value to be used if not empty
 	 * @return the {@link DelineaSecretDto} object
 	 */
-	public DelineaSecretDto getSecret(String id, String autoCommentValue) {
+	@Nullable
+	public DelineaSecretDto getSecret(String id, @Nullable String autoCommentValue) {
 		// it is possible to create a new view comment before getting the secret details. Enabled when autoCommentValue is not empty.
 		// see: https://updates.thycotic.net/secretserver/restapiguide/TokenAuth/#tag/SecretAccessRequests/operation/SecretAccessRequestsService_CreateViewComment
 		if (StringUtils.isNotBlank(autoCommentValue)) {
@@ -91,6 +93,7 @@ public class DelineaClient extends RestTemplate {
 	/**
 	 * This is a paginated api. Called with a 'skip' parameter to skip a page of results.
 	 */
+	@Nullable
 	private SecretsListDto getSecretsPage(int skip) {
 		final Map<String, String> params = new HashMap<>();
 		params.put("skip", String.valueOf(skip));

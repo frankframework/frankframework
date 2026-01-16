@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,13 +17,14 @@ package org.frankframework.credentialprovider;
 
 import java.util.Base64;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import io.fabric8.kubernetes.api.model.Secret;
 import lombok.extern.java.Log;
 
+@NullMarked
 @Log
 public class KubernetesSecret extends org.frankframework.credentialprovider.Secret {
 
@@ -41,7 +42,7 @@ public class KubernetesSecret extends org.frankframework.credentialprovider.Secr
 	}
 
 	@Override
-	public String getField(@Nonnull String key) {
+	public String getField(@Nullable String key) {
 		String foundKey = secret.getData().get(key);
 		if (StringUtils.isEmpty(foundKey)) {
 			log.info("no value found for alias [%s] field [%s]".formatted(getAlias(), key));

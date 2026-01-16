@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,9 +28,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.stream.Stream;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DynamicContainer;
@@ -147,7 +146,7 @@ public class RunCypressE2eTest {
 	}
 
 	@TestFactory
-	@Nonnull Stream<DynamicContainer> runCypressTests() throws InterruptedException, IOException, TimeoutException {
+	@NonNull Stream<DynamicContainer> runCypressTests() throws InterruptedException, IOException, TimeoutException {
 		CypressTestResults testResults = container.getTestResults();
 
 		return testResults.getSuites()

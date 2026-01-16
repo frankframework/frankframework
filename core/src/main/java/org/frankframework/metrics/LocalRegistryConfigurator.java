@@ -15,7 +15,7 @@
 */
 package org.frankframework.metrics;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.simple.SimpleConfig;
@@ -28,7 +28,7 @@ import io.micrometer.core.instrument.simple.SimpleConfig;
 public class LocalRegistryConfigurator extends AbstractMetricsRegistryConfigurator<SimpleConfig> {
 
 	private class Config extends AbstractMeterRegistryConfig implements SimpleConfig {
-		@Nonnull
+		@NonNull
 		@Override
 		public String prefix() {
 			return "local";

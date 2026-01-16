@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,11 +22,11 @@ import java.io.StringWriter;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.annotation.security.RolesAllowed;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.messaging.Message;
 
 import org.frankframework.configuration.Configuration;
@@ -86,8 +86,8 @@ public class DatabaseMigrator extends BusEndpointBase {
 		return new BinaryMessage(changelog.openStream(), getMediaTypeFromName(changelog.getName()));
 	}
 
-	@Nonnull
-	private String normalizeName(@Nonnull String name) {
+	@NonNull
+	private String normalizeName(@NonNull String name) {
 		if (name.startsWith(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME)) {
 			return name.substring(IConfigurationClassLoader.CLASSPATH_RESOURCE_SCHEME.length());
 		}

@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2025 WeAreFrank!
+   Copyright 2019-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package org.frankframework.filesystem;
 
 import java.util.List;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import lombok.Getter;
 
@@ -98,9 +98,9 @@ public abstract class AbstractFileSystemPipe<F, FS extends IBasicFileSystem<F>> 
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
-	public PipeRunResult doPipe(@Nonnull Message message, @Nonnull PipeLineSession session) throws PipeRunException {
+	public PipeRunResult doPipe(@NonNull Message message, @NonNull PipeLineSession session) throws PipeRunException {
 		ParameterList paramList = getParameterList();
 		ParameterValueList pvl;
 		try {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,9 +20,6 @@ import java.io.InputStream;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.qpid.protonj2.client.Connection;
 import org.apache.qpid.protonj2.client.Delivery;
 import org.apache.qpid.protonj2.client.Receiver;
@@ -35,6 +32,8 @@ import org.apache.qpid.protonj2.client.StreamReceiverMessage;
 import org.apache.qpid.protonj2.client.StreamReceiverOptions;
 import org.apache.qpid.protonj2.client.Tracker;
 import org.apache.qpid.protonj2.client.exceptions.ClientException;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -46,14 +45,14 @@ public class Amqp1Helper {
 		// Private constructor for utility class
 	}
 
-	public static @Nullable Message getStreamingMessage(@Nonnull AmqpConnectionFactoryFactory connectionFactory, @Nonnull String connectionName, @Nonnull String address, @Nonnull AddressType addressType) throws ClientException, IOException {
+	public static @Nullable Message getStreamingMessage(@NonNull AmqpConnectionFactoryFactory connectionFactory, @NonNull String connectionName, @NonNull String address, @NonNull AddressType addressType) throws ClientException, IOException {
 		try (Connection connection = connectionFactory.getConnectionFactory(connectionName).getConnection()) {
 			return getStreamingMessage(connection, address, addressType);
 		}
 	}
 
 	@Nullable
-	public static Message getStreamingMessage(@Nonnull Connection connection, @Nonnull String address, @Nonnull AddressType addressType) throws ClientException, IOException {
+	public static Message getStreamingMessage(@NonNull Connection connection, @NonNull String address, @NonNull AddressType addressType) throws ClientException, IOException {
 		StreamReceiverOptions streamOptions = new StreamReceiverOptions();
 		streamOptions.sourceOptions().capabilities(addressType.getCapabilityName());
 		try (StreamReceiver receiver = connection.openStreamReceiver(address)) {
@@ -69,8 +68,8 @@ public class Amqp1Helper {
 		}
 	}
 
-	@Nonnull
-	public static Message convertAmqpMessageToFFMessage(@Nonnull org.apache.qpid.protonj2.client.Message<?> amqpMessage) throws IOException, ClientException {
+	@NonNull
+	public static Message convertAmqpMessageToFFMessage(org.apache.qpid.protonj2.client.@NonNull Message<?> amqpMessage) throws IOException, ClientException {
 		Object body = amqpMessage.body();
 		Message result;
 		if (body instanceof InputStream is) {
@@ -82,7 +81,7 @@ public class Amqp1Helper {
 		return result;
 	}
 
-	private static void copyMessageContentMetaData(@Nonnull org.apache.qpid.protonj2.client.Message<?> amqpMessage, Message result) throws ClientException {
+	private static void copyMessageContentMetaData(org.apache.qpid.protonj2.client.@NonNull Message<?> amqpMessage, Message result) throws ClientException {
 		if (amqpMessage.contentEncoding() != null) {
 			result.getContext().withCharset(amqpMessage.contentEncoding());
 		}
@@ -91,13 +90,13 @@ public class Amqp1Helper {
 		}
 	}
 
-	public static @Nullable Message getMessage(@Nonnull AmqpConnectionFactoryFactory connectionFactory, @Nonnull String connectionName, @Nonnull String address, @Nonnull AddressType addressType) throws ClientException, IOException {
+	public static @Nullable Message getMessage(@NonNull AmqpConnectionFactoryFactory connectionFactory, @NonNull String connectionName, @NonNull String address, @NonNull AddressType addressType) throws ClientException, IOException {
 		try (Connection connection = connectionFactory.getConnectionFactory(connectionName).getConnection()) {
 			return getMessage(connection, address, addressType);
 		}
 	}
 
-	public static @Nullable Message getMessage(@Nonnull Connection connection, @Nonnull String address, @Nonnull AddressType addressType) throws ClientException, IOException {
+	public static @Nullable Message getMessage(@NonNull Connection connection, @NonNull String address, @NonNull AddressType addressType) throws ClientException, IOException {
 		ReceiverOptions receiverOptions = new ReceiverOptions();
 		receiverOptions.sourceOptions().capabilities(addressType.getCapabilityName());
 		try (Receiver receiver = connection.openReceiver(address, receiverOptions)) {
@@ -112,13 +111,13 @@ public class Amqp1Helper {
 		return null;
 	}
 
-	public static @Nullable String sendFFMessage(@Nonnull AmqpConnectionFactoryFactory connectionFactory, @Nonnull String connectionName, @Nonnull String address, @Nonnull AddressType addressType, @Nonnull Message message) throws ClientException, IOException {
+	public static @Nullable String sendFFMessage(@NonNull AmqpConnectionFactoryFactory connectionFactory, @NonNull String connectionName, @NonNull String address, @NonNull AddressType addressType, @NonNull Message message) throws ClientException, IOException {
 		try (Connection connection = connectionFactory.getConnectionFactory(connectionName).getConnection()) {
 			return sendFFMessage(connection, address, addressType, message);
 		}
 	}
 
-	private static @Nullable String sendFFMessage(Connection connection, String address, @Nonnull AddressType addressType, Message message) throws ClientException, IOException {
+	private static @Nullable String sendFFMessage(Connection connection, String address, @NonNull AddressType addressType, Message message) throws ClientException, IOException {
 		SenderOptions options = new SenderOptions();
 		options.targetOptions().capabilities(addressType.getCapabilityName());
 

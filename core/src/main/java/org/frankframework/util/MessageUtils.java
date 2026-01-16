@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,8 +31,6 @@ import java.util.zip.CheckedInputStream;
 
 import javax.xml.transform.TransformerException;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.json.Json;
 import jakarta.json.stream.JsonParser;
 import jakarta.json.stream.JsonParsingException;
@@ -50,6 +48,8 @@ import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.logging.log4j.Logger;
 import org.apache.tika.Tika;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 import org.springframework.util.DigestUtils;
 import org.springframework.util.MimeType;
@@ -270,7 +270,7 @@ public class MessageUtils {
 		return mimeType;
 	}
 
-	public static boolean isMimeType(@Nonnull Message message, @Nullable MimeType compareTo) {
+	public static boolean isMimeType(@NonNull Message message, @Nullable MimeType compareTo) {
 		MessageContext context = message.getContext();
 		MimeType mimeType = (MimeType) context.get(MessageContext.METADATA_MIMETYPE);
 		return mimeType != null && mimeType.includes(compareTo);
@@ -432,19 +432,14 @@ public class MessageUtils {
 	 */
 	@Deprecated
 	public static @Nullable String asString(@Nullable Object object) throws IOException {
-		if (object == null) {
-			return null;
-		}
-		if (object instanceof String string) {
-			return string;
-		}
-		if (object instanceof Message message) {
-			return message.asString();
-		}
-		if (object instanceof MessageWrapper<?> wrapper) {
-			return wrapper.getMessage().asString();
-		}
-		return Message.asMessage(object).asString();
+		return switch (object) {
+			case null -> null;
+			case String string -> string;
+			case Enum<?> enumObj -> enumObj.name();
+			case Message message -> message.asString();
+			case MessageWrapper<?> wrapper -> wrapper.getMessage().asString();
+			default -> Message.asMessage(object).asString();
+		};
 	}
 
 	/**
@@ -452,7 +447,7 @@ public class MessageUtils {
 	 * is returned as-is. If the value is in XML format, it will be converted to JSON using {@link UtilityTransformerPools#getXml2JsonTransformerPool()}.
 	 * Otherwise the string-value of the input-value will be wrapped as JSON as {@code {"value": value}}.
 	 */
-	public static @Nonnull Message convertToJsonMessage(@Nonnull Object value) throws IOException, XmlException {
+	public static @NonNull Message convertToJsonMessage(@NonNull Object value) throws IOException, XmlException {
 		return convertToJsonMessage(value, "value");
 	}
 
@@ -462,7 +457,7 @@ public class MessageUtils {
 	 * Otherwise the string-value of the input-value will be wrapped as JSON as {@code {"valueName": value}}, using parameter {@code valueName} as
 	 * name of the object.
 	 */
-	public static @Nonnull Message convertToJsonMessage(@Nonnull Object value, @Nonnull String valueName) throws IOException, XmlException {
+	public static @NonNull Message convertToJsonMessage(@NonNull Object value, @NonNull String valueName) throws IOException, XmlException {
 		Message message = Message.asMessage(value);
 		MimeType mimeType = MessageUtils.computeMimeType(message);
 		if (MediaType.APPLICATION_JSON.isCompatibleWith(mimeType)) {
@@ -500,19 +495,19 @@ public class MessageUtils {
 		}
 	}
 
-	public static @Nonnull String generateMessageId() {
+	public static @NonNull String generateMessageId() {
 		return generateMessageId(DEFAULT_MESSAGE_ID_PREFIX);
 	}
 
-	public static @Nonnull String generateMessageId(String prefix) {
+	public static @NonNull String generateMessageId(String prefix) {
 		return prefix + "-" + Misc.getHostname() + "-" + UUIDUtil.createSimpleUUID();
 	}
 
-	public static @Nonnull String generateFallbackMessageId() {
+	public static @NonNull String generateFallbackMessageId() {
 		return generateMessageId(FALLBACK_MESSAGE_ID_PREFIX);
 	}
 
-	public static boolean isFallbackMessageId(@Nonnull String messageId) {
+	public static boolean isFallbackMessageId(@NonNull String messageId) {
 		return messageId.startsWith(FALLBACK_MESSAGE_ID_PREFIX);
 	}
 }

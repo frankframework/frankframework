@@ -74,9 +74,11 @@
 	<properties>
 		<revision>10.0.0-SNAPSHOT</revision>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<maven.compiler.target>17</maven.compiler.target>
-		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>21</maven.compiler.target>
+		<maven.compiler.source>25</maven.compiler.source>
 		<maven.compiler.proc>full</maven.compiler.proc>
+		<lombok.version>1.18.42</lombok.version>
+		<lombok.plugin.version>1.18.20.0</lombok.plugin.version>
 		<log4j2.version>2.25.3</log4j2.version>
 
 		<sonar.organization>frank-framework</sonar.organization>
@@ -96,7 +98,7 @@
 
 		<narayana.version>7.3.3.Final</narayana.version>
 		<jboss-logging.version>3.6.1.Final</jboss-logging.version>
-		<micrometer.version>1.16.1</micrometer.version>
+		<micrometer.version>1.16.2</micrometer.version>
 		<argLine />
 		<!-- add empty default argLine so Surefire won't fail when JaCoCo isn't present -->
 		<!-- property [iaf.rootdir] is available to get the root of the project, because of the [directory-maven-plugin] -->
@@ -125,7 +127,7 @@
 
 		<!-- Some test dependency versions -->
 		<mockito.version>5.21.0</mockito.version>
-		<junit.version>6.0.1</junit.version>
+		<junit.version>6.0.2</junit.version>
 	</properties>
 
 	<dependencyManagement>
@@ -205,6 +207,12 @@
 				<scope>import</scope>
 			</dependency>
 
+			<dependency>
+				<groupId>org.jspecify</groupId>
+				<artifactId>jspecify</artifactId>
+				<version>1.0.0</version>
+			</dependency>
+
 			<!-- Lock transient dependency versions to fix CVE's -->
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
@@ -244,7 +252,7 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>4.33.2</version>
+				<version>4.33.4</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
@@ -260,7 +268,7 @@
 			<dependency>
 				<groupId>com.nimbusds</groupId>
 				<artifactId>nimbus-jose-jwt</artifactId>
-				<version>10.6</version>
+				<version>10.7</version>
 			</dependency>
 			<!-- End Lock transient deps -->
 
@@ -481,7 +489,7 @@
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-pool2</artifactId>
-				<version>2.13.0</version>
+				<version>2.13.1</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.commons</groupId>
@@ -762,7 +770,35 @@
 						<target>${maven.compiler.target}</target>
 						<compilerArgs>
 							<arg>-parameters</arg>
+							<!-- Flags required for ErrorProne -->
+							<arg>-XDcompilePolicy=simple</arg>
+							<arg>--should-stop=ifError=FLOW</arg>
+							<!-- Flags to enable ErrorProne, and options for ErrorProne. Should be given in the same arg parameter otherwise it doesn't seem to work. -->
+							<arg>-Xplugin:ErrorProne -XepOpt:NullAway:AnnotatedPackages=org.frankframework -Xep:InvalidBlockTag:OFF -Xep:BanJNDI:WARN -Xep:EqualsHashCode:WARN -Xep:GetClassOnClass:WARN</arg>
 						</compilerArgs>
+						<annotationProcessorPaths>
+							<path>
+								<groupId>com.google.errorprone</groupId>
+								<artifactId>error_prone_core</artifactId>
+								<version>2.46.0</version>
+							</path>
+							<path>
+								<groupId>com.uber.nullaway</groupId>
+								<artifactId>nullaway</artifactId>
+								<version>0.12.15</version>
+							</path>
+							<!-- Because Error Prone needs to be added explicitly we now also need to explicitly add other annotation processors here -->
+							<path>
+								<groupId>org.projectlombok</groupId>
+								<artifactId>lombok</artifactId>
+								<version>${lombok.version}</version>
+							</path>
+							<path>
+								<groupId>org.apache.logging.log4j</groupId>
+								<artifactId>log4j-core</artifactId>
+								<version>${log4j2.version}</version>
+							</path>
+						</annotationProcessorPaths>
 					</configuration>
 				</plugin>
 				<plugin>
@@ -857,13 +893,13 @@
 				<plugin>
 					<groupId>org.projectlombok</groupId>
 					<artifactId>lombok-maven-plugin</artifactId>
-					<version>1.18.20.0</version>
+					<version>${lombok.plugin.version}</version>
 					<dependencies>
 						<!-- This specified version of Lombok can be removed when the lombok-maven-plugin is updated >= 1.18.30 -->
 						<dependency>
 							<groupId>org.projectlombok</groupId>
 							<artifactId>lombok</artifactId>
-							<version>1.18.42</version>
+							<version>${lombok.version}</version>
 						</dependency>
 					</dependencies>
 					<executions>
@@ -1325,7 +1361,7 @@
 							<configuration>
 								<rules>
 									<requireJavaVersion>
-										<version>[17,26)</version>
+										<version>[21,26)</version>
 									</requireJavaVersion>
 								</rules>
 							</configuration>

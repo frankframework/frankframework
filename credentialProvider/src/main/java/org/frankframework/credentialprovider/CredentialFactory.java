@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 Nationale-Nederlanden, 2022-2025 WeAreFrank!
+   Copyright 2021 Nationale-Nederlanden, 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,10 +24,8 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.logging.Level;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 import lombok.extern.java.Log;
 
@@ -52,7 +50,7 @@ public class CredentialFactory {
 	protected static boolean ALLOW_DEFAULT_PASSWORD = CredentialConstants.getInstance().getBoolean("credentialFactory.allowDefaultPassword", true);
 	private static boolean ALLOW_FALLBACK = CredentialConstants.getInstance().getBoolean("credentialFactory.allowFallbackProvider", true);
 
-	private static CredentialFactory self;
+	private static @Nullable CredentialFactory self;
 
 	public static synchronized CredentialFactory getInstance() {
 		if (self == null) {
@@ -65,7 +63,7 @@ public class CredentialFactory {
 		this(ALLOW_FALLBACK);
 	}
 
-	// Create a non static instance, for testing purposes only
+	// Create a non-static instance, for testing purposes only
 	protected CredentialFactory(boolean allowFallbackProvider) {
 		// Attempt to load the provided CredentialProviders
 		if (!loadFactoryClasses()) {
@@ -106,7 +104,7 @@ public class CredentialFactory {
 		self = null;
 	}
 
-	private boolean tryFactories(final String factoryClassNames) {
+	private boolean tryFactories(final @Nullable String factoryClassNames) {
 		if (StringUtils.isBlank(factoryClassNames)) {
 			return false;
 		}
@@ -168,7 +166,6 @@ public class CredentialFactory {
 	 * Entrypoint. Attempts to find the credential for the specified alias.
 	 * When none is found, uses the default (provided) fallback user/pass combination.
 	 */
-	@Nonnull
 	public static ICredentials getCredentials(@Nullable String rawAlias, @Nullable String defaultUsername, @Nullable String defaultPassword) throws NoSuchElementException {
 		final CredentialAlias alias = CredentialAlias.parse(rawAlias);
 		List<ISecretProvider> credentialFactoryDelegates = getInstance().delegates;
@@ -222,7 +219,8 @@ public class CredentialFactory {
 		return new Credential(alias.getName(), username, password);
 	}
 
-	private static String substitute(String input, ISecret secret) throws IOException {
+	@Nullable
+	private static String substitute(@Nullable String input, ISecret secret) throws IOException {
 		if (StringUtils.isBlank(input) || StringUtils.containsNone(input, CredentialAlias.SEPARATOR_CHARACTERS)) {
 			return secret.getField(input);
 		}
@@ -248,7 +246,7 @@ public class CredentialFactory {
 	 * String split method, includes the characters to split on.
 	 * When the input is abc@def, the output will be a list ['abc', '@', 'def'].
 	 */
-	private static List<String> splitWithSeparators(@Nonnull String str, @Nonnull String charsToSplitOn) {
+	private static List<String> splitWithSeparators(String str, String charsToSplitOn) {
 		final char[] c = str.toCharArray();
 		final List<String> list = new ArrayList<>();
 		int tokenStart = 0;

@@ -54,8 +54,6 @@ import java.util.stream.Stream;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.X509KeyManager;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.ServletOutputStream;
 import jakarta.servlet.http.Cookie;
@@ -67,6 +65,8 @@ import org.apache.http.NameValuePair;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.ContentType;
 import org.apache.logging.log4j.ThreadContext;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
@@ -2058,13 +2058,13 @@ public class ApiListenerServletTest {
 		return signedJWT.serialize();
 	}
 
-	public @Nonnull MockHttpServletRequest prepareJWTRequest(@Nullable String token) throws Exception {
+	public @NonNull MockHttpServletRequest prepareJWTRequest(@Nullable String token) throws Exception {
 		return prepareJWTRequest(token, HttpHeaders.AUTHORIZATION, true);
 	}
-	public @Nonnull MockHttpServletRequest prepareJWTRequest(@Nullable String token, @Nonnull String header) throws Exception {
+	public @NonNull MockHttpServletRequest prepareJWTRequest(@Nullable String token, @NonNull String header) throws Exception {
 		return prepareJWTRequest(token, header, true);
 	}
-	public @Nonnull MockHttpServletRequest prepareJWTRequest(@Nullable String token, @Nonnull String header, boolean isBearerToken) throws Exception {
+	public @NonNull MockHttpServletRequest prepareJWTRequest(@Nullable String token, @NonNull String header, boolean isBearerToken) throws Exception {
 		Map<String, String> headers = new HashMap<>();
 		headers.put(header, (isBearerToken ? "Bearer " : "") + (token != null ? token : createJWT()) );
 
@@ -2076,7 +2076,7 @@ public class ApiListenerServletTest {
 	 * Get the response as string, with content-type header, and all boundaries replaced with "IGNORE" for easier comparison to expected results.
 	 * Also, the values of the headers Last-Modified and Content-Length are replaced with "IGNORE", for the same reason.
 	 */
-	@Nonnull
+	@NonNull
 	private static String getResultAsStringWithIgnores(Response response) throws UnsupportedEncodingException {
 		String content = response.getContentAsString();
 		String boundary = getBoundary(response.getContentType());
@@ -2084,7 +2084,7 @@ public class ApiListenerServletTest {
 		return result.replace(boundary, "IGNORE").replaceAll("(?<=(Last-Modified|Content-Length): )([a-zA-Z0-9: ,-]+)", "IGNORE");
 	}
 
-	@Nonnull
+	@NonNull
 	private static String getBoundary(String contentType) {
 		String boundary = contentType.substring(contentType.indexOf("boundary=")+9);
 		boundary = boundary.substring(0, boundary.indexOf(";"));
@@ -2116,13 +2116,13 @@ public class ApiListenerServletTest {
 		}
 
 		@Override
-		@Nonnull
+		@NonNull
 		public PrintWriter getWriter() throws UnsupportedEncodingException {
 			responseAccessed = true;
 			return super.getWriter();
 		}
 
-		@Nonnull
+		@NonNull
 		@Override
 		public ServletOutputStream getOutputStream() {
 			responseAccessed = true;
@@ -2144,7 +2144,7 @@ public class ApiListenerServletTest {
 		}
 
 		@Override
-		public void sendError(int status, @Nonnull String errorMessage) throws IOException {
+		public void sendError(int status, @NonNull String errorMessage) throws IOException {
 			log.info("Send Error. Committing response.");
 			assertResponseNotCommitted();
 			responseCommitted = true;
@@ -2192,25 +2192,25 @@ public class ApiListenerServletTest {
 		}
 
 		@Override
-		public void addDateHeader(@Nonnull String name, long value) {
+		public void addDateHeader(@NonNull String name, long value) {
 			assertResponseNotAccessed();
 			super.addDateHeader(name, value);
 		}
 
 		@Override
-		public void setDateHeader(@Nonnull String name, long value) {
+		public void setDateHeader(@NonNull String name, long value) {
 			assertResponseNotAccessed();
 			super.setDateHeader(name, value);
 		}
 
 		@Override
-		public void addIntHeader(@Nonnull String name, int value) {
+		public void addIntHeader(@NonNull String name, int value) {
 			assertResponseNotAccessed();
 			super.addIntHeader(name, value);
 		}
 
 		@Override
-		public void setIntHeader(@Nonnull String name, int value) {
+		public void setIntHeader(@NonNull String name, int value) {
 			assertResponseNotAccessed();
 			super.setIntHeader(name, value);
 		}
@@ -2234,7 +2234,7 @@ public class ApiListenerServletTest {
 		}
 
 		@Override
-		public void addCookie(@Nonnull Cookie cookie) {
+		public void addCookie(@NonNull Cookie cookie) {
 			assertResponseNotAccessed();
 			super.addCookie(cookie);
 		}

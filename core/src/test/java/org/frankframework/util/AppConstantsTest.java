@@ -94,7 +94,7 @@ public class AppConstantsTest {
 		old.setProperty("dummy-key", "1");
 		AppConstants.removeInstance();
 
-		assertFalse(AppConstants.getInstance().contains("dummy-key"), "should not contain key [dummy-key]");
+		assertFalse(AppConstants.getInstance().containsValue("dummy-key"), "should not contain key [dummy-key]");
 	}
 
 	@Test

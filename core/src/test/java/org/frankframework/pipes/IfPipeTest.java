@@ -14,6 +14,7 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import com.jayway.jsonpath.InvalidJsonException;
@@ -24,6 +25,7 @@ import org.frankframework.core.PipeRunException;
 import org.frankframework.core.PipeRunResult;
 import org.frankframework.json.JsonException;
 import org.frankframework.stream.Message;
+import org.frankframework.stream.MessageContext;
 
 /**
  * Contains generic {@link IfPipe} scenarios to test
@@ -248,6 +250,63 @@ public class IfPipeTest extends PipeTestBase<IfPipe> {
 		expectedMessage += (isJson) ? "application/json" : "application/xml";
 
 		assertThat(e.getMessage(), Matchers.containsString(expectedMessage));
+	}
+
+	@ParameterizedTest
+	@CsvSource({
+			"/root, $.root, XML",
+			", $.root, JSON",
+			", , TEXT",
+			"/root, , XML"
+	})
+	void testDefaultMediaType(String xpathExpression, String jsonPathExpression, IfPipe.SupportedMediaType expectedMediaType) throws ConfigurationException {
+		// Arrange
+		pipe.setXpathExpression(xpathExpression);
+		pipe.setJsonPathExpression(jsonPathExpression);
+
+		// Act
+		configureAndStartPipe();
+
+		// Assert
+		assertEquals(expectedMediaType, pipe.getDefaultMediaType());
+	}
+
+	@Test
+	void testDefaultMediaTypeNotOverriddenWhenConfigured() throws ConfigurationException {
+		// Arrange
+		pipe.setJsonPathExpression("$.root");
+		pipe.setDefaultMediaType(IfPipe.SupportedMediaType.TEXT);
+
+		// Act
+		configureAndStartPipe();
+
+		// Assert
+		assertEquals(IfPipe.SupportedMediaType.TEXT, pipe.getDefaultMediaType());
+	}
+
+	@Test
+	void testXmlSubTypes() throws ConfigurationException, PipeRunException {
+		// Arrange
+		pipe.setXpathExpression("/feed/title");
+		pipe.setExpressionValue("Feed Name");
+		pipe.addForward(new PipeForward("then", "match"));
+		pipe.addForward(new PipeForward("else", "nomatch"));
+
+		configureAndStartPipe();
+
+		Message input = new Message("""
+				<feed>
+					<title>Feed Name</title>
+				</feed>
+				""", new MessageContext().withMimeType("application/atom+xml")
+		);
+
+
+		// Act
+		PipeRunResult result = pipe.doPipe(input, session);
+
+		// Assert
+		assertEquals("then", result.getPipeForward().getName());
 	}
 
 	private static Message getJsonMessage() {

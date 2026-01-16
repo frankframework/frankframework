@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020, 2022, 2024-2025 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,9 +23,8 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Phaser;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
@@ -130,7 +129,7 @@ public class ShadowSender extends ParallelSenders {
 	 * Override this from the parallel sender as it should only execute the original and shadowsenders here!
 	 */
 	@Override
-	public @Nonnull SenderResult sendMessage(@Nonnull Message message, @Nonnull PipeLineSession session) throws SenderException, TimeoutException {
+	public @NonNull SenderResult sendMessage(@NonNull Message message, @NonNull PipeLineSession session) throws SenderException, TimeoutException {
 		Phaser primaryGuard = new Phaser(2); // Itself and the added originalSender
 		Phaser shadowGuard = new Phaser(getSecondarySenders().size() + 1); // Itself and all secondary senders
 		Map<ISender, ParallelSenderExecutor> executorMap = new ConcurrentHashMap<>();

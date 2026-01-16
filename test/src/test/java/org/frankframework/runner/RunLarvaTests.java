@@ -16,17 +16,18 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
-import jakarta.annotation.Nonnull;
 import jakarta.servlet.ServletContext;
 
 import org.apache.activemq.artemis.core.config.Configuration;
 import org.apache.activemq.artemis.core.config.impl.ConfigurationImpl;
 import org.apache.activemq.artemis.core.server.embedded.EmbeddedActiveMQ;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.io.IoBuilder;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -144,6 +145,7 @@ public class RunLarvaTests {
 		// However work is underway to fix this in an upcoming release, probably before we are ready to release F!F 10.0 and move to JDK25.
 		log.info("Starting in-memory Artemis message broker");
 		String jmsDataDir = IafTestInitializer.getLogDir(IafTestInitializer.getProjectDir()) + "/ArtemisMQ";
+		FileUtils.deleteDirectory(new File(jmsDataDir));
 
 		Configuration artemisJmsConfig = new ConfigurationImpl();
 		artemisJmsConfig.addAcceptorConfiguration("in-vm", "vm://0")
@@ -243,7 +245,7 @@ public class RunLarvaTests {
 		return createScenarios(scenarioRootDir, "", allScenarios);
 	}
 
-	private @Nonnull Stream<DynamicNode> createScenarioContainer(@Nonnull String baseFolder, @Nonnull Map.Entry<String, List<Scenario>> scenarioFolder) {
+	private @NonNull Stream<DynamicNode> createScenarioContainer(@NonNull String baseFolder, Map.@NonNull Entry<String, List<Scenario>> scenarioFolder) {
 		String scenarioFolderName = scenarioFolder.getKey();
 		if (StringUtils.isBlank(scenarioFolderName)) {
 			return createScenarios(baseFolder, scenarioFolderName, scenarioFolder.getValue());
@@ -251,7 +253,7 @@ public class RunLarvaTests {
 		return Stream.of(DynamicContainer.dynamicContainer(scenarioFolderName, new File(baseFolder, scenarioFolderName).toURI(), createScenarios(baseFolder, scenarioFolderName, scenarioFolder.getValue())));
 	}
 
-	private @Nonnull Stream<DynamicNode> createScenarios(@Nonnull String baseFolder, @Nonnull String subFolder, @Nonnull List<Scenario> scenarioFiles) {
+	private @NonNull Stream<DynamicNode> createScenarios(@NonNull String baseFolder, @NonNull String subFolder, @NonNull List<Scenario> scenarioFiles) {
 		String commonFolder = StringUtils.isBlank(subFolder) ? baseFolder : Paths.get(baseFolder, subFolder).toString();
 		Map<String, List<Scenario>> scenariosByFolder = ScenarioRunner.groupScenariosByFolder(scenarioFiles, commonFolder);
 

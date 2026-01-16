@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 Nationale-Nederlanden, 2021-2025 WeAreFrank!
+   Copyright 2021 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -21,15 +21,15 @@ import java.util.Map.Entry;
 import java.util.NoSuchElementException;
 import java.util.Properties;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public class MapSecret extends Secret {
 
 	private final Properties secret;
 
-	public MapSecret(CredentialAlias alias, @Nonnull Map<String,String> aliases) {
+	public MapSecret(CredentialAlias alias, @NonNull Map<String,String> aliases) {
 		super(alias);
 
 		String aliasName = alias.getName();
@@ -48,7 +48,7 @@ public class MapSecret extends Secret {
 	}
 
 	@Override
-	public String getField(@Nonnull String fieldName) throws IOException {
+	public String getField(@Nullable String fieldName) throws IOException {
 		if (secret.size() == 1) {
 			// no field
 			if(StringUtils.isBlank(fieldName)) {

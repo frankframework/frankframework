@@ -10,10 +10,10 @@ import static org.mockito.Mockito.spy;
 import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
-import jakarta.annotation.Nonnull;
 import jakarta.annotation.security.RolesAllowed;
 
 import org.awaitility.Awaitility;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -54,7 +54,7 @@ public class HazelcastEndToEndTest {
 		handler = spy(new MessageHandler() {
 			@Override
 			@RolesAllowed("IbisTester")
-			public void handleMessage(@Nonnull Message<?> message) throws MessagingException {
+			public void handleMessage(@NonNull Message<?> message) throws MessagingException {
 				assertTrue(BusMessageUtils.hasRole("IbisTester"));
 				String request = (String) message.getPayload();
 				if ("sync-string".equals(request)) {

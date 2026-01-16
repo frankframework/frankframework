@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -20,11 +20,15 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
+
 import org.frankframework.stream.Message;
 
+@NullMarked
 public class MessageToStringResolver implements AdditionalStringResolver {
 	@Override
-	public Optional<String> resolve(String key, Map<?, ?> props1, Map<?, ?> props2, Set<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) {
+	public Optional<String> resolve(String key, Map<?, ?> props1, @Nullable Map<?, ?> props2, @Nullable Set<String> propsToHide, String delimStart, String delimStop, boolean resolveWithPropertyName) {
 		return getMessageFromMap(key, props1)
 				.or(() -> getMessageFromMap(key, props2));
 	}

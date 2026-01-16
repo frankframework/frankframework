@@ -18,9 +18,8 @@ package org.frankframework.management.gateway;
 import java.io.IOException;
 import java.io.InputStream;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.NotImplementedException;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
@@ -36,18 +35,18 @@ public class InputStreamHttpMessageConverter extends AbstractHttpMessageConverte
 	}
 
 	@Override
-	protected boolean supports(@Nonnull Class<?> clazz) {
+	protected boolean supports(@NonNull Class<?> clazz) {
 		return InputStream.class.isAssignableFrom(clazz);
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
-	protected InputStream readInternal(@Nonnull Class<? extends InputStream> clazz, @Nonnull HttpInputMessage inputMessage) throws HttpMessageNotReadableException {
+	protected InputStream readInternal(@NonNull Class<? extends InputStream> clazz, @NonNull HttpInputMessage inputMessage) throws HttpMessageNotReadableException {
 		throw new NotImplementedException("messages should not be read directly as InputStream");
 	}
 
 	@Override
-	protected void writeInternal(@Nonnull InputStream is, @Nonnull HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
+	protected void writeInternal(@NonNull InputStream is, @NonNull HttpOutputMessage outputMessage) throws IOException, HttpMessageNotWritableException {
 		StreamUtils.copy(is, outputMessage.getBody());
 	}
 }

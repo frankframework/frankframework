@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,10 +17,10 @@ package org.frankframework.credentialprovider.delinea;
 
 import java.util.Collection;
 import java.util.NoSuchElementException;
-
-import jakarta.annotation.Nonnull;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.Nullable;
 
 import lombok.extern.java.Log;
 
@@ -103,15 +103,15 @@ public class DelineaCredentialFactory implements ISecretProvider {
 
 	private final Cache<String, DelineaSecretDto, NoSuchElementException> configuredAliases = new Cache<>(CACHE_DURATION_MILLIS);
 
-	private DelineaClientSettings delineaClientSettings;
+	private @Nullable DelineaClientSettings delineaClientSettings;
 
-	private DelineaClient delineaClient;
+	private @Nullable DelineaClient delineaClient;
 
 	@Override
 	public void initialize() {
 		log.info("initializing DelineaCredentialFactory");
 
-		readConfiguration();
+		this.delineaClientSettings = readConfiguration();
 
 		if ((StringUtils.isEmpty(delineaClientSettings.apiRootUrlTemplate()) || StringUtils.isEmpty(delineaClientSettings.tokenUrlTemplate()))
 				&& (StringUtils.isEmpty(delineaClientSettings.apiRootUrl()) || StringUtils.isEmpty(delineaClientSettings.oauthTokenUrl()))
@@ -125,10 +125,10 @@ public class DelineaCredentialFactory implements ISecretProvider {
 		}
 	}
 
-	private void readConfiguration() {
+	private DelineaClientSettings readConfiguration() {
 		CredentialConstants appConstants = CredentialConstants.getInstance();
 
-		this.delineaClientSettings = new DelineaClientSettings(
+		return new DelineaClientSettings(
 				appConstants.get(TENANT_KEY),
 				appConstants.get(API_ROOT_URL_KEY),
 				appConstants.get(API_ROOT_URL_TEMPLATE_KEY),
@@ -142,8 +142,13 @@ public class DelineaCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public boolean hasSecret(@Nonnull CredentialAlias alias) {
-		return getSecret(alias) != null;
+	public boolean hasSecret(CredentialAlias alias) {
+		try {
+			getSecret(alias);
+			return true;
+		} catch (NoSuchElementException e) {
+			return false;
+		}
 	}
 
 	@Override
@@ -152,13 +157,14 @@ public class DelineaCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public ISecret getSecret(@Nonnull CredentialAlias alias) throws NoSuchElementException {
-		if (alias.getName() != null && !StringUtils.isNumeric(alias.getName())) {
+	public ISecret getSecret(CredentialAlias alias) throws NoSuchElementException {
+		if (!StringUtils.isNumeric(alias.getName())) {
 			log.warning("Delinea secret aliases must be numeric, as they reference the internal Delinea secret ID. Supplied alias: %s".formatted(alias.getName()));
 		}
 
 		// Make sure to always get a live copy of the secret
-		DelineaSecretDto secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), aliasToRetrieve -> delineaClient.getSecret(aliasToRetrieve, delineaClientSettings.autoCommentValue()));
+		DelineaSecretDto secret = configuredAliases.computeIfAbsentOrExpired(alias.getName(), aliasToRetrieve ->
+				Objects.requireNonNull(delineaClient).getSecret(aliasToRetrieve, Objects.requireNonNull(delineaClientSettings).autoCommentValue()));
 
 		if (secret == null) {
 			throw new NoSuchElementException();

@@ -16,6 +16,8 @@
 package org.frankframework.jwt;
 
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.ParseException;
 import java.util.Map;
@@ -53,8 +55,8 @@ public class JwtValidator<C extends SecurityContext> {
 		jwtProcessor = new DefaultJWTProcessor<>();
 	}
 
-	public void init(String jwksUrl, String requiredIssuer) throws ParseException, IOException {
-		JWKSource<C> keySource = getKeySource(new URL(jwksUrl));
+	public void init(String jwksUrl, String requiredIssuer) throws ParseException, IOException, URISyntaxException {
+		JWKSource<C> keySource = getKeySource(new URI(jwksUrl).toURL());
 
 		// The expected JWS algorithm of the access tokens (agreed out-of-band)
 		JWSAlgorithm expectedJWSAlg = JWSAlgorithm.RS256;

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,11 +22,10 @@ import java.util.List;
 import javax.xml.transform.SourceLocator;
 import javax.xml.transform.TransformerException;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.SAXParseException;
 
 import org.frankframework.util.ClassUtils;
@@ -37,9 +36,10 @@ import org.frankframework.util.StringUtil;
  *
  * @author Gerrit van Brakel
  */
+@NullMarked
 public class IbisException extends Exception {
 
-	private String expandedMessage = null;
+	private @Nullable String expandedMessage = null;
 
 	public IbisException() {
 		super();
@@ -57,7 +57,8 @@ public class IbisException extends Exception {
 		super(cause);
 	}
 
-	public static String getExceptionSpecificDetails(@Nonnull Throwable t) {
+	@Nullable
+	public static String getExceptionSpecificDetails(Throwable t) {
 		final String className = t.getClass().getCanonicalName();
 		switch (className) {
 			case "jakarta.mail.internet.AddressException": {
@@ -99,10 +100,12 @@ public class IbisException extends Exception {
 		}
 	}
 
+	@Nullable
 	private static String getSAXLocatorInformation(SAXParseException spe) {
 		return compileLocatorInformation(spe.getSystemId(), spe.getLineNumber(), spe.getColumnNumber());
 	}
 
+	@Nullable
 	private static String getTransformerLocatorInformation(TransformerException te) {
 		SourceLocator locator = te.getLocator();
 		if (locator == null) {
@@ -112,6 +115,7 @@ public class IbisException extends Exception {
 		return compileLocatorInformation(locator.getSystemId(), locator.getLineNumber(), locator.getColumnNumber());
 	}
 
+	@Nullable
 	private static String compileLocatorInformation(String systemId, int line, int column) {
 		String locationInfo = null;
 		if (StringUtils.isNotEmpty(systemId)) {
@@ -126,16 +130,16 @@ public class IbisException extends Exception {
 		return locationInfo;
 	}
 
-	public static String expandMessage(String msg, Throwable e) {
+	public static String expandMessage(@Nullable String msg, Throwable e) {
 		return expandMessage(msg, e, IbisException.class::isInstance);
 	}
 
-	public static String expandMessage(String msg, Throwable e, ExcludeClassInfoExceptionFilter filter) {
+	public static String expandMessage(@Nullable String msg, Throwable e, ExcludeClassInfoExceptionFilter filter) {
 		String result = null;
 		List<String> msgChain = getMessages(e, msg);
 		Throwable t = e;
 		for (String message : msgChain) {
-			String exceptionType = filter.accept(t) ? "" : "(" + ClassUtils.classNameOf(t) + ")";
+			String exceptionType = (t == null || filter.accept(t)) ? "" : "(" + ClassUtils.classNameOf(t) + ")";
 			message = StringUtil.concatStrings(exceptionType, " ", message);
 			result = StringUtil.concatStrings(result, ": ", message);
 			t = getCause(t);
@@ -173,7 +177,7 @@ public class IbisException extends Exception {
 	 * <p>If none of the above is found, returns {@code null}.</p>
 	 */
 	@Nullable
-	private static Throwable getCause(Throwable t) {
+	private static Throwable getCause(@Nullable Throwable t) {
 		Throwable cause = ExceptionUtils.getCause(t);
 		if ((cause == null || cause == t) && t != null && t.getSuppressed().length > 0) {
 			return t.getSuppressed()[0];
@@ -181,9 +185,9 @@ public class IbisException extends Exception {
 		return cause;
 	}
 
-	public static LinkedList<String> getMessages(Throwable t, String message) {
+	public static List<String> getMessages(Throwable t, @Nullable String message) {
 		Throwable cause = getCause(t);
-		LinkedList<String> result;
+		List<String> result;
 		if (cause != null && cause != t) {
 			String causeMessage = cause.getMessage();
 			String causeToString = cause.toString();

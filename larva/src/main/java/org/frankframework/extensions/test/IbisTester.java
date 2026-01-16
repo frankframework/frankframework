@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -32,12 +32,11 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -348,10 +347,9 @@ public class IbisTester {
 			startTime = System.currentTimeMillis();
 			ScenarioRunner scenarioRunner = new ScenarioRunner(
 					scenariosRootDir, scenario);
-			ExecutorService service = Executors.newSingleThreadExecutor();
-			Future<String> future = service.submit(scenarioRunner);
-			long timeout = 60;
-			try {
+			try (ExecutorService service = Executors.newSingleThreadExecutor()) {
+				Future<String> future = service.submit(scenarioRunner);
+				long timeout = 60;
 				try {
 					resultString = future.get(timeout, TimeUnit.SECONDS);
 				} catch (TimeoutException e) {
@@ -359,8 +357,6 @@ public class IbisTester {
 				} catch (Exception e) {
 					debug(scenarioInfo + " got error, retries left [" + count + "]");
 				}
-			} finally {
-				service.shutdown();
 			}
 		}
 
@@ -377,11 +373,11 @@ public class IbisTester {
 		return string;
 	}
 
-	private static @Nonnull String getIsoTimeStamp() {
+	private static @NonNull String getIsoTimeStamp() {
 		return DateFormatUtils.now();
 	}
 
-	private static @Nonnull String getMemoryInfo() {
+	private static @NonNull String getMemoryInfo() {
 		long freeMem = Runtime.getRuntime().freeMemory();
 		long totalMem = Runtime.getRuntime().totalMemory();
 		return "[" + Misc.toFileSize(totalMem - freeMem) + "/" + Misc.toFileSize(totalMem) + "]";
@@ -396,7 +392,7 @@ public class IbisTester {
 		}
 	}
 
-	private static @Nonnull Collection<String> evaluateXPath(String xhtml, String xpath) {
+	private static @NonNull Collection<String> evaluateXPath(String xhtml, String xpath) {
 		try {
 			return XmlUtils.evaluateXPathNodeSet(xhtml, xpath);
 		} catch (Exception e) {

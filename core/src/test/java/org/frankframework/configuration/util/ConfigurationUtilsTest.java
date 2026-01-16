@@ -9,9 +9,8 @@ import java.net.URL;
 import java.sql.Connection;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.io.FilenameUtils;
+import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
@@ -59,19 +58,19 @@ public class ConfigurationUtilsTest extends Mockito {
 		// STUB a TransactionManager
 		PlatformTransactionManager ptm = new PlatformTransactionManager() {
 
-			@Nonnull
+			@NonNull
 			@Override
 			public TransactionStatus getTransaction(TransactionDefinition definition) throws TransactionException {
 				return mock(TransactionStatus.class);
 			}
 
 			@Override
-			public void commit(@Nonnull TransactionStatus status) throws TransactionException {
+			public void commit(@NonNull TransactionStatus status) throws TransactionException {
 				// STUB
 			}
 
 			@Override
-			public void rollback(@Nonnull TransactionStatus status) throws TransactionException {
+			public void rollback(@NonNull TransactionStatus status) throws TransactionException {
 				// STUB
 			}
 		};

@@ -1,6 +1,6 @@
 /*
 
-   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,9 +18,8 @@ package org.frankframework.processors;
 
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 
@@ -53,7 +52,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 	private Configuration configuration;
 
 	@Override
-	public void setApplicationContext(@Nonnull ApplicationContext applicationContext) {
+	public void setApplicationContext(@NonNull ApplicationContext applicationContext) {
 		if (applicationContext instanceof Configuration config) {
 			configuration = config;
 		} else {
@@ -62,7 +61,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 	}
 
 	@Override
-	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, @Nonnull Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
+	public PipeLineResult processPipeLine(PipeLine pipeLine, String messageId, @NonNull Message message, PipeLineSession pipeLineSession, String firstPipe) throws PipeRunException {
 
 		if (message.isEmpty() && StringUtils.isNotEmpty(pipeLine.getAdapterToRunBeforeOnEmptyInput())) {
 			log.debug("running adapterBeforeOnEmptyInput");

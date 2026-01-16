@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021-2025 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,13 +29,12 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 import lombok.SneakyThrows;
@@ -53,6 +52,7 @@ import org.frankframework.util.TimeProvider;
  * @author  Johan Verrips IOS
  * @since   version 3.2.2
  */
+@NullMarked
 public class PipeLineSession extends HashMap<String,Object> implements AutoCloseable {
 	private static final Logger LOG = LogManager.getLogger(PipeLineSession.class);
 
@@ -74,11 +74,11 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	public static final String HTTP_METHOD_KEY 	   = "HttpMethod";
 
 	public static final String API_PRINCIPAL_KEY   = "apiPrincipal";
-	public static final String EXIT_STATE_CONTEXT_KEY="exitState";
-	public static final String EXIT_CODE_CONTEXT_KEY="exitCode";
+	public static final String EXIT_STATE_CONTEXT_KEY= SYSTEM_MANAGED_RESOURCE_PREFIX + "exitState";
+	public static final String EXIT_CODE_CONTEXT_KEY= "exitCode";
 
-	private transient ISecurityHandler securityHandler = null;
-	private transient Cleaner.Cleanable cleanable;
+	private transient @Nullable ISecurityHandler securityHandler = null;
+	private transient Cleaner.@Nullable Cleanable cleanable;
 
 	// closeables.keySet is a List of wrapped resources. The wrapper is used to unschedule them, once they are closed by a regular step in the process.
 	// Values are labels to help debugging
@@ -94,7 +94,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 *
 	 * @param t {@link Map} or PipeLineSession from which to copy session variables into the new session. Should not be null!
 	 */
-	public PipeLineSession(@Nonnull Map<String, Object> t) {
+	public PipeLineSession(Map<String, Object> t) {
 		super(t);
 		createCloseAction();
 	}
@@ -104,7 +104,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		cleanable = CleanerProvider.CLEANER.register(this, closeAction);
 	}
 
-	public void setExitState(PipeLine.ExitState state, Integer code) {
+	public void setExitState(PipeLine.ExitState state, @Nullable Integer code) {
 		put(EXIT_STATE_CONTEXT_KEY, state);
 		if(code != null) {
 			put(EXIT_CODE_CONTEXT_KEY, Integer.toString(code));
@@ -131,7 +131,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 *                   If an empty string then no keys will be copied.
 	 * @param parentSession Parent {@link PipeLineSession}.
 	 */
-	public void mergeToParentSession(String keysToCopy, PipeLineSession parentSession) {
+	public void mergeToParentSession(@Nullable String keysToCopy, @Nullable PipeLineSession parentSession) {
 		if (parentSession == null) {
 			return;
 		}
@@ -167,14 +167,18 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	}
 
 	@Override
-	public Object put(String key, Object value) {
+	@Nullable
+	public Object put(String key, @Nullable Object value) {
 		if (shouldCloseSessionResource(key, value)) {
 			closeables.add((AutoCloseable) value);
+		}
+		if (value instanceof Enum<?> enumValue && !key.startsWith(SYSTEM_MANAGED_RESOURCE_PREFIX)) {
+			super.put(key, enumValue.name());
 		}
 		return super.put(key, value);
 	}
 
-	private static boolean shouldCloseSessionResource(final String key, final Object value) {
+	private static boolean shouldCloseSessionResource(final String key, final @Nullable Object value) {
 		return value instanceof AutoCloseable autoCloseable &&
 				isNotSystemManagedResource(key) &&
 				isValueToBeClosed(autoCloseable);
@@ -188,7 +192,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * @param value AutoCloseable to check
 	 * @return {@code true} if {@code value} is not a {@link Message}, or if it is a Message with a request that is not a scalar or array type. Returns {@code false} otherwise.
 	 */
-	private static boolean isValueToBeClosed(AutoCloseable value) {
+	private static boolean isValueToBeClosed(@Nullable AutoCloseable value) {
 		return (!(value instanceof Message)); // Don't close-on-close messages anymore
 	}
 
@@ -234,7 +238,6 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * @return The value associated with the key encapsulated in a {@link Message} object.
 	 *         If the key does not exist or the value is null, a null message is returned.
 	 */
-	@Nonnull
 	public Message getMessage(String key) {
 		Object obj = get(key);
 		if (obj instanceof Message message) {
@@ -246,10 +249,12 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		return Message.nullMessage();
 	}
 
+	@Nullable
 	public Instant getTsReceived() {
 		return getTsReceived(this);
 	}
 
+	@Nullable
 	public static Instant getTsReceived(Map<String, Object> context) {
 		Object tsReceived = context.get(PipeLineSession.TS_RECEIVED_KEY);
 		if(tsReceived instanceof Instant instant) {
@@ -260,10 +265,12 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		return null;
 	}
 
+	@Nullable
 	public Instant getTsSent() {
 		return getTsSent(this);
 	}
 
+	@Nullable
 	public static Instant getTsSent(Map<String, Object> context) {
 		Object tsSent = context.get(PipeLineSession.TS_SENT_KEY);
 		if(tsSent instanceof Instant instant) {
@@ -278,7 +285,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * Convenience method to set required parameters from listeners. Will not update messageId and correlationId when NULL.
 	 * Sets the current date-time as TS-Received.
 	 */
-	public static void updateListenerParameters(@Nonnull Map<String, Object> map, @Nullable String messageId, @Nullable String correlationId) {
+	public static void updateListenerParameters(Map<String, Object> map, @Nullable String messageId, @Nullable String correlationId) {
 		updateListenerParameters(map, messageId, correlationId, TimeProvider.now(), null);
 	}
 
@@ -286,7 +293,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * Convenience method to set required parameters from listeners. Will not update messageId and
 	 * correlationId when NULL. Will use current date-time for TS-Received if null.
 	 */
-	public static void updateListenerParameters(@Nonnull Map<String, Object> map, @Nullable String messageId, @Nullable String correlationId, @Nullable Instant tsReceived, @Nullable Instant tsSent) {
+	public static void updateListenerParameters(Map<String, Object> map, @Nullable String messageId, @Nullable String correlationId, @Nullable Instant tsReceived, @Nullable Instant tsSent) {
 		if (messageId != null) {
 			map.put(MESSAGE_ID_KEY, messageId);
 		}
@@ -307,7 +314,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 		put(SECURITY_HANDLER_KEY, handler);
 	}
 
-	public @Nonnull ISecurityHandler getSecurityHandler() throws NotImplementedException {
+	public ISecurityHandler getSecurityHandler() throws NotImplementedException {
 		if (securityHandler == null) {
 			securityHandler = (ISecurityHandler) get(SECURITY_HANDLER_KEY);
 			if (securityHandler == null) {
@@ -329,7 +336,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 */
 	@Nullable
 	@SneakyThrows(IOException.class)
-	public String getString(@Nonnull String key) {
+	public String getString(String key) {
 		Object obj = get(key);
 		if (obj == null) {
 			return null;
@@ -359,7 +366,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	 * @return String
 	 */
 	@Nullable
-	public String get(@Nonnull String key, @Nullable String defaultValue) {
+	public String get(String key, @Nullable String defaultValue) {
 		String ob = this.getString(key);
 
 		if (ob == null) return defaultValue;
@@ -422,15 +429,12 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	@Nullable
 	public Integer getInteger(String key) {
 		Object ob = this.get(key);
-		if (ob == null) return null;
-
-		if(ob instanceof Integer integer) {
-			return integer;
-		}
-		if(ob instanceof Number number) {
-			return number.intValue();
-		}
-		return Integer.parseInt(Objects.requireNonNull(this.getString(key)));
+		return switch (ob) {
+			case null -> null;
+			case Integer integer -> integer;
+			case Number number -> number.intValue();
+			default -> Integer.parseInt(Objects.requireNonNull(this.getString(key)));
+		};
 	}
 
 	/**
@@ -478,7 +482,9 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 	@Override
 	public void close() {
 		LOG.debug("Closing PipeLineSession");
-		cleanable.clean();
+		if (cleanable != null) {
+			cleanable.clean();
+		}
 	}
 
 	private static class PipeLineSessionCloseAction implements Runnable {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,11 +19,10 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.qpid.protonj2.client.Client;
 import org.apache.qpid.protonj2.client.ClientOptions;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.jdbc.datasource.FrankResource;
 import org.frankframework.jdbc.datasource.ObjectFactory;
@@ -46,9 +45,9 @@ public class AmqpConnectionFactoryFactory extends ObjectFactory<AmqpConnectionFa
 		defaultClient = Client.create(clientOptions);
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
-	protected AmqpConnectionFactory augment(@Nonnull Object object, @Nonnull String objectName) {
+	protected AmqpConnectionFactory augment(@NonNull Object object, @NonNull String objectName) {
 		if (object instanceof FrankResource resource) {
 			return map(resource, objectName);
 		}
@@ -68,14 +67,14 @@ public class AmqpConnectionFactoryFactory extends ObjectFactory<AmqpConnectionFa
 		return new AmqpConnectionFactory(objectName, resource, client);
 	}
 
-	@Nonnull
+	@NonNull
 	private static Client createClient(String clientId) {
 		ClientOptions clientOptions = new ClientOptions();
 		clientOptions.id(clientId);
 		return Client.create(clientOptions);
 	}
 
-	@Nonnull
+	@NonNull
 	public AmqpConnectionFactory getConnectionFactory(String name) {
 		return get(name, null);
 	}

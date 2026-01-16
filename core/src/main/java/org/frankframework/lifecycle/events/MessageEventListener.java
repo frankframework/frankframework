@@ -18,8 +18,7 @@ package org.frankframework.lifecycle.events;
 import java.util.HashMap;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationListener;
 
 import org.frankframework.management.bus.BusMessageUtils;
@@ -65,7 +64,7 @@ public class MessageEventListener implements ApplicationListener<MessageEvent<?>
 	}
 
 	@Override
-	public void onApplicationEvent(@Nonnull MessageEvent<?> event) {
+	public void onApplicationEvent(@NonNull MessageEvent<?> event) {
 		MessageKeeperMessage messageKeeperMessage = MessageKeeperMessage.fromEvent(event);
 
 		if(event instanceof ConfigurationMessageEvent messageEvent) {

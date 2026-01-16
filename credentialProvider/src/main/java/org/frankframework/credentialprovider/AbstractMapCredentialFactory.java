@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 Nationale-Nederlanden, 2021-2025 WeAreFrank!
+   Copyright 2021 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,9 +27,8 @@ import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.credentialprovider.util.CredentialConstants;
 import org.frankframework.util.ClassUtils;
@@ -44,9 +43,6 @@ public abstract class AbstractMapCredentialFactory implements ISecretProvider {
 		CredentialConstants appConstants = CredentialConstants.getInstance();
 
 		aliases = getCredentialMap(appConstants);
-		if (aliases == null) {
-			throw new IllegalArgumentException(this.getClass().getName()+" cannot get alias map");
-		}
 	}
 
 	protected abstract Map<String,String> getCredentialMap(CredentialConstants appConstants) throws IOException;
@@ -72,7 +68,7 @@ public abstract class AbstractMapCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public boolean hasSecret(@Nonnull CredentialAlias alias) {
+	public boolean hasSecret(@NonNull CredentialAlias alias) {
 		try {
 			return getSecret(alias) != null;
 		} catch (NoSuchElementException e) {
@@ -81,7 +77,7 @@ public abstract class AbstractMapCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public ISecret getSecret(@Nonnull CredentialAlias alias) throws NoSuchElementException {
+	public ISecret getSecret(@NonNull CredentialAlias alias) throws NoSuchElementException {
 		return new MapSecret(alias, aliases);
 	}
 
@@ -89,7 +85,7 @@ public abstract class AbstractMapCredentialFactory implements ISecretProvider {
 	public Set<String> getConfiguredAliases() {
 		Set<String> aliasNames = new LinkedHashSet<>();
 		for (String rawName: aliases.keySet()) {
-			String name = StringUtil.split(rawName, "/").get(0);
+			String name = StringUtil.split(rawName, "/").getFirst();
 			aliasNames.add(name);
 		}
 		return aliasNames;

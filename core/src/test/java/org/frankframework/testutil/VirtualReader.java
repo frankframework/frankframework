@@ -4,10 +4,9 @@ import java.io.IOException;
 import java.io.Reader;
 import java.util.concurrent.atomic.LongAdder;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 
 public class VirtualReader extends Reader {
 	private final static Logger LOG = LogManager.getLogger(VirtualReader.class);
@@ -20,7 +19,7 @@ public class VirtualReader extends Reader {
 	}
 
 	@Override
-	public int read(@Nonnull final char[] cbuf, final int off, final int len) throws IOException {
+	public int read(@NonNull final char[] cbuf, final int off, final int len) throws IOException {
 		if (charsRead.longValue() >= streamSize) {
 			LOG.info("{}: VirtualReader EOF after {} characters", Thread.currentThread().getName(), charsRead.longValue());
 			return -1;

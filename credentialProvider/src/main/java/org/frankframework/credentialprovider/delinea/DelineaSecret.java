@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,7 +15,8 @@
 */
 package org.frankframework.credentialprovider.delinea;
 
-import jakarta.annotation.Nonnull;
+
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.credentialprovider.CredentialAlias;
 import org.frankframework.credentialprovider.Secret;
@@ -38,7 +39,8 @@ public class DelineaSecret extends Secret {
 	}
 
 	@Override
-	public String getField(@Nonnull String slugName) {
+	@Nullable
+	public String getField(@Nullable String slugName) {
 		return secret.fields().stream()
 				.filter(field -> field.slug().equals(slugName))
 				.map(DelineaSecretDto.Field::value)

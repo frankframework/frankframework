@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2025 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,8 +19,8 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -80,16 +80,16 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 		return requestMessages.poll();
 	}
 
-	public @Nonnull ListenerMessage getRequestMessageWithDefaultTimeout() throws TimeoutException {
+	public @NonNull ListenerMessage getRequestMessageWithDefaultTimeout() throws TimeoutException {
 		return getRequestMessage(timeoutMillis);
 	}
 
 	/** Attempt to retrieve a {@link ListenerMessage} with timeout in ms. Returns TimeOutException if non is present */
-	private @Nonnull ListenerMessage getRequestMessage(long timeout) throws TimeoutException {
+	private @NonNull ListenerMessage getRequestMessage(long timeout) throws TimeoutException {
 		return getMessageFromQueue(requestMessages, timeout, "request");
 	}
 
-	private @Nonnull ListenerMessage getMessageFromQueue(BlockingQueue<ListenerMessage> queue, long timeout, String messageType) throws TimeoutException {
+	private @NonNull ListenerMessage getMessageFromQueue(BlockingQueue<ListenerMessage> queue, long timeout, String messageType) throws TimeoutException {
 		try {
 			ListenerMessage requestMessage = queue.poll(timeout, TimeUnit.MILLISECONDS);
 			if(requestMessage != null) {
@@ -109,7 +109,7 @@ public class ListenerMessageHandler<M> implements IMessageHandler<M> {
 	}
 
 	/** Attempt to retrieve a {@link ListenerMessage} with timeout in ms. Returns TimeOutException if non is present */
-	private @Nonnull ListenerMessage getResponseMessage(long timeout) throws TimeoutException {
+	private @NonNull ListenerMessage getResponseMessage(long timeout) throws TimeoutException {
 		return getMessageFromQueue(responseMessages, timeout, "response");
 	}
 

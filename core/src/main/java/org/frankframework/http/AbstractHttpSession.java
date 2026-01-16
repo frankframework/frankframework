@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2025 WeAreFrank!
+   Copyright 2017-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -27,9 +27,6 @@ import java.util.concurrent.TimeUnit;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
-
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpHost;
@@ -68,6 +65,8 @@ import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.pool.ConnPoolControl;
 import org.apache.http.protocol.BasicHttpContext;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.util.Assert;
 
@@ -314,7 +313,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 	/**
 	 * Makes sure only http(s) requests can be performed.
 	 */
-	protected URI getURI(@Nonnull String url) throws URISyntaxException {
+	protected URI getURI(@NonNull String url) throws URISyntaxException {
 		if(StringUtils.isBlank(url)) {
 			throw new URISyntaxException("<null>", "no url provided");
 		}
@@ -657,7 +656,7 @@ public abstract class AbstractHttpSession implements ConfigurableLifecycle, HasK
 		return StringUtils.isNotEmpty(getTokenEndpoint()) ? AuthenticationScheme.OAUTH : AuthenticationScheme.BASIC;
 	}
 
-	@Nonnull
+	@NonNull
 	protected SSLConnectionSocketFactory getSSLConnectionSocketFactory() throws ConfigurationException {
 		SSLConnectionSocketFactory sslConnectionSocketFactory;
 		HostnameVerifier hostnameVerifier = verifyHostname ? new DefaultHostnameVerifier() : new NoopHostnameVerifier();

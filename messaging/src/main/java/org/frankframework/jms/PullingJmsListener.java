@@ -19,8 +19,6 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import jakarta.jms.Destination;
 import jakarta.jms.JMSException;
 import jakarta.jms.Message;
@@ -28,6 +26,8 @@ import jakarta.jms.MessageConsumer;
 import jakarta.jms.Session;
 
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.core.HasSender;
 import org.frankframework.core.ICorrelatedPullingListener;
@@ -130,7 +130,7 @@ public class PullingJmsListener extends AbstractJmsListener implements IPullingL
 		}
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public Map<String,Object> openThread() throws ListenerException {
 		Map<String,Object> threadContext = new HashMap<>();
@@ -150,7 +150,7 @@ public class PullingJmsListener extends AbstractJmsListener implements IPullingL
 	}
 
 	@Override
-	public void closeThread(@Nonnull Map<String, Object> threadContext) throws ListenerException {
+	public void closeThread(@NonNull Map<String, Object> threadContext) throws ListenerException {
 		try {
 			if (!isSessionsArePooled()) {
 				MessageConsumer mc = (MessageConsumer) threadContext.remove(THREAD_CONTEXT_MESSAGECONSUMER_KEY);
@@ -194,7 +194,7 @@ public class PullingJmsListener extends AbstractJmsListener implements IPullingL
      * Retrieves messages from queue or other channel, but does no processing on it.
      */
 	@Override
-	public @Nullable RawMessageWrapper<Message> getRawMessage(@Nonnull Map<String, Object> threadContext) throws ListenerException {
+	public @Nullable RawMessageWrapper<Message> getRawMessage(@NonNull Map<String, Object> threadContext) throws ListenerException {
 		return getRawMessageFromDestination(null, threadContext);
 	}
 

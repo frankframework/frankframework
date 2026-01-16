@@ -24,10 +24,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -58,13 +57,13 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 	private ValidateAttributeRule handleAttributeRule;
 	private @Getter @Setter Locator documentLocator;
 
-	record BeanRuleWrapper (DigesterRule rule, @Nonnull Object bean) {}
+	record BeanRuleWrapper (DigesterRule rule, @NonNull Object bean) {}
 
 	/**
 	 * This Class is created via the Configuration context. This is also the first element to populate.
 	 */
 	@Override
-	public void setApplicationContext(@Nonnull ApplicationContext ac) {
+	public void setApplicationContext(@NonNull ApplicationContext ac) {
 		applicationContext.push(ac); // Should be the first item on the stack, stack should never be empty.
 		elementBeans.push(new BeanRuleWrapper(null, ac));
 	}
@@ -230,7 +229,7 @@ public class Digester extends FullXmlFilter implements InitializingBean, Applica
 		});
 	}
 
-	@Nonnull
+	@NonNull
 	private DigesterRule findRuleForLocalName(String localName) throws SAXException {
 		return parsedPatterns.stream()
 				.filter(this::matchesRule)

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,9 +18,8 @@ package org.frankframework.pipes;
 import java.io.IOException;
 import java.util.Map;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
 
@@ -128,7 +127,7 @@ public class SwitchPipe extends AbstractPipe {
 	 * `weblogic.xerces` the transformer gets corrupt, on an exception the configuration is done again, so that the
 	 * transformer is re-initialized.
 	 */
-	@Nonnull
+	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		String forward = getForwardName(message, session);

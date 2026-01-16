@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2022-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2022-2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -25,8 +25,8 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.Getter;
 import lombok.extern.log4j.Log4j2;
@@ -53,17 +53,17 @@ public class MessageWrapper<M> extends RawMessageWrapper<M> implements Serializa
 		super();
 	}
 
-	public MessageWrapper(@Nonnull Message message, @Nullable String messageId, @Nullable String correlationId) {
+	public MessageWrapper(@NonNull Message message, @Nullable String messageId, @Nullable String correlationId) {
 		// Ugly cast, but I don't think it is safe to leave it NULL
 		super((M)message.asObject(), messageId, correlationId);
 		this.message = message;
 	}
 
-	public MessageWrapper(@Nonnull RawMessageWrapper<M> rawMessageWrapper, @Nonnull Message message) {
+	public MessageWrapper(@NonNull RawMessageWrapper<M> rawMessageWrapper, @NonNull Message message) {
 		this(rawMessageWrapper, message, rawMessageWrapper.id, rawMessageWrapper.correlationId);
 	}
 
-	public MessageWrapper(@Nonnull RawMessageWrapper<M> rawMessageWrapper, @Nonnull Message message, @Nullable String messageId, @Nullable String correlationId) {
+	public MessageWrapper(@NonNull RawMessageWrapper<M> rawMessageWrapper, @NonNull Message message, @Nullable String messageId, @Nullable String correlationId) {
 		super(rawMessageWrapper.getRawMessage(), messageId, correlationId);
 		this.message = message;
 		this.context.putAll(rawMessageWrapper.getContext());

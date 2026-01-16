@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021-2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -22,13 +22,16 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.doc.DocumentedEnum;
 
 /**
  * @author Niels Meijer
  */
+@NullMarked
 public class EnumUtils {
 
 	private EnumUtils() {
@@ -45,16 +48,14 @@ public class EnumUtils {
 
 	private static String getFieldName(Class<?> enumClass) {
 		String className = org.springframework.util.ClassUtils.getUserClass(enumClass).getSimpleName();
-		char[] c = className.toCharArray();
-		c[0] = Character.toLowerCase(c[0]);
-		return new String(c);
+		return StringUtil.lcFirst(className);
 	}
 
-	public static <E extends Enum<E>> E parse(Class<E> enumClass, String fieldName, String value) {
+	public static <E extends Enum<E>> E parse(Class<E> enumClass, @Nullable String fieldName, String value) {
 		return parse(enumClass, fieldName, value, false);
 	}
 
-	public static <E extends Enum<E>> E parse(Class<E> enumClass, String fieldName, String value, boolean fallbackToStandardEnumParsing) {
+	public static <E extends Enum<E>> E parse(Class<E> enumClass, @Nullable String fieldName, String value, boolean fallbackToStandardEnumParsing) {
 		if (DocumentedEnum.class.isAssignableFrom(enumClass)) {
 			try {
 				return parseDocumented(enumClass, fieldName, value);
@@ -74,7 +75,7 @@ public class EnumUtils {
 		return parseNormal(enumClass, fieldName, value);
 	}
 
-	protected static <E extends Enum<E>> E parseNormal(Class<E> enumClass, String fieldName, String value) {
+	protected static <E extends Enum<E>> E parseNormal(Class<E> enumClass, @Nullable String fieldName, String value) {
 		E result = parseIgnoreCase(enumClass, value);
 		if (result == null) {
 			throw new IllegalArgumentException((fieldName != null ? "cannot set field [" + fieldName + "] to " : "") + "unparsable value [" + value + "]. Must be one of " + getEnumList(enumClass));
@@ -85,11 +86,11 @@ public class EnumUtils {
 	/**
 	 * Solely for DocumentedEnums !
 	 */
-	protected static <E extends Enum<E>> E parseDocumented(Class<E> enumClass, String fieldName, String value) {
+	protected static <E extends Enum<E>> E parseDocumented(Class<E> enumClass, @Nullable String fieldName, String value) {
 		return parseFromField(enumClass, fieldName, value, e -> ((DocumentedEnum) e).getLabel());
 	}
 
-	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, String fieldName, String value, Function<E, String> field) {
+	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, @Nullable String fieldName, String value, Function<E, String> field) {
 		List<String> fieldValues = new ArrayList<>();
 		for (E e : getEnumList(enumClass)) {
 			String fieldValue = field.apply(e);
@@ -101,7 +102,7 @@ public class EnumUtils {
 		throw new IllegalArgumentException((fieldName != null ? "cannot set field [" + fieldName + "] to " : "") + "unparsable value [" + value + "]. Must be one of " + fieldValues);
 	}
 
-	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, String fieldName, int value, Function<E, Integer> field) {
+	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, @Nullable String fieldName, int value, Function<E, Integer> field) {
 		List<Integer> fieldValues = new ArrayList<>();
 		for (E e : getEnumList(enumClass)) {
 			int fieldValue = field.apply(e);
@@ -117,6 +118,7 @@ public class EnumUtils {
 		return new ArrayList<>(Arrays.asList(enumClass.getEnumConstants()));
 	}
 
+	@Nullable
 	private static <E extends Enum<E>> E parseIgnoreCase(final Class<E> enumClass, final String enumName) {
 		if (enumName == null) {
 			return null;
@@ -137,7 +139,7 @@ public class EnumUtils {
 	 * @return the first matching annotation, or {@code null} if not found
 	 */
 	@Nullable
-	public static <A extends Annotation> A findAnnotation(Enum<?> enumValue, @Nullable Class<A> annotationType) {
+	public static <A extends Annotation> A findAnnotation(Enum<?> enumValue, @NonNull Class<A> annotationType) {
 		try {
 			Field field = enumValue.getClass().getField(enumValue.name());
 			return field.getAnnotation(annotationType);

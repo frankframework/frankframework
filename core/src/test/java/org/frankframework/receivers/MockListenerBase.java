@@ -6,8 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import jakarta.annotation.Nonnull;
-
+import org.jspecify.annotations.NonNull;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
@@ -56,7 +55,7 @@ public abstract class MockListenerBase implements IListener<String> {
 	}
 
 	@Override
-	public Message extractMessage(@Nonnull RawMessageWrapper<String> rawMessage, @Nonnull Map<String, Object> context) throws ListenerException {
+	public Message extractMessage(@NonNull RawMessageWrapper<String> rawMessage, @NonNull Map<String, Object> context) throws ListenerException {
 		String text = rawMessage.getRawMessage();
 		if("extractMessageException".equals(text)) {
 			throw new ListenerException(text);

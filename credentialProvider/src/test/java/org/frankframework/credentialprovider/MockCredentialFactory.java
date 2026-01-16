@@ -5,12 +5,15 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.NoSuchElementException;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 @SuppressWarnings("serial")
+@NullMarked
 public class MockCredentialFactory extends HashMap<String, ISecret> implements ISecretProvider {
 
 	private static MockCredentialFactory instance;
@@ -28,12 +31,12 @@ public class MockCredentialFactory extends HashMap<String, ISecret> implements I
 	}
 
 	@Override
-	public boolean hasSecret(@Nonnull CredentialAlias alias) {
+	public boolean hasSecret(@NonNull CredentialAlias alias) {
 		return getInstance().containsKey(alias.getName());
 	}
 
 	@Override
-	public ISecret getSecret(@Nonnull CredentialAlias alias) throws NoSuchElementException {
+	public ISecret getSecret(@NonNull CredentialAlias alias) throws NoSuchElementException {
 		ISecret credentials = getInstance().get(alias.getName());
 		if (credentials == null) {
 			throw new NoSuchElementException("credentials not found");
@@ -63,7 +66,7 @@ public class MockCredentialFactory extends HashMap<String, ISecret> implements I
 		private final String password;
 
 		@Override
-		public String getField(@Nonnull String fieldname) throws IOException {
+		public String getField(@Nullable String fieldname) throws IOException {
 			if ("username".equals(fieldname) && username != null) {
 				return username;
 			}

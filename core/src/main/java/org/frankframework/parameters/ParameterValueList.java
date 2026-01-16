@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021-2024 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,10 +23,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
@@ -98,7 +97,7 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 		return pv;
 	}
 
-	@Nonnull
+	@NonNull
 	private Map<String, ParameterValue> getParameterValueMap() {
 		return Collections.unmodifiableMap(map);
 	}
@@ -106,12 +105,12 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 	/**
 	 * Returns a Map of value objects which may be a subset of the ParameterList when multiple parameters exist with the same name!
 	 */
-	@Nonnull
+	@NonNull
 	public Map<String, Object> getValueMap() {
 		Map<String, ParameterValue> paramValuesMap = getParameterValueMap();
 
 		// convert map with parameterValue to map with value
-		Map<String, Object> result = new LinkedHashMap<>(paramValuesMap.size());
+		Map<String, Object> result = LinkedHashMap.newLinkedHashMap(paramValuesMap.size());
 		for (ParameterValue pv : paramValuesMap.values()) {
 			result.put(pv.getDefinition().getName(), pv.getValue());
 		}
@@ -159,7 +158,7 @@ public class ParameterValueList implements Iterable<ParameterValue> {
 	 * Returns the {@code List} iterator which may contain {@link Parameter Parameters} with the same name!
 	 */
 	@Override
-	@Nonnull
+	@NonNull
 	public Iterator<ParameterValue> iterator() {
 		return list.iterator();
 	}

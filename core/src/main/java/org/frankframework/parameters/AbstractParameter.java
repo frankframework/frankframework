@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2021-2025 WeAreFrank!
+   Copyright 2013, 2016, 2019, 2020 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,11 +35,10 @@ import javax.xml.transform.Source;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.dom.DOMResult;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.http.MediaType;
 import org.springframework.util.MimeType;
@@ -125,31 +124,31 @@ import org.frankframework.util.XmlUtils;
 public abstract class AbstractParameter<T> implements IConfigurable, IWithParameters, IParameter {
 	public static final String CONTEXT_KEY_WILDCARD = "*";
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-	private @Getter @Setter ApplicationContext applicationContext;
+	private @Nullable @Getter @Setter ApplicationContext applicationContext;
 
 	public static final String FIXEDUID ="0a1b234c--56de7fa8_9012345678b_-9cd0";
 	public static final String FIXEDHOSTNAME ="MYHOST000012345";
 
 	private String name = null;
 	private @Getter ParameterType type = ParameterType.STRING;
-	private @Getter String sessionKey = null;
-	private @Getter String sessionKeyXPath = null;
-	private @Getter String sessionKeyJPath = null;
-	private JsonPath sessionKeyJsonPath = null;
-	private @Getter String contextKey = null;
-	private @Getter String xpathExpression = null;
-	private @Getter String jsonPathExpression = null;
-	private JsonPath jsonPath = null;
-	private @Getter String namespaceDefs = null;
-	private @Getter String styleSheetName = null;
-	private @Getter String pattern = null;
-	private @Getter String authAlias;
-	private @Getter String username;
-	private @Getter String password;
+	private @Nullable @Getter String sessionKey = null;
+	private @Nullable @Getter String sessionKeyXPath = null;
+	private @Nullable @Getter String sessionKeyJPath = null;
+	private @Nullable JsonPath sessionKeyJsonPath = null;
+	private @Nullable @Getter String contextKey = null;
+	private @Nullable @Getter String xpathExpression = null;
+	private @Nullable @Getter String jsonPathExpression = null;
+	private @Nullable JsonPath jsonPath = null;
+	private @Nullable @Getter String namespaceDefs = null;
+	private @Nullable @Getter String styleSheetName = null;
+	private @Nullable @Getter String pattern = null;
+	private @Nullable @Getter String authAlias;
+	private @Nullable @Getter String username;
+	private @Nullable @Getter String password;
 	private @Getter boolean ignoreUnresolvablePatternElements = false;
-	private @Getter String defaultValue = null;
-	private @Getter String defaultValueMethods = "defaultValue";
-	private @Getter String value = null;
+	private @Nullable @Getter String defaultValue = null;
+	private @Nullable @Getter String defaultValueMethods = "defaultValue";
+	private @Nullable @Getter String value = null;
 	private @Getter int maxLength = -1;
 	private @Getter boolean hidden = false;
 	private @Getter boolean removeNamespaces=false;
@@ -157,13 +156,13 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 
 	private @Getter OutputType xpathResultType = OutputType.TEXT;
 
-	private TransformerPool transformerPool = null;
-	private TransformerPool tpDynamicSessionKey = null;
-	protected @Nonnull ParameterList paramList = new ParameterList();
+	private @Nullable TransformerPool transformerPool = null;
+	private @Nullable TransformerPool tpDynamicSessionKey = null;
+	protected @NonNull ParameterList paramList = new ParameterList();
 	private boolean configured = false;
-	private CredentialFactory cf;
+	private @Nullable CredentialFactory cf;
 
-	private List<DefaultValueMethods> defaultValueMethodsList;
+	private @Nullable List<DefaultValueMethods> defaultValueMethodsList;
 
 	@Getter
 	private ParameterMode mode = ParameterMode.INPUT;
@@ -186,7 +185,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 	}
 
 	@Override
-	public @Nonnull ParameterList getParameterList() {
+	public @NonNull ParameterList getParameterList() {
 		return paramList;
 	}
 
@@ -235,7 +234,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 	private Document transformToDocument(Source xmlSource, ParameterValueList pvl) throws TransformerException, IOException {
 		TransformerPool pool = getTransformerPool();
 		DOMResult transformResult = new DOMResult();
-		pool.transform(xmlSource, transformResult, pvl ==null? null : pvl.getValueMap());
+		pool.transform(xmlSource, transformResult, pvl ==null ? null : pvl.getValueMap());
 		return (Document) transformResult.getNode();
 	}
 
@@ -273,6 +272,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 	 */
 	@Override // should be package private imo
 	@SuppressWarnings("deprecation")
+	@Nullable
 	public Object getValue(ParameterValueList alreadyResolvedParameters, Message message, PipeLineSession session, boolean namespaceAware) throws ParameterException {
 		Object result = null;
 		log.debug("Calculating value for Parameter [{}]", this::getName);
@@ -624,7 +624,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 	}
 
 	/** Converts raw data to configured parameter type */
-	protected abstract T getValueAsType(@Nonnull Message request, boolean namespaceAware) throws ParameterException, IOException;
+	protected abstract T getValueAsType(@NonNull Message request, boolean namespaceAware) throws ParameterException, IOException;
 
 	private String formatPattern(ParameterValueList alreadyResolvedParameters, PipeLineSession session) throws ParameterException {
 		int findNextFrom = 0;
@@ -725,7 +725,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 		return "," + substitution.formatType + "," + substitution.formatString;
 	}
 
-	private @Nonnull Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, PipeLineSession session, ParameterPatternSubstitution substitutionPattern) throws ParameterException {
+	private @NonNull Object getValueForFormatting(ParameterValueList alreadyResolvedParameters, PipeLineSession session, ParameterPatternSubstitution substitutionPattern) throws ParameterException {
 
 		if (alreadyResolvedParameters != null) {
 			ParameterValue paramValue = alreadyResolvedParameters.get(substitutionPattern.name);
@@ -858,6 +858,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 		return "Parameter name=[" + name + "] defaultValue=[" + defaultValue + "] sessionKey=[" + sessionKey + "] "+ sessionKeyExpressionType+" =[" + sessionKeyExpression + "] "+expressionType+"=[" + expression + "] type=[" + type + "] value=[" + value + "]";
 	}
 
+	@Nullable
 	private TransformerPool getTransformerPool() {
 		return transformerPool;
 	}
@@ -878,7 +879,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 
 	/** The value of the parameter, or the base for transformation using xpathExpression, jpathExpression or stylesheet, or formatting. */
 	@Override
-	public void setValue(String value) {
+	public void setValue(@Nullable String value) {
 		this.value = value;
 	}
 
@@ -890,7 +891,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 	 * value '*' then all existing sessionkeys are added as parameter (except tsReceived)
 	 */
 	@Override
-	public void setSessionKey(String string) {
+	public void setSessionKey(@Nullable String string) {
 		sessionKey = string;
 	}
 
@@ -898,27 +899,27 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 	 * Key of {@link org.frankframework.stream.MessageContext} variable to use as source, instead of the {@link Message} found from input message or sessionKey itself. Use a {@literal *}
 	 * to get an XML or JSON document containing all values from the {@link org.frankframework.stream.MessageContext}.
 	 */
-	public void setContextKey(String string) {
+	public void setContextKey(@Nullable String string) {
 		contextKey = string;
 	}
 
 	/** Instead of a fixed <code>sessionKey</code> it's also possible to use a XPath expression applied to the input message to extract the name of the session-variable. */
-	public void setSessionKeyXPath(String string) {
+	public void setSessionKeyXPath(@Nullable String string) {
 		sessionKeyXPath = string;
 	}
 
 	/** Instead of a fixed <code>sessionKey</code> it's also possible to use a JPath expression applied to the input message to extract the name of the session-variable. */
-	public void setSessionKeyJPath(String string) {
+	public void setSessionKeyJPath(@Nullable String string) {
 		sessionKeyJPath = string;
 	}
 
 	/** URL to a stylesheet that wil be applied to the contents of the message or the value of the session-variable. */
-	public void setStyleSheetName(String stylesheetName){
+	public void setStyleSheetName(@Nullable String stylesheetName){
 		this.styleSheetName=stylesheetName;
 	}
 
 	/** the XPath expression to extract the parameter value from the (xml formatted) input or session-variable. */
-	public void setXpathExpression(String xpathExpression) {
+	public void setXpathExpression(@Nullable String xpathExpression) {
 		this.xpathExpression = xpathExpression;
 	}
 
@@ -928,7 +929,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 	 * When {@code jsonPathExpression} is set, then the value of the parameter will be derived using the same order
 	 * of precedence as with {@code xpathExpression}.
 	 */
-	public void setJsonPathExpression(String jsonPathExpression) {
+	public void setJsonPathExpression(@Nullable String jsonPathExpression) {
 		this.jsonPathExpression = jsonPathExpression;
 	}
 
@@ -944,7 +945,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 	 * Namespace definitions for xpathExpression. Must be in the form of a comma or space separated list of
 	 * <code>prefix=namespaceuri</code> definitions. One entry can be without a prefix, that will define the default namespace.
 	 */
-	public void setNamespaceDefs(String namespaceDefs) {
+	public void setNamespaceDefs(@Nullable String namespaceDefs) {
 		this.namespaceDefs = namespaceDefs;
 	}
 
@@ -957,7 +958,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 	}
 
 	/** If the result of sessionKey, xpathExpression and/or stylesheet returns null or an empty string, this value is returned */
-	public void setDefaultValue(String string) {
+	public void setDefaultValue(@Nullable String string) {
 		defaultValue = string;
 	}
 
@@ -965,7 +966,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 	 * Comma separated list of methods (<code>defaultValue</code>, <code>sessionKey</code>, <code>pattern</code>, <code>value</code> or <code>input</code>) to use as default value. Used in the order they appear until a non-null value is found.
 	 * @ff.default <code>defaultValue</code>
 	 */
-	public void setDefaultValueMethods(String string) {
+	public void setDefaultValueMethods(@Nullable String string) {
 		defaultValueMethods = string;
 	}
 
@@ -997,22 +998,22 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 	 * <code>formatString</code> must match the effective value of the formatString in the <code>pattern</code>.
 	 */
 	@Override
-	public void setPattern(String string) {
+	public void setPattern(@Nullable String string) {
 		pattern = string;
 	}
 
 	/** Alias used to obtain username and password, used when a <code>pattern</code> containing {username} or {password} is specified */
-	public void setAuthAlias(String string) {
+	public void setAuthAlias(@Nullable String string) {
 		authAlias = string;
 	}
 
 	/** Default username that is used when a <code>pattern</code> containing {username} is specified */
-	public void setUsername(String string) {
+	public void setUsername(@Nullable String string) {
 		username = string;
 	}
 
 	/** Default password that is used when a <code>pattern</code> containing {password} is specified */
-	public void setPassword(String string) {
+	public void setPassword(@Nullable String string) {
 		password = string;
 	}
 

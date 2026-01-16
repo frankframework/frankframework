@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,11 @@
 */
 package org.frankframework.credentialprovider.util;
 
+import org.jspecify.annotations.Nullable;
+
 public class CacheEntry<V> {
 
-	private V value;
+	private @Nullable V value;
 	private long expiry;
 
 	public CacheEntry() {
@@ -33,11 +35,11 @@ public class CacheEntry<V> {
 		return System.currentTimeMillis() > expiry;
 	}
 
-	public V getValue() {
+	public @Nullable V getValue() {
 		return value;
 	}
 
-	public void update(V value, int timeToLiveMillis) {
+	public void update(@Nullable V value, int timeToLiveMillis) {
 		this.value = value;
 		expiry = System.currentTimeMillis()+timeToLiveMillis;
 	}

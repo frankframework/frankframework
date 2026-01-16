@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,8 +17,8 @@ package org.frankframework.errormessageformatters;
 
 import java.io.IOException;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import com.datasonnet.Mapper;
 import com.datasonnet.MapperBuilder;
@@ -74,7 +74,7 @@ public class DataSonnetErrorMessageFormatter extends ErrorMessageFormatter imple
 	}
 
 	@Override
-	public @Nonnull Message format(@Nullable String errorMessage, @Nullable Throwable t, @Nullable HasName location, @Nullable Message originalMessage, @Nonnull PipeLineSession session) {
+	public @NonNull Message format(@Nullable String errorMessage, @Nullable Throwable t, @Nullable HasName location, @Nullable Message originalMessage, @NonNull PipeLineSession session) {
 		try {
 			Message defaultMessage = super.format(errorMessage, t, location, originalMessage, session);
 			return DataSonnetUtil.transform(mapper, defaultMessage, parameters.getValues(originalMessage, session), outputType);
@@ -112,7 +112,7 @@ public class DataSonnetErrorMessageFormatter extends ErrorMessageFormatter imple
 
 	@Override
 	@Protected
-	public void setMessageFormat(@Nonnull DocumentFormat messageFormat) {
+	public void setMessageFormat(@NonNull DocumentFormat messageFormat) {
 		throw new UnsupportedOperationException("Not supported for this type");
 	}
 
@@ -121,7 +121,7 @@ public class DataSonnetErrorMessageFormatter extends ErrorMessageFormatter imple
 		parameters.add(p);
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public ParameterList getParameterList() {
 		return parameters;

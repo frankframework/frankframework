@@ -44,7 +44,9 @@ public class LadybugServletConfiguration implements ApplicationContextAware {
 		SecuritySettings.setupDefaultSecuritySettings(applicationContext.getEnvironment());
 	}
 
-	// DO NOT REMOVE!
+	/**
+	 * Required for the `setDetectAllHandlerMappings` setting in the ladybugApiServletBean.
+	 */
 	@Bean
 	public RequestMappingHandlerMapping handlerMapping() {
 		return new RequestMappingHandlerMapping();

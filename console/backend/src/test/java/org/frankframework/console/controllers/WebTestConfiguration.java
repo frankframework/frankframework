@@ -2,12 +2,12 @@ package org.frankframework.console.controllers;
 
 import org.mockito.Mockito;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.integration.support.DefaultMessageBuilderFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 
-import org.frankframework.console.configuration.ApiExceptionHandler;
 import org.frankframework.console.configuration.ClientSession;
 import org.frankframework.console.configuration.WebConfiguration;
 import org.frankframework.console.controllers.socket.MessageCacheStore;
@@ -18,7 +18,9 @@ import org.frankframework.console.controllers.socket.MessageCacheStore;
  */
 @Configuration
 @Import(WebConfiguration.class)
+@ComponentScan(basePackages = "org.frankframework.console.exceptions")
 public class WebTestConfiguration {
+
 	@Bean
 	MessageCacheStore messageCacheStore() {
 		return new MessageCacheStore();
@@ -37,11 +39,6 @@ public class WebTestConfiguration {
 	@Bean
 	DefaultMessageBuilderFactory messageBuilderFactory() {
 		return new DefaultMessageBuilderFactory();
-	}
-
-	@Bean
-	ApiExceptionHandler apiExceptionHandler() {
-		return new ApiExceptionHandler();
 	}
 
 	@Bean

@@ -1,5 +1,5 @@
 /*
-   Copyright 2015, 2020 Nationale-Nederlanden, 2021-2025 WeAreFrank!
+   Copyright 2015, 2020 Nationale-Nederlanden, 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,9 +15,8 @@
  */
 package org.frankframework.extensions.esb;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.core.ParameterException;
 import org.frankframework.core.PipeLineSession;
@@ -41,7 +40,7 @@ public class DirectWrapperPipe extends FixedForwardPipe {
 	protected static final String CMHVERSION = "cmhVersion";
 	protected static final String ADDOUTPUTNAMESPACE = "addOutputNamespace";
 
-	@Nonnull
+	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		ParameterValueList pvl;

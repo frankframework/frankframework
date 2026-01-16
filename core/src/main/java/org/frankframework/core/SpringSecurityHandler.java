@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -15,13 +15,17 @@
 */
 package org.frankframework.core;
 
+import java.io.Serializable;
 import java.security.Principal;
-import java.util.Collection;
 
 import org.apache.commons.lang3.NotImplementedException;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import lombok.extern.log4j.Log4j2;
 
 /**
  * ISecurityHandler implementation that uses Spring Security's SecurityContextHolder to retrieve the user information. Since the application is fully
@@ -29,8 +33,10 @@ import org.springframework.security.core.context.SecurityContextHolder;
  *
  * @author evandongen
  */
-public class SpringSecurityHandler implements ISecurityHandler {
-	private final Authentication authentication;
+@NullMarked
+@Log4j2
+public class SpringSecurityHandler implements ISecurityHandler, Serializable {
+	private final @Nullable Authentication authentication;
 
 	public SpringSecurityHandler() {
 		this.authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -38,19 +44,21 @@ public class SpringSecurityHandler implements ISecurityHandler {
 
 	@Override
 	public boolean isUserInRole(String role) throws NotImplementedException {
-		return getAuthorities().stream()
+		if (authentication == null) {
+			log.info("no authentication object found");
+			return false;
+		}
+
+		log.info("validating if user [{}] contains role [{}]", authentication::getPrincipal, () -> role);
+		return authentication.getAuthorities().stream()
 				.map(GrantedAuthority::getAuthority)
-				.filter(authority -> authority.startsWith("ROLE_"))
+				.filter(authority -> authority != null && authority.startsWith("ROLE_"))
 				.map(authority -> authority.substring(5))
 				.anyMatch(authority -> authority.equalsIgnoreCase(role));
 	}
 
-	Collection<? extends GrantedAuthority> getAuthorities() {
-		return authentication.getAuthorities();
-	}
-
 	@Override
-	public Principal getPrincipal() throws NotImplementedException {
+	public @Nullable Principal getPrincipal() throws NotImplementedException {
 		return authentication;
 	}
 }

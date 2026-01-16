@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,10 +18,9 @@ package org.frankframework.credentialprovider;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -39,7 +38,7 @@ public class CredentialAlias {
 	private static final String USERNAME_SUFFIX = "usernameSuffix";
 	private static final String PASSWORD_SUFFIX = "passwordSuffix";
 
-	public static final String ALIAS_PREFIX;
+	public static final @Nullable String ALIAS_PREFIX;
 	public static final String DEFAULT_USERNAME_FIELD;
 	public static final String DEFAULT_PASSWORD_FIELD;
 
@@ -88,7 +87,7 @@ public class CredentialAlias {
 	 * Extracting is deprecated, cleanse is not.
 	 * @return NULL when empty.
 	 */
-	@Nonnull
+	@NonNull
 	private static String extractAlias(@Nullable final String rawAlias) {
 		if (StringUtils.isBlank(rawAlias)) {
 			throw new IllegalArgumentException("alias may not be empty");
@@ -134,7 +133,7 @@ public class CredentialAlias {
 	}
 
 	@Nullable
-	public static CredentialAlias parse(String rawAlias) {
+	public static CredentialAlias parse(@Nullable String rawAlias) {
 		if (StringUtils.isBlank(rawAlias)) {
 			log.info("raw alias is empty, returning null");
 			return null;

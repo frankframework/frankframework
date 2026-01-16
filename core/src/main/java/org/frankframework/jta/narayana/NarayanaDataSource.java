@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2025 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,9 +26,8 @@ import java.util.Properties;
 import javax.sql.DataSource;
 import javax.sql.XADataSource;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 
 import com.arjuna.ats.internal.jdbc.ConnectionImple;
 import com.arjuna.ats.internal.jdbc.ConnectionManager;
@@ -60,7 +59,7 @@ public class NarayanaDataSource implements DataSource {
 	private final @Getter XADataSource targetDataSource;
 	private final String name;
 
-	public NarayanaDataSource(@Nonnull XADataSource dataSource, String name) {
+	public NarayanaDataSource(@NonNull XADataSource dataSource, String name) {
 		this.targetDataSource = dataSource;
 		this.name = name;
 

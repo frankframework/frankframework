@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2020 Nationale-Nederlanden, 2024-2025 WeAreFrank
+   Copyright 2019, 2020 Nationale-Nederlanden, 2021-2026 WeAreFrank
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,10 +23,9 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -90,7 +89,7 @@ public class LadybugPipe extends FixedForwardPipe {
 		reportNameComparator = new ReportNameComparator();
 	}
 
-	@Nonnull
+	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		XmlBuilder results = new XmlBuilder("Results");

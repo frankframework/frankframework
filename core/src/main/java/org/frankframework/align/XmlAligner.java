@@ -1,5 +1,5 @@
 /*
-   Copyright 2017-2024 WeAreFrank!
+   Copyright 2017-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,9 +26,6 @@ import java.util.Set;
 
 import javax.xml.validation.ValidatorHandler;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.XMLSchemaLoader;
@@ -46,6 +43,8 @@ import org.apache.xerces.xs.XSParticle;
 import org.apache.xerces.xs.XSTerm;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSWildcard;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.Attributes;
 import org.xml.sax.ErrorHandler;
 import org.xml.sax.Locator;
@@ -83,7 +82,7 @@ public class XmlAligner extends XMLFilterImpl {
 	private @Getter @Setter Locator documentLocator;
 
 	private final Deque<Set<String>> multipleOccurringElements = new ArrayDeque<>();
-	private @Getter @Nonnull Set<String> multipleOccurringChildElements = Set.of(); // May not be null or cannot be put into ArrayDeQue
+	private @Getter @NonNull Set<String> multipleOccurringChildElements = Set.of(); // May not be null or cannot be put into ArrayDeQue
 	private final Deque<Boolean> parentOfSingleMultipleOccurringChildElements = new ArrayDeque<>();
 	private @Getter boolean parentOfSingleMultipleOccurringChildElement = false;
 	private final Deque<Boolean> typeContainsWildcards = new ArrayDeque<>();
@@ -334,7 +333,7 @@ public class XmlAligner extends XMLFilterImpl {
 		}
 	}
 
-	protected @Nonnull Set<String> findMultipleOccurringChildElements(XSParticle particle) {
+	protected @NonNull Set<String> findMultipleOccurringChildElements(XSParticle particle) {
 		Set<String> result=new HashSet<>();
 		if (particle == null) {
 			log.warn("typeDefinition particle is null, is this a problem?");
@@ -359,12 +358,12 @@ public class XmlAligner extends XMLFilterImpl {
 		return result;
 	}
 
-	public @Nonnull List<XSAttributeUse> getAttributeUses() {
+	public @NonNull List<XSAttributeUse> getAttributeUses() {
 		return getAttributeUses(typeDefinition);
 	}
 
 	@SuppressWarnings("unchecked")
-	public @Nonnull List<XSAttributeUse> getAttributeUses(XSTypeDefinition typeDefinition) {
+	public @NonNull List<XSAttributeUse> getAttributeUses(XSTypeDefinition typeDefinition) {
 		if (typeDefinition==null) {
 			log.trace("getAttributeUses typeDefinition is null");
 			return List.of();
@@ -456,7 +455,7 @@ public class XmlAligner extends XMLFilterImpl {
 		return (XSElementDeclaration) elementDeclarations.toArray()[0];
 	}
 
-	protected @Nonnull Set<XSElementDeclaration> findElementDeclarationsForName(String namespace, String name) {
+	protected @NonNull Set<XSElementDeclaration> findElementDeclarationsForName(String namespace, String name) {
 		Set<XSElementDeclaration> result=new LinkedHashSet<>();
 		if (schemaInformation==null) {
 			throw new IllegalStateException("No SchemaInformation specified, cannot find namespaces for ["+namespace+"]:["+name+"]");

@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023-2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
 
-import jakarta.annotation.Nonnull;
+import org.jspecify.annotations.NonNull;
 
 import org.frankframework.validation.AbstractXSD;
 
@@ -42,7 +42,7 @@ public class StringXsd extends AbstractXSD {
 	}
 
 	@Override
-	public @Nonnull String asString() throws IOException {
+	public @NonNull String asString() throws IOException {
 		return contents;
 	}
 }

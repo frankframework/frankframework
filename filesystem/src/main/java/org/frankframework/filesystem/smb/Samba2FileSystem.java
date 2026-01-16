@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2025 WeAreFrank!
+   Copyright 2019-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -31,10 +31,9 @@ import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import com.hierynomus.msdtyp.AccessMask;
 import com.hierynomus.mserref.NtStatus;
@@ -185,7 +184,7 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 		log.debug("closed connection to [{}] for Samba2FS", hostname);
 	}
 
-	private @Nonnull AuthenticationContext createAuthenticationContext() throws FileSystemException {
+	private @NonNull AuthenticationContext createAuthenticationContext() throws FileSystemException {
 		CredentialFactory credentialFactory = new CredentialFactory(authAlias, username, password);
 		if(StringUtils.isNotEmpty(credentialFactory.getUsername())) {
 			switch (authType) {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 Nationale-Nederlanden, 2022, 2024 WeAreFrank!
+   Copyright 2021 Nationale-Nederlanden, 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -39,6 +39,7 @@ import org.apache.juli.logging.Log;
 import org.apache.juli.logging.LogFactory;
 import org.apache.tomcat.util.digester.Digester;
 import org.apache.tomcat.util.file.ConfigFileLoader;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.SAXException;
 
 import lombok.Getter;
@@ -71,12 +72,12 @@ public class RoleToGroupMappingJndiRealm extends JNDIRealm implements RoleGroupM
 	 * The pathname (absolute or relative to Catalina's current working directory "catalina.base")
 	 * of the XML file containing our mapping information.
 	 */
-	@Setter @Getter private String pathname = null;
+	private @Setter @Getter @Nullable String pathname = null;
 
 	/**
 	 * The Digester we will use to process role-mapping data.
 	 */
-	private static Digester digester = null;
+	private static @Nullable Digester digester = null;
 
 
 	/**

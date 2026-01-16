@@ -95,3 +95,4 @@ site.webmanifest
 .importorder
 pnpm-lock.yaml
 pnpm-workspace.yaml
+jvm.config

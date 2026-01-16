@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2017 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013-2017 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,19 +23,21 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.security.CodeSource;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Properties;
 import java.util.stream.Stream;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
@@ -46,6 +48,7 @@ import org.frankframework.core.HasName;
  *
  * @author Johan Verrips
  */
+@NullMarked
 @Log4j2
 public class ClassUtils {
 
@@ -90,7 +93,7 @@ public class ClassUtils {
 			if (resource.contains(":")) {
 				String escapedURL = resource.replace(" ", "%20");
 				log.trace("attempt to look up resource natively [{}]", escapedURL);
-				return new URL(escapedURL);
+				return new URI(escapedURL).toURL();
 			} else {
 				// no URL -> treat as file path
 				File file = new File(resource);
@@ -99,7 +102,7 @@ public class ClassUtils {
 					return file.toURI().toURL();
 				}
 			}
-		} catch (MalformedURLException e) {
+		} catch (MalformedURLException | URISyntaxException e) {
 			FileNotFoundException fnfe = new FileNotFoundException("Resource location [" + resource + "] is neither a URL not a well-formed file path");
 			fnfe.initCause(e);
 			throw fnfe;
@@ -160,8 +163,7 @@ public class ClassUtils {
 	/**
 	 * Returns the ClassName or BeanName of the object without the package name AND includes a [name] suffix for a {@link HasName} bean.
 	 */
-	@Nonnull
-	public static String nameOf(Object o) {
+	public static String nameOf(@Nullable Object o) {
 		String head = null;
 		if (isClassPresent("org.springframework.beans.factory.NamedBean")) {
 			// Must be a separate statement because of this optional class
@@ -181,14 +183,13 @@ public class ClassUtils {
 			}
 		}
 
-		return StringUtil.concatStrings(head, " ", tail);
+		return Objects.requireNonNull(StringUtil.concatStrings(head, " ", tail));
 	}
 
 	/**
 	 * Returns the ClassName of the object (without package name), like {@link #nameOf(Object)}, but without [name] suffix for a {@link HasName}.
 	 */
-	@Nonnull
-	public static String classNameOf(Object o) {
+	public static String classNameOf(@Nullable Object o) {
 		if (o == null) {
 			return "<null>";
 		}
@@ -245,9 +246,9 @@ public class ClassUtils {
 			throw new IllegalStateException("method must start with [set] and may only contain [1] parameter");
 		}
 
-		try {// Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
+		try { // Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
 			Object castValue = parseValueToSet(method, valueToSet);
-			log.trace("trying to set method [{}] with value [{}] of type [{}] on [{}]", method::getName, () -> valueToSet, () -> castValue.getClass()
+			log.trace("trying to set method [{}] with value [{}] of type [{}] on [{}]", method::getName, () -> valueToSet, () -> castValue == null ? "<null value>" : castValue.getClass()
 					.getCanonicalName(), () -> ClassUtils.nameOf(clazz));
 
 			method.invoke(clazz, castValue);
@@ -256,6 +257,7 @@ public class ClassUtils {
 		}
 	}
 
+	@Nullable
 	private static Object parseValueToSet(Method method, String value) throws IllegalArgumentException {
 		Class<?> setterArgumentClass = method.getParameters()[0].getType();
 
@@ -282,7 +284,7 @@ public class ClassUtils {
 	}
 
 	@Nullable
-	private static Object convertToTypeRawTyped(Class<?> type, String value) throws IllegalArgumentException {
+	private static Object convertToTypeRawTyped(Class<?> type, @Nullable String value) throws IllegalArgumentException {
 		if (value == null) {
 			return null;
 		}
@@ -359,6 +361,7 @@ public class ClassUtils {
 		return getterMtd.invoke(o, (Object[]) null);
 	}
 
+	@Nullable
 	public static Object getDeclaredFieldValue(Object o, Class<?> c, String name) throws IllegalArgumentException, SecurityException, NoSuchFieldException {
 		Field f = c.getDeclaredField(name);
 		try {
@@ -370,6 +373,7 @@ public class ClassUtils {
 		}
 	}
 
+	@Nullable
 	public static Object getDeclaredFieldValue(Object o, String name) throws IllegalArgumentException, SecurityException, NoSuchFieldException {
 		return getDeclaredFieldValue(o, o.getClass(), name);
 	}
@@ -397,7 +401,7 @@ public class ClassUtils {
 		return infoList;
 	}
 
-	public static Map<String, Object> getClassInfo(Class<?> clazz, ClassLoader classLoader) {
+	public static Map<String, Object> getClassInfo(@Nullable Class<?> clazz, @Nullable ClassLoader classLoader) {
 		Map<String, Object> result = new LinkedHashMap<>();
 		String classLoaderName = classLoader != null ? classLoader.toString() : "<system classloader>";
 		result.put("classLoader", classLoaderName);

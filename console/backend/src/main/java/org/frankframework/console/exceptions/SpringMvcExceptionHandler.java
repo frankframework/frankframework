@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -13,11 +13,12 @@
    See the License for the specific language governing permissions and
    limitations under the License.
 */
-package org.frankframework.console.configuration;
+package org.frankframework.console.exceptions;
 
-import jakarta.annotation.Nullable;
+
 import jakarta.servlet.ServletException;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.beans.ConversionNotSupportedException;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.core.Ordered;
@@ -32,58 +33,54 @@ import org.springframework.validation.BindException;
 import org.springframework.validation.method.MethodValidationException;
 import org.springframework.web.ErrorResponse;
 import org.springframework.web.ErrorResponseException;
-import org.springframework.web.HttpMediaTypeNotAcceptableException;
-import org.springframework.web.HttpMediaTypeNotSupportedException;
-import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
-import org.springframework.web.bind.MissingPathVariableException;
-import org.springframework.web.bind.MissingServletRequestParameterException;
-import org.springframework.web.bind.ServletRequestBindingException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.context.request.async.AsyncRequestTimeoutException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
-import org.springframework.web.multipart.support.MissingServletRequestPartException;
 import org.springframework.web.servlet.NoHandlerFoundException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
-import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.console.ApiException;
 
+/**
+ * Taken partially from {@link ResponseEntityExceptionHandler#handleException(Exception, WebRequest)}.
+ * This ExceptionHandler catches Spring {@link ErrorResponse HTTP related} MVC exceptions,
+ * as well as IO related exceptions.
+ *
+ * Catch all Spring web exceptions (such as subclasses of {@link ServletException}), even when they are not thrown from our own sources.
+ * We need to prioritize this so our handler is used before Spring's own ExceptionHandler.
+ */
 @RestControllerAdvice
-@Order(Ordered.HIGHEST_PRECEDENCE+1)
+@Order(Ordered.HIGHEST_PRECEDENCE+100)
 @Log4j2
-public class ApiExceptionHandler {
+public class SpringMvcExceptionHandler {
 
-	/** Taken from {@link ResponseEntityExceptionHandler#handleException(Exception, WebRequest)} } */
+	/**
+	 * These Exceptions all implement {@link ErrorResponse} so they come pre-configured with a status-code and headers.
+	 */
 	@ExceptionHandler({
-			HttpRequestMethodNotSupportedException.class,
-			HttpMediaTypeNotSupportedException.class,
-			HttpMediaTypeNotAcceptableException.class,
-			MissingPathVariableException.class,
 			MethodArgumentNotValidException.class,
-			NoResourceFoundException.class,
 			AsyncRequestTimeoutException.class,
 			ErrorResponseException.class,
 			MaxUploadSizeExceededException.class,
-			Exception.class
+			ServletException.class
 	})
 	protected final ResponseEntity<Object> handleException(Exception ex) {
 		if (ex instanceof ErrorResponse errorResponseEx) {
 			return handleSpringException(ex, errorResponseEx.getStatusCode(), errorResponseEx.getHeaders());
 		}
+
+		// Could be a subclass of ServletException
 		return handleExceptionLowLevel(ex);
 	}
 
-	/** Lower level exceptions */
+	/** Lower level bean-exceptions */
 	@ExceptionHandler({
-			MissingServletRequestParameterException.class,
-			MissingServletRequestPartException.class,
-			ServletRequestBindingException.class,
 			ConversionNotSupportedException.class,
 			TypeMismatchException.class,
 			HttpMessageNotReadableException.class,
@@ -92,27 +89,13 @@ public class ApiExceptionHandler {
 			BindException.class
 	})
 	protected final ResponseEntity<Object> handleExceptionLowLevel(Exception ex) {
-		HttpHeaders headers = new HttpHeaders();
-		HttpStatus status = HttpStatus.INTERNAL_SERVER_ERROR;
-		if (ex instanceof ServletException
-				|| ex instanceof TypeMismatchException
-				|| ex instanceof HttpMessageNotReadableException
-				|| ex instanceof BindException
-		) {
-			status = HttpStatus.BAD_REQUEST;
-		}
-		return handleSpringException(ex, status, headers);
+		return handleSpringException(ex, HttpStatus.BAD_REQUEST, null);
 	}
 
 	/** When a {@link RestController} cannot be found, Spring MVC throws this Exception. */
 	@ExceptionHandler(NoHandlerFoundException.class)
 	protected ResponseEntity<Object> handleNoHandlerFoundException(NoHandlerFoundException ex) {
 		return ApiException.formatExceptionResponse(ex.getMessage(), HttpStatus.NOT_FOUND);
-	}
-
-	@ExceptionHandler(ApiException.class)
-	protected ResponseEntity<Object> handleApiException(ApiException exception) {
-		return exception.getResponse();
 	}
 
 	protected ResponseEntity<Object> handleSpringException(Exception exception, HttpStatusCode status, @Nullable HttpHeaders headers) {
