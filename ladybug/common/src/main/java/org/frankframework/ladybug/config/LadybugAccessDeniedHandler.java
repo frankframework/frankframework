@@ -22,22 +22,21 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
-import org.springframework.stereotype.Component;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
 @RestControllerAdvice({"org.frankframework.ladybug", "org.wearefrank.ladybug"})
 public class LadybugAccessDeniedHandler implements AccessDeniedHandler {
 	private static final Logger APPLICATION_LOG = LogManager.getLogger("APPLICATION");
-	private final HandlerExceptionResolver resolver;
+	private HandlerExceptionResolver resolver;
 
-	public LadybugAccessDeniedHandler(HandlerExceptionResolver resolver) {
-		if (resolver == null) {
-			APPLICATION_LOG.error("Creating LadybugAccessDeniedHandler with null HandlerExceptionResolver");
-		} else {
-			APPLICATION_LOG.error("Creating LadybugAccessDeniedHandler with non-null HandlerExceptionResolver");
-		}
-		this.resolver = resolver;
+	public LadybugAccessDeniedHandler() {
+		APPLICATION_LOG.error("Constructing LadybugAccessDeniedHandler, will inject HandlerExceptionResolver later to prevent circular dependencies");
+	}
+
+	public void setHandlerExceptionResolver(HandlerExceptionResolver handlerExceptionResolver) {
+		APPLICATION_LOG.error("Setting HandlerExceptionResolver");
+		this.resolver = handlerExceptionResolver;
 	}
 
 	@Override
