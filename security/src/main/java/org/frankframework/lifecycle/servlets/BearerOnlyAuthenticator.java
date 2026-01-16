@@ -117,6 +117,7 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 		JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
 
 		if (StringUtils.isNotBlank(userNameAttributeName)) {
+			log.debug("Using principalClaimName [{}]", userNameAttributeName);
 			jwtAuthenticationConverter.setPrincipalClaimName(userNameAttributeName);
 		}
 
@@ -132,6 +133,7 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 	Converter<Jwt, Collection<GrantedAuthority>> getJwtCollectionConverter() {
 		// use default converter when no nested claim is used and no userInfoUri is set
 		if (!Strings.CS.contains(authoritiesClaimName, ".") && StringUtils.isBlank(userInfoUri)) {
+			log.debug("Using default JwtGrantedAuthoritiesConverter for authoritiesClaimName [{}]", authoritiesClaimName);
 			JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
 
 			if (StringUtils.isNotBlank(authoritiesClaimName)) {
@@ -143,6 +145,9 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 			return grantedAuthoritiesConverter;
 		}
 
+		log.debug("Using custom Jwt to GrantedAuthorities converter for authoritiesClaimName [{}]", authoritiesClaimName);
+
+		// use custom converter to extract roles from nested claim or from userInfoUri
 		return jwt -> getListOfRoles(jwt).stream()
 					.map(role -> new SimpleGrantedAuthority(DEFAULT_ROLE_PREFIX + role))
 					.collect(Collectors.toList());
@@ -156,10 +161,12 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 	 */
 	private List<String> getListOfRoles(Jwt jwt) {
 		if (StringUtils.isNotBlank(userInfoUri)) {
+			log.debug("Fetching user roles from userInfoUri [{}]", userInfoUri);
 			return getRolesFromUserInfoUri(jwt.getTokenValue());
 		}
 
 		// get roles from given jwt
+		log.debug("No userInfoUri configured, fetching user roles from JWT token");
 		return AuthorityMapperUtil.getRolesFromUserInfo(jwt, authoritiesClaimName).stream().toList();
 	}
 
@@ -172,13 +179,17 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 				.retrieve()
 				.body(new ParameterizedTypeReference<>() {});
 
+		log.debug("Fetched user info: {}", userInfo);
+
 		return AuthorityMapperUtil.getRolesFromAttributesMap(userInfo, authoritiesClaimName);
 	}
 
 	private JwtDecoder getJwtDecoder() {
 		if (StringUtils.isNotBlank(issuerUri)) {
+			log.debug("Creating JwtDecoder from issuerUri [{}]", issuerUri);
 			return JwtDecoders.fromIssuerLocation(issuerUri);
 		} else if (StringUtils.isNotBlank(jwkSetUri)) {
+			log.debug("Creating JwtDecoder from jwkSetUri [{}]", jwkSetUri);
 			return NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
 		}
 

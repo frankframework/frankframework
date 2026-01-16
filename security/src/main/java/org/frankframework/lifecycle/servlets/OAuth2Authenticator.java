@@ -215,6 +215,7 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	private @Setter boolean usePkce = false;
 
 	private ClientRegistrationRepository clientRepository;
+
 	private String servletPath;
 
 	/**
@@ -262,6 +263,9 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	 */
 	private OAuth2LoginConfigurer<HttpSecurity>.@NonNull AuthorizationEndpointConfig getOauth2LoginConfigurer(OAuth2LoginConfigurer<HttpSecurity>.AuthorizationEndpointConfig endpoint) {
 		String authorizationRequestBaseUri = servletPath + OAuth2AuthorizationRequestRedirectFilter.DEFAULT_AUTHORIZATION_REQUEST_BASE_URI;
+
+		log.debug("Configuring OAuth2LoginConfigurer with baseUri [{}]", authorizationRequestBaseUri);
+
 		endpoint.baseUri(authorizationRequestBaseUri);
 
 		if (usePkce) {
@@ -293,13 +297,14 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 		this.clientCredentials = credentials;
 
 		roleMappingURL = ClassUtils.getResourceURL(roleMappingFile);
-		if(roleMappingURL == null) {
-			throw new FileNotFoundException("unable to find OAUTH role-mapping file ["+roleMappingFile+"]");
+		if (roleMappingURL == null) {
+			throw new FileNotFoundException("unable to find OAUTH role-mapping file [" + roleMappingFile + "]");
 		}
 		log.info("found rolemapping file [{}]", roleMappingURL);
 
 		servletPath = computeRelativePathFromServlet();
 		redirectUri = computeRedirectUri();
+
 		log.debug("using oauth servlet-path [{}] and redirect-uri [{}]", servletPath, redirectUri);
 
 		clientRepository = getOrCreateClientRegistrationRepository();
@@ -326,7 +331,6 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 		};
 
 		builder.clientId(credentials.getUsername()).clientSecret(credentials.getPassword());
-
 		builder.redirectUri(getRedirectUri());
 
 		return builder.build();
@@ -353,6 +357,7 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 		builder.userInfoUri("https://graph.microsoft.com/oidc/userinfo");
 		builder.userNameAttributeName("email");
 		builder.clientName("azure");
+
 		return builder;
 	}
 
@@ -375,7 +380,7 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 	}
 
 	/**
-	 * Absolute base URL starts eg. `http(s)://{host}:{port}/` or is NULL (relative).
+	 * Absolute base URL starts e.g. `http(s)://{host}:{port}/` or is NULL (relative).
 	 */
 	@Nullable
 	private String determineBaseUrl() {
@@ -408,10 +413,17 @@ public class OAuth2Authenticator extends AbstractServletAuthenticator {
 
 		if (determinedBaseUrl == null) {
 			String path = servletPath.startsWith("/") ? servletPath.substring(1) : servletPath;
-			return "{baseUrl}/%s/oauth2/code/{registrationId}".formatted(path);
+
+			String formatted = "{baseUrl}/%s/oauth2/code/{registrationId}".formatted(path);
+			log.debug("computed redirect-uri [{}] without baseUrl", formatted);
+
+			return formatted;
 		}
 
-		return "%s/oauth2/code/{registrationId}".formatted(determinedBaseUrl);
+		String formatted = "%s/oauth2/code/{registrationId}".formatted(determinedBaseUrl);
+		log.debug("computed redirect-uri [{}] with baseUrl", formatted);
+
+		return formatted;
 	}
 
 	/**
