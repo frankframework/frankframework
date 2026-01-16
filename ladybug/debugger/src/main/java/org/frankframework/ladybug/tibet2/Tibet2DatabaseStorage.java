@@ -38,23 +38,16 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.CheckpointType;
 import org.wearefrank.ladybug.Report;
-import org.wearefrank.ladybug.SecurityContext;
 import org.wearefrank.ladybug.TestTool;
 import org.wearefrank.ladybug.storage.CrudStorage;
 import org.wearefrank.ladybug.storage.LogStorage;
 import org.wearefrank.ladybug.storage.StorageException;
 import org.wearefrank.ladybug.util.SearchUtil;
 
-import org.frankframework.configuration.Configuration;
-import org.frankframework.core.Adapter;
-import org.frankframework.core.PipeLineResult;
-import org.frankframework.core.PipeLineSession;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.JdbcFacade;
-import org.frankframework.ladybug.LadybugDebugger;
-import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.StreamUtil;
 
@@ -65,8 +58,6 @@ import org.frankframework.util.StreamUtil;
 // Reports can be deleted in the debug tab when a debug storage also implements CrudStorage
 public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, CrudStorage {
 	private static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
-	private static final String DELETE_ADAPTER_NAME = "DeleteFromExceptionLog";
-	private static final String DELETE_ADAPTER_CONFIG = "main";
 	private String name;
 	private String table;
 	private List<String> reportColumnNames;
@@ -77,8 +68,6 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 	private Map<String, String> fixedStringTables;
 	private TestTool testTool;
 	private JdbcTemplate jdbcTemplate;
-	private LadybugDebugger ibisDebugger;
-	private SecurityContext securityContext;
 
 	@Override
 	public void setName(String name) {
@@ -140,17 +129,6 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 
 	public void setTestTool(TestTool testTool) {
 		this.testTool = testTool;
-	}
-
-	public void setIbisDebugger(LadybugDebugger ibisDebugger) {
-		this.ibisDebugger = ibisDebugger;
-	}
-
-	/**
-	 * Called by TibetView.initBean() (not by Spring)
-	 */
-	public void setSecurityContext(SecurityContext securityContext) {
-		this.securityContext = securityContext;
 	}
 
 	@PostConstruct
@@ -567,35 +545,11 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 		if (!"Table EXCEPTIONLOG".equals(report.getName())) {
 			throw new StorageException("Delete method is not implemented for '" + report.getName() + "'");
 		}
+
 		List<Checkpoint> checkpoints = report.getCheckpoints();
 		Checkpoint checkpoint = checkpoints.get(0);
-		Message message = new Message(checkpoint.getMessage());
-		Configuration config = ibisDebugger.getIbisManager().getConfiguration(DELETE_ADAPTER_CONFIG);
-		if (config == null) {
-			throw new StorageException("Configuration '" + DELETE_ADAPTER_CONFIG + "' not found");
-		}
-		Adapter adapter = config.getRegisteredAdapter(DELETE_ADAPTER_NAME);
-		if (adapter == null) {
-			throw new StorageException("Adapter '" + DELETE_ADAPTER_NAME + "' not found");
-		}
 
-		try (PipeLineSession pipeLineSession = new PipeLineSession()) {
-			if (securityContext.getUserPrincipal() != null)
-				pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
-			PipeLineResult processResult = adapter.processMessageDirect(TestTool.getCorrelationId(), message, pipeLineSession);
-			if (!processResult.isSuccessful()) {
-				throw new StorageException("Delete failed (see logging for more details)");
-			}
-
-			try {
-				String result = processResult.getResult().asString();
-				if (!"<ok/>".equalsIgnoreCase(result)) {
-					throw new StorageException("Delete failed: " + result);
-				}
-			} catch (IOException e) {
-				throw new StorageException("Delete failed", e);
-			}
-		}
+		new Tibet2ToFrameworkDispatcher(getApplicationContext()).deleteReport(checkpoint.getMessage());
 	}
 
 	@Override
