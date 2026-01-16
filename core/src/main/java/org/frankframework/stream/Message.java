@@ -611,6 +611,9 @@ public class Message implements Serializable {
 		if (request instanceof Number || request instanceof Boolean) {
 			return request.toString();
 		}
+		if (request instanceof Enum<?> enumValue) {
+			return enumValue.name();
+		}
 		if (request instanceof Node node) {
 			try {
 				LOG.debug("returning Node {} as String", this::getObjectId);
