@@ -174,7 +174,7 @@ public class PipeLineSession extends HashMap<String,Object> implements AutoClose
 			closeables.add((AutoCloseable) value);
 		}
 		if (value instanceof Enum<?> enumValue && !key.startsWith(SYSTEM_MANAGED_RESOURCE_PREFIX)) {
-			super.put(key, enumValue.name());
+			return super.put(key, enumValue.name());
 		}
 		return super.put(key, value);
 	}

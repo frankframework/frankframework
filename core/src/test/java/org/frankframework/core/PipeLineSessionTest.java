@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.doAnswer;
@@ -518,4 +519,35 @@ public class PipeLineSessionTest {
 		// Assert
 		verify(jdbcConnection, times(1)).close();
 	}
+
+	@Test
+	public void testPutEnumInSessionNormalSessionKey() {
+		session.put("enum", TestEnumInSession.A);
+
+		assertEquals("A", session.get("enum"));
+		assertThrows(IllegalArgumentException.class, () -> {
+			TestEnumInSession ignored = session.getAsType("enum");
+		}
+		); // Need to pass an Enum value to get the right type
+
+		TestEnumInSession result = session.removeIfType("enum");
+		assertNull(result);
+		assertTrue(session.containsKey("enum"));
+	}
+
+	@Test
+	public void testPutEnumInSessionSystemSessionKey() {
+		// Arrange
+		String key = PipeLineSession.SYSTEM_MANAGED_RESOURCE_PREFIX + "enum";
+
+		// Act
+		session.put(key, TestEnumInSession.B);
+
+		assertEquals(TestEnumInSession.B, session.get(key));
+		assertEquals(TestEnumInSession.B, session.getAsType(key));
+		assertEquals(TestEnumInSession.B, session.removeIfType(key));
+		assertFalse(session.containsKey(key));
+	}
+
+	private enum TestEnumInSession { A, B }
 }
