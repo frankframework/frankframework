@@ -140,7 +140,7 @@ public class IbisJavaSender extends AbstractSenderWithParameters implements HasP
 				}
 				subAdapterSession.mergeToParentSession(getReturnedSessionKeys(), session);
 			}
-			ExitState exitState = (ExitState) subAdapterSession.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
+			ExitState exitState = subAdapterSession.removeIfType(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
 			Object exitCode = subAdapterSession.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
 			String forwardName = Objects.toString(exitCode, null);
 			return new SenderResult(exitState == null || exitState == ExitState.SUCCESS, new Message(result), "exitState=" + exitState, forwardName);

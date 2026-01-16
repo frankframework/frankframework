@@ -611,6 +611,9 @@ public class Message implements Serializable {
 		if (request instanceof Number || request instanceof Boolean) {
 			return request.toString();
 		}
+		if (request instanceof Enum<?> enumValue) {
+			return enumValue.name();
+		}
 		if (request instanceof Node node) {
 			try {
 				LOG.debug("returning Node {} as String", this::getObjectId);
@@ -742,6 +745,7 @@ public class Message implements Serializable {
 
 	public static boolean isSupportedType(@Nullable Object request) {
 		return request instanceof byte[] ||
+				request instanceof Enum ||
 				request instanceof Boolean ||
 				request instanceof String ||
 				request instanceof Date ||

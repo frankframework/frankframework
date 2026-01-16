@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2021 - 2024 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2021 - 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -52,7 +52,7 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 
 	private CmisHttpSender sender = null;
 
-	//To stub during testing
+	// To stub during testing
 	protected CmisHttpSender createSender() {
 		CmisHttpSender cmisHttpSender = new CmisHttpSender() {};
 		log.debug("CmisHttpInvoker [{}] created new CmisHttpSender [{}]", this, cmisHttpSender);
@@ -77,13 +77,13 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 
 			sender.setUrlParam("url");
 
-			//Auth
+			// Auth
 			if(session.get(SessionParameter.USER) != null)
 				sender.setUsername((String) session.get(SessionParameter.USER));
 			if(session.get(SessionParameter.PASSWORD) != null)
 				sender.setPassword((String) session.get(SessionParameter.PASSWORD));
 
-			//Proxy
+			// Proxy
 			if(session.get("proxyHost") != null) {
 				sender.setProxyHost((String) session.get("proxyHost"));
 				if(session.get("proxyPort") != null)
@@ -94,7 +94,7 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 					sender.setProxyPassword((String) session.get("proxyPassword"));
 			}
 
-			//SSL
+			// SSL
 			if(session.get("keystoreUrl") != null)
 				sender.setKeystore((String) session.get("keystoreUrl"));
 			if(session.get("keystorePassword") != null)
@@ -116,7 +116,7 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 			if(session.get("trustManagerAlgorithm") != null)
 				sender.setTrustManagerAlgorithm((String) session.get("trustManagerAlgorithm"));
 
-			//SSL+
+			// SSL+
 			if(session.get("isAllowSelfSignedCertificates") != null) {
 				boolean isAllowSelfSignedCertificates = Boolean.parseBoolean((String) session.get("isAllowSelfSignedCertificates"));
 				sender.setAllowSelfSignedCertificates(isAllowSelfSignedCertificates);
@@ -133,7 +133,7 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 			// Add parameters
 			Parameter urlParam = new Parameter();
 			urlParam.setName("url");
-			urlParam.setSessionKey("url");
+			urlParam.setSessionKey(CmisHttpSender.URL_KEY);
 			sender.addParameter(urlParam);
 
 			// Timeouts
@@ -249,7 +249,7 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 						if (header.getKey() != null && !header.getValue().isEmpty()) {
 							String key = header.getKey();
 							if ("user-agent".equalsIgnoreCase(key)) {
-								headers.put("User-Agent", header.getValue().get(0));
+								headers.put("User-Agent", header.getValue().getFirst());
 							}
 							else {
 								for (String value : header.getValue()) {
@@ -263,12 +263,12 @@ public class CmisHttpInvoker implements HttpInvoker, AutoCloseable {
 				}
 			}
 
-			for(String key : session.getKeys()) {
-				if(key.startsWith(CmisSender.HEADER_PARAM_PREFIX)) {
+			for (String key : session.getKeys()) {
+				if (key.startsWith(CmisSender.HEADER_PARAM_PREFIX)) {
 					String name = StringUtils.substring(key, HEADER_PARAM_PREFIX_LENGTH);
 					Object value = session.get(key);
-					if(value != null) {
-						headers.put(name, String.valueOf(value)); //Session values are always stored as String
+					if (value != null) {
+						headers.put(name, String.valueOf(value)); // Session values are always stored as String
 					}
 				}
 			}

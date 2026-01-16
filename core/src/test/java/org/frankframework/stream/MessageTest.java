@@ -1124,7 +1124,7 @@ public class MessageTest {
 		byte[] content = msg.asByteArray();
 
 		// Assert
-		Message message = (Message) msg;
+		Message message = msg;
 		assertEquals("text", message.asString());
 		assertEquals(4, content.length);
 	}
@@ -1142,5 +1142,22 @@ public class MessageTest {
 		MessageWrapper<Message> messageWrapper = (MessageWrapper) wrapper;
 		assertEquals("text", messageWrapper.getMessage().asString());
 		assertEquals(4, content.length);
+	}
+
+	@Test
+	void testEnumInMessage() throws IOException {
+		Message msg = assertDoesNotThrow(() -> Message.asMessage(TestEnum.A));
+
+		assertEquals("A", msg.asString());
+	}
+
+	private enum TestEnum {
+		A, B;
+
+		@Override
+		public String toString() {
+			// This toString method should not be called when calling Message#asString() !
+			return "This is TestEnum [" + name() + "]";
+		}
 	}
 }
