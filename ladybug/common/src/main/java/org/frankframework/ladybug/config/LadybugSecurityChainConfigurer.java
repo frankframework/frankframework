@@ -72,7 +72,7 @@ public class LadybugSecurityChainConfigurer implements ApplicationContextAware {
 	private @Setter ApplicationContext applicationContext;
 
 	@Bean
-	public SecurityFilterChain createLadybugSecurityChain(HttpSecurity http, IAuthenticator ladybugAuthenticator, LadybugAccessDeniedHandler accessDeniedHandler) throws Exception {
+	public SecurityFilterChain createLadybugSecurityChain(HttpSecurity http, IAuthenticator ladybugAuthenticator) throws Exception {
 		APPLICATION_LOG.info("Securing Ladybug TestTool using {}", ClassUtils.classNameOf(ladybugAuthenticator));
 
 		registerServletWhenBeanExists(ladybugAuthenticator, "ladybugApiServletBean");
@@ -87,7 +87,7 @@ public class LadybugSecurityChainConfigurer implements ApplicationContextAware {
 		// STATELESS prevents session from leaking over multiple servlets.
 		// but OAuth requires cookies...
 		http.sessionManagement(management -> management.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED));
-		http.exceptionHandling(ex -> ex.accessDeniedHandler(accessDeniedHandler));
+
 		return ladybugAuthenticator.configureHttpSecurity(http);
 	}
 
