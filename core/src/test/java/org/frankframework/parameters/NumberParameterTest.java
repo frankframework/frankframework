@@ -35,7 +35,7 @@ public class NumberParameterTest {
 	public void testSmallNumberWithMaxLengthShouldLeftTrim() throws Exception {
 		NumberParameter p = new NumberParameter();
 		p.setName("number");
-		p.setValue("0008"); //Smaller then max-length
+		p.setValue("0008"); // Smaller then max-length
 		p.setMaxLength(5);
 		p.configure();
 
@@ -50,7 +50,7 @@ public class NumberParameterTest {
 	public void testSmallNumberWithMaxLength() throws Exception {
 		NumberParameter p = new NumberParameter();
 		p.setName("number");
-		p.setValue("0000008"); //Larger then max-length
+		p.setValue("0000008"); // Larger then max-length
 		p.setMaxLength(5);
 		p.configure();
 
@@ -195,7 +195,7 @@ public class NumberParameterTest {
 	public void testGroupingSeparator() throws Exception {
 		NumberParameter p = new NumberParameter();
 		p.setGroupingSeparator(",.");
-		p.setDecimalSeparator("."); //Unfortunately required when building on American servers...
+		p.setDecimalSeparator("."); // Unfortunately required when building on American servers...
 		p.setName("number");
 		p.setValue("5,6.00");
 		p.configure();

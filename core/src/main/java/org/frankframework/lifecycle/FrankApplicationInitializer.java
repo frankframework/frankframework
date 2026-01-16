@@ -1,5 +1,5 @@
 /*
-   Copyright 2023-2024 WeAreFrank!
+   Copyright 2023-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -63,14 +63,14 @@ public class FrankApplicationInitializer implements WebApplicationInitializer {
 
 		ApplicationContext parentContext = null;
 		try {
-			parentContext = WebApplicationContextUtils.getWebApplicationContext(servletContext); //This can throw many different types of errors!
+			parentContext = WebApplicationContextUtils.getWebApplicationContext(servletContext); // This can throw many different types of errors!
 			if(parentContext == null) {
 				throw new IllegalStateException("No Frank EnvironmentContext found. Aborting launch...");
 			}
 		} catch (Throwable t) {
 			servletContext.setAttribute(EXCEPTION_KEY, t);
 			APPLICATION_LOG.fatal("Frank EnvironmentContext failed to initialize. Aborting launch...", t);
-			throw t; //If the IBIS WebApplicationInitializer can't be found or initialized, throw the exception
+			throw t; // If the IBIS WebApplicationInitializer can't be found or initialized, throw the exception
 		}
 
 		IbisContext ibisContext = new IbisContext();

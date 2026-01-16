@@ -103,7 +103,7 @@ public class MtomResponseWrapper extends HttpServletResponseWrapper {
 
 				HttpEntity entity;
 
-				if(count == 1) { //only mtom when there is more then 1 part.
+				if(count == 1) { // only mtom when there is more then 1 part.
 					BodyPart bodyPart = mimeMultipart.getBodyPart(0);
 
 					ContentType parsedContentType = parseContentType(bodyPart.getContentType());
@@ -118,7 +118,7 @@ public class MtomResponseWrapper extends HttpServletResponseWrapper {
 						BodyPart bodyPart = mimeMultipart.getBodyPart(i);
 
 						ContentType parsedContentType = null;
-						if(i == 0) //Apparently with IBM CMIS the first part always returns this header, ala SWA but other parts are MTOM!?
+						if(i == 0) // Apparently with IBM CMIS the first part always returns this header, ala SWA but other parts are MTOM!?
 							parsedContentType = ContentType.create("text/xml");
 						else
 							parsedContentType = parseContentType(bodyPart.getContentType());
@@ -128,7 +128,7 @@ public class MtomResponseWrapper extends HttpServletResponseWrapper {
 						String[] partName = bodyPart.getHeader("content-id");
 						if(partName != null && partName.length > 0) {
 							String contentId = partName[0];
-							contentId = contentId.substring(1, contentId.length()-1); //Remove pre and post-fix: < & >
+							contentId = contentId.substring(1, contentId.length()-1); // Remove pre and post-fix: < & >
 							fbpb.setName(contentId);
 						}
 						else

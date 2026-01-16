@@ -24,7 +24,7 @@ public class ApplicationWarningsTest {
 
 	@BeforeEach
 	public void setUp() {
-		ApplicationWarnings.removeInstance(); //Remove old instance if present
+		ApplicationWarnings.removeInstance(); // Remove old instance if present
 		configuration = new TestConfiguration();
 	}
 

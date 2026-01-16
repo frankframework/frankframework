@@ -138,7 +138,7 @@ public enum MediaTypes {
 		if (this == ANY || StringUtils.isBlank(acceptHeader)) {
 			return true;
 		}
-		//The Accept header may consist out of multiple parts.
+		// The Accept header may consist out of multiple parts.
 		String[] headerParts = acceptHeader.split(",");
 		for(String headerPart : headerParts) {
 			if(parseAndEvaluate(headerPart, mimeType::isCompatibleWith)) {

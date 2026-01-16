@@ -44,7 +44,7 @@ public class WsdlGeneratorTest {
 		return pipeline;
 	}
 
-	//Catch any file-not-found exceptions beforehand
+	// Catch any file-not-found exceptions beforehand
 	private String validateResource(String schema) {
 		URL url = this.getClass().getResource(schema);
 		assertNotNull(url, "File ["+schema+"] not found");

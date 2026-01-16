@@ -191,13 +191,13 @@ public class ApiServiceDispatcherTest {
 		assertNotNull(config);
 		assertEquals("[GET, POST]", config.getMethods().toString());
 
-		//Test what happens after we remove 1 ServiceClient
+		// Test what happens after we remove 1 ServiceClient
 		dispatcher.unregisterServiceClient(createServiceClient(HttpMethod.POST, uri));
 		ApiDispatchConfig config2 = dispatcher.findExactMatchingConfigForUri("/" + uri);
 		assertNotNull(config2);
 		assertEquals("[GET]", config2.getMethods().toString());
 
-		//Test what happens after we remove both ServiceClient in the same DispatchConfig
+		// Test what happens after we remove both ServiceClient in the same DispatchConfig
 		dispatcher.unregisterServiceClient(createServiceClient(HttpMethod.GET, uri));
 		ApiDispatchConfig config3 = dispatcher.findExactMatchingConfigForUri("/" + uri);
 		assertNull(config3);

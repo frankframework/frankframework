@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2024 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -55,10 +55,10 @@ public class BisUtils {
 	private static final String bisNamespaceDefs = "bis=http://www.ing.com/CSP/XSD/General/Message_2";
 	private static final String messageHeaderConversationIdXPath = "bis:MessageHeader/bis:HeaderFields/bis:ConversationId";
 	private static final String messageHeaderExternalRefToMessageIdXPath = "bis:MessageHeader/bis:HeaderFields/bis:MessageId";
-	//resultInPayload=false (old)
+	// resultInPayload=false (old)
 	private static final String oldBisErrorXPath = "soapenv:Envelope/soapenv:Body/bis:Result/bis:Status='ERROR' or string-length(soapenv:Envelope/soapenv:Body/soapenv:Fault/faultcode)&gt;0";
 	private static final String oldBisErrorListXPath = "soapenv:Envelope/soapenv:Body/bis:Result/bis:ErrorList";
-	//resultInPayload=true
+	// resultInPayload=true
 	private static final String bisErrorXPath = "soapenv:Envelope/soapenv:Body/*/bis:Result/bis:Status='ERROR' or string-length(soapenv:Envelope/soapenv:Body/soapenv:Fault/faultcode)&gt;0";
 	private static final String bisErrorListXPath = "soapenv:Envelope/soapenv:Body/*/bis:Result/bis:ErrorList";
 

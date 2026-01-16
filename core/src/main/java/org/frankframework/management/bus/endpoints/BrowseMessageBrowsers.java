@@ -287,7 +287,7 @@ public class BrowseMessageBrowsers extends BusEndpointBase {
 			IMessageBrowser<?> store = receiver.getMessageBrowser(processState);
 			try {
 				RawMessageWrapper rawMessage = store.browseMessage(messageId);
-				if (receiver.changeProcessState(rawMessage, targetState, "admin requested move")==null) { //Why do I need to provide a reason? //Why do I need to provide the raw message?
+				if (receiver.changeProcessState(rawMessage, targetState, "admin requested move")==null) { // Why do I need to provide a reason? // Why do I need to provide the raw message?
 					throw new BusException("could not move message ["+messageId+"]");
 				}
 			} catch (ListenerException e) {

@@ -107,7 +107,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		String actualContents = readFile(null, filename);
 		// test
 		// TODO: evaluate 'result'
-		//assertEquals("result of sender should be input message",result,message);
+		// assertEquals("result of sender should be input message",result,message);
 		assertEquals(contents.trim(), actualContents.trim());
 	}
 
@@ -282,7 +282,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		String actual = readFile(null, filename);
 		// test
 		// TODO: evaluate 'result'
-		//assertEquals("result of sender should be input message",result,message);
+		// assertEquals("result of sender should be input message",result,message);
 		assertEquals(contents.trim(), actual.trim());
 	}
 
@@ -343,7 +343,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		actor.configure(fileSystem, parameters, adapter);
 		actor.open();
 
-		Message message = new Message(folderName + "/" + filename); //Flat file structure, should create folder
+		Message message = new Message(folderName + "/" + filename); // Flat file structure, should create folder
 		ParameterValueList pvl = parameters.getValues(message, session);
 		Message result = actor.doAction(message, pvl, session);
 		TestAssertions.assertXpathValueEquals(filename, result.asString(), "file/@name");
@@ -351,7 +351,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		assertTrue(_fileExists(folderName, filename), "Expected the file [" + filename + "] to be present");
 		assertTrue(fileSystem.folderExists(folderName), "existing folder is not seen"); // we just checked the file, the folder should be there...
 
-		//Test if we can list items in the folder
+		// Test if we can list items in the folder
 		actor.setAction(FileSystemAction.LIST);
 		actor.setInputFolder(folderName);
 		actor.configure(fileSystem, parameters, adapter);
@@ -389,7 +389,7 @@ public abstract class WritableFileSystemActorTest<F, FS extends IBasicFileSystem
 		String actual = readFile(null, filename);
 		// test
 		// TODO: evaluate 'result'
-		//assertEquals("result of sender should be input message",result,message);
+		// assertEquals("result of sender should be input message",result,message);
 		assertEquals(contents.trim(), actual.trim());
 	}
 

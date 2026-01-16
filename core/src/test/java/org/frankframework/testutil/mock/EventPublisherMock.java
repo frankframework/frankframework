@@ -7,6 +7,6 @@ public class EventPublisherMock extends EventPublisher {
 
 	@Override
 	public void registerEvent(EventThrowing source, String eventCode) {
-		//Do nothing
+		// Do nothing
 	}
 }

@@ -65,7 +65,7 @@ public class MessageStoreSenderAndListenerTest {
 	public void teardown() {
 		CloseUtils.closeSilently(session);
 		if (listener != null) {
-			listener.stop(); //does this trigger an exception
+			listener.stop(); // does this trigger an exception
 		}
 		if (sender != null) {
 			sender.stop();

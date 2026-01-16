@@ -145,11 +145,11 @@ public class AppConstantsTest {
 
 	@Test
 	public void setRuntimePropertyThroughSetProperty() {
-		//Remove the default instance
+		// Remove the default instance
 		AppConstants.removeInstance();
-		//Create a new one and set a property on the newly created instance
+		// Create a new one and set a property on the newly created instance
 		AppConstants.getInstance().setProperty("dummyConstant2", "2.8");
-		//Retrieve the property through a different instance
+		// Retrieve the property through a different instance
 		assertNotEquals("2.8", constants.get("dummyConstant2"));
 	}
 

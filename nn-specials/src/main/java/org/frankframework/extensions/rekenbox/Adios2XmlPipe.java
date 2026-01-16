@@ -356,7 +356,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 			StringTokenizer st2 = new StringTokenizer(regel,":");
 			if (st2.hasMoreTokens()) {
 				String label = st2.nextToken();
-				//log.debug("label ["+label+"]");
+				// log.debug("label ["+label+"]");
 				String waarde;
 
 				if (regel.length()>label.length()) {
@@ -372,7 +372,7 @@ public class Adios2XmlPipe extends FixedForwardPipe {
 				StringTokenizer st3 = new StringTokenizer(label,",");
 				while(st3.hasMoreTokens()) {
 					String item = st3.nextToken();
-					//log.debug("item ["+item+"]");
+					// log.debug("item ["+item+"]");
 
 					if (st3.hasMoreTokens()) {
 						addItem(item, rubriek, nummer2record, prefix+"record", prefix+"recordnr", prefix+"recordindex" );

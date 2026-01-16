@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2023 - 2025 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2023 - 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -120,12 +120,12 @@ public class SoapProviderTest {
 			Element attachment = XmlUtils.getFirstChildTag(xml, "part");
 			assertNotNull(attachment);
 
-			//Retrieve sessionkey the attachment was stored in
+			// Retrieve sessionkey the attachment was stored in
 			String sessionKey = attachment.getAttribute("sessionKey");
 			assertNotNull(sessionKey);
 			Message attachmentMessage = session.getMessage(sessionKey);
 
-			//Verify that the attachment sent, was received properly
+			// Verify that the attachment sent, was received properly
 			assertEquals(ATTACHMENT_CONTENT, attachmentMessage.asString());
 			assertEquals(ATTACHMENT_MIMETYPE, attachmentMessage.getContext().get(MessageContext.METADATA_MIMETYPE).toString());
 		}
@@ -139,19 +139,19 @@ public class SoapProviderTest {
 		Element attachment = XmlUtils.getFirstChildTag(xml, "attachment");
 		assertNotNull(attachment);
 
-		//Retrieve sessionkey the attachment was stored in
+		// Retrieve sessionkey the attachment was stored in
 		String sessionKey = XmlUtils.getChildTagAsString(attachment, "sessionKey");
 		assertNotNull(sessionKey);
 		Message attachmentMessage = session.getMessage(sessionKey);
 
-		//Verify that the attachment sent, was received properly
+		// Verify that the attachment sent, was received properly
 		assertEquals(ATTACHMENT_CONTENT, attachmentMessage.asString());
 		assertEquals(ATTACHMENT_MIMETYPE, attachmentMessage.getContext().get(MessageContext.METADATA_MIMETYPE).toString());
 
-		//Verify the content type
+		// Verify the content type
 		Element mimeTypes = XmlUtils.getFirstChildTag(attachment, "mimeHeaders");
 		mimeTypes.getElementsByTagName("mimeHeader");
-		//TODO check what happens when multiple attachments are returned...
+		// TODO check what happens when multiple attachments are returned...
 		String mimeType = XmlUtils.getChildTagAsString(mimeTypes, "mimeHeader");
 		assertEquals(ATTACHMENT_MIMETYPE, mimeType);
 	}
@@ -163,13 +163,13 @@ public class SoapProviderTest {
 		while (attachmentParts.hasNext()) {
 			AttachmentPart soapAttachmentPart = (AttachmentPart)attachmentParts.next();
 			String attachment = StreamUtil.streamToString(soapAttachmentPart.getRawContent());
-			//ContentID should be equal to the filename
+			// ContentID should be equal to the filename
 			assertEquals(PART_NAME, soapAttachmentPart.getContentId());
 
-			//Validate the attachment's content
+			// Validate the attachment's content
 			assertEquals(ATTACHMENT2_CONTENT, attachment);
 
-			//Make sure at least the content-type header has been set
+			// Make sure at least the content-type header has been set
 			Iterator<?> headers = soapAttachmentPart.getAllMimeHeaders();
 			String contentType = null;
 			while (headers.hasNext()) {
@@ -439,10 +439,10 @@ public class SoapProviderTest {
 		String expected = getFile("correct-soapmsg.xml").asString();
 		assertEquals(expected.replace("\r", ""), result.replace("\r", ""));
 
-		//Validate an attachment was sent to the listener
+		// Validate an attachment was sent to the listener
 		assertAttachmentInSession(SOAPProvider.getSession(), legacyAttachmentNotation);
 
-		//Validate the listener returned an attachment back
+		// Validate the listener returned an attachment back
 		assertAttachmentInReceivedMessage(message);
 	}
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -63,7 +63,7 @@ public class SoapValidator extends Json2XmlValidator {
 	public void configure() throws ConfigurationException {
 		setSoapNamespace("");
 		if (isAllowPlainXml()) {
-			//super.setRoot("Envelope,"+soapBody);
+			// super.setRoot("Envelope,"+soapBody);
 			addRequestRootValidation(new SoapRootValidation(SOAP_ENVELOPE_ELEMENT_NAME+","+soapBody));
 		} else {
 			super.setRoot(getRoot());

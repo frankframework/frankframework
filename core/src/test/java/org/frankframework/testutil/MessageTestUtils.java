@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -96,10 +96,10 @@ public class MessageTestUtils {
 	public static Stream<Arguments> readFileInDifferentWays(String resource) throws IOException, URISyntaxException {
 		URL testFileURL = TestFileUtils.getTestFileURL(resource);
 		return Stream.of(
-				Arguments.of(MessageTestUtils.getBinaryMessage(resource, false)), //InputStream
-				Arguments.of(MessageTestUtils.getCharacterMessage(resource, false)), //Reader
-				Arguments.of(new UrlMessage(testFileURL)), //Supplier
-				Arguments.of(new FileMessage(new File(testFileURL.toURI()))) //SerializableFileReference
+				Arguments.of(MessageTestUtils.getBinaryMessage(resource, false)), // InputStream
+				Arguments.of(MessageTestUtils.getCharacterMessage(resource, false)), // Reader
+				Arguments.of(new UrlMessage(testFileURL)), // Supplier
+				Arguments.of(new FileMessage(new File(testFileURL.toURI()))) // SerializableFileReference
 		);
 	}
 }

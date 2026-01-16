@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2020 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013-2020 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -425,9 +425,9 @@ public class EsbSoapWrapperPipe extends SoapWrapperPipe implements DestinationVa
 					|| (StringUtils.isNotEmpty(esbAlias) && destination.startsWith(esbAlias + "."))
 					|| (StringUtils.isNotEmpty(p2pAlias) && destination.startsWith(p2pAlias + "."))
 					) {
-				//In case the messaging layer is ESB, the destination syntax is:
+				// In case the messaging layer is ESB, the destination syntax is:
 				// Destination = [MessagingLayer].[BusinessDomain].[ServiceLayer].[ServiceName].[ServiceContext].[ServiceContextVersion].[OperationName].[OperationVersion].[Paradigm]
-				//In case the messaging layer is P2P, the destination syntax is:
+				// In case the messaging layer is P2P, the destination syntax is:
 				// Destination = [MessagingLayer].[BusinessDomain].[ApplicationName].[ApplicationFunction].[Paradigm]
 				boolean p2p = false;
 				boolean esbDestinationWithoutServiceContext = false;

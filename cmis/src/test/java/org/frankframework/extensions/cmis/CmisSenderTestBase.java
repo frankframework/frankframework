@@ -97,7 +97,7 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 
 //		CREATE
 		Folder folder = mock(FolderImpl.class);
-		doAnswer(cmisObject).when(folder).createDocument(anyMap(), any(), any(VersioningState.class)); //improve test to validate the ContentStream!
+		doAnswer(cmisObject).when(folder).createDocument(anyMap(), any(), any(VersioningState.class)); // improve test to validate the ContentStream!
 		doReturn(folder).when(cmisSession).getRootFolder();
 		doAnswer(cmisObject).when(cmisSession).createDocument(anyMap(), any(), any(), any());
 
@@ -141,7 +141,7 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 			InputStream content = (InputStream) invocation.getArguments()[3];
 
 			stream = StreamUtil.streamToBytes(content);
-			if(length > 0) { //if a length has been provided, validate it.
+			if(length > 0) { // if a length has been provided, validate it.
 				assertEquals(stream.length, length);
 			}
 
@@ -155,7 +155,7 @@ public class CmisSenderTestBase extends SenderTestBase<CmisSender> {
 
 		@Override
 		public void setExtensions(List<CmisExtensionElement> extensions) {
-			//Can't set something that doesn't exist!
+			// Can't set something that doesn't exist!
 		}
 
 		@Override

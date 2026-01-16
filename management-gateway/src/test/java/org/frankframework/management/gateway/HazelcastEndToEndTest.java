@@ -89,15 +89,15 @@ public class HazelcastEndToEndTest {
 	@SuppressWarnings("unchecked")
 	@WithMockUser(authorities = { "ROLE_IbisTester" })
 	public void testSynchronousHazelcastMessage() {
-		//Arrange
+		// Arrange
 		ArgumentCaptor<Message<String>> requestCapture = ArgumentCaptor.forClass(Message.class);
 		doCallRealMethod().when(handler).handleMessage(requestCapture.capture());
 		Message<String> request = new GenericMessage<>("sync-string", new MessageHeaders(null));
 
-		//Act
+		// Act
 		Message<String> response = outboundGateway.sendSyncMessage(request);
 
-		//Assert
+		// Assert
 		assertEquals("response-string", response.getPayload());
 		Message<String> capturedRequest = requestCapture.getValue();
 		assertEquals("sync-string", capturedRequest.getPayload());
@@ -132,15 +132,15 @@ public class HazelcastEndToEndTest {
 	@WithMockUser(authorities = { "ROLE_IbisTester" })
 	@Tag("unstable")
 	public void testAsynchronousHazelcastMessage() {
-		//Arrange
+		// Arrange
 		ArgumentCaptor<Message<String>> requestCapture = ArgumentCaptor.forClass(Message.class);
 		doCallRealMethod().when(handler).handleMessage(requestCapture.capture());
 		Message<String> request = new GenericMessage<>("async-string", new MessageHeaders(null));
 
-		//Act
+		// Act
 		outboundGateway.sendAsyncMessage(request);
 
-		//Assert
+		// Assert
 		Message<String> capturedRequest = Awaitility.await()
 				.atMost(30_000, TimeUnit.MILLISECONDS)
 				.until(requestCapture::getValue, Objects::nonNull);

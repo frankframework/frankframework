@@ -28,7 +28,7 @@ class BusExceptionTest {
 	@ParameterizedTest
 	@MethodSource("data")
 	void testExceptionMessage(String expectedLogMessage, Level expectedLogLevel, Exception innerException) {
-		//only log the first line of the exception
+		// only log the first line of the exception
 		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m - %throwable{1}").build()) {
 			Exception ex = new BusException(BUS_EXCEPTION_MESSAGE, innerException);
 			assertEquals(BUS_EXCEPTION_MESSAGE + expectedLogMessage, ex.getMessage());
@@ -41,13 +41,13 @@ class BusExceptionTest {
 			String message = event[1];
 			String exception = event.length == 3 ? event[2] : null;
 
-			//Check log level
+			// Check log level
 			assertEquals(expectedLogLevel.name(), level, "["+level+"] did not match the expected log level ["+expectedLogLevel+"]");
 
-			//Check log message
+			// Check log message
 			assertEquals("outer exception", message.trim());
 
-			//Check log exception
+			// Check log exception
 			if(exception != null) {
 				assertEquals("org.frankframework.configuration.ConfigurationException" + expectedLogMessage, exception.trim());
 			}

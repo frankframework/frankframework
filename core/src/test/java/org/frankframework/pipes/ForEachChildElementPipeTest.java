@@ -348,12 +348,12 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 	}
 
 	private void assertCauseChainEndsAtOriginalException(Exception expectedCause,Exception actual) {
-		//actual.printStackTrace();
+		// actual.printStackTrace();
 		Throwable cause=actual;
 		while (cause.getCause()!=null) {
 			cause=cause.getCause();
 		}
-		//cause.printStackTrace();
+		// cause.printStackTrace();
 		assertEquals(expectedCause, cause, "cause chain should continue up to original exception");
 	}
 
@@ -1060,8 +1060,8 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		assertEquals(expected, actual);
 	}
 
-	//The XmlFileElementIteratorPipe has been removed, elementName has been replaced by targetElement.
-	//This test proves that the old method works with the ForEachChildElemenPipe
+	// The XmlFileElementIteratorPipe has been removed, elementName has been replaced by targetElement.
+	// This test proves that the old method works with the ForEachChildElemenPipe
 	@Test
 	public void testElementName() throws Exception {
 		XsltSender sender = new XsltSender();

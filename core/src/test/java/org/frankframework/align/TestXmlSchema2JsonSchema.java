@@ -71,7 +71,7 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 //    	}
 //
 		JsonStructure jsonschema = validator.createJsonSchema(rootElement);
-		//JsonStructure jsonschema = validator.createJsonSchema();
+		// JsonStructure jsonschema = validator.createJsonSchema();
 
 		if (jsonschema == null) {
 			fail("no schema generated for [" + rootElement + "]");
@@ -84,8 +84,8 @@ public class TestXmlSchema2JsonSchema extends AlignTestBase {
 		// compare generated schema to reference
 		if (compactArrays == skipJsonRootElements) {
 
-			//String schemaPretty = jsonPrettyPrint("{" + jsonSchemaContent + "}");
-			//schemaPretty = schemaPretty.substring(1, schemaPretty.length() - 1).trim();
+			// String schemaPretty = jsonPrettyPrint("{" + jsonSchemaContent + "}");
+			// schemaPretty = schemaPretty.substring(1, schemaPretty.length() - 1).trim();
 
 			log.debug("expected [{}]", expectedJsonSchema);
 			log.debug("actual [{}]", jsonSchemaContent);

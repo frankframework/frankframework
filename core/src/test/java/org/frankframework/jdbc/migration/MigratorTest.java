@@ -22,6 +22,8 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.junit.jupiter.api.BeforeEach;
 
+import jakarta.annotation.Nullable;
+
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationWarnings;
@@ -179,6 +181,7 @@ public class MigratorTest {
 		return string.toString();
 	}
 
+	@Nullable
 	private String applyIgnores(String sqlScript) {
 		Pattern regex = Pattern.compile("(\\d+)\\'\\)");
 		Matcher match = regex.matcher(sqlScript);
@@ -189,12 +192,12 @@ public class MigratorTest {
 			fail("no match found");
 			return null;
 		}
-		sqlScript = sqlScript.replaceAll("\\'[4-9]\\.\\d+\\.\\d{1,3}\\'", "'VERSION'"); //Replace the Liquibase Version
-		sqlScript = sqlScript.replaceAll("'\\d{1,2}:[a-f0-9]{32}'", "'CHANGESET-CHECKSUM'"); //Replace the Liquibase Changeset Checksum
+		sqlScript = sqlScript.replaceAll("\\'[4-9]\\.\\d+\\.\\d{1,3}\\'", "'VERSION'"); // Replace the Liquibase Version
+		sqlScript = sqlScript.replaceAll("'\\d{1,2}:[a-f0-9]{32}'", "'CHANGESET-CHECKSUM'"); // Replace the Liquibase Changeset Checksum
 
-		sqlScript = sqlScript.replaceAll("SET SEARCH_PATH TO public, \"\\$user\",\"public\";", ""); //Remove search path setting
-		sqlScript = sqlScript.replace("\r\n", "\n"); //change CRLF into LF
-		sqlScript = sqlScript.replace("\n\n\n", "\n"); //remove duplicate linefeeds
+		sqlScript = sqlScript.replaceAll("SET SEARCH_PATH TO public, \"\\$user\",\"public\";", ""); // Remove search path setting
+		sqlScript = sqlScript.replace("\r\n", "\n"); // change CRLF into LF
+		sqlScript = sqlScript.replace("\n\n\n", "\n"); // remove duplicate linefeeds
 
 		return sqlScript.replaceAll("(LOCKEDBY = ')(.*)(WHERE)", "LOCKEDBY = 'IGNORE', LOCKGRANTED = 'IGNORE' WHERE");
 	}
@@ -205,20 +208,20 @@ public class MigratorTest {
 		Configurator.reconfigure();
 		try (TestAppender appender = TestAppender.newBuilder().useIbisPatternLayout("%level - %m").build()) {
 			migrator.validate();
-			assertTrue(appender.contains("Successfully acquired change log lock")); //Validate Liquibase logs on INFO level
+			assertTrue(appender.contains("Successfully acquired change log lock")); // Validate Liquibase logs on INFO level
 
-			Configurator.setRootLevel(Level.DEBUG); //Capture all loggers (at debug level)
-			Configurator.setLevel("org.frankframework", Level.WARN); //Exclude Frank!Framework loggers
-			Configurator.setLevel("liquibase", Level.WARN); //Set all Liquibase loggers to WARN
+			Configurator.setRootLevel(Level.DEBUG); // Capture all loggers (at debug level)
+			Configurator.setLevel("org.frankframework", Level.WARN); // Exclude Frank!Framework loggers
+			Configurator.setLevel("liquibase", Level.WARN); // Set all Liquibase loggers to WARN
 			appender.clearLogs();
 
 			migrator.update();
 
 			String msg = "LiquiBase applied [3] change(s) and added tag [three:Niels Meijer]";
-			assertFalse(appender.contains(msg), "expected message not to be logged but found ["+appender.getLogLines()+"]"); //Validate Liquibase doesn't log
+			assertFalse(appender.contains(msg), "expected message not to be logged but found ["+appender.getLogLines()+"]"); // Validate Liquibase doesn't log
 
 			ConfigurationMessageEventListener configurationMessages = env.getConfiguration().getBean("ConfigurationMessageListener", ConfigurationMessageEventListener.class);
-			assertTrue(configurationMessages.contains(msg)); //Validate Liquibase did run
+			assertTrue(configurationMessages.contains(msg)); // Validate Liquibase did run
 		} finally {
 			Configurator.reconfigure();
 		}

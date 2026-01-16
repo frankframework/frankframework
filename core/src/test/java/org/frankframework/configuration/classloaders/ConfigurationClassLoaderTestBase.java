@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2019 Nationale-Nederlanden, WeAreFrank! 2025
+   Copyright 2018, 2019 Nationale-Nederlanden, 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -217,7 +217,7 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 		String basePath = "Config";
 		String path = basePath + "/" + file;
 
-		//Order is everything!
+		// Order is everything!
 		ClassLoader parent = new ClassLoaderMock();
 		appConstants = AppConstants.getInstance();
 		classLoader = createClassLoader(parent);
@@ -245,7 +245,7 @@ public abstract class ConfigurationClassLoaderTestBase<C extends AbstractClassLo
 	public void toStringTest() {
 		String logPrefix = classLoader.getClass().getSimpleName() + "@" + Integer.toHexString(classLoader.hashCode());
 
-		//Should match DatabaseClassLoader@1234abcd[<CONFIG-NAME>]
+		// Should match DatabaseClassLoader@1234abcd[<CONFIG-NAME>]
 		assertThat(classLoader.toString(), Matchers.startsWith(logPrefix+"["+getConfigurationName()+"]"));
 	}
 

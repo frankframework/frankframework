@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -121,7 +121,7 @@ public class Dir2Xml {
 		}
 		// Get the modification date of the file
 		Date modificationDate = new Date(file.lastModified());
-		//add date
+		// add date
 		String date = DateFormatUtils.format(modificationDate, DateFormatUtils.SHORT_DATE_FORMATTER);
 		fileXml.addAttribute("modificationDate", date);
 

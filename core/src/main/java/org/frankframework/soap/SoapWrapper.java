@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015 Nationale-Nederlanden, 2020, 2024-2025 WeAreFrank!
+   Copyright 2013, 2015 Nationale-Nederlanden, 2020, 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -88,7 +88,7 @@ public class SoapWrapper {
 	public static final String DEFAULT_XML_HEADER = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>";
 
 	private static SoapWrapper self = null;
-	private @Setter WsuIdAllocator idAllocator = null; //Only used for testing purposes
+	private @Setter WsuIdAllocator idAllocator = null; // Only used for testing purposes
 
 	private SoapWrapper() {
 		super();
@@ -362,9 +362,9 @@ public class SoapWrapper {
 			sign.setCustomTokenId(tokenBuilder.getId());
 			sign.setSigCanonicalization(WSS4JConstants.C14N_EXCL_OMIT_COMMENTS);
 			sign.setAddInclusivePrefixes(false);
-			String signatureValue = UsernameTokenUtil.doPasswordDigest(decodedNonce, created, password); //conform WS-Trust spec
+			String signatureValue = UsernameTokenUtil.doPasswordDigest(decodedNonce, created, password); // conform WS-Trust spec
 			sign.setSecretKey(signatureValue.getBytes(StreamUtil.DEFAULT_CHARSET));
-			sign.setKeyIdentifierType(WSConstants.CUSTOM_SYMM_SIGNING); //UT_SIGNING no longer exists since v1.5.11
+			sign.setKeyIdentifierType(WSConstants.CUSTOM_SYMM_SIGNING); // UT_SIGNING no longer exists since v1.5.11
 			sign.setSignatureAlgorithm(WSS4JConstants.HMAC_SHA1);
 			sign.build(null);
 

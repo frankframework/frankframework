@@ -441,7 +441,7 @@ public class ApiListener extends PushingListenerAdapter implements HasPhysicalDe
 		this.updateEtag = updateEtag;
 	}
 
-	//TODO add authenticationType
+	// TODO add authenticationType
 
 	/**
 	 * Enables security for this listener. If you wish to use the application servers authorization roles [AUTHROLE], you need to enable them globally for all ApiListeners with the <code>servlet.ApiListenerServlet.securityRoles=IbisTester,IbisWebService</code> property

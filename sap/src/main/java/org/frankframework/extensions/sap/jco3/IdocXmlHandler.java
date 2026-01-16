@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2022-2023 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2022-2023, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ public class IdocXmlHandler extends DefaultHandler {
 
 	@Override
 	public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-		//log.debug("startElement("+localName+")");
+		// log.debug("startElement("+localName+")");
 		if (doc==null) {
 			log.debug("creating Idoc [{}]", localName);
 			try {
@@ -105,7 +105,7 @@ public class IdocXmlHandler extends DefaultHandler {
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
-		//log.debug("endElement("+localName+")");
+		// log.debug("endElement("+localName+")");
 		if (currentField!=null) {
 			String value=currentFieldValue.toString().trim();
 			if (StringUtils.isNotEmpty(value)) {

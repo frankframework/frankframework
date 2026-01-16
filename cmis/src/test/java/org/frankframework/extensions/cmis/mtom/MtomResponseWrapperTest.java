@@ -60,11 +60,11 @@ public class MtomResponseWrapperTest {
 		String result = response.getContentAsString();
 
 		String boundary = getBoundary(contentType);
-		if(boundary == null) { //assume there are no parts
+		if(boundary == null) { // assume there are no parts
 			assertTrue(contentType.contains("text/xml"), "contentType does not contain [text/xml]");
 		} else {
 			assertTrue(contentType.contains("type=\"application/xop+xml\";"), "contentType is not a multipart");
-			result = result.replace(boundary, "IGNORE"); //Replace the multipart boundary with IGNORE
+			result = result.replace(boundary, "IGNORE"); // Replace the multipart boundary with IGNORE
 		}
 
 		TestAssertions.assertEqualsIgnoreCRLF(getOutputFile(testFileName), result);

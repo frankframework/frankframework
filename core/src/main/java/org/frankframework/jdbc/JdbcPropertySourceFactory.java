@@ -1,5 +1,5 @@
 /*
-   Copyright 2021-2024 WeAreFrank!
+   Copyright 2021-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -62,7 +62,7 @@ public class JdbcPropertySourceFactory implements ApplicationContextAware {
 				if(!properties.isEmpty()) {
 					log.info("found [{}] properties in database with datasouce [{}]", properties.size(), datasourceName);
 					return properties;
-					//return new PropertiesPropertySource(name, properties);
+					// return new PropertiesPropertySource(name, properties);
 				} else {
 					log.debug("did not find any properties in database with datasouce [{}]", datasourceName);
 				}

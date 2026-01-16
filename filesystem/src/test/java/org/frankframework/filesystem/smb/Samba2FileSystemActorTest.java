@@ -68,20 +68,20 @@ public class Samba2FileSystemActorTest extends WritableFileSystemActorTest<SmbFi
 	@Disabled("does not work for SMB2")
 	@Override
 	public void fileSystemActorCopyActionTestRootToFolder() {
-		//Ignore this test
+		// Ignore this test
 	}
 
 	@Override
 	@Test
 	@Disabled("does not work for SMB2")
 	public void fileSystemActorCopyActionTestWithExcludeWildCard() {
-		//Ignore this test
+		// Ignore this test
 	}
 
 	@Test
 	@Disabled("does not work for SMB2")
 	@Override
 	public void fileSystemActorCopyActionTestWithWildCard() {
-		//Ignore this test
+		// Ignore this test
 	}
 }

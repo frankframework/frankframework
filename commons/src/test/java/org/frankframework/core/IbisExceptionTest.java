@@ -97,7 +97,7 @@ public class IbisExceptionTest {
 	@MethodSource("sqlExceptions")
 	public void sqlExceptions(String expectedMessage, SQLException cause) {
 		SQLException nextException = new SQLException("spice it up with a suppressed message");
-		cause.setNextException(nextException); //This should be picked up by the 'ExceptionUtils.getCause(t)'
+		cause.setNextException(nextException); // This should be picked up by the 'ExceptionUtils.getCause(t)'
 		// Arrange
 		IbisException exception = new IbisException("text", cause);
 
@@ -164,7 +164,7 @@ public class IbisExceptionTest {
 	public void testJmsException() {
 		IOException root = new IOException("rootMsg");
 		JMSException jmse = new JMSException("reason", "errorCode");
-		jmse.setLinkedException(root); //This should be picked up by the 'ExceptionUtils.getCause(t)'
+		jmse.setLinkedException(root); // This should be picked up by the 'ExceptionUtils.getCause(t)'
 		Exception ibisException = new IbisException("wrapper", jmse);
 
 		String result = ibisException.getMessage();
@@ -187,7 +187,7 @@ public class IbisExceptionTest {
 		// Arrange
 		IOException root = new IOException("spice it up with a suppressed message");
 		SAXParseException saxException = new SAXParseException("reason", locator);
-		saxException.addSuppressed(root); //This should be picked up by the 'ExceptionUtils.getCause(t)'
+		saxException.addSuppressed(root); // This should be picked up by the 'ExceptionUtils.getCause(t)'
 		Exception ibisException = new IbisException("wrapper", saxException);
 
 		// Act
@@ -213,7 +213,7 @@ public class IbisExceptionTest {
 		// Arrange
 		IOException root = new IOException("spice it up with a suppressed message");
 		TransformerException saxException = new TransformerException("reason", locator);
-		saxException.addSuppressed(root); //This should be picked up by the 'ExceptionUtils.getCause(t)'
+		saxException.addSuppressed(root); // This should be picked up by the 'ExceptionUtils.getCause(t)'
 		Exception ibisException = new IbisException("wrapper", saxException);
 
 		// Act

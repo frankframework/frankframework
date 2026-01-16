@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeareFrank!
+   Copyright 2021, 2026 WeareFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -98,7 +98,7 @@ public class TomcatJndiProxy<C> extends JndiBase implements ObjectFactory {
 
 			String objectName = name.toString();
 			String targetClassName = ref.getClassName();
-			//Class targetClass = Class.forName(targetClassName);
+			// Class targetClass = Class.forName(targetClassName);
 			log.debug("constructing object [{}] of type [{}]", objectName, targetClassName);
 
 			// fetch and set delegate properties
@@ -107,7 +107,7 @@ public class TomcatJndiProxy<C> extends JndiBase implements ObjectFactory {
 				if (refAddr.getType().startsWith(DELEGATE_PREFIX)) {
 					String propertyName = refAddr.getType().substring(DELEGATE_PREFIX.length());
 					Object propertyValue = refAddr.getContent();
-					//log.debug("setting delegate property [{}] to value [{}]", propertyName, propertyValue);
+					// log.debug("setting delegate property [{}] to value [{}]", propertyName, propertyValue);
 					BeanUtils.setProperty(this, propertyName, propertyValue);
 				}
 			}
@@ -121,7 +121,7 @@ public class TomcatJndiProxy<C> extends JndiBase implements ObjectFactory {
 				String propertyName = refAddr.getType();
 				if (!propertyName.startsWith(DELEGATE_PREFIX) && !"factory".equals(propertyName)) {
 					Object propertyValue = refAddr.getContent();
-					//log.debug("setting result property [{}] to value [{}]", propertyName, propertyValue);"
+					// log.debug("setting result property [{}] to value [{}]", propertyName, propertyValue);"
 					if (!PropertyUtils.isWriteable(result, propertyName)) {
 						log.warn("object of type [{}] with name [{}] has no property [{}]", result.getClass().getTypeName(), targetObjectName, propertyName);
 					}

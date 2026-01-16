@@ -98,7 +98,7 @@ public abstract class FileSystemPipeTest<FSP extends AbstractFileSystemPipe<F, F
 		String actual = readFile(null, filename);
 		// test
 		// TODO: evaluate 'result'
-		//assertEquals("result of sender should be input message",result,message);
+		// assertEquals("result of sender should be input message",result,message);
 		assertEquals(contents.trim(), actual.trim());
 	}
 
@@ -130,7 +130,7 @@ public abstract class FileSystemPipeTest<FSP extends AbstractFileSystemPipe<F, F
 		String actual = readFile(null, filename);
 		// test
 		// TODO: evaluate 'result'
-		//assertEquals("result of sender should be input message",result,message);
+		// assertEquals("result of sender should be input message",result,message);
 		assertEquals(contents.trim(), actual.trim());
 	}
 
@@ -162,7 +162,7 @@ public abstract class FileSystemPipeTest<FSP extends AbstractFileSystemPipe<F, F
 		String actual = readFile(null, filename);
 		// test
 		// TODO: evaluate 'result'
-		//assertEquals("result of sender should be input message",result,message);
+		// assertEquals("result of sender should be input message",result,message);
 		assertEquals(contents.trim(), actual.trim());
 	}
 

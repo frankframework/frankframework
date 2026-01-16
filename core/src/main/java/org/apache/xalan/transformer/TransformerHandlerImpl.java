@@ -354,7 +354,7 @@ public class TransformerHandlerImpl
     ContentHandler l_contentHandler = m_contentHandler;
     if (l_contentHandler != null)
     {
-      //m_transformer.setTransformThread(listener);
+      // m_transformer.setTransformThread(listener);
       if(m_incremental)
       {
         m_transformer.setSourceTreeDocForThread(m_dtm.getDocument());
@@ -373,8 +373,8 @@ public class TransformerHandlerImpl
       l_contentHandler.startDocument();
    }
 
-   //listener.setDaemon(false);
-   //listener.start();
+   // listener.setDaemon(false);
+   // listener.start();
 
   }
 

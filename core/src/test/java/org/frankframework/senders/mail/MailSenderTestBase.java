@@ -81,11 +81,11 @@ public abstract class MailSenderTestBase<S extends AbstractMailSender> extends S
 			Matcher matcher = pattern.matcher(rawResult);
 			matcher.find();
 			String boundary = matcher.group(0);
-			boundary = boundary.substring(10, boundary.length()); //remove an additional 10 for 'boundary='
+			boundary = boundary.substring(10, boundary.length()); // remove an additional 10 for 'boundary='
 			rawResult = rawResult.replace(boundary, "BOUNDARY");
 		}
 
-		//Make sure there is always a newline, otherwise test assertions may sometimes fail
+		// Make sure there is always a newline, otherwise test assertions may sometimes fail
 		TestAssertions.assertEqualsIgnoreCRLF(expected, rawResult.replace("/mixed; boundary", "/mixed;\n\tboundary"));
 	}
 

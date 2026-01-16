@@ -601,7 +601,7 @@ public class Json2XmlValidatorTest extends PipeTestBase<Json2XmlValidator> {
 		pipe.setRoot("Party");
 		pipe.setThrowException(true);
 
-		//pipe.setDeepSearch(true); // deepSearch is required to find element in optional branches of the document
+		// pipe.setDeepSearch(true); // deepSearch is required to find element in optional branches of the document
 
 		pipe.addParameter(new Parameter("Id", "24"));
 

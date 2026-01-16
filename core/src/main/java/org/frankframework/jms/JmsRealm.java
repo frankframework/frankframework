@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -40,7 +40,7 @@ import org.frankframework.util.StringUtil;
  */
 @FrankDocGroup(FrankDocGroupValue.OTHER)
 public class JmsRealm {
-	//TODO: change to J2eeRealm
+	// TODO: change to J2eeRealm
 	private final Logger log = LogUtil.getLogger(this);
 
 	private String realmName;

@@ -96,7 +96,7 @@ public class DatabaseTestEnvironment implements AutoCloseable {
 	final Connection createNonTransactionalConnection() {
 		try {
 			Connection connection = getTargetDataSource(dataSource).getConnection();
-			connection.setAutoCommit(true); //Ensure this connection is NOT transactional!
+			connection.setAutoCommit(true); // Ensure this connection is NOT transactional!
 			return connection;
 		} catch (Exception e) {
 			throw ExceptionUtils.throwAsUncheckedException(e);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -180,7 +180,7 @@ public class DB2DocumentWriter {
 						throw new SenderException("error getting fieldvalue column ["+i+"] fieldType ["+getFieldType(rsmeta.getColumnType(i))+ "]", e);
 					}
 				}
-				//JdbcUtil.warningsToXml(rs.getWarnings(), row);
+				// JdbcUtil.warningsToXml(rs.getWarnings(), row);
 			}
 		}
 	}

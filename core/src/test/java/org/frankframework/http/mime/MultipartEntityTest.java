@@ -39,7 +39,7 @@ public class MultipartEntityTest {
 		assertEquals(FORMDATA_BOUNDARY, entity.getContentType().getValue());
 		assertEquals(327, entity.getContentLength());
 		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/multipart.txt"), toString(entity));
-		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/multipart.txt"), toString(entity)); //Test repeatability
+		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/multipart.txt"), toString(entity)); // Test repeatability
 	}
 
 	@Test
@@ -57,7 +57,7 @@ public class MultipartEntityTest {
 		assertEquals("multipart/related; boundary=test-boundary; type=\"application/xop+xml\"; start=\"<part1>\"; start-info=\"text/xml\"", entity.getContentType().getValue());
 		assertEquals(277, entity.getContentLength());
 		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/mtom.txt"), toString(entity));
-		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/mtom.txt"), toString(entity)); //Test repeatability
+		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/mtom.txt"), toString(entity)); // Test repeatability
 	}
 
 	@Test
@@ -74,14 +74,14 @@ public class MultipartEntityTest {
 		assertTrue(entity.isStreaming());
 		assertEquals(FORMDATA_BOUNDARY+"; charset=UTF-8", entity.getContentType().getValue());
 		assertEquals(327, entity.getContentLength());
-		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/multipart.txt"), toString(entity)); //Charset should not change the parts
-		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/multipart.txt"), toString(entity)); //Test repeatability
+		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/multipart.txt"), toString(entity)); // Charset should not change the parts
+		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/multipart.txt"), toString(entity)); // Test repeatability
 	}
 
 	@Test
 	public void testContentType() throws Exception {
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-		builder.setContentType(ContentType.TEXT_XML); //ContentType with charset ISO-8859-1
+		builder.setContentType(ContentType.TEXT_XML); // ContentType with charset ISO-8859-1
 		builder.setBoundary("test-boundary");
 		builder.addTextBody("part1", "content1");
 		builder.addTextBody("part2", "content2");
@@ -90,15 +90,15 @@ public class MultipartEntityTest {
 		assertTrue(entity.isStreaming());
 		assertEquals("text/xml; boundary=test-boundary; charset=ISO-8859-1", entity.getContentType().getValue());
 		assertEquals(327, entity.getContentLength());
-		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/multipart.txt"), toString(entity)); //Charset should not change the parts
-		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/multipart.txt"), toString(entity)); //Test repeatability
+		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/multipart.txt"), toString(entity)); // Charset should not change the parts
+		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/multipart.txt"), toString(entity)); // Test repeatability
 	}
 
 	@Test
 	public void testContentTypeAndCharset() throws Exception {
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-		builder.setCharset(Charset.forName("UTF-8")); //Should be used even though defined earlier
-		builder.setContentType(ContentType.TEXT_XML); //ContentType with charset ISO-8859-1
+		builder.setCharset(Charset.forName("UTF-8")); // Should be used even though defined earlier
+		builder.setContentType(ContentType.TEXT_XML); // ContentType with charset ISO-8859-1
 		builder.setBoundary("test-boundary");
 		builder.addTextBody("part1", "content1");
 		builder.addTextBody("part2", "content2");
@@ -107,8 +107,8 @@ public class MultipartEntityTest {
 		assertTrue(entity.isStreaming());
 		assertEquals("text/xml; boundary=test-boundary; charset=UTF-8", entity.getContentType().getValue());
 		assertEquals(327, entity.getContentLength());
-		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/multipart.txt"), toString(entity)); //Charset should not change the parts
-		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/multipart.txt"), toString(entity)); //Test repeatability
+		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/multipart.txt"), toString(entity)); // Charset should not change the parts
+		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/multipart.txt"), toString(entity)); // Test repeatability
 	}
 
 	@Test
@@ -147,7 +147,7 @@ public class MultipartEntityTest {
 		assertEquals(FORMDATA_BOUNDARY, entity.getContentType().getValue());
 		assertEquals(339, entity.getContentLength());
 		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/multipart-message.txt"), toString(entity));
-		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/multipart-message.txt"), toString(entity)); //Test repeatability
+		TestAssertions.assertEqualsIgnoreCRLF(TestFileUtils.getTestFile("/Http/Entity/multipart-message.txt"), toString(entity)); // Test repeatability
 	}
 
 	@Test
@@ -182,7 +182,7 @@ public class MultipartEntityTest {
 		contentBody.writeTo(boas);
 
 		// Assert
-		assertEquals(charMessage.asString(), boas.toString().replace("\ufeff", ""));//remove BOM if present
+		assertEquals(charMessage.asString(), boas.toString().replace("\ufeff", ""));// remove BOM if present
 	}
 
 	private String toString(HttpEntity entity) throws IOException {
