@@ -8,9 +8,10 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.stereotype.Component;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.HandlerExceptionResolver;
 
-@Component
+@RestControllerAdvice({"org.frankframework.ladybug", "org.wearefrank.ladybug"})
 public class LadybugAccessDeniedHandler implements AccessDeniedHandler {
 	private static final Logger APPLICATION_LOG = LogManager.getLogger("APPLICATION");
 	private final HandlerExceptionResolver resolver;
