@@ -27,7 +27,7 @@ public class DatabaseSchedulerTest extends Mockito {
 	@BeforeEach
 	public void setup() throws Exception {
 		configuration = new TestConfiguration();
-		configuration.getIbisManager(); //Sets a dummy IbisManager if none is found
+		configuration.getIbisManager(); // Sets a dummy IbisManager if none is found
 
 		job = configuration.createBean();
 		job.setName("testJob");

@@ -1,5 +1,5 @@
 /*
-   Copyright 2021, 2025 WeAreFrank!
+   Copyright 2021, 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@ public class JsonXslt3XmlReader implements XMLReader {
 			return false;
 		} else if (event == Event.START_ARRAY) {
 			startElement("array", key);
-			//noinspection StatementWithEmptyBody
+			// noinspection StatementWithEmptyBody
 			while (parse(null, parser)) ; // parse array elements until the close
 			endElement("array");
 		} else {

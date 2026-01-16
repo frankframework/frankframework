@@ -57,7 +57,7 @@ public class ParallelXsltTest extends XsltErrorTestBase<SenderPipe> {
 		xsltSenders=new ArrayList<>();
 		for(int i=0;i<NUM_SENDERS;i++) {
 			XsltSender sender = new XsltSender();
-			//sender.setSessionKey("out"+i);
+			// sender.setSessionKey("out"+i);
 			sender.setOmitXmlDeclaration(true);
 
 			sender.addParameter(new Parameter("header", "header"+i));

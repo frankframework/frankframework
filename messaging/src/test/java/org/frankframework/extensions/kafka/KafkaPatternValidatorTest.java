@@ -21,7 +21,7 @@ public class KafkaPatternValidatorTest {
 		listener = new KafkaListener();
 		listener.setClientId("test");
 		listener.setGroupId("testGroup");
-		listener.setBootstrapServers("example.com:9092"); //dummy, doesn't connect.
+		listener.setBootstrapServers("example.com:9092"); // dummy, doesn't connect.
 	}
 
 	@ParameterizedTest
@@ -48,7 +48,7 @@ public class KafkaPatternValidatorTest {
 	}
 
 	public static Stream<Arguments> validateInvalidTopics() {
-		//Simply List.of() doesn't work, because it doesn't allow null values.
+		// Simply List.of() doesn't work, because it doesn't allow null values.
 		List<String> data = Lists.newArrayList(
 				null,
 				"",

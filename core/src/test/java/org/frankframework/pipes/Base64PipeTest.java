@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2020-2022, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -81,35 +81,35 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 		// Arrange
 		pipe.configure();
 		pipe.start();
-		byte[] inputString = "Më-×m👌‰Œœ‡TzdDEyMt120=".getBytes("WINDOWS-1252"); //String containing utf-8 characters
-		Message in = new Message(inputString); //Saving it with a different charset
+		byte[] inputString = "Më-×m👌‰Œœ‡TzdDEyMt120=".getBytes("WINDOWS-1252"); // String containing utf-8 characters
+		Message in = new Message(inputString); // Saving it with a different charset
 
 		// Act
-		PipeRunResult encodeResult = doPipe(pipe, in, session); //Base64Pipe still works and does as told (convert a string with an incompatible charset)
+		PipeRunResult encodeResult = doPipe(pipe, in, session); // Base64Pipe still works and does as told (convert a string with an incompatible charset)
 
 		// Assert
-		assertEquals("Test120/iYych1R6ZERFeU10MTIwPQ==", encodeResult.getResult().asString().trim()); //Unreadable base64 string
+		assertEquals("Test120/iYych1R6ZERFeU10MTIwPQ==", encodeResult.getResult().asString().trim()); // Unreadable base64 string
 	}
 
 	@Test
 	void wrongCharsetShouldNotBeUsed() throws ConfigurationException, IOException, PipeRunException {
 		// Arrange
-		pipe.setCharset("ISO-8859-1"); //Should be ignored
+		pipe.setCharset("ISO-8859-1"); // Should be ignored
 		pipe.configure();
 		pipe.start();
 
 		String utf8Input = "Më-×m👌‰Œœ‡TzdDEyMt120=";
-		byte[] inputBytes = utf8Input.getBytes(StandardCharsets.UTF_8); //String containing utf-8 characters
-		Message in = new Message(inputBytes, "auto"); //Saving it with a different charset
+		byte[] inputBytes = utf8Input.getBytes(StandardCharsets.UTF_8); // String containing utf-8 characters
+		Message in = new Message(inputBytes, "auto"); // Saving it with a different charset
 
 		assertEquals(utf8Input, in.asString()); // read the message which should update the auto field in the MessageContext
-		assertEquals("UTF-8", in.getContext().get(MessageContext.METADATA_CHARSET)); //base64#charset attribute should be ignored because of explicit value in the MessageContext.
+		assertEquals("UTF-8", in.getContext().get(MessageContext.METADATA_CHARSET)); // base64#charset attribute should be ignored because of explicit value in the MessageContext.
 
 		// Act
 		Message result = doPipe(pipe, in, session).getResult();
 
 		// Assert
-		assertEquals("TcOrLcOXbfCfkYzigLDFksWT4oChVHpkREV5TXQxMjA9", result.asString().trim()); //validate and preserve the message
+		assertEquals("TcOrLcOXbfCfkYzigLDFksWT4oChVHpkREV5TXQxMjA9", result.asString().trim()); // validate and preserve the message
 
 		InputStream decodedResult = new Base64InputStream(result.asInputStream(), false);
 		assertEquals(utf8Input, StreamUtil.streamToString(decodedResult));
@@ -123,7 +123,7 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 		pipe.start();
 
 		String encodedString = "Test120/iYych1R6ZERFeU10MTIwPQ==";
-		byte[] expected = "Më-×m👌‰Œœ‡TzdDEyMt120=".getBytes("WINDOWS-1252"); //String containing utf-8 characters
+		byte[] expected = "Më-×m👌‰Œœ‡TzdDEyMt120=".getBytes("WINDOWS-1252"); // String containing utf-8 characters
 
 		// Act
 		PipeRunResult decodeResult = doPipe(pipe, encodedString, session);
@@ -212,7 +212,7 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 		assertEquals(plainText, new String(result).trim());
 	}
 
-	//String input encode
+	// String input encode
 	@Test
 	void inputStringOutputString() throws ConfigurationException, IOException, PipeRunException {
 		// Arrange
@@ -228,7 +228,7 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 		assertEquals(base64Encoded, result.trim());
 	}
 
-	//String stream encode
+	// String stream encode
 	@Test
 	void inputStreamOutputString() throws ConfigurationException, IOException, PipeRunException {
 		// Arrange
@@ -263,7 +263,7 @@ class Base64PipeTest extends PipeTestBase<Base64Pipe> {
 		assertEquals(plainText, new String(result).trim());
 	}
 
-	//String stream decode
+	// String stream decode
 	@Test
 	void inputStreamOutputStringDecode() throws ConfigurationException, IOException, PipeRunException {
 		// Arrange

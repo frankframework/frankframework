@@ -269,7 +269,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		ATTRIBUTE
 	}
 
-	//The results to return if the modifying operation succeeds (an XML, to make it "next pipe ready")
+	// The results to return if the modifying operation succeeds (an XML, to make it "next pipe ready")
 	private static final String DEFAULT_RESULT = "<LdapResult>Success</LdapResult>";
 	private static final String DEFAULT_RESULT_READ = "<LdapResult>No such object</LdapResult>";
 	private static final String DEFAULT_RESULT_SEARCH = "<LdapResult>Object not found</LdapResult>";
@@ -277,7 +277,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	private static final String DEFAULT_RESULT_DELETE = "<LdapResult>Delete Success - Never Existed</LdapResult>";
 	private static final String DEFAULT_RESULT_CREATE_OK = "<LdapResult>Create Success - Already There</LdapResult>";
 	private static final String DEFAULT_RESULT_CREATE_NOK = "<LdapResult>Create FAILED - Entry with given name already exists</LdapResult>";
-//	private static final String DEFAULT_RESULT_UPDATE_NOK = "<LdapResult>Update FAILED</LdapResult>"; //TODO Find out why this was disabled
+//	private static final String DEFAULT_RESULT_UPDATE_NOK = "<LdapResult>Update FAILED</LdapResult>"; // TODO Find out why this was disabled
 	private static final String DEFAULT_RESULT_CHALLENGE_OK = DEFAULT_RESULT;
 	private static final String DEFAULT_RESULT_CHALLENGE_NOK = "<LdapResult>Challenge FAILED - Invalid credentials</LdapResult>";
 	private static final String DEFAULT_RESULT_CHANGE_UNICODE_PWD_OK = DEFAULT_RESULT;
@@ -389,8 +389,8 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	 * specific attributes are required -
 	 */
 	private String[] getAttributesReturnedParameter() {
-		//since 1.4: return attributesToReturn == null ? null : attributesToReturn.split(",");
-		//since 1.3 below:
+		// since 1.4: return attributesToReturn == null ? null : attributesToReturn.split(",");
+		// since 1.3 below:
 		return getAttributesToReturn() == null ? null : splitCommaSeparatedString(getAttributesToReturn());
 	}
 
@@ -398,7 +398,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		if (toSeparate == null || toSeparate.isEmpty()) return null;
 
 		List<String> list = new ArrayList<>();
-		String[] strArr = new String[1]; //just do determine the type of the array in list.toArray(Object[] o)
+		String[] strArr = new String[1]; // just do determine the type of the array in list.toArray(Object[] o)
 
 		StringBuilder sb = new StringBuilder(toSeparate);
 		for (int i = 0; i < sb.length(); i++) {
@@ -532,7 +532,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 						} else {
 							msg="Exception in operation [" + getOperation()+ "] entryName ["+entryNameAfter+"]";
 						}
-						//result = DEFAULT_RESULT_UPDATE_NOK;
+						// result = DEFAULT_RESULT_UPDATE_NOK;
 						storeLdapException(e, session);
 						throw new SenderException(msg,e);
 					} finally {
@@ -545,8 +545,8 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		DirContext dirContext = null;
 		try {
 			dirContext = getDirContext(paramValueMap);
-			//dirContext.rename(newEntryName, oldEntryName);
-			//result = DEFAULT_RESULT;
+			// dirContext.rename(newEntryName, oldEntryName);
+			// result = DEFAULT_RESULT;
 			dirContext.rename(entryName, entryName);
 			return "<LdapResult>Deze functionaliteit is nog niet beschikbaar - naam niet veranderd.</LdapResult>";
 		} catch (NamingException e) {
@@ -1027,9 +1027,9 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 		DirContext dirContext;
 		if (jndiEnv==null) {
 			Hashtable<Object, Object> newJndiEnv = getJndiEnv();
-			//newJndiEnv.put("com.sun.jndi.ldap.trace.ber", System.err);//ldap response in log for debug purposes
+			// newJndiEnv.put("com.sun.jndi.ldap.trace.ber", System.err);// ldap response in log for debug purposes
 			if (getLdapProviderURL() != null) {
-				//Overwriting the (realm)providerURL if specified in configuration
+				// Overwriting the (realm)providerURL if specified in configuration
 				newJndiEnv.put("java.naming.provider.url", getLdapProviderURL());
 			}
 			if (principalParameterFound) {
@@ -1039,7 +1039,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			if (isUsePooling()) {
 				// Enable connection pooling
 				newJndiEnv.put("com.sun.jndi.ldap.connect.pool", "true");
-				//see http://java.sun.com/products/jndi/tutorial/ldap/connect/config.html
+				// see http://java.sun.com/products/jndi/tutorial/ldap/connect/config.html
 //				newJndiEnv.put("com.sun.jndi.ldap.connect.pool.maxsize", "20" );
 //				newJndiEnv.put("com.sun.jndi.ldap.connect.pool.prefsize", "10" );
 //				newJndiEnv.put("com.sun.jndi.ldap.connect.pool.timeout", "300000" );

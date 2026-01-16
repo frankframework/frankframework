@@ -529,7 +529,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 					if (StringUtils.isEmpty(formatStringAttr)) {
 						formatStringAttr = CmisUtils.FORMATSTRING_BY_DEFAULT;
 					}
-					//TODO to be removed in a few versions
+					// TODO to be removed in a few versions
 					if(AppConstants.getInstance().getBoolean("cmissender.processproperties.legacydateformat", false)) {
 						formatStringAttr = "yyyy-MM-dd HH:mm:ss";
 					}
@@ -672,7 +672,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 		if(objectIdstr != null) {
 			return cmisSession.getObject(cmisSession.createObjectId(objectIdstr), operationContext);
 		}
-		//Ok, id can still be null, perhaps its a path?
+		// Ok, id can still be null, perhaps its a path?
 		String path = XmlUtils.getChildTagAsString(queryElement, "path");
 		return cmisSession.getObjectByPath(path, operationContext);
 	}
@@ -830,7 +830,7 @@ public class CmisSender extends AbstractSenderWithParameters implements HasKeyst
 					skipCount = BigInteger.valueOf(Long.parseLong(skipCountString));
 				}
 
-				//Create a operationContext and do session.query?
+				// Create a operationContext and do session.query?
 //				OperationContext context = session.createOperationContext();
 //				context.setIncludeAllowableActions(includeAllowableActions);
 //				context.setIncludeRelationships(includeRelationships);

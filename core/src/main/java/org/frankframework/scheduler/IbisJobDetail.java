@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2021, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -33,12 +33,12 @@ public class IbisJobDetail extends JobDetailImpl {
 	public boolean compareWith(IJob otherJobDef) {
 		IJob thisJobDef = getJobDef();
 
-		//If the CRON expression is different in both jobs, it's not equal!
+		// If the CRON expression is different in both jobs, it's not equal!
 		if (!StringUtils.equals(thisJobDef.getCronExpression(), otherJobDef.getCronExpression())) {
 			return false;
 		}
 
-		//If the Interval expression is different in both jobs, it's not equal!
+		// If the Interval expression is different in both jobs, it's not equal!
 		if (thisJobDef.getInterval() != otherJobDef.getInterval()) {
 			return false;
 		}
@@ -46,17 +46,17 @@ public class IbisJobDetail extends JobDetailImpl {
 		Locker thisLocker = thisJobDef.getLocker();
 		Locker otherLocker = otherJobDef.getLocker();
 
-		//If one is NULL but the other isn't, (locker has been removed or added, it's not equal!
+		// If one is NULL but the other isn't, (locker has been removed or added, it's not equal!
 		if((thisLocker == null && otherLocker != null) || (thisLocker != null && otherLocker == null)) {
 			return false;
 		}
 
-		//If both contain a locker but the key is different, it's not equal!
+		// If both contain a locker but the key is different, it's not equal!
 		if (thisLocker != null && otherLocker != null && !StringUtils.equals(thisLocker.getObjectId(), otherLocker.getObjectId())) {
 			return false;
 		}
 
-		//If at this point the message is equal in both jobs, the jobs are equal!
+		// If at this point the message is equal in both jobs, the jobs are equal!
 		if(thisJobDef instanceof SendMessageJob job1 && otherJobDef instanceof SendMessageJob job2) {
 			String msg1 = job1.getMessage();
 			String msg2 = job2.getMessage();

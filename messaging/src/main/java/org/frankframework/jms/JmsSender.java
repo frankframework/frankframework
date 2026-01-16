@@ -124,9 +124,9 @@ public class JmsSender extends JMSFacade implements ISenderWithParameters, ICorr
 		paramList.configure();
 		super.configure();
 		if (isSoap()) {
-			//ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			//String msg = getLogPrefix()+"the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
-			//configWarnings.add(log, msg);
+			// ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+			// String msg = getLogPrefix()+"the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
+			// configWarnings.add(log, msg);
 			soapWrapper = SoapWrapper.getInstance();
 		}
 

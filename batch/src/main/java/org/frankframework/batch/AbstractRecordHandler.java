@@ -71,11 +71,11 @@ public abstract class AbstractRecordHandler implements IRecordHandler, IWithPara
 
 	@Override
 	public void open() throws SenderException {
-		//nothing to do
+		// nothing to do
 	}
 	@Override
 	public void close() throws SenderException {
-		//nothing to do
+		// nothing to do
 	}
 
 	public void addInputField(int length) {

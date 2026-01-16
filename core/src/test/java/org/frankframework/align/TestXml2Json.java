@@ -246,7 +246,7 @@ public class TestXml2Json extends AlignTestBase {
 //
 //	@Test
 //	public void testChoiceOfSequence() throws Exception {
-//		//testStrings("<a><b></b><c></c></a>","{\"a\":{\"b\":\"\",\"c\":\"\"}}");
+//		// testStrings("<a><b></b><c></c></a>","{\"a\":{\"b\":\"\",\"c\":\"\"}}");
 //		testXml2Json("/Transaction/transaction.xsd","/Transaction/order","transaction",true);
 //		testXml2Json("/Transaction/transaction.xsd","/Transaction/invoice","transaction",true);
 //	}

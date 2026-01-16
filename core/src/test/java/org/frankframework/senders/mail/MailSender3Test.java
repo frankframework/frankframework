@@ -296,7 +296,7 @@ public class MailSender3Test extends SenderTestBase<MailSender> {
 
 		Parameter pAttachments = new Parameter();
 		pAttachments.setName("attachments");
-		//This is the first attachment base64 encoded
+		// This is the first attachment base64 encoded
 		pAttachments.setValue("<attachment name=\"filename1\" base64=\"true\" type=\"text/plain\">VGhpcyBpcyB0aGUgZmlyc3QgYXR0YWNobWVudA==</attachment>");
 		sender.addParameter(pAttachments);
 

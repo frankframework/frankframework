@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020 Nationale-Nederlanden
+   Copyright 2018-2020 Nationale-Nederlanden, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -185,7 +185,7 @@ public class HttpSenderResultTest {
 		sender.configure();
 		sender.start();
 
-		//Use InputStream 'content' as result.
+		// Use InputStream 'content' as result.
 		SenderResult result = sender.sendMessage(new Message(""), session);
 
 		// Assert
@@ -205,7 +205,7 @@ public class HttpSenderResultTest {
 		sender.configure();
 		sender.start();
 
-		//Use InputStream 'content' as result.
+		// Use InputStream 'content' as result.
 		SenderResult result = sender.sendMessage(new Message(""), session);
 
 		// Assert
@@ -233,7 +233,7 @@ public class HttpSenderResultTest {
 		senderPipe.configure();
 		senderPipe.start();
 
-		//Use InputStream 'content' as result.
+		// Use InputStream 'content' as result.
 		PipeRunResult pipeRunResult = senderPipe.doPipe(new Message(""), session);
 
 		// Assert
@@ -261,7 +261,7 @@ public class HttpSenderResultTest {
 		senderPipe.configure();
 		senderPipe.start();
 
-		//Use InputStream 'content' as result.
+		// Use InputStream 'content' as result.
 		PipeRunResult pipeRunResult = senderPipe.doPipe(new Message(""), session);
 
 		// Assert

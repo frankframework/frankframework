@@ -68,7 +68,7 @@ public class JdbcPoolUtil {
 		info.append("testWhileIdle [").append(pool.getTestWhileIdle()).append(CLOSE);
 		info.append("removeAbandonedOnBorrow [").append(pool.getRemoveAbandonedOnBorrow()).append(CLOSE);
 		info.append("removeAbandonedOnMaintenance [").append(pool.getRemoveAbandonedOnMaintenance()).append(CLOSE);
-		info.append("removeAbandonedTimeoutDuration [").append(pool.getRemoveAbandonedTimeoutDuration()).append("]"); //TODO decide if we should make this human readable
+		info.append("removeAbandonedTimeoutDuration [").append(pool.getRemoveAbandonedTimeoutDuration()).append("]"); // TODO decide if we should make this human readable
 	}
 
 	// Try and find the inner DataSource if it's wrapped

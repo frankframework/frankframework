@@ -129,7 +129,7 @@ public class JUnitLiquibaseExtension implements BeforeEachCallback, BeforeAllCal
 			System.setProperty("tableName", tableName);
 			Liquibase liquibase = runMigrator(file, dbTestEnv);
 
-			//Store every instance in the 'Store' so it's auto-closed after the test has ran, even when it fails.
+			// Store every instance in the 'Store' so it's auto-closed after the test has ran, even when it fails.
 			getStore(context).put("liquibaseInstance#" + argumentIndex.incrementAndGet(), new CloseableArgument(liquibase));
 		}
 	}

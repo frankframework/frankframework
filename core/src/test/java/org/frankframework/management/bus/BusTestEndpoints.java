@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2024 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@ public class BusTestEndpoints {
 		MESSAGE, MESSAGE_WITH_CAUSE, CAUSE, NOT_FOUND
 	}
 
-	//Test authorization
+	// Test authorization
 	@TopicSelector(BusTopic.DEBUG)
 	@ActionSelector(BusAction.MANAGE)
 	@RolesAllowed({"IbisAdmin", "IbisTester"})
@@ -38,7 +38,7 @@ public class BusTestEndpoints {
 		return new GenericMessage<>(isAdmin);
 	}
 
-	//Test exceptions
+	// Test exceptions
 	@TopicSelector(BusTopic.DEBUG)
 	@ActionSelector(BusAction.WARNINGS)
 	public Message<String> throwException(Message<?> message) {

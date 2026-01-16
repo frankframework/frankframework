@@ -1,5 +1,5 @@
 /*
-Copyright 2017 Integration Partners B.V.
+Copyright 2017 Integration Partners B.V., 2026 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -90,7 +90,7 @@ public class ApiMemcached implements IApiCache {
 
 		try {
 			client = new MemcachedClient(cf, addresses);
-			//Fetching a none-existing key to test the connection
+			// Fetching a none-existing key to test the connection
 			Future<Object> future = client.asyncGet("test-connection");
 			future.get(timeout, TimeUnit.MILLISECONDS);
 		} catch (Exception e) {

@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2023, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -76,7 +76,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 	private Message<String> createOrUpdateSchedule(String name, String jobGroup, Message<?> message, boolean overwrite) {
 		String cronExpression = BusMessageUtils.getHeader(message, "cron", null);
 		int interval = BusMessageUtils.getIntHeader(message, "interval", -1);
-		//Either one of the two has to be set
+		// Either one of the two has to be set
 		if(interval == -1 && StringUtils.isEmpty(cronExpression)) {
 			throw new BusException("Either 'cron' or 'interval' has to be set");
 		}
@@ -85,14 +85,14 @@ public class CreateScheduledJob extends BusEndpointBase {
 		String adapterName = BusMessageUtils.getHeader(message, "adapter");
 
 		Adapter adapter = getAdapter(configurationName, adapterName);
-		//Make sure the adapter exists!
+		// Make sure the adapter exists!
 		if(adapter == null) {
 			throw new BusException("Adapter ["+adapterName+"] not found");
 		}
 
 		String listenerName = BusMessageUtils.getHeader(message, "listener");
 		String receiverName = BusMessageUtils.getHeader(message, "receiver");
-		//Make sure the receiver exists!
+		// Make sure the receiver exists!
 		if(StringUtils.isEmpty(listenerName) && StringUtils.isNotEmpty(receiverName)) {
 			Receiver<?> receiver = adapter.getReceiverByName(receiverName);
 			IListener<?> listener = receiver.getListener();
@@ -113,7 +113,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 
 		SchedulerHelper sh = getSchedulerHelper();
 
-		//First try to create the schedule and run it on the local ibis before storing it in the database
+		// First try to create the schedule and run it on the local ibis before storing it in the database
 		DatabaseJob jobdef = SpringUtils.createBean(applicationContext);
 		jobdef.setCronExpression(cronExpression);
 		jobdef.setName(name);
@@ -139,7 +139,7 @@ public class CreateScheduledJob extends BusEndpointBase {
 			throw new BusException("Failed to add schedule", e);
 		}
 
-		//Save the job in the database
+		// Save the job in the database
 		if(AppConstants.getInstance().getBoolean("loadDatabaseSchedules.active", false)) {
 			boolean success = false;
 			FixedQuerySender qs = createBean(FixedQuerySender.class);

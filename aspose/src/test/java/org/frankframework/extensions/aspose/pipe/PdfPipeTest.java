@@ -223,7 +223,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		Message input = MessageTestUtils.getBinaryMessage(fileToConvert, false);
 		pipe.doPipe(input, session);
 
-		//returns <main conversionOption="0" mediaType="xxx/xxx" documentName="filename" numberOfPages="1" convertedDocument="xxx.pdf" />
+		// returns <main conversionOption="0" mediaType="xxx/xxx" documentName="filename" numberOfPages="1" convertedDocument="xxx.pdf" />
 		return session.getString(pipe.getConversionResultDocumentSessionKey());
 	}
 
@@ -246,10 +246,10 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 		PipeLineSession session = new PipeLineSession();
 		Message input = MessageTestUtils.getMessage(MessageType.CHARACTER_UTF8);
 		MimeType mimeType = MessageUtils.computeMimeType(input);
-		assertEquals("UTF-8", mimeType.getParameter("charset")); //ensure we have a charset in the mimetype
+		assertEquals("UTF-8", mimeType.getParameter("charset")); // ensure we have a charset in the mimetype
 		PipeRunResult result = pipe.doPipe(input, session);
 
-		//returns <main conversionOption="0" mediaType="xxx/xxx" documentName="filename" numberOfPages="1" convertedDocument="xxx.pdf" />
+		// returns <main conversionOption="0" mediaType="xxx/xxx" documentName="filename" numberOfPages="1" convertedDocument="xxx.pdf" />
 		String responseXml = result.getResult().asString();
 		assertFalse(responseXml.contains("failureReason"));
 	}
@@ -593,7 +593,7 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void emptyLicense() throws Exception {
-		pipe.setAction(DocumentAction.CONVERT); //without action the pipe will never reach the license block!
+		pipe.setAction(DocumentAction.CONVERT); // without action the pipe will never reach the license block!
 		pipe.setLicense("");
 		pipe.configure();
 
@@ -604,8 +604,8 @@ public class PdfPipeTest extends PipeTestBase<PdfPipe> {
 
 	@Test
 	public void wrongLicense() {
-		pipe.setAction(DocumentAction.CONVERT); //without action the pipe will never reach the license block!
-		pipe.setLicense("test123");//can't find this 'license' file
+		pipe.setAction(DocumentAction.CONVERT); // without action the pipe will never reach the license block!
+		pipe.setLicense("test123");// can't find this 'license' file
 		assertThrows(ConfigurationException.class, pipe::configure);
 	}
 

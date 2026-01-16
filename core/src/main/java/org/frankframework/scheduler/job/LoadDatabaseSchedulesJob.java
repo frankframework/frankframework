@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -111,7 +111,7 @@ public class LoadDatabaseSchedulesJob extends AbstractJobDef {
 								continue;
 							}
 
-							//Create a new JobDefinition so we can compare it with existing jobs
+							// Create a new JobDefinition so we can compare it with existing jobs
 							DatabaseJob jobdef = SpringUtils.createBean(adapter.getApplicationContext());
 							jobdef.setCronExpression(cronExpression);
 							jobdef.setName(jobName);
@@ -179,7 +179,7 @@ public class LoadDatabaseSchedulesJob extends AbstractJobDef {
 		}
 	}
 
-	//Loops through all configurations
+	// Loops through all configurations
 	private Adapter findAdapter(String adapterName) {
 		List<Adapter> adapters = new ArrayList<>();
 		for(Configuration config : getIbisManager().getConfigurations()) {

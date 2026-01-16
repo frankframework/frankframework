@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013, 2017 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -329,7 +329,7 @@ public class XmlQuerySender extends DirectQuerySender {
 			if (StringUtils.isNotEmpty(type) && "select".equalsIgnoreCase(type)) {
 				return executeSelectQuery(statement).getResult();
 			} else if (StringUtils.isNotEmpty(type) && "ddl".equalsIgnoreCase(type)) {
-				//TODO: Strip SQL comments, everything between -- and newline
+				// TODO: Strip SQL comments, everything between -- and newline
 				StringBuilder result = new StringBuilder();
 				for (String q : StringUtil.split(query, ";")) {
 					statement = getStatement(connection, q, QueryType.OTHER);
@@ -444,7 +444,7 @@ public class XmlQuerySender extends DirectQuerySender {
 					statement.setBytes(var, (byte[]) column.getParameter());
 					var++;
 				} else {
-					//if (column.getParameter() instanceof String)
+					// if (column.getParameter() instanceof String)
 					if (parameterMetaData == null && getDbmsSupport().isParameterTypeMatchRequired()) {
 						parameterMetaData = statement.getParameterMetaData();
 					}

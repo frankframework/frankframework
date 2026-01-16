@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden
+   Copyright 2018 Nationale-Nederlanden, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -132,7 +132,7 @@ public class HttpResponseMock extends Mockito implements Answer<CloseableHttpRes
 	private InputStream doHead(HttpHost host, HttpHead request, HttpContext context) {
 		assertEquals("HEAD", request.getMethod());
 		assertEquals("HEAD / HTTP/1.1", request.toString());
-		return null; //HEAD requests do not have a body
+		return null; // HEAD requests do not have a body
 	}
 
 	private boolean appendHeaders(HttpRequestBase request, StringBuilder response) {
@@ -143,7 +143,7 @@ public class HttpResponseMock extends Mockito implements Answer<CloseableHttpRes
 			if ("content-type".equalsIgnoreCase(headerName)) foundContentType = true;
 
 			String headerValue = header.getValue();
-			if("X-Akamai-ACS-Auth-Data".equals(headerName)) { //Ignore timestamps in request header
+			if("X-Akamai-ACS-Auth-Data".equals(headerName)) { // Ignore timestamps in request header
 				int start = StringUtils.ordinalIndexOf(headerValue, ",", 3);
 				int end = headerValue.lastIndexOf(",");
 				headerValue = headerValue.substring(0, start) + ", timestamp, timestamp" + headerValue.substring(end);
@@ -199,7 +199,7 @@ public class HttpResponseMock extends Mockito implements Answer<CloseableHttpRes
 
 		appendHeaders(request, response);
 
-		if(request.getEntity() != null) { //If an entity is present
+		if(request.getEntity() != null) { // If an entity is present
 			Header contentTypeHeader = request.getEntity().getContentType();
 			if(contentTypeHeader != null) {
 				response.append(contentTypeHeader.getName() + ": ").append(contentTypeHeader.getValue()).append(lineSeparator);

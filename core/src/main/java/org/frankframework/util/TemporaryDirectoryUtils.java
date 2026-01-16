@@ -59,7 +59,7 @@ public class TemporaryDirectoryUtils {
 		}
 		log.debug("resolved temp directory to [{}]", directory);
 
-		//Directory may be NULL but not empty. The directory has to valid, available and the IBIS must have read+write access to it.
+		// Directory may be NULL but not empty. The directory has to valid, available and the IBIS must have read+write access to it.
 		if(StringUtils.isEmpty(directory)) {
 			log.error("unable to determine ibis temp directory, falling back to [java.io.tmpdir]");
 			return System.getProperty("java.io.tmpdir");

@@ -350,7 +350,7 @@ public class CmisUtils {
 					break;
 				default:
 					log.warn("unparsable type [{}] for property [{}]", typeAttr, propertyValue);
-					continue; //Skip all and continue with the next property!
+					continue; // Skip all and continue with the next property!
 			}
 
 			log.debug("set property name [{}] value [{}]", nameAttr, propertyValue);
@@ -848,7 +848,7 @@ public class CmisUtils {
 		repositoryCapabilities.setNewTypeSettableAttributes(CmisUtils.xml2newTypeSettableAttributes(repositoryCapabilitiesXml));
 		repositoryCapabilities.setCreatablePropertyTypes(CmisUtils.xml2creatablePropertyTypes(repositoryCapabilitiesXml));
 
-		//These enums don't have to be set, require a null check else Enum.valueOf will bom.
+		// These enums don't have to be set, require a null check else Enum.valueOf will bom.
 		if(StringUtils.isNotEmpty(repositoryCapabilitiesXml.getAttribute("aclCapability")))
 			repositoryCapabilities.setCapabilityAcl(CapabilityAcl.valueOf(repositoryCapabilitiesXml.getAttribute("aclCapability")));
 		if(StringUtils.isNotEmpty(repositoryCapabilitiesXml.getAttribute("changesCapability")))

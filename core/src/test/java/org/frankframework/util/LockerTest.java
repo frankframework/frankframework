@@ -291,8 +291,8 @@ public class LockerTest {
 			// This test is not about the other thread to complete without problems,
 			// only about this thread to wait at most <timeout> seconds for the lock.
 
-			//log.debug("Other threads process finished, testing conditions");
-			//assertNull(lockerTester.getCaught());
+			// log.debug("Other threads process finished, testing conditions");
+			// assertNull(lockerTester.getCaught());
 			log.debug("testLockWaitTimeout() passed");
 
 		} catch (Throwable t) {

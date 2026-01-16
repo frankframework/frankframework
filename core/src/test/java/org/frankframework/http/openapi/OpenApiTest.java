@@ -256,7 +256,7 @@ class OpenApiTest extends OpenApiTestBase {
 	@Test
 	void petStore() throws Exception {
 		String uriBase = "/pets";
-		//Make sure all adapters have been registered on the dispatcher
+		// Make sure all adapters have been registered on the dispatcher
 		assertEquals(0, dispatcher.findAllMatchingConfigsForUri(uriBase).size(), "there are still registered patterns! Threading issue?");
 
 		new AdapterBuilder("listPets", "List all pets")
@@ -280,9 +280,9 @@ class OpenApiTest extends OpenApiTestBase {
 				.addExit(500, "Error", false)
 				.build(true);
 
-		//getPets.start(getPets, postPet, getPet); //Async start
+		// getPets.start(getPets, postPet, getPet); // Async start
 
-		// Thread.sleep(1200); //Adding a small timeout to fix async starting issues
+		// Thread.sleep(1200); // Adding a small timeout to fix async starting issues
 
 		assertNotNull(dispatcher.findExactMatchingConfigForUri(uriBase), "unable to find DispatchConfig for uri [pets]");
 		assertEquals(2, dispatcher.findExactMatchingConfigForUri(uriBase).getMethods().size(), "not all listener uri [pets] are registered on the dispatcher");

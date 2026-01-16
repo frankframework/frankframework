@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -28,8 +28,8 @@ import org.frankframework.core.ListenerException;
 
 @JsonInclude(Include.NON_NULL)
 public class StorageItemDTO {
-	private final @Getter String id; //MessageId
-	private final @Getter String originalId; //Made up Id?
+	private final @Getter String id; // MessageId
+	private final @Getter String originalId; // Made up Id?
 	private final @Getter String correlationId;
 	private final @Getter String type;
 	private final @Getter String host;

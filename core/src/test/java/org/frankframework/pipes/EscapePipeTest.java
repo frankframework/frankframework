@@ -44,7 +44,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 	}
 
 	@Test
-	public void testPartialEscapedMultiLineXmlInput() throws Exception { //double escapes
+	public void testPartialEscapedMultiLineXmlInput() throws Exception { // double escapes
 		configureAndStartPipe();
 
 		PipeRunResult result = doPipe(getResource("multi-line-partial-escaped.xml"));
@@ -102,7 +102,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 	}
 
 	@Test
-	public void testPartialEscapedMultiLineXmlInputSubString() throws Exception { //double escapes
+	public void testPartialEscapedMultiLineXmlInputSubString() throws Exception { // double escapes
 		pipe.setSubstringStart("<multi>");
 		pipe.setSubstringEnd("</multi>");
 		pipe.setEncodeSubstring(true);
@@ -125,7 +125,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
 	}
 
-	@Test //input-output is unchanged / substring is not found, nothing is being de/en-coded
+	@Test // input-output is unchanged / substring is not found, nothing is being de/en-coded
 	public void testDecodeEscapedMultiLineXmlInputWithEncodedSubString() throws Exception {
 		pipe.setSubstringStart("<test>");
 		pipe.setSubstringEnd("</test>");
@@ -171,7 +171,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
 	}
 
-	@Test //input-output is unchanged / substring is not found, nothing is being de/en-coded
+	@Test // input-output is unchanged / substring is not found, nothing is being de/en-coded
 	public void testDecodePartialEncodedMultiLineXmlInputWithSubString() throws Exception {
 		pipe.setSubstringStart("<root>");
 		pipe.setSubstringEnd("</root>");
@@ -183,7 +183,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 		TestAssertions.assertEqualsIgnoreCRLF(expected, result.getResult().asString());
 	}
 
-	@Test //input-output is unchanged / substring is not found, nothing is being de/en-coded
+	@Test // input-output is unchanged / substring is not found, nothing is being de/en-coded
 	public void testDecodePartialDoubleEncodedMultiLineXmlInput() throws Exception {
 		pipe.setDirection(Direction.DECODE);
 		configureAndStartPipe();
@@ -226,7 +226,7 @@ public class EscapePipeTest extends PipeTestBase<EscapePipe> {
 		TestAssertions.assertEqualsIgnoreRNTSpace(expected, result.getResult().asString());
 	}
 
-	@Test //The substring is the cdata part, without root, which returns null
+	@Test // The substring is the cdata part, without root, which returns null
 	public void testCdata2TextSubStringOnRoot() throws Exception {
 		pipe.setSubstringStart("<test>");
 		pipe.setSubstringEnd("</test>");

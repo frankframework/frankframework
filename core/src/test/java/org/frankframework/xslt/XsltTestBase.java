@@ -134,7 +134,7 @@ public abstract class XsltTestBase<P extends FixedForwardPipe> extends PipeTestB
 			System.out.println(i + " " + warnings.get(i));
 		}
 		assertFalse(warnings.isEmpty(), "Expected at least one config warnings");
-		int nextPos = 0;//warnings.size()>4?warnings.size()-2:1;
+		int nextPos = 0;// warnings.size()>4?warnings.size()-2:1;
 		assertThat(warnings.get(nextPos), StringContains.containsString("configured xsltVersion [1] does not match xslt version [2] declared in stylesheet"));
 		assertThat(warnings.get(nextPos), StringContains.containsString(styleSheetName));
 	}

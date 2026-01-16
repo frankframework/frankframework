@@ -150,7 +150,7 @@ public class ServletManagerTest {
 	@Test
 	public void testUrlMultipleMappingsOverride() {
 		String name = UUIDUtil.createNumericUUID();
-		properties.setProperty("servlet."+name+".urlMapping", "  test2 , /test3"); //contains spaces ;)
+		properties.setProperty("servlet."+name+".urlMapping", "  test2 , /test3"); // contains spaces ;)
 
 		DummyServletImpl servlet = new DummyServletImpl();
 		servlet.setUrlMapping(new String[] {"mapping1", "mapping2"});

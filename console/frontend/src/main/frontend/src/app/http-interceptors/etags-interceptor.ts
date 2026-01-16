@@ -8,7 +8,7 @@ export class EtagsInterceptor implements HttpInterceptor {
 
   intercept(request: HttpRequest<unknown>, next: HttpHandler): Observable<HttpEvent<unknown>> {
     if (Object.prototype.hasOwnProperty.call(this.etags, request.url)) {
-      //If not explicitly disabled (httpOptions==false), check eTag
+      // If not explicitly disabled (httpOptions==false), check eTag
       const tag = this.etags[request.url];
       const matchRequest = request.clone({
         setHeaders: { 'If-None-Match': tag },

@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2021 WeAreFrank
+   Copyright 2018 Nationale-Nederlanden, 2021, 2026 WeAreFrank
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ public class ResultHandler {
 
 	public String waitFor() throws FlowGenerationException {
 		try {
-			final String v = value.poll(5, TimeUnit.SECONDS); //Shouldn't take longer then 50 ms, but just to be sure..
+			final String v = value.poll(5, TimeUnit.SECONDS); // Shouldn't take longer then 50 ms, but just to be sure..
 			if(v == null) {
 				throw new FlowGenerationException("Timeout exceeded");
 			}

@@ -371,7 +371,7 @@ export class StorageListComponent implements OnInit, AfterViewInit, OnDestroy {
     for (const index in this.storageService.selectedMessages) {
       if (this.storageService.selectedMessages[index]) {
         messageIds.push(index);
-        this.storageService.selectedMessages[index] = false; //unset the messageId
+        this.storageService.selectedMessages[index] = false; // unset the messageId
       }
     }
 

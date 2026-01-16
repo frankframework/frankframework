@@ -14,7 +14,7 @@ import org.frankframework.testutil.TestFileUtils;
 public class IbmMisc {
 
 	public static String getApplicationDeploymentDescriptorPath() {
-		return getFileLocation("META-INF"); //pretend this is the META-INF folder of an EAR file.
+		return getFileLocation("META-INF"); // pretend this is the META-INF folder of an EAR file.
 	}
 
 	/**

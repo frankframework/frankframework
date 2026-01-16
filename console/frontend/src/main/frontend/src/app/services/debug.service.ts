@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
   providedIn: 'root',
 })
 export class DebugService {
-  private level = 0; //ERROR
+  private level = 0; // ERROR
   private levelEnums = ['ERROR', 'WARN', 'INFO', 'DEBUG'];
   private inGroup = false;
 
@@ -43,7 +43,7 @@ export class DebugService {
     globalThis.console.group(`${this.head()} ${title}`);
 
     if (arguments_.length > 0) {
-      //Loop through args and close group after...
+      // Loop through args and close group after...
       for (const a in arguments_) console.log(arguments_[a]);
       this.groupEnd();
     }

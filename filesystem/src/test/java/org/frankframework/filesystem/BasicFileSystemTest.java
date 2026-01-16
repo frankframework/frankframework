@@ -298,8 +298,8 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 		assertTrue(_folderExists(dstFolder), "Destination folder must exist");
 		assertFileExistsWithContents(dstFolder, fileSystem.getName(movedFile), contents);
-		//TODO: test that contents of file has remained the same
-		//TODO: test that file timestamp has not changed
+		// TODO: test that contents of file has remained the same
+		// TODO: test that file timestamp has not changed
 		assertFileDoesNotExist(srcFolder, id);
 
 		assertFalse(fileSystem.exists(f2), "original file should not exist anymore after move");
@@ -371,15 +371,15 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		F copiedFile = fileSystem.copyFile(f, dstFolder, false);
 		waitForActionToFinish();
 
-		if (filename.equals(id)) { //If each file has a different 'name' because it's not unique in a folder, this test wont work.
+		if (filename.equals(id)) { // If each file has a different 'name' because it's not unique in a folder, this test wont work.
 			assertEquals(filename, fileSystem.getName(copiedFile));
 		}
 
 		assertTrue(_folderExists(dstFolder), "Destination folder must exist");
-		assertFileExistsWithContents(dstFolder, fileSystem.getName(copiedFile), contents); //Assert new file is present
-		//TODO: test that contents of file has remained the same
-		//TODO: test that file timestamp has not changed
-		assertFileExistsWithContents(srcFolder, id, contents); //Assert old file is (still) present
+		assertFileExistsWithContents(dstFolder, fileSystem.getName(copiedFile), contents); // Assert new file is present
+		// TODO: test that contents of file has remained the same
+		// TODO: test that file timestamp has not changed
+		assertFileExistsWithContents(srcFolder, id, contents); // Assert old file is (still) present
 	}
 
 	@Test
@@ -477,26 +477,26 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 	@Test
 	public void basicFileSystemTestListFileFromRoot() throws Exception {
-		_deleteFolder(null); //Clean root folder
+		_deleteFolder(null); // Clean root folder
 		basicFileSystemTestListFile(null, 2);
 	}
 	@Test
 	public void basicFileSystemTestListFileFromFolder() throws Exception {
-		_deleteFolder(null); //Clean root folder
+		_deleteFolder(null); // Clean root folder
 		_createFolder("folder");
 		basicFileSystemTestListFile("folder", 2);
 	}
 
 	@Test
 	public void basicFileSystemTestListFileFromEmptyFolder() throws Exception {
-		_deleteFolder(null); //Clean root folder
+		_deleteFolder(null); // Clean root folder
 		_createFolder("folder2");
 		basicFileSystemTestListFile("folder2", 0);
 	}
 
 	@Test
 	public void basicFileSystemTestListFileShouldNotReadFromOtherFoldersWhenReadingFromRoot() throws Exception {
-		_deleteFolder(null); //Clean root folder
+		_deleteFolder(null); // Clean root folder
 		_createFolder("folder");
 		_createFolder("Otherfolder");
 		createFile("Otherfolder", "otherfile", "maakt niet uit");
@@ -505,7 +505,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 	@Test
 	public void basicFileSystemTestListFileShouldNotReadFromOtherFoldersWhenReadingFromFolder() throws Exception {
-		_deleteFolder(null); //Clean root folder
+		_deleteFolder(null); // Clean root folder
 		_createFolder("folder");
 		_createFolder("Otherfolder");
 		createFile("Otherfolder", "otherfile", "maakt niet uit");
@@ -514,7 +514,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 
 	@Test
 	public void basicFileSystemTestListFileShouldNotReadFromRootWhenReadingFromFolder() throws Exception {
-		_deleteFolder(null); //Clean root folder
+		_deleteFolder(null); // Clean root folder
 		_createFolder("folder");
 		createFile(null, "otherfile", "maakt niet uit");
 		basicFileSystemTestListFile("folder", 2);
@@ -645,7 +645,7 @@ public abstract class BasicFileSystemTest<F, FS extends IBasicFileSystem<F>> ext
 		fileSystem.open();
 
 		// Arrange files and folder structure
-		_deleteFolder(null); //Clean root folder
+		_deleteFolder(null); // Clean root folder
 		_createFolder("folder");
 		_createFolder("Otherfolder");
 		_createFolder("Otherfolder/Folder2");

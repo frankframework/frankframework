@@ -120,7 +120,7 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 	}
 
 	private OutputStream flushBufferToDisk() throws IOException {
-		if (outputStream != null) { //buffer has been reset, and fos exists.
+		if (outputStream != null) { // buffer has been reset, and fos exists.
 			return outputStream;
 		}
 		log.info("flushing buffer to disk");
@@ -203,7 +203,7 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 		if(fileLocation != null) {
 			log.trace("creating message from reference on disk");
 			PathMessage result = PathMessage.asTemporaryMessage(fileLocation);
-			//Since we were successfully able to create a PathMessage (which will cleanup the file on close) remove the reference here.
+			// Since we were successfully able to create a PathMessage (which will cleanup the file on close) remove the reference here.
 			fileLocation = null;
 			cleanupFileAction.shouldClean = false;
 			CleanerProvider.clean(cleanable);

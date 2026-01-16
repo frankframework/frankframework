@@ -21,7 +21,7 @@ export class InputFileUploadComponent {
       this.fileUpdated.emit(null);
       return;
     }
-    this.fileUpdated.emit(files[0]); //Can only parse 1 file!
+    this.fileUpdated.emit(files[0]); // Can only parse 1 file!
   }
 
   reset(): void {

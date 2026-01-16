@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2019 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -279,7 +279,7 @@ public class MailSender extends AbstractMailSender implements HasPhysicalDestina
 
 		// Even though this is called EnvelopeFrom/mail.smtp.from, it actually adds the Return-Path header and does not overwrite the MAIL FROM header
 		if (StringUtils.isNotEmpty(mailSession.getBounceAddress())) {
-			//TODO: use session.setProperty("mail.smtp.from", mailSession.getBounceAddress()); here, or do not globally share the session...
+			// TODO: use session.setProperty("mail.smtp.from", mailSession.getBounceAddress()); here, or do not globally share the session...
 			msg.setEnvelopeFrom(mailSession.getBounceAddress());
 		}
 

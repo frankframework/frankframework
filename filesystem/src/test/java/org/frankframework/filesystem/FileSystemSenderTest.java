@@ -420,7 +420,7 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 		waitForActionToFinish();
 
 		// Assert
-		assertFileCountEquals(result, 2); //2 files and 1 folder (which should be omitted from the result)
+		assertFileCountEquals(result, 2); // 2 files and 1 folder (which should be omitted from the result)
 	}
 
 	@Test
@@ -451,7 +451,7 @@ public abstract class FileSystemSenderTest<FSS extends AbstractFileSystemSender<
 		waitForActionToFinish();
 
 		// Assert
-		result.asString(); //read the stream else close won't be called... sigh
+		result.asString(); // read the stream else close won't be called... sigh
 		assertFalse(_fileExists(inputFolder, FILE1), "File [" + FILE1 + "] should have been deleted after READ action");
 		assertEquals("some content", result.asString());
 	}

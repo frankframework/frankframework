@@ -15,7 +15,7 @@ public class MessageContextTest {
 	@Test
 	public void testEmpty() {
 		MessageContext context = new MessageContext();
-		context.withMimeType("multipart/related=text/xml"); //very invalid
+		context.withMimeType("multipart/related=text/xml"); // very invalid
 		MimeType mimetype = (MimeType) context.get(MessageContext.METADATA_MIMETYPE);
 		String charset = (String) context.get(MessageContext.METADATA_CHARSET);
 

@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2023, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -48,7 +48,7 @@ public class ConfigFlow extends BusEndpointBase {
 			return new BinaryMessage(flow, flowDiagramManager.getMediaType());
 		}
 
-		return EmptyMessage.noContent(); //No flow file present
+		return EmptyMessage.noContent(); // No flow file present
 	}
 
 	private InputStream getFlow(Message<?> message) throws IOException {

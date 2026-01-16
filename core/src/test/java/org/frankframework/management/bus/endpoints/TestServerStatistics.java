@@ -32,17 +32,17 @@ public class TestServerStatistics extends BusTestBase {
 		Message<?> response = callSyncGateway(request);
 
 		String result = response.getPayload().toString();
-		assertThat(result, containsString("\"fileSystem\":{")); //Object
-		assertThat(result, containsString("\"framework\":{")); //Object
-		assertThat(result, containsString("\"instance\":{")); //Object
-		assertThat(result, containsString("\"applicationServer\":\"")); //String
-		assertThat(result, containsString("\"javaVersion\":\"")); //String
-		assertThat(result, containsString("\"dtap.stage\":\"")); //String
-		assertThat(result, containsString("\"dtap.side\":\"")); //String
-		assertThat(result, containsString("\"processMetrics\":{")); //Object
-		assertThat(result, containsString("\"machineName\":\"")); //String
-		assertThat(result, containsString("\"serverTimezone\":\"ETC/UTC\"")); //String
-		assertThat(result, not(containsString("\"Z\""))); //String
+		assertThat(result, containsString("\"fileSystem\":{")); // Object
+		assertThat(result, containsString("\"framework\":{")); // Object
+		assertThat(result, containsString("\"instance\":{")); // Object
+		assertThat(result, containsString("\"applicationServer\":\"")); // String
+		assertThat(result, containsString("\"javaVersion\":\"")); // String
+		assertThat(result, containsString("\"dtap.stage\":\"")); // String
+		assertThat(result, containsString("\"dtap.side\":\"")); // String
+		assertThat(result, containsString("\"processMetrics\":{")); // Object
+		assertThat(result, containsString("\"machineName\":\"")); // String
+		assertThat(result, containsString("\"serverTimezone\":\"ETC/UTC\"")); // String
+		assertThat(result, not(containsString("\"Z\""))); // String
 	}
 
 	@Test
@@ -51,9 +51,9 @@ public class TestServerStatistics extends BusTestBase {
 		Message<?> response = callSyncGateway(request);
 
 		String result = response.getPayload().toString();
-		assertThat(result, containsString("{\"errorStoreCount\":0")); //No errors in the IbisStore
+		assertThat(result, containsString("{\"errorStoreCount\":0")); // No errors in the IbisStore
 		assertThat(result, containsString("\"totalErrorStoreCount\":0"));
-		assertThat(result, containsString("\"messages\":[{\"date\":")); //Messages object with an Array with Objects
+		assertThat(result, containsString("\"messages\":[{\"date\":")); // Messages object with an Array with Objects
 		assertThat(result, not(containsString("\"monitorsRaised\":\"")));
 	}
 

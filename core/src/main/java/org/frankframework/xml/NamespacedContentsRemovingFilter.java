@@ -1,5 +1,5 @@
 /*
-   Copyright 2019, 2022 WeAreFrank!
+   Copyright 2019, 2022, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -54,12 +54,12 @@ public class NamespacedContentsRemovingFilter extends FullXmlFilter {
 
 	@Override
 	public void startPrefixMapping(String prefix, String uri) throws SAXException {
-		//log.debug("startPrefixMapping("+prefix+","+uri+")");
+		// log.debug("startPrefixMapping("+prefix+","+uri+")");
 	}
 
 	@Override
 	public void endPrefixMapping(String prefix) throws SAXException {
-		//log.debug("endPrefixMapping("+prefix+")");
+		// log.debug("endPrefixMapping("+prefix+")");
 	}
 
 	@Override

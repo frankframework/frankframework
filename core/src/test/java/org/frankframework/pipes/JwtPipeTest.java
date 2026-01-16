@@ -253,7 +253,7 @@ public class JwtPipeTest extends PipeTestBase<JwtPipe> {
 	@Test
 	void dontUseSecretParameter() throws Exception {
 		// Arrange
-		pipe.setExpirationTime(0); //And no expiration time
+		pipe.setExpirationTime(0); // And no expiration time
 		pipe.addParameter(new Parameter("sharedSecret", DUMMY_SECRET));
 
 		pipe.addParameter(new Parameter("sub", "Smint"));

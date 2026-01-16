@@ -153,7 +153,7 @@ public class CmisSessionBuilder {
 		} else if (getBindingType() == BindingTypes.BROWSER) {
 			parameterMap.setBrowserBindingUrl(url);
 			parameterMap.setBasicAuthentication();
-			//Add parameter dateTimeFormat to send dates in ISO format instead of milliseconds.
+			// Add parameter dateTimeFormat to send dates in ISO format instead of milliseconds.
 			parameterMap.put(SessionParameter.BROWSER_DATETIME_FORMAT, DateTimeFormat.EXTENDED.value());
 			parameterMap.put(SessionParameter.BINDING_SPI_CLASS, CmisCustomBrowserBindingSpi.class.getName());
 			log.debug("Added custom BINDING_SPI_CLASS CmisCustomBrowserBindingSpi to new CmisSession");
@@ -169,18 +169,18 @@ public class CmisSessionBuilder {
 
 			// OpenCMIS requires an entrypoint url (wsdl), if this url has been secured and is not publicly accessible,
 			// we can manually override this wsdl by reading it from the classpath.
-			//TODO: Does this work with any binding type?
+			// TODO: Does this work with any binding type?
 			if(overrideEntryPointWSDL != null) {
 				URL url = ClassLoaderUtils.getResourceURL(scopeProvider, overrideEntryPointWSDL);
 				if(url != null) {
 					try {
 						parameterMap.put(OVERRIDE_WSDL_KEY, StreamUtil.streamToString(url.openStream()));
 
-						//We need to setup a fake URL in order to initialize the CMIS Session
+						// We need to setup a fake URL in order to initialize the CMIS Session
 						parameterMap.setWebServicesBindingUrl(OVERRIDE_WSDL_URL);
 					}
 					catch (IOException e) {
-						//eg. if the named charset is not supported
+						// eg. if the named charset is not supported
 						throw new CmisSessionException("error reading overrideEntryPointWSDL["+overrideEntryPointWSDL+"]");
 					}
 				} else {
@@ -205,7 +205,7 @@ public class CmisSessionBuilder {
 		}
 		parameterMap.setRepositoryId(repository);
 
-		//SSL
+		// SSL
 		if (keystore!=null || truststore!=null || allowSelfSignedCertificates) {
 			CredentialFactory keystoreCf = new CredentialFactory(keystoreAuthAlias, null, keystorePassword);
 			CredentialFactory keystoreAliasCf = StringUtils.isNotEmpty(keystoreAliasAuthAlias) || StringUtils.isNotEmpty(keystoreAliasPassword)

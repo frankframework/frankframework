@@ -57,7 +57,7 @@ public class MessageStoreListenerTest {
 	@AfterEach
 	public void teardown() {
 		if(listener != null) {
-			listener.stop(); //does this trigger an exception
+			listener.stop(); // does this trigger an exception
 		}
 	}
 

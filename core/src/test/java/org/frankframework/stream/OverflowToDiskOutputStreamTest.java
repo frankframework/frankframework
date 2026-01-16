@@ -31,7 +31,7 @@ public class OverflowToDiskOutputStreamTest {
 		OverflowToDiskOutputStream oos = new OverflowToDiskOutputStream(100, tmpDir);
 		oos.write(testString.getBytes());
 		oos.write(48);
-		oos.flush(); //shouldn't do anything
+		oos.flush(); // shouldn't do anything
 		oos.write(48);
 
 		oos.flush();
@@ -50,7 +50,7 @@ public class OverflowToDiskOutputStreamTest {
 		String testString = "longer-then-10-characters";
 		OverflowToDiskOutputStream oos = new OverflowToDiskOutputStream(10, tmpDir);
 		oos.write(testString.getBytes());
-		oos.flush(); //shouldn't do anything
+		oos.flush(); // shouldn't do anything
 
 		List<Path> files = Files.list(tmpDir).toList();
 		assertEquals(1, files.size(), "1 file should have been created");
@@ -129,7 +129,7 @@ public class OverflowToDiskOutputStreamTest {
 	public void testBufferSizeLessThenOne(int bufferSize) throws Exception {
 		OverflowToDiskOutputStream oos = new OverflowToDiskOutputStream(bufferSize, tmpDir);
 		oos.write(48);
-		oos.flush(); //shouldn't do anything
+		oos.flush(); // shouldn't do anything
 		oos.write(48);
 
 		List<Path> files = Files.list(tmpDir).toList();

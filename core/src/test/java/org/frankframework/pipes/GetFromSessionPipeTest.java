@@ -127,7 +127,7 @@ public class GetFromSessionPipeTest extends PipeTestBase<GetFromSessionPipe> {
 		String key1 = null;
 		String key2 = null;
 
-		//It's a bit random how the map is sorted.. sometimes key2 appears before key1
+		// It's a bit random how the map is sorted.. sometimes key2 appears before key1
 		BufferedReader bufReader = new BufferedReader(new StringReader(result));
 		String line;
 		while( (line=bufReader.readLine()) != null ) {

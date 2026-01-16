@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2023 WeAreFrank!
+   Copyright 2022-2023, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -37,7 +37,7 @@ public class HandleIbisManagerAction extends BusEndpointBase {
 		String adapterName = BusMessageUtils.getHeader(message, "adapter");
 		String receiverName = BusMessageUtils.getHeader(message, "receiver");
 		String userPrincipalName = BusMessageUtils.getUserPrincipalName();
-		boolean isAdmin = BusMessageUtils.hasAnyRole("IbisAdmin", "IbisTester"); //limits the use of a FULL_RELOAD
+		boolean isAdmin = BusMessageUtils.hasAnyRole("IbisAdmin", "IbisTester"); // limits the use of a FULL_RELOAD
 
 		if(action == null) {
 			throw new BusException("no (valid) action specified");

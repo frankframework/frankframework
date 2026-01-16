@@ -85,7 +85,7 @@ public class LocalDistributionSummary extends CumulativeDistributionSummary {
 		}
 	}
 
-	public double getStdDev() {//moet null terug geven
+	public double getStdDev() {// moet null terug geven
 		return Math.sqrt(getVariance());
 	}
 

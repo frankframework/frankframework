@@ -27,7 +27,7 @@ public class SwitchPipeNamespaceUnawarenessTest extends PipeTestBase<SwitchPipe>
 		pipe.start();
 		PipeRunResult prr = doPipe(input);
 
-		//assertEquals(input,prr.getResult());
+		// assertEquals(input,prr.getResult());
 
 		PipeForward forward=prr.getPipeForward();
 		assertNotNull(forward);

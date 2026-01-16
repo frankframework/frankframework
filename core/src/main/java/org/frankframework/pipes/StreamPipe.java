@@ -149,7 +149,7 @@ public class StreamPipe extends FixedForwardPipe {
 				List<AntiVirusObject> antiVirusObjects = new ArrayList<>();
 				if(MultipartUtils.isMultipart(httpRequest)) {
 					log.debug("request with content type [{}] and length [{}] contains multipart content", httpRequest.getContentType(), httpRequest.getContentLength());
-					InputStreamDataSource dataSource = new InputStreamDataSource(httpRequest.getContentType(), httpRequest.getInputStream()); //the entire InputStream will be read here!
+					InputStreamDataSource dataSource = new InputStreamDataSource(httpRequest.getContentType(), httpRequest.getInputStream()); // the entire InputStream will be read here!
 					MimeMultipart mimeMultipart = new MimeMultipart(dataSource);
 
 					log.debug("multipart request items size [{}]", mimeMultipart.getCount());

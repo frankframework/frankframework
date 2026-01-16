@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2022-2024 WeAreFrank!
+   Copyright 2013, 2016 Nationale-Nederlanden, 2020, 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -46,7 +46,7 @@ public class DirectQuerySender extends AbstractJdbcQuerySender<Connection> {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		configure(null); //No adapter? Don't trust!
+		configure(null); // No adapter? Don't trust!
 	}
 
 	public void configure(boolean ignoreSQLInjectionWarning) throws ConfigurationException {
@@ -63,7 +63,7 @@ public class DirectQuerySender extends AbstractJdbcQuerySender<Connection> {
 		if (adapter != null) {
 			ConfigurationWarnings.add(adapter, log, "has a ["+ClassUtils.nameOf(this)+"]. This may cause potential SQL injections!", SuppressKeys.SQL_INJECTION_SUPPRESS_KEY, adapter);
 		} else {
-			//This can still be triggered when a Sender is inside a SenderSeries wrapper such as ParallelSenders
+			// This can still be triggered when a Sender is inside a SenderSeries wrapper such as ParallelSenders
 			ApplicationWarnings.add(log, "The class ["+ClassUtils.nameOf(this)+"] is used one or more times. This may cause potential SQL injections!");
 		}
 	}

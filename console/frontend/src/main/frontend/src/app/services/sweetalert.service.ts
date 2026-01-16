@@ -16,7 +16,7 @@ export class SweetalertService {
     // let args = arguments || [];
     const options = this.defaultSettings;
 
-    //expects (String, String) or (JsonObject, Function)
+    // expects (String, String) or (JsonObject, Function)
     if (typeof title == 'object') {
       return { ...title };
       // DEPRECATED
@@ -30,7 +30,7 @@ export class SweetalertService {
       }
     }
 
-    return options; //let [options, callback] = this.defaults.apply(this, arguments);
+    return options; // let [options, callback] = this.defaults.apply(this, arguments);
   }
 
   input(title: string | SweetAlertOptions, text?: string): Promise<SweetAlertResult<unknown>> {

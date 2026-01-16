@@ -344,7 +344,7 @@ public class ApiListenerServletTest {
 
 		Response result = service(createRequest(uri, HttpMethod.OPTIONS));
 		assertEquals(200, result.getStatus());
-		assertEquals("", result.getContentAsString()); //Pre-flight requests have no data
+		assertEquals("", result.getContentAsString()); // Pre-flight requests have no data
 		assertNull(result.getErrorMessage());
 		assertTrue(result.containsHeader("Access-Control-Allow-Origin"));
 		assertFalse(result.containsHeader("Access-Control-Allow-Headers"));
@@ -361,7 +361,7 @@ public class ApiListenerServletTest {
 		headers.put("Access-Control-Request-Headers", "Message-Id,CustomHeader");
 		Response result = service(createRequest(uri, HttpMethod.OPTIONS, null, headers));
 		assertEquals(200, result.getStatus());
-		assertEquals("", result.getContentAsString()); //Pre-flight requests have no data
+		assertEquals("", result.getContentAsString()); // Pre-flight requests have no data
 		assertNull(result.getErrorMessage());
 		assertTrue(result.containsHeader("Access-Control-Allow-Origin"));
 		assertTrue(result.containsHeader("Access-Control-Allow-Headers"));
@@ -665,7 +665,7 @@ public class ApiListenerServletTest {
 
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.setBoundary("gc0p4Jq0M2Yt08jU534c0p");
-		builder.addTextBody("string1", "<hello>â¬ Ã¨</hello>");//Defaults to 'text/plain;charset=ISO-8859-1'
+		builder.addTextBody("string1", "<hello>â¬ Ã¨</hello>");// Defaults to 'text/plain;charset=ISO-8859-1'
 
 		InputStream doc1 = getClass().getResourceAsStream("/Documents/doc001.pdf");
 		builder.addBinaryBody("file1", doc1, ContentType.APPLICATION_OCTET_STREAM, "file1");
@@ -700,7 +700,7 @@ public class ApiListenerServletTest {
 		Response result = service(createRequest(uri, HttpMethod.POST, builder.build()));
 		assertEquals(200, result.getStatus());
 		assertTrue(result.getContentType().contains("application/json"), "Content-Type header does not contain [application/json]");
-		assertEquals("<hello>€ è</hello>", result.getContentAsString()); //Parsed as UTF-8
+		assertEquals("<hello>€ è</hello>", result.getContentAsString()); // Parsed as UTF-8
 		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
 	}
@@ -724,7 +724,7 @@ public class ApiListenerServletTest {
 		assertEquals(200, result.getStatus());
 		assertTrue(result.getContentType().contains("text/plain"), "Content-Type header does not contain [application/json]");
 		assertTrue(result.getContentType().contains("charset=ISO-8859-1"), "Content-Type header does not contain correct [charset]");
-		assertEquals("<hello>â¬ Ã¨</hello>", result.getContentAsString()); //Parsed as ISO-8859-1
+		assertEquals("<hello>â¬ Ã¨</hello>", result.getContentAsString()); // Parsed as ISO-8859-1
 		assertEquals("OPTIONS, POST", result.getHeader("Allow"));
 		assertNull(result.getErrorMessage());
 	}
@@ -736,7 +736,7 @@ public class ApiListenerServletTest {
 
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.addTextBody("string1", "<hallo>€ è</hallo>", ContentType.create("text/plain"));
-		builder.addTextBody("string2", "<hello>€ è</hello>", ContentType.create("text/plain", "UTF-8"));//explicitly sent as UTF-8
+		builder.addTextBody("string2", "<hello>€ è</hello>", ContentType.create("text/plain", "UTF-8"));// explicitly sent as UTF-8
 
 		URL url1 = ClassLoaderUtils.getResourceURL("/test1.xml");
 		assertNotNull(url1);
@@ -770,7 +770,7 @@ public class ApiListenerServletTest {
 
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
 		builder.setMtomMultipart();
-		builder.addTextBody("string1", "<hello>€ è</hello>", ContentType.create("text/xml", "UTF-8"));//explicitly sent as UTF-8, defaults to ISO-8859-1
+		builder.addTextBody("string1", "<hello>€ è</hello>", ContentType.create("text/xml", "UTF-8"));// explicitly sent as UTF-8, defaults to ISO-8859-1
 
 		URL url1 = ClassLoaderUtils.getResourceURL("/test1.xml");
 		assertNotNull(url1);
@@ -802,7 +802,7 @@ public class ApiListenerServletTest {
 		new ApiListenerBuilder(uri, List.of(HttpMethod.POST), MediaTypes.MULTIPART, MediaTypes.JSON).build();
 
 		MultipartEntityBuilder builder = MultipartEntityBuilder.create();
-		builder.addTextBody("string1", "<request/>", ContentType.create("text/xml"));//explicitly sent as UTF-8
+		builder.addTextBody("string1", "<request/>", ContentType.create("text/xml"));// explicitly sent as UTF-8
 
 		Response result = service(createRequest(uri, HttpMethod.POST, builder.build()));
 		assertEquals(200, result.getStatus());
@@ -1347,7 +1347,7 @@ public class ApiListenerServletTest {
 	}
 
 	@ParameterizedTest
-	//you may not set the OPTIONS method on an ApiListener, the Servlet should handle this without calling the adapter
+	// you may not set the OPTIONS method on an ApiListener, the Servlet should handle this without calling the adapter
 	@EnumSource(value = HttpMethod.class, mode = EnumSource.Mode.EXCLUDE, names = { "OPTIONS" })
 	public void testRequestWithAccept(HttpMethod method) throws Exception {
 		// Arrange

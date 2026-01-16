@@ -122,7 +122,7 @@ public class ResultSetIteratingPipeTest extends JdbcEnabledPipeTestBase<ResultSe
 		assertEquals("<results count=\"10\"/>", result.getResult().asString());
 		String expectedXml = TestFileUtils.getTestFile("/Pipes/ResultSetIteratingPipe/result.xml");
 
-		MatchUtils.assertXmlEquals(expectedXml, sender.collectResults()); //to display clean diff
+		MatchUtils.assertXmlEquals(expectedXml, sender.collectResults()); // to display clean diff
 	}
 
 	@DatabaseTest

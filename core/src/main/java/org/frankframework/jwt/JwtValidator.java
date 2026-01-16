@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -98,7 +98,7 @@ public class JwtValidator<C extends SecurityContext> {
 			// object caches the retrieved keys to speed up subsequent look-ups and can
 			// also gracefully handle key-rollover
 			ResourceRetriever retriever = new DefaultResourceRetriever(getConnectTimeout(), getReadTimeout());
-			//JWKSource<C> keySource = new RemoteJWKSet<C>(new URL(jwksURL),retriever);
+			// JWKSource<C> keySource = new RemoteJWKSet<C>(new URL(jwksURL),retriever);
 			// Implemented Seam for Dependency Injection of JWKSource for unit testing
 			keySource = new RemoteJWKSet<>(jwksURL, retriever);
 		}

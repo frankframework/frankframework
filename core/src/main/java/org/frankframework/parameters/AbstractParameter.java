@@ -315,7 +315,7 @@ public abstract class AbstractParameter<T> implements IConfigurable, IWithParame
 					Object sourceObject = session.get(requestedSessionKey);
 					if (getType() == ParameterType.LIST && sourceObject instanceof List) {
 						// larva can produce the sourceObject as list
-						//noinspection unchecked
+						// noinspection unchecked
 						List<String> items = (List<String>) sourceObject;
 						XmlBuilder itemsXml = new XmlBuilder("items");
 						for (String item : items) {

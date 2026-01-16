@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2024 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -341,7 +341,7 @@ public class ReceiverTest {
 					int nrTries = 0;
 					while (nrTries++ < NR_TIMES_MESSAGE_OFFERED) {
 						final TransactionStatus tx = txManager.getTransaction(TX_REQUIRES_NEW);
-						//noinspection unchecked
+						// noinspection unchecked
 						reset(errorStorage, listener);
 						when(errorStorage.storeMessage(any(), any(), any(), any(), any(), any()))
 							.thenAnswer(invocation -> {
@@ -460,7 +460,7 @@ public class ReceiverTest {
 
 						log.info("Nr tries: {}, Nr rolled back transactions: {}, delivery count: {}", nrTries, rolledBackTXCounter.get(), receiver.getDeliveryCount(messageWrapper));
 						final TransactionStatus tx = txManager.getTransaction(TX_REQUIRES_NEW);
-						//noinspection unchecked
+						// noinspection unchecked
 						reset(errorStorage, listener);
 						when(errorStorage.storeMessage(messageIdCaptor.capture(), correlationIdCaptor.capture(), any(), any(), any(), messageCaptor.capture()))
 								.thenAnswer(invocation -> {

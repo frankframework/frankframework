@@ -255,7 +255,7 @@ export class AppComponent implements OnInit, OnDestroy {
       this.serverInfo = null;
       if (!response || response.length === 0) return;
 
-      const release = response[0]; //Not sure what ID to pick, smallest or latest?
+      const release = response[0]; // Not sure what ID to pick, smallest or latest?
 
       const newVersion = release.tag_name.slice(0, 1) == 'v' ? release.tag_name.slice(1) : release.tag_name;
       const currentVersion = this.appService.appConstants()['application.version'] as string;
@@ -321,7 +321,7 @@ export class AppComponent implements OnInit, OnDestroy {
   }
 
   initializeAdapters(): void {
-    //Get base information first, then update it with more details
+    // Get base information first, then update it with more details
     this.appService.getAdapters().subscribe((data: Record<string, Adapter>) => this.finalizeStartup(data));
   }
 
@@ -412,7 +412,7 @@ export class AppComponent implements OnInit, OnDestroy {
       if (adapter.receiverReachedMaxExceptions) {
         adapter.status = 'warning';
       }
-      //If last message is WARN or ERROR change adapter status to warning.
+      // If last message is WARN or ERROR change adapter status to warning.
       if (adapter.messages && adapter.messages.length > 0 && adapter.status != 'stopped') {
         const message = adapter.messages.at(-1);
         if (message && message.level != 'INFO') adapter.status = 'warning';

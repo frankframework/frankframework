@@ -83,9 +83,9 @@ export class LoggingComponent implements OnInit {
 
     this.setBreadcrumb(directoryParameter, fileParameter);
 
-    //This is only "" when the user opens the logging page
+    // This is only "" when the user opens the logging page
     const directory = directoryParameter.length > 0 ? directoryParameter : '';
-    //The file param is only set when the user copies and pastes an url in their browser
+    // The file param is only set when the user copies and pastes an url in their browser
     if (fileParameter.length > 0) {
       this.directory = directory;
       this.file = fileParameter;

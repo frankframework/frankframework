@@ -60,7 +60,7 @@ public class GetFromSessionPipe extends FixedForwardPipe {
 		Object result = session.get(key);
 
 		if (result == null) {
-			//why is null returned when nothing can be found?
+			// why is null returned when nothing can be found?
 			log.warn("got null value from session under key [{}]", getSessionKey());
 		}
 		else {

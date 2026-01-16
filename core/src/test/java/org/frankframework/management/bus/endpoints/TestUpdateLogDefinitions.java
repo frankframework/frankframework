@@ -30,7 +30,7 @@ import org.frankframework.testutil.SpringRootInitializer;
  */
 @SpringJUnitConfig(initializers = {SpringRootInitializer.class})
 @WithMockUser(roles = { "IbisTester" })
-@SuppressWarnings("unchecked") //can be removed once we implement a DAO
+@SuppressWarnings("unchecked") // can be removed once we implement a DAO
 public class TestUpdateLogDefinitions extends BusTestBase {
 	private static final String LOG_DEFINITION_PACKAGE = "org.frankframework.management.bus";
 	private static final String EXCEPTION_MESSAGE = "neither [reconfigure], [logPackage] or [level] provided";

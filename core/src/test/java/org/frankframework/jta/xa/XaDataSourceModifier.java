@@ -20,7 +20,7 @@ public class XaDataSourceModifier {
 	}
 
 	public static <T extends XaResourceObserverFactory> T getXaResourceObserverFactory() {
-		//noinspection unchecked
+		// noinspection unchecked
 		return (T)XaDataSourceModifier.xaResourceObserverFactory;
 	}
 

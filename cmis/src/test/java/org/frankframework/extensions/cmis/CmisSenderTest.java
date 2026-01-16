@@ -70,7 +70,7 @@ public class CmisSenderTest extends SenderTestBase<CmisSender> {
 		sender.setAction(CmisSender.CmisAction.FIND);
 		sender.configure();
 
-		//Should configure and open just fine, but fail trying to connect to an endpoint.
+		// Should configure and open just fine, but fail trying to connect to an endpoint.
 		assertThrows(CmisConnectionException.class, sender::start);
 	}
 }

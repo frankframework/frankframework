@@ -28,6 +28,6 @@ public abstract class DbmsSupportMock extends GenericDbmsSupport implements IDbm
 
 	@Override
 	public boolean isTablePresent(Connection conn, String schemaName, String tableName) throws DbmsException {
-		return true; //all tables are present
+		return true; // all tables are present
 	}
 }

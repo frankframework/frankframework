@@ -490,7 +490,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 	}
 
 
-	@Test //Mocking a Repeatable Message
+	@Test // Mocking a Repeatable Message
 	void testRetryRepeatablePayloadOnResetOAuth() throws Exception {
 		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.OAUTH_PATH);
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
@@ -512,7 +512,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 	}
 
 
-	@Test //Mocking a Non-Repeatable Message (avoids a NonRepeatableRequestException)
+	@Test // Mocking a Non-Repeatable Message (avoids a NonRepeatableRequestException)
 	@Disabled("Messages are now always repeatable")
 	void testRetryNonRepeatablePayloadOnResetOAuth() throws Exception {
 		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.OAUTH_PATH);
@@ -534,7 +534,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 		assertEquals("(SocketException) Connection reset", exception.getMessage());
 	}
 
-	@Test //Mocking a Repeatable Multipart Message
+	@Test // Mocking a Repeatable Multipart Message
 	void testRetryRepeatableMultipartPayloadOnResetOAuth() throws Exception {
 		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.OAUTH_PATH);
 		sender.setResultStatusCodeSessionKey(RESULT_STATUS_CODE_SESSIONKEY);
@@ -570,7 +570,7 @@ public class HttpSenderAuthenticationTest extends SenderTestBase<HttpSender> {
 	}
 
 
-	@Test //Mocking a Non-Repeatable Multipart Message (avoids a NonRepeatableRequestException)
+	@Test // Mocking a Non-Repeatable Multipart Message (avoids a NonRepeatableRequestException)
 	@Disabled("Messages are now always repeatable")
 	void testRetryNonRepeatableMultipartPayloadOnResetOAuth() throws Exception {
 		sender.setUrl(getServiceEndpoint() + MockAuthenticatedService.OAUTH_PATH);

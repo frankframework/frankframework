@@ -97,7 +97,7 @@ $toast-header-border-color: $toast-border-color !default;
 .toast-header {
   display: flex;
   align-items: center;
-  //padding: var(--#{$prefix}toast-padding-y) var(--#{$prefix}toast-padding-x);
+  // padding: var(--#{$prefix}toast-padding-y) var(--#{$prefix}toast-padding-x);
   padding: 0 0 5px;
   color: var(--#{$prefix}toast-header-color);
   background-color: var(--#{$prefix}toast-header-bg);

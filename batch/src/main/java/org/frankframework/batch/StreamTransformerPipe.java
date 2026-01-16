@@ -426,7 +426,7 @@ public class StreamTransformerPipe extends FixedForwardPipe {
 					log.debug("<no flow>: {}", rawRecord);
 					continue; // ignore line for which no handlers are registered
 				}
-				//log.debug("flow ["+flow.getRecordKey()+"] openBlockBeforeLine ["+flow.getOpenBlockBeforeLine()+"]");
+				// log.debug("flow ["+flow.getRecordKey()+"] openBlockBeforeLine ["+flow.getOpenBlockBeforeLine()+"]");
 				IResultHandler resultHandler = flow.getResultHandler();
 				closeBlock(session, resultHandler, streamId, flow, flow.getCloseBlockBeforeLine(),"closeBlockBeforeLine of flow ["+flow.getRecordKey()+"]",blocks);
 				String obbl = null;

@@ -70,7 +70,7 @@ public class NamespaceUriProviderBean implements ApplicationContextAware, Initia
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		//TODO look into NamespaceHandlerResolver
+		// TODO look into NamespaceHandlerResolver
 		Bus bus = (Bus) applicationContext.getBean("cxf");
 		if(bus instanceof SpringBus) {
 			log.debug("default CXF SpringBus [{}]", bus.getId());

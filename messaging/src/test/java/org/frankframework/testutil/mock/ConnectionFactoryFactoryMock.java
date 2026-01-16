@@ -131,7 +131,7 @@ public class ConnectionFactoryFactoryMock implements IConnectionFactoryFactory {
 		}
 	}
 
-	//Use this to 'send' and 'receive' messages
+	// Use this to 'send' and 'receive' messages
 	public abstract static class MessageHandler extends Mockito implements MessageProducer, MessageConsumer {
 		private jakarta.jms.Message payload = null;
 		public static MessageHandler newInstance() {

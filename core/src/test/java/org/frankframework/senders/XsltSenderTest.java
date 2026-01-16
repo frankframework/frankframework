@@ -104,7 +104,7 @@ public class XsltSenderTest extends SenderTestBase<XsltSender> {
 		assertEquals("dummy", result);
 	}
 
-	//This xPath only runs on xslt version 1
+	// This xPath only runs on xslt version 1
 	@Test
 	public void testComplexXslt1Xpath() throws SenderException, TimeoutException, ConfigurationException, IOException {
 		sender.setXpathExpression("number(count(/results/result[contains(@name , 'test')]))");

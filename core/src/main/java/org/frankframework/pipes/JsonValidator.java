@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -51,7 +51,7 @@ import org.frankframework.validation.AbstractXmlValidator.ValidationResult;
 public class JsonValidator extends AbstractValidator {
 
 	private @Getter String schema;
-	//private @Getter String jsonSchemaVersion=null;
+	// private @Getter String jsonSchemaVersion=null;
 	private @Getter String subSchemaPrefix="/definitions/";
 	private @Getter String reasonSessionKey = "failureReason";
 

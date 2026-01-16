@@ -318,7 +318,7 @@ public abstract class IteratingPipe<I> extends MessageSendingPipe {
 						long senderStartTime= System.currentTimeMillis();
 						Message resultMessage;
 						if (sender instanceof IBlockEnabledSender<?>) {
-							//noinspection unchecked
+							// noinspection unchecked
 							SenderResult senderResult=((IBlockEnabledSender<Object>)sender).sendMessage(blockHandle, message, childSession);
 							resultMessage = senderResult.getResult();
 							if (!senderResult.isSuccess()) {

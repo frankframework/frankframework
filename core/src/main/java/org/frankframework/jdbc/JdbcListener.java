@@ -150,7 +150,7 @@ public class JdbcListener<M> extends JdbcFacade implements IPeekableListener<M>,
 				throw new LifecycleException(e);
 			}
 		} else {
-			//noinspection EmptyTryBlock
+			// noinspection EmptyTryBlock
 			try (Connection ignored = getConnection()) {
 				// do nothing, eat a connection from the pool to validate connectivity
 			} catch (JdbcException | SQLException e) {

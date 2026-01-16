@@ -88,14 +88,14 @@ export class FlowComponent implements OnChanges {
     const status = data && data.status ? data.status : 204;
     if (status == 200) {
       const contentType = data.headers.get('Content-Type')!;
-      this.flow.isImage = contentType.includes('image') || contentType.includes('svg'); //display an image or a button to open a modal
+      this.flow.isImage = contentType.includes('image') || contentType.includes('svg'); // display an image or a button to open a modal
       if (!this.flow.isImage) {
-        //only store metadata when required
+        // only store metadata when required
         this.flow.data = data.body;
       }
       return;
     }
-    //If non successful response, force no-image-available
+    // If non successful response, force no-image-available
     this.flow.isImage = true;
     this.flow.url = 'assets/images/no_image_available.svg';
   }

@@ -47,7 +47,7 @@ public abstract class WritableFileSystemSenderTest<FSS extends AbstractFileSyste
 		String actual = readFile(null, filename);
 		// test
 		// TODO: evaluate 'result'
-		//assertEquals("result of sender should be input message",result,message);
+		// assertEquals("result of sender should be input message",result,message);
 		assertEquals(contents.trim(), actual.trim());
 	}
 
@@ -64,7 +64,7 @@ public abstract class WritableFileSystemSenderTest<FSS extends AbstractFileSyste
 			createFile(folder, filename, "dummy-contents\n");
 		}
 
-		fileSystemSender.setAction(FileSystemAction.CREATE); //TODO WRITE
+		fileSystemSender.setAction(FileSystemAction.CREATE); // TODO WRITE
 		if (setCreateFolderAttribute) {
 			fileSystemSender.setCreateFolder(true);
 		}
@@ -136,7 +136,7 @@ public abstract class WritableFileSystemSenderTest<FSS extends AbstractFileSyste
 		String actual = readFile(null, filename);
 		// test
 		// TODO: evaluate 'result'
-		//assertEquals("result of sender should be input message",result,message);
+		// assertEquals("result of sender should be input message",result,message);
 		assertEquals(contents.trim(), actual.trim());
 	}
 
@@ -165,7 +165,7 @@ public abstract class WritableFileSystemSenderTest<FSS extends AbstractFileSyste
 		String actual = readFile(null, filename);
 		// test
 		// TODO: evaluate 'result'
-		//assertEquals("result of sender should be input message",result,message);
+		// assertEquals("result of sender should be input message",result,message);
 		assertEquals(contents.trim(), actual.trim());
 	}
 

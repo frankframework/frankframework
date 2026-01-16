@@ -41,7 +41,7 @@ public class ParameterListTest {
 		}
 		assertEquals("[key1, key2, key4, key3]", sortedList2.toString());
 
-		assertSame(key2, list.remove("key2")); //cannot remove by name
+		assertSame(key2, list.remove("key2")); // cannot remove by name
 		assertNull(list.remove("doesnt-exist"));
 
 		assertEquals("value3", list.findParameter("key3").getValue());

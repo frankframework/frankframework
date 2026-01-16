@@ -85,7 +85,7 @@ public class FixedQuerySenderMock extends FixedQuerySender {
 		public ResultSetBuilder addRow() {
 			if(row != null) {
 				rows.add(row);
-				index = new AtomicInteger(1); //Reset the row index
+				index = new AtomicInteger(1); // Reset the row index
 			}
 
 			row = new HashMap<>();
@@ -103,7 +103,7 @@ public class FixedQuerySenderMock extends FixedQuerySender {
 		}
 
 		public ResultSet build() throws SQLException {
-			rows.add(row); //Add the last row
+			rows.add(row); // Add the last row
 
 			ResultSet rs = Mockito.mock(ResultSet.class);
 			Mockito.doAnswer((Answer<Boolean>) invocation -> {

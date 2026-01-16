@@ -246,7 +246,7 @@ public class Utils {
 //	}
 
 //	public static String xml2JsonString(String xml) throws Exception {
-//		//valididateXml(xml, schemaUrl);
+//		// valididateXml(xml, schemaUrl);
 //		JSONObject jsonObject = XML.toJSONObject(xml);
 //		String result = jsonObject.toString();
 //		return result;

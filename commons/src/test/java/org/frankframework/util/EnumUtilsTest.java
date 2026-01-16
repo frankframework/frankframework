@@ -53,9 +53,9 @@ public class EnumUtilsTest {
 
 	@Test
 	public void testParseNonExistingEnumWithFieldName() {
-		EnumUtils.parse(TestEnumWithField.class, "fieldname", "Available"); //Exists
+		EnumUtils.parse(TestEnumWithField.class, "fieldname", "Available"); // Exists
 
-		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> EnumUtils.parse(TestEnumWithField.class, "fieldname", "tralala2")); //Does not exist
+		IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> EnumUtils.parse(TestEnumWithField.class, "fieldname", "tralala2")); // Does not exist
 		assertEquals("cannot set field [fieldname] to unparsable value [tralala2]. Must be one of [AVAILABLE, INPROCESS, DONE, ERROR, HOLD]", e.getMessage());
 	}
 
@@ -92,7 +92,7 @@ public class EnumUtilsTest {
 
 		IllegalArgumentException exception2 = assertThrows(
 				IllegalArgumentException.class, () -> {
-					EnumUtils.parse(TestNotDocumentedEnum.class, "zero", true); //unknown not-documented enum
+					EnumUtils.parse(TestNotDocumentedEnum.class, "zero", true); // unknown not-documented enum
 				}
 		);
 		assertEquals("cannot set field [testNotDocumentedEnum] to unparsable value [zero]. Must be one of [ONE, TWO]", exception2.getMessage());
@@ -100,7 +100,7 @@ public class EnumUtilsTest {
 
 		IllegalArgumentException exception3 = assertThrows(
 				IllegalArgumentException.class, () -> {
-					EnumUtils.parse(TestDocumentedEnum.class, "zero", true); //unknown documented enum
+					EnumUtils.parse(TestDocumentedEnum.class, "zero", true); // unknown documented enum
 				}
 		);
 		assertEquals("cannot set field [testDocumentedEnum] to unparsable value [zero]. Must be one of [een, twee]", exception3.getMessage());

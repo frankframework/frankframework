@@ -141,7 +141,7 @@ public class AdapterStatus extends BusEndpointBase {
 
 		case NONE:
 		default:
-			//Don't add additional info
+			// Don't add additional info
 		}
 		return adapterInfo;
 	}

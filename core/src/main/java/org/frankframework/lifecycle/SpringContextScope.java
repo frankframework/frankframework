@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -23,8 +23,8 @@ import lombok.Getter;
 public enum SpringContextScope {
 	STANDALONE("SpringStandaloneContext.xml"), // Standalone Jar Environment
 	ENVIRONMENT("SpringEnvironmentContext.xml"), // Web Application Environment
-	APPLICATION("SpringApplicationContext.xml"), //IbisContext
-	CONFIGURATION("SpringConfigurationContext.xml"); //Configurations
+	APPLICATION("SpringApplicationContext.xml"), // IbisContext
+	CONFIGURATION("SpringConfigurationContext.xml"); // Configurations
 
 	private final @Getter String contextFile;
 	SpringContextScope(String contextFile) {

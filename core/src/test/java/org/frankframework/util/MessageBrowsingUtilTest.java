@@ -72,7 +72,7 @@ public class MessageBrowsingUtilTest {
 		assertEquals(contents, MessageBrowsingUtil.getMessageText(rawMessageWrapper, new TestListener()));
 	}
 
-	@Test //This is a strange test the causes a ClassCastException when converting a byte[] to TestListenerMessage.
+	@Test // This is a strange test the causes a ClassCastException when converting a byte[] to TestListenerMessage.
 	public void testByteArrayMessageThatIsNotCompatibleWithTheListenerType() throws Exception {
 		String contents = "fakeMessage";
 		byte[] bytes = contents.getBytes();

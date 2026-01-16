@@ -54,7 +54,7 @@ public class CmisHttpInvokerTest {
 
 					CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
 
-					//Mock all requests
+					// Mock all requests
 					when(httpClient.execute(any(HttpHost.class), any(HttpRequestBase.class), any(HttpContext.class))).thenAnswer(new HttpResponseMock(statusCode));
 					when(sender.getHttpClient()).thenReturn(httpClient);
 

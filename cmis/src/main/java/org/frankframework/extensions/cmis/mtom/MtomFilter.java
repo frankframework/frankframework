@@ -44,7 +44,7 @@ public class MtomFilter implements Filter, InitializingBean, ServletContextAware
 
 	@Override
 	public void init(FilterConfig filterConfig) throws ServletException {
-		//Nothing to init
+		// Nothing to init
 	}
 
 	@Override
@@ -60,7 +60,7 @@ public class MtomFilter implements Filter, InitializingBean, ServletContextAware
 
 	@Override
 	public void destroy() {
-		//Nothing to destroy
+		// Nothing to destroy
 	}
 
 	@Override

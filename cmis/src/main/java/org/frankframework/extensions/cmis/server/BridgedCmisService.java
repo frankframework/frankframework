@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2020 - 2025 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2020 - 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -73,7 +73,7 @@ public class BridgedCmisService extends FilterCmisService {
 
 	public CmisBinding createCmisBinding() {
 
-		//Make sure cmisbridge properties are defined
+		// Make sure cmisbridge properties are defined
 		if(APP_CONSTANTS.getProperty(RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX+"url") == null)
 			throw new CmisConnectionException("no bridge properties found");
 
@@ -82,14 +82,14 @@ public class BridgedCmisService extends FilterCmisService {
 			if(!method.getName().startsWith("set") || method.getParameterTypes().length != 1)
 				continue;
 
-			//Remove set from the method name
+			// Remove set from the method name
 			String setter = StringUtil.lcFirst(method.getName().substring(3));
 			String propertyName = RepositoryConnectorFactory.CMIS_BRIDGE_PROPERTY_PREFIX+setter;
 			String value = APP_CONSTANTS.getProperty(propertyName);
 			if(value == null)
 				continue;
 
-			//Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
+			// Only always grab the first value because we explicitly check method.getParameterTypes().length != 1
 			Object castValue = ClassUtils.convertToType(method.getParameterTypes()[0], value);
 			log.debug("trying to set property [{}] with value [{}] of type [{}] on [{}]", () -> propertyName, () -> value, () -> castValue.getClass().getCanonicalName(), sessionBuilder::toString);
 

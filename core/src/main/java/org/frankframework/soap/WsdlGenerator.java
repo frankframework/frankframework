@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2015, 2016 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013, 2015, 2016 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -336,7 +336,7 @@ public class WsdlGenerator {
 			// validated. In this case we use the serviceNamespaceURI from
 			// the WebServiceListener as the namespace for the schema.
 			ResourceXsd xsd = new ResourceXsd();
-			//xsd.setNamespace(webServiceListenerNamespace);
+			// xsd.setNamespace(webServiceListenerNamespace);
 			xsd.setAddNamespaceToSchema(true);
 			xsd.initNamespace(webServiceListenerNamespace, pipeLine, inputSchema);
 			xsds.add(xsd);

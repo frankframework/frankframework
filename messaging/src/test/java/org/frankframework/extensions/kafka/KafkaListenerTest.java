@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -66,7 +66,7 @@ public class KafkaListenerTest {
 		listener.setTopics("test.*.test2, anothertopic");
 		listener.setClientId("test");
 		listener.setGroupId("testGroup");
-		listener.setBootstrapServers("example.com:9092"); //dummy, doesn't connect.
+		listener.setBootstrapServers("example.com:9092"); // dummy, doesn't connect.
 		listener.configure();
 
 		Map<MetricName, Metric> metrics = new HashMap<>();

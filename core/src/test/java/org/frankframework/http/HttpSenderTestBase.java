@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2019 Nationale-Nederlanden
+   Copyright 2018-2019 Nationale-Nederlanden, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -46,12 +46,12 @@ public abstract class HttpSenderTestBase<S extends AbstractHttpSender> extends S
 
 		CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
 
-		//Mock all requests
+		// Mock all requests
 		when(httpClient.execute(any(HttpHost.class), any(HttpRequestBase.class), any(HttpContext.class))).thenAnswer(new HttpResponseMock());
 
 		when(sender.getHttpClient()).thenReturn(httpClient);
 
-		//Some default settings, url will be mocked.
+		// Some default settings, url will be mocked.
 		sender.setUrl("http://127.0.0.1/");
 		sender.setVerifyHostname(false);
 		sender.setAllowSelfSignedCertificates(true);

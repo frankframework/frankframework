@@ -25,13 +25,13 @@ public class ResolveConfigurationFileTest {
 
 	private static Stream<Arguments> data() {
 		return Stream.of(
-			Arguments.of("Config", null, "Config/Configuration.xml"), //No basepath should be derived from configurationFile
-			Arguments.of("Config", null, "Configuration.xml"), //No basepath should be derrived from configurationName
-			Arguments.of("Config", "Config/", "Configuration.xml"), //setting both shouldn't matter
-			Arguments.of("Config", "Config/", "Config/Configuration.xml"), //configurationFile with basepath should be stripped
+			Arguments.of("Config", null, "Config/Configuration.xml"), // No basepath should be derived from configurationFile
+			Arguments.of("Config", null, "Configuration.xml"), // No basepath should be derrived from configurationName
+			Arguments.of("Config", "Config/", "Configuration.xml"), // setting both shouldn't matter
+			Arguments.of("Config", "Config/", "Config/Configuration.xml"), // configurationFile with basepath should be stripped
 
-			Arguments.of("Config", "Config/", null), //no configurationFile should default to Configuration.xml
-			Arguments.of("Config", null, null), //no basePath should use configurationName
+			Arguments.of("Config", "Config/", null), // no configurationFile should default to Configuration.xml
+			Arguments.of("Config", null, null), // no basePath should use configurationName
 
 			Arguments.of("Config", null, "Config/NonDefaultConfiguration.xml"),
 			Arguments.of("Config", null, "NonDefaultConfiguration.xml"),

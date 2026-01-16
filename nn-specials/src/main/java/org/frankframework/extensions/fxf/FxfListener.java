@@ -1,5 +1,5 @@
 /*
-   Copyright 2015 Nationale-Nederlanden, 2022-2023 WeAreFrank!
+   Copyright 2015 Nationale-Nederlanden, 2022-2023, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -77,7 +77,7 @@ public class FxfListener extends EsbJmsListener {
 	public void afterMessageProcessed(PipeLineResult plr, RawMessageWrapper<Message> rawMessageWrapper, PipeLineSession pipeLineSession) throws ListenerException {
 		super.afterMessageProcessed(plr, rawMessageWrapper, pipeLineSession);
 
-		//TODO plr.getState() may return null when there is an error.
+		// TODO plr.getState() may return null when there is an error.
 		// The message will be placed in the errorstore due to this,
 		// when solving the NPE this no longer happens
 		if (!isMoveProcessedFile() || !plr.isSuccessful()) {

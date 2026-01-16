@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 WeAreFrank!
+   Copyright 2021, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -123,7 +123,7 @@ public class FileSender implements IConfigurable, FrankElement {
 				long startTime = System.currentTimeMillis();
 				while (checkDelete && file.exists() && System.currentTimeMillis() < startTime + timeout) {
 					try {
-						//noinspection BusyWait
+						// noinspection BusyWait
 						Thread.sleep(interval);
 					} catch (InterruptedException e) {
 						Thread.currentThread().interrupt();

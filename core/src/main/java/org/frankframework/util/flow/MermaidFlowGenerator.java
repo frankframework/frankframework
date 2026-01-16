@@ -183,8 +183,8 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 		scanner.resetFilters(false);
 		scanner.addIncludeFilter(new AssignableTypeFilter(IConfigurable.class));
 		scanner.addIncludeFilter(new AnnotationTypeFilter(EnterpriseIntegrationPattern.class));
-		scanner.addExcludeFilter((i, e) -> i.getClassMetadata().getClassName().contains("$")); //Exclude inner classes
-		scanner.addExcludeFilter(new AnnotationTypeFilter(Protected.class)); //Exclude protected FrankElements
+		scanner.addExcludeFilter((i, e) -> i.getClassMetadata().getClassName().contains("$")); // Exclude inner classes
+		scanner.addExcludeFilter(new AnnotationTypeFilter(Protected.class)); // Exclude protected FrankElements
 
 		BeanNameGenerator beanNameGenerator = new AnnotationBeanNameGenerator() {
 			@NonNull
@@ -217,7 +217,7 @@ public class MermaidFlowGenerator implements IFlowGenerator {
 
 	protected String generateMermaid(String xml) throws FlowGenerationException {
 		try {
-			Map<String, Object> xsltParams = new HashMap<>(1);//frankElements
+			Map<String, Object> xsltParams = new HashMap<>(1);// frankElements
 			xsltParams.put("frankElements", frankElements);
 			if (xml.startsWith("<adapter")) {
 				return transformerPoolAdapter.transformToString(xml, xsltParams);

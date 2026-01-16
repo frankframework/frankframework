@@ -41,7 +41,7 @@ public class NodeSetFilterTest {
 	@Test
 	public void testTargetElementFilter() throws Exception {
 		String expected = TestFileUtils.getTestFile("/NodeSetFilter/targetElementResult.txt");
-		//System.out.println(expected);
+		// System.out.println(expected);
 		testTargetElementFilter("a", false, document, expected);
 	}
 
@@ -49,7 +49,7 @@ public class NodeSetFilterTest {
 	public void testNamespaceMapping() throws Exception {
 		String input = TestFileUtils.getTestFile("/NodeSetFilter/simpleIn.xml");
 		String expected = TestFileUtils.getTestFile("/NodeSetFilter/simpleOut.txt");
-		//System.out.println(expected);
+		// System.out.println(expected);
 		testTargetElementFilter(null, false, input, expected);
 	}
 

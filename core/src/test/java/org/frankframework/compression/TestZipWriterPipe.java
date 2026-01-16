@@ -133,7 +133,7 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 		PipeRunResult prr = doPipe(fileContents);
 		assertEquals("success", prr.getPipeForward().getName());
 		assertTrue(Message.isNull(prr.getResult()));
-		//assertEquals(fileContents, prr.getResult().asString()); // ZipWriterPipe used to return it's input
+		// assertEquals(fileContents, prr.getResult().asString()); // ZipWriterPipe used to return it's input
 
 		Message result = getCollectionFromSession().build();
 		ZipInputStream zipin = new ZipInputStream(result.asInputStream());
@@ -153,7 +153,7 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 
 		PipeRunResult prr = doPipe(fileContents);
 		assertEquals("success", prr.getPipeForward().getName());
-		//assertEquals(fileContents, prr.getResult().asString()); // ZipWriterPipe used to return it's input
+		// assertEquals(fileContents, prr.getResult().asString()); // ZipWriterPipe used to return it's input
 
 		Message result = prr.getResult();
 		ZipInputStream zipin = new ZipInputStream(result.asInputStream());
@@ -178,12 +178,12 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 		session.put("filename", filename1);
 		PipeRunResult prr = doPipe(fileContents1);
 		assertEquals("success", prr.getPipeForward().getName());
-		//assertEquals(fileContents, prr.getResult().asString()); // ZipWriterPipe used to return it's input
+		// assertEquals(fileContents, prr.getResult().asString()); // ZipWriterPipe used to return it's input
 
 		session.put("filename", filename2);
 		prr = doPipe(fileContents2);
 		assertEquals("success", prr.getPipeForward().getName());
-		//assertEquals(fileContents, prr.getResult().asString()); // ZipWriterPipe used to return it's input
+		// assertEquals(fileContents, prr.getResult().asString()); // ZipWriterPipe used to return it's input
 
 		Message result = getCollectionFromSession().build();
 		try (ZipInputStream zipin = new ZipInputStream(result.asInputStream())) {
@@ -216,12 +216,12 @@ public class TestZipWriterPipe extends PipeTestBase<ZipWriterPipe> {
 		session.put("filename", filename1);
 		PipeRunResult prr = doPipe(fileContents1);
 		assertEquals("success", prr.getPipeForward().getName());
-		//assertEquals(fileContents, prr.getResult().asString()); // ZipWriterPipe used to return it's input
+		// assertEquals(fileContents, prr.getResult().asString()); // ZipWriterPipe used to return it's input
 
 		session.put("filename", filename2);
 		prr = doPipe(fileContents2);
 		assertEquals("success", prr.getPipeForward().getName());
-		//assertEquals(fileContents, prr.getResult().asString()); // ZipWriterPipe used to return it's input
+		// assertEquals(fileContents, prr.getResult().asString()); // ZipWriterPipe used to return it's input
 
 		Message result = getCollectionFromSession().build();
 		try (ZipInputStream zipin = new ZipInputStream(result.asInputStream())) {

@@ -23,7 +23,7 @@ import { faRepeat, faTimes } from '@fortawesome/free-solid-svg-icons';
 })
 export class StorageViewComponent implements OnInit {
   protected message: PartialMessage = {
-    id: '0', //this.$state.params["messageId"],
+    id: '0', // this.$state.params["messageId"],
     processing: false,
   };
   protected data: Message = {
@@ -93,14 +93,14 @@ export class StorageViewComponent implements OnInit {
 
   resendMessage(message: PartialMessage): void {
     this.storageService.resendMessage(message, () => {
-      //Go back to the storage list if successful
+      // Go back to the storage list if successful
       this.goBack();
     });
   }
 
   deleteMessage(message: PartialMessage): void {
     this.storageService.deleteMessage(message, () => {
-      //Go back to the storage list if successful
+      // Go back to the storage list if successful
       this.goBack();
     });
   }

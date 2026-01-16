@@ -71,7 +71,7 @@ export class ConfigurationsShowComponent implements OnInit, OnDestroy {
     this.selectedConfiguration = name;
     if (this.initialized) {
       this.selectedAdapter = undefined;
-      this.fragment = undefined; //unset hash anchor
+      this.fragment = undefined; // unset hash anchor
     }
     this.getConfiguration();
   }

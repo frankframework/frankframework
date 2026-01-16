@@ -54,7 +54,7 @@ public class MtomRequestWrapperTest {
 
 		String boundary = getBoundary(contentType);
 		assertNotNull(boundary, "no boundary found");
-		result = result.replace(boundary, "IGNORE"); //Replace the multipart boundary with IGNORE
+		result = result.replace(boundary, "IGNORE"); // Replace the multipart boundary with IGNORE
 
 		TestAssertions.assertEqualsIgnoreCRLF(getOutputFile(testFileName), result);
 	}

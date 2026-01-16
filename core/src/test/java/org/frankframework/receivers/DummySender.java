@@ -22,7 +22,7 @@ public class DummySender implements ICorrelatedSender {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		//Nothing to configure
+		// Nothing to configure
 	}
 
 	@Override

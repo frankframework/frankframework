@@ -1,5 +1,5 @@
 /*
-   Copyright 2019 Nationale-Nederlanden, 2020-2022 WeAreFrank!
+   Copyright 2019 Nationale-Nederlanden, 2020-2022, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -104,7 +104,7 @@ public class CmisEventDispatcher {
 			throw new CmisRuntimeException("invalid or unparsable result", e);
 		}
 
-		//Try and catch the original CMIS exception and throw that instead
+		// Try and catch the original CMIS exception and throw that instead
 		catch (ListenerException e) {
 			if(e.getCause() instanceof PipeRunException pre) {
 				if(pre != null && pre.getCause() instanceof CmisBaseException cbe)
@@ -121,7 +121,7 @@ public class CmisEventDispatcher {
 		if(StringUtils.isNotEmpty(dispatcherName)) {
 			JavaListener<?> listener = JavaListener.getListener(dispatcherName);
 			if(listener == null) {
-				throw new CmisRuntimeException("unable to bridge cmis request, dispatcher offline"); //Adapter registered but not started
+				throw new CmisRuntimeException("unable to bridge cmis request, dispatcher offline"); // Adapter registered but not started
 			}
 
 			HashMap<String, Object> messageContext = new HashMap<>();
@@ -131,7 +131,7 @@ public class CmisEventDispatcher {
 				String result = listener.processRequest(null, event.getLabel(), messageContext);
 				return Boolean.parseBoolean(result); // Result should determine if we should proceed, an exception may be thrown.
 			} catch (ListenerException e) {
-				throw new CmisRuntimeException("unable to bridge cmis request: " + e.getMessage(), e); //Append the message so it becomes visible in the soap-fault (when using WS)
+				throw new CmisRuntimeException("unable to bridge cmis request: " + e.getMessage(), e); // Append the message so it becomes visible in the soap-fault (when using WS)
 			}
 		} else {
 			return eventListeners.containsKey(event);

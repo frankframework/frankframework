@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ public class AmazonSqsFactory extends AwsBase implements ObjectFactory {
 
 			String objectName = name.toString();
 			String targetClassName = ref.getClassName();
-			//Class targetClass = Class.forName(targetClassName);
+			// Class targetClass = Class.forName(targetClassName);
 			log.debug("constructing object [{}] of type [{}]", objectName, targetClassName);
 
 			// fetch and set properties

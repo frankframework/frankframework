@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020, 2021, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -56,7 +56,7 @@ public interface HasTransactionAttribute {
 	/**
 	 * Timeout (in seconds) of transaction started to process a message.
 	 * @ff.default <code>0</code> (use system default)
-	 */ //TODO use Integer and set to NULL by default
+	 */ // TODO use Integer and set to NULL by default
 	void setTransactionTimeout(int i);
 	int getTransactionTimeout();
 

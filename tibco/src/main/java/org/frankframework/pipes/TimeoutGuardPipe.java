@@ -101,7 +101,7 @@ public abstract class TimeoutGuardPipe extends FixedForwardPipe {
 	 * optional implementation to kill additional threads if the pipe may have created those.
 	 */
 	protected void killPipe() {
-		//kill other threads
+		// kill other threads
 	}
 
 	/**

@@ -67,7 +67,7 @@ class TestZipWriterSender extends SenderTestBase<ZipWriterSender>{
 		String fileContents = "some text to be compressed";
 
 		sendMessage(fileContents);
-		//assertEquals(fileContents, prr.getResult().asString()); // ZipWriterPipe used to return it's input
+		// assertEquals(fileContents, prr.getResult().asString()); // ZipWriterPipe used to return it's input
 
 		Message result = getCollectionFromSession().build();
 		try (ZipInputStream zipin = new ZipInputStream(result.asInputStream())) {

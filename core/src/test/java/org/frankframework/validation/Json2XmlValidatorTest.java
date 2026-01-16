@@ -260,7 +260,7 @@ public class Json2XmlValidatorTest extends XmlValidatorTestBase {
 		json2xml.addForward(new PipeForward("success", null));
 
 		try {
-			Thread.currentThread().setContextClassLoader(new ClassLoader(null) {}); //No parent classloader, getResource and getResources will not fall back
+			Thread.currentThread().setContextClassLoader(new ClassLoader(null) {}); // No parent classloader, getResource and getResources will not fall back
 
 			// Should pass because the ScopeProvider is set during class initialization
 			ConfigurationException thrown = assertThrows(ConfigurationException.class, json2xml::configure);

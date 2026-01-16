@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2024 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -79,7 +79,7 @@ public class BrowseJdbcTable extends BusEndpointBase {
 	@Override
 	protected void doAfterPropertiesSet() {
 		URL url = ClassLoaderUtils.getResourceURL(DB2XML_XSLT);
-		if (url != null) { //Should never be null but...
+		if (url != null) { // Should never be null but...
 			try {
 				transformer = XmlUtils.createTransformer(url, 2);
 			} catch (TransformerConfigurationException | IOException e) {
@@ -158,7 +158,7 @@ public class BrowseJdbcTable extends BusEndpointBase {
 		Map<String, Object> resultObject = new HashMap<>();
 		resultObject.put("table", table);
 		resultObject.put("query", XmlEncodingUtils.encodeChars(query));
-		Map<String, String> fDef = rowDefinitions.stream() //confusing collector but this maintains insert order.
+		Map<String, String> fDef = rowDefinitions.stream() // confusing collector but this maintains insert order.
 				.collect(Collectors.toMap(RowDefinition::name, RowDefinition::jsonValue, (t, u) -> t, LinkedHashMap::new));
 		resultObject.put("fielddefinition", fDef);
 		resultObject.put("result", resultMap);

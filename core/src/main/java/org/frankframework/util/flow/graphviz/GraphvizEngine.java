@@ -1,5 +1,5 @@
 /*
-   Copyright 2018-2020, 2022-2025 WeAreFrank!
+   Copyright 2018-2020, 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -35,7 +35,7 @@ import org.frankframework.util.flow.FlowGenerationException;
 import org.frankframework.util.flow.GraphvizJsFlowGenerator;
 import org.frankframework.util.flow.ResultHandler;
 
-//TODO: consider moving this to a separate module
+// TODO: consider moving this to a separate module
 /**
  * JavaScript engine wrapper for VizJs flow diagrams
  *

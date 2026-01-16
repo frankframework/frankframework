@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2017 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2013, 2017 Nationale-Nederlanden, 2022, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -91,7 +91,7 @@ public class SapSystemDataProvider implements DestinationDataProvider {
 			destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_PARTNERNAME, sapSystem.getPartnerName());
 			destinationProperties.setProperty(DestinationDataProvider.JCO_SNC_MYNAME, sapSystem.getMyName());
 			if(sapSystem.getSncAuthMethod().equals("1")) {
-				destinationProperties.setProperty(DestinationDataProvider.JCO_GETSSO2, sapSystem.getSncAuthMethod()); //Automatically order a SSO ticket after logon
+				destinationProperties.setProperty(DestinationDataProvider.JCO_GETSSO2, sapSystem.getSncAuthMethod()); // Automatically order a SSO ticket after logon
 				if(sapSystem.getSncSSO2().equals("1"))
 					destinationProperties.setProperty(DestinationDataProvider.JCO_MYSAPSSO2, sapSystem.getSncSSO2());
 			}

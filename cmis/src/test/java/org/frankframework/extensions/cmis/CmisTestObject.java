@@ -45,7 +45,7 @@ public abstract class CmisTestObject extends Mockito implements Document, Answer
 			throw new CmisObjectNotFoundException();
 		}
 
-		return this; //created at newInstance() to mock unimplemented methods, initialized once answer is called
+		return this; // created at newInstance() to mock unimplemented methods, initialized once answer is called
 	}
 
 	@Override

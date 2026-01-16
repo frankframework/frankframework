@@ -32,8 +32,8 @@ import org.frankframework.util.AppConstants;
 import org.frankframework.util.Locker;
 import org.frankframework.util.TimeProvider;
 
-@WithLiquibase(tableName = "IBISLOCK") //Lock table must exist
-@WithLiquibase(tableName = CleanupDatabaseJobTest.txStorageTableName) //Actual JdbcTXStorage table
+@WithLiquibase(tableName = "IBISLOCK") // Lock table must exist
+@WithLiquibase(tableName = CleanupDatabaseJobTest.txStorageTableName) // Actual JdbcTXStorage table
 public class CleanupDatabaseJobTest {
 
 	private CleanupDatabaseJob jobDef;
@@ -84,7 +84,7 @@ public class CleanupDatabaseJobTest {
 		}
 
 		// Ensure we have an IbisManager via side effects of method
-		//noinspection ResultOfMethodCallIgnored
+		// noinspection ResultOfMethodCallIgnored
 		configuration.getIbisManager();
 		jobDef = configuration.createBean();
 	}

@@ -77,7 +77,7 @@ public class DomainTransformerPipe extends FixedForwardPipe {
 		qs = createBean(FixedQuerySender.class);
 		qs.setDatasourceName(getDatasourceName());
 
-		//dummy query required
+		// dummy query required
 		qs.setQuery("SELECT count(*) FROM ALL_TABLES");
 		qs.configure();
 

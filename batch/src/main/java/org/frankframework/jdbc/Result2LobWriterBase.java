@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2020-2025 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -69,7 +69,7 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 	@Override
 	public void open() throws SenderException {
 		super.open();
-		try { //TODO remove this
+		try { // TODO remove this
 			querySender.start();
 		} catch (LifecycleException e) {
 			throw new SenderException(e);
@@ -81,7 +81,7 @@ public abstract class Result2LobWriterBase extends ResultWriter implements Appli
 		try {
 			super.close();
 		} finally {
-			try { //TODO remove this
+			try { // TODO remove this
 				querySender.stop();
 			} catch (LifecycleException e) {
 				throw new SenderException(e);

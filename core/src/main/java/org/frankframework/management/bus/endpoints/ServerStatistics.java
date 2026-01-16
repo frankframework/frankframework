@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -174,7 +174,7 @@ public class ServerStatistics extends BusEndpointBase {
 								try {
 									esr += errorStorage.getMessageCount();
 								} catch (Exception e) {
-									//error("error occurred on getting number of errorlog records for adapter ["+adapter.getName()+"]",e);
+									// error("error occurred on getting number of errorlog records for adapter ["+adapter.getName()+"]",e);
 									log.warn("Assuming there are no errorlog records for adapter [{}]", adapter.getName());
 								}
 							}

@@ -107,7 +107,7 @@ export class TestPipelineComponent implements OnInit {
       const keyIndex = this.formSessionKeys.slice(0, -1).findIndex((f) => f.key === sessionKey.key);
       if (keyIndex !== -1) {
         if (!this.state.some((f) => f.message === 'Session keys cannot have the same name!'))
-          //avoid adding it more than once
+          // avoid adding it more than once
           this.addNote('warning', 'Session keys cannot have the same name!');
         return;
       }

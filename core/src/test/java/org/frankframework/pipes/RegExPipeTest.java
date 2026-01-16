@@ -18,7 +18,7 @@ public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 	public RegExPipe createPipe() throws ConfigurationException {
 		RegExPipe pipe = new RegExPipe();
 
-		//Add default pipes
+		// Add default pipes
 		pipe.addForward(new PipeForward(RegExPipe.THEN_FORWARD, null));
 		pipe.addForward(new PipeForward(RegExPipe.ELSE_FORWARD, null));
 		return pipe;
@@ -33,48 +33,48 @@ public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 
 	@Test
 	void testEmptyInput() throws Exception {
-		//Arrange
+		// Arrange
 		pipe.setRegex("(.*?)");
 
 		pipe.configure();
 		pipe.start();
 
-		//Act
+		// Act
 		pipeRunResult = doPipe(pipe, "", session);
 
-		//Assert
+		// Assert
 		assertEquals(RegExPipe.ELSE_FORWARD, pipeRunResult.getPipeForward().getName());
 		assertTrue(pipeRunResult.getResult().isNull());
 	}
 
 	@Test
 	void testNullInput() throws Exception {
-		//Arrange
+		// Arrange
 		pipe.setRegex("(.*?)");
 
 		pipe.configure();
 		pipe.start();
 
-		//Act
+		// Act
 		pipeRunResult = doPipe(pipe, null, session);
 
-		//Assert
+		// Assert
 		assertEquals(RegExPipe.ELSE_FORWARD, pipeRunResult.getPipeForward().getName());
 		assertTrue(pipeRunResult.getResult().isNull());
 	}
 
 	@Test
 	void testMatchWildcard() throws Exception {
-		//Arrange
+		// Arrange
 		pipe.setRegex("^(.*?)(string!)$");
 
 		pipe.configure();
 		pipe.start();
 
-		//Act
+		// Act
 		pipeRunResult = doPipe(pipe, "This is a string!", session);
 
-		//Assert
+		// Assert
 		assertEquals(RegExPipe.THEN_FORWARD, pipeRunResult.getPipeForward().getName());
 
 		final String expectedResult = "<matches>\n" +
@@ -88,16 +88,16 @@ public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 
 	@Test
 	void testFindSubString() throws Exception {
-		//Arrange
+		// Arrange
 		pipe.setRegex("hoi");
 
 		pipe.configure();
 		pipe.start();
 
-		//Act
+		// Act
 		pipeRunResult = doPipe(pipe, "hoi a hoi", session);
 
-		//Assert
+		// Assert
 		assertEquals(RegExPipe.THEN_FORWARD, pipeRunResult.getPipeForward().getName());
 
 		final String expectedResult = "<matches>\n" +
@@ -109,17 +109,17 @@ public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 
 	@Test
 	void testMultiline() throws Exception {
-		//Arrange
+		// Arrange
 		pipe.setRegex("string");
 		pipe.setFlags(RegExPipe.RegExFlag.MULTILINE);
 
 		pipe.configure();
 		pipe.start();
 
-		//Act
+		// Act
 		pipeRunResult = doPipe(pipe, "string\nstring\nstring", session);
 
-		//Assert
+		// Assert
 		assertEquals(RegExPipe.THEN_FORWARD, pipeRunResult.getPipeForward().getName());
 
 		final String expectedResult = "<matches>\n" +
@@ -132,17 +132,17 @@ public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 
 	@Test
 	void testCaseInsensitive() throws Exception {
-		//Arrange
+		// Arrange
 		pipe.setRegex("STRING.");
 		pipe.setFlags(RegExPipe.RegExFlag.CASE_INSENSITIVE);
 
 		pipe.configure();
 		pipe.start();
 
-		//Act
+		// Act
 		pipeRunResult = doPipe(pipe, "stringA\nstringB\nstringC", session);
 
-		//Assert
+		// Assert
 		assertEquals(RegExPipe.THEN_FORWARD, pipeRunResult.getPipeForward().getName());
 
 		final String expectedResult = "<matches>\n" +
@@ -155,17 +155,17 @@ public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 
 	@Test
 	void testMultilineAndCaseInsensitive() throws Exception {
-		//Arrange
+		// Arrange
 		pipe.setRegex("^This is a (.*?)$");
 		pipe.setFlags(RegExPipe.RegExFlag.MULTILINE, RegExPipe.RegExFlag.CASE_INSENSITIVE);
 
 		pipe.configure();
 		pipe.start();
 
-		//Act
+		// Act
 		pipeRunResult = doPipe(pipe, "THIS IS A STRING", session);
 
-		//Assert
+		// Assert
 		assertEquals(RegExPipe.THEN_FORWARD, pipeRunResult.getPipeForward().getName());
 
 		final String expectedResult = "<matches>\n" +
@@ -178,16 +178,16 @@ public class RegExPipeTest extends PipeTestBase<RegExPipe> {
 
 	@Test
 	void testNoMatch() throws Exception {
-		//Arrange
+		// Arrange
 		pipe.setRegex("string string string");
 
 		pipe.configure();
 		pipe.start();
 
-		//Act
+		// Act
 		pipeRunResult = doPipe(pipe, "string string", session);
 
-		//Assert
+		// Assert
 		assertEquals(RegExPipe.ELSE_FORWARD, pipeRunResult.getPipeForward().getName());
 		assertTrue(pipeRunResult.getResult().isNull());
 	}
