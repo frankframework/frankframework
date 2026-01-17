@@ -34,7 +34,7 @@ public class TibetView extends View implements ApplicationContextAware {
 		return isOpenReportAllowedViaAdapter("" + storageId);
 	}
 
-	public String isOpenReportAllowedViaAdapter(String storageId) {
+	private String isOpenReportAllowedViaAdapter(String storageId) {
 		return new Tibet2ToFrameworkDispatcher(applicationContext).authorisationCheck(storageId, getName());
 	}
 }

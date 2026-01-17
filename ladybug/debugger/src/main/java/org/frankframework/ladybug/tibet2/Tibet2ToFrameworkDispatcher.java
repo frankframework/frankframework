@@ -10,6 +10,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHandlingException;
 import org.wearefrank.ladybug.echo2.reports.ReportsComponent;
 import org.wearefrank.ladybug.storage.StorageException;
 
@@ -23,9 +24,9 @@ import org.frankframework.util.JacksonUtils;
 import org.frankframework.util.StreamUtil;
 
 public class Tibet2ToFrameworkDispatcher {
-	private static final String AUTHORISATION_CHECK_ADAPTER_NAME = "AuthorisationCheck";
-	private static final String DELETE_ADAPTER_NAME = "DeleteFromExceptionLog";
 	private static final String AUTHORISATION_CHECK_ADAPTER_CONFIG = "main";
+	private static final String AUTHORISATION_CHECK_ADAPTER_NAME = "AuthorisationCheck";
+	private static final String AUTHORISATION_CHECK_DELETE_ADAPTER_NAME = "DeleteFromExceptionLog";
 
 	private final OutboundGateway gateway;
 
@@ -39,7 +40,7 @@ public class Tibet2ToFrameworkDispatcher {
 			builder.setHeader(BusMessageUtils.HEADER_PREFIX+"sessionKeys", toJson(storageId, viewName));
 
 			@NonNull
-			Message<Object> result = gateway.sendSyncMessage(builder.build());
+			Message<Object> result = sendMessage(builder.build());
 
 			if (BusMessageUtils.getIntHeader(result, MessageBase.STATUS_KEY, 500) == 200) {
 				return ReportsComponent.OPEN_REPORT_ALLOWED;
@@ -53,10 +54,10 @@ public class Tibet2ToFrameworkDispatcher {
 
 	public void deleteReport(String checkpointMessage) throws StorageException {
 		try {
-			MessageBuilder<String> builder = createRequestMessage(checkpointMessage, AUTHORISATION_CHECK_ADAPTER_CONFIG, DELETE_ADAPTER_NAME);
+			MessageBuilder<String> builder = createRequestMessage(checkpointMessage, AUTHORISATION_CHECK_ADAPTER_CONFIG, AUTHORISATION_CHECK_DELETE_ADAPTER_NAME);
 
 			@NonNull
-			Message<Object> result = gateway.sendSyncMessage(builder.build());
+			Message<Object> result = sendMessage(builder.build());
 
 			if (BusMessageUtils.getIntHeader(result, MessageBase.STATUS_KEY, 500) == 200) {
 				String stringResult = convertPayload(result.getPayload());
@@ -68,6 +69,22 @@ public class Tibet2ToFrameworkDispatcher {
 			}
 		} catch (IOException | BusException e) {
 			throw new StorageException("Delete failed (see logging for more details)", e);
+		}
+	}
+
+	/**
+	 * Ideally we only get BusExceptions and MessageHandlingException which wrap one.
+	 */
+	private Message<Object> sendMessage(Message<String> message) throws BusException {
+		try {
+			return gateway.sendSyncMessage(message);
+		} catch (BusException e) {
+			throw e;
+		} catch (MessageHandlingException t) {
+			if (t.getCause() instanceof BusException be) {
+				throw be;
+			}
+			throw new BusException("unable to send message", t);
 		}
 	}
 

@@ -44,6 +44,7 @@ import org.wearefrank.ladybug.storage.LogStorage;
 import org.wearefrank.ladybug.storage.StorageException;
 import org.wearefrank.ladybug.util.SearchUtil;
 
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
@@ -58,7 +59,6 @@ import org.frankframework.util.StreamUtil;
 // Reports can be deleted in the debug tab when a debug storage also implements CrudStorage
 public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, CrudStorage {
 	private static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
-	private String name;
 	private String table;
 	private List<String> reportColumnNames;
 	private List<String> bigValueColumns;
@@ -68,16 +68,6 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 	private Map<String, String> fixedStringTables;
 	private TestTool testTool;
 	private JdbcTemplate jdbcTemplate;
-
-	@Override
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	@Override
-	public String getName() {
-		return name;
-	}
 
 	public void setTable(String table) {
 		this.table = table;
@@ -127,12 +117,17 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 		return timestampColumns;
 	}
 
-	public void setTestTool(TestTool testTool) {
-		this.testTool = testTool;
+	private TestTool getTestTool() {
+		if (testTool == null) {
+			testTool = getApplicationContext().getBean("testTool", TestTool.class);
+		}
+		return testTool;
 	}
 
 	@PostConstruct
-	public void init() throws JdbcException {
+	public void init() throws JdbcException, ConfigurationException {
+		configure();
+
 		jdbcTemplate = new JdbcTemplate(getDatasource());
 	}
 
@@ -313,7 +308,7 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 	@Override
 	public Report getReport(Integer storageId) throws StorageException {
 		final Report report = new Report();
-		report.setTestTool(testTool);
+		report.setTestTool(getTestTool());
 		report.setStorage(this);
 		report.setStorageId(storageId);
 		report.setName("Table " + table);
