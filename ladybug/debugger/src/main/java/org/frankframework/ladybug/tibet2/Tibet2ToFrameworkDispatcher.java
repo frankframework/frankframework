@@ -42,7 +42,7 @@ public class Tibet2ToFrameworkDispatcher {
 			@NonNull
 			Message<Object> result = sendMessage(builder.build());
 
-			if (BusMessageUtils.getIntHeader(result, MessageBase.STATUS_KEY, 500) == 200) {
+			if ("SUCCESS".equalsIgnoreCase(BusMessageUtils.getHeader(result, MessageBase.STATE_KEY))) {
 				return ReportsComponent.OPEN_REPORT_ALLOWED;
 			} else {
 				return "Not allowed. Result of adapter " + AUTHORISATION_CHECK_ADAPTER_NAME + ": " + convertPayload(result.getPayload());
