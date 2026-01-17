@@ -1,0 +1,138 @@
+<databaseChangeLog
+	xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+		http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.8.xsd">
+
+	<changeSet id="TIBET2:AUDITLOG" author="Niels Meijer">
+		<comment>Add AUDITLOG Table</comment>
+		<createTable tableName="AUDITLOG">
+			<column name="LOGID" type="BIGINT" autoIncrement="true">
+				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_TIBET2_AUDITLOG"/>
+			</column>
+
+			<column name="MESSAGEID" type="java.sql.Types.VARCHAR(100)" />
+			<column name="CONVERSATIONID" type="java.sql.Types.VARCHAR(100)" />
+			<column name="CPAID" type="java.sql.Types.VARCHAR(100)" />
+			<column name="BUSINESSDOMAIN" type="java.sql.Types.VARCHAR(100)" />
+			<column name="SERVICENAME" type="java.sql.Types.VARCHAR(100)" />
+			<column name="SERVICECONTEXT" type="java.sql.Types.VARCHAR(100)" />
+			<column name="SERVICECONTEXTVERSION" type="java.sql.Types.VARCHAR(100)" />
+			<column name="OPERATIONNAME" type="java.sql.Types.VARCHAR(100)" />
+			<column name="OPERATIONVERSION" type="java.sql.Types.VARCHAR(100)" />
+			<column name="APPLICATIONNAME" type="java.sql.Types.VARCHAR(100)" />
+			<column name="APPLICATIONFUNCTION" type="java.sql.Types.VARCHAR(100)" />
+			<column name="LOG_TIMESTAMP" type="DATETIME" />
+			<column name="SENDERID" type="java.sql.Types.VARCHAR(100)" />
+			<column name="CRE_TIMESTAMP" type="DATETIME" />
+			<column name="MESSAGE" type="java.sql.Types.VARCHAR(100)" />
+			<column name="TYPE" type="java.sql.Types.VARCHAR(100)" />
+			<column name="FUNCT_CALLID" type="java.sql.Types.VARCHAR(100)" />
+			<column name="LABEL" type="java.sql.Types.VARCHAR(100)" />
+			<column name="FUNCT_ERROR_CODE" type="java.sql.Types.VARCHAR(100)" />
+			<column name="FUNCT_ERROR_REASON" type="java.sql.Types.VARCHAR(100)" />
+			<column name="FUNCT_ERROR_TEXT" type="java.sql.Types.VARCHAR(100)" />
+		</createTable>
+	</changeSet>
+
+	<changeSet id="TIBET2:EXCEPTIONLOG" author="Niels Meijer">
+		<comment>Add EXCEPTIONLOG Table</comment>
+		<createTable tableName="EXCEPTIONLOG">
+			<column name="LOGID" type="BIGINT" autoIncrement="true">
+				<constraints primaryKey="true" nullable="false" primaryKeyName="PK_TIBET2_EXCEPTIONLOG"/>
+			</column>
+
+			<column name="MESSAGEID" type="java.sql.Types.VARCHAR(100)" />
+			<column name="CONVERSATIONID" type="java.sql.Types.VARCHAR(100)" />
+			<column name="CPAID" type="java.sql.Types.VARCHAR(100)" />
+			<column name="BUSINESSDOMAIN" type="java.sql.Types.VARCHAR(100)" />
+			<column name="SERVICENAME" type="java.sql.Types.VARCHAR(100)" />
+			<column name="SERVICECONTEXT" type="java.sql.Types.VARCHAR(100)" />
+			<column name="SERVICECONTEXTVERSION" type="java.sql.Types.VARCHAR(100)" />
+			<column name="OPERATIONNAME" type="java.sql.Types.VARCHAR(100)" />
+			<column name="OPERATIONVERSION" type="java.sql.Types.VARCHAR(100)" />
+			<column name="APPLICATIONNAME" type="java.sql.Types.VARCHAR(100)" />
+			<column name="APPLICATIONFUNCTION" type="java.sql.Types.VARCHAR(100)" />
+			<column name="LOG_TIMESTAMP" type="DATETIME" />
+			<column name="SENDERID" type="java.sql.Types.VARCHAR(100)" />
+			<column name="CRE_TIMESTAMP" type="DATETIME" />
+			<column name="ERROR_CODE" type="java.sql.Types.VARCHAR(100)" />
+			<column name="ERROR_REASON" type="java.sql.Types.VARCHAR(100)" />
+			<column name="ERROR_TEXT" type="java.sql.Types.VARCHAR(100)" />
+			<column name="MESSAGE" type="java.sql.Types.VARCHAR(100)" />
+			<column name="RESEND_CONN_FACT" type="java.sql.Types.VARCHAR(100)" />
+			<column name="RESEND_PROV_URL" type="java.sql.Types.VARCHAR(100)" />
+			<column name="RESEND_DESTINATION" type="java.sql.Types.VARCHAR(100)" />
+		</createTable>
+	</changeSet>
+
+	<changeSet id="TIBET2:DL_AUDITLOG_APPLNAME" author="Niels Meijer">
+		<comment>Add DL_AUDITLOG_APPLNAME Table</comment>
+		<createTable tableName="DL_AUDITLOG_APPLNAME">
+			<column name="APPLICATIONNAME" type="java.sql.Types.VARCHAR(100)" />
+		</createTable>
+	</changeSet>
+
+	<changeSet id="TIBET2:DL_EXCEPTLOG_APPLFUN" author="Niels Meijer">
+		<comment>Add DL_EXCEPTLOG_APPLFUN Table</comment>
+		<createTable tableName="DL_EXCEPTLOG_APPLFUN">
+			<column name="APPLICATIONFUNCTION" type="java.sql.Types.VARCHAR(100)" />
+		</createTable>
+	</changeSet>
+
+	<changeSet id="TIBET2:DL_EXCEPTLOG_ERRCD" author="Niels Meijer">
+		<comment>Add DL_EXCEPTLOG_ERRCD Table</comment>
+		<createTable tableName="DL_EXCEPTLOG_ERRCD">
+			<column name="ERROR_CODE" type="java.sql.Types.VARCHAR(100)" />
+		</createTable>
+	</changeSet>
+
+	<changeSet id="TIBET2:DL_AUDITLOG_TYPE" author="Niels Meijer">
+		<comment>Add DL_AUDITLOG_TYPE Table</comment>
+		<createTable tableName="DL_AUDITLOG_TYPE">
+			<column name="TYPE" type="java.sql.Types.VARCHAR(100)" />
+		</createTable>
+	</changeSet>
+
+	<changeSet id="TIBET2:DL_AUDITLOG_FUNCERRCD" author="Niels Meijer">
+		<comment>Add DL_AUDITLOG_FUNCERRCD Table</comment>
+		<createTable tableName="DL_AUDITLOG_FUNCERRCD">
+			<column name="FUNCT_ERROR_CODE" type="java.sql.Types.VARCHAR(100)" />
+		</createTable>
+	</changeSet>
+
+	<changeSet id="TIBET2:DL_AUDITLOG_FUNCERRRS" author="Niels Meijer">
+		<comment>Add DL_AUDITLOG_FUNCERRRS Table</comment>
+		<createTable tableName="DL_AUDITLOG_FUNCERRRS">
+			<column name="FUNCT_ERROR_REASON" type="java.sql.Types.VARCHAR(100)" />
+		</createTable>
+	</changeSet>
+
+	<changeSet id="TIBET2:ADD_DUMMY_DATA_TO_EXCEPTIONLOG" author="Niels Meijer">
+		<comment>Insert into EXCEPTIONLOG Table</comment>
+		<insert tableName="EXCEPTIONLOG">
+			<column name="MESSAGEID" value="dummy" />
+			<column name="CONVERSATIONID" value="dummy" />
+			<column name="CPAID" value="dummy" />
+			<column name="BUSINESSDOMAIN" value="dummy" />
+			<column name="SERVICENAME" value="dummy" />
+			<column name="SERVICECONTEXT" value="dummy" />
+			<column name="SERVICECONTEXTVERSION" value="dummy" />
+			<column name="OPERATIONNAME" value="dummy" />
+			<column name="OPERATIONVERSION" value="dummy" />
+			<column name="APPLICATIONNAME" value="dummy" />
+			<column name="APPLICATIONFUNCTION" value="dummy" />
+			<column name="LOG_TIMESTAMP" value="2024-10-14T00:00:00+02:00" />
+			<column name="SENDERID" value="dummy" />
+			<column name="CRE_TIMESTAMP" value="2024-10-14T00:00:00+02:00" />
+			<column name="ERROR_CODE" value="dummy" />
+			<column name="ERROR_REASON" value="dummy" />
+			<column name="ERROR_TEXT" value="dummy" />
+			<column name="MESSAGE" value="dummy" />
+			<column name="RESEND_CONN_FACT" value="dummy" />
+			<column name="RESEND_PROV_URL" value="dummy" />
+			<column name="RESEND_DESTINATION" value="dummy" />
+		</insert>
+	</changeSet>
+
+</databaseChangeLog>
