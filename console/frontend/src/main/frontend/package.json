@@ -20,7 +20,7 @@
   },
   "private": true,
   "engines": {
-    "node": ">=22.21.1"
+    "node": ">=22.22.0"
   },
   "dependencies": {
     "@angular/animations": "^21.0.8",
@@ -37,7 +37,7 @@
     "@fortawesome/free-brands-svg-icons": "^7.1.0",
     "@fortawesome/free-regular-svg-icons": "^7.1.0",
     "@fortawesome/free-solid-svg-icons": "^7.1.0",
-    "@frankframework/frank-config-layout": "^1.2.6",
+    "@frankframework/frank-config-layout": "^1.2.7",
     "@ng-bootstrap/ng-bootstrap": "^20.0.0",
     "@popperjs/core": "^2.11.8",
     "@stomp/stompjs": "^7.2.1",
@@ -67,7 +67,7 @@
     "@angular/compiler-cli": "^21.0.8",
     "@cypress/schematic": "^5.0.0",
     "@eslint/js": "^9.39.2",
-    "@types/jasmine": "~5.1.14",
+    "@types/jasmine": "~5.1.15",
     "@types/lodash": "^4.17.23",
     "@types/markdown-it": "^14.1.2",
     "@types/sockjs-client": "^1.5.4",
