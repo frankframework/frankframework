@@ -97,7 +97,7 @@ public class IfPipeXpathTest extends PipeTestBase<IfPipe> {
 	void xsltVersion1Error() {
 		assertThrows(ConfigurationException.class, () -> {
 			pipe.setXpathExpression("number(count(/results/result[contains(@name , lower-case('test'))]))>1");
-			pipe.setXsltVersion(1); //current default
+			pipe.setXsltVersion(1); // current default
 			configureAndStartPipe();
 
 			pipeRunResult = doPipe(pipe, "<results><result name=\"test\"></result><result name=\"test\"></result></results>", session);
@@ -108,7 +108,7 @@ public class IfPipeXpathTest extends PipeTestBase<IfPipe> {
 	@Test
 	void xsltVersion2Success() throws Exception {
 		pipe.setXpathExpression("number(count(/results/result[contains(@name , lower-case('test'))]))>1");
-		pipe.setXsltVersion(2); //current default
+		pipe.setXsltVersion(2); // current default
 		configureAndStartPipe();
 
 		pipeRunResult = doPipe(pipe, "<results><result name=\"test\"></result><result name=\"test\"></result></results>", session);

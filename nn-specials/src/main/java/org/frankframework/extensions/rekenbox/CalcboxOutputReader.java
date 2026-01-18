@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden
+   Copyright 2013 Nationale-Nederlanden, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -55,7 +55,7 @@ public class CalcboxOutputReader implements XMLReader {
 	String rootElement = "CALCBOXMESSAGE";
 	String indent = "\n    "; // for readability!
 
-	//static int to memorize details of last tags
+	// static int to memorize details of last tags
 	String[] tagMemory = {};
 
 	/** Parse the input (CalcBox Message Format) */
@@ -119,7 +119,7 @@ public class CalcboxOutputReader implements XMLReader {
 		// place tag in arraylist
 		String[] arrayTagString = split(name, ".");
 
-		//Figure out wich elements changed...
+		// Figure out wich elements changed...
 		int tagChangeLevel = tagMemory.length + 1;
 		for(int i = tagMemory.length; i > 0; i--) {
 			// If new tag has more tag parts or a tag part has changed
@@ -128,13 +128,13 @@ public class CalcboxOutputReader implements XMLReader {
 			}
 		}
 
-		//And place end elements for these tags
+		// And place end elements for these tags
 		for(int i = tagMemory.length; i >= tagChangeLevel; i--) {
 			String strippedTag = striptrailingnumbers(tagMemory[i - 1]);
 			handler.endElement(nsu, strippedTag, strippedTag);
 		}
 
-		//Determine where the ':' is, and take this as the startposition
+		// Determine where the ':' is, and take this as the startposition
 		int startIndex = line.indexOf(":") + 1; // 1=length of ":" after the name
 		handler.ignorableWhitespace(indent.toCharArray(), 0, indent.length());
 

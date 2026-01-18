@@ -1,5 +1,5 @@
 /*
-   Copyright 2020-2022 WeAreFrank!
+   Copyright 2020-2022, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -103,7 +103,7 @@ public class JdbcTableMessageBrowser<M> extends AbstractJdbcMessageBrowser<M> {
 		if (tableListener!=null) {
 			return tableListener.extractRawMessage(rs);
 		}
-		//noinspection unchecked
+		// noinspection unchecked
 		RawMessageWrapper<M> rawMessageWrapper = (RawMessageWrapper<M>) new RawMessageWrapper<>(rs.getString(columnIndex), storageKey, null);
 		rawMessageWrapper.getContext().put(PipeLineSession.STORAGE_ID_KEY, storageKey);
 		return rawMessageWrapper;
@@ -148,7 +148,7 @@ public class JdbcTableMessageBrowser<M> extends AbstractJdbcMessageBrowser<M> {
 		if (endTime!=null) {
 			whereClause= StringUtil.concatStrings(whereClause, " AND ", getDateField()+"<?");
 		}
-		if(order == SortOrder.NONE) { //If no order has been set, use the default (DESC for messages and ASC for errors)
+		if(order == SortOrder.NONE) { // If no order has been set, use the default (DESC for messages and ASC for errors)
 			order = getOrder();
 		}
 		if (order == null) {

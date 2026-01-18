@@ -52,12 +52,17 @@ import org.frankframework.stream.Message;
  */
 public abstract class CmisHttpSender extends AbstractHttpSender {
 
+	public static final String METHOD_KEY = PipeLineSession.SYSTEM_MANAGED_RESOURCE_PREFIX + "method";
+	public static final String HEADERS_KEY = PipeLineSession.SYSTEM_MANAGED_RESOURCE_PREFIX + "headers";
+	public static final String URL_KEY = PipeLineSession.SYSTEM_MANAGED_RESOURCE_PREFIX + "url";
+	public static final String WRITER_KEY = PipeLineSession.SYSTEM_MANAGED_RESOURCE_PREFIX + "writer";
+
 	@Override
 	public HttpRequestBase getMethod(URI uri, Message message, @NonNull ParameterValueList pvl, PipeLineSession session) throws SenderException {
 		HttpRequestBase method = null;
 
-		HttpMethod methodType = (HttpMethod) session.get("method");
-		if(methodType == null) {
+		HttpMethod methodType = session.getAsType(METHOD_KEY);
+		if (methodType == null) {
 			throw new SenderException("unable to determine method from pipeline session");
 		}
 
@@ -71,8 +76,8 @@ public abstract class CmisHttpSender extends AbstractHttpSender {
 				HttpPost httpPost = new HttpPost(uri);
 
 				// send data
-				if (session.get("writer") != null) {
-					Output writer = (Output) session.get("writer");
+				if (session.get(WRITER_KEY) != null) {
+					Output writer = (Output) session.get(WRITER_KEY);
 					ByteArrayOutputStream out = new ByteArrayOutputStream();
 
 					Object clientCompression = pvl.get(SessionParameter.CLIENT_COMPRESSION);
@@ -95,8 +100,8 @@ public abstract class CmisHttpSender extends AbstractHttpSender {
 				HttpPut httpPut = new HttpPut(uri);
 
 				// send data
-				if (session.get("writer") != null) {
-					Output writer = (Output) session.get("writer");
+				if (session.get(WRITER_KEY) != null) {
+					Output writer = (Output) session.get(WRITER_KEY);
 					ByteArrayOutputStream out = new ByteArrayOutputStream();
 
 					Object clientCompression = pvl.get(SessionParameter.CLIENT_COMPRESSION);
@@ -126,9 +131,9 @@ public abstract class CmisHttpSender extends AbstractHttpSender {
 			throw new SenderException(e);
 		}
 
-		if (session.get("headers") != null) {
+		if (session.get(HEADERS_KEY) != null) {
 			@SuppressWarnings("unchecked")
-			Map<String, String> headers = (Map<String, String>) session.get("headers");
+			Map<String, String> headers = (Map<String, String>) session.get(HEADERS_KEY);
 
 			for(Map.Entry<String, String> entry : headers.entrySet()) {
 				if(log.isTraceEnabled()) log.trace("appending header [{}] with value [{}]", entry.getKey(), entry.getValue());
@@ -143,7 +148,7 @@ public abstract class CmisHttpSender extends AbstractHttpSender {
 
 	@Override
 	protected boolean validateResponseCode(int statusCode) {
-		return true; //Always success
+		return true; // Always success
 	}
 
 	@Override
@@ -174,14 +179,14 @@ public abstract class CmisHttpSender extends AbstractHttpSender {
 	}
 
 	public Response invoke(HttpMethod method, String url, Map<String, String> headers, Output writer) {
-		//Prepare the message. We will overwrite things later...
+		// Prepare the message. We will overwrite things later...
 		int responseCode = -1;
 
 		try(PipeLineSession pls = new PipeLineSession()) {
-			pls.put("writer", writer);
-			pls.put("url", url);
-			pls.put("method", method);
-			pls.put("headers", headers);
+			pls.put(WRITER_KEY, writer);
+			pls.put(URL_KEY, url);
+			pls.put(METHOD_KEY, method);
+			pls.put(HEADERS_KEY, headers);
 
 			try {
 				// Message is unused, we use 'Output writer' instead

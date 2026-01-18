@@ -141,7 +141,7 @@ public class PartMessageTest {
 		TestPart testPart = new TestPart(source.toURI().toURL());
 		Message in = new PartMessage(testPart, "UTF-8");
 
-		//assertEquals(testStringLength, in.size());
+		// assertEquals(testStringLength, in.size());
 		byte[] wire = serializationTester.serialize(in);
 		log.debug("wire {}", () -> Hex.encodeHexString(wire));
 		MessageTest.writeContentsToFile(source, "fakeContentAsReplacementOfThePrevious");

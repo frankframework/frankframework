@@ -70,7 +70,7 @@ public class DirectQuerySenderMock extends DirectQuerySender {
 
 	@Override
 	public void closeBlock(Connection connection, PipeLineSession session) throws SenderException {
-		//ignore
+		// ignore
 	}
 
 	@Override

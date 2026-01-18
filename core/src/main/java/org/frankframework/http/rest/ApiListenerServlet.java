@@ -432,7 +432,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				/*
 				 * Check authorization
 				 */
-				//TODO: authentication implementation
+				// TODO: authentication implementation
 
 				/*
 				 * Map uriIdentifiers into messageContext
@@ -476,7 +476,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 				 * If applicable, map multipart parts into messageContext
 				 */
 				Message body = null;
-				//TODO fix HttpSender#handleMultipartResponse(..)
+				// TODO fix HttpSender#handleMultipartResponse(..)
 				if(MultipartUtils.isMultipart(request)) {
 					final String multipartBodyName = listener.getMultipartBodyName();
 					try {

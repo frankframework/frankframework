@@ -48,7 +48,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 	private String action = null;
 	List<String> allowedActions = List.of("get", "set", "create", "remove");
 	private IApiCache cache = null;
-	private final int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); //Defaults to 7 days
+	private final int authTTL = AppConstants.getInstance().getInt("api.auth.token-ttl", 60 * 60 * 24 * 7); // Defaults to 7 days
 	private String authenticationMethod = "header";
 
 	@Override
@@ -97,7 +97,7 @@ public class ApiPrincipalPipe extends FixedForwardPipe {
 			return new PipeRunResult(getSuccessForward(), "");
 		}
 		if("create".equals(getAction())) {
-			//TODO type of token? (jwt, saml)
+			// TODO type of token? (jwt, saml)
 			String uidString = (new UID()).toString();
 			String token = UUIDUtil.RANDOM.nextInt() + uidString + Integer.toHexString(uidString.hashCode()) + UUIDUtil.RANDOM.nextInt(8);
 

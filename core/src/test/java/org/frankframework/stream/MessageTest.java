@@ -163,7 +163,7 @@ public class MessageTest {
 		String actual = adapter.toString();
 		// remove the toStringPrefix(), if it is present
 		String valuePart = actual.contains("value:\n") ? actual.split("value:\n")[1] : actual;
-		valuePart = valuePart.replaceAll(".*Message\\[[a-fA-F0-9]+:", ""); //Strip 'Message[abcd1234:'
+		valuePart = valuePart.replaceAll(".*Message\\[[a-fA-F0-9]+:", ""); // Strip 'Message[abcd1234:'
 		assertEquals(clazz.getSimpleName(), valuePart.substring(0, valuePart.indexOf("]: ")));
 		if (wrapperClass == null) {
 			assertEquals(clazz.getSimpleName(), adapter.getRequestClass());
@@ -967,21 +967,21 @@ public class MessageTest {
 	public void testMessageDefaultCharset() throws Exception {
 		String utf8Input = "Më-×m👌‰Œœ‡TzdDEyMt120=";
 		ByteArrayInputStream source = new ByteArrayInputStream(utf8Input.getBytes(StandardCharsets.UTF_8));
-		Message binaryMessage = new Message(source); //non-repeatable stream, no provided charset
+		Message binaryMessage = new Message(source); // non-repeatable stream, no provided charset
 
-		assertEquals(utf8Input, binaryMessage.asString()); //Default must be used
+		assertEquals(utf8Input, binaryMessage.asString()); // Default must be used
 
 		Message characterMessage = new Message(utf8Input);
-		assertEquals(utf8Input, characterMessage.asString("ISO-8859-1")); //This should not be used as there is no binary conversion
+		assertEquals(utf8Input, characterMessage.asString("ISO-8859-1")); // This should not be used as there is no binary conversion
 	}
 
 	@Test
 	public void testMessageDetectCharset() throws Exception {
 		String utf8Input = "Më-×m👌‰Œœ‡TzdDEyMt120=";
 		ByteArrayInputStream source = new ByteArrayInputStream(utf8Input.getBytes(StandardCharsets.UTF_8));
-		Message message = new Message(source, "auto"); //Set the MessageContext charset
+		Message message = new Message(source, "auto"); // Set the MessageContext charset
 
-		String stringResult = message.asString("ISO-8859-ik-besta-niet"); //use MessageContext charset
+		String stringResult = message.asString("ISO-8859-ik-besta-niet"); // use MessageContext charset
 		assertEquals(utf8Input, stringResult);
 	}
 
@@ -990,20 +990,20 @@ public class MessageTest {
 		URL isoInputFile = TestFileUtils.getTestFileURL("/Util/MessageUtils/iso-8859-1.txt");
 		assertNotNull(isoInputFile, "unable to find isoInputFile");
 
-		Message message = new UrlMessage(isoInputFile); //repeatable stream, detect charset
-		String stringResult = message.asString("auto"); //detect when reading
+		Message message = new UrlMessage(isoInputFile); // repeatable stream, detect charset
+		String stringResult = message.asString("auto"); // detect when reading
 		assertEquals(StreamUtil.streamToString(isoInputFile.openStream(), "ISO-8859-1"), stringResult);
 	}
 
 	@Test
 	public void testCharsetDeterminationAndFallbackToDefault() throws Exception {
-		Message messageNullCharset = new Message((byte[]) null) { //NullMessage, charset cannot be determined
+		Message messageNullCharset = new Message((byte[]) null) { // NullMessage, charset cannot be determined
 			@Override
 			public String getCharset() {
 				return null;
 			}
 		};
-		Message messageAutoCharset = new Message((byte[]) null) { //NullMessage, charset cannot be determined
+		Message messageAutoCharset = new Message((byte[]) null) { // NullMessage, charset cannot be determined
 			@Override
 			public String getCharset() {
 				return "AUTO";
@@ -1025,7 +1025,7 @@ public class MessageTest {
 
 	@Test
 	public void shouldOnlyDetectCharsetOnce() throws Exception {
-		Message message = new Message("’•†™".getBytes("cp-1252")) { //NullMessage, charset cannot be determined
+		Message message = new Message("’•†™".getBytes("cp-1252")) { // NullMessage, charset cannot be determined
 			@Override
 			public String getCharset() {
 				return "AUTO";
@@ -1034,14 +1034,14 @@ public class MessageTest {
 		};
 
 		try (TestAppender appender = TestAppender.newBuilder().build()) {
-			message.asString("auto"); //calls asReader();
-			message.asString(); //calls asReader();
-			message.asString("auto"); //calls asReader();
-			message.asString(); //calls asReader();
-			message.asString("auto"); //calls asReader();
-			message.asString(); //calls asReader();
-			message.asString("auto"); //calls asReader();
-			message.asString(); //calls asReader();
+			message.asString("auto"); // calls asReader();
+			message.asString(); // calls asReader();
+			message.asString("auto"); // calls asReader();
+			message.asString(); // calls asReader();
+			message.asString("auto"); // calls asReader();
+			message.asString(); // calls asReader();
+			message.asString("auto"); // calls asReader();
+			message.asString(); // calls asReader();
 			int i = 0;
 			for (String logLine : appender.getLogLines()) {
 				if (logLine.contains("unable to detect charset for message")) {
@@ -1124,7 +1124,7 @@ public class MessageTest {
 		byte[] content = msg.asByteArray();
 
 		// Assert
-		Message message = (Message) msg;
+		Message message = msg;
 		assertEquals("text", message.asString());
 		assertEquals(4, content.length);
 	}
@@ -1142,5 +1142,22 @@ public class MessageTest {
 		MessageWrapper<Message> messageWrapper = (MessageWrapper) wrapper;
 		assertEquals("text", messageWrapper.getMessage().asString());
 		assertEquals(4, content.length);
+	}
+
+	@Test
+	void testEnumInMessage() throws IOException {
+		Message msg = assertDoesNotThrow(() -> Message.asMessage(TestEnum.A));
+
+		assertEquals("A", msg.asString());
+	}
+
+	private enum TestEnum {
+		A, B;
+
+		@Override
+		public String toString() {
+			// This toString method should not be called when calling Message#asString() !
+			return "This is TestEnum [" + name() + "]";
+		}
 	}
 }

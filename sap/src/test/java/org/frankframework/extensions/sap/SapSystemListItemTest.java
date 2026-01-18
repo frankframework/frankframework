@@ -16,14 +16,14 @@ public class SapSystemListItemTest {
 
 	@Test
 	public void testSapSystemIsRegistered() {
-		//Arrange
+		// Arrange
 		var sapSystem1 = new SapSystem();
 		sapSystem1.setName("sapSystem1");
 
-		//Act
+		// Act
 		SapSystemListItem.registerItem(sapSystem1);
 
-		//Assert
+		// Assert
 		assertEquals(1, SapSystemListItem.getRegisteredNamesAsList().size());
 	}
 

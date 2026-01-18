@@ -127,7 +127,7 @@ public class IntraGrammarPoolEntityResolverTest {
 		}
 	}
 
-	@Test //See issue #3973. Should throw an XNIException to trigger XercesValidationErrorHandler#error which rethrows the Exception.
+	@Test // See issue #3973. Should throw an XNIException to trigger XercesValidationErrorHandler#error which rethrows the Exception.
 	public void localClassPathAbsoluteRef() throws Exception {
 		IntraGrammarPoolEntityResolver resolver = new IntraGrammarPoolEntityResolver(scopeProvider, EMPTY_SCHEMAS_LIST);
 
@@ -157,7 +157,7 @@ public class IntraGrammarPoolEntityResolverTest {
 		JarFile jarFile = new JarFile(file.getFile());
 		assertNotNull(jarFile, "jar file not found");
 
-		JarFileClassLoader cl = new JarFileClassLoader(new ClassLoader(null) {}); //No parent classloader, getResource and getResources will not fall back
+		JarFileClassLoader cl = new JarFileClassLoader(new ClassLoader(null) {}); // No parent classloader, getResource and getResources will not fall back
 		cl.setJar(file.getFile());
 		cl.configure(null, "");
 		return cl;

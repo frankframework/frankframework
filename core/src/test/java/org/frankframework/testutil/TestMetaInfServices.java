@@ -20,31 +20,31 @@ import org.frankframework.xml.StaxParserFactory;
  */
 public class TestMetaInfServices {
 
-	@Test //Xerces 2.12 with xml schema 1.1 enabled
+	@Test // Xerces 2.12 with xml schema 1.1 enabled
 	public void testSAXParserFactory() {
 		Class<?> parser = org.apache.xerces.jaxp.SAXParserFactoryImpl.class;
 		assertEquals(parser, SAXParserFactory.newInstance().getClass());
 	}
 
-	@Test //Original sun.com MessageFactory used for creating SOAP messages
+	@Test // Original sun.com MessageFactory used for creating SOAP messages
 	public void testMessageFactory() throws SOAPException {
 		Class<?> messageFactory = com.sun.xml.messaging.saaj.soap.dynamic.SOAPMessageFactoryDynamicImpl.class;
 		assertEquals(messageFactory, MessageFactory.newInstance().getClass());
 	}
 
-	@Test //WstxInputFactory with xml schema 1.1 enabled to fix 'Illegal character entity: expansion character'
+	@Test // WstxInputFactory with xml schema 1.1 enabled to fix 'Illegal character entity: expansion character'
 	public void testXMLInputFactory() {
 		Class<?> inputFactory = StaxParserFactory.class;
 		assertEquals(inputFactory, XMLInputFactory.newInstance().getClass());
 	}
 
-	@Test //ZephyrWriterFactory to improve fix namespaces support in WSDL's
+	@Test // ZephyrWriterFactory to improve fix namespaces support in WSDL's
 	public void testXMLOutputFactory() {
 		Class<?> outputFactory = com.sun.xml.stream.ZephyrWriterFactory.class;
 		assertEquals(outputFactory, XMLOutputFactory.newInstance().getClass());
 	}
 
-	@Test //Xerces to ensure that the sax parser is the same as event factory
+	@Test // Xerces to ensure that the sax parser is the same as event factory
 	public void testXMLEventFactory() {
 		Class<?> outputFactory = org.apache.xerces.stax.XMLEventFactoryImpl.class;
 		assertEquals(outputFactory, XMLEventFactory.newInstance().getClass());

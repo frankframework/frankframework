@@ -93,7 +93,7 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 			int length = message.length();
 			if (maxLength > 0 && length > maxLength) {
 				int diff = length - maxLength;
-				//We trim the message because it may end with a newline or whitespace character.
+				// We trim the message because it may end with a newline or whitespace character.
 				message = message.substring(0, maxLength).trim() + " " + moreMessage.formatted(diff) + "\r\n";
 			}
 		}
@@ -153,7 +153,7 @@ public abstract class IbisMaskingLayout extends AbstractStringLayout {
 			return builder.build();
 		}
 
-		//NB: this might trigger a source location lookup.
+		// NB: this might trigger a source location lookup.
 		MutableLogEvent mutable = new MutableLogEvent();
 		mutable.initFrom(event);
 		mutable.setMessage(message);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021, 2022-2025 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021, 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -92,7 +92,7 @@ public class TransactionAttributePipeLineProcessor extends AbstractPipeLineProce
 					throw new PipeRunException(null, "Caught unknown checked exception", t);
 				}
 			} finally {
-				//txManager.commit(txStatus);
+				// txManager.commit(txStatus);
 				itx.complete();
 			}
 		} catch (RuntimeException e) {

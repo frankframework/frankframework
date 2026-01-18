@@ -141,7 +141,7 @@ public abstract class SapListenerImpl<M> extends SapFunctionFacade implements IS
 		}
 	}
 
-	//JCoIDocHandlerFactory
+	// JCoIDocHandlerFactory
 	@Override
 	public JCoIDocHandler getIDocHandler(JCoIDocServerContext serverCtx) {
 		return this;
@@ -157,7 +157,7 @@ public abstract class SapListenerImpl<M> extends SapFunctionFacade implements IS
 		if(message instanceof JCoFunction jcoFunction) {
 			return wrapAsJcoFunction(jcoFunction);
 		}
-		return new RawMessageWrapper<>(message); //String
+		return new RawMessageWrapper<>(message); // String
 	}
 
 	private RawMessageWrapper<M> wrapAsJcoFunction(JCoFunction jcoFunction) {
@@ -219,7 +219,7 @@ public abstract class SapListenerImpl<M> extends SapFunctionFacade implements IS
 			try (PipeLineSession session = new PipeLineSession()) {
 				Message rawMessage = new Message(xmlProcessor.render(doc));
 				MessageWrapper messageWrapper = new MessageWrapper<>(rawMessage, doc.getIDocNumber(), null);
-				//noinspection unchecked
+				// noinspection unchecked
 				handler.processRequest(this, messageWrapper, session);
 			} catch (Throwable t) {
 				log.warn("{}Exception caught and handed to SAP", getLogPrefix(), t);

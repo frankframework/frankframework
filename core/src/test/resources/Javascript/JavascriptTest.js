@@ -21,7 +21,7 @@ function f3(x,y,z){
 }
 
 function f4(x,y) {
-	var a = x * 5 + ""; //ensure it's a string, else it cannot be parsed
+	var a = x * 5 + ""; // ensure it's a string, else it cannot be parsed
 	var b = y * 2 + "";
 
 	var c = myFunction(a);
@@ -34,7 +34,7 @@ function f5(input) {
 	return input;
 }
 
-//Used to test the performance.
+// Used to test the performance.
 function performance(x) {
 	var data = [];
 	for (var i = 0; i < x; i++) {

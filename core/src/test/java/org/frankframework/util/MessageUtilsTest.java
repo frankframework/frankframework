@@ -35,8 +35,8 @@ public class MessageUtilsTest {
 	@Test
 	public void testCharset() {
 		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.setCharacterEncoding("tja"); //overridden by content-type header
-		request.setContentType("application/xml;  charset=utf-8"); //2 spaces
+		request.setCharacterEncoding("tja"); // overridden by content-type header
+		request.setContentType("application/xml;  charset=utf-8"); // 2 spaces
 		request.setContent("request".getBytes());
 		MessageContext context = MessageUtils.getContext(request);
 
@@ -48,8 +48,8 @@ public class MessageUtilsTest {
 	@Test
 	public void testCharsetUtf8() {
 		MockHttpServletRequest request = new MockHttpServletRequest();
-		request.setCharacterEncoding("tja"); //overridden by content-type header
-		request.setContentType("application/xml;  charset=utf-16"); //2 spaces
+		request.setCharacterEncoding("tja"); // overridden by content-type header
+		request.setContentType("application/xml;  charset=utf-16"); // 2 spaces
 		request.setContent("request".getBytes());
 		MessageContext context = MessageUtils.getContext(request);
 
@@ -163,7 +163,7 @@ public class MessageUtilsTest {
 		Message message = new UrlMessage(url);
 		MessageDataSource ds = new MessageDataSource(message);
 		assertEquals("file.xml", ds.getName(), "filename should be the same");
-		assertEquals("application/xml", ds.getContentType(),"content-type should be the same"); //determined from file extension
+		assertEquals("application/xml", ds.getContentType(),"content-type should be the same"); // determined from file extension
 		assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "contents should be the same");
 		assertEquals(StreamUtil.streamToString(url.openStream()), StreamUtil.streamToString(ds.getInputStream()), "should be able to read the content twice");
 	}
@@ -258,7 +258,7 @@ public class MessageUtilsTest {
 		Message json = new Message(JSON_TEST_INPUT, new MessageContext().withName("foo.json"));
 		MimeType mimeType = MessageUtils.computeMimeType(json);
 		assertNotNull(mimeType);
-		assertEquals("application/json", mimeType.toString()); //mime-type can be determined
+		assertEquals("application/json", mimeType.toString()); // mime-type can be determined
 		assertEquals(JSON_TEST_INPUT, json.asString());
 	}
 

@@ -81,24 +81,24 @@ public class ClassLoaderEntityResolverTest {
 
 	@Test
 	public void testResourceNotFound() throws Exception {
-		//Get the working directory
+		// Get the working directory
 		final URL context = this.getClass().getResource("/");
 		assertNotNull(context);
 
-		//Get a random filename
+		// Get a random filename
 		final String randomName = "myFile-"+ UUIDUtil.createRandomUUID();
 
-		//Find a file which does not exist, but also does not return NULL
+		// Find a file which does not exist, but also does not return NULL
 		URL file = new URL(context, randomName);
 		assertNotNull(file);
 
 		ClassLoaderEntityResolver resolver = new ClassLoaderEntityResolver(localScopeProvider);
 
 		try(InputStream is = file.openStream()) {
-			fail("This should fail!"); //Make sure the file cannot be found!
+			fail("This should fail!"); // Make sure the file cannot be found!
 		}
 		catch (IOException e) {}
-		String systemId = file.getFile(); //Get the full absolute path to the non-existing file
+		String systemId = file.getFile(); // Get the full absolute path to the non-existing file
 
 		// Act
 		SAXException e = assertThrows(SAXException.class, () -> resolver.resolveEntity(publicId, systemId));

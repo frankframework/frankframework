@@ -100,7 +100,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
     private static final String LDAP_PROPS_FILENAME_KEY = "ldap.props.file";
     private static final String LDAP_CONNECTION_POOL_TIMEOUT_DEFAULT = "600000"; // milliseconds that an idle connection may remain in the pool without being closed and removed
 
-    //An Array of LDAP JVM custom properties for connection pooling with default values to set
+    // An Array of LDAP JVM custom properties for connection pooling with default values to set
     private static final String[][] LDAP_JVM_PROPS = {
     	{"com.sun.jndi.ldap.connect.pool.authentication", "none simple"},
     	{"com.sun.jndi.ldap.connect.pool.debug", null},
@@ -115,10 +115,10 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 	private ICache<String,Set<String>> attributeCache=null;
 
     static{
-    	//set JVM custom properties from Ldap.properties only once
-    	//check if a custom property exists to override LDAP properties name/location in classpath
+    	// set JVM custom properties from Ldap.properties only once
+    	// check if a custom property exists to override LDAP properties name/location in classpath
     	String strPropsFileName = System.getProperty(LDAP_PROPS_FILENAME_KEY);
-    	//if not available make the properties file name LDAP.properties
+    	// if not available make the properties file name LDAP.properties
     	if(strPropsFileName == null){
     		strPropsFileName = LDAP_PROPS_DEFAULT_FILENAME;
     	}
@@ -171,7 +171,7 @@ public class LdapClient implements ICacheEnabled<String,Set<String>> {
 	protected Map<String,Object> getJndiEnv(@SuppressWarnings("rawtypes") Set optionSet) {
 		Map<String,Object> jndiEnv = new HashMap<>();
 
-		//jndiEnv.put("com.sun.jndi.ldap.trace.ber", System.err);//ldap response in log for debug purposes
+		// jndiEnv.put("com.sun.jndi.ldap.trace.ber", System.err);// ldap response in log for debug purposes
 		jndiEnv.put(Context.INITIAL_CONTEXT_FACTORY, DEFAULT_INITIAL_CONTEXT_FACTORY_NAME);
 		for (Entry<String,Object> entry: (Set<Entry<String,Object>>)optionSet) {
 			if (entry.getKey().equals(JNDI_AUTH_ALIAS_KEY)) {

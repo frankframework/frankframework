@@ -1,5 +1,5 @@
 /*
-   Copyright 2022 WeAreFrank!
+   Copyright 2022, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -119,7 +119,7 @@ public class ConfigurationDTO {
 			String version1 = lhs.getVersion();
 			String version2 = rhs.getVersion();
 
-			return -compareNames(version1, version2); //invert the results as we want the latest version first
+			return -compareNames(version1, version2); // invert the results as we want the latest version first
 		}
 	}
 

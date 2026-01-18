@@ -204,7 +204,7 @@ public class CorePipeLineProcessor implements PipeLineProcessor, ApplicationCont
 					ExitState state=plExit.getState();
 					pipeLineResult.setState(state);
 					pipeLineResult.setExitCode(plExit.getExitCode());
-					if (!Message.isNull(message) && !plExit.isEmptyResult()) { //TODO Replace with Message.isEmpty() once Larva can handle NULL responses...
+					if (!Message.isNull(message) && !plExit.isEmptyResult()) { // TODO Replace with Message.isEmpty() once Larva can handle NULL responses...
 						pipeLineResult.setResult(message);
 					} else {
 						pipeLineResult.setResult(Message.nullMessage());

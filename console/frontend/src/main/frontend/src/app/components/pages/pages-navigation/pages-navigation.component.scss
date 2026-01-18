@@ -7,7 +7,7 @@
   height: 0;
   z-index: -1;
   overflow: hidden;
-  //transition: height .15s ease;
+  // transition: height .15s ease;
 
   &.in {
     height: auto;
@@ -67,4 +67,3 @@ li > a {
 .navbar-spacer {
   height: 60px;
 }
-

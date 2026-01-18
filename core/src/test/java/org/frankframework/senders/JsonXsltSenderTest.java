@@ -76,7 +76,7 @@ public class JsonXsltSenderTest extends SenderTestBase<JsonXsltSender> {
 		log.debug("jsonAct: ["+jsonAct+"]");
 		JsonStructure jAct=string2Json(jsonAct);
 		assertEquals(jExp.toString(), jAct.toString(), description);
-		//assertEquals(description,inputJson,jsonOut);
+		// assertEquals(description,inputJson,jsonOut);
 	}
 
 }

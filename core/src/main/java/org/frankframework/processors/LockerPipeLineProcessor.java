@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2020 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013, 2020 Nationale-Nederlanden, 2021, 2022, 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ public class LockerPipeLineProcessor extends AbstractPipeLineProcessor {
 					try {
 						locker.release(objectId);
 					} catch (Exception e) {
-						//throw new PipeRunException(null, "error while removing lock", e);
+						// throw new PipeRunException(null, "error while removing lock", e);
 						String msg = "error while removing lock ["+locker+"]: " + e.getMessage();
 						log.warn(msg);
 					}

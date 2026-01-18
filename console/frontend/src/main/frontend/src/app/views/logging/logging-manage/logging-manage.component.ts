@@ -61,12 +61,12 @@ export class LoggingManageComponent implements OnInit {
     });
   }
 
-  //Root logger level
+  // Root logger level
   changeRootLoglevel(level: (typeof this.errorLevels)[number]): void {
     this.form.loglevel = level;
   }
 
-  //Individual level
+  // Individual level
   changeLoglevel(logger: string, level: (typeof this.errorLevels)[number]): void {
     this.loggingService.putLoggingSettingsChange({ logger: logger, level: level }).subscribe(() => {
       this.toastService.success(`Updated logger [${logger}] to [${level}]`);
@@ -78,7 +78,7 @@ export class LoggingManageComponent implements OnInit {
     this.router.navigate(['add'], { relativeTo: this.route });
   }
 
-  //Reconfigure Log4j2
+  // Reconfigure Log4j2
   reconfigure(): void {
     this.loggingService.putLoggingSettingsChange({ reconfigure: true }).subscribe(() => {
       this.toastService.success('Reconfigured log definitions!');

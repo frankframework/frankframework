@@ -41,7 +41,7 @@ public abstract class SlowListenerBase implements IListener<String> {
 
 	@Override
 	public void configure() throws ConfigurationException {
-		//Nothing to configure
+		// Nothing to configure
 	}
 
 	@Override

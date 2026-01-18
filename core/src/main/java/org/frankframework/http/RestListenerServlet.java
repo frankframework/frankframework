@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2015 Nationale-Nederlanden, 2020-2024 WeAreFrank!
+   Copyright 2013-2015 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -50,7 +50,7 @@ import org.frankframework.util.StreamUtil;
 @Log4j2
 @IbisInitializer
 public class RestListenerServlet extends AbstractHttpServlet {
-	private final String corsAllowOrigin = AppConstants.getInstance().getString("rest.cors.allowOrigin", "*"); //Defaults to everything
+	private final String corsAllowOrigin = AppConstants.getInstance().getString("rest.cors.allowOrigin", "*"); // Defaults to everything
 	private final String corsExposeHeaders = AppConstants.getInstance().getString("rest.cors.exposeHeaders", "Allow, ETag, Content-Disposition");
 
 	private transient RestServiceDispatcher sd = null;
@@ -80,10 +80,10 @@ public class RestListenerServlet extends AbstractHttpServlet {
 			String pattern = sd.findMatchingPattern(path);
 			if(pattern!=null) {
 				Map<String, Object> methodConfig = sd.getMethodConfig(pattern, "OPTIONS");
-				if (methodConfig == null) { //If set, it means the adapter handles the OPTIONS request
+				if (methodConfig == null) { // If set, it means the adapter handles the OPTIONS request
 					Iterator<String> iter = sd.getAvailableMethods(pattern).iterator();
 					StringBuilder sb = new StringBuilder();
-					sb.append("OPTIONS"); //Append preflight OPTIONS request
+					sb.append("OPTIONS"); // Append preflight OPTIONS request
 					while (iter.hasNext()) {
 						sb.append(", ").append(iter.next());
 					}
@@ -91,7 +91,7 @@ public class RestListenerServlet extends AbstractHttpServlet {
 
 					if("OPTIONS".equalsIgnoreCase(request.getMethod())) {
 						response.setStatus(200);
-						//Preflight OPTIONS request should not return any data.
+						// Preflight OPTIONS request should not return any data.
 						return;
 					}
 				}

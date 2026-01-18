@@ -127,8 +127,8 @@ public class IMSSender extends MQSender {
 			byte[] data = message.asByteArray(CHARSET.name());
 
 			int messageLength = data == null ? 0 : data.length;
-			bos.write(shortToBytes(messageLength + 13)); //LL, +13 is for LL, ZZ and transaction code bytes
-			bos.write(new byte[2]); //ZZ
+			bos.write(shortToBytes(messageLength + 13)); // LL, +13 is for LL, ZZ and transaction code bytes
+			bos.write(new byte[2]); // ZZ
 			bos.write((transactionCode + " ").getBytes(CHARSET));
 
 			bos.write(data);

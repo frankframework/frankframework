@@ -95,7 +95,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		Message message = new Message("<normal><xml/><input/></normal>", new MessageContext().withMimeType(MediaType.APPLICATION_XML));
 		PipeRunResult res = doPipe(pipe, message, session);
 		assertEquals(expectedOutput, res.getResult().asString());
-		MatchUtils.assertXmlEquals(expectedOutput, res.getResult().asString()); //Parses both strings as XML, uses pretty print filter
+		MatchUtils.assertXmlEquals(expectedOutput, res.getResult().asString()); // Parses both strings as XML, uses pretty print filter
 	}
 
 	@Test
@@ -109,7 +109,7 @@ public class Text2XmlPipeTest extends PipeTestBase<Text2XmlPipe> {
 		Message message = new Message("<normal>\n<xml/>\n<input/>\n</normal>", new MessageContext().withMimeType(MediaType.APPLICATION_XML));
 		PipeRunResult res = doPipe(pipe, message, session);
 		assertEquals(expectedOutput, res.getResult().asString());
-		MatchUtils.assertXmlEquals(expectedOutput, res.getResult().asString()); //Parses both strings as XML, uses pretty print filter
+		MatchUtils.assertXmlEquals(expectedOutput, res.getResult().asString()); // Parses both strings as XML, uses pretty print filter
 	}
 
 	@Test

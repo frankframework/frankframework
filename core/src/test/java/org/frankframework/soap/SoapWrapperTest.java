@@ -269,7 +269,7 @@ public class SoapWrapperTest {
 		String result = replaceDynamicElements(soapBody);
 		MatchUtils.assertXmlEquals(expectedSoapBody, result);
 
-		//TODO assertTrue(verifySoapDigest(soapBody)); //does not read digest methods, only plain text
+		// TODO assertTrue(verifySoapDigest(soapBody)); // does not read digest methods, only plain text
 	}
 
 	@Test
@@ -288,7 +288,7 @@ public class SoapWrapperTest {
 	@Test
 	void validateSignedSoap1_1() throws Exception {
 		URL file = TestFileUtils.getTestFileURL("/Soap/signedSoap1_1.xml");
-		assertNotNull(file); //ensure we can find the file
+		assertNotNull(file); // ensure we can find the file
 
 		assertTrue(verifySoapDigest(file.openStream()));
 	}
@@ -398,14 +398,14 @@ public class SoapWrapperTest {
 
 					Document document = wsse.getOwnerDocument();
 					NodeList utl = document.getElementsByTagNameNS(WSS4JConstants.WSSE_NS, "UsernameToken");
-					Element ut = (Element) utl.item(0); //TODO use the URI here to select the correct UT item
+					Element ut = (Element) utl.item(0); // TODO use the URI here to select the correct UT item
 
 					byte[] passwordDigest = getPasswordDigest(ut);
 
 					return new KeySelectorResult() {
 						@Override
 						public Key getKey() {
-							String keyAlgorithm = JCEMapper.getJCEKeyAlgorithmFromURI(WSConstants.HMAC_SHA1); //TODO use the node's namespace
+							String keyAlgorithm = JCEMapper.getJCEKeyAlgorithmFromURI(WSConstants.HMAC_SHA1); // TODO use the node's namespace
 							assertNotNull(keyAlgorithm);
 							return new SecretKeySpec(passwordDigest, keyAlgorithm);
 						}

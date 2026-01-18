@@ -54,7 +54,7 @@ class JavascriptSenderCallbackTest extends SenderTestBase<JavascriptSender> {
 		assertEquals("7", sender.sendMessageOrThrow(dummyInput, session).asString());
 	}
 
-	//An EchoSender will be called in the javascript code.
+	// An EchoSender will be called in the javascript code.
 	@ParameterizedTest
 	@EnumSource(JavaScriptEngines.class)
 	void javaScriptSenderWithNestedEchoSender(JavaScriptEngines engine) throws ConfigurationException, SenderException, TimeoutException, IOException {

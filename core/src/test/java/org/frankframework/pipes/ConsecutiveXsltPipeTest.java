@@ -31,7 +31,7 @@ public class ConsecutiveXsltPipeTest extends PipeTestBase<XsltPipe> {
 
 		pipe.setName("nextPipe");
 		pipe.setStyleSheetName("/Xslt/map.xslt");
-		//second.setStoreResultInSessionKey("test");
+		// second.setStoreResultInSessionKey("test");
 		pipeline.addPipe(pipe);
 
 

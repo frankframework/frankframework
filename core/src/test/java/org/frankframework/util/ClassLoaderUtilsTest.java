@@ -100,7 +100,7 @@ public class ClassLoaderUtilsTest {
 	public void getResourceURLnoExternalFileErrorC2() {
 		URL url = ClassLoaderUtils.getResourceURL(scopeProvider, "file://potato.ext", "file");
 
-		assertEquals("", url.getFile()); //returns an empty string if one does not exist
+		assertEquals("", url.getFile()); // returns an empty string if one does not exist
 	}
 
 	@Test
@@ -163,7 +163,7 @@ public class ClassLoaderUtilsTest {
 		URL url = ClassLoaderUtils.getResourceURL(nullScopeProvider, "file://potato.ext", "file");
 
 		assertNotNull(url);
-		assertEquals("", url.getFile()); //returns an empty string if one does not exist
+		assertEquals("", url.getFile()); // returns an empty string if one does not exist
 	}
 
 

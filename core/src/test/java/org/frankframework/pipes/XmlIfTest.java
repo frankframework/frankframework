@@ -32,7 +32,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 	public XmlIf createPipe() throws ConfigurationException {
 		XmlIf xmlIf = new XmlIf();
 
-		//Add default pipes
+		// Add default pipes
 		xmlIf.addForward(new PipeForward(pipeForwardThen, null));
 		xmlIf.addForward(new PipeForward(pipeForwardElse, null));
 		return xmlIf;
@@ -284,7 +284,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 	void xsltVersion1Error() {
 		assertThrows(ConfigurationException.class, () -> {
 			pipe.setXpathExpression("number(count(/results/result[contains(@name , lower-case('test'))]))>1");
-			pipe.setXsltVersion(1); //current default
+			pipe.setXsltVersion(1); // current default
 			configureAndStartPipe();
 
 			pipeRunResult = doPipe(pipe, "<results><result name=\"test\"></result><result name=\"test\"></result></results>", session);
@@ -295,7 +295,7 @@ public class XmlIfTest extends PipeTestBase<XmlIf> {
 	@Test
 	void xsltVersion2Success() throws Exception {
 		pipe.setXpathExpression("number(count(/results/result[contains(@name , lower-case('test'))]))>1");
-		pipe.setXsltVersion(2); //current default
+		pipe.setXsltVersion(2); // current default
 		configureAndStartPipe();
 
 		pipeRunResult = doPipe(pipe, "<results><result name=\"test\"></result><result name=\"test\"></result></results>", session);

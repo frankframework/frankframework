@@ -73,9 +73,9 @@ public class WebServiceSender extends HttpSender {
 		super.configure();
 
 		if (isSoap()) {
-			//ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
-			//String msg = "the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
-			//configWarnings.add(log, msg);
+			// ConfigurationWarnings configWarnings = ConfigurationWarnings.getInstance();
+			// String msg = "the use of attribute soap=true has been deprecated. Please change to SoapWrapperPipe";
+			// configWarnings.add(log, msg);
 		}
 		soapWrapper = SoapWrapper.getInstance();
 

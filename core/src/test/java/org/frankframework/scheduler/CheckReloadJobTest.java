@@ -27,7 +27,7 @@ public class CheckReloadJobTest {
 		};
 
 		// Ensure we have an IbisManager via side effects of method
-		//noinspection ResultOfMethodCallIgnored
+		// noinspection ResultOfMethodCallIgnored
 		databaseTestEnvironment.getConfiguration().getIbisManager();
 
 		jobDef.setName("CheckReloadJob");

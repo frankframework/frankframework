@@ -1,5 +1,5 @@
 /*
-   Copyright 2024 WeAreFrank!
+   Copyright 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -26,7 +26,7 @@ public enum HttpEntityType {
 	 * The input message is sent unchanged as binary or character data. The mimetype and character set on the HTTP entity
 	 * will determine how the client interprets the data.
 	 */
-	BINARY, //application/octet-stream
+	BINARY, // application/octet-stream
 
 //		SWA("Soap with Attachments"), // text/xml
 	/** Yields a x-www-form-urlencoded form entity */

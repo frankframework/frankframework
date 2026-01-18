@@ -1,5 +1,5 @@
 /*
-Copyright 2019 Integration Partners B.V.
+Copyright 2019 Integration Partners B.V., 2026 WeAreFrank!
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ public class MediaTypeTest {
 
 	@Test
 	public void fromValue() {
-		//Test the 3 most commonly used mediaTypes
+		// Test the 3 most commonly used mediaTypes
 		assertEquals(MediaTypes.XML, MediaTypes.fromValue("application/xml"), "fromValue [XML]");
 		assertEquals(MediaTypes.JSON, MediaTypes.fromValue("application/json"), "fromValue [JSON]");
 		assertEquals(MediaTypes.TEXT, MediaTypes.fromValue("text/plain"), "fromValue [TEXT]");
@@ -85,8 +85,8 @@ public class MediaTypeTest {
 	@ParameterizedTest
 	@CsvSource({"multipart/form-data", "multipart/related", "multipart/mixed"})
 	public void isConsumableMULTIPARTS(String header) {
-		//There are different multipart contentTypes, see: https://msdn.microsoft.com/en-us/library/ms527355(v=exchg.10).aspx
-		//Test at least the 3 most commonly used multiparts
+		// There are different multipart contentTypes, see: https://msdn.microsoft.com/en-us/library/ms527355(v=exchg.10).aspx
+		// Test at least the 3 most commonly used multiparts
 		String acceptHeader = header + "; type=text; boundary=--my-top-notch-boundary-";
 
 		assertTrue(MediaTypes.MULTIPART.includes(acceptHeader), "can parse ["+header+"]");

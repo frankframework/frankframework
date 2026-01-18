@@ -28,7 +28,7 @@ public abstract class PreparedStatementMock extends Mockito implements PreparedS
 	public Map<String, Object> getNamedParameters() {
 		Map<String, Object> map = new HashMap<>();
 
-		//Prepare parameterMap. We can assume its a proper query!
+		// Prepare parameterMap. We can assume its a proper query!
 		int fieldTo = query.indexOf(")");
 		String fields = query.substring(query.indexOf("(")+1, fieldTo);
 		String values = query.substring(query.indexOf("(", fieldTo)+1, query.lastIndexOf(")"));

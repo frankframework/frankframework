@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2022-2024 WeAreFrank!
+   Copyright 2013, 2018 Nationale-Nederlanden, 2020, 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -116,7 +116,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 
 	private void configureXPathLogging() throws TransformerConfigurationException {
 		String logKeys;
-		if(getXPathLoggingKeys() != null) //Override on listener level
+		if(getXPathLoggingKeys() != null) // Override on listener level
 			logKeys = getXPathLoggingKeys();
 		else
 			logKeys = MSGLOG_KEYS;
@@ -206,7 +206,7 @@ public class EsbJmsListener extends JmsListener implements ITransactionRequireme
 				TransformerPool test = LOG_KEY_TRANSFORMER_POOLS.get(xPathExpression);
 				found = test.transformToString(message, null);
 
-				//xPath not found and message length is 0 but not null nor ""
+				// xPath not found and message length is 0 but not null nor ""
 				if(found.isEmpty()) found = "";
 			} catch (Exception e) {
 				log.debug("could not evaluate xpath expression",e);

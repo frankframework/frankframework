@@ -1,5 +1,5 @@
 /*
-   Copyright 2018, 2019 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2018, 2019 Nationale-Nederlanden, 2021, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -58,7 +58,7 @@ public class ClassLoaderURIResolver implements URIResolver {
 			if (href.contains(":")) {
 				protocol=href.substring(0,href.indexOf(":"));
 			}
-			if (StringUtils.isNotEmpty(protocol)) { //if href contains a protocol, verify that it's allowed to look it up
+			if (StringUtils.isNotEmpty(protocol)) { // if href contains a protocol, verify that it's allowed to look it up
 				if(allowedProtocols.isEmpty()) {
 					throw new TransformerException("Cannot lookup resource ["+href+"] with protocol ["+protocol+"], no allowedProtocols");
 				} else if(!allowedProtocols.contains(protocol)) {
@@ -91,7 +91,7 @@ public class ClassLoaderURIResolver implements URIResolver {
 
 		if (resource==null) {
 			String message = "Cannot get resource for href [" + href + "] with base [" + base + "] as ref ["+ref+"]" +(globalClasspathRef==null?"":" nor as ref ["+absoluteOrRelativeRef+"]")+" protocol ["+protocol+"] in scope ["+scopeProvider+"]";
-			//log.warn(message); // TODO could log this message here, because Saxon does not log the details of the exception thrown. This will cause some duplicate messages, however. See for instance XsltSenderTest for example.
+			// log.warn(message); // TODO could log this message here, because Saxon does not log the details of the exception thrown. This will cause some duplicate messages, however. See for instance XsltSenderTest for example.
 			throw new TransformerException(message);
 		}
 		if (log.isDebugEnabled()) log.debug("resolved href [{}] base [{}] to resource [{}]", href, base, resource);

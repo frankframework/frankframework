@@ -1,5 +1,5 @@
 /*
-   Copyright 2023 WeAreFrank!
+   Copyright 2023, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -43,7 +43,7 @@ public class KafkaSenderTest {
 	void setUp() throws Exception {
 		sender.setTopic("test.test2");
 		sender.setClientId("test");
-		sender.setBootstrapServers("example.com:9092"); //dummy, doesn't connect.
+		sender.setBootstrapServers("example.com:9092"); // dummy, doesn't connect.
 		sender.configure();
 		sender.setProducer(mockProducer);
 	}

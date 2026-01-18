@@ -1,5 +1,5 @@
 /*
-   Copyright 2013, 2019 Nationale-Nederlanden, 2021, 2022 WeAreFrank!
+   Copyright 2013, 2019 Nationale-Nederlanden, 2021, 2022, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -68,7 +68,7 @@ public abstract class SapSystemImpl extends SapSystemListItem implements ISapSys
 
 	private int referenceCount=0;
 
-	//SNC Encryption
+	// SNC Encryption
 	private @Getter boolean sncEnabled = false;
 	private @Getter String sncLibrary;
 	private @Getter int sncQop = 8;
@@ -184,7 +184,7 @@ public abstract class SapSystemImpl extends SapSystemListItem implements ISapSys
 
 	@Override
 	public String toString() {
-		//return ToStringBuilder.reflectionToString(this);
+		// return ToStringBuilder.reflectionToString(this);
 		return (new ReflectionToStringBuilder(this) {
 			@Override
 			protected boolean accept(Field f) {

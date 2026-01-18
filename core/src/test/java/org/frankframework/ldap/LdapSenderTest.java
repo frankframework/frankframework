@@ -186,7 +186,7 @@ public class LdapSenderTest extends SenderTestBase<LdapSender> {
 		compareXML("Ldap/expected/search.xml", result);
 	}
 
-	//Create a new sender and execute the TREE action to run a diff against that changes
+	// Create a new sender and execute the TREE action to run a diff against that changes
 	private String getTree() throws Exception {
 		super.tearDown();
 		super.setUp();

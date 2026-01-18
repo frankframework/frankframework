@@ -131,9 +131,9 @@ public abstract class AbstractJdbcMessageBrowser<M> extends JdbcFacade implement
 		selector = createSelector();
 		if(getOrder() == null) {
 			if (type.equalsIgnoreCase(StorageType.ERRORSTORAGE.getCode())) {
-				setOrder(EnumUtils.parse(SortOrder.class, errorsOrder)); //Defaults to ASC
+				setOrder(EnumUtils.parse(SortOrder.class, errorsOrder)); // Defaults to ASC
 			} else {
-				setOrder(EnumUtils.parse(SortOrder.class, messagesOrder)); //Defaults to DESC
+				setOrder(EnumUtils.parse(SortOrder.class, messagesOrder)); // Defaults to DESC
 			}
 		}
 	}

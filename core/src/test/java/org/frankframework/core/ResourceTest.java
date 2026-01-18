@@ -83,9 +83,9 @@ public class ResourceTest {
 		String relativeResource = "../dom/CommentImpl.class";
 
 		URL url = this.getClass().getResource(baseResource);
-		//System.out.println("url ["+url.toExternalForm()+"]");
+		// System.out.println("url ["+url.toExternalForm()+"]");
 		Resource resource = Resource.getResource(baseResource);
-		//System.out.println("resource ["+resource.getSystemId()+"]");
+		// System.out.println("resource ["+resource.getSystemId()+"]");
 
 		ClassLoaderURIResolver resolver = new ClassLoaderURIResolver(resource);
 		assertNotNull(resolver.resolve(relativeResource, url.toExternalForm()));

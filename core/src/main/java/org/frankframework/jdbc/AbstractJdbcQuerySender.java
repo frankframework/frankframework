@@ -306,7 +306,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 		} catch (SQLException e) {
 			log.warn("got exception closing SQL statement", e);
 		}
-		//noinspection EmptyTryBlock
+		// noinspection EmptyTryBlock
 		try (Statement statement = queryExecutionContext.getResultQueryStatement()) {
 			// only close statement
 		} catch (SQLException e) {

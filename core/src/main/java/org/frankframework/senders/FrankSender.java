@@ -387,7 +387,7 @@ public class FrankSender extends AbstractSenderWithParameters implements HasPhys
 	}
 
 	private static SenderResult createSenderResult(Message resultMessage, PipeLineSession childSession) {
-		PipeLine.ExitState exitState = (PipeLine.ExitState) childSession.remove(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
+		PipeLine.ExitState exitState = childSession.removeIfType(PipeLineSession.EXIT_STATE_CONTEXT_KEY);
 		Object exitCode = childSession.remove(PipeLineSession.EXIT_CODE_CONTEXT_KEY);
 		String forwardName = Objects.toString(exitCode, null);
 

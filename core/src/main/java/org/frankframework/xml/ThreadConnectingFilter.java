@@ -47,7 +47,7 @@ public class ThreadConnectingFilter extends AbstractExceptionCatchingFilter {
 		try {
 			threadConnector.startThread(null);
 		} catch(Exception e) {
-			handleException(e); //Cleanup dangling threads, creates better Ladybug reports
+			handleException(e); // Cleanup dangling threads, creates better Ladybug reports
 		}
 		super.startDocument();
 	}

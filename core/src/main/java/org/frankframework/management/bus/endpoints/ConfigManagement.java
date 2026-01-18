@@ -133,7 +133,7 @@ public class ConfigManagement extends BusEndpointBase {
 	@RolesAllowed({"IbisTester", "IbisAdmin", "IbisDataAdmin"})
 	public Message<String> manageConfiguration(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
-		getConfigurationByName(configurationName); //Validate the configuration exists
+		getConfigurationByName(configurationName); // Validate the configuration exists
 
 		String version = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_VERSION_KEY);
 		Boolean activate = BusMessageUtils.getBooleanHeader(message, "activate", null);
@@ -218,7 +218,7 @@ public class ConfigManagement extends BusEndpointBase {
 			return response;
 		}
 
-		getConfigurationByName(configurationName); //Validate the configuration exists
+		getConfigurationByName(configurationName); // Validate the configuration exists
 		String version = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_VERSION_KEY);
 		String datasourceName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 
@@ -244,7 +244,7 @@ public class ConfigManagement extends BusEndpointBase {
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	public void deleteConfiguration(Message<?> message) {
 		String configurationName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_CONFIGURATION_NAME_KEY);
-		getConfigurationByName(configurationName); //Validate the configuration exists
+		getConfigurationByName(configurationName); // Validate the configuration exists
 		String version = BusMessageUtils.getHeader(message, HEADER_CONFIGURATION_VERSION_KEY);
 		String datasourceName = BusMessageUtils.getHeader(message, BusMessageUtils.HEADER_DATASOURCE_NAME_KEY, IDataSourceFactory.GLOBAL_DEFAULT_DATASOURCE_NAME);
 

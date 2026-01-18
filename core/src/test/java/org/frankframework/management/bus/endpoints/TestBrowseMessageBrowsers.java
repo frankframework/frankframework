@@ -1,5 +1,5 @@
 /*
-   Copyright 2019-2024 WeAreFrank!
+   Copyright 2019-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -97,7 +97,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 		Receiver<String> receiver = spy(SpringUtils.createBean(adapter, Receiver.class));
 		receiver.setName("ReceiverName");
 		receiver.setListener(listener);
-		doAnswer(p -> { throw new ListenerException("testing message ->"+p.getArgument(0)); }).when(receiver).retryMessage(anyString()); //does not actually test the retry mechanism
+		doAnswer(p -> { throw new ListenerException("testing message ->"+p.getArgument(0)); }).when(receiver).retryMessage(anyString()); // does not actually test the retry mechanism
 		adapter.addReceiver(receiver);
 		PipeLine pipeline = SpringUtils.createBean(adapter);
 		SenderPipe pipe = SpringUtils.createBean(adapter);
@@ -410,7 +410,7 @@ public class TestBrowseMessageBrowsers extends BusTestBase {
 			doReturn(iterator).when(browser).getIterator(any(Date.class), any(Date.class), any(SortOrder.class));
 			doReturn(iterator).when(browser).getIterator(isNull(), isNull(), any(SortOrder.class));
 			doAnswer(this::messageMock).when(browser).browseMessage(anyString());
-			doAnswer(p -> { throw new ListenerException("testing message ->"+p.getArgument(0)); }).when(browser).deleteMessage(anyString()); //does not actually test the delete mechanism
+			doAnswer(p -> { throw new ListenerException("testing message ->"+p.getArgument(0)); }).when(browser).deleteMessage(anyString()); // does not actually test the delete mechanism
 		} catch (ListenerException e) {
 			fail(e.getMessage());
 		}

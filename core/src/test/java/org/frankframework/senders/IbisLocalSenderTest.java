@@ -89,7 +89,7 @@ class IbisLocalSenderTest {
 		ibisLocalSender.setSynchronous(!callIsolated || callSynchronous);
 
 		if (callByServiceName) {
-			//noinspection removal
+			// noinspection removal
 			ibisLocalSender.setServiceName(listener.getServiceName());
 		} else {
 			ibisLocalSender.setJavaListener(listener.getName());
@@ -356,7 +356,7 @@ class IbisLocalSenderTest {
 		// Arrange
 		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient(false);
 		sender.setThrowJavaListenerNotFoundException(true);
-		//noinspection removal
+		// noinspection removal
 		sender.setServiceName("invalid");
 
 		try (PipeLineSession session = new PipeLineSession()) {
@@ -372,7 +372,7 @@ class IbisLocalSenderTest {
 		// Arrange
 		IbisLocalSender sender = createIbisLocalSenderWithDummyServiceClient(false);
 		sender.setThrowJavaListenerNotFoundException(false);
-		//noinspection removal
+		// noinspection removal
 		sender.setServiceName("invalid");
 
 		try (PipeLineSession session = new PipeLineSession()) {
@@ -587,7 +587,7 @@ class IbisLocalSenderTest {
 			}
 		}));
 		IbisLocalSender sender = new IbisLocalSender();
-		//noinspection removal
+		// noinspection removal
 		sender.setServiceName(SERVICE_NAME);
 		sender.setSynchronous(true);
 		sender.setIsolated(isolated);

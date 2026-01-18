@@ -143,7 +143,7 @@ public class JdbcUtilTest {
 		stringResult = JdbcTestUtil.selectAllFromTable(dbmsSupport, connection, "TEMP", "TKEY");
 		System.out.println(stringResult);
 		MatchUtils.assertXmlEquals(TestFileUtils.getTestFile("/JdbcUtil/expected.xml"), stringResult);
-		//compareXML("JdbcUtil/expected.xml", stringResult);
+		// compareXML("JdbcUtil/expected.xml", stringResult);
 
 		// Arrange
 		query = "SELECT TVARCHAR2, TDATETIME FROM TEMP WHERE TKEY = ?";

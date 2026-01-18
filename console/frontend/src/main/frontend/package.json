@@ -20,7 +20,7 @@
   },
   "private": true,
   "engines": {
-    "node": ">=22.21.1"
+    "node": ">=22.22.0"
   },
   "dependencies": {
     "@angular/animations": "^21.0.8",
@@ -37,7 +37,7 @@
     "@fortawesome/free-brands-svg-icons": "^7.1.0",
     "@fortawesome/free-regular-svg-icons": "^7.1.0",
     "@fortawesome/free-solid-svg-icons": "^7.1.0",
-    "@frankframework/frank-config-layout": "^1.2.6",
+    "@frankframework/frank-config-layout": "^1.2.7",
     "@ng-bootstrap/ng-bootstrap": "^20.0.0",
     "@popperjs/core": "^2.11.8",
     "@stomp/stompjs": "^7.2.1",
@@ -67,17 +67,17 @@
     "@angular/compiler-cli": "^21.0.8",
     "@cypress/schematic": "^5.0.0",
     "@eslint/js": "^9.39.2",
-    "@types/jasmine": "~5.1.14",
+    "@types/jasmine": "~5.1.15",
     "@types/lodash": "^4.17.23",
     "@types/markdown-it": "^14.1.2",
     "@types/sockjs-client": "^1.5.4",
     "@types/tinycon": "^0.6.7",
-    "@typescript-eslint/eslint-plugin": "^8.52.0",
-    "@typescript-eslint/parser": "^8.52.0",
+    "@typescript-eslint/eslint-plugin": "^8.53.0",
+    "@typescript-eslint/parser": "^8.53.0",
     "angular-eslint": "^21.1.0",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.4",
+    "eslint-plugin-prettier": "^5.5.5",
     "eslint-plugin-sonarjs": "^3.0.5",
     "eslint-plugin-unicorn": "^62.0.0",
     "jasmine-core": "~5.13.0",
@@ -88,7 +88,7 @@
     "karma-jasmine-html-reporter": "~2.1.0",
     "prettier": "^3.7.4",
     "typescript": "~5.9.3",
-    "typescript-eslint": "^8.52.0"
+    "typescript-eslint": "^8.53.0"
   },
-  "packageManager": "pnpm@10.24.0+sha512.01ff8ae71b4419903b65c60fb2dc9d34cf8bb6e06d03bde112ef38f7a34d6904c424ba66bea5cdcf12890230bf39f9580473140ed9c946fef328b6e5238a345a"
+  "packageManager": "pnpm@10.28.0+sha512.05df71d1421f21399e053fde567cea34d446fa02c76571441bfc1c7956e98e363088982d940465fd34480d4d90a0668bc12362f8aa88000a64e83d0b0e47be48"
 }

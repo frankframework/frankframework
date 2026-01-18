@@ -15,7 +15,7 @@ import org.frankframework.stream.Message;
 import org.frankframework.testutil.TestConfiguration;
 import org.frankframework.util.SpringUtils;
 
-@SuppressWarnings("deprecation") //Part of the tests!
+@SuppressWarnings("deprecation") // Part of the tests!
 public class TestDirectWrapperPipePipeLine {
 
 	TestConfiguration configuration;

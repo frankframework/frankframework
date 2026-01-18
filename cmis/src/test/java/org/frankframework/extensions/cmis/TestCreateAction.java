@@ -60,7 +60,7 @@ public class TestCreateAction extends CmisSenderTestBase {
 
 	public void setup(String input) {
 		if(EMPTY_INPUT.equals(input)) {
-			assumeTrue(STUBBED); //Only test empty named objects when stubbed
+			assumeTrue(STUBBED); // Only test empty named objects when stubbed
 			this.expectedResult = EMPTY_RESULT;
 			this.input = new Message(EMPTY_INPUT);
 		} else {

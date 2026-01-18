@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 - 2019 Nationale-Nederlanden
+   Copyright 2018 - 2019 Nationale-Nederlanden, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -41,7 +41,7 @@ public class RepositoryConnectorFactory extends AbstractServiceFactory {
 	public static final boolean CMIS_BRIDGE_ENABLED = AppConstants.getInstance().getBoolean(CMIS_BRIDGE_PROPERTY_PREFIX+"active", true);
 
 	private static final Logger LOG = LogUtil.getLogger(RepositoryConnectorFactory.class);
-	private static final ThreadLocal<CallContextAwareCmisService> CMIS_SERVICE = new ThreadLocal<>(); //1 service per appl-server HTTP connection pool thread.
+	private static final ThreadLocal<CallContextAwareCmisService> CMIS_SERVICE = new ThreadLocal<>(); // 1 service per appl-server HTTP connection pool thread.
 	private File tempDirectory = null;
 
 	@Override
@@ -80,7 +80,7 @@ public class RepositoryConnectorFactory extends AbstractServiceFactory {
 			LOG.debug("stored repository service in local http-conn-thread");
 		}
 
-		service.setCallContext(context); //Update the CallContext
+		service.setCallContext(context); // Update the CallContext
 
 		return service;
 	}

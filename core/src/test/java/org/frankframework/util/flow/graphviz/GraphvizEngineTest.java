@@ -96,7 +96,7 @@ public class GraphvizEngineTest {
 		assertEquals("{format:'svg',engine:'dot'}", options.toJson(false));
 
 		String render = "render('" + dot + "'," + options.toJson(false) + ");";
-		String result = engine.execute(render, options); //We also have to give options here to make sure SVG_STANDALONE is used
+		String result = engine.execute(render, options); // We also have to give options here to make sure SVG_STANDALONE is used
 		URL svg = ClassLoaderUtils.getResourceURL(scopeProvider, "flow.svg_standalone");
 
 		assertNotNull(svg);
