@@ -257,7 +257,7 @@ public class LocalFileServer implements AutoCloseable, CloseableResource {
 			server = createSMB1Server();
 			break;
 		case SMB2:
-			assumeTrue(license != null); //Only run test when a license is present!
+			assumeTrue(license != null); // Only run test when a license is present!
 			server = createSMB2Server();
 			break;
 

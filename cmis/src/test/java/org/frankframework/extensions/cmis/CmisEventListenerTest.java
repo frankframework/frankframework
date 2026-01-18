@@ -17,7 +17,7 @@ public class CmisEventListenerTest extends ListenerTestBase<Message, CmisEventLi
 
 	@BeforeEach
 	@Override
-	public void setUp() throws Exception { //Make this test Junit5 compliant
+	public void setUp() throws Exception { // Make this test Junit5 compliant
 		super.setUp();
 	}
 

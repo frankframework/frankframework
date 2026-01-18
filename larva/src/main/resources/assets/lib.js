@@ -175,7 +175,7 @@ function xmlFormat(elementId) {
 function jsonFormat(elementId) {
 	var value = $(elementId).value;
 	var jsonObject = JSON.parse(value);
-	$(elementId).value = JSON.stringify(jsonObject, null, 4); //indent with 4 spaces
+	$(elementId).value = JSON.stringify(jsonObject, null, 4); // indent with 4 spaces
 }
 
 /** Searches for the differences in Result and Expected.

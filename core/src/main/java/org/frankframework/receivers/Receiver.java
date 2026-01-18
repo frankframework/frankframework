@@ -592,7 +592,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 			if (getListener() instanceof ITransactionRequirements tr) {
 				if (tr.transactionalRequired() && !isTransacted()) {
 					ConfigurationWarnings.add(this, log, "listener type ["+ClassUtils.nameOf(getListener())+"] requires transactional processing", SuppressKeys.TRANSACTION_SUPPRESS_KEY, getAdapter());
-					//throw new ConfigurationException(msg);
+					// throw new ConfigurationException(msg);
 				}
 			}
 			ISender sender = getSender();
@@ -874,13 +874,13 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 		if (toState == ProcessState.AVAILABLE) {
 			resetProblematicHistory(message);
 		}
-		//noinspection unchecked
+		// noinspection unchecked
 		return ((IHasProcessState<M>)getListener()).changeProcessState(message, toState, reason); // Cast is safe because changeProcessState will only be executed in internal MessageBrowser
 	}
 
 	@Override
 	public IMessageBrowser<M> getMessageBrowser(ProcessState state) {
-		//noinspection unchecked
+		// noinspection unchecked
 		return (IMessageBrowser<M>)messageBrowsers.get(state);
 	}
 
@@ -1099,7 +1099,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 
 			MessageWrapper<M> messageWrapper;
 			if (rawMessageWrapper instanceof MessageWrapper && !(getListener() instanceof MessageStoreListener)) {
-				//somehow messages wrapped in MessageWrapper are in the ITransactionalStorage
+				// somehow messages wrapped in MessageWrapper are in the ITransactionalStorage
 				// There are, however, also Listeners that might use MessageWrapper as their raw message type,
 				// like JdbcListener
 				messageWrapper = (MessageWrapper<M>) rawMessageWrapper;
@@ -1160,7 +1160,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 				try {
 					// This deletes the message from the error store! Because that's the way JMS works and so it works that way for all TransactionStorage implementations
 					msg = errorStorage.consumeMessage(storageKey);
-					//noinspection unchecked
+					// noinspection unchecked
 					processRawMessage((RawMessageWrapper<M>) msg, session, true, false);
 				} catch (ListenerException e) {
 					itx.setRollbackOnly();
@@ -1280,7 +1280,7 @@ public class Receiver<M> extends TransactionAttributes implements ManagableLifec
 						result = pipeLineResult.getResult();
 
 						statusMessage = "exitState ["+pipeLineResult.getState()+"], result [";
-						if(!Message.isEmpty(result) && result.size() > ITransactionalStorage.MAXCOMMENTLEN - statusMessage.length()) { //Since we can determine the size, assume the message is preserved
+						if(!Message.isEmpty(result) && result.size() > ITransactionalStorage.MAXCOMMENTLEN - statusMessage.length()) { // Since we can determine the size, assume the message is preserved
 							String resultString = result.asString();
 							statusMessage += resultString.substring(0, Math.min(ITransactionalStorage.MAXCOMMENTLEN - statusMessage.length(), resultString.length()));
 						} else {

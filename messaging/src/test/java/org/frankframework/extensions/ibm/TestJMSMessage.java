@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2023 WeAreFrank!
+   Copyright 2020, 2023, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ public abstract class TestJMSMessage extends Mockito implements BytesMessage, An
 
 	@Override
 	public BytesMessage answer(InvocationOnMock invocation) {
-		return this; //created at newInstance() to mock unimplemented methods, initialized once answer is called
+		return this; // created at newInstance() to mock unimplemented methods, initialized once answer is called
 	}
 
 	@Override

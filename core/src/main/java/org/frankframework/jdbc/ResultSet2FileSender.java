@@ -129,7 +129,7 @@ public class ResultSet2FileSender extends FixedQuerySender {
 			log.debug("iteration [{}] item [{}]", counter, rec_str);
 		}
 		if ("timestamp".equalsIgnoreCase(getStatusFieldType())) {
-			//TODO: statusFieldType is nu altijd een timestamp (dit moeten ook andere types kunnen zijn)
+			// TODO: statusFieldType is nu altijd een timestamp (dit moeten ook andere types kunnen zijn)
 			resultset.updateTimestamp(2 , new Timestamp(TimeProvider.nowAsMillis()));
 			resultset.updateRow();
 		}

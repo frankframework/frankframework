@@ -99,7 +99,7 @@ public class DocumentBuilderTest {
 		try (IDocumentBuilder root = new JsonDocumentBuilder(writer)) {
 			buildDocument(root);
 		}
-		//MatchUtils.assertJsonEqual("", expected, root.getRoot().toString());
+		// MatchUtils.assertJsonEqual("", expected, root.getRoot().toString());
 		assertEquals(expected, result.toString());
 	}
 

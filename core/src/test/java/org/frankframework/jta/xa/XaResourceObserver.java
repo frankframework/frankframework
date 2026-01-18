@@ -18,7 +18,7 @@ public class XaResourceObserver implements XAResource {
 	@Override
 	public void commit(Xid xid, boolean onePhase) throws XAException {
 		log.debug("commit Xid [{}] onePhase [{}]", xid, onePhase);
-		//throw new XAException(XAException.XAER_RMFAIL);
+		// throw new XAException(XAException.XAER_RMFAIL);
 		target.commit(xid, onePhase);
 	}
 

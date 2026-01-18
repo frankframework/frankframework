@@ -60,7 +60,7 @@ public class PipeLineSessionTest {
 		list.add("789");
 
 		session.put("key1", "test");
-		session.put("key1", "test1"); //Overwrite a key
+		session.put("key1", "test1"); // Overwrite a key
 		session.put("key2", new Message("test2"));
 		session.put("key3", "test3".getBytes());
 		session.put("key4", new ByteArrayInputStream("test4".getBytes()));
@@ -121,13 +121,13 @@ public class PipeLineSessionTest {
 		Instant tsReceived = Instant.ofEpochMilli(1634150000000L);
 		Instant tsSent = Instant.ofEpochMilli(1634500000000L);
 
-		//Should set the value as a String
+		// Should set the value as a String
 		PipeLineSession.updateListenerParameters(session, null, null, tsReceived, tsSent);
 
 		assertEquals(tsReceived, session.getTsReceived());
 		assertEquals(tsSent, session.getTsSent());
 
-		//Sets the raw value
+		// Sets the raw value
 		session.put(PipeLineSession.TS_RECEIVED_KEY, tsReceived);
 		session.put(PipeLineSession.TS_SENT_KEY, tsSent);
 
@@ -254,10 +254,10 @@ public class PipeLineSessionTest {
 	public void ladybugStubMessageIDTest() {
 		String messageId = "I am a messageID!";
 
-		session.put(PipeLineSession.MESSAGE_ID_KEY, messageId); //key inserted as String
+		session.put(PipeLineSession.MESSAGE_ID_KEY, messageId); // key inserted as String
 		assertEquals(messageId, session.getMessageId());
 
-		session.put(PipeLineSession.MESSAGE_ID_KEY, new Message(messageId)); //key inserted as Message
+		session.put(PipeLineSession.MESSAGE_ID_KEY, new Message(messageId)); // key inserted as Message
 		assertEquals(messageId, session.getMessageId());
 	}
 
@@ -265,10 +265,10 @@ public class PipeLineSessionTest {
 	public void ladybugStubCorrelationIDTest() {
 		String correlationId = "I am something else";
 
-		session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId); //key inserted as String
+		session.put(PipeLineSession.CORRELATION_ID_KEY, correlationId); // key inserted as String
 		assertEquals(correlationId, session.getCorrelationId());
 
-		session.put(PipeLineSession.CORRELATION_ID_KEY, new Message(correlationId)); //key inserted as Message
+		session.put(PipeLineSession.CORRELATION_ID_KEY, new Message(correlationId)); // key inserted as Message
 		assertEquals(correlationId, session.getCorrelationId());
 	}
 
@@ -333,7 +333,7 @@ public class PipeLineSessionTest {
 
 				sub.scheduleCloseOnSessionExit(closeable);
 				sub.scheduleCloseOnSessionExit(closeable); // Just for good measure, add it twice..
-				sub.put("c", closeable); //Store under `c` which we merge later on
+				sub.put("c", closeable); // Store under `c` which we merge later on
 
 				for(int j = 1; j <= 10; j++) {
 

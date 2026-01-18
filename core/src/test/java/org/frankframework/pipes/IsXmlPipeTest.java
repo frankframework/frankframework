@@ -21,7 +21,7 @@ public class IsXmlPipeTest extends PipeTestBase<IsXmlPipe> {
 	public IsXmlPipe createPipe() throws ConfigurationException {
 		IsXmlPipe isXmlPipe = new IsXmlPipe();
 
-		//Add default pipes
+		// Add default pipes
 		isXmlPipe.addForward(new PipeForward(pipeForwardThen, null));
 		isXmlPipe.addForward(new PipeForward(pipeForwardElse, null));
 		return isXmlPipe;

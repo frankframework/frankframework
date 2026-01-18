@@ -1,5 +1,5 @@
 /*
-   Copyright 2022-2025 WeAreFrank!
+   Copyright 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -122,7 +122,7 @@ public class MessageDispatcher implements InitializingBean, ApplicationContextAw
 	private void registerServiceActivator(Object bean, Method method, SubscribableChannel channel, BusTopic topic) {
 		String componentName = ClassUtils.classNameOf(bean)+"."+method.getName();
 		ServiceActivatingHandler serviceActivator = new ServiceActivatingHandler(bean, method);
-//		serviceActivator.setRequiresReply(method.getReturnType() != void.class); //forces methods to return something, but this might not be required
+//		serviceActivator.setRequiresReply(method.getReturnType() != void.class); // forces methods to return something, but this might not be required
 		serviceActivator.setComponentName(componentName);
 		serviceActivator.setManagedName("@"+componentName);
 		initializeBean(serviceActivator);

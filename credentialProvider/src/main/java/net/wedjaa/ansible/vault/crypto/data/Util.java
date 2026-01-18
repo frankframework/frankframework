@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 - Fabio "MrWHO" Torchetti
+ * Copyright 2016 - Fabio "MrWHO" Torchetti, 2026 WeAreFrank!
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,7 @@ public class Util
 
     public static String join(String [] datalines)
     {
-    	//LF + CR (Windows & Linux files supported
+    	// LF + CR (Windows & Linux files supported
     	return Arrays.asList(datalines).stream().map(n -> n.trim()).collect(Collectors.joining());
     }
 
@@ -70,7 +70,7 @@ public class Util
 
     public static VaultInfo getVaultInfo(String vaultData)
     {
-    	//LF + CR (Windows & Linux files supported
+    	// LF + CR (Windows & Linux files supported
     	String infoString =  vaultData.substring(0, vaultData.indexOf(LINE_BREAK)).trim();
         return new VaultInfo(infoString);
     }

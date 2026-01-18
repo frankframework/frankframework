@@ -188,7 +188,7 @@ public class MetricsInitializer implements InitializingBean, DisposableBean, App
 		} else if (ac instanceof Adapter adapter) {
 			return (Configuration) adapter.getParent();
 		}
-		return null; //TODO throw new IllegalStateException("No ConfigurationContext found");
+		return null; // TODO throw new IllegalStateException("No ConfigurationContext found");
 	}
 
 	private Adapter getAdapter(@NonNull FrankElement frankElement) {

@@ -22,7 +22,7 @@ public class MockPullingListener extends MockListenerBase implements IPullingLis
 
 	@Override
 	public void closeThread(@NonNull Map<String, Object> threadContext)  {
-		//No-op
+		// No-op
 	}
 
 	@Override

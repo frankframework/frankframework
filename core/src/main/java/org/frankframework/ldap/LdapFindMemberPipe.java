@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2019-2020 Nationale-Nederlanden, 2022 WeAreFrank!
+   Copyright 2016, 2019-2020 Nationale-Nederlanden, 2022, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -104,7 +104,7 @@ public class LdapFindMemberPipe extends AbstractLdapQueryPipe {
 				ctx = new InitialDirContext(env);
 			} catch (CommunicationException e) {
 				log.info("Cannot create constructor for DirContext [{}], will try again with dummy SocketFactory", e.getMessage(), e);
-				ctx = new InitialLdapContext(env, null); //Try again without connection request controls.
+				ctx = new InitialLdapContext(env, null); // Try again without connection request controls.
 			}
 			Attribute attrs = ctx.getAttributes("").get("member");
 			if (attrs != null) {

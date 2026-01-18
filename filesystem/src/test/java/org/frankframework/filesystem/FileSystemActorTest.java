@@ -1110,7 +1110,7 @@ public abstract class FileSystemActorTest<F, FS extends IBasicFileSystem<F>> ext
 	}
 
 	@Test
-	//Should not be able to clean up directory after removing 'filename' because there are still 2 empty folders on the same root. Tests if list detects DIRECTORIES
+	// Should not be able to clean up directory after removing 'filename' because there are still 2 empty folders on the same root. Tests if list detects DIRECTORIES
 	public void fileSystemActorDeleteActionWithDeleteEmptyFolderRootContainsEmptyFoldersTest() throws Exception {
 		String filename = "filetobedeleted" + FILE1;
 		final String folder = "inner";

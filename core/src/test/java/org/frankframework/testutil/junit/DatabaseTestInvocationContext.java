@@ -97,7 +97,7 @@ class DatabaseTestInvocationContext implements TestTemplateInvocationContext {
 			Object testInstance = context.getRequiredTestInstances().getInnermostInstance();
 			setAnnotatedFields(testInstance, testInstance.getClass());
 
-			//Always store the database context, so it's closed after each test.
+			// Always store the database context, so it's closed after each test.
 			getStore(context).put(JUnitDatabaseExtension.DB_INSTANCE, dte);
 		}
 
@@ -116,7 +116,7 @@ class DatabaseTestInvocationContext implements TestTemplateInvocationContext {
 				int index = field.getDeclaredAnnotation(DatabaseTestOptions.Parameter.class).value();
 
 				Object valueToSet = arguments[index];
-				if(valueToSet != null) { //Skip null values
+				if(valueToSet != null) { // Skip null values
 					if(!field.getType().isAssignableFrom(valueToSet.getClass())) {
 						throw new ExtensionConfigurationException("Unable to set @Parameter field ["+field.getName()+"] to value ["+valueToSet+"] type mismatch.");
 					}

@@ -120,7 +120,7 @@ export class StatusComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     const fragmentSubscription = this.route.fragment.subscribe((fragment) => {
       if (fragment && fragment != '' && this.adapterName == '') {
-        //If the adapter param hasn't explicitly been set
+        // If the adapter param hasn't explicitly been set
         this.adapterName = fragment;
       }
     });
@@ -248,7 +248,7 @@ export class StatusComponent implements OnInit, OnDestroy {
     for (const config of configurations) {
       this.isConfigStubbed[config.name] = config.stubbed;
       this.isConfigAutoReloadable[config.name] = config.autoreload ?? false;
-      this.isConfigReloading[config.name] = config.state == 'STARTING' || config.state == 'STOPPING'; //Assume reloading when in state STARTING (LOADING) or in state STOPPING (UNLOADING)
+      this.isConfigReloading[config.name] = config.state == 'STARTING' || config.state == 'STOPPING'; // Assume reloading when in state STARTING (LOADING) or in state STOPPING (UNLOADING)
     }
   }
 

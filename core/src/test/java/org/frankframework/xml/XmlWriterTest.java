@@ -61,7 +61,7 @@ public class XmlWriterTest {
 	public void testWithNullAttribute() throws Exception {
 		XmlWriter xmlWriter = new XmlWriter();
 
-		//String expected = "<document attr=\"null\"/>";
+		// String expected = "<document attr=\"null\"/>";
 		String expected = "<document/>";
 
 		try (SaxDocumentBuilder documentBuilder = new SaxDocumentBuilder("document", xmlWriter, false)) {

@@ -100,7 +100,7 @@ public class EtagHandlerPipe extends FixedForwardPipe {
 			throw new PipeRunException(this, "exception extracting parameters", e);
 		}
 
-		//hash over data genereren, uit cache lezen en teruggeven, in cache updaten, verwijderen uit cache, cache naar disk wegschrijven, cache legen
+		// hash over data genereren, uit cache lezen en teruggeven, in cache updaten, verwijderen uit cache, cache naar disk wegschrijven, cache legen
 		String cacheKey = null;
 		if(uriPatternSessionKey != null && !uriPatternSessionKey.isEmpty())
 			cacheKey = getRestPath()+"_"+uriPatternSessionKey.toLowerCase();

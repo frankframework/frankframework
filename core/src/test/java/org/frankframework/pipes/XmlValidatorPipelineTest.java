@@ -403,7 +403,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 	}
 
 	@MethodSource("data")
-	@ParameterizedTest(name = "{0}") //copied from iaf-test /XmlValidator/scenario07a
+	@ParameterizedTest(name = "{0}") // copied from iaf-test /XmlValidator/scenario07a
 	void testImportIncludeOK(Class<AbstractXmlValidator> implementation) throws Exception {
 		initXmlValidatorTest(implementation);
 		// Arrange
@@ -454,7 +454,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 	}
 
 	@MethodSource("data")
-	@ParameterizedTest(name = "{0}") //copied from iaf-test /XmlValidator/scenario07b
+	@ParameterizedTest(name = "{0}") // copied from iaf-test /XmlValidator/scenario07b
 	void testImportIncludeError(Class<AbstractXmlValidator> implementation) throws Exception {
 		initXmlValidatorTest(implementation);
 		// Arrange
@@ -483,7 +483,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 	}
 
 	@MethodSource("data")
-	@ParameterizedTest(name = "{0}") //copied from iaf-test /XmlValidator/scenario07b
+	@ParameterizedTest(name = "{0}") // copied from iaf-test /XmlValidator/scenario07b
 	void testIncludeErrorDupNSPrefixes(Class<AbstractXmlValidator> implementation) throws Exception {
 		initXmlValidatorTest(implementation);
 		// Arrange
@@ -500,7 +500,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 	}
 
 	@MethodSource("data")
-	@ParameterizedTest(name = "{0}") //copied from iaf-test /XmlValidator/scenario05a, then simplified
+	@ParameterizedTest(name = "{0}") // copied from iaf-test /XmlValidator/scenario05a, then simplified
 	void testIncludeOK(Class<AbstractXmlValidator> implementation) throws Exception {
 		initXmlValidatorTest(implementation);
 		// Arrange
@@ -526,7 +526,7 @@ public class XmlValidatorPipelineTest extends XmlValidatorTestBase {
 	}
 
 	@MethodSource("data")
-	@ParameterizedTest(name = "{0}") //copied from iaf-test /XmlValidator/scenario05b, then simplified
+	@ParameterizedTest(name = "{0}") // copied from iaf-test /XmlValidator/scenario05b, then simplified
 	void testIncludeError(Class<AbstractXmlValidator> implementation) throws Exception {
 		initXmlValidatorTest(implementation);
 		// Arrange

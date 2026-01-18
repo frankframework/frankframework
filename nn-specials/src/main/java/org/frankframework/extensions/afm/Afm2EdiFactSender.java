@@ -59,7 +59,7 @@ public class Afm2EdiFactSender implements ISender {
 	private String destination = "   "; // 3 tekens
 	private String tpnummer = "999999";
 	// 6 tekens indien label AL_RECCRT ontbreekt
-	private String postbus = "                "; //16 tekens
+	private String postbus = "                "; // 16 tekens
 
 	private String name;
 
@@ -90,7 +90,7 @@ public class Afm2EdiFactSender implements ISender {
 	}
 	private void appendString(String aStr, StringBuilder aRes) {
 		if (aStr != null) {
-			String lHlpStr = aStr.trim();  //TODO: checken of dit wel klopt, stond zo in originele EvdW-code
+			String lHlpStr = aStr.trim();  // TODO: checken of dit wel klopt, stond zo in originele EvdW-code
 			if (aStr.length() > 1) {
 				aRes.append(aStr.intern() + "\r\n");
 			}
@@ -125,7 +125,7 @@ public class Afm2EdiFactSender implements ISender {
 			untRegel[i] = ' ';
 		"UNT".getChars(0, "UNT".length(), untRegel, 0);
 		DecimalFormat df = new DecimalFormat("000000");
-		regelTeller++; //de UNT Regel zelf
+		regelTeller++; // de UNT Regel zelf
 		df.format(regelTeller).getChars(0,df.format(regelTeller).length(),untRegel,3);
 		appendArray(untRegel, aRes);
 		regelTeller = 0;
@@ -142,13 +142,13 @@ public class Afm2EdiFactSender implements ISender {
 			setTpnummer(getWaardeForNode(lHlpNode));
 		}
 		StringBuilder resultaat = new StringBuilder();
-		//start
+		// start
 		this.appendArray(getInitResultaat(), resultaat);
-		//docs
+		// docs
 		this.HandleList(contractList, resultaat);
 		this.HandleList(mantelList, resultaat);
 		this.HandleList(onderdeelList, resultaat);
-		//finish
+		// finish
 		this.appendArray(getCloseResultaat(), resultaat);
 
 		return resultaat.toString();
@@ -261,7 +261,7 @@ public class Afm2EdiFactSender implements ISender {
 							regelTeller = HandleSubList(aSubList, aRes, regelTeller);
 						} else {
 							if (labelNaam.contains(VERWERKTAG)) {
-								//Verwerktags niet in edifact zetten
+								// Verwerktags niet in edifact zetten
 							} else {
 								lHlp = "LBW" + labelNaam.substring(3);
 

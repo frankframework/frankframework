@@ -148,7 +148,7 @@ public abstract class CmisHttpSender extends AbstractHttpSender {
 
 	@Override
 	protected boolean validateResponseCode(int statusCode) {
-		return true; //Always success
+		return true; // Always success
 	}
 
 	@Override
@@ -179,7 +179,7 @@ public abstract class CmisHttpSender extends AbstractHttpSender {
 	}
 
 	public Response invoke(HttpMethod method, String url, Map<String, String> headers, Output writer) {
-		//Prepare the message. We will overwrite things later...
+		// Prepare the message. We will overwrite things later...
 		int responseCode = -1;
 
 		try(PipeLineSession pls = new PipeLineSession()) {

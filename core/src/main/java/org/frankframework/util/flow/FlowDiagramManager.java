@@ -1,5 +1,5 @@
 /*
-   Copyright 2016, 2018 Nationale-Nederlanden, 2019-2021 WeAreFrank!
+   Copyright 2016, 2018 Nationale-Nederlanden, 2019-2021, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -134,7 +134,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		File destFile = retrieveAdapterFlowFile(adapter);
 		if(destFile == null) return;
 
-		if(destFile.exists()) { //If the file exists, update it
+		if(destFile.exists()) { // If the file exists, update it
 			Files.delete(destFile.toPath());
 		}
 
@@ -148,7 +148,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		File destFile = retrieveConfigurationFlowFile(configuration);
 		if(destFile == null) return;
 
-		if(destFile.exists()) { //If the file exists, update it
+		if(destFile.exists()) { // If the file exists, update it
 			Files.delete(destFile.toPath());
 		}
 
@@ -162,7 +162,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 		File destFile = retrieveAllConfigurationsFlowFile();
 		if(destFile == null) return;
 
-		if(destFile.exists()) { //If the file exists, update it
+		if(destFile.exists()) { // If the file exists, update it
 			Files.delete(destFile.toPath());
 		}
 
@@ -208,7 +208,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 	}
 
 	private File retrieveFlowFile(File parent, String fileName) {
-		if(flowGenerator == null) { //fail fast check to see if an IFlowGenerator is available.
+		if(flowGenerator == null) { // fail fast check to see if an IFlowGenerator is available.
 			log.debug("cannot retrieve Flow file, no generator found");
 			return null;
 		}
@@ -225,7 +225,7 @@ public class FlowDiagramManager implements ApplicationContextAware, Initializing
 
 	// Don't call this when no generator is set!
 	private void generateFlowDiagram(String name, String xml, File destination) throws IOException {
-		if(flowGenerator == null || StringUtils.isEmpty(xml)) { //fail fast check to see if an IFlowGenerator is available.
+		if(flowGenerator == null || StringUtils.isEmpty(xml)) { // fail fast check to see if an IFlowGenerator is available.
 			log.debug("cannot generate flow diagram for [{}]", name);
 			return;
 		}

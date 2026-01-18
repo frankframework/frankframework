@@ -28,7 +28,7 @@ class WsdlGeneratorPipeTest {
 		assertTrue(b);
 	}
 
-	@Test //retrieve the first file from a directory. Alphabetically it should first return 'copyFile'. Add a stability period, and check if it skips the first file
+	@Test // retrieve the first file from a directory. Alphabetically it should first return 'copyFile'. Add a stability period, and check if it skips the first file
 	void testGetFirstFile() {
 		assumeTrue(TestAssertions.isTestRunningOnWindows());
 
@@ -36,8 +36,8 @@ class WsdlGeneratorPipeTest {
 		String base = "/GetFirstFile/";
 		File copyFromFile = new File(this.getClass().getResource(base + "copyFrom.txt").getPath());
 		File copyFile = new File(this.getClass().getResource(base + "copyFile.txt").getPath());
-		copyFromFile.setLastModified(TimeProvider.nowAsMillis()-(stabilityPeriod + 500)); //mark file as stable (add 500ms to the stability period because of HDD latency)
-		copyFile.setLastModified(TimeProvider.nowAsMillis()); //update last modified to now, so it fails the stability period
+		copyFromFile.setLastModified(TimeProvider.nowAsMillis()-(stabilityPeriod + 500)); // mark file as stable (add 500ms to the stability period because of HDD latency)
+		copyFile.setLastModified(TimeProvider.nowAsMillis()); // update last modified to now, so it fails the stability period
 
 		File directory = new File(this.getClass().getResource(base).getPath());
 		File file = WsdlGeneratorPipe.getFirstFile(directory);

@@ -1,5 +1,5 @@
 /*
-   Copyright 2013 Nationale-Nederlanden, 2021 WeAreFrank!
+   Copyright 2013 Nationale-Nederlanden, 2021, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -117,7 +117,7 @@ public class WsdlGeneratorUtils {
 		}
 
 		IValidator inputValidator = adapter.getPipeLine().getInputValidator();
-		if(inputValidator instanceof SoapValidator) { //We have to check this first as the SoapValidator cannot use getSchema()
+		if(inputValidator instanceof SoapValidator) { // We have to check this first as the SoapValidator cannot use getSchema()
 			return true;
 		} else if(inputValidator instanceof IXmlValidator xmlValidator) {
 			if(xmlValidator.getSchema() != null) {
@@ -125,7 +125,7 @@ public class WsdlGeneratorUtils {
 			}
 		}
 
-		return hasWebServiceListener; //If not an IXmlValidator, return false
+		return hasWebServiceListener; // If not an IXmlValidator, return false
 	}
 
 }

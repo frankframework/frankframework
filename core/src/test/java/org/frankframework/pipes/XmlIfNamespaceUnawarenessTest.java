@@ -17,11 +17,12 @@ public class XmlIfNamespaceUnawarenessTest extends PipeTestBase<XmlIf>{
 	private final String pipeForwardThen = "then";
 	private final String pipeForwardElse = "else";
 
+	@SuppressWarnings("removal")
 	@Override
 	public XmlIf createPipe() {
 		XmlIf xmlIf = new XmlIf();
 
-		//Add default pipes
+		// Add default pipes
 		try {
 			xmlIf.addForward(new PipeForward(pipeForwardThen, null));
 			xmlIf.addForward(new PipeForward(pipeForwardElse, null));

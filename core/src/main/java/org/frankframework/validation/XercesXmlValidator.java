@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2017 Nationale-Nederlanden, 2020-2023 WeAreFrank!
+   Copyright 2013-2017 Nationale-Nederlanden, 2020-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -212,7 +212,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 		}
 		XercesValidationErrorHandler errorHandler = new XercesValidationErrorHandler(getOwner()!=null ? getOwner() : this, warn);
 		preparser.setErrorHandler(errorHandler);
-		//namespaceSet.add(""); // allow empty namespace, to cover 'ElementFormDefault="Unqualified"'. N.B. beware, this will cause SoapValidator to miss validation failure of a non-namespaced SoapBody
+		// namespaceSet.add(""); // allow empty namespace, to cover 'ElementFormDefault="Unqualified"'. N.B. beware, this will cause SoapValidator to miss validation failure of a non-namespaced SoapBody
 		Set<Grammar> namespaceRegisteredGrammars = new HashSet<>();
 		for (Schema schema : schemas) {
 			Grammar grammar = preparse(preparser, schemasId, schema);
@@ -302,7 +302,7 @@ public class XercesXmlValidator extends AbstractXmlValidator {
 			throw new ConfigurationException(logPrefix + " Cannot create schema", e);
 		}
 		try {
-			//validatorHandler.setFeature(NAMESPACES_FEATURE_ID, true);
+			// validatorHandler.setFeature(NAMESPACES_FEATURE_ID, true);
 			validatorHandler.setFeature(VALIDATION_FEATURE_ID, true);
 			validatorHandler.setFeature(SCHEMA_VALIDATION_FEATURE_ID, true);
 			validatorHandler.setFeature(SCHEMA_FULL_CHECKING_FEATURE_ID, isFullSchemaChecking());

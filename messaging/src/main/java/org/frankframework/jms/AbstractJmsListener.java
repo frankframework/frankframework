@@ -264,7 +264,7 @@ public abstract class AbstractJmsListener extends JMSFacade implements HasSender
 				long timeToLive = getReplyMessageTimeToLive();
 				boolean ignoreInvalidDestinationException = false;
 				if (timeToLive == 0) {
-					//noinspection DataFlowIssue
+					// noinspection DataFlowIssue
 					if (rawMessageWrapper.getRawMessage() instanceof jakarta.jms.Message) {
 						jakarta.jms.Message messageReceived = rawMessageWrapper.getRawMessage();
 						long expiration = messageReceived.getJMSExpiration();
