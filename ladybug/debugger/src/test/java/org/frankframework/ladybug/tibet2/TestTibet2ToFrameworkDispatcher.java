@@ -115,7 +115,7 @@ public class TestTibet2ToFrameworkDispatcher {
 	@Test
 	@SuppressWarnings("unchecked")
 	public void deleteReportTechnicalError() throws StorageException {
-		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenThrow(new BusException("techincal-error-here"));
+		Mockito.when(outputGateway.sendSyncMessage(Mockito.any(Message.class))).thenThrow(new BusException("technical-error-here"));
 
 		StorageException ex = assertThrows(StorageException.class, () -> dispatcher.deleteReport("no-idea"));
 		assertEquals("Delete failed (see logging for more details)", ex.getMessage());
