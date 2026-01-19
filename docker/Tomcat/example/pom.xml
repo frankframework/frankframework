@@ -30,6 +30,11 @@
 			<version>${project.version}</version>
 			<classifier>context</classifier>
 		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<version>${postgresql.driver.version}</version>
+		</dependency>
 	</dependencies>
 
 	<build>
@@ -54,6 +59,7 @@
 							<includeClassifiers>resources</includeClassifiers>
 						</configuration>
 					</execution>
+
 					<execution>
 						<id>unpack</id>
 						<goals>
@@ -73,6 +79,29 @@
 							</artifactItems>
 							<overWriteReleases>false</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-postgresql</id>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<phase>package</phase>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.postgresql</groupId>
+									<artifactId>postgresql</artifactId>
+									<version>${postgresql.driver.version}</version>
+									<type>jar</type>
+									<outputDirectory>${project.build.directory}/dependencies</outputDirectory>
+								</artifactItem>
+							</artifactItems>
+
+							<overWriteReleases>false</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+							<stripVersion>true</stripVersion>
+
 						</configuration>
 					</execution>
 				</executions>
