@@ -1,2 +1,0 @@
-docker build -t private.docker.nexus.frankframework.org/jboss-eap-8/eap81-openjdk21-runtime-openshift-rhel9:1.0.0.GA-prebuild .
-docker push private.docker.nexus.frankframework.org/jboss-eap-8/eap81-openjdk21-runtime-openshift-rhel9:1.0.0.GA-prebuild
