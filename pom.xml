@@ -89,7 +89,7 @@
 
 		<jackson.version>2.20.1</jackson.version>
 		<cxf.version>4.1.4</cxf.version>
-		<spring.version>7.0.2</spring.version>
+		<spring.version>7.0.3</spring.version>
 		<spring-security.version>7.0.2</spring-security.version>
 		<spring-integration.version>7.0.1</spring-integration.version>
 		<spring.boot.version>4.0.1</spring.boot.version>
