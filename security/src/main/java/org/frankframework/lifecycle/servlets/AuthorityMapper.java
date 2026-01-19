@@ -89,8 +89,7 @@ public class AuthorityMapper implements GrantedAuthoritiesMapper {
 				.toList();
 		List<String> userRoles = getUserRolesFrom(authorities);
 
-		log.debug("Canonical role names from granted authorities: {}", () -> canonicalRoleNames);
-		log.debug("User roles from token claims: {}", () -> userRoles);
+		log.debug("found the following roles from authorities [{}] and userRoles in token claims [{}]", canonicalRoleNames, userRoles);
 
 		authorityToRoleMapping.forEach((authority, role) -> {
 			if (canonicalRoleNames.contains(role) || userRoles.contains(role)) {

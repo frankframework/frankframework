@@ -55,7 +55,7 @@ public class AuthorityMapperUtil {
 			// get second part of the key
 			Collection<String> strings = realmAccess.get(keyParts[1]);
 
-			log.debug("Fetched user roles from userInfo: {}", strings);
+			log.debug("fetched user roles [{}] from userInfo", strings);
 
 			return strings;
 		}
@@ -84,7 +84,7 @@ public class AuthorityMapperUtil {
 			// get second part of the key
 			List<String> strings = (List<String>) realmAccess.get(keyParts[1]);
 
-			log.debug("Fetched user roles from userAttributes: {}", strings);
+			log.debug("fetched user roles [{}] from userAttributes", strings);
 
 			return strings;
 		}
