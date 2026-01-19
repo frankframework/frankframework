@@ -1,13 +1,13 @@
-import { Component, inject, OnInit } from '@angular/core';
-import { WebStorageService } from 'src/app/services/web-storage.service';
-import { JmsBrowseForm, JmsService, Message } from '../jms.service';
 import { HttpErrorResponse } from '@angular/common/http';
-import { ServerErrorResponse } from '../../../app.service';
+import { Component, inject, OnInit } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { LaddaModule } from 'angular2-ladda';
+import { WebStorageService } from 'src/app/services/web-storage.service';
+import { ServerErrorResponse } from '../../../app.service';
 
 import { QuickSubmitFormDirective } from '../../../components/quick-submit-form.directive';
 import { ToDateDirective } from '../../../components/to-date.directive';
+import { JmsBrowseForm, JmsService, Message } from '../jms.service';
 
 @Component({
   selector: 'app-jms-browse-queue',
@@ -40,6 +40,7 @@ export class JmsBrowseQueueComponent implements OnInit {
 
     this.jmsService.getJms().subscribe((data) => {
       this.connectionFactories = data['connectionFactories'];
+      this.form.connectionFactory = this.connectionFactories[0] ?? '';
     });
   }
 
