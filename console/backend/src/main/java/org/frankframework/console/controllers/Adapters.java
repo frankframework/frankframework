@@ -85,7 +85,6 @@ public class Adapters {
 	}
 
 	// Normally you don't use the PUT method on a collection...
-	@SuppressWarnings("unchecked")
 	@RolesAllowed({"IbisDataAdmin", "IbisAdmin", "IbisTester"})
 	@Relation("adapter")
 	@Description("start/stop multiple adapters")
