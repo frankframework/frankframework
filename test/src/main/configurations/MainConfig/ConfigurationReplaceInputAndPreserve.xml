@@ -47,7 +47,7 @@
 			</Exits>
 
 			<PutInSessionPipe name="PutValueInSession" sessionKey="requestKey" value="&lt;abc/&gt;" />
-			<EchoPipe name="TestMissingKeyInputReplacement" emptyInputReplacement="" getInputFromSessionKey="missingKey"/>
+			<EchoPipe name="TestMissingKeyInputReplacement" defaultValue="" getInputFromSessionKey="missingKey"/>
 		</Pipeline>
 	</Adapter>
 </Module>
