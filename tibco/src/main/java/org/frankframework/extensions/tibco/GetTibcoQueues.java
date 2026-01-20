@@ -1,5 +1,5 @@
 /*
-   Copyright 2013-2016, 2020 Nationale-Nederlanden, 2021, 2024-2025 WeAreFrank!
+   Copyright 2013-2016, 2020 Nationale-Nederlanden, 2021, 2024-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -208,7 +208,7 @@ public class GetTibcoQueues extends TimeoutGuardPipe {
 	private LdapSender retrieveLdapSender(String ldapUrl, CredentialFactory cf) {
 		try {
 			LdapSender ldapSender = new LdapSender();
-			ldapSender.setProviderURL(ldapUrl);
+			ldapSender.setLdapProviderURL(ldapUrl);
 			ldapSender.setAttributesToReturn("cn,description");
 			if (StringUtils.isNotEmpty(cf.getAlias())) {
 				ldapSender.setJndiAuthAlias(cf.getAlias());
