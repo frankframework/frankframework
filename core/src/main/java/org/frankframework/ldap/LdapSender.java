@@ -306,7 +306,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 
 	protected ParameterList paramList = new ParameterList();
 	private boolean principalParameterFound = false;
-	private @Nullable Hashtable<Object, Object> jndiEnv = null;
+	private @Nullable Map<Object, Object> jndiEnv = null;
 
 	public LdapSender() {
 		super();
@@ -976,7 +976,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	protected synchronized DirContext loopkupDirContext(@Nullable Map<String, String> paramValueMap) throws NamingException {
 		DirContext dirContext;
 		if (jndiEnv == null) {
-			Hashtable<Object, Object> newJndiEnv = getJndiEnv();
+			Map<Object, Object> newJndiEnv = getJndiEnv();
 			// newJndiEnv.put("com.sun.jndi.ldap.trace.ber", System.err);// ldap response in log for debug purposes
 			if (getLdapProviderURL() != null) {
 				// Overwriting the (realm)providerURL if specified in configuration
@@ -999,12 +999,12 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 			}
 			if (log.isDebugEnabled())
 				log.debug("created environment for LDAP provider URL [{}]", newJndiEnv.get("java.naming.provider.url"));
-			dirContext = new InitialDirContext(newJndiEnv);
+			dirContext = new InitialDirContext(new Hashtable<>(newJndiEnv));
 			if (!principalParameterFound) {
 				jndiEnv = newJndiEnv;
 			}
 		} else {
-			dirContext = new InitialDirContext(jndiEnv);
+			dirContext = new InitialDirContext(new Hashtable<>(jndiEnv));
 		}
 		return dirContext;
 	}
