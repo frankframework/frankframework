@@ -15,8 +15,6 @@
 		<constructor-arg value="${jdbc.datasource.default}" />
 	</bean>
 
-	<bean name="ibisDebugger" class="org.frankframework.ladybug.tibet2.Tibet2Debugger" autowire="byName"/>
-
 	<bean name="metadataExtractor" class="org.wearefrank.ladybug.MetadataExtractor">
 		<property name="extraMetadataFieldExtractors">
 			<list>
