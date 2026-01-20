@@ -10,9 +10,6 @@
 		<property name="file" value="${config_loc}/checkstyle-suppressions.xml"/>
 	</module>
 	<module name="BeforeExecutionExclusionFileFilter">
-		<property name="fileNamePattern" value=".*[\\/]src[\\/]test[\\/].*$"/>
-	</module>
-	<module name="BeforeExecutionExclusionFileFilter">
 		<property name="fileNamePattern" value=".*[\\/]net[\\/]wedjaa[\\/]ansible[\\/].*$"/>
 	</module>
 
@@ -70,7 +67,10 @@
 			<property name="message" value="You shouldn't use file.deleteOnExit()!" />
 			<property name="ignoreComments" value="true" />
 		</module>
+	</module>
 
+	<module name="TreeWalker">
+		<property name="severity" value="warning" />
 		<module name="RegexpSinglelineJava">
 			<property name="format" value="^\t* +\t+ *[^\s]" />
 			<property name="message" value="Indent must use tab characters." />

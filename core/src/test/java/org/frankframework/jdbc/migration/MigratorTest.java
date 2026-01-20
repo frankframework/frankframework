@@ -17,11 +17,10 @@ import java.sql.SQLWarning;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import jakarta.annotation.Nullable;
-
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.BeforeEach;
 
 import lombok.extern.log4j.Log4j2;
