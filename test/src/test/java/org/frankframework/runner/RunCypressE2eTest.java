@@ -30,6 +30,7 @@ import java.util.stream.Stream;
 
 import org.apache.logging.log4j.Logger;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DynamicContainer;
@@ -69,8 +70,8 @@ import org.frankframework.util.SpringUtils;
 @Testcontainers(disabledWithoutDocker = true)
 @Tag("integration")
 public class RunCypressE2eTest {
-	private static CypressContainer container;
-	private static ConfigurableApplicationContext run;
+	private static @Nullable CypressContainer container;
+	private static @Nullable ConfigurableApplicationContext run;
 	private static final Logger CYPRESS_LOG = LogUtil.getLogger("cypress");
 	private static final String TEST_CONTAINER_BASE_URL = "http://host.testcontainers.internal:8080";
 	private static final Path MOCHAWESOME_REPORTS_DIR = Paths.get("target/test-classes/e2e/cypress/test-results/reports/mochawesome");
@@ -134,10 +135,12 @@ public class RunCypressE2eTest {
 		if (run == null) return;
 
 		run.stop();
-		container.stop();
+		if (container != null) {
+			container.stop();
+			assertFalse(container.isRunning());
+		}
 
 		assertFalse(run.isRunning());
-		assertFalse(container.isRunning());
 
 		run.close();
 
@@ -147,6 +150,9 @@ public class RunCypressE2eTest {
 
 	@TestFactory
 	@NonNull Stream<DynamicContainer> runCypressTests() throws InterruptedException, IOException, TimeoutException {
+		if (container == null) {
+			return Stream.empty();
+		}
 		CypressTestResults testResults = container.getTestResults();
 
 		return testResults.getSuites()

@@ -123,7 +123,7 @@ public class DateFormatUtils {
 
 	@Deprecated
 	@Nullable
-	public static String format(Date date) {
+	public static String format(@Nullable Date date) {
 		return date == null ? null : format(date.toInstant());
 	}
 

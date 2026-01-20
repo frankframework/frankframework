@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.nio.charset.Charset;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.jspecify.annotations.NonNull;
@@ -60,7 +61,7 @@ public class LargeBlockTesterPipe extends FixedForwardPipe {
 					long bytesLeftToServe = bytesToServe;
 
 					@Override
-					public int read(@NonNull byte[] buf, int off, int len) throws IOException {
+					public int read(byte @NonNull [] buf, int off, int len) throws IOException {
 						if (bytesLeftToServe <= 0L) {
 							return -1;
 						}
@@ -111,6 +112,7 @@ public class LargeBlockTesterPipe extends FixedForwardPipe {
 			}
 		} else {
 			try (Reader reader=message.asReader()) {
+				Objects.requireNonNull(reader, "Cannot read data from NULL message");
 				int blocksServedAfterFirstBlockRead=Integer.MAX_VALUE;
 				int buflen=blockSize;
 				int displaylen=40;
@@ -119,7 +121,7 @@ public class LargeBlockTesterPipe extends FixedForwardPipe {
 				int block=0;
 
 				while (true) {
-					int len = reader.read(buf,0,buflen);
+					int len = reader.read(buf, 0, buflen);
 					if (block==0) {
 						blocksServedAfterFirstBlockRead = totalBlocksServed.get();
 					}
@@ -127,7 +129,9 @@ public class LargeBlockTesterPipe extends FixedForwardPipe {
 						break;
 					}
 					bytesRead += len;
-					log.debug("read block [{}] of size [{}]: {}", block++, len, new String(buf, 0, len < displaylen ? len : displaylen));
+					if (log.isDebugEnabled()) {
+						log.debug("read block [{}] of size [{}]: {}", block++, len, new String(buf, 0, len < displaylen ? len : displaylen));
+					}
 				}
 				int blocksServedAtEndOfReading = totalBlocksServed.get();
 
@@ -143,13 +147,10 @@ public class LargeBlockTesterPipe extends FixedForwardPipe {
 		return new PipeRunResult(getSuccessForward(), result);
 	}
 
-	@NonNull
-	private byte[] buildDataBuffer() {
+	private byte @NonNull [] buildDataBuffer() {
 		final String filler;
 		StringBuilder fillerTmp = new StringBuilder();
-		for (int i = 0; i < blockSize / 10; i++) {
-			fillerTmp.append(" 123456789");
-		}
+		fillerTmp.append(" 123456789".repeat(Math.max(0, blockSize / 10)));
 		filler = fillerTmp.toString();
 		return filler.getBytes(Charset.defaultCharset());
 	}

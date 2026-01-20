@@ -28,6 +28,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.io.IoBuilder;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -98,16 +99,16 @@ public class RunLarvaTests {
 			"FxF3/scenario12"
 			);
 
-	private static ConfigurableApplicationContext parentContext;
-	private static ConfigurableApplicationContext applicationContext;
-	private static IbisContext ibisContext;
-	private static EmbeddedActiveMQ jmsServer;
+	private static @Nullable ConfigurableApplicationContext parentContext;
+	private static @Nullable ConfigurableApplicationContext applicationContext;
+	private static @Nullable IbisContext ibisContext;
+	private static @Nullable EmbeddedActiveMQ jmsServer;
 
-	private LarvaTool larvaTool;
-	private ScenarioRunner scenarioRunner;
-	private String scenarioRootDir;
-	private LarvaWriter larvaWriter;
-	private TestExecutionObserver testExecutionObserver;
+	private @Nullable LarvaTool larvaTool;
+	private @Nullable ScenarioRunner scenarioRunner;
+	private @Nullable String scenarioRootDir;
+	private @Nullable LarvaWriter larvaWriter;
+	private @Nullable TestExecutionObserver testExecutionObserver;
 
 	/**
 	 * Since we don't use @SpringBootApplication, we can't use @SpringBootTest here and need to manually configure the application
@@ -197,17 +198,21 @@ public class RunLarvaTests {
 
 	@AfterAll
 	static void tearDown() {
-		parentContext.stop();
-		CloseUtils.closeSilently(parentContext);
-		parentContext = null;
+		if (parentContext != null) {
+			parentContext.stop();
+			CloseUtils.closeSilently(parentContext);
+			parentContext = null;
+		}
 		applicationContext = null;
 		ibisContext = null;
-		try {
-			jmsServer.stop();
-		} catch (Exception e) {
-			log.error("error while stopping embedded JMS server", e);
+		if (jmsServer != null) {
+			try {
+				jmsServer.stop();
+			} catch (Exception e) {
+				log.error("error while stopping embedded JMS server", e);
+			}
+			jmsServer = null;
 		}
-		jmsServer = null;
 
 		// Make sure to clear the app constants as well
 		AppConstants.removeInstance();

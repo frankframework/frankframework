@@ -8,12 +8,14 @@ import java.io.ByteArrayInputStream;
 import java.io.StringWriter;
 import java.net.URI;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.NoSuchElementException;
 
 import javax.xml.crypto.dsig.CanonicalizationMethod;
@@ -63,7 +65,7 @@ public class IdinSenderTest {
 	private PipeLineSession session = null;
 
 	@BeforeEach
-	public void initializeIdinSender() throws Exception {
+	public void initializeIdinSender() {
 		sender = new IdinSender();
 		sender.setConfigurationXML("configs/default-config.xml");
 
@@ -72,7 +74,7 @@ public class IdinSenderTest {
 		session = new PipeLineSession();
 	}
 
-	private class DummyMessenger implements IMessenger {
+	private static class DummyMessenger implements IMessenger {
 
 		@Override
 		public String sendMessage(Configuration config, String request, URI url) throws CommunicatorException {
@@ -93,9 +95,9 @@ public class IdinSenderTest {
 				String expectedString = StreamUtil.resourceToString(expected);
 
 				// Complex regex, but ensures the correct format: `2024-08-22T11:49:01.760Z` is used.
-				request = request.replaceAll("<createDateTimestamp>\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z<\\/createDateTimestamp>", "<createDateTimestamp/>");
+				request = request.replaceAll("<createDateTimestamp>\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z</createDateTimestamp>", "<createDateTimestamp/>");
 				request = request.replaceAll("AuthnRequest [\\s\\S]*?>", "AuthnRequest xmlns:ns3=\"http://dummy\" signature=\"here\">");
-				request = request.replaceAll("<Signature[\\s\\S]*?<\\/Signature>", "");
+				request = request.replaceAll("<Signature[\\s\\S]*?</Signature>", "");
 
 				assertEquals(expectedString.replace("\r", ""), request.replace("\r", ""));
 			} catch(Exception e) {
@@ -406,7 +408,7 @@ public class IdinSenderTest {
 
 		DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
 		dbf.setNamespaceAware(true);
-		Document doc = dbf.newDocumentBuilder().parse(new ByteArrayInputStream(xml.getBytes()));
+		Document doc = dbf.newDocumentBuilder().parse(new ByteArrayInputStream(xml.getBytes(StandardCharsets.UTF_8)));
 
 		DOMSignContext dsc = new DOMSignContext(keyEntry.getPrivateKey(), doc.getDocumentElement());
 
@@ -430,13 +432,11 @@ public class IdinSenderTest {
 		MessageDigest sha1 = MessageDigest.getInstance("SHA1");
 		sha1.update(data);
 		byte[] fp = sha1.digest();
-		String fingerprint = "";
-		for (int i = 0; i < fp.length; i++) {
-			String f = "00" + Integer.toHexString(fp[i]);
-			fingerprint = fingerprint + f.substring(f.length() - 2);
+		StringBuilder fingerprint = new StringBuilder(fp.length * 2);
+		for (byte b : fp) {
+			String f = "00" + Integer.toHexString(b);
+			fingerprint.append(f.substring(f.length() - 2));
 		}
-		fingerprint = fingerprint.toUpperCase();
-
-		return fingerprint;
+		return fingerprint.toString().toUpperCase(Locale.ROOT);
 	}
 }

@@ -199,7 +199,7 @@ public class IdinSender extends AbstractSenderWithParameters implements HasPhysi
 	}
 
 	protected Configuration createConfiguration() throws ConfigurationException {
-		Configuration config = null;
+		Configuration config;
 		if(StringUtils.isNotEmpty(getIDinConfigurationXML())) {
 			URL defaultIdinConfigXML = ClassLoaderUtils.getResourceURL(this, getIDinConfigurationXML());
 			if(defaultIdinConfigXML == null) {

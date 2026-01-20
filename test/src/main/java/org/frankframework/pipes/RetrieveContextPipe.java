@@ -18,6 +18,7 @@ package org.frankframework.pipes;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.Map.Entry;
+import java.util.Objects;
 
 import org.apache.logging.log4j.ThreadContext;
 import org.jspecify.annotations.NonNull;
@@ -51,7 +52,7 @@ public class RetrieveContextPipe extends FixedForwardPipe {
 	}
 
 	private void createDocument(ObjectBuilder document, Message message, PipeLineSession session) throws SAXException, IOException {
-		document.add("message", message.asString());
+		document.add("message", Objects.requireNonNull(message.asString(), "Cannot build document using NULL-message"));
 		try (ObjectBuilder messageContext = document.addObjectField("messageContext")) {
 			for (Entry<String, Serializable> entry : message.getContext().entrySet()) {
 				messageContext.add(entry.getKey(), entry.getValue().toString());

@@ -242,11 +242,12 @@ public class EmbeddedScriptEvaluation implements AdditionalStringResolver {
 
 		private final transient Map<String, Object> contextCustomValues;
 
-		public BackingMapMutator(Map<String, Object> contextCustomValues) {
+		private BackingMapMutator(Map<String, Object> contextCustomValues) {
 			this.contextCustomValues = contextCustomValues;
 		}
 
 		@Override
+		@Nullable
 		public Object put(CompositeMap<String, Object> map, Map<String, Object>[] composited, String key, Object value) {
 			return contextCustomValues.put(key, value);
 		}

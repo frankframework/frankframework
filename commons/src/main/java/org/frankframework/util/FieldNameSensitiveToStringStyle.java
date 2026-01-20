@@ -19,6 +19,7 @@ import java.io.Serial;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
@@ -63,7 +64,7 @@ class FieldNameSensitiveToStringStyle extends ToStringStyle {
 	}
 
 	private boolean containsHiddenWord(final String name) {
-		String lcName = name.toLowerCase();
+		String lcName = name.toLowerCase(Locale.ROOT);
 		for (String field : PROTECTED_FIELDS) {
 			if (lcName.contains(field)) {
 				return true;

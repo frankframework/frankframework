@@ -20,6 +20,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
 
 import org.jspecify.annotations.NullMarked;
 
@@ -48,9 +49,9 @@ public class VaultHandler
 			throw new IllegalArgumentException("Cannot create cypher for [%s]".formatted(cypher));
 		}
 		byte [] vaultData = cypherInstance.encrypt(cleartext, password);
-        String vaultDataString = new String(vaultData);
+        String vaultDataString = new String(vaultData, StandardCharsets.UTF_8);
         String vaultPackage = cypherInstance.infoLine() + "\n" + vaultDataString;
-        return vaultPackage.getBytes();
+        return vaultPackage.getBytes(StandardCharsets.UTF_8);
     }
 
     public static byte [] encrypt(byte [] cleartext, String password) throws IOException

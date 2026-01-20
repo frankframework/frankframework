@@ -16,7 +16,7 @@
 package org.frankframework.core;
 
 import java.sql.SQLException;
-import java.util.LinkedList;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.xml.transform.SourceLocator;
@@ -60,22 +60,17 @@ public class IbisException extends Exception {
 	@Nullable
 	public static String getExceptionSpecificDetails(Throwable t) {
 		final String className = t.getClass().getCanonicalName();
-		switch (className) {
-			case "jakarta.mail.internet.AddressException": {
+		return switch (className) {
+			case "jakarta.mail.internet.AddressException" -> {
 				jakarta.mail.internet.AddressException ae = (jakarta.mail.internet.AddressException) t;
 				final String parsedString = ae.getRef();
 				final String errorMessage = StringUtils.isNotEmpty(parsedString) ? "[" + parsedString + "]" : null;
 				final int column = ae.getPos() + 1;
-				return column > 0 ? StringUtil.concatStrings(errorMessage, " ", "at column [" + column + "]") : errorMessage;
+				yield column > 0 ? StringUtil.concatStrings(errorMessage, " ", "at column [" + column + "]") : errorMessage;
 			}
-
-			case "org.xml.sax.SAXParseException": {
-				return getSAXLocatorInformation((SAXParseException) t);
-			}
-			case "javax.xml.transform.TransformerException": {
-				return getTransformerLocatorInformation((TransformerException) t);
-			}
-			case "java.sql.SQLException": {
+			case "org.xml.sax.SAXParseException" -> getSAXLocatorInformation((SAXParseException) t);
+			case "javax.xml.transform.TransformerException" -> getTransformerLocatorInformation((TransformerException) t);
+			case "java.sql.SQLException" -> {
 				SQLException sqle = (SQLException) t;
 				int errorCode = sqle.getErrorCode();
 				String sqlState = sqle.getSQLState();
@@ -86,18 +81,15 @@ public class IbisException extends Exception {
 				if (StringUtils.isNotEmpty(sqlState)) {
 					result = StringUtil.concatStrings("SQLState [" + sqlState + "]", ", ", result);
 				}
-				return result;
+				yield result;
 			}
-
-			case "oracle.jdbc.xa.OracleXAException": {
+			case "oracle.jdbc.xa.OracleXAException" -> {
 				oracle.jdbc.xa.OracleXAException oxae = (oracle.jdbc.xa.OracleXAException) t;
 				int xaError = oxae.getXAError();
-				return xaError != 0 ? "xaError [" + xaError + "] xaErrorMessage [" + oracle.jdbc.xa.OracleXAException.getXAErrorMessage(xaError) + "]" : null;
+				yield xaError != 0 ? "xaError [" + xaError + "] xaErrorMessage [" + oracle.jdbc.xa.OracleXAException.getXAErrorMessage(xaError) + "]" : null;
 			}
-
-			default:
-				return null;
-		}
+			default -> null;
+		};
 	}
 
 	@Nullable
@@ -185,16 +177,16 @@ public class IbisException extends Exception {
 		return cause;
 	}
 
-	public static List<String> getMessages(Throwable t, @Nullable String message) {
+	public static List<@Nullable String> getMessages(Throwable t, @Nullable String message) {
 		Throwable cause = getCause(t);
-		List<String> result;
+		List<@Nullable String> result;
 		if (cause != null && cause != t) {
 			String causeMessage = cause.getMessage();
 			String causeToString = cause.toString();
 
 			if (cause instanceof IbisException) {
 				// in case of an IbisException, the recursion already happened in cause.getMessage(), so do not call getMessages() here.
-				result = new LinkedList<>();
+				result = new ArrayList<>();
 				result.add(causeMessage);
 			} else {
 				result = getMessages(cause, causeMessage);
@@ -202,16 +194,16 @@ public class IbisException extends Exception {
 			if (StringUtils.isNotEmpty(message) && (message.equals(causeMessage) || message.equals(causeToString))) {
 				message = null;
 			}
-			if (StringUtils.isNotEmpty(message) && StringUtils.isNotEmpty(causeToString) && (message.endsWith(causeToString))) {
+			if (StringUtils.isNotEmpty(message) && StringUtils.isNotEmpty(causeToString) && message.endsWith(causeToString)) {
 				message = message.substring(0, message.length() - causeToString.length());
 			}
-			if (StringUtils.isNotEmpty(message) && StringUtils.isNotEmpty(causeMessage) && (message.endsWith(causeMessage))) {
+			if (StringUtils.isNotEmpty(message) && StringUtils.isNotEmpty(causeMessage) && message.endsWith(causeMessage)) {
 				message = message.substring(0, message.length() - causeMessage.length());
 			}
 		} else {
-			result = new LinkedList<>();
+			result = new ArrayList<>();
 		}
-		if (StringUtils.isNotEmpty(message) && (message.endsWith(": "))) {
+		if (StringUtils.isNotEmpty(message) && message.endsWith(": ")) {
 			message = message.substring(0, message.length() - 2);
 		}
 		String specificDetails = getExceptionSpecificDetails(t);

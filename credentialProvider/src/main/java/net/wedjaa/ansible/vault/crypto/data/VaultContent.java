@@ -45,7 +45,7 @@ public class VaultContent {
 	}
 
 	public byte[] toByteArray() {
-		return toString().getBytes();
+		return toString().getBytes(StandardCharsets.UTF_8);
 	}
 
 	@Override
@@ -74,7 +74,7 @@ public class VaultContent {
 		if (logger.isDebugEnabled()) {
 			logger.debug("Complete: %d - %s".formatted(complete.length(), complete));
 		}
-		String result = Util.hexit(complete.getBytes(), 80);
+		String result = Util.hexit(complete.getBytes(StandardCharsets.UTF_8), 80);
 		if (logger.isDebugEnabled()) {
 			logger.debug("Result: [%d] %d - %s".formatted(complete.length() * 2, result.length(), result));
 		}

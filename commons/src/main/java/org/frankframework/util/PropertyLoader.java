@@ -57,18 +57,14 @@ public class PropertyLoader extends Properties {
 		this(PropertyLoader.class.getClassLoader(), propertiesFile);
 	}
 
-	public PropertyLoader(@Nullable ClassLoader classLoader, String propertiesFile) {
+	public PropertyLoader(ClassLoader classLoader, String propertiesFile) {
 		super();
 		rootPropertyFile = propertiesFile;
 
 		load(classLoader, propertiesFile);
 
 		// Make sure to not call ClassUtils when using the root instance, as it has a static field referencing to AppConstants
-		if (classLoader != null) {
-			log.info("created new PropertyLoader for classloader [{}]", () -> ClassUtils.classNameOf(classLoader));
-		} else {
-			log.info("created new PropertyLoader for root classloader");
-		}
+		log.info("created new PropertyLoader for classloader [{}]", () -> ClassUtils.classNameOf(classLoader));
 	}
 
 	/**
@@ -168,7 +164,7 @@ public class PropertyLoader extends Properties {
 		if (value == null) {
 			return dfault;
 		}
-		return (T) EnumUtils.parse(dfault.getClass(), value);
+		return EnumUtils.parse(dfault.getDeclaringClass(), value);
 	}
 
 	/**
@@ -211,6 +207,7 @@ public class PropertyLoader extends Properties {
 	 */
 	@Deprecated
 	@Override
+	@Nullable
 	public synchronized Object put(Object key, Object value) {
 		return super.put(key, value);
 	}
@@ -224,15 +221,12 @@ public class PropertyLoader extends Properties {
 	 * which will cause both files to be loaded in the listed order.
 	 * </p>
 	 */
-	protected synchronized void load(@Nullable final ClassLoader classLoader, final String filename) {
+	protected synchronized void load(final ClassLoader classLoader, final String filename) {
 		if (StringUtils.isEmpty(filename)) {
 			throw new IllegalStateException("file to load properties from cannot be null");
 		}
 
 		try {
-			if (classLoader == null) {
-				throw new IllegalStateException("no classloader found!");
-			}
 			List<URL> resources = Collections.list(classLoader.getResources(filename));
 			if (resources.isEmpty()) {
 				if (rootPropertyFile.equals(filename)) { // The file cannot be found, abort!
@@ -342,15 +336,12 @@ public class PropertyLoader extends Properties {
 		String extension = FilenameUtils.getExtension(url.getPath());
 		try (InputStream is = url.openStream(); Reader reader = StreamUtil.getCharsetDetectingInputStreamReader(is)) {
 			switch (extension) {
-				case "properties":
-					load(reader);
-					break;
-				case "yml", "yaml":
+				case "properties" -> load(reader);
+				case "yml", "yaml" -> {
 					YamlParser parser = new YamlParser();
 					putAll(parser.load(reader));
-					break;
-				default:
-					throw new IllegalArgumentException("Extension not supported: " + extension);
+				}
+				default -> throw new IllegalArgumentException("Extension not supported: " + extension);
 			}
 		}
 	}

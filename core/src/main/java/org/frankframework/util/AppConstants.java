@@ -19,6 +19,8 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
+import jakarta.annotation.Nonnull;
+
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -232,7 +234,7 @@ public final class AppConstants extends PropertyLoader {
 	}
 
 	@Override
-	protected synchronized void load(ClassLoader classLoader, String filename) {
+	protected synchronized void load(@NonNull ClassLoader classLoader, @Nonnull String filename) {
 		load(classLoader, filename, true);
 	}
 

@@ -39,7 +39,6 @@ import org.springframework.boot.context.event.ApplicationFailedEvent;
 import org.springframework.boot.logging.LoggingSystem;
 import org.springframework.boot.logging.log4j2.Log4J2LoggingSystem;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
-import org.springframework.context.ApplicationContextException;
 import org.springframework.context.ApplicationContextInitializer;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -128,21 +127,20 @@ public class IafTestInitializer {
 	/**
 	 * When the application fails to start up, trigger a shutdown and log the exception.
 	 */
+	@SuppressWarnings("unused")
 	@Log4j2
 	private static class FailedInitializationMonitor implements ApplicationListener<ApplicationFailedEvent> {
 
 		@Override
 		public void onApplicationEvent(ApplicationFailedEvent event) {
-			if (event.getException() != null) {
-				log.fatal("unable to start application", event.getException());
-				LogUtil.getLogger("APPLICATION").fatal("unable to start application: {}", () -> getRootCause(event.getException()).getMessage());
-			}
+			log.fatal("unable to start application", event.getException());
+			LogUtil.getLogger("APPLICATION").fatal("unable to start application: {}", () -> getRootCause(event.getException()).getMessage());
 
 			System.exit(1); // Terminate the JVM
 		}
 
 		private Throwable getRootCause(Throwable t) {
-			if (t instanceof BeansException || t instanceof ApplicationContextException) {
+			if (t instanceof BeansException) {
 				return (t.getCause() != null) ? getRootCause(t.getCause()) : t;
 			}
 			return t;

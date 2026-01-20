@@ -36,7 +36,7 @@ import org.frankframework.util.StringUtil;
 
 public abstract class AbstractMapCredentialFactory implements ISecretProvider {
 
-	private Map<String,String> aliases;
+	private Map<String,String> aliases = Map.of(); // Initialize with dummy-map so the value is never null
 
 	@Override
 	public void initialize() throws IOException {
