@@ -189,7 +189,7 @@
 		</property>
 	</bean>
 
-	<bean name="auditLogView" class="org.frankframework.ladybug.tibet2.TibetView" scope="prototype">
+	<bean name="auditLogView" class="org.wearefrank.ladybug.filter.View" scope="prototype">
 		<property name="name" value="Audit log"/>
 		<property name="debugStorage">
 			<ref bean="auditLogStorage"/>
@@ -286,7 +286,7 @@
 		</property>
 	</bean>
 
-	<bean name="exceptionLogView" class="org.frankframework.ladybug.tibet2.TibetView" scope="prototype">
+	<bean name="exceptionLogView" class="org.wearefrank.ladybug.filter.View" scope="prototype">
 		<property name="name" value="Exception log"/>
 		<property name="debugStorage">
 			<ref bean="exceptionLogStorage"/>
