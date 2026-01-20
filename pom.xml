@@ -87,9 +87,9 @@
 		<junit.excludedTags />
 		<junit.includedTags />
 
-		<jackson.version>2.20.1</jackson.version>
+		<jackson.version>2.21.0</jackson.version>
 		<cxf.version>4.1.4</cxf.version>
-		<spring.version>7.0.2</spring.version>
+		<spring.version>7.0.3</spring.version>
 		<spring-security.version>7.0.2</spring-security.version>
 		<spring-integration.version>7.0.1</spring-integration.version>
 		<spring.boot.version>4.0.1</spring.boot.version>
@@ -113,7 +113,7 @@
 		<mssql.driver.version>12.10.2.jre11</mssql.driver.version>
 		<mysql.driver.version>9.5.0</mysql.driver.version>
 		<mariadb.driver.version>3.5.7</mariadb.driver.version>
-		<postgresql.driver.version>42.7.8</postgresql.driver.version>
+		<postgresql.driver.version>42.7.9</postgresql.driver.version>
 		<mongodb.driver.version>5.6.2</mongodb.driver.version>
 
 		<!-- Other versions for building Docker images and running IAF-Test -->
@@ -773,6 +773,7 @@
 							<!-- Flags required for ErrorProne -->
 							<arg>-XDcompilePolicy=simple</arg>
 							<arg>--should-stop=ifError=FLOW</arg>
+							<arg>-XDaddTypeAnnotationsToSymbol=true</arg>
 							<!-- Flags to enable ErrorProne, and options for ErrorProne. Should be given in the same arg parameter otherwise it doesn't seem to work. -->
 							<arg>-Xplugin:ErrorProne -XepOpt:NullAway:AnnotatedPackages=org.frankframework -Xep:InvalidBlockTag:OFF -Xep:BanJNDI:WARN -Xep:EqualsHashCode:WARN -Xep:GetClassOnClass:WARN</arg>
 						</compilerArgs>

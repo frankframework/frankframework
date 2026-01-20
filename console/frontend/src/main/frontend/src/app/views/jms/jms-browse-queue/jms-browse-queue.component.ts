@@ -40,6 +40,7 @@ export class JmsBrowseQueueComponent implements OnInit {
 
     this.jmsService.getJms().subscribe((data) => {
       this.connectionFactories = data['connectionFactories'];
+      this.form.connectionFactory = this.connectionFactories[0] ?? '';
     });
   }
 
