@@ -31,7 +31,7 @@
 			<pipe
 				name="ConvertEmptyMessageToDummyMessage"
 				className="org.frankframework.pipes.EchoPipe"
-				emptyInputReplacement="Dummy"
+				defaultValue="Dummy"
 			/>
 			<pipe
 				name="Text2Xml"
