@@ -20,6 +20,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import org.jspecify.annotations.Nullable;
+
 public class OverridesMap<V> extends SubstitutionNode<V> implements SubstitutionProvider<V> {
 
 	private final Map<String, Set<String>> allParents = new HashMap<>();
@@ -32,7 +34,7 @@ public class OverridesMap<V> extends SubstitutionNode<V> implements Substitution
 		}
 	}
 
-	protected void registerParent(String parent, String child) {
+	protected void registerParent(@Nullable String parent, String child) {
 		if (parent==null) {
 			// if parent is null, searching can stop after this child
 			allParents.put(child, null);
@@ -72,7 +74,7 @@ public class OverridesMap<V> extends SubstitutionNode<V> implements Substitution
 	}
 
 	@Override
-	public V getSubstitutionsFor(AlignmentContext context, String childName) {
+	public @Nullable V getSubstitutionsFor(AlignmentContext context, String childName) {
 		if (!hasSubstitutionsFor(context, childName)) {
 			return null;
 		}
@@ -90,7 +92,7 @@ public class OverridesMap<V> extends SubstitutionNode<V> implements Substitution
 	}
 
 	@Override
-	public V getDefault(AlignmentContext context) {
+	public @Nullable V getDefault(AlignmentContext context) {
 		return null;
 	}
 

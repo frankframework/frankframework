@@ -19,8 +19,6 @@ import java.io.IOException;
 import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
-import jakarta.annotation.Nonnull;
-
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
@@ -226,6 +224,7 @@ public final class AppConstants extends PropertyLoader {
 	 * @param key the key to be removed
 	 * @return The value associated with the key, or null
 	 */
+	@SuppressWarnings("UnusedReturnValue")
 	public static synchronized @Nullable String clearGlobalProperty(@NonNull String key) {
 		for (AppConstants localAppConstants : appConstantsMap.values()) {
 			localAppConstants.remove(key);
@@ -234,7 +233,7 @@ public final class AppConstants extends PropertyLoader {
 	}
 
 	@Override
-	protected synchronized void load(@NonNull ClassLoader classLoader, @Nonnull String filename) {
+	protected synchronized void load(@NonNull ClassLoader classLoader, @NonNull String filename) {
 		load(classLoader, filename, true);
 	}
 

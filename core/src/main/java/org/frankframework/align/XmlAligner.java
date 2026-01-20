@@ -77,7 +77,7 @@ public class XmlAligner extends XMLFilterImpl {
 
 	private @Getter AlignmentContext context;
 	private int indentLevel;
-	private @Getter XSTypeDefinition typeDefinition;
+	private @Getter @Nullable XSTypeDefinition typeDefinition;
 
 	private @Getter @Setter Locator documentLocator;
 
@@ -117,7 +117,7 @@ public class XmlAligner extends XMLFilterImpl {
 
 	public void newLine() throws SAXException {
 		int level = indentLevel;
-		ignorableWhitespace(INDENTOR, 0, (Math.min(level, MAX_INDENT))*2+1);
+		ignorableWhitespace(INDENTOR, 0, Math.min(level, MAX_INDENT) * 2 + 1);
 	}
 
 	public boolean isNil(Attributes attributes) {
@@ -203,82 +203,89 @@ public class XmlAligner extends XMLFilterImpl {
 		if (term == null) {
 			throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement particle.term is null");
 		}
-		if (log.isTraceEnabled())
+		if (log.isTraceEnabled()) {
 			log.trace("term name [{}] occurring unbounded [{}] max occur [{}] term [{}]", term.getName(), particle.getMaxOccursUnbounded(), particle.getMaxOccurs(), ToStringBuilder.reflectionToString(term));
-		if (term instanceof XSModelGroup modelGroup) {
-			short compositor = modelGroup.getCompositor();
-			XSObjectList particles = modelGroup.getParticles();
-			switch (compositor) {
-			case XSModelGroup.COMPOSITOR_SEQUENCE:
-			case XSModelGroup.COMPOSITOR_ALL: {
-				if (log.isTraceEnabled()) log.trace("sequence or all particles [{}]", ToStringBuilder.reflectionToString(particles));
-				ChildOccurrence result=ChildOccurrence.EMPTY;
-				for (int i = 0; i < particles.getLength(); i++) {
-					XSParticle childParticle = (XSParticle)particles.item(i);
-					ChildOccurrence current=determineIsParentOfSingleMultipleOccurringChildElement(childParticle);
-					if (log.isTraceEnabled()) log.trace("sequence or all, particle [{}] current result [{}]", i, current);
-					switch (current) {
-					case EMPTY:
-						break;
-					case ONE_SINGLE_OCCURRING_ELEMENT:
-					case ONE_MULTIPLE_OCCURRING_ELEMENT:
-						if (result.ordinal()>ChildOccurrence.EMPTY.ordinal()) {
-							if (log.isTraceEnabled()) log.trace("sequence or all, result [{}] current [{}]", result, current);
+		}
+		switch (term) {
+			case XSModelGroup modelGroup -> {
+				short compositor = modelGroup.getCompositor();
+				XSObjectList particles = modelGroup.getParticles();
+				switch (compositor) {
+					case XSModelGroup.COMPOSITOR_SEQUENCE:
+					case XSModelGroup.COMPOSITOR_ALL: {
+						if (log.isTraceEnabled()) log.trace("sequence or all particles [{}]", ToStringBuilder.reflectionToString(particles));
+						ChildOccurrence result = ChildOccurrence.EMPTY;
+						for (int i = 0; i < particles.getLength(); i++) {
+							XSParticle childParticle = (XSParticle) particles.item(i);
+							ChildOccurrence current = determineIsParentOfSingleMultipleOccurringChildElement(childParticle);
+							if (log.isTraceEnabled()) log.trace("sequence or all, particle [{}] current result [{}]", i, current);
+							switch (current) {
+								case EMPTY:
+									break;
+								case ONE_SINGLE_OCCURRING_ELEMENT:
+								case ONE_MULTIPLE_OCCURRING_ELEMENT:
+									if (result != ChildOccurrence.EMPTY) {
+										if (log.isTraceEnabled()) log.trace("sequence or all, result [{}] current [{}]", result, current);
+										return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
+									}
+									result = current;
+									break;
+								case MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING:
+									return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
+								default:
+									throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement child occurrence [" + current + "]");
+							}
+						}
+						if (log.isTraceEnabled()) log.trace("end of sequence or all, returning [{}]", result);
+						return result;
+					}
+					case XSModelGroup.COMPOSITOR_CHOICE: {
+						if (log.isTraceEnabled()) log.trace("choice particles [{}]", ToStringBuilder.reflectionToString(particles));
+						if (particles.getLength() == 0) {
+							if (log.isTraceEnabled()) log.trace("choice length 0, returning [{}]", ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING);
+							return ChildOccurrence.EMPTY;
+						}
+						ChildOccurrence result = determineIsParentOfSingleMultipleOccurringChildElement((XSParticle) particles.item(0));
+						if (result == ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING) {
+							if (log.isTraceEnabled())
+								log.trace("choice single mixed, returning [{}]", ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING);
 							return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
 						}
-						result=current;
-						break;
-					case MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING:
-						return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
+						for (int i = 1; i < particles.getLength(); i++) {
+							XSParticle childParticle = (XSParticle) particles.item(i);
+							ChildOccurrence current = determineIsParentOfSingleMultipleOccurringChildElement(childParticle);
+							if (current != result) {
+								if (log.isTraceEnabled())
+									log.trace("break out of choice, returning [{}]", ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING);
+								return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
+							}
+						}
+						if (log.isTraceEnabled()) log.trace("end of choice, returning [{}]", result);
+						return result;
+					}
 					default:
-						throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement child occurrence ["+current+"]");
-					}
+						throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement() modelGroup.compositor is not COMPOSITOR_SEQUENCE, COMPOSITOR_ALL or COMPOSITOR_CHOICE, but [" + compositor + "]");
 				}
-				if (log.isTraceEnabled()) log.trace("end of sequence or all, returning [{}]", result);
-				return result;
 			}
-			case XSModelGroup.COMPOSITOR_CHOICE: {
-				if (log.isTraceEnabled()) log.trace("choice particles [{}]", ToStringBuilder.reflectionToString(particles));
-				if (particles.getLength() == 0) {
-					if (log.isTraceEnabled()) log.trace("choice length 0, returning [{}]", ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING);
-					return ChildOccurrence.EMPTY;
+			case XSElementDeclaration elementDeclaration -> {
+				String elementName = elementDeclaration.getName();
+				if (log.isTraceEnabled())
+					log.trace("ElementDeclaration name [{}] unbounded [{}] maxOccurs [{}]", elementName, particle.getMaxOccursUnbounded(), particle.getMaxOccurs());
+				if (particle.getMaxOccursUnbounded() || particle.getMaxOccurs() > 1) {
+					return ChildOccurrence.ONE_MULTIPLE_OCCURRING_ELEMENT;
 				}
-				ChildOccurrence result = determineIsParentOfSingleMultipleOccurringChildElement((XSParticle) particles.item(0));
-				if (result == ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING) {
-					if (log.isTraceEnabled()) log.trace("choice single mixed, returning [{}]", ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING);
-					return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
+				if (particle.getMaxOccurs() == 1) {
+					return ChildOccurrence.ONE_SINGLE_OCCURRING_ELEMENT;
 				}
-				for (int i = 1; i < particles.getLength(); i++) {
-					XSParticle childParticle = (XSParticle) particles.item(i);
-					ChildOccurrence current = determineIsParentOfSingleMultipleOccurringChildElement(childParticle);
-					if (current != result) {
-						if (log.isTraceEnabled()) log.trace("break out of choice, returning [{}]", ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING);
-						return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
-					}
-				}
-				if (log.isTraceEnabled()) log.trace("end of choice, returning [{}]", result);
-				return result;
+				return ChildOccurrence.EMPTY;
 			}
-			default:
-				throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement() modelGroup.compositor is not COMPOSITOR_SEQUENCE, COMPOSITOR_ALL or COMPOSITOR_CHOICE, but ["+compositor+"]");
+			case XSWildcard xsWildcard -> {
+				return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
+			}
+			default -> {
+				throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement unknown Term type ["+term.getClass().getName()+"]");
 			}
 		}
-		if (term instanceof XSElementDeclaration elementDeclaration) {
-			String elementName=elementDeclaration.getName();
-			if (log.isTraceEnabled())
-				log.trace("ElementDeclaration name [{}] unbounded [{}] maxOccurs [{}]", elementName, particle.getMaxOccursUnbounded(), particle.getMaxOccurs());
-			if (particle.getMaxOccursUnbounded() || particle.getMaxOccurs()>1) {
-				return ChildOccurrence.ONE_MULTIPLE_OCCURRING_ELEMENT;
-			}
-			if (particle.getMaxOccurs()==1) {
-				return ChildOccurrence.ONE_SINGLE_OCCURRING_ELEMENT;
-			}
-			return ChildOccurrence.EMPTY;
-		}
-		if (term instanceof XSWildcard) {
-			return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
-		}
-		throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement unknown Term type ["+term.getClass().getName()+"]");
 	}
 
 	public static boolean typeContainsWildcard(XSParticle particle) {

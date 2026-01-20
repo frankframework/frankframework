@@ -27,6 +27,7 @@ import java.util.Map.Entry;
 import org.apache.commons.lang3.NotImplementedException;
 import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
+import org.jspecify.annotations.Nullable;
 import org.springframework.http.MediaType;
 
 import lombok.Getter;
@@ -55,11 +56,11 @@ public class JsonDocumentContainer {
 	@Getter private final JsonElementContainer root = createElementContainer(null, false, false, null);
 	private JsonElementContainer elementContainer=root;
 
-	@Getter private final String name;
+	@Getter private final @Nullable String name;
 	private final boolean skipArrayElementContainers;
 	private final boolean skipRootElement;
 
-	public JsonDocumentContainer(String name, boolean skipArrayElementContainers, boolean skipRootElement) {
+	public JsonDocumentContainer(@Nullable String name, boolean skipArrayElementContainers, boolean skipRootElement) {
 		this.name = name;
 		this.skipArrayElementContainers = skipArrayElementContainers;
 		this.skipRootElement = skipRootElement;

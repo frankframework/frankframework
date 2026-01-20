@@ -32,6 +32,7 @@ import org.apache.xerces.xs.XSSimpleTypeDefinition;
 import org.apache.xerces.xs.XSTypeDefinition;
 import org.apache.xerces.xs.XSWildcard;
 import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.XMLFilterImpl;
@@ -53,7 +54,7 @@ public class Xml2Json extends XMLFilterImpl {
 	private final XmlAligner aligner;
 	private final JsonDocumentContainer documentContainer;
 	Deque<String> element = new ArrayDeque<>();
-	String topElement;
+	@Nullable String topElement;
 	private boolean writeAttributes=true;
 
 	public Xml2Json(XmlAligner aligner, boolean skipArrayElementContainers, boolean skipRootElement) {
