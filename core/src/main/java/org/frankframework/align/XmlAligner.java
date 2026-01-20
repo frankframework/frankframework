@@ -416,11 +416,11 @@ public class XmlAligner extends XMLFilterImpl {
 	}
 
 
-	protected static ValidatorHandler getValidatorHandler(@NonNull URL schemaURL) throws SAXException {
+	protected static @NonNull ValidatorHandler getValidatorHandler(@NonNull URL schemaURL) throws SAXException {
 		return XmlUtils.getValidatorHandler(schemaURL);
 	}
 
-	protected static List<XSModel> getSchemaInformation(@NonNull URL schemaURL) {
+	protected static @NonNull List<XSModel> getSchemaInformation(@NonNull URL schemaURL) {
 		XMLSchemaLoader xsLoader = new XMLSchemaLoader();
 		XSModel xsModel = xsLoader.loadURI(schemaURL.toExternalForm());
 		return Collections.singletonList(xsModel);
