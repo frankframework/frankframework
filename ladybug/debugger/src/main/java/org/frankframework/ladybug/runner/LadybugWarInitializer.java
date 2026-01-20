@@ -108,6 +108,7 @@ public class LadybugWarInitializer extends SpringBootServletInitializer {
 		}
 		if(dtapIsLoc(properties)) {
 			profiles.add("ladybug-xml");
+			profiles.add("LOC");
 		}
 		APPLICATION_LOG.debug("Using Ladybug profiles {}", profiles);
 		return profiles;

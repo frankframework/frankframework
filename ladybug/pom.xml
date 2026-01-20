@@ -19,7 +19,7 @@
 	</modules>
 
 	<properties>
-		<ladybug.version>3.0-for-ff-9.2-20251107.170534</ladybug.version>
+		<ladybug.version>3.0-20260120.102632</ladybug.version>
 	</properties>
 
 </project>

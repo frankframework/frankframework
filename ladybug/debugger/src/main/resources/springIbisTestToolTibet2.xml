@@ -11,7 +11,9 @@
 		<constructor-arg value="Ibis Test Tool Tibet 2"/>
 	</bean>
 
-	<bean name="debugger,ibisDebugger" class="org.frankframework.ladybug.tibet2.Tibet2Debugger" autowire="byName"/>
+	<bean name="tibet2Datasource" class="java.lang.String">
+		<constructor-arg value="${jdbc.datasource.default}" />
+	</bean>
 
 	<bean name="metadataExtractor" class="nl.nn.testtool.MetadataExtractor">
 		<property name="extraMetadataFieldExtractors">
@@ -99,15 +101,22 @@
 		</property>
 	</bean>
 
+	<!-- START: These beans are no longer automatically present, and are only there when the database profile is used. -->
 	<bean id="jndiContextPrefixFactory" class="org.frankframework.core.JndiContextPrefixFactory"/>
 
-	<bean id="dataSourceFactory" class="org.frankframework.jdbc.datasource.DataSourceFactory" autowire="byType"/>
-
+	<bean id="resourceObjectLocator" class="org.frankframework.jdbc.datasource.ResourceObjectLocator">
+		<property name="resourceFile" value="${ladybug.jdbc.resourceFile:resources.yml}"/>
+	</bean>
+	<bean id="jndiObjectLocator" class="org.frankframework.jndi.JndiObjectLocator" />
+	<bean id="dataSourceFactory" class="org.frankframework.ladybug.jdbc.LadyBugDataSourceFactory" autowire="byType" />
 	<bean name="dbmsSupportFactory" class="org.frankframework.dbms.DbmsSupportFactory"/>
+	<!-- END -->
 
 	<bean name="auditLogStorage" class="org.frankframework.ladybug.tibet2.Tibet2DatabaseStorage" autowire="byName">
-		<property name="name" value="Logging"/>
-		<property name="datasourceName" value="jdbc/${instance.name.lc}"/>
+		<property name="name" value="AuditLogStorage"/>
+		<property name="datasourceName">
+			<ref bean="tibet2Datasource"/>
+		</property>
 		<property name="table" value="AUDITLOG"/>
 		<property name="reportColumnNames">
 			<list>
@@ -201,14 +210,13 @@
 				<value>FUNCT_ERROR_TEXT</value>
 			</list>
 		</property>
-		<property name="ibisDebugger">
-			<ref bean="ibisDebugger"/>
-		</property>
 	</bean>
 
 	<bean name="exceptionLogStorage" class="org.frankframework.ladybug.tibet2.Tibet2DatabaseStorage" autowire="byName">
-		<property name="name" value="Logging"/>
-		<property name="datasourceName" value="jdbc/${instance.name.lc}"/>
+		<property name="name" value="ExceptionLogStorage"/>
+		<property name="datasourceName">
+			<ref bean="tibet2Datasource"/>
+		</property>
 		<property name="table" value="EXCEPTIONLOG"/>
 		<property name="reportColumnNames">
 			<list>
@@ -298,9 +306,6 @@
 				<value>ERROR_TEXT</value>
 			</list>
 		</property>
-		<property name="ibisDebugger">
-			<ref bean="ibisDebugger"/>
-		</property>
 	</bean>
 
 	<bean name="views" class="nl.nn.testtool.filter.Views" scope="prototype">
@@ -315,5 +320,34 @@
 			</list>
 		</property>
 	</bean>
+
+	<beans profile="LOC">
+		<bean id="ladybugDataSource" factory-bean="dataSourceFactory" factory-method="getDataSource">
+			<constructor-arg ref="tibet2Datasource"/>
+		</bean>
+
+		<bean
+			name="ladybugDatabaseChangelog"
+			class="liquibase.integration.spring.SpringLiquibase"
+			depends-on="databaseStartupValidator"
+			>
+			<property name="dataSource" ref="ladybugDataSource"/>
+			<property name="changeLog" value="classpath:liquibase/springIbisTestToolTibet2.xml"/>
+			<property name="uiService">
+				<!-- Show "Running Changeset: ..." in System.out -->
+				<value type="liquibase.ui.UIServiceEnum">CONSOLE</value>
+			</property>
+			<property name="showSummaryOutput">
+				<!-- Don't show "UPDATE SUMMARY" in System.out -->
+				<value type="liquibase.UpdateSummaryOutputEnum">LOG</value>
+			</property>
+		</bean>
+
+		<bean name="databaseStartupValidator" class="org.springframework.jdbc.support.DatabaseStartupValidator">
+			<property name="timeout" value="60"/>
+			<property name="interval" value="5"/>
+			<property name="dataSource" ref="ladybugDataSource"/>
+		</bean>
+	</beans>
 
 </beans>
