@@ -40,6 +40,7 @@ import org.springframework.security.authorization.AuthenticatedAuthorizationMana
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AnonymousConfigurer;
+import org.springframework.security.config.annotation.web.configurers.CorsConfigurer;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
@@ -171,6 +172,7 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 
 		try {
 			httpSecurityConfigurer.csrf(CsrfConfigurer::disable); // Disable CSRF, post requests should be possible.
+			httpSecurityConfigurer.cors(CorsConfigurer::disable); // Disable CORS, post requests should be possible.
 			httpSecurityConfigurer.formLogin(FormLoginConfigurer::disable); // Disable the form login filter
 			httpSecurityConfigurer.logout(LogoutConfigurer::disable); // Disable the logout filter
 			httpSecurityConfigurer.headers(h -> h.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
