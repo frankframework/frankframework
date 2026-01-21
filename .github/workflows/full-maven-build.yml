@@ -56,11 +56,6 @@ jobs:
         # Required for SonarCloud
         fetch-depth: 0
 
-    - name: Create cached directories
-      run: |
-        mkdir -p ~/.m2/repository
-        mkdir -p ~/.sonar/cache
-
     - name: Restore cached directories
       uses: actions/cache/restore@9255dc7a253b0ccc959486e2bca901246202afeb # v5
       with:

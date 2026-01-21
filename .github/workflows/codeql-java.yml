@@ -53,11 +53,6 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
 
-    - name: Create cached directories
-      run: |
-        mkdir -p ~/.m2/repository
-        mkdir -p ~/.sonar/cache
-
     - name: Restore cached directories
       uses: actions/cache/restore@9255dc7a253b0ccc959486e2bca901246202afeb # v5
       with:
