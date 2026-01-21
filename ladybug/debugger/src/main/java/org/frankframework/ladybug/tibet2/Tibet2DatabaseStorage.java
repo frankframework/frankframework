@@ -39,6 +39,7 @@ import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.CheckpointType;
 import org.wearefrank.ladybug.Report;
 import org.wearefrank.ladybug.TestTool;
+import org.wearefrank.ladybug.echo2.reports.ReportsComponent;
 import org.wearefrank.ladybug.storage.CrudStorage;
 import org.wearefrank.ladybug.storage.LogStorage;
 import org.wearefrank.ladybug.storage.StorageException;
@@ -307,6 +308,11 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 
 	@Override
 	public Report getReport(Integer storageId) throws StorageException {
+		String result = new Tibet2ToFrameworkDispatcher(getApplicationContext()).authorisationCheck(""+ storageId, getName());
+		if (!ReportsComponent.OPEN_REPORT_ALLOWED.equals(result)) {
+			throw new StorageException(result);
+		}
+
 		final Report report = new Report();
 		report.setTestTool(getTestTool());
 		report.setStorage(this);
