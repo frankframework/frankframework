@@ -28,7 +28,8 @@ public abstract class KeycloakBearerOnlyBase {
 		keycloak.start();
 	}
 
-	static @Nullable ConfigurableApplicationContext applicationContext = null;
+	@SuppressWarnings("NullAway.Init")
+	static ConfigurableApplicationContext applicationContext = null;
 
 	static final String TOKEN_ENDPOINT_FORMAT = "http://localhost:%s/realms/test/protocol/openid-connect/token";
 

@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 
-import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
@@ -20,7 +19,8 @@ import org.frankframework.util.AppConstants;
 @Tag("slow")
 class IafTestInitializerTest {
 
-	private static @Nullable ConfigurableApplicationContext applicationContext = null;
+	@SuppressWarnings("NullAway.Init")
+	private static ConfigurableApplicationContext applicationContext = null;
 
 	/**
 	 * Since we don't use @SpringBootApplication, we can't use @SpringBootTest here and need to manually configure the application

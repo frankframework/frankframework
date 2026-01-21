@@ -28,7 +28,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.io.IoBuilder;
 import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -99,16 +98,25 @@ public class RunLarvaTests {
 			"FxF3/scenario12"
 			);
 
-	private static @Nullable ConfigurableApplicationContext parentContext;
-	private static @Nullable ConfigurableApplicationContext applicationContext;
-	private static @Nullable IbisContext ibisContext;
-	private static @Nullable EmbeddedActiveMQ jmsServer;
+	@SuppressWarnings("NullAway.Init")
+	private static ConfigurableApplicationContext parentContext;
+	@SuppressWarnings("NullAway.Init")
+	private static ConfigurableApplicationContext applicationContext;
+	@SuppressWarnings("NullAway.Init")
+	private static IbisContext ibisContext;
+	@SuppressWarnings("NullAway.Init")
+	private static EmbeddedActiveMQ jmsServer;
 
-	private @Nullable LarvaTool larvaTool;
-	private @Nullable ScenarioRunner scenarioRunner;
-	private @Nullable String scenarioRootDir;
-	private @Nullable LarvaWriter larvaWriter;
-	private @Nullable TestExecutionObserver testExecutionObserver;
+	@SuppressWarnings("NullAway.Init")
+	private LarvaTool larvaTool;
+	@SuppressWarnings("NullAway.Init")
+	private ScenarioRunner scenarioRunner;
+	@SuppressWarnings("NullAway.Init")
+	private String scenarioRootDir;
+	@SuppressWarnings("NullAway.Init")
+	private LarvaWriter larvaWriter;
+	@SuppressWarnings("NullAway.Init")
+	private TestExecutionObserver testExecutionObserver;
 
 	/**
 	 * Since we don't use @SpringBootApplication, we can't use @SpringBootTest here and need to manually configure the application

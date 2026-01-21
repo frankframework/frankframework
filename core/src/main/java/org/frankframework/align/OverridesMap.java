@@ -25,7 +25,7 @@ import org.jspecify.annotations.Nullable;
 public class OverridesMap<V> extends SubstitutionNode<V> implements SubstitutionProvider<V> {
 
 	private final Map<String, Set<String>> allParents = new HashMap<>();
-	
+
 	@Override
 	protected void registerSubstitute(String[] elements, int index, V value) {
 		super.registerSubstitute(elements, index, value);
