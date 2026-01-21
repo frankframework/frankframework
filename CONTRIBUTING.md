@@ -99,6 +99,10 @@ For more information on these tools, you can check their documentation at:
 - [NullAway](https://github.com/uber/NullAway)
 - [JSpecify](https://jspecify.dev/docs/applying/)
 
+Some fields which should not be `null` are not initialized in constructors, but via mandatory setters (via the Configuration.xml or the Spring context) or set in lifecycle methods such as `configure()`.
+In these cases, annotate these fields with `@SuppressWarnings("NullAway.Init")` and make sure to check in the `configure()` methods that these fields have been populated.
+Then they do not need to be annotated as `@Nullable` and surrounded with null-checks in every place.
+
 See our [Additional Coding Guidelines](AdditionalCodingGuidelines.md) for code examples to help create more readable, testable and maintainable code.
 
 ## Testing
