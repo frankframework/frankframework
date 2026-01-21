@@ -26,7 +26,6 @@ import java.util.Set;
 
 import javax.xml.validation.ValidatorHandler;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.xs.ElementPSVI;
@@ -202,7 +201,7 @@ public class XmlAligner extends XMLFilterImpl {
 		if (term == null) {
 			throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement particle.term is null");
 		}
-		log.trace("term name [{}] occurring unbounded [{}] max occur [{}] term [{}]", term::getName, particle::getMaxOccursUnbounded, particle::getMaxOccurs, ()->ToStringBuilder.reflectionToString(term));
+		log.trace("term name [{}] occurring unbounded [{}] max occur [{}] term [{}]", term::getName, particle::getMaxOccursUnbounded, particle::getMaxOccurs, ()->term);
 
 		switch (term) {
 			case XSModelGroup modelGroup -> {
@@ -210,7 +209,7 @@ public class XmlAligner extends XMLFilterImpl {
 				XSObjectList particles = modelGroup.getParticles();
 				switch (compositor) {
 					case XSModelGroup.COMPOSITOR_SEQUENCE, XSModelGroup.COMPOSITOR_ALL -> {
-						log.trace("sequence or all particles [{}]", ToStringBuilder.reflectionToString(particles));
+						log.trace("sequence or all particles [{}]", particles);
 						ChildOccurrence result = ChildOccurrence.EMPTY;
 						for (int i = 0; i < particles.getLength(); i++) {
 							XSParticle childParticle = (XSParticle) particles.item(i);
@@ -237,7 +236,7 @@ public class XmlAligner extends XMLFilterImpl {
 						return result;
 					}
 					case XSModelGroup.COMPOSITOR_CHOICE -> {
-						log.trace("choice particles [{}]", () -> ToStringBuilder.reflectionToString(particles));
+						log.trace("choice particles [{}]", particles);
 						if (particles.getLength() == 0) {
 							log.trace("choice length 0, returning [{}]", ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING);
 							return ChildOccurrence.EMPTY;
@@ -342,14 +341,14 @@ public class XmlAligner extends XMLFilterImpl {
 		if (term == null) {
 			throw new IllegalStateException("findMultipleOccurringChildElements particle.term is null");
 		}
-		log.trace("term name [{}] occurring unbounded [{}] max occur [{}] term [{}]", term::getName, particle::getMaxOccursUnbounded, particle::getMaxOccurs, ()->ToStringBuilder.reflectionToString(term));
+		log.trace("term name [{}] occurring unbounded [{}] max occur [{}] term [{}]", term::getName, particle::getMaxOccursUnbounded, particle::getMaxOccurs, ()->term);
 		if (particle.getMaxOccursUnbounded() || particle.getMaxOccurs() > 1) {
 			collectChildElements(particle,result);
 			return result;
 		}
 		if (term instanceof XSModelGroup modelGroup) {
 			@SuppressWarnings("unchecked") List<XSParticle> particles = modelGroup.getParticles();
-			log.trace("modelGroup particles [{}]", () -> ToStringBuilder.reflectionToString(particles));
+			log.trace("modelGroup particles [{}]", particles);
 			for (XSParticle childParticle : particles) {
 				result.addAll(findMultipleOccurringChildElements(childParticle));
 			}
