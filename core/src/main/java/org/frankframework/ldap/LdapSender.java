@@ -44,6 +44,7 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.context.ApplicationContext;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -162,6 +163,8 @@ import org.frankframework.util.XmlEncodingUtils;
 @Log4j2
 public class LdapSender extends JndiBase implements ISenderWithParameters {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
+	@SuppressWarnings("NullAway.Init")
+	private @Getter @Setter ApplicationContext applicationContext;
 
 	private @Getter String name = "";
 
@@ -178,16 +181,6 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	private @Getter int searchTimeout = 20_000;
 
 	public @Getter Operation operation = Operation.READ;
-
-	@Override
-	public ApplicationContext getApplicationContext() {
-		throw new UnsupportedOperationException("Application Context not supported by this sender");
-	}
-
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) {
-		// Not implemented for this sender but required by interface
-	}
 
 	public enum Operation implements DocumentedEnum {
 		/** Read the contents of an entry. Configuration requirements:
