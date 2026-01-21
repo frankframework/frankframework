@@ -50,13 +50,6 @@
 			<scope>provided</scope>
 		</dependency>
 		<dependency>
-			<!-- prevent compile error on TibetView: cannot access javax.enterprise.context.Dependent -->
-			<groupId>jakarta.enterprise</groupId>
-			<artifactId>jakarta.enterprise.cdi-api</artifactId>
-			<version>4.1.0</version>
-			<scope>provided</scope>
-		</dependency>
-		<dependency>
 			<groupId>org.aspectj</groupId>
 			<artifactId>aspectjlib</artifactId>
 			<version>1.6.2</version>

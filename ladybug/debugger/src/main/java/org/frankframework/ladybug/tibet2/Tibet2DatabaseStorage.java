@@ -47,6 +47,7 @@ import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.SearchUtil;
 
+
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
@@ -310,6 +311,11 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 
 	@Override
 	public Report getReport(Integer storageId) throws StorageException {
+		String result = new Tibet2ToFrameworkDispatcher(getApplicationContext()).authorisationCheck(""+ storageId, getName());
+		if (!ReportsComponent.OPEN_REPORT_ALLOWED.equals(result)) {
+			throw new StorageException(result);
+		}
+
 		final Report report = new Report();
 		report.setTestTool(getTestTool());
 		report.setStorage(this);
