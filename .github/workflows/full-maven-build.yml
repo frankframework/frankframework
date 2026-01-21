@@ -62,7 +62,7 @@ jobs:
         path: |
           ~/.m2/repository
           ~/.sonar/cache
-        key: maven-build-cache
+        key: ff-maven-build-cache
 
     - name: Set up JDK ${{ env.JDK_VERSION }}
       uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5
@@ -167,4 +167,4 @@ jobs:
         path: |
           ~/.m2/repository
           ~/.sonar/cache
-        key: maven-build-cache
+        key: ff-maven-build-cache
