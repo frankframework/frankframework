@@ -1,5 +1,5 @@
 /*
-   Copyright 2018 Nationale-Nederlanden, 2022-2024 WeAreFrank!
+   Copyright 2018 Nationale-Nederlanden, 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,7 +16,6 @@
 package org.frankframework.ladybug.tibet2;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 
 import org.wearefrank.ladybug.Checkpoint;
@@ -30,6 +29,7 @@ import org.frankframework.core.Adapter;
 import org.frankframework.core.PipeLineResult;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.ladybug.LadybugDebugger;
+import org.frankframework.management.bus.BusMessageUtils;
 import org.frankframework.stream.Message;
 import org.frankframework.util.MessageUtils;
 
@@ -42,9 +42,7 @@ public class Tibet2Debugger extends LadybugDebugger {
 
 	@Override
 	public List<String> getStubStrategies() {
-		List<String> stubStrategies = new ArrayList<>();
-		stubStrategies.add(TestTool.STUB_STRATEGY_NEVER);
-		return stubStrategies;
+		return List.of(TestTool.STUB_STRATEGY_NEVER);
 	}
 
 	@Override
@@ -73,9 +71,7 @@ public class Tibet2Debugger extends LadybugDebugger {
 			inRerun.add(correlationId);
 		}
 		try (PipeLineSession pipeLineSession = new PipeLineSession()) {
-			if(securityContext.getUserPrincipal() != null) {
-				pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
-			}
+			pipeLineSession.put("principal", BusMessageUtils.getUserPrincipalName());
 			pipeLineSession.put(PipeLineSession.CORRELATION_ID_KEY, correlationId);
 			// Analog to test a pipeline that is using: "testmessage" + Misc.createSimpleUUID();
 			String messageId = MessageUtils.generateMessageId("tibet2-resend");

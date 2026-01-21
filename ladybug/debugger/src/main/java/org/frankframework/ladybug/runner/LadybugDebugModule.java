@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -17,12 +17,20 @@ package org.frankframework.ladybug.runner;
 
 import java.util.List;
 
-import org.frankframework.components.Module;
+import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.components.Module;
+import org.frankframework.util.AppConstants;
+
+@Log4j2
 public class LadybugDebugModule implements Module {
 
 	@Override
 	public List<String> getSpringConfigurationFiles() {
-		return List.of("springIbisDebuggerAdvice.xml");
+		AppConstants properties = AppConstants.getInstance();
+		String customXmlfile = properties.getProperty("ibistesttool.custom", "");
+		String debuggerAdvice = "springIbisDebuggerAdvice%s.xml".formatted(customXmlfile);
+		log.debug("using Ladybug debugger file [{}]", debuggerAdvice);
+		return List.of(debuggerAdvice);
 	}
 }
