@@ -35,13 +35,11 @@ import jakarta.annotation.PostConstruct;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
-
-
 import org.wearefrank.ladybug.Checkpoint;
 import org.wearefrank.ladybug.CheckpointType;
 import org.wearefrank.ladybug.Report;
-import org.wearefrank.ladybug.SecurityContext;
 import org.wearefrank.ladybug.TestTool;
+import org.wearefrank.ladybug.echo2.reports.ReportsComponent;
 import org.wearefrank.ladybug.storage.CrudStorage;
 import org.wearefrank.ladybug.storage.LogStorage;
 import org.wearefrank.ladybug.storage.StorageException;

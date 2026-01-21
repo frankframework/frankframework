@@ -14,8 +14,7 @@ import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHeaders;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-
-import nl.nn.testtool.storage.StorageException;
+import org.wearefrank.ladybug.storage.StorageException;
 
 import org.frankframework.management.bus.BusException;
 import org.frankframework.management.bus.message.StringMessage;
