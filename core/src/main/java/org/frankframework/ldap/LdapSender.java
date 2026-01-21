@@ -163,7 +163,7 @@ import org.frankframework.util.XmlEncodingUtils;
 @Log4j2
 public class LdapSender extends JndiBase implements ISenderWithParameters {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
-	@SuppressWarnings("NullAway.Init")
+	@SuppressWarnings({ "NullAway.Init", "java:S2637" }) // Set via Spring Autowiring so these checks should not apply
 	private @Getter @Setter ApplicationContext applicationContext;
 
 	private @Getter String name = "";
