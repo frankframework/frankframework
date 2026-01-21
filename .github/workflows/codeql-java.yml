@@ -20,6 +20,7 @@ on:
       - "**.txt"
       - "**.png"
       - ".github/**"
+      - "!.github/workflows/codeql-java.yml"
       - "docker/**"
   pull_request:
     # The branches below must be a subset of the branches above
@@ -30,6 +31,7 @@ on:
       - "**.txt"
       - "**.png"
       - ".github/**"
+      - "!.github/workflows/codeql-java.yml"
       - "docker/**"
   schedule:
     - cron: '0 23 * * 1'

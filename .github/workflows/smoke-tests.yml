@@ -20,7 +20,7 @@ on:
       - "**.png"
       - "**.toml"
       - ".github/**"
-      - "!.github/workflows/maven-build.yml"
+      - "!.github/workflows/smoke-tests.yml"
       - "docker/**"
   pull_request:
     branches:
@@ -34,7 +34,7 @@ on:
       - "**.png"
       - "**.toml"
       - ".github/**"
-      - "!.github/workflows/maven-build.yml"
+      - "!.github/workflows/smoke-tests.yml"
       - "docker/**"
 
 jobs:
@@ -62,7 +62,7 @@ jobs:
           ~/.sonar/cache
         key: ff-maven-build-cache-${{ github.ref }}
         restore-keys: |
-          maven-build-cache
+          ff-maven-build-cache
 
     - name: Set up JDK ${{ matrix.java }}
       uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5
