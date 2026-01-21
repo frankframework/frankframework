@@ -146,8 +146,7 @@ public class XmlAligner extends XMLFilterImpl {
 				multipleOccurringChildElements = findMultipleOccurringChildElements(complexTypeDefinition.getParticle());
 				parentOfSingleMultipleOccurringChildElement=ChildOccurrence.ONE_MULTIPLE_OCCURRING_ELEMENT==determineIsParentOfSingleMultipleOccurringChildElement(complexTypeDefinition.getParticle());
 				typeContainsWildcard=typeContainsWildcard(complexTypeDefinition.getParticle());
-				if (log.isTraceEnabled())
-					log.trace("element [{}] is parentOfSingleMultipleOccurringChildElement [{}]", localName, parentOfSingleMultipleOccurringChildElement);
+				log.trace("element [{}] is parentOfSingleMultipleOccurringChildElement [{}]", localName, parentOfSingleMultipleOccurringChildElement);
 			} else {
 				multipleOccurringChildElements = Set.of();
 				parentOfSingleMultipleOccurringChildElement = false;
@@ -168,7 +167,7 @@ public class XmlAligner extends XMLFilterImpl {
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
-		if (log.isTraceEnabled()) log.trace("endElement() uri [{}] localName [{}] qName [{}]", uri, localName, qName);
+		log.trace("endElement() uri [{}] localName [{}] qName [{}]", uri, localName, qName);
 		boolean knownElement = context.getTypeDefinition()!=null;
 		context = context.getParent();
 		indentLevel--;
@@ -203,28 +202,27 @@ public class XmlAligner extends XMLFilterImpl {
 		if (term == null) {
 			throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement particle.term is null");
 		}
-		if (log.isTraceEnabled()) {
-			log.trace("term name [{}] occurring unbounded [{}] max occur [{}] term [{}]", term.getName(), particle.getMaxOccursUnbounded(), particle.getMaxOccurs(), ToStringBuilder.reflectionToString(term));
-		}
+		log.trace("term name [{}] occurring unbounded [{}] max occur [{}] term [{}]", term::getName, particle::getMaxOccursUnbounded, particle::getMaxOccurs, ()->ToStringBuilder.reflectionToString(term));
+
 		switch (term) {
 			case XSModelGroup modelGroup -> {
 				short compositor = modelGroup.getCompositor();
 				XSObjectList particles = modelGroup.getParticles();
 				switch (compositor) {
 					case XSModelGroup.COMPOSITOR_SEQUENCE, XSModelGroup.COMPOSITOR_ALL -> {
-						if (log.isTraceEnabled()) log.trace("sequence or all particles [{}]", ToStringBuilder.reflectionToString(particles));
+						log.trace("sequence or all particles [{}]", ToStringBuilder.reflectionToString(particles));
 						ChildOccurrence result = ChildOccurrence.EMPTY;
 						for (int i = 0; i < particles.getLength(); i++) {
 							XSParticle childParticle = (XSParticle) particles.item(i);
 							ChildOccurrence current = determineIsParentOfSingleMultipleOccurringChildElement(childParticle);
-							if (log.isTraceEnabled()) log.trace("sequence or all, particle [{}] current result [{}]", i, current);
+							log.trace("sequence or all, particle [{}] current result [{}]", i, current);
 							switch (current) {
 								case EMPTY:
 									break;
 								case ONE_SINGLE_OCCURRING_ELEMENT:
 								case ONE_MULTIPLE_OCCURRING_ELEMENT:
 									if (result != ChildOccurrence.EMPTY) {
-										if (log.isTraceEnabled()) log.trace("sequence or all, result [{}] current [{}]", result, current);
+										log.trace("sequence or all, result [{}] current [{}]", result, current);
 										return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
 									}
 									result = current;
@@ -235,31 +233,29 @@ public class XmlAligner extends XMLFilterImpl {
 									throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement child occurrence [" + current + "]");
 							}
 						}
-						if (log.isTraceEnabled()) log.trace("end of sequence or all, returning [{}]", result);
+						log.trace("end of sequence or all, returning [{}]", result);
 						return result;
 					}
 					case XSModelGroup.COMPOSITOR_CHOICE -> {
-						if (log.isTraceEnabled()) log.trace("choice particles [{}]", ToStringBuilder.reflectionToString(particles));
+						log.trace("choice particles [{}]", () -> ToStringBuilder.reflectionToString(particles));
 						if (particles.getLength() == 0) {
-							if (log.isTraceEnabled()) log.trace("choice length 0, returning [{}]", ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING);
+							log.trace("choice length 0, returning [{}]", ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING);
 							return ChildOccurrence.EMPTY;
 						}
 						ChildOccurrence result = determineIsParentOfSingleMultipleOccurringChildElement((XSParticle) particles.item(0));
 						if (result == ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING) {
-							if (log.isTraceEnabled())
-								log.trace("choice single mixed, returning [{}]", ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING);
+							log.trace("choice single mixed, returning [{}]", ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING);
 							return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
 						}
 						for (int i = 1; i < particles.getLength(); i++) {
 							XSParticle childParticle = (XSParticle) particles.item(i);
 							ChildOccurrence current = determineIsParentOfSingleMultipleOccurringChildElement(childParticle);
 							if (current != result) {
-								if (log.isTraceEnabled())
-									log.trace("break out of choice, returning [{}]", ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING);
+								log.trace("break out of choice, returning [{}]", ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING);
 								return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
 							}
 						}
-						if (log.isTraceEnabled()) log.trace("end of choice, returning [{}]", result);
+						log.trace("end of choice, returning [{}]", result);
 						return result;
 					}
 					default -> throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement() modelGroup.compositor is not COMPOSITOR_SEQUENCE, COMPOSITOR_ALL or COMPOSITOR_CHOICE, but [" + compositor + "]");
@@ -267,8 +263,7 @@ public class XmlAligner extends XMLFilterImpl {
 			}
 			case XSElementDeclaration elementDeclaration -> {
 				String elementName = elementDeclaration.getName();
-				if (log.isTraceEnabled())
-					log.trace("ElementDeclaration name [{}] unbounded [{}] maxOccurs [{}]", elementName, particle.getMaxOccursUnbounded(), particle.getMaxOccurs());
+				log.trace("ElementDeclaration name [{}] unbounded [{}] maxOccurs [{}]", ()->elementName, particle::getMaxOccursUnbounded, particle::getMaxOccurs);
 				if (particle.getMaxOccursUnbounded() || particle.getMaxOccurs() > 1) {
 					return ChildOccurrence.ONE_MULTIPLE_OCCURRING_ELEMENT;
 				}
@@ -328,7 +323,7 @@ public class XmlAligner extends XMLFilterImpl {
 			}
 			case XSElementDeclaration elementDeclaration -> {
 				String elementName = elementDeclaration.getName();
-				if (log.isTraceEnabled()) log.trace("ElementDeclaration name [{}]", elementName);
+				log.trace("ElementDeclaration name [{}]", elementName);
 				elementNames.add(elementName);
 			}
 			default -> {
@@ -375,7 +370,7 @@ public class XmlAligner extends XMLFilterImpl {
 		if (typeDefinition instanceof XSComplexTypeDefinition complexTypeDefinition) {
 			return complexTypeDefinition.getAttributeUses();
 		}
-		if (log.isTraceEnabled()) log.trace("typeDefinition [{}] SimpleType, no attributes", typeDefinition.getClass().getSimpleName());
+		log.trace("typeDefinition [{}] SimpleType, no attributes", ()->typeDefinition.getClass().getSimpleName());
 		return List.of();
 	}
 
@@ -469,12 +464,11 @@ public class XmlAligner extends XMLFilterImpl {
 			for (int i=0;i<components.getLength();i++) {
 				XSElementDeclaration item=(XSElementDeclaration)components.item(i);
 				if ((namespace==null || namespace.equals(item.getNamespace())) && (name==null || name.equals(item.getName()))) {
-					if (log.isTraceEnabled()) log.trace("name [{}] found in namespace [{}]", item.getName(), item.getNamespace());
+					log.trace("name [{}] found in namespace [{}]", item::getName, item::getNamespace);
 					result.add(item);
 				}
 			}
 		}
 		return result;
 	}
-
 }
