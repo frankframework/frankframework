@@ -39,23 +39,18 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.CheckpointType;
 import nl.nn.testtool.Report;
-import nl.nn.testtool.SecurityContext;
 import nl.nn.testtool.TestTool;
+import nl.nn.testtool.echo2.reports.ReportsComponent;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.SearchUtil;
 
-import org.frankframework.configuration.Configuration;
-import org.frankframework.core.Adapter;
-import org.frankframework.core.PipeLineResult;
-import org.frankframework.core.PipeLineSession;
+import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.dbms.Dbms;
 import org.frankframework.dbms.IDbmsSupport;
 import org.frankframework.dbms.JdbcException;
 import org.frankframework.jdbc.JdbcFacade;
-import org.frankframework.ladybug.LadybugDebugger;
-import org.frankframework.stream.Message;
 import org.frankframework.util.JdbcUtil;
 import org.frankframework.util.StreamUtil;
 
@@ -66,9 +61,6 @@ import org.frankframework.util.StreamUtil;
 // Reports can be deleted in the debug tab when a debug storage also implements CrudStorage
 public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, CrudStorage {
 	private static final String TIMESTAMP_PATTERN = "yyyy-MM-dd'T'HH:mm:ss.SSS";
-	private static final String DELETE_ADAPTER_NAME = "DeleteFromExceptionLog";
-	private static final String DELETE_ADAPTER_CONFIG = "main";
-	private String name;
 	private String table;
 	private List<String> reportColumnNames;
 	private List<String> bigValueColumns;
@@ -78,18 +70,6 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 	private Map<String, String> fixedStringTables;
 	private TestTool testTool;
 	private JdbcTemplate jdbcTemplate;
-	private LadybugDebugger ibisDebugger;
-	private SecurityContext securityContext;
-
-	@Override
-	public void setName(String name) {
-		this.name = name;
-	}
-
-	@Override
-	public String getName() {
-		return name;
-	}
 
 	public void setTable(String table) {
 		this.table = table;
@@ -139,23 +119,17 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 		return timestampColumns;
 	}
 
-	public void setTestTool(TestTool testTool) {
-		this.testTool = testTool;
-	}
-
-	public void setIbisDebugger(LadybugDebugger ibisDebugger) {
-		this.ibisDebugger = ibisDebugger;
-	}
-
-	/**
-	 * Called by TibetView.initBean() (not by Spring)
-	 */
-	public void setSecurityContext(SecurityContext securityContext) {
-		this.securityContext = securityContext;
+	private TestTool getTestTool() {
+		if (testTool == null) {
+			testTool = getApplicationContext().getBean("testTool", TestTool.class);
+		}
+		return testTool;
 	}
 
 	@PostConstruct
-	public void init() throws JdbcException {
+	public void init() throws JdbcException, ConfigurationException {
+		configure();
+
 		jdbcTemplate = new JdbcTemplate(getDatasource());
 	}
 
@@ -335,8 +309,13 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 
 	@Override
 	public Report getReport(Integer storageId) throws StorageException {
+		String result = new Tibet2ToFrameworkDispatcher(getApplicationContext()).authorisationCheck(""+ storageId, getName());
+		if (!ReportsComponent.OPEN_REPORT_ALLOWED.equals(result)) {
+			throw new StorageException(result);
+		}
+
 		final Report report = new Report();
-		report.setTestTool(testTool);
+		report.setTestTool(getTestTool());
 		report.setStorage(this);
 		report.setStorageId(storageId);
 		report.setName("Table " + table);
@@ -568,35 +547,11 @@ public class Tibet2DatabaseStorage extends JdbcFacade implements LogStorage, Cru
 		if (!"Table EXCEPTIONLOG".equals(report.getName())) {
 			throw new StorageException("Delete method is not implemented for '" + report.getName() + "'");
 		}
+
 		List<Checkpoint> checkpoints = report.getCheckpoints();
 		Checkpoint checkpoint = checkpoints.get(0);
-		Message message = new Message(checkpoint.getMessage());
-		Configuration config = ibisDebugger.getIbisManager().getConfiguration(DELETE_ADAPTER_CONFIG);
-		if (config == null) {
-			throw new StorageException("Configuration '" + DELETE_ADAPTER_CONFIG + "' not found");
-		}
-		Adapter adapter = config.getRegisteredAdapter(DELETE_ADAPTER_NAME);
-		if (adapter == null) {
-			throw new StorageException("Adapter '" + DELETE_ADAPTER_NAME + "' not found");
-		}
 
-		try (PipeLineSession pipeLineSession = new PipeLineSession()) {
-			if (securityContext.getUserPrincipal() != null)
-				pipeLineSession.put("principal", securityContext.getUserPrincipal().getName());
-			PipeLineResult processResult = adapter.processMessageDirect(TestTool.getCorrelationId(), message, pipeLineSession);
-			if (!processResult.isSuccessful()) {
-				throw new StorageException("Delete failed (see logging for more details)");
-			}
-
-			try {
-				String result = processResult.getResult().asString();
-				if (!"<ok/>".equalsIgnoreCase(result)) {
-					throw new StorageException("Delete failed: " + result);
-				}
-			} catch (IOException e) {
-				throw new StorageException("Delete failed", e);
-			}
-		}
+		new Tibet2ToFrameworkDispatcher(getApplicationContext()).deleteReport(checkpoint.getMessage());
 	}
 
 	@Override

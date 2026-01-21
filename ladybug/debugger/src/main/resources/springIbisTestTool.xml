@@ -106,10 +106,10 @@
 			<property name="resourceFile" value="${ladybug.jdbc.resourceFile:resources.yml}"/>
 		</bean>
 		<bean id="jndiObjectLocator" class="org.frankframework.jndi.JndiObjectLocator" />
-		<bean name="dataSourceFactory" class="org.frankframework.ladybug.jdbc.LadyBugDataSourceFactory" autowire="byType" />
+		<bean id="dataSourceFactory" class="org.frankframework.ladybug.jdbc.LadyBugDataSourceFactory" autowire="byType" />
 
 		<!-- Bean will be wired to ladybugJdbcTemplate (see Config class of Ladybug) -->
-		<bean name="ladybugDataSource" factory-bean="dataSourceFactory" factory-method="getDataSource">
+		<bean id="ladybugDataSource" factory-bean="dataSourceFactory" factory-method="getDataSource">
 			<constructor-arg value="${ladybug.jdbc.datasource:}"/>
 		</bean>
 
