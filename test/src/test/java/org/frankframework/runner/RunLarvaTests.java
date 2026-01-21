@@ -98,15 +98,24 @@ public class RunLarvaTests {
 			"FxF3/scenario12"
 			);
 
+	@SuppressWarnings("NullAway.Init")
 	private static ConfigurableApplicationContext parentContext;
+	@SuppressWarnings("NullAway.Init")
 	private static ConfigurableApplicationContext applicationContext;
+	@SuppressWarnings("NullAway.Init")
 	private static IbisContext ibisContext;
+	@SuppressWarnings("NullAway.Init")
 	private static EmbeddedActiveMQ jmsServer;
 
+	@SuppressWarnings("NullAway.Init")
 	private LarvaTool larvaTool;
+	@SuppressWarnings("NullAway.Init")
 	private ScenarioRunner scenarioRunner;
+	@SuppressWarnings("NullAway.Init")
 	private String scenarioRootDir;
+	@SuppressWarnings("NullAway.Init")
 	private LarvaWriter larvaWriter;
+	@SuppressWarnings("NullAway.Init")
 	private TestExecutionObserver testExecutionObserver;
 
 	/**
@@ -197,17 +206,21 @@ public class RunLarvaTests {
 
 	@AfterAll
 	static void tearDown() {
-		parentContext.stop();
-		CloseUtils.closeSilently(parentContext);
-		parentContext = null;
+		if (parentContext != null) {
+			parentContext.stop();
+			CloseUtils.closeSilently(parentContext);
+			parentContext = null;
+		}
 		applicationContext = null;
 		ibisContext = null;
-		try {
-			jmsServer.stop();
-		} catch (Exception e) {
-			log.error("error while stopping embedded JMS server", e);
+		if (jmsServer != null) {
+			try {
+				jmsServer.stop();
+			} catch (Exception e) {
+				log.error("error while stopping embedded JMS server", e);
+			}
+			jmsServer = null;
 		}
-		jmsServer = null;
 
 		// Make sure to clear the app constants as well
 		AppConstants.removeInstance();

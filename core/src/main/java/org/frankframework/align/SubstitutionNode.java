@@ -20,6 +20,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import org.jspecify.annotations.Nullable;
+
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.stream.Message;
@@ -27,7 +29,7 @@ import org.frankframework.util.XmlUtils;
 
 @Log4j2
 public class SubstitutionNode<V> {
-	private Map<String,SubstitutionNode<V>> parents;
+	private @Nullable Map<String,SubstitutionNode<V>> parents;
 	private V value;
 
 	public void registerSubstitutes(Map<String,V> substitutes) {
@@ -63,21 +65,15 @@ public class SubstitutionNode<V> {
 			this.value=value;
 		} else {
 			String key = elements[--index];
-			SubstitutionNode<V> parent=null;
 			if (parents==null) {
 				parents=new HashMap<>();
-			} else {
-				parent = parents.get(key);
 			}
-			if (parent==null) {
-				parent=new SubstitutionNode<>();
-				parents.put(key, parent);
-			}
+			SubstitutionNode<V> parent = parents.computeIfAbsent(key, k -> new SubstitutionNode<>());
 			parent.registerSubstitute(elements, index, value);
 		}
 	}
 
-	public V getMatchingValue(AlignmentContext context, String elementName) {
+	public V getMatchingValue(@Nullable AlignmentContext context, @Nullable String elementName) {
 		if (parents==null || !parents.containsKey(elementName)) {
 			return value;
 		}

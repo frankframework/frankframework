@@ -69,7 +69,9 @@ import org.frankframework.util.SpringUtils;
 @Testcontainers(disabledWithoutDocker = true)
 @Tag("integration")
 public class RunCypressE2eTest {
+	@SuppressWarnings("NullAway.Init")
 	private static CypressContainer container;
+	@SuppressWarnings("NullAway.Init")
 	private static ConfigurableApplicationContext run;
 	private static final Logger CYPRESS_LOG = LogUtil.getLogger("cypress");
 	private static final String TEST_CONTAINER_BASE_URL = "http://host.testcontainers.internal:8080";
@@ -134,10 +136,12 @@ public class RunCypressE2eTest {
 		if (run == null) return;
 
 		run.stop();
-		container.stop();
+		if (container != null) {
+			container.stop();
+			assertFalse(container.isRunning());
+		}
 
 		assertFalse(run.isRunning());
-		assertFalse(container.isRunning());
 
 		run.close();
 
@@ -147,6 +151,9 @@ public class RunCypressE2eTest {
 
 	@TestFactory
 	@NonNull Stream<DynamicContainer> runCypressTests() throws InterruptedException, IOException, TimeoutException {
+		if (container == null) {
+			return Stream.empty();
+		}
 		CypressTestResults testResults = container.getTestResults();
 
 		return testResults.getSuites()

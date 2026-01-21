@@ -40,7 +40,7 @@ public class XmlEncodingUtils {
 	 * See {@link #encodeChars(String, boolean)}.
 	 */
 	@Nullable
-	public static String encodeChars(String string) {
+	public static String encodeChars(@Nullable String string) {
 		return encodeChars(string, false);
 	}
 
@@ -49,7 +49,7 @@ public class XmlEncodingUtils {
 	 * hence you might want to use {@link #replaceNonValidXmlCharacters(String)} or {@link #stripNonValidXmlCharacters(String, boolean)} too.
 	 */
 	@Nullable
-	public static String encodeChars(String string, boolean escapeNewLines) {
+	public static String encodeChars(@Nullable String string, boolean escapeNewLines) {
 		if (string == null) {
 			return null;
 		}
@@ -60,7 +60,7 @@ public class XmlEncodingUtils {
 	}
 
 	@Nullable
-	public static String encodeCharsAndReplaceNonValidXmlCharacters(String string) {
+	public static String encodeCharsAndReplaceNonValidXmlCharacters(@Nullable String string) {
 		return encodeChars(replaceNonValidXmlCharacters(string));
 	}
 
@@ -73,10 +73,9 @@ public class XmlEncodingUtils {
 			return "";
 		}
 		StringBuilder encoded = new StringBuilder(length);
-		String escape;
 		for (int i = 0; i < length; i++) {
 			char c = chars[offset + i];
-			escape = escapeChar(c, escapeNewLines);
+			String escape = escapeChar(c, escapeNewLines);
 			if (escape == null)
 				encoded.append(c);
 			else
@@ -129,12 +128,12 @@ public class XmlEncodingUtils {
 	@Nullable
 	private static String escapeChar(char c, boolean escapeNewLines) {
 		return switch (c) {
-			case ('<') -> "&lt;";
-			case ('>') -> "&gt;";
-			case ('&') -> "&amp;";
-			case ('\"') -> "&quot;";
-			case ('\'') -> "&#39;";    // return "&apos;"; // apos does not work in Internet Explorer
-			case ('\n') -> escapeNewLines ? "&#10;" : null;
+			case '<' -> "&lt;";
+			case '>' -> "&gt;";
+			case '&' -> "&amp;";
+			case '\"' -> "&quot;";
+			case '\'' -> "&#39;";    // return "&apos;"; // apos does not work in Internet Explorer
+			case '\n' -> escapeNewLines ? "&#10;" : null;
 			default -> null;
 		};
 	}
@@ -162,7 +161,7 @@ public class XmlEncodingUtils {
 			return len;
 		}
 		int c;
-		int charCount = 0;
+		int charCount;
 		int counter = 0;
 		int readPos = 0;
 		int writePos = 0;
@@ -204,12 +203,12 @@ public class XmlEncodingUtils {
 	 * appended with #, the character number and ;.
 	 */
 	@Nullable
-	public static String replaceNonValidXmlCharacters(String string) {
+	public static String replaceNonValidXmlCharacters(@Nullable String string) {
 		return replaceNonValidXmlCharacters(string, REPLACE_NON_XML_CHAR, true, true);
 	}
 
 	@Nullable
-	public static String replaceNonValidXmlCharacters(String string, char to, boolean appendCharNum, boolean allowUnicodeSupplementaryCharacters) {
+	public static String replaceNonValidXmlCharacters(@Nullable String string, char to, boolean appendCharNum, boolean allowUnicodeSupplementaryCharacters) {
 		if (string == null) {
 			return null;
 		}

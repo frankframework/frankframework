@@ -1,5 +1,6 @@
 package org.frankframework.runner;
 
+import org.jspecify.annotations.Nullable;
 import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.http.HttpEntity;
@@ -27,14 +28,14 @@ public abstract class KeycloakBearerOnlyBase {
 		keycloak.start();
 	}
 
+	@SuppressWarnings("NullAway.Init")
 	static ConfigurableApplicationContext applicationContext = null;
 
 	static final String TOKEN_ENDPOINT_FORMAT = "http://localhost:%s/realms/test/protocol/openid-connect/token";
 
 	String getFrameworkUrl() {
 		TomcatServletWebServerFactory tomcat = applicationContext.getBean("tomcat", TomcatServletWebServerFactory.class);
-		return String.
-				format("http://localhost:%d%s/iaf/api", tomcat.getPort(), tomcat.getContextPath());
+		return String.format("http://localhost:%d%s/iaf/api", tomcat.getPort(), tomcat.getContextPath());
 	}
 
 	/**
@@ -61,13 +62,14 @@ public abstract class KeycloakBearerOnlyBase {
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	static class TokenResponse {
 		@JsonProperty("access_token")
-		private String accessToken;
+		private @Nullable String accessToken;
 
+		@Nullable
 		public String getAccessToken() {
 			return accessToken;
 		}
 
-		public void setAccessToken(String accessToken) {
+		public void setAccessToken(@Nullable String accessToken) {
 			this.accessToken = accessToken;
 		}
 	}
@@ -77,13 +79,14 @@ public abstract class KeycloakBearerOnlyBase {
 	 */
 	@JsonIgnoreProperties(ignoreUnknown = true)
 	static class GetServerInfoResponse {
-		private String userName;
+		private @Nullable String userName;
 
+		@Nullable
 		public String getUserName() {
 			return userName;
 		}
 
-		public void setUserName(String userName) {
+		public void setUserName(@Nullable String userName) {
 			this.userName = userName;
 		}
 	}

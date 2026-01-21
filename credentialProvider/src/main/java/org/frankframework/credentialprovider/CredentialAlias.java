@@ -19,7 +19,6 @@ import java.util.logging.Level;
 import java.util.regex.Pattern;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import lombok.AccessLevel;
@@ -87,7 +86,6 @@ public class CredentialAlias {
 	 * Extracting is deprecated, cleanse is not.
 	 * @return NULL when empty.
 	 */
-	@NonNull
 	private static String extractAlias(@Nullable final String rawAlias) {
 		if (StringUtils.isBlank(rawAlias)) {
 			throw new IllegalArgumentException("alias may not be empty");
@@ -98,7 +96,7 @@ public class CredentialAlias {
 			aliasName = rawAlias.substring(ALIAS_PREFIX.length());
 		}
 
-		String cleanAliasName = StringUtil.split(aliasName, "{").get(0);
+		String cleanAliasName = StringUtil.split(aliasName, "{").getFirst();
 		if (!ALIAS_ALLOWED_CHARACTERS.matcher(cleanAliasName).matches()) {
 			throw new IllegalArgumentException("alias must only consist of letters, numbers, hyphens and dots");
 		}

@@ -224,6 +224,7 @@ public final class AppConstants extends PropertyLoader {
 	 * @param key the key to be removed
 	 * @return The value associated with the key, or null
 	 */
+	@SuppressWarnings("UnusedReturnValue")
 	public static synchronized @Nullable String clearGlobalProperty(@NonNull String key) {
 		for (AppConstants localAppConstants : appConstantsMap.values()) {
 			localAppConstants.remove(key);
@@ -232,7 +233,7 @@ public final class AppConstants extends PropertyLoader {
 	}
 
 	@Override
-	protected synchronized void load(ClassLoader classLoader, String filename) {
+	protected synchronized void load(@NonNull ClassLoader classLoader, @NonNull String filename) {
 		load(classLoader, filename, true);
 	}
 

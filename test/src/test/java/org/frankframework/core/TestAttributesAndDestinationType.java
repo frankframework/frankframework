@@ -16,6 +16,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import jakarta.servlet.Servlet;
 
@@ -99,7 +100,7 @@ public class TestAttributesAndDestinationType {
 					String getterName = "get" + propertyName;
 					String getterStartsWithIs = "is" + propertyName;
 
-					propertyName = propertyName.substring(0, 1).toLowerCase() + propertyName.substring(1);
+					propertyName = propertyName.substring(0, 1).toLowerCase(Locale.ROOT) + propertyName.substring(1);
 
 					boolean getterMatches = Arrays.stream(methodDescriptors)
 							.anyMatch(name -> name.getName().equals(getterName) || name.getName().equals(getterStartsWithIs));

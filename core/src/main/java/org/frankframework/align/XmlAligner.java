@@ -26,7 +26,6 @@ import java.util.Set;
 
 import javax.xml.validation.ValidatorHandler;
 
-import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.xerces.impl.dv.XSSimpleType;
 import org.apache.xerces.impl.xs.XMLSchemaLoader;
 import org.apache.xerces.xs.ElementPSVI;
@@ -73,11 +72,11 @@ public class XmlAligner extends XMLFilterImpl {
 	private @Setter PSVIProvider psviProvider;
 	private @Getter @Setter boolean ignoreUndeclaredElements=false;
 	protected ValidatorHandler validatorHandler;
-	private @Getter @Setter List<XSModel> schemaInformation;
+	private @Getter @Setter @Nullable List<XSModel> schemaInformation;
 
 	private @Getter AlignmentContext context;
 	private int indentLevel;
-	private @Getter XSTypeDefinition typeDefinition;
+	private @Getter @Nullable XSTypeDefinition typeDefinition;
 
 	private @Getter @Setter Locator documentLocator;
 
@@ -117,7 +116,7 @@ public class XmlAligner extends XMLFilterImpl {
 
 	public void newLine() throws SAXException {
 		int level = indentLevel;
-		ignorableWhitespace(INDENTOR, 0, (Math.min(level, MAX_INDENT))*2+1);
+		ignorableWhitespace(INDENTOR, 0, Math.min(level, MAX_INDENT) * 2 + 1);
 	}
 
 	public boolean isNil(Attributes attributes) {
@@ -146,8 +145,7 @@ public class XmlAligner extends XMLFilterImpl {
 				multipleOccurringChildElements = findMultipleOccurringChildElements(complexTypeDefinition.getParticle());
 				parentOfSingleMultipleOccurringChildElement=ChildOccurrence.ONE_MULTIPLE_OCCURRING_ELEMENT==determineIsParentOfSingleMultipleOccurringChildElement(complexTypeDefinition.getParticle());
 				typeContainsWildcard=typeContainsWildcard(complexTypeDefinition.getParticle());
-				if (log.isTraceEnabled())
-					log.trace("element [{}] is parentOfSingleMultipleOccurringChildElement [{}]", localName, parentOfSingleMultipleOccurringChildElement);
+				log.trace("element [{}] is parentOfSingleMultipleOccurringChildElement [{}]", localName, parentOfSingleMultipleOccurringChildElement);
 			} else {
 				multipleOccurringChildElements = Set.of();
 				parentOfSingleMultipleOccurringChildElement = false;
@@ -168,7 +166,7 @@ public class XmlAligner extends XMLFilterImpl {
 
 	@Override
 	public void endElement(String uri, String localName, String qName) throws SAXException {
-		if (log.isTraceEnabled()) log.trace("endElement() uri [{}] localName [{}] qName [{}]", uri, localName, qName);
+		log.trace("endElement() uri [{}] localName [{}] qName [{}]", uri, localName, qName);
 		boolean knownElement = context.getTypeDefinition()!=null;
 		context = context.getParent();
 		indentLevel--;
@@ -194,146 +192,146 @@ public class XmlAligner extends XMLFilterImpl {
 		return isPresentInSet(multipleOccurringChildElements, name);
 	}
 
-	private ChildOccurrence determineIsParentOfSingleMultipleOccurringChildElement(XSParticle particle) {
+	private ChildOccurrence determineIsParentOfSingleMultipleOccurringChildElement(@Nullable XSParticle particle) {
 		if (particle == null) {
-			log.warn("Particle is null, is this a problem? Appearantly not");
+			log.warn("Particle is null, is this a problem? Apparently not");
 			return ChildOccurrence.EMPTY;
 		}
 		XSTerm term = particle.getTerm();
 		if (term == null) {
 			throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement particle.term is null");
 		}
-		if (log.isTraceEnabled())
-			log.trace("term name [{}] occurring unbounded [{}] max occur [{}] term [{}]", term.getName(), particle.getMaxOccursUnbounded(), particle.getMaxOccurs(), ToStringBuilder.reflectionToString(term));
-		if (term instanceof XSModelGroup modelGroup) {
-			short compositor = modelGroup.getCompositor();
-			XSObjectList particles = modelGroup.getParticles();
-			switch (compositor) {
-			case XSModelGroup.COMPOSITOR_SEQUENCE:
-			case XSModelGroup.COMPOSITOR_ALL: {
-				if (log.isTraceEnabled()) log.trace("sequence or all particles [{}]", ToStringBuilder.reflectionToString(particles));
-				ChildOccurrence result=ChildOccurrence.EMPTY;
-				for (int i = 0; i < particles.getLength(); i++) {
-					XSParticle childParticle = (XSParticle)particles.item(i);
-					ChildOccurrence current=determineIsParentOfSingleMultipleOccurringChildElement(childParticle);
-					if (log.isTraceEnabled()) log.trace("sequence or all, particle [{}] current result [{}]", i, current);
-					switch (current) {
-					case EMPTY:
-						break;
-					case ONE_SINGLE_OCCURRING_ELEMENT:
-					case ONE_MULTIPLE_OCCURRING_ELEMENT:
-						if (result.ordinal()>ChildOccurrence.EMPTY.ordinal()) {
-							if (log.isTraceEnabled()) log.trace("sequence or all, result [{}] current [{}]", result, current);
+		log.trace("term name [{}] occurring unbounded [{}] max occur [{}] term [{}]", term::getName, particle::getMaxOccursUnbounded, particle::getMaxOccurs, ()->term);
+
+		switch (term) {
+			case XSModelGroup modelGroup -> {
+				short compositor = modelGroup.getCompositor();
+				XSObjectList particles = modelGroup.getParticles();
+				switch (compositor) {
+					case XSModelGroup.COMPOSITOR_SEQUENCE, XSModelGroup.COMPOSITOR_ALL -> {
+						log.trace("sequence or all particles [{}]", particles);
+						ChildOccurrence result = ChildOccurrence.EMPTY;
+						for (int i = 0; i < particles.getLength(); i++) {
+							XSParticle childParticle = (XSParticle) particles.item(i);
+							ChildOccurrence current = determineIsParentOfSingleMultipleOccurringChildElement(childParticle);
+							log.trace("sequence or all, particle [{}] current result [{}]", i, current);
+							switch (current) {
+								case EMPTY:
+									break;
+								case ONE_SINGLE_OCCURRING_ELEMENT:
+								case ONE_MULTIPLE_OCCURRING_ELEMENT:
+									if (result != ChildOccurrence.EMPTY) {
+										log.trace("sequence or all, result [{}] current [{}]", result, current);
+										return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
+									}
+									result = current;
+									break;
+								case MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING:
+									return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
+								default:
+									throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement child occurrence [" + current + "]");
+							}
+						}
+						log.trace("end of sequence or all, returning [{}]", result);
+						return result;
+					}
+					case XSModelGroup.COMPOSITOR_CHOICE -> {
+						log.trace("choice particles [{}]", particles);
+						if (particles.getLength() == 0) {
+							log.trace("choice length 0, returning [{}]", ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING);
+							return ChildOccurrence.EMPTY;
+						}
+						ChildOccurrence result = determineIsParentOfSingleMultipleOccurringChildElement((XSParticle) particles.item(0));
+						if (result == ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING) {
+							log.trace("choice single mixed, returning [{}]", ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING);
 							return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
 						}
-						result=current;
-						break;
-					case MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING:
-						return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
-					default:
-						throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement child occurrence ["+current+"]");
+						for (int i = 1; i < particles.getLength(); i++) {
+							XSParticle childParticle = (XSParticle) particles.item(i);
+							ChildOccurrence current = determineIsParentOfSingleMultipleOccurringChildElement(childParticle);
+							if (current != result) {
+								log.trace("break out of choice, returning [{}]", ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING);
+								return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
+							}
+						}
+						log.trace("end of choice, returning [{}]", result);
+						return result;
 					}
+					default -> throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement() modelGroup.compositor is not COMPOSITOR_SEQUENCE, COMPOSITOR_ALL or COMPOSITOR_CHOICE, but [" + compositor + "]");
 				}
-				if (log.isTraceEnabled()) log.trace("end of sequence or all, returning [{}]", result);
-				return result;
 			}
-			case XSModelGroup.COMPOSITOR_CHOICE: {
-				if (log.isTraceEnabled()) log.trace("choice particles [{}]", ToStringBuilder.reflectionToString(particles));
-				if (particles.getLength() == 0) {
-					if (log.isTraceEnabled()) log.trace("choice length 0, returning [{}]", ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING);
-					return ChildOccurrence.EMPTY;
+			case XSElementDeclaration elementDeclaration -> {
+				String elementName = elementDeclaration.getName();
+				log.trace("ElementDeclaration name [{}] unbounded [{}] maxOccurs [{}]", ()->elementName, particle::getMaxOccursUnbounded, particle::getMaxOccurs);
+				if (particle.getMaxOccursUnbounded() || particle.getMaxOccurs() > 1) {
+					return ChildOccurrence.ONE_MULTIPLE_OCCURRING_ELEMENT;
 				}
-				ChildOccurrence result = determineIsParentOfSingleMultipleOccurringChildElement((XSParticle) particles.item(0));
-				if (result == ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING) {
-					if (log.isTraceEnabled()) log.trace("choice single mixed, returning [{}]", ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING);
-					return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
+				if (particle.getMaxOccurs() == 1) {
+					return ChildOccurrence.ONE_SINGLE_OCCURRING_ELEMENT;
 				}
-				for (int i = 1; i < particles.getLength(); i++) {
-					XSParticle childParticle = (XSParticle) particles.item(i);
-					ChildOccurrence current = determineIsParentOfSingleMultipleOccurringChildElement(childParticle);
-					if (current != result) {
-						if (log.isTraceEnabled()) log.trace("break out of choice, returning [{}]", ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING);
-						return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
-					}
-				}
-				if (log.isTraceEnabled()) log.trace("end of choice, returning [{}]", result);
-				return result;
+				return ChildOccurrence.EMPTY;
 			}
-			default:
-				throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement() modelGroup.compositor is not COMPOSITOR_SEQUENCE, COMPOSITOR_ALL or COMPOSITOR_CHOICE, but ["+compositor+"]");
+			case XSWildcard ignored -> {
+				return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
 			}
+			default -> throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement unknown Term type ["+term.getClass().getName()+"]");
 		}
-		if (term instanceof XSElementDeclaration elementDeclaration) {
-			String elementName=elementDeclaration.getName();
-			if (log.isTraceEnabled())
-				log.trace("ElementDeclaration name [{}] unbounded [{}] maxOccurs [{}]", elementName, particle.getMaxOccursUnbounded(), particle.getMaxOccurs());
-			if (particle.getMaxOccursUnbounded() || particle.getMaxOccurs()>1) {
-				return ChildOccurrence.ONE_MULTIPLE_OCCURRING_ELEMENT;
-			}
-			if (particle.getMaxOccurs()==1) {
-				return ChildOccurrence.ONE_SINGLE_OCCURRING_ELEMENT;
-			}
-			return ChildOccurrence.EMPTY;
-		}
-		if (term instanceof XSWildcard) {
-			return ChildOccurrence.MULTIPLE_ELEMENTS_OR_NOT_MULTIPLE_OCCURRING;
-		}
-		throw new IllegalStateException("determineIsParentOfSingleMultipleOccurringChildElement unknown Term type ["+term.getClass().getName()+"]");
 	}
 
-	public static boolean typeContainsWildcard(XSParticle particle) {
-		if (particle==null) {
+	public static boolean typeContainsWildcard(@Nullable XSParticle particle) {
+		if (particle == null) {
 			return false;
 		}
 		XSTerm term = particle.getTerm();
-		if (term==null) {
-			throw new IllegalStateException("checkIfTypeIsWildcard particle.term is null");
-
-		}
-		if (term instanceof XSWildcard) {
-			return true;
-		}
-		if (term instanceof XSElementDeclaration) {
-			return false;
-		}
-		if (term instanceof XSModelGroup modelGroup) {
-			XSObjectList particles = modelGroup.getParticles();
-			for (int i=0;i<particles.getLength();i++) {
-				if (typeContainsWildcard((XSParticle)particles.item(i))) {
-					return true;
-				}
+		switch (term) {
+			case null -> throw new IllegalStateException("checkIfTypeIsWildcard particle.term is null");
+			case XSWildcard ignored -> {
+				return true;
 			}
-			return false;
+			case XSElementDeclaration ignored -> {
+				return false;
+			}
+			case XSModelGroup modelGroup -> {
+				XSObjectList particles = modelGroup.getParticles();
+				for (int i = 0; i < particles.getLength(); i++) {
+					if (typeContainsWildcard((XSParticle) particles.item(i))) {
+						return true;
+					}
+				}
+				return false;
+			}
+			default -> throw new IllegalStateException("typeIsWildcard unknown Term type ["+term.getClass().getName()+"]");
 		}
-		throw new IllegalStateException("typeIsWildcard unknown Term type ["+term.getClass().getName()+"]");
 	}
 
 
-	protected void collectChildElements(XSParticle particle, Set<String> elementNames) {
-		if (particle==null) {
+	protected void collectChildElements(@Nullable XSParticle particle, @NonNull Set<String> elementNames) {
+		if (particle == null) {
 			log.warn("collectChildElements() particle is null, is this a problem?");
 			return;
 		}
 		XSTerm term = particle.getTerm();
-		if (term==null) {
-			throw new IllegalStateException("collectChildElements() particle.term is null");
-		}
-		if (term instanceof XSModelGroup modelGroup) {
-			XSObjectList particles = modelGroup.getParticles();
-			for (int i=0;i<particles.getLength();i++) {
-				XSParticle childParticle = (XSParticle)particles.item(i);
-				collectChildElements(childParticle, elementNames);
+		switch (term) {
+			case null -> throw new IllegalStateException("collectChildElements() particle.term is null");
+			case XSModelGroup modelGroup -> {
+				XSObjectList particles = modelGroup.getParticles();
+				for (int i = 0; i < particles.getLength(); i++) {
+					XSParticle childParticle = (XSParticle) particles.item(i);
+					collectChildElements(childParticle, elementNames);
+				}
 			}
-			return;
-		}
-		if (term instanceof XSElementDeclaration elementDeclaration) {
-			String elementName=elementDeclaration.getName();
-			if (log.isTraceEnabled()) log.trace("ElementDeclaration name [{}]", elementName);
-			elementNames.add(elementName);
+			case XSElementDeclaration elementDeclaration -> {
+				String elementName = elementDeclaration.getName();
+				log.trace("ElementDeclaration name [{}]", elementName);
+				elementNames.add(elementName);
+			}
+			default -> {
+				// No-op for these types
+			}
 		}
 	}
 
-	protected @NonNull Set<String> findMultipleOccurringChildElements(XSParticle particle) {
+	protected @NonNull Set<String> findMultipleOccurringChildElements(@Nullable XSParticle particle) {
 		Set<String> result=new HashSet<>();
 		if (particle == null) {
 			log.warn("typeDefinition particle is null, is this a problem?");
@@ -343,14 +341,14 @@ public class XmlAligner extends XMLFilterImpl {
 		if (term == null) {
 			throw new IllegalStateException("findMultipleOccurringChildElements particle.term is null");
 		}
-		log.trace("term name [{}] occurring unbounded [{}] max occur [{}] term [{}]", term::getName, particle::getMaxOccursUnbounded, particle::getMaxOccurs, ()->ToStringBuilder.reflectionToString(term));
+		log.trace("term name [{}] occurring unbounded [{}] max occur [{}] term [{}]", term::getName, particle::getMaxOccursUnbounded, particle::getMaxOccurs, ()->term);
 		if (particle.getMaxOccursUnbounded() || particle.getMaxOccurs() > 1) {
 			collectChildElements(particle,result);
 			return result;
 		}
 		if (term instanceof XSModelGroup modelGroup) {
 			@SuppressWarnings("unchecked") List<XSParticle> particles = modelGroup.getParticles();
-			log.trace("modelGroup particles [{}]", ()->ToStringBuilder.reflectionToString(particles));
+			log.trace("modelGroup particles [{}]", particles);
 			for (XSParticle childParticle : particles) {
 				result.addAll(findMultipleOccurringChildElements(childParticle));
 			}
@@ -363,19 +361,19 @@ public class XmlAligner extends XMLFilterImpl {
 	}
 
 	@SuppressWarnings("unchecked")
-	public @NonNull List<XSAttributeUse> getAttributeUses(XSTypeDefinition typeDefinition) {
-		if (typeDefinition==null) {
+	public @NonNull List<XSAttributeUse> getAttributeUses(@Nullable XSTypeDefinition typeDefinition) {
+		if (typeDefinition == null) {
 			log.trace("getAttributeUses typeDefinition is null");
 			return List.of();
 		}
 		if (typeDefinition instanceof XSComplexTypeDefinition complexTypeDefinition) {
 			return complexTypeDefinition.getAttributeUses();
 		}
-		if (log.isTraceEnabled()) log.trace("typeDefinition [{}] SimpleType, no attributes", typeDefinition.getClass().getSimpleName());
+		log.trace("typeDefinition [{}] SimpleType, no attributes", ()->typeDefinition.getClass().getSimpleName());
 		return List.of();
 	}
 
-	public @Nullable XSTypeDefinition getTypeDefinition(PSVIProvider psviProvider) {
+	public @Nullable XSTypeDefinition getTypeDefinition(@NonNull PSVIProvider psviProvider) {
 		ElementPSVI elementPSVI = psviProvider.getElementPSVI();
 		XSElementDeclaration elementDeclaration = elementPSVI.getElementDeclaration();
 		if (elementDeclaration == null) {
@@ -393,7 +391,7 @@ public class XmlAligner extends XMLFilterImpl {
 	}
 
 	@Override
-	public void setFeature(String feature, boolean value) throws SAXNotRecognizedException, SAXNotSupportedException {
+	public void setFeature(@NonNull String feature, boolean value) throws SAXNotRecognizedException, SAXNotSupportedException {
 		if (feature.equals(FEATURE_NAMESPACES)) {
 			if (!value) {
 				throw new SAXNotSupportedException("Cannot set feature ["+feature+"] to ["+value+"]");
@@ -412,19 +410,19 @@ public class XmlAligner extends XMLFilterImpl {
 	}
 
 
-	protected static ValidatorHandler getValidatorHandler(URL schemaURL) throws SAXException {
+	protected static @NonNull ValidatorHandler getValidatorHandler(@NonNull URL schemaURL) throws SAXException {
 		return XmlUtils.getValidatorHandler(schemaURL);
 	}
 
-	protected static List<XSModel> getSchemaInformation(URL schemaURL) {
+	protected static @NonNull List<XSModel> getSchemaInformation(@NonNull URL schemaURL) {
 		XMLSchemaLoader xsLoader = new XMLSchemaLoader();
 		XSModel xsModel = xsLoader.loadURI(schemaURL.toExternalForm());
 		return Collections.singletonList(xsModel);
 	}
 
-	public void handleRecoverableError(String message, boolean ignoreFlag) throws SAXParseException {
+	public void handleRecoverableError(@NonNull String message, boolean ignoreFlag) throws SAXParseException {
 		ErrorHandler errorHandler = getErrorHandler();
-		if (errorHandler!=null) {
+		if (errorHandler != null) {
 			try {
 				SAXParseException saxException = new SAXParseException(message, getDocumentLocator());
 				if (ignoreFlag) {
@@ -442,22 +440,22 @@ public class XmlAligner extends XMLFilterImpl {
 		}
 	}
 
-	protected @Nullable XSElementDeclaration findElementDeclarationForName(String namespace, String name) throws SAXException {
-		Set<XSElementDeclaration> elementDeclarations=findElementDeclarationsForName(namespace, name);
+	protected @Nullable XSElementDeclaration findElementDeclarationForName(@Nullable String namespace, @Nullable String name) throws SAXException {
+		Set<XSElementDeclaration> elementDeclarations = findElementDeclarationsForName(namespace, name);
 		if (elementDeclarations.isEmpty()) {
 			log.warn("No element declarations found for [{}]:[{}]", namespace, name);
 			return null;
 		}
 		if (elementDeclarations.size() > 1) {
 			XSElementDeclaration[] elementDeclarationsArray = elementDeclarations.toArray(new XSElementDeclaration[0]);
-			throw new SAXException("multiple ["+elementDeclarations.size()+"] elementDeclarations found for ["+namespace+"]:["+name+"]: first two ["+elementDeclarationsArray[0].getNamespace()+":"+elementDeclarationsArray[0].getName()+"]["+elementDeclarationsArray[1].getNamespace()+":"+elementDeclarationsArray[1].getName()+"]");
+			throw new SAXException("multiple [" + elementDeclarations.size() + "] elementDeclarations found for [" + namespace + "]:[" + name + "]: first two [" + elementDeclarationsArray[0].getNamespace() + ":" + elementDeclarationsArray[0].getName() + "][" + elementDeclarationsArray[1].getNamespace() + ":" + elementDeclarationsArray[1].getName() + "]");
 		}
 		return (XSElementDeclaration) elementDeclarations.toArray()[0];
 	}
 
-	protected @NonNull Set<XSElementDeclaration> findElementDeclarationsForName(String namespace, String name) {
-		Set<XSElementDeclaration> result=new LinkedHashSet<>();
-		if (schemaInformation==null) {
+	protected @NonNull Set<XSElementDeclaration> findElementDeclarationsForName(@Nullable String namespace, @Nullable String name) {
+		Set<XSElementDeclaration> result = new LinkedHashSet<>();
+		if (schemaInformation == null) {
 			throw new IllegalStateException("No SchemaInformation specified, cannot find namespaces for ["+namespace+"]:["+name+"]");
 		}
 		for (XSModel model: schemaInformation) {
@@ -465,12 +463,11 @@ public class XmlAligner extends XMLFilterImpl {
 			for (int i=0;i<components.getLength();i++) {
 				XSElementDeclaration item=(XSElementDeclaration)components.item(i);
 				if ((namespace==null || namespace.equals(item.getNamespace())) && (name==null || name.equals(item.getName()))) {
-					if (log.isTraceEnabled()) log.trace("name [{}] found in namespace [{}]", item.getName(), item.getNamespace());
+					log.trace("name [{}] found in namespace [{}]", item::getName, item::getNamespace);
 					result.add(item);
 				}
 			}
 		}
 		return result;
 	}
-
 }

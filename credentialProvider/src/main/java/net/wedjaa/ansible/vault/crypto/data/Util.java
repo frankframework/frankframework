@@ -1,5 +1,5 @@
 /*
- * Copyright 2016 - Fabio "MrWHO" Torchetti, 2026 WeAreFrank!
+ * Copyright 2016 - Fabio "MrWHO" Torchetti, 2024, 2026 WeAreFrank!
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 
 package net.wedjaa.ansible.vault.crypto.data;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
@@ -77,7 +78,7 @@ public class Util
 
     public static VaultInfo getVaultInfo(byte [] vaultData)
     {
-        return getVaultInfo(new String(vaultData));
+        return getVaultInfo(new String(vaultData, StandardCharsets.UTF_8));
     }
 
     public static String removeVaultInfo(String vaultData)
@@ -93,7 +94,7 @@ public class Util
 
     public static byte[] getVaultData(byte [] vaultData)
     {
-        String rawData = join(removeVaultInfo(new String(vaultData)).split(LINE_BREAK));
+        String rawData = join(removeVaultInfo(new String(vaultData, StandardCharsets.UTF_8)).split(LINE_BREAK));
         return unhex(rawData);
     }
 

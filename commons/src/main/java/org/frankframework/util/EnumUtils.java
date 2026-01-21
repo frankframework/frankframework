@@ -22,7 +22,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
 
@@ -119,7 +118,7 @@ public class EnumUtils {
 	}
 
 	@Nullable
-	private static <E extends Enum<E>> E parseIgnoreCase(final Class<E> enumClass, final String enumName) {
+	private static <E extends Enum<E>> E parseIgnoreCase(final Class<E> enumClass, final @Nullable String enumName) {
 		if (enumName == null) {
 			return null;
 		}
@@ -139,9 +138,9 @@ public class EnumUtils {
 	 * @return the first matching annotation, or {@code null} if not found
 	 */
 	@Nullable
-	public static <A extends Annotation> A findAnnotation(Enum<?> enumValue, @NonNull Class<A> annotationType) {
+	public static <A extends Annotation> A findAnnotation(Enum<?> enumValue, Class<A> annotationType) {
 		try {
-			Field field = enumValue.getClass().getField(enumValue.name());
+			Field field = enumValue.getDeclaringClass().getField(enumValue.name());
 			return field.getAnnotation(annotationType);
 		} catch (NoSuchFieldException | SecurityException ignored) {
 			return null;

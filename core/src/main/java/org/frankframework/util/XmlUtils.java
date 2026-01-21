@@ -1539,13 +1539,13 @@ public class XmlUtils {
 		return new XPathFactoryImpl();
 	}
 
-	public static ValidatorHandler getValidatorHandler(URL schemaURL) throws SAXException {
+	public static ValidatorHandler getValidatorHandler(@NonNull URL schemaURL) throws SAXException {
 		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 		Schema schema = sf.newSchema(schemaURL);
 		return schema.newValidatorHandler();
 	}
 
-	public static ValidatorHandler getValidatorHandler(Source schemaSource) throws SAXException {
+	public static ValidatorHandler getValidatorHandler(@NonNull Source schemaSource) throws SAXException {
 		SchemaFactory sf = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 		Schema schema = sf.newSchema(schemaSource);
 		return schema.newValidatorHandler();

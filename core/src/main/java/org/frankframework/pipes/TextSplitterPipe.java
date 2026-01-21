@@ -36,6 +36,7 @@ public class TextSplitterPipe extends FixedForwardPipe {
 	private int maxBlockLength=160;
 	private boolean softSplit = false;
 
+	@SuppressWarnings("StatementWithEmptyBody")
 	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {

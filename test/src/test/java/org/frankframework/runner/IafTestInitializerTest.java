@@ -19,6 +19,7 @@ import org.frankframework.util.AppConstants;
 @Tag("slow")
 class IafTestInitializerTest {
 
+	@SuppressWarnings("NullAway.Init")
 	private static ConfigurableApplicationContext applicationContext = null;
 
 	/**
