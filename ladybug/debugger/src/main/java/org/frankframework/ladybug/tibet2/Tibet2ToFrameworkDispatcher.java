@@ -26,8 +26,9 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageHandlingException;
-import org.wearefrank.ladybug.echo2.reports.ReportsComponent;
-import org.wearefrank.ladybug.storage.StorageException;
+
+import nl.nn.testtool.echo2.reports.ReportsComponent;
+import nl.nn.testtool.storage.StorageException;
 
 import org.frankframework.management.bus.BusAction;
 import org.frankframework.management.bus.BusException;

@@ -36,17 +36,15 @@ import org.apache.commons.lang3.StringUtils;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 
-
 import nl.nn.testtool.Checkpoint;
 import nl.nn.testtool.CheckpointType;
 import nl.nn.testtool.Report;
-import nl.nn.testtool.SecurityContext;
 import nl.nn.testtool.TestTool;
+import nl.nn.testtool.echo2.reports.ReportsComponent;
 import nl.nn.testtool.storage.CrudStorage;
 import nl.nn.testtool.storage.LogStorage;
 import nl.nn.testtool.storage.StorageException;
 import nl.nn.testtool.util.SearchUtil;
-
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.dbms.Dbms;
