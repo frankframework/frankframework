@@ -56,15 +56,15 @@ jobs:
         # Required for SonarCloud
         fetch-depth: 0
 
-    - name: Set up Maven Repository Cache
+    - name: Set up Maven Dependency Cache
       uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5
       with:
         path: |
           ~/.m2/repository
-        key: maven-build-cache-${{ github.ref }}
+        key: maven-dependency-cache-${{ github.ref }}
         restore-keys: |
-          maven-build-cache-${{ github.ref }}
-          maven-build-cache-
+          maven-dependency-cache-${{ github.ref }}
+          maven-dependency-cache-
 
     - name: Set up Sonar Cache
       uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5
