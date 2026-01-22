@@ -59,9 +59,8 @@ jobs:
       with:
         path: |
           ~/.m2/repository
-        key: maven-build-cache-${{ github.ref }}-${{ hashFiles('**/pom.xml') }}
+        key: maven-build-cache-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
-          maven-build-cache-${{ github.ref }}-${{ hashFiles('**/pom.xml') }}
           maven-build-cache-${{ hashFiles('**/pom.xml') }}
           maven-build-cache-
 

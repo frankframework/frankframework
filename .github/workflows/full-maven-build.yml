@@ -64,6 +64,7 @@ jobs:
           ~/.sonar/cache
         key: maven-build-cache-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
+          maven-build-cache-${{ hashFiles('**/pom.xml') }}
           maven-build-cache-
 
     - name: Set up JDK ${{ env.JDK_VERSION }}
@@ -162,9 +163,6 @@ jobs:
 
     - name: Save cached directories
       uses: actions/cache/save@9255dc7a253b0ccc959486e2bca901246202afeb # v5
-      if: |
-        always() &&
-        (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release') || startsWith(github.ref, 'refs/heads/[0-9]+.[0-9]+-release'))
       with:
         path: |
           ~/.m2/repository
