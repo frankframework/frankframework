@@ -17,7 +17,6 @@ package org.frankframework.ladybug.runner;
 
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -89,9 +88,15 @@ public class LadybugWarInitializer extends SpringBootServletInitializer {
 
 		// Only allow this (by default) for this context, application.properties may be overwritten.
 		application.setAllowBeanDefinitionOverriding(true);
-		Set<String> set = new HashSet<>();
-		set.add(getConfigFile(file));
-		application.setSources(set);
+
+		// No fallback here, if it can't find this config, don't start the application!
+		String ladybugConfigfile = getConfigFile(file);
+		if (StringUtils.isBlank(ladybugConfigfile)) {
+			throw new IllegalStateException("unable to start Ladybug, configFile ["+file+"] not found");
+		}
+
+		application.setSources(Set.of(ladybugConfigfile));
+
 		application.setWebApplicationType(WebApplicationType.NONE);
 		application.setDefaultProperties(properties);
 		return super.run(application);
