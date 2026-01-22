@@ -89,12 +89,15 @@ jobs:
 #        fetch-depth: 0
 
     - name: Restore cached directories
-      uses: actions/cache/restore@9255dc7a253b0ccc959486e2bca901246202afeb # v5
+      uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5
       with:
         path: |
           ~/.m2/repository
           ~/.sonar/cache
-        key: ff-maven-build-cache
+        key: maven-build-cache-${{ github.ref }}-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          maven-build-cache-${{ hashFiles('**/pom.xml') }}
+          maven-build-cache-
 
     - name: Create Maven settings.xml file
       if: ${{ env.USE_PROPRIETARY == 'true' }}
