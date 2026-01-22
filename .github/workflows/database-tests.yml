@@ -4,6 +4,7 @@
 name: Database Tests
 
 env:
+  JDK_VERSION: 25
   PROFILES: frankframework,ci,skip-console-frontend
   USE_PROPRIETARY: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'frankframework') && github.actor != 'dependabot[bot]' }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
@@ -98,6 +99,12 @@ jobs:
           maven-build-cache-${{ github.ref }}-${{ hashFiles('**/pom.xml') }}
           maven-build-cache-${{ hashFiles('**/pom.xml') }}
           maven-build-cache-
+
+    - name: Set up JDK ${{ env.JDK_VERSION }}
+      uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5
+      with:
+        distribution: 'temurin'
+        java-version: ${{ env.JDK_VERSION }}
 
     - name: Create Maven settings.xml file
       if: ${{ env.USE_PROPRIETARY == 'true' }}
