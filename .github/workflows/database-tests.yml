@@ -88,9 +88,10 @@ jobs:
       with:
         path: |
           ~/.m2/repository
-        key: maven-build-cache-${{ hashFiles('**/pom.xml') }}
+        key: maven-build-cache-${{ github.ref }}
         restore-keys: |
-          maven-build-cache-${{ hashFiles('**/pom.xml') }}
+          maven-build-cache-${{ github.ref }}
+          maven-build-cache-refs/heads/master
           maven-build-cache-
 
     - name: Set up JDK ${{ env.JDK_VERSION }}
