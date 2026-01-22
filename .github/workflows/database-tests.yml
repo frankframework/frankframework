@@ -63,12 +63,6 @@ jobs:
   run-database-tests:
     name: Database Tests
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/frankframework/build/jdk25:latest
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-
     strategy:
       fail-fast: false
       matrix:
