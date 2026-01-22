@@ -56,16 +56,25 @@ jobs:
         # Required for SonarCloud
         fetch-depth: 0
 
-    - name: Restore cached directories
-      uses: actions/cache/restore@9255dc7a253b0ccc959486e2bca901246202afeb # v5
+    - name: Set up Maven Repository Cache
+      uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5
       with:
         path: |
           ~/.m2/repository
-          ~/.sonar/cache
         key: maven-build-cache-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
           maven-build-cache-${{ hashFiles('**/pom.xml') }}
           maven-build-cache-
+
+    - name: Set up Sonar Cache
+      uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5
+      with:
+        path: |
+          ~/.sonar/cache
+        key: sonar-cache-${{ github.ref }}
+        restore-keys: |
+          sonar-cache-refs/heads/master
+          sonar-cache-
 
     - name: Set up JDK ${{ env.JDK_VERSION }}
       uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5
@@ -160,11 +169,3 @@ jobs:
       with:
         name: java${{ env.JDK_VERSION }}_FrankDoc
         path: ${{ github.workspace }}/target/frankdoc/xml/xsd/*.xsd
-
-    - name: Save cached directories
-      uses: actions/cache/save@9255dc7a253b0ccc959486e2bca901246202afeb # v5
-      with:
-        path: |
-          ~/.m2/repository
-          ~/.sonar/cache
-        key: maven-build-cache-${{ hashFiles('**/pom.xml') }}

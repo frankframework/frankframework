@@ -54,7 +54,7 @@ jobs:
         # Required for SonarCloud
         fetch-depth: 0
 
-    - name: Restore cached directories
+    - name: Maven Repository Cache
       uses: actions/cache@9255dc7a253b0ccc959486e2bca901246202afeb # v5
       with:
         path: |
