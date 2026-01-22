@@ -59,9 +59,9 @@ jobs:
       with:
         path: |
           ~/.m2/repository
-          ~/.sonar/cache
         key: maven-build-cache-${{ github.ref }}-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
+          maven-build-cache-${{ github.ref }}-${{ hashFiles('**/pom.xml') }}
           maven-build-cache-${{ hashFiles('**/pom.xml') }}
           maven-build-cache-
 
