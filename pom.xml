@@ -92,7 +92,7 @@
 		<spring.version>7.0.3</spring.version>
 		<spring-security.version>7.0.2</spring-security.version>
 		<spring-integration.version>7.0.1</spring-integration.version>
-		<spring.boot.version>4.0.1</spring.boot.version>
+		<spring.boot.version>4.0.2</spring.boot.version>
 		<tomcat.version>11.0.15</tomcat.version>
 		<bouncycastle.version>1.83</bouncycastle.version>
 
@@ -786,7 +786,7 @@
 							<path>
 								<groupId>com.uber.nullaway</groupId>
 								<artifactId>nullaway</artifactId>
-								<version>0.12.15</version>
+								<version>0.13.0</version>
 							</path>
 							<!-- Because Error Prone needs to be added explicitly we now also need to explicitly add other annotation processors here -->
 							<path>
