@@ -131,8 +131,7 @@
 		<module name="MatchXpath">
 			<property name="id" value="singleLineCommentStartWithSpace"/>
 			<property name="query"
-				value="//SINGLE_LINE_COMMENT[./COMMENT_CONTENT[not(starts-with(@text, ' '))
-                       and not(@text = '\n') and not(ends-with(@text, '//\n')) ]]"/>
+				value="//SINGLE_LINE_COMMENT[./COMMENT_CONTENT[ not(matches(@text, '^/*[ \t].*' )) and not(@text = '\n') and not(matches(@text, '^/+\n$')) ]]"/>
 			<message key="matchxpath.match" value="Single line comment text should start with space."/>
 		</module>
 	</module>
