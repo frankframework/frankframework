@@ -61,7 +61,6 @@ jobs:
           ~/.m2/repository
         key: maven-dependency-cache-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
-          maven-dependency-cache-${{ hashFiles('**/pom.xml') }}
           maven-dependency-cache-
 
     - name: Set up JDK ${{ matrix.java }}

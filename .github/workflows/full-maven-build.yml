@@ -63,15 +63,14 @@ jobs:
           ~/.m2/repository
         key: maven-dependency-cache-${{ hashFiles('**/pom.xml') }}
         restore-keys: |
-          maven-dependency-cache-${{ hashFiles('**/pom.xml') }}
           maven-dependency-cache-
 
-    - name: Set up Sonar Cache
-      uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5
+    - name: Restore Sonar Cache
+      uses: actions/cache/restore@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5
       with:
         path: |
           ~/.sonar/cache
-        key: sonar-cache-${{ github.ref }}
+        key: sonar-cache-${{ github.base_ref }}
         restore-keys: |
           sonar-cache-refs/heads/master
           sonar-cache-
@@ -169,3 +168,13 @@ jobs:
       with:
         name: java${{ env.JDK_VERSION }}_FrankDoc
         path: ${{ github.workspace }}/target/frankdoc/xml/xsd/*.xsd
+
+    - name: Save Sonar Cache
+      uses: actions/cache/save@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5
+      if: |
+        always() &&
+        (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release') || startsWith(github.ref, 'refs/heads/[0-9]+.[0-9]+-release'))
+      with:
+        path: |
+          ~/.sonar/cache
+        key: sonar-cache-${{ github.base_ref }}
