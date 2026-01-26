@@ -16,7 +16,6 @@
 package org.frankframework.ldap;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -64,6 +63,7 @@ import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValue;
 import org.frankframework.stream.Message;
 import org.frankframework.util.ClassUtils;
+import org.frankframework.util.StringUtil;
 import org.frankframework.util.XmlBuilder;
 import org.frankframework.util.XmlEncodingUtils;
 
@@ -395,29 +395,7 @@ public class LdapSender extends JndiBase implements ISenderWithParameters {
 	private String @Nullable[] getAttributesReturnedParameter() {
 		// since 1.4: return attributesToReturn == null ? null : attributesToReturn.split(",");
 		// since 1.3 below:
-		return getAttributesToReturn() == null ? null : splitCommaSeparatedString(getAttributesToReturn());
-	}
-
-	private String @Nullable[] splitCommaSeparatedString(@Nullable String toSeparate) {
-		if (toSeparate == null || toSeparate.isEmpty()) return null;
-
-		List<String> list = new ArrayList<>();
-		String[] strArr = new String[1]; // just do determine the type of the array in list.toArray(Object[] o)
-
-		StringBuilder sb = new StringBuilder(toSeparate);
-		for (int i = 0; i < sb.length(); i++) {
-			if(sb.charAt(i) == ' ')
-				sb.deleteCharAt(i);
-		}
-		int start = 0;
-		for (int i = 0; i < sb.length(); i++) {
-			if(sb.charAt(i) == ',' || i == sb.length()-1) {
-				list.add(sb.substring(start, i == sb.length()-1 ? i+1 : i));
-				start = i+1;
-			}
-		}
-
-		return list.toArray(strArr);
+		return getAttributesToReturn() == null ? null : StringUtil.split(getAttributesToReturn()).toArray(new String[0]);
 	}
 
 	@Override
