@@ -56,18 +56,24 @@ jobs:
         # Required for SonarCloud
         fetch-depth: 0
 
-    - name: Create cached directories
-      run: |
-        mkdir -p ~/.m2/repository
-        mkdir -p ~/.sonar/cache
-
-    - name: Restore cached directories
-      uses: actions/cache/restore@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5
+    - name: Set up Maven Dependency Cache
+      uses: actions/cache@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5
       with:
         path: |
           ~/.m2/repository
+        key: maven-dependency-cache-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          maven-dependency-cache-
+
+    - name: Restore Sonar Cache
+      uses: actions/cache/restore@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5
+      with:
+        path: |
           ~/.sonar/cache
-        key: maven-build-cache
+        key: sonar-cache-${{ github.base_ref }}
+        restore-keys: |
+          sonar-cache-refs/heads/master
+          sonar-cache-
 
     - name: Set up JDK ${{ env.JDK_VERSION }}
       uses: actions/setup-java@be666c2fcd27ec809703dec50e508c2fdc7f6654 # v5
@@ -163,13 +169,12 @@ jobs:
         name: java${{ env.JDK_VERSION }}_FrankDoc
         path: ${{ github.workspace }}/target/frankdoc/xml/xsd/*.xsd
 
-    - name: Save cached directories
+    - name: Save Sonar Cache
       uses: actions/cache/save@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5
       if: |
         always() &&
         (github.ref == 'refs/heads/master' || startsWith(github.ref, 'refs/heads/release') || startsWith(github.ref, 'refs/heads/[0-9]+.[0-9]+-release'))
       with:
         path: |
-          ~/.m2/repository
           ~/.sonar/cache
-        key: maven-build-cache
+        key: sonar-cache-${{ github.base_ref }}

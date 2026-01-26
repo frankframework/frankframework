@@ -40,9 +40,6 @@ jobs:
     name: Analyze Front-End
     runs-on: ubuntu-latest
 
-    strategy:
-      fail-fast: false
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6
@@ -53,6 +50,7 @@ jobs:
       with:
         languages: javascript
         config-file: ./.github/codeql/codeql-config.yml
+        trap-caching: false
         # If you wish to specify custom queries, you can do so here or in a config file.
         # By default, queries listed here will override any specified in a config file.
         # Prefix the list here with "+" to use these queries and those in the config file.

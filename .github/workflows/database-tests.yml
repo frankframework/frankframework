@@ -4,6 +4,7 @@
 name: Database Tests
 
 env:
+  JDK_VERSION: 25
   PROFILES: frankframework,ci,skip-console-frontend
   USE_PROPRIETARY: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.owner.login == 'frankframework') && github.actor != 'dependabot[bot]' }}
   BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
@@ -62,12 +63,6 @@ jobs:
   run-database-tests:
     name: Database Tests
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/frankframework/build/jdk25:latest
-      credentials:
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-
     strategy:
       fail-fast: false
       matrix:
@@ -88,18 +83,20 @@ jobs:
 #        # Required for SonarCloud
 #        fetch-depth: 0
 
-    - name: Create cached directories
-      run: |
-        mkdir -p ~/.m2/repository
-        mkdir -p ~/.sonar/cache
-
-    - name: Restore cached directories
+    - name: Load Maven Dependency Cache
       uses: actions/cache/restore@8b402f58fbc84540c8b491a91e594a4576fec3d7 # v5
       with:
         path: |
           ~/.m2/repository
-          ~/.sonar/cache
-        key: maven-build-cache
+        key: maven-dependency-cache-${{ hashFiles('**/pom.xml') }}
+        restore-keys: |
+          maven-dependency-cache-
+
+    - name: Set up JDK ${{ env.JDK_VERSION }}
+      uses: actions/setup-java@f2beeb24e141e01a676f977032f5a29d81c9e27e # v5
+      with:
+        distribution: 'temurin'
+        java-version: ${{ env.JDK_VERSION }}
 
     - name: Create Maven settings.xml file
       if: ${{ env.USE_PROPRIETARY == 'true' }}
