@@ -18,6 +18,8 @@ package org.frankframework.functional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import lombok.Lombok;
+
 /**
  * Static utility class with helper functions for functional programming and using lambdas.
  */
@@ -148,5 +150,32 @@ public class FunctionalUtil {
 	 */
 	public static <T, R> Function<T, R> function(Function<T, R> f) {
 		return f;
+	}
+
+	/**
+	 * Allow a Lambda function to throw an exception in places where a checked exception is not expected, such as lambda functions
+	 * in Streams.
+	 *
+	 * <p>
+	 *     Lambda functions can usually not call methods that throw checked exceptions, such as IOException. These have to be surrounded with try/catch blocks
+	 *     which make the Lambda function harder to read.
+	 * </p>
+	 * <p>
+	 *     By wrapping the Lambda function with {@code FunctionalUtil.throwingLambda(...)}, the checked exception is hidden from the compiler. The original checked
+	 *     exception will still be thrown by the code, but without triggering the compiler.
+	 *     It is therefore the caller's responsibility to handle these exceptions.
+	 * </p>
+	 *
+	 * @param f The Lambda function to execute
+	 * @return The return-value of the Lambda function
+	 * @param <T> Return type of Lambda function
+	 * @param <E> Exception type of the Lambda function
+	 */
+	public static <T, E extends Exception> T throwingLambda(ThrowingSupplier<T, E> f) {
+		try {
+			return f.get();
+		} catch (Exception e) {
+			throw Lombok.sneakyThrow(e);
+		}
 	}
 }
