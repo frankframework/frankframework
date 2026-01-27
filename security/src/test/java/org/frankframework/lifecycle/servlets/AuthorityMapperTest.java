@@ -65,11 +65,13 @@ public class AuthorityMapperTest {
 	}
 
 	public static List<Arguments> data() {
-		return Arrays.asList(new Arguments[]{
+		return Arrays.asList(
 				Arguments.of("roles", Map.of("roles", List.of("IbisAdmin"))),
 				Arguments.of("realm_access.roles", Map.of("realm_access", Map.of("roles", List.of("IbisAdmin")))),
-				Arguments.of("realm_access.roles", Map.of("realm_access", Map.of("roles", List.of("IbisAdmin", "IbisObserver"))))
-		});
+				Arguments.of("realm_access.roles", Map.of("realm_access", Map.of("roles", List.of("IbisAdmin", "IbisObserver")))),
+				Arguments.of("realm_access.roles", Map.of("realm_access", Map.of("roles", List.of("IbisAdmin,IbisObserver")))),
+				Arguments.of("realm_access.roles", Map.of("realm_access", Map.of("roles", List.of("IbisAdmin, IbisObserver"))))
+		);
 	}
 
 	@MethodSource("data")
