@@ -17,6 +17,7 @@ package org.frankframework.lifecycle.servlets;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -46,6 +47,8 @@ import org.springframework.security.config.annotation.web.configurers.FormLoginC
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
@@ -114,6 +117,15 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 		} else {
 			this.securityRoles.addAll(securityRoles);
 		}
+	}
+
+	final List<GrantedAuthority> getAuthorities() {
+		Set<String> securityRoles = getSecurityRoles();
+		List<GrantedAuthority> grantedAuthorities = new ArrayList<>(securityRoles.size());
+		for (String role : securityRoles) {
+			grantedAuthorities.add(new SimpleGrantedAuthority(DEFAULT_ROLE_PREFIX + role));
+		}
+		return grantedAuthorities;
 	}
 
 	/**
