@@ -125,7 +125,7 @@ public class DataSonnetUtil {
 			Message arg = inputArgs.stream()
 					.map(this::toMessage)
 					.findFirst()
-					.orElseThrow(() -> new IllegalArgumentException("no value provided"));
+					.orElseThrow(() -> new IllegalArgumentException("no value provided for call to sender [" + sender.getName() + "]"));
 
 			try {
 				Message result = sender.sendMessageOrThrow(arg, session);
@@ -141,7 +141,7 @@ public class DataSonnetUtil {
 			} else if (value == Val.bool(false)) {
 				return Message.asMessage(false);
 			} else if (value instanceof Val.Num number) {
-				return Message.asMessage((long) number.value());
+				return Message.asMessage(number.value());
 			} else if (value instanceof Val.Str stringValue) {
 				return new Message(stringValue.value());
 			} else {
@@ -154,10 +154,12 @@ public class DataSonnetUtil {
 		private Val messageToVal(Message result) throws IOException {
 			@SuppressWarnings("deprecation")
 			Object value = result.asObject();
-			if (value instanceof Boolean bool) {
+			if (value == null) {
+				return new Val.Null$();
+			} else if (value instanceof Boolean bool) {
 				return Val.bool(bool);
 			} else if (value instanceof Number) {
-				return new Val.Num(Long.parseLong(""+value));
+				return new Val.Num(Double.parseDouble(""+value));
 			}
 
 			MimeType mimeType = MessageUtils.computeMimeType(result);

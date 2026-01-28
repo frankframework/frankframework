@@ -1,0 +1,3 @@
+{
+    makeId():: "random"
+}

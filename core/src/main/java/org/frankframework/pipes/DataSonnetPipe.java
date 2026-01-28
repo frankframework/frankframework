@@ -20,7 +20,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.jspecify.annotations.NonNull;
+import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import com.datasonnet.MapperBuilder;
 import com.datasonnet.document.Document;
@@ -103,10 +105,13 @@ import org.frankframework.util.StringUtil;
  * @see <a href="https://datasonnet.github.io/datasonnet-mapper/datasonnet/latest/cookbook.html">DataSonnet cookbook</a>.
  */
 @EnterpriseIntegrationPattern(Type.TRANSLATOR)
+@NullMarked
 public class DataSonnetPipe extends FixedForwardPipe {
+	@SuppressWarnings({ "NullAway.Init", "java:S2637" })
 	private String styleSheetName;
+	@SuppressWarnings({ "NullAway.Init", "java:S2637" })
 	private String resolvedStyleSheet;
-	private String imports;
+	private @Nullable String imports;
 
 	private final List<ISender> senderList = new ArrayList<>();
 	private Map<String, String> importMap = Map.of();
@@ -117,11 +122,15 @@ public class DataSonnetPipe extends FixedForwardPipe {
 		parameterNamesMustBeUnique = true;
 		super.configure();
 
+		if (StringUtils.isBlank(styleSheetName)) {
+			throw new ConfigurationException("DataSonnet transformation stylesheet not set");
+		}
+
 		for (ISender sender: senderList) {
 			sender.configure();
 		}
 
-		importMap = StringUtil.splitToStream(imports)
+		importMap = StringUtil.splitToStream(imports, ",;")
 				.collect(Collectors.toMap(n -> n, n -> FunctionalUtil.throwingLambda(()-> Misc.getStyleSheet(this, n))));
 
 		resolvedStyleSheet = Misc.getStyleSheet(this, styleSheetName);
@@ -141,7 +150,6 @@ public class DataSonnetPipe extends FixedForwardPipe {
 		senderList.forEach(ISender::stop);
 	}
 
-	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		ParameterValueList pvl = getParameters(message, session);
