@@ -134,8 +134,8 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			reportGenerator.pipelineAbort(pipeLine, correlationId, pipeLineResult.getResult());
 		} else {
 			Message result = reportGenerator.pipelineOutput(pipeLine, correlationId, pipeLineResult.getResult());
-			if (Message.isNull(result)) {
-				log.error("debugger returned NULL, pipeline result was: [{}]", pipeLineResult.getResult());
+			if (Message.isNull(result) && !Message.isNull(pipeLineResult.getResult())) {
+				log.info("debugger returned NULL, pipeline result was: [{}]", pipeLineResult.getResult());
 			}
 			pipeLineResult.setResult(result);
 		}
@@ -404,7 +404,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		if (log.isDebugEnabled()) {
 			String nameClause=threadInfo.owner instanceof HasName ino?" name ["+ino.getName()+"]":"";
 			log.debug("announceChildThread thread id [{}] thread name [{}] owner [{}]{} threadId [{}] correlationId [{}]", Thread.currentThread()
-					.getId(), Thread.currentThread().getName(), threadInfo.owner.getClass()
+					.threadId(), Thread.currentThread().getName(), threadInfo.owner.getClass()
 					.getSimpleName(), nameClause, threadInfo.threadId, threadInfo.correlationId);
 		}
 		reportGenerator.createThread(threadInfo.owner, threadInfo.threadId, threadInfo.correlationId);
@@ -419,7 +419,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		if (log.isDebugEnabled()) {
 			String nameClause=threadInfo.owner instanceof HasName ino?" name ["+ino.getName()+"]":"";
 			log.debug("cancelChildThread thread id [{}] thread name [{}] owner [{}]{} threadId [{}] correlationId [{}]", Thread.currentThread()
-					.getId(), Thread.currentThread().getName(), threadInfo.owner.getClass()
+					.threadId(), Thread.currentThread().getName(), threadInfo.owner.getClass()
 					.getSimpleName(), nameClause, threadInfo.threadId, threadInfo.correlationId);
 		}
 		reportGenerator.cancelThread(threadInfo.owner, threadInfo.threadId, threadInfo.correlationId);
@@ -433,7 +433,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		if (log.isDebugEnabled()) {
 			String nameClause=ref.owner instanceof HasName ino?" name ["+ino.getName()+"]":"";
 			log.debug("threadCreated thread id [{}] thread name [{}] owner [{}]{} threadId [{}] correlationId [{}]", Thread.currentThread()
-					.getId(), Thread.currentThread().getName(), ref.owner.getClass().getSimpleName(), nameClause, ref.threadId, ref.correlationId);
+					.threadId(), Thread.currentThread().getName(), ref.owner.getClass().getSimpleName(), nameClause, ref.threadId, ref.correlationId);
 		}
 		return (R)reportGenerator.startThread(ref.owner, ref.threadId, ref.correlationId, request);
 	}
@@ -446,7 +446,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		if (log.isDebugEnabled()) {
 			String nameClause=ref.owner instanceof HasName ino?" name ["+ino.getName()+"]":"";
 			log.debug("threadEnded thread id [{}] thread name [{}] owner [{}]{} threadId [{}] correlationId [{}]", Thread.currentThread()
-					.getId(), Thread.currentThread().getName(), ref.owner.getClass().getSimpleName(), nameClause, ref.threadId, ref.correlationId);
+					.threadId(), Thread.currentThread().getName(), ref.owner.getClass().getSimpleName(), nameClause, ref.threadId, ref.correlationId);
 		}
 		return (R)reportGenerator.endThread(ref.owner, ref.correlationId, result);
 	}
@@ -459,7 +459,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 		if (log.isDebugEnabled()) {
 			String nameClause=ref.owner instanceof HasName ino?" name ["+ino.getName()+"]":"";
 			log.debug("threadAborted thread id [{}] thread name [{}] owner [{}]{} threadId [{}] correlationId [{}]", Thread.currentThread()
-					.getId(), Thread.currentThread().getName(), ref.owner.getClass().getSimpleName(), nameClause, ref.threadId, ref.correlationId);
+					.threadId(), Thread.currentThread().getName(), ref.owner.getClass().getSimpleName(), nameClause, ref.threadId, ref.correlationId);
 		}
 		return reportGenerator.abortThread(ref.owner, ref.correlationId, t);
 	}
