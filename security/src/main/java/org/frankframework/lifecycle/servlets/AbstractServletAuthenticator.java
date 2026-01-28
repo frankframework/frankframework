@@ -37,6 +37,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.env.PropertySources;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authorization.AuthenticatedAuthorizationManager;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -217,9 +218,13 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 			http.anonymous(AnonymousConfigurer::disable); // Disable the default anonymous filter and thus disallow all anonymous access
 		}
 
+		if (allowUnsecureOptionsRequest) {
+			http.authorizeHttpRequests(requests -> requests.requestMatchers(HttpMethod.OPTIONS).permitAll());
+			http.anonymous(withDefaults()); // Anonymous access without roles
+		}
+
 		// Enables security for all servlet endpoints
-		RequestMatcher authorizationRequestMatcher = new AndRequestMatcher(securityRequestMatcher, this::authorizationRequestMatcher);
-		http.authorizeHttpRequests(requests -> requests.requestMatchers(authorizationRequestMatcher).access(getAuthorizationManager()));
+		http.authorizeHttpRequests(requests -> requests.requestMatchers(securityRequestMatcher).access(getAuthorizationManager()));
 
 		// This filter removes x-forwarded headers and converts them to their corresponding `normal` headers. Eg. `X-Forwarded-Proto` sets HttpServletRequest.isSecure to `true`.
 		http.addFilterBefore(new CustomizedForwardedHeaderFilter(allowForwardedHeadersPassthrough), SecurityContextHolderFilter.class);
@@ -231,15 +236,6 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 	 */
 	protected AuthorizationManager<RequestAuthorizationContext> getAuthorizationManager() {
 		return AuthenticatedAuthorizationManager.authenticated();
-	}
-
-	/**
-	 * RequestMatcher which determines when a client has to log in.
-	 *
-	 * @return when !(property {@value #ALLOW_OPTIONS_REQUESTS_KEY} == true, and request == OPTIONS).
-	 */
-	private boolean authorizationRequestMatcher(HttpServletRequest request) {
-		return !(allowUnsecureOptionsRequest && "OPTIONS".equals(request.getMethod()));
 	}
 
 	/** Before building, configure the FilterChain. */

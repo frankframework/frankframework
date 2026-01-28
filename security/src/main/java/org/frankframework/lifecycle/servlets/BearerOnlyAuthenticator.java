@@ -88,7 +88,7 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 	 * @see "JwtAuthenticationConverter#principalClaimName"
 	 */
 	@Setter
-	private String userNameAttributeName = JwtClaimNames.SUB;
+	private String userNameAttributeName;
 
 	/**
 	 * <p>The claim name in the JWT token that contains the authorities of the user.
@@ -111,6 +111,10 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 			throw new IllegalArgumentException("The authoritiesClaimName must not contain more than one dot (.) to indicate a nested claim. Found: " + authoritiesClaimName);
 		}
 
+		if (StringUtils.isBlank(authoritiesClaimName)) {
+			authoritiesClaimName = JwtClaimNames.SUB;
+		}
+
 		http.oauth2ResourceServer(oauth2 -> oauth2
 				.jwt(jwt -> jwt.decoder(getJwtDecoder())
 						.jwtAuthenticationConverter(new RoleBasedJwtAuthenticationConverter())));
@@ -131,8 +135,9 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 			AbstractAuthenticationToken token = new JwtAuthenticationToken(jwt, authorities, principalClaimValue);
 
 			if (!getAuthorities().isEmpty()) {
-				token.setAuthenticated(!Collections.disjoint(getAuthorities(), token.getAuthorities()));
-				log.info("Checking if user contains required role(s) [{}]", getAuthorities());
+				boolean result = !Collections.disjoint(getAuthorities(), token.getAuthorities());
+				token.setAuthenticated(result);
+				log.info("User {} required role(s) {}", () -> result ? "contains" : "does not contain", () -> getAuthorities(), token::getAuthorities);
 			}
 
 			return token;
