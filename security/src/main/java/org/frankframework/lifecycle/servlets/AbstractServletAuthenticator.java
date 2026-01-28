@@ -17,13 +17,12 @@ package org.frankframework.lifecycle.servlets;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
-
-import jakarta.servlet.http.HttpServletRequest;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,6 +35,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.core.env.MapPropertySource;
 import org.springframework.core.env.PropertySource;
 import org.springframework.core.env.PropertySources;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authorization.AuthenticatedAuthorizationManager;
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -46,10 +46,11 @@ import org.springframework.security.config.annotation.web.configurers.FormLoginC
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
 import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
-import org.springframework.security.web.util.matcher.AndRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import lombok.Getter;
@@ -114,6 +115,15 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 		} else {
 			this.securityRoles.addAll(securityRoles);
 		}
+	}
+
+	final List<GrantedAuthority> getAuthorities() {
+		Set<String> securityRoles = getSecurityRoles();
+		List<GrantedAuthority> grantedAuthorities = new ArrayList<>(securityRoles.size());
+		for (String role : securityRoles) {
+			grantedAuthorities.add(new SimpleGrantedAuthority(DEFAULT_ROLE_PREFIX + role));
+		}
+		return grantedAuthorities;
 	}
 
 	/**
@@ -205,9 +215,13 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 			http.anonymous(AnonymousConfigurer::disable); // Disable the default anonymous filter and thus disallow all anonymous access
 		}
 
+		if (allowUnsecureOptionsRequest) {
+			http.authorizeHttpRequests(requests -> requests.requestMatchers(HttpMethod.OPTIONS).permitAll());
+			http.anonymous(withDefaults()); // Anonymous access without roles
+		}
+
 		// Enables security for all servlet endpoints
-		RequestMatcher authorizationRequestMatcher = new AndRequestMatcher(securityRequestMatcher, this::authorizationRequestMatcher);
-		http.authorizeHttpRequests(requests -> requests.requestMatchers(authorizationRequestMatcher).access(getAuthorizationManager()));
+		http.authorizeHttpRequests(requests -> requests.requestMatchers(securityRequestMatcher).access(getAuthorizationManager()));
 
 		// This filter removes x-forwarded headers and converts them to their corresponding `normal` headers. Eg. `X-Forwarded-Proto` sets HttpServletRequest.isSecure to `true`.
 		http.addFilterBefore(new CustomizedForwardedHeaderFilter(allowForwardedHeadersPassthrough), SecurityContextHolderFilter.class);
@@ -219,15 +233,6 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 	 */
 	protected AuthorizationManager<RequestAuthorizationContext> getAuthorizationManager() {
 		return AuthenticatedAuthorizationManager.authenticated();
-	}
-
-	/**
-	 * RequestMatcher which determines when a client has to log in.
-	 *
-	 * @return when !(property {@value #ALLOW_OPTIONS_REQUESTS_KEY} == true, and request == OPTIONS).
-	 */
-	private boolean authorizationRequestMatcher(HttpServletRequest request) {
-		return !(allowUnsecureOptionsRequest && "OPTIONS".equals(request.getMethod()));
 	}
 
 	/** Before building, configure the FilterChain. */

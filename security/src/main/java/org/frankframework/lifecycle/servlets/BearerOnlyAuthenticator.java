@@ -1,5 +1,5 @@
 /*
-   Copyright 2025 WeAreFrank!
+   Copyright 2025-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 package org.frankframework.lifecycle.servlets;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -26,16 +28,21 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.FactorGrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtClaimNames;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.jwt.JwtDecoders;
 import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
 
 import lombok.Setter;
@@ -104,25 +111,38 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 			throw new IllegalArgumentException("The authoritiesClaimName must not contain more than one dot (.) to indicate a nested claim. Found: " + authoritiesClaimName);
 		}
 
+		if (StringUtils.isBlank(authoritiesClaimName)) {
+			authoritiesClaimName = JwtClaimNames.SUB;
+		}
+
 		http.oauth2ResourceServer(oauth2 -> oauth2
 				.jwt(jwt -> jwt.decoder(getJwtDecoder())
-						.jwtAuthenticationConverter(jwtAuthenticationConverter())));
+						.jwtAuthenticationConverter(new RoleBasedJwtAuthenticationConverter())));
 
 		return http.build();
 	}
 
-	public JwtAuthenticationConverter jwtAuthenticationConverter() {
-		Converter<Jwt, Collection<GrantedAuthority>> jwtGrantedAuthoritiesConverter = getJwtCollectionConverter();
+	/**
+	 * {@link JwtAuthenticationConverter}
+	 */
+	private class RoleBasedJwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
 
-		JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();
+		@Override
+		public final AbstractAuthenticationToken convert(Jwt jwt) {
+			Collection<GrantedAuthority> authorities = new HashSet<>(getJwtCollectionConverter().convert(jwt));
+			authorities.add(FactorGrantedAuthority.fromAuthority(FactorGrantedAuthority.BEARER_AUTHORITY));
+			String principalClaimValue = jwt.getClaimAsString(userNameAttributeName);
+			AbstractAuthenticationToken token = new JwtAuthenticationToken(jwt, authorities, principalClaimValue);
 
-		if (StringUtils.isNotBlank(userNameAttributeName)) {
-			log.debug("Using principalClaimName [{}]", userNameAttributeName);
-			jwtAuthenticationConverter.setPrincipalClaimName(userNameAttributeName);
+			if (!getAuthorities().isEmpty()) {
+				boolean result = !Collections.disjoint(getAuthorities(), token.getAuthorities());
+				token.setAuthenticated(result);
+				log.info("User {} required role(s) {}", () -> result ? "contains" : "does not contain", () -> getAuthorities(), token::getAuthorities);
+			}
+
+			return token;
 		}
 
-		jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwtGrantedAuthoritiesConverter);
-		return jwtAuthenticationConverter;
 	}
 
 	/**
@@ -171,13 +191,19 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 	}
 
 	List<String> getRolesFromUserInfoUri(String accessToken) {
-		Map<String, Object> userInfo = RestClient.create()
+		final Map<String, Object> userInfo;
+		try {
+			userInfo = RestClient.create()
 				.get()
 				.uri(userInfoUri)
 				.accept(MediaType.APPLICATION_JSON)
 				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
 				.retrieve()
 				.body(new ParameterizedTypeReference<>() {});
+		} catch (HttpClientErrorException e) {
+			log.debug("userInfo endpoint exception, status code [{}]", () -> e.getStatusCode().value(), () -> e);
+			return List.of();
+		}
 
 		log.debug("Fetched user info: {}", userInfo);
 

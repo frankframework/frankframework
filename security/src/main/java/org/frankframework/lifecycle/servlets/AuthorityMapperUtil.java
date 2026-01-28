@@ -24,6 +24,8 @@ import org.springframework.security.oauth2.core.ClaimAccessor;
 
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.util.StringUtil;
+
 /**
  * Utility class for mapping authorities from user info or attributes map.
  *
@@ -40,7 +42,7 @@ public class AuthorityMapperUtil {
 	 * Get roles from OidcUserInfo based on the authoritiesClaimName. Please note that {@code OAuth2Authenticator.configure()} makes sure that a maximum
 	 * of only one (1) '.' is allowed in the authoritiesClaimName.
 	 */
-	static Collection<String> getRolesFromUserInfo(ClaimAccessor userInfo, String authoritiesClaimName) {
+	static List<String> getRolesFromUserInfo(ClaimAccessor userInfo, String authoritiesClaimName) {
 		log.debug("Fetching user roles from userInfo with authoritiesClaimName [{}]", authoritiesClaimName);
 
 		// use a normal get if the key does not contain a '.'
@@ -57,7 +59,7 @@ public class AuthorityMapperUtil {
 
 			log.debug("fetched user roles [{}] from userInfo", strings);
 
-			return strings;
+			return splitRolesStringIfNeeded(strings.stream().toList());
 		}
 	}
 
@@ -86,7 +88,15 @@ public class AuthorityMapperUtil {
 
 			log.debug("fetched user roles [{}] from userAttributes", strings);
 
-			return strings;
+			return splitRolesStringIfNeeded(strings);
 		}
+	}
+
+	private static List<String> splitRolesStringIfNeeded(List<String> roles) {
+		if (roles.size() != 1 && !roles.getFirst().contains(",")) {
+			return roles;
+		}
+
+		return StringUtil.split(roles.getFirst());
 	}
 }

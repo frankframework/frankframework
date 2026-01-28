@@ -36,6 +36,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.Strings;
 import org.apache.commons.text.StringEscapeUtils;
 import org.apache.http.HttpEntity;
 import org.apache.logging.log4j.CloseableThreadContext;
@@ -315,7 +316,7 @@ public class ApiListenerServlet extends AbstractHttpServlet {
 						boolean isNonStandardJwtAuthHeader = !HttpHeaders.AUTHORIZATION.equalsIgnoreCase(listener.getJwtHeader());
 						if (StringUtils.isNotEmpty(authorizationHeader) && (authorizationHeader.startsWith("Bearer") || isNonStandardJwtAuthHeader)) {
 							try {
-								String jwtToken = StringUtils.removeStartIgnoreCase(authorizationHeader, "Bearer ");
+								String jwtToken = Strings.CI.removeStart(authorizationHeader, "Bearer ");
 								Map<String, Object> claimsSet = listener.getJwtValidator().validateJWT(jwtToken);
 								pipelineSession.setSecurityHandler(new JwtSecurityHandler(claimsSet, listener.getRoleClaim(), listener.getPrincipalNameClaim()));
 								pipelineSession.put("ClaimsSet", JSONObjectUtils.toJSONString(claimsSet));
