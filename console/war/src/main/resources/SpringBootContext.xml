@@ -7,7 +7,7 @@
 		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context.xsd
 	">
 
-	<context:property-placeholder location="classpath:application.properties,classpath:testtool.properties"/>
+	<context:property-placeholder />
 
 	<bean id="tomcat" class="org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory">
 		<property name="port" value="${server.port}"/>
