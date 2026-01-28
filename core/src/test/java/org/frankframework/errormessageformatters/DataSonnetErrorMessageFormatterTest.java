@@ -98,7 +98,7 @@ class DataSonnetErrorMessageFormatterTest {
 	@Test
 	void formatErrorWithImports() throws Exception {
 		// Arrange
-		formatter.setStyleSheetName("ErrorMessageFormatters/errorMessageWithImports.jsonnet");
+		formatter.setStyleSheetName("ErrorMessageFormatters/errormessageWithImports.jsonnet");
 		formatter.setImports("ErrorMessageFormatters/imported.libsonnet");
 		assertDoesNotThrow(() -> formatter.configure());
 
