@@ -142,7 +142,7 @@ public class MatchUtils {
 
 	public static void assertTestFileEquals(String file1, String file2) throws IOException {
 		String testFile = TestFileUtils.getTestFile(file1);
-		assertNotNull("testFile ["+file1+"] is null", testFile);
+		assertNotNull(testFile, "testFile ["+file1+"] is null");
 
 		TestAssertions.assertEqualsIgnoreWhitespaces(testFile.trim(), file2.trim());
 	}
