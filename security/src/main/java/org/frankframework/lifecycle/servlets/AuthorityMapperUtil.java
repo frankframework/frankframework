@@ -76,7 +76,7 @@ public class AuthorityMapperUtil {
 
 		// use a normal get if the key does not contain a '.'
 		if (!Strings.CS.contains(authoritiesClaimName, ".")) {
-			List<String> userRoles = (List<String>) userAttributes.get(authoritiesClaimName);
+			Object userRoles = userAttributes.get(authoritiesClaimName);
 			return splitRolesStringIfNeeded(userRoles);
 		} else {
 			String[] keyParts = authoritiesClaimName.split("\\.");
@@ -85,19 +85,25 @@ public class AuthorityMapperUtil {
 			Map<String, Collection<String>> realmAccess = (Map<String, Collection<String>>) userAttributes.get(keyParts[0]);
 
 			// get second part of the key
-			List<String> userRoles = (List<String>) realmAccess.get(keyParts[1]);
+			Object userRoles = realmAccess.get(keyParts[1]);
 
-			log.debug("fetched user roles [{}] from userAttributes", userRoles);
+			log.debug("fetched user roles [{}] from userAttributes", userRoles.toString());
 
 			return splitRolesStringIfNeeded(userRoles);
 		}
 	}
 
-	private static List<String> splitRolesStringIfNeeded(List<String> roles) {
-		if (roles.size() != 1 && !roles.getFirst().contains(",")) {
-			return roles;
+	private static List<String> splitRolesStringIfNeeded(Object roles) {
+		if (roles instanceof String) {
+			return StringUtil.split((String) roles);
+		} else if (roles instanceof List) {
+			// can we assume its a List<String>?
+			List<String> rolesList = (List<String>) roles;
+			if (rolesList.size() != 1 && !rolesList.getFirst().contains(",")) {
+				return rolesList;
+			}
+			return StringUtil.split(rolesList.getFirst());
 		}
-
-		return StringUtil.split(roles.getFirst());
+		return List.of();
 	}
 }
