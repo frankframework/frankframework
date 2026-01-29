@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.Strings;
 import org.springframework.security.oauth2.core.ClaimAccessor;
 
@@ -47,7 +48,7 @@ public class AuthorityMapperUtil {
 
 		// use a normal get if the key does not contain a '.'
 		if (!Strings.CS.contains(authoritiesClaimName, ".")) {
-			return userInfo.getClaim(authoritiesClaimName);
+			return ListUtils.emptyIfNull(userInfo.getClaim(authoritiesClaimName));
 		} else {
 			String[] keyParts = authoritiesClaimName.split("\\.");
 
@@ -55,11 +56,11 @@ public class AuthorityMapperUtil {
 			Map<String, Collection<String>> realmAccess = userInfo.getClaim(keyParts[0]);
 
 			// get second part of the key
-			Collection<String> strings = realmAccess.get(keyParts[1]);
+			List<String> strings = List.copyOf(realmAccess.get(keyParts[1]));
 
 			log.debug("fetched user roles [{}] from userInfo", strings);
 
-			return splitRolesStringIfNeeded(strings.stream().toList());
+			return splitRolesStringIfNeeded(strings);
 		}
 	}
 
@@ -76,7 +77,7 @@ public class AuthorityMapperUtil {
 
 		// use a normal get if the key does not contain a '.'
 		if (!Strings.CS.contains(authoritiesClaimName, ".")) {
-			return (List<String>) userAttributes.get(authoritiesClaimName);
+			return ListUtils.emptyIfNull((List<String>) userAttributes.get(authoritiesClaimName));
 		} else {
 			String[] keyParts = authoritiesClaimName.split("\\.");
 
@@ -84,7 +85,7 @@ public class AuthorityMapperUtil {
 			Map<String, Collection<String>> realmAccess = (Map<String, Collection<String>>) userAttributes.get(keyParts[0]);
 
 			// get second part of the key
-			List<String> strings = (List<String>) realmAccess.get(keyParts[1]);
+			List<String> strings = List.copyOf(realmAccess.get(keyParts[1]));
 
 			log.debug("fetched user roles [{}] from userAttributes", strings);
 

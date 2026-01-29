@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Strings;
+import org.jspecify.annotations.NonNull;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpHeaders;
@@ -179,6 +180,7 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 	 *   <li>Otherwise, we get the roles from the given jwt</li>
 	 * </ul>
 	 */
+	@NonNull
 	private List<String> getListOfRoles(Jwt jwt) {
 		if (StringUtils.isNotBlank(userInfoUri)) {
 			log.debug("Fetching user roles from userInfoUri [{}]", userInfoUri);
@@ -187,7 +189,7 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 
 		// get roles from given jwt
 		log.debug("No userInfoUri configured, fetching user roles from JWT token");
-		return AuthorityMapperUtil.getRolesFromUserInfo(jwt, authoritiesClaimName).stream().toList();
+		return AuthorityMapperUtil.getRolesFromUserInfo(jwt, authoritiesClaimName);
 	}
 
 	List<String> getRolesFromUserInfoUri(String accessToken) {
