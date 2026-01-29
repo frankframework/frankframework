@@ -133,6 +133,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	private @Getter String packageContent = "db2";
 	private @Getter String[] columnsReturnedList=null;
 	private @Getter String sqlDialect = AppConstants.getInstance().getString("jdbc.sqlDialect", null);
+	private @Getter boolean sqlDialectTranslationEnabled = AppConstants.getInstance().getBoolean("jdbc.sqlDialect.translation.enabled", true);
 	private @Getter boolean lockRows=false;
 	private @Getter int lockWait=-1;
 	private @Getter boolean avoidLocking=false;
@@ -199,12 +200,31 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 
 	@NonNull
 	protected String convertQuery(@NonNull String query) throws SQLException, DbmsException {
-		if (!StringUtils.isNotEmpty(getSqlDialect()) || getSqlDialect().equalsIgnoreCase(getDbmsSupport().getDbmsName())) {
+		if (!StringUtils.isNotEmpty(getSqlDialect())) {
+			if (log.isDebugEnabled()) {
+				log.debug("SQL dialect not set, returning raw query [{}]", query::trim);
+			}
 			return query;
 		}
+
+		if (!isSqlDialectTranslationEnabled()) {
+			if (log.isDebugEnabled()) {
+				log.debug("SQL dialect translation disabled, returning raw query [{}]", query::trim);
+			}
+			return query;
+		}
+
+		if (getSqlDialect().equalsIgnoreCase(getDbmsSupport().getDbmsName())) {
+			if (log.isDebugEnabled()) {
+				log.debug("SQL dialect matches DBMS ({}), no conversion applied for query [{}]", getSqlDialect(), query.trim());
+			}
+			return query;
+		}
+
 		if (log.isDebugEnabled()) {
 			log.debug("converting query [{}] from [{}] to [{}]", query::trim, this::getSqlDialect, () -> getDbmsSupport().getDbmsName());
 		}
+
 		return getDbmsSupport().convertQuery(query, getSqlDialect());
 	}
 
@@ -917,6 +937,16 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	/** If set, the SQL dialect in which the queries are written and should be translated from to the actual SQL dialect */
 	public void setSqlDialect(String string) {
 		sqlDialect = string;
+	}
+
+	/**
+	 * Controls whether SQL dialect translation is enabled.
+	 * If set to <code>false</code>, queries are run exactly as they are written and are not converted to the DBMS dialect.
+	 * If <code>true</code> (default), queries are converted from the configured SQL dialect to the actual database dialect.
+	 * @ff.default true
+	 */
+	public void setSqlDialectTranslationEnabled(boolean enabled) {
+		sqlDialectTranslationEnabled = enabled;
 	}
 
 	/**
