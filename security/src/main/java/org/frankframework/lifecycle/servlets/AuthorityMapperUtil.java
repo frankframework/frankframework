@@ -47,7 +47,8 @@ public class AuthorityMapperUtil {
 
 		// use a normal get if the key does not contain a '.'
 		if (!Strings.CS.contains(authoritiesClaimName, ".")) {
-			return userInfo.getClaim(authoritiesClaimName);
+			Object userRoles = userInfo.getClaim(authoritiesClaimName);
+			return splitRolesStringIfNeeded(userRoles);
 		} else {
 			String[] keyParts = authoritiesClaimName.split("\\.");
 
@@ -55,11 +56,11 @@ public class AuthorityMapperUtil {
 			Map<String, Collection<String>> realmAccess = userInfo.getClaim(keyParts[0]);
 
 			// get second part of the key
-			Collection<String> strings = realmAccess.get(keyParts[1]);
+			Collection<String> userRoles = realmAccess.get(keyParts[1]);
 
-			log.debug("fetched user roles [{}] from userInfo", strings);
+			log.debug("fetched user roles [{}] from userInfo", userRoles);
 
-			return splitRolesStringIfNeeded(strings.stream().toList());
+			return splitRolesStringIfNeeded(userRoles.stream().toList());
 		}
 	}
 
@@ -94,8 +95,8 @@ public class AuthorityMapperUtil {
 	}
 
 	private static List<String> splitRolesStringIfNeeded(Object roles) {
-		if (roles instanceof String) {
-			return StringUtil.split((String) roles);
+		if (roles instanceof String rolesStr) {
+			return StringUtil.split(rolesStr);
 		} else if (roles instanceof List) {
 			// can we assume its a List<String>?
 			List<String> rolesList = (List<String>) roles;
