@@ -47,7 +47,8 @@ public class AuthorityMapperUtil {
 
 		// use a normal get if the key does not contain a '.'
 		if (!Strings.CS.contains(authoritiesClaimName, ".")) {
-			return userInfo.getClaim(authoritiesClaimName);
+			Object userRoles = userInfo.getClaim(authoritiesClaimName);
+			return splitRolesStringIfNeeded(userRoles);
 		} else {
 			String[] keyParts = authoritiesClaimName.split("\\.");
 
@@ -55,11 +56,11 @@ public class AuthorityMapperUtil {
 			Map<String, Collection<String>> realmAccess = userInfo.getClaim(keyParts[0]);
 
 			// get second part of the key
-			Collection<String> strings = realmAccess.get(keyParts[1]);
+			Collection<String> userRoles = realmAccess.get(keyParts[1]);
 
-			log.debug("fetched user roles [{}] from userInfo", strings);
+			log.debug("fetched user roles [{}] from userInfo", userRoles);
 
-			return splitRolesStringIfNeeded(strings.stream().toList());
+			return splitRolesStringIfNeeded(userRoles.stream().toList());
 		}
 	}
 
@@ -76,7 +77,8 @@ public class AuthorityMapperUtil {
 
 		// use a normal get if the key does not contain a '.'
 		if (!Strings.CS.contains(authoritiesClaimName, ".")) {
-			return (List<String>) userAttributes.get(authoritiesClaimName);
+			Object userRoles = userAttributes.get(authoritiesClaimName);
+			return splitRolesStringIfNeeded(userRoles);
 		} else {
 			String[] keyParts = authoritiesClaimName.split("\\.");
 
@@ -84,19 +86,25 @@ public class AuthorityMapperUtil {
 			Map<String, Collection<String>> realmAccess = (Map<String, Collection<String>>) userAttributes.get(keyParts[0]);
 
 			// get second part of the key
-			List<String> strings = (List<String>) realmAccess.get(keyParts[1]);
+			Object userRoles = realmAccess.get(keyParts[1]);
 
-			log.debug("fetched user roles [{}] from userAttributes", strings);
+			log.debug("fetched user roles [{}] from userAttributes", userRoles.toString());
 
-			return splitRolesStringIfNeeded(strings);
+			return splitRolesStringIfNeeded(userRoles);
 		}
 	}
 
-	private static List<String> splitRolesStringIfNeeded(List<String> roles) {
-		if (roles.size() != 1 && !roles.getFirst().contains(",")) {
-			return roles;
+	private static List<String> splitRolesStringIfNeeded(Object roles) {
+		if (roles instanceof String rolesStr) {
+			return StringUtil.split(rolesStr);
+		} else if (roles instanceof List) {
+			// can we assume its a List<String>?
+			List<String> rolesList = (List<String>) roles;
+			if (rolesList.size() != 1 && !rolesList.getFirst().contains(",")) {
+				return rolesList;
+			}
+			return StringUtil.split(rolesList.getFirst());
 		}
-
-		return StringUtil.split(roles.getFirst());
+		return List.of();
 	}
 }
