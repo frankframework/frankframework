@@ -73,8 +73,11 @@ public class ConsoleStandaloneInitializer {
 		app.setSources(Set.of("SpringBootContext.xml"));
 		app.addPrimarySources(List.of(WsSciWrapper.class));
 
-		app.setResourceLoader(new DefaultResourceLoader(new DirectoryClassLoader(ClassUtils.getDefaultClassLoader(), ".")));
+		// Custom ClassLoader to ensure we can read from the classpath as well as the far-jar.
+		ClassLoader newClassLoader = new DirectoryClassLoader(ClassUtils.getDefaultClassLoader(), ".");
+		app.setResourceLoader(new DefaultResourceLoader(newClassLoader));
 		app.setEnvironment(new PropertyLoaderEnvironment(app.getClassLoader()));
+
 		return app;
 	}
 

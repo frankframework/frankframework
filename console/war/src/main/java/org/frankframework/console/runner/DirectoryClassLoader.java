@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Vector;
 
 import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.cglib.core.ReflectUtils;
@@ -51,16 +52,20 @@ public class DirectoryClassLoader extends ClassLoader implements SmartClassLoade
 
 	private final List<String> loadedCustomClasses = new ArrayList<>();
 
-	protected DirectoryClassLoader(String directory) {
+	public DirectoryClassLoader(String directory) {
 		this(Thread.currentThread().getContextClassLoader(), directory);
 	}
 
-	protected DirectoryClassLoader(ClassLoader parent, String directory) {
+	public DirectoryClassLoader(@NonNull ClassLoader parent, String directory) {
 		super(parent);
 
+		if (StringUtils.isBlank(directory)) {
+			throw new IllegalArgumentException("directory may not be empty");
+		}
+
 		File dir = new File(directory);
-		if(!dir.isDirectory()) {
-			throw new IllegalStateException("directory ["+directory+"] not found");
+		if (!dir.isDirectory()) {
+			throw new IllegalArgumentException("directory ["+directory+"] not found");
 		}
 
 		this.directory = dir.getAbsoluteFile();
@@ -72,10 +77,19 @@ public class DirectoryClassLoader extends ClassLoader implements SmartClassLoade
 	 * Override this method and make it final so nobody can overwrite it.
 	 * Implementations of this class should use {@link DirectoryClassLoader#getLocalResource(String)}
 	 */
+	@Nullable
 	@Override
 	public final URL getResource(String name) {
-		if (name == null || name.startsWith("/")) { // Resources retrieved from ClassLoaders should never start with a leading slash
-			log.warn(new IllegalStateException("resources retrieved from ClassLoaders should not use an absolute path ["+name+"]")); // Use an exception so we can 'trace the stack'
+		// Resources retrieved from ClassLoaders should never start with a leading slash
+		if (name == null || name.startsWith("/")) {
+			// Use an exception so we can 'trace the stack'
+			log.warn(new IllegalStateException("resources retrieved from ClassLoaders should not use an absolute path ["+name+"]"));
+			return null;
+		}
+
+		// Basic validation to prevent traversal and protocol-style resource names coming from untrusted input
+		if (name.contains("..") || name.contains(":")) {
+			log.warn("rejecting unsafe resource name [{}]", name);
 			return null;
 		}
 
@@ -91,7 +105,7 @@ public class DirectoryClassLoader extends ClassLoader implements SmartClassLoade
 	 * @param name of the file to search for in the current local classpath
 	 * @return the URL of the file if found in the ClassLoader or <code>null</code> when the file cannot be found
 	 */
-	public URL getLocalResource(String name) {
+	private URL getLocalResource(String name) {
 		File file = new File(directory, name);
 		if (file.exists()) {
 			try {
@@ -110,7 +124,8 @@ public class DirectoryClassLoader extends ClassLoader implements SmartClassLoade
 	 * @param useParent only use local classpath or also traverse down the classpath
 	 * @return the URL of the file if found in the ClassLoader or <code>null</code>
 	 */
-	public URL getResource(String name, boolean useParent) {
+	@Nullable
+	private URL getResource(@Nullable String name, boolean useParent) {
 		URL url = null;
 		String normalizedFilename = FilenameUtils.normalize(name, true);
 		if(normalizedFilename == null) {
@@ -136,7 +151,7 @@ public class DirectoryClassLoader extends ClassLoader implements SmartClassLoade
 	}
 
 	@Override
-	public final Enumeration<URL> getResources(String name) throws IOException {
+	public final Enumeration<URL> getResources(@NonNull String name) throws IOException {
 		// It will and should never find files that are in the META-INF folder in this classloader, so always traverse to it's parent
 		if (name.startsWith("META-INF/services")) {
 			return getParent().getResources(name);
