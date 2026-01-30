@@ -1,6 +1,7 @@
 package org.frankframework.errormessageformatters;
 
 import static org.frankframework.testutil.MatchUtils.assertJsonEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
@@ -88,6 +89,31 @@ class DataSonnetErrorMessageFormatterTest {
 					"error": "MyLocation [dummy-location] msgId [dummy-message-id]: dummy-error-message",
 					"messageId": "dummy-message-id",
 					"status": 400
+				}
+				""";
+
+		assertJsonEquals(expected, errorAsString);
+	}
+
+	@Test
+	void formatErrorWithImports() throws Exception {
+		// Arrange
+		formatter.setStyleSheetName("ErrorMessageFormatters/errormessageWithImports.jsonnet");
+		formatter.setImports("ErrorMessageFormatters/imported.libsonnet");
+		assertDoesNotThrow(() -> formatter.configure());
+
+		// Act
+		Message error = formatter.format(errorMessage, exception, location, originalMessage, session);
+
+		// Assert
+		String errorAsString = error.asString();
+		assertNotNull(errorAsString);
+
+		String expected = """
+				{
+					"errorId": "random",
+					"error": "MyLocation [dummy-location] msgId [dummy-message-id]: dummy-error-message",
+					"messageId": "dummy-message-id"
 				}
 				""";
 

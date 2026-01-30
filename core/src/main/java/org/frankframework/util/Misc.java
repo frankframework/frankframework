@@ -22,6 +22,8 @@ import java.net.UnknownHostException;
 
 import org.apache.commons.lang3.time.DurationFormatUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.IScopeProvider;
@@ -220,7 +222,7 @@ public class Misc {
 	/**
 	 * @return 'file content' in String format.
 	 */
-	public static String getStyleSheet(IScopeProvider scopeProvider, String styleSheetName) throws ConfigurationException {
+	public static @NonNull String getStyleSheet(@Nullable IScopeProvider scopeProvider, @NonNull String styleSheetName) throws ConfigurationException {
 		Resource styleSheet = Resource.getResource(scopeProvider, styleSheetName);
 		if (styleSheet == null) {
 			throw new ConfigurationException("StyleSheet [" + styleSheetName + "] not found");

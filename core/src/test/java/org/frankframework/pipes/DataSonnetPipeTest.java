@@ -1,9 +1,14 @@
 package org.frankframework.pipes;
 
 import static org.frankframework.testutil.MatchUtils.assertJsonEquals;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
 
 import org.jspecify.annotations.NonNull;
 import org.junit.jupiter.api.Test;
@@ -12,6 +17,7 @@ import org.springframework.http.MediaType;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.PipeRunException;
+import org.frankframework.core.PipeRunResult;
 import org.frankframework.core.SenderException;
 import org.frankframework.core.SenderResult;
 import org.frankframework.core.TimeoutException;
@@ -23,13 +29,13 @@ import org.frankframework.testutil.DateParameterBuilder;
 import org.frankframework.testutil.NumberParameterBuilder;
 import org.frankframework.testutil.ParameterBuilder;
 import org.frankframework.testutil.TestAssertions;
+import org.frankframework.testutil.TestFileUtils;
 
 public class DataSonnetPipeTest extends PipeTestBase<DataSonnetPipe> {
 
 	@Override
 	public DataSonnetPipe createPipe() throws ConfigurationException {
-		DataSonnetPipe pipe = new DataSonnetPipe();
-		return pipe;
+		return new DataSonnetPipe();
 	}
 
 	@Test
@@ -48,7 +54,7 @@ public class DataSonnetPipeTest extends PipeTestBase<DataSonnetPipe> {
 	@Test
 	public void toXmlMapping() throws Exception {
 		pipe.setStyleSheetName("/Pipes/DataSonnet/toXml.jsonnet");
-		pipe.setOutputType(DataSonnetOutputType.XML);
+		pipe.setOutputFileFormat(DataSonnetOutputType.XML);
 		configureAndStartPipe();
 
 		// Act
@@ -357,7 +363,7 @@ public class DataSonnetPipeTest extends PipeTestBase<DataSonnetPipe> {
 	@Test
 	public void mappingWithXmlParamtoXml() throws Exception {
 		pipe.setStyleSheetName("/Pipes/DataSonnet/xml-param.jsonnet");
-		pipe.setOutputType(DataSonnetOutputType.XML);
+		pipe.setOutputFileFormat(DataSonnetOutputType.XML);
 
 		Message jsonInput = new Message("{\"myvalue\":123}");
 		jsonInput.getContext().withMimeType(MediaType.APPLICATION_JSON);
@@ -397,5 +403,51 @@ public class DataSonnetPipeTest extends PipeTestBase<DataSonnetPipe> {
 		assertEquals(MediaType.APPLICATION_JSON, result.getContext().getMimeType());
 		assertEquals("""
 				{"greetings":{"foo":456},"param-one":""}""", result.asString());
+	}
+
+	@Test
+	public void mappingWithInvalidImport() {
+		// Arrange
+		pipe.setStyleSheetName("/Pipes/DataSonnet/simple.jsonnet");
+		pipe.setImports("bad_file1.ds,bad_file2.libsonnet");
+
+		// Act / Assert
+		ConfigurationException configurationException = assertThrows(ConfigurationException.class, pipe::configure);
+
+		// Assert
+		assertThat(configurationException.getMessage(), containsString("StyleSheet [bad_file1.ds] not found"));
+	}
+
+	@Test
+	public void mappingWithImports() throws PipeRunException, IOException {
+		// Arrange
+		pipe.setStyleSheetName("/Pipes/DataSonnet/jsonnet-with-import.jsonnet");
+		pipe.setImports("/Pipes/DataSonnet/imported1.ds,/Pipes/DataSonnet/imported2.libsonnet");
+		JsonParameter param = new JsonParameter();
+		param.setName("userData");
+		param.setSessionKey("userData");
+		pipe.addParameter(param);
+
+		assertDoesNotThrow(pipe::configure);
+		pipe.start();
+
+		session.put("userData", """
+				{
+				  "userId" : "123",
+				  "name" : "DataSonnet"
+				}
+				""");
+
+		Message payload = Message.asMessage("""
+				{
+					"greetings": "HelloWorld"
+				}
+				""");
+
+		// Act
+		PipeRunResult result = pipe.doPipe(payload, session);
+
+		// Assert
+		assertJsonEquals(TestFileUtils.getTestFile("/Pipes/DataSonnet/test-with-imports-expected-result.json"), result.getResult().asString());
 	}
 }

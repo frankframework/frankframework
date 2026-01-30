@@ -17,8 +17,12 @@ package org.frankframework.pipes;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
-import org.jspecify.annotations.NonNull;
+import org.apache.commons.lang3.StringUtils;
+import org.jspecify.annotations.NullMarked;
+import org.jspecify.annotations.Nullable;
 
 import com.datasonnet.MapperBuilder;
 import com.datasonnet.document.Document;
@@ -33,6 +37,7 @@ import org.frankframework.core.PipeRunResult;
 import org.frankframework.doc.EnterpriseIntegrationPattern;
 import org.frankframework.doc.EnterpriseIntegrationPattern.Type;
 import org.frankframework.doc.Mandatory;
+import org.frankframework.functional.FunctionalUtil;
 import org.frankframework.json.DataSonnetOutputType;
 import org.frankframework.json.DataSonnetUtil;
 import org.frankframework.json.DataSonnetUtil.DataSonnetToSenderConnector;
@@ -41,6 +46,7 @@ import org.frankframework.parameters.ParameterList;
 import org.frankframework.parameters.ParameterValueList;
 import org.frankframework.stream.Message;
 import org.frankframework.util.Misc;
+import org.frankframework.util.StringUtil;
 
 /**
  * <p>
@@ -99,12 +105,16 @@ import org.frankframework.util.Misc;
  * @see <a href="https://datasonnet.github.io/datasonnet-mapper/datasonnet/latest/cookbook.html">DataSonnet cookbook</a>.
  */
 @EnterpriseIntegrationPattern(Type.TRANSLATOR)
+@NullMarked
 public class DataSonnetPipe extends FixedForwardPipe {
+	@SuppressWarnings({ "NullAway.Init", "java:S2637" })
 	private String styleSheetName;
+	@SuppressWarnings({ "NullAway.Init", "java:S2637" })
 	private String resolvedStyleSheet;
+	private @Nullable String imports;
 
 	private final List<ISender> senderList = new ArrayList<>();
-
+	private Map<String, String> importMap = Map.of();
 	private DataSonnetOutputType outputFileFormat = DataSonnetOutputType.JSON;
 
 	@Override
@@ -112,9 +122,16 @@ public class DataSonnetPipe extends FixedForwardPipe {
 		parameterNamesMustBeUnique = true;
 		super.configure();
 
+		if (StringUtils.isBlank(styleSheetName)) {
+			throw new ConfigurationException("DataSonnet transformation stylesheet not set");
+		}
+
 		for (ISender sender: senderList) {
 			sender.configure();
 		}
+
+		importMap = StringUtil.splitToStream(imports, ",;")
+				.collect(Collectors.toMap(n -> n, n -> FunctionalUtil.throwingLambda(()-> Misc.getStyleSheet(this, n))));
 
 		resolvedStyleSheet = Misc.getStyleSheet(this, styleSheetName);
 	}
@@ -133,12 +150,12 @@ public class DataSonnetPipe extends FixedForwardPipe {
 		senderList.forEach(ISender::stop);
 	}
 
-	@NonNull
 	@Override
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		ParameterValueList pvl = getParameters(message, session);
 
 		MapperBuilder builder = new MapperBuilder(resolvedStyleSheet)
+				.withImports(importMap)
 				.withInputNames(getParameterList().getParameterNames());
 
 		if (!senderList.isEmpty()) {
@@ -194,5 +211,21 @@ public class DataSonnetPipe extends FixedForwardPipe {
 	/** One or more specifications of senders. Can be called from the JSonnet file using {@code sender.'name-here'(input)}. */
 	public void addSender(ISender sender) {
 		senderList.add(sender);
+	}
+
+	/**
+	 * List of stylesheets / DataSonnet files imported by the stylesheet to be executed. Stylesheets are only evaluated as JSonnet files if the filename has the extension {@literal .ds} or {@literal .libsonnet}.
+	 *
+	 * <p>
+	 *     The list of stylesheets is expected to be a comma-separated list of files, which are loaded from the configuration.
+	 *     Import statements in DataSonnet cannot be used unless each file to be imported is listed here in the {@code imports} attribute.
+	 * </p>
+	 * <p>
+	 *     Imported files may not be able to use DataSonnet functions from DataSonnet's own libraries, normally available as {@code ds.map()} and the like. The
+	 *     cause for this is not yet known.
+	 * </p>
+	 */
+	public void setImports(String imports) {
+		this.imports = imports;
 	}
 }

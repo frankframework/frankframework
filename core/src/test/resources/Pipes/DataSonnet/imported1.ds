@@ -1,0 +1,3 @@
+{
+    toInt(name):: std.parseInt(name)
+}
