@@ -112,8 +112,8 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 			throw new IllegalArgumentException("The authoritiesClaimName must not contain more than one dot (.) to indicate a nested claim. Found: " + authoritiesClaimName);
 		}
 
-		if (StringUtils.isBlank(authoritiesClaimName)) {
-			authoritiesClaimName = JwtClaimNames.SUB;
+		if (StringUtils.isBlank(userNameAttributeName)) {
+			userNameAttributeName = JwtClaimNames.SUB;
 		}
 
 		http.oauth2ResourceServer(oauth2 -> oauth2
