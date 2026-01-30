@@ -66,17 +66,23 @@ public class AuthorityMapperTest {
 
 	public static List<Arguments> data() {
 		return Arrays.asList(
-				Arguments.of("roles", Map.of("roles", List.of("IbisAdmin"))),
-				Arguments.of("realm_access.roles", Map.of("realm_access", Map.of("roles", List.of("IbisAdmin")))),
-				Arguments.of("realm_access.roles", Map.of("realm_access", Map.of("roles", List.of("IbisAdmin", "IbisObserver")))),
-				Arguments.of("realm_access.roles", Map.of("realm_access", Map.of("roles", List.of("IbisAdmin,IbisObserver")))),
-				Arguments.of("realm_access.roles", Map.of("realm_access", Map.of("roles", List.of("IbisAdmin, IbisObserver"))))
+				Arguments.of("roles", Map.of("roles", ""), 1),
+				Arguments.of("roles", Map.of("roles", List.of()), 1),
+				Arguments.of("roles", Map.of("roles", List.of("")), 1),
+				Arguments.of("roles", Map.of("roles", List.of("IbisAdmin")), 3),
+				Arguments.of("roles", Map.of("roles", List.of("IbisAdmin,")), 3),
+				Arguments.of("roles", Map.of("roles", List.of("IbisAdmin,", "IbisObserver")), 3),
+				Arguments.of("roles", Map.of("roles", "IbisAdmin, IbisObserver"), 3),
+				Arguments.of("realm_access.roles", Map.of("realm_access", Map.of("roles", List.of("IbisAdmin"))), 3),
+				Arguments.of("realm_access.roles", Map.of("realm_access", Map.of("roles", List.of("IbisAdmin", "IbisObserver"))), 3),
+				Arguments.of("realm_access.roles", Map.of("realm_access", Map.of("roles", List.of("IbisAdmin,IbisObserver"))), 3),
+				Arguments.of("realm_access.roles", Map.of("realm_access", Map.of("roles", List.of("IbisAdmin, IbisObserver"))), 3)
 		);
 	}
 
 	@MethodSource("data")
 	@ParameterizedTest
-	void testAuthorityMapperWithOidcUserAuthority(String authoritiesClaimName, Map<String, Object> authorityClaims) throws IOException {
+	void testAuthorityMapperWithOidcUserAuthority(String authoritiesClaimName, Map<String, Object> authorityClaims, int amtRoles) throws IOException {
 		// Arrange
 		URL roleMappingFile = AuthorityMapperTest.class.getResource("/oauth-role-mapping.properties");
 		Properties properties = new Properties();
@@ -102,12 +108,12 @@ public class AuthorityMapperTest {
 		List<String> authorities = mappedAuthorities.stream()
 				.map(GrantedAuthority::getAuthority)
 				.toList();
-		assertEquals(3, authorities.size());
+		assertEquals(amtRoles, authorities.size());
 	}
 
 	@MethodSource("data")
 	@ParameterizedTest
-	void testAuthorityMapperWithOauthUserAuthority(String authoritiesClaimName, Map<String, Object> authorityClaims) throws IOException {
+	void testAuthorityMapperWithOauthUserAuthority(String authoritiesClaimName, Map<String, Object> authorityClaims, int amtRoles) throws IOException {
 		// Arrange
 		URL roleMappingFile = AuthorityMapperTest.class.getResource("/oauth-role-mapping.properties");
 		Properties properties = new Properties();
@@ -130,6 +136,6 @@ public class AuthorityMapperTest {
 		List<String> authorities = mappedAuthorities.stream()
 				.map(GrantedAuthority::getAuthority)
 				.toList();
-		assertEquals(3, authorities.size());
+		assertEquals(amtRoles, authorities.size());
 	}
 }
