@@ -19,8 +19,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.Strings;
+import org.jspecify.annotations.NonNull;
 import org.springframework.security.oauth2.core.ClaimAccessor;
 
 import lombok.extern.log4j.Log4j2;
@@ -43,12 +43,13 @@ public class AuthorityMapperUtil {
 	 * Get roles from OidcUserInfo based on the authoritiesClaimName. Please note that {@code OAuth2Authenticator.configure()} makes sure that a maximum
 	 * of only one (1) '.' is allowed in the authoritiesClaimName.
 	 */
+	@NonNull
 	static List<String> getRolesFromUserInfo(ClaimAccessor userInfo, String authoritiesClaimName) {
 		log.debug("Fetching user roles from userInfo with authoritiesClaimName [{}]", authoritiesClaimName);
 
 		// use a normal get if the key does not contain a '.'
 		if (!Strings.CS.contains(authoritiesClaimName, ".")) {
-			return ListUtils.emptyIfNull(userInfo.getClaim(authoritiesClaimName));
+			return splitRolesStringIfNeeded((Object) userInfo.getClaim(authoritiesClaimName));
 		} else {
 			String[] keyParts = authoritiesClaimName.split("\\.");
 
@@ -56,11 +57,10 @@ public class AuthorityMapperUtil {
 			Map<String, Collection<String>> realmAccess = userInfo.getClaim(keyParts[0]);
 
 			// get second part of the key
-			List<String> strings = List.copyOf(realmAccess.get(keyParts[1]));
+			List<String> userRoles = List.copyOf(realmAccess.get(keyParts[1]));
 
-			log.debug("fetched user roles [{}] from userInfo", strings);
-
-			return splitRolesStringIfNeeded(strings);
+			log.debug("fetched user roles [{}] from userInfo", userRoles);
+			return splitRolesStringIfNeeded(userRoles);
 		}
 	}
 
@@ -68,6 +68,7 @@ public class AuthorityMapperUtil {
 	 * Get roles from OAuth2UserAuthority userAttributes based on the authoritiesClaimName. Please note that {@code OAuth2Authenticator.configure()} makes
 	 * sure that a maximum of only one (1) '.' is allowed in the authoritiesClaimName.
 	 */
+	@NonNull
 	static List<String> getRolesFromAttributesMap(Map<String, Object> userAttributes, String authoritiesClaimName) {
 		if (userAttributes == null || userAttributes.isEmpty()) {
 			return List.of();
@@ -77,27 +78,39 @@ public class AuthorityMapperUtil {
 
 		// use a normal get if the key does not contain a '.'
 		if (!Strings.CS.contains(authoritiesClaimName, ".")) {
-			return ListUtils.emptyIfNull((List<String>) userAttributes.get(authoritiesClaimName));
+			return splitRolesStringIfNeeded(userAttributes.get(authoritiesClaimName));
 		} else {
 			String[] keyParts = authoritiesClaimName.split("\\.");
 
-			// get the first part of the key
+			// Get the first part of the key
 			Map<String, Collection<String>> realmAccess = (Map<String, Collection<String>>) userAttributes.get(keyParts[0]);
 
-			// get second part of the key
-			List<String> strings = List.copyOf(realmAccess.get(keyParts[1]));
+			// Get second part of the key
+			List<String> userRoles = List.copyOf(realmAccess.get(keyParts[1]));
 
-			log.debug("fetched user roles [{}] from userAttributes", strings);
-
-			return splitRolesStringIfNeeded(strings);
+			log.debug("fetched user roles [{}] from userAttributes", userRoles);
+			return splitRolesStringIfNeeded(userRoles);
 		}
 	}
 
-	private static List<String> splitRolesStringIfNeeded(List<String> roles) {
-		if (roles.size() != 1 && !roles.getFirst().contains(",")) {
-			return roles;
+	@SuppressWarnings("unchecked")
+	private static List<String> splitRolesStringIfNeeded(Object roles) {
+		if (roles instanceof String rolesStr) {
+			return StringUtil.split(rolesStr);
+		} else if (roles instanceof List list) {
+			return splitRolesStringIfNeeded(list);
+		} else {
+			return List.of();
 		}
+	}
 
-		return StringUtil.split(roles.getFirst());
+	/**
+	 * End end-users may opt to return a comma-separated string with roles.
+	 */
+	private static List<String> splitRolesStringIfNeeded(List<String> rolesList) {
+		if (rolesList.isEmpty() || (rolesList.size() != 1 && !rolesList.getFirst().contains(","))) {
+			return rolesList;
+		}
+		return StringUtil.split(rolesList.getFirst());
 	}
 }
