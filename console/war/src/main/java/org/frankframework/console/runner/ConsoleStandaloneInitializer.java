@@ -31,7 +31,6 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.core.env.MutablePropertySources;
 import org.springframework.core.env.PropertiesPropertySource;
 import org.springframework.core.env.StandardEnvironment;
-import org.springframework.core.io.DefaultResourceLoader;
 import org.springframework.util.ClassUtils;
 
 import lombok.extern.log4j.Log4j2;
@@ -75,8 +74,9 @@ public class ConsoleStandaloneInitializer {
 
 		// Custom ClassLoader to ensure we can read from the classpath as well as the far-jar.
 		ClassLoader newClassLoader = new DirectoryClassLoader(ClassUtils.getDefaultClassLoader(), ".");
-		app.setResourceLoader(new DefaultResourceLoader(newClassLoader));
-		app.setEnvironment(new PropertyLoaderEnvironment(app.getClassLoader()));
+		// I've attempted to set the default ResourceLoader but that breaks the OpenApi configuration.
+		// app.setResourceLoader(new DefaultResourceLoader(newClassLoader));
+		app.setEnvironment(new PropertyLoaderEnvironment(newClassLoader));
 
 		return app;
 	}
