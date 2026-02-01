@@ -35,6 +35,7 @@ import org.springframework.util.ClassUtils;
 
 import lombok.extern.log4j.Log4j2;
 
+import org.frankframework.credentialprovider.CredentialFactory;
 import org.frankframework.util.PropertyLoader;
 
 /**
@@ -75,10 +76,25 @@ public class ConsoleStandaloneInitializer {
 		// Custom ClassLoader to ensure we can read from the classpath as well as the far-jar.
 		ClassLoader newClassLoader = new DirectoryClassLoader(ClassUtils.getDefaultClassLoader(), ".");
 		// I've attempted to set the default ResourceLoader but that breaks the OpenApi configuration.
-		// app.setResourceLoader(new DefaultResourceLoader(newClassLoader));
+		// By changing the ResourceLoader, which is not the 'default' WebApplicationContext,
+		// it mucks up the OnWebApplicationCondition which has a strange explicit check on the ResourceLoader and not the Context itself.
+		app.addInitializers(context -> context.setClassLoader(newClassLoader));
 		app.setEnvironment(new PropertyLoaderEnvironment(newClassLoader));
 
+		loadCredentialProvider(newClassLoader);
+
 		return app;
+	}
+
+	/** Ugly hack to ensure the correct ClassLoader is used to create the CredentialProvider instance. */
+	private static void loadCredentialProvider(ClassLoader newClassLoader) {
+		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+		try {
+			Thread.currentThread().setContextClassLoader(newClassLoader);
+			CredentialFactory.getInstance();
+		} finally {
+			Thread.currentThread().setContextClassLoader(originalClassLoader);
+		}
 	}
 
 	/**
