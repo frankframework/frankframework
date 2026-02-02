@@ -73,7 +73,7 @@ public class ConsoleStandaloneInitializer {
 		app.setSources(Set.of("SpringBootContext.xml"));
 		app.addPrimarySources(List.of(WsSciWrapper.class));
 
-		// Custom ClassLoader to ensure we can read from the classpath as well as the far-jar.
+		// Custom ClassLoader to ensure we can read from the classpath as well as the fat-jar.
 		ClassLoader newClassLoader = new DirectoryClassLoader(ClassUtils.getDefaultClassLoader(), ".");
 		// I've attempted to set the default ResourceLoader but that breaks the OpenApi configuration.
 		// By changing the ResourceLoader, which is not the 'default' WebApplicationContext,
