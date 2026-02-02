@@ -439,7 +439,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 	}
 
 	@NonNull
-	private static String bytesToString(@NonNull byte[] bytes) {
+	private static String bytesToString(byte @NonNull [] bytes) {
 		CharsetDetector detector = new CharsetDetector();
 		detector.setText(bytes);
 		CharsetMatch match = detector.detect();
@@ -450,7 +450,7 @@ public class LocalFileSystem extends AbstractFileSystem<Path> implements IWritab
 			// If confidence was low, use system default charset
 			charset = Charset.defaultCharset();
 		}
-		return XmlEncodingUtils.replaceNonValidXmlCharacters(new String(bytes, charset), '?', false, true);
+		return Objects.requireNonNull(XmlEncodingUtils.replaceNonValidXmlCharacters(new String(bytes, charset), '?', false, true));
 	}
 
 	@Nullable

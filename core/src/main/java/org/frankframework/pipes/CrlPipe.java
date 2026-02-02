@@ -100,9 +100,9 @@ public class CrlPipe extends FixedForwardPipe {
 	}
 
 	private boolean isCRLOK(X509CRL x509crl, Message issuer) throws PipeRunException {
-		try {
+		try (InputStream issuerInputStream = issuer.asInputStream()) {
 			CertificateFactory certificateFactory = CertificateFactory.getInstance("X.509");
-			X509Certificate issuerCertificate = (X509Certificate)certificateFactory.generateCertificate(issuer.asInputStream());
+			X509Certificate issuerCertificate = (X509Certificate)certificateFactory.generateCertificate(issuerInputStream);
 			if (x509crl.getIssuerX500Principal().equals(issuerCertificate.getSubjectX500Principal())) {
 				return true;
 			}

@@ -67,7 +67,7 @@ public class ZipIteratorPipe extends IteratingPipe<String> {
 	}
 
 	protected ZipInputStream getZipInputStream(Message input) throws SenderException {
-		if (input == null) {
+		if (Message.isNull(input)) {
 			throw new SenderException("input is null. Must supply String (Filename, with processFile=true), File or InputStream as input");
 		}
 

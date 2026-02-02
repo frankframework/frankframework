@@ -31,13 +31,13 @@ public class ThrowingAfterCloseInputStream extends InputStream {
 	}
 
 	@Override
-	public int read(@NonNull byte[] b) throws IOException {
+	public int read(byte @NonNull [] b) throws IOException {
 		assertNotClosed();
 		return delegate.read(b);
 	}
 
 	@Override
-	public int read(@NonNull byte[] b, int off, int len) throws IOException {
+	public int read(byte @NonNull [] b, int off, int len) throws IOException {
 		assertNotClosed();
 		return delegate.read(b, off, len);
 	}

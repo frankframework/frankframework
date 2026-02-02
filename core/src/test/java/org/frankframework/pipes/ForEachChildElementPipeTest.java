@@ -1140,7 +1140,7 @@ public class ForEachChildElementPipeTest extends PipeTestBase<ForEachChildElemen
 		}
 
 		@Override
-		public int read(@NonNull byte[] buf, int off, int len) throws IOException {
+		public int read(byte @NonNull [] buf, int off, int len) throws IOException {
 			int l=super.read(buf, off, Math.min(len, blockSize));
 			if (l<0) {
 				print("{EOF}");

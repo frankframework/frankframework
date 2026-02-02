@@ -289,7 +289,7 @@ public abstract class AbstractClassLoader extends ClassLoader implements IConfig
 	 */
 	@NonNull
 	@Override
-	public Class<?> publicDefineClass(@NonNull String name, @NonNull byte[] b, @Nullable ProtectionDomain protectionDomain) {
+	public Class<?> publicDefineClass(@NonNull String name, byte @NonNull [] b, @Nullable ProtectionDomain protectionDomain) {
 		return super.defineClass(name, b, 0, b.length, protectionDomain);
 	}
 

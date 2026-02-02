@@ -112,11 +112,9 @@ public class FileSender implements IConfigurable, FrankElement {
 					createDirectories(path);
 				}
 
-				try (FileOutputStream fileOutputStream = new FileOutputStream(file)) {
-					InputStream inputStream = message.asInputStream(encoding);
-					if (inputStream != null) {
-						inputStream.transferTo(fileOutputStream);
-					}
+				try (FileOutputStream fileOutputStream = new FileOutputStream(file);
+					 InputStream inputStream = message.asInputStream(encoding)) {
+					inputStream.transferTo(fileOutputStream);
 				} catch (Exception e) {
 					throw new SenderException("Exception writing file '" + filename + "': " + e.getMessage(), e);
 				}

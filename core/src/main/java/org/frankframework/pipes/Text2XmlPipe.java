@@ -132,7 +132,7 @@ public class Text2XmlPipe extends FixedForwardPipe {
 		}
 		Reader encapsulatingReader = isReplaceNonXmlChars() ? new EncapsulatingReader(message.asReader(), prefix, suffix) {
 			@Override
-			public int read(@NonNull char[] cbuf, int off, int len) throws IOException {
+			public int read(char @NonNull [] cbuf, int off, int len) throws IOException {
 				int lenRead = super.read(cbuf, off, len);
 				return XmlEncodingUtils.replaceNonPrintableCharacters(cbuf, off, lenRead);
 			}

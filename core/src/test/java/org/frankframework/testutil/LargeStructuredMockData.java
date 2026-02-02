@@ -138,7 +138,7 @@ public class LargeStructuredMockData {
 		}
 
 		@Override
-		public int read(@NonNull char[] cbuf, int off, int len) throws IOException {
+		public int read(char @NonNull [] cbuf, int off, int len) throws IOException {
 			if (isClosed) {
 				throw new EOFException("Reader is closed");
 			}
@@ -204,7 +204,7 @@ public class LargeStructuredMockData {
 		}
 
 		@Override
-		public int read(@NonNull byte[] buf, int off, int len) throws IOException {
+		public int read(byte @NonNull [] buf, int off, int len) throws IOException {
 			if (isClosed) {
 				throw new EOFException("Reader is closed");
 			}

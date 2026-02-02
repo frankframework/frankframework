@@ -70,7 +70,7 @@ public class NetStorageUtils {
 	 * @param hashType determines which algorithm to use. The recommendation is to use HMAC-SHA256
 	 * @return a byte[] presenting the HMAC hash of the source data.
 	 */
-	public static byte[] computeKeyedHash(@NonNull byte[] data, String key, KeyedHashAlgorithm hashType) {
+	public static byte[] computeKeyedHash(byte @NonNull [] data, String key, KeyedHashAlgorithm hashType) {
 		if(key == null) return new byte[0];
 
 		try {

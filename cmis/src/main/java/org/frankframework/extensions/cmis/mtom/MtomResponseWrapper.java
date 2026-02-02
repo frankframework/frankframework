@@ -89,7 +89,7 @@ public class MtomResponseWrapper extends HttpServletResponseWrapper {
 		}
 
 		@Override
-		public void write(@NonNull byte[] b, int off, int len) {
+		public void write(byte @NonNull [] b, int off, int len) {
 			bufferStream.write(b, off, len);
 		}
 

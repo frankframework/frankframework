@@ -79,7 +79,7 @@ public class EncapsulatingReader extends FilterReader {
 	}
 
 	@Override
-	public int read(@NonNull char[] cbuf, int off, int len) throws IOException {
+	public int read(char @NonNull [] cbuf, int off, int len) throws IOException {
 		int charsRead=0;
 		if (!readPrefix) {
 			while (position<prefix.length() && charsRead<len) {

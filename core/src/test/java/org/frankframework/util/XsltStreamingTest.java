@@ -102,7 +102,7 @@ public class XsltStreamingTest {
 		}
 
 		@Override
-		public int read(@NonNull byte[] buf, int off, int len) throws IOException {
+		public int read(byte @NonNull [] buf, int off, int len) throws IOException {
 			if (len>blocksize) {
 				len=blocksize;
 			}
