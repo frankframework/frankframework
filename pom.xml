@@ -140,7 +140,7 @@
 			<dependency><!-- Can be removed when SQS jar is updated > 2.25.17, with an updated netty-nio-client > 2.25.17 and has a higher version of netty-codec-http. -->
 				<groupId>io.netty</groupId>
 				<artifactId>netty-codec-http</artifactId>
-				<version>4.1.125.Final</version>
+				<version>4.2.9.Final</version>
 			</dependency>
 
 			<dependency>
