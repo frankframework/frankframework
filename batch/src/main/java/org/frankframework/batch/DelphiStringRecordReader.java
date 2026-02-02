@@ -65,7 +65,7 @@ public class DelphiStringRecordReader extends Reader {
 	/*
 	 * Fill buffer if empty, then copy characters as required.
 	 */
-	public int read(@NonNull char[] cbuf, int off, int len) throws IOException {
+	public int read(char @NonNull [] cbuf, int off, int len) throws IOException {
 		if (buffer==null || bufferPos>=bufferLen) {
 			fillBuffer();
 		}

@@ -104,12 +104,10 @@ public class CsvParserPipe extends FixedForwardPipe {
 	public PipeRunResult doPipe(Message message, PipeLineSession session) throws PipeRunException {
 		try {
 			MessageBuilder messageBuilder = new MessageBuilder();
-			try (Reader reader = message.asReader()) {
-				try (SaxDocumentBuilder document = new SaxDocumentBuilder("csv", messageBuilder.asXmlWriter(), isPrettyPrint())) {
-					CSVParser csvParser = format.parse(reader);
-					for (CSVRecord csvRecord : csvParser) {
-						processCsvRecord(csvRecord, document);
-					}
+			try (Reader reader = message.asReader(); SaxDocumentBuilder document = new SaxDocumentBuilder("csv", messageBuilder.asXmlWriter(), isPrettyPrint())) {
+				CSVParser csvParser = format.parse(reader);
+				for (CSVRecord csvRecord : csvParser) {
+					processCsvRecord(csvRecord, document);
 				}
 			}
 			return new PipeRunResult(getSuccessForward(), messageBuilder.build());

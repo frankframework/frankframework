@@ -533,9 +533,7 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 					StreamUtil.streamToStream(inputStream, blobOutputStream);
 				}
 			} finally {
-				if (blobOutputStream!=null) {
-					blobOutputStream.close();
-				}
+				CloseUtils.closeSilently(blobOutputStream);
 			}
 		} catch (SQLException|JdbcException|IOException e) {
 			throw new SenderException("got exception executing an update BLOB command", e);
@@ -555,18 +553,16 @@ public abstract class AbstractJdbcQuerySender<H> extends AbstractJdbcSender<H> {
 	}
 
 	protected Message executeUpdateClobQuery(PreparedStatement statement, Message contents) throws SenderException{
-		ClobWriter clobWriter=null;
+		ClobWriter clobWriter = null;
 		try {
 			try {
 				clobWriter = getClobWriter(statement, getClobColumn());
-				if (contents!=null) {
+				if (contents != null) {
 					Reader reader = contents.asReader(getStreamCharset());
 					StreamUtil.readerToWriter(reader, clobWriter);
 				}
 			} finally {
-				if (clobWriter!=null) {
-					clobWriter.close();
-				}
+				CloseUtils.closeSilently(clobWriter);
 			}
 		} catch (SQLException|JdbcException|IOException e) {
 			throw new SenderException("got exception executing an update CLOB command", e);

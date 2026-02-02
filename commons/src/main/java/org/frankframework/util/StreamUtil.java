@@ -52,11 +52,11 @@ public class StreamUtil {
 		// Private constructor so that the utility-class cannot be instantiated.
 	}
 
-	public static String readerToString(Reader reader, String endOfLineString) throws IOException {
+	public static String readerToString(Reader reader, @Nullable String endOfLineString) throws IOException {
 		return readerToString(reader, endOfLineString, false);
 	}
 
-	public static String streamToString(InputStream stream, String endOfLineString, String streamEncoding) throws IOException {
+	public static String streamToString(InputStream stream, @Nullable String endOfLineString, String streamEncoding) throws IOException {
 		return readerToString(StreamUtil.getCharsetDetectingInputStreamReader(stream, streamEncoding), endOfLineString);
 	}
 

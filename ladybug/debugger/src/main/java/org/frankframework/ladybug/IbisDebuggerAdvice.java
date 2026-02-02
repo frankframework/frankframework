@@ -314,7 +314,7 @@ public class IbisDebuggerAdvice implements InitializingBean, ThreadLifeCycleEven
 			private long written;
 
 			@Override
-			public void write(@NonNull char[] buffer, int offset, int length) throws IOException {
+			public void write(char @NonNull [] buffer, int offset, int length) throws IOException {
 				if (written <= maxSize) {
 					writer.write(buffer, offset, length);
 					written += length;

@@ -47,7 +47,7 @@ public class BytesMessageInputStream extends InputStream {
 	}
 
 	@Override
-	public int read(@NonNull byte[] b) throws IOException {
+	public int read(byte @NonNull [] b) throws IOException {
 		try {
 			return bytesMsg.readBytes(b);
 		} catch (JMSException e) {
@@ -56,7 +56,7 @@ public class BytesMessageInputStream extends InputStream {
 	}
 
 	@Override
-	public int read(@NonNull byte[] b, int off, int len) throws IOException {
+	public int read(byte @NonNull [] b, int off, int len) throws IOException {
 		try {
 			// If we try filling the whole array from start, then we do not need to read data into
 			// a temp array and copy it.

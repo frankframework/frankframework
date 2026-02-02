@@ -149,14 +149,14 @@ public class SerializableInputStream extends InputStream implements Externalizab
 	}
 
 	@Override
-	public int read(@NonNull byte[] b) throws IOException {
+	public int read(byte @NonNull [] b) throws IOException {
 		checkIfDelegateExists();
 
 		return delegate.read(b);
 	}
 
 	@Override
-	public int read(@NonNull byte[] b, int off, int len) throws IOException {
+	public int read(byte @NonNull [] b, int off, int len) throws IOException {
 		checkIfDelegateExists();
 
 		return delegate.read(b, off, len);

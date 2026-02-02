@@ -144,7 +144,7 @@ public class OverflowToDiskOutputStream extends OutputStream implements AutoClos
 	}
 
 	@Override
-	public void write(@NonNull byte[] b, int off, int len) throws IOException {
+	public void write(byte @NonNull [] b, int off, int len) throws IOException {
 		if(closed) throw new IllegalStateException("stream already closed");
 
 		// Buffer has already been flushed
