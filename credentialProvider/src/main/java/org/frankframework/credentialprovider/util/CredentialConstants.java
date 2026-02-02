@@ -32,7 +32,7 @@ public final class CredentialConstants extends PropertyLoader {
 	private static CredentialConstants instance = null;
 
 	private CredentialConstants() {
-		super(CredentialConstants.class.getClassLoader(), APP_CONSTANTS_PROPERTIES_FILE);
+		super(Thread.currentThread().getContextClassLoader(), APP_CONSTANTS_PROPERTIES_FILE);
 	}
 
 	public static synchronized CredentialConstants getInstance() {

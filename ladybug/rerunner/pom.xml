@@ -24,6 +24,11 @@
 			<groupId>org.frankframework</groupId>
 			<artifactId>frankframework-management-gateway</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>org.frankframework</groupId>
+			<artifactId>credentialprovider</artifactId>
+			<optional>true</optional>
+		</dependency>
 
 		<dependency>
 			<groupId>org.projectlombok</groupId>
