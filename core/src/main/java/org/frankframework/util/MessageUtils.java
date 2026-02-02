@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
@@ -366,18 +367,25 @@ public class MessageUtils {
 		}
 		try (InputStream inputStream = message.asInputStream()) {
 			try (JsonParser parser = Json.createParser(inputStream)) {
-				parser.next();
-				return MediaType.APPLICATION_JSON;
+				while (parser.hasNext()) {
+					parser.next(); // Throw away the parse results as we only want to validate
+				}
+			} catch (NoSuchElementException e) {
+				// Ignore exception, indicates end of the JSON
 			}
+			// If we can reach this we are JSON
+			return MediaType.APPLICATION_JSON;
 		} catch (JsonParsingException | IOException e) {
-			return MediaType.TEXT_PLAIN;
+			// Ignore these exceptions, they indicate the message is not valid JSON
 		}
+		return MediaType.TEXT_PLAIN;
 	}
 
 	/**
 	 * Resource intensive operation, preserves the message and calculates an MD5 hash over the entire message.
 	 */
 	@SuppressWarnings("java:S4790") // MD5 usage is allowed for checksums
+	@Nullable
 	public static String generateMD5Hash(Message message) {
 		try {
 			try (InputStream inputStream = message.asInputStream()) {
@@ -392,6 +400,7 @@ public class MessageUtils {
 	/**
 	 * Resource intensive operation, preserves the message and calculates an CRC32 checksum over the entire message.
 	 */
+	@Nullable
 	public static Long generateCRC32(Message message) {
 		try {
 			CRC32 checksum = new CRC32();
