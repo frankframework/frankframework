@@ -15,7 +15,6 @@
 */
 package org.frankframework.console.runner;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -29,8 +28,15 @@ import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.context.event.ApplicationFailedEvent;
 import org.springframework.boot.web.servlet.ServletContextInitializer;
 import org.springframework.context.ApplicationListener;
+import org.springframework.core.env.MutablePropertySources;
+import org.springframework.core.env.PropertiesPropertySource;
+import org.springframework.core.env.StandardEnvironment;
+import org.springframework.util.ClassUtils;
 
 import lombok.extern.log4j.Log4j2;
+
+import org.frankframework.credentialprovider.CredentialFactory;
+import org.frankframework.util.PropertyLoader;
 
 /**
  * Spring Boot entrypoint or main class defined in the pom.xml when packaging using the 'spring-boot:repackage' goal.
@@ -64,12 +70,53 @@ public class ConsoleStandaloneInitializer {
 		app.setAllowBeanDefinitionOverriding(true);
 		app.setWebApplicationType(WebApplicationType.SERVLET);
 		app.addListeners(new FailedInitializationMonitor());
-		Set<String> set = new HashSet<>();
-		set.add("SpringBootContext.xml");
-		app.setSources(set);
+		app.setSources(Set.of("SpringBootContext.xml"));
 		app.addPrimarySources(List.of(WsSciWrapper.class));
 
+		// Custom ClassLoader to ensure we can read from the classpath as well as the fat-jar.
+		ClassLoader newClassLoader = new DirectoryClassLoader(ClassUtils.getDefaultClassLoader(), ".");
+		// I've attempted to set the default ResourceLoader but that breaks the OpenApi configuration.
+		// By changing the ResourceLoader, which is not the 'default' WebApplicationContext,
+		// it mucks up the OnWebApplicationCondition which has a strange explicit check on the ResourceLoader and not the Context itself.
+		app.addInitializers(context -> context.setClassLoader(newClassLoader));
+		app.setEnvironment(new PropertyLoaderEnvironment(newClassLoader));
+
+		loadCredentialProvider(newClassLoader);
+
 		return app;
+	}
+
+	/** Ugly hack to ensure the correct ClassLoader is used to create the CredentialProvider instance. */
+	private static void loadCredentialProvider(ClassLoader newClassLoader) {
+		ClassLoader originalClassLoader = Thread.currentThread().getContextClassLoader();
+		try {
+			Thread.currentThread().setContextClassLoader(newClassLoader);
+			CredentialFactory.getInstance();
+		} finally {
+			Thread.currentThread().setContextClassLoader(originalClassLoader);
+		}
+	}
+
+	/**
+	 * Custom Environment that uses our own {@link PropertyLoader} to use AdditionalStringResolver.
+	 * Also attempts to load properties from the same directory as the WAR file when running as an executable WAR.
+	 */
+	public static class PropertyLoaderEnvironment extends StandardEnvironment {
+		public PropertyLoaderEnvironment(ClassLoader classLoader) {
+			super(createPropertySources(classLoader));
+		}
+
+		private static MutablePropertySources createPropertySources(ClassLoader classLoader) {
+			MutablePropertySources propertySources = new MutablePropertySources();
+			propertySources.addLast(new PropertiesPropertySource("application", new PropertyLoader(classLoader, "application.properties")));
+			propertySources.addLast(new PropertiesPropertySource("ladybug", new PropertyLoader(classLoader, "testtool.properties")));
+			return propertySources;
+		}
+
+		@Override
+		protected void customizePropertySources(MutablePropertySources propertySources) {
+			// NO OP
+		}
 	}
 
 	/**
