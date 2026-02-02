@@ -252,7 +252,7 @@
 			<dependency>
 				<groupId>com.google.protobuf</groupId>
 				<artifactId>protobuf-java</artifactId>
-				<version>4.33.4</version>
+				<version>4.33.5</version>
 			</dependency>
 			<dependency>
 				<groupId>com.google.guava</groupId>
@@ -786,7 +786,7 @@
 							<path>
 								<groupId>com.uber.nullaway</groupId>
 								<artifactId>nullaway</artifactId>
-								<version>0.13.0</version>
+								<version>0.13.1</version>
 							</path>
 							<!-- Because Error Prone needs to be added explicitly we now also need to explicitly add other annotation processors here -->
 							<path>
