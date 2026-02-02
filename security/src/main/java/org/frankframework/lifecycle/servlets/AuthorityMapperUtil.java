@@ -44,7 +44,7 @@ public class AuthorityMapperUtil {
 	 * of only one (1) '.' is allowed in the authoritiesClaimName.
 	 */
 	@NonNull
-	static List<String> getRolesFromUserInfo(ClaimAccessor userInfo, String authoritiesClaimName) {
+	static List<String> getRolesFromClaim(ClaimAccessor userInfo, String authoritiesClaimName) {
 		log.debug("Fetching user roles from userInfo with authoritiesClaimName [{}]", authoritiesClaimName);
 
 		// use a normal get if the key does not contain a '.'
@@ -69,7 +69,7 @@ public class AuthorityMapperUtil {
 	 * sure that a maximum of only one (1) '.' is allowed in the authoritiesClaimName.
 	 */
 	@NonNull
-	static List<String> getRolesFromAttributesMap(Map<String, Object> userAttributes, String authoritiesClaimName) {
+	static List<String> getRolesFromAttributes(Map<String, Object> userAttributes, String authoritiesClaimName) {
 		if (userAttributes == null || userAttributes.isEmpty()) {
 			return List.of();
 		}
@@ -96,7 +96,8 @@ public class AuthorityMapperUtil {
 	@SuppressWarnings("unchecked")
 	private static List<String> splitRolesStringIfNeeded(Object roles) {
 		if (roles instanceof String rolesStr) {
-			return StringUtil.split(rolesStr);
+			// Split on JwtGrantedAuthoritiesConverter#DEFAULT_AUTHORITIES_CLAIM_DELIMITER && whitespace
+			return StringUtil.split(rolesStr, ", ");
 		} else if (roles instanceof List list) {
 			return splitRolesStringIfNeeded(list);
 		} else {

@@ -39,10 +39,10 @@ public class KeycloakBearerOnlyAuthenticatorUserinfoIntegrationTest extends Keyc
 	static void setup() throws IOException {
 		// Set system properties for the application to use the Keycloak container and start the framework initializer
 		System.setProperty("application.security.console.authentication.type", "BEARER_ONLY");
-		System.setProperty("application.security.console.authentication.issuerUri", "http://localhost:%s/realms/test".formatted(keycloak.getHttpPort()));
+		System.setProperty("application.security.console.authentication.issuerUri", "http://localhost:%s/realms/test".formatted(httpPort));
 		System.setProperty("application.security.console.authentication.userNameAttributeName", "preferred_username");
 		System.setProperty("application.security.console.authentication.authoritiesClaimName", "realm_access.roles");
-		System.setProperty("application.security.console.authentication.userInfoUri", "http://localhost:%s/realms/test/protocol/openid-connect/userinfo?scope=openid".formatted(keycloak.getHttpPort()));
+		System.setProperty("application.security.console.authentication.userInfoUri", "http://localhost:%s/realms/test/protocol/openid-connect/userinfo?scope=openid".formatted(httpPort));
 
 		SpringApplication springApplication = IafTestInitializer.configureApplication();
 
@@ -71,7 +71,7 @@ public class KeycloakBearerOnlyAuthenticatorUserinfoIntegrationTest extends Keyc
 		RestTemplate restTemplate = new RestTemplate();
 
 		TokenResponse tokenResponse = restTemplate.postForObject(
-				getTokenEndpoint(keycloak.getHttpPort()),
+				getTokenEndpoint(),
 				getRequestEntity(),
 				TokenResponse.class);
 

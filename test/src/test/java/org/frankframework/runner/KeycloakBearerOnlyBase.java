@@ -23,9 +23,11 @@ import dasniko.testcontainers.keycloak.KeycloakContainer;
 public abstract class KeycloakBearerOnlyBase {
 	public static final KeycloakContainer keycloak = new KeycloakContainer()
 			.withRealmImportFile("/test-realm.json");
+	protected static int httpPort = 8888;
 
 	static {
 		keycloak.start();
+		httpPort = keycloak.getHttpPort();
 	}
 
 	@SuppressWarnings("NullAway.Init")
@@ -91,7 +93,7 @@ public abstract class KeycloakBearerOnlyBase {
 		}
 	}
 
-	String getTokenEndpoint(int httpPort) {
+	String getTokenEndpoint() {
 		return String.format(TOKEN_ENDPOINT_FORMAT, httpPort);
 	}
 }

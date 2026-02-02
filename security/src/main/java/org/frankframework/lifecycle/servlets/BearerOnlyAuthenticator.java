@@ -18,13 +18,10 @@ package org.frankframework.lifecycle.servlets;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.Strings;
-import org.jspecify.annotations.NonNull;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpHeaders;
@@ -130,11 +127,18 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 
 		@Override
 		public final AbstractAuthenticationToken convert(Jwt jwt) {
-			Collection<GrantedAuthority> authorities = new HashSet<>(getJwtCollectionConverter().convert(jwt));
+			if (StringUtils.isNotBlank(userInfoUri)) {
+				log.debug("Fetching user roles from userInfoUri [{}]", userInfoUri);
+				jwt = updateJwtWithUserInfoUri(jwt);
+			}
+
+			Collection<GrantedAuthority> authorities = new HashSet<>(getGrantedAuthorities(jwt));
 			authorities.add(FactorGrantedAuthority.fromAuthority(FactorGrantedAuthority.BEARER_AUTHORITY));
+
 			String principalClaimValue = jwt.getClaimAsString(userNameAttributeName);
 			AbstractAuthenticationToken token = new JwtAuthenticationToken(jwt, authorities, principalClaimValue);
 
+			// If Authorities are set, ensure the user has the required roles
 			if (!getAuthorities().isEmpty()) {
 				boolean result = !Collections.disjoint(getAuthorities(), token.getAuthorities());
 				token.setAuthenticated(result);
@@ -143,73 +147,39 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 
 			return token;
 		}
-
 	}
 
 	/**
 	 * <p>Determines the converter to use for extracting authorities from the JWT token.</p>
+	 * See {@link JwtGrantedAuthoritiesConverter} for the default implementation.
+	 * This one splits on both spaces and comma's, as well as a single line roles list.
 	 *
 	 * @return the converter to use for extracting authorities from the JWT token
 	 */
-	Converter<Jwt, Collection<GrantedAuthority>> getJwtCollectionConverter() {
-		// use default converter when no nested claim is used and no userInfoUri is set
-		if (!Strings.CS.contains(authoritiesClaimName, ".") && StringUtils.isBlank(userInfoUri)) {
-			log.debug("Using default JwtGrantedAuthoritiesConverter for authoritiesClaimName [{}]", authoritiesClaimName);
-			JwtGrantedAuthoritiesConverter grantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
-
-			if (StringUtils.isNotBlank(authoritiesClaimName)) {
-				grantedAuthoritiesConverter.setAuthoritiesClaimName(authoritiesClaimName);
-			}
-
-			grantedAuthoritiesConverter.setAuthorityPrefix(DEFAULT_ROLE_PREFIX);
-
-			return grantedAuthoritiesConverter;
-		}
-
+	Collection<GrantedAuthority> getGrantedAuthorities(Jwt jwt) {
 		log.debug("Using custom Jwt to GrantedAuthorities converter for authoritiesClaimName [{}]", authoritiesClaimName);
-
-		// use custom converter to extract roles from nested claim or from userInfoUri
-		return jwt -> getListOfRoles(jwt).stream()
+		return AuthorityMapperUtil.getRolesFromClaim(jwt, authoritiesClaimName).stream()
 					.map(role -> new SimpleGrantedAuthority(DEFAULT_ROLE_PREFIX + role))
 					.collect(Collectors.toList());
 	}
 
-	/**
-	 * <ul>
-	 *   <li>If the userInfoUri is set, we obtain the user info from the IdP using the access token and extract the roles from there</li>
-	 *   <li>Otherwise, we get the roles from the given jwt</li>
-	 * </ul>
-	 */
-	@NonNull
-	private List<String> getListOfRoles(Jwt jwt) {
-		if (StringUtils.isNotBlank(userInfoUri)) {
-			log.debug("Fetching user roles from userInfoUri [{}]", userInfoUri);
-			return getRolesFromUserInfoUri(jwt.getTokenValue());
-		}
-
-		// get roles from given jwt
-		log.debug("No userInfoUri configured, fetching user roles from JWT token");
-		return AuthorityMapperUtil.getRolesFromUserInfo(jwt, authoritiesClaimName);
-	}
-
-	List<String> getRolesFromUserInfoUri(String accessToken) {
+	private Jwt updateJwtWithUserInfoUri(Jwt jwt) {
 		final Map<String, Object> userInfo;
 		try {
 			userInfo = RestClient.create()
 				.get()
 				.uri(userInfoUri)
 				.accept(MediaType.APPLICATION_JSON)
-				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken)
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + jwt.getTokenValue())
 				.retrieve()
 				.body(new ParameterizedTypeReference<>() {});
 		} catch (HttpClientErrorException e) {
 			log.debug("userInfo endpoint exception, status code [{}]", () -> e.getStatusCode().value(), () -> e);
-			return List.of();
+			return jwt;
 		}
 
 		log.debug("Fetched user info: {}", userInfo);
-
-		return AuthorityMapperUtil.getRolesFromAttributesMap(userInfo, authoritiesClaimName);
+		return new Jwt(jwt.getTokenValue(), jwt.getIssuedAt(), jwt.getExpiresAt(), jwt.getHeaders(), userInfo);
 	}
 
 	private JwtDecoder getJwtDecoder() {
