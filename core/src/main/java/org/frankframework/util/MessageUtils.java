@@ -364,12 +364,15 @@ public class MessageUtils {
 		if (!"{".equals(firstChar) && !"[".equals(firstChar)) {
 			return MediaType.TEXT_PLAIN;
 		}
-		try (InputStream inputStream = message.asInputStream()) {
-			try (JsonParser parser = Json.createParser(inputStream)) {
-				parser.next();
-				return MediaType.APPLICATION_JSON;
+		try (InputStream inputStream = message.asInputStream(); JsonParser parser = Json.createParser(inputStream)) {
+			while (parser.hasNext()) {
+				parser.next(); // Throw away the parse results as we only want to validate
 			}
+			// If we can reach this we are JSON
+			return MediaType.APPLICATION_JSON;
 		} catch (JsonParsingException | IOException e) {
+			// Ignore these exceptions, they indicate the message is not valid JSON
+			LOG.trace("JSON Parsing exception", e);
 			return MediaType.TEXT_PLAIN;
 		}
 	}
@@ -378,6 +381,7 @@ public class MessageUtils {
 	 * Resource intensive operation, preserves the message and calculates an MD5 hash over the entire message.
 	 */
 	@SuppressWarnings("java:S4790") // MD5 usage is allowed for checksums
+	@Nullable
 	public static String generateMD5Hash(Message message) {
 		try {
 			try (InputStream inputStream = message.asInputStream()) {
@@ -392,6 +396,7 @@ public class MessageUtils {
 	/**
 	 * Resource intensive operation, preserves the message and calculates an CRC32 checksum over the entire message.
 	 */
+	@Nullable
 	public static Long generateCRC32(Message message) {
 		try {
 			CRC32 checksum = new CRC32();
