@@ -48,6 +48,7 @@ import org.frankframework.stream.MessageBuilder;
 import org.frankframework.util.EnumUtils;
 import org.frankframework.util.TransformerPool;
 import org.frankframework.util.XmlUtils;
+import org.frankframework.util.TransformerPool.OutputType;
 import org.frankframework.xml.PrettyPrintFilter;
 import org.frankframework.xml.SkipEmptyTagsFilter;
 import org.frankframework.xml.TransformerFilter;
@@ -346,7 +347,10 @@ public class XsltSender extends AbstractSenderWithParameters {
 	}
 
 	/**
-	 * For xpathExpression only
+	 * Only valid for xPathExpression.
+	 * If outputType is {@link OutputType#XML} then the resulting stylesheet will use the {@code copy-of} method instead of {@code value-of}.
+	 * </p>
+	 * This field controls how to read the input and does not determine the output.
 	 * @ff.default text
 	 */
 	public void setOutputType(TransformerPool.OutputType string) {
