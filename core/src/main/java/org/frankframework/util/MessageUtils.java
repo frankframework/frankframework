@@ -377,6 +377,7 @@ public class MessageUtils {
 			return MediaType.APPLICATION_JSON;
 		} catch (JsonParsingException | IOException e) {
 			// Ignore these exceptions, they indicate the message is not valid JSON
+			LOG.trace("JSON Parsing exception", e);
 		}
 		return MediaType.TEXT_PLAIN;
 	}
