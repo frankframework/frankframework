@@ -11,6 +11,13 @@ jdbc:
     username: "fake+user"
     password: "fake_pwd"
 
+  - name: "properties"
+    type: "org.frankframework.jdbc.datasource.MockDataSource"
+    url: "unused:url:mem:test"
+    properties:
+      one: 1
+      two: "two"
+      property.with.dots: "dots"
 
   - name: "substitution"
     type: "${substitution.type}"

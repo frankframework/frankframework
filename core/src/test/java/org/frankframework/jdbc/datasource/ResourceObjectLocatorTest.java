@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Properties;
+
 import javax.sql.DataSource;
 
 import org.h2.jdbcx.JdbcDataSource;
@@ -28,6 +30,21 @@ public class ResourceObjectLocatorTest {
 		JdbcDataSource jdbcDataSource = assertInstanceOf(JdbcDataSource.class, obj);
 		assertEquals("fake+user", jdbcDataSource.getUser());
 		assertEquals("fake_pwd", jdbcDataSource.getPassword());
+	}
+
+	@Test
+	public void parseProperties() throws Exception {
+		ResourceObjectLocator locator = new ResourceObjectLocator();
+		locator.setResourceFile("ResourceLocator/validResources.yml");
+		locator.afterPropertiesSet();
+
+		FrankResource obj = locator.lookup("jdbc/properties", null, null);
+		assertNotNull(obj);
+
+		Properties props = obj.getProperties();
+		assertEquals("1", props.get("one"));
+		assertEquals("two", props.get("two"));
+		assertEquals("dots", props.get("property.with.dots"));
 	}
 
 	@Test
