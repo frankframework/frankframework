@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.NoSuchElementException;
 import java.util.zip.CRC32;
 import java.util.zip.CheckedInputStream;
 
@@ -365,21 +364,17 @@ public class MessageUtils {
 		if (!"{".equals(firstChar) && !"[".equals(firstChar)) {
 			return MediaType.TEXT_PLAIN;
 		}
-		try (InputStream inputStream = message.asInputStream()) {
-			try (JsonParser parser = Json.createParser(inputStream)) {
-				while (parser.hasNext()) {
-					parser.next(); // Throw away the parse results as we only want to validate
-				}
-			} catch (NoSuchElementException e) {
-				// Ignore exception, indicates end of the JSON
+		try (InputStream inputStream = message.asInputStream(); JsonParser parser = Json.createParser(inputStream)) {
+			while (parser.hasNext()) {
+				parser.next(); // Throw away the parse results as we only want to validate
 			}
 			// If we can reach this we are JSON
 			return MediaType.APPLICATION_JSON;
 		} catch (JsonParsingException | IOException e) {
 			// Ignore these exceptions, they indicate the message is not valid JSON
 			LOG.trace("JSON Parsing exception", e);
+			return MediaType.TEXT_PLAIN;
 		}
-		return MediaType.TEXT_PLAIN;
 	}
 
 	/**
