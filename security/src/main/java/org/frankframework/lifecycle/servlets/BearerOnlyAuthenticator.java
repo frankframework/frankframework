@@ -23,7 +23,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.core.convert.converter.Converter;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
@@ -115,38 +114,42 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 
 		http.oauth2ResourceServer(oauth2 -> oauth2
 				.jwt(jwt -> jwt.decoder(getJwtDecoder())
-						.jwtAuthenticationConverter(new RoleBasedJwtAuthenticationConverter())));
+						.jwtAuthenticationConverter(this::jwtAuthenticationTokenConverter)));
 
 		return http.build();
 	}
 
 	/**
-	 * {@link JwtAuthenticationConverter}
+	 * Our own implementation similar to Spring's {@link JwtAuthenticationConverter}.
+	 * Unlike Spring's Converter this one is capable of:
+	 * <ul>
+	 * <li>Enriching the JWT claimset by calling the 'UserInfo' endpoint.</li>
+	 * <li>Splitting nested roles, eg. {@code realm_access.roles}.</li>
+	 * <li>Splitting a claim String on both `comma's` and `spaces`.</li>
+	 * <li>Splitting a single entry Claim list on both `comma's` and `spaces`.</li>
+	 * <li>Validating if the found Authorities may access the target resource.</li>
+	 * </ul>
 	 */
-	private class RoleBasedJwtAuthenticationConverter implements Converter<Jwt, AbstractAuthenticationToken> {
-
-		@Override
-		public final AbstractAuthenticationToken convert(Jwt jwt) {
-			if (StringUtils.isNotBlank(userInfoUri)) {
-				log.debug("Fetching user roles from userInfoUri [{}]", userInfoUri);
-				jwt = updateJwtWithUserInfoUri(jwt);
-			}
-
-			Collection<GrantedAuthority> authorities = new HashSet<>(getGrantedAuthorities(jwt));
-			authorities.add(FactorGrantedAuthority.fromAuthority(FactorGrantedAuthority.BEARER_AUTHORITY));
-
-			String principalClaimValue = jwt.getClaimAsString(userNameAttributeName);
-			AbstractAuthenticationToken token = new JwtAuthenticationToken(jwt, authorities, principalClaimValue);
-
-			// If Authorities are set, ensure the user has the required roles
-			if (!getAuthorities().isEmpty()) {
-				boolean result = !Collections.disjoint(getAuthorities(), token.getAuthorities());
-				token.setAuthenticated(result);
-				log.info("User {} required role(s) {}", () -> result ? "contains" : "does not contain", () -> getAuthorities(), token::getAuthorities);
-			}
-
-			return token;
+	protected AbstractAuthenticationToken jwtAuthenticationTokenConverter(Jwt jwt) {
+		if (StringUtils.isNotBlank(userInfoUri)) {
+			log.debug("Fetching user roles from userInfoUri [{}]", userInfoUri);
+			jwt = updateJwtWithUserInfoUri(jwt);
 		}
+
+		Collection<GrantedAuthority> authorities = new HashSet<>(getGrantedAuthorities(jwt));
+		authorities.add(FactorGrantedAuthority.fromAuthority(FactorGrantedAuthority.BEARER_AUTHORITY));
+
+		String principalClaimValue = jwt.getClaimAsString(userNameAttributeName);
+		AbstractAuthenticationToken token = new JwtAuthenticationToken(jwt, authorities, principalClaimValue);
+
+		// If Authorities are set, ensure the user has the required roles
+		if (!getAuthorities().isEmpty()) {
+			boolean result = !Collections.disjoint(getAuthorities(), token.getAuthorities());
+			token.setAuthenticated(result);
+			log.info("User {} required role(s) {}", () -> result ? "contains" : "does not contain", () -> getAuthorities(), token::getAuthorities);
+		}
+
+		return token;
 	}
 
 	/**

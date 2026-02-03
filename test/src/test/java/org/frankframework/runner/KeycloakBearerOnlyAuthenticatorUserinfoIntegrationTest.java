@@ -2,11 +2,13 @@ package org.frankframework.runner;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.ParseException;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -66,7 +68,7 @@ public class KeycloakBearerOnlyAuthenticatorUserinfoIntegrationTest extends Keyc
 	}
 
 	@Test
-	void testAuthentication() throws URISyntaxException {
+	void testAuthentication() throws URISyntaxException, ParseException {
 		// first, get a token from keycloak
 		RestTemplate restTemplate = new RestTemplate();
 
@@ -77,6 +79,9 @@ public class KeycloakBearerOnlyAuthenticatorUserinfoIntegrationTest extends Keyc
 
 		assertNotNull(tokenResponse, "Token response should not be null");
 		assertNotNull(tokenResponse.getAccessToken(), "Access token should not be null");
+
+		String userAttrName = System.getProperty("application.security.console.authentication.userNameAttributeName");
+		assertNull(tokenResponse.getClaims().get(userAttrName), "field ["+userAttrName+"] should not exist in JWT");
 
 		// then, use that token to access a protected resource in the application
 		RestTemplate restTemplateFramework = new RestTemplate();
