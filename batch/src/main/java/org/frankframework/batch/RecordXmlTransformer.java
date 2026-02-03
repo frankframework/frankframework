@@ -142,7 +142,10 @@ public class RecordXmlTransformer extends AbstractRecordHandler {
 	}
 
 	/**
-	 * Only valid for <code>xpathExpression</code>
+	 * Only valid for xPathExpression.
+	 * If outputType is {@link OutputType#XML} then the resulting stylesheet will use the {@code copy-of} method instead of {@code value-of}.
+	 * </p>
+	 * This field controls how to read the input and does not determine the output.
 	 * @ff.default text
 	 */
 	public void setOutputType(OutputType outputType) {
