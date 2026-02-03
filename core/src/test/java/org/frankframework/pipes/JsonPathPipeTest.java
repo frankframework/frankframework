@@ -111,7 +111,7 @@ class JsonPathPipeTest {
 						""",
 						"""
 								{
-								  "a": {"Hello": "World"},
+								  "a": {"Hello": "World"}
 								}
 								""")
 		);
@@ -164,7 +164,7 @@ class JsonPathPipeTest {
 		pipe.setJsonPathExpression("$.a");
 		pipe.configure();
 
-		input = Message.asMessage("{k: \"Hello World\"}");
+		input = Message.asMessage("{\"k\": \"Hello World\"}");
 
 		// Act
 		PipeRunException pipeRunException = assertThrows(PipeRunException.class, () -> pipe.doPipe(input, session));

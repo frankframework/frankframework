@@ -111,8 +111,9 @@ public class MessageUtilsTest {
 		URL url = ClassLoaderUtils.getResourceURL("/Util/MessageUtils/iso-8859-1.txt");
 		Message message = new UrlMessage(url);
 		MimeType mimeType = MessageUtils.computeMimeType(message);
-		assertTrue(mimeType.toString().contains("text/plain"), "Content-Type header ["+mimeType.toString()+"] does not contain [text/plain]");
-		assertTrue(mimeType.toString().contains("charset=ISO-8859-1"), "Content-Type header ["+mimeType.toString()+"] does not contain correct [charset]");
+		assertNotNull(mimeType);
+		assertTrue(mimeType.toString().contains("text/plain"), "Content-Type header ["+ mimeType +"] does not contain [text/plain]");
+		assertTrue(mimeType.toString().contains("charset=ISO-8859-1"), "Content-Type header ["+ mimeType +"] does not contain correct [charset]");
 	}
 
 	@Test
@@ -120,8 +121,9 @@ public class MessageUtilsTest {
 		URL url = ClassLoaderUtils.getResourceURL("/Logging/pdf-parsed-with-wrong-charset.pdf");
 		Message message = new UrlMessage(url);
 		MimeType mimeType = MessageUtils.computeMimeType(message);
-		assertTrue(mimeType.toString().contains("application/pdf"), "Content-Type header ["+mimeType.toString()+"] does not contain [application/pdf]");
-		assertNull(mimeType.getParameter("charset"), "Content-Type header ["+mimeType.toString()+"] may not contain a charset");
+		assertNotNull(mimeType);
+		assertTrue(mimeType.toString().contains("application/pdf"), "Content-Type header ["+ mimeType +"] does not contain [application/pdf]");
+		assertNull(mimeType.getParameter("charset"), "Content-Type header ["+ mimeType +"] may not contain a charset");
 	}
 
 	@Test
@@ -130,8 +132,9 @@ public class MessageUtilsTest {
 		Message message = new UrlMessage(url);
 		MimeType mimeType = MessageUtils.computeMimeType(message);
 		MessageUtils.computeMimeType(message);
-		assertTrue(mimeType.toString().contains("application/pdf"), "Content-Type header ["+mimeType.toString()+"] does not contain [application/pdf]");
-		assertNull(mimeType.getParameter("charset"), "Content-Type header ["+mimeType.toString()+"] may not contain a charset");
+		assertNotNull(mimeType);
+		assertTrue(mimeType.toString().contains("application/pdf"), "Content-Type header ["+ mimeType +"] does not contain [application/pdf]");
+		assertNull(mimeType.getParameter("charset"), "Content-Type header ["+ mimeType +"] may not contain a charset");
 	}
 
 	@Test
@@ -141,8 +144,9 @@ public class MessageUtilsTest {
 		message.getContext().put(MessageContext.METADATA_CHARSET, "auto");
 
 		MimeType mimeType = MessageUtils.computeMimeType(message);
-		assertTrue(mimeType.toString().contains("text/plain"), "Content-Type header ["+mimeType.toString()+"] does not contain [text/plain]");
-		assertTrue(mimeType.toString().contains("charset=ISO-8859-1"), "Content-Type header ["+mimeType.toString()+"] does not contain correct [charset]");
+		assertNotNull(mimeType);
+		assertTrue(mimeType.toString().contains("text/plain"), "Content-Type header ["+ mimeType +"] does not contain [text/plain]");
+		assertTrue(mimeType.toString().contains("charset=ISO-8859-1"), "Content-Type header ["+ mimeType +"] does not contain correct [charset]");
 	}
 
 	@Test
@@ -152,8 +156,9 @@ public class MessageUtilsTest {
 		message.getContext().put(MessageContext.METADATA_CHARSET, "utf-8"); // Is wrong, but it's been set, so it must be used...
 
 		MimeType mimeType = MessageUtils.computeMimeType(message);
-		assertTrue(mimeType.toString().contains("text/plain"), "Content-Type header ["+mimeType.toString()+"] does not contain [text/plain]");
-		assertTrue(mimeType.toString().contains("charset=UTF-8"), "Content-Type header ["+mimeType.toString()+"] does not contain correct [charset]");
+		assertNotNull(mimeType);
+		assertTrue(mimeType.toString().contains("text/plain"), "Content-Type header ["+ mimeType +"] does not contain [text/plain]");
+		assertTrue(mimeType.toString().contains("charset=UTF-8"), "Content-Type header ["+ mimeType +"] does not contain correct [charset]");
 	}
 
 	@Test
@@ -207,6 +212,26 @@ public class MessageUtilsTest {
 		assertNotNull(mimeType);
 		assertEquals("application/json", mimeType.toString());
 		assertEquals(JSON_TEST_INPUT, json.asString());
+	}
+
+	@Test
+	public void testInvalidJsonMessage1() throws IOException {
+		String val = "[$var]";
+		Message notJson = new Message(val);
+		MimeType mimeType = MessageUtils.computeMimeType(notJson);
+		assertNotNull(mimeType);
+		assertEquals("text/plain", mimeType.toString());
+		assertEquals(val, notJson.asString());
+	}
+
+	@Test
+	public void testInvalidJsonMessage2() throws IOException {
+		String val = "[\"key\": [1, $var]]";
+		Message notJson = new Message(val);
+		MimeType mimeType = MessageUtils.computeMimeType(notJson);
+		assertNotNull(mimeType);
+		assertEquals("text/plain", mimeType.toString());
+		assertEquals(val, notJson.asString());
 	}
 
 	@Test
