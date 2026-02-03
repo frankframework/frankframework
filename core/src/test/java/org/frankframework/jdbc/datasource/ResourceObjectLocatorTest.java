@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.yaml.snakeyaml.constructor.ConstructorException;
 
 public class ResourceObjectLocatorTest {
 
@@ -45,6 +46,18 @@ public class ResourceObjectLocatorTest {
 		assertEquals("1", props.get("one"));
 		assertEquals("two", props.get("two"));
 		assertEquals("dots", props.get("property.with.dots"));
+	}
+
+	@Test
+	public void testInvalidProperties() {
+		ResourceObjectLocator locator = new ResourceObjectLocator();
+		locator.setResourceFile("ResourceLocator/resource-with-equal-sign-and-no-value.yml");
+
+		IllegalStateException e = assertThrows(IllegalStateException.class, locator::afterPropertiesSet);
+		assertTrue(e.getMessage().contains("[ResourceLocator/resource-with-equal-sign-and-no-value.yml]"));
+
+		ConstructorException cause = assertInstanceOf(ConstructorException.class, e.getCause());
+		assertTrue(cause.getMessage().contains("Cannot create property=properties for JavaBean=FrankResource [dummy]"));
 	}
 
 	@Test
