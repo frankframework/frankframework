@@ -142,7 +142,7 @@ public class BearerOnlyAuthenticator extends AbstractServletAuthenticator {
 		String principalClaimValue = jwt.getClaimAsString(userNameAttributeName);
 		AbstractAuthenticationToken token = new JwtAuthenticationToken(jwt, authorities, principalClaimValue);
 
-		// If Authorities are set, ensure the user has the required roles
+		// If Authorities are set, the user is authenticated if the user has at least one of the required roles
 		if (!getAuthorities().isEmpty()) {
 			boolean result = !Collections.disjoint(getAuthorities(), token.getAuthorities());
 			token.setAuthenticated(result);
