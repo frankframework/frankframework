@@ -40,6 +40,7 @@ import org.springframework.security.authorization.AuthenticatedAuthorizationMana
 import org.springframework.security.authorization.AuthorizationManager;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AnonymousConfigurer;
+import org.springframework.security.config.annotation.web.configurers.CorsConfigurer;
 import org.springframework.security.config.annotation.web.configurers.CsrfConfigurer;
 import org.springframework.security.config.annotation.web.configurers.FormLoginConfigurer;
 import org.springframework.security.config.annotation.web.configurers.HeadersConfigurer;
@@ -48,7 +49,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.context.SecurityContextHolderFilter;
-import org.springframework.security.web.util.matcher.AndRequestMatcher;
 import org.springframework.security.web.util.matcher.RequestMatcher;
 
 import lombok.Getter;
@@ -171,6 +171,7 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 
 		try {
 			httpSecurityConfigurer.csrf(CsrfConfigurer::disable); // Disable CSRF, post requests should be possible.
+			httpSecurityConfigurer.cors(CorsConfigurer::disable); // Disable CORS, post requests should be possible.
 			httpSecurityConfigurer.formLogin(FormLoginConfigurer::disable); // Disable the form login filter
 			httpSecurityConfigurer.logout(LogoutConfigurer::disable); // Disable the logout filter
 			httpSecurityConfigurer.headers(h -> h.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin));
@@ -203,9 +204,13 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 			http.anonymous(AnonymousConfigurer::disable); // Disable the default anonymous filter and thus disallow all anonymous access
 		}
 
+		if (allowUnsecureOptionsRequest) {
+			http.authorizeHttpRequests(requests -> requests.requestMatchers(this::authorizationRequestMatcher).permitAll());
+			http.anonymous(withDefaults()); // Anonymous access without roles
+		}
+
 		// Enables security for all servlet endpoints
-		RequestMatcher authorizationRequestMatcher = new AndRequestMatcher(securityRequestMatcher, this::authorizationRequestMatcher);
-		http.authorizeHttpRequests(requests -> requests.requestMatchers(authorizationRequestMatcher).access(getAuthorizationManager()));
+		http.authorizeHttpRequests(requests -> requests.requestMatchers(securityRequestMatcher).access(getAuthorizationManager()));
 
 		// This filter removes x-forwarded headers and converts them to their corresponding `normal` headers. Eg. `X-Forwarded-Proto` sets HttpServletRequest.isSecure to `true`.
 		http.addFilterBefore(new CustomizedForwardedHeaderFilter(allowForwardedHeadersPassthrough), SecurityContextHolderFilter.class);
@@ -225,7 +230,7 @@ public abstract class AbstractServletAuthenticator implements IAuthenticator, Ap
 	 * @return when !(property {@value #ALLOW_OPTIONS_REQUESTS_KEY} == true, and request == OPTIONS).
 	 */
 	private boolean authorizationRequestMatcher(HttpServletRequest request) {
-		return !(allowUnsecureOptionsRequest && "OPTIONS".equals(request.getMethod()));
+		return "OPTIONS".equals(request.getMethod());
 	}
 
 	/** Before building, configure the FilterChain. */
