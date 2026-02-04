@@ -26,10 +26,13 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
+import lombok.extern.log4j.Log4j2;
+
 import org.frankframework.util.ClassUtils;
 import org.frankframework.util.CredentialFactory;
 import org.frankframework.util.StringUtil;
 
+@Log4j2
 public class ObjectCreator {
 
 	@NonNull
@@ -77,6 +80,7 @@ public class ObjectCreator {
 	@NonNull
 	private <O> O createInstance(@NonNull Class<O> clazz, @NonNull String url, @NonNull Properties properties) {
 		try {
+			log.debug("attempt to create new instance of type [{}]", clazz);
 			O instance = clazz.getDeclaredConstructor().newInstance();
 
 			for(Method method: clazz.getMethods()) {

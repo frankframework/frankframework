@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.util.Properties;
+
 import javax.sql.DataSource;
 
 import org.h2.jdbcx.JdbcDataSource;
@@ -14,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.NullAndEmptySource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.yaml.snakeyaml.constructor.ConstructorException;
 
 public class ResourceObjectLocatorTest {
 
@@ -28,6 +31,33 @@ public class ResourceObjectLocatorTest {
 		JdbcDataSource jdbcDataSource = assertInstanceOf(JdbcDataSource.class, obj);
 		assertEquals("fake+user", jdbcDataSource.getUser());
 		assertEquals("fake_pwd", jdbcDataSource.getPassword());
+	}
+
+	@Test
+	public void parseProperties() throws Exception {
+		ResourceObjectLocator locator = new ResourceObjectLocator();
+		locator.setResourceFile("ResourceLocator/validResources.yml");
+		locator.afterPropertiesSet();
+
+		FrankResource obj = locator.lookup("jdbc/properties", null, null);
+		assertNotNull(obj);
+
+		Properties props = obj.getProperties();
+		assertEquals("1", props.get("one"));
+		assertEquals("two", props.get("two"));
+		assertEquals("dots", props.get("property.with.dots"));
+	}
+
+	@Test
+	public void testInvalidProperties() {
+		ResourceObjectLocator locator = new ResourceObjectLocator();
+		locator.setResourceFile("ResourceLocator/resource-with-equal-sign-and-no-value.yml");
+
+		IllegalStateException e = assertThrows(IllegalStateException.class, locator::afterPropertiesSet);
+		assertTrue(e.getMessage().contains("[ResourceLocator/resource-with-equal-sign-and-no-value.yml]"));
+
+		ConstructorException cause = assertInstanceOf(ConstructorException.class, e.getCause());
+		assertTrue(cause.getMessage().contains("Cannot create property=properties for JavaBean=FrankResource [dummy]"));
 	}
 
 	@Test
