@@ -2,21 +2,25 @@ package org.frankframework.lifecycle.servlets;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Instant;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.springframework.core.convert.converter.Converter;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.oauth2.jwt.Jwt;
 
@@ -75,36 +79,66 @@ public class BearerOnlyAuthenticatorTest extends ServletAuthenticatorTest<Bearer
 		assertThrows(IllegalArgumentException.class, () -> authenticator.configure(httpSecurity));
 	}
 
-	@Test
-	void testJwtCollectionConverterWithAuthoritiesClaimName() {
-		// Expect our custom role mapper, by using the nested authoritiesClaimName
-		authenticator.setAuthoritiesClaimName("realm_access.roles");
-		Converter<Jwt, Collection<GrantedAuthority>> jwtCollectionConverter = authenticator.getJwtCollectionConverter();
+	public static List<Arguments> data() {
+		return Arrays.asList(
+				// Null or empty
+				Arguments.of("roles", "roles", Collections.emptyMap(), 1),
+				Arguments.of("roles", "roles", List.of(), 1),
+				Arguments.of("roles", "roles", List.of(""), 1),
+				Arguments.of("roles", "roles", null, 1),
+				Arguments.of("roles", "roles", "", 1),
 
-		Jwt jwt = jwt()
-				.claim("realm_access", Map.of("roles", List.of("IbisObserver")))
-				.build();
+				// Single and multi-line
+				Arguments.of("roles", "roles", "IbisObserver", 2),
+				Arguments.of("roles", "roles", "IbisObserver IbisAdmin", 3),
+				Arguments.of("roles", "roles", "IbisObserver,IbisAdmin", 3),
+				Arguments.of("roles", "roles", "IbisObserver, IbisAdmin", 3),
 
-		Collection<GrantedAuthority> convert = jwtCollectionConverter.convert(jwt);
+				// Collections and single-entry collection with multi-line String
+				Arguments.of("roles", "roles", List.of("IbisObserver"), 2),
+				Arguments.of("roles", "roles", List.of("IbisObserver,"), 2),
+				Arguments.of("roles", "roles", List.of("IbisObserver IbisAdmin"), 2), // Not seen as multi-value
+				Arguments.of("roles", "roles", List.of("IbisObserver,IbisAdmin"), 3),
 
-		assertNotNull(convert, "Converted authorities should not be null");
+				// Nested claim
+				Arguments.of("realm_access.roles", "realm_access", Map.of("roles", "IbisObserver"), 2),
+				Arguments.of("realm_access.roles", "realm_access", Map.of("roles", "IbisObserver, IbisAdmin"), 3),
+				Arguments.of("realm_access.roles", "realm_access", Map.of("roles", List.of("IbisObserver")), 2),
+				Arguments.of("realm_access.roles", "realm_access", Map.of("roles", List.of("IbisObserver", "IbisAdmin")), 3),
+				Arguments.of("realm_access.roles", "realm_access", Map.of("roles", List.of("IbisObserver, IbisAdmin")), 3)
+		);
 	}
 
-	@Test
-	void testJwtCollectionConverterWithUserInfoUriMocked() {
-		authenticator.setUserInfoUri("http://localhost:8080/realms/myrealm/protocol/openid-connect/userinfo");
+	@MethodSource("data")
+	@ParameterizedTest
+	void testJwtCollectionConverterWithAuthoritiesClaimName(String authoritiesClaimName, String rolesClaim, Object authorityClaims, int amtRoles) {
+		// Expect our custom role mapper, by using the nested authoritiesClaimName
+		authenticator.setAuthoritiesClaimName(authoritiesClaimName);
+		authenticator.setUserNameAttributeName("sub");
+		Converter<Jwt, AbstractAuthenticationToken> jwtCollectionConverter = authenticator::jwtAuthenticationTokenConverter;
 
-		BearerOnlyAuthenticator spy = spy(authenticator);
-		doReturn(List.of("role_from_userinfo")).when(spy).getRolesFromUserInfoUri(anyString());
+		Jwt jwt = jwt()
+				.claim(rolesClaim, authorityClaims)
+				.build();
 
-		Converter<Jwt, Collection<GrantedAuthority>> jwtCollectionConverter = spy.getJwtCollectionConverter();
+		AbstractAuthenticationToken token = jwtCollectionConverter.convert(jwt);
+		Collection<GrantedAuthority> authorities = token.getAuthorities();
 
-		Jwt jwt = jwt().build();
+		assertTrue(token.isAuthenticated());
+		assertNotNull(authorities, "Converted authorities should not be null");
+		assertEquals(amtRoles, authorities.size());
 
-		Collection<GrantedAuthority> convert = jwtCollectionConverter.convert(jwt);
+		// Ensure we've read the correct 'UserNameAttribute'
+		assertEquals("mock-test-subject", token.getName());
+		Jwt jwtToken = assertInstanceOf(Jwt.class, token.getPrincipal());
+		assertEquals("mock-test-subject", jwtToken.getSubject());
 
-		assertNotNull(convert, "Converted authorities should not be null when userInfoUri is used");
-		assertEquals(1, convert.size());
+		// Ensure the token hasn't changed
+		assertEquals("token", jwtToken.getTokenValue());
+
+		// Ensure these values are copied over
+		assertEquals(Instant.MAX, jwtToken.getExpiresAt());
+		assertEquals(Instant.MIN, jwtToken.getIssuedAt());
 	}
 
 	public static Jwt.Builder jwt() {

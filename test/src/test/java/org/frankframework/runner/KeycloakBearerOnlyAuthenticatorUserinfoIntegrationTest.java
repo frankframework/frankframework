@@ -2,11 +2,13 @@ package org.frankframework.runner;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.text.ParseException;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -39,10 +41,10 @@ public class KeycloakBearerOnlyAuthenticatorUserinfoIntegrationTest extends Keyc
 	static void setup() throws IOException {
 		// Set system properties for the application to use the Keycloak container and start the framework initializer
 		System.setProperty("application.security.console.authentication.type", "BEARER_ONLY");
-		System.setProperty("application.security.console.authentication.issuerUri", "http://localhost:%s/realms/test".formatted(keycloak.getHttpPort()));
+		System.setProperty("application.security.console.authentication.issuerUri", "http://localhost:%s/realms/test".formatted(httpPort));
 		System.setProperty("application.security.console.authentication.userNameAttributeName", "preferred_username");
 		System.setProperty("application.security.console.authentication.authoritiesClaimName", "realm_access.roles");
-		System.setProperty("application.security.console.authentication.userInfoUri", "http://localhost:%s/realms/test/protocol/openid-connect/userinfo?scope=openid".formatted(keycloak.getHttpPort()));
+		System.setProperty("application.security.console.authentication.userInfoUri", "http://localhost:%s/realms/test/protocol/openid-connect/userinfo?scope=openid".formatted(httpPort));
 
 		SpringApplication springApplication = IafTestInitializer.configureApplication();
 
@@ -66,17 +68,20 @@ public class KeycloakBearerOnlyAuthenticatorUserinfoIntegrationTest extends Keyc
 	}
 
 	@Test
-	void testAuthentication() throws URISyntaxException {
+	void testAuthentication() throws URISyntaxException, ParseException {
 		// first, get a token from keycloak
 		RestTemplate restTemplate = new RestTemplate();
 
 		TokenResponse tokenResponse = restTemplate.postForObject(
-				getTokenEndpoint(keycloak.getHttpPort()),
+				getTokenEndpoint(),
 				getRequestEntity(),
 				TokenResponse.class);
 
 		assertNotNull(tokenResponse, "Token response should not be null");
 		assertNotNull(tokenResponse.getAccessToken(), "Access token should not be null");
+
+		String userAttrName = System.getProperty("application.security.console.authentication.userNameAttributeName");
+		assertNull(tokenResponse.getClaims().get(userAttrName), "field ["+userAttrName+"] should not exist in JWT");
 
 		// then, use that token to access a protected resource in the application
 		RestTemplate restTemplateFramework = new RestTemplate();

@@ -39,7 +39,7 @@ public class KeycloakBearerOnlyAuthenticatorIntegrationTest extends KeycloakBear
 		// Set system properties for the application to use the Keycloak container and start the framework initializer
 		System.setProperty("application.security.console.authentication.type", "BEARER_ONLY");
 		System.setProperty("application.security.console.authentication.issuerUri", "http://localhost:%s/realms/test".formatted(keycloak.getHttpPort()));
-		System.setProperty("application.security.console.authentication.userNameAttributeName", "preferred_username");
+		System.setProperty("application.security.console.authentication.userNameAttributeName", "name");
 		System.setProperty("application.security.console.authentication.authoritiesClaimName", "realm_access.roles");
 
 		SpringApplication springApplication = IafTestInitializer.configureApplication();
@@ -68,7 +68,7 @@ public class KeycloakBearerOnlyAuthenticatorIntegrationTest extends KeycloakBear
 		RestTemplate restTemplate = new RestTemplate();
 
 		TokenResponse tokenResponse = restTemplate.postForObject(
-				getTokenEndpoint(keycloak.getHttpPort()),
+				getTokenEndpoint(),
 				getRequestEntity(),
 				TokenResponse.class);
 
@@ -100,6 +100,6 @@ public class KeycloakBearerOnlyAuthenticatorIntegrationTest extends KeycloakBear
 				.headers(headers).build(), GetServerInfoResponse.class);
 
 		assertNotNull(serverInfoResponse, "Server info response should not be null");
-		assertEquals("testuser", serverInfoResponse.getBody().getUserName(), "Username should match the authenticated user");
+		assertEquals("Test User", serverInfoResponse.getBody().getUserName(), "Username should match the authenticated user");
 	}
 }

@@ -1,5 +1,9 @@
 package org.frankframework.runner;
 
+import java.text.ParseException;
+import java.util.Base64;
+import java.util.Map;
+
 import org.jspecify.annotations.Nullable;
 import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
 import org.springframework.context.ConfigurableApplicationContext;
@@ -11,6 +15,7 @@ import org.springframework.util.MultiValueMap;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.nimbusds.jose.util.JSONObjectUtils;
 
 import dasniko.testcontainers.keycloak.KeycloakContainer;
 
@@ -21,11 +26,14 @@ import dasniko.testcontainers.keycloak.KeycloakContainer;
  * See: <a href="https://testcontainers.com/guides/testcontainers-container-lifecycle/">testcontainers lifecycle</a>>
  */
 public abstract class KeycloakBearerOnlyBase {
+	@SuppressWarnings("resource")
 	public static final KeycloakContainer keycloak = new KeycloakContainer()
 			.withRealmImportFile("/test-realm.json");
+	protected static int httpPort = 8888;
 
 	static {
 		keycloak.start();
+		httpPort = keycloak.getHttpPort();
 	}
 
 	@SuppressWarnings("NullAway.Init")
@@ -72,6 +80,13 @@ public abstract class KeycloakBearerOnlyBase {
 		public void setAccessToken(@Nullable String accessToken) {
 			this.accessToken = accessToken;
 		}
+
+		public Map<String, Object> getClaims() throws ParseException {
+			String jws = accessToken;
+			String withoutSignature = jws.substring(jws.indexOf('.')+1, jws.lastIndexOf('.'));
+			String asJson = new String(Base64.getDecoder().decode(withoutSignature));
+			return JSONObjectUtils.parse(asJson);
+		}
 	}
 
 	/**
@@ -91,7 +106,7 @@ public abstract class KeycloakBearerOnlyBase {
 		}
 	}
 
-	String getTokenEndpoint(int httpPort) {
+	String getTokenEndpoint() {
 		return String.format(TOKEN_ENDPOINT_FORMAT, httpPort);
 	}
 }

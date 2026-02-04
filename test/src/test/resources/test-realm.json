@@ -900,6 +900,7 @@
           "config": {
             "introspection.token.claim": "true",
             "multivalued": "true",
+            "userinfo.token.claim": "true",
             "user.attribute": "foo",
             "id.token.claim": "true",
             "access.token.claim": "true",
@@ -928,7 +929,8 @@
           "config": {
             "id.token.claim": "true",
             "introspection.token.claim": "true",
-            "access.token.claim": "true"
+            "access.token.claim": "true",
+            "userinfo.token.claim": "true"
           }
         }
       ]
@@ -951,8 +953,9 @@
           "consentRequired": false,
           "config": {
             "user.session.note": "AUTH_TIME",
-            "id.token.claim": "true",
             "introspection.token.claim": "true",
+            "userinfo.token.claim": "true",
+            "id.token.claim": "true",
             "access.token.claim": "true",
             "claim.name": "auth_time",
             "jsonType.label": "long"
@@ -989,11 +992,14 @@
           "protocolMapper": "oidc-usermodel-attribute-mapper",
           "consentRequired": false,
           "config": {
-            "introspection.token.claim": "true",
+            "aggregate.attrs": "false",
+            "introspection.token.claim": "false",
+            "multivalued": "false",
             "userinfo.token.claim": "true",
             "user.attribute": "username",
-            "id.token.claim": "true",
-            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "lightweight.claim": "false",
+            "access.token.claim": "false",
             "claim.name": "preferred_username",
             "jsonType.label": "String"
           }
@@ -1431,7 +1437,7 @@
       "description": "OpenID Connect built-in scope: email",
       "protocol": "openid-connect",
       "attributes": {
-        "include.in.token.scope": "true",
+        "include.in.token.scope": "false",
         "consent.screen.text": "${emailScopeConsentText}",
         "display.on.consent.screen": "true"
       },
@@ -1459,11 +1465,14 @@
           "protocolMapper": "oidc-usermodel-attribute-mapper",
           "consentRequired": false,
           "config": {
-            "introspection.token.claim": "true",
+            "aggregate.attrs": "false",
+            "introspection.token.claim": "false",
+            "multivalued": "false",
             "userinfo.token.claim": "true",
             "user.attribute": "email",
-            "id.token.claim": "true",
-            "access.token.claim": "true",
+            "id.token.claim": "false",
+            "lightweight.claim": "false",
+            "access.token.claim": "false",
             "claim.name": "email",
             "jsonType.label": "String"
           }

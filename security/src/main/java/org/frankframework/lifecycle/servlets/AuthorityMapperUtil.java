@@ -15,7 +15,6 @@
 */
 package org.frankframework.lifecycle.servlets;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -44,24 +43,8 @@ public class AuthorityMapperUtil {
 	 * of only one (1) '.' is allowed in the authoritiesClaimName.
 	 */
 	@NonNull
-	static List<String> getRolesFromUserInfo(ClaimAccessor userInfo, String authoritiesClaimName) {
-		log.debug("Fetching user roles from userInfo with authoritiesClaimName [{}]", authoritiesClaimName);
-
-		// use a normal get if the key does not contain a '.'
-		if (!Strings.CS.contains(authoritiesClaimName, ".")) {
-			return splitRolesStringIfNeeded((Object) userInfo.getClaim(authoritiesClaimName));
-		} else {
-			String[] keyParts = authoritiesClaimName.split("\\.");
-
-			// get first part of the key
-			Map<String, Collection<String>> realmAccess = userInfo.getClaim(keyParts[0]);
-
-			// get second part of the key
-			List<String> userRoles = List.copyOf(realmAccess.get(keyParts[1]));
-
-			log.debug("fetched user roles [{}] from userInfo", userRoles);
-			return splitRolesStringIfNeeded(userRoles);
-		}
+	static List<String> getRolesFromClaim(ClaimAccessor userInfo, String authoritiesClaimName) {
+		return getRolesFromAttributes(userInfo.getClaims(), authoritiesClaimName);
 	}
 
 	/**
@@ -69,7 +52,7 @@ public class AuthorityMapperUtil {
 	 * sure that a maximum of only one (1) '.' is allowed in the authoritiesClaimName.
 	 */
 	@NonNull
-	static List<String> getRolesFromAttributesMap(Map<String, Object> userAttributes, String authoritiesClaimName) {
+	static List<String> getRolesFromAttributes(Map<String, Object> userAttributes, String authoritiesClaimName) {
 		if (userAttributes == null || userAttributes.isEmpty()) {
 			return List.of();
 		}
@@ -83,10 +66,11 @@ public class AuthorityMapperUtil {
 			String[] keyParts = authoritiesClaimName.split("\\.");
 
 			// Get the first part of the key
-			Map<String, Collection<String>> realmAccess = (Map<String, Collection<String>>) userAttributes.get(keyParts[0]);
+			@SuppressWarnings("unchecked")
+			Map<String, Object> realmAccess = (Map<String, Object>) userAttributes.get(keyParts[0]);
 
 			// Get second part of the key
-			List<String> userRoles = List.copyOf(realmAccess.get(keyParts[1]));
+			Object userRoles = realmAccess.get(keyParts[1]);
 
 			log.debug("fetched user roles [{}] from userAttributes", userRoles);
 			return splitRolesStringIfNeeded(userRoles);
@@ -96,7 +80,8 @@ public class AuthorityMapperUtil {
 	@SuppressWarnings("unchecked")
 	private static List<String> splitRolesStringIfNeeded(Object roles) {
 		if (roles instanceof String rolesStr) {
-			return StringUtil.split(rolesStr);
+			// Split on JwtGrantedAuthoritiesConverter#DEFAULT_AUTHORITIES_CLAIM_DELIMITER && whitespace
+			return StringUtil.split(rolesStr, ", ");
 		} else if (roles instanceof List list) {
 			return splitRolesStringIfNeeded(list);
 		} else {
