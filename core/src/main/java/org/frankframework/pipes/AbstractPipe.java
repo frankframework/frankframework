@@ -485,14 +485,14 @@ public abstract class AbstractPipe extends TransactionAttributes implements IPip
 			return true;
 		}
 		if (StringUtils.isNotEmpty(getOnlyIfSessionKey())) {
-			Object onlyIfActualValue = session.get(getOnlyIfSessionKey());
+			String onlyIfActualValue = session.getString(getOnlyIfSessionKey());
 			if (onlyIfActualValue==null || StringUtils.isNotEmpty(getOnlyIfValue()) && !getOnlyIfValue().equals(onlyIfActualValue)) {
 				log.debug("skip pipe processing: onlyIfSessionKey [{}] value [{}] not found or not equal to value [{}]", getOnlyIfSessionKey(), onlyIfActualValue, getOnlyIfValue());
 				return true;
 			}
 		}
 		if (StringUtils.isNotEmpty(getUnlessSessionKey())) {
-			Object unlessActualValue = session.get(getUnlessSessionKey());
+			String unlessActualValue = session.getString(getUnlessSessionKey());
 			if (unlessActualValue!=null && (StringUtils.isEmpty(getUnlessValue()) || getUnlessValue().equals(unlessActualValue))) {
 				log.debug("skip pipe processing: unlessSessionKey [{}] value [{}] not found or equal to value [{}]", getUnlessSessionKey(), unlessActualValue, getUnlessValue());
 				return true;
