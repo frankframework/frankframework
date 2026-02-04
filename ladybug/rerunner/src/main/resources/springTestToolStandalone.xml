@@ -63,12 +63,12 @@
 			<property name="URL" value="jdbc:h2:../${ladybug.directory:ladybug}/data/database-storage/ladybug"/>
 		</bean>
 		-->
-		<bean id="ladybugDataSource" class="org.springframework.jdbc.datasource.DriverManagerDataSource">
-<!-- 		<bean name="ladybugDataSource" class="org.apache.tomcat.dbcp.dbcp2.BasicDataSource" destroy-method="close"> -->
+		<bean id="ladybugDataSource" class="org.frankframework.ladybug.AliasAwareDriverManagerDataSource">
 			<property name="driverClassName" value="${ladybug.jdbc.driver}"/>
 			<property name="url" value="${ladybug.jdbc.url}"/>
-			<property name="username" value="${ladybug.jdbc.username}" />
-			<property name="password" value="${ladybug.jdbc.password}" />
+			<property name="username" value="${ladybug.jdbc.username:}" />
+			<property name="password" value="${ladybug.jdbc.password:}" />
+			<property name="authAlias" value="${ladybug.jdbc.authAlias:}" />
 		</bean>
 
 		<bean name="ladybugDatabaseChangelog" class="liquibase.integration.spring.SpringLiquibase">

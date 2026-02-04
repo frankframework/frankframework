@@ -15,6 +15,7 @@
 */
 package org.frankframework.credentialprovider;
 
+import java.net.URL;
 import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
@@ -28,6 +29,7 @@ import io.fabric8.kubernetes.api.model.Secret;
 import io.fabric8.kubernetes.client.Config;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.KubernetesClientBuilder;
+import io.fabric8.kubernetes.client.KubernetesClientException;
 import lombok.extern.java.Log;
 
 import org.frankframework.credentialprovider.util.Cache;
@@ -92,7 +94,13 @@ public class KubernetesCredentialFactory implements ISecretProvider {
 		log.info("initializing KubernetesCredentialFactory");
 
 		if (client == null) { // For testing purposes
-			client = new KubernetesClientBuilder().build();
+			client = new KubernetesClientBuilder()
+					.editOrNewConfig()
+					.withConnectionTimeout(3_000)
+					.withRequestTimeout(3_000)
+					.withRequestRetryBackoffLimit(0)
+					.endConfig()
+					.build();
 		}
 
 		String defaultNamespace = Optional.ofNullable(client.getNamespace()).orElse(DEFAULT_NAMESPACE);
@@ -107,6 +115,15 @@ public class KubernetesCredentialFactory implements ISecretProvider {
 		if (k8MasterURL != null) {
 			config.setMasterUrl(k8MasterURL);
 			log.info("Using Kubernetes master URL: " + k8MasterURL);
+		}
+
+		URL masterUrl = client.getMasterUrl();
+		try {
+			// Call the API, doesn't matter which endpoint
+			client.getKubernetesVersion();
+			log.info("Connected to K8s cluster: " + masterUrl);
+		} catch (Exception e) {
+			throw new KubernetesClientException("unable to connect to cluster: " + masterUrl, e);
 		}
 
 		// Fetch secrets directly at startup, from Kubernetes cluster
