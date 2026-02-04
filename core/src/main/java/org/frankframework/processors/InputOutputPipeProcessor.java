@@ -87,6 +87,9 @@ public class InputOutputPipeProcessor extends AbstractPipeProcessor {
 
 		if (pipe.skipPipe(message, pipeLineSession)) {
 			PipeForward successForward = pipe.findForward(PipeForward.SUCCESS_FORWARD_NAME);
+			if (successForward == null) {
+				throw new PipeRunException(pipe, "Pipe [%s] has no success forward".formatted(pipe.getName()));
+			}
 			log.info("skipped pipe processing for adapter [{}] pipe [{}], next pipe: [{}]", pipeLine::getAdapter, pipe::getName, successForward::getName);
 			return new PipeRunResult(successForward, originalMessage);
 		}
