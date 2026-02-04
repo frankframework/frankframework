@@ -26,10 +26,11 @@ import java.util.Enumeration;
 import java.util.List;
 import java.util.Vector;
 
+import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
+
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
 import org.springframework.cglib.core.ReflectUtils;
 import org.springframework.core.SmartClassLoader;
 
@@ -56,7 +57,7 @@ public class DirectoryClassLoader extends ClassLoader implements SmartClassLoade
 		this(Thread.currentThread().getContextClassLoader(), directory);
 	}
 
-	public DirectoryClassLoader(@NonNull ClassLoader parent, String directory) {
+	public DirectoryClassLoader(@Nonnull ClassLoader parent, String directory) {
 		super(parent);
 
 		if (StringUtils.isBlank(directory)) {
@@ -151,7 +152,7 @@ public class DirectoryClassLoader extends ClassLoader implements SmartClassLoade
 	}
 
 	@Override
-	public final Enumeration<URL> getResources(@NonNull String name) throws IOException {
+	public final Enumeration<URL> getResources(@Nonnull String name) throws IOException {
 		// It will and should never find files that are in the META-INF folder in this classloader, so always traverse to it's parent
 		if (name.startsWith("META-INF/services")) {
 			return getParent().getResources(name);
@@ -211,9 +212,9 @@ public class DirectoryClassLoader extends ClassLoader implements SmartClassLoade
 	 *
 	 * {@inheritDoc}
 	 */
-	@NonNull
+	@Nonnull
 	@Override
-	public Class<?> publicDefineClass(@NonNull String name, @NonNull byte[] b, @Nullable ProtectionDomain protectionDomain) {
+	public Class<?> publicDefineClass(@Nonnull String name, @Nonnull byte[] b, @Nullable ProtectionDomain protectionDomain) {
 		return super.defineClass(name, b, 0, b.length, protectionDomain);
 	}
 
