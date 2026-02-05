@@ -17,14 +17,13 @@ package org.frankframework.extensions.cmis;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.DestinationType;
-import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.extensions.cmis.server.CmisEvent;
 import org.frankframework.extensions.cmis.server.CmisEventDispatcher;
 import org.frankframework.http.PushingListenerAdapter;
 import org.frankframework.util.EnumUtils;
 
-@DestinationType(Type.CMIS)
+@DestinationType(DestinationType.Type.CMIS)
 public class CmisEventListener extends PushingListenerAdapter implements HasPhysicalDestination {
 
 	private CmisEvent cmisEvent = null;

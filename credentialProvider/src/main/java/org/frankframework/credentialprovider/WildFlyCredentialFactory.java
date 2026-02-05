@@ -26,7 +26,6 @@ import org.jboss.as.server.CurrentServiceContainer;
 import org.jboss.msc.service.ServiceContainer;
 import org.jboss.msc.service.ServiceController;
 import org.jboss.msc.service.ServiceName;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 import org.wildfly.security.credential.store.CredentialStore;
 import org.wildfly.security.credential.store.CredentialStoreException;
@@ -67,7 +66,7 @@ public class WildFlyCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public ISecret getSecret(@NonNull CredentialAlias alias) throws NoSuchElementException {
+	public ISecret getSecret(CredentialAlias alias) throws NoSuchElementException {
 		CredentialStore store = getCredentialStore(credentialStore);
 		if (store == null) {
 			throw new NoSuchElementException("CredentialStore [" + credentialStore + "] not found");
@@ -76,10 +75,10 @@ public class WildFlyCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public boolean hasSecret(@NonNull CredentialAlias alias) {
+	public boolean hasSecret(CredentialAlias alias) {
 		try {
-			return getSecret(alias) != null;
-
+			getSecret(alias);
+			return true;
 		} catch (NoSuchElementException e) {
 			log.log(Level.INFO, e, () -> "exception testing for alias [" + alias + "] (" + e.getClass().getName() + ") :" + e.getMessage());
 			return false;
@@ -105,7 +104,7 @@ public class WildFlyCredentialFactory implements ISecretProvider {
 		return result;
 	}
 
-	private CredentialStore getCredentialStore(String credentialStore) {
+	private @Nullable CredentialStore getCredentialStore(String credentialStore) {
 		if (cs == null) {
 			ServiceContainer registry = getServiceContainer();
 
@@ -122,7 +121,7 @@ public class WildFlyCredentialFactory implements ISecretProvider {
 	}
 
 	// Make method mockable
-	protected ServiceContainer getServiceContainer() {
+	protected @Nullable ServiceContainer getServiceContainer() {
 		return CurrentServiceContainer.getServiceContainer();
 	}
 }

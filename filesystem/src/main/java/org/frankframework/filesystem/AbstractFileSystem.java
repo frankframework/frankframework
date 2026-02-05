@@ -20,14 +20,13 @@ import java.nio.file.DirectoryStream;
 import java.util.Iterator;
 
 import org.frankframework.core.DestinationType;
-import org.frankframework.core.DestinationType.Type;
 
 /**
  * Baseclass for {@link IBasicFileSystem FileSystems}.
  *
  * @author Gerrit van Brakel
  */
-@DestinationType(Type.FILE_SYSTEM)
+@DestinationType(DestinationType.Type.FILE_SYSTEM)
 public abstract class AbstractFileSystem<F> implements IBasicFileSystem<F> {
 	private int maxNumberOfMessagesToList=-1;
 

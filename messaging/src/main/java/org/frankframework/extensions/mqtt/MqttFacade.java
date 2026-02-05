@@ -25,7 +25,6 @@ import lombok.Setter;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.DestinationType;
-import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.FrankElement;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IConfigurable;
@@ -52,7 +51,7 @@ import org.frankframework.doc.Mandatory;
  * Inbound and outbound messages are persisted while they are in flight to prevent data loss. The default is an in memory store, but the {@literal persistenceDirectory}
  * flag can be used to set the disk storage location.
  */
-@DestinationType(Type.MQTT)
+@DestinationType(DestinationType.Type.MQTT)
 public abstract class MqttFacade implements HasPhysicalDestination, IConfigurable, NameAware, FrankElement {
 
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();

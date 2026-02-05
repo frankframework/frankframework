@@ -323,14 +323,18 @@ public class StreamUtil {
 	}
 
 	/**
+	 * Convert the contents of the {@link InputStream} to a String, using the {@link #DEFAULT_INPUT_STREAM_ENCODING} and no encoding of XML special characters.
+	 *
 	 * @return String that's included in the stream
-	 * @see #streamToString(InputStream, String, boolean)
+	 * @see #streamToString(InputStream, String, String, boolean)
 	 */
 	public static String streamToString(InputStream stream) throws IOException {
 		return streamToString(stream, DEFAULT_INPUT_STREAM_ENCODING);
 	}
 
 	/**
+	 * Convert the contents of the {@link InputStream} to a String, using the given encoding and no encoding of XML special characters.
+	 *
 	 * @see #streamToString(InputStream, String, String, boolean)
 	 */
 	public static String streamToString(InputStream stream, String streamEncoding) throws IOException {
@@ -338,6 +342,8 @@ public class StreamUtil {
 	}
 
 	/**
+	 * Convert the contents of the {@link InputStream} to a String, using the {@link #DEFAULT_INPUT_STREAM_ENCODING} and optional end-of-line string and optionally encoding of XML special characters.
+	 *
 	 * @see #streamToString(InputStream, String, String, boolean)
 	 */
 	public static String streamToString(InputStream stream, @Nullable String endOfLineString, boolean xmlEncode) throws IOException {
@@ -345,6 +351,8 @@ public class StreamUtil {
 	}
 
 	/**
+	 * Convert the contents of the {@link InputStream} to a String, using the given encoding, end-of-line string and optionally encoding of XML special characters.
+	 *
 	 * @see #readerToString(Reader, String, boolean)
 	 */
 	public static String streamToString(InputStream stream, @Nullable String endOfLineString, String streamEncoding, boolean xmlEncode) throws IOException {
@@ -352,6 +360,8 @@ public class StreamUtil {
 	}
 
 	/**
+	 * Load a classpath resource from the given classpath URL and return the contents as a string.
+	 *
 	 * @see StreamUtil#streamToString(InputStream, String, boolean)
 	 */
 	public static String resourceToString(URL resource) throws IOException {
@@ -359,6 +369,8 @@ public class StreamUtil {
 	}
 
 	/**
+	 * Load a classpath resource from the given classpath URL and return the contents as a string using the optional endOfLineString if given.
+	 *
 	 * @see StreamUtil#streamToString(InputStream, String, boolean)
 	 */
 	public static String resourceToString(URL resource, @Nullable String endOfLineString) throws IOException {
@@ -366,6 +378,8 @@ public class StreamUtil {
 	}
 
 	/**
+	 * Load a classpath resource from the given classpath URL and return the contents as a string using the optional endOfLineString if given and optionally encoding XML special characters.
+	 *
 	 * @see StreamUtil#streamToString(InputStream, String, boolean)
 	 */
 	public static String resourceToString(URL resource, @Nullable String endOfLineString, boolean xmlEncode) throws IOException {

@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -101,7 +100,7 @@ public class Json2Xml extends XmlAligner {
 	private static final String ATTRIBUTE_PREFIX = "@";
 	private static final String MIXED_CONTENT_LABEL = "#text";
 	private @Getter @Setter String rootElement;
-	private @Getter @Setter String targetNamespace;
+	private @Getter @Setter @Nullable String targetNamespace;
 	private @Getter @Setter boolean deepSearch=false;
 	private @Getter @Setter boolean failOnWildcards=false;
 	private int prefixPrefixCounter=1;
@@ -133,8 +132,11 @@ public class Json2Xml extends XmlAligner {
 			// determine somewhat heuristically whether the json contains a 'root' node:
 			// if the outermost JsonObject contains only one key, that has the name of the root element,
 			// then we'll assume that that is the root element...
-			if (potentialRootElements.size()==1 && getRootElement().equals(potentialRootElements.get(0))) {
+			if (potentialRootElements.size()==1 && getRootElement().equals(potentialRootElements.getFirst())) {
 				node = root.get(getRootElement());
+				if (node == null) {
+					throw new IllegalStateException("Root node cannot be NULL");
+				}
 			}
 		}
 		if (node instanceof JsonArray && !insertElementContainerElements && strictSyntax) {
@@ -154,7 +156,7 @@ public class Json2Xml extends XmlAligner {
 			throw new SAXException("Cannot determine XML root element, neither from attribute rootElement, nor from JSON node");
 		}
 		if(potentialRootElements.size() == 1) {
-			setRootElement(potentialRootElements.get(0));
+			setRootElement(potentialRootElements.getFirst());
 		} else {
 			String namesList = potentialRootElements.stream().limit(5).collect(Collectors.joining(","));
 			if(potentialRootElements.size() > 5) {
@@ -837,21 +839,21 @@ public class Json2Xml extends XmlAligner {
 		XSTypeDefinition typeDefinition = elementDeclaration.getTypeDefinition();
 		if (typeDefinition == null) {
 			log.warn("getBestChildElementPath typeDefinition is null");
-			return Collections.emptyList();
+			return List.of();
 		}
 		switch (typeDefinition.getTypeCategory()) {
 		case XSTypeDefinition.SIMPLE_TYPE:
 			log.trace("getBestChildElementPath typeDefinition.typeCategory is SimpleType, no child elements");
-			return Collections.emptyList();
+			return List.of();
 		case XSTypeDefinition.COMPLEX_TYPE:
 			XSComplexTypeDefinition complexTypeDefinition=(XSComplexTypeDefinition)typeDefinition;
 			switch (complexTypeDefinition.getContentType()) {
 			case XSComplexTypeDefinition.CONTENTTYPE_EMPTY:
 				log.trace("getBestChildElementPath complexTypeDefinition.contentType is Empty, no child elements");
-				return Collections.emptyList();
+				return List.of();
 			case XSComplexTypeDefinition.CONTENTTYPE_SIMPLE:
 				log.trace("getBestChildElementPath complexTypeDefinition.contentType is Simple, no child elements (only characters)");
-				return Collections.emptyList();
+				return List.of();
 			case XSComplexTypeDefinition.CONTENTTYPE_ELEMENT:
 			case XSComplexTypeDefinition.CONTENTTYPE_MIXED:
 				XSParticle particle = complexTypeDefinition.getParticle();
@@ -862,12 +864,12 @@ public class Json2Xml extends XmlAligner {
 				List<XSParticle> result=new ArrayList<>();
 				List<String> failureReasons=new ArrayList<>();
 				if (getBestMatchingElementPath(elementDeclaration, node, particle, result, failureReasons)) {
-					return result;
+					return List.copyOf(result); // ErrorProne: Makes the result immutable, like the other lists returned
 				}
 				if (!silent) {
 					handleError("Cannot find path:" + String.join("\n", failureReasons));
 				}
-				return Collections.emptyList();
+				return List.of();
 			default:
 				throw new IllegalStateException("getBestChildElementPath complexTypeDefinition.contentType is not Empty,Simple,Element or Mixed, but ["+complexTypeDefinition.getContentType()+"]");
 			}
@@ -886,24 +888,15 @@ public class Json2Xml extends XmlAligner {
 	 * @return true when a matching path is found. if false, failureReasons will contain reasons why.
 	 * @throws SAXException If there was any exception
  	 */
-	private boolean getBestMatchingElementPath(XSElementDeclaration baseElementDeclaration, JsonValue baseNode, XSParticle particle, List<XSParticle> path, List<String> failureReasons) throws SAXException {
-		if (particle==null) {
-			throw new NullPointerException("getBestMatchingElementPath particle is null");
-		}
+	private boolean getBestMatchingElementPath(XSElementDeclaration baseElementDeclaration, JsonValue baseNode, @NonNull XSParticle particle, List<XSParticle> path, List<String> failureReasons) throws SAXException {
 		XSTerm term = particle.getTerm();
-		if (term == null) {
-			throw new NullPointerException("getBestMatchingElementPath particle.term is null");
-		}
-		if (term instanceof XSModelGroup xsModelGroup) {
-			return handleModelGroupTerm(baseElementDeclaration, baseNode, path, failureReasons, xsModelGroup);
-		}
-		if (term instanceof XSElementDeclaration xsElementDeclaration) {
-			return handleElementDeclarationTerm(baseNode, particle, path, failureReasons, xsElementDeclaration);
-		}
-		if (term instanceof XSWildcard xsWildcard) {
-			return handleWildcardTerm(baseElementDeclaration, xsWildcard);
-		}
-		throw new IllegalStateException("getBestMatchingElementPath unknown Term type ["+term.getClass().getName()+"]");
+		return switch (term) {
+			case null -> throw new NullPointerException("getBestMatchingElementPath particle.term is null");
+			case XSModelGroup xsModelGroup -> handleModelGroupTerm(baseElementDeclaration, baseNode, path, failureReasons, xsModelGroup);
+			case XSElementDeclaration xsElementDeclaration -> handleElementDeclarationTerm(baseNode, particle, path, failureReasons, xsElementDeclaration);
+			case XSWildcard xsWildcard -> handleWildcardTerm(baseElementDeclaration, xsWildcard);
+			default -> throw new IllegalStateException("getBestMatchingElementPath unknown Term type [" + term.getClass().getName() + "]");
+		};
 	}
 
 	private boolean handleElementDeclarationTerm(JsonValue baseNode, XSParticle particle, List<XSParticle> path, List<String> failureReasons, XSElementDeclaration elementDeclaration) throws SAXException {

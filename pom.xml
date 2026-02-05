@@ -775,7 +775,7 @@
 							<arg>--should-stop=ifError=FLOW</arg>
 							<arg>-XDaddTypeAnnotationsToSymbol=true</arg>
 							<!-- Flags to enable ErrorProne, and options for ErrorProne. Should be given in the same arg parameter otherwise it doesn't seem to work. -->
-							<arg>-Xplugin:ErrorProne -XepOpt:NullAway:AnnotatedPackages=org.frankframework -Xep:InvalidBlockTag:OFF -Xep:BanJNDI:WARN -Xep:EqualsHashCode:WARN -Xep:GetClassOnClass:WARN</arg>
+							<arg>-Xplugin:ErrorProne -XepOpt:NullAway:AnnotatedPackages=org.frankframework -Xep:InvalidBlockTag:OFF -Xep:BanJNDI:WARN -Xep:EqualsHashCode:WARN -Xep:GetClassOnClass:WARN -Xep:InlineMeSuggester:OFF</arg>
 						</compilerArgs>
 						<annotationProcessorPaths>
 							<path>

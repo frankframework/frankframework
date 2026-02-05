@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2022-2023 WeAreFrank!
+   Copyright 2020, 2022-2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ import jakarta.mail.internet.InternetAddress;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.SAXException;
 
 import org.frankframework.util.LogUtil;
@@ -38,7 +39,7 @@ public class MailFileSystemUtils {
 	private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSZ");
 	protected static Logger log = LogUtil.getLogger(MailFileSystemUtils.class);
 
-	public static final List<String> specialHeaders = Arrays.asList(
+	private static final List<String> specialHeaders = Arrays.asList(
 			IMailFileSystem.TO_RECIPIENTS_KEY,
 			IMailFileSystem.CC_RECIPIENTS_KEY,
 			IMailFileSystem.BCC_RECIPIENTS_KEY,
@@ -49,6 +50,10 @@ public class MailFileSystemUtils {
 			IMailFileSystem.DATETIME_RECEIVED_KEY,
 			IMailFileSystem.BEST_REPLY_ADDRESS_KEY
 	);
+
+	private MailFileSystemUtils() {
+		// Private constructor to hide implicit public constructor
+	}
 
 	public static <M,A> void addEmailInfoSimple(IMailFileSystem<M,A> fileSystem, M emailMessage, SaxElementBuilder emailXml) throws FileSystemException, SAXException {
 		emailXml.addElement("subject", fileSystem.getSubject(emailMessage));
@@ -135,7 +140,7 @@ public class MailFileSystemUtils {
 		}
 	}
 
-	public static String findBestReplyAddress(Map<String,Object> headers, String replyAddressFields) {
+	public static @Nullable String findBestReplyAddress(Map<String,Object> headers, String replyAddressFields) {
 		if (StringUtils.isEmpty(replyAddressFields)) {
 			return null;
 		}
@@ -148,14 +153,14 @@ public class MailFileSystemUtils {
 		return null;
 	}
 
-	public static String getValidAddressFromHeader(String key, Map<String,Object> headers) {
+	public static @Nullable String getValidAddressFromHeader(String key, Map<String,Object> headers) {
 		Object item = headers.get(key);
 		if (item == null) {
 			return null;
 		}
-		if (item instanceof List list) {
+		if (item instanceof List<?> list) {
 			String result;
-			for(Object address:list) {
+			for(Object address : list) {
 				if (null != (result = getValidAddress(key, address.toString()))) {
 					return result;
 				}
@@ -165,7 +170,7 @@ public class MailFileSystemUtils {
 		return getValidAddress(key, item.toString());
 	}
 
-	public static String getValidAddress(String type, String address) {
+	public static @Nullable String getValidAddress(String type, String address) {
 		try {
 			if (StringUtils.isEmpty(address)) {
 				return null;

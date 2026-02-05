@@ -52,7 +52,6 @@ import net.bankid.merchant.library.internal.DirectoryResponseBase.Issuer;
 
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.DestinationType;
-import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.PipeLineSession;
 import org.frankframework.core.SenderException;
@@ -73,7 +72,7 @@ import org.frankframework.util.XmlUtils;
  *
  * @author Niels Meijer
  */
-@DestinationType(Type.IDIN)
+@DestinationType(DestinationType.Type.IDIN)
 public class IdinSender extends AbstractSenderWithParameters implements HasPhysicalDestination {
 
 	private @Getter String merchantID = null;

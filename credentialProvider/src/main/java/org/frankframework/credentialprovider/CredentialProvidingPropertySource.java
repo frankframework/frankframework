@@ -44,9 +44,9 @@ public class CredentialProvidingPropertySource implements PropertySource {
 	@Override
 	@Nullable
 	public String getProperty(String key) {
-		String[] keyAndDefault = key.split(DEFAULT_MARKER);
+		String[] keyAndDefault = key.split(DEFAULT_MARKER, -1);
 
-		String[] pathElements = keyAndDefault[0].split("/");
+		String[] pathElements = keyAndDefault[0].split("/", -1);
 		String alias = pathElements[0].trim(); // Ignore default value in key, it will be handled by Tomcat when necessary
 
 		try {

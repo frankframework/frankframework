@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
+import java.util.function.ToIntFunction;
 
 import org.jspecify.annotations.NullMarked;
 import org.jspecify.annotations.Nullable;
@@ -28,6 +29,8 @@ import org.jspecify.annotations.Nullable;
 import org.frankframework.doc.DocumentedEnum;
 
 /**
+ * Utility functinos for working with enums.
+ *
  * @author Niels Meijer
  */
 @NullMarked
@@ -101,10 +104,10 @@ public class EnumUtils {
 		throw new IllegalArgumentException((fieldName != null ? "cannot set field [" + fieldName + "] to " : "") + "unparsable value [" + value + "]. Must be one of " + fieldValues);
 	}
 
-	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, @Nullable String fieldName, int value, Function<E, Integer> field) {
+	public static <E extends Enum<E>> E parseFromField(Class<E> enumClass, @Nullable String fieldName, int value, ToIntFunction<E> field) {
 		List<Integer> fieldValues = new ArrayList<>();
 		for (E e : getEnumList(enumClass)) {
-			int fieldValue = field.apply(e);
+			int fieldValue = field.applyAsInt(e);
 			if (fieldValue == value) {
 				return e;
 			}

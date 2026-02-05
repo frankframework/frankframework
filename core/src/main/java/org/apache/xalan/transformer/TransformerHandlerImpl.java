@@ -51,6 +51,7 @@ import org.xml.sax.ext.LexicalHandler;
  * listens for SAX ContentHandler parse events and transforms
  * them to a Result.
  */
+@SuppressWarnings({ "unused", "override" })
 public class TransformerHandlerImpl
         implements EntityResolver, DTDHandler, ContentHandler, ErrorHandler,
                    LexicalHandler, TransformerHandler, DeclHandler

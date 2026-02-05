@@ -27,6 +27,7 @@ import org.jspecify.annotations.NonNull;
 /**
  * This class provides a way to get current time, but also control time in unit tests.
  */
+@SuppressWarnings("JavaTimeDefaultTimeZone")
 public class TimeProvider {
 
 	/**

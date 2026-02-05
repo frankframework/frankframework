@@ -30,7 +30,6 @@ import org.frankframework.configuration.Configuration;
 import org.frankframework.configuration.ConfigurationAware;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.core.DestinationType;
-import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.ParameterException;
@@ -110,7 +109,7 @@ import org.frankframework.util.MessageUtils;
  * @author Gerrit van Brakel
  * @since  4.2
  */
-@DestinationType(Type.ADAPTER)
+@DestinationType(DestinationType.Type.ADAPTER)
 @Forward(name = "*", description = "Exit code")
 @Category(Category.Type.BASIC)
 public class IbisLocalSender extends AbstractSenderWithParameters implements HasPhysicalDestination, IThreadCreator, ConfigurationAware {

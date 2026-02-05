@@ -20,6 +20,7 @@ import java.nio.file.DirectoryStream;
 import java.util.Date;
 import java.util.Map;
 
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import org.frankframework.configuration.ConfigurationException;
@@ -56,11 +57,11 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination, AutoCloseab
 	 * Only lists the objects as defined by the type filter. <br />
 	 * Temporary default method until all implementations use {@link #list(F, TypeFilter)} TODO: See <a href="https://github.com/frankframework/frankframework/issues/7193">Issue 7193</a>
 	 */
-	default DirectoryStream<F> list(String folder, TypeFilter filter) throws FileSystemException {
+	default @NonNull DirectoryStream<F> list(@Nullable String folder, @NonNull TypeFilter filter) throws FileSystemException {
 		F actualFolder = toFile(folder);
 		return list(actualFolder, filter);
 	}
-	DirectoryStream<F> list(F folder, TypeFilter filter) throws FileSystemException;
+	@NonNull DirectoryStream<F> list(@Nullable F folder, @NonNull TypeFilter filter) throws FileSystemException;
 	int getNumberOfFilesInFolder(String folder) throws FileSystemException;
 	/**
 	 * Get a string representation of an identification of a file.
@@ -73,16 +74,16 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination, AutoCloseab
 	 * Get a file 'F' representation of an identification of a file.
 	 * Must pair up with the implementation of {@link #getName(Object)}.
 	 */
-	F toFile(@Nullable String filename) throws FileSystemException;
+	@NonNull F toFile(@Nullable String filename) throws FileSystemException;
 	/**
 	 * Creates a reference to a file. If filename is not absolute, it will be created in 'defaultFolder'.
 	 */
-	F toFile(@Nullable String defaultFolder, @Nullable String filename) throws FileSystemException;
+	@NonNull F toFile(@Nullable String defaultFolder, @Nullable String filename) throws FileSystemException;
 	boolean exists(F f) throws FileSystemException;
 	boolean isFolder(F f) throws FileSystemException;
 
 	boolean folderExists(String folder) throws FileSystemException;
-	Message readFile(F f, String charset) throws FileSystemException, IOException;
+	Message readFile(F f, @Nullable String charset) throws FileSystemException, IOException;
 	void deleteFile(F f) throws FileSystemException;
 
 	/**
@@ -106,7 +107,6 @@ public interface IBasicFileSystem<F> extends HasPhysicalDestination, AutoCloseab
 	long getFileSize(F f) throws FileSystemException;
 	String getCanonicalName(F f) throws FileSystemException;
 	Date getModificationTime(F f) throws FileSystemException;
-	@Nullable
 	Map<String, Object> getAdditionalFileProperties(F f) throws FileSystemException;
 
 	/**

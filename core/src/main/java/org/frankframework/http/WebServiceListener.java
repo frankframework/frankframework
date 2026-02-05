@@ -32,7 +32,6 @@ import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.configuration.SuppressKeys;
 import org.frankframework.core.DestinationType;
-import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
@@ -67,7 +66,7 @@ import org.frankframework.util.XmlBuilder;
  * @author Jaco de Groot
  * @author Niels Meijer
  */
-@DestinationType(Type.HTTP)
+@DestinationType(DestinationType.Type.HTTP)
 public class WebServiceListener extends PushingListenerAdapter implements HasPhysicalDestination {
 
 	private @Getter boolean soap = true;

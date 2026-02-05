@@ -186,7 +186,8 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	public DirectoryStream<M> list(String folder, TypeFilter filter) throws FileSystemException {
+	@NonNull
+	public DirectoryStream<M> list(String folder, @NonNull TypeFilter filter) throws FileSystemException {
 		M actualFolder = toFile(folder, null);
 		return list(actualFolder, filter);
 	}
@@ -194,7 +195,8 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public DirectoryStream<M> list(MockFile folder, TypeFilter filter) throws FileSystemException {
+	@NonNull
+	public DirectoryStream<M> list(MockFile folder, @NonNull TypeFilter filter) throws FileSystemException {
 		checkOpen();
 		if (folder == null) {
 			folder = toFile(null);
@@ -393,7 +395,6 @@ public class MockFileSystem<M extends MockFile> extends MockFolder implements IW
 	}
 
 	@Override
-	@Nullable
 	public Map<String, Object> getAdditionalFileProperties(M file) {
 		checkOpen();
 		Map<String, Object> additionalProperties = new LinkedHashMap<>(file.getAdditionalProperties());

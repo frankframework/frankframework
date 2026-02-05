@@ -103,11 +103,11 @@ public class MessageContext implements Serializable {
 		}
 	}
 
-	Serializable remove(@NonNull String key) {
+	@Nullable Serializable remove(@NonNull String key) {
 		return data.remove(key);
 	}
 
-	public Serializable get(@NonNull String key) {
+	public @Nullable Serializable get(@NonNull String key) {
 		return data.get(key);
 	}
 

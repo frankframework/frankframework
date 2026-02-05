@@ -1,5 +1,5 @@
 /*
-   Copyright 2021 - 2024 WeAreFrank!
+   Copyright 2021 - 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import jakarta.mail.Part;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jspecify.annotations.Nullable;
 
 import org.frankframework.http.mime.MultipartUtils;
 import org.frankframework.stream.Message;
@@ -40,7 +41,7 @@ public class PartMessage extends Message {
 		this(part, MultipartUtils.getContext(part));
 	}
 
-	public PartMessage(Part part, String charset) throws MessagingException, IOException {
+	public PartMessage(Part part, @Nullable String charset) throws MessagingException, IOException {
 		this(part, MultipartUtils.getContext(part).withCharset(charset));
 	}
 

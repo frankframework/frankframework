@@ -39,7 +39,6 @@ import lombok.extern.log4j.Log4j2;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarnings;
 import org.frankframework.core.DestinationType;
-import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.IMessageBrowser;
 import org.frankframework.core.IProvidesMessageBrowsers;
@@ -75,7 +74,7 @@ import org.frankframework.xml.XmlWriter;
  *
  */
 @Log4j2
-@DestinationType(Type.FILE_SYSTEM)
+@DestinationType(DestinationType.Type.FILE_SYSTEM)
 public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<F>> implements IPullingListener<F>, HasPhysicalDestination, IProvidesMessageBrowsers<F> {
 	private final @Getter ClassLoader configurationClassLoader = Thread.currentThread().getContextClassLoader();
 	private @Getter @Setter ApplicationContext applicationContext;
@@ -349,9 +348,7 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 			Map <String,Object> attributes = fs.getAdditionalFileProperties(rawMessage);
 			String messageId = deriveMessageId(rawMessage, originalFilename, attributes);
 			PipeLineSession.updateListenerParameters(messageProperties, messageId, messageId);
-			if (attributes!=null) {
-				messageProperties.putAll(attributes);
-			}
+			messageProperties.putAll(attributes);
 			if (getMessageType() != MessageType.PATH) {
 				messageProperties.put(FILEPATH_KEY, fs.getCanonicalName(rawMessage));
 			}
@@ -390,19 +387,18 @@ public abstract class AbstractFileSystemListener<F, FS extends IBasicFileSystem<
 		return messageId;
 	}
 
-	private String buildAttributeXml(Map<String, Object> attributes) throws SAXException {
+	private String buildAttributeXml(@NonNull Map<String, Object> attributes) throws SAXException {
 		XmlWriter writer = new XmlWriter();
 		try (XmlDocumentBuilder xmlBuilder = new XmlDocumentBuilder("metadata", writer, true)) {
-			if (attributes != null) {
-				ObjectBuilder metadataBuilder = xmlBuilder.startObject();
-				attributes.forEach((k, v) -> {
-					try {
-						metadataBuilder.add(k, v == null ? null : v.toString());
-					} catch (SAXException e) {
-						log.warn("cannot add property [{}] value [{}]", k, v, e);
-					}
-				});
-			}
+			ObjectBuilder metadataBuilder = xmlBuilder.startObject();
+			attributes.forEach((k, v) -> {
+				try {
+					metadataBuilder.add(k, v == null ? null : v.toString());
+				} catch (SAXException e) {
+					log.warn("cannot add property [{}] value [{}]", k, v, e);
+				}
+			});
+			metadataBuilder.close();
 		}
 		return writer.toString();
 	}

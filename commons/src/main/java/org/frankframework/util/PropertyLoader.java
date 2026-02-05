@@ -114,7 +114,7 @@ public class PropertyLoader extends Properties {
 	}
 
 	@Override
-	public final boolean containsKey(Object objKey) {
+	public final synchronized boolean containsKey(Object objKey) {
 		if (!(objKey instanceof String key)) {
 			return false;
 		}

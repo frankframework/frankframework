@@ -216,8 +216,9 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 		return new SmbFileRef(filename != null ? filename : "", folder);
 	}
 
+	@NonNull
 	@Override
-	public DirectoryStream<SmbFileRef> list(SmbFileRef folder, TypeFilter filter) throws FileSystemException {
+	public DirectoryStream<SmbFileRef> list(SmbFileRef folder, @NonNull TypeFilter filter) throws FileSystemException {
 		String folderName = folder != null ? getCanonicalName(folder) : null;
 		return FileSystemUtils.getDirectoryStream(new FilesIterator(folderName, filter, diskShare.list(folderName)));
 	}
@@ -316,7 +317,6 @@ public class Samba2FileSystem extends AbstractFileSystem<SmbFileRef> implements 
 	}
 
 	@Override
-	@Nullable
 	public Map<String, Object> getAdditionalFileProperties(SmbFileRef f) {
 		Map<String, Object> attributes = new HashMap<>();
 		FileAllInformation attrs = getFileAttributes(f);

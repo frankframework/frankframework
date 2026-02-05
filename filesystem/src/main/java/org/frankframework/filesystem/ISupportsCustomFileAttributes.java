@@ -85,9 +85,9 @@ public interface ISupportsCustomFileAttributes<F> {
 	/**
 	 * Creates a file with the given custom file attributes.
 	 *
-	 * @param file
-	 * @param contents
-	 * @param customFileAttributes
+	 * @param file File to create
+	 * @param contents Contents of the file
+	 * @param customFileAttributes Custom file attributes to apply to the file
 	 */
 	void createFile(F file, InputStream contents, Map<String, String> customFileAttributes) throws FileSystemException, IOException;
 

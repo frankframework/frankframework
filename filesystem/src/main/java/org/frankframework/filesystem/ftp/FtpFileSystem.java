@@ -29,12 +29,12 @@ import java.util.NoSuchElementException;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.net.ftp.FTPClient;
 import org.apache.commons.net.ftp.FTPFile;
+import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import lombok.extern.log4j.Log4j2;
 
 import org.frankframework.core.DestinationType;
-import org.frankframework.core.DestinationType.Type;
 import org.frankframework.filesystem.FileAlreadyExistsException;
 import org.frankframework.filesystem.FileNotFoundException;
 import org.frankframework.filesystem.FileSystemException;
@@ -53,7 +53,7 @@ import org.frankframework.stream.SerializableFileReference;
  * @author Niels Meijer
  */
 @Log4j2
-@DestinationType(Type.FILE_SYSTEM)
+@DestinationType(DestinationType.Type.FILE_SYSTEM)
 public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTPFileRef> {
 
 	private String remoteDirectory = "";
@@ -96,7 +96,8 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	public DirectoryStream<FTPFileRef> list(FTPFileRef folder, TypeFilter filter) throws FileSystemException {
+	@NonNull
+	public DirectoryStream<FTPFileRef> list(FTPFileRef folder, @NonNull TypeFilter filter) throws FileSystemException {
 		try {
 			String folderName = folder != null ? getCanonicalName(folder) : null;
 			return FileSystemUtils.getDirectoryStream(new FTPFilePathIterator(folderName, ftpClient.listFiles(folderName), filter));
@@ -344,7 +345,6 @@ public class FtpFileSystem extends FtpSession implements IWritableFileSystem<FTP
 	}
 
 	@Override
-	@Nullable
 	public Map<String, Object> getAdditionalFileProperties(FTPFileRef f) {
 		Map<String, Object> attributes = new HashMap<>();
 		attributes.put("user", f.getUser());

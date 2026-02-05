@@ -18,6 +18,7 @@ package org.frankframework.credentialprovider.delinea;
 import static org.springframework.web.util.UriComponentsBuilder.fromUriString;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.apache.commons.lang3.StringUtils;
 import org.jspecify.annotations.Nullable;
@@ -81,7 +82,6 @@ public class DelineaClientFactory {
 		return delineaClient;
 	}
 
-	@Nullable
 	AccessGrant getAccessGrant() {
 		final MultiValueMap<String, String> request = new LinkedMultiValueMap<>();
 
@@ -89,15 +89,14 @@ public class DelineaClientFactory {
 		request.add(GRANT_REQUEST_PASSWORD_PROPERTY, delineaClientSettings.oauthPassword());
 		request.add(GRANT_REQUEST_GRANT_TYPE_PROPERTY, GRANT_REQUEST_GRANT_TYPE);
 
-		return new RestTemplate().postForObject(
-				formatUrlTemplateOrGetUrl(delineaClientSettings.tokenUrlTemplate(), delineaClientSettings.oauthTokenUrl()),
-				request, AccessGrant.class);
+		String tokenUrl = formatUrlTemplateOrGetUrl(delineaClientSettings.tokenUrlTemplate(), delineaClientSettings.oauthTokenUrl());
+		return Objects.requireNonNull(new RestTemplate().postForObject(tokenUrl, request, AccessGrant.class), "No AccessGrant returned from token URL");
 	}
 
-	private String formatUrlTemplateOrGetUrl(String urlTemplate, String url) {
+	private String formatUrlTemplateOrGetUrl(String urlTemplate, @Nullable String url) {
 		return StringUtils.isNotEmpty(delineaClientSettings.tenant()) ? String.format(removeTrailingSlashes(urlTemplate),
 				delineaClientSettings.tenant(), delineaClientSettings.tld())
-				: removeTrailingSlashes(url);
+				: removeTrailingSlashes(Objects.requireNonNull(url, "Delinea oauthTokenUrl has to be set when tenant is not set"));
 	}
 
 	private String removeTrailingSlashes(String url) {

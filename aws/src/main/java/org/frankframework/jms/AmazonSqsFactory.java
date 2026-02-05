@@ -90,11 +90,11 @@ public class AmazonSqsFactory extends AwsBase implements ObjectFactory {
 	public void createQueues(Connection connection, String queues) throws JMSException {
 		if (StringUtils.isNotEmpty(queues)) {
 			AmazonSQSMessagingClientWrapper client = ((SQSConnection) connection).getWrappedAmazonSQSClient();
-			String[] queueArr = queues.split(",");
-			for (int i=0; i<queueArr.length; i++) {
-				if (!client.queueExists(queueArr[i])) {
-					log.debug("creating SQS queue [{}", queueArr[i]);
-					client.createQueue(queueArr[i]);
+			String[] queueArr = queues.split(",", -1);
+			for (String s : queueArr) {
+				if (!client.queueExists(s)) {
+					log.debug("creating SQS queue [{}", s);
+					client.createQueue(s);
 				}
 			}
 		}

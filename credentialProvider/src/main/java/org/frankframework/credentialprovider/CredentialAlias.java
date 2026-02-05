@@ -15,6 +15,7 @@
 */
 package org.frankframework.credentialprovider;
 
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
 
@@ -56,7 +57,7 @@ public class CredentialAlias {
 		String aliasPrefix = constants.getProperty(CredentialFactory.CREDENTIAL_FACTORY_ALIAS_PREFIX_KEY);
 		if (StringUtils.isNotBlank(aliasPrefix)) {
 			log.info("setting optional prefix to [" + aliasPrefix + "]");
-			ALIAS_PREFIX = aliasPrefix.toLowerCase();
+			ALIAS_PREFIX = aliasPrefix.toLowerCase(Locale.ROOT);
 		} else {
 			ALIAS_PREFIX = null;
 		}
@@ -92,7 +93,7 @@ public class CredentialAlias {
 		}
 
 		String aliasName = rawAlias;
-		if (ALIAS_PREFIX != null && rawAlias.toLowerCase().startsWith(ALIAS_PREFIX)) {
+		if (ALIAS_PREFIX != null && rawAlias.toLowerCase(Locale.ROOT).startsWith(ALIAS_PREFIX)) {
 			aliasName = rawAlias.substring(ALIAS_PREFIX.length());
 		}
 
@@ -113,7 +114,7 @@ public class CredentialAlias {
 			name = cleanAlias.substring(0, openParenthesis);
 
 			String remainder = cleanAlias.substring(openParenthesis+1, cleanAlias.length()-1);
-			String[] fieldNames = remainder.split(",");
+			String[] fieldNames = remainder.split(",", -1);
 			usernameField = StringUtils.defaultIfBlank(fieldNames[0], DEFAULT_USERNAME_FIELD);
 
 			if (fieldNames.length == 2) {

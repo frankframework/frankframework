@@ -1,5 +1,5 @@
 /*
-   Copyright 2020, 2024 WeAreFrank!
+   Copyright 2020, 2024, 2026 WeAreFrank!
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -19,6 +19,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.jspecify.annotations.Nullable;
 import org.xml.sax.SAXException;
 
 import org.frankframework.stream.Message;
@@ -68,7 +69,7 @@ public interface IMailFileSystem<M,A> extends IBasicFileSystem<M> {
 
 	String getAttachmentFileName(A a) throws FileSystemException;
 
-	M getFileFromAttachment(A a) throws FileSystemException;
+	@Nullable M getFileFromAttachment(A a) throws FileSystemException;
 
 	Map<String, Object> getAdditionalAttachmentProperties(A a) throws FileSystemException;
 }

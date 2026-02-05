@@ -19,7 +19,7 @@ import org.frankframework.util.AppConstants;
 @Tag("slow")
 class IafTestInitializerTest {
 
-	@SuppressWarnings("NullAway.Init")
+	@SuppressWarnings({ "NullAway.Init", "java:S2637" })
 	private static ConfigurableApplicationContext applicationContext = null;
 
 	/**

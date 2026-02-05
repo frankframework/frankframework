@@ -24,7 +24,6 @@ import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
-import org.jspecify.annotations.NonNull;
 
 import org.frankframework.credentialprovider.util.CredentialConstants;
 
@@ -46,6 +45,7 @@ import org.frankframework.credentialprovider.util.CredentialConstants;
 public class FileSystemCredentialFactory implements ISecretProvider {
 	private static final String FILESYSTEM_ROOT_PROPERTY = "credentialFactory.filesystem.root";
 
+	@SuppressWarnings({ "NullAway.Init", "java:S2637" })
 	private Path root;
 
 	@Override
@@ -63,12 +63,12 @@ public class FileSystemCredentialFactory implements ISecretProvider {
 	}
 
 	@Override
-	public boolean hasSecret(@NonNull CredentialAlias alias) {
+	public boolean hasSecret(CredentialAlias alias) {
 		return Files.exists(root.resolve(alias.getName()));
 	}
 
 	@Override
-	public ISecret getSecret(@NonNull CredentialAlias alias) throws NoSuchElementException {
+	public ISecret getSecret(CredentialAlias alias) throws NoSuchElementException {
 		// No additional checks needed here, since this has been done already by constructing a CredentialAlias
 		return new FileSystemSecret(alias, root);
 	}

@@ -24,7 +24,6 @@ import lombok.Getter;
 import org.frankframework.configuration.ConfigurationException;
 import org.frankframework.configuration.ConfigurationWarning;
 import org.frankframework.core.DestinationType;
-import org.frankframework.core.DestinationType.Type;
 import org.frankframework.core.HasPhysicalDestination;
 import org.frankframework.core.ListenerException;
 import org.frankframework.core.PipeLineSession;
@@ -60,7 +59,7 @@ import org.frankframework.stream.Message;
  */
 @Deprecated(forRemoval = true, since = "9.0")
 @ConfigurationWarning("Please use the ApiListener instead")
-@DestinationType(Type.HTTP)
+@DestinationType(DestinationType.Type.HTTP)
 public class RestListener extends PushingListenerAdapter implements HasPhysicalDestination {
 
 	private @Getter String uriPattern;
