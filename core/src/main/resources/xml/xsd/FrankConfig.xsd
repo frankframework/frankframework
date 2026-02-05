@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Public FrankDoc XSD, should be used within an IDE to validate a configuration. -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.4.0">
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" version="9.4.1">
   <xs:element name="Configuration">
     <xs:annotation>
       <xs:documentation>Container of Adapters that belong together.
@@ -1219,7 +1219,7 @@
         <xs:annotation>
           <xs:documentation>Parameter that resolves it's value to either &lt;code&gt;true&lt;/code&gt; or &lt;code&gt;false&lt;/code&gt;.
  &lt;p/&gt;
- Generic parameter definition.
+Generic parameter definition.
 
  &lt;p&gt;
  A parameter resembles an attribute. However, while attributes get their value at configuration-time,
@@ -1686,7 +1686,7 @@
 
  &lt;/p&gt;
 
- listener that looks in a FileSystem for files.
+listener that looks in a FileSystem for files.
  When a file is found, it is moved to an in-process folder, so that it isn't found more than once.
  &lt;br/&gt;
  The information specified by &lt;code&gt;messageType&lt;/code&gt; is then passed to the pipeline.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;To avoid problems with duplicate filenames in folders like the &lt;code&gt;errorFolder&lt;/code&gt; or &lt;code&gt;processedFolder&lt;/code&gt;,
@@ -1707,7 +1707,7 @@
         <xs:annotation>
           <xs:documentation>ESB (Enterprise Service Bus) extension of JmsListener.
 
- A true multi-threaded Listener-class.
+A true multi-threaded Listener-class.
  &lt;br/&gt;
 
  Since version 4.1, Ibis supports distributed transactions using the XA-protocol. This feature is controlled by the
@@ -1738,7 +1738,7 @@
  jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
  &lt;/p&gt;
 
- JMSListener re-implemented as a pushing listener rather than a pulling listener.
+JMSListener re-implemented as a pushing listener rather than a pulling listener.
  The JMS messages have to come in from an external source: an MDB or a Spring
  message container.
 
@@ -1766,7 +1766,7 @@
  jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
  &lt;/p&gt;
 
- Provides functions for jms connections, queues and topics and acts as a facade
+Provides functions for jms connections, queues and topics and acts as a facade
  to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
  &lt;br/&gt;
  The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
@@ -1812,7 +1812,7 @@
         <xs:annotation>
           <xs:documentation>File listener for an FTP connection.
 
- listener that looks in a FileSystem for files.
+listener that looks in a FileSystem for files.
  When a file is found, it is moved to an in-process folder, so that it isn't found more than once.
  &lt;br/&gt;
  The information specified by &lt;code&gt;messageType&lt;/code&gt; is then passed to the pipeline.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;To avoid problems with duplicate filenames in folders like the &lt;code&gt;errorFolder&lt;/code&gt; or &lt;code&gt;processedFolder&lt;/code&gt;,
@@ -1845,9 +1845,9 @@
  &lt;/ul&gt;&lt;/td&gt;&lt;td&gt;"FF"&lt;/td&gt;&lt;/tr&gt;
  &lt;/table&gt;&lt;/p&gt;
 
- ESB (Enterprise Service Bus) extension of JmsListener.
+ESB (Enterprise Service Bus) extension of JmsListener.
 
- A true multi-threaded Listener-class.
+A true multi-threaded Listener-class.
  &lt;br/&gt;
 
  Since version 4.1, Ibis supports distributed transactions using the XA-protocol. This feature is controlled by the
@@ -1878,7 +1878,7 @@
  jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
  &lt;/p&gt;
 
- JMSListener re-implemented as a pushing listener rather than a pulling listener.
+JMSListener re-implemented as a pushing listener rather than a pulling listener.
  The JMS messages have to come in from an external source: an MDB or a Spring
  message container.
 
@@ -1906,7 +1906,7 @@
  jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
  &lt;/p&gt;
 
- Provides functions for jms connections, queues and topics and acts as a facade
+Provides functions for jms connections, queues and topics and acts as a facade
  to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
  &lt;br/&gt;
  The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
@@ -2013,7 +2013,7 @@
  jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
  &lt;/p&gt;
 
- JMSListener re-implemented as a pushing listener rather than a pulling listener.
+JMSListener re-implemented as a pushing listener rather than a pulling listener.
  The JMS messages have to come in from an external source: an MDB or a Spring
  message container.
 
@@ -2041,7 +2041,7 @@
  jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
  &lt;/p&gt;
 
- Provides functions for jms connections, queues and topics and acts as a facade
+Provides functions for jms connections, queues and topics and acts as a facade
  to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
  &lt;br/&gt;
  The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
@@ -2114,7 +2114,7 @@
 
  Links to &lt;a href="https://www.eclipse.org/paho/files/javadoc" target="_blank"&gt;https://www.eclipse.org/paho/files/javadoc&lt;/a&gt; are opened in a new window/tab because the response from eclipse.org contains header X-Frame-Options:SAMEORIGIN which will make the browser refuse to open the link inside this frame.
 
- Requires a resource to be configured. Example &lt;pre&gt;resources.yml&lt;/pre&gt;:
+Requires a resource to be configured. Example &lt;pre&gt;resources.yml&lt;/pre&gt;:
  &lt;pre&gt;&lt;code&gt;mqtt:
    - name: &amp;quot;my-connection&amp;quot;
      url: &amp;quot;tcp://host:port&amp;quot;
@@ -2170,7 +2170,7 @@
  &lt;code&gt;jakarta.jms.TextMessage&lt;/code&gt;s &lt;br/&gt;&lt;br/&gt;
  &lt;/p&gt;
 
- Provides functions for jms connections, queues and topics and acts as a facade
+Provides functions for jms connections, queues and topics and acts as a facade
  to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
  &lt;br/&gt;
  The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
@@ -2214,7 +2214,7 @@
  jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
  &lt;/p&gt;
 
- Provides functions for jms connections, queues and topics and acts as a facade
+Provides functions for jms connections, queues and topics and acts as a facade
  to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
  &lt;br/&gt;
  The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
@@ -2245,7 +2245,7 @@
         <xs:annotation>
           <xs:documentation>File listener for an SMB2 or SMB3 share.
 
- listener that looks in a FileSystem for files.
+listener that looks in a FileSystem for files.
  When a file is found, it is moved to an in-process folder, so that it isn't found more than once.
  &lt;br/&gt;
  The information specified by &lt;code&gt;messageType&lt;/code&gt; is then passed to the pipeline.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;To avoid problems with duplicate filenames in folders like the &lt;code&gt;errorFolder&lt;/code&gt; or &lt;code&gt;processedFolder&lt;/code&gt;,
@@ -2285,7 +2285,7 @@
         <xs:annotation>
           <xs:documentation>File listener for an SFTP connection.
 
- listener that looks in a FileSystem for files.
+listener that looks in a FileSystem for files.
  When a file is found, it is moved to an in-process folder, so that it isn't found more than once.
  &lt;br/&gt;
  The information specified by &lt;code&gt;messageType&lt;/code&gt; is then passed to the pipeline.&lt;br&gt;&lt;br&gt;&lt;b&gt;INFO&lt;/b&gt;&lt;p&gt;To avoid problems with duplicate filenames in folders like the &lt;code&gt;errorFolder&lt;/code&gt; or &lt;code&gt;processedFolder&lt;/code&gt;,
@@ -2348,7 +2348,7 @@
  jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
  &lt;/p&gt;
 
- JMSListener re-implemented as a pushing listener rather than a pulling listener.
+JMSListener re-implemented as a pushing listener rather than a pulling listener.
  The JMS messages have to come in from an external source: an MDB or a Spring
  message container.
 
@@ -2376,7 +2376,7 @@
  jakarta.jms.TextMessages and jakarta.jms.BytesMessage&lt;br/&gt;&lt;br/&gt;
  &lt;/p&gt;
 
- Provides functions for jms connections, queues and topics and acts as a facade
+Provides functions for jms connections, queues and topics and acts as a facade
  to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
  &lt;br/&gt;
  The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
@@ -4428,7 +4428,7 @@
         <xs:annotation>
           <xs:documentation>ESB (Enterprise Service Bus) extension of &lt;code&gt;JmsSender&lt;/code&gt;.
 
- Provides functions for jms connections, queues and topics and acts as a facade
+Provides functions for jms connections, queues and topics and acts as a facade
  to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
  &lt;br/&gt;
  The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
@@ -4448,10 +4448,10 @@
 
  &lt;p&gt;See JmsSender for configuration&lt;/p&gt;
 
- JMS sender which will call IBM WebSphere MQ specific &lt;code&gt;setTargetClient(JMSC.MQJMS_CLIENT_NONJMS_MQ)&lt;/code&gt; on the destination prior to sending a message.
+JMS sender which will call IBM WebSphere MQ specific &lt;code&gt;setTargetClient(JMSC.MQJMS_CLIENT_NONJMS_MQ)&lt;/code&gt; on the destination prior to sending a message.
  This is needed when the MQ destination is not a JMS receiver otherwise format errors occur (e.g. dots are added after every character in the message).
 
- Provides functions for jms connections, queues and topics and acts as a facade
+Provides functions for jms connections, queues and topics and acts as a facade
  to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
  &lt;br/&gt;
  The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
@@ -4486,7 +4486,7 @@
           <xs:documentation>JMS sender which will call IBM WebSphere MQ specific &lt;code&gt;setTargetClient(JMSC.MQJMS_CLIENT_NONJMS_MQ)&lt;/code&gt; on the destination prior to sending a message.
  This is needed when the MQ destination is not a JMS receiver otherwise format errors occur (e.g. dots are added after every character in the message).
 
- Provides functions for jms connections, queues and topics and acts as a facade
+Provides functions for jms connections, queues and topics and acts as a facade
  to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
  &lt;br/&gt;
  The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
@@ -4680,7 +4680,7 @@
  &lt;/ul&gt;
  &lt;/p&gt;
 
- Implements a message log (&lt;code&gt;JmsMessageLog&lt;/code&gt;) or error store (&lt;code&gt;JmsErrorStorage&lt;/code&gt;) that uses JMS technology.
+Implements a message log (&lt;code&gt;JmsMessageLog&lt;/code&gt;) or error store (&lt;code&gt;JmsErrorStorage&lt;/code&gt;) that uses JMS technology.
  &lt;br/&gt;&lt;br/&gt;
  &lt;b&gt;Message log:&lt;/b&gt; A message log writes messages in persistent storage for logging purposes.
  When a message log appears in a receiver, it also ensures that the same message is only processed
@@ -4697,9 +4697,9 @@
  a key based on the sent or received message. Messages with the same key are considered to
  be the same.
 
- Basic browser of JMS Messages.
+Basic browser of JMS Messages.
 
- Provides functions for jms connections, queues and topics and acts as a facade
+Provides functions for jms connections, queues and topics and acts as a facade
  to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
  &lt;br/&gt;
  The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
@@ -4778,9 +4778,9 @@
  a key based on the sent or received message. Messages with the same key are considered to
  be the same.
 
- Basic browser of JMS Messages.
+Basic browser of JMS Messages.
 
- Provides functions for jms connections, queues and topics and acts as a facade
+Provides functions for jms connections, queues and topics and acts as a facade
  to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
  &lt;br/&gt;
  The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
@@ -5030,7 +5030,7 @@
  &lt;/ul&gt;
  &lt;/p&gt;
 
- Implements a message log (&lt;code&gt;JmsMessageLog&lt;/code&gt;) or error store (&lt;code&gt;JmsErrorStorage&lt;/code&gt;) that uses JMS technology.
+Implements a message log (&lt;code&gt;JmsMessageLog&lt;/code&gt;) or error store (&lt;code&gt;JmsErrorStorage&lt;/code&gt;) that uses JMS technology.
  &lt;br/&gt;&lt;br/&gt;
  &lt;b&gt;Message log:&lt;/b&gt; A message log writes messages in persistent storage for logging purposes.
  When a message log appears in a receiver, it also ensures that the same message is only processed
@@ -5047,9 +5047,9 @@
  a key based on the sent or received message. Messages with the same key are considered to
  be the same.
 
- Basic browser of JMS Messages.
+Basic browser of JMS Messages.
 
- Provides functions for jms connections, queues and topics and acts as a facade
+Provides functions for jms connections, queues and topics and acts as a facade
  to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
  &lt;br/&gt;
  The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
@@ -5128,9 +5128,9 @@
  a key based on the sent or received message. Messages with the same key are considered to
  be the same.
 
- Basic browser of JMS Messages.
+Basic browser of JMS Messages.
 
- Provides functions for jms connections, queues and topics and acts as a facade
+Provides functions for jms connections, queues and topics and acts as a facade
  to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
  &lt;br/&gt;
  The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
@@ -7422,7 +7422,7 @@
  &lt;code&gt;jakarta.jms.TextMessage&lt;/code&gt;s &lt;br/&gt;&lt;br/&gt;
  &lt;/p&gt;
 
- Provides functions for jms connections, queues and topics and acts as a facade
+Provides functions for jms connections, queues and topics and acts as a facade
  to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
  &lt;br/&gt;
  The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
@@ -7841,7 +7841,7 @@
         <xs:annotation>
           <xs:documentation>ESB (Enterprise Service Bus) extension of &lt;code&gt;JmsSender&lt;/code&gt;.
 
- Provides functions for jms connections, queues and topics and acts as a facade
+Provides functions for jms connections, queues and topics and acts as a facade
  to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
  &lt;br/&gt;
  The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
@@ -8163,10 +8163,10 @@
 
  &lt;p&gt;See JmsSender for configuration&lt;/p&gt;
 
- JMS sender which will call IBM WebSphere MQ specific &lt;code&gt;setTargetClient(JMSC.MQJMS_CLIENT_NONJMS_MQ)&lt;/code&gt; on the destination prior to sending a message.
+JMS sender which will call IBM WebSphere MQ specific &lt;code&gt;setTargetClient(JMSC.MQJMS_CLIENT_NONJMS_MQ)&lt;/code&gt; on the destination prior to sending a message.
  This is needed when the MQ destination is not a JMS receiver otherwise format errors occur (e.g. dots are added after every character in the message).
 
- Provides functions for jms connections, queues and topics and acts as a facade
+Provides functions for jms connections, queues and topics and acts as a facade
  to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
  &lt;br/&gt;
  The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
@@ -8510,7 +8510,7 @@
           <xs:documentation>JMS sender which will call IBM WebSphere MQ specific &lt;code&gt;setTargetClient(JMSC.MQJMS_CLIENT_NONJMS_MQ)&lt;/code&gt; on the destination prior to sending a message.
  This is needed when the MQ destination is not a JMS receiver otherwise format errors occur (e.g. dots are added after every character in the message).
 
- Provides functions for jms connections, queues and topics and acts as a facade
+Provides functions for jms connections, queues and topics and acts as a facade
  to hide for clients whether a &lt;code&gt;Queue&lt;/code&gt; or &lt;code&gt;Topic&lt;/code&gt; is used.
  &lt;br/&gt;
  The &lt;code&gt;destinationType&lt;/code&gt; field specifies which type should be used.&lt;br/&gt;
@@ -8626,7 +8626,7 @@
 
  Links to &lt;a href="https://www.eclipse.org/paho/files/javadoc" target="_blank"&gt;https://www.eclipse.org/paho/files/javadoc&lt;/a&gt; are opened in a new window/tab because the response from eclipse.org contains header X-Frame-Options:SAMEORIGIN which will make the browser refuse to open the link inside this frame.
 
- Requires a resource to be configured. Example &lt;pre&gt;resources.yml&lt;/pre&gt;:
+Requires a resource to be configured. Example &lt;pre&gt;resources.yml&lt;/pre&gt;:
  &lt;pre&gt;&lt;code&gt;mqtt:
    - name: &amp;quot;my-connection&amp;quot;
      url: &amp;quot;tcp://host:port&amp;quot;
@@ -18268,7 +18268,7 @@
         <xs:annotation>
           <xs:documentation>Job which can stop/start adapters and receivers.
 
- &lt;h3&gt;Possible cron expressions:&lt;/h3&gt;
+&lt;h3&gt;Possible cron expressions:&lt;/h3&gt;
  &lt;p&gt;
  A "Cron-Expression" is a string comprised of 6 or 7 fields separated by
  white space. The 6 mandatory and 1 optional fields are as follows:&lt;br/&gt;
@@ -18512,7 +18512,7 @@
  Find all MessageLogs and Lockers in the current configuration and removes database
  entries which have surpassed their corresponding ExpiryDateField.
 
- &lt;h3&gt;Possible cron expressions:&lt;/h3&gt;
+&lt;h3&gt;Possible cron expressions:&lt;/h3&gt;
  &lt;p&gt;
  A "Cron-Expression" is a string comprised of 6 or 7 fields separated by
  white space. The 6 mandatory and 1 optional fields are as follows:&lt;br/&gt;
@@ -18744,7 +18744,7 @@
  stale (untouched) for the given &lt;code&gt;retention&lt;/code&gt; duration.
  See DirectoryCleaner for more info.
 
- &lt;h3&gt;Possible cron expressions:&lt;/h3&gt;
+&lt;h3&gt;Possible cron expressions:&lt;/h3&gt;
  &lt;p&gt;
  A "Cron-Expression" is a string comprised of 6 or 7 fields separated by
  white space. The 6 mandatory and 1 optional fields are as follows:&lt;br/&gt;
@@ -18974,7 +18974,7 @@
         <xs:annotation>
           <xs:documentation>Scheduled job to execute JDBC Queries using a FixedQuerySender.
 
- &lt;h3&gt;Possible cron expressions:&lt;/h3&gt;
+&lt;h3&gt;Possible cron expressions:&lt;/h3&gt;
  &lt;p&gt;
  A "Cron-Expression" is a string comprised of 6 or 7 fields separated by
  white space. The 6 mandatory and 1 optional fields are as follows:&lt;br/&gt;
@@ -19239,7 +19239,7 @@
           <xs:documentation>Scheduled job to send messages to a FrankListener.
  Message may be &lt;pre&gt;null&lt;/pre&gt; (or empty).
 
- &lt;h3&gt;Possible cron expressions:&lt;/h3&gt;
+&lt;h3&gt;Possible cron expressions:&lt;/h3&gt;
  &lt;p&gt;
  A "Cron-Expression" is a string comprised of 6 or 7 fields separated by
  white space. The 6 mandatory and 1 optional fields are as follows:&lt;br/&gt;
